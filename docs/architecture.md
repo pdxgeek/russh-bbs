@@ -50,6 +50,8 @@ Rules never live in a front end. A rule that exists in both the TUI and GraphQL 
 ## Front ends
 
 - **SSH TUI:** `russh` server, public-key auth, restricted session for unknown keys. `ratatui` rendering on the channel PTY with resize handling.
+  - **Implemented (M1-A, `russh-bbs-server::ssh`):** persistent Ed25519 host key, public-key-only auth, our own accept loop (connection cap, auth deadline), one PTY shell per connection, `ratatui` over an in-memory backend flushed to the channel (D19), resize, and the lockdown in the threat model. The access rule lives in `russh-bbs-core::access` (`decide_access`: unknown key => `Restricted`); the server only calls it. Today every key is restricted and sees a placeholder screen.
+  - **Planned:** the real waiting room (M1-C), a member store behind `MemberDirectory` (M1-B), per-IP and per-key limits (M1-C), SFTP (M4), timer-driven screen updates.
 - **SFTP:** virtual filesystem mapped to file areas by ID, never raw paths.
 - **GraphQL (M5):** `async-graphql` on `axum`, dataloaders for nested fields.
 
@@ -79,4 +81,4 @@ See [ui.md](ui.md).
 
 ## Verified
 
-Nothing yet.
+SSH transport (M1-A): integration tests drive a real `russh` client against the server on loopback, and the OpenSSH `ssh` and `sftp` clients were run by hand. See [features.md](features.md). Everything else is unverified.

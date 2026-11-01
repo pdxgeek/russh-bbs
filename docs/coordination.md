@@ -9,7 +9,7 @@ A slice with an unmet dependency is not claimable.
 | M0-A Workspace, toolchain, CI, deny config | repo root, `.github/`, crate scaffolds | none | In review | `m0/workspace`, [PR #1](https://github.com/pdxgeek/russh-bbs/pull/1) |
 | M0-B Shared sanitizer with tests | `crates/core/src/sanitize` | M0-A | In review | `m0/sanitizer` (base `m0/workspace`), [PR #2](https://github.com/pdxgeek/russh-bbs/pull/2) |
 | M0-C Icon registry and width table | `crates/core/src/icons` | M0-A | In review | `m0/icons` (base `m0/sanitizer`), [PR #3](https://github.com/pdxgeek/russh-bbs/pull/3) |
-| M1-A SSH server, host key, restricted session | `crates/server/src/ssh` | M0-A | Open | |
+| M1-A SSH server, host key, restricted session | `crates/server/src/ssh` | M0-A | In review | `m1/ssh-server` (base `m0/icons`), [PR #4](https://github.com/pdxgeek/russh-bbs/pull/4) |
 | M1-B SQLite store and migrations | `crates/store`, `crates/core/src/store` traits | M0-A | Open | |
 | M1-C Waiting room screens and rate limits | `crates/server/src/waiting_room` | M1-A, M0-B | Open | |
 | M1-D Founder claim flow | `crates/server/src/founder`, store | M1-A, M1-B | Open | |
@@ -23,4 +23,6 @@ Add a line here if you need a change in code another slice owns. Do not make it 
 
 | From | To | Request | Resolved |
 |---|---|---|---|
-| | | | |
+| M1-A | M1-B | `russh-bbs-core::access` defines `Fingerprint` and the `MemberDirectory` trait (`is_member(&Fingerprint) -> Future<bool>`, fail closed). Implement it over the store; the server takes it as `Arc<D>` in `SshServer::start`. Replace if you want a richer return type, but keep "unknown key => Restricted" in `decide_access`. | |
+| M1-A | M1-C | Plug per-IP limits in at `AcceptLoop::admit` and per-key limits at the top of `ClientHandler::auth_publickey` (both marked `M1-C`). The placeholder lives in `ssh/screen.rs` (`render_waiting_room`); replace it with your screens and keep drawing through `Screen` (D19). Any text that is not chrome must go through `core::sanitize`. | |
+| M1-A | M1-D | The handler never reads or writes the store; the founder flow needs a way to mark a key as member/sysop through `MemberDirectory` and a way for `ClientHandler` to learn the role. Not designed here. | |

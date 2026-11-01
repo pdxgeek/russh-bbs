@@ -1,6 +1,7 @@
 //! Business rules for russh-bbs: domain types, traits, the shared sanitizer and the icon
 //! registry. Front ends and storage depend on this crate; it depends on none of them.
 
+pub mod access;
 pub mod icons;
 pub mod sanitize;
 
