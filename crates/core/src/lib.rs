@@ -13,6 +13,6 @@ mod tests {
 
     #[test]
     fn version_is_not_empty() {
-        assert!(!version().is_empty());
+        assert_ne!(version(), "");
     }
 }
