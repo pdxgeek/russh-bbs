@@ -15,6 +15,8 @@ The MVP is a closed-beta board that works with plain `ssh` and `sftp`. No instal
 - Credits ledger (non-transferable).
 - Event scheduler.
 - Door framework and one or two Rust-native games.
+- Datasource selection: SQLite (default) or Postgres, the latter also against PGlite. No MySQL.
+- Container image with a compose example.
 - Sysop admin TUI, page the sysop, moderation workflow, audit log.
 - Notifications and digests, backups with a tested restore, data export and deletion.
 - Accessibility mode.
