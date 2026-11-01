@@ -20,7 +20,7 @@ Decided items are not reopened without the owner. Open items need the owner befo
 | D12 | Door games: Rust-native first-party doors first; WASM sandbox for community doors later. Remakes are original ("clean-room"), not ports of copyrighted code, unless a license permits it. | Safety and copyright. |
 | D13 | The software is named **russh-bbs**. A running board has its own name. Not affiliated with the `russh` project. | Software name vs. board name. |
 | D14 | Federation, directory listing, finger, and NNTP are opt-in and post-MVP. | Quiet, invite-only feel. |
-| D15 | The waiting room is built around the registration mode from the start (M1-C), and the `apply` and `open` flows ship in M2 with the sysop queue. The waiting room reveals nothing about members, boards, or stats in any mode; `apply` and `open` only add a registration path. | Avoids retrofitting the waiting room; the honesty and no-leak rules do not depend on mode. |
+| D23 | The waiting room is built around the registration mode from the start (M1-C), and the `apply` and `open` flows ship in M2 with the sysop queue. The waiting room reveals nothing about members, boards, or stats in any mode; `apply` and `open` only add a registration path. | Avoids retrofitting the waiting room; the honesty and no-leak rules do not depend on mode. |
 
 ## Open (owner needed)
 

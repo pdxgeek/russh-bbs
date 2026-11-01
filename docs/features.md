@@ -17,7 +17,7 @@ Update this table in the same pass as the code.
 | SQLite store and migrations | M1 | Planned | |
 | Invite codes, quotas, invite tree | M2 | Planned | |
 | Sysop approval queue and vouching | M2 | Planned | |
-| Registration mode setting (`invite`, `apply`, `open`) | M2 | Planned | Default `invite`; D2, D15. Waiting room built mode-aware in M1 |
+| Registration mode setting (`invite`, `apply`, `open`) | M2 | Planned | Default `invite`; D2, D23. Waiting room built mode-aware in M1 |
 | User profiles and members list | M2 | Planned | |
 | Time and call limits (optional) | M2 | Planned | |
 | Menu tree, layouts, themes | M3 | Planned | See [ui.md](ui.md) |
