@@ -38,6 +38,7 @@ Member identities and key fingerprints, the invite tree, message and mail conten
 | Outbound fetching | User-supplied URLs cannot reach private networks. |
 | Uploads | Files are quarantined and scanned before becoming visible. |
 | Honesty | Nothing is labeled private unless the server genuinely cannot read it. |
+| Container | The image runs as a non-root user on an unprivileged port with no added capabilities. The founder setup token is printed to stdout, so anyone who can read the container logs during first run can claim sysop; the docs say so. The container boundary is a second layer, not the door sandbox. |
 
 ## What the MVP does not guarantee
 
