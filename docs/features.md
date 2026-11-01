@@ -7,7 +7,7 @@ Update this table in the same pass as the code.
 | Feature | Milestone | Status | Notes |
 |---|---|---|---|
 | Workspace, CI, threat model | M0 | Implemented | Workspace, toolchain, deny and CI exist and pass locally (fmt, clippy, test, deny); CI itself not yet seen running on GitHub. Threat model is a doc. Not yet Verified |
-| Shared sanitizer | M0 | Planned | Owned by core; used everywhere |
+| Shared sanitizer | M0 | Implemented | `russh-bbs-core::sanitize`: controls, ANSI/CSI/OSC/DCS/APC/PM/SOS and 8-bit C1 sequences, bidi and invisible characters, private-use neutralization, char-count limits, `Sanitized` newtype, NFKC + strict ASCII usernames, ASCII lookalike skeleton. Unit and property tests; no fuzz target yet (Planned). Not yet used by any front end. Not yet Verified |
 | Icon registry and width table | M0 | Planned | |
 | SSH server, host key, public-key auth | M1 | Planned | |
 | Waiting room (banner, rules, request, redeem) | M1 | Planned | |

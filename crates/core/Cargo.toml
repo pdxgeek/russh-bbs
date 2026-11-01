@@ -7,3 +7,9 @@ publish.workspace = true
 
 [lints]
 workspace = true
+
+[dependencies]
+unicode-normalization = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }

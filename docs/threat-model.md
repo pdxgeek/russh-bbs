@@ -54,6 +54,8 @@ Applied to every string that is not UI chrome: usernames, post bodies, subjects,
 - Enforce length limits.
 - Ship fuzz and property tests.
 
+Implementation status (`russh-bbs-core::sanitize`): **Implemented and unit/property tested:** control and escape-sequence removal, bidi and invisible-character removal, private-use neutralization (replaced with U+FFFD), length limits (in `char`s), NFKC and a strict ASCII allowed set for usernames, and a minimal ASCII lookalike skeleton (`0`/`o`, `1`/`i`/`l`, `-`/`_`). **Still planned:** a `cargo-fuzz` target; multi-letter lookalikes (`rn`/`m`); wiring into front ends, which is each consuming slice's job. Cross-script confusables are blocked by rejection (non-ASCII names are not allowed in the MVP), not by a confusables table.
+
 ### Security chrome
 Lock, signature, key-changed, and server-readable markers are drawn only by chrome code. Layouts and themes can position them but cannot hide, recolor to mislead, or replace them. Every icon tier has a text fallback ("E2EE", "SERVER-READABLE").
 
