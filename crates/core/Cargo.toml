@@ -1,0 +1,9 @@
+[package]
+name = "russh-bbs-core"
+description = "russh-bbs domain rules, traits, sanitizer and icon registry"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true

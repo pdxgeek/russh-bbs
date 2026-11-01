@@ -1,0 +1,37 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/core",
+    "crates/store",
+    "crates/server",
+    "crates/proto",
+    "crates/api",
+]
+
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+# No license is declared on purpose: the repo license is an open owner decision (Q1).
+publish = false
+
+[workspace.dependencies]
+# Internal crates. Dependency direction: server, store, api -> core. core depends on none of them.
+russh-bbs-core = { path = "crates/core" }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+unreachable_pub = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+unwrap_used = "deny"
+expect_used = "warn"
+panic = "deny"
+dbg_macro = "deny"
+print_stdout = "warn"
+todo = "warn"
+# Pedantic lints we do not follow:
+module_name_repetitions = "allow" # domain names read better fully qualified
+missing_errors_doc = "allow"      # error types are documented on the type

@@ -1,0 +1,12 @@
+[package]
+name = "russh-bbs-store"
+description = "russh-bbs SQLite implementation of the core storage traits"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+russh-bbs-core = { workspace = true }
