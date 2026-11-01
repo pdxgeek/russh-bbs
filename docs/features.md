@@ -14,7 +14,7 @@ Update this table in the same pass as the code.
 | Founder / first-run sysop claim | M1 | Planned | One-time setup token |
 | Per-user terminal settings | M1 | Planned | width, height, color, pause, tier |
 | Login and logoff screens, themeable strings | M1 | Planned | |
-| SQLite store and migrations | M1 | Planned | |
+| SQLite store and migrations | M1 | Implemented | `m1/store`. `sqlx` (D24), WAL, forward-only checksummed migrations (D26), accounts, key fingerprints, settings; `MemberDirectory` over the store (active accounts only, fails closed). Tested on temp-file DBs and with OpenSSH. Account/state transitions beyond create, and the founder flow, are M1-D/M2 |
 | Invite codes, quotas, invite tree | M2 | Planned | |
 | Sysop approval queue and vouching | M2 | Planned | |
 | Registration mode setting (`invite`, `apply`, `open`) | M2 | Planned | Default `invite`; D2, D23. Waiting room built mode-aware in M1 |

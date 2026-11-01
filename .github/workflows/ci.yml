@@ -9,6 +9,8 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: always
+  # sqlx checks queries against the committed crates/store/.sqlx data, never a live database.
+  SQLX_OFFLINE: "true"
 
 jobs:
   check:
