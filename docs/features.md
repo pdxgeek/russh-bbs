@@ -7,9 +7,9 @@ Update this table in the same pass as the code.
 | Feature | Milestone | Status | Notes |
 |---|---|---|---|
 | Workspace, CI, threat model | M0 | Implemented | Workspace, toolchain, deny and CI exist and pass locally (fmt, clippy, test, deny); CI itself not yet seen running on GitHub. Threat model is a doc. Not yet Verified |
-| Shared sanitizer | M0 | Planned | Owned by core; used everywhere |
-| Icon registry and width table | M0 | Planned | |
-| SSH server, host key, public-key auth | M1 | Planned | |
+| Shared sanitizer | M0 | Implemented | `russh-bbs-core::sanitize`: controls, ANSI/CSI/OSC/DCS/APC/PM/SOS and 8-bit C1 sequences, bidi and invisible characters, private-use neutralization, char-count limits, `Sanitized` newtype, NFKC + strict ASCII usernames, ASCII lookalike skeleton. Unit and property tests; no fuzz target yet (Planned). Not yet used by any front end. Not yet Verified |
+| Icon registry and width table | M0 | Implemented | `russh-bbs-core::icons`: closed enums (`ContentIcon`, `SecurityMarker`, `Icon`), three tiers, text labels, explicit width table, padded `render`. Unit tested incl. sanitizer round-trip. Not used by any front end yet. Multi-terminal alignment **not verified** (needs real terminals). Not yet Verified |
+| SSH server, host key, public-key auth | M1 | Verified | M1-A (`russh-bbs-server::ssh`, `russh-bbs-core::access`). Persistent Ed25519 host key (0600, outside the repo, stable fingerprint logged at start); public-key-only auth; every unknown key gets a restricted session showing a placeholder screen (the real waiting room is M1-C). Lockdown: exec, subsystem/sftp, env, agent, X11, direct-tcpip, tcpip-forward and streamlocal all refused. PTY size honored, clamped, and updated on resize; auth timeout, auth-attempt cap, idle timeout and connection cap. 23 unit + 31 integration tests (real russh client on loopback) and a manual run with OpenSSH `ssh`/`sftp` (see PR). **Not covered:** per-IP and per-key rate limits (M1-C), RSA client keys (unsupported by design, D21), clients other than OpenSSH and russh, CI on GitHub, load or fuzz testing of the transport. Members do not exist yet (M1-B), so `Access::Member` is untested end to end |
 | Waiting room (banner, rules, request, redeem) | M1 | Planned | |
 | Founder / first-run sysop claim | M1 | Planned | One-time setup token |
 | Per-user terminal settings | M1 | Planned | width, height, color, pause, tier |

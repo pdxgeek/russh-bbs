@@ -18,6 +18,31 @@ publish = false
 # Internal crates. Dependency direction: server, store, api -> core. core depends on none of them.
 russh-bbs-core = { path = "crates/core" }
 
+# External crates.
+unicode-normalization = "0.1"
+proptest = "1"
+# OS-seeded RNG for generating the host key (already in the tree via russh).
+rand = "0.10"
+# Temporary directories for tests, so tests never touch the operator's files.
+tempfile = "3"
+# SSH server library (decision D7). Default features off: `ring` backend instead of aws-lc-rs, and no `rsa`
+# (the `rsa` crate has an unfixed timing advisory, and RSA host/user keys are not needed).
+russh = { version = "0.65", default-features = false, features = ["ring", "flate2"] }
+# Async runtime for the SSH server.
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "time", "sync", "signal", "fs"] }
+# Structured logging (architecture.md Cross-cutting).
+tracing = "0.1"
+# Log output for the binary.
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+# Typed errors in library code.
+thiserror = "2"
+# Errors at the binary edge only.
+anyhow = "1"
+# CLI flags and environment for the server binary.
+clap = { version = "4", features = ["derive", "env"] }
+# Terminal rendering over the PTY (decision D7, Q5/D19).
+ratatui = { version = "0.30", default-features = false, features = ["crossterm"] }
+
 [workspace.lints.rust]
 unsafe_code = "forbid"
 missing_docs = "warn"
