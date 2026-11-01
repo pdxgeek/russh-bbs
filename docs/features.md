@@ -6,7 +6,7 @@ Update this table in the same pass as the code.
 
 | Feature | Milestone | Status | Notes |
 |---|---|---|---|
-| Workspace, CI, threat model | M0 | Planned | |
+| Workspace, CI, threat model | M0 | Implemented | Workspace, toolchain, deny and CI exist and pass locally (fmt, clippy, test, deny); CI itself not yet seen running on GitHub. Threat model is a doc. Not yet Verified |
 | Shared sanitizer | M0 | Planned | Owned by core; used everywhere |
 | Icon registry and width table | M0 | Planned | |
 | SSH server, host key, public-key auth | M1 | Planned | |

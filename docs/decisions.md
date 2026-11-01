@@ -20,6 +20,7 @@ Decided items are not reopened without the owner. Open items need the owner befo
 | D12 | Door games: Rust-native first-party doors first; WASM sandbox for community doors later. Remakes are original ("clean-room"), not ports of copyrighted code, unless a license permits it. | Safety and copyright. |
 | D13 | The software is named **russh-bbs**. A running board has its own name. Not affiliated with the `russh` project. | Software name vs. board name. |
 | D14 | Federation, directory listing, finger, and NNTP are opt-in and post-MVP. | Quiet, invite-only feel. |
+| D15 | Workspace uses **edition 2024** and resolver 3, toolchain **pinned to an exact stable release** in `rust-toolchain.toml` (bumped deliberately in its own change), workspace crates `publish = false`, with no license declared. | The rust-coding skill assumes 2024 (AGENTS.md allows 2021 or later); a new repo gains nothing from an older edition. The pin exists because floating `stable` made local and CI clippy disagree (a newer lint failed only in CI); the trade-off is a manual bump. `publish = false` plus `licenses.private.ignore` in `deny.toml` lets cargo-deny pass without inventing a license (Q1 stays open). |
 
 ## Open (owner needed)
 
