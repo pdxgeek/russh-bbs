@@ -7,7 +7,7 @@ Decided items are not reopened without the owner. Open items need the owner befo
 | ID | Decision | Why |
 |---|---|---|
 | D1 | The MVP works over plain `ssh` and `sftp` with **no custom client**. | "No install required" is the MVP goal. |
-| D2 | The board is **invite-only**. Unknown keys reach only a waiting room (request or redeem an invite). | Quiet community; the invite tree is also the trust graph. |
+| D2 | **Registration mode is a sysop setting** with three values, default `invite`. `invite`: unknown keys reach only a waiting room (request or redeem an invite). `apply`: anyone can submit a membership application that lands in the sysop queue; the account is inactive until approved. `open`: an unknown key can create an active account at once, subject to rate limits and an optional cap on new accounts. Amended by the owner on 2026-11-01; the original decision was invite-only with no option. | Quiet by default; the invite tree is still the trust graph in `invite` mode. Sysops who want a classic apply-and-approve board or an open board get it by configuration, not by a fork. |
 | D3 | In the MVP **the server can read everything** except PGP-encrypted mail and files users encrypt themselves. The product states this. | Real E2EE needs code on the user's machine; faking it would be dishonest. |
 | D4 | True E2EE (DMs via double ratchet, groups via MLS) comes **after the MVP** with a native client. | A server-rendered session sees keystrokes. |
 | D5 | Public spaces are server-side and plaintext; member-to-member private spaces are E2EE once the client exists. No mixed or silent-fallback rooms. | Locks must mean what they say. |
@@ -20,6 +20,7 @@ Decided items are not reopened without the owner. Open items need the owner befo
 | D12 | Door games: Rust-native first-party doors first; WASM sandbox for community doors later. Remakes are original ("clean-room"), not ports of copyrighted code, unless a license permits it. | Safety and copyright. |
 | D13 | The software is named **russh-bbs**. A running board has its own name. Not affiliated with the `russh` project. | Software name vs. board name. |
 | D14 | Federation, directory listing, finger, and NNTP are opt-in and post-MVP. | Quiet, invite-only feel. |
+| D15 | The waiting room is built around the registration mode from the start (M1-C), and the `apply` and `open` flows ship in M2 with the sysop queue. The waiting room reveals nothing about members, boards, or stats in any mode; `apply` and `open` only add a registration path. | Avoids retrofitting the waiting room; the honesty and no-leak rules do not depend on mode. |
 
 ## Open (owner needed)
 

@@ -20,7 +20,7 @@ Member identities and key fingerprints, the invite tree, message and mail conten
 
 | Adversary | Goal |
 |---|---|
-| Unauthenticated stranger | Learn who is on the board, get in without an invite, flood the waiting room |
+| Unauthenticated stranger | Learn who is on the board, get in without an invite, flood the waiting room, mass-create accounts when registration is `apply` or `open`, squat usernames |
 | Malicious member | Spam, impersonate, inject terminal escapes, abuse invites, cheat in doors, exfiltrate others' data |
 | Malicious external content (feeds, mail, files) | Terminal injection, SSRF, malware, resource exhaustion |
 | Curious or compromised operator or server | Read private content |
@@ -32,7 +32,8 @@ Member identities and key fingerprints, the invite tree, message and mail conten
 |---|---|
 | Transport | SSH only. No telnet. Host key is persistent and its fingerprint is published by the sysop. |
 | Authentication | Public-key only. No passwords. |
-| Waiting room | An unknown key sees only the banner, rules, request-invite, and redeem-invite. No member list, board list, or stats. |
+| Waiting room | An unknown key sees only the banner, rules, request-invite, and redeem-invite, plus apply or create-account when the registration mode (D2) allows it. No member list, board list, or stats in any mode. |
+| Registration | Default mode is `invite`. `apply` creates an inactive account visible only to the sysop queue. `open` creates an active account only within per-IP and per-key creation limits and an optional cap on new accounts per day; when the cap is hit the stranger sees the `apply` path instead. |
 | Output safety | Untrusted text cannot inject terminal escapes or spoof UI icons or security badges. |
 | Outbound fetching | User-supplied URLs cannot reach private networks. |
 | Uploads | Files are quarantined and scanned before becoming visible. |
@@ -63,8 +64,10 @@ For every server-side fetch of a user-supplied URL: only `http` and `https`, res
 ### Uploads
 Quarantine until scanned (antivirus hook), detect type by content not extension, cap size and archive expansion depth and ratio, map the SFTP view to IDs (no path traversal), never render or execute uploaded content on the server.
 
-### Invites and abuse
+### Invites, registration, and abuse
 Rate-limit the waiting room per key and per IP, with a small cost or queue cap against floods. Expire denied requests quickly and keep minimal personal data. Invite codes are single-use, expiring, and bound to an inviter. Bans act on keys and affect the inviter's standing.
+
+Registration mode (D2) adds: account creation in `apply` and `open` modes is rate-limited per IP and per key separately from waiting-room requests; `open` mode has a configurable daily cap on new accounts and degrades to `apply` when the cap is reached; usernames are reserved for a short window during registration and confusables are blocked so a stranger cannot squat or impersonate a member; accounts created in `open` mode have no inviter, so quotas that depend on inviter standing default to the most restrictive tier until the sysop vouches. Switching the mode never changes existing accounts.
 
 ### Keys and secrets
 Never log keys, invite codes, message bodies, or mail. Zero key material in memory when finished. No credentials in the repo, fixtures, or the database in plaintext.

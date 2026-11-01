@@ -4,7 +4,7 @@ The MVP is a closed-beta board that works with plain `ssh` and `sftp`. No instal
 
 ## In the MVP
 
-- Invite-only waiting room, invite codes, sysop queue, invite tree, founder claim.
+- Waiting room, invite codes, sysop queue, invite tree, founder claim. Registration mode setting (`invite` default, `apply`, `open`).
 - User profiles, members list, per-user terminal settings.
 - Forums with search, full-screen message editor, public chat, one-liners, last callers, polls.
 - Menu layouts, themes, Nerd Font icon tiers with ASCII fallback, login and logoff screens.
