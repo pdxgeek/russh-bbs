@@ -7,7 +7,7 @@ An invite-only bulletin board you reach with plain `ssh`: forums, chat, mail, fi
 ## Principles
 
 1. **No install for the MVP.** If a user has `ssh` and `sftp`, they can do everything the MVP offers.
-2. **Invite-only and quiet.** Strangers see a waiting room and nothing else. Growth is by vouching, and the invite tree is a feature.
+2. **Quiet by default.** Out of the box the board is invite-only: strangers see a waiting room and nothing else, growth is by vouching, and the invite tree is a feature. The sysop can switch registration to apply-and-approve or open (decision D2).
 3. **Honest privacy.** The MVP server can read nearly everything, and the product says so. Real end-to-end encryption comes later, with a native client, and is never faked before that.
 4. **Open edges.** RSS in and out, a GraphQL API, and data export, so the board is not a walled garden.
 5. **Alive, not nostalgic museum.** Door games, shared worlds, scheduled events, and a sysop with a voice.
@@ -22,7 +22,7 @@ An invite-only bulletin board you reach with plain `ssh`: forums, chat, mail, fi
 
 ## What it refuses to be
 
-- A public, open-registration service.
+- A public service by default. Open registration exists as a sysop choice, never as the default, and never with a public member directory.
 - A chain, token, or financial product. Credits are an internal, non-transferable game mechanic.
 - A system that pretends to be private when it is not.
 - A system that runs code from strangers without a sandbox.
