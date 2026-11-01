@@ -48,4 +48,10 @@ A compact, text-only layout with no icons, no art, and screen-reader-friendly ou
 
 ## Implemented / Verified
 
-Nothing yet.
+**Icon registry** (`russh-bbs-core::icons`), implemented and unit tested; no front end uses it yet.
+
+- Logical names are closed enums: `ContentIcon` (`Board`, `Lock`, `Unread`, `Feed`, `Mail`, `Invite`) and `SecurityMarker` (`ServerReadable`, `E2eeLock`, `Signature`, `KeyChanged`), joined by `Icon`. Each icon is one exhaustive `match` arm (no wildcard) giving Nerd Font, plain Unicode and ASCII glyphs plus a text label, so an icon missing a tier does not compile.
+- Tests: every icon non-empty in all tiers; ASCII tier is printable ASCII; Unicode tier has no private-use characters; Nerd Font glyphs are exactly private-use and the M0-B sanitizer replaces every one (content cannot forge them); glyphs are unique per tier; no raw private-use character exists in any workspace source file (registry glyphs are `\u{..}` escapes).
+- **Security chrome in the type system.** `SecurityMarker` is a separate type: layout and theme APIs that accept `ContentIcon` cannot be given one, and `Rendered::is_security_chrome()` is true for them in every tier, so a renderer must not hide, replace or restyle them. Their ASCII tier is the honest label (`SERVER-READABLE`, `E2EE`, `SIGNED`, `KEY-CHANGED`). The generic `Lock` icon (access restriction) is a different glyph from `E2eeLock` in every tier and is not a privacy claim.
+- **Widths.** `width` holds an explicit 1-or-2 cell entry for every non-ASCII character used. Nerd Font glyphs reserve 2 cells and `render` appends one space (correct whether the terminal draws 1 or 2 cells); plain-Unicode glyphs are East Asian Width Neutral, 1 cell. A glyph with no entry renders as its ASCII tier. See D18.
+- **Not verified:** alignment in real terminals (multiple emulators and fonts); the glyph test screen (M1-E); Nerd Font codepoints against a specific patched font release.
