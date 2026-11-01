@@ -15,7 +15,7 @@ use std::sync::{Arc, Mutex, PoisonError};
 use ratatui::backend::CrosstermBackend;
 use ratatui::crossterm::cursor::{Hide, Show};
 use ratatui::crossterm::queue;
-use ratatui::crossterm::terminal::{EnterAlternateScreen, LeaveAlternateScreen};
+use ratatui::crossterm::terminal::{Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen};
 use ratatui::layout::{Alignment, Constraint, Layout, Rect};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::Line;
@@ -67,12 +67,8 @@ impl Screen {
     /// Create a screen of `size`. Nothing is drawn until [`Screen::enter`].
     pub(super) fn new(size: PtySize) -> io::Result<Self> {
         let output = OutputBuffer::default();
-        let backend = CrosstermBackend::new(output.clone());
-        let options = TerminalOptions {
-            viewport: Viewport::Fixed(rect(size)),
-        };
         Ok(Self {
-            terminal: Terminal::with_options(backend, options)?,
+            terminal: new_terminal(&output, size)?,
             output,
         })
     }
@@ -85,8 +81,14 @@ impl Screen {
     }
 
     /// Apply a new window size and redraw. Returns the bytes to send.
+    ///
+    /// ratatui's own `Terminal::resize` asks the backend for its size, and the crossterm
+    /// backend answers by querying the *server process's* terminal, which is wrong here and
+    /// fails without a tty. So we clear the client's screen and build a fresh fixed-viewport
+    /// terminal over the same output buffer; nothing ever consults the host tty.
     pub(super) fn resize(&mut self, size: PtySize) -> io::Result<Vec<u8>> {
-        self.terminal.resize(rect(size))?;
+        queue!(self.terminal.backend_mut(), Clear(ClearType::All))?;
+        self.terminal = new_terminal(&self.output, size)?;
         self.draw()
     }
 
@@ -104,6 +106,16 @@ impl Screen {
     fn take_output(&mut self) -> Vec<u8> {
         self.output.take()
     }
+}
+
+fn new_terminal(
+    output: &OutputBuffer,
+    size: PtySize,
+) -> io::Result<Terminal<CrosstermBackend<OutputBuffer>>> {
+    let options = TerminalOptions {
+        viewport: Viewport::Fixed(rect(size)),
+    };
+    Terminal::with_options(CrosstermBackend::new(output.clone()), options)
 }
 
 fn rect(size: PtySize) -> Rect {
