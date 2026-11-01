@@ -85,6 +85,19 @@ Non-transferable and non-redeemable. Ledger changes are append-only and auditabl
 - Metadata mitigations (padding, sealed sender) are hardening work, not v1.
 - Moderation in private spaces uses member reports with franking, not server reading.
 
+## Implementation status of the guarantees
+
+| Guarantee | Status |
+|---|---|
+| Transport: SSH only, persistent host key, fingerprint published | **Implemented and tested (M1-A).** Ed25519 key, 0600, reused across restarts (test proves the fingerprint is stable and equals what a client sees on the wire); fingerprint logged at startup. Publishing it is the sysop's job. |
+| Authentication: public-key only | **Implemented and tested (M1-A).** `none`, password and keyboard-interactive are rejected; only `publickey` is advertised. RSA client keys are unsupported (D21). |
+| Waiting room reveals nothing | **Partly (M1-A).** Every unknown key gets a restricted session with a fixed placeholder; tests assert it names no members, boards or stats. The real waiting room screens and the founder flow are M1-C and M1-D. |
+| Restricted session lockdown | **Implemented and tested (M1-A).** Refused: exec, subsystem (incl. sftp), env, agent forwarding, X11, direct-tcpip, forwarded-tcpip, direct-streamlocal, tcpip-forward, streamlocal-forward, a shell without a PTY, and a second PTY or shell. At most 4 session channels. |
+| Flood limits | **Partly (M1-A).** Auth deadline, auth-attempt cap, idle timeout and a global connection cap are implemented and tested. **Per-IP and per-key rate limits are planned (M1-C).** A single IP can still use every connection slot until then. |
+| Logging | **Implemented (M1-A).** Logs carry fingerprints, peer address, request kinds, sizes. They never carry key material, commands, environment values or client input. Not audited beyond review of the code. |
+| Output safety | **Trivially met in M1-A:** the only text drawn is fixed UI chrome; nothing from the client (not even the SSH username) is rendered. Sanitizer wiring starts when a screen shows user text. |
+| Outbound fetching, uploads, honesty labels | Not started. |
+
 ## Verified
 
-Nothing yet. Each guarantee above needs a test; track them in [features.md](features.md).
+Only what the table above marks tested. Each remaining guarantee needs a test; track them in [features.md](features.md).

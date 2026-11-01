@@ -22,3 +22,10 @@ rustc-ice-*.txt
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+# SSH host keys and any generated key material must never be committed (docs/threat-model.md).
+# The default key path is outside the repo; these catch a key written into the tree by mistake.
+host_ed25519_key*
+ssh_host_*
+*_ed25519_key
+*.pem
