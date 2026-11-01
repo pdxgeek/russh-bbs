@@ -18,6 +18,10 @@ publish = false
 # Internal crates. Dependency direction: server, store, api -> core. core depends on none of them.
 russh-bbs-core = { path = "crates/core" }
 
+# External crates.
+unicode-normalization = "0.1"
+proptest = "1"
+
 [workspace.lints.rust]
 unsafe_code = "forbid"
 missing_docs = "warn"
