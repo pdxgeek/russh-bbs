@@ -14,7 +14,10 @@ Update this table in the same pass as the code.
 | Founder / first-run sysop claim | M1 | Planned | One-time setup token |
 | Per-user terminal settings | M1 | Planned | width, height, color, pause, tier |
 | Login and logoff screens, themeable strings | M1 | Planned | |
-| SQLite store and migrations | M1 | Planned | |
+| Store traits, SQLite backend and migrations | M1 | Planned | Default datasource; D6, D24 |
+| Postgres backend (also used with PGlite) | M1 | Planned | Same behavior tests as SQLite; D6, D24 |
+| Datasource selection in config | M1 | Planned | `sqlite` or `postgres`; never MySQL |
+| Container image, compose example, GHCR publish | M1 | Planned | D25 |
 | Invite codes, quotas, invite tree | M2 | Planned | |
 | Sysop approval queue and vouching | M2 | Planned | |
 | Registration mode setting (`invite`, `apply`, `open`) | M2 | Planned | Default `invite`; D2, D23. Waiting room built mode-aware in M1 |

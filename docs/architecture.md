@@ -10,7 +10,7 @@ One Cargo workspace. Business rules in a core crate that depends on nothing conc
 Cargo.toml                 workspace
 crates/
   core/    russh-bbs-core    domain types, traits, rules, sanitizer, icon registry, invites, ledger, scheduler
-  store/   russh-bbs-store   SQLite implementation of core's storage traits, migrations
+  store/   russh-bbs-store   SQLite and Postgres implementations of core's storage traits, one migration set each
   server/  russh-bbs-server  the binary: SSH + SFTP front end, TUI, config
   proto/   russh-bbs-proto   reserved: wire types for the future client (empty until M9)
   api/     russh-bbs-api     reserved: GraphQL front end (M5)
@@ -28,7 +28,7 @@ Dependency direction: `server`, `api`, `store` → `core`. `core` depends on non
         └──────────────┬───────────────────────────────┘
                  russh-bbs-core   (rules, sanitizer, traits)
                        │ traits
-                 russh-bbs-store  (SQLite, blobs on disk)
+                 russh-bbs-store  (SQLite or Postgres, blobs on disk)
 ```
 
 Rules never live in a front end. A rule that exists in both the TUI and GraphQL is a bug.
@@ -55,13 +55,14 @@ Rules never live in a front end. A rule that exists in both the TUI and GraphQL 
 
 ## Storage
 
-- SQLite in WAL mode behind traits. Migrations forward-only.
+- Datasource chosen in config (D6, D24): SQLite in WAL mode (default) or Postgres. The Postgres backend is also what runs against PGlite in development and CI. No MySQL. Each backend has its own forward-only migrations and passes the same behavior test suite.
 - File blobs on disk, addressed by BLAKE3 hash; metadata in SQLite.
 - Backups with a tested restore procedure (M5).
 
 ## Cross-cutting
 
-- **Config:** TOML. Hot-reload for themes and layouts, with validation and fallback.
+- **Config:** TOML, with environment-variable overrides for container use. Hot-reload for themes and layouts, with validation and fallback.
+- **Deployment:** a container image is a first-class deliverable (D25): static binary, non-root, one `/data` volume, logs to stdout.
 - **Logging:** `tracing`, structured, never logging content, keys, or invite codes.
 - **Time:** injected `Clock` trait.
 - **Doors:** `Door` trait in core; Rust-native runtime in M4; WASM runtime later.
