@@ -21,7 +21,7 @@ Read `docs/README.md`, `docs/vision.md`, and `docs/decisions.md`. Then read only
 
 ## Engineering rules
 
-Follow the `rust-coding` skill (`skills/rust-coding/` in [pdxgeek/ai-skills](https://github.com/pdxgeek/ai-skills): `SKILL.md` plus `references/`). It is not stored in this repo. If your environment does not already have it loaded, read it from that repository before writing Rust. If you cannot reach it, say so in your report instead of guessing at the standard.
+Follow the `rust-coding` skill (`.claude/skills/rust-coding/`: `SKILL.md` plus `references/`). It is a copy of the skill in [pdxgeek/ai-skills](https://github.com/pdxgeek/ai-skills), which is the source of truth: do not edit the copy here, change it upstream and re-copy. Agents that cannot load skills should read those files directly before writing Rust.
 
 - Rust stable, edition 2021 or later. Cargo workspace. No `unsafe` without a comment explaining why and a test.
 - Business logic lives in `russh-bbs-core`. Front ends (SSH TUI, SFTP, GraphQL later) stay thin and call it. Do not put rules in a front end.

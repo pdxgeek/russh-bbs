@@ -4,7 +4,7 @@ How to hand this repo to remote coding sessions safely.
 
 ## Prerequisites
 
-1. **Everything a session needs must be pushed to GitHub.** A cloud session starts from the pushed repository, not from a local checkout. Docs and `AGENTS.md` that are only local are invisible to it. The coding skills live in `pdxgeek/ai-skills`, not here; confirm the session's environment can load them (or read that repo) before starting.
+1. **Everything a session needs must be pushed to GitHub.** A cloud session starts from the pushed repository, not from a local checkout. Docs, `AGENTS.md`, and `.claude/skills/` that are only local are invisible to it. The `rust-coding` skill is committed in `.claude/skills/`, which cloud sessions load because it is part of the clone.
 2. A cloud environment with a Rust stable toolchain, `cargo-deny`, and a C compiler. If it lacks any, the session must say so and stop rather than skip the checks.
 3. The owner has chosen the next slice from [coordination.md](coordination.md).
 
@@ -40,7 +40,7 @@ Slice: <id and title from docs/coordination.md>
 Branch: <milestone>/<slice-name>
 Goal: <one or two sentences>
 Read first: AGENTS.md, docs/README.md, docs/vision.md, docs/decisions.md,
-            <area docs>, the rust-coding skill (pdxgeek/ai-skills)
+            <area docs>, .claude/skills/rust-coding/SKILL.md
 Owns: <paths>
 Do not touch: everything else (note needs in docs/coordination.md instead)
 Acceptance: <copied from docs/milestones.md plus any slice-specific tests>
