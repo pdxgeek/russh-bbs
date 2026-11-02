@@ -8,6 +8,7 @@ use russh_bbs_core::access::{
     NewGrant, Permission, Reach, Reason, ResourceId, ResourceKind, ResourceRef, Scope, Slug,
     Source, Subject, Via,
 };
+use russh_bbs_core::audit::Actor;
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::{Account, AccountState, AccountStore, NewAccount};
@@ -31,17 +32,20 @@ async fn active<S: AccountStore>(store: &S, name: &str) -> Account {
 
 async fn group<S: AccessStore>(store: &S, name: &str) -> GroupId {
     store
-        .create_group(&Slug::parse(name).unwrap())
+        .create_group(&Slug::parse(name).unwrap(), Actor::System)
         .await
         .unwrap()
 }
 
 async fn add<S: AccessStore>(store: &S, outer: GroupId, child: Child) -> Result<(), AccessError> {
     store
-        .change_groups(GroupChange::Add {
-            group: outer,
-            child,
-        })
+        .change_groups(
+            GroupChange::Add {
+                group: outer,
+                child,
+            },
+            Actor::System,
+        )
         .await
 }
 
@@ -147,11 +151,15 @@ pub(crate) async fn the_built_in_groups_exist<H: Harness>() {
     let staff = groups.iter().find(|g| g.name == Slug::STAFF).unwrap().id;
     let store = h.store();
     assert!(matches!(
-        store.change_groups(GroupChange::Delete(everyone)).await,
+        store
+            .change_groups(GroupChange::Delete(everyone), Actor::System)
+            .await,
         Err(AccessError::Group(GroupError::Locked))
     ));
     assert!(matches!(
-        store.change_groups(GroupChange::Delete(staff)).await,
+        store
+            .change_groups(GroupChange::Delete(staff), Actor::System)
+            .await,
         Err(AccessError::Group(GroupError::Builtin))
     ));
     let member = active(store, "alice").await;
@@ -227,11 +235,14 @@ pub(crate) async fn unknown_and_inactive_accounts_get_the_waiting_snapshot<H: Ha
     let suspended = account(store, "dave", AccountState::Suspended).await;
     // Even a suspended sysop holds nothing but the waiting room.
     store
-        .add_grant(&NewGrant {
-            subject: Subject::Account(suspended.id),
-            granting: Granting::Role(Slug::SYSOP),
-            scope: Scope::Global,
-        })
+        .add_grant(
+            &NewGrant {
+                subject: Subject::Account(suspended.id),
+                granting: Granting::Role(Slug::SYSOP),
+                scope: Scope::Global,
+            },
+            Actor::System,
+        )
         .await
         .unwrap();
     let missing = russh_bbs_core::store::AccountId::from_raw(9_999);
@@ -284,10 +295,13 @@ pub(crate) async fn staff_members_hold_moderator<H: Harness>() {
     assert_eq!(after.top_role(), Some(&Slug::MODERATOR));
     // Removing the member applies on the next snapshot.
     store
-        .change_groups(GroupChange::Remove {
-            group: staff,
-            child: Child::Account(alice.id),
-        })
+        .change_groups(
+            GroupChange::Remove {
+                group: staff,
+                child: Child::Account(alice.id),
+            },
+            Actor::System,
+        )
         .await
         .unwrap();
     let removed = store.snapshot(Some(alice.id)).await.unwrap();
@@ -305,11 +319,14 @@ pub(crate) async fn nested_groups_reach_accounts_through_the_closure<H: Harness>
     let outer = group(store, "outer").await;
     let inner = group(store, "inner").await;
     store
-        .add_grant(&NewGrant {
-            subject: Subject::Group(outer),
-            granting: Granting::Role(Slug::TRUSTED),
-            scope: Scope::Global,
-        })
+        .add_grant(
+            &NewGrant {
+                subject: Subject::Group(outer),
+                granting: Granting::Role(Slug::TRUSTED),
+                scope: Scope::Global,
+            },
+            Actor::System,
+        )
         .await
         .unwrap();
     add(store, outer, Child::Group(inner)).await.unwrap();
@@ -328,10 +345,13 @@ pub(crate) async fn nested_groups_reach_accounts_through_the_closure<H: Harness>
     );
     // Taking the inner group out of the outer one removes the role on the next snapshot.
     store
-        .change_groups(GroupChange::Remove {
-            group: outer,
-            child: Child::Group(inner),
-        })
+        .change_groups(
+            GroupChange::Remove {
+                group: outer,
+                child: Child::Group(inner),
+            },
+            Actor::System,
+        )
         .await
         .unwrap();
     let snapshot = store.snapshot(Some(alice.id)).await.unwrap();
@@ -347,7 +367,7 @@ pub(crate) async fn nested_groups_reach_accounts_through_the_closure<H: Harness>
             .is_granted()
     );
     store
-        .change_groups(GroupChange::Delete(outer))
+        .change_groups(GroupChange::Delete(outer), Actor::System)
         .await
         .unwrap();
     assert!(
@@ -367,11 +387,14 @@ pub(crate) async fn a_rejected_cycle_leaves_everything_unchanged<H: Harness>() {
     let one = group(store, "one").await;
     let two = group(store, "two").await;
     store
-        .add_grant(&NewGrant {
-            subject: Subject::Group(one),
-            granting: Granting::Role(Slug::TRUSTED),
-            scope: Scope::Global,
-        })
+        .add_grant(
+            &NewGrant {
+                subject: Subject::Group(one),
+                granting: Granting::Role(Slug::TRUSTED),
+                scope: Scope::Global,
+            },
+            Actor::System,
+        )
         .await
         .unwrap();
     add(store, one, Child::Group(two)).await.unwrap();
@@ -451,11 +474,14 @@ pub(crate) async fn a_scoped_role_grant_reaches_only_its_resource<H: Harness>() 
     let store = h.store();
     let alice = active(store, "alice").await;
     store
-        .add_grant(&NewGrant {
-            subject: Subject::Account(alice.id),
-            granting: Granting::Role(Slug::MODERATOR),
-            scope: Scope::Resource(board(5)),
-        })
+        .add_grant(
+            &NewGrant {
+                subject: Subject::Account(alice.id),
+                granting: Granting::Role(Slug::MODERATOR),
+                scope: Scope::Resource(board(5)),
+            },
+            Actor::System,
+        )
         .await
         .unwrap();
     let snapshot = store.snapshot(Some(alice.id)).await.unwrap();
@@ -504,11 +530,11 @@ pub(crate) async fn allow_entries_name_accounts_and_groups<H: Harness>() {
         scope: Scope::Resource(board(9)),
     };
     store
-        .add_grant(&entry(Subject::Account(alice.id)))
+        .add_grant(&entry(Subject::Account(alice.id)), Actor::System)
         .await
         .unwrap();
     store
-        .add_grant(&entry(Subject::Group(lounge)))
+        .add_grant(&entry(Subject::Group(lounge)), Actor::System)
         .await
         .unwrap();
     let a = store.snapshot(Some(alice.id)).await.unwrap();
@@ -548,9 +574,9 @@ pub(crate) async fn adding_a_grant_twice_is_not_an_error_and_adds_nothing<H: Har
         granting: Granting::Role(Slug::TRUSTED),
         scope: Scope::Global,
     };
-    store.add_grant(&grant).await.unwrap();
+    store.add_grant(&grant, Actor::System).await.unwrap();
     let once = store.snapshot(Some(alice.id)).await.unwrap().held().len();
-    store.add_grant(&grant).await.unwrap();
+    store.add_grant(&grant, Actor::System).await.unwrap();
     assert_eq!(
         store.snapshot(Some(alice.id)).await.unwrap().held().len(),
         once
@@ -564,46 +590,58 @@ pub(crate) async fn bad_grants_are_refused_by_name<H: Harness>() {
     let global = Scope::Global;
     assert!(matches!(
         store
-            .add_grant(&NewGrant {
-                subject: Subject::Account(alice.id),
-                granting: Granting::Role(Slug::parse("nope").unwrap()),
-                scope: global,
-            })
+            .add_grant(
+                &NewGrant {
+                    subject: Subject::Account(alice.id),
+                    granting: Granting::Role(Slug::parse("nope").unwrap()),
+                    scope: global,
+                },
+                Actor::System
+            )
             .await,
         Err(AccessError::UnknownRole)
     ));
     assert!(matches!(
         store
-            .add_grant(&NewGrant {
-                subject: Subject::Account(alice.id),
-                granting: Granting::Role(Slug::WAITING),
-                scope: global,
-            })
+            .add_grant(
+                &NewGrant {
+                    subject: Subject::Account(alice.id),
+                    granting: Granting::Role(Slug::WAITING),
+                    scope: global,
+                },
+                Actor::System
+            )
             .await,
         Err(AccessError::RoleNotGrantable)
     ));
     assert!(matches!(
         store
-            .add_grant(&NewGrant {
-                subject: Subject::Account(russh_bbs_core::store::AccountId::from_raw(9_999)),
-                granting: Granting::Role(Slug::TRUSTED),
-                scope: global,
-            })
+            .add_grant(
+                &NewGrant {
+                    subject: Subject::Account(russh_bbs_core::store::AccountId::from_raw(9_999)),
+                    granting: Granting::Role(Slug::TRUSTED),
+                    scope: global,
+                },
+                Actor::System
+            )
             .await,
         Err(AccessError::UnknownAccount)
     ));
     assert!(matches!(
         store
-            .add_grant(&NewGrant {
-                subject: Subject::Group(GroupId::from_raw(9_999)),
-                granting: Granting::Permission(Permission::ForumRead),
-                scope: global,
-            })
+            .add_grant(
+                &NewGrant {
+                    subject: Subject::Group(GroupId::from_raw(9_999)),
+                    granting: Granting::Permission(Permission::ForumRead),
+                    scope: global,
+                },
+                Actor::System
+            )
             .await,
         Err(AccessError::Group(GroupError::UnknownGroup))
     ));
     assert!(matches!(
-        store.create_group(&Slug::EVERYONE).await,
+        store.create_group(&Slug::EVERYONE, Actor::System).await,
         Err(AccessError::GroupNameTaken)
     ));
 }
@@ -614,11 +652,14 @@ pub(crate) async fn access_data_survives_a_reopen<H: Harness>() {
     let g = group(h.store(), "lounge").await;
     add(h.store(), g, Child::Account(alice.id)).await.unwrap();
     h.store()
-        .add_grant(&NewGrant {
-            subject: Subject::Group(g),
-            granting: Granting::Role(Slug::TRUSTED),
-            scope: Scope::Global,
-        })
+        .add_grant(
+            &NewGrant {
+                subject: Subject::Group(g),
+                granting: Granting::Role(Slug::TRUSTED),
+                scope: Scope::Global,
+            },
+            Actor::System,
+        )
         .await
         .unwrap();
     h.reopen().await;
