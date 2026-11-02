@@ -24,14 +24,14 @@ Member identities and key fingerprints, the invite tree, message and mail conten
 | Malicious member | Spam, impersonate, inject terminal escapes, abuse invites, cheat in doors, exfiltrate others' data |
 | Malicious external content (feeds, mail, files) | Terminal injection, SSRF, malware, resource exhaustion |
 | Curious or compromised operator or server | Read private content |
-| Network attacker | Impersonate the server, downgrade |
+| Network attacker | Impersonate the server, downgrade, read or alter a telnet session on the wire, replay a telnet password |
 
 ## What the MVP guarantees
 
 | Area | Guarantee |
 |---|---|
-| Transport | SSH only. No telnet. Host key is persistent and its fingerprint is published by the sysop. |
-| Authentication | Public-key only. No passwords. |
+| Transport | SSH by default. Host key is persistent and its fingerprint is published by the sysop. Telnet is off unless the sysop enables it (D27); a telnet session is plaintext and every screen says so with a fixed `UNENCRYPTED` marker. |
+| Authentication | Public-key only over SSH. No passwords over SSH. Over telnet, login is off unless the sysop also enables it; then a per-member argon2id password that is set over SSH. SFTP, invite redemption, and sysop functions never work over telnet. |
 | Waiting room | An unknown key sees only the banner, rules, request-invite, and redeem-invite, plus apply or create-account when the registration mode (D2) allows it. No member list, board list, or stats in any mode. |
 | Registration | Default mode is `invite`. `apply` creates an inactive account visible only to the sysop queue. `open` creates an active account only within per-IP and per-key creation limits and an optional cap on new accounts per day; when the cap is hit the stranger sees the `apply` path instead. |
 | Output safety | Untrusted text cannot inject terminal escapes or spoof UI icons or security badges. |
@@ -69,6 +69,9 @@ Quarantine until scanned (antivirus hook), detect type by content not extension,
 Rate-limit the waiting room per key and per IP, with a small cost or queue cap against floods. Expire denied requests quickly and keep minimal personal data. Invite codes are single-use, expiring, and bound to an inviter. Bans act on keys and affect the inviter's standing.
 
 Registration mode (D2) adds: account creation in `apply` and `open` modes is rate-limited per IP and per key separately from waiting-room requests; `open` mode has a configurable daily cap on new accounts and degrades to `apply` when the cap is reached; usernames are reserved for a short window during registration and confusables are blocked so a stranger cannot squat or impersonate a member; accounts created in `open` mode have no inviter, so quotas that depend on inviter standing default to the most restrictive tier until the sysop vouches. Switching the mode never changes existing accounts.
+
+### Telnet (when enabled)
+Bind to a separate port and listener; never share the SSH accept loop. Negotiate only the options the TUI needs (NAWS, terminal type, echo, suppress go-ahead) with a well-tested crate, and treat everything else as untrusted input through the sanitizer. Rate-limit per IP like the waiting room. Passwords are argon2id with per-user salt, compared in constant time, never logged, set or changed only over SSH, and lockout after repeated failures. A member logged in over telnet sees the `UNENCRYPTED` marker on every screen and the composer shows "readable on the wire" next to "visible to the sysop". Sysop role is refused over telnet.
 
 ### Keys and secrets
 Never log keys, invite codes, message bodies, or mail. Zero key material in memory when finished. No credentials in the repo, fixtures, or the database in plaintext.

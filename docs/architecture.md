@@ -50,6 +50,7 @@ Rules never live in a front end. A rule that exists in both the TUI and GraphQL 
 ## Front ends
 
 - **SSH TUI:** `russh` server, public-key auth, restricted session for unknown keys. `ratatui` rendering on the channel PTY with resize handling.
+- **Telnet (optional, off by default, M3):** separate listener in `crates/server/src/telnet`, option negotiation via a crate, drives the same `Screen` abstraction as SSH. Adds the `UNENCRYPTED` marker to chrome. See D27.
 - **SFTP:** virtual filesystem mapped to file areas by ID, never raw paths.
 - **GraphQL (M5):** `async-graphql` on `axum`, dataloaders for nested fields.
 
