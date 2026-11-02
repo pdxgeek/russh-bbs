@@ -1,8 +1,9 @@
 //! The SSH front end: a `russh` server with a persistent host key, public-key authentication,
 //! and a locked-down PTY session.
 //!
-//! Every authenticated key gets a restricted session that shows the waiting room (M1-C); the
-//! member experience arrives in later slices. Rules (who is restricted, which screens exist,
+//! A key that is not a member sees the waiting room (M1-C). A member's key sees a "signed in"
+//! placeholder (M1-D); the real member experience arrives in later slices. The SSH user name
+//! `claim` opens the founder token prompt for every key (D38). Rules (who is restricted, which screens exist,
 //! rate limits) live in `russh-bbs-core`; this module is transport and rendering only.
 
 mod error;

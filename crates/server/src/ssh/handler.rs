@@ -238,8 +238,8 @@ impl<D: Backend> Handler for ClientHandler<D> {
         };
         self.guard.set_authenticated(fingerprint.clone(), access);
         self.fingerprint = Some(fingerprint);
-        // Both levels authenticate. `Restricted` limits what the session may do, and in this
-        // slice that is the placeholder screen for everyone.
+        // Both levels authenticate. `Restricted` limits the session to the waiting room;
+        // `Member` gets the signed-in placeholder (the member UI is later work).
         match access {
             Access::Restricted | Access::Member => Ok(Auth::Accept),
         }
