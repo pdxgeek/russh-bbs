@@ -1,6 +1,6 @@
 # russh-bbs
 
-A modern, invite-only BBS you reach with plain `ssh`, written in Rust.
+A modern, invite-only by default BBS you reach with plain `ssh`, written in Rust.
 
 > Status: **planning**. Nothing is implemented yet. See [docs/README.md](docs/README.md).
 
@@ -8,7 +8,8 @@ Built on the [`russh`](https://crates.io/crates/russh) crate. This project is no
 
 ## What it is
 
-- **Invite-only.** An unknown SSH key lands in a waiting room where it can only request or redeem an invite.
+- **SSH by default.** Telnet can be switched on by the sysop; it is off out of the box and every telnet screen says the connection is unencrypted.
+- **Invite-only by default.** An unknown SSH key lands in a waiting room where it can only request or redeem an invite. The sysop can switch registration to apply-and-approve or open.
 - **No install.** The whole MVP works over `ssh` and `sftp`. No custom client.
 - **Forums, chat rooms, mail, files, RSS, and door games**, rendered as a themeable terminal UI.
 - **A GraphQL API** (planned) so others can build their own UI.

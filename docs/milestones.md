@@ -12,11 +12,13 @@ Each milestone ends with something runnable. Estimates are guesses for one devel
 ## M1: SSH server and waiting room
 - `russh` server, persistent host key, public-key auth, restricted session for unknown keys.
 - TUI over the PTY with resize handling (resolve Q5, record it in decisions).
-- SQLite store and migrations (resolve Q4).
+- Store traits in core, SQLite backend and migrations (resolve Q4), with the backend selected by config (D6, D24).
+- Postgres backend with its own migrations, behavior tests shared with SQLite, run in CI against PGlite or a Postgres service.
+- Container image: Dockerfile, compose example, GHCR publish in CI, one `/data` volume (D25).
 - Waiting room screens, per-IP and per-key rate limits.
 - Founder flow: one-time setup token printed to the console claims sysop.
 - Per-user terminal settings and the glyph test screen. Login and logoff screens.
-- **Done when:** `ssh localhost -p <port>` shows the waiting room, the founder can claim sysop, and tests show an unknown key learns nothing beyond the waiting room.
+- **Done when:** `ssh localhost -p <port>` shows the waiting room, the founder can claim sysop, tests show an unknown key learns nothing beyond the waiting room, the same tests pass on SQLite and Postgres, and the published container image does all of the above from a fresh volume.
 
 ## M2: Invites and members
 - States (pending, approved, active, suspended), codes (single-use, expiring, bound to inviter), quotas, invite tree.
@@ -30,6 +32,7 @@ Each milestone ends with something runnable. Estimates are guesses for one devel
 - Public chat rooms with presence and whispers; one-liners, graffiti wall, last callers; polls.
 - RSS in (feeds as read-only boards, SSRF guard, sanitization) and RSS out for public boards.
 - Event scheduler, credits ledger, internal mail (stage 1).
+- Member passwords (argon2id, set over SSH), password login over SSH as an opt-in (D28), and the telnet transport, off by default (D27): separate listener, same screens, fixed `UNENCRYPTED` marker, low-security mode marker for the sysop.
 - **Done when:** three users post and chat over plain `ssh`, a malicious feed (escape codes, SSRF attempt) is neutralized by tests, and the layout can be switched live.
 
 ## M4: Files and doors
