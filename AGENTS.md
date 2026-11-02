@@ -17,7 +17,7 @@ Read `docs/README.md`, `docs/vision.md`, and `docs/decisions.md`. Then read only
 - **Security cues are not themeable.** Layouts and themes may place them but never hide or restyle them in a misleading way.
 - **Fetching user-supplied URLs requires SSRF protection** (see threat model).
 - **Never persist credentials, private keys, or tokens** in the repo, logs, fixtures, or the database in plaintext. Test keys are generated at test time.
-- **The invite-only waiting room reveals nothing** about members, boards, or stats to an unauthenticated key.
+- **The waiting room reveals nothing** about members, boards, or stats to an unauthenticated key, in every registration mode. Registration mode is a sysop setting with `invite` as the default (D2); `apply` and `open` add a registration path and nothing else.
 
 ## Engineering rules
 
