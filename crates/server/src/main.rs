@@ -8,6 +8,7 @@ use clap::Parser;
 use russh_bbs_core::store::set_registration_mode;
 use russh_bbs_server::config::{Cli, Loaded};
 use russh_bbs_server::founder;
+use russh_bbs_server::shutdown;
 use russh_bbs_server::ssh::{HostKey, ServerConfig, SshServer};
 use russh_bbs_store::SqliteStore;
 use tracing::{info, warn};
@@ -70,11 +71,10 @@ async fn main() -> anyhow::Result<()> {
     )
     .await?;
 
-    tokio::signal::ctrl_c()
+    shutdown::wait_for_signal()
         .await
         .context("waiting for shutdown signal")?;
     info!("shutting down");
-    server.shutdown().await;
-    store.close().await;
+    shutdown::graceful(server, &store, shutdown::SHUTDOWN_TIMEOUT).await;
     Ok(())
 }

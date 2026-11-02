@@ -68,8 +68,16 @@ impl SqliteStore {
         &self.pool
     }
 
-    /// Close the pool, flushing the WAL.
+    /// Checkpoint the WAL into the main file (truncating it), then close the pool. The
+    /// checkpoint is best effort: a failure is only reported, because SQLite recovers an
+    /// un-checkpointed WAL on the next open.
     pub async fn close(&self) {
+        let checkpoint = sqlx::query("PRAGMA wal_checkpoint(TRUNCATE)")
+            .execute(&self.pool)
+            .await;
+        if let Err(error) = checkpoint {
+            tracing::warn!(%error, "WAL checkpoint failed at close");
+        }
         self.pool.close().await;
     }
 }

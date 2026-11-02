@@ -1,0 +1,9 @@
+target
+.git
+.github
+docs
+*.db
+*.db-wal
+*.db-shm
+host_ed25519_key
+.claude
