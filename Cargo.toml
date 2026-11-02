@@ -24,6 +24,10 @@ unicode-normalization = "0.1"
 proptest = "1"
 # OS-seeded RNG for generating the host key (already in the tree via russh).
 rand = "0.10"
+# SHA-256 for the founder setup-token hash (D38); already in the tree via russh.
+sha2 = "0.10"
+# Constant-time comparison of token hashes (D38); already in the tree via russh.
+subtle = "2"
 # Temporary directories for tests, so tests never touch the operator's files.
 tempfile = "3"
 # SSH server library (decision D7). Default features off: `ring` backend instead of aws-lc-rs, and no `rsa`

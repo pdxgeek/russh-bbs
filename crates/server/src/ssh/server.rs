@@ -11,19 +11,21 @@ use std::time::Duration;
 
 use russh::server::{Config as RusshConfig, run_stream};
 use russh::{Disconnect, MethodKind, MethodSet, SshId};
-use russh_bbs_core::access::{Fingerprint, MemberDirectory};
-use russh_bbs_core::waiting_room::{SystemClock, Verdict, WaitingRoomSource};
+use russh_bbs_core::access::Fingerprint;
+use russh_bbs_core::waiting_room::{SystemClock, Verdict};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::{OwnedSemaphorePermit, Semaphore, oneshot, watch};
 use tokio::task::{JoinHandle, JoinSet};
 use tokio::time::{Instant, timeout, timeout_at};
 use tracing::{debug, info, warn};
 
+use super::Backend;
 use super::error::ServerError;
 use super::handler::ClientHandler;
 use super::host_key::HostKey;
 use super::limits::Limits;
 use super::registry::{SessionRegistry, SessionSnapshot};
+use crate::founder::Founder;
 use crate::waiting_room::Throttle;
 
 /// How long a disconnected connection may take to wind down before we stop waiting for it.
@@ -53,14 +55,22 @@ pub struct SshServer {
 
 impl SshServer {
     /// Bind and start serving. Every key authenticates, then `directory` decides its access.
-    pub async fn start<D>(
+    pub async fn start<D: Backend>(
         config: &ServerConfig,
         host_key: &HostKey,
         directory: Arc<D>,
-    ) -> Result<Self, ServerError>
-    where
-        D: MemberDirectory + WaitingRoomSource + 'static,
-    {
+    ) -> Result<Self, ServerError> {
+        Self::start_with_founder(config, host_key, directory, Arc::new(Founder::closed())).await
+    }
+
+    /// Like [`SshServer::start`], with a live founder claim (M1-D). `ssh claim@host` opens the
+    /// token prompt; with a closed `founder` every token is rejected.
+    pub async fn start_with_founder<D: Backend>(
+        config: &ServerConfig,
+        host_key: &HostKey,
+        directory: Arc<D>,
+        founder: Arc<Founder>,
+    ) -> Result<Self, ServerError> {
         let listener =
             TcpListener::bind(config.listen)
                 .await
@@ -80,6 +90,7 @@ impl SshServer {
             russh_config,
             limits: config.limits,
             directory,
+            founder,
             registry: Arc::clone(&registry),
             permits: Arc::new(Semaphore::new(config.limits.max_connections)),
             throttle: Arc::new(Throttle::new(
@@ -152,12 +163,13 @@ struct AcceptLoop<D> {
     russh_config: Arc<RusshConfig>,
     limits: Limits,
     directory: Arc<D>,
+    founder: Arc<Founder>,
     registry: Arc<SessionRegistry>,
     permits: Arc<Semaphore>,
     throttle: Arc<Throttle>,
 }
 
-impl<D: MemberDirectory + WaitingRoomSource + 'static> AcceptLoop<D> {
+impl<D: Backend> AcceptLoop<D> {
     async fn run(self, mut stopped: watch::Receiver<bool>) {
         // The JoinSet owns every connection task; dropping it on exit aborts them all.
         let mut connections = JoinSet::new();
@@ -202,6 +214,7 @@ impl<D: MemberDirectory + WaitingRoomSource + 'static> AcceptLoop<D> {
             config: Arc::clone(&self.russh_config),
             auth_timeout: self.limits.auth_timeout,
             directory: Arc::clone(&self.directory),
+            founder: Arc::clone(&self.founder),
             registry: Arc::clone(&self.registry),
             throttle: Arc::clone(&self.throttle),
             max_form_submissions: self.limits.max_form_submissions,
@@ -217,6 +230,7 @@ struct Connection<D> {
     config: Arc<RusshConfig>,
     auth_timeout: Duration,
     directory: Arc<D>,
+    founder: Arc<Founder>,
     registry: Arc<SessionRegistry>,
     throttle: Arc<Throttle>,
     max_form_submissions: u32,
@@ -225,13 +239,14 @@ struct Connection<D> {
     _permit: OwnedSemaphorePermit,
 }
 
-impl<D: MemberDirectory + WaitingRoomSource + 'static> Connection<D> {
+impl<D: Backend> Connection<D> {
     async fn serve(mut self, stream: TcpStream, peer: SocketAddr) {
         let deadline = Instant::now() + self.auth_timeout;
         let (authenticated_tx, authenticated_rx) = oneshot::channel();
         let guard = self.registry.register(Some(peer));
         let handler = ClientHandler::new(
             Arc::clone(&self.directory),
+            Arc::clone(&self.founder),
             Some(peer),
             guard,
             authenticated_tx,

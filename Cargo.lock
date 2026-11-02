@@ -2478,8 +2478,11 @@ name = "russh-bbs-core"
 version = "0.0.0"
 dependencies = [
  "proptest",
+ "sha2 0.10.9",
+ "subtle",
  "thiserror",
  "tokio",
+ "tracing",
  "unicode-normalization",
 ]
 

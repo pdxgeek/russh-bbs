@@ -18,17 +18,21 @@ use std::sync::Arc;
 
 use russh::server::{Auth, Handler, Msg, PublicKeyOffer, Session, VerifiedPublicKey};
 use russh::{Channel, ChannelId, ChannelOpenFailure, Pty};
-use russh_bbs_core::access::{Access, MemberDirectory, decide_access};
-use russh_bbs_core::waiting_room::{RoomConfig, Verdict, WaitingRoom, WaitingRoomSource};
+use russh_bbs_core::access::{Access, Fingerprint, decide_access};
+use russh_bbs_core::founder::{ClaimForm, ClaimOutcome, MAX_ATTEMPTS_PER_SESSION, claim_founder};
+use russh_bbs_core::store::Role;
+use russh_bbs_core::waiting_room::{RoomConfig, Verdict, WaitingRoom};
 use tokio::sync::oneshot;
 use tokio::time::timeout;
 use tracing::{debug, info, warn};
 
+use super::Backend;
 use super::error::SessionError;
 use super::host_key::fingerprint_of;
 use super::registry::SessionGuard;
-use super::screen::Screen;
+use super::screen::{Content, Screen};
 use super::terminal::{PtySize, parse_keys};
+use crate::founder::{CLAIM_USER, Founder};
 use crate::waiting_room::Throttle;
 
 /// Session channels one connection may hold open at once. OpenSSH multiplexing and refused
@@ -42,6 +46,7 @@ const ROOM_CONFIG_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(
 /// Handler for one client connection.
 pub(crate) struct ClientHandler<D> {
     directory: Arc<D>,
+    founder: Arc<Founder>,
     peer: Option<SocketAddr>,
     guard: SessionGuard,
     /// Fired once when authentication succeeds, to cancel the auth deadline.
@@ -54,11 +59,18 @@ pub(crate) struct ClientHandler<D> {
     screen: Option<Screen>,
     throttle: Arc<Throttle>,
     max_form_submissions: u32,
+    /// The key this session authenticated with.
+    fingerprint: Option<Fingerprint>,
+    /// The role of the account behind the key, if it is a member.
+    role: Option<Role>,
+    /// Whether the SSH user name asked for the founder token prompt (`ssh claim@host`).
+    claim_requested: bool,
 }
 
 impl<D> ClientHandler<D> {
     pub(crate) fn new(
         directory: Arc<D>,
+        founder: Arc<Founder>,
         peer: Option<SocketAddr>,
         guard: SessionGuard,
         authenticated: oneshot::Sender<()>,
@@ -67,6 +79,7 @@ impl<D> ClientHandler<D> {
     ) -> Self {
         Self {
             directory,
+            founder,
             peer,
             guard,
             authenticated: Some(authenticated),
@@ -76,6 +89,9 @@ impl<D> ClientHandler<D> {
             screen: None,
             throttle,
             max_form_submissions,
+            fingerprint: None,
+            role: None,
+            claim_requested: false,
         }
     }
 
@@ -92,7 +108,7 @@ impl<D> ClientHandler<D> {
     /// the strictest built-in configuration (`invite` mode, default text), never a looser one.
     async fn waiting_room(&self) -> WaitingRoom
     where
-        D: WaitingRoomSource,
+        D: Backend,
     {
         let config = match timeout(ROOM_CONFIG_TIMEOUT, self.directory.load_room_config()).await {
             Ok(Ok(config)) => config,
@@ -106,6 +122,51 @@ impl<D> ClientHandler<D> {
             }
         };
         WaitingRoom::new(&config, self.max_form_submissions)
+    }
+
+    /// Check a token typed at the claim prompt and update the screen. Every failure (limited,
+    /// wrong token, already claimed, store error) is the same generic message.
+    async fn try_claim(
+        &mut self,
+        channel: ChannelId,
+        token: &str,
+        session: &mut Session,
+    ) -> Result<(), SessionError>
+    where
+        D: Backend,
+    {
+        let Some(fingerprint) = self.fingerprint.clone() else {
+            return Ok(());
+        };
+        let peer_ip = self.peer.map(|peer| peer.ip());
+        let outcome = if self
+            .founder
+            .admit_attempt(&fingerprint, peer_ip)
+            .is_allowed()
+        {
+            claim_founder(self.founder.gate(), &*self.directory, token, &fingerprint).await
+        } else {
+            info!(session = ?self.guard.id(), fingerprint = %fingerprint, "founder claim rate limited");
+            ClaimOutcome::Rejected
+        };
+        let Some(screen) = self.screen.as_mut() else {
+            return Ok(());
+        };
+        match outcome {
+            ClaimOutcome::Claimed(account) => {
+                self.role = Some(account.role);
+                self.guard.set_authenticated(fingerprint, Access::Member);
+                session.data(channel, screen.claim_accepted(account.role)?)?;
+            }
+            ClaimOutcome::Rejected => {
+                let (bytes, disconnect) = screen.claim_rejected()?;
+                session.data(channel, bytes)?;
+                if disconnect {
+                    self.finish(channel, session)?;
+                }
+            }
+        }
+        Ok(())
     }
 
     /// End the shell: restore the client's terminal, then close the channel.
@@ -125,7 +186,7 @@ impl<D> ClientHandler<D> {
     clippy::unused_async_trait_impl,
     reason = "russh's Handler methods return futures; most refusals resolve immediately"
 )]
-impl<D: MemberDirectory + WaitingRoomSource + 'static> Handler for ClientHandler<D> {
+impl<D: Backend> Handler for ClientHandler<D> {
     type Error = SessionError;
 
     // `none`, `password` and `keyboard-interactive` keep the trait defaults, which reject.
@@ -142,7 +203,7 @@ impl<D: MemberDirectory + WaitingRoomSource + 'static> Handler for ClientHandler
 
     async fn auth_publickey(
         &mut self,
-        _user: &str,
+        user: &str,
         key: VerifiedPublicKey<'_>,
     ) -> Result<Auth, Self::Error> {
         let Ok(fingerprint) = fingerprint_of(key.public_key) else {
@@ -169,9 +230,16 @@ impl<D: MemberDirectory + WaitingRoomSource + 'static> Handler for ClientHandler
             access = ?access,
             "public key authenticated"
         );
-        self.guard.set_authenticated(fingerprint, access);
-        // Both levels authenticate. `Restricted` limits what the session may do, and in this
-        // slice that is the placeholder screen for everyone.
+        // The user name only selects the claim prompt. It is never rendered or logged.
+        self.claim_requested = user == CLAIM_USER;
+        self.role = match access {
+            Access::Member => self.directory.role_of(&fingerprint).await,
+            Access::Restricted => None,
+        };
+        self.guard.set_authenticated(fingerprint.clone(), access);
+        self.fingerprint = Some(fingerprint);
+        // Both levels authenticate. `Restricted` limits the session to the waiting room;
+        // `Member` gets the signed-in placeholder (the member UI is later work).
         match access {
             Access::Restricted | Access::Member => Ok(Auth::Accept),
         }
@@ -306,8 +374,15 @@ impl<D: MemberDirectory + WaitingRoomSource + 'static> Handler for ClientHandler
             return Ok(());
         }
         session.channel_success(channel)?;
-        let room = self.waiting_room().await;
-        let mut screen = Screen::new(size, room)?;
+        let content = if self.claim_requested {
+            // The same prompt for every key on every board, claimed or not (D41).
+            Content::Claim(ClaimForm::new(MAX_ATTEMPTS_PER_SESSION))
+        } else if let Some(role) = self.role {
+            Content::SignedIn(role)
+        } else {
+            Content::Room(self.waiting_room().await)
+        };
+        let mut screen = Screen::new(size, content)?;
         session.data(channel, screen.enter()?)?;
         self.screen = Some(screen);
         self.guard.set_shell_open(true);
@@ -351,6 +426,8 @@ impl<D: MemberDirectory + WaitingRoomSource + 'static> Handler for ClientHandler
         session.data(channel, update.bytes)?;
         if update.disconnect {
             self.finish(channel, session)?;
+        } else if let Some(token) = update.claim_token {
+            self.try_claim(channel, &token, session).await?;
         }
         Ok(())
     }

@@ -442,3 +442,54 @@ async fn a_network_that_connects_too_often_is_dropped_at_accept() {
     drop(kept);
     rig.stop().await;
 }
+
+/// M1-D: the founder claim entry (`ssh claim@host`) on a board that is already claimed (the rig
+/// sets `founder_claimed`) shows a prompt that names nothing, and a guess gets the one generic
+/// failure. The unclaimed state is covered in `tests/founder.rs`, which also asserts the two
+/// prompts are word for word identical.
+#[tokio::test]
+async fn the_claim_entry_on_a_claimed_board_reveals_nothing() {
+    for mode in [
+        RegistrationMode::Invite,
+        RegistrationMode::Apply,
+        RegistrationMode::Open,
+    ] {
+        let rig = Rig::start(mode, relaxed()).await;
+        let key = new_client_key();
+        let config = Arc::new(client::Config::default());
+        let mut session = client::connect(config, rig.addr(), Client).await.unwrap();
+        let result = session
+            .authenticate_publickey("claim", PrivateKeyWithHashAlg::new(Arc::new(key), None))
+            .await
+            .unwrap();
+        assert!(matches!(result, AuthResult::Success));
+        let mut channel = open_shell(&session, 80, 24).await;
+        drain(&mut channel).await;
+        channel.window_change(80, 24, 0, 0).await.unwrap();
+        let prompt = strip_ansi(&drain(&mut channel).await);
+        let after = type_line(&mut channel, "AAAA-BBBB-CCCC-DDDD").await;
+        let lower = format!("{prompt}\n{after}").to_lowercase();
+        for secret in [
+            "zorgon",
+            "qwerty",
+            "founder",
+            "claimed",
+            "registration",
+            "already",
+            "invalid",
+            "expired",
+            "online",
+            "member list",
+        ] {
+            assert!(
+                !lower.contains(secret),
+                "{mode:?} leaks {secret:?}: {lower}"
+            );
+        }
+        assert!(
+            flat(&after).contains("That token was not accepted."),
+            "{after}"
+        );
+        rig.stop().await;
+    }
+}

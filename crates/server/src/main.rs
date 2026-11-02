@@ -7,6 +7,7 @@ use anyhow::Context as _;
 use clap::Parser;
 use russh_bbs_core::store::set_registration_mode;
 use russh_bbs_server::config::{Cli, Loaded};
+use russh_bbs_server::founder;
 use russh_bbs_server::ssh::{HostKey, ServerConfig, SshServer};
 use russh_bbs_store::SqliteStore;
 use tracing::{info, warn};
@@ -53,12 +54,21 @@ async fn main() -> anyhow::Result<()> {
         );
     }
 
+    // First run: print the one-time setup token to the console (D41).
+    let founder = founder::start(&store, &mut std::io::stdout()).await?;
+
     let config = ServerConfig {
         listen: loaded.config.ssh.listen,
         limits: loaded.config.limits(),
     };
     // The store decides who is a member; an unknown key or a store error is Restricted.
-    let server = SshServer::start(&config, &host_key, Arc::new(store.clone())).await?;
+    let server = SshServer::start_with_founder(
+        &config,
+        &host_key,
+        Arc::new(store.clone()),
+        Arc::new(founder),
+    )
+    .await?;
 
     tokio::signal::ctrl_c()
         .await
