@@ -319,18 +319,67 @@ fn banner_and_rules_are_sanitized() {
 }
 
 #[test]
-fn banner_and_rules_are_length_capped() {
+fn banner_and_rules_are_length_capped_and_the_cut_is_marked() {
     let config = RoomConfig {
         banner: Some("b".repeat(100_000)),
         rules: Some("r".repeat(100_000)),
         ..RoomConfig::default()
     };
     let mut room = WaitingRoom::new(&config, 5);
-    let banner: usize = room.view().banner.iter().map(|l| l.chars().count()).sum();
-    assert_eq!(banner, super::BANNER_MAX_CHARS);
+    let banner: String = room.view().banner.concat();
+    assert_eq!(banner.chars().count(), super::BANNER_MAX_CHARS + 1);
+    assert!(banner.ends_with('\u{2026}'), "a cut is visible: {banner:?}");
     room.input(RoomInput::Char('r'));
-    let rules: usize = room.view().body.iter().map(|l| l.chars().count()).sum();
-    assert_eq!(rules, super::RULES_MAX_CHARS);
+    let rules: String = room.view().body.concat();
+    assert_eq!(rules.chars().count(), super::RULES_MAX_CHARS + 1);
+    assert!(rules.ends_with('\u{2026}'));
+}
+
+#[test]
+fn text_at_the_limits_is_shown_whole_and_extra_lines_are_cut() {
+    let exact = "x\n".repeat(super::BANNER_MAX_LINES - 1) + "x";
+    let config = RoomConfig {
+        banner: Some(exact.clone()),
+        rules: Some("many\n".repeat(super::RULES_MAX_LINES + 5)),
+        ..RoomConfig::default()
+    };
+    let mut room = WaitingRoom::new(&config, 5);
+    assert_eq!(room.view().banner.join("\n"), exact, "no mark at the limit");
+    room.input(RoomInput::Char('r'));
+    let body = room.view().body;
+    assert_eq!(body.len(), super::RULES_MAX_LINES);
+    assert!(body.last().unwrap().ends_with('\u{2026}'));
+}
+
+#[test]
+fn setting_text_over_the_limit_is_refused_with_the_numbers() {
+    use super::{RoomText, TextLimitError, check_room_text};
+    assert_eq!(check_room_text(RoomText::Banner, "fine"), Ok(()));
+    let long = "a".repeat(super::BANNER_MAX_CHARS + 1);
+    let error = check_room_text(RoomText::Banner, &long).unwrap_err();
+    assert_eq!(
+        error,
+        TextLimitError::TooLong {
+            text: RoomText::Banner,
+            actual: super::BANNER_MAX_CHARS + 1,
+            max: super::BANNER_MAX_CHARS
+        }
+    );
+    assert_eq!(
+        error.to_string(),
+        "The banner is 301 characters; the most the waiting room shows is 300. Shorten it."
+    );
+    let tall = "\n".repeat(super::RULES_MAX_LINES);
+    let error = check_room_text(RoomText::Rules, &(tall + "x")).unwrap_err();
+    assert!(matches!(
+        error,
+        TextLimitError::TooManyLines {
+            actual: 11,
+            max: 10,
+            ..
+        }
+    ));
+    assert!(error.to_string().starts_with("The rules is 11 lines"));
 }
 
 #[test]
