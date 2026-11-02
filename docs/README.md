@@ -1,6 +1,6 @@
 # russh-bbs documentation index
 
-Status of the project: **planning only. No code exists yet.** Every feature below is "Planned" until its document says otherwise.
+Status of the project: M0 and M1 are merged (the M1 QA gate has not passed yet; see [qa/m1.md](qa/m1.md)). [features.md](features.md) holds the status of every feature.
 
 ## Read first (everyone)
 
@@ -19,6 +19,7 @@ Status of the project: **planning only. No code exists yet.** Every feature belo
 | Scope and order of work | [features.md](features.md), [mvp-scope.md](mvp-scope.md), [milestones.md](milestones.md) |
 | Terminal UI, menus, layouts, themes, icons | [ui.md](ui.md) |
 | Running cloud sessions | [cloud-sessions.md](cloud-sessions.md), [orchestration.md](orchestration.md) |
+| Third-party crates (default choices, library-first D47) | [third-party.md](third-party.md) |
 | Coding standards (Rust) | [../.claude/skills/rust-coding/SKILL.md](../.claude/skills/rust-coding/SKILL.md), copied from [pdxgeek/ai-skills](https://github.com/pdxgeek/ai-skills) (upstream is the source of truth) |
 
 ## Conventions
