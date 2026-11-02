@@ -98,6 +98,27 @@ impl Harness for PgHarness {
     async fn close(&self) {
         self.store.close().await;
     }
+
+    fn set_clock(&mut self, clock: std::sync::Arc<dyn russh_bbs_core::audit::WallClock>) {
+        self.store = self.store.clone().with_clock(clock);
+    }
+
+    async fn raw(&self, sql: &str) -> Result<u64, String> {
+        sqlx::query(sql)
+            .execute(self.store.pool())
+            .await
+            .map(|done| done.rows_affected())
+            .map_err(|error| error.to_string())
+    }
+
+    async fn break_audit_inserts(&self) {
+        // A constraint no new row can satisfy; NOT VALID skips the (empty) existing rows.
+        self.raw(
+            "ALTER TABLE audit_log ADD CONSTRAINT audit_insert_broken CHECK (false) NOT VALID",
+        )
+        .await
+        .unwrap();
+    }
 }
 
 impl Drop for PgHarness {
@@ -145,6 +166,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
     (
         3,
         "30d33c5c10004f05324ac2943ad60731fc2d2779a11faa408b3eda531081b5b90148958a1a603a2c94521b21ab0b6a64",
+    ),
+    (
+        4,
+        "dd825623b1277a602de93a586ff964de23e6295be36aed810538127136ba3f2f47dce6db449d36269da7a0beb7031c60",
     ),
 ];
 
@@ -202,6 +227,7 @@ async fn a_fresh_database_gets_every_migration_and_only_these_tables() {
             "account_keys",
             "account_logins",
             "accounts",
+            "audit_log",
             "group_closure",
             "group_member",
             "member_group",
@@ -262,7 +288,7 @@ async fn an_m1_database_gets_the_access_migration_and_a_sysop_grant() {
             .fetch_all(store.pool())
             .await
             .unwrap();
-    assert_eq!(versions, [1, 2, 3]);
+    assert_eq!(versions, [1, 2, 3, 4]);
 }
 
 #[tokio::test]
@@ -694,4 +720,53 @@ mod tls {
             .and_then(|(userinfo, _)| userinfo.split_once(':'))
             .map_or("", |(_, password)| password)
     }
+}
+
+/// Things only Postgres can be asked: `TRUNCATE` does not fire row triggers, and an upsert by id
+/// is an UPDATE.
+#[tokio::test]
+#[ignore = "needs a Postgres server: set RUSSH_BBS_TEST_POSTGRES_URL"]
+async fn audit_log_refuses_truncate_and_upsert_by_id() {
+    use russh_bbs_core::audit::{Action, Actor, AuditEvent, AuditQuery, AuditStore, Target};
+
+    let h = PgHarness::fresh().await;
+    let store = h.store();
+    let original =
+        AuditEvent::new(Actor::System, Action::GroupCreated, Target::None).detail("orig");
+    let id = store.append(&original).await.unwrap();
+    for sql in [
+        "TRUNCATE audit_log".to_owned(),
+        "TRUNCATE audit_log RESTART IDENTITY CASCADE".to_owned(),
+        format!(
+            "INSERT INTO audit_log (id, at, actor_kind, action) OVERRIDING SYSTEM VALUE \
+             VALUES ({}, 1, 'system', 'group.deleted') \
+             ON CONFLICT (id) DO UPDATE SET action = excluded.action",
+            id.as_raw()
+        ),
+    ] {
+        let error = sqlx::query(&sql).execute(store.pool()).await.unwrap_err();
+        assert!(error.to_string().contains("append-only"), "{sql}: {error}");
+    }
+    let rows = store.page(&AuditQuery::default()).await.unwrap();
+    assert_eq!(rows.len(), 1);
+    assert_eq!(rows[0].event, original);
+}
+
+/// A row the code could not have written is `Corrupt`, never skipped or guessed.
+#[tokio::test]
+#[ignore = "needs a Postgres server: set RUSSH_BBS_TEST_POSTGRES_URL"]
+async fn a_hand_written_audit_row_with_an_unknown_action_is_corrupt() {
+    use russh_bbs_core::audit::{AuditQuery, AuditStore};
+    use russh_bbs_core::store::StoreError;
+
+    let h = PgHarness::fresh().await;
+    let store = h.store();
+    sqlx::query("INSERT INTO audit_log (at, actor_kind, action) VALUES (1, 'system', 'made.up')")
+        .execute(store.pool())
+        .await
+        .unwrap();
+    assert!(matches!(
+        store.page(&AuditQuery::default()).await,
+        Err(StoreError::Corrupt(_))
+    ));
 }

@@ -3,6 +3,7 @@
 //! Rows are plain columns mapped to core's [`TerminalSettings`] in one place. A stored value the
 //! code could not have written is [`StoreError::Corrupt`], never a default.
 
+use russh_bbs_core::audit::events;
 use russh_bbs_core::store::{AccountId, StoreError, UnixSeconds};
 use russh_bbs_core::terminal_settings::{
     TerminalSettings, TerminalSettingsStore, tier_from_stored, tier_to_stored,
@@ -73,6 +74,7 @@ impl TerminalSettingsStore for PostgresStore {
         let color = settings.color();
         let pause = settings.pause();
         let tier = settings.chosen_tier().map(tier_to_stored);
+        let mut tx = self.pool().begin().await.map_err(backend)?;
         sqlx::query!(
             "INSERT INTO terminal_settings
                  (account_id, width_override, height_override, color, pause, icon_tier)
@@ -91,13 +93,15 @@ impl TerminalSettingsStore for PostgresStore {
             pause,
             tier,
         )
-        .execute(self.pool())
+        .execute(&mut *tx)
         .await
-        .map(drop)
         .map_err(|error| match kind(&error) {
             Some(ErrorKind::ForeignKeyViolation) => StoreError::AccountNotFound,
             _ => backend(error),
-        })
+        })?;
+        self.audit_in(&mut tx, &events::terminal_settings_changed(account))
+            .await?;
+        tx.commit().await.map_err(backend)
     }
 
     async fn record_login(&self, account: AccountId) -> Result<Option<UnixSeconds>, StoreError> {

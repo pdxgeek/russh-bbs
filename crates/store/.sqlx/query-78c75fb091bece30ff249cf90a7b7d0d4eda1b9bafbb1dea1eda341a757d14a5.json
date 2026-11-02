@@ -1,0 +1,74 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id AS \"id!\", at, actor_kind, actor_id, action, target_kind, target_ref,\n                      resource_kind, resource_id, detail\n               FROM audit_log\n               WHERE (?1 IS NULL OR actor_kind = ?1)\n                 AND (?2 IS NULL OR actor_id = ?2)\n                 AND (?3 IS NULL OR action = ?3)\n                 AND (?4 IS NULL OR at >= ?4)\n                 AND (?5 IS NULL OR at < ?5)\n                 AND (?6 IS NULL OR id < ?6)\n               ORDER BY id DESC\n               LIMIT ?7",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "at",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "actor_kind",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "actor_id",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "action",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "target_kind",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "target_ref",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "resource_kind",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "resource_id",
+        "ordinal": 8,
+        "type_info": "Integer"
+      },
+      {
+        "name": "detail",
+        "ordinal": 9,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 7
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "78c75fb091bece30ff249cf90a7b7d0d4eda1b9bafbb1dea1eda341a757d14a5"
+}

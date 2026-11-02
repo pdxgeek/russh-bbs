@@ -121,7 +121,7 @@ This is the most intricate feature in the MVP, so the M2 access slice starts wit
 
 ### Not done / not verified
 
-- The editing services (create or change a role, grant or revoke, with the rank rules) are **M2-B2**; nothing writes roles or grants except the founder claim, account creation, group changes and the tests. Role, group and grant changes are not audited yet (M2-C adds that).
+- The editing services (create or change a role, grant or revoke, with the rank rules) are **M2-B2**; nothing writes roles or grants except the founder claim, account creation, group changes and the tests. Group changes and grants written by `add_grant` are audited since M2-C ([audit.md](audit.md)); the editing services add their own rows.
 - Resource limits are **M2-H**. `sysop` and `cosysop` over telnet (D27) is the M3 telnet slice. Resource-owner-managed allow lists wait for the resources (M3, M4).
 - Not exercised: a deployment with two server processes on one database (nothing is cached, so it should hold, but it was not run), a database with thousands of groups, and the Postgres `LOCK TABLE` under load beyond the two-task race. A suspended account's open session is not disconnected; it simply holds the waiting snapshot from its next action.
 - The first-run icon check stores its answer without `account.edit_settings` being checked as a page (it runs before the menu); the save itself is refused if the permission is not held, and the choice then lasts for the session only.
@@ -375,7 +375,7 @@ Storage traits (`core::access`): `AccessStore` with a few methods only: `snapsho
 - **Role inheritance**: not needed; layered inserts give the same data.
 - **Resource-owner-managed allow lists** and an `owner` column on resources: the resources do not exist until M3/M4; each resource slice adds its owner and uses `grant_permission`.
 - **Checking that a scoped permission matches the resource's kind** at write time: harmless without it (a mismatched grant never matches); add when the sysop UI exists.
-- **Audit rows** for role, group and grant changes: M2-C.
+- **Audit rows** for role, group and grant changes: group changes and `add_grant` done in M2-C ([audit.md](audit.md)); the M2-B2 editing services add theirs. **Retention** and the sysop screen: M5.
 - **Sysop/cosysop refused over telnet** (D27): M3 telnet slice.
 - **Sysop UI** to edit roles, groups and allow lists, and the "visible to the sysop" wording on allow-list screens: M5 and the resource slices.
 - **RFC 9068 claim names** (`roles`, `groups`, `entitlements`) on API tokens: M5.
