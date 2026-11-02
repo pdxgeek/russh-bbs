@@ -2493,6 +2493,7 @@ dependencies = [
 name = "russh-bbs-core"
 version = "0.0.0"
 dependencies = [
+ "icu_properties",
  "proptest",
  "sha2 0.10.9",
  "subtle",

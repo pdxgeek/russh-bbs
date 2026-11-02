@@ -24,6 +24,16 @@ const RESERVED_NAMES: &[&str] = &[
     "waiting",
     "member",
     "trusted",
+    // Staff-sounding words (QA M0 N3). Best effort: a name is not how staff status is
+    // shown (chrome is), this only narrows the gap.
+    "administrator",
+    "sysadmin",
+    "support",
+    "owner",
+    "operator",
+    "webmaster",
+    "mod",
+    "guest",
 ];
 
 /// Fewest characters in a username.
@@ -128,12 +138,31 @@ pub fn sanitize_username(input: &str) -> Result<Username, UsernameError> {
 
 /// Whether `name` (already validated ASCII) is, or looks like, a reserved name.
 fn is_reserved(name: &str) -> bool {
-    let skeleton = skeleton_of(name);
+    let key = reserved_key(name);
     RESERVED_NAMES
         .iter()
         .copied()
         .chain(SecurityMarker::ALL.map(SecurityMarker::label))
-        .any(|reserved| skeleton_of(reserved) == skeleton)
+        .any(|reserved| reserved_key(reserved) == key)
+}
+
+/// The comparison key for reserved names: separators (`_`, `-`) dropped, the extra leet
+/// digits folded (`3`→`e`, `4`→`a`, `7`→`t`, `9`→`g`), then the ordinary skeleton. It is
+/// stronger than [`skeleton_of`] on purpose and is **not** the uniqueness key: stored
+/// skeletons (D17, D35) must not change under existing rows.
+fn reserved_key(name: &str) -> String {
+    let folded: String = name
+        .chars()
+        .filter(|c| !matches!(c, '_' | '-'))
+        .map(|c| match c {
+            '3' => 'e',
+            '4' => 'a',
+            '7' => 't',
+            '9' => 'g',
+            other => other,
+        })
+        .collect();
+    skeleton_of(&folded)
 }
 
 /// The confusable skeleton of a validated name: ASCII lowercase with common lookalikes

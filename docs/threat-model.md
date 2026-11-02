@@ -34,7 +34,7 @@ Member identities and key fingerprints, the invite tree, message and mail conten
 | Authentication | Public-key over SSH by default. Password login over SSH is a sysop opt-in (D28), encrypted on the wire, with lockout. Over telnet, login is off unless the sysop also enables it; then a per-member argon2id password that is set over SSH. SFTP, invite redemption, and sysop functions never work over telnet. |
 | Waiting room | An unknown key sees only the banner, rules, request-invite, and redeem-invite, plus apply or create-account when the registration mode (D2) allows it. No member list, board list, or stats in any mode. |
 | Registration | Default mode is `invite`. `apply` creates an inactive account visible only to the sysop queue. `open` creates an active account only within per-IP and per-key creation limits and an optional cap on new accounts per day; when the cap is hit the stranger sees the `apply` path instead. |
-| Output safety | Untrusted text cannot inject terminal escapes or spoof UI icons or security badges. |
+| Output safety | Untrusted text cannot inject terminal escapes or emit the exact reserved marker codepoints or styling. It can still imitate a security badge with lookalike characters or, in the ASCII tier, the same text; the reserved style and a chrome-only position are what tell the real one apart (see Security chrome, D39, D45). |
 | Outbound fetching | User-supplied URLs cannot reach private networks. |
 | Uploads | Files are quarantined and scanned before becoming visible. |
 | Honesty | Nothing is labeled private unless the server genuinely cannot read it. |
@@ -58,7 +58,7 @@ Applied to every string that is not UI chrome: usernames, post bodies, subjects,
 - Enforce length limits.
 - Ship fuzz and property tests.
 
-Implementation status (`russh-bbs-core::sanitize`): **Implemented and unit/property tested:** control and escape-sequence removal, bidi and invisible-character removal (including the filler and format class), Unicode-space mapping, combining-mark cap, private-use and reserved-chrome neutralization (replaced with U+FFFD), length limits (in `char`s), NFKC and a strict ASCII allowed set for usernames, reserved usernames compared on the skeleton, and an ASCII lookalike skeleton with digit and multi-letter folds (best effort, errs toward collisions). **Still planned:** a `cargo-fuzz` target; wiring into front ends, which is each consuming slice's job. Cross-script confusables are blocked by rejection (non-ASCII names are not allowed in the MVP), not by a confusables table.
+Implementation status (`russh-bbs-core::sanitize`): **Implemented and unit/property tested:** control and escape-sequence removal, bidi and invisible-character removal by Unicode property (`Cf` and Default_Ignorable, D45), ZWJ/ZWNJ kept only in a joining context, Unicode-space mapping, combining-mark cap (not reset by joiners), private-use and reserved-chrome neutralization (replaced with U+FFFD), length limits (in `char`s), NFKC and a strict ASCII allowed set for usernames, reserved usernames compared on the skeleton, and an ASCII lookalike skeleton with digit and multi-letter folds (best effort, errs toward collisions). **Still planned:** a `cargo-fuzz` target; wiring into front ends, which is each consuming slice's job. Cross-script confusables are blocked by rejection (non-ASCII names are not allowed in the MVP), not by a confusables table.
 
 ### Security chrome
 Lock, signature, key-changed, and server-readable markers are drawn only by chrome code. Layouts and themes can position them but cannot hide, recolor to mislead, or replace them. Every icon tier has a text fallback ("E2EE", "SERVER-READABLE"). What is guaranteed, per tier (D39):
@@ -67,10 +67,10 @@ Lock, signature, key-changed, and server-readable markers are drawn only by chro
 |---|---|---|
 | All | The reserved style (bold + reverse video): the sanitizer removes every escape sequence | Property test: no sanitized string contains ESC or the style bytes |
 | Nerd Font | The marker glyph (private-use, replaced by the sanitizer) | Property test |
-| Unicode | The delimiters U+27E6/U+27E7 and the marker glyphs (replaced by the sanitizer), so `⟦glyph⟧` is unforgeable even without color | Property test |
+| Unicode | The **exact codepoints** of the delimiters U+27E6/U+27E7 and the four marker glyphs (replaced by the sanitizer). **Not** lookalikes: `〚☉〛`, `⸨◉⸩`, fullwidth or ASCII brackets and similar-looking glyphs pass through and may render like a marker in some fonts. Like the ASCII tier, the Unicode tier therefore depends on the reserved style and a chrome-only position in the end (QA M0 N1, D45) | Property test over the exact set; the lookalike limit is pinned by a test |
 | ASCII | **Nothing textual.** Content can type `E2EE` or `SERVER-READABLE`; only the reserved style and a chrome-only screen position tell the real marker apart | A test pins this limit |
 
-On a terminal with no color or styling, **position is the only cue** for the ASCII tier, so markers must be drawn in a chrome-only place (status line or fixed gutter) that content is never drawn into. Usernames equal to a marker label, a staff word or a default role or group name are rejected. Not yet exercised end to end: no front end draws markers, so the renderer applying the style and position is an M2 screen-framework task.
+On a terminal with no color or styling, **position is the only cue** for the ASCII tier and, because of lookalikes, in practice for the Unicode tier too, so markers must be drawn in a chrome-only place (status line or fixed gutter) that content is never drawn into. Usernames equal to a marker label, a staff word or a default role or group name are rejected. Not yet exercised end to end: no front end draws markers, so the renderer applying the style and position is an M2 screen-framework task.
 
 ### SSRF guard
 For every server-side fetch of a user-supplied URL: only `http` and `https`, resolve DNS and re-check the IP at connect time, block loopback, link-local, private, and metadata ranges, cap redirects, set connect and total timeouts, cap response size, and disallow credentials in URLs.

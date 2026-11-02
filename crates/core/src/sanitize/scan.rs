@@ -3,12 +3,15 @@
 use std::iter::Peekable;
 use std::str::Chars;
 
+use icu_properties::props::{DefaultIgnorableCodePoint, GeneralCategory};
+use icu_properties::{CodePointMapData, CodePointSetData};
 use unicode_normalization::char::is_combining_mark;
 
 /// Most combining marks kept after one base character. A longer run is truncated (the
 /// extra marks are dropped, the base and the first four kept). Four covers every real
 /// script's needs (Vietnamese and Indic stacks use up to three); more is a "zalgo" attack on
-/// line height and on column arithmetic.
+/// line height and on column arithmetic. ZWJ and ZWNJ neither count nor reset the run, so
+/// interleaving them does not buy more marks (QA M0 N2).
 pub const MAX_COMBINING_MARKS: usize = 4;
 
 /// Characters reserved for security chrome (decision D39). Content can never produce them:
@@ -36,6 +39,8 @@ const CAN: char = '\u{18}';
 const SUB: char = '\u{1a}';
 /// 8-bit String Terminator.
 const C1_ST: char = '\u{9c}';
+const ZWNJ: char = '\u{200C}';
+const ZWJ: char = '\u{200D}';
 
 /// How line breaks and tabs are treated.
 #[derive(Debug, Clone, Copy)]
@@ -93,6 +98,9 @@ pub(super) fn clean(input: &str, layout: Layout, max_chars: usize) -> String {
             c if is_unicode_space(c) => Some(' '),
             // U+FE0F keeps emoji presentation, but only straight after an emoji base.
             '\u{FE0F}' if last.is_some_and(is_emoji_base) => Some('\u{FE0F}'),
+            // ZWNJ and ZWJ are kept only in a joining context (D45); elsewhere they hide text.
+            ZWNJ | ZWJ if last.is_some_and(is_joiner_context) => Some(c),
+            ZWNJ | ZWJ => None,
             c if c.is_control() || is_invisible_format(c) => None,
             c if is_private_use(c) || is_noncharacter(c) || RESERVED_CHROME.contains(&c) => {
                 Some(REPLACEMENT)
@@ -101,9 +109,12 @@ pub(super) fn clean(input: &str, layout: Layout, max_chars: usize) -> String {
             c => Some(c),
         };
         if let Some(c) = emit {
-            if c != '\u{FE0F}' && is_combining_mark(c) {
+            // Variation selector and joiners are transparent to the mark run.
+            if matches!(c, '\u{FE0F}' | ZWNJ | ZWJ) {
+                // keep `marks` as is
+            } else if is_combining_mark(c) {
                 marks += 1;
-            } else if c != '\u{FE0F}' {
+            } else {
                 marks = 0;
             }
             out.push(c);
@@ -167,39 +178,25 @@ const fn is_emoji_base(c: char) -> bool {
     )
 }
 
-/// Bidi controls and invisible or format characters that can hide, reorder or fake text.
-/// Keeps U+200C and U+200D (ZWNJ, ZWJ), which real scripts and emoji sequences need, and
-/// U+FE0F after an emoji base (see `clean`). Line and paragraph separators are handled as
-/// line breaks before this runs.
-pub(super) const fn is_invisible_format(c: char) -> bool {
-    matches!(
-        c,
-        '\u{00AD}' // soft hyphen
-            | '\u{034F}' // combining grapheme joiner
-            | '\u{0600}'..='\u{0605}' // Arabic number signs (prepended concatenation marks)
-            | '\u{061C}'
-            | '\u{06DD}'
-            | '\u{070F}'
-            | '\u{08E2}'
-            | '\u{115F}'..='\u{1160}' // Hangul fillers
-            | '\u{17B4}'..='\u{17B5}' // Khmer inherent vowels
-            | '\u{180B}'..='\u{180F}' // Mongolian free variation selectors and vowel separator
-            | '\u{200B}'
-            | '\u{200E}'..='\u{200F}'
-            | '\u{202A}'..='\u{202E}'
-            | '\u{2060}'..='\u{206F}' // word joiner, invisible operators, deprecated format
-            | '\u{2800}' // braille pattern blank
-            | '\u{3164}' // Hangul filler
-            | '\u{FE00}'..='\u{FE0F}' // variation selectors (FE0F handled earlier)
-            | '\u{FEFF}'
-            | '\u{FFA0}' // halfwidth Hangul filler
-            | '\u{FFF9}'..='\u{FFFC}' // interlinear annotation, object replacement
-            | '\u{110BD}'
-            | '\u{1BCA0}'..='\u{1BCA3}' // shorthand format controls
-            | '\u{1D173}'..='\u{1D17A}' // musical format controls
-            | '\u{E0000}'..='\u{E007F}' // tag characters
-            | '\u{E0100}'..='\u{E01EF}' // variation selectors supplement
-    )
+/// Whether a ZWNJ or ZWJ may follow `prev`: only after a non-ASCII character that is not
+/// itself a joiner. That keeps emoji sequences (after an emoji base or U+FE0F), Persian and
+/// Indic shaping (after a letter or a virama), and drops a joiner after ASCII, after
+/// another joiner, or at the start, where it can only hide or split text (D45).
+const fn is_joiner_context(prev: char) -> bool {
+    !prev.is_ascii() && !matches!(prev, ZWNJ | ZWJ)
+}
+
+/// Invisible and format characters that can hide, reorder or fake text, decided by Unicode
+/// property rather than a hand-kept list (D45): general category `Cf`, or
+/// `Default_Ignorable_Code_Point` (which also covers assigned fillers and unassigned
+/// reserved ranges), plus two visible-blank characters that have neither property.
+///
+/// This returns true for ZWNJ, ZWJ and U+FE0F as well; `clean` decides those first. Line
+/// and paragraph separators (category `Zl`/`Zp`) are not in it; they are line breaks.
+pub(super) fn is_invisible_format(c: char) -> bool {
+    matches!(c, '\u{2800}' | '\u{FFFC}')
+        || CodePointSetData::new::<DefaultIgnorableCodePoint>().contains(c)
+        || CodePointMapData::<GeneralCategory>::new().get(c) == GeneralCategory::Format
 }
 
 /// Called after `ESC` was consumed.

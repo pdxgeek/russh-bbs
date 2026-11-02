@@ -2,8 +2,8 @@
 
 use proptest::prelude::*;
 
+use super::scan::is_noncharacter;
 use super::scan::is_private_use;
-use super::scan::{is_invisible_format, is_noncharacter};
 use super::{
     MAX_COMBINING_MARKS, MultiLine, RESERVED_CHROME, SingleLine, UsernameError, sanitize_username,
 };
@@ -318,7 +318,11 @@ fn security_marker_labels_are_reserved_usernames() {
     }
     // Neighbours that are not the label are fine.
     assert!(sanitize_username("signed2").is_ok());
-    assert!(sanitize_username("keychanged").is_ok());
+    // N3: separators do not make a different name.
+    assert_eq!(
+        sanitize_username("keychanged").err(),
+        Some(UsernameError::Reserved)
+    );
 }
 
 #[test]
@@ -385,7 +389,6 @@ const F3_CLASS: &[char] = &[
 #[test]
 fn invisible_filler_and_format_characters_are_removed() {
     for &c in F3_CLASS {
-        assert!(is_invisible_format(c), "U+{:04X}", c as u32);
         assert_eq!(line(&format!("a{c}b")), "ab", "U+{:04X}", c as u32);
         assert_eq!(body(&format!("a{c}b")), "ab", "U+{:04X}", c as u32);
     }
@@ -553,8 +556,10 @@ fn assert_clean(out: &str, allow_nl_tab: bool) {
             "tag or invisible U+{:04X}",
             c as u32
         );
+        // Independent of the implementation: transcribed `Cf` and Default_Ignorable
+        // tables, so a character the scanner misses fails here.
         assert!(
-            !is_invisible_format(c) || c == '\u{FE0F}',
+            !is_format_or_default_ignorable(c) || matches!(c, '\u{FE0F}' | '\u{200C}' | '\u{200D}'),
             "invisible format U+{:04X}",
             c as u32
         );
@@ -567,8 +572,8 @@ fn assert_clean(out: &str, allow_nl_tab: bool) {
             "unicode space U+{:04X}",
             c as u32
         );
-        if c == '\u{FE0F}' {
-            // Variation selector: not counted, kept only after an emoji base.
+        if matches!(c, '\u{FE0F}' | '\u{200C}' | '\u{200D}') {
+            // Variation selector and joiners: transparent to the mark run.
         } else if unicode_normalization::char::is_combining_mark(c) {
             marks += 1;
             assert!(marks <= MAX_COMBINING_MARKS, "too many marks");
@@ -624,4 +629,219 @@ proptest! {
             prop_assert_eq!(sanitize_username(u.as_str()), Ok(u));
         }
     }
+}
+
+// ---- N2/N4: property-based stripping and the joiner-proof mark cap -----------------------
+
+/// `Default_Ignorable_Code_Point`, transcribed from `DerivedCoreProperties.txt` (stable since
+/// Unicode 6.x apart from newly assigned characters inside these ranges). Deliberately not
+/// shared with the implementation, which reads the property from `icu_properties`.
+const DEFAULT_IGNORABLE: &[(u32, u32)] = &[
+    (0x00AD, 0x00AD),
+    (0x034F, 0x034F),
+    (0x061C, 0x061C),
+    (0x115F, 0x1160),
+    (0x17B4, 0x17B5),
+    (0x180B, 0x180F),
+    (0x200B, 0x200F),
+    (0x202A, 0x202E),
+    (0x2060, 0x206F),
+    (0x3164, 0x3164),
+    (0xFE00, 0xFE0F),
+    (0xFEFF, 0xFEFF),
+    (0xFFA0, 0xFFA0),
+    (0xFFF0, 0xFFF8),
+    (0x1BCA0, 0x1BCA3),
+    (0x1D173, 0x1D17A),
+    (0xE0000, 0xE0FFF),
+];
+
+/// General category `Cf`, transcribed from `UnicodeData.txt` (Unicode 16). The
+/// implementation reads the same facts from `icu_properties`; a second copy typed here is
+/// what lets a missing character fail a test.
+const FORMAT_CF: &[(u32, u32)] = &[
+    (0x00AD, 0x00AD),
+    (0x0600, 0x0605),
+    (0x061C, 0x061C),
+    (0x06DD, 0x06DD),
+    (0x070F, 0x070F),
+    (0x0890, 0x0891),
+    (0x08E2, 0x08E2),
+    (0x180E, 0x180E),
+    (0x200B, 0x200F),
+    (0x202A, 0x202E),
+    (0x2060, 0x2064),
+    (0x2066, 0x206F),
+    (0xFEFF, 0xFEFF),
+    (0xFFF9, 0xFFFB),
+    (0x110BD, 0x110BD),
+    (0x110CD, 0x110CD),
+    (0x13430, 0x1343F),
+    (0x1BCA0, 0x1BCA3),
+    (0x1D173, 0x1D17A),
+    (0xE0001, 0xE0001),
+    (0xE0020, 0xE007F),
+];
+
+fn is_format_or_default_ignorable(c: char) -> bool {
+    let v = c as u32;
+    FORMAT_CF.iter().any(|&(lo, hi)| (lo..=hi).contains(&v))
+        || DEFAULT_IGNORABLE
+            .iter()
+            .any(|&(lo, hi)| (lo..=hi).contains(&v))
+        || matches!(c, '\u{2800}' | '\u{FFFC}')
+}
+
+#[test]
+fn every_scalar_value_is_checked_against_unicode_properties() {
+    // Whole code space, both contexts: every Cf and Default_Ignorable character is gone
+    // except ZWJ/ZWNJ (context) and U+FE0F (emoji), and nothing else non-ASCII vanishes
+    // for this reason. N4: this catches U+0890, U+110CD, U+13430 and the unassigned
+    // default-ignorable ranges without a list in the implementation to agree with.
+    let mut checked = 0u32;
+    for v in 0..=0x0010_FFFF_u32 {
+        let Some(c) = char::from_u32(v) else { continue };
+        if c.is_control() || matches!(c, '\u{2028}' | '\u{2029}') {
+            continue;
+        }
+        let input = format!("\u{e9}{c}\u{e9}");
+        for out in [line(&input), body(&input)] {
+            if is_format_or_default_ignorable(c)
+                && !matches!(c, '\u{200C}' | '\u{200D}' | '\u{FE0F}')
+            {
+                assert_eq!(out, "\u{e9}\u{e9}", "U+{v:04X} survived");
+            }
+        }
+        checked += 1;
+    }
+    assert!(checked > 1_000_000);
+}
+
+#[test]
+fn unicode_data_canaries() {
+    // Pin that the property data is recent enough for the characters the QA re-check
+    // named (Cf U+0890, U+110CD, U+13430; unassigned default-ignorable U+FFF0, U+E0080,
+    // U+E01F0). If a dependency bump loses these, this fails.
+    for c in [
+        '\u{0890}',
+        '\u{0891}',
+        '\u{110CD}',
+        '\u{13430}',
+        '\u{1343F}',
+        '\u{FFF0}',
+        '\u{FFF8}',
+        '\u{E0080}',
+        '\u{E01F0}',
+        '\u{E0FFF}',
+    ] {
+        assert_eq!(line(&format!("a{c}b")), "ab", "U+{:04X}", c as u32);
+    }
+}
+
+#[test]
+fn combining_cap_survives_interleaved_joiners() {
+    for joiner in ['\u{200D}', '\u{200C}'] {
+        let mut input = String::from("\u{e9}");
+        for _ in 0..50 {
+            input.push_str(&"\u{0301}".repeat(4));
+            input.push(joiner);
+        }
+        for out in [line(&input), body(&input)] {
+            let marks = out.chars().filter(|c| *c == '\u{0301}').count();
+            assert_eq!(marks, MAX_COMBINING_MARKS, "joiner U+{:04X}", joiner as u32);
+            assert!(
+                out.chars().count() <= 1 + MAX_COMBINING_MARKS + 50,
+                "joiners are not unbounded"
+            );
+        }
+    }
+}
+
+#[test]
+fn joiners_are_kept_only_in_a_joining_context() {
+    // Emoji sequence, Persian ZWNJ, Indic virama + ZWJ keep their joiner.
+    assert_eq!(
+        line("\u{1F468}\u{200D}\u{1F469}"),
+        "\u{1F468}\u{200D}\u{1F469}"
+    );
+    assert_eq!(line("\u{0645}\u{200C}\u{06CC}"), "\u{0645}\u{200C}\u{06CC}");
+    assert_eq!(
+        line("\u{0915}\u{094D}\u{200D}\u{0937}"),
+        "\u{0915}\u{094D}\u{200D}\u{0937}"
+    );
+    // After ASCII, at the start, after another joiner, after a space: dropped.
+    assert_eq!(line("ad\u{200D}min"), "admin");
+    assert_eq!(line("\u{200C}x"), "x");
+    assert_eq!(
+        line("\u{1F468}\u{200D}\u{200D}\u{200C}\u{1F469}"),
+        "\u{1F468}\u{200D}\u{1F469}"
+    );
+    assert_eq!(line("a \u{200D}\u{3000}\u{200D}b"), "a  b");
+}
+
+// ---- N3: reserved names ------------------------------------------------------------------
+
+#[test]
+fn reserved_names_ignore_separators_and_fold_more_leet() {
+    for name in [
+        "sys_op",
+        "sys-op",
+        "ad-min",
+        "ad_min",
+        "co-sysop",
+        "s-y-s-o-p",
+        "syst3m",
+        "4dmin",
+        "3veryone",
+        "st4ff",
+        "mod3rator",
+        "serverreadable",
+        "KEYCHANGED",
+        "e2e3",
+        "key_changed",
+        "SERVER-READABLE",
+        "adm1n1strator",
+        "sysadmin",
+        "support",
+        "0wner",
+        "operator",
+        "webm4ster",
+        "mod",
+        "gu3st",
+        "9uest",
+        "tru5ted",
+    ] {
+        assert_eq!(
+            sanitize_username(name).err(),
+            Some(UsernameError::Reserved),
+            "{name}"
+        );
+    }
+    // A suffix is not stripped (policy), and ordinary names stay free.
+    for name in [
+        "admin1",
+        "sysop2",
+        "modest",
+        "alice",
+        "ownership",
+        "guesthouse",
+    ] {
+        assert!(sanitize_username(name).is_ok(), "{name}");
+    }
+}
+
+#[test]
+fn lookalike_brackets_and_glyphs_are_not_blocked_and_the_docs_say_so() {
+    // N1/D45: only the exact reserved codepoints are neutralized. These pass through, so
+    // the Unicode tier depends on style and position like the ASCII tier. If the reserved
+    // set is ever widened, change this test and D45 together.
+    for fake in [
+        "\u{301A}\u{2609}\u{301B}",
+        "\u{2E28}\u{25C9}\u{2E29}",
+        "\u{FF3B}\u{2299}".replace('\u{2299}', "\u{25C9}").as_str(),
+        "[|\u{25C9}|]",
+    ] {
+        assert_eq!(line(fake), fake);
+    }
+    assert_eq!(line("\u{27E6}\u{2299}\u{27E7}"), "\u{FFFD}\u{FFFD}\u{FFFD}");
 }
