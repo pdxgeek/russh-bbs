@@ -14,6 +14,9 @@ pub enum SessionError {
     /// Drawing to the client's terminal failed.
     #[error("terminal render error: {0}")]
     Render(#[from] io::Error),
+    /// The client kept sending past its request and input budgets (D49).
+    #[error("session over its request budget")]
+    OverBudget,
 }
 
 /// A failure starting the server.

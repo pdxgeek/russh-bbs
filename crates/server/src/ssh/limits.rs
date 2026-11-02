@@ -2,7 +2,8 @@
 //!
 //! These keep a stranger from holding connections open forever or hammering the door. They are
 //! per connection, global, per network (checked at accept, before a handler exists) or per key
-//! (checked at the top of `ClientHandler::auth_publickey`). The rate policy itself lives in
+//! (checked at the top of `ClientHandler::auth_publickey`). The per-session budgets after login
+//! (redraw rate, request and input rates, the output stall) are decision D49. The rate policy itself lives in
 //! `russh_bbs_core::waiting_room`; the defaults are decision D37.
 
 use std::time::Duration;
@@ -37,6 +38,21 @@ pub struct Limits {
     pub max_tracked_sources: usize,
     /// Waiting-room form submissions one session may make before it is disconnected.
     pub max_form_submissions: u32,
+    /// Shortest time between two redraws of one session. A session redraws at most
+    /// `1 / redraw_interval` times a second however much it sends (D49).
+    pub redraw_interval: Duration,
+    /// Requests per second one session may send after login (data packets and window changes
+    /// together). Excess data packets are dropped; excess window changes are folded into the
+    /// latest size.
+    pub requests_per_second: u32,
+    /// Input bytes per second one session may send. Excess bytes are dropped.
+    pub input_bytes_per_second: u32,
+    /// Over-budget events (an excess request, or each started KiB of excess input) a session may
+    /// collect before it is disconnected.
+    pub flood_strikes: u32,
+    /// How long a peer may leave the server unable to hand it output (its window or socket
+    /// full) before the connection is dropped instead of queueing without bound.
+    pub write_stall: Duration,
 }
 
 impl Default for Limits {
@@ -52,6 +68,11 @@ impl Default for Limits {
             key_rate: DEFAULT_KEY_RATE,
             max_tracked_sources: DEFAULT_MAX_TRACKED,
             max_form_submissions: DEFAULT_MAX_SUBMISSIONS,
+            redraw_interval: Duration::from_millis(50),
+            requests_per_second: 200,
+            input_bytes_per_second: 8192,
+            flood_strikes: 1000,
+            write_stall: Duration::from_secs(10),
         }
     }
 }

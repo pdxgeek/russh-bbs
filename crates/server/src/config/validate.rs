@@ -6,7 +6,7 @@ use std::path::Path;
 
 use super::error::{ConfigError, Source};
 use super::layers::Sources;
-use super::model::{BlobBackend, Config, DatasourceKind, TlsMode};
+use super::model::{BlobBackend, Config, DatasourceKind, SshConfig, TlsMode};
 
 struct Check<'a> {
     sources: &'a Sources,
@@ -63,6 +63,36 @@ impl Check<'_> {
     }
 }
 
+/// The per-session limits of D49.
+fn session_limits(c: &Check<'_>, ssh: &SshConfig) -> Result<(), ConfigError> {
+    c.range(
+        "ssh.redraw_interval_millis",
+        ssh.redraw_interval_millis,
+        10,
+        5_000,
+    )?;
+    c.range(
+        "ssh.requests_per_second",
+        u64::from(ssh.requests_per_second),
+        10,
+        100_000,
+    )?;
+    c.range(
+        "ssh.input_bytes_per_second",
+        u64::from(ssh.input_bytes_per_second),
+        64,
+        10_000_000,
+    )?;
+    c.range(
+        "ssh.flood_strikes",
+        u64::from(ssh.flood_strikes),
+        1,
+        1_000_000,
+    )?;
+    c.range("ssh.write_stall_secs", ssh.write_stall_secs, 1, 3_600)?;
+    Ok(())
+}
+
 /// Validate a merged configuration.
 pub(crate) fn validate(config: &Config, sources: &Sources) -> Result<(), ConfigError> {
     let c = Check { sources };
@@ -90,6 +120,7 @@ pub(crate) fn validate(config: &Config, sources: &Sources) -> Result<(), ConfigE
         0,
         60_000,
     )?;
+    session_limits(&c, ssh)?;
     if let Some(path) = &ssh.host_key {
         c.path("ssh.host_key", path, false)?;
     }
