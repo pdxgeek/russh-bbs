@@ -48,6 +48,13 @@ A compact, text-only layout with no icons, no art, and screen-reader-friendly ou
 
 ## Implemented / Verified
 
+**Waiting room** (`russh-bbs-core::waiting_room` rules and view model, `russh-bbs-server::waiting_room` drawing), M1-C.
+
+- **Implemented:** the page set per registration mode, menu keys, form input (Enter next/send, Backspace, Esc back, Ctrl-C leave), and the drawing: a bordered box with a heading, the banner, menu or form, a `Notice:` / `Problem:` line (words, not only colour) and a footer hint. Every fixed string is in `waiting_room::strings`, not in drawing code, so a theme or translation can replace them later. Banner and rules come from settings and are sanitized.
+- **Security cues:** the rules page carries a fixed privacy line ("the server can read everything except PGP-encrypted mail and files you encrypt yourself") that settings cannot edit; no lock or privacy glyph is shown anywhere in the waiting room.
+- **Not implemented:** theme and layout selection for these screens (strings are themeable by design, the layer is M3); scrolling of long rules or banner text (clipped to the window); non-ASCII typing; the real request, redeem, apply and create-account flows (M2).
+- **Verified:** rendering of every page of every mode into a ratatui test backend; a real russh client and OpenSSH walking the screens. Not verified in other terminal emulators.
+
 **Icon registry** (`russh-bbs-core::icons`), implemented and unit tested; no front end uses it yet.
 
 - Logical names are closed enums: `ContentIcon` (`Board`, `Lock`, `Unread`, `Feed`, `Mail`, `Invite`) and `SecurityMarker` (`ServerReadable`, `E2eeLock`, `Signature`, `KeyChanged`), joined by `Icon`. Each icon is one exhaustive `match` arm (no wildcard) giving Nerd Font, plain Unicode and ASCII glyphs plus a text label, so an icon missing a tier does not compile.

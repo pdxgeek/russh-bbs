@@ -1,0 +1,87 @@
+//! Every fixed string the waiting room shows. They are UI chrome, so they bypass the
+//! sanitizer, and they live here (not in rendering code) so a theme or translation can replace
+//! them later (`docs/ui.md`).
+//!
+//! None of these names a member, a board or a statistic, and none differs between a member's
+//! key and a stranger's: the waiting room reveals nothing (threat model, "Waiting room").
+
+/// Shown on the first line of every page.
+pub const TITLE: &str = "russh-bbs";
+/// The home page's heading.
+pub const HOME_HEADING: &str = "Waiting room";
+/// The rules page's heading.
+pub const RULES_HEADING: &str = "House rules";
+/// Heading of the invite-request form.
+pub const REQUEST_INVITE_HEADING: &str = "Request an invite";
+/// Heading of the invite-redeem form.
+pub const REDEEM_INVITE_HEADING: &str = "Redeem an invite";
+/// Heading of the application form.
+pub const APPLY_HEADING: &str = "Apply for membership";
+/// Heading of the create-account form.
+pub const CREATE_ACCOUNT_HEADING: &str = "Create an account";
+
+/// Menu labels.
+pub const MENU_RULES: &str = "Read the rules";
+/// See [`MENU_RULES`].
+pub const MENU_REQUEST_INVITE: &str = "Request an invite";
+/// See [`MENU_RULES`].
+pub const MENU_REDEEM_INVITE: &str = "Redeem an invite code";
+/// See [`MENU_RULES`].
+pub const MENU_APPLY: &str = "Apply for membership";
+/// See [`MENU_RULES`].
+pub const MENU_CREATE_ACCOUNT: &str = "Create an account";
+/// The disconnect entry, always last.
+pub const MENU_QUIT: &str = "Disconnect";
+
+/// Footer hints.
+pub const FOOTER_HOME: &str = "Press a key from the list.";
+/// See [`FOOTER_HOME`].
+pub const FOOTER_PAGE: &str = "Esc: back";
+/// See [`FOOTER_HOME`].
+pub const FOOTER_FORM: &str = "Enter: next or send   Esc: back   Ctrl-C: disconnect";
+
+/// Honest privacy line on the rules page. Fixed chrome: sysops cannot edit it away, because
+/// the product must not imply privacy it does not have (D3).
+pub const PRIVACY_NOTE: &str = "Privacy: in this version the server can read everything except \
+PGP-encrypted mail and files you encrypt yourself.";
+
+/// Banner used when the sysop has not set one.
+pub const DEFAULT_BANNER: &str = "A quiet place.";
+/// Rules used when the sysop has not set any.
+pub const DEFAULT_RULES: &str = "Be decent to the people here.\n\
+No spam, scams or harassment.\n\
+Do not share what other members say outside the board.";
+
+/// Field labels.
+pub const LABEL_HANDLE: &str = "Handle you would like";
+/// See [`LABEL_HANDLE`].
+pub const LABEL_ABOUT: &str = "A line about yourself";
+/// See [`LABEL_HANDLE`].
+pub const LABEL_CODE: &str = "Invite code";
+
+/// Form results. Each says plainly that nothing was stored or sent, because nothing was.
+pub const REQUEST_INVITE_UNAVAILABLE: &str =
+    "Invite requests are not open yet. Nothing you typed was stored or sent.";
+/// See [`REQUEST_INVITE_UNAVAILABLE`].
+pub const REDEEM_INVITE_UNAVAILABLE: &str =
+    "Invite codes cannot be redeemed yet. Your code was not checked, stored or sent.";
+/// See [`REQUEST_INVITE_UNAVAILABLE`].
+pub const APPLY_UNAVAILABLE: &str =
+    "Applications are not open yet. Nothing you typed was stored or sent.";
+/// See [`REQUEST_INVITE_UNAVAILABLE`].
+pub const CREATE_ACCOUNT_UNAVAILABLE: &str =
+    "Account creation is not open yet. Nothing you typed was stored or sent.";
+
+/// Validation messages. They depend only on what was typed, never on who is a member, so they
+/// cannot tell a member from a stranger.
+pub const ERR_EMPTY: &str = "Please fill in every field.";
+/// See [`ERR_EMPTY`].
+pub const ERR_HANDLE_TOO_SHORT: &str = "A handle needs at least 2 characters.";
+/// See [`ERR_EMPTY`].
+pub const ERR_HANDLE_TOO_LONG: &str = "A handle can have at most 24 characters.";
+/// See [`ERR_EMPTY`].
+pub const ERR_HANDLE_CHARS: &str =
+    "A handle may use letters, digits, _ and -, and must start with a letter or digit.";
+
+/// Shown when a connection has used up its form submissions.
+pub const ERR_TOO_MANY: &str = "Too many attempts on this connection. Goodbye.";

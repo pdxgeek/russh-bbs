@@ -19,18 +19,25 @@ use std::sync::Arc;
 use russh::server::{Auth, Handler, Msg, PublicKeyOffer, Session, VerifiedPublicKey};
 use russh::{Channel, ChannelId, ChannelOpenFailure, Pty};
 use russh_bbs_core::access::{Access, MemberDirectory, decide_access};
+use russh_bbs_core::waiting_room::{RoomConfig, Verdict, WaitingRoom, WaitingRoomSource};
 use tokio::sync::oneshot;
+use tokio::time::timeout;
 use tracing::{debug, info, warn};
 
 use super::error::SessionError;
 use super::host_key::fingerprint_of;
 use super::registry::SessionGuard;
 use super::screen::Screen;
-use super::terminal::{Key, PtySize, parse_keys};
+use super::terminal::{PtySize, parse_keys};
+use crate::waiting_room::Throttle;
 
 /// Session channels one connection may hold open at once. OpenSSH multiplexing and refused
 /// probes need more than one; a stranger does not need many.
 const MAX_SESSION_CHANNELS: usize = 4;
+
+/// How long a new shell waits for the waiting-room settings before using the built-in
+/// defaults. A slow store must not hold a stranger's screen hostage.
+const ROOM_CONFIG_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(2);
 
 /// Handler for one client connection.
 pub(crate) struct ClientHandler<D> {
@@ -45,6 +52,8 @@ pub(crate) struct ClientHandler<D> {
     shell_channel: Option<ChannelId>,
     pty: Option<PtySize>,
     screen: Option<Screen>,
+    throttle: Arc<Throttle>,
+    max_form_submissions: u32,
 }
 
 impl<D> ClientHandler<D> {
@@ -53,6 +62,8 @@ impl<D> ClientHandler<D> {
         peer: Option<SocketAddr>,
         guard: SessionGuard,
         authenticated: oneshot::Sender<()>,
+        throttle: Arc<Throttle>,
+        max_form_submissions: u32,
     ) -> Self {
         Self {
             directory,
@@ -63,6 +74,8 @@ impl<D> ClientHandler<D> {
             shell_channel: None,
             pty: None,
             screen: None,
+            throttle,
+            max_form_submissions,
         }
     }
 
@@ -73,6 +86,26 @@ impl<D> ClientHandler<D> {
     /// Log a refused request by kind. Never log its payload (command, variable, path).
     fn refused(&self, kind: &'static str) {
         info!(session = ?self.guard.id(), peer = ?self.peer, kind, "request refused");
+    }
+
+    /// Build this session's waiting room from the board's settings. Any failure falls back to
+    /// the strictest built-in configuration (`invite` mode, default text), never a looser one.
+    async fn waiting_room(&self) -> WaitingRoom
+    where
+        D: WaitingRoomSource,
+    {
+        let config = match timeout(ROOM_CONFIG_TIMEOUT, self.directory.load_room_config()).await {
+            Ok(Ok(config)) => config,
+            Ok(Err(error)) => {
+                warn!(session = ?self.guard.id(), %error, "waiting-room settings unreadable; using defaults");
+                RoomConfig::default()
+            }
+            Err(_) => {
+                warn!(session = ?self.guard.id(), "waiting-room settings timed out; using defaults");
+                RoomConfig::default()
+            }
+        };
+        WaitingRoom::new(&config, self.max_form_submissions)
     }
 
     /// End the shell: restore the client's terminal, then close the channel.
@@ -92,7 +125,7 @@ impl<D> ClientHandler<D> {
     clippy::unused_async_trait_impl,
     reason = "russh's Handler methods return futures; most refusals resolve immediately"
 )]
-impl<D: MemberDirectory + 'static> Handler for ClientHandler<D> {
+impl<D: MemberDirectory + WaitingRoomSource + 'static> Handler for ClientHandler<D> {
     type Error = SessionError;
 
     // `none`, `password` and `keyboard-interactive` keep the trait defaults, which reject.
@@ -112,11 +145,22 @@ impl<D: MemberDirectory + 'static> Handler for ClientHandler<D> {
         _user: &str,
         key: VerifiedPublicKey<'_>,
     ) -> Result<Auth, Self::Error> {
-        // M1-C: per-key rate limiting plugs in here, before the decision.
         let Ok(fingerprint) = fingerprint_of(key.public_key) else {
             warn!(session = ?self.guard.id(), "could not fingerprint client key; rejecting");
             return Ok(Auth::reject());
         };
+        // Per-key limit, before the membership lookup and for every key alike, so a throttled
+        // reply cannot tell a member from a stranger. The client sees an ordinary refusal.
+        if let Verdict::Limited { retry_after } = self.throttle.admit_key(&fingerprint) {
+            info!(
+                session = ?self.guard.id(),
+                peer = ?self.peer,
+                fingerprint = %fingerprint,
+                ?retry_after,
+                "key rate limit; rejecting"
+            );
+            return Ok(Auth::reject());
+        }
         let access = decide_access(&*self.directory, &fingerprint).await;
         info!(
             session = ?self.guard.id(),
@@ -262,7 +306,8 @@ impl<D: MemberDirectory + 'static> Handler for ClientHandler<D> {
             return Ok(());
         }
         session.channel_success(channel)?;
-        let mut screen = Screen::new(size)?;
+        let room = self.waiting_room().await;
+        let mut screen = Screen::new(size, room)?;
         session.data(channel, screen.enter()?)?;
         self.screen = Some(screen);
         self.guard.set_shell_open(true);
@@ -296,10 +341,15 @@ impl<D: MemberDirectory + 'static> Handler for ClientHandler<D> {
         data: &[u8],
         session: &mut Session,
     ) -> Result<(), Self::Error> {
-        if !self.is_shell_channel(channel) || self.screen.is_none() {
+        if !self.is_shell_channel(channel) {
             return Ok(());
         }
-        if parse_keys(data).into_iter().any(Key::is_quit) {
+        let Some(screen) = self.screen.as_mut() else {
+            return Ok(());
+        };
+        let update = screen.keys(&parse_keys(data))?;
+        session.data(channel, update.bytes)?;
+        if update.disconnect {
             self.finish(channel, session)?;
         }
         Ok(())

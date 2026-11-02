@@ -5,6 +5,7 @@ pub mod access;
 pub mod icons;
 pub mod sanitize;
 pub mod store;
+pub mod waiting_room;
 
 /// The crate version, used by front ends to report what they were built against.
 #[must_use]

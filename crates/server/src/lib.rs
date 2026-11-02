@@ -2,3 +2,4 @@
 //! everything is testable. SFTP and the full TUI arrive in later slices.
 
 pub mod ssh;
+pub mod waiting_room;

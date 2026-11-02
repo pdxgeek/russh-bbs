@@ -19,15 +19,15 @@ use russh_bbs_core::access::Access;
 use russh_bbs_server::ssh::terminal::{MAX_COLS, MAX_ROWS, PtySize};
 use tokio::time::timeout;
 
-// ---- the placeholder screen ----
+// ---- the waiting-room screen ----
 
 #[tokio::test]
-async fn shell_shows_the_waiting_room_placeholder() {
+async fn shell_shows_the_waiting_room() {
     let t = start_server(fast_limits()).await;
     let (session, _) = login(t.addr()).await;
     let mut channel = open_shell(&session, 80, 24).await;
 
-    let screen = read_until(&mut channel, "disconnect.").await;
+    let screen = read_until(&mut channel, "Disconnect").await;
     assert!(screen.contains("Waiting"));
     assert!(screen.contains("\x1b[?1049h"), "uses the alternate screen");
     eventually(&t.server, |s| s.len() == 1 && s[0].shell_open).await;
@@ -39,7 +39,7 @@ async fn q_disconnects_cleanly_and_restores_the_terminal() {
     let t = start_server(fast_limits()).await;
     let (session, _) = login(t.addr()).await;
     let mut channel = open_shell(&session, 80, 24).await;
-    read_until(&mut channel, "disconnect.").await;
+    read_until(&mut channel, "Disconnect").await;
 
     channel.data_bytes(&b"q"[..]).await.unwrap();
 
@@ -60,7 +60,7 @@ async fn other_keys_do_not_disconnect() {
     let t = start_server(fast_limits()).await;
     let (session, _) = login(t.addr()).await;
     let mut channel = open_shell(&session, 80, 24).await;
-    read_until(&mut channel, "disconnect.").await;
+    read_until(&mut channel, "Disconnect").await;
 
     channel.data_bytes(&b"hello\x1b[A"[..]).await.unwrap();
     // Still alive: a following q is honored.
@@ -86,7 +86,7 @@ async fn window_change_updates_the_session_size_and_redraws() {
     let t = start_server(fast_limits()).await;
     let (session, _) = login(t.addr()).await;
     let mut channel = open_shell(&session, 80, 24).await;
-    read_until(&mut channel, "disconnect.").await;
+    read_until(&mut channel, "Disconnect").await;
 
     channel.window_change(150, 50, 0, 0).await.unwrap();
 
@@ -94,7 +94,7 @@ async fn window_change_updates_the_session_size_and_redraws() {
         s.first().and_then(|x| x.pty_size) == Some(PtySize::from_request(150, 50))
     })
     .await;
-    read_until(&mut channel, "disconnect.").await; // redrawn for the new size
+    read_until(&mut channel, "Disconnect").await; // redrawn for the new size
 }
 
 #[tokio::test]
@@ -102,7 +102,7 @@ async fn hostile_window_sizes_are_clamped_not_allocated() {
     let t = start_server(fast_limits()).await;
     let (session, _) = login(t.addr()).await;
     let mut channel = open_shell(&session, u32::MAX, u32::MAX).await;
-    read_until(&mut channel, "disconnect.").await;
+    read_until(&mut channel, "Disconnect").await;
     let max = PtySize::from_request(u32::from(MAX_COLS), u32::from(MAX_ROWS));
     eventually(&t.server, |s| {
         s.first().and_then(|x| x.pty_size) == Some(max)
@@ -131,7 +131,7 @@ async fn a_second_shell_on_the_same_channel_is_refused() {
     let t = start_server(fast_limits()).await;
     let (session, _) = login(t.addr()).await;
     let mut channel = open_shell(&session, 80, 24).await;
-    read_until(&mut channel, "disconnect.").await;
+    read_until(&mut channel, "Disconnect").await;
     channel.request_shell(true).await.unwrap();
     expect_reply(&mut channel, false).await;
 }
@@ -221,7 +221,7 @@ async fn refusals_leave_the_connection_usable() {
     let _ = session.tcpip_forward("127.0.0.1", 0).await;
 
     let mut channel = open_shell(&session, 80, 24).await;
-    read_until(&mut channel, "disconnect.").await;
+    read_until(&mut channel, "Disconnect").await;
 }
 
 #[tokio::test]
@@ -266,14 +266,14 @@ async fn pty_request_twice_is_refused() {
     assert_eq!(next_reply(&mut channel).await, Some(false));
 }
 
-// ---- the placeholder reveals nothing ----
+// ---- the waiting room reveals nothing ----
 
 #[tokio::test]
-async fn the_placeholder_names_no_members_boards_or_stats() {
+async fn the_waiting_room_names_no_members_boards_or_stats() {
     let t = start_server(fast_limits()).await;
     let (session, _) = login(t.addr()).await;
     let mut channel = open_shell(&session, 80, 24).await;
-    let screen = read_until(&mut channel, "disconnect.").await.to_lowercase();
+    let screen = read_until(&mut channel, "Disconnect").await.to_lowercase();
     for word in ["member list", "online", "board", "post", "caller", "users"] {
         assert!(!screen.contains(word), "screen leaks {word:?}: {screen:?}");
     }

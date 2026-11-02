@@ -1,0 +1,432 @@
+//! The waiting room as a state machine: pages, menu navigation, form input, and what to show.
+//!
+//! One [`WaitingRoom`] per SSH session. The front end feeds it [`RoomInput`]s and draws the
+//! [`View`] it returns; it holds no rule of its own. The room is built from a [`RoomConfig`]
+//! and a submission cap, and it never talks to a store: it cannot learn who is a member, so it
+//! cannot reveal it.
+//!
+//! **Text.** Banner and rules come from the sysop and typed field values come from a stranger.
+//! Both pass through the shared sanitizer ([`crate::sanitize`]) before they are stored here, so
+//! every string in a [`View`] is either fixed chrome or sanitized.
+//!
+//! **Forms are honest.** In M1 no invite, application or account can be created (that is M2),
+//! so a valid submission ends in a message saying nothing was stored or sent.
+
+use std::fmt;
+
+use super::screens::{self, Page, QUIT_KEY};
+use super::source::RoomConfig;
+use super::strings;
+use crate::sanitize::USERNAME_MAX_CHARS;
+use crate::sanitize::{MultiLine, SingleLine, UsernameError, sanitize_username};
+use crate::store::RegistrationMode;
+
+/// Longest banner kept, in characters.
+pub const BANNER_MAX_CHARS: usize = 1_000;
+/// Longest rules text kept, in characters.
+pub const RULES_MAX_CHARS: usize = 4_000;
+/// Longest free-text field, in characters.
+pub const LINE_MAX_CHARS: usize = 280;
+/// Longest invite code, in characters.
+pub const CODE_MAX_CHARS: usize = 64;
+/// Form submissions one session may make before it is disconnected (the default).
+pub const DEFAULT_MAX_SUBMISSIONS: u32 = 5;
+
+/// What the user did, as far as the room cares.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RoomInput {
+    /// A printable character.
+    Char(char),
+    /// Enter / Return.
+    Enter,
+    /// Backspace or Delete.
+    Backspace,
+    /// A lone Escape.
+    Escape,
+    /// Ctrl-C or Ctrl-D: leave from anywhere.
+    Quit,
+}
+
+/// What the front end should do after an input.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RoomEffect {
+    /// Redraw and keep going.
+    Stay,
+    /// Redraw once, then close the session.
+    Disconnect,
+}
+
+/// Whether a notice is good news or a problem.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NoticeKind {
+    /// Information, such as "not open yet".
+    Info,
+    /// A problem with what was typed.
+    Error,
+}
+
+/// A one-line result shown under a form. Always fixed chrome.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Notice {
+    /// Good or bad.
+    pub kind: NoticeKind,
+    /// The words.
+    pub text: &'static str,
+}
+
+/// One menu line, as drawn.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct MenuItemView {
+    /// The key to press.
+    pub key: char,
+    /// What it does.
+    pub label: &'static str,
+}
+
+/// One form field, as drawn.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FieldView {
+    /// The field's label (chrome).
+    pub label: &'static str,
+    /// What has been typed so far (sanitized).
+    pub value: String,
+    /// Whether keystrokes go here.
+    pub active: bool,
+}
+
+/// Everything the front end needs to draw the current page.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct View {
+    /// The product name (chrome).
+    pub title: &'static str,
+    /// The page heading (chrome).
+    pub heading: &'static str,
+    /// The sysop's banner lines (sanitized). Home only.
+    pub banner: Vec<String>,
+    /// Body text lines (sanitized). The rules page only.
+    pub body: Vec<String>,
+    /// A fixed note shown after the body (chrome).
+    pub note: Option<&'static str>,
+    /// Menu entries. Home only; the disconnect entry is appended by [`View::quit_key`].
+    pub menu: Vec<MenuItemView>,
+    /// Form fields. Form pages only.
+    pub fields: Vec<FieldView>,
+    /// The result of the last submission.
+    pub notice: Option<Notice>,
+    /// Key hints (chrome).
+    pub footer: &'static str,
+}
+
+impl View {
+    /// The key that disconnects from the home page.
+    #[must_use]
+    pub const fn quit_key() -> MenuItemView {
+        MenuItemView {
+            key: QUIT_KEY,
+            label: strings::MENU_QUIT,
+        }
+    }
+}
+
+/// How a field's text is limited and checked.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum FieldKind {
+    Handle,
+    Line,
+    Code,
+}
+
+impl FieldKind {
+    const fn max_chars(self) -> usize {
+        match self {
+            Self::Handle => USERNAME_MAX_CHARS,
+            Self::Line => LINE_MAX_CHARS,
+            Self::Code => CODE_MAX_CHARS,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct FieldSpec {
+    label: &'static str,
+    kind: FieldKind,
+}
+
+const HANDLE: FieldSpec = FieldSpec {
+    label: strings::LABEL_HANDLE,
+    kind: FieldKind::Handle,
+};
+const ABOUT: FieldSpec = FieldSpec {
+    label: strings::LABEL_ABOUT,
+    kind: FieldKind::Line,
+};
+const CODE: FieldSpec = FieldSpec {
+    label: strings::LABEL_CODE,
+    kind: FieldKind::Code,
+};
+
+fn fields_of(page: Page) -> &'static [FieldSpec] {
+    match page {
+        Page::Home | Page::Rules => &[],
+        Page::RequestInvite | Page::Apply => &[HANDLE, ABOUT],
+        Page::RedeemInvite => &[CODE, HANDLE],
+        Page::CreateAccount => &[HANDLE],
+    }
+}
+
+/// The honest "not available yet" message for a form page.
+fn unavailable(page: Page) -> &'static str {
+    match page {
+        Page::RequestInvite => strings::REQUEST_INVITE_UNAVAILABLE,
+        Page::RedeemInvite => strings::REDEEM_INVITE_UNAVAILABLE,
+        Page::Apply => strings::APPLY_UNAVAILABLE,
+        Page::CreateAccount => strings::CREATE_ACCOUNT_UNAVAILABLE,
+        // Not forms; never submitted.
+        Page::Home | Page::Rules => strings::ERR_EMPTY,
+    }
+}
+
+fn username_error(error: UsernameError) -> &'static str {
+    match error {
+        UsernameError::TooShort => strings::ERR_HANDLE_TOO_SHORT,
+        UsernameError::TooLong => strings::ERR_HANDLE_TOO_LONG,
+        UsernameError::DisallowedCharacter | UsernameError::BadFirstCharacter => {
+            strings::ERR_HANDLE_CHARS
+        }
+    }
+}
+
+/// One session's waiting room.
+pub struct WaitingRoom {
+    mode: RegistrationMode,
+    banner: Vec<String>,
+    rules: Vec<String>,
+    page: Page,
+    values: Vec<String>,
+    active: usize,
+    notice: Option<Notice>,
+    submissions: u32,
+    max_submissions: u32,
+}
+
+impl fmt::Debug for WaitingRoom {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Typed text is not logged.
+        f.debug_struct("WaitingRoom")
+            .field("mode", &self.mode)
+            .field("page", &self.page)
+            .field("submissions", &self.submissions)
+            .finish_non_exhaustive()
+    }
+}
+
+impl WaitingRoom {
+    /// Build a room for `config`, allowing `max_submissions` form submissions per session.
+    #[must_use]
+    pub fn new(config: &RoomConfig, max_submissions: u32) -> Self {
+        let banner = config.banner.as_deref().unwrap_or(strings::DEFAULT_BANNER);
+        let rules = config.rules.as_deref().unwrap_or(strings::DEFAULT_RULES);
+        Self {
+            mode: config.mode,
+            banner: lines_of(
+                &MultiLine::new(BANNER_MAX_CHARS)
+                    .sanitize(banner)
+                    .into_string(),
+            ),
+            rules: lines_of(
+                &MultiLine::new(RULES_MAX_CHARS)
+                    .sanitize(rules)
+                    .into_string(),
+            ),
+            page: Page::Home,
+            values: Vec::new(),
+            active: 0,
+            notice: None,
+            submissions: 0,
+            max_submissions,
+        }
+    }
+
+    /// The registration mode this room was built for.
+    #[must_use]
+    pub fn mode(&self) -> RegistrationMode {
+        self.mode
+    }
+
+    /// The page being shown.
+    #[must_use]
+    pub fn page(&self) -> Page {
+        self.page
+    }
+
+    /// Apply one input.
+    pub fn input(&mut self, input: RoomInput) -> RoomEffect {
+        if input == RoomInput::Quit {
+            return RoomEffect::Disconnect;
+        }
+        match self.page {
+            Page::Home => self.home_input(input),
+            Page::Rules => {
+                if matches!(input, RoomInput::Escape | RoomInput::Enter) {
+                    self.go(Page::Home);
+                }
+                RoomEffect::Stay
+            }
+            _ => self.form_input(input),
+        }
+    }
+
+    fn home_input(&mut self, input: RoomInput) -> RoomEffect {
+        let RoomInput::Char(key) = input else {
+            return RoomEffect::Stay;
+        };
+        if key.eq_ignore_ascii_case(&QUIT_KEY) {
+            return RoomEffect::Disconnect;
+        }
+        if let Some(entry) = screens::entry_for(self.mode, key) {
+            self.go(entry.page);
+        }
+        RoomEffect::Stay
+    }
+
+    fn form_input(&mut self, input: RoomInput) -> RoomEffect {
+        match input {
+            RoomInput::Escape => self.go(Page::Home),
+            RoomInput::Char(c) => self.type_char(c),
+            RoomInput::Backspace => {
+                if let Some(value) = self.values.get_mut(self.active) {
+                    value.pop();
+                }
+            }
+            RoomInput::Enter => return self.enter(),
+            RoomInput::Quit => return RoomEffect::Disconnect,
+        }
+        RoomEffect::Stay
+    }
+
+    fn type_char(&mut self, c: char) {
+        let Some(spec) = fields_of(self.page).get(self.active) else {
+            return;
+        };
+        let Some(value) = self.values.get_mut(self.active) else {
+            return;
+        };
+        // Re-sanitize the whole buffer on each key: it enforces the length cap and keeps the
+        // buffer free of controls, escapes and private-use characters whatever the client sent.
+        value.push(c);
+        *value = SingleLine::new(spec.kind.max_chars())
+            .sanitize(value)
+            .into_string();
+    }
+
+    fn enter(&mut self) -> RoomEffect {
+        let last = fields_of(self.page).len().saturating_sub(1);
+        if self.active < last {
+            self.active += 1;
+            return RoomEffect::Stay;
+        }
+        self.submit()
+    }
+
+    fn submit(&mut self) -> RoomEffect {
+        self.submissions = self.submissions.saturating_add(1);
+        if self.submissions > self.max_submissions {
+            self.notice = Some(Notice {
+                kind: NoticeKind::Error,
+                text: strings::ERR_TOO_MANY,
+            });
+            return RoomEffect::Disconnect;
+        }
+        self.active = 0;
+        self.notice = Some(match self.validate() {
+            Ok(()) => {
+                // Nothing is stored or sent in M1; say so, and do not keep what was typed.
+                self.clear_form();
+                Notice {
+                    kind: NoticeKind::Info,
+                    text: unavailable(self.page),
+                }
+            }
+            Err(text) => Notice {
+                kind: NoticeKind::Error,
+                text,
+            },
+        });
+        RoomEffect::Stay
+    }
+
+    /// Check what was typed. The checks depend only on the text, never on the board's members.
+    fn validate(&self) -> Result<(), &'static str> {
+        for (spec, value) in fields_of(self.page).iter().zip(&self.values) {
+            if value.trim().is_empty() {
+                return Err(strings::ERR_EMPTY);
+            }
+            if spec.kind == FieldKind::Handle {
+                sanitize_username(value).map_err(username_error)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn go(&mut self, page: Page) {
+        self.page = page;
+        self.notice = None;
+        self.clear_form();
+    }
+
+    fn clear_form(&mut self) {
+        self.values = vec![String::new(); fields_of(self.page).len()];
+        self.active = 0;
+    }
+
+    /// What to draw for the current page.
+    #[must_use]
+    pub fn view(&self) -> View {
+        let mut view = View {
+            title: strings::TITLE,
+            heading: self.page.heading(),
+            banner: Vec::new(),
+            body: Vec::new(),
+            note: None,
+            menu: Vec::new(),
+            fields: Vec::new(),
+            notice: self.notice,
+            footer: strings::FOOTER_PAGE,
+        };
+        match self.page {
+            Page::Home => {
+                view.banner.clone_from(&self.banner);
+                view.menu = screens::menu(self.mode)
+                    .iter()
+                    .map(|entry| MenuItemView {
+                        key: entry.key,
+                        label: entry.label,
+                    })
+                    .collect();
+                view.footer = strings::FOOTER_HOME;
+            }
+            Page::Rules => {
+                view.body.clone_from(&self.rules);
+                view.note = Some(strings::PRIVACY_NOTE);
+            }
+            _ => {
+                view.fields = fields_of(self.page)
+                    .iter()
+                    .zip(&self.values)
+                    .enumerate()
+                    .map(|(index, (spec, value))| FieldView {
+                        label: spec.label,
+                        value: value.clone(),
+                        active: index == self.active,
+                    })
+                    .collect();
+                view.footer = strings::FOOTER_FORM;
+            }
+        }
+        view
+    }
+}
+
+fn lines_of(text: &str) -> Vec<String> {
+    text.lines().map(str::to_owned).collect()
+}

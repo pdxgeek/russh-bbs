@@ -208,6 +208,10 @@ pub enum SettingKey {
     RegistrationMode,
     /// Set to `true` once the founder claim has been used. Written by M1-D.
     FounderClaimed,
+    /// The sysop's waiting-room banner text. Raw; sanitized when shown.
+    WaitingRoomBanner,
+    /// The sysop's waiting-room rules text. Raw; sanitized when shown.
+    WaitingRoomRules,
 }
 
 impl SettingKey {
@@ -217,6 +221,8 @@ impl SettingKey {
         match self {
             Self::RegistrationMode => "registration_mode",
             Self::FounderClaimed => "founder_claimed",
+            Self::WaitingRoomBanner => "waiting_room_banner",
+            Self::WaitingRoomRules => "waiting_room_rules",
         }
     }
 }

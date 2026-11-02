@@ -8,6 +8,7 @@ use std::time::Duration;
 
 use anyhow::Context as _;
 use clap::Parser;
+use russh_bbs_core::waiting_room::RatePolicy;
 use russh_bbs_server::ssh::{HostKey, Limits, ServerConfig, SshServer};
 use russh_bbs_store::SqliteStore;
 use tracing::info;
@@ -50,6 +51,26 @@ struct Cli {
     /// Maximum concurrent connections.
     #[arg(long, env = "RUSSH_BBS_MAX_CONNECTIONS", default_value_t = 256)]
     max_connections: usize,
+
+    /// New connections allowed back to back from one network (IPv4 address or IPv6 /64).
+    #[arg(long, env = "RUSSH_BBS_IP_BURST", default_value_t = 10)]
+    ip_burst: u32,
+
+    /// Seconds to earn back one connection for a network.
+    #[arg(long, env = "RUSSH_BBS_IP_INTERVAL_SECS", default_value_t = 2)]
+    ip_interval_secs: u64,
+
+    /// Authentication attempts allowed back to back for one key.
+    #[arg(long, env = "RUSSH_BBS_KEY_BURST", default_value_t = 5)]
+    key_burst: u32,
+
+    /// Seconds to earn back one authentication attempt for a key.
+    #[arg(long, env = "RUSSH_BBS_KEY_INTERVAL_SECS", default_value_t = 10)]
+    key_interval_secs: u64,
+
+    /// Waiting-room form submissions per session before it is disconnected.
+    #[arg(long, env = "RUSSH_BBS_MAX_FORM_SUBMISSIONS", default_value_t = 5)]
+    max_form_submissions: u32,
 }
 
 impl Cli {
@@ -58,6 +79,9 @@ impl Cli {
             auth_timeout: Duration::from_secs(self.auth_timeout_secs),
             idle_timeout: Duration::from_secs(self.idle_timeout_secs),
             max_connections: self.max_connections,
+            ip_rate: RatePolicy::new(self.ip_burst, Duration::from_secs(self.ip_interval_secs)),
+            key_rate: RatePolicy::new(self.key_burst, Duration::from_secs(self.key_interval_secs)),
+            max_form_submissions: self.max_form_submissions,
             ..Limits::default()
         }
     }

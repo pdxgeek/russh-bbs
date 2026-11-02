@@ -2,8 +2,8 @@
 //! hands each connection to a [`ClientHandler`].
 //!
 //! We run our own accept loop instead of russh's `run_on_address` so we can (a) cap concurrent
-//! connections, (b) enforce an authentication deadline that russh does not provide, and (c) have
-//! one place to add per-IP rate limiting in M1-C.
+//! connections, (b) enforce an authentication deadline that russh does not provide, and (c) rate
+//! limit each network before any SSH work is done (M1-C).
 
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -12,6 +12,7 @@ use std::time::Duration;
 use russh::server::{Config as RusshConfig, run_stream};
 use russh::{Disconnect, MethodKind, MethodSet, SshId};
 use russh_bbs_core::access::{Fingerprint, MemberDirectory};
+use russh_bbs_core::waiting_room::{SystemClock, Verdict, WaitingRoomSource};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::{OwnedSemaphorePermit, Semaphore, oneshot, watch};
 use tokio::task::{JoinHandle, JoinSet};
@@ -23,6 +24,7 @@ use super::handler::ClientHandler;
 use super::host_key::HostKey;
 use super::limits::Limits;
 use super::registry::{SessionRegistry, SessionSnapshot};
+use crate::waiting_room::Throttle;
 
 /// How long a disconnected connection may take to wind down before we stop waiting for it.
 const DISCONNECT_GRACE: Duration = Duration::from_secs(5);
@@ -57,7 +59,7 @@ impl SshServer {
         directory: Arc<D>,
     ) -> Result<Self, ServerError>
     where
-        D: MemberDirectory + 'static,
+        D: MemberDirectory + WaitingRoomSource + 'static,
     {
         let listener =
             TcpListener::bind(config.listen)
@@ -80,6 +82,12 @@ impl SshServer {
             directory,
             registry: Arc::clone(&registry),
             permits: Arc::new(Semaphore::new(config.limits.max_connections)),
+            throttle: Arc::new(Throttle::new(
+                config.limits.ip_rate,
+                config.limits.key_rate,
+                config.limits.max_tracked_sources,
+                &SystemClock::new(),
+            )),
         };
         let task = tokio::spawn(accept.run(stopped));
         info!(%local_addr, host_key = %host_key.fingerprint(), "ssh server listening");
@@ -146,9 +154,10 @@ struct AcceptLoop<D> {
     directory: Arc<D>,
     registry: Arc<SessionRegistry>,
     permits: Arc<Semaphore>,
+    throttle: Arc<Throttle>,
 }
 
-impl<D: MemberDirectory + 'static> AcceptLoop<D> {
+impl<D: MemberDirectory + WaitingRoomSource + 'static> AcceptLoop<D> {
     async fn run(self, mut stopped: watch::Receiver<bool>) {
         // The JoinSet owns every connection task; dropping it on exit aborts them all.
         let mut connections = JoinSet::new();
@@ -177,7 +186,13 @@ impl<D: MemberDirectory + 'static> AcceptLoop<D> {
         peer: SocketAddr,
         stopped: &watch::Receiver<bool>,
     ) {
-        // M1-C: per-IP rate limiting plugs in here, before any handler or task exists.
+        // Per-network limit, before any handler or task exists. A dropped connection costs us
+        // one accept and nothing else; the client sees the connection close. Logged at debug
+        // so a flood does not become a log flood.
+        if let Verdict::Limited { retry_after } = self.throttle.admit_connection(peer.ip()) {
+            debug!(%peer, ?retry_after, "connection rate limit; dropping connection");
+            return;
+        }
         let Ok(permit) = Arc::clone(&self.permits).try_acquire_owned() else {
             warn!(%peer, "connection limit reached; dropping connection");
             return;
@@ -188,6 +203,8 @@ impl<D: MemberDirectory + 'static> AcceptLoop<D> {
             auth_timeout: self.limits.auth_timeout,
             directory: Arc::clone(&self.directory),
             registry: Arc::clone(&self.registry),
+            throttle: Arc::clone(&self.throttle),
+            max_form_submissions: self.limits.max_form_submissions,
             stopped: stopped.clone(),
             _permit: permit,
         };
@@ -201,12 +218,14 @@ struct Connection<D> {
     auth_timeout: Duration,
     directory: Arc<D>,
     registry: Arc<SessionRegistry>,
+    throttle: Arc<Throttle>,
+    max_form_submissions: u32,
     stopped: watch::Receiver<bool>,
     /// Released when the connection ends, freeing a slot under `max_connections`.
     _permit: OwnedSemaphorePermit,
 }
 
-impl<D: MemberDirectory + 'static> Connection<D> {
+impl<D: MemberDirectory + WaitingRoomSource + 'static> Connection<D> {
     async fn serve(mut self, stream: TcpStream, peer: SocketAddr) {
         let deadline = Instant::now() + self.auth_timeout;
         let (authenticated_tx, authenticated_rx) = oneshot::channel();
@@ -216,6 +235,8 @@ impl<D: MemberDirectory + 'static> Connection<D> {
             Some(peer),
             guard,
             authenticated_tx,
+            Arc::clone(&self.throttle),
+            self.max_form_submissions,
         );
 
         let started = timeout_at(
