@@ -180,7 +180,8 @@ async fn the_full_claim_story() {
     assert!(!after.contains(&token));
     assert_eq!(access_of(&rig, &key_a).await, Access::Member);
     // The claim wrote its audit row in its transaction (M2-C): one row, no token in it.
-    let rows = rig.store.page(&AuditQuery::default()).await.unwrap();
+    let rows =
+        russh_bbs_core::audit::known_events(rig.store.page(&AuditQuery::default()).await.unwrap());
     assert_eq!(rows.len(), 1, "{rows:?}");
     assert_eq!(rows[0].event.action, Action::FounderClaimed);
     assert!(!format!("{rows:?}").contains(&token));
@@ -202,7 +203,8 @@ async fn the_full_claim_story() {
     assert_eq!(access_of(&rig, &key_b).await, Access::Restricted);
     // A refused claim writes no audit row.
     assert_eq!(
-        rig.store.page(&AuditQuery::default()).await.unwrap().len(),
+        russh_bbs_core::audit::known_events(rig.store.page(&AuditQuery::default()).await.unwrap())
+            .len(),
         1
     );
 

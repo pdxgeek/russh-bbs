@@ -300,7 +300,7 @@ async fn profile_rows<S: russh_bbs_core::audit::AuditStore>(
         action: Some(russh_bbs_core::audit::Action::ProfileEdited),
         ..russh_bbs_core::audit::AuditQuery::default()
     };
-    store.page(&query).await.unwrap()
+    russh_bbs_core::audit::known_events(store.page(&query).await.unwrap())
 }
 
 /// The rank rule for staff edits reads a target's standing (D60 (6), D77): the top global rank
@@ -324,8 +324,15 @@ pub(crate) async fn standing_is_the_top_global_rank_and_none_for_inactive_accoun
     let pending = account(store, "pat", AccountState::Pending).await;
 
     let rank = |id: AccountId| async move { store.standing(id).await.unwrap() };
-    let (m, c, s) = (rank(member.id).await, rank(cosysop.id).await, rank(sysop.id).await);
-    assert!(m.is_some() && c.is_some() && s.is_some(), "{m:?} {c:?} {s:?}");
+    let (m, c, s) = (
+        rank(member.id).await,
+        rank(cosysop.id).await,
+        rank(sysop.id).await,
+    );
+    assert!(
+        m.is_some() && c.is_some() && s.is_some(),
+        "{m:?} {c:?} {s:?}"
+    );
     assert!(m < c && c < s, "member {m:?} < cosysop {c:?} < sysop {s:?}");
     // Not active: it holds only the waiting room's role, which ranks below a member.
     assert!(rank(pending.id).await < m);

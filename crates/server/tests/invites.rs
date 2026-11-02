@@ -329,7 +329,8 @@ async fn a_member_invites_a_stranger_who_redeems_and_becomes_a_member() {
         .account;
     let node = tree.iter().find(|n| n.account == account.id).unwrap();
     assert_eq!(node.invited_by, Some(founder_id));
-    let log = rig.store.page(&AuditQuery::default()).await.unwrap();
+    let log =
+        russh_bbs_core::audit::known_events(rig.store.page(&AuditQuery::default()).await.unwrap());
     assert!(log.iter().any(|r| r.event.action == Action::InviteCreated));
     assert!(log.iter().any(|r| r.event.action == Action::InviteRedeemed));
 
