@@ -1,0 +1,56 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT a.id AS \"id!\", a.username AS \"username!\",\n                      COALESCE(p.display_name, '') AS \"display_name!\",\n                      COALESCE(p.pronouns, '') AS \"pronouns!\",\n                      COALESCE(p.location, '') AS \"location!\",\n                      COALESCE(p.about, '') AS \"about!\",\n                      COALESCE(p.website, '') AS \"website!\"\n               FROM accounts a LEFT JOIN profiles p ON p.account_id = a.id\n               WHERE a.id = ? AND a.state = 'active'",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "username!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "display_name!",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "pronouns!",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "location!",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "about!",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "website!",
+        "ordinal": 6,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "3366dfdae54f7fd266b5b3eded0dd0b00ff01b2b9477868c69acab6f77dd3bca"
+}

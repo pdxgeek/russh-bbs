@@ -96,6 +96,9 @@ pub const SAVED: &str = "Saved.";
 /// Shown when the account no longer holds `account.edit_settings`: the change applies on the
 /// next action, so the page the person was on closes instead of pretending to save.
 pub const NOT_PERMITTED: &str = "You are not allowed to change these settings.";
+/// Shown on the menu when a members screen closes because a permission it needed is gone
+/// (M2-F): the change applies on the next action.
+pub const MEMBERS_NOT_PERMITTED: &str = "You are not allowed to do that.";
 /// Notice: tier chosen.
 pub const CHOSE_NERD: &str = "Icons set to Nerd Font.";
 /// Notice: tier chosen.

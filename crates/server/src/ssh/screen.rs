@@ -34,13 +34,17 @@ use russh_bbs_core::access::Snapshot;
 use russh_bbs_core::founder::{ClaimEffect, ClaimForm, ClaimInput};
 use russh_bbs_core::icons::Tier;
 use russh_bbs_core::menu::MenuPage;
+use russh_bbs_core::profiles::{
+    Request as MembersRequest, Response as MembersResponse, ScreenView,
+};
 use russh_bbs_core::terminal_settings::{MemberEffect, MemberFlow, MemberInput, TerminalSettings};
 use russh_bbs_core::waiting_room::{RoomEffect, RoomInput, View, WaitingRoom};
 
 use super::terminal::{Key, PtySize, RenderCap};
+use crate::members;
 use crate::settings::{self, Look};
 use crate::ui::Ui;
-use crate::ui::classic::{self, MENU_MARKERS, MenuScreen};
+use crate::ui::classic::{self, ContentScreen, MENU_MARKERS, MenuScreen};
 use crate::waiting_room::render;
 
 /// Bytes the backend has written and the handler has not yet sent. The backend owns one handle
@@ -79,6 +83,23 @@ pub(super) struct KeyEffects {
     pub(super) claim_token: Option<String>,
     /// Terminal settings the member changed. The session stores them.
     pub(super) save_settings: Option<TerminalSettings>,
+    /// A members request (list page, profile, save) the screen is waiting on. The session runs
+    /// it against the store and gives the answer to [`Screen::deliver_members`].
+    pub(super) members_request: Option<MembersRequest>,
+    /// Keys held back because `members_request` has to be answered first. The session applies
+    /// them after delivering the answer, so a fast typist's next key is not lost.
+    pub(super) held_back: Vec<Key>,
+}
+
+impl KeyEffects {
+    /// Fold in what a later batch asked for.
+    pub(super) fn absorb(&mut self, later: Self) {
+        self.disconnect |= later.disconnect;
+        self.claim_token = later.claim_token.or(self.claim_token.take());
+        self.save_settings = later.save_settings.or(self.save_settings.take());
+        self.members_request = later.members_request;
+        self.held_back = later.held_back;
+    }
 }
 
 /// What a session is looking at.
@@ -104,6 +125,14 @@ impl Content {
     fn menu_page(&self) -> Option<MenuPage> {
         match self {
             Self::Member(flow) => flow.menu_page(),
+            Self::Room(_) | Self::Claim(_) => None,
+        }
+    }
+
+    /// The members list, a profile or the profile form, while a member is at one.
+    fn members_view(&self) -> Option<ScreenView> {
+        match self {
+            Self::Member(flow) => flow.members_view(),
             Self::Room(_) | Self::Claim(_) => None,
         }
     }
@@ -204,7 +233,12 @@ impl Screen {
                 }
             }
             Content::Member(flow) => {
-                for input in keys.iter().copied().filter_map(member_input) {
+                for (index, input) in keys
+                    .iter()
+                    .copied()
+                    .enumerate()
+                    .filter_map(|(index, key)| member_input(key).map(|input| (index, input)))
+                {
                     match flow.input(input) {
                         MemberEffect::Stay => {}
                         MemberEffect::Save(settings) => effects.save_settings = Some(settings),
@@ -212,6 +246,13 @@ impl Screen {
                             effects.disconnect = true;
                             break;
                         }
+                    }
+                    // A members screen that needs the store stops the batch: keys after it
+                    // would act on a list that is about to be replaced.
+                    if let Some(request) = flow.take_members_request() {
+                        effects.members_request = Some(request);
+                        effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
+                        break;
                     }
                 }
             }
@@ -238,6 +279,15 @@ impl Screen {
         if let Content::Member(flow) = &mut self.content {
             flow.set_access(access);
         }
+    }
+
+    /// The answer to the members request taken from [`KeyEffects`]. The screen shows it on the
+    /// next render.
+    pub(super) fn deliver_members(&mut self, response: MembersResponse) {
+        if let Content::Member(flow) = &mut self.content {
+            flow.deliver_members(response);
+        }
+        self.dirty = true;
     }
 
     /// The submitted token failed. The screen shows the one generic message on the next render;
@@ -334,9 +384,27 @@ impl Screen {
         let view = self.content.view();
         let look = self.content.look();
         let menu = self.content.menu_page();
+        let members_view = self.content.members_view();
         let tier = self.content.tier();
         let ui = &self.ui;
         self.terminal.draw(|frame| match (look, &menu) {
+            // A members screen: the same classic layout and status row, with its own lines.
+            (Some(look), None) if members_view.is_some() => {
+                if let Some(screen) = &members_view {
+                    let width =
+                        usize::from(frame.area().width.min(settings::MAX_WIDTH)).saturating_sub(2);
+                    classic::render_content(
+                        frame,
+                        ContentScreen {
+                            strings: ui.strings(),
+                            lines: members::lines(screen, ui.strings(), look, width),
+                            look,
+                            tier,
+                            markers: &MENU_MARKERS,
+                        },
+                    );
+                }
+            }
             // The main menu: the classic hotkey layout, with the reserved status row.
             (Some(look), Some(page)) => classic::render(
                 frame,

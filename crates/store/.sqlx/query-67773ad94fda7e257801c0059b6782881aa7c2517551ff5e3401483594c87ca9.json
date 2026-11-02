@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO profiles (account_id, display_name, pronouns, location, about, website)\n             VALUES ($1, $2, $3, $4, $5, $6)\n             ON CONFLICT (account_id) DO UPDATE SET\n                 display_name = excluded.display_name,\n                 pronouns     = excluded.pronouns,\n                 location     = excluded.location,\n                 about        = excluded.about,\n                 website      = excluded.website,\n                 updated_at   = extract(epoch FROM now())::bigint",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "67773ad94fda7e257801c0059b6782881aa7c2517551ff5e3401483594c87ca9"
+}

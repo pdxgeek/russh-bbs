@@ -146,6 +146,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         3,
         "30d33c5c10004f05324ac2943ad60731fc2d2779a11faa408b3eda531081b5b90148958a1a603a2c94521b21ab0b6a64",
     ),
+    (
+        5,
+        "e3af2b2e1262291ab3dee3895958b454bea8b70a27b980a12b23caea35ef22055bb6dc92843281d81d021b60fd5e4555",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {
@@ -205,6 +209,7 @@ async fn a_fresh_database_gets_every_migration_and_only_these_tables() {
             "group_closure",
             "group_member",
             "member_group",
+            "profiles",
             "role",
             "role_permission",
             "settings",
@@ -262,7 +267,7 @@ async fn an_m1_database_gets_the_access_migration_and_a_sysop_grant() {
             .fetch_all(store.pool())
             .await
             .unwrap();
-    assert_eq!(versions, [1, 2, 3]);
+    assert_eq!(versions, [1, 2, 3, 5]);
 }
 
 #[tokio::test]
