@@ -46,7 +46,7 @@ A slice with an unmet dependency is not claimable.
 | FIX-M1-L8 "Pause" is stored but changes no output (QA M1 L8) | `crates/server/src/settings`, `crates/core/src/terminal_settings` | M2-A | Open | Wired by the M2-A pager; until then keep the screen text honest |
 | FIX-M1-L9 `verify-ca` also checks the host name (QA M1 L9) | `docs/config.md` | none | In review ([PR #36](https://github.com/pdxgeek/russh-bbs/pull/36)) | Document the difference (rustls behaves like `verify-full`); safe because stricter |
 | FIX-M1-L10 Memory not returned after a flood: RSS 354-455 MB vs 22 MB baseline on the musl allocator (QA M1 L10) | `Dockerfile`, `crates/server/Cargo.toml` | FIX-M1-1, FIX-M1-2 | In review ([PR #36](https://github.com/pdxgeek/russh-bbs/pull/36)) | Measure another allocator in the release image after the flood fix; record the numbers |
-| FIX-REL-1 Build the arm64 image without compiling Rust under QEMU (v0.1.0 publish run 41414781113 ran 2+ hours) | `Dockerfile`, `.dockerignore`, `.github/workflows/publish-image.yml`, `docs/deploy.md` (release/build section), D66 | FIX-M1-2 | Claimed | `fix/rel-arm64-cross` |
+| FIX-REL-1 Build the arm64 image without compiling Rust under QEMU (v0.1.0 publish run 41414781113 ran 2+ hours) | `Dockerfile`, `.dockerignore`, `.github/workflows/publish-image.yml`, `docs/deploy.md` (release/build section), D66 | FIX-M1-2 | In review (PR link below) | `fix/rel-arm64-cross`, D66. `container-build.yml` (other slice) still has a now-unused QEMU step and builds arm64 on PRs; remove the QEMU step there. `docs/features.md` container row still says the arm64 image and in-Docker builder stage are unverified, which stays true until a runner builds it. |
 
 ### M2: Invites and members
 

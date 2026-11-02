@@ -3,6 +3,8 @@ name: Publish image
 # Publishes the container image to GHCR on version tags only (D25, D46). Never on pull requests
 # or pushes to main. `workflow_dispatch` is a DRY RUN: it builds both architectures exactly as
 # a release would and pushes nothing (no registry login, `push` is false).
+# Both architectures are cross-compiled on the amd64 runner by the Dockerfile (zig, D66); nothing
+# runs under emulation, so a release takes minutes, not hours.
 on:
   push:
     tags:
@@ -15,6 +17,9 @@ permissions: {}
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # A release must not hang for hours (the QEMU build ran past two). The cross build takes
+    # minutes; 45 leaves room for a cold cache and a slow registry, and fails loudly past that.
+    timeout-minutes: 45
     permissions:
       contents: read
       packages: write
@@ -22,8 +27,8 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
-      # amd64 + arm64. arm64 is built under QEMU emulation, which is slow but needs no extra runners.
-      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
+      # No QEMU: the Dockerfile compiles for arm64 on the runner's own architecture and its
+      # final stage has no RUN, so nothing executes an arm64 binary during the build (D66).
       - uses: docker/setup-buildx-action@f7ce87c1d6bead3e36075b2ce75da1f6cc28aaca # v3.9.0
       # Only a tag push logs in; a dry run never holds a registry credential.
       - if: github.ref_type == 'tag'

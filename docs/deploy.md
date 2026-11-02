@@ -29,19 +29,26 @@ docker run -d --name bbs -p 2222:2222 -v bbs-data:/data russh-bbs
 
 With compose, use [`compose.yaml`](../compose.yaml): one service, one named volume (`bbs-data`), port 2222. It points at the published image; for a local build, uncomment `build: .` and comment out `image:`.
 
+### How the image is built
+
+`docker buildx build --platform linux/amd64,linux/arm64 .` (what the release workflow runs) compiles on the **build** machine for each target: the `build` stage is pinned to the build platform and cross-compiles with `cargo-zigbuild` and zig (D66), so the arm64 image costs about the same as the amd64 one and never runs under QEMU. The final stage only copies the binary and `/data` into `scratch`. A plain `docker build .` on an arm64 host builds an arm64 image the same way.
+
 ### Building behind a TLS-intercepting proxy
 
 The builder stage downloads the Rust toolchain (rust-lang.org) and crates (crates.io) over HTTPS. A proxy that re-signs TLS makes those downloads fail with `invalid peer certificate: UnknownIssuer`. Two ways out:
 
 1. **Give the builder the proxy's CA.** Mount or `COPY` the CA into the builder image and point `SSL_CERT_FILE` / `CARGO_HTTP_CAINFO` at it (this needs a Dockerfile change on your side; the project's Dockerfile does not ship one).
-2. **Build the static musl binary on the host and package it** with the same final stage:
+2. **Build the static musl binary on the host and package it** with the same final stage. The image uses `cargo-zigbuild` with zig (D66); on the host any musl-capable toolchain that produces a static binary works. The simplest is the same pinned pair the Dockerfile uses:
 
 ```bash
-rustup target add x86_64-unknown-linux-musl     # aarch64-unknown-linux-musl on arm64
-sudo apt-get install -y musl-tools
-SQLX_OFFLINE=true cargo build --release --locked -p russh-bbs-server --target x86_64-unknown-linux-musl
+rustup target add x86_64-unknown-linux-musl     # aarch64-unknown-linux-musl for arm64
+pip install --target ~/zig ziglang==0.17.0 cargo-zigbuild==0.24.0   # versions as in the Dockerfile
+PATH=~/zig/bin:~/zig/ziglang:$PATH SQLX_OFFLINE=true \
+  cargo zigbuild --release --locked -p russh-bbs-server --target x86_64-unknown-linux-musl
 docker build --build-arg BIN_STAGE=prebuilt \
   --build-context hostbin=target/x86_64-unknown-linux-musl/release -t russh-bbs .
+# arm64: build with --target aarch64-unknown-linux-musl, then add
+#   --platform linux/arm64 and use target/aarch64-unknown-linux-musl/release
 ```
 
 The `prebuilt` stage copies `russh-bbs-server` into the same `scratch` final stage (user, `/data`, entrypoint) and needs to pull `alpine:3` once. Or skip building: use the published image.
@@ -131,7 +138,7 @@ docker run -d --name bbs -p 2222:2222 -v bbs-data:/data \
 
 Cutting a tag and publishing the package are the repository owner's actions; nothing in CI or the agent sessions does them. Until they are done, `ghcr.io/pdxgeek/russh-bbs` does not exist.
 
-1. **Prove the workflow first (optional, pushes nothing).** GitHub: Actions, "Publish image", "Run workflow" (a `workflow_dispatch` dry run builds amd64 and arm64 and never logs in or pushes). Expect the arm64 half to take a long time under QEMU.
+1. **Prove the workflow first (optional, pushes nothing).** GitHub: Actions, "Publish image", "Run workflow" (a `workflow_dispatch` dry run builds amd64 and arm64 and never logs in or pushes). Both architectures are cross-compiled on the runner (D66, no emulation), and the job stops after 45 minutes (`timeout-minutes`). A cold-cache build is expected to take a few minutes (the two release binaries took 2m46s and 2m00s on a laptop-class host here); if it runs anywhere near the limit, something is wrong, so cancel it and look at the log.
 2. **Cut the tag** from the commit on `main` you want to ship:
    ```bash
    git checkout main && git pull
