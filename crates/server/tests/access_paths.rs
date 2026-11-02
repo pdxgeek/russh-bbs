@@ -25,7 +25,12 @@ use common::{Client, fast_limits, new_client_key};
 use russh::client::{self, AuthResult, Handle};
 use russh::keys::{HashAlg, PrivateKey, PrivateKeyWithHashAlg};
 use russh::{Channel, ChannelMsg};
-use russh_bbs_core::access::{Fingerprint, Permission};
+use russh_bbs_core::access::AccessStore;
+use russh_bbs_core::access::{Fingerprint, Permission, Slug};
+use russh_bbs_core::limits::{
+    Limit, LimitEditError, LimitKind, LimitStore, clear_member_limit, set_member_limit,
+    set_role_limit,
+};
 use russh_bbs_core::store::AccountStore;
 use russh_bbs_core::terminal_settings::{TerminalSettings, TerminalSettingsStore};
 use russh_bbs_server::founder;
@@ -47,6 +52,7 @@ const WIRED: &[Permission] = &[
     Permission::ForumList,
     Permission::MailRead,
     Permission::FilesList,
+    Permission::LimitsEdit,
 ];
 
 /// Permissions with no front-end action yet. A slice that builds one moves it to `WIRED` in the
@@ -454,6 +460,83 @@ async fn the_waiting_room_needs_waiting_view_and_refuses_the_shell_without_it() 
     let session = login(rig.addr(), "anyone", &stranger).await;
     let mut channel = common::open_shell(&session, 80, 24).await;
     assert!(words(&mut channel).await.contains("Waiting room"));
+    rig.server.shutdown().await;
+}
+
+/// `limits.edit` has no front-end screen yet (the sysop console is M5); its path is the core
+/// editing service. The proof comes from the account's own snapshot, so removing the permission
+/// from the roles refuses the next edit and nothing is written; putting it back works again.
+#[tokio::test]
+async fn editing_limits_needs_limits_edit_and_a_removal_writes_nothing() {
+    let rig = Rig::start().await;
+    let key = new_client_key();
+    let (_session, _channel) = founder_at_menu(&rig, &key).await;
+    let fp =
+        Fingerprint::parse(&key.public_key().fingerprint(HashAlg::Sha256).to_string()).unwrap();
+    let account = rig
+        .store
+        .account_by_fingerprint(&fp)
+        .await
+        .unwrap()
+        .unwrap()
+        .id;
+    let kind = LimitKind::MinutesPerDay;
+    let proof = |rig: &Rig| {
+        let store = rig.store.clone();
+        async move {
+            store
+                .snapshot(Some(account))
+                .await
+                .unwrap()
+                .require(Permission::LimitsEdit, None)
+        }
+    };
+
+    // Held: the edit works for a role and for the account.
+    let granted = proof(&rig).await.unwrap();
+    set_role_limit(&rig.store, &granted, &Slug::MEMBER, kind, Limit::AtMost(99))
+        .await
+        .unwrap();
+    set_member_limit(&rig.store, &granted, account, kind, Limit::AtMost(7))
+        .await
+        .unwrap();
+    assert_eq!(rig.store.member_limits(account).await.unwrap().len(), 1);
+
+    // Removed: there is no proof to pass, so the service cannot be reached, and a proof for a
+    // different permission is refused by the service itself.
+    let taken = rig.revoke(Permission::LimitsEdit).await;
+    assert!(proof(&rig).await.is_err());
+    let other = rig
+        .store
+        .snapshot(Some(account))
+        .await
+        .unwrap()
+        .require(Permission::AccountEditSettings, None)
+        .unwrap();
+    assert!(matches!(
+        set_role_limit(&rig.store, &other, &Slug::MEMBER, kind, Limit::AtMost(1)).await,
+        Err(LimitEditError::NotPermitted)
+    ));
+    assert!(matches!(
+        clear_member_limit(&rig.store, &other, account, kind).await,
+        Err(LimitEditError::NotPermitted)
+    ));
+    let role_rows = rig.store.role_limits(&[Slug::MEMBER]).await.unwrap();
+    assert!(
+        role_rows
+            .iter()
+            .any(|r| r.kind == kind && r.limit == Limit::AtMost(99)),
+        "nothing was written"
+    );
+    assert_eq!(rig.store.member_limits(account).await.unwrap().len(), 1);
+
+    // Put back: it works on the next action.
+    rig.restore(&taken, Permission::LimitsEdit).await;
+    let granted = proof(&rig).await.unwrap();
+    clear_member_limit(&rig.store, &granted, account, kind)
+        .await
+        .unwrap();
+    assert_eq!(rig.store.member_limits(account).await.unwrap().len(), 0);
     rig.server.shutdown().await;
 }
 

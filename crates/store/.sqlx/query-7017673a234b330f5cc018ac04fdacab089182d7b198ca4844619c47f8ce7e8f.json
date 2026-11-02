@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT role, kind, value FROM role_limit",
+  "describe": {
+    "columns": [
+      {
+        "name": "role",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "kind",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "value",
+        "ordinal": 2,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "7017673a234b330f5cc018ac04fdacab089182d7b198ca4844619c47f8ce7e8f"
+}

@@ -10,6 +10,7 @@
 mod access;
 mod audit;
 mod founder;
+mod limits;
 mod profiles;
 mod terminal_settings;
 

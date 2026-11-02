@@ -38,6 +38,9 @@ pub enum Action {
     /// A setting was changed (the member's own terminal settings today).
     #[strum(serialize = "setting.changed")]
     SettingChanged,
+    /// A resource limit was set or an override cleared (M2-H).
+    #[strum(serialize = "limit.changed")]
+    LimitChanged,
     /// Staff edited another member's profile (M2-F). The owner's own edits are not audited.
     #[strum(serialize = "profile.edited")]
     ProfileEdited,

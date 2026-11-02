@@ -10,6 +10,7 @@ pub(crate) mod access;
 pub(crate) mod accounts;
 pub(crate) mod audit;
 pub(crate) mod founder;
+pub(crate) mod limits;
 pub(crate) mod profiles;
 pub(crate) mod terminal_settings;
 
@@ -18,6 +19,7 @@ use std::sync::Arc;
 use russh_bbs_core::access::{AccessStore, Fingerprint, MemberDirectory, Slug};
 use russh_bbs_core::audit::{AuditStore, WallClock};
 use russh_bbs_core::founder::FounderStore;
+use russh_bbs_core::limits::LimitStore;
 use russh_bbs_core::profiles::ProfileStore;
 use russh_bbs_core::store::{AccountStore, SettingsStore};
 use russh_bbs_core::terminal_settings::{MemberSessions, TerminalSettingsStore};
@@ -30,6 +32,7 @@ pub(crate) trait TestStore:
     + AuditStore
     + SettingsStore
     + FounderStore
+    + LimitStore
     + TerminalSettingsStore
     + ProfileStore
     + MemberDirectory
@@ -47,6 +50,7 @@ impl<T> TestStore for T where
         + AuditStore
         + SettingsStore
         + FounderStore
+        + LimitStore
         + TerminalSettingsStore
         + ProfileStore
         + MemberDirectory
@@ -111,7 +115,7 @@ macro_rules! shared_suite {
         mod $name {
             #[allow(unused_imports)]
             use super::*;
-            use $crate::suite::{access, accounts, audit, founder, profiles, terminal_settings};
+            use $crate::suite::{access, accounts, audit, founder, limits, profiles, terminal_settings};
 
             $crate::suite::shared_suite!(@tests $harness, $attr;
                 access::the_built_in_roles_have_their_ranks_and_kinds,
@@ -162,6 +166,22 @@ macro_rules! shared_suite {
                 founder::a_failed_claim_rolls_back_and_leaves_the_board_unclaimed,
                 founder::the_claim_survives_reopening_the_database,
                 founder::role_lookup_is_only_for_active_accounts,
+                limits::the_built_in_roles_have_the_documented_defaults,
+                limits::the_documented_defaults_equal_the_seeded_rows,
+                limits::limit_edits_write_audit_rows_and_no_ops_write_none,
+                limits::a_limit_edit_never_lands_without_its_audit_row,
+                limits::every_role_has_every_kind_and_the_layers_do_not_tighten,
+                limits::limits_edit_is_held_by_sysop_and_cosysop_only,
+                limits::role_limits_can_be_replaced_and_unlimited_is_a_real_value,
+                limits::member_overrides_set_clear_and_isolate,
+                limits::an_override_changes_the_effective_limit,
+                limits::usage_accumulates_per_account_kind_and_day,
+                limits::a_capped_add_stops_at_the_cap_and_changes_nothing_when_full,
+                limits::concurrent_capped_adds_never_pass_the_cap,
+                limits::pruning_deletes_only_older_days_of_that_account,
+                limits::limits_and_usage_survive_a_reopen,
+                limits::a_broken_store_errors_instead_of_reading_as_unlimited,
+                limits::a_session_start_counts_calls_in_the_store,
                 profiles::an_active_member_without_a_profile_has_an_empty_one,
                 profiles::a_saved_profile_round_trips_and_a_later_save_replaces_it,
                 profiles::saving_a_profile_for_an_unknown_account_fails,

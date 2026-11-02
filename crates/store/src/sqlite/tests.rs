@@ -102,6 +102,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         5,
         "9ecd872b24dcef690f2a366d025b4566df941aa81d8e816b99e8f285cee5c39ffb8dffbdce35b432a7f7213de73f4c8d",
     ),
+    (
+        6,
+        "b6b8bb05d697513a30a254b0f1aee5c2579dacd330f66952b872398680fa94f7e58a94fbc8cbccfa511be5ada8098f30",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {
@@ -160,9 +164,12 @@ async fn a_fresh_database_gets_every_migration() {
             "audit_log",
             "group_closure",
             "group_member",
+            "limit_usage",
             "member_group",
+            "member_limit",
             "profiles",
             "role",
+            "role_limit",
             "role_permission",
             "settings",
             "terminal_settings"
@@ -452,7 +459,7 @@ async fn a_database_made_before_the_restructure_still_opens_and_keeps_its_data()
     let store = SqliteStore::open(&path).await.unwrap();
     let after = recorded(store.pool().clone()).await;
     assert_eq!(after[..2], before[..]);
-    assert_eq!(after.len(), 5);
+    assert_eq!(after.len(), MIGRATOR.iter().count());
     // The M1 sysop (legacy role column) is backfilled with a `sysop` grant (M2-B).
     let sysops: Vec<String> = sqlx::query_scalar(
         "SELECT a.username FROM access_grant g JOIN accounts a ON a.id = g.account_id \

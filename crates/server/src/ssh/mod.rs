@@ -28,20 +28,33 @@ pub use terminal::RenderCap;
 
 use russh_bbs_core::access::MemberDirectory;
 use russh_bbs_core::founder::FounderStore;
+use russh_bbs_core::limits::LimitStore;
 use russh_bbs_core::profiles::ProfileStore;
 use russh_bbs_core::terminal_settings::MemberSessions;
 use russh_bbs_core::waiting_room::WaitingRoomSource;
 
 /// Everything the SSH front end asks of the board's store: who is a member, the waiting room's
 /// settings, the founder claim, member profiles, and a member's session (what the account holds, terminal
-/// settings and login time). The SQLite store is one; so is the empty `NoMembers` directory used by
+/// settings and login time), and its limits and usage counters (M2-H). The SQLite store is one; so is the empty `NoMembers` directory used by
 /// tests.
 pub trait Backend:
-    MemberDirectory + WaitingRoomSource + FounderStore + MemberSessions + ProfileStore + 'static
+    MemberDirectory
+    + WaitingRoomSource
+    + FounderStore
+    + MemberSessions
+    + ProfileStore
+    + LimitStore
+    + 'static
 {
 }
 
 impl<T> Backend for T where
-    T: MemberDirectory + WaitingRoomSource + FounderStore + MemberSessions + ProfileStore + 'static
+    T: MemberDirectory
+        + WaitingRoomSource
+        + FounderStore
+        + MemberSessions
+        + ProfileStore
+        + LimitStore
+        + 'static
 {
 }

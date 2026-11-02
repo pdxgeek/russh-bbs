@@ -27,6 +27,7 @@ use russh::ChannelId;
 use russh::server::Handle;
 use russh_bbs_core::access::{Access, Fingerprint, Permission, Snapshot};
 use russh_bbs_core::founder::{ClaimOutcome, claim_founder};
+use russh_bbs_core::limits::{LimitError, MemberMeter, SystemClock};
 use russh_bbs_core::store::{Account, AccountId};
 use russh_bbs_core::terminal_settings::{MemberFlow, MemberStart, TerminalSettings};
 use tokio::sync::Notify;
@@ -136,6 +137,9 @@ pub(super) struct ShellParts<D> {
     pub(super) fingerprint: Option<Fingerprint>,
     pub(super) peer_ip: Option<IpAddr>,
     pub(super) account: Option<AccountId>,
+    /// The signed-in session's place in the resource limits (M2-H): its session slot and the
+    /// minutes it has used. `None` for the waiting room, the founder claim and a refused start.
+    pub(super) meter: Option<MemberMeter>,
     pub(super) redraw_interval: Duration,
     pub(super) write_stall: Duration,
 }
@@ -157,6 +161,11 @@ impl<D: Backend> Shell<D> {
     /// Run until the shell ends: the person logs off, the client leaves, or the connection is
     /// dropped.
     pub(super) async fn run(mut self) {
+        self.run_loop().await;
+        self.settle_meter().await;
+    }
+
+    async fn run_loop(&mut self) {
         let first = self.parts.screen.enter();
         let Ok(first) = first else {
             warn!(session = ?self.parts.session.id(), "first frame could not be drawn");
@@ -164,6 +173,11 @@ impl<D: Backend> Shell<D> {
             return;
         };
         if !self.send(first).await {
+            return;
+        }
+        if self.parts.screen.is_ended() {
+            // A limit refused the session: the message is up, nothing more to do.
+            self.finish().await;
             return;
         }
         let mut next_cycle = tokio::time::Instant::now() + self.parts.redraw_interval;
@@ -195,6 +209,8 @@ impl<D: Backend> Shell<D> {
                 self.refresh_access().await;
                 self.parts.screen.apply_keys(&keys)
             };
+            // Permission first (above), limit second: minutes are checked at each action.
+            let out_of_time = !keys.is_empty() && self.check_minutes().await;
             if let Some(settings) = &effects.save_settings {
                 self.persist_settings(settings).await;
             }
@@ -211,7 +227,7 @@ impl<D: Backend> Shell<D> {
                 let later = self.parts.screen.apply_keys(&rest);
                 effects.absorb(later);
             }
-            let mut leaving = effects.disconnect || batch.finish;
+            let mut leaving = effects.disconnect || batch.finish || out_of_time;
             if !leaving
                 && let Some(token) = effects.claim_token
                 && self.try_claim(&token).await
@@ -240,6 +256,64 @@ impl<D: Backend> Shell<D> {
                 return;
             }
             next_cycle = tokio::time::Instant::now() + self.parts.redraw_interval;
+        }
+    }
+
+    /// Charge the time used so far and check that the day's minutes are not spent. When they
+    /// are, the screen shows which limit and when it resets, and the answer is `true` (log
+    /// off). If the store cannot be reached the session carries on and the failure is logged:
+    /// an outage must not log every member off, and the time is charged at the next checkpoint.
+    async fn check_minutes(&mut self) -> bool {
+        let Some(meter) = self.parts.meter.as_mut() else {
+            return false;
+        };
+        let Some(access) = self.parts.screen.access() else {
+            return false;
+        };
+        let checked = timeout(
+            MEMBER_START_TIMEOUT,
+            meter.tick(&*self.parts.directory, &SystemClock, access),
+        )
+        .await;
+        match checked {
+            Ok(Ok(())) => false,
+            Ok(Err(LimitError::Refused(refusal))) => {
+                info!(session = ?self.parts.session.id(), limit = refusal.kind.name(), "minutes used up; logging off");
+                let mut lines = refusal.lines();
+                lines.push("You are being signed off.".to_owned());
+                self.parts.screen.limit_reached(lines);
+                true
+            }
+            Ok(Err(error)) => {
+                warn!(session = ?self.parts.session.id(), %error, "time could not be charged");
+                false
+            }
+            Err(_) => {
+                warn!(session = ?self.parts.session.id(), "charging time timed out");
+                false
+            }
+        }
+    }
+
+    /// Charge the last stretch of time when the session ends, however it ended, and free the
+    /// session slot.
+    async fn settle_meter(&mut self) {
+        let Some(meter) = self.parts.meter.take() else {
+            return;
+        };
+        let settled = timeout(
+            MEMBER_START_TIMEOUT,
+            meter.finish(&*self.parts.directory, &SystemClock),
+        )
+        .await;
+        match settled {
+            Ok(Ok(())) => {}
+            Ok(Err(error)) => {
+                warn!(session = ?self.parts.session.id(), %error, "final time could not be charged");
+            }
+            Err(_) => {
+                warn!(session = ?self.parts.session.id(), "final time charge timed out");
+            }
         }
     }
 

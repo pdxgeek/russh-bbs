@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE limit_usage SET amount = amount + $4::bigint\n             WHERE account_id = $1 AND kind = $2 AND day = $3 AND amount <= $5::bigint - $4::bigint",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text",
+        "Int8",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4ef31d54a27138def27401f06c4b5ec5abf6de621f739741efcc606b07d510f1"
+}

@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO limit_usage (account_id, kind, day, amount) VALUES ($1, $2, $3, 0)\n             ON CONFLICT (account_id, kind, day) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e346c0f68f901a8f460f984b29e71fc786cb2866617bbf3e1377113f1b0ee7d5"
+}

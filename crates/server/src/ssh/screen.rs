@@ -37,6 +37,7 @@ use russh_bbs_core::menu::MenuPage;
 use russh_bbs_core::profiles::{
     Request as MembersRequest, Response as MembersResponse, ScreenView,
 };
+use russh_bbs_core::terminal_settings::strings::TITLE;
 use russh_bbs_core::terminal_settings::{MemberEffect, MemberFlow, MemberInput, TerminalSettings};
 use russh_bbs_core::waiting_room::{RoomEffect, RoomInput, View, WaitingRoom};
 
@@ -46,6 +47,9 @@ use crate::settings::{self, Look};
 use crate::ui::Ui;
 use crate::ui::classic::{self, ContentScreen, MENU_MARKERS, MenuScreen};
 use crate::waiting_room::render;
+
+/// The heading of the screen a refused session sees.
+const LIMIT_HEADING: &str = "Limit reached";
 
 /// Bytes the backend has written and the handler has not yet sent. The backend owns one handle
 /// and the screen keeps another to drain it, because ratatui does not expose its writer.
@@ -110,6 +114,10 @@ pub(super) enum Content {
     Claim(ClaimForm),
     /// A member's signed-in session: login, glyph test, settings, home, logoff.
     Member(Box<MemberFlow>),
+    /// A resource limit refused the session (M2-H): the honest message, then the session ends.
+    /// The lines are fixed words and numbers from core's `LimitRefusal`, so they need no
+    /// sanitizing.
+    Limited(Vec<String>),
 }
 
 impl Content {
@@ -118,6 +126,17 @@ impl Content {
             Self::Room(room) => room.view(),
             Self::Claim(form) => form.view(),
             Self::Member(flow) => flow.view(),
+            Self::Limited(lines) => View {
+                title: TITLE,
+                heading: LIMIT_HEADING,
+                banner: Vec::new(),
+                body: lines.clone(),
+                note: None,
+                menu: Vec::new(),
+                fields: Vec::new(),
+                notice: None,
+                footer: "",
+            },
         }
     }
 
@@ -125,7 +144,7 @@ impl Content {
     fn menu_page(&self) -> Option<MenuPage> {
         match self {
             Self::Member(flow) => flow.menu_page(),
-            Self::Room(_) | Self::Claim(_) => None,
+            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
         }
     }
 
@@ -133,7 +152,7 @@ impl Content {
     fn members_view(&self) -> Option<ScreenView> {
         match self {
             Self::Member(flow) => flow.members_view(),
-            Self::Room(_) | Self::Claim(_) => None,
+            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
         }
     }
 
@@ -142,7 +161,7 @@ impl Content {
     fn tier(&self) -> Tier {
         match self {
             Self::Member(flow) => flow.settings().icon_tier(),
-            Self::Room(_) | Self::Claim(_) => Tier::Ascii,
+            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => Tier::Ascii,
         }
     }
 
@@ -151,7 +170,7 @@ impl Content {
     fn look(&self) -> Option<Look> {
         match self {
             Self::Member(flow) => Some(Look::of(flow.settings())),
-            Self::Room(_) | Self::Claim(_) => None,
+            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
         }
     }
 }
@@ -234,6 +253,7 @@ impl Screen {
                     }
                 }
             }
+            Content::Limited(_) => effects.disconnect = true,
             Content::Member(flow) => {
                 for (index, input) in keys
                     .iter()
@@ -272,7 +292,7 @@ impl Screen {
     pub(super) fn access(&self) -> Option<&Snapshot> {
         match &self.content {
             Content::Member(flow) => Some(flow.access_snapshot()),
-            Content::Room(_) | Content::Claim(_) => None,
+            Content::Room(_) | Content::Claim(_) | Content::Limited(_) => None,
         }
     }
 
@@ -297,10 +317,24 @@ impl Screen {
     pub(super) fn claim_rejected(&mut self) -> bool {
         let disconnect = match &mut self.content {
             Content::Claim(form) => form.rejected() == ClaimEffect::Disconnect,
-            Content::Room(_) | Content::Member(_) => false,
+            Content::Room(_) | Content::Member(_) | Content::Limited(_) => false,
         };
         self.dirty = true;
         disconnect
+    }
+
+    /// A limit ended the session (M2-H): show the message instead of the menu. The caller then
+    /// ends the session; the message is also printed on the main screen when it is left, so it
+    /// stays in the scrollback.
+    pub(super) fn limit_reached(&mut self, lines: Vec<String>) {
+        self.content = Content::Limited(lines);
+        self.rebuild = true;
+    }
+
+    /// Whether the content has nothing more to offer, so the session should end after the
+    /// first frame (a start refused by a limit).
+    pub(super) fn is_ended(&self) -> bool {
+        matches!(self.content, Content::Limited(_))
     }
 
     /// The claim succeeded: the new sysop's session starts at the login screen.
@@ -373,13 +407,14 @@ impl Screen {
     pub(super) fn leave(&mut self) -> io::Result<Vec<u8>> {
         queue!(self.terminal.backend_mut(), Show, LeaveAlternateScreen)?;
         let mut bytes = self.take_output();
-        if let Content::Member(flow) = &self.content
-            && let Some(lines) = flow.farewell()
-        {
-            for line in lines {
-                bytes.extend_from_slice(line.as_bytes());
-                bytes.extend_from_slice(b"\r\n");
-            }
+        let farewell = match &self.content {
+            Content::Member(flow) => flow.farewell(),
+            Content::Limited(lines) => Some(lines.clone()),
+            Content::Room(_) | Content::Claim(_) => None,
+        };
+        for line in farewell.into_iter().flatten() {
+            bytes.extend_from_slice(line.as_bytes());
+            bytes.extend_from_slice(b"\r\n");
         }
         Ok(bytes)
     }
@@ -458,7 +493,7 @@ fn drawn_size(pty: PtySize, content: &Content) -> PtySize {
             let (cols, rows) = flow.settings().size(pty.cols(), pty.rows());
             PtySize::from_request(u32::from(cols), u32::from(rows))
         }
-        Content::Room(_) | Content::Claim(_) => pty,
+        Content::Room(_) | Content::Claim(_) | Content::Limited(_) => pty,
     }
 }
 
