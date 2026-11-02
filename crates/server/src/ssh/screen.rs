@@ -2,8 +2,9 @@
 //! the SSH handler then sends down the channel (decision D19, resolving Q5).
 //!
 //! The terminal uses a **fixed viewport** whose size we set from the client's `pty-req` and
-//! `window-change`. ratatui therefore never asks the host's own tty for its size, and a session
-//! cannot affect another or the server's console.
+//! `window-change`, and draws through [`SessionBackend`], which answers ratatui's size and cursor
+//! questions from the session. Nothing in the render path consults the server's own tty (D75), so
+//! a session cannot affect another or the server's console, and a server without a tty renders.
 //!
 //! **Render cost is bounded by the sysop's cap, not the window (D52, D53).** The viewport is the
 //! window size capped at the [`RenderCap`] and centered in it; the rest of a bigger window stays
@@ -24,11 +25,12 @@
 use std::io::{self, Write};
 use std::sync::{Arc, Mutex, PoisonError};
 
-use ratatui::backend::CrosstermBackend;
+use ratatui::backend::{Backend, ClearType as RegionType, CrosstermBackend, WindowSize};
+use ratatui::buffer::Cell;
 use ratatui::crossterm::cursor::{Hide, Show};
 use ratatui::crossterm::queue;
 use ratatui::crossterm::terminal::{Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen};
-use ratatui::layout::Rect;
+use ratatui::layout::{Position, Rect, Size};
 use ratatui::{Terminal, TerminalOptions, Viewport};
 use russh_bbs_core::access::Snapshot;
 use russh_bbs_core::founder::{ClaimEffect, ClaimForm, ClaimInput};
@@ -79,6 +81,98 @@ impl Write for OutputBuffer {
 
     fn flush(&mut self) -> io::Result<()> {
         Ok(())
+    }
+}
+
+/// The backend a session's ratatui terminal draws through: crossterm's escape sequences into the
+/// session's [`OutputBuffer`], with every question about the terminal answered from the session
+/// (D75).
+///
+/// [`CrosstermBackend`] answers `size` and `get_cursor_position` by asking the *server
+/// process's* own terminal (`ioctl` on stdout, then `/dev/tty`, then a `tput` child process), which
+/// is the wrong terminal and fails without a tty (a container, a service). ratatui asks during
+/// `Terminal::resize` (to decide how to clear a fixed viewport), so a window change used to fail
+/// the render. Here `size` is the client's window as the session last recorded it, the cursor is
+/// where this backend last moved it, and `window_size` (pixels) is unsupported. Nothing in the
+/// render path can reach the host terminal, because the crossterm query functions are not called
+/// anywhere in this crate.
+struct SessionBackend {
+    inner: CrosstermBackend<OutputBuffer>,
+    /// The client's window (or the member's override of it).
+    size: Size,
+    /// Where the last cursor move put the cursor.
+    cursor: Position,
+}
+
+impl SessionBackend {
+    fn new(output: &OutputBuffer, size: Size) -> Self {
+        Self {
+            inner: CrosstermBackend::new(output.clone()),
+            size,
+            cursor: Position::ORIGIN,
+        }
+    }
+}
+
+impl Write for SessionBackend {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        self.inner.write(buf)
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        Write::flush(&mut self.inner)
+    }
+}
+
+impl Backend for SessionBackend {
+    type Error = io::Error;
+
+    fn draw<'a, I>(&mut self, content: I) -> io::Result<()>
+    where
+        I: Iterator<Item = (u16, u16, &'a Cell)>,
+    {
+        self.inner.draw(content)
+    }
+
+    fn hide_cursor(&mut self) -> io::Result<()> {
+        self.inner.hide_cursor()
+    }
+
+    fn show_cursor(&mut self) -> io::Result<()> {
+        self.inner.show_cursor()
+    }
+
+    fn get_cursor_position(&mut self) -> io::Result<Position> {
+        Ok(self.cursor)
+    }
+
+    fn set_cursor_position<P: Into<Position>>(&mut self, position: P) -> io::Result<()> {
+        let position = position.into();
+        self.cursor = position;
+        self.inner.set_cursor_position(position)
+    }
+
+    fn clear(&mut self) -> io::Result<()> {
+        self.inner.clear()
+    }
+
+    fn clear_region(&mut self, clear_type: RegionType) -> io::Result<()> {
+        self.inner.clear_region(clear_type)
+    }
+
+    fn size(&self) -> io::Result<Size> {
+        Ok(self.size)
+    }
+
+    fn window_size(&mut self) -> io::Result<WindowSize> {
+        Err(io::Error::new(
+            io::ErrorKind::Unsupported,
+            "a session has no pixel size",
+        ))
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        Backend::flush(&mut self.inner)
     }
 }
 
@@ -218,7 +312,7 @@ impl Content {
 
 /// One session's screen.
 pub(super) struct Screen {
-    terminal: Terminal<CrosstermBackend<OutputBuffer>>,
+    terminal: Terminal<SessionBackend>,
     output: OutputBuffer,
     /// The rectangle `terminal` draws into.
     viewport: Rect,
@@ -250,9 +344,10 @@ impl Screen {
         let output = OutputBuffer::default();
         let mut content = content;
         tell_flow_the_terminal(&mut content, size);
-        let viewport = viewport(drawn_size(size, &content), cap);
+        let drawn = drawn_size(size, &content);
+        let viewport = viewport(drawn, cap);
         Ok(Self {
-            terminal: new_terminal(&output, viewport)?,
+            terminal: new_terminal(&output, drawn, viewport)?,
             output,
             viewport,
             cap,
@@ -462,12 +557,13 @@ impl Screen {
     /// many sizes arrived since the last frame. A size equal to the current one still asks for
     /// a full redraw: clients use a window change to repaint a screen.
     ///
-    /// ratatui's `autoresize` and `clear` ask the backend for its size or cursor, and the
-    /// crossterm backend answers by querying the *server process's* terminal, which is wrong here
-    /// and fails without a tty. `Terminal::resize` on a fixed viewport does not (ratatui-core
-    /// 0.1.2, `resize.rs`): it resizes the two buffers in place and emits a clear. So a changed
-    /// drawn rectangle resizes and an unchanged one only forgets what was drawn; neither builds a
-    /// terminal and nothing ever consults the host tty.
+    /// ratatui asks its backend for the terminal size and cursor in `Terminal::resize` (through
+    /// `clear_viewport`), `clear` and `autoresize`. The crossterm backend answers by querying the
+    /// *server process's* terminal, which is the wrong terminal and fails without a tty (D75; this
+    /// comment used to claim `resize` did not ask, and it does). The terminal therefore draws
+    /// through [`SessionBackend`], which answers from the session. A changed drawn rectangle
+    /// resizes the buffers in place and an unchanged one only forgets what was drawn; neither
+    /// builds a terminal.
     pub(super) fn set_size(&mut self, size: PtySize) {
         self.pty = size;
         tell_flow_the_terminal(&mut self.content, size);
@@ -492,7 +588,9 @@ impl Screen {
     /// rectangle to draw into changed (a shrink keeps the allocation); otherwise they are reset.
     fn rebuild_now(&mut self) -> io::Result<Vec<u8>> {
         queue!(self.terminal.backend_mut(), Clear(ClearType::All))?;
-        let target = viewport(drawn_size(self.pty, &self.content), self.cap);
+        let drawn = drawn_size(self.pty, &self.content);
+        self.terminal.backend_mut().size = window_size(drawn);
+        let target = viewport(drawn, self.cap);
         if target == self.viewport {
             // `swap_buffers` resets the buffer it leaves behind, so two swaps blank both and the
             // next draw diffs against an empty frame: every cell is written again.
@@ -605,12 +703,18 @@ impl Screen {
 
 fn new_terminal(
     output: &OutputBuffer,
+    window: PtySize,
     area: Rect,
-) -> io::Result<Terminal<CrosstermBackend<OutputBuffer>>> {
+) -> io::Result<Terminal<SessionBackend>> {
     let options = TerminalOptions {
         viewport: Viewport::Fixed(area),
     };
-    Terminal::with_options(CrosstermBackend::new(output.clone()), options)
+    Terminal::with_options(SessionBackend::new(output, window_size(window)), options)
+}
+
+/// A window as the backend reports it.
+fn window_size(window: PtySize) -> Size {
+    Size::new(window.cols(), window.rows())
 }
 
 /// Give a member session the real terminal size, so its settings screen can say when a stored
