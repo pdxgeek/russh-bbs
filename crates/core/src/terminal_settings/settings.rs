@@ -92,8 +92,10 @@ impl TerminalSettings {
         self.color
     }
 
-    /// Whether page prompts appear at the end of a screenful. Nothing pages yet (M2+), so this
-    /// is stored and shown but changes no output today.
+    /// Whether long text is shown a page at a time with a "more" prompt. [`Pager`] honors it
+    /// (D65); no screen has text long enough to page yet, so today it changes no screen.
+    ///
+    /// [`Pager`]: super::Pager
     #[must_use]
     pub const fn pause(&self) -> bool {
         self.pause
@@ -127,12 +129,26 @@ impl TerminalSettings {
         self.color && self.tier.is_some()
     }
 
-    /// The size to draw at: each override if set, else the PTY's value.
+    /// The size to draw at: each override if set, else the PTY's value, and never larger than
+    /// the PTY. An override that does not fit the real terminal would be drawn off screen and
+    /// garble the layout (FIX-M1-L7, D64), so it is clamped here and the settings screen says
+    /// so ([`Self::overrides_clamped`]). The stored value is left alone: it applies again in a
+    /// bigger window.
     #[must_use]
     pub fn size(&self, pty_cols: u16, pty_rows: u16) -> (u16, u16) {
         (
-            self.width.unwrap_or(pty_cols),
-            self.height.unwrap_or(pty_rows),
+            self.width.map_or(pty_cols, |w| w.min(pty_cols)),
+            self.height.map_or(pty_rows, |h| h.min(pty_rows)),
+        )
+    }
+
+    /// Whether the stored width and height overrides, in that order, are larger than the
+    /// terminal and so cut down by [`Self::size`].
+    #[must_use]
+    pub fn overrides_clamped(&self, pty_cols: u16, pty_rows: u16) -> (bool, bool) {
+        (
+            self.width.is_some_and(|w| w > pty_cols),
+            self.height.is_some_and(|h| h > pty_rows),
         )
     }
 

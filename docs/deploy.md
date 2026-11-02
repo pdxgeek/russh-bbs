@@ -81,6 +81,16 @@ ssh -p 2222 claim@localhost     # paste the token to become sysop (D41)
 - The token goes to the console only; the server does not write it through its logger. A container runtime still keeps everything on stdout, so `docker logs` retains the token after the claim (it is void by then, so the only cost is confusion). After the claim nothing more is printed. Anyone who can read `docker logs` before the claim can claim the board, so do not use a log driver that ships stdout to a third party before you claim it, and claim promptly.
 - `ssh -p 2222 localhost` (any other user name) reaches the waiting room.
 
+### If the claim connection is dropped (connection flood)
+
+The per-address connection limit (`waiting_room.ip_burst` connections, then one per `waiting_room.ip_interval_secs`; defaults 10 and 2 s) runs at accept, before the SSH handshake, and the claim is only recognized from its user name after the handshake. So the founder claim shares the allowance of the address it comes from: after a flood from that address (a scanner, or a loop of retries on a shared NAT), `ssh claim@host` is reset (`Connection reset by peer`) until the allowance refills (D65). Nothing is wrong with the server and nothing is lost; the token stays valid. Any of these gets you through:
+
+- Wait. Each `ip_interval_secs` (2 s by default) puts one connection back; stop retrying in a tight loop, which keeps the allowance empty.
+- Claim from another address, or before the port is reachable from the internet (the token is printed on first start, and the claim works on localhost).
+- Raise `waiting_room.ip_burst` for the first start (for example `RUSSH_BBS_IP_BURST=100`) and lower it again afterwards.
+
+The limit is per address (an IPv6 address counts as its /64), so one noisy address never blocks others.
+
 ## Memory after a connection flood
 
 The image uses the system allocator of the static musl build. Measured on a release musl binary (D57): about 8 MB idle, and after a local flood of 200 sessions with constant resizes and input about 28 MB ten seconds later, i.e. roughly 20 MB stays with the process until restart. Peak memory is bounded by `ssh.max_connections` and the render cap (`ssh.render_cols` x `ssh.render_rows`, D53), not by the allocator. Swapping in `mimalloc` used more memory and was not adopted.

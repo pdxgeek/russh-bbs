@@ -21,10 +21,122 @@ use crate::sanitize::USERNAME_MAX_CHARS;
 use crate::sanitize::{MultiLine, SingleLine, UsernameError, sanitize_username};
 use crate::store::RegistrationMode;
 
-/// Longest banner kept, in characters.
-pub const BANNER_MAX_CHARS: usize = 1_000;
-/// Longest rules text kept, in characters.
-pub const RULES_MAX_CHARS: usize = 4_000;
+/// Longest banner kept, in characters (D64). Small enough that the home page's menu fits at
+/// 80x24 with the banner at its limit; there is no scrolling in the waiting room.
+pub const BANNER_MAX_CHARS: usize = 300;
+/// Most banner lines kept (D64).
+pub const BANNER_MAX_LINES: usize = 5;
+/// Longest rules text kept, in characters (D64). Small enough that the rules page and its
+/// footer fit at 80x24.
+pub const RULES_MAX_CHARS: usize = 900;
+/// Most rules lines kept (D64).
+pub const RULES_MAX_LINES: usize = 10;
+/// Shown at the end of banner or rules text that was cut to fit (text stored before the caps
+/// existed). Fixed chrome.
+const CUT_MARK: char = '\u{2026}';
+
+/// Which sysop text a limit applies to.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RoomText {
+    /// The home page banner.
+    Banner,
+    /// The rules page.
+    Rules,
+}
+
+impl RoomText {
+    const fn limits(self) -> (usize, usize) {
+        match self {
+            Self::Banner => (BANNER_MAX_CHARS, BANNER_MAX_LINES),
+            Self::Rules => (RULES_MAX_CHARS, RULES_MAX_LINES),
+        }
+    }
+
+    const fn name(self) -> &'static str {
+        match self {
+            Self::Banner => "banner",
+            Self::Rules => "rules",
+        }
+    }
+}
+
+/// Sysop text that is longer than the waiting room can show. The message says what to cut.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
+pub enum TextLimitError {
+    /// More characters than allowed.
+    #[error("The {} is {actual} characters; the most the waiting room shows is {max}. Shorten it.", .text.name())]
+    TooLong {
+        /// Which text.
+        text: RoomText,
+        /// What was given.
+        actual: usize,
+        /// What is allowed.
+        max: usize,
+    },
+    /// More lines than allowed.
+    #[error("The {} is {actual} lines; the most the waiting room shows is {max}. Shorten it.", .text.name())]
+    TooManyLines {
+        /// Which text.
+        text: RoomText,
+        /// What was given.
+        actual: usize,
+        /// What is allowed.
+        max: usize,
+    },
+}
+
+/// Check sysop text against the waiting room's limits (D64). Call this where the text is set,
+/// so a too-long text is refused with a reason instead of being cut when shown. Counts the
+/// text as typed, before sanitizing, so a pass here never turns into a cut later.
+///
+/// # Errors
+/// [`TextLimitError`] naming the limit that was exceeded.
+pub fn check_room_text(text: RoomText, value: &str) -> Result<(), TextLimitError> {
+    let (max_chars, max_lines) = text.limits();
+    let chars = value.chars().count();
+    if chars > max_chars {
+        return Err(TextLimitError::TooLong {
+            text,
+            actual: chars,
+            max: max_chars,
+        });
+    }
+    let lines = value.lines().count();
+    if lines > max_lines {
+        return Err(TextLimitError::TooManyLines {
+            text,
+            actual: lines,
+            max: max_lines,
+        });
+    }
+    Ok(())
+}
+
+/// Sanitize sysop text and cut it to the limits, marking the cut with an ellipsis.
+fn shown_lines(text: RoomText, raw: &str) -> Vec<String> {
+    let (max_chars, max_lines) = text.limits();
+    // One character past the cap tells a cut from an exact fit.
+    let clean = MultiLine::new(max_chars + 1).sanitize(raw).into_string();
+    let mut cut = clean.chars().count() > max_chars;
+    let mut lines: Vec<String> = clean
+        .chars()
+        .take(max_chars)
+        .collect::<String>()
+        .lines()
+        .map(str::to_owned)
+        .collect();
+    if lines.len() > max_lines {
+        lines.truncate(max_lines);
+        cut = true;
+    }
+    if cut {
+        match lines.last_mut() {
+            Some(last) => last.push(CUT_MARK),
+            None => lines.push(CUT_MARK.to_string()),
+        }
+    }
+    lines
+}
 /// Longest free-text field, in characters.
 pub const LINE_MAX_CHARS: usize = 280;
 /// Longest invite code, in characters.
@@ -229,16 +341,8 @@ impl WaitingRoom {
         let rules = config.rules.as_deref().unwrap_or(strings::DEFAULT_RULES);
         Self {
             mode: config.mode,
-            banner: lines_of(
-                &MultiLine::new(BANNER_MAX_CHARS)
-                    .sanitize(banner)
-                    .into_string(),
-            ),
-            rules: lines_of(
-                &MultiLine::new(RULES_MAX_CHARS)
-                    .sanitize(rules)
-                    .into_string(),
-            ),
+            banner: shown_lines(RoomText::Banner, banner),
+            rules: shown_lines(RoomText::Rules, rules),
             page: Page::Home,
             values: Vec::new(),
             active: 0,
@@ -426,8 +530,4 @@ impl WaitingRoom {
         }
         view
     }
-}
-
-fn lines_of(text: &str) -> Vec<String> {
-    text.lines().map(str::to_owned).collect()
 }

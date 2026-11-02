@@ -30,8 +30,15 @@ pub(crate) const STATUS_SERVER_READABLE: &str = "ui.status.server_readable";
 /// Status line text when markers cannot be drawn.
 pub(crate) const STATUS_UNAVAILABLE: &str = "ui.status.unavailable";
 
+/// Pager prompt, pause on, more pages follow (`{page}`, `{pages}`).
+pub(crate) const PAGER_MORE: &str = "ui.pager.more";
+/// Pager prompt, pause on, last page (`{page}`, `{pages}`).
+pub(crate) const PAGER_END: &str = "ui.pager.end";
+/// Pager prompt, pause off, text longer than the screen (`{hidden}`).
+pub(crate) const PAGER_CLIPPED: &str = "ui.pager.clipped";
+
 /// Every key above; the table must hold these plus the menu tree's keys.
-pub(crate) const FRAMEWORK: [&str; 14] = [
+pub(crate) const FRAMEWORK: [&str; 17] = [
     TITLE,
     FOOTER_MENU,
     NOTICE_INFO,
@@ -46,4 +53,7 @@ pub(crate) const FRAMEWORK: [&str; 14] = [
     HELP_FOOTER,
     STATUS_SERVER_READABLE,
     STATUS_UNAVAILABLE,
+    PAGER_MORE,
+    PAGER_END,
+    PAGER_CLIPPED,
 ];

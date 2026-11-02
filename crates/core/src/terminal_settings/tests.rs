@@ -78,11 +78,28 @@ fn defaults_follow_the_pty_and_are_the_plain_layout_until_a_tier_is_chosen() {
 #[test]
 fn overrides_replace_the_pty_size_one_axis_at_a_time() {
     let s = TerminalSettings::default().with_width(Some(100)).unwrap();
-    assert_eq!(s.size(80, 24), (100, 24));
+    assert_eq!(s.size(132, 24), (100, 24));
     let s = s.with_height(Some(40)).unwrap();
-    assert_eq!(s.size(80, 24), (100, 40));
+    assert_eq!(s.size(132, 50), (100, 40));
     let s = s.with_width(None).unwrap();
-    assert_eq!(s.size(80, 24), (80, 40));
+    assert_eq!(s.size(132, 50), (132, 40));
+}
+
+#[test]
+fn an_override_larger_than_the_terminal_is_cut_down_to_it() {
+    let s = TerminalSettings::default()
+        .with_width(Some(500))
+        .unwrap()
+        .with_height(Some(200))
+        .unwrap();
+    assert_eq!(s.size(200, 60), (200, 60), "never off screen");
+    assert_eq!(s.overrides_clamped(200, 60), (true, true));
+    assert_eq!(s.size(500, 200), (500, 200), "an exact fit is not cut");
+    assert_eq!(s.overrides_clamped(500, 200), (false, false));
+    let s = TerminalSettings::default().with_width(Some(60)).unwrap();
+    assert_eq!(s.size(80, 24), (60, 24), "a smaller override still applies");
+    assert_eq!(s.overrides_clamped(80, 24), (false, false));
+    assert_eq!(s.width(), Some(60), "the stored value is not changed");
 }
 
 #[test]
@@ -421,7 +438,7 @@ fn settings_sets_and_clears_size_overrides() {
     assert_eq!(f.settings().width(), Some(120));
     assert!(matches!(effects.last(), Some(MemberEffect::Save(_))));
     press(&mut f, "h40\n");
-    assert_eq!(f.settings().size(80, 24), (120, 40));
+    assert_eq!(f.settings().size(200, 60), (120, 40));
     assert!(text(&f.view()).contains("Width: 120"));
     press(&mut f, "w\n");
     assert_eq!(f.settings().width(), None);
@@ -533,6 +550,147 @@ fn range_messages_state_the_real_limits() {
     }
     assert!(strings::FIELD_WIDTH.contains("20 to 500"));
     assert!(strings::FIELD_HEIGHT.contains("6 to 200"));
+}
+
+#[test]
+fn the_settings_screen_says_when_an_override_is_cut_down_to_the_terminal() {
+    let stored = TerminalSettings::default()
+        .with_tier(Tier::Ascii)
+        .with_width(Some(500))
+        .unwrap()
+        .with_height(Some(200))
+        .unwrap();
+    let mut f = flow(stored, None);
+    f.set_terminal(200, 60);
+    press(&mut f, "xs");
+    let shown = text(&f.view());
+    assert!(
+        shown.contains("Width: 500 (your terminal is 200 wide, so 200 is used)"),
+        "{shown}"
+    );
+    assert!(
+        shown.contains("Height: 200 (your terminal is 60 tall, so 60 is used)"),
+        "{shown}"
+    );
+    // A window that fits the override says nothing; one that shrinks again says so again.
+    f.set_terminal(500, 200);
+    let shown = text(&f.view());
+    assert!(
+        shown.contains("Width: 500\n") && !shown.contains("so 500 is used"),
+        "{shown}"
+    );
+    f.set_terminal(80, 24);
+    assert!(text(&f.view()).contains("so 80 is used"));
+}
+
+#[test]
+fn blind_recovery_clears_a_bad_override_with_s_w_enter_h_enter() {
+    let stored = TerminalSettings::default()
+        .with_tier(Tier::Ascii)
+        .with_width(Some(500))
+        .unwrap()
+        .with_height(Some(200))
+        .unwrap();
+    let mut f = flow(stored, None);
+    f.set_terminal(80, 24);
+    // Past the login screen, then the documented keys: s, w, Enter, h, Enter.
+    press(&mut f, "x");
+    let effects = press(&mut f, "sw\nh\n");
+    assert_eq!(f.settings().width(), None);
+    assert_eq!(f.settings().height(), None);
+    assert!(
+        effects.iter().any(|e| matches!(e, MemberEffect::Save(_))),
+        "the cleared overrides are saved"
+    );
+    let shown = text(&f.view());
+    assert!(shown.contains("Width: automatic") && shown.contains("Height: automatic"));
+    assert!(
+        !shown.contains("so "),
+        "nothing is cut once cleared: {shown}"
+    );
+}
+
+#[test]
+fn the_pause_line_does_not_overstate_what_it_does() {
+    let f = at_settings();
+    let shown = text(&f.view());
+    assert!(
+        shown.contains("applies to long text; no screen pages yet"),
+        "{shown}"
+    );
+}
+
+// ---- pager (L8) ----
+
+fn numbered(n: usize) -> Vec<String> {
+    (1..=n).map(|i| format!("line {i}")).collect()
+}
+
+fn pager(n: usize, pause: bool) -> Pager {
+    Pager::new(numbered(n), &TerminalSettings::default().with_pause(pause))
+}
+
+#[test]
+fn with_pause_on_a_long_text_pages_with_a_more_prompt_and_every_line_is_reachable() {
+    let mut p = pager(25, true);
+    let mut seen = Vec::new();
+    let mut prompts = Vec::new();
+    loop {
+        let view = p.view(10);
+        seen.extend(view.lines.iter().cloned());
+        prompts.push(view.prompt);
+        if p.input(PagerKey::Next, 10) == PagerEffect::Done {
+            break;
+        }
+    }
+    assert_eq!(seen, numbered(25), "nothing dropped, nothing repeated");
+    assert_eq!(
+        prompts,
+        [
+            PagerPrompt::More { page: 1, pages: 3 },
+            PagerPrompt::More { page: 2, pages: 3 },
+            PagerPrompt::End { page: 3, pages: 3 },
+        ]
+    );
+}
+
+#[test]
+fn with_pause_off_there_is_no_prompt_and_the_cut_is_stated() {
+    let mut p = pager(25, false);
+    let view = p.view(10);
+    assert_eq!(view.lines, &numbered(10)[..]);
+    assert_eq!(view.prompt, PagerPrompt::Clipped { hidden: 15 });
+    assert_eq!(p.input(PagerKey::Next, 10), PagerEffect::Done, "no paging");
+    assert_eq!(pager(8, false).view(10).prompt, PagerPrompt::None);
+}
+
+#[test]
+fn a_text_that_fits_has_no_prompt_either_way() {
+    for pause in [true, false] {
+        let p = pager(10, pause);
+        assert_eq!(p.view(10).prompt, PagerPrompt::None);
+        assert_eq!(p.view(10).lines.len(), 10);
+    }
+    assert_eq!(pager(0, true).view(10).prompt, PagerPrompt::None);
+}
+
+#[test]
+fn previous_and_stop_work_and_a_resize_keeps_the_reader_on_a_valid_page() {
+    let mut p = pager(25, true);
+    p.input(PagerKey::Next, 10);
+    assert_eq!(p.view(10).lines[0], "line 11");
+    assert_eq!(p.input(PagerKey::Previous, 10), PagerEffect::Stay);
+    assert_eq!(p.view(10).lines[0], "line 1");
+    assert_eq!(
+        p.input(PagerKey::Previous, 10),
+        PagerEffect::Stay,
+        "stops at the top"
+    );
+    p.input(PagerKey::Next, 10);
+    // The window shrinks to 4 rows: the page that holds line 11 is shown.
+    assert!(p.view(4).lines.contains(&"line 11".to_owned()));
+    assert_eq!(p.view(0).lines.len(), 1, "zero rows is treated as one");
+    assert_eq!(p.input(PagerKey::Stop, 10), PagerEffect::Done);
 }
 
 #[test]

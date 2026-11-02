@@ -17,6 +17,10 @@ use russh_bbs_core::waiting_room::{NoticeKind, View};
 const MAX_WIDTH: u16 = 76;
 
 /// Draw `view` centered in the frame.
+///
+/// The sysop's banner or rules text is the only part that can be long, so it gets the rows left
+/// over after the menu, the notice and the footer have theirs (D64). A text that still does not
+/// fit is clipped at the bottom of its own region; the menu is never pushed off screen.
 pub(crate) fn render(frame: &mut Frame<'_>, view: &View) {
     let area = frame.area();
     let [_, middle, _] = Layout::horizontal([
@@ -25,15 +29,48 @@ pub(crate) fn render(frame: &mut Frame<'_>, view: &View) {
         Constraint::Fill(1),
     ])
     .areas(area);
-    let paragraph = Paragraph::new(lines(view))
-        .wrap(Wrap { trim: false })
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .title(format!(" {} ", view.title))
-                .title_alignment(Alignment::Center),
-        );
-    frame.render_widget(paragraph, fit(middle));
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .title(format!(" {} ", view.title))
+        .title_alignment(Alignment::Center);
+    let outer = fit(middle);
+    let inner = block.inner(outer);
+    frame.render_widget(block, outer);
+
+    let parts = parts(view);
+    let wrap = |lines: Vec<Line<'static>>| Paragraph::new(lines).wrap(Wrap { trim: false });
+    let head_rows = rows_of(&parts.head, inner.width);
+    let tail_rows = rows_of(&parts.tail, inner.width);
+    // The sysop text takes what it needs, but never the rows reserved for the head and tail.
+    let room_left = inner
+        .height
+        .saturating_sub(head_rows)
+        .saturating_sub(tail_rows);
+    let flex_rows = rows_of(&parts.flex, inner.width).min(room_left);
+    let [head, flex, tail, _] = Layout::vertical([
+        Constraint::Length(head_rows),
+        Constraint::Length(flex_rows),
+        Constraint::Length(tail_rows),
+        Constraint::Fill(1),
+    ])
+    .areas(inner);
+    frame.render_widget(wrap(parts.head), head);
+    frame.render_widget(wrap(parts.flex), flex);
+    frame.render_widget(wrap(parts.tail), tail);
+}
+
+/// How many rows `lines` take when wrapped at `width`. Counts one extra row for every line
+/// that wraps, which is the worst case for word wrapping, so the reserved space is never short.
+fn rows_of(lines: &[Line<'_>], width: u16) -> u16 {
+    let width = usize::from(width.max(1));
+    let rows: usize = lines
+        .iter()
+        .map(|line| {
+            let w = line.width();
+            if w <= width { 1 } else { w.div_ceil(width) + 1 }
+        })
+        .sum();
+    u16::try_from(rows).unwrap_or(u16::MAX)
 }
 
 /// Keep the box off the very edge of a roomy terminal; use all of a small one.
@@ -48,19 +85,26 @@ fn fit(area: Rect) -> Rect {
     }
 }
 
-fn lines(view: &View) -> Vec<Line<'static>> {
+/// The page in three bands: a fixed heading, the sysop's flexible text, and everything after.
+struct Parts {
+    head: Vec<Line<'static>>,
+    flex: Vec<Line<'static>>,
+    tail: Vec<Line<'static>>,
+}
+
+fn parts(view: &View) -> Parts {
     let bold = Style::new().add_modifier(Modifier::BOLD);
     let dim = Style::new().add_modifier(Modifier::DIM);
-    let mut out = vec![Line::styled(view.heading, bold), Line::raw("")];
-
-    for text in &view.banner {
-        out.push(Line::raw(text.clone()));
-    }
+    let head = vec![Line::styled(view.heading, bold), Line::raw("")];
+    let flex: Vec<Line<'static>> = view
+        .banner
+        .iter()
+        .chain(&view.body)
+        .map(|text| Line::raw(text.clone()))
+        .collect();
+    let mut out = Vec::new();
     if !view.banner.is_empty() {
         out.push(Line::raw(""));
-    }
-    for text in &view.body {
-        out.push(Line::raw(text.clone()));
     }
     if let Some(note) = view.note {
         out.push(Line::raw(""));
@@ -95,7 +139,11 @@ fn lines(view: &View) -> Vec<Line<'static>> {
     }
     out.push(Line::raw(""));
     out.push(Line::styled(view.footer, dim));
-    out
+    Parts {
+        head,
+        flex,
+        tail: out,
+    }
 }
 
 pub(crate) use throttle::Throttle;
