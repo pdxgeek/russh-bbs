@@ -32,6 +32,7 @@ Update this table in the same pass as the code.
 | Polls and voting booths | M3 | Planned | |
 | RSS in (feeds as boards) and RSS out | M3 | Planned | SSRF guard required |
 | Internal mail (stage 1) | M3 | Planned | |
+| Telnet transport, disabled by default | M3 | Planned | D27; `UNENCRYPTED` marker; password login is a second opt-in |
 | Credits ledger | M3 | Planned | Non-transferable |
 | Event scheduler | M3 | Planned | |
 | File areas over SFTP, scanning, quarantine | M4 | Planned | |

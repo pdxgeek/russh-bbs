@@ -32,6 +32,7 @@ Each milestone ends with something runnable. Estimates are guesses for one devel
 - Public chat rooms with presence and whispers; one-liners, graffiti wall, last callers; polls.
 - RSS in (feeds as read-only boards, SSRF guard, sanitization) and RSS out for public boards.
 - Event scheduler, credits ledger, internal mail (stage 1).
+- Telnet transport, off by default (D27): separate listener, same screens, fixed `UNENCRYPTED` marker, optional password login.
 - **Done when:** three users post and chat over plain `ssh`, a malicious feed (escape codes, SSRF attempt) is neutralized by tests, and the layout can be switched live.
 
 ## M4: Files and doors
