@@ -5,7 +5,8 @@ use std::future::Future;
 use std::sync::atomic::{AtomicI64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use super::event::{Action, Actor, AuditEvent};
+use super::event::{Action, Actor, AuditEvent, Detail, Target};
+use crate::sanitize::{Sanitized, SingleLine};
 use crate::store::{StoreError, UnixSeconds};
 
 /// The largest page a read returns, whatever the query asks for.
@@ -83,12 +84,109 @@ pub struct AuditEntry {
     pub event: AuditEvent,
 }
 
+/// Longest [`UnknownAction`] name kept, in characters. Longer stored names are cut.
+pub const UNKNOWN_ACTION_MAX_CHARS: usize = 64;
+
+/// The stored action name of a row this binary does not recognise (D77): a renamed action, or
+/// one written by another version. It is only ever **read**: it is not an [`Action`], it
+/// converts to nothing that [`AuditEvent`] accepts, and no store method takes it, so the code
+/// cannot write one. The text went through the shared sanitizer and is cut to
+/// [`UNKNOWN_ACTION_MAX_CHARS`], because it came from the database and is shown to a sysop.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UnknownAction(Sanitized);
+
+impl UnknownAction {
+    /// Wrap a stored name, sanitized as one line and capped. Call this only where a row is read
+    /// (the store).
+    #[must_use]
+    pub fn from_stored(name: &str) -> Self {
+        Self(SingleLine::new(UNKNOWN_ACTION_MAX_CHARS).sanitize(name))
+    }
+
+    /// The sanitized name, for a label such as `unknown action "made.up"`.
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        self.0.as_str()
+    }
+}
+
+/// A stored row whose action this binary does not know (D77). Its actor was validated like any
+/// row's. Its target is kept only if this binary can read it: another version's action may
+/// come with a target kind this one lacks, and refusing the row for that would bring back the
+/// unreadable log. The resource is not carried.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UnknownEntry {
+    /// Its id.
+    pub id: AuditId,
+    /// When it was written, by the store's clock.
+    pub at: UnixSeconds,
+    /// The stored action name, sanitized and capped.
+    pub action: UnknownAction,
+    /// Who did it.
+    pub actor: Actor,
+    /// What it was done to, if this binary can read the stored target; else `None`.
+    pub target: Option<Target>,
+    /// The stored note, sanitized and capped like any detail.
+    pub detail: Detail,
+}
+
+/// One row of a page of the log: an event this binary knows, or a labelled unknown one.
+/// Reading never fails because of an action name (D77); a row that is structurally invalid
+/// is still [`StoreError::Corrupt`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LogEntry {
+    /// An event the code could have written.
+    Event(AuditEntry),
+    /// A row with an action this binary does not know.
+    Unknown(UnknownEntry),
+}
+
+impl LogEntry {
+    /// Its id.
+    #[must_use]
+    pub const fn id(&self) -> AuditId {
+        match self {
+            Self::Event(entry) => entry.id,
+            Self::Unknown(entry) => entry.id,
+        }
+    }
+
+    /// When it was written.
+    #[must_use]
+    pub const fn at(&self) -> UnixSeconds {
+        match self {
+            Self::Event(entry) => entry.at,
+            Self::Unknown(entry) => entry.at,
+        }
+    }
+
+    /// The known event, if this is one.
+    #[must_use]
+    pub fn into_event(self) -> Option<AuditEntry> {
+        match self {
+            Self::Event(entry) => Some(entry),
+            Self::Unknown(_) => None,
+        }
+    }
+}
+
+/// The events of `entries` this binary knows, in order. **Drops unknown rows**: for callers
+/// that look for specific actions (an unknown row cannot be one); a screen of the log must show
+/// every [`LogEntry`] instead.
+#[must_use]
+pub fn known_events(entries: Vec<LogEntry>) -> Vec<AuditEntry> {
+    entries
+        .into_iter()
+        .filter_map(LogEntry::into_event)
+        .collect()
+}
+
 /// A bounded, paged read, newest first. Every filter is optional and they combine with AND.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct AuditQuery {
     /// Only this actor.
     pub actor: Option<Actor>,
-    /// Only this action.
+    /// Only this action. Unknown rows (D77) match no action filter.
     pub action: Option<Action>,
     /// Only rows at or after this time.
     pub since: Option<UnixSeconds>,
@@ -132,10 +230,12 @@ pub trait AuditStore: Send + Sync {
         event: &AuditEvent,
     ) -> impl Future<Output = Result<AuditId, StoreError>> + Send;
 
-    /// One page of matching rows, newest first, at most [`MAX_PAGE`]. A stored row the code
-    /// could not have written is [`StoreError::Corrupt`].
+    /// One page of matching rows, newest first, at most [`MAX_PAGE`]. A row whose action this
+    /// binary does not know is a [`LogEntry::Unknown`] (D77); a stored row that is structurally
+    /// invalid (a bad actor, an unreadable target on a known action) is
+    /// [`StoreError::Corrupt`].
     fn page(
         &self,
         query: &AuditQuery,
-    ) -> impl Future<Output = Result<Vec<AuditEntry>, StoreError>> + Send;
+    ) -> impl Future<Output = Result<Vec<LogEntry>, StoreError>> + Send;
 }

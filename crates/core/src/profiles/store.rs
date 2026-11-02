@@ -131,6 +131,16 @@ pub trait ProfileStore: Send + Sync {
         id: AccountId,
     ) -> impl Future<Output = Result<Option<MemberRecord>, StoreError>> + Send;
 
+    /// The rank of the highest-ranked role `id` holds globally, as [`Snapshot::top_rank`] reads
+    /// it, or `None` when it holds none (or is not active, which holds only `waiting`). The
+    /// rank rule for staff edits (D60 (6), D77) compares it with the editor's.
+    ///
+    /// [`Snapshot::top_rank`]: crate::access::Snapshot::top_rank
+    fn standing(
+        &self,
+        id: AccountId,
+    ) -> impl Future<Output = Result<Option<u8>, StoreError>> + Send;
+
     /// Replace the account's profile. [`StoreError::AccountNotFound`] for an id with no
     /// account. `audit`, when given, is written in the same transaction (M2-C): the profile and
     /// its audit row commit or roll back together.
@@ -156,6 +166,13 @@ impl ProfileStore for crate::access::NoMembers {
         &self,
         _id: AccountId,
     ) -> impl Future<Output = Result<Option<MemberRecord>, StoreError>> + Send {
+        std::future::ready(Ok(None))
+    }
+
+    fn standing(
+        &self,
+        _id: AccountId,
+    ) -> impl Future<Output = Result<Option<u8>, StoreError>> + Send {
         std::future::ready(Ok(None))
     }
 

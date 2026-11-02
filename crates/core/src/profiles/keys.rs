@@ -42,4 +42,5 @@ keys! {
     NOTICE_UNCHANGED = "members.notice.unchanged",
     NOTICE_NOT_FOUND = "members.notice.not_found",
     NOTICE_FAILED = "members.notice.failed",
+    NOTICE_RANK = "members.notice.rank",
 }

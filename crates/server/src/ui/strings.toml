@@ -114,6 +114,7 @@ saved = "Profile saved."
 unchanged = "Nothing changed, so nothing was saved."
 not_found = "That member is not available."
 failed = "That did not work. Nothing was changed. Try again."
+rank = "You cannot edit the profile of someone whose role ranks at or above yours. Nothing was changed."
 
 [placeholder]
 forums = "Forums are not built yet."

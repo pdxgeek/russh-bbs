@@ -436,7 +436,9 @@ pub(crate) async fn limit_edits_write_audit_rows_and_no_ops_write_none<H: Harnes
     let s = h.store();
     let (admin, ann) = (active(s, "pat").await, active(s, "ann").await);
     let by = Actor::Account(admin.id);
-    let rows = || async { s.page(&AuditQuery::default()).await.unwrap() };
+    let rows = || async {
+        russh_bbs_core::audit::known_events(s.page(&AuditQuery::default()).await.unwrap())
+    };
     let before = rows().await.len();
 
     s.set_role_limit(&Slug::MEMBER, MIN, Limit::AtMost(90), by)

@@ -867,28 +867,10 @@ async fn audit_log_refuses_truncate_and_upsert_by_id() {
         let error = sqlx::query(&sql).execute(store.pool()).await.unwrap_err();
         assert!(error.to_string().contains("append-only"), "{sql}: {error}");
     }
-    let rows = store.page(&AuditQuery::default()).await.unwrap();
+    let rows =
+        russh_bbs_core::audit::known_events(store.page(&AuditQuery::default()).await.unwrap());
     assert_eq!(rows.len(), 1);
     assert_eq!(rows[0].event, original);
-}
-
-/// A row the code could not have written is `Corrupt`, never skipped or guessed.
-#[tokio::test]
-#[ignore = "needs a Postgres server: set RUSSH_BBS_TEST_POSTGRES_URL"]
-async fn a_hand_written_audit_row_with_an_unknown_action_is_corrupt() {
-    use russh_bbs_core::audit::{AuditQuery, AuditStore};
-    use russh_bbs_core::store::StoreError;
-
-    let h = PgHarness::fresh().await;
-    let store = h.store();
-    sqlx::query("INSERT INTO audit_log (at, actor_kind, action) VALUES (1, 'system', 'made.up')")
-        .execute(store.pool())
-        .await
-        .unwrap();
-    assert!(matches!(
-        store.page(&AuditQuery::default()).await,
-        Err(StoreError::Corrupt(_))
-    ));
 }
 
 // ---- migration 0007 (M2-D) --------------------------------------------------------------

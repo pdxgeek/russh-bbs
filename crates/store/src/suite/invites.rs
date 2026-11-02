@@ -80,7 +80,7 @@ fn is_code_refusal<T: std::fmt::Debug>(result: &Result<T, RedeemError>) -> bool 
 }
 
 async fn all<S: AuditStore>(store: &S) -> Vec<AuditEntry> {
-    store.page(&AuditQuery::default()).await.unwrap()
+    russh_bbs_core::audit::known_events(store.page(&AuditQuery::default()).await.unwrap())
 }
 
 fn count_of(rows: &[AuditEntry], action: Action) -> usize {

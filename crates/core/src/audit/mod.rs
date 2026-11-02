@@ -14,6 +14,10 @@
 //!   write (a refusal, a ban attempt).
 //! * **Append-only is enforced by the database**: triggers abort `UPDATE` and `DELETE` on both
 //!   backends. [`AuditStore`] has no update or delete method either.
+//! * **Reading never fails on an action name** (D77). A row whose action this binary does not
+//!   know (a renamed action, another version's) reads as a labelled [`LogEntry::Unknown`] that
+//!   carries the sanitized, capped stored name; it is not an [`Action`] and cannot be written.
+//!   A structurally invalid row is still `Corrupt`.
 //! * Reading is [`view_log`]: gated by `audit.view`, bounded and paged, newest first. The sysop
 //!   screen over it is M5.
 //!
@@ -28,7 +32,8 @@ mod store;
 pub use event::{Action, Actor, AuditEvent, DETAIL_MAX_CHARS, Detail, Target};
 pub use service::{AuditViewError, view_log};
 pub use store::{
-    AuditEntry, AuditId, AuditQuery, AuditStore, FixedClock, MAX_PAGE, SystemWallClock, WallClock,
+    AuditEntry, AuditId, AuditQuery, AuditStore, FixedClock, LogEntry, MAX_PAGE, SystemWallClock,
+    UNKNOWN_ACTION_MAX_CHARS, UnknownAction, UnknownEntry, WallClock, known_events,
 };
 
 #[cfg(test)]

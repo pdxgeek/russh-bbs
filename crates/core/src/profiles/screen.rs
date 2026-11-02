@@ -371,6 +371,7 @@ impl MembersScreen {
                     return Step::Leave;
                 }
             }
+            Response::RankTooLow => self.notice = Some((true, keys::NOTICE_RANK)),
             Response::NotPermitted => return Step::Denied,
             Response::Failed => self.notice = Some((true, keys::NOTICE_FAILED)),
         }

@@ -31,7 +31,18 @@ sysop screen over it is M5; the board has no audit screen yet.
   deleting an account cannot cascade into history.
 - **Bounded, paged read.** `AuditStore::page(&AuditQuery)`: newest first, filter by actor, action
   and time (`since` inclusive, `until` exclusive), a cursor (`before` an id), page size clamped
-  to 1..=100. A stored row the code could not have written is `StoreError::Corrupt`.
+  to 1..=100. The page is a list of `LogEntry`:
+  `Event(AuditEntry)` for a row this binary can have written, `Unknown(UnknownEntry)` for a row whose
+  **action name it does not know** (D77). A structurally invalid row is still `StoreError::Corrupt`.
+- **An unknown action does not make the log unreadable (D77, FIX-M2-2).** A renamed action, or
+  one left by another version, reads as `LogEntry::Unknown`: id, time, actor, the stored name as
+  `UnknownAction` (sanitized as one line, capped at 64 characters), the target if this binary can
+  read it (else `None`), and the sanitized `Detail`. `UnknownAction` is not an `Action`; no
+  `AuditEvent`, `append` or `audit_in` accepts it, so the code cannot write one (a `compile_fail`
+  doctest shows it). Filters: actor and time apply to unknown rows; an action filter is a known
+  `Action`, so unknown rows match none. `Corrupt` stays for a bad actor, and for a **known** action
+  with a target or resource the code could not have written. An unknown action's target and resource
+  are not held to that, because another version's action may bring its own target kinds.
 - **Read service gated by `audit.view`.** `core::audit::view_log(store, &Snapshot, &query)`
   checks `audit.view` globally first and does not touch the store when it is missing.
 
@@ -71,6 +82,15 @@ sysop) writes no row either; audit.md does not log refusals.
 
 `create_group`, `change_groups`, `add_grant` and the M2-B2 role and revoke writes take an `Actor` argument; the store cannot know
 who is calling.
+
+### Tested (unknown actions)
+
+The shared store suite (`suite/audit.rs`, SQLite, Postgres 16, TLS-required Postgres 16) plants
+rows by hand: a page of known and unknown rows reads whole and in order; paging with a cursor
+neither skips nor repeats; actor and time filters include unknown rows and an action filter never
+does; hostile names and notes are sanitized; invalid structure is still `Corrupt`. Core tests cover
+`UnknownAction` sanitizing and capping and `known_events`. Nothing reads the log on screen until M5,
+which must render `Unknown` rows with a visible label and never as an ordinary event.
 
 ## Planned
 

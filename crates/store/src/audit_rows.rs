@@ -1,7 +1,10 @@
 //! Audit rows and their one-time mapping to and from core's types, shared by both backends.
 //! The SQL (placeholders, `RETURNING`) is in each backend's own `audit.rs`.
 
-use russh_bbs_core::audit::{Action, Actor, AuditEntry, AuditEvent, AuditId, AuditQuery, Target};
+use russh_bbs_core::audit::{
+    Action, Actor, AuditEntry, AuditEvent, AuditId, AuditQuery, Detail, LogEntry, Target,
+    UnknownAction, UnknownEntry,
+};
 use russh_bbs_core::store::{AccountId, StoreError, UnixSeconds};
 
 /// The stored columns of an event (everything but id and time).
@@ -52,26 +55,37 @@ pub(crate) struct AuditRow {
 }
 
 impl AuditRow {
-    /// Validate the stored text; anything the code could not have written is `Corrupt`.
-    pub(crate) fn into_entry(self) -> Result<AuditEntry, StoreError> {
+    /// Validate the stored text. A row the code could not have written is `Corrupt`, with one
+    /// exception (D77): an action name this binary does not know reads as an
+    /// [`LogEntry::Unknown`] and is never an error, so one renamed or foreign action cannot
+    /// make the append-only log unreadable. Its actor is still validated; its target is kept
+    /// only if this binary can read it.
+    pub(crate) fn into_entry(self) -> Result<LogEntry, StoreError> {
         let corrupt = |what: &str| StoreError::Corrupt(format!("stored audit row {what}"));
         let actor = match (self.actor_kind.as_str(), self.actor_id) {
             ("system", None) => Actor::System,
             ("account", Some(id)) => Actor::Account(AccountId::from_raw(id)),
             _ => return Err(corrupt("has an invalid actor")),
         };
-        let action = Action::parse(&self.action).ok_or_else(|| corrupt("has an unknown action"))?;
-        let target = Target::from_parts(&self.target_kind, &self.target_ref)
-            .ok_or_else(|| corrupt("has an invalid target"))?;
+        let id = AuditId::from_raw(self.id);
+        let at = UnixSeconds::from_raw(self.at);
+        let target = Target::from_parts(&self.target_kind, &self.target_ref);
+        let Some(action) = Action::parse(&self.action) else {
+            return Ok(LogEntry::Unknown(UnknownEntry {
+                id,
+                at,
+                action: UnknownAction::from_stored(&self.action),
+                actor,
+                target,
+                detail: Detail::new(&self.detail),
+            }));
+        };
+        let target = target.ok_or_else(|| corrupt("has an invalid target"))?;
         let resource = AuditEvent::resource_from_parts(&self.resource_kind, self.resource_id)
             .ok_or_else(|| corrupt("has an invalid resource"))?;
         let mut event = AuditEvent::new(actor, action, target).detail(&self.detail);
         event.resource = resource;
-        Ok(AuditEntry {
-            id: AuditId::from_raw(self.id),
-            at: UnixSeconds::from_raw(self.at),
-            event,
-        })
+        Ok(LogEntry::Event(AuditEntry { id, at, event }))
     }
 }
 

@@ -38,7 +38,7 @@ fn name(text: &str) -> russh_bbs_core::sanitize::Username {
 }
 
 async fn all<S: AuditStore>(store: &S) -> Vec<AuditEntry> {
-    store.page(&AuditQuery::default()).await.unwrap()
+    russh_bbs_core::audit::known_events(store.page(&AuditQuery::default()).await.unwrap())
 }
 
 fn count_of(rows: &[AuditEntry], action: Action) -> usize {

@@ -396,7 +396,8 @@ async fn an_applicant_lands_in_the_queue_and_stays_outside_until_the_sysop_appro
     }
 
     // The application is audited once: by the board, the request's id, nothing typed.
-    let audit = rig.store.page(&AuditQuery::default()).await.unwrap();
+    let audit =
+        russh_bbs_core::audit::known_events(rig.store.page(&AuditQuery::default()).await.unwrap());
     let submitted: Vec<_> = audit
         .iter()
         .filter(|row| row.event.action == Action::ApplicationSubmitted)
@@ -533,7 +534,8 @@ async fn an_applicant_reads_the_same_words_whatever_the_queue_does_with_the_appl
         1,
         "the suspended account only"
     );
-    let audit = rig.store.page(&AuditQuery::default()).await.unwrap();
+    let audit =
+        russh_bbs_core::audit::known_events(rig.store.page(&AuditQuery::default()).await.unwrap());
     let submitted = audit
         .iter()
         .filter(|row| row.event.action == Action::ApplicationSubmitted)
@@ -568,7 +570,8 @@ async fn an_open_visitor_gets_an_active_account_at_once() {
     assert!(flat(&strip_ansi(&drain(&mut channel).await)).contains("Signed in as newcomer"));
 
     // Audit: one account.created by the board, and nothing with the key in it.
-    let audit = rig.store.page(&AuditQuery::default()).await.unwrap();
+    let audit =
+        russh_bbs_core::audit::known_events(rig.store.page(&AuditQuery::default()).await.unwrap());
     let created: Vec<_> = audit
         .iter()
         .filter(|row| row.event.action == Action::AccountCreated)
@@ -659,7 +662,8 @@ async fn an_open_refusal_reads_the_same_whatever_the_cause() {
     // Nothing was made by any of it, and nothing was audited.
     assert_eq!(count(&rig, "accounts").await, accounts_before);
     assert_eq!(count(&rig, "registration_day").await, 0);
-    let audit = rig.store.page(&AuditQuery::default()).await.unwrap();
+    let audit =
+        russh_bbs_core::audit::known_events(rig.store.page(&AuditQuery::default()).await.unwrap());
     assert!(
         audit
             .iter()
@@ -750,7 +754,8 @@ async fn the_daily_cap_degrades_open_to_apply_for_the_rest_of_the_utc_day() {
     assert!(!is_a_member(&rig, &key).await);
 
     // The audit log has the one `registration.capped` row, however many were turned away.
-    let audit = rig.store.page(&AuditQuery::default()).await.unwrap();
+    let audit =
+        russh_bbs_core::audit::known_events(rig.store.page(&AuditQuery::default()).await.unwrap());
     let capped = audit
         .iter()
         .filter(|row| row.event.action == Action::RegistrationCapped)
