@@ -10,6 +10,7 @@ use super::store::{InviteStatus, InviteSummary};
 use super::strings;
 use super::tree::TreeLine;
 use crate::sanitize::{SingleLine, USERNAME_MAX_CHARS};
+use crate::store::UnixSeconds;
 use crate::terminal_settings::format_utc;
 use crate::terminal_settings::strings::fill;
 use crate::waiting_room::{Notice, NoticeKind, View};
@@ -42,6 +43,8 @@ pub enum InviteOutcome {
     QuotaReached {
         /// The quota.
         limit: u32,
+        /// When the count restarts.
+        resets_at: UnixSeconds,
     },
     /// The session does not hold the permission.
     Denied,
@@ -129,11 +132,14 @@ impl InviteScreen {
                 view.footer = strings::FOOTER_LIST;
             }
             InviteOutcome::Tree(lines) => self.tree_view(&mut view, lines),
-            InviteOutcome::QuotaReached { limit } => {
+            InviteOutcome::QuotaReached { limit, resets_at } => {
                 view.heading = strings::CREATE_HEADING;
                 view.body = vec![fill(
                     strings::QUOTA_REACHED,
-                    &[("limit", &limit.to_string())],
+                    &[
+                        ("limit", &limit.to_string()),
+                        ("when", &format_utc(*resets_at)),
+                    ],
                 )];
                 view.notice = Some(error(strings::NOTICE_QUOTA));
                 view.footer = strings::FOOTER_LIST;

@@ -45,6 +45,7 @@ sysop screen over it is M5; the board has no audit screen yet.
 | `change_groups` add / remove | `group.member_added` / `group.member_removed` | caller | the group | `account <id>` or `group <id>` |
 | `change_groups` delete | `group.deleted` | caller | the group | `name <name>` |
 | `add_grant` | `grant.added` | caller | the subject (account or group) | `role <name>` or `permission <name>`; the grant's resource, if scoped |
+| `set_role_limit` / `set_member_limit` (M2-H) | `limit.changed` | caller | the role or the account | `<kind> set to <n>`, `<kind> set to unlimited` or `<kind> override cleared`; a repeat of the same value, or clearing an override that is not set, writes no row |
 | `set_terminal_settings` | `setting.changed` | the account | the account | `terminal settings` |
 | `create_invite` (M2-D) | `invite.created` | the inviter | the invite (row id, never the code) | `expires at <unix seconds>` |
 | `redeem_invite` (M2-D) | `account.created` | the new account | the new account | `via invite <id> by account <id> state active` |

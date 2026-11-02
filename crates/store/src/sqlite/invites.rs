@@ -12,7 +12,7 @@ use russh_bbs_core::access::Fingerprint;
 use russh_bbs_core::audit::events;
 use russh_bbs_core::invites::{
     CodeHash, CreateError, InviteId, InviteRecord, InviteStore, InviteSummary, NewInvite,
-    QUOTA_WINDOW_SECS, REDEEMED_STATE, RedeemError, Redeemed, RejectReason, TreeNode,
+    REDEEMED_STATE, RedeemError, Redeemed, RejectReason, TreeNode, month_start, next_month_start,
 };
 use russh_bbs_core::sanitize::Username;
 use russh_bbs_core::store::{AccountId, StoreError, UnixSeconds};
@@ -27,7 +27,9 @@ impl InviteStore for SqliteStore {
     async fn create_invite(&self, new: &NewInvite) -> Result<InviteRecord, CreateError> {
         let now = self.clock().now().as_raw();
         let expires = now.saturating_add(new.ttl_secs);
-        let window_start = now.saturating_sub(QUOTA_WINDOW_SECS);
+        // The quota counts the UTC calendar month the store's clock is in.
+        let window_start = month_start(UnixSeconds::from_raw(now)).as_raw();
+        let resets_at = next_month_start(UnixSeconds::from_raw(now));
         let hash = new.code_hash.to_hex();
         let inviter = new.inviter.as_raw();
         let limit = new.quota.limit().map(i64::from);
@@ -42,7 +44,7 @@ impl InviteStore for SqliteStore {
                WHERE a.id = ?4
                  AND (?5 IS NULL
                       OR (SELECT count(*) FROM invite
-                          WHERE inviter_id = a.id AND created_at > ?6) < ?5)
+                          WHERE inviter_id = a.id AND created_at >= ?6) < ?5)
                RETURNING id AS "id!""#,
             hash,
             now,
@@ -62,13 +64,13 @@ impl InviteStore for SqliteStore {
                     .map_err(backend)?
                     .is_some();
             return Err(match (exists, new.quota.limit()) {
-                (true, Some(limit)) => CreateError::QuotaReached { limit },
+                (true, Some(limit)) => CreateError::QuotaReached { limit, resets_at },
                 (true, None) | (false, _) => CreateError::Store(StoreError::AccountNotFound),
             });
         };
         let used = sqlx::query_scalar!(
             r#"SELECT count(*) AS "n!: i64" FROM invite
-               WHERE inviter_id = ? AND created_at > ?"#,
+               WHERE inviter_id = ? AND created_at >= ?"#,
             inviter,
             window_start,
         )
@@ -88,7 +90,7 @@ impl InviteStore for SqliteStore {
         Ok(InviteRecord {
             id: InviteId::from_raw(id),
             expires_at: UnixSeconds::from_raw(expires),
-            used_in_window: u32::try_from(used).unwrap_or(u32::MAX),
+            used_in_month: u32::try_from(used).unwrap_or(u32::MAX),
         })
     }
 

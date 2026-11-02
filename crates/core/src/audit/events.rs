@@ -4,6 +4,7 @@
 use super::event::{Action, Actor, AuditEvent, Target};
 use crate::access::{Child, Granting, GroupChange, GroupId, NewGrant, Scope, Slug, Subject};
 use crate::invites::InviteId;
+use crate::limits::{Limit, LimitKind};
 use crate::store::{AccountId, AccountState, UnixSeconds};
 
 /// The founder claim made `account` the first sysop. The actor is the new account itself.
@@ -88,6 +89,23 @@ pub fn grant_added(actor: Actor, grant: &NewGrant) -> AuditEvent {
         Scope::Global => event,
         Scope::Resource(resource) => event.on(resource),
     }
+}
+
+/// A resource limit was set (`Some`) or a member override cleared (`None`). The target is the
+/// role or the account; the note names the kind and the new value.
+#[must_use]
+pub fn limit_changed(
+    actor: Actor,
+    target: Target,
+    kind: LimitKind,
+    value: Option<Limit>,
+) -> AuditEvent {
+    let what = match value {
+        Some(Limit::AtMost(n)) => format!("{} set to {n}", kind.name()),
+        Some(Limit::Unlimited) => format!("{} set to unlimited", kind.name()),
+        None => format!("{} override cleared", kind.name()),
+    };
+    AuditEvent::new(actor, Action::LimitChanged, target).detail(&what)
 }
 
 /// A member saved their own terminal settings.

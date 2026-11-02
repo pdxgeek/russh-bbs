@@ -497,8 +497,9 @@ async fn a_member_stops_at_their_quota_with_a_plain_message() {
     press(&mut member, "y").await;
     press(&mut member, "i").await;
 
-    // A member may make 3 in the window: the screens count down, then say no.
-    for left in [2, 1, 0] {
+    // A member may make 2 a month (M2-H's default for `member`): the screens count down, then
+    // say no.
+    for left in [1, 0] {
         let screen = flat(&press(&mut member, "c").await);
         assert!(
             screen.contains(&format!("still make this month: {left}.")),
@@ -507,7 +508,11 @@ async fn a_member_stops_at_their_quota_with_a_plain_message() {
         press(&mut member, "x").await;
     }
     let screen = flat(&press(&mut member, "c").await);
-    assert!(screen.contains("all 3 of your invites"), "{screen}");
+    assert!(
+        screen.contains("all 2 of your invites for this month"),
+        "{screen}"
+    );
+    assert!(screen.contains("The count restarts"), "{screen}");
     assert!(screen.contains("No invite was made."), "{screen}");
     assert!(!screen.contains("Invite code:"), "{screen}");
     let made: i64 = sqlx::query_scalar(
@@ -516,7 +521,7 @@ async fn a_member_stops_at_their_quota_with_a_plain_message() {
     .fetch_one(&rig.db)
     .await
     .unwrap();
-    assert_eq!(made, 3);
+    assert_eq!(made, 2);
     rig.stop().await;
 }
 

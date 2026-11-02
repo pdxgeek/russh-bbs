@@ -36,6 +36,8 @@ pub(crate) const SEED: &[&str] = &[
      SELECT id, 2 FROM member_group WHERE name = 'crew'",
     "INSERT INTO profiles (account_id, display_name, pronouns, location, about, website, updated_at) \
      VALUES (2, 'Bobby', 'they/them', 'Portland', 'hello there', 'https://example.org', 950)",
+    "INSERT INTO member_limit (account_id, kind, value) VALUES (2, 'invites_per_month', 9), (2, 'mail_per_day', NULL)",
+    "INSERT INTO limit_usage (account_id, kind, day, amount) VALUES (2, 'calls_per_day', 20000, 3), (1, 'minutes_per_day', 20000, 1800)",
     "INSERT INTO audit_log (at, actor_kind, actor_id, action, target_kind, target_ref, detail) VALUES \
      (100, 'account', 1, 'founder.claimed', 'account', '1', 'role sysop'), \
      (200, 'system', NULL, 'account.created', 'account', '2', 'role member state active'), \
@@ -94,6 +96,21 @@ pub(crate) const DUMPS: &[(&str, &str)] = &[
         "SELECT CAST(account_id AS TEXT) || '|' || display_name || '|' || pronouns || '|' \
          || location || '|' || about || '|' || website || '|' || CAST(updated_at AS TEXT) \
          FROM profiles ORDER BY account_id",
+    ),
+    (
+        "member_limit",
+        "SELECT CAST(account_id AS TEXT) || '|' || kind || '|' \
+         || COALESCE(CAST(value AS TEXT), '-') FROM member_limit ORDER BY 1",
+    ),
+    (
+        "limit_usage",
+        "SELECT CAST(account_id AS TEXT) || '|' || kind || '|' || CAST(day AS TEXT) || '|' \
+         || CAST(amount AS TEXT) FROM limit_usage ORDER BY 1",
+    ),
+    (
+        "role_limit",
+        "SELECT role || '|' || kind || '|' || COALESCE(CAST(value AS TEXT), '-') \
+         FROM role_limit ORDER BY 1",
     ),
     (
         "role",

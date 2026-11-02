@@ -48,6 +48,9 @@ pub enum Action {
     /// An account moved from one state to another (M2-D).
     #[strum(serialize = "account.state_changed")]
     AccountStateChanged,
+    /// A resource limit was set or an override cleared (M2-H).
+    #[strum(serialize = "limit.changed")]
+    LimitChanged,
     /// Staff edited another member's profile (M2-F). The owner's own edits are not audited.
     #[strum(serialize = "profile.edited")]
     ProfileEdited,

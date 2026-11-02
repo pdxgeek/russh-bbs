@@ -13,7 +13,7 @@ use russh_bbs_core::access::Fingerprint;
 use russh_bbs_core::audit::events;
 use russh_bbs_core::invites::{
     CodeHash, CreateError, InviteId, InviteRecord, InviteStore, InviteSummary, NewInvite,
-    QUOTA_WINDOW_SECS, REDEEMED_STATE, RedeemError, Redeemed, RejectReason, TreeNode,
+    REDEEMED_STATE, RedeemError, Redeemed, RejectReason, TreeNode, month_start, next_month_start,
 };
 use russh_bbs_core::sanitize::Username;
 use russh_bbs_core::store::{AccountId, StoreError, UnixSeconds};
@@ -28,7 +28,9 @@ impl InviteStore for PostgresStore {
     async fn create_invite(&self, new: &NewInvite) -> Result<InviteRecord, CreateError> {
         let now = self.clock().now().as_raw();
         let expires = now.saturating_add(new.ttl_secs);
-        let window_start = now.saturating_sub(QUOTA_WINDOW_SECS);
+        // The quota counts the UTC calendar month the store's clock is in.
+        let window_start = month_start(UnixSeconds::from_raw(now)).as_raw();
+        let resets_at = next_month_start(UnixSeconds::from_raw(now));
         let hash = new.code_hash.to_hex();
         let inviter = new.inviter.as_raw();
 
@@ -42,7 +44,7 @@ impl InviteStore for PostgresStore {
             return Err(CreateError::Store(StoreError::AccountNotFound));
         }
         let before = sqlx::query_scalar!(
-            r#"SELECT count(*) AS "n!" FROM invite WHERE inviter_id = $1 AND created_at > $2"#,
+            r#"SELECT count(*) AS "n!" FROM invite WHERE inviter_id = $1 AND created_at >= $2"#,
             inviter,
             window_start,
         )
@@ -52,7 +54,7 @@ impl InviteStore for PostgresStore {
         if let Some(limit) = new.quota.limit()
             && before >= i64::from(limit)
         {
-            return Err(CreateError::QuotaReached { limit });
+            return Err(CreateError::QuotaReached { limit, resets_at });
         }
         let id = sqlx::query_scalar!(
             "INSERT INTO invite (code_hash, inviter_id, created_at, expires_at)
@@ -78,7 +80,7 @@ impl InviteStore for PostgresStore {
         Ok(InviteRecord {
             id: InviteId::from_raw(id),
             expires_at: UnixSeconds::from_raw(expires),
-            used_in_window: u32::try_from(before.saturating_add(1)).unwrap_or(u32::MAX),
+            used_in_month: u32::try_from(before.saturating_add(1)).unwrap_or(u32::MAX),
         })
     }
 

@@ -11,6 +11,7 @@ pub(crate) mod accounts;
 pub(crate) mod audit;
 pub(crate) mod founder;
 pub(crate) mod invites;
+pub(crate) mod limits;
 pub(crate) mod profiles;
 pub(crate) mod terminal_settings;
 
@@ -20,6 +21,7 @@ use russh_bbs_core::access::{AccessStore, Fingerprint, MemberDirectory, Slug};
 use russh_bbs_core::audit::{AuditStore, WallClock};
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::invites::InviteStore;
+use russh_bbs_core::limits::LimitStore;
 use russh_bbs_core::profiles::ProfileStore;
 use russh_bbs_core::store::{AccountStateStore, AccountStore, SettingsStore};
 use russh_bbs_core::terminal_settings::{MemberSessions, TerminalSettingsStore};
@@ -34,6 +36,7 @@ pub(crate) trait TestStore:
     + AuditStore
     + SettingsStore
     + FounderStore
+    + LimitStore
     + TerminalSettingsStore
     + ProfileStore
     + MemberDirectory
@@ -53,6 +56,7 @@ impl<T> TestStore for T where
         + AuditStore
         + SettingsStore
         + FounderStore
+        + LimitStore
         + TerminalSettingsStore
         + ProfileStore
         + MemberDirectory
@@ -122,7 +126,7 @@ macro_rules! shared_suite {
             #[allow(unused_imports)]
             use super::*;
             use $crate::suite::{
-                access, accounts, audit, founder, invites, profiles, terminal_settings,
+                access, accounts, audit, founder, invites, limits, profiles, terminal_settings,
             };
 
             $crate::suite::shared_suite!(@tests $harness, $attr;
@@ -182,7 +186,7 @@ macro_rules! shared_suite {
                 invites::a_refused_redemption_consumes_nothing,
                 invites::a_suspended_inviter_voids_their_open_codes,
                 invites::concurrent_redemptions_of_one_code_make_exactly_one_account,
-                invites::the_quota_counts_a_rolling_window_and_a_missing_inviter_is_an_error,
+                invites::the_quota_counts_the_utc_calendar_month_and_a_missing_inviter_is_an_error,
                 invites::concurrent_creations_cannot_exceed_the_quota,
                 invites::the_tree_lists_members_with_their_inviters_and_never_applicants,
                 invites::my_invites_are_newest_first_with_their_status,
@@ -192,6 +196,22 @@ macro_rules! shared_suite {
                 invites::allowed_state_changes_are_made_and_audited,
                 invites::refused_state_changes_write_nothing,
                 invites::racing_state_changes_apply_once,
+                limits::the_built_in_roles_have_the_documented_defaults,
+                limits::the_documented_defaults_equal_the_seeded_rows,
+                limits::limit_edits_write_audit_rows_and_no_ops_write_none,
+                limits::a_limit_edit_never_lands_without_its_audit_row,
+                limits::every_role_has_every_kind_and_the_layers_do_not_tighten,
+                limits::limits_edit_is_held_by_sysop_and_cosysop_only,
+                limits::role_limits_can_be_replaced_and_unlimited_is_a_real_value,
+                limits::member_overrides_set_clear_and_isolate,
+                limits::an_override_changes_the_effective_limit,
+                limits::usage_accumulates_per_account_kind_and_day,
+                limits::a_capped_add_stops_at_the_cap_and_changes_nothing_when_full,
+                limits::concurrent_capped_adds_never_pass_the_cap,
+                limits::pruning_deletes_only_older_days_of_that_account,
+                limits::limits_and_usage_survive_a_reopen,
+                limits::a_broken_store_errors_instead_of_reading_as_unlimited,
+                limits::a_session_start_counts_calls_in_the_store,
                 profiles::an_active_member_without_a_profile_has_an_empty_one,
                 profiles::a_saved_profile_round_trips_and_a_later_save_replaces_it,
                 profiles::saving_a_profile_for_an_unknown_account_fails,

@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT count(*) AS \"n!: i64\" FROM invite\n               WHERE inviter_id = ? AND created_at > ?",
+  "query": "SELECT count(*) AS \"n!: i64\" FROM invite\n               WHERE inviter_id = ? AND created_at >= ?",
   "describe": {
     "columns": [
       {
@@ -16,5 +16,5 @@
       false
     ]
   },
-  "hash": "cadc8b2682d4be2f4874b44b25009ae32d1a17aa7b7df9398f3c75722779301d"
+  "hash": "619477511bc1115e9fc7cc24e51e3f0ea842894ce9e1fe98933366c5dea95af8"
 }

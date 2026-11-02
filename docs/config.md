@@ -116,6 +116,20 @@ The waiting-room banner and rules text are stored settings (D37), not config key
 
 The per-address connection limit (`waiting_room.ip_burst`, `waiting_room.ip_interval_secs`) also applies to the founder claim; see "If the claim connection is dropped" in [deploy.md](deploy.md) (D65).
 
+## Resource limits (M2-H)
+
+Limits are **not config keys**: they are board data, edited by a member holding `limits.edit` (a sysop screen arrives in M5; the core service is `core::limits`), stored in `role_limit` and `member_limit`, and effective without a restart (an open session notices within 30 seconds). Only the seeded **defaults** are described here; the rules, kinds and enforcement status are in [access.md](access.md#resource-limits). A test keeps this table equal to the migration's rows.
+
+| Role | Minutes/day | Calls/day | Sessions | Posts/hour | Upload/day | Upload/file | Mail/day | Invites/month |
+|---|---|---|---|---|---|---|---|---|
+| `member` | 60 | 5 | 2 | 20 | 10 MiB | 5 MiB | 20 | 2 |
+| `trusted` | 120 | 10 | 3 | 40 | 50 MiB | 10 MiB | 50 | 5 |
+| `moderator` | 240 | 20 | 4 | 100 | 100 MiB | 25 MiB | 100 | 10 |
+| `cosysop` | unlimited | unlimited | 8 | 200 | 1024 MiB | 100 MiB | 500 | 50 |
+| `sysop` | unlimited | unlimited | unlimited | unlimited | unlimited | unlimited | unlimited | unlimited |
+
+Usage counters (`limit_usage`) are per account per UTC day and survive a restart. The concurrent-session count is in memory, per process.
+
 ## Other flags and variables
 
 | Name | Meaning |

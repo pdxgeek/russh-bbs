@@ -4,13 +4,14 @@
 use tracing::{info, warn};
 
 use super::code::{CODE_BYTES, CodeHash, InviteCode};
-use super::quota::{INVITE_TTL_SECS, invite_quota};
+use super::quota::{INVITE_TTL_SECS, Quota};
 use super::store::{
     CreateError, InviteId, InviteStore, InviteSummary, NewInvite, RedeemError, Redeemed,
     RejectReason,
 };
 use super::tree::{TreeLine, order_tree};
 use crate::access::{Denied, Fingerprint, Permission, Snapshot};
+use crate::limits::{EffectiveLimits, LimitKind, LimitStore, load_effective};
 use crate::sanitize::Username;
 use crate::store::{StoreError, UnixSeconds};
 
@@ -44,23 +45,45 @@ pub enum InviteError {
     QuotaReached {
         /// The quota.
         limit: u32,
+        /// When the count restarts.
+        resets_at: UnixSeconds,
     },
     /// The store failed.
     #[error(transparent)]
     Store(#[from] StoreError),
 }
 
-/// Create an invite for the session behind `access`. Needs `invites.create`; the quota comes
-/// from the account's highest role ([`invite_quota`]); `random` is [`CODE_BYTES`] bytes from the
-/// OS CSPRNG. Audited in the store's transaction. The plaintext code is in the result and
-/// nowhere else.
+/// Create an invite for the session behind `access`. Needs `invites.create` first and the
+/// account's `invites_per_month` limit second (M2-H: the role's value or the member's override,
+/// resolved by [`load_effective`]); `random` is [`CODE_BYTES`] bytes from the OS CSPRNG. Audited
+/// in the store's transaction. The plaintext code is in the result and nowhere else.
 ///
 /// # Errors
 /// [`InviteError::Denied`] without the permission, [`InviteError::QuotaReached`] at the quota,
-/// [`InviteError::Store`] otherwise.
-pub async fn create_invite<S: InviteStore>(
+/// [`InviteError::Store`] otherwise (including a failure to read the limits: the invite is not
+/// made).
+pub async fn create_invite<S: InviteStore + LimitStore>(
     store: &S,
     access: &Snapshot,
+    random: [u8; CODE_BYTES],
+) -> Result<CreatedInvite, InviteError> {
+    let granted = access.require(Permission::InvitesCreate, None)?;
+    let Some(inviter) = granted.account() else {
+        return Err(InviteError::Store(StoreError::AccountNotFound));
+    };
+    let limits = load_effective(store, inviter, access).await?;
+    create_invite_within(store, access, &limits, random).await
+}
+
+/// [`create_invite`] with the limits already resolved. Separate so the rules can be tested
+/// without a limits store; the permission is still checked here.
+///
+/// # Errors
+/// As [`create_invite`].
+pub async fn create_invite_within<S: InviteStore>(
+    store: &S,
+    access: &Snapshot,
+    limits: &EffectiveLimits,
     random: [u8; CODE_BYTES],
 ) -> Result<CreatedInvite, InviteError> {
     let granted = access.require(Permission::InvitesCreate, None)?;
@@ -68,7 +91,7 @@ pub async fn create_invite<S: InviteStore>(
         // `invites.create` is never granted to the waiting room; fail closed if it somehow is.
         return Err(InviteError::Store(StoreError::AccountNotFound));
     };
-    let quota = invite_quota(access.top_role());
+    let quota = Quota::from_limit(limits.get(LimitKind::InvitesPerMonth));
     let code = InviteCode::from_bytes(random);
     let new = NewInvite {
         inviter,
@@ -81,7 +104,7 @@ pub async fn create_invite<S: InviteStore>(
             info!(inviter = %inviter, invite = %record.id, "invite created");
             let remaining = quota
                 .limit()
-                .map(|limit| limit.saturating_sub(record.used_in_window));
+                .map(|limit| limit.saturating_sub(record.used_in_month));
             Ok(CreatedInvite {
                 id: record.id,
                 code,
@@ -89,7 +112,9 @@ pub async fn create_invite<S: InviteStore>(
                 remaining,
             })
         }
-        Err(CreateError::QuotaReached { limit }) => Err(InviteError::QuotaReached { limit }),
+        Err(CreateError::QuotaReached { limit, resets_at }) => {
+            Err(InviteError::QuotaReached { limit, resets_at })
+        }
         Err(CreateError::Store(error)) => Err(error.into()),
     }
 }

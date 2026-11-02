@@ -19,6 +19,7 @@ mod directory;
 mod error;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod invite_rows;
+mod limit_rows;
 mod profile_rows;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod rows;

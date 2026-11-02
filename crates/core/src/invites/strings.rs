@@ -28,7 +28,8 @@ pub const FOOTER_CODE: &str = "Any key: done (the code is not shown again)";
 /// Notice after the quota is used up.
 pub const NOTICE_QUOTA: &str = "No invite was made.";
 /// Body line for the quota.
-pub const QUOTA_REACHED: &str = "You have made all {limit} of your invites for the last 30 days. A slot frees up 30 days after an invite was made.";
+pub const QUOTA_REACHED: &str =
+    "You have made all {limit} of your invites for this month. The count restarts {when}.";
 /// Notice when the session may not do it (a role changed since the menu was drawn).
 pub const NOTICE_DENIED: &str = "You are not allowed to do that.";
 /// Notice when the store failed. Nothing was changed.

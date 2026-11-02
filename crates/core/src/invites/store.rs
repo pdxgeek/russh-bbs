@@ -50,7 +50,8 @@ pub struct NewInvite {
     pub code_hash: CodeHash,
     /// Seconds the code lives.
     pub ttl_secs: i64,
-    /// The inviter's quota; the store checks it in the same transaction as the insert.
+    /// The inviter's quota for the calendar month the store's clock is in; the store checks it
+    /// in the same transaction as the insert.
     pub quota: Quota,
 }
 
@@ -61,18 +62,20 @@ pub struct InviteRecord {
     pub id: InviteId,
     /// When it expires.
     pub expires_at: UnixSeconds,
-    /// How many codes the inviter has created in the quota window, this one included.
-    pub used_in_window: u32,
+    /// How many codes the inviter has created this calendar month (UTC), this one included.
+    pub used_in_month: u32,
 }
 
 /// Why a code was not recorded. Nothing was written.
 #[derive(Debug, thiserror::Error)]
 pub enum CreateError {
-    /// The inviter has already created `limit` codes in the window.
+    /// The inviter has already created `limit` codes this month.
     #[error("invite quota reached ({limit} per month)")]
     QuotaReached {
         /// The quota that was hit.
         limit: u32,
+        /// When the count restarts: 00:00 UTC on the first of next month.
+        resets_at: UnixSeconds,
     },
     /// The store failed, or the inviter does not exist.
     #[error(transparent)]
@@ -153,7 +156,7 @@ pub struct TreeNode {
 /// Invite persistence.
 pub trait InviteStore: Send + Sync {
     /// Record a code for `new.inviter`. In one transaction: lock the inviter, count the codes
-    /// created in the quota window, refuse with [`CreateError::QuotaReached`] if the quota is
+    /// created this calendar month (UTC), refuse with [`CreateError::QuotaReached`] if the quota is
     /// used, insert, and write the `invite.created` audit row (actor: the inviter, target: the
     /// invite id). Concurrent callers cannot both take the last slot.
     fn create_invite(

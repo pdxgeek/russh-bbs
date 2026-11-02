@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO member_limit (account_id, kind, value) VALUES (?, ?, ?)\n                     ON CONFLICT (account_id, kind) DO UPDATE SET value = excluded.value\n                     WHERE member_limit.value IS NOT excluded.value",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "0d3adf56b2e22e1c1181c170da1b3bd87b2fdf86efef09ab66d52c5e3ec1ebfc"
+}

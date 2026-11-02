@@ -19,7 +19,7 @@ One named permission per action, a closed enum in `core::access`. Names are `are
 | Feeds | `feeds.read`, `feeds.manage` |
 | Doors | `doors.run`, `doors.manage` |
 | Boardlets | `oneliners.post`, `graffiti.post`, `polls.vote`, `polls.create`, `events.view`, `events.manage` |
-| Sysop | `sysop.page`, `sysop.chat`, `sessions.view`, `sessions.disconnect`, `audit.view`, `settings.edit`, `roles.edit`, `groups.edit`, `themes.manage`, `backups.run` |
+| Sysop | `sysop.page`, `sysop.chat`, `sessions.view`, `sessions.disconnect`, `audit.view`, `settings.edit`, `roles.edit`, `groups.edit`, `limits.edit`, `themes.manage`, `backups.run` |
 
 A permission is held either globally (from the role) or scoped to one area (one board, file area, room, or door). Scoped grants are how a trusted member moderates one board without becoming a moderator everywhere.
 
@@ -33,7 +33,7 @@ Shipped so a sysop never has to build a role from scratch. All of them except `s
 | `member` | 10 | Account, `members.view`, `invites.create`, all read and post permissions in Forums, Chat, Mail, Files (`files.upload` goes to quarantine), Feeds, Doors, Boardlets except `polls.create` and `events.manage` | Everyone who was approved |
 | `trusted` | 20 | `member` plus `polls.create`, `members.vouch`, `invites.view_tree` | Long-standing members; the inviter tier |
 | `moderator` | 30 | `trusted` plus every `*.moderate`, `files.approve`, `members.deny`, `sessions.view` | Keeps the board clean; no settings or roles |
-| `cosysop` | 40 | `moderator` plus every `*.manage`, `members.approve`, `members.suspend`, `members.edit`, `groups.edit`, `audit.view`, `events.manage`, `sysop.chat` | Runs the board day to day; cannot edit roles, settings, or backups |
+| `cosysop` | 40 | `moderator` plus every `*.manage`, `members.approve`, `members.suspend`, `members.edit`, `groups.edit`, `limits.edit`, `audit.view`, `events.manage`, `sysop.chat` | Runs the board day to day; cannot edit roles, settings, or backups |
 | `sysop` | 100 | Everything, always | The founder and whoever they trust completely. Not editable. |
 
 Rank only orders roles and stops an account from granting or editing a role at or above its own. It never unlocks an action by itself.
@@ -71,8 +71,67 @@ Permissions say what a role may do. Resource security says it on **each thing**:
 - **Per-resource policy.** Each resource carries: an owner; for each role, which of the resource's permissions that role holds there (default: the role's global set); and an explicit **allow list** of members or groups who get a permission there regardless of role (how a private board or an invite-only room works in the plain-ssh MVP, labeled "visible to the sysop" as always). There is **no deny list**: access is purely additive. To take access away, remove the grant, remove the member from the group, change their role, or suspend the account.
 - **Visibility follows policy.** A resource a member cannot `list` or `read` is absent from menus, search, new-scan, feeds out, and the SFTP tree, and is not reachable by name or ID. Tests cover every one of those paths, since a leak through search or SFTP is the same leak as one through the menu.
 - **Ownership.** `*.edit_own` and delete-own apply to the member's own posts, files, and profile. Moderators act on others' through `*.moderate`. Ownership transfers are audited.
-- **Resource limits per role**, overridable per member: minutes per day, calls per day, maximum concurrent sessions, posts per hour, upload bytes per day and per file, mail per day, invites per month, credits earn rate. Exceeding a limit is a normal, honest message, never a silent drop. Limits are checked in core next to permissions, so a front end cannot forget them.
+- **Resource limits per role**, overridable per member: minutes per day, calls per day, maximum concurrent sessions, posts per hour, upload bytes per day and per file, mail per day, invites per month (the credits earn rate waits for the credit economy). Exceeding a limit is a normal, honest message, never a silent drop. Limits are checked in core next to permissions, so a front end cannot forget them. Details in "Resource limits" below.
 - **Sysop sees everything.** The `sysop` role holds every permission everywhere; the UI says so wherever a member sets an allow list, in keeping with the honesty rule.
+
+## Resource limits
+
+Status: **Implemented** (M2-H, `m2/limits`, D62, D63); not yet Verified (the QA gate has not run). Code: `core::limits`; tables `role_limit`, `member_limit`, `limit_usage` (migration `0006_limits` on both backends).
+
+**Order: permission first, limit second, both in core.** An action first needs its permission (`Snapshot::require`, which yields the `Granted` proof); then the action asks core whether a limit allows it. A refusal is a `LimitRefusal` that names the limit, its value and when it resets, shown to the member as it is. Nothing is dropped silently.
+
+### Kinds
+
+A closed enum, `LimitKind`; each kind has a value per role (a number, or unlimited) and an optional per-member override.
+
+| Kind (stored name) | Counts | Window | Enforced by |
+|---|---|---|---|
+| `minutes_per_day` | signed-in time | UTC day | **M2-H now** (SSH sessions) |
+| `calls_per_day` | signed-in sessions started | UTC day | **M2-H now** (SSH sessions) |
+| `max_sessions` | signed-in sessions open at once | none (in-process count) | **M2-H now** (SSH sessions) |
+| `posts_per_hour` | forum posts and replies | rolling hour | M3 forums |
+| `upload_bytes_per_day` | bytes uploaded | UTC day | M4 files |
+| `upload_bytes_per_file` | bytes in one file | none | M4 files |
+| `mail_per_day` | mail messages sent | UTC day | M3 mail |
+| `invites_per_month` | invite codes created | calendar month (UTC) | **M2-D now** (`create_invite`, from the invite rows) |
+
+The **credits earn rate** is left out until the credit economy exists (M3 credits ledger); adding it is a new variant, its row here and a migration. The kinds not enforced yet are stored, resolved by `load_effective` and editable now; the slice that owns the action calls `load_effective` (and `add_usage` for a per-day count) when it builds the action. Hand-off rows are in [coordination.md](coordination.md).
+
+### The effective limit
+
+`effective_limits` (pure, unit tested) gives the limit of each kind for an account:
+
+1. **`sysop` is unlimited**, whatever is stored, so the founder cannot lock themselves out with an edit.
+2. Otherwise the **member override**, if one is set for the kind.
+3. Otherwise the **most generous value among the roles the account holds globally** (additive, like permissions, D33; unlimited is the most generous). A role held only on one resource (a per-board moderator) does not count. A role with no stored value for the kind is skipped.
+4. If no held role has a value, the kind is **unlimited**. (So a custom role never loosens a limit by existing, but an account holding only roles without values is unlimited. Every active account holds `member` through `everyone`, which has all values.)
+
+Zero is a real limit ("none"). `NULL` in the table means unlimited and is an explicit value, different from "no row".
+
+### Defaults
+
+Seeded by migration `0006_limits` and editable with `limits.edit`. Conservative on purpose: a new board starts tight and the sysop loosens it. `waiting` has none (it never signs in). A test keeps this table equal to the seeded rows.
+
+| Role | Minutes/day | Calls/day | Sessions | Posts/hour | Upload/day | Upload/file | Mail/day | Invites/month |
+|---|---|---|---|---|---|---|---|---|
+| `member` | 60 | 5 | 2 | 20 | 10 MiB | 5 MiB | 20 | 2 |
+| `trusted` | 120 | 10 | 3 | 40 | 50 MiB | 10 MiB | 50 | 5 |
+| `moderator` | 240 | 20 | 4 | 100 | 100 MiB | 25 MiB | 100 | 10 |
+| `cosysop` | unlimited | unlimited | 8 | 200 | 1024 MiB | 100 MiB | 500 | 50 |
+| `sysop` | unlimited | unlimited | unlimited | unlimited | unlimited | unlimited | unlimited | unlimited |
+
+### What is enforced for SSH sessions now
+
+- **At sign-in** (a member session start, `begin_member_session`), in this order so a refusal never costs a count: concurrent sessions, then minutes left today, then calls today (the call is counted only when it is allowed, in one atomic step). The refusal screen says which limit and when it resets (midnight UTC, with the time left), is printed again on the main screen so it stays in the scrollback, and the session ends.
+- **At each action** (each batch of keys), for minutes: elapsed time is charged to the day's counter at least every 30 seconds and when the session ends; when the day's minutes are used up the member sees the message and is logged off. An idle session is charged too, but is told at its next keypress. A limit edit reaches an open session at its next 30-second checkpoint.
+- **Not limited by this:** the waiting room and the founder claim (the M1 per-IP and per-key limits still apply to them). A founder claim's own session is not metered; its next sign-in is, as `sysop`, unlimited.
+- **Counters** are persisted per account per UTC day in `limit_usage` (minutes are stored as seconds), so a restart does not reset them. Rows older than 62 days are deleted when the account signs in. Time comes from an injected clock in core, so the tests never sleep.
+- **Concurrent sessions are counted in this process.** A deployment with two server processes on one database is **not covered**: each process counts for itself, so an account could hold its limit in each. Sharing the count needs a lease row in the database. The board runs as one process today.
+- **If the store fails** at sign-in, the member path fails closed (the member sees the waiting room, as for any member-start failure). If it fails while charging time, the session carries on and the failure is logged: an outage must not log every member off, and the time is charged at the next checkpoint.
+
+### Editing limits
+
+`core::limits::{set_role_limit, set_member_limit, clear_member_limit}` take the `Granted` proof of **`limits.edit`** (held by `sysop` and `cosysop`; migration rows in `0006_limits`). There is **no sysop screen yet** (M5): these functions are what that screen and the tests call. A proof for any other permission is refused (`NotPermitted`), a number the database cannot hold is refused (`TooLarge`), and an unknown role or account is named. Every edit is **audited** (`limit.changed`, [audit.md](audit.md)) by the store in the same transaction as the write, with the account in the proof as the actor; a repeat that changes nothing writes no row. There are no rank rules on limits (a `cosysop` can edit any role's limits, including their own).
 
 ## Prior art
 
@@ -117,6 +176,10 @@ This is the most intricate feature in the MVP, so the M2 access slice starts wit
 - **Three permissions wired** ([profiles.md](profiles.md), D60): `members.view` (the Members menu, the list and a profile, so the Members item now opens a submenu instead of a placeholder), `account.edit_profile` (your own profile) and `members.edit` (anyone else's). They do not stand in for each other. Their `role_permission` rows already existed (migration `0003`), so migration `0005_profiles` adds only the `profiles` table. Core actions take a `Granted`; a proof for another permission is refused. Only `active` accounts are visible through any of them.
 - `crates/server/tests/access_paths.rs`: both edit permissions moved to `WIRED`, each with a path test (item and key vanish on the next action, an open form is closed and writes nothing, put back it works again).
 
+### Implemented (M2-H, `m2/limits`)
+
+- See "Resource limits" above: `core::limits`, migration `0006_limits` on both backends, the `limits.edit` permission (one new row in the table), session hooks in `crates/server/src/ssh` (`handler.rs` starts the meter, `shell.rs` ticks it at each action and settles it at the end, `screen.rs` has the limit screen, `registry.rs` holds the in-process session count).
+
 ### Tested
 
 - `resolve` table test (16 cases) and two property tests (an independent oracle; `reach` agrees with `resolve`); `GroupGraph` tests (self loop, two and three cycles, diamond, depth 8 and 9, remove, delete, locked and built-in groups); a test that the enum equals the table in this page.
@@ -124,10 +187,17 @@ This is the most intricate feature in the MVP, so the M2 access slice starts wit
 - A migration test per backend that an M1-era database (migrations 1 and 2, with a sysop) gets `0003` applied and the sysop grant.
 - `crates/server/tests/access_paths.rs` over a real russh client and the real SQLite store: each wired permission is taken away from the roles that give it and the path refuses (menu items vanish and their hotkeys do nothing, settings are not saved, the waiting room is refused a shell), then put back and works again; a removal applies on the very next key of an open session; and a guard test that every `Permission` is in exactly one of `WIRED` and `NOT_YET_WIRED`.
 
+### Tested (M2-H)
+
+- `core::limits` unit tests (no database, a manual clock): the `effective_limits` table (11 cases: most generous of several roles, unlimited beats numbers, zero is real, override lowers and raises, a role without a value is skipped, rows of roles not held are ignored, sysop unlimited whatever is stored, kinds do not leak), roles held only on one resource do not count, the session counter (per account, released on drop, zero means none), session start (counts one call; refuses calls, sessions and minutes with the reset time; a refusal costs no call and no slot), the meter (minutes run out, a restart does not reset usage, a limit edit reaches an open session, midnight rollover, old rows pruned), and the editing proof.
+- The shared store suite (`suite/limits.rs`, 13 checks) on SQLite, Postgres 16 and a TLS-required Postgres 16: the seeded defaults equal the table above, every role has every kind and no layer is tighter than the one below it, `limits.edit` is held by `sysop` and `cosysop` only, replace and clear, usage per account/kind/day, the capped add (including 12 concurrent adds against a cap of 5: exactly 5 succeed), pruning, survival of a reopen, and a broken store errors instead of reading as unlimited.
+- `crates/server/tests/limits.rs` over a real russh client and the real SQLite store: a second sign-in over `calls_per_day` is refused with the message and the reset time; a second concurrent session is refused and the slot comes back when the first ends; a day with no minutes left refuses the sign-in without counting a call; minutes run out during a session and the member is logged off with the message, and the used time is written down; the waiting room is not limited by a member's limits.
+- `crates/server/tests/access_paths.rs`: `limits.edit` is in `WIRED` with a path test (no screen yet): the edit works with the proof, a removal of the permission leaves no proof and a wrong proof is refused with nothing written, and putting it back works on the next action.
+
 ### Not done / not verified
 
 - The editing services (create or change a role, grant or revoke, with the rank rules) are **M2-B2**; nothing writes roles or grants except the founder claim, account creation, group changes and the tests. Group changes and grants written by `add_grant` are audited since M2-C ([audit.md](audit.md)); the editing services add their own rows.
-- Resource limits are **M2-H**. `sysop` and `cosysop` over telnet (D27) is the M3 telnet slice. Resource-owner-managed allow lists wait for the resources (M3, M4).
+- Resource limits: see M2-H above. Not verified: a two-process deployment (concurrent sessions are counted in-process), a session that stays open across several UTC days, real `ssh` for the limit screens (driven with russh clients only; see the PR report), and the posts, mail, upload and invite limits (stored and resolved, not yet enforced; the owning slices enforce them). `sysop` and `cosysop` over telnet (D27) is the M3 telnet slice. Resource-owner-managed allow lists wait for the resources (M3, M4).
 - Not exercised: a deployment with two server processes on one database (nothing is cached, so it should hold, but it was not run), a database with thousands of groups, and the Postgres `LOCK TABLE` under load beyond the two-task race. A suspended account's open session is not disconnected; it simply holds the waiting snapshot from its next action.
 - The first-run icon check stores its answer without `account.edit_settings` being checked as a page (it runs before the menu); the save itself is refused if the permission is not held, and the choice then lasts for the session only.
 

@@ -11,6 +11,7 @@ use std::sync::Mutex;
 
 use super::*;
 use crate::access::{Fingerprint, Permission, Slug, Snapshot, Via};
+use crate::limits::{EffectiveLimits, Limit, LimitKind, RoleLimit, effective_limits};
 use crate::sanitize::{Username, sanitize_username};
 use crate::store::{Account, AccountId, AccountState, StoreError, UnixSeconds};
 
@@ -31,7 +32,10 @@ impl InviteStore for Fake {
         if let Quota::Limited(limit) = new.quota
             && *used >= limit
         {
-            return Err(CreateError::QuotaReached { limit });
+            return Err(CreateError::QuotaReached {
+                limit,
+                resets_at: UnixSeconds::from_raw(2_000),
+            });
         }
         *used += 1;
         let mut created = self.created.lock().unwrap();
@@ -39,7 +43,7 @@ impl InviteStore for Fake {
         Ok(InviteRecord {
             id: InviteId::from_raw(i64::try_from(created.len()).unwrap()),
             expires_at: UnixSeconds::from_raw(1_000 + new.ttl_secs),
-            used_in_window: *used,
+            used_in_month: *used,
         })
     }
 
@@ -87,6 +91,21 @@ fn member(role: &str, permissions: &[Permission]) -> Snapshot {
     )
 }
 
+/// The limits a role of that name with `invites_per_month = n` gets (the sysop is unlimited by
+/// rule, whatever is stored).
+fn limits_of(role: &str, n: u64) -> EffectiveLimits {
+    let role = Slug::parse(role).unwrap();
+    effective_limits(
+        std::slice::from_ref(&role),
+        &[RoleLimit {
+            role: role.clone(),
+            kind: LimitKind::InvitesPerMonth,
+            limit: Limit::AtMost(n),
+        }],
+        &[],
+    )
+}
+
 fn key() -> Fingerprint {
     Fingerprint::parse(&format!("SHA256:{:A>43}", 1)).unwrap()
 }
@@ -112,7 +131,7 @@ fn the_redeemed_account_starts_active() {
 async fn without_invites_create_nothing_is_written() {
     let store = Fake::default();
     let none = member("member", &[Permission::MembersView]);
-    let error = create_invite(&store, &none, [1; CODE_BYTES])
+    let error = create_invite_within(&store, &none, &limits_of("member", 2), [1; CODE_BYTES])
         .await
         .unwrap_err();
     assert!(matches!(error, InviteError::Denied(_)));
@@ -123,7 +142,7 @@ async fn without_invites_create_nothing_is_written() {
 async fn a_created_invite_is_bound_to_the_inviter_hashed_and_expires_in_seven_days() {
     let store = Fake::default();
     let access = member("member", &[Permission::InvitesCreate]);
-    let made = create_invite(&store, &access, [5; CODE_BYTES])
+    let made = create_invite_within(&store, &access, &limits_of("member", 3), [5; CODE_BYTES])
         .await
         .unwrap();
     let recorded = store.created.lock().unwrap();
@@ -142,15 +161,15 @@ async fn the_quota_stops_creation_at_the_role_number() {
     let store = Fake::default();
     let access = member("member", &[Permission::InvitesCreate]);
     for n in 0..3_u8 {
-        create_invite(&store, &access, [n; CODE_BYTES])
+        create_invite_within(&store, &access, &limits_of("member", 3), [n; CODE_BYTES])
             .await
             .unwrap();
     }
-    let error = create_invite(&store, &access, [9; CODE_BYTES])
+    let error = create_invite_within(&store, &access, &limits_of("member", 3), [9; CODE_BYTES])
         .await
         .unwrap_err();
     assert!(
-        matches!(error, InviteError::QuotaReached { limit: 3 }),
+        matches!(error, InviteError::QuotaReached { limit: 3, .. }),
         "{error:?}"
     );
     assert_eq!(store.created.lock().unwrap().len(), 3);
@@ -161,7 +180,7 @@ async fn the_sysop_has_no_quota() {
     let store = Fake::default();
     let access = member("sysop", &[Permission::InvitesCreate]);
     for n in 0..30_u8 {
-        let made = create_invite(&store, &access, [n; CODE_BYTES])
+        let made = create_invite_within(&store, &access, &limits_of("sysop", 3), [n; CODE_BYTES])
             .await
             .unwrap();
         assert_eq!(made.remaining, None);
@@ -176,7 +195,7 @@ async fn a_store_failure_is_an_error_not_a_code() {
     };
     let access = member("member", &[Permission::InvitesCreate]);
     assert!(matches!(
-        create_invite(&store, &access, [1; CODE_BYTES]).await,
+        create_invite_within(&store, &access, &limits_of("member", 3), [1; CODE_BYTES]).await,
         Err(InviteError::Store(_))
     ));
 }
@@ -242,7 +261,7 @@ fn text_of(view: &crate::waiting_room::View) -> String {
 async fn the_create_screen_shows_the_code_and_the_expiry_once() {
     let store = Fake::default();
     let access = member("member", &[Permission::InvitesCreate]);
-    let made = create_invite(&store, &access, [5; CODE_BYTES])
+    let made = create_invite_within(&store, &access, &limits_of("member", 3), [5; CODE_BYTES])
         .await
         .unwrap();
     let code = made.code.reveal().to_owned();
@@ -258,8 +277,18 @@ async fn the_create_screen_shows_the_code_and_the_expiry_once() {
 
 #[test]
 fn quota_denied_and_failed_screens_say_what_happened() {
-    let quota = text_of(&InviteScreen::new(InviteOutcome::QuotaReached { limit: 3 }).view());
-    assert!(quota.contains("all 3 of your invites"));
+    let quota = text_of(
+        &InviteScreen::new(InviteOutcome::QuotaReached {
+            limit: 3,
+            resets_at: UnixSeconds::from_raw(1_793_491_200),
+        })
+        .view(),
+    );
+    assert!(
+        quota.contains("all 3 of your invites for this month"),
+        "{quota}"
+    );
+    assert!(quota.contains("restarts 2026-11-01 00:00 UTC"), "{quota}");
     assert!(quota.contains("No invite was made."));
     let denied = text_of(&InviteScreen::new(InviteOutcome::Denied).view());
     assert!(denied.contains("not allowed"));

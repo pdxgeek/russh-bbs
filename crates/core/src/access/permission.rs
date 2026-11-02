@@ -188,6 +188,9 @@ pub enum Permission {
     /// `groups.edit`.
     #[strum(serialize = "groups.edit")]
     GroupsEdit,
+    /// `limits.edit`.
+    #[strum(serialize = "limits.edit")]
+    LimitsEdit,
     /// `themes.manage`.
     #[strum(serialize = "themes.manage")]
     ThemesManage,

@@ -6,7 +6,7 @@
 //!   redemption (mark used, create the account and key, audit) each in **one transaction**.
 //! * [`create_invite`], [`redeem_invite`], [`my_invites`], [`invite_tree`]: the actions, with
 //!   their permission checks (`invites.create`, `invite.redeem`, `invites.view_tree`).
-//! * [`invite_quota`]: invites per month by role, a stand-in for M2-H's limit.
+//! * [`Quota`]: the account's `invites_per_month` limit (M2-H) per UTC calendar month.
 //! * [`strings`]: the fixed words of the invite screens.
 //!
 //! **No oracle.** A wrong, unknown, used or expired code, a taken handle and a key that already
@@ -22,11 +22,11 @@ pub mod strings;
 mod tree;
 
 pub use code::{CODE_BYTES, CODE_TEXT_MAX_CHARS, CodeHash, InviteCode};
-pub use quota::{INVITE_TTL_SECS, QUOTA_WINDOW_SECS, Quota, invite_quota};
+pub use quota::{INVITE_TTL_SECS, Quota, month_start, next_month_start};
 pub use screens::{InviteOutcome, InviteRequest, InviteScreen, TREE_PAGE_LINES};
 pub use service::{
-    CreatedInvite, InviteError, LIST_LIMIT, TREE_LIMIT, create_invite, invite_tree, my_invites,
-    redeem_invite,
+    CreatedInvite, InviteError, LIST_LIMIT, TREE_LIMIT, create_invite, create_invite_within,
+    invite_tree, my_invites, redeem_invite,
 };
 pub use store::{
     CreateError, InviteId, InviteRecord, InviteStatus, InviteStore, InviteSummary, NewInvite,

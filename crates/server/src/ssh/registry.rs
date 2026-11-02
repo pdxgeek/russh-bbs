@@ -10,6 +10,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 
 use russh_bbs_core::access::{Access, Fingerprint};
+use russh_bbs_core::limits::SessionCounter;
 
 use super::terminal::PtySize;
 
@@ -48,6 +49,9 @@ pub struct SessionSnapshot {
 pub struct SessionRegistry {
     next_id: AtomicU64,
     sessions: Mutex<HashMap<SessionId, SessionSnapshot>>,
+    /// Signed-in sessions per account, for the concurrent-session limit (M2-H). In this
+    /// process only: a second process has its own count.
+    member_sessions: SessionCounter,
 }
 
 impl SessionRegistry {
@@ -108,6 +112,12 @@ impl SessionRef {
     #[must_use]
     pub fn id(&self) -> SessionId {
         self.id
+    }
+
+    /// The count of signed-in sessions per account, shared by every session of this server.
+    #[must_use]
+    pub fn member_sessions(&self) -> SessionCounter {
+        self.registry.member_sessions.clone()
     }
 
     /// Record the authenticated key and the access decided for it.

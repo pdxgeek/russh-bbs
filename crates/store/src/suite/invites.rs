@@ -11,7 +11,7 @@ use russh_bbs_core::audit::{
 };
 use russh_bbs_core::invites::{
     CODE_BYTES, CodeHash, CreateError, INVITE_TTL_SECS, InviteCode, InviteRecord, InviteStatus,
-    InviteStore, NewInvite, QUOTA_WINDOW_SECS, Quota, RedeemError, Redeemed, RejectReason,
+    InviteStore, NewInvite, Quota, RedeemError, Redeemed, RejectReason,
 };
 use russh_bbs_core::sanitize::{Username, sanitize_username};
 use russh_bbs_core::store::{
@@ -102,7 +102,7 @@ pub(crate) async fn a_created_invite_is_stored_hashed_bound_to_the_inviter_and_a
     let alice = member(store, "alice").await;
     let (record, code) = make(store, &alice, 1, Quota::Limited(3)).await;
     assert_eq!(record.expires_at.as_raw(), 1_000 + INVITE_TTL_SECS);
-    assert_eq!(record.used_in_window, 1);
+    assert_eq!(record.used_in_month, 1);
 
     // The database holds the hash and nothing from which the code could be read back.
     assert_eq!(
@@ -369,59 +369,80 @@ pub(crate) async fn concurrent_redemptions_of_one_code_make_exactly_one_account<
     assert_eq!(count_of(&all(store).await, Action::InviteRedeemed), 3);
 }
 
-pub(crate) async fn the_quota_counts_a_rolling_window_and_a_missing_inviter_is_an_error<
+pub(crate) async fn the_quota_counts_the_utc_calendar_month_and_a_missing_inviter_is_an_error<
     H: Harness,
 >() {
+    // 2026-11-02 11:00 UTC; November ends and December starts at these seconds.
+    const NOVEMBER: i64 = 1_793_491_200;
+    const DECEMBER: i64 = 1_796_083_200;
     let mut h = H::fresh().await;
-    let clock = clock_at(&mut h, 1_000);
+    let clock = clock_at(&mut h, 1_793_617_200);
     let store = h.store();
     let alice = member(store, "alice").await;
     let bob = member(store, "bob").await;
     let (first, _) = make(store, &alice, 30, Quota::Limited(2)).await;
     let (second, _) = make(store, &alice, 31, Quota::Limited(2)).await;
-    assert_eq!((first.used_in_window, second.used_in_window), (1, 2));
+    assert_eq!((first.used_in_month, second.used_in_month), (1, 2));
 
-    let over = store
-        .create_invite(&NewInvite {
-            inviter: alice.id,
-            code_hash: InviteCode::from_bytes([32; CODE_BYTES]).hash(),
-            ttl_secs: INVITE_TTL_SECS,
-            quota: Quota::Limited(2),
-        })
-        .await;
+    let attempt = |seed: u8, inviter: AccountId, quota: Quota| {
+        let store = store.clone();
+        async move {
+            store
+                .create_invite(&NewInvite {
+                    inviter,
+                    code_hash: InviteCode::from_bytes([seed; CODE_BYTES]).hash(),
+                    ttl_secs: INVITE_TTL_SECS,
+                    quota,
+                })
+                .await
+        }
+    };
+    let over = attempt(32, alice.id, Quota::Limited(2)).await;
     assert!(
-        matches!(over, Err(CreateError::QuotaReached { limit: 2 })),
+        matches!(over, Err(CreateError::QuotaReached { limit: 2, resets_at }) if resets_at.as_raw() == DECEMBER),
         "{over:?}"
     );
     // The refusal wrote no invite and no audit row.
     assert_eq!(count(&h, "invite").await, "2");
     assert_eq!(count_of(&all(store).await, Action::InviteCreated), 2);
 
-    // Another inviter has their own count; no quota never refuses.
+    // Another inviter has their own count; no quota never refuses; a quota of zero always does.
     make(store, &bob, 33, Quota::Limited(2)).await;
     for seed in 40..45 {
         make(store, &alice, seed, Quota::Unlimited).await;
     }
-
-    // The window is rolling: a code made exactly one window ago no longer counts.
-    clock.set(1_000 + QUOTA_WINDOW_SECS);
-    let (renewed, _) = make(store, &bob, 50, Quota::Limited(2)).await;
-    assert_eq!(
-        renewed.used_in_window, 1,
-        "bob's first code has left the window"
+    let none = attempt(46, bob.id, Quota::Limited(0)).await;
+    assert!(
+        matches!(none, Err(CreateError::QuotaReached { limit: 0, .. })),
+        "{none:?}"
     );
-    let carol = member(store, "carol").await;
-    let (fresh, _) = make(store, &carol, 51, Quota::Limited(1)).await;
-    assert_eq!(fresh.used_in_window, 1);
 
-    let missing = store
-        .create_invite(&NewInvite {
-            inviter: AccountId::from_raw(9_999),
-            code_hash: InviteCode::from_bytes([60; CODE_BYTES]).hash(),
-            ttl_secs: INVITE_TTL_SECS,
-            quota: Quota::Unlimited,
-        })
-        .await;
+    // The month is the calendar month: the last second of November is still November, the
+    // first second of December starts a new count. (Unlimited codes counted too: alice made
+    // seven this month, so she needs a quota above that to make one.)
+    clock.set(DECEMBER - 1);
+    let still = attempt(47, bob.id, Quota::Limited(1)).await;
+    assert!(
+        matches!(still, Err(CreateError::QuotaReached { .. })),
+        "{still:?}"
+    );
+    clock.set(DECEMBER);
+    let renewed = attempt(48, bob.id, Quota::Limited(1)).await.unwrap();
+    assert_eq!(
+        renewed.used_in_month, 1,
+        "bob's November codes have left the month"
+    );
+    // A code made in the first second of a month counts in that month.
+    clock.set(NOVEMBER);
+    let carol = member(store, "carol").await;
+    make(store, &carol, 49, Quota::Limited(1)).await;
+    let again = attempt(50, carol.id, Quota::Limited(1)).await;
+    assert!(
+        matches!(again, Err(CreateError::QuotaReached { .. })),
+        "{again:?}"
+    );
+
+    let missing = attempt(60, AccountId::from_raw(9_999), Quota::Unlimited).await;
     assert!(
         matches!(
             missing,
@@ -454,7 +475,7 @@ pub(crate) async fn concurrent_creations_cannot_exceed_the_quota<H: Harness>() {
     for task in tasks {
         match task.await.unwrap() {
             Ok(_) => made += 1,
-            Err(CreateError::QuotaReached { limit: 3 }) => refused += 1,
+            Err(CreateError::QuotaReached { limit: 3, .. }) => refused += 1,
             Err(other) => panic!("{other:?}"),
         }
     }

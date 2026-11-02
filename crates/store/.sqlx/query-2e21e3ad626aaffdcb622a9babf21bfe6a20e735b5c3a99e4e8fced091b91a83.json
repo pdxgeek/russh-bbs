@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO limit_usage (account_id, kind, day, amount) VALUES (?, ?, ?, 0)\n             ON CONFLICT (account_id, kind, day) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "2e21e3ad626aaffdcb622a9babf21bfe6a20e735b5c3a99e4e8fced091b91a83"
+}
