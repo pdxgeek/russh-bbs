@@ -11,6 +11,7 @@ pub(crate) mod accounts;
 pub(crate) mod audit;
 pub(crate) mod founder;
 pub(crate) mod invites;
+pub(crate) mod profiles;
 pub(crate) mod terminal_settings;
 
 use std::sync::Arc;
@@ -19,6 +20,7 @@ use russh_bbs_core::access::{AccessStore, Fingerprint, MemberDirectory, Slug};
 use russh_bbs_core::audit::{AuditStore, WallClock};
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::invites::InviteStore;
+use russh_bbs_core::profiles::ProfileStore;
 use russh_bbs_core::store::{AccountStateStore, AccountStore, SettingsStore};
 use russh_bbs_core::terminal_settings::{MemberSessions, TerminalSettingsStore};
 
@@ -33,6 +35,7 @@ pub(crate) trait TestStore:
     + SettingsStore
     + FounderStore
     + TerminalSettingsStore
+    + ProfileStore
     + MemberDirectory
     + MemberSessions
     + Clone
@@ -51,6 +54,7 @@ impl<T> TestStore for T where
         + SettingsStore
         + FounderStore
         + TerminalSettingsStore
+        + ProfileStore
         + MemberDirectory
         + MemberSessions
         + Clone
@@ -117,7 +121,9 @@ macro_rules! shared_suite {
         mod $name {
             #[allow(unused_imports)]
             use super::*;
-            use $crate::suite::{access, accounts, audit, founder, invites, terminal_settings};
+            use $crate::suite::{
+                access, accounts, audit, founder, invites, profiles, terminal_settings,
+            };
 
             $crate::suite::shared_suite!(@tests $harness, $attr;
                 access::the_built_in_roles_have_their_ranks_and_kinds,
@@ -186,6 +192,17 @@ macro_rules! shared_suite {
                 invites::allowed_state_changes_are_made_and_audited,
                 invites::refused_state_changes_write_nothing,
                 invites::racing_state_changes_apply_once,
+                profiles::an_active_member_without_a_profile_has_an_empty_one,
+                profiles::a_saved_profile_round_trips_and_a_later_save_replaces_it,
+                profiles::saving_a_profile_for_an_unknown_account_fails,
+                profiles::only_active_accounts_have_visible_profiles,
+                profiles::the_list_is_sorted_by_handle_ignoring_case,
+                profiles::a_prefix_matches_the_start_of_a_handle_only_and_has_no_wildcards,
+                profiles::paging_by_cursor_neither_skips_nor_repeats,
+                profiles::the_list_carries_the_display_name,
+                profiles::profiles_survive_a_reopen,
+                profiles::a_staff_edit_writes_its_audit_row_and_a_failed_audit_rolls_the_edit_back,
+                profiles::a_broken_store_fails_instead_of_answering,
                 terminal_settings::defaults_when_missing,
                 terminal_settings::set_then_get_round_trips,
                 terminal_settings::every_tier_and_unset_round_trip,

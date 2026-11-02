@@ -50,6 +50,7 @@ sysop screen over it is M5; the board has no audit screen yet.
 | `redeem_invite` (M2-D) | `account.created` | the new account | the new account | `via invite <id> by account <id> state active` |
 | `redeem_invite` (M2-D) | `invite.redeemed` | the new account | the invite | `account <id> inviter <id>` |
 | `change_state` (M2-D) | `account.state_changed` | caller | the account | `<from> to <to>` |
+| `save_profile` by staff (M2-F) | `profile.edited` | the editor (`members.edit`) | the edited account | `fields <names>`: field names only, never values. The owner's own edits write no row |
 
 A write that changed nothing (adding a member already in the group, removing one who is not, a
 grant already held, a refused change) writes no row.

@@ -10,6 +10,7 @@ use crate::access::Permission;
 const MAIN: &str = "main";
 const SYSOP: &str = "sysop";
 const INVITES: &str = "invites";
+const MEMBERS: &str = "members";
 
 const fn item(hotkey: char, label: &'static str, target: Target) -> Item {
     Item {
@@ -51,7 +52,7 @@ static MAIN_ITEMS: [Item; 8] = [
     gated(
         'u',
         "menu.main.item.members",
-        Target::Placeholder("placeholder.members"),
+        Target::Menu(MEMBERS),
         Permission::MembersView,
     ),
     gated(
@@ -99,7 +100,25 @@ static INVITES_ITEMS: [Item; 3] = [
     ),
 ];
 
-static MENUS: [Menu; 3] = [
+static MEMBERS_ITEMS: [Item; 3] = [
+    item(
+        'l',
+        "menu.members.item.list",
+        Target::Action(Action::MemberList),
+    ),
+    item(
+        'p',
+        "menu.members.item.profile",
+        Target::Action(Action::OwnProfile),
+    ),
+    item(
+        'e',
+        "menu.members.item.edit",
+        Target::Action(Action::EditOwnProfile),
+    ),
+];
+
+static MENUS: [Menu; 4] = [
     Menu {
         id: MAIN,
         title: "menu.main.title",
@@ -114,6 +133,11 @@ static MENUS: [Menu; 3] = [
         id: INVITES,
         title: "menu.invites.title",
         items: &INVITES_ITEMS,
+    },
+    Menu {
+        id: MEMBERS,
+        title: "menu.members.title",
+        items: &MEMBERS_ITEMS,
     },
 ];
 

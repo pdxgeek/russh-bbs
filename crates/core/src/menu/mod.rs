@@ -61,6 +61,12 @@ pub enum Action {
     InviteList,
     /// Show the invite tree (`invites.view_tree`, M2-D).
     InviteTree,
+    /// Open the member list (M2-F).
+    MemberList,
+    /// Open the signed-in member's own profile (M2-F).
+    OwnProfile,
+    /// Open the form to edit the signed-in member's own profile (M2-F).
+    EditOwnProfile,
     /// End the session.
     LogOff,
 }
@@ -74,6 +80,8 @@ impl Action {
             Self::TerminalSettings => Some(Permission::AccountEditSettings),
             Self::InviteCreate | Self::InviteList => Some(Permission::InvitesCreate),
             Self::InviteTree => Some(Permission::InvitesViewTree),
+            Self::MemberList | Self::OwnProfile => Some(Permission::MembersView),
+            Self::EditOwnProfile => Some(Permission::AccountEditProfile),
             Self::LogOff => None,
         }
     }

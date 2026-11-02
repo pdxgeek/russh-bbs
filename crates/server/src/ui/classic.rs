@@ -36,19 +36,6 @@ pub(crate) struct MenuScreen<'a> {
     pub(crate) markers: &'a [SecurityMarker],
 }
 
-/// Everything the layout needs to draw one content screen that is not a menu (the invite
-/// screens, M2-D): a [`View`] of chrome and sanitized lines, in the same frame and with the same
-/// reserved status row as the menu.
-pub(crate) struct ContentScreen<'a> {
-    pub(crate) strings: &'a StringTable,
-    pub(crate) view: &'a View,
-    pub(crate) look: Look,
-    /// Icon tier the markers are drawn in.
-    pub(crate) tier: Tier,
-    /// Markers for the status row.
-    pub(crate) markers: &'a [SecurityMarker],
-}
-
 /// The markers a menu screen shows: the whole signed-in session is server-readable (MVP).
 pub(crate) const MENU_MARKERS: [SecurityMarker; 1] = [SecurityMarker::ServerReadable];
 
@@ -72,15 +59,25 @@ pub(crate) fn render(frame: &mut Frame<'_>, screen: &MenuScreen<'_>) {
     }
 }
 
-/// Draw a content screen: the box above, the status row below. The view's lines go in the box
-/// only; the status row is split off first and nothing in the view can reach it.
-pub(crate) fn render_content(frame: &mut Frame<'_>, screen: &ContentScreen<'_>) {
+/// Everything the layout needs to draw a content screen (a list, a profile, a form): lines the
+/// caller built from sanitized content, in the same box as a menu, with the same reserved
+/// status row underneath. The lines are given a rectangle that excludes the status row.
+pub(crate) struct ContentScreen<'a> {
+    pub(crate) strings: &'a StringTable,
+    pub(crate) lines: Vec<Line<'static>>,
+    pub(crate) look: Look,
+    pub(crate) tier: Tier,
+    pub(crate) markers: &'a [SecurityMarker],
+}
+
+/// Draw a content screen: content box above, status row below.
+pub(crate) fn render_content(frame: &mut Frame<'_>, screen: ContentScreen<'_>) {
     let (content, status) = chrome::split_status(frame.area());
     settings::boxed(
         frame,
         content,
         screen.strings.text(keys::TITLE),
-        content_lines(screen),
+        screen.lines,
         screen.look,
     );
     if let Some(row) = status {
@@ -88,9 +85,10 @@ pub(crate) fn render_content(frame: &mut Frame<'_>, screen: &ContentScreen<'_>) 
     }
 }
 
-fn content_lines(screen: &ContentScreen<'_>) -> Vec<Line<'static>> {
-    let (bold, dim, heading, _) = styles(screen.look);
-    let view = screen.view;
+/// The lines of a [`View`] (the invite screens, M2-D): heading, body, note, notice and footer,
+/// ready for [`render_content`]. Everything in the view is chrome or already sanitized.
+pub(crate) fn view_lines(strings: &StringTable, view: &View, look: Look) -> Vec<Line<'static>> {
+    let (bold, dim, heading, _) = styles(look);
     let mut out = vec![
         Line::styled(view.heading.to_owned(), heading),
         Line::raw(""),
@@ -102,20 +100,15 @@ fn content_lines(screen: &ContentScreen<'_>) -> Vec<Line<'static>> {
     }
     if let Some(notice) = view.notice {
         out.push(Line::raw(""));
-        out.push(notice_line(
-            screen.strings,
-            notice.kind,
-            notice.text,
-            screen.look,
-            bold,
-        ));
+        out.push(notice_line(strings, notice.kind, notice.text, look, bold));
     }
     out.push(Line::raw(""));
     out.push(Line::styled(view.footer.to_owned(), dim));
     out
 }
 
-fn styles(look: Look) -> (Style, Style, Style, Style) {
+/// The styles screens built on this layout share: bold, dim, heading and hotkey.
+pub(crate) fn styles(look: Look) -> (Style, Style, Style, Style) {
     let bold = Style::new().add_modifier(Modifier::BOLD);
     let dim = Style::new().add_modifier(Modifier::DIM);
     (
@@ -183,7 +176,7 @@ fn item_line(strings: &StringTable, item: &PageItem, key: Style, dim: Style) -> 
 }
 
 /// The word, not only a color: the message must read correctly on a mono terminal.
-fn notice_line(
+pub(crate) fn notice_line(
     strings: &StringTable,
     kind: NoticeKind,
     text: &str,

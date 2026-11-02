@@ -7,6 +7,7 @@ mod access;
 mod audit;
 mod founder;
 mod invites;
+mod profiles;
 mod state;
 mod terminal_settings;
 

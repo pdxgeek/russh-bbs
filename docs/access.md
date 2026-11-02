@@ -112,6 +112,11 @@ This is the most intricate feature in the MVP, so the M2 access slice starts wit
 - **Wired paths:** the menu items (`forum.list`, `mail.read`, `files.list`, `members.view`, `members.approve`), the terminal settings page and the save of settings (`account.edit_settings`; the save needs the `Granted` proof and names the account itself), and the waiting room (`waiting.view`; without it the shell is refused). The founder claim is the one documented exception: it has no account yet, and the setup token is its gate. Founder sessions are `sysop` through a grant row written in the claim's transaction.
 - **Group changes:** `change_groups` (add, remove, delete) validates cycles and depth (at most 8 groups deep) in core and rewrites `group_closure` in the same transaction; SQLite takes the write lock first (`BEGIN IMMEDIATE`), Postgres locks `group_member`.
 
+### Implemented (M2-F, `m2/profiles`)
+
+- **Three permissions wired** ([profiles.md](profiles.md), D60): `members.view` (the Members menu, the list and a profile, so the Members item now opens a submenu instead of a placeholder), `account.edit_profile` (your own profile) and `members.edit` (anyone else's). They do not stand in for each other. Their `role_permission` rows already existed (migration `0003`), so migration `0005_profiles` adds only the `profiles` table. Core actions take a `Granted`; a proof for another permission is refused. Only `active` accounts are visible through any of them.
+- `crates/server/tests/access_paths.rs`: both edit permissions moved to `WIRED`, each with a path test (item and key vanish on the next action, an open form is closed and writes nothing, put back it works again).
+
 ### Tested
 
 - `resolve` table test (16 cases) and two property tests (an independent oracle; `reach` agrees with `resolve`); `GroupGraph` tests (self loop, two and three cycles, diamond, depth 8 and 9, remove, delete, locked and built-in groups); a test that the enum equals the table in this page.

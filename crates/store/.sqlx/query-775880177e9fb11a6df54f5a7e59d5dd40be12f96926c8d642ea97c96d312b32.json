@@ -1,0 +1,58 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT a.id AS \"id!\", a.username AS \"username!\",\n                      COALESCE(p.display_name, '') AS \"display_name!\",\n                      COALESCE(p.pronouns, '') AS \"pronouns!\",\n                      COALESCE(p.location, '') AS \"location!\",\n                      COALESCE(p.about, '') AS \"about!\",\n                      COALESCE(p.website, '') AS \"website!\"\n               FROM accounts a LEFT JOIN profiles p ON p.account_id = a.id\n               WHERE a.id = $1 AND a.state = 'active'",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "username!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "display_name!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "pronouns!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "location!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "about!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "website!",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "775880177e9fb11a6df54f5a7e59d5dd40be12f96926c8d642ea97c96d312b32"
+}

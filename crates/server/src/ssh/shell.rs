@@ -194,7 +194,7 @@ impl<D: Backend> Shell<D> {
             if let Some(size) = batch.resize {
                 self.parts.screen.set_size(size);
             }
-            let effects = if keys.is_empty() {
+            let mut effects = if keys.is_empty() {
                 super::screen::KeyEffects::default()
             } else {
                 // One action: load what the account holds now (D33), so a role or group change
@@ -205,7 +205,20 @@ impl<D: Backend> Shell<D> {
             if let Some(settings) = &effects.save_settings {
                 self.persist_settings(settings).await;
             }
-            if let Some(request) = effects.invite {
+            // A members screen needs the store before it can take the next key. Answer it, then
+            // apply the keys that were held back, with the account's permissions loaded again
+            // (every action sees what the account holds now).
+            while let Some(request) = effects.members_request.take() {
+                self.run_members(request).await;
+                let rest = std::mem::take(&mut effects.held_back);
+                if rest.is_empty() {
+                    break;
+                }
+                self.refresh_access().await;
+                let later = self.parts.screen.apply_keys(&rest);
+                effects.absorb(later);
+            }
+            if let Some(request) = effects.invite.take() {
                 self.run_invite(request).await;
             }
             let mut leaving = effects.disconnect || batch.finish;
@@ -487,6 +500,18 @@ impl<D: Backend> Shell<D> {
             settings: TerminalSettings::default(),
             previous_login: None,
         }
+    }
+
+    /// Run the members request a screen is waiting on (a list page, a profile, a save) and give
+    /// it the answer. Core checks the permission against the snapshot loaded for this action
+    /// (`profiles::execute`); a session without one gets "not permitted", and a slow or failing
+    /// store gets "failed". Nothing is cached.
+    async fn run_members(&mut self, request: russh_bbs_core::profiles::Request) {
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let response = crate::members::run(&*self.parts.directory, &access, request).await;
+        self.parts.screen.deliver_members(response);
     }
 
     /// Store settings the member changed. A failure is logged; the session keeps its choice.
