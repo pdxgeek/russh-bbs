@@ -10,6 +10,7 @@
 //!   stored and resolved here and enforced by the slice that owns the action.
 //! - [`set_role_limit`], [`set_member_limit`] and [`clear_member_limit`] edit limits, gated by
 //!   the `limits.edit` permission.
+//! - Edits are audited by the store in the same transaction (`limit.changed`, M2-C).
 //! - The order is **permission first, limit second**, both in core. A refusal is a
 //!   [`LimitRefusal`] that says which limit and when it resets; nothing is dropped silently.
 

@@ -4,6 +4,7 @@
 //! migration set is `migrations/sqlite/`; the Postgres backend has its own.
 
 mod access;
+mod audit;
 mod founder;
 mod limits;
 mod terminal_settings;
@@ -12,9 +13,11 @@ mod terminal_settings;
 mod tests;
 
 use std::path::Path;
+use std::sync::Arc;
 use std::time::Duration;
 
 use russh_bbs_core::access::{Fingerprint, Slug};
+use russh_bbs_core::audit::{SystemWallClock, WallClock, events};
 use russh_bbs_core::store::{
     Account, AccountId, AccountStore, NewAccount, SettingKey, SettingsStore, StoreError,
 };
@@ -48,6 +51,8 @@ const DB_DIR_MODE: u32 = 0o700;
 #[derive(Debug, Clone)]
 pub struct SqliteStore {
     pool: SqlitePool,
+    /// Where audit timestamps come from (injected so tests control it).
+    clock: Arc<dyn WallClock>,
 }
 
 impl SqliteStore {
@@ -71,7 +76,22 @@ impl SqliteStore {
             .await
             .map_err(OpenError::Connect)?;
         MIGRATOR.run(&pool).await.map_err(OpenError::Migrate)?;
-        Ok(Self { pool })
+        Ok(Self {
+            pool,
+            clock: Arc::new(SystemWallClock),
+        })
+    }
+
+    /// Use `clock` for audit timestamps instead of the system clock.
+    #[must_use]
+    pub fn with_clock(mut self, clock: Arc<dyn WallClock>) -> Self {
+        self.clock = clock;
+        self
+    }
+
+    /// The audit clock.
+    pub(crate) fn clock(&self) -> &dyn WallClock {
+        &*self.clock
     }
 
     /// The pool, for sibling modules and tests in this crate.
@@ -131,6 +151,7 @@ impl AccountStore for SqliteStore {
         // authority is the grant below. `member` needs no grant: `everyone` carries it.
         let label = crate::legacy_role_label(&account.role);
         let state = account.state.as_str();
+        let input_role = account.role.clone();
         let mut tx = self.pool().begin().await.map_err(backend)?;
         let row = sqlx::query_as!(
             AccountRow,
@@ -164,8 +185,14 @@ impl AccountStore for SqliteStore {
                 _ => backend(error),
             })?;
         }
+        let account = row.into_account()?;
+        self.audit_in(
+            &mut tx,
+            &events::account_created(account.id, &input_role, account.state),
+        )
+        .await?;
         tx.commit().await.map_err(backend)?;
-        row.into_account()
+        Ok(account)
     }
 
     async fn attach_fingerprint(

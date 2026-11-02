@@ -21,6 +21,7 @@ use russh::client::{self, AuthResult, Handle};
 use russh::keys::{HashAlg, PrivateKey, PrivateKeyWithHashAlg};
 use russh::{Channel, ChannelMsg};
 use russh_bbs_core::access::{Fingerprint, Slug};
+use russh_bbs_core::audit::Actor;
 use russh_bbs_core::limits::{Clock, Day, Limit, LimitKind, LimitStore, SystemClock};
 use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::{Account, AccountState, AccountStore, NewAccount};
@@ -89,7 +90,7 @@ impl Rig {
 
     async fn override_limit(&self, account: &Account, kind: LimitKind, limit: Limit) {
         self.store
-            .set_member_limit(account.id, kind, Some(limit))
+            .set_member_limit(account.id, kind, Some(limit), Actor::System)
             .await
             .unwrap();
     }

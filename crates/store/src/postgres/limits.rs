@@ -2,6 +2,7 @@
 //! core's `limits`; this file is SQL and one transaction (the capped increment).
 
 use russh_bbs_core::access::Slug;
+use russh_bbs_core::audit::{Actor, Target, events};
 use russh_bbs_core::limits::{
     Day, Limit, LimitKind, LimitStore, LimitWriteError, MemberLimit, RoleLimit, UsageOutcome,
 };
@@ -46,23 +47,35 @@ impl LimitStore for PostgresStore {
         role: &Slug,
         kind_: LimitKind,
         limit: Limit,
+        actor: Actor,
     ) -> Result<(), LimitWriteError> {
-        let role = role.as_str();
+        let name_of_role = role.as_str();
         let name = kind_.name();
         let value = stored(limit)?;
-        sqlx::query!(
+        // One transaction: the write and its audit row commit or roll back together. Setting
+        // the value the role already has changes nothing, so it writes no row.
+        let mut tx = self.pool().begin().await.map_err(backend)?;
+        let changed = sqlx::query!(
             "INSERT INTO role_limit (role, kind, value) VALUES ($1, $2, $3)
-             ON CONFLICT (role, kind) DO UPDATE SET value = excluded.value",
-            role,
+             ON CONFLICT (role, kind) DO UPDATE SET value = excluded.value
+             WHERE role_limit.value IS DISTINCT FROM excluded.value",
+            name_of_role,
             name,
             value,
         )
-        .execute(self.pool())
+        .execute(&mut *tx)
         .await
         .map_err(|error| match kind(&error) {
             Some(ErrorKind::ForeignKeyViolation) => LimitWriteError::UnknownRole,
             _ => backend(error).into(),
-        })?;
+        })?
+        .rows_affected();
+        if changed > 0 {
+            let event =
+                events::limit_changed(actor, Target::Role(role.clone()), kind_, Some(limit));
+            self.audit_in(&mut tx, &event).await?;
+        }
+        tx.commit().await.map_err(backend)?;
         Ok(())
     }
 
@@ -71,37 +84,45 @@ impl LimitStore for PostgresStore {
         account: AccountId,
         kind_: LimitKind,
         limit: Option<Limit>,
+        actor: Actor,
     ) -> Result<(), LimitWriteError> {
         let id = account.as_raw();
         let name = kind_.name();
-        match limit {
+        let mut tx = self.pool().begin().await.map_err(backend)?;
+        let changed = match limit {
             Some(limit) => {
                 let value = stored(limit)?;
                 sqlx::query!(
                     "INSERT INTO member_limit (account_id, kind, value) VALUES ($1, $2, $3)
-                     ON CONFLICT (account_id, kind) DO UPDATE SET value = excluded.value",
+                     ON CONFLICT (account_id, kind) DO UPDATE SET value = excluded.value
+                     WHERE member_limit.value IS DISTINCT FROM excluded.value",
                     id,
                     name,
                     value,
                 )
-                .execute(self.pool())
+                .execute(&mut *tx)
                 .await
                 .map_err(|error| match kind(&error) {
                     Some(ErrorKind::ForeignKeyViolation) => LimitWriteError::UnknownAccount,
                     _ => backend(error).into(),
-                })?;
+                })?
+                .rows_affected()
             }
-            None => {
-                sqlx::query!(
-                    "DELETE FROM member_limit WHERE account_id = $1 AND kind = $2",
-                    id,
-                    name,
-                )
-                .execute(self.pool())
-                .await
-                .map_err(backend)?;
-            }
+            None => sqlx::query!(
+                "DELETE FROM member_limit WHERE account_id = $1 AND kind = $2",
+                id,
+                name,
+            )
+            .execute(&mut *tx)
+            .await
+            .map_err(backend)?
+            .rows_affected(),
+        };
+        if changed > 0 {
+            let event = events::limit_changed(actor, Target::Account(account), kind_, limit);
+            self.audit_in(&mut tx, &event).await?;
         }
+        tx.commit().await.map_err(backend)?;
         Ok(())
     }
 

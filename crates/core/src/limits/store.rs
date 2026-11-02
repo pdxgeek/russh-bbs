@@ -4,6 +4,7 @@
 use std::future::Future;
 
 use crate::access::Slug;
+use crate::audit::Actor;
 use crate::store::{AccountId, StoreError};
 
 use super::clock::Day;
@@ -49,19 +50,25 @@ pub trait LimitStore: Send + Sync {
 
     /// Set a role's value for a kind, replacing any earlier one. [`Limit::Unlimited`] is
     /// stored too (it is an explicit value, not a missing one).
+    ///
+    /// Audited (`limit.changed`) in the same transaction when the value changed; setting the
+    /// value a role already has writes no row. `actor` is who made the edit.
     fn set_role_limit(
         &self,
         role: &Slug,
         kind: LimitKind,
         limit: Limit,
+        actor: Actor,
     ) -> impl Future<Output = Result<(), LimitWriteError>> + Send;
 
-    /// Set (`Some`) or clear (`None`) the account's override for a kind.
+    /// Set (`Some`) or clear (`None`) the account's override for a kind. Audited like
+    /// [`LimitStore::set_role_limit`]; clearing an override that is not set writes no row.
     fn set_member_limit(
         &self,
         account: AccountId,
         kind: LimitKind,
         limit: Option<Limit>,
+        actor: Actor,
     ) -> impl Future<Output = Result<(), LimitWriteError>> + Send;
 
     /// What the account has used of `kind` on `day`.
@@ -112,6 +119,7 @@ impl LimitStore for crate::access::NoMembers {
         _role: &Slug,
         _kind: LimitKind,
         _limit: Limit,
+        _actor: Actor,
     ) -> impl Future<Output = Result<(), LimitWriteError>> + Send {
         std::future::ready(Err(LimitWriteError::UnknownRole))
     }
@@ -121,6 +129,7 @@ impl LimitStore for crate::access::NoMembers {
         _account: AccountId,
         _kind: LimitKind,
         _limit: Option<Limit>,
+        _actor: Actor,
     ) -> impl Future<Output = Result<(), LimitWriteError>> + Send {
         std::future::ready(Err(LimitWriteError::UnknownAccount))
     }

@@ -2,6 +2,7 @@
 #![allow(clippy::unwrap_used, clippy::panic)]
 
 use russh_bbs_core::access::{AccessStore, Permission, Slug};
+use russh_bbs_core::audit::{Action, Actor, AuditQuery, AuditStore, Target};
 use russh_bbs_core::limits::{
     Day, Limit, LimitKind, LimitStore, LimitWriteError, ManualClock, SessionCounter, UsageOutcome,
     begin_member_session, load_effective,
@@ -112,21 +113,21 @@ pub(crate) async fn limits_edit_is_held_by_sysop_and_cosysop_only<H: Harness>() 
 pub(crate) async fn role_limits_can_be_replaced_and_unlimited_is_a_real_value<H: Harness>() {
     let h = H::fresh().await;
     let s = h.store();
-    s.set_role_limit(&Slug::MEMBER, MIN, Limit::AtMost(15))
+    s.set_role_limit(&Slug::MEMBER, MIN, Limit::AtMost(15), Actor::System)
         .await
         .unwrap();
     assert_eq!(
         role_limit(s, &Slug::MEMBER, MIN).await,
         Some(Limit::AtMost(15))
     );
-    s.set_role_limit(&Slug::MEMBER, MIN, Limit::Unlimited)
+    s.set_role_limit(&Slug::MEMBER, MIN, Limit::Unlimited, Actor::System)
         .await
         .unwrap();
     assert_eq!(
         role_limit(s, &Slug::MEMBER, MIN).await,
         Some(Limit::Unlimited)
     );
-    s.set_role_limit(&Slug::MEMBER, MIN, Limit::AtMost(0))
+    s.set_role_limit(&Slug::MEMBER, MIN, Limit::AtMost(0), Actor::System)
         .await
         .unwrap();
     assert_eq!(
@@ -135,7 +136,8 @@ pub(crate) async fn role_limits_can_be_replaced_and_unlimited_is_a_real_value<H:
     );
     let missing = Slug::parse("no-such-role").unwrap();
     assert!(matches!(
-        s.set_role_limit(&missing, MIN, Limit::AtMost(1)).await,
+        s.set_role_limit(&missing, MIN, Limit::AtMost(1), Actor::System)
+            .await,
         Err(LimitWriteError::UnknownRole)
     ));
 }
@@ -144,15 +146,20 @@ pub(crate) async fn member_overrides_set_clear_and_isolate<H: Harness>() {
     let h = H::fresh().await;
     let s = h.store();
     let (a, b) = (active(s, "ann").await, active(s, "bob").await);
-    s.set_member_limit(a.id, MIN, Some(Limit::AtMost(5)))
+    s.set_member_limit(a.id, MIN, Some(Limit::AtMost(5)), Actor::System)
         .await
         .unwrap();
-    s.set_member_limit(a.id, MIN, Some(Limit::AtMost(7)))
+    s.set_member_limit(a.id, MIN, Some(Limit::AtMost(7)), Actor::System)
         .await
         .unwrap();
-    s.set_member_limit(a.id, LimitKind::MailPerDay, Some(Limit::Unlimited))
-        .await
-        .unwrap();
+    s.set_member_limit(
+        a.id,
+        LimitKind::MailPerDay,
+        Some(Limit::Unlimited),
+        Actor::System,
+    )
+    .await
+    .unwrap();
     assert_eq!(s.member_limits(a.id).await.unwrap().len(), 2);
     assert_eq!(s.member_limits(b.id).await.unwrap().len(), 0);
     let mine = s.member_limits(a.id).await.unwrap();
@@ -160,12 +167,21 @@ pub(crate) async fn member_overrides_set_clear_and_isolate<H: Harness>() {
         mine.iter()
             .any(|m| m.kind == MIN && m.limit == Limit::AtMost(7))
     );
-    s.set_member_limit(a.id, MIN, None).await.unwrap();
-    s.set_member_limit(a.id, MIN, None).await.unwrap();
+    s.set_member_limit(a.id, MIN, None, Actor::System)
+        .await
+        .unwrap();
+    s.set_member_limit(a.id, MIN, None, Actor::System)
+        .await
+        .unwrap();
     assert_eq!(s.member_limits(a.id).await.unwrap().len(), 1);
     assert!(matches!(
-        s.set_member_limit(AccountId::from_raw(9_999), MIN, Some(Limit::AtMost(1)))
-            .await,
+        s.set_member_limit(
+            AccountId::from_raw(9_999),
+            MIN,
+            Some(Limit::AtMost(1)),
+            Actor::System
+        )
+        .await,
         Err(LimitWriteError::UnknownAccount)
     ));
 }
@@ -180,7 +196,7 @@ pub(crate) async fn an_override_changes_the_effective_limit<H: Harness>() {
         load_effective(s, a.id, &snapshot).await.unwrap().get(MIN),
         Limit::AtMost(60)
     );
-    s.set_member_limit(a.id, MIN, Some(Limit::AtMost(5)))
+    s.set_member_limit(a.id, MIN, Some(Limit::AtMost(5)), Actor::System)
         .await
         .unwrap();
     assert_eq!(
@@ -295,11 +311,11 @@ pub(crate) async fn limits_and_usage_survive_a_reopen<H: Harness>() {
     let mut h = H::fresh().await;
     let a = active(h.store(), "ann").await;
     h.store()
-        .set_role_limit(&Slug::MEMBER, MIN, Limit::AtMost(9))
+        .set_role_limit(&Slug::MEMBER, MIN, Limit::AtMost(9), Actor::System)
         .await
         .unwrap();
     h.store()
-        .set_member_limit(a.id, MIN, Some(Limit::AtMost(3)))
+        .set_member_limit(a.id, MIN, Some(Limit::AtMost(3)), Actor::System)
         .await
         .unwrap();
     h.store()
@@ -338,9 +354,14 @@ pub(crate) async fn a_session_start_counts_calls_in_the_store<H: Harness>() {
     let h = H::fresh().await;
     let s = h.store();
     let a = active(s, "ann").await;
-    s.set_role_limit(&Slug::MEMBER, LimitKind::CallsPerDay, Limit::AtMost(1))
-        .await
-        .unwrap();
+    s.set_role_limit(
+        &Slug::MEMBER,
+        LimitKind::CallsPerDay,
+        Limit::AtMost(1),
+        Actor::System,
+    )
+    .await
+    .unwrap();
     let clock = ManualClock::new(UnixSeconds::from_raw(1_793_613_600));
     let snapshot = s.snapshot(Some(a.id)).await.unwrap();
     drop(
@@ -406,4 +427,91 @@ fn parse_cell(cell: &str) -> Limit {
         Some("MiB") => number * 1024 * 1024,
         Some(other) => panic!("unknown unit {other}"),
     })
+}
+
+/// Limit edits write one `limit.changed` row each, in their transaction; a repeat that changes
+/// nothing and a refused edit write none.
+pub(crate) async fn limit_edits_write_audit_rows_and_no_ops_write_none<H: Harness>() {
+    let h = H::fresh().await;
+    let s = h.store();
+    let (admin, ann) = (active(s, "pat").await, active(s, "ann").await);
+    let by = Actor::Account(admin.id);
+    let rows = || async { s.page(&AuditQuery::default()).await.unwrap() };
+    let before = rows().await.len();
+
+    s.set_role_limit(&Slug::MEMBER, MIN, Limit::AtMost(90), by)
+        .await
+        .unwrap();
+    s.set_role_limit(&Slug::MEMBER, MIN, Limit::AtMost(90), by)
+        .await
+        .unwrap();
+    s.set_member_limit(ann.id, LimitKind::CallsPerDay, Some(Limit::Unlimited), by)
+        .await
+        .unwrap();
+    s.set_member_limit(ann.id, LimitKind::CallsPerDay, Some(Limit::Unlimited), by)
+        .await
+        .unwrap();
+    s.set_member_limit(ann.id, LimitKind::CallsPerDay, None, by)
+        .await
+        .unwrap();
+    s.set_member_limit(ann.id, LimitKind::CallsPerDay, None, by)
+        .await
+        .unwrap();
+    let missing = Slug::parse("no-such-role").unwrap();
+    assert!(
+        s.set_role_limit(&missing, MIN, Limit::AtMost(1), by)
+            .await
+            .is_err()
+    );
+    assert!(
+        s.set_member_limit(AccountId::from_raw(9_999), MIN, Some(Limit::AtMost(1)), by)
+            .await
+            .is_err()
+    );
+
+    let new: Vec<_> = rows()
+        .await
+        .into_iter()
+        .take(rows().await.len() - before)
+        .collect();
+    assert_eq!(
+        new.len(),
+        3,
+        "one row per change, none for no-ops or refusals"
+    );
+    // Newest first: clear, set unlimited, set 90.
+    let detail = |i: usize| new[i].event.detail.as_str().to_owned();
+    assert_eq!(detail(0), "calls_per_day override cleared");
+    assert_eq!(detail(1), "calls_per_day set to unlimited");
+    assert_eq!(detail(2), "minutes_per_day set to 90");
+    assert_eq!(new[2].event.target, Target::Role(Slug::MEMBER));
+    assert_eq!(new[0].event.target, Target::Account(ann.id));
+    for row in &new {
+        assert_eq!(row.event.action, Action::LimitChanged);
+        assert_eq!(row.event.actor, by);
+    }
+}
+
+/// When the audit insert fails the edit does not land either.
+pub(crate) async fn a_limit_edit_never_lands_without_its_audit_row<H: Harness>() {
+    let h = H::fresh().await;
+    let s = h.store();
+    let ann = active(s, "ann").await;
+    let by = Actor::Account(ann.id);
+    h.break_audit_inserts().await;
+    assert!(
+        s.set_role_limit(&Slug::MEMBER, MIN, Limit::AtMost(1), by)
+            .await
+            .is_err()
+    );
+    assert_eq!(
+        role_limit(s, &Slug::MEMBER, MIN).await,
+        Some(Limit::AtMost(60))
+    );
+    assert!(
+        s.set_member_limit(ann.id, MIN, Some(Limit::AtMost(1)), by)
+            .await
+            .is_err()
+    );
+    assert_eq!(s.member_limits(ann.id).await.unwrap().len(), 0);
 }

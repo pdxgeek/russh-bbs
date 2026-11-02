@@ -13,6 +13,7 @@ use std::collections::BTreeMap;
 use std::sync::Mutex;
 
 use crate::access::{Permission, Slug, Snapshot, Via};
+use crate::audit::Actor;
 use crate::store::{AccountId, StoreError, UnixSeconds};
 
 use super::*;
@@ -297,6 +298,7 @@ impl LimitStore for Fake {
         role: &Slug,
         kind: LimitKind,
         limit: Limit,
+        _actor: Actor,
     ) -> Result<(), LimitWriteError> {
         let mut rows = self.role.lock().unwrap();
         rows.retain(|r| !(r.role == *role && r.kind == kind));
@@ -313,6 +315,7 @@ impl LimitStore for Fake {
         account: AccountId,
         kind: LimitKind,
         limit: Option<Limit>,
+        _actor: Actor,
     ) -> Result<(), LimitWriteError> {
         let mut rows = self.member.lock().unwrap();
         match limit {
@@ -380,7 +383,7 @@ fn member_snapshot() -> Snapshot {
 async fn fake_with(member: &[(LimitKind, Limit)]) -> Fake {
     let fake = Fake::default();
     for &(kind, limit) in member {
-        fake.set_role_limit(&Slug::MEMBER, kind, limit)
+        fake.set_role_limit(&Slug::MEMBER, kind, limit, Actor::System)
             .await
             .unwrap();
     }
@@ -523,7 +526,12 @@ async fn no_minutes_left_refuses_the_start_without_counting_a_call() {
 async fn an_override_applies_and_unlimited_roles_are_not_metered() {
     let store = fake_with(&[(LimitKind::CallsPerDay, Limit::AtMost(1))]).await;
     store
-        .set_member_limit(ACCOUNT, LimitKind::CallsPerDay, Some(Limit::AtMost(3)))
+        .set_member_limit(
+            ACCOUNT,
+            LimitKind::CallsPerDay,
+            Some(Limit::AtMost(3)),
+            Actor::System,
+        )
         .await
         .unwrap();
     let (clock, counter) = (clock(), SessionCounter::new());
@@ -548,7 +556,7 @@ async fn an_override_applies_and_unlimited_roles_are_not_metered() {
         [Permission::LimitsEdit],
     );
     store
-        .set_role_limit(&Slug::SYSOP, MIN, Limit::AtMost(0))
+        .set_role_limit(&Slug::SYSOP, MIN, Limit::AtMost(0), Actor::System)
         .await
         .unwrap();
     begin_member_session(&store, &clock, &counter, &sysop)
@@ -623,7 +631,7 @@ async fn a_limit_edit_reaches_an_open_session_at_the_next_checkpoint() {
         .await
         .unwrap();
     store
-        .set_role_limit(&Slug::MEMBER, MIN, Limit::AtMost(1))
+        .set_role_limit(&Slug::MEMBER, MIN, Limit::AtMost(1), Actor::System)
         .await
         .unwrap();
     clock.advance(CHECKPOINT_SECONDS);

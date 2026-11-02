@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO role_limit (role, kind, value) VALUES ($1, $2, $3)\n             ON CONFLICT (role, kind) DO UPDATE SET value = excluded.value\n             WHERE role_limit.value IS DISTINCT FROM excluded.value",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "0707c7f443824f389dd943ef25ecd9540ec4ed57b7090cc264d5dd8a7194e00c"
+}

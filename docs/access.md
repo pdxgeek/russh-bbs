@@ -131,7 +131,7 @@ Seeded by migration `0006_limits` and editable with `limits.edit`. Conservative 
 
 ### Editing limits
 
-`core::limits::{set_role_limit, set_member_limit, clear_member_limit}` take the `Granted` proof of **`limits.edit`** (held by `sysop` and `cosysop`; migration rows in `0006_limits`). There is **no sysop screen yet** (M5): these functions are what that screen and the tests call. A proof for any other permission is refused (`NotPermitted`), a number the database cannot hold is refused (`TooLarge`), and an unknown role or account is named. Edits are **not audited yet**: see the M2-C hand-off row in [coordination.md](coordination.md). There are no rank rules on limits (a `cosysop` can edit any role's limits, including their own).
+`core::limits::{set_role_limit, set_member_limit, clear_member_limit}` take the `Granted` proof of **`limits.edit`** (held by `sysop` and `cosysop`; migration rows in `0006_limits`). There is **no sysop screen yet** (M5): these functions are what that screen and the tests call. A proof for any other permission is refused (`NotPermitted`), a number the database cannot hold is refused (`TooLarge`), and an unknown role or account is named. Every edit is **audited** (`limit.changed`, [audit.md](audit.md)) by the store in the same transaction as the write, with the account in the proof as the actor; a repeat that changes nothing writes no row. There are no rank rules on limits (a `cosysop` can edit any role's limits, including their own).
 
 ## Prior art
 
@@ -191,7 +191,7 @@ This is the most intricate feature in the MVP, so the M2 access slice starts wit
 
 ### Not done / not verified
 
-- The editing services (create or change a role, grant or revoke, with the rank rules) are **M2-B2**; nothing writes roles or grants except the founder claim, account creation, group changes and the tests. Role, group and grant changes are not audited yet (M2-C adds that).
+- The editing services (create or change a role, grant or revoke, with the rank rules) are **M2-B2**; nothing writes roles or grants except the founder claim, account creation, group changes and the tests. Group changes and grants written by `add_grant` are audited since M2-C ([audit.md](audit.md)); the editing services add their own rows.
 - Resource limits: see M2-H above. Not verified: a two-process deployment (concurrent sessions are counted in-process), a session that stays open across several UTC days, real `ssh` for the limit screens (driven with russh clients only; see the PR report), and the posts, mail, upload and invite limits (stored and resolved, not yet enforced; the owning slices enforce them). `sysop` and `cosysop` over telnet (D27) is the M3 telnet slice. Resource-owner-managed allow lists wait for the resources (M3, M4).
 - Not exercised: a deployment with two server processes on one database (nothing is cached, so it should hold, but it was not run), a database with thousands of groups, and the Postgres `LOCK TABLE` under load beyond the two-task race. A suspended account's open session is not disconnected; it simply holds the waiting snapshot from its next action.
 - The first-run icon check stores its answer without `account.edit_settings` being checked as a page (it runs before the menu); the save itself is refused if the permission is not held, and the choice then lasts for the session only.
@@ -445,7 +445,7 @@ Storage traits (`core::access`): `AccessStore` with a few methods only: `snapsho
 - **Role inheritance**: not needed; layered inserts give the same data.
 - **Resource-owner-managed allow lists** and an `owner` column on resources: the resources do not exist until M3/M4; each resource slice adds its owner and uses `grant_permission`.
 - **Checking that a scoped permission matches the resource's kind** at write time: harmless without it (a mismatched grant never matches); add when the sysop UI exists.
-- **Audit rows** for role, group and grant changes: M2-C.
+- **Audit rows** for role, group and grant changes: group changes and `add_grant` done in M2-C ([audit.md](audit.md)); the M2-B2 editing services add theirs. **Retention** and the sysop screen: M5.
 - **Sysop/cosysop refused over telnet** (D27): M3 telnet slice.
 - **Sysop UI** to edit roles, groups and allow lists, and the "visible to the sysop" wording on allow-list screens: M5 and the resource slices.
 - **RFC 9068 claim names** (`roles`, `groups`, `entitlements`) on API tokens: M5.

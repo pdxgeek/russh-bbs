@@ -48,6 +48,27 @@ impl Harness for SqliteHarness {
     async fn close(&self) {
         self.store.close().await;
     }
+
+    fn set_clock(&mut self, clock: std::sync::Arc<dyn russh_bbs_core::audit::WallClock>) {
+        self.store = self.store.clone().with_clock(clock);
+    }
+
+    async fn raw(&self, sql: &str) -> Result<u64, String> {
+        sqlx::query(sql)
+            .execute(self.store.pool())
+            .await
+            .map(|done| done.rows_affected())
+            .map_err(|error| error.to_string())
+    }
+
+    async fn break_audit_inserts(&self) {
+        self.raw(
+            "CREATE TRIGGER audit_insert_broken BEFORE INSERT ON audit_log
+             BEGIN SELECT RAISE(ABORT, 'audit insert broken'); END",
+        )
+        .await
+        .unwrap();
+    }
 }
 
 suite::shared_suite!(shared, SqliteHarness, allow(unused));
@@ -72,6 +93,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
     (
         3,
         "6addf0696c99af4807e315c720136c0e847dc6f1709f1a9657b55a51bdf5bb40a0f4ec23c2becd98740e33a41157b05d",
+    ),
+    (
+        4,
+        "dc0b92309b186cd248415cffe0fe6c407afea360a22ed0525bcc652242ddaae8d39f41ac2235f05d8a1cb832214f0f9d",
     ),
     (
         6,
@@ -132,6 +157,7 @@ async fn a_fresh_database_gets_every_migration() {
             "account_keys",
             "account_logins",
             "accounts",
+            "audit_log",
             "group_closure",
             "group_member",
             "limit_usage",
@@ -424,7 +450,7 @@ async fn a_database_made_before_the_restructure_still_opens_and_keeps_its_data()
     pool.close().await;
 
     // The new code opens it: no VersionMismatch, the two landed migrations are not re-applied
-    // (same install times), the M2-B migration is applied on top, data intact.
+    // (same install times), the M2-B and M2-C migrations are applied on top, data intact.
     let store = SqliteStore::open(&path).await.unwrap();
     let after = recorded(store.pool().clone()).await;
     assert_eq!(after[..2], before[..]);
@@ -447,4 +473,57 @@ async fn a_database_made_before_the_restructure_still_opens_and_keeps_its_data()
         .await
         .unwrap();
     assert_eq!(name, "alice");
+}
+
+/// Things only SQLite can be asked: an `INSERT OR REPLACE` that reuses an id deletes the old row
+/// without firing the delete trigger, so a third trigger refuses any insert that reuses an id.
+#[tokio::test]
+async fn audit_log_refuses_replace_and_upsert_by_id() {
+    use russh_bbs_core::audit::{Action, Actor, AuditEvent, AuditQuery, AuditStore, Target};
+
+    let (_dir, store) = temp_store().await;
+    let original =
+        AuditEvent::new(Actor::System, Action::GroupCreated, Target::None).detail("orig");
+    let id = store.append(&original).await.unwrap();
+    for sql in [
+        format!(
+            "INSERT OR REPLACE INTO audit_log (id, at, actor_kind, action) \
+             VALUES ({}, 1, 'system', 'group.deleted')",
+            id.as_raw()
+        ),
+        format!(
+            "REPLACE INTO audit_log (id, at, actor_kind, action) \
+             VALUES ({}, 1, 'system', 'group.deleted')",
+            id.as_raw()
+        ),
+        format!(
+            "INSERT INTO audit_log (id, at, actor_kind, action) \
+             VALUES ({}, 1, 'system', 'group.deleted') \
+             ON CONFLICT (id) DO UPDATE SET action = excluded.action",
+            id.as_raw()
+        ),
+    ] {
+        let error = sqlx::query(&sql).execute(store.pool()).await.unwrap_err();
+        assert!(error.to_string().contains("append-only"), "{sql}: {error}");
+    }
+    let rows = store.page(&AuditQuery::default()).await.unwrap();
+    assert_eq!(rows.len(), 1);
+    assert_eq!(rows[0].event, original);
+}
+
+/// A row the code could not have written is `Corrupt`, never skipped or guessed.
+#[tokio::test]
+async fn a_hand_written_audit_row_with_an_unknown_action_is_corrupt() {
+    use russh_bbs_core::audit::{AuditQuery, AuditStore};
+    use russh_bbs_core::store::StoreError;
+
+    let (_dir, store) = temp_store().await;
+    sqlx::query("INSERT INTO audit_log (at, actor_kind, action) VALUES (1, 'system', 'made.up')")
+        .execute(store.pool())
+        .await
+        .unwrap();
+    assert!(matches!(
+        store.page(&AuditQuery::default()).await,
+        Err(StoreError::Corrupt(_))
+    ));
 }
