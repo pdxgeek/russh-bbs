@@ -5,6 +5,7 @@ The MVP is a closed-beta board that works with plain `ssh` and `sftp`. No instal
 ## In the MVP
 
 - Waiting room, invite codes, sysop queue, invite tree, founder claim. Registration mode setting (`invite` default, `apply`, `open`).
+- A named permission for every action; roles as sysop-editable sets of permissions, globally or per area (D33).
 - User profiles, members list, per-user terminal settings.
 - Forums with search, full-screen message editor, public chat, one-liners, last callers, polls.
 - Menu layouts, themes, Nerd Font icon tiers with ASCII fallback, login and logoff screens.
@@ -17,7 +18,8 @@ The MVP is a closed-beta board that works with plain `ssh` and `sftp`. No instal
 - Door framework and one or two Rust-native games.
 - Datasource selection: SQLite (default) or Postgres, the latter also against PGlite. No MySQL.
 - Container image with a compose example.
-- Password login over SSH, disabled by default (D30). Telnet transport, disabled by default and labeled low-security mode when on, with telnet login as a further opt-in (D29).
+- Blob storage behind one object-store interface: local directory (default) or S3-compatible (D30). Managed Postgres works as the Postgres backend with TLS (D31).
+- Password login over SSH, disabled by default (D28). Telnet transport, disabled by default and labeled low-security mode when on, with telnet login as a further opt-in (D27).
 - Sysop admin TUI, page the sysop, moderation workflow, audit log.
 - Notifications and digests, backups with a tested restore, data export and deletion.
 - Accessibility mode.

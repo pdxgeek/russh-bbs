@@ -9,7 +9,7 @@
 //! new source first purges the entries that are idle (an idle entry is the same as an absent
 //! one), and if that is not enough drops the oldest eighth. The cost of that last step is that
 //! a flood of distinct sources can reset some limited sources early; the memory bound matters
-//! more than a perfect memory (decision D31).
+//! more than a perfect memory (decision D37).
 //!
 //! **Time.** The limiter reads a [`Clock`], so tests advance a [`ManualClock`] instead of
 //! sleeping.

@@ -65,10 +65,16 @@ Report: what you built, what you tested (and how), what you did not verify,
 
 ## First batch
 
+This was the hand-run sequence. When an orchestrator runs the build, [orchestration.md](orchestration.md) is the current sequence and this list is history.
+
 1. **M0-A** alone. It creates the workspace the others need.
 2. After M0-A merges, run **M0-B**, **M0-C**, **M1-A**, and **M1-B** in parallel. Their owned paths do not overlap.
 3. Then **M1-C**, **M1-D**, and **M1-E**.
 4. Review each PR before starting the next batch. After M1, decide whether to adjust the plan from what was learned.
+
+## QA session
+
+The QA gate in [milestones.md](milestones.md) is a session of its own. Brief it with the gate text, the milestone, and `main`. It owns `docs/qa/<milestone>.md` and rows it adds to `docs/coordination.md`, and nothing else. It needs the `ssh` and `sftp` clients and, from M1-F, a container runtime; it says which of those it lacked.
 
 ## Reviewing a session's PR
 

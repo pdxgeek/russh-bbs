@@ -10,12 +10,12 @@ use russh_bbs_core::waiting_room::{
 };
 
 /// Defaults for the per-network limit: a burst of 10 connections, then one every 2 seconds
-/// (30 a minute). Generous for a NAT with several members, ruinous for a scanner (D31).
+/// (30 a minute). Generous for a NAT with several members, ruinous for a scanner (D37).
 pub const DEFAULT_IP_RATE: RatePolicy = RatePolicy::new(10, std::time::Duration::from_secs(2));
 /// Defaults for the per-key limit: a burst of 5 authentications, then one every 10 seconds
-/// (6 a minute). A person retrying a login never gets near it (D31).
+/// (6 a minute). A person retrying a login never gets near it (D37).
 pub const DEFAULT_KEY_RATE: RatePolicy = RatePolicy::new(5, std::time::Duration::from_secs(10));
-/// Distinct sources each limiter remembers before it evicts (D31).
+/// Distinct sources each limiter remembers before it evicts (D37).
 pub const DEFAULT_MAX_TRACKED: usize = 10_000;
 
 /// Rate limits for connections and authentications.

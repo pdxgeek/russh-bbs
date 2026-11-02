@@ -3,7 +3,7 @@
 //! These keep a stranger from holding connections open forever or hammering the door. They are
 //! per connection, global, per network (checked at accept, before a handler exists) or per key
 //! (checked at the top of `ClientHandler::auth_publickey`). The rate policy itself lives in
-//! `russh_bbs_core::waiting_room`; the defaults are decision D31.
+//! `russh_bbs_core::waiting_room`; the defaults are decision D37.
 
 use std::time::Duration;
 

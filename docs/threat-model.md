@@ -21,7 +21,7 @@ Member identities and key fingerprints, the invite tree, message and mail conten
 | Adversary | Goal |
 |---|---|
 | Unauthenticated stranger | Learn who is on the board, get in without an invite, flood the waiting room, mass-create accounts when registration is `apply` or `open`, squat usernames |
-| Malicious member | Spam, impersonate, inject terminal escapes, abuse invites, cheat in doors, exfiltrate others' data |
+| Malicious member | Spam, impersonate, inject terminal escapes, abuse invites, cheat in doors, exfiltrate others' data, reach areas or actions above their role |
 | Malicious external content (feeds, mail, files) | Terminal injection, SSRF, malware, resource exhaustion |
 | Curious or compromised operator or server | Read private content |
 | Network attacker | Impersonate the server, downgrade, read or alter a telnet session on the wire, replay a telnet password |
@@ -30,14 +30,15 @@ Member identities and key fingerprints, the invite tree, message and mail conten
 
 | Area | Guarantee |
 |---|---|
-| Transport | SSH by default. Host key is persistent and its fingerprint is published by the sysop. Telnet is off unless the sysop enables it (D29); a telnet session is plaintext and every screen says so with a fixed `UNENCRYPTED` marker. |
-| Authentication | Public-key over SSH by default. Password login over SSH is a sysop opt-in (D30), encrypted on the wire, with lockout. Over telnet, login is off unless the sysop also enables it; then a per-member argon2id password that is set over SSH. SFTP, invite redemption, and sysop functions never work over telnet. |
+| Transport | SSH by default. Host key is persistent and its fingerprint is published by the sysop. Telnet is off unless the sysop enables it (D27); a telnet session is plaintext and every screen says so with a fixed `UNENCRYPTED` marker. |
+| Authentication | Public-key over SSH by default. Password login over SSH is a sysop opt-in (D28), encrypted on the wire, with lockout. Over telnet, login is off unless the sysop also enables it; then a per-member argon2id password that is set over SSH. SFTP, invite redemption, and sysop functions never work over telnet. |
 | Waiting room | An unknown key sees only the banner, rules, request-invite, and redeem-invite, plus apply or create-account when the registration mode (D2) allows it. No member list, board list, or stats in any mode. |
 | Registration | Default mode is `invite`. `apply` creates an inactive account visible only to the sysop queue. `open` creates an active account only within per-IP and per-key creation limits and an optional cap on new accounts per day; when the cap is hit the stranger sees the `apply` path instead. |
 | Output safety | Untrusted text cannot inject terminal escapes or spoof UI icons or security badges. |
 | Outbound fetching | User-supplied URLs cannot reach private networks. |
 | Uploads | Files are quarantined and scanned before becoming visible. |
 | Honesty | Nothing is labeled private unless the server genuinely cannot read it. |
+| Access control | Every read, post, upload, moderation and admin action is a named permission checked in core against the account's roles, the resource's own policy (owner, role grants, allow list) and the role's resource limits (D33); an area a role cannot see is not listed and not reachable by name; role changes are audited. |
 | Container | The image runs as a non-root user on an unprivileged port with no added capabilities. The founder setup token is printed to stdout, so anyone who can read the container logs during first run can claim sysop; the docs say so. The container boundary is a second layer, not the door sandbox. |
 
 ## What the MVP does not guarantee
@@ -65,7 +66,7 @@ Lock, signature, key-changed, and server-readable markers are drawn only by chro
 For every server-side fetch of a user-supplied URL: only `http` and `https`, resolve DNS and re-check the IP at connect time, block loopback, link-local, private, and metadata ranges, cap redirects, set connect and total timeouts, cap response size, and disallow credentials in URLs.
 
 ### Uploads
-Quarantine until scanned (antivirus hook), detect type by content not extension, cap size and archive expansion depth and ratio, map the SFTP view to IDs (no path traversal), never render or execute uploaded content on the server.
+Quarantine until scanned (antivirus hook), detect type by content not extension, cap size and archive expansion depth and ratio, map the SFTP view to IDs (no path traversal), never render or execute uploaded content on the server. Blobs are reached only through the `BlobStore` interface (D30); object-store credentials come from the environment, are never logged, and the bucket policy denies public reads. Quarantined objects are under a separate prefix and are never served.
 
 ### Invites, registration, and abuse
 Rate-limit the waiting room per key and per IP, with a small cost or queue cap against floods. Expire denied requests quickly and keep minimal personal data. Invite codes are single-use, expiring, and bound to an inviter. Bans act on keys and affect the inviter's standing.
@@ -100,7 +101,7 @@ Non-transferable and non-redeemable. Ledger changes are append-only and auditabl
 | Authentication: public-key only | **Implemented and tested (M1-A).** `none`, password and keyboard-interactive are rejected; only `publickey` is advertised. RSA client keys are unsupported (D21). |
 | Waiting room reveals nothing | **Implemented and tested (M1-C), founder flow still M1-D.** The room is built from the registration mode and the sysop's banner and rules only; it never sees the store's members, so it cannot name one, and form replies depend only on the typed text (a member's name and a stranger's get the same reply). Tests drive every page of every mode and assert no seeded member name, board name, setting name or stat word appears, over the rendering layer and over a real SSH client. A member's key sees the same room in M1. Not verified: scrolling (a very long rules text is clipped on a small window), non-ASCII typing (the key parser ignores it), and timing side channels between member and non-member authentication. |
 | Restricted session lockdown | **Implemented and tested (M1-A).** Refused: exec, subsystem (incl. sftp), env, agent forwarding, X11, direct-tcpip, forwarded-tcpip, direct-streamlocal, tcpip-forward, streamlocal-forward, a shell without a PTY, and a second PTY or shell. At most 4 session channels. |
-| Flood limits | **Implemented and tested (M1-A, M1-C).** Auth deadline, auth-attempt cap, idle timeout and a global connection cap (M1-A). Per-network connection limit at accept (burst 10, 1 per 2 s, IPv6 per /64), per-key authentication limit before the membership lookup (burst 5, 1 per 10 s), and 5 form submissions per session (M1-C, D31), all configurable; the limiter tables are bounded and evict. Tested with a fake clock (burst, refill, flood of distinct sources) and with a real client and OpenSSH. **Not covered:** limits are per process and in memory (reset on restart, not shared across instances); shared NAT addresses share an allowance; invite-request and account-creation rate limits arrive with those flows in M2. |
+| Flood limits | **Implemented and tested (M1-A, M1-C).** Auth deadline, auth-attempt cap, idle timeout and a global connection cap (M1-A). Per-network connection limit at accept (burst 10, 1 per 2 s, IPv6 per /64), per-key authentication limit before the membership lookup (burst 5, 1 per 10 s), and 5 form submissions per session (M1-C, D37), all configurable; the limiter tables are bounded and evict. Tested with a fake clock (burst, refill, flood of distinct sources) and with a real client and OpenSSH. **Not covered:** limits are per process and in memory (reset on restart, not shared across instances); shared NAT addresses share an allowance; invite-request and account-creation rate limits arrive with those flows in M2. |
 | Logging | **Implemented (M1-A).** Logs carry fingerprints, peer address, request kinds, sizes. They never carry key material, commands, environment values or client input. Not audited beyond review of the code. |
 | Output safety | **Implemented and tested (M1-C).** Banner, rules and typed form text pass through the core sanitizer before they are stored in the room (a banner with ESC and Nerd Font characters renders neutralized, tested); everything else is fixed chrome in `waiting_room::strings`. The SSH username is never rendered. |
 | Outbound fetching, uploads, honesty labels | Not started. |

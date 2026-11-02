@@ -14,10 +14,10 @@ Status of the project: **planning only. No code exists yet.** Every feature belo
 
 | Area | Documents |
 |---|---|
-| Whole system | [architecture.md](architecture.md), [threat-model.md](threat-model.md) |
+| Whole system | [architecture.md](architecture.md), [threat-model.md](threat-model.md), [access.md](access.md) |
 | Scope and order of work | [features.md](features.md), [mvp-scope.md](mvp-scope.md), [milestones.md](milestones.md) |
 | Terminal UI, menus, layouts, themes, icons | [ui.md](ui.md) |
-| Running cloud sessions | [cloud-sessions.md](cloud-sessions.md) |
+| Running cloud sessions | [cloud-sessions.md](cloud-sessions.md), [orchestration.md](orchestration.md) |
 | Coding standards (Rust) | [../.claude/skills/rust-coding/SKILL.md](../.claude/skills/rust-coding/SKILL.md), copied from [pdxgeek/ai-skills](https://github.com/pdxgeek/ai-skills) (upstream is the source of truth) |
 
 ## Conventions
