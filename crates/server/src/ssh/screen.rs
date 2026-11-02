@@ -14,7 +14,9 @@
 //! **What is drawn.** One of three [`Content`]s, each a core state machine that produces a
 //! [`View`]: the waiting room (M1-C, drawn by `crate::waiting_room`), the founder token prompt
 //! (`ssh claim@host`, M1-D), or a member's signed-in session (M1-E, drawn by
-//! `crate::settings` according to the member's terminal settings).
+//! `crate::settings` according to the member's terminal settings). A member at the main menu
+//! is drawn by the screen framework instead (M2-A): the classic hotkey layout in `crate::ui`,
+//! with its strings from the string table and security markers in its reserved status row.
 //!
 //! **Output safety.** Every string is fixed UI chrome or has passed the core sanitizer (the
 //! sysop's banner and rules, and what the visitor typed). The SSH username is never rendered.
@@ -29,11 +31,15 @@ use ratatui::crossterm::terminal::{Clear, ClearType, EnterAlternateScreen, Leave
 use ratatui::layout::Rect;
 use ratatui::{Terminal, TerminalOptions, Viewport};
 use russh_bbs_core::founder::{ClaimEffect, ClaimForm, ClaimInput};
+use russh_bbs_core::icons::Tier;
+use russh_bbs_core::menu::MenuPage;
 use russh_bbs_core::terminal_settings::{MemberEffect, MemberFlow, MemberInput, TerminalSettings};
 use russh_bbs_core::waiting_room::{RoomEffect, RoomInput, View, WaitingRoom};
 
 use super::terminal::{Key, PtySize, RenderCap};
 use crate::settings::{self, Look};
+use crate::ui::Ui;
+use crate::ui::classic::{self, MENU_MARKERS, MenuScreen};
 use crate::waiting_room::render;
 
 /// Bytes the backend has written and the handler has not yet sent. The backend owns one handle
@@ -93,6 +99,23 @@ impl Content {
         }
     }
 
+    /// The main menu, while a member is at it. Everything else keeps its own drawing.
+    fn menu_page(&self) -> Option<MenuPage> {
+        match self {
+            Self::Member(flow) => flow.menu_page(),
+            Self::Room(_) | Self::Claim(_) => None,
+        }
+    }
+
+    /// The icon tier markers are drawn in: the member's, which is ASCII until the glyph test
+    /// is answered.
+    fn tier(&self) -> Tier {
+        match self {
+            Self::Member(flow) => flow.settings().icon_tier(),
+            Self::Room(_) | Self::Claim(_) => Tier::Ascii,
+        }
+    }
+
     /// How to draw: a member's settings choose color and borders; everyone else gets the
     /// plain layout (the waiting room and claim prompt predate settings and use no color).
     fn look(&self) -> Option<Look> {
@@ -114,6 +137,8 @@ pub(super) struct Screen {
     /// How many times `viewport` changed (tests assert an unchanged size changes nothing).
     resizes: u32,
     content: Content,
+    /// The string table and menu tree the framework's screens draw with.
+    ui: Arc<Ui>,
     /// What the client reported. The drawn size is this with the member's overrides applied.
     pty: PtySize,
     /// The content changed since the last frame; the next [`Screen::render`] draws it.
@@ -126,7 +151,12 @@ pub(super) struct Screen {
 impl Screen {
     /// Create a screen of `size` showing `content`, drawing into at most `cap`. Nothing is drawn
     /// until [`Screen::enter`].
-    pub(super) fn new(size: PtySize, cap: RenderCap, content: Content) -> io::Result<Self> {
+    pub(super) fn new(
+        size: PtySize,
+        cap: RenderCap,
+        content: Content,
+        ui: Arc<Ui>,
+    ) -> io::Result<Self> {
         let output = OutputBuffer::default();
         let viewport = viewport(drawn_size(size, &content), cap);
         Ok(Self {
@@ -136,6 +166,7 @@ impl Screen {
             cap,
             resizes: 0,
             content,
+            ui,
             pty: size,
             dirty: false,
             rebuild: false,
@@ -285,9 +316,25 @@ impl Screen {
     fn draw(&mut self) -> io::Result<Vec<u8>> {
         let view = self.content.view();
         let look = self.content.look();
-        self.terminal.draw(|frame| match look {
-            Some(look) => settings::render(frame, &view, look),
-            None => render(frame, &view),
+        let menu = self.content.menu_page();
+        let tier = self.content.tier();
+        let ui = &self.ui;
+        self.terminal.draw(|frame| match (look, &menu) {
+            // The main menu: the classic hotkey layout, with the reserved status row.
+            (Some(look), Some(page)) => classic::render(
+                frame,
+                &MenuScreen {
+                    strings: ui.strings(),
+                    page,
+                    body: &view.body,
+                    notice: view.notice,
+                    look,
+                    tier,
+                    markers: &MENU_MARKERS,
+                },
+            ),
+            (Some(look), None) => settings::render(frame, &view, look),
+            (None, _) => render(frame, &view),
         })?;
         Ok(self.take_output())
     }

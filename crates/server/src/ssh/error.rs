@@ -34,6 +34,9 @@ pub enum ServerError {
         #[source]
         source: io::Error,
     },
+    /// The menu tree or the string table is invalid.
+    #[error("screen framework: {0}")]
+    Ui(#[from] crate::ui::UiError),
     /// A blocking startup task failed.
     #[error("startup task failed: {0}")]
     Join(String),

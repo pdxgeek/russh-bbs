@@ -237,12 +237,14 @@ async fn a_reconnect_skips_the_glyph_test_and_shows_the_stored_tier() {
         screen.contains("Terminal: Unicode icons, color on, pause on"),
         "{screen}"
     );
-    let (next, _) = send(&mut again, "x").await;
+    send(&mut again, "x").await;
+    let next = full(&mut again).await;
     assert!(
         !next.contains(QUESTION),
         "no glyph test the second time: {next}"
     );
-    assert!(next.contains("placeholder"), "{next}");
+    assert!(next.contains("Main menu"), "{next}");
+    assert!(next.contains("not built yet"), "{next}");
     rig.server.shutdown().await;
 }
 
