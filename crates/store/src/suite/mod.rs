@@ -267,6 +267,7 @@ macro_rules! shared_suite {
                 queue::a_broken_store_errors_instead_of_answering,
                 registration::open_makes_an_active_account_with_no_inviter_and_audits_it,
                 registration::the_cap_degrades_open_for_the_rest_of_the_utc_day_and_the_next_day_starts_fresh,
+                registration::the_capped_row_follows_the_account_created_row_that_used_the_last_place,
                 registration::an_unlimited_cap_never_refuses,
                 registration::a_refused_open_registration_leaves_no_trace_and_costs_no_place,
                 registration::concurrent_opens_never_pass_the_cap,

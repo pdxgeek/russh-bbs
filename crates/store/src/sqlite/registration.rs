@@ -119,11 +119,6 @@ impl RegistrationStore for SqliteStore {
             tx.commit().await.map_err(backend)?;
             return Err(OpenError::CapReached);
         };
-        if limit.is_some_and(|limit| opened >= limit) {
-            // This account takes the day's last place: the cap is reached now, whether or not
-            // anyone is turned away afterwards.
-            self.note_capped(&mut tx, day, at, cap).await?;
-        }
         let row = sqlx::query_as!(
             AccountRow,
             r#"INSERT INTO accounts (username, username_skeleton, state)
@@ -156,6 +151,12 @@ impl RegistrationStore for SqliteStore {
             &events::account_created_via_open(account.id, account.state),
         )
         .await?;
+        if limit.is_some_and(|limit| opened >= limit) {
+            // This account takes the day's last place: the cap is reached now, whether or not
+            // anyone is turned away afterwards. Written after the `account.created` row it
+            // belongs to, so the log reads in the order things happened (QA M2 L2).
+            self.note_capped(&mut tx, day, at, cap).await?;
+        }
         tx.commit().await.map_err(backend)?;
         Ok(Opened { account })
     }

@@ -188,6 +188,38 @@ pub(crate) async fn the_cap_degrades_open_for_the_rest_of_the_utc_day_and_the_ne
     assert_eq!(count_of(&all(store).await, Action::RegistrationCapped), 2);
 }
 
+/// QA M2 L2: the `registration.capped` row is written after the `account.created` row of the
+/// account that used up the cap, so the log reads in the order things happened.
+pub(crate) async fn the_capped_row_follows_the_account_created_row_that_used_the_last_place<
+    H: Harness,
+>() {
+    let mut h = H::fresh().await;
+    let _clock = clock_at(&mut h, DAY + 10);
+    let store = h.store();
+    let cap = DailyCap::Limited(2);
+    for n in 1..=2_u32 {
+        store
+            .open_account(name(&format!("member{n}")), &fingerprint(n), cap)
+            .await
+            .unwrap();
+    }
+    let rows = all(store).await;
+    let id_of = |action: Action, nth_from_last: usize| {
+        rows.iter()
+            .filter(|r| r.event.action == action)
+            .nth(nth_from_last)
+            .map(|r| r.id)
+            .unwrap()
+    };
+    // Newest first: the capped row is the newest, and the account that took the last place
+    // (the newest `account.created`) is older than it. The first account is older still.
+    let capped = id_of(Action::RegistrationCapped, 0);
+    let last_created = id_of(Action::AccountCreated, 0);
+    let first_created = id_of(Action::AccountCreated, 1);
+    assert!(first_created < last_created, "{rows:?}");
+    assert!(last_created < capped, "{rows:?}");
+}
+
 pub(crate) async fn an_unlimited_cap_never_refuses<H: Harness>() {
     let mut h = H::fresh().await;
     clock_at(&mut h, DAY);

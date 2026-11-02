@@ -45,7 +45,7 @@ use russh_bbs_core::queue::{
 };
 use russh_bbs_core::terminal_settings::strings::TITLE;
 use russh_bbs_core::terminal_settings::{MemberEffect, MemberFlow, MemberInput, TerminalSettings};
-use russh_bbs_core::waiting_room::{RedeemRequest, RoomEffect, RoomInput, View, WaitingRoom};
+use russh_bbs_core::waiting_room::{Page, RedeemRequest, RoomEffect, RoomInput, View, WaitingRoom};
 
 use super::terminal::{Key, PtySize, RenderCap};
 use crate::members;
@@ -330,6 +330,9 @@ pub(super) struct Screen {
     /// The window or the drawn size changed (or the screen must be cleared); the next render
     /// clears the client's screen and repaints everything.
     rebuild: bool,
+    /// The day's last `open` place went while this visitor's create-account form was open: the
+    /// room becomes the `apply` room, with its notice, as soon as they leave the form (FIX-M2-4).
+    degrade_on_leave: bool,
 }
 
 impl Screen {
@@ -357,6 +360,7 @@ impl Screen {
             pty: size,
             dirty: false,
             rebuild: false,
+            degrade_on_leave: false,
         })
     }
 
@@ -383,6 +387,12 @@ impl Screen {
                             break;
                         }
                     }
+                }
+                if self.degrade_on_leave && room.page() != Page::CreateAccount {
+                    // The visitor left the form: show the room the next connection would get.
+                    self.degrade_on_leave = false;
+                    room.degrade_open(true);
+                    self.dirty = true;
                 }
             }
             Content::Claim(form) => {
@@ -528,6 +538,17 @@ impl Screen {
             room.redeem_refused();
         }
         self.dirty = true;
+    }
+
+    /// The create-account form was refused because the day's cap is used up. The form shows the
+    /// same refusal sentence as for every other failure (no-leak); once the visitor leaves the
+    /// form, the room becomes the `apply` room with its notice, without a reconnect. Only an
+    /// `open` room is changed (`WaitingRoom::degrade_open` does nothing in any other mode).
+    pub(super) fn open_cap_reached(&mut self) {
+        self.redeem_refused();
+        if matches!(self.content, Content::Room(_)) {
+            self.degrade_on_leave = true;
+        }
     }
 
     /// The redemption worked: the visitor's session continues as the new member, at the login
