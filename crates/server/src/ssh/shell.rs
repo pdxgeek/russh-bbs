@@ -244,9 +244,6 @@ impl<D: Backend> Shell<D> {
             if let Some(request) = effects.invite.take() {
                 self.run_invite(request).await;
             }
-            if let Some(ask) = effects.request_invite.take() {
-                self.try_request_invite(ask).await;
-            }
             let mut leaving = effects.disconnect || batch.finish || out_of_time;
             if !leaving && let Some(request) = effects.redeem {
                 self.try_redeem(request).await;
@@ -273,6 +270,11 @@ impl<D: Backend> Shell<D> {
                         return;
                     }
                 }
+            }
+            // After the frame: the room's answer to a request does not wait for the store, so how
+            // long it takes cannot tell a kept request from a dropped one (D71).
+            if let Some(ask) = effects.request_invite.take() {
+                self.try_request_invite(ask).await;
             }
             if leaving {
                 self.finish().await;
@@ -498,7 +500,8 @@ impl<D: Backend> Shell<D> {
     }
 
     /// Offer a request for an invite typed in the waiting room to the queue (M2-E). The room
-    /// has already shown its one fixed answer, so nothing here reaches the screen: a drop (a
+    /// has already shown its one fixed answer, and the frame carrying it is sent before this
+    /// runs, so nothing here reaches the screen or delays it: a drop (a
     /// rate limit, a full queue, a repeat, a recent refusal, a slow or broken store) is logged
     /// by core without the request's text and looks like a kept request to the person. The
     /// waiting snapshot must hold `invite.request` (checked in core).
