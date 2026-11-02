@@ -11,7 +11,7 @@ A slice with an unmet dependency is not claimable.
 | M0-C Icon registry and width table | `crates/core/src/icons` | M0-A | In review | `m0/icons` (base `m0/sanitizer`), [PR #3](https://github.com/pdxgeek/russh-bbs/pull/3) |
 | M1-A SSH server, host key, restricted session | `crates/server/src/ssh` | M0-A | In review | `m1/ssh-server` (base `m0/icons`), [PR #4](https://github.com/pdxgeek/russh-bbs/pull/4) |
 | M1-B SQLite store and migrations | `crates/store`, `crates/core/src/store` traits | M0-A | In review | `m1/store` (base `m1/ssh-server`), [PR #6](https://github.com/pdxgeek/russh-bbs/pull/6) |
-| M1-C Waiting room screens and rate limits | `crates/server/src/waiting_room` | M1-A, M0-B | Open | |
+| M1-C Waiting room screens and rate limits | `crates/server/src/waiting_room`, `crates/core/src/waiting_room` | M1-A, M0-B | Claimed | `m1/waiting-room` (base `m1/store`) |
 | M1-D Founder claim flow | `crates/server/src/founder`, store | M1-A, M1-B | Open | |
 | M1-E Terminal settings and glyph test screen | `crates/server/src/settings` | M1-A, M0-C | Open | |
 | M1-F Container image, compose example, GHCR publish | `Dockerfile`, `compose.yaml`, the publish workflow in `.github/`, `docs/deploy.md` | M1-A, M1-B, M1-D | Open | |
