@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT r.id, r.handle, r.message, r.created_at, r.expires_at,\n                      v.account_id AS \"voucher_id?\", a.username AS \"voucher_handle?\"\n               FROM invite_request r\n               LEFT JOIN invite_request_vouch v ON v.request_id = r.id\n               LEFT JOIN accounts a ON a.id = v.account_id AND a.state = 'active'\n               WHERE r.id IN (SELECT id FROM invite_request ORDER BY id LIMIT $1)\n               ORDER BY r.id, v.created_at, v.account_id",
+  "query": "SELECT r.id, r.handle, r.message, r.created_at, r.expires_at, r.kind,\n                      v.account_id AS \"voucher_id?\", a.username AS \"voucher_handle?\"\n               FROM invite_request r\n               LEFT JOIN invite_request_vouch v ON v.request_id = r.id\n               LEFT JOIN accounts a ON a.id = v.account_id AND a.state = 'active'\n               WHERE r.id IN (SELECT id FROM invite_request ORDER BY id LIMIT $1)\n               ORDER BY r.id, v.created_at, v.account_id",
   "describe": {
     "columns": [
       {
@@ -30,11 +30,16 @@
       },
       {
         "ordinal": 5,
+        "name": "kind",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
         "name": "voucher_id?",
         "type_info": "Int8"
       },
       {
-        "ordinal": 6,
+        "ordinal": 7,
         "name": "voucher_handle?",
         "type_info": "Text"
       }
@@ -51,8 +56,9 @@
       false,
       false,
       false,
+      false,
       false
     ]
   },
-  "hash": "f36edb56881940c1833d30cf5f3eb8f766b5d5d4f919306c010807d6ea8e8fe0"
+  "hash": "c37b35fcfb0fafa7a5055a931dd34aa1fe849c5c19470a15452025a7cfb75184"
 }

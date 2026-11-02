@@ -284,3 +284,35 @@ pub fn member_vouched(voucher: AccountId, request: RequestId) -> AuditEvent {
         Target::Request(request),
     )
 }
+
+/// An account was made by `open` registration (M2-G). Nobody vouched and nobody decided: the
+/// actor is the board itself, the target is the new account, and the account has no inviter.
+#[must_use]
+pub fn account_created_via_open(account: AccountId, state: AccountState) -> AuditEvent {
+    AuditEvent::new(
+        Actor::System,
+        Action::AccountCreated,
+        Target::Account(account),
+    )
+    .detail(&format!("via open state {}", state.as_str()))
+}
+
+/// A membership application was kept as request `request` (M2-G). No account exists yet, so the
+/// actor is the board and the target is the request's id: no handle, no message, no key.
+#[must_use]
+pub fn application_submitted(request: RequestId) -> AuditEvent {
+    AuditEvent::new(
+        Actor::System,
+        Action::ApplicationSubmitted,
+        Target::Request(request),
+    )
+}
+
+/// The `open` daily cap was reached on `day` (the number of whole days since 1970-01-01 UTC), so
+/// the board answers with the `apply` form until the day ends (M2-G). `cap` is the cap that was
+/// in force.
+#[must_use]
+pub fn registration_capped(day: i64, cap: u32) -> AuditEvent {
+    AuditEvent::new(Actor::System, Action::RegistrationCapped, Target::None)
+        .detail(&format!("day {day} cap {cap}"))
+}

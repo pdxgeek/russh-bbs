@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE registration_day SET capped_at = ? WHERE day = ? AND capped_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "a2a79975446555b6cbdbd22eddb93ebae79e9cf8e028e3bd778629ec0029164b"
+}

@@ -10,10 +10,11 @@ use std::sync::Mutex;
 
 use super::screens::{entry_for, menu, pages};
 use super::{
-    NoticeKind, Page, RedeemRequest, RoomConfig, RoomEffect, RoomInput, View, WaitingRoom,
-    WaitingRoomSource, strings,
+    JoinKind, NoticeKind, Page, RedeemRequest, RoomConfig, RoomEffect, RoomInput, View,
+    WaitingRoom, WaitingRoomSource, strings,
 };
 use crate::access::NoMembers;
+use crate::queue::RequestKind;
 use crate::store::{
     RegistrationMode, SettingKey, SettingsStore, StoreError, set_registration_mode,
 };
@@ -155,37 +156,161 @@ fn rules_page_shows_the_fixed_privacy_note() {
 
 // ---- forms ---------------------------------------------------------------------------------
 
+/// The application form (`apply` mode, M2-G) is the request form's twin: a valid submission
+/// is handed over as an application and answered at once with one fixed text.
 #[test]
-fn a_valid_submission_says_it_is_not_open_and_keeps_nothing() {
-    let cases = [
-        (RegistrationMode::Apply, 'a', strings::APPLY_UNAVAILABLE, 2),
-        (
-            RegistrationMode::Open,
-            'n',
-            strings::CREATE_ACCOUNT_UNAVAILABLE,
-            1,
-        ),
-    ];
-    for (mode, key, message, field_count) in cases {
+fn a_valid_application_is_handed_over_and_answered_with_the_fixed_text() {
+    let mut room = room(RegistrationMode::Apply);
+    room.input(RoomInput::Char('a'));
+    assert_eq!(room.view().fields.len(), 2);
+    type_text(&mut room, "applicant");
+    assert_eq!(room.input(RoomInput::Enter), RoomEffect::Stay);
+    type_text(&mut room, "  I run a small board \u{1b}[31m too ");
+    let RoomEffect::RequestInvite(ask) = room.input(RoomInput::Enter) else {
+        panic!("a valid application is handed over");
+    };
+    assert_eq!(ask.kind, RequestKind::Application);
+    assert_eq!(ask.handle.as_str(), "applicant");
+    assert!(!ask.message.contains('\u{1b}'), "{:?}", ask.message);
+    let view = room.view();
+    let notice = view.notice.expect("an answer");
+    assert_eq!(notice.kind, NoticeKind::Info);
+    assert_eq!(notice.text, strings::APPLY_ANSWER);
+    assert!(
+        view.fields.iter().all(|f| f.value.is_empty()),
+        "typed text does not stay in the room"
+    );
+    // True either way: who can read it, that the key stays outside, that nobody is told.
+    for claim in ["approved", "created", "success", "you are in"] {
+        assert!(!notice.text.to_lowercase().contains(claim), "{claim}");
+    }
+    assert!(notice.text.contains("fingerprint"));
+    assert!(notice.text.contains("outside the board"));
+    assert!(notice.text.contains("Nobody is notified"));
+}
+
+/// An invalid application never reaches the front end, and its problem depends only on what
+/// was typed.
+#[test]
+fn an_invalid_application_is_not_handed_over() {
+    for (handle, message, problem) in [
+        ("x", "hello", strings::ERR_HANDLE_TOO_SHORT),
+        ("sysop", "hello", strings::ERR_HANDLE_RESERVED),
+        ("applicant", "", strings::ERR_EMPTY),
+    ] {
+        let mut room = room(RegistrationMode::Apply);
+        room.input(RoomInput::Char('a'));
+        type_text(&mut room, handle);
+        room.input(RoomInput::Enter);
+        type_text(&mut room, message);
+        assert_eq!(room.input(RoomInput::Enter), RoomEffect::Stay);
+        let notice = room.view().notice.expect("a problem");
+        assert_eq!(notice.kind, NoticeKind::Error);
+        assert_eq!(notice.text, problem);
+    }
+}
+
+/// The create-account form (`open` mode, M2-G) is the redeem form's twin: a valid handle
+/// becomes an effect with nothing claimed, and a refusal reads as one fixed sentence.
+#[test]
+fn a_valid_create_account_form_hands_over_an_open_request() {
+    let mut room = room(RegistrationMode::Open);
+    room.input(RoomInput::Char('n'));
+    assert_eq!(room.view().fields.len(), 1);
+    type_text(&mut room, "newcomer");
+    let RoomEffect::Redeem(request) = room.input(RoomInput::Enter) else {
+        panic!("a valid handle is handed over");
+    };
+    assert_eq!(request.join, JoinKind::Open);
+    assert_eq!(request.handle.as_str(), "newcomer");
+    let view = room.view();
+    assert!(view.fields.iter().all(|f| f.value.is_empty()));
+    assert!(
+        view.notice.is_none(),
+        "nothing is claimed before the store answers"
+    );
+    assert!(
+        !format!("{request:?}").contains("redacted"),
+        "no code, so nothing to hide"
+    );
+
+    room.redeem_refused();
+    let notice = room.view().notice.expect("a refusal");
+    assert_eq!(notice.kind, NoticeKind::Error);
+    assert_eq!(notice.text, strings::CREATE_ACCOUNT_FAILED);
+}
+
+/// A bad handle never reaches the front end in `open` mode either.
+#[test]
+fn an_invalid_create_account_form_is_not_handed_over() {
+    for (handle, problem) in [
+        ("x", strings::ERR_HANDLE_TOO_SHORT),
+        ("bad name!", strings::ERR_HANDLE_CHARS),
+        ("admin", strings::ERR_HANDLE_RESERVED),
+        ("   ", strings::ERR_EMPTY),
+    ] {
+        let mut room = room(RegistrationMode::Open);
+        room.input(RoomInput::Char('n'));
+        type_text(&mut room, handle);
+        assert_eq!(room.input(RoomInput::Enter), RoomEffect::Stay);
+        assert_eq!(room.view().notice.expect("a problem").text, problem);
+    }
+}
+
+/// A full day turns `open` into `apply`: same screens as an `apply` board plus an honest notice
+/// on the home and application pages (D2). Nothing else changes.
+#[test]
+fn a_degraded_open_room_offers_the_application_form_with_a_notice() {
+    let mut degraded = room(RegistrationMode::Open);
+    degraded.degrade_open(true);
+    assert_eq!(degraded.mode(), RegistrationMode::Apply);
+    let home = degraded.view();
+    assert_eq!(home.note, Some(strings::OPEN_CAPPED_NOTICE));
+    let labels: Vec<_> = home.menu.iter().map(|m| (m.key, m.label)).collect();
+    let apply_room = room(RegistrationMode::Apply).view();
+    let apply_labels: Vec<_> = apply_room.menu.iter().map(|m| (m.key, m.label)).collect();
+    assert_eq!(labels, apply_labels);
+    assert!(
+        !labels
+            .iter()
+            .any(|(_, l)| *l == strings::MENU_CREATE_ACCOUNT)
+    );
+    // The create-account key does nothing.
+    degraded.input(RoomInput::Char('n'));
+    assert_eq!(degraded.page(), Page::Home);
+    // The application page carries the notice too, and the form works.
+    degraded.input(RoomInput::Char('a'));
+    assert_eq!(degraded.page(), Page::Apply);
+    assert_eq!(degraded.view().note, Some(strings::OPEN_CAPPED_NOTICE));
+    type_text(&mut degraded, "applicant");
+    degraded.input(RoomInput::Enter);
+    type_text(&mut degraded, "hello");
+    assert!(matches!(
+        degraded.input(RoomInput::Enter),
+        RoomEffect::RequestInvite(_)
+    ));
+    // The notice is about the cap, so it is honest about what it says and nothing more.
+    assert!(!strings::OPEN_CAPPED_NOTICE.contains(char::is_numeric));
+}
+
+/// Degrading without a notice (the cap could not be read) is just the stricter path.
+#[test]
+fn a_degraded_room_without_a_notice_shows_none() {
+    let mut degraded = room(RegistrationMode::Open);
+    degraded.degrade_open(false);
+    assert_eq!(degraded.mode(), RegistrationMode::Apply);
+    assert_eq!(degraded.view().note, None);
+}
+
+/// `degrade_open` can only make a room stricter: it does nothing to `invite` or `apply`.
+#[test]
+fn degrading_never_loosens_a_room() {
+    for mode in [RegistrationMode::Invite, RegistrationMode::Apply] {
         let mut room = room(mode);
-        room.input(RoomInput::Char(key));
-        assert_eq!(room.view().fields.len(), field_count);
-        for _ in 0..field_count {
-            type_text(&mut room, "validname");
-            room.input(RoomInput::Enter);
-        }
-        let notice = room.view().notice.expect("a result");
-        assert_eq!(notice.kind, NoticeKind::Info, "{mode:?}");
-        assert_eq!(notice.text, message);
-        assert!(
-            room.view().fields.iter().all(|f| f.value.is_empty()),
-            "typed text must not be retained after a submission that is dropped"
-        );
-        // The message never claims success.
-        for claim in ["sent to", "submitted", "approved", "created!", "success"] {
-            assert!(!notice.text.to_lowercase().contains(claim), "{claim}");
-        }
-        assert!(notice.text.contains("not"), "{}", notice.text);
+        let before = room.view();
+        room.degrade_open(true);
+        assert_eq!(room.mode(), mode);
+        assert_eq!(room.view(), before);
     }
 }
 
@@ -544,10 +669,15 @@ fn fill_redeem(room: &mut WaitingRoom, code: &str, handle: &str) -> RoomEffect {
 fn a_filled_redeem_form_hands_the_front_end_a_request_and_forgets_what_was_typed() {
     let mut room = redeem_room();
     let effect = fill_redeem(&mut room, "  ABCD-EFGH  ", "newcomer");
-    let RoomEffect::Redeem(RedeemRequest { code, handle }) = effect else {
+    let RoomEffect::Redeem(RedeemRequest { join, handle }) = effect else {
         unreachable!("expected a redeem request, got {effect:?}");
     };
-    assert_eq!(code, "ABCD-EFGH");
+    assert_eq!(
+        join,
+        JoinKind::Invite {
+            code: "ABCD-EFGH".to_owned()
+        }
+    );
     assert_eq!(handle.as_str(), "newcomer");
     let view = room.view();
     assert!(view.fields.iter().all(|f| f.value.is_empty()));

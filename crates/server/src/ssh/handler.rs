@@ -23,7 +23,9 @@ use russh_bbs_core::access::Permission;
 use russh_bbs_core::access::{Access, Fingerprint, decide_access};
 use russh_bbs_core::founder::{ClaimForm, MAX_ATTEMPTS_PER_SESSION};
 use russh_bbs_core::limits::{LimitError, MemberMeter, SystemClock, begin_member_session};
+use russh_bbs_core::registration::open_cap_reached;
 use russh_bbs_core::store::AccountId;
+use russh_bbs_core::store::RegistrationMode;
 use russh_bbs_core::terminal_settings::{MemberFlow, MemberStart};
 use russh_bbs_core::waiting_room::{RoomConfig, Verdict, WaitingRoom};
 use tokio::sync::oneshot;
@@ -166,7 +168,25 @@ impl<D> ClientHandler<D> {
                 RoomConfig::default()
             }
         };
-        WaitingRoom::new(&config, self.limits.max_form_submissions)
+        let mut room = WaitingRoom::new(&config, self.limits.max_form_submissions);
+        if config.mode == RegistrationMode::Open {
+            // A full day turns `open` into `apply` for every connection until 00:00 UTC (M2-G,
+            // D2). If the count cannot be read, take the stricter path without claiming the
+            // cap is reached.
+            match timeout(ROOM_CONFIG_TIMEOUT, open_cap_reached(&*self.directory)).await {
+                Ok(Ok(false)) => {}
+                Ok(Ok(true)) => room.degrade_open(true),
+                Ok(Err(error)) => {
+                    warn!(session = ?self.guard.id(), %error, "daily cap unreadable; offering apply");
+                    room.degrade_open(false);
+                }
+                Err(_) => {
+                    warn!(session = ?self.guard.id(), "daily cap check timed out; offering apply");
+                    room.degrade_open(false);
+                }
+            }
+        }
+        room
     }
 
     /// Whether the waiting room may be shown: the unauthenticated snapshot must hold

@@ -10,6 +10,7 @@ pub mod limits;
 pub mod menu;
 pub mod profiles;
 pub mod queue;
+pub mod registration;
 pub mod sanitize;
 pub mod store;
 pub mod terminal_settings;

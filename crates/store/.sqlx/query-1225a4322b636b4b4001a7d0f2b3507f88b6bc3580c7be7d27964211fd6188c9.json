@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE registration_day SET capped_at = $1 WHERE day = $2 AND capped_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1225a4322b636b4b4001a7d0f2b3507f88b6bc3580c7be7d27964211fd6188c9"
+}

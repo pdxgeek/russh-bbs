@@ -15,15 +15,19 @@
 //! valid submission to the front end as [`RoomEffect::RequestInvite`] and shows **one fixed
 //! answer at once**, before anything is stored: the queue may keep the request or drop it (a
 //! rate limit, a full queue, a repeat), and the person cannot tell which, so the answer cannot
-//! be an oracle for the board's state. The apply and create-account forms store nothing yet
-//! (M2-G), so a valid submission there ends in a message saying nothing was stored or sent.
+//! be an oracle for the board's state. The application form (`apply` mode, M2-G) does the same
+//! with [`RequestKind::Application`]: one fixed answer at once, the queue keeps or drops it. The
+//! create-account form (`open` mode, M2-G) is the redeem form's twin: a valid submission is a
+//! [`RoomEffect::Redeem`] with [`JoinKind::Open`], and a refusal reads as one fixed sentence.
+//! On a day the `open` cap is used up the front end calls [`WaitingRoom::degrade_open`] and the
+//! room shows the `apply` screens with an honest notice.
 
 use std::fmt;
 
 use super::screens::{self, Page, QUIT_KEY};
 use super::source::RoomConfig;
 use super::strings;
-use crate::queue::InviteAsk;
+use crate::queue::{InviteAsk, RequestKind};
 use crate::sanitize::USERNAME_MAX_CHARS;
 use crate::sanitize::{MultiLine, SingleLine, Username, UsernameError, sanitize_username};
 use crate::store::RegistrationMode;
@@ -166,21 +170,44 @@ pub enum RoomInput {
     Quit,
 }
 
-/// A redemption the front end should attempt. Built from a form that passed the room's own
-/// checks (both fields filled, the handle valid), so the front end only needs the store.
+/// How a visitor asks to become a member at once.
+#[derive(Clone, PartialEq, Eq)]
+pub enum JoinKind {
+    /// With an invite code (`invite` mode, M2-D).
+    Invite {
+        /// The code as typed (sanitized and length-capped, not yet normalized or hashed).
+        code: String,
+    },
+    /// With nothing but a handle (`open` mode, M2-G).
+    Open,
+}
+
+impl fmt::Debug for JoinKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // The code is a credential: never in a log or a test failure message.
+        match self {
+            Self::Invite { .. } => f.write_str("Invite { code: <redacted> }"),
+            Self::Open => f.write_str("Open"),
+        }
+    }
+}
+
+/// A "become a member now" attempt the front end should make: an invite redemption or an `open`
+/// account (the effect keeps the name it had when the redeem form was its only user). Built from
+/// a form that passed the room's own checks (every field filled, the handle valid), so the
+/// front end only needs the store.
 #[derive(Clone, PartialEq, Eq)]
 pub struct RedeemRequest {
-    /// The code as typed (sanitized and length-capped, not yet normalized or hashed).
-    pub code: String,
+    /// Which form it came from.
+    pub join: JoinKind,
     /// The handle the new account will have.
     pub handle: Username,
 }
 
 impl fmt::Debug for RedeemRequest {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // The code is a credential: never in a log or a test failure message.
         f.debug_struct("RedeemRequest")
-            .field("code", &"<redacted>")
+            .field("join", &self.join)
             .field("handle", &self.handle)
             .finish()
     }
@@ -193,11 +220,13 @@ pub enum RoomEffect {
     Stay,
     /// Redraw once, then close the session.
     Disconnect,
-    /// Try to redeem an invite, then call [`WaitingRoom::redeem_refused`] if it did not work.
+    /// Try to redeem an invite or open an account, then call [`WaitingRoom::redeem_refused`] if
+    /// it did not work.
     Redeem(RedeemRequest),
-    /// Offer a request for an invite to the queue (M2-E). The room has already shown its one
-    /// fixed answer; the front end does not report back, because nothing it learns may change
-    /// what the person reads.
+    /// Offer a request for an invite, or a membership application (the ask's
+    /// [`RequestKind`]), to the queue (M2-E, M2-G). The room has already shown its one fixed
+    /// answer; the front end does not report back, because nothing it learns may change what the
+    /// person reads.
     RequestInvite(InviteAsk),
 }
 
@@ -319,15 +348,17 @@ fn fields_of(page: Page) -> &'static [FieldSpec] {
     }
 }
 
-/// The honest "not available yet" message for a form page.
+/// The words for a valid form that no special case took. Every form is live, so this is the
+/// same sentence the live path shows.
 fn unavailable(page: Page) -> &'static str {
     match page {
         // The request form is live (M2-E) and never gets here; the words stay honest anyway.
         Page::RequestInvite => strings::REQUEST_INVITE_ANSWER,
         // The redeem form is live (M2-D) and never gets here; the words stay honest anyway.
         Page::RedeemInvite => strings::REDEEM_FAILED,
-        Page::Apply => strings::APPLY_UNAVAILABLE,
-        Page::CreateAccount => strings::CREATE_ACCOUNT_UNAVAILABLE,
+        // The apply and create-account forms are live (M2-G) and never get here either.
+        Page::Apply => strings::APPLY_ANSWER,
+        Page::CreateAccount => strings::CREATE_ACCOUNT_FAILED,
         // Not forms; never submitted.
         Page::Home | Page::Rules => strings::ERR_EMPTY,
     }
@@ -355,6 +386,7 @@ pub struct WaitingRoom {
     notice: Option<Notice>,
     submissions: u32,
     max_submissions: u32,
+    degraded: bool,
 }
 
 impl fmt::Debug for WaitingRoom {
@@ -384,6 +416,20 @@ impl WaitingRoom {
             notice: None,
             submissions: 0,
             max_submissions,
+            degraded: false,
+        }
+    }
+
+    /// Turn an `open` room into an `apply` room for the rest of the UTC day because the daily
+    /// cap on new accounts is used up (M2-G, D2). `with_notice` adds the honest notice to the
+    /// home and application pages; pass `false` when the cap could not be read and the room
+    /// simply takes the stricter path. Does nothing in any other mode, so a room can never be
+    /// loosened by it.
+    pub fn degrade_open(&mut self, with_notice: bool) {
+        if self.mode == RegistrationMode::Open {
+            self.mode = RegistrationMode::Apply;
+            self.degraded = with_notice;
+            self.go(Page::Home);
         }
     }
 
@@ -478,7 +524,7 @@ impl WaitingRoom {
             return RoomEffect::Disconnect;
         }
         self.active = 0;
-        if self.page == Page::RedeemInvite
+        if matches!(self.page, Page::RedeemInvite | Page::CreateAccount)
             && self.validate().is_ok()
             && let Some(request) = self.redeem_request()
         {
@@ -487,7 +533,7 @@ impl WaitingRoom {
             self.notice = None;
             return RoomEffect::Redeem(request);
         }
-        if self.page == Page::RequestInvite
+        if matches!(self.page, Page::RequestInvite | Page::Apply)
             && self.validate().is_ok()
             && let Some(ask) = self.invite_ask()
         {
@@ -495,7 +541,7 @@ impl WaitingRoom {
             self.clear_form();
             self.notice = Some(Notice {
                 kind: NoticeKind::Info,
-                text: strings::REQUEST_INVITE_ANSWER,
+                text: unavailable(self.page),
             });
             return RoomEffect::RequestInvite(ask);
         }
@@ -516,27 +562,51 @@ impl WaitingRoom {
         RoomEffect::Stay
     }
 
-    /// The redemption the redeem form describes, if its handle is valid.
+    /// The redemption or `open` registration the form describes, if its handle is valid.
     fn redeem_request(&self) -> Option<RedeemRequest> {
+        if self.page == Page::CreateAccount {
+            let handle = sanitize_username(self.values.first()?).ok()?;
+            return Some(RedeemRequest {
+                join: JoinKind::Open,
+                handle,
+            });
+        }
         let code = self.values.first()?.trim().to_owned();
         let handle = sanitize_username(self.values.get(1)?).ok()?;
-        Some(RedeemRequest { code, handle })
+        Some(RedeemRequest {
+            join: JoinKind::Invite { code },
+            handle,
+        })
     }
 
-    /// The request the invite form describes, if its handle is valid.
+    /// The request or application the form describes, if its handle is valid.
     fn invite_ask(&self) -> Option<InviteAsk> {
         let handle = sanitize_username(self.values.first()?).ok()?;
         let message = self.values.get(1)?.trim().to_owned();
-        Some(InviteAsk { handle, message })
+        let kind = if self.page == Page::Apply {
+            RequestKind::Application
+        } else {
+            RequestKind::Invite
+        };
+        Some(InviteAsk {
+            handle,
+            message,
+            kind,
+        })
     }
 
-    /// The redemption did not work. Whatever the reason (an unknown, wrong, used or expired
-    /// code, a taken handle, a key that already has an account, a store failure) the visitor
-    /// reads the same words, so the answer tells a stranger nothing about the board.
+    /// The redemption or account creation did not work. Whatever the reason (an unknown, wrong,
+    /// used or expired code, a taken handle, a key that already has an account, a rate limit, a
+    /// full day, a store failure) the visitor reads the same words for the form they used, so
+    /// the answer tells a stranger nothing about the board.
     pub fn redeem_refused(&mut self) {
         self.notice = Some(Notice {
             kind: NoticeKind::Error,
-            text: strings::REDEEM_FAILED,
+            text: if self.page == Page::CreateAccount {
+                strings::CREATE_ACCOUNT_FAILED
+            } else {
+                strings::REDEEM_FAILED
+            },
         });
     }
 
@@ -589,12 +659,18 @@ impl WaitingRoom {
                     })
                     .collect();
                 view.footer = strings::FOOTER_HOME;
+                if self.degraded {
+                    view.note = Some(strings::OPEN_CAPPED_NOTICE);
+                }
             }
             Page::Rules => {
                 view.body.clone_from(&self.rules);
                 view.note = Some(strings::PRIVACY_NOTE);
             }
-            _ => {
+            page => {
+                if self.degraded && page == Page::Apply {
+                    view.note = Some(strings::OPEN_CAPPED_NOTICE);
+                }
                 view.fields = fields_of(self.page)
                     .iter()
                     .zip(&self.values)

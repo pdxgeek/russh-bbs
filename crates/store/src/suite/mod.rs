@@ -15,6 +15,7 @@ pub(crate) mod invites;
 pub(crate) mod limits;
 pub(crate) mod profiles;
 pub(crate) mod queue;
+pub(crate) mod registration;
 pub(crate) mod terminal_settings;
 
 use std::sync::Arc;
@@ -26,6 +27,7 @@ use russh_bbs_core::invites::InviteStore;
 use russh_bbs_core::limits::LimitStore;
 use russh_bbs_core::profiles::ProfileStore;
 use russh_bbs_core::queue::QueueStore;
+use russh_bbs_core::registration::RegistrationStore;
 use russh_bbs_core::store::{AccountStateStore, AccountStore, SettingsStore};
 use russh_bbs_core::terminal_settings::{MemberSessions, TerminalSettingsStore};
 
@@ -43,6 +45,7 @@ pub(crate) trait TestStore:
     + TerminalSettingsStore
     + ProfileStore
     + QueueStore
+    + RegistrationStore
     + MemberDirectory
     + MemberSessions
     + Clone
@@ -64,6 +67,7 @@ impl<T> TestStore for T where
         + TerminalSettingsStore
         + ProfileStore
         + QueueStore
+        + RegistrationStore
         + MemberDirectory
         + MemberSessions
         + Clone
@@ -132,7 +136,7 @@ macro_rules! shared_suite {
             use super::*;
             use $crate::suite::{
                 access, access_edit, accounts, audit, founder, invites, limits, profiles, queue,
-                terminal_settings,
+                registration, terminal_settings,
             };
 
             $crate::suite::shared_suite!(@tests $harness, $attr;
@@ -255,6 +259,17 @@ macro_rules! shared_suite {
                 queue::queue_writes_never_land_without_their_audit_row,
                 queue::the_queue_survives_a_reopen,
                 queue::a_broken_store_errors_instead_of_answering,
+                registration::open_makes_an_active_account_with_no_inviter_and_audits_it,
+                registration::the_cap_degrades_open_for_the_rest_of_the_utc_day_and_the_next_day_starts_fresh,
+                registration::an_unlimited_cap_never_refuses,
+                registration::a_refused_open_registration_leaves_no_trace_and_costs_no_place,
+                registration::concurrent_opens_never_pass_the_cap,
+                registration::old_counter_rows_are_pruned_by_the_next_creation,
+                registration::open_registration_never_lands_without_its_audit_row,
+                registration::the_mode_and_the_cap_setting_are_read_on_every_call,
+                registration::an_application_is_a_queue_row_of_its_kind_with_one_audit_row_and_no_content,
+                registration::an_application_never_lands_without_its_audit_row,
+                registration::registration_data_survives_a_reopen,
                 terminal_settings::defaults_when_missing,
                 terminal_settings::set_then_get_round_trips,
                 terminal_settings::every_tier_and_unset_round_trip,

@@ -11,7 +11,7 @@ use russh_bbs_core::access::{Permission, Slug, Snapshot, Via};
 use russh_bbs_core::icons::Tier;
 use russh_bbs_core::queue::{
     Message, PendingRequest, Queue, QueueKey, QueueMode, QueueScreen, QueueView, RequestId,
-    Response, Voucher,
+    RequestKind, Response, Voucher,
 };
 use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::{AccountId, UnixSeconds};
@@ -85,6 +85,7 @@ fn request(id: i64, handle: &str, message: &str, vouchers: usize) -> PendingRequ
         message: Message::new(message),
         created_at: UnixSeconds::from_raw(1_000),
         expires_at: UnixSeconds::from_raw(1_000 + 14 * 86_400),
+        kind: RequestKind::Invite,
         vouchers: (0..vouchers)
             .map(|n| Voucher {
                 account: AccountId::from_raw(100 + i64::try_from(n).unwrap()),

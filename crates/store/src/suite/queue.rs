@@ -12,7 +12,7 @@ use russh_bbs_core::audit::{
 };
 use russh_bbs_core::queue::{
     ApproveError, DENIAL_COOLDOWN_SECS, DecideError, Message, NewRequest, PENDING_TTL_SECS, Queue,
-    QueueStore, Refusal, RequestId, SubmitTerms, Submitted, VouchError, cooldown_key,
+    QueueStore, Refusal, RequestId, RequestKind, SubmitTerms, Submitted, VouchError, cooldown_key,
 };
 use russh_bbs_core::sanitize::{Username, sanitize_username};
 use russh_bbs_core::store::{Account, AccountState, AccountStore, NewAccount, StoreError};
@@ -44,6 +44,7 @@ fn request(key: u32, handle: &str) -> NewRequest {
         handle: name(handle),
         message: Message::new(MESSAGE),
         fingerprint: fingerprint(key),
+        kind: RequestKind::Invite,
     }
 }
 

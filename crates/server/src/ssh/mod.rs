@@ -32,6 +32,7 @@ use russh_bbs_core::invites::InviteStore;
 use russh_bbs_core::limits::LimitStore;
 use russh_bbs_core::profiles::ProfileStore;
 use russh_bbs_core::queue::QueueStore;
+use russh_bbs_core::registration::RegistrationStore;
 use russh_bbs_core::terminal_settings::MemberSessions;
 use russh_bbs_core::waiting_room::WaitingRoomSource;
 
@@ -48,6 +49,7 @@ pub trait Backend:
     + InviteStore
     + ProfileStore
     + QueueStore
+    + RegistrationStore
     + LimitStore
     + 'static
 {
@@ -61,6 +63,7 @@ impl<T> Backend for T where
         + InviteStore
         + ProfileStore
         + QueueStore
+        + RegistrationStore
         + LimitStore
         + 'static
 {

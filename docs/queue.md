@@ -1,6 +1,6 @@
 # The sysop queue: requests for an invite, approve, deny, vouch
 
-Status: **Implemented** (M2-E, `m2/sysop-queue`, D71, D72); not yet Verified (the M2 QA gate has not run). Code: `core::queue`, `server::sysop::queue`, the store's `QueueStore` on both backends, migration `0009_queue`. The `apply` and `open` registration modes (M2-G) will use it; today only `invite` mode does.
+Status: **Implemented** (M2-E, `m2/sysop-queue`, D71, D72); not yet Verified (the M2 QA gate has not run). Code: `core::queue`, `server::sysop::queue`, the store's `QueueStore` on both backends, migration `0009_queue`. The `apply` registration mode (M2-G) uses it too: an application is a request of kind `application` ([registration.md](registration.md)); `open` mode does not use the queue (except on a day its cap is used up, when the board shows the application form).
 
 ## What a stranger does
 
@@ -78,10 +78,10 @@ Submissions and purges are **not** audited: the log is append-only (D59) and can
 - Waiting room: the form hands a valid submission to the front end (`RoomEffect::RequestInvite`); the SSH shell offers it to core with the peer address for the network limit.
 - Screens: the two screens above; menu items under Sysop tools and Members.
 - Permission `invite.request` (waiting, sysop); `members.deny` and `members.vouch` now have actions.
+- **Applications (M2-G):** the table has a `kind` column (`invite` or `application`, migration `0010`); an application is submitted through `core::registration::submit_application` (permission `membership.apply`, the stored mode must be `apply` or `open`) and then is exactly an invite request: one per key, the same cap, limits, expiry, cooldown, vouches and approve/deny. The sysop screen's detail title reads "Application N: handle" for one; the list and the intro say "Invite requests and applications". A kept application writes one `application.submitted` audit row (the request id; no text, no key); an invite request still writes none (D71, D73).
 
 ## Not built
 
-- **`apply` and `open` modes** (M2-G): their forms still say nothing was stored. See the handoff in [coordination.md](coordination.md).
 - **Moderators cannot reach the screen.** They hold `members.deny` but not `members.approve`, and Sysop tools is gated on `members.approve`. The M5 sysop console decides where the screen lives and who sees it.
 - **Notification.** Nobody is told of a decision; the person finds out by connecting again with the same key. There is no mail yet.
 - **Editing the cap from a screen** (`queue_max_pending` is a stored setting; M5 sets settings).

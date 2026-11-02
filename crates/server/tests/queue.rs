@@ -431,7 +431,9 @@ async fn a_request_stores_only_the_documented_fields_and_no_address() {
             "handle",
             "message",
             "created_at",
-            "expires_at"
+            "expires_at",
+            // M2-G: which form it came from (`invite` or `application`); no new personal data.
+            "kind"
         ]
     );
     assert_eq!(
@@ -649,7 +651,7 @@ async fn a_trusted_member_vouches_once_and_the_sysop_sees_the_name() {
         assert!(!members.contains("Vouch for a request"), "{members}");
         let after = flat(&press(&mut channel, "v").await);
         assert!(
-            after.contains("Member list") && !after.contains("People who asked"),
+            after.contains("Member list") && !after.contains("Invite requests and applications"),
             "{after}"
         );
     }

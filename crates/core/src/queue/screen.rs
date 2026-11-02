@@ -17,7 +17,7 @@
 //! about to replace.
 
 use super::keys;
-use super::request::{DENIAL_COOLDOWN_SECS, PendingRequest, RequestId};
+use super::request::{DENIAL_COOLDOWN_SECS, PendingRequest, RequestId, RequestKind};
 use super::service::{Request, Response};
 use crate::access::{Permission, PermissionCheck};
 use crate::store::{AccountId, UnixSeconds};
@@ -495,7 +495,10 @@ impl QueueScreen {
         let extra = request.vouchers.len().saturating_sub(MAX_NAMES);
         let mut lines = vec![
             ViewLine::Filled {
-                key: keys::DETAIL_TITLE,
+                key: match request.kind {
+                    RequestKind::Invite => keys::DETAIL_TITLE,
+                    RequestKind::Application => keys::DETAIL_TITLE_APPLICATION,
+                },
                 values: vec![("id", request.id.to_string()), ("handle", handle.clone())],
             },
             ViewLine::Filled {

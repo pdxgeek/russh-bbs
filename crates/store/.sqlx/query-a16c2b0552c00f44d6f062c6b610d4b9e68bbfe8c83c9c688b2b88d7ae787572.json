@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM registration_day WHERE day < ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "a16c2b0552c00f44d6f062c6b610d4b9e68bbfe8c83c9c688b2b88d7ae787572"
+}

@@ -27,6 +27,7 @@ keys! {
     PAGE = "queue.page",
     FOOTER_LIST = "queue.footer.list",
     DETAIL_TITLE = "queue.detail.title",
+    DETAIL_TITLE_APPLICATION = "queue.detail.title_application",
     DETAIL_WHEN = "queue.detail.when",
     DETAIL_VOUCHES = "queue.detail.vouches",
     DETAIL_NO_VOUCHES = "queue.detail.no_vouches",

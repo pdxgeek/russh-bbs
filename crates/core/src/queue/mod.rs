@@ -36,7 +36,8 @@ pub use gate::{
 };
 pub use request::{
     DEFAULT_MAX_PENDING, DENIAL_COOLDOWN_SECS, InviteAsk, MAX_MAX_PENDING, MESSAGE_MAX_CHARS,
-    Message, NewRequest, PENDING_TTL_SECS, PendingRequest, RequestId, Voucher, cooldown_key,
+    Message, NewRequest, PENDING_TTL_SECS, PendingRequest, RequestId, RequestKind, Voucher,
+    cooldown_key,
 };
 pub use screen::{
     PAGE_SIZE, QueueKey, QueueMode, QueueScreen, QueueStep, QueueView, Row, ViewLine, age_text,

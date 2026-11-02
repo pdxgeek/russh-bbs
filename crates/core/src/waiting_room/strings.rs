@@ -65,12 +65,23 @@ pub const LABEL_CODE: &str = "Invite code";
 /// it is kept, and that nobody is notified.
 pub const REQUEST_INVITE_ANSWER: &str = "Thank you. If your request is kept, the staff and trusted members here can read your handle, your message and this key's fingerprint, and the staff decide when they can. Nobody is notified: connect again later with this same key to find out.";
 
-/// Form results. Each says plainly that nothing was stored or sent, because nothing was.
-pub const APPLY_UNAVAILABLE: &str =
-    "Applications are not open yet. Nothing you typed was stored or sent.";
-/// See [`APPLY_UNAVAILABLE`].
-pub const CREATE_ACCOUNT_UNAVAILABLE: &str =
-    "Account creation is not open yet. Nothing you typed was stored or sent.";
+/// The one answer to the application form (M2-G). Like [`REQUEST_INVITE_ANSWER`] it is shown
+/// before the store is asked and is the same whether the application was kept or dropped (a
+/// rate limit, a full queue, a repeat, a recent refusal, a key that already has an account).
+/// It says what is true either way: who can read the text if it is kept, that the account
+/// stays inactive until the staff decide, and that nobody is notified.
+pub const APPLY_ANSWER: &str = "Thank you. If your application is kept, the staff and trusted members here can read your handle, your message and this key's fingerprint, and the staff decide when they can. This key stays outside the board until they say yes. Nobody is notified: connect again later with this same key to find out.";
+
+/// The one answer to a create-account attempt that did not work (M2-G). It is the same for a
+/// taken handle, a key that already has an account, a rate limit, a day whose cap is used up
+/// and a store that failed, so it is not an oracle for any of them. A day that is full shows
+/// [`OPEN_CAPPED_NOTICE`] to the next connection.
+pub const CREATE_ACCOUNT_FAILED: &str = "That account could not be created. Try a different handle, or disconnect and connect again later.";
+
+/// Shown on the home and application pages of an `open` board on a day when its cap on new
+/// accounts is used up (M2-G, D2). It is the one thing a stranger can read about the cap, and
+/// it says what happens instead.
+pub const OPEN_CAPPED_NOTICE: &str = "Today's limit on new accounts has been reached. Until the day ends (UTC), people apply instead and the staff decide.";
 
 /// The one answer to a redemption that did not work. It is the same for a code that does not
 /// exist, one that was used or has expired, a handle that is taken, a key that already has an

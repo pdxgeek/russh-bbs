@@ -1,7 +1,7 @@
 //! Row types for the queue and their one-time mapping to core's domain types. Both backends
 //! read the same joined shape, so the grouping lives once.
 
-use russh_bbs_core::queue::{Message, PendingRequest, RequestId, Voucher};
+use russh_bbs_core::queue::{Message, PendingRequest, RequestId, RequestKind, Voucher};
 use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::{AccountId, StoreError, UnixSeconds};
 
@@ -12,6 +12,7 @@ pub(crate) struct QueueRow {
     pub(crate) message: String,
     pub(crate) created_at: i64,
     pub(crate) expires_at: i64,
+    pub(crate) kind: String,
     pub(crate) voucher_id: Option<i64>,
     /// `None` when the voucher is not an active member any more; such a vouch is not shown.
     pub(crate) voucher_handle: Option<String>,
@@ -34,6 +35,9 @@ pub(crate) fn group(rows: Vec<QueueRow>) -> Result<Vec<PendingRequest>, StoreErr
                 created_at: UnixSeconds::from_raw(row.created_at),
                 expires_at: UnixSeconds::from_raw(row.expires_at),
                 vouchers: Vec::new(),
+                kind: RequestKind::parse(&row.kind).ok_or_else(|| {
+                    StoreError::Corrupt("stored request kind is not valid".into())
+                })?,
             });
         }
         if let (Some(account), Some(name), Some(last)) =

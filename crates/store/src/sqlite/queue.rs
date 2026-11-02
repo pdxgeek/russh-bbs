@@ -11,7 +11,7 @@ use russh_bbs_core::access::Fingerprint;
 use russh_bbs_core::audit::events;
 use russh_bbs_core::queue::{
     ApproveError, DecideError, NewRequest, Purged, Queue, QueueStore, Refusal, RequestId,
-    SubmitTerms, Submitted, VouchError, cooldown_key,
+    RequestKind, SubmitTerms, Submitted, VouchError, cooldown_key,
 };
 use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::{
@@ -56,6 +56,7 @@ impl QueueStore for SqliteStore {
         let handle = new.handle.as_str();
         let message = new.message.as_str();
         let cap = i64::from(terms.max_pending);
+        let kind_text = new.kind.as_str();
 
         let mut tx = self.pool().begin().await.map_err(backend)?;
         purge_in(&mut tx, now).await?;
@@ -104,21 +105,29 @@ impl QueueStore for SqliteStore {
             return Ok(Submitted::Refused(refusal));
         }
         let id = sqlx::query_scalar!(
-            r#"INSERT INTO invite_request (fingerprint, handle, message, created_at, expires_at)
-               VALUES (?, ?, ?, ?, ?)
+            r#"INSERT INTO invite_request (fingerprint, handle, message, created_at, expires_at, kind)
+               VALUES (?, ?, ?, ?, ?, ?)
                RETURNING id AS "id!""#,
             fingerprint,
             handle,
             message,
             now,
             expires,
+            kind_text,
         )
         .fetch_one(&mut *tx)
         .await;
         match id {
             Ok(id) => {
+                let id = RequestId::from_raw(id);
+                if new.kind == RequestKind::Application {
+                    // The application is the registration act, so it is audited in the same
+                    // transaction (ids only). Invite requests are not (D71).
+                    self.audit_in(&mut tx, &events::application_submitted(id))
+                        .await?;
+                }
                 tx.commit().await.map_err(backend)?;
-                Ok(Submitted::Stored(RequestId::from_raw(id)))
+                Ok(Submitted::Stored(id))
             }
             // Cannot happen under the write lock; if it ever does, it is the one-per-key rule.
             Err(error) if kind(&error) == Some(ErrorKind::UniqueViolation) => {
@@ -136,7 +145,7 @@ impl QueueStore for SqliteStore {
         // Active vouchers only: a suspended member's name is not shown.
         let rows = sqlx::query_as!(
             QueueRow,
-            r#"SELECT r.id AS "id!", r.handle, r.message, r.created_at, r.expires_at,
+            r#"SELECT r.id AS "id!", r.handle, r.message, r.created_at, r.expires_at, r.kind,
                       v.account_id AS "voucher_id?", a.username AS "voucher_handle?"
                FROM invite_request r
                LEFT JOIN invite_request_vouch v ON v.request_id = r.id
