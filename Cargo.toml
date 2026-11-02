@@ -43,6 +43,10 @@ thiserror = "2"
 anyhow = "1"
 # CLI flags and environment for the server binary.
 clap = { version = "4", features = ["derive", "env"] }
+# Config file parsing for the server (M1-H): the TOML format the sysop writes.
+toml = { version = "0.9", default-features = false, features = ["parse", "serde", "std"] }
+# Typed config structs (M1-H); derive only, no format of its own.
+serde = { version = "1", features = ["derive"] }
 # Terminal rendering over the PTY (decision D7, Q5/D19).
 ratatui = { version = "0.30", default-features = false, features = ["crossterm"] }
 
