@@ -28,7 +28,7 @@ Update this table in the same pass as the code.
 | Sysop approval queue and vouching | M2 | Planned | |
 | Registration mode setting (`invite`, `apply`, `open`) | M2 | Planned | Default `invite`; D2, D23. Waiting room built mode-aware in M1 |
 | User profiles and members list | M2 | Planned | |
-| Resource limits per role (time, calls, sessions, rates, bytes) | M2 | Planned | Part of the access slice; per-member override |
+| Resource limits per role (time, calls, sessions, rates, bytes) | M2 | Planned | Slice M2-H, split from the access slice (M2-B); per-member override |
 | Lightbar and compact layouts, theme packs, live switching | M3 | Planned | See [ui.md](ui.md); menu tree and classic layout are M2 |
 | Forums with search | M3 | Planned | FTS5 |
 | Full-screen message editor | M3 | Planned | quoting, drafts |
