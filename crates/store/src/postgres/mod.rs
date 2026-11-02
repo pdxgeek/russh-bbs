@@ -13,6 +13,7 @@ mod founder;
 mod invites;
 mod limits;
 mod profiles;
+mod queue;
 mod state;
 mod terminal_settings;
 

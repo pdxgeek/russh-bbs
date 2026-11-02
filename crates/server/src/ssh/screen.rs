@@ -38,6 +38,9 @@ use russh_bbs_core::menu::MenuPage;
 use russh_bbs_core::profiles::{
     Request as MembersRequest, Response as MembersResponse, ScreenView,
 };
+use russh_bbs_core::queue::{
+    InviteAsk, QueueView, Request as QueueRequest, Response as QueueResponse,
+};
 use russh_bbs_core::terminal_settings::strings::TITLE;
 use russh_bbs_core::terminal_settings::{MemberEffect, MemberFlow, MemberInput, TerminalSettings};
 use russh_bbs_core::waiting_room::{RedeemRequest, RoomEffect, RoomInput, View, WaitingRoom};
@@ -45,6 +48,7 @@ use russh_bbs_core::waiting_room::{RedeemRequest, RoomEffect, RoomInput, View, W
 use super::terminal::{Key, PtySize, RenderCap};
 use crate::members;
 use crate::settings::{self, Look};
+use crate::sysop;
 use crate::ui::Ui;
 use crate::ui::classic::{self, ContentScreen, MENU_MARKERS, MenuScreen};
 use crate::waiting_room::render;
@@ -92,12 +96,20 @@ pub(super) struct KeyEffects {
     /// (it needs the store) and reports back through [`Screen::redeem_refused`] or
     /// [`Screen::redeemed`].
     pub(super) redeem: Option<RedeemRequest>,
+    /// A request for an invite the visitor made in the waiting room (M2-E). The session offers
+    /// it to the queue (it needs the store and the peer address). It never reports back: the
+    /// room has already shown its one fixed answer.
+    pub(super) request_invite: Option<InviteAsk>,
     /// An invite screen the member asked for (M2-D). The session carries it out and reports
     /// back through [`Screen::invite_done`].
     pub(super) invite: Option<InviteRequest>,
     /// A members request (list page, profile, save) the screen is waiting on. The session runs
     /// it against the store and gives the answer to [`Screen::deliver_members`].
     pub(super) members_request: Option<MembersRequest>,
+    /// A queue request (list, approve, deny, vouch) the sysop or vouch screen is waiting on
+    /// (M2-E). The session runs it against the store and gives the answer to
+    /// [`Screen::deliver_queue`].
+    pub(super) queue_request: Option<QueueRequest>,
     /// Keys held back because `members_request` has to be answered first. The session applies
     /// them after delivering the answer, so a fast typist's next key is not lost.
     pub(super) held_back: Vec<Key>,
@@ -111,7 +123,9 @@ impl KeyEffects {
         self.save_settings = later.save_settings.or(self.save_settings.take());
         self.redeem = later.redeem.or(self.redeem.take());
         self.invite = later.invite.or(self.invite.take());
+        self.request_invite = later.request_invite.or(self.request_invite.take());
         self.members_request = later.members_request;
+        self.queue_request = later.queue_request;
         self.held_back = later.held_back;
     }
 }
@@ -171,6 +185,14 @@ impl Content {
     fn members_view(&self) -> Option<ScreenView> {
         match self {
             Self::Member(flow) => flow.members_view(),
+            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
+        }
+    }
+
+    /// The sysop queue or the vouch screen, while a member is at one (M2-E).
+    fn queue_view(&self) -> Option<QueueView> {
+        match self {
+            Self::Member(flow) => flow.queue_view(),
             Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
         }
     }
@@ -261,6 +283,10 @@ impl Screen {
                             effects.redeem = Some(request);
                             break;
                         }
+                        RoomEffect::RequestInvite(ask) => {
+                            effects.request_invite = Some(ask);
+                            break;
+                        }
                     }
                 }
             }
@@ -306,6 +332,12 @@ impl Screen {
                         effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
                         break;
                     }
+                    // The same for the queue screens (M2-E).
+                    if let Some(request) = flow.take_queue_request() {
+                        effects.queue_request = Some(request);
+                        effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
+                        break;
+                    }
                 }
             }
         }
@@ -340,6 +372,24 @@ impl Screen {
             flow.deliver_members(response);
         }
         self.dirty = true;
+    }
+
+    /// The answer to the queue request taken from [`KeyEffects`]. The screen shows it on the
+    /// next render.
+    pub(super) fn deliver_queue(&mut self, response: QueueResponse) {
+        if let Content::Member(flow) = &mut self.content {
+            flow.deliver_queue(response);
+        }
+        self.dirty = true;
+    }
+
+    /// The queue request the screen asked for after an answer (a decision asks for the list
+    /// again), once.
+    pub(super) fn take_queue_request(&mut self) -> Option<QueueRequest> {
+        match &mut self.content {
+            Content::Member(flow) => flow.take_queue_request(),
+            Content::Room(_) | Content::Claim(_) | Content::Limited(_) => None,
+        }
     }
 
     /// The submitted token failed. The screen shows the one generic message on the next render;
@@ -478,10 +528,29 @@ impl Screen {
         let look = self.content.look();
         let menu = self.content.menu_page();
         let members_view = self.content.members_view();
+        let queue_view = self.content.queue_view();
         let tier = self.content.tier();
         let ui = &self.ui;
         let framed = self.content.is_framed_screen();
         self.terminal.draw(|frame| match (look, &menu) {
+            // The sysop queue and the vouch screen (M2-E): the same layout and status row. The
+            // requester's text is drawn in the content box only.
+            (Some(look), None) if queue_view.is_some() => {
+                if let Some(screen) = &queue_view {
+                    let width =
+                        usize::from(frame.area().width.min(settings::MAX_WIDTH)).saturating_sub(2);
+                    classic::render_content(
+                        frame,
+                        ContentScreen {
+                            strings: ui.strings(),
+                            lines: sysop::queue::lines(screen, ui.strings(), look, width),
+                            look,
+                            tier,
+                            markers: &MENU_MARKERS,
+                        },
+                    );
+                }
+            }
             // A members screen: the same classic layout and status row, with its own lines.
             (Some(look), None) if members_view.is_some() => {
                 if let Some(screen) = &members_view {

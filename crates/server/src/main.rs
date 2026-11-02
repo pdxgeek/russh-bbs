@@ -95,10 +95,18 @@ async fn serve<S: Backend + SettingsStore + Close + Clone>(
     )
     .await?;
 
+    // Expired invite requests and denial cooldowns are deleted on a timer as well as whenever
+    // the queue is used (M2-E, D72).
+    let purge = tokio::spawn(russh_bbs_server::sysop::queue::purge_every(
+        store.clone(),
+        russh_bbs_server::sysop::queue::PURGE_INTERVAL,
+    ));
+
     shutdown::wait_for_signal()
         .await
         .context("waiting for shutdown signal")?;
     info!("shutting down");
+    purge.abort();
     // Closes the sessions, then the store (SQLite checkpoints its WAL, Postgres closes the pool).
     shutdown::graceful(server, &store, shutdown::SHUTDOWN_TIMEOUT).await;
     Ok(())

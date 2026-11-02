@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO invite_request (fingerprint, handle, message, created_at, expires_at)\n             VALUES ($1, $2, $3, $4, $5)\n             RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "f8a84b491edf2697d2110f89339fe6e5d2c462ffaa1a3b60d5e8e2b004b10165"
+}

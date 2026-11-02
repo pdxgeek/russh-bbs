@@ -5,6 +5,7 @@ use super::event::{Action, Actor, AuditEvent, Target};
 use crate::access::{Child, Granting, GroupChange, GroupId, NewGrant, Scope, Slug, Subject};
 use crate::invites::InviteId;
 use crate::limits::{Limit, LimitKind};
+use crate::queue::RequestId;
 use crate::store::{AccountId, AccountState, UnixSeconds};
 
 /// The founder claim made `account` the first sysop. The actor is the new account itself.
@@ -175,4 +176,54 @@ pub fn account_state_changed(
         from.as_str(),
         to.as_str()
     ))
+}
+
+/// `actor` approved request `request`, which made `account`. The note has the request's id and
+/// nothing the requester typed.
+#[must_use]
+pub fn member_approved(actor: AccountId, account: AccountId, request: RequestId) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(actor),
+        Action::MemberApproved,
+        Target::Account(account),
+    )
+    .detail(&format!("request {request}"))
+}
+
+/// The approval also made `account`: the same record every account has, with the approver as
+/// the actor and the request in the note.
+#[must_use]
+pub fn account_created_via_request(
+    actor: AccountId,
+    account: AccountId,
+    request: RequestId,
+    state: AccountState,
+) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(actor),
+        Action::AccountCreated,
+        Target::Account(account),
+    )
+    .detail(&format!("via request {request} state {}", state.as_str()))
+}
+
+/// `actor` denied request `request`. No content and no key: the request is gone, and only a
+/// hash of its key remains, for a day, outside the log.
+#[must_use]
+pub fn member_denied(actor: AccountId, request: RequestId) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(actor),
+        Action::MemberDenied,
+        Target::Request(request),
+    )
+}
+
+/// `voucher` vouched for request `request`.
+#[must_use]
+pub fn member_vouched(voucher: AccountId, request: RequestId) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(voucher),
+        Action::MemberVouched,
+        Target::Request(request),
+    )
 }

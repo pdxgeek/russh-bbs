@@ -1,0 +1,56 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT r.id AS \"id!\", r.handle, r.message, r.created_at, r.expires_at,\n                      v.account_id AS \"voucher_id?\", a.username AS \"voucher_handle?\"\n               FROM invite_request r\n               LEFT JOIN invite_request_vouch v ON v.request_id = r.id\n               LEFT JOIN accounts a ON a.id = v.account_id AND a.state = 'active'\n               WHERE r.id IN (SELECT id FROM invite_request ORDER BY id LIMIT ?)\n               ORDER BY r.id, v.created_at, v.account_id",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "handle",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "message",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "expires_at",
+        "ordinal": 4,
+        "type_info": "Integer"
+      },
+      {
+        "name": "voucher_id?",
+        "ordinal": 5,
+        "type_info": "Integer"
+      },
+      {
+        "name": "voucher_handle?",
+        "ordinal": 6,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "74c2bda27fd93aff8318f4ed4210e975454a6c70e73c2a93d40879029844c8da"
+}

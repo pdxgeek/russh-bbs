@@ -75,11 +75,10 @@ static MAIN_ITEMS: [Item; 8] = [
     item('l', "menu.main.item.logoff", Target::Action(Action::LogOff)),
 ];
 
-static SYSOP_ITEMS: [Item; 1] = [gated(
+static SYSOP_ITEMS: [Item; 1] = [item(
     'q',
     "menu.sysop.item.queue",
-    Target::Placeholder("placeholder.queue"),
-    Permission::MembersApprove,
+    Target::Action(Action::SysopQueue),
 )];
 
 static INVITES_ITEMS: [Item; 3] = [
@@ -100,7 +99,7 @@ static INVITES_ITEMS: [Item; 3] = [
     ),
 ];
 
-static MEMBERS_ITEMS: [Item; 3] = [
+static MEMBERS_ITEMS: [Item; 4] = [
     item(
         'l',
         "menu.members.item.list",
@@ -115,6 +114,11 @@ static MEMBERS_ITEMS: [Item; 3] = [
         'e',
         "menu.members.item.edit",
         Target::Action(Action::EditOwnProfile),
+    ),
+    item(
+        'v',
+        "menu.members.item.vouch",
+        Target::Action(Action::VouchQueue),
     ),
 ];
 

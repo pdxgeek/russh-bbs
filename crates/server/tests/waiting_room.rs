@@ -247,11 +247,11 @@ async fn an_unknown_key_walks_every_invite_mode_screen() {
     type_line(&mut channel, "newcomer").await;
     let sent = type_line(&mut channel, "a friend of a friend").await;
     let sent = flat(&sent);
-    assert!(sent.contains("not open yet"), "{sent}");
     assert!(
-        sent.contains("Nothing you typed was stored or sent"),
+        sent.contains("Thank you. If your request is kept"),
         "{sent}"
     );
+    assert!(sent.contains("Nobody is notified"), "{sent}");
     press(&mut channel, b"\x1b").await;
 
     let redeem = press(&mut channel, b"c").await;

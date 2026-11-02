@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM invite_request WHERE id = $1 AND expires_at > $2\n             RETURNING fingerprint",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "fingerprint",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "4136b72f24f3f128ee12a8a378314f8f7ff56ca6a54020b3478e8a2bebf4f4ed"
+}

@@ -33,6 +33,7 @@ fn the_shipped_table_and_tree_are_valid() {
         .copied()
         .chain(main_tree().text_keys())
         .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
+        .chain(russh_bbs_core::queue::keys::TEXT_KEYS.iter().copied())
     {
         assert_ne!(ui.strings().text(key), key, "{key} has no text");
     }
@@ -45,6 +46,7 @@ fn the_table_holds_exactly_the_keys_the_code_uses() {
         .copied()
         .chain(main_tree().text_keys())
         .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
+        .chain(russh_bbs_core::queue::keys::TEXT_KEYS.iter().copied())
         .collect();
     let ui = ui();
     let held: std::collections::BTreeSet<&str> = ui.strings().keys().collect();
@@ -312,7 +314,11 @@ fn a_submenu_is_drawn_by_the_same_layout() {
         Tier::Ascii,
         (80, 24),
     ));
-    assert!(out.contains("[q] Approval queue  (not built yet)"), "{out}");
+    assert!(out.contains("[q] Invite requests"), "{out}");
+    assert!(
+        !out.contains("not built yet"),
+        "the queue is built now\n{out}"
+    );
 }
 
 #[test]

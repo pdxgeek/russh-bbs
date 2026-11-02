@@ -1,6 +1,7 @@
 #![allow(
     clippy::unwrap_used,
     clippy::expect_used,
+    clippy::panic,
     clippy::unused_async_trait_impl
 )]
 
@@ -157,12 +158,6 @@ fn rules_page_shows_the_fixed_privacy_note() {
 #[test]
 fn a_valid_submission_says_it_is_not_open_and_keeps_nothing() {
     let cases = [
-        (
-            RegistrationMode::Invite,
-            'i',
-            strings::REQUEST_INVITE_UNAVAILABLE,
-            2,
-        ),
         (RegistrationMode::Apply, 'a', strings::APPLY_UNAVAILABLE, 2),
         (
             RegistrationMode::Open,
@@ -191,6 +186,56 @@ fn a_valid_submission_says_it_is_not_open_and_keeps_nothing() {
             assert!(!notice.text.to_lowercase().contains(claim), "{claim}");
         }
         assert!(notice.text.contains("not"), "{}", notice.text);
+    }
+}
+
+/// The request-an-invite form (M2-E) hands a valid submission to the front end and answers at
+/// once with one fixed text, whatever the queue does with it.
+#[test]
+fn a_valid_invite_request_is_handed_over_and_answered_with_the_fixed_text() {
+    let mut room = room(RegistrationMode::Invite);
+    room.input(RoomInput::Char('i'));
+    type_text(&mut room, "newcomer");
+    assert_eq!(room.input(RoomInput::Enter), RoomEffect::Stay);
+    type_text(&mut room, "  a friend of alice\u{1b}[31m  ");
+    let RoomEffect::RequestInvite(ask) = room.input(RoomInput::Enter) else {
+        panic!("a valid submission is handed over");
+    };
+    assert_eq!(ask.handle.as_str(), "newcomer");
+    assert!(!ask.message.contains('\u{1b}'), "{:?}", ask.message);
+    assert!(ask.message.starts_with("a friend of alice"));
+    let view = room.view();
+    let notice = view.notice.expect("an answer");
+    assert_eq!(notice.kind, NoticeKind::Info);
+    assert_eq!(notice.text, strings::REQUEST_INVITE_ANSWER);
+    assert!(
+        view.fields.iter().all(|f| f.value.is_empty()),
+        "typed text does not stay in the room"
+    );
+    // The answer says what is true either way: who reads it, and that nobody is notified.
+    assert!(notice.text.contains("trusted members"));
+    assert!(notice.text.contains("Nobody is notified"));
+    for claim in ["sent to", "approved", "accepted", "success", "stored"] {
+        assert!(!notice.text.to_lowercase().contains(claim), "{claim}");
+    }
+    // The effect's Debug never carries what was typed.
+    assert!(!format!("{ask:?}").contains("newcomer"));
+}
+
+#[test]
+fn an_invalid_invite_request_is_not_handed_over() {
+    for (handle, message) in [("a", "hi"), ("fine-name", ""), ("", "hi"), ("-bad", "hi")] {
+        let mut room = room(RegistrationMode::Invite);
+        room.input(RoomInput::Char('i'));
+        type_text(&mut room, handle);
+        room.input(RoomInput::Enter);
+        type_text(&mut room, message);
+        assert_eq!(
+            room.input(RoomInput::Enter),
+            RoomEffect::Stay,
+            "{handle:?} {message:?}"
+        );
+        assert_eq!(room.view().notice.unwrap().kind, NoticeKind::Error);
     }
 }
 

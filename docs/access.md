@@ -8,7 +8,7 @@ One named permission per action, a closed enum in `core::access`. Names are `are
 
 | Group | Permissions |
 |---|---|
-| Waiting room | `waiting.view`, `invite.redeem`, `membership.apply` |
+| Waiting room | `waiting.view`, `invite.request`, `invite.redeem`, `membership.apply` |
 | Account | `account.edit_profile`, `account.edit_settings`, `account.set_password` |
 | Members | `members.view`, `members.approve`, `members.deny`, `members.vouch`, `members.suspend`, `members.edit`, `members.delete_data` |
 | Invites | `invites.create`, `invites.revoke`, `invites.view_tree` |
