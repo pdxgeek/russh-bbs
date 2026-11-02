@@ -7,6 +7,8 @@ use std::path::Path;
 use super::error::{ConfigError, Source};
 use super::layers::Sources;
 use super::model::{BlobBackend, Config, DatasourceKind, SshConfig, TlsMode};
+use crate::ssh::RenderCap;
+use crate::ssh::terminal::{MAX_COLS, MAX_ROWS};
 
 struct Check<'a> {
     sources: &'a Sources,
@@ -108,6 +110,18 @@ pub(crate) fn validate(config: &Config, sources: &Sources) -> Result<(), ConfigE
     )?;
     let max_connections = u64::try_from(ssh.max_connections).unwrap_or(u64::MAX);
     c.range("ssh.max_connections", max_connections, 1, 1_000_000)?;
+    c.range(
+        "ssh.render_cols",
+        u64::from(ssh.render_cols),
+        u64::from(RenderCap::MIN_COLS),
+        u64::from(MAX_COLS),
+    )?;
+    c.range(
+        "ssh.render_rows",
+        u64::from(ssh.render_rows),
+        u64::from(RenderCap::MIN_ROWS),
+        u64::from(MAX_ROWS),
+    )?;
     c.range(
         "ssh.max_auth_attempts",
         u64::from(ssh.max_auth_attempts),

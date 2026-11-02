@@ -102,7 +102,15 @@ impl SshServer {
             )),
         };
         let task = tokio::spawn(accept.run(stopped));
-        info!(%local_addr, host_key = %host_key.fingerprint(), "ssh server listening");
+        let limits = &config.limits;
+        info!(
+            %local_addr,
+            host_key = %host_key.fingerprint(),
+            max_connections = limits.max_connections,
+            render_cap = %format_args!("{}x{}", limits.render_cap.cols(), limits.render_cap.rows()),
+            render_memory_ceiling_mib = render_ceiling_mib(limits),
+            "ssh server listening"
+        );
         Ok(Self {
             local_addr,
             host_fingerprint: host_key.fingerprint().clone(),
@@ -339,4 +347,14 @@ async fn disconnect(handle: &russh::server::Handle, reason: &str) {
         handle.disconnect(Disconnect::ByApplication, reason.to_owned(), String::new()),
     )
     .await;
+}
+
+/// The most render memory every session together can hold, in MiB: the sysop's bill for
+/// `max_connections` at `render_cap` (D53). Logged at start so the trade-off is visible.
+fn render_ceiling_mib(limits: &Limits) -> usize {
+    limits
+        .render_cap
+        .bytes_per_session()
+        .saturating_mul(limits.max_connections)
+        / (1024 * 1024)
 }

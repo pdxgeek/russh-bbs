@@ -3,15 +3,20 @@
 use russh_bbs_core::waiting_room::{RoomConfig, WaitingRoom};
 
 use super::{KeyEffects, Screen};
-use crate::ssh::terminal::{Key, PtySize, RENDER_COLS, RENDER_ROWS};
+use crate::ssh::terminal::{Key, PtySize, RenderCap};
 
 fn text(bytes: &[u8]) -> String {
     String::from_utf8_lossy(bytes).into_owned()
 }
 
 fn screen(size: PtySize) -> Screen {
+    capped_screen(size, RenderCap::default())
+}
+
+fn capped_screen(size: PtySize, cap: RenderCap) -> Screen {
     Screen::new(
         size,
+        cap,
         super::Content::Room(WaitingRoom::new(&RoomConfig::default(), 5)),
     )
     .unwrap()
@@ -143,24 +148,37 @@ fn buffer_cells(screen: &mut Screen) -> usize {
 }
 
 #[test]
-fn render_buffers_do_not_grow_with_the_window() {
-    let cap = usize::from(RENDER_COLS) * usize::from(RENDER_ROWS);
+fn render_buffers_do_not_grow_past_the_cap() {
+    let cap = RenderCap::new(100, 40);
     for (cols, rows) in [(80, 24), (500, 200), (u32::MAX, u32::MAX)] {
-        let mut screen = screen(PtySize::from_request(cols, rows));
-        assert!(buffer_cells(&mut screen) <= cap, "{cols}x{rows}");
+        let mut screen = capped_screen(PtySize::from_request(cols, rows), cap);
+        assert!(buffer_cells(&mut screen) <= cap.cells(), "{cols}x{rows}");
         screen.enter().unwrap();
         screen.set_size(PtySize::from_request(400, 150));
         screen.render().unwrap();
-        assert!(buffer_cells(&mut screen) <= cap, "after resize");
+        assert!(buffer_cells(&mut screen) <= cap.cells(), "after resize");
     }
 }
 
 #[test]
-fn a_large_window_is_drawn_centered_in_the_capped_viewport() {
+fn the_default_cap_draws_the_whole_clamped_window() {
     let mut screen = screen(PtySize::from_request(500, 200));
+    assert_eq!(screen.viewport, ratatui::layout::Rect::new(0, 0, 500, 200));
+    assert_eq!(buffer_cells(&mut screen), 100_000);
+    let mut hostile = screen_from(u32::MAX, u32::MAX);
+    assert_eq!(buffer_cells(&mut hostile), 100_000, "clamped, not grown");
+}
+
+fn screen_from(cols: u32, rows: u32) -> Screen {
+    screen(PtySize::from_request(cols, rows))
+}
+
+#[test]
+fn a_large_window_is_drawn_centered_in_the_capped_viewport() {
+    let mut screen = capped_screen(PtySize::from_request(500, 200), RenderCap::new(100, 40));
     assert_eq!(
         screen.viewport,
-        ratatui::layout::Rect::new(200, 80, RENDER_COLS, RENDER_ROWS)
+        ratatui::layout::Rect::new(200, 80, 100, 40)
     );
     assert!(text(&screen.enter().unwrap()).contains("Waiting"));
 }
@@ -173,15 +191,28 @@ fn an_unchanged_drawn_rectangle_repaints_without_rebuilding() {
     let out = text(&screen.render().unwrap().unwrap());
     assert!(out.contains("\x1b[2J"), "screen cleared");
     assert!(out.contains("Waiting"), "everything drawn again");
-    assert_eq!(screen.builds, 1, "terminal was rebuilt");
+    assert_eq!(screen.resizes, 0, "viewport was resized");
 
     let mut big = self::screen(PtySize::from_request(500, 200));
     big.enter().unwrap();
     big.set_size(PtySize::from_request(500, 200));
     let out = text(&big.render().unwrap().unwrap());
     assert!(out.contains("Waiting"));
-    assert_eq!(big.builds, 1, "terminal was rebuilt");
+    assert_eq!(big.resizes, 0, "viewport was resized");
+}
+
+#[test]
+fn a_changed_drawn_rectangle_resizes_the_buffers_in_place() {
+    let mut big = screen_from(500, 200);
+    big.enter().unwrap();
+    let before = big.terminal.current_buffer_mut().content.capacity();
     big.set_size(PtySize::from_request(300, 100));
-    big.render().unwrap();
-    assert_eq!(big.builds, 2, "a different rectangle does rebuild");
+    let out = text(&big.render().unwrap().unwrap());
+    assert!(out.contains("\x1b[2J"), "screen cleared");
+    assert!(out.contains("Waiting"), "everything drawn again");
+    assert_eq!(big.resizes, 1);
+    assert_eq!(big.viewport, ratatui::layout::Rect::new(0, 0, 300, 100));
+    assert_eq!(buffer_cells(&mut big), 30_000);
+    // A shrink keeps the allocation: no new terminal, no new buffers.
+    assert_eq!(big.terminal.current_buffer_mut().content.capacity(), before);
 }

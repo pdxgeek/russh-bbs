@@ -428,7 +428,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
         };
         // The window may have changed while the content was loading.
         let size = self.pty.unwrap_or(size);
-        let screen = Screen::new(size, content)?;
+        let screen = Screen::new(size, self.limits.render_cap, content)?;
         let shell = Shell::new(ShellParts {
             handle: session.handle(),
             channel,

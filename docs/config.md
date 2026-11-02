@@ -50,7 +50,9 @@ A key's environment variable is listed below. Names that existed before this fil
 | `ssh.auth_timeout_secs` | integer 1–3600 | `30` | `RUSSH_BBS_AUTH_TIMEOUT_SECS` | `--auth-timeout-secs` | Accept loop (M1-A, D22) |
 | `ssh.idle_timeout_secs` | integer 1–86400 | `600` | `RUSSH_BBS_IDLE_TIMEOUT_SECS` | `--idle-timeout-secs` | SSH sessions (M1-A) |
 | `ssh.keepalive_interval_secs` | integer 1–3600 | `30` | `RUSSH_BBS_SSH_KEEPALIVE_INTERVAL_SECS` | none | SSH sessions (M1-A) |
-| `ssh.max_connections` | integer 1–1000000 | `256` | `RUSSH_BBS_MAX_CONNECTIONS` | `--max-connections` | Accept loop (M1-A) |
+| `ssh.max_connections` | integer 1–1000000 | `64` | `RUSSH_BBS_MAX_CONNECTIONS` | `--max-connections` | Accept loop (M1-A, D53). This times the render cap is the memory ceiling for render buffers: each session may hold two buffers of `render_cols` x `render_rows` cells at 48 bytes a cell (about 9.6 MB at the default cap, 0.2 MB for a member at 80x24). The server logs the ceiling at start (`render_memory_ceiling_mib`) |
+| `ssh.render_cols` | integer 80–500 | `500` | `RUSSH_BBS_SSH_RENDER_COLS` | none | SSH sessions (D53). Widest area one session draws into; a wider window is centered on it and the rest stays blank. Lower it on a small host |
+| `ssh.render_rows` | integer 24–200 | `200` | `RUSSH_BBS_SSH_RENDER_ROWS` | none | SSH sessions (D53). Tallest area one session draws into; see `render_cols` |
 | `ssh.max_auth_attempts` | integer 1–100 | `6` | `RUSSH_BBS_SSH_MAX_AUTH_ATTEMPTS` | none | SSH handler (M1-A) |
 | `ssh.auth_rejection_millis` | integer 0–60000 | `1000` | `RUSSH_BBS_SSH_AUTH_REJECTION_MILLIS` | none | SSH handler (M1-A) |
 | `ssh.redraw_interval_millis` | integer 10–5000 | `50` | `RUSSH_BBS_SSH_REDRAW_INTERVAL_MILLIS` | none | SSH sessions (FIX-M1-1, D49). One session redraws at most `1000 / value` times a second (20 by default). Window changes are folded into the latest size and keys into one batch per redraw |

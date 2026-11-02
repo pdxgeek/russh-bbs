@@ -10,6 +10,7 @@ use std::time::Duration;
 
 use russh_bbs_core::waiting_room::{DEFAULT_MAX_SUBMISSIONS, RatePolicy};
 
+use super::terminal::RenderCap;
 use crate::waiting_room::{DEFAULT_IP_RATE, DEFAULT_KEY_RATE, DEFAULT_MAX_TRACKED};
 
 /// Timeouts and caps for the SSH front end.
@@ -27,7 +28,11 @@ pub struct Limits {
     /// Interval for SSH keepalives that cull dead TCP connections.
     pub keepalive_interval: Duration,
     /// Concurrent connections, authenticated or not. Excess connections are dropped on accept.
+    /// With `render_cap` this is the sysop's memory bill: each session may hold
+    /// `render_cap.bytes_per_session()` of render buffers (D53).
     pub max_connections: usize,
+    /// Widest and tallest area one session draws into; a bigger window is centered on it (D53).
+    pub render_cap: RenderCap,
     /// New connections per network (an IPv4 address or an IPv6 /64). Excess are dropped on
     /// accept, before any SSH work is done.
     pub ip_rate: RatePolicy,
@@ -63,7 +68,8 @@ impl Default for Limits {
             auth_rejection_time: Duration::from_secs(1),
             idle_timeout: Duration::from_secs(600),
             keepalive_interval: Duration::from_secs(30),
-            max_connections: 256,
+            max_connections: 64,
+            render_cap: RenderCap::default(),
             ip_rate: DEFAULT_IP_RATE,
             key_rate: DEFAULT_KEY_RATE,
             max_tracked_sources: DEFAULT_MAX_TRACKED,

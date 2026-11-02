@@ -24,6 +24,7 @@ pub use host_key::{HostKey, HostKeyError};
 pub use limits::Limits;
 pub use registry::{SessionId, SessionRef, SessionRegistry, SessionSnapshot};
 pub use server::{ServerConfig, SshServer};
+pub use terminal::RenderCap;
 
 use russh_bbs_core::access::{MemberDirectory, RoleDirectory};
 use russh_bbs_core::founder::FounderStore;
