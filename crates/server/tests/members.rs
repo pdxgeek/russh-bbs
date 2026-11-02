@@ -116,7 +116,7 @@ impl Rig {
 
     async fn set_profile(&self, id: AccountId, raw: RawProfile) {
         self.store
-            .save_profile(id, &Profile::from_raw(&raw))
+            .save_profile(id, &Profile::from_raw(&raw), None)
             .await
             .unwrap();
     }
@@ -473,6 +473,17 @@ async fn staff_edit_another_profile_and_a_member_cannot() {
         "{saved}"
     );
     assert_eq!(rig.profile_of(bob).await.get(Field::Location), "Elsewhere");
+    // The staff edit is in the audit log, with field names and no values; Bob's own kind of
+    // edit (none made here) would not be.
+    let rows: Vec<(String, String)> =
+        sqlx::query_as("SELECT action, detail FROM audit_log WHERE action = 'profile.edited'")
+            .fetch_all(&rig.db)
+            .await
+            .unwrap();
+    assert_eq!(
+        rows,
+        [("profile.edited".to_owned(), "fields location".to_owned())]
+    );
     rig.server.shutdown().await;
 }
 

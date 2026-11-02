@@ -4,6 +4,7 @@
 //! unique ignoring case, so `lower(username)` is both the sort key and the paging cursor, and
 //! BINARY collation gives the same order as Postgres's `"C"` collation.
 
+use russh_bbs_core::audit::AuditEvent;
 use russh_bbs_core::profiles::{MemberQuery, MemberRecord, MemberSummary, Profile, ProfileStore};
 use russh_bbs_core::store::{AccountId, StoreError};
 use sqlx::error::ErrorKind;
@@ -62,7 +63,12 @@ impl ProfileStore for SqliteStore {
         row.map(RecordRow::into_record).transpose()
     }
 
-    async fn save_profile(&self, id: AccountId, profile: &Profile) -> Result<(), StoreError> {
+    async fn save_profile(
+        &self,
+        id: AccountId,
+        profile: &Profile,
+        audit: Option<&AuditEvent>,
+    ) -> Result<(), StoreError> {
         use russh_bbs_core::profiles::Field;
         let id = id.as_raw();
         let display_name = profile.get(Field::DisplayName);
@@ -70,6 +76,7 @@ impl ProfileStore for SqliteStore {
         let location = profile.get(Field::Location);
         let about = profile.get(Field::About);
         let website = profile.get(Field::Website);
+        let mut tx = self.pool().begin().await.map_err(backend)?;
         sqlx::query!(
             "INSERT INTO profiles (account_id, display_name, pronouns, location, about, website)
              VALUES (?, ?, ?, ?, ?, ?)
@@ -87,12 +94,15 @@ impl ProfileStore for SqliteStore {
             about,
             website,
         )
-        .execute(self.pool())
+        .execute(&mut *tx)
         .await
-        .map(drop)
         .map_err(|error| match kind(&error) {
             Some(ErrorKind::ForeignKeyViolation) => StoreError::AccountNotFound,
             _ => backend(error),
-        })
+        })?;
+        if let Some(event) = audit {
+            self.audit_in(&mut tx, event).await?;
+        }
+        tx.commit().await.map_err(backend)
     }
 }

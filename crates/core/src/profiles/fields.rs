@@ -56,6 +56,18 @@ impl Field {
         }
     }
 
+    /// A stable ASCII name, for an audit note.
+    #[must_use]
+    pub const fn name(self) -> &'static str {
+        match self {
+            Self::DisplayName => "display_name",
+            Self::Pronouns => "pronouns",
+            Self::Location => "location",
+            Self::About => "about",
+            Self::Website => "website",
+        }
+    }
+
     /// Sanitize `raw` for this field: single line, capped, and trimmed.
     #[must_use]
     pub fn sanitize(self, raw: &str) -> Sanitized {

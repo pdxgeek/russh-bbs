@@ -10,6 +10,7 @@
 //! ([`ProfileError::NotFound`]), so a pending or suspended account cannot be probed.
 
 use crate::access::{Granted, Permission, Snapshot};
+use crate::audit::{Actor, events};
 use crate::store::{AccountId, StoreError};
 
 use super::fields::{Field, Profile, RawProfile};
@@ -48,7 +49,7 @@ pub struct Saved {
     /// Which fields changed. Names only, for an audit row that copies no content.
     pub changed: Vec<Field>,
     /// Whether someone other than the owner made the change (`members.edit`). Such a change is
-    /// to be audited (M2-C; see docs/coordination.md).
+    /// audited (`profile.edited`).
     pub by_staff: bool,
 }
 
@@ -122,7 +123,14 @@ pub async fn edit_profile<S: ProfileStore>(
     let profile = Profile::from_raw(raw);
     let changed = profile.changed_from(&before.profile);
     if !changed.is_empty() {
-        store.save_profile(target, &profile).await?;
+        // A staff edit of someone else's profile is audited in the write's own transaction,
+        // with the names of the fields and never their values. The owner's edits are not.
+        let event = by_staff.then(|| {
+            let names: Vec<&str> = changed.iter().map(|field| field.name()).collect();
+            let actor = granted.account().map_or(Actor::System, Actor::Account);
+            events::profile_edited(actor, target, &names)
+        });
+        store.save_profile(target, &profile, event.as_ref()).await?;
     }
     Ok(Saved {
         target,

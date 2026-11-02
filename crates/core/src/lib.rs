@@ -2,6 +2,7 @@
 //! registry. Front ends and storage depend on this crate; it depends on none of them.
 
 pub mod access;
+pub mod audit;
 pub mod founder;
 pub mod icons;
 pub mod menu;

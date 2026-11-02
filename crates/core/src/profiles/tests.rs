@@ -41,6 +41,7 @@ struct Fake {
     rows: Mutex<Vec<(AccountId, String, bool, RawProfile)>>,
     calls: Mutex<u32>,
     saves: Mutex<u32>,
+    audits: Mutex<Vec<crate::audit::AuditEvent>>,
 }
 
 impl Fake {
@@ -119,8 +120,16 @@ impl ProfileStore for Fake {
             }))
     }
 
-    async fn save_profile(&self, who: AccountId, profile: &Profile) -> Result<(), StoreError> {
+    async fn save_profile(
+        &self,
+        who: AccountId,
+        profile: &Profile,
+        audit: Option<&crate::audit::AuditEvent>,
+    ) -> Result<(), StoreError> {
         *self.saves.lock().unwrap() += 1;
+        if let Some(event) = audit {
+            self.audits.lock().unwrap().push(event.clone());
+        }
         for row in self.rows.lock().unwrap().iter_mut() {
             if row.0 == who {
                 row.3 = profile.to_raw();
@@ -383,6 +392,10 @@ fn a_member_edits_their_own_profile_and_not_anyone_elses() {
     assert!(!saved.by_staff);
     assert_eq!(saved.changed, vec![Field::DisplayName, Field::Location]);
     assert!(!saved.profile.get(Field::DisplayName).contains('\u{1b}'));
+    assert!(
+        store.audits.lock().unwrap().is_empty(),
+        "own edits are not audited"
+    );
 
     assert_eq!(
         run(execute(&store, &access, Request::Save(id(2), raw.clone()))),
@@ -411,6 +424,14 @@ fn staff_with_members_edit_edit_another_profile_and_it_is_flagged_for_audit() {
         panic!("not saved");
     };
     assert!(saved.by_staff);
+    {
+        // The staff edit is audited with field names only; the owner's own edits are not.
+        let audits = store.audits.lock().unwrap();
+        assert_eq!(audits.len(), 1);
+        assert_eq!(audits[0].action, crate::audit::Action::ProfileEdited);
+        assert_eq!(audits[0].detail.as_str(), "fields about");
+        assert!(!audits[0].detail.as_str().contains("edited by staff"));
+    }
     assert_eq!(saved.target, id(2));
     assert_eq!(saved.changed, vec![Field::About]);
     // `members.edit` is about other people: without `account.edit_profile` staff cannot edit

@@ -6,13 +6,14 @@ use russh_bbs_core::access::{
     AccessError, AccessStore, Child, Granting, GroupChange, GroupId, GroupInfo, NewGrant, RoleInfo,
     Scope, Slug, Snapshot, Subject,
 };
+use russh_bbs_core::audit::{Actor, events};
 use russh_bbs_core::store::{AccountId, StoreError};
 use sqlx::error::ErrorKind;
 
 use super::SqliteStore;
 use crate::access_rows::{
-    EdgeRow, GroupRow, RoleRow, SnapshotRow, closure_diff, graph_from_rows, roles_from_rows,
-    snapshot_from_rows, waiting_snapshot,
+    ClosureDiff, EdgeRow, GroupRow, RoleRow, SnapshotRow, closure_diff, deleted_group_name,
+    graph_from_rows, roles_from_rows, snapshot_from_rows, waiting_snapshot,
 };
 use crate::error::{backend, kind};
 
@@ -95,22 +96,27 @@ impl AccessStore for SqliteStore {
             .collect()
     }
 
-    async fn create_group(&self, name: &Slug) -> Result<GroupId, AccessError> {
-        let name = name.as_str();
-        sqlx::query_scalar!(
+    async fn create_group(&self, name: &Slug, actor: Actor) -> Result<GroupId, AccessError> {
+        let text = name.as_str();
+        let mut tx = self.pool().begin().await.map_err(backend)?;
+        let id = sqlx::query_scalar!(
             r#"INSERT INTO member_group (name, kind) VALUES (?, 'custom') RETURNING id AS "id!""#,
-            name,
+            text,
         )
-        .fetch_one(self.pool())
+        .fetch_one(&mut *tx)
         .await
         .map(GroupId::from_raw)
         .map_err(|error| match kind(&error) {
             Some(ErrorKind::UniqueViolation) => AccessError::GroupNameTaken,
             _ => backend(error).into(),
-        })
+        })?;
+        self.audit_in(&mut tx, &events::group_created(actor, id, name))
+            .await?;
+        tx.commit().await.map_err(backend)?;
+        Ok(id)
     }
 
-    async fn change_groups(&self, change: GroupChange) -> Result<(), AccessError> {
+    async fn change_groups(&self, change: GroupChange, actor: Actor) -> Result<(), AccessError> {
         // BEGIN IMMEDIATE takes the write lock before the reads, so two changes cannot both
         // pass the cycle check against the same old state.
         let mut tx = self
@@ -145,11 +151,15 @@ impl AccessStore for SqliteStore {
         let mut graph = graph_from_rows(&groups, &edges)?;
         graph.apply(change)?;
 
+        let deleted_name = deleted_group_name(change, &groups);
+        // Adding a member that is already there, or removing one that is not, changes nothing
+        // and writes no audit row.
+        let mut changed = true;
         match change {
             GroupChange::Add { group, child } => {
                 let group = group.as_raw();
                 let (account, inner) = split(child);
-                sqlx::query!(
+                let done = sqlx::query!(
                     "INSERT INTO group_member (group_id, account_id, child_group_id)
                      VALUES (?, ?, ?) ON CONFLICT DO NOTHING",
                     group,
@@ -162,11 +172,12 @@ impl AccessStore for SqliteStore {
                     Some(ErrorKind::ForeignKeyViolation) => AccessError::UnknownAccount,
                     _ => backend(error).into(),
                 })?;
+                changed = done.rows_affected() > 0;
             }
             GroupChange::Remove { group, child } => {
                 let group = group.as_raw();
                 let (account, inner) = split(child);
-                sqlx::query!(
+                let done = sqlx::query!(
                     "DELETE FROM group_member WHERE group_id = ?
                        AND COALESCE(account_id, 0) = COALESCE(?, 0)
                        AND COALESCE(child_group_id, 0) = COALESCE(?, 0)",
@@ -177,6 +188,7 @@ impl AccessStore for SqliteStore {
                 .execute(&mut *tx)
                 .await
                 .map_err(backend)?;
+                changed = done.rows_affected() > 0;
             }
             GroupChange::Delete(group) => {
                 let group = group.as_raw();
@@ -187,33 +199,19 @@ impl AccessStore for SqliteStore {
             }
         }
 
-        let diff = closure_diff(&old, &graph);
-        for (group, account) in diff.remove {
-            sqlx::query!(
-                "DELETE FROM group_closure WHERE group_id = ? AND account_id = ?",
-                group,
-                account,
+        rewrite_closure(&mut tx, closure_diff(&old, &graph)).await?;
+        if changed {
+            self.audit_in(
+                &mut tx,
+                &events::group_changed(actor, change, deleted_name.as_ref()),
             )
-            .execute(&mut *tx)
-            .await
-            .map_err(backend)?;
-        }
-        for (group, account) in diff.add {
-            sqlx::query!(
-                "INSERT INTO group_closure (group_id, account_id) VALUES (?, ?)
-                 ON CONFLICT DO NOTHING",
-                group,
-                account,
-            )
-            .execute(&mut *tx)
-            .await
-            .map_err(backend)?;
+            .await?;
         }
         tx.commit().await.map_err(backend)?;
         Ok(())
     }
 
-    async fn add_grant(&self, grant: &NewGrant) -> Result<(), AccessError> {
+    async fn add_grant(&self, grant: &NewGrant, actor: Actor) -> Result<(), AccessError> {
         if matches!(&grant.granting, Granting::Role(role) if *role == Slug::WAITING) {
             return Err(AccessError::RoleNotGrantable);
         }
@@ -229,6 +227,7 @@ impl AccessStore for SqliteStore {
             Scope::Global => ("", 0),
             Scope::Resource(r) => (r.kind.name(), r.id.as_raw()),
         };
+        let mut tx = self.pool().begin().await.map_err(backend)?;
         let result = sqlx::query!(
             "INSERT INTO access_grant
                  (account_id, group_id, role, permission, resource_kind, resource_id)
@@ -240,11 +239,20 @@ impl AccessStore for SqliteStore {
             resource_kind,
             resource_id,
         )
-        .execute(self.pool())
+        .execute(&mut *tx)
         .await;
         match result {
-            Ok(_) => Ok(()),
+            Ok(done) => {
+                // A grant that already existed changed nothing and writes no audit row.
+                if done.rows_affected() > 0 {
+                    self.audit_in(&mut tx, &events::grant_added(actor, grant))
+                        .await?;
+                }
+                tx.commit().await.map_err(backend)?;
+                Ok(())
+            }
             Err(error) if kind(&error) == Some(ErrorKind::ForeignKeyViolation) => {
+                drop(tx);
                 Err(self.unknown_target(grant).await)
             }
             Err(error) => Err(backend(error).into()),
@@ -279,4 +287,33 @@ const fn split(child: Child) -> (Option<i64>, Option<i64>) {
         Child::Account(account) => (Some(account.as_raw()), None),
         Child::Group(group) => (None, Some(group.as_raw())),
     }
+}
+
+/// Rewrite the cached closure to match the new graph, in the change's own transaction.
+async fn rewrite_closure(
+    tx: &mut sqlx::Transaction<'_, sqlx::Sqlite>,
+    diff: ClosureDiff,
+) -> Result<(), AccessError> {
+    for (group, account) in diff.remove {
+        sqlx::query!(
+            "DELETE FROM group_closure WHERE group_id = ? AND account_id = ?",
+            group,
+            account,
+        )
+        .execute(&mut **tx)
+        .await
+        .map_err(backend)?;
+    }
+    for (group, account) in diff.add {
+        sqlx::query!(
+            "INSERT INTO group_closure (group_id, account_id) VALUES (?, ?)
+                 ON CONFLICT DO NOTHING",
+            group,
+            account,
+        )
+        .execute(&mut **tx)
+        .await
+        .map_err(backend)?;
+    }
+    Ok(())
 }

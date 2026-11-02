@@ -8,11 +8,15 @@
 
 pub(crate) mod access;
 pub(crate) mod accounts;
+pub(crate) mod audit;
 pub(crate) mod founder;
 pub(crate) mod profiles;
 pub(crate) mod terminal_settings;
 
+use std::sync::Arc;
+
 use russh_bbs_core::access::{AccessStore, Fingerprint, MemberDirectory, Slug};
+use russh_bbs_core::audit::{AuditStore, WallClock};
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::profiles::ProfileStore;
 use russh_bbs_core::store::{AccountStore, SettingsStore};
@@ -23,6 +27,7 @@ use russh_bbs_core::terminal_settings::{MemberSessions, TerminalSettingsStore};
 pub(crate) trait TestStore:
     AccountStore
     + AccessStore
+    + AuditStore
     + SettingsStore
     + FounderStore
     + TerminalSettingsStore
@@ -39,6 +44,7 @@ pub(crate) trait TestStore:
 impl<T> TestStore for T where
     T: AccountStore
         + AccessStore
+        + AuditStore
         + SettingsStore
         + FounderStore
         + TerminalSettingsStore
@@ -68,6 +74,17 @@ pub(crate) trait Harness: Sized {
 
     /// Close the pool so every later call fails (to prove callers fail closed).
     async fn close(&self);
+
+    /// Make the store stamp audit rows from `clock`.
+    fn set_clock(&mut self, clock: Arc<dyn WallClock>);
+
+    /// Run one raw SQL statement on the database, returning the database's error text if it
+    /// fails. For proving what the database itself refuses.
+    async fn raw(&self, sql: &str) -> Result<u64, String>;
+
+    /// Make every insert into `audit_log` fail, so a test can prove the change that wanted to
+    /// write the row did not land either.
+    async fn break_audit_inserts(&self);
 }
 
 /// The highest role the account behind `key` holds right now: `None` for an unknown key,
@@ -94,7 +111,7 @@ macro_rules! shared_suite {
         mod $name {
             #[allow(unused_imports)]
             use super::*;
-            use $crate::suite::{access, accounts, founder, profiles, terminal_settings};
+            use $crate::suite::{access, accounts, audit, founder, profiles, terminal_settings};
 
             $crate::suite::shared_suite!(@tests $harness, $attr;
                 access::the_built_in_roles_have_their_ranks_and_kinds,
@@ -115,6 +132,18 @@ macro_rules! shared_suite {
                 access::bad_grants_are_refused_by_name,
                 access::access_data_survives_a_reopen,
                 access::a_broken_store_fails_the_snapshot_instead_of_granting,
+                audit::append_and_page_round_trip_newest_first_with_the_injected_clock,
+                audit::paging_filters_combine_and_time_bounds_are_since_inclusive_until_exclusive,
+                audit::pages_are_bounded_and_the_cursor_walks_every_row_once,
+                audit::update_and_delete_by_raw_sql_fail_and_leave_the_row,
+                audit::the_founder_claim_writes_its_row_in_its_transaction,
+                audit::creating_an_account_writes_a_row,
+                audit::group_changes_write_rows_and_no_ops_write_none,
+                audit::a_new_grant_writes_one_row_and_a_repeat_or_a_bad_grant_none,
+                audit::saving_terminal_settings_writes_a_row,
+                audit::a_change_never_lands_without_its_audit_row,
+                audit::audit_rows_survive_a_reopen,
+                audit::the_read_service_follows_the_role_data,
                 accounts::creates_an_account_with_its_fields,
                 accounts::a_known_fingerprint_returns_its_account_and_an_unknown_one_returns_none,
                 accounts::an_account_can_have_several_keys,
@@ -142,6 +171,7 @@ macro_rules! shared_suite {
                 profiles::paging_by_cursor_neither_skips_nor_repeats,
                 profiles::the_list_carries_the_display_name,
                 profiles::profiles_survive_a_reopen,
+                profiles::a_staff_edit_writes_its_audit_row_and_a_failed_audit_rolls_the_edit_back,
                 profiles::a_broken_store_fails_instead_of_answering,
                 terminal_settings::defaults_when_missing,
                 terminal_settings::set_then_get_round_trips,

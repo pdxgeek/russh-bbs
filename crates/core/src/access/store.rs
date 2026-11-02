@@ -3,6 +3,7 @@
 
 use std::future::Future;
 
+use crate::audit::Actor;
 use crate::store::{AccountId, StoreError};
 
 use super::groups::{GroupChange, GroupError, GroupId, GroupInfo, Kind};
@@ -92,20 +93,29 @@ pub trait AccessStore: Send + Sync {
     /// Every group.
     fn groups(&self) -> impl Future<Output = Result<Vec<GroupInfo>, StoreError>> + Send;
 
-    /// Create a custom group.
+    /// Create a custom group. Audited in the same transaction (`group.created`, by `actor`).
     fn create_group(
         &self,
         name: &Slug,
+        actor: Actor,
     ) -> impl Future<Output = Result<GroupId, AccessError>> + Send;
 
     /// Change group membership or delete a group. One transaction: validate with
-    /// [`super::GroupGraph`] (cycles and depth), write, rebuild the closure.
+    /// [`super::GroupGraph`] (cycles and depth), write, rebuild the closure, and write the
+    /// audit row (`group.member_added`, `group.member_removed` or `group.deleted`, by `actor`).
     fn change_groups(
         &self,
         change: GroupChange,
+        actor: Actor,
     ) -> impl Future<Output = Result<(), AccessError>> + Send;
 
     /// Add a grant. Adding one that exists is not an error. This is a plain write: who may call
-    /// it, and the rank rules, belong to the editing services (M2-B2).
-    fn add_grant(&self, grant: &NewGrant) -> impl Future<Output = Result<(), AccessError>> + Send;
+    /// it, and the rank rules, belong to the editing services (M2-B2). A grant that is new is
+    /// audited in the same transaction (`grant.added`, by `actor`); one that already existed
+    /// changed nothing and writes no row.
+    fn add_grant(
+        &self,
+        grant: &NewGrant,
+        actor: Actor,
+    ) -> impl Future<Output = Result<(), AccessError>> + Send;
 }

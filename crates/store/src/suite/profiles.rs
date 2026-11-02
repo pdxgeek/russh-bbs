@@ -62,13 +62,13 @@ pub(crate) async fn a_saved_profile_round_trips_and_a_later_save_replaces_it<H: 
         about: "I run the board.".to_owned(),
         website: "example.org".to_owned(),
     });
-    store.save_profile(alice.id, &first).await.unwrap();
+    store.save_profile(alice.id, &first, None).await.unwrap();
     assert_eq!(
         store.member(alice.id).await.unwrap().unwrap().profile,
         first
     );
     store
-        .save_profile(alice.id, &profile("Al", ""))
+        .save_profile(alice.id, &profile("Al", ""), None)
         .await
         .unwrap();
     let second = store.member(alice.id).await.unwrap().unwrap().profile;
@@ -89,7 +89,7 @@ pub(crate) async fn saving_a_profile_for_an_unknown_account_fails<H: Harness>() 
     let h = H::fresh().await;
     let result = h
         .store()
-        .save_profile(AccountId::from_raw(9_999), &profile("x", ""))
+        .save_profile(AccountId::from_raw(9_999), &profile("x", ""), None)
         .await;
     assert!(
         matches!(result, Err(StoreError::AccountNotFound)),
@@ -110,7 +110,7 @@ pub(crate) async fn only_active_accounts_have_visible_profiles<H: Harness>() {
         let other = account(store, name, state).await;
         // A profile row can exist for any account; it must not make the account visible.
         store
-            .save_profile(other.id, &profile("Hidden", "Nowhere"))
+            .save_profile(other.id, &profile("Hidden", "Nowhere"), None)
             .await
             .unwrap();
         others.push(other.id);
@@ -208,7 +208,7 @@ pub(crate) async fn the_list_carries_the_display_name<H: Harness>() {
     let alice = account(store, "alice", AccountState::Active).await;
     account(store, "bob", AccountState::Active).await;
     store
-        .save_profile(alice.id, &profile("Alice A.", ""))
+        .save_profile(alice.id, &profile("Alice A.", ""), None)
         .await
         .unwrap();
     let rows = store
@@ -223,7 +223,7 @@ pub(crate) async fn profiles_survive_a_reopen<H: Harness>() {
     let mut h = H::fresh().await;
     let alice = account(h.store(), "alice", AccountState::Active).await;
     h.store()
-        .save_profile(alice.id, &profile("Alice", "Here"))
+        .save_profile(alice.id, &profile("Alice", "Here"), None)
         .await
         .unwrap();
     h.reopen().await;
@@ -245,8 +245,60 @@ pub(crate) async fn a_broken_store_fails_instead_of_answering<H: Harness>() {
     assert!(store.member(alice.id).await.is_err());
     assert!(
         store
-            .save_profile(alice.id, &profile("x", ""))
+            .save_profile(alice.id, &profile("x", ""), None)
             .await
             .is_err()
     );
+}
+
+pub(crate) async fn a_staff_edit_writes_its_audit_row_and_a_failed_audit_rolls_the_edit_back<
+    H: Harness,
+>() {
+    use russh_bbs_core::audit::{Actor, Target, events};
+    let h = H::fresh().await;
+    let store = h.store();
+    let staff = account(store, "carol", AccountState::Active).await;
+    let bob = account(store, "bob", AccountState::Active).await;
+    // An edit without an audit event (the owner's own) writes no row.
+    store
+        .save_profile(bob.id, &profile("Bob", ""), None)
+        .await
+        .unwrap();
+    assert!(profile_rows(store).await.is_empty());
+
+    // A staff edit writes one row, with the field names and no values, with the profile.
+    let event = events::profile_edited(Actor::Account(staff.id), bob.id, &["location"]);
+    store
+        .save_profile(bob.id, &profile("Bob", "Secret Place"), Some(&event))
+        .await
+        .unwrap();
+    let written = profile_rows(store).await;
+    assert_eq!(written.len(), 1);
+    assert_eq!(written[0].event.actor, Actor::Account(staff.id));
+    assert_eq!(written[0].event.target, Target::Account(bob.id));
+    assert_eq!(written[0].event.detail.as_str(), "fields location");
+    assert!(!written[0].event.detail.as_str().contains("Secret"));
+
+    // If the audit insert fails, the edit does not land.
+    h.break_audit_inserts().await;
+    let result = store
+        .save_profile(bob.id, &profile("Bob", "Elsewhere"), Some(&event))
+        .await;
+    assert!(result.is_err());
+    let now = store.member(bob.id).await.unwrap().unwrap().profile;
+    assert_eq!(
+        now.get(Field::Location),
+        "Secret Place",
+        "the edit rolled back"
+    );
+}
+
+async fn profile_rows<S: russh_bbs_core::audit::AuditStore>(
+    store: &S,
+) -> Vec<russh_bbs_core::audit::AuditEntry> {
+    let query = russh_bbs_core::audit::AuditQuery {
+        action: Some(russh_bbs_core::audit::Action::ProfileEdited),
+        ..russh_bbs_core::audit::AuditQuery::default()
+    };
+    store.page(&query).await.unwrap()
 }

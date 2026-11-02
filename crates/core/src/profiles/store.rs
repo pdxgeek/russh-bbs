@@ -4,6 +4,7 @@
 
 use std::future::Future;
 
+use crate::audit::AuditEvent;
 use crate::sanitize::{SingleLine, USERNAME_MAX_CHARS, Username};
 use crate::store::{AccountId, StoreError};
 
@@ -131,11 +132,13 @@ pub trait ProfileStore: Send + Sync {
     ) -> impl Future<Output = Result<Option<MemberRecord>, StoreError>> + Send;
 
     /// Replace the account's profile. [`StoreError::AccountNotFound`] for an id with no
-    /// account.
+    /// account. `audit`, when given, is written in the same transaction (M2-C): the profile and
+    /// its audit row commit or roll back together.
     fn save_profile(
         &self,
         id: AccountId,
         profile: &Profile,
+        audit: Option<&AuditEvent>,
     ) -> impl Future<Output = Result<(), StoreError>> + Send;
 }
 
@@ -160,6 +163,7 @@ impl ProfileStore for crate::access::NoMembers {
         &self,
         _id: AccountId,
         _profile: &Profile,
+        _audit: Option<&AuditEvent>,
     ) -> impl Future<Output = Result<(), StoreError>> + Send {
         std::future::ready(Err(StoreError::AccountNotFound))
     }
