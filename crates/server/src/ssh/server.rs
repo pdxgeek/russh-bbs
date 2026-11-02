@@ -27,6 +27,7 @@ use super::host_key::HostKey;
 use super::limits::Limits;
 use super::registry::{SessionRegistry, SessionSnapshot};
 use crate::founder::Founder;
+use crate::ui::Ui;
 use crate::waiting_room::Throttle;
 
 /// How long a disconnected connection may take to wind down before we stop waiting for it.
@@ -83,6 +84,8 @@ impl SshServer {
             addr: config.listen,
             source,
         })?;
+        // A bad menu tree or string table stops the boot here, naming the key (M2-A).
+        let ui = Arc::new(Ui::standard()?);
         let russh_config = Arc::new(russh_config(host_key, &config.limits));
         let registry = Arc::new(SessionRegistry::default());
         let (stop, stopped) = watch::channel(false);
@@ -90,6 +93,7 @@ impl SshServer {
             listener,
             russh_config,
             limits: config.limits,
+            ui,
             directory,
             founder,
             registry: Arc::clone(&registry),
@@ -171,6 +175,7 @@ struct AcceptLoop<D> {
     listener: TcpListener,
     russh_config: Arc<RusshConfig>,
     limits: Limits,
+    ui: Arc<Ui>,
     directory: Arc<D>,
     founder: Arc<Founder>,
     registry: Arc<SessionRegistry>,
@@ -227,6 +232,7 @@ impl<D: Backend> AcceptLoop<D> {
             registry: Arc::clone(&self.registry),
             throttle: Arc::clone(&self.throttle),
             limits: self.limits,
+            ui: Arc::clone(&self.ui),
             stopped: stopped.clone(),
             _permit: permit,
         };
@@ -243,6 +249,7 @@ struct Connection<D> {
     registry: Arc<SessionRegistry>,
     throttle: Arc<Throttle>,
     limits: Limits,
+    ui: Arc<Ui>,
     stopped: watch::Receiver<bool>,
     /// Released when the connection ends, freeing a slot under `max_connections`.
     _permit: OwnedSemaphorePermit,
@@ -269,6 +276,7 @@ impl<D: Backend> Connection<D> {
                 founder: Arc::clone(&self.founder),
                 throttle: Arc::clone(&self.throttle),
                 limits: self.limits,
+                ui: Arc::clone(&self.ui),
                 abort: Arc::clone(&abort),
             },
             Some(peer),

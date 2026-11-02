@@ -18,6 +18,7 @@ fn capped_screen(size: PtySize, cap: RenderCap) -> Screen {
         size,
         cap,
         super::Content::Room(WaitingRoom::new(&RoomConfig::default(), 5)),
+        std::sync::Arc::new(crate::ui::Ui::standard().unwrap()),
     )
     .unwrap()
 }

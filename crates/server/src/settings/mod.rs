@@ -21,7 +21,7 @@ use russh_bbs_core::terminal_settings::TerminalSettings;
 use russh_bbs_core::waiting_room::{NoticeKind, View};
 
 /// Widest the box is drawn, so long lines stay readable on a wide terminal.
-const MAX_WIDTH: u16 = 76;
+pub(crate) const MAX_WIDTH: u16 = 76;
 
 /// Printable-ASCII box: the border for the ASCII tier.
 const ASCII_BORDER: border::Set = border::Set {
@@ -52,14 +52,26 @@ impl Look {
         }
     }
 
-    fn accent(self, style: Style, color: Color) -> Style {
+    pub(crate) fn accent(self, style: Style, color: Color) -> Style {
         if self.color { style.fg(color) } else { style }
     }
 }
 
 /// Draw `view` centered in the frame.
 pub(crate) fn render(frame: &mut Frame<'_>, view: &View, look: Look) {
-    let area = frame.area();
+    boxed(frame, frame.area(), view.title, lines(view, look), look);
+}
+
+/// Draw `lines` in the bordered box, centered in `area`. Shared with the menu framework's
+/// layout (`crate::ui`), which draws its content here and keeps its own reserved rows outside
+/// `area`.
+pub(crate) fn boxed(
+    frame: &mut Frame<'_>,
+    area: Rect,
+    title: &str,
+    lines: Vec<Line<'static>>,
+    look: Look,
+) {
     let [_, middle, _] = Layout::horizontal([
         Constraint::Fill(1),
         Constraint::Length(MAX_WIDTH.min(area.width)),
@@ -70,12 +82,12 @@ pub(crate) fn render(frame: &mut Frame<'_>, view: &View, look: Look) {
     let mut block = Block::default()
         .borders(Borders::ALL)
         .border_style(border_style)
-        .title(format!(" {} ", view.title))
+        .title(format!(" {title} "))
         .title_alignment(Alignment::Center);
     if look.ascii_borders {
         block = block.border_set(ASCII_BORDER);
     }
-    let paragraph = Paragraph::new(lines(view, look))
+    let paragraph = Paragraph::new(lines)
         .wrap(Wrap { trim: false })
         .block(block);
     frame.render_widget(paragraph, fit(middle));

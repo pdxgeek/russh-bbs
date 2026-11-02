@@ -1,12 +1,20 @@
-//! The signed-in session as a state machine: login screen, the glyph test on first login, a
-//! placeholder home, the terminal settings screen and logoff (M1-E). M2 replaces the
-//! placeholder home with the real menu tree; the screens around it stay.
+//! The signed-in session as a state machine: login screen, the glyph test on first login, the
+//! main menu, the terminal settings screen and logoff (M1-E, M2-A).
+//!
+//! The home page is the menu framework's (`crate::menu`, M2-A): the flow routes keys to a
+//! [`MenuSession`] and carries out the [`Action`] it returns. The screens around it (login,
+//! glyph test, settings, logoff) stay here and still use `terminal_settings::strings`.
+//! **Universal keys:** Ctrl-C / Ctrl-D log off from every page; Esc is back on the menu, the
+//! settings screen and the glyph test; `?` is help on menus. The login, glyph test and number
+//! entry pages are not menus, and `?` there would be input or nothing, so it is not offered.
 
 use super::glyph::{GlyphAnswer, GlyphProgress, GlyphTest};
 use super::settings::{SettingsError, TerminalSettings};
 use super::strings::{self, fill};
 use super::{format_utc, tier_name};
+use crate::access::RolePermissions;
 use crate::icons::Tier;
+use crate::menu::{Action, MenuKey, MenuOutcome, MenuPage, MenuSession, main_tree};
 use crate::sanitize::{SingleLine, USERNAME_MAX_CHARS, Username};
 use crate::store::{Role, UnixSeconds};
 use crate::waiting_room::{FieldView, MenuItemView, Notice, NoticeKind, View};
@@ -60,6 +68,9 @@ pub struct MemberFlow {
     settings: TerminalSettings,
     page: Page,
     notice: Option<Notice>,
+    /// Where the person is in the menu tree. Kept while the settings screen is open, so
+    /// "back" returns to the same menu.
+    menu: MenuSession,
 }
 
 impl MemberFlow {
@@ -81,6 +92,7 @@ impl MemberFlow {
             settings,
             page: Page::Login,
             notice: None,
+            menu: MenuSession::new(main_tree()),
         }
     }
 
@@ -90,7 +102,8 @@ impl MemberFlow {
         &self.settings
     }
 
-    /// The account's role. Shown nowhere yet; the permission model is M2's (D33).
+    /// The account's role. It decides what the menus offer, through [`RolePermissions`] today
+    /// and M2-B's resolved permission set later (D33).
     #[must_use]
     pub const fn role(&self) -> Role {
         self.role
@@ -162,14 +175,33 @@ impl MemberFlow {
     }
 
     fn home_input(&mut self, input: MemberInput) -> MemberEffect {
-        match input {
-            MemberInput::Char('s' | 'S') => {
+        let key = match input {
+            MemberInput::Char(c) => MenuKey::Char(c),
+            MemberInput::Escape => MenuKey::Back,
+            MemberInput::Enter | MemberInput::Backspace | MemberInput::Quit => {
+                return MemberEffect::Stay;
+            }
+        };
+        match self.menu.press(&self.access(), key) {
+            MenuOutcome::Stay => MemberEffect::Stay,
+            MenuOutcome::Action(Action::TerminalSettings) => {
                 self.page = Page::Settings;
                 MemberEffect::Stay
             }
-            MemberInput::Char('l' | 'L' | 'q' | 'Q') => self.log_off(),
-            _ => MemberEffect::Stay,
+            MenuOutcome::Action(Action::LogOff) => self.log_off(),
         }
+    }
+
+    /// What this session may do. The one place the menus get their access from.
+    fn access(&self) -> RolePermissions {
+        RolePermissions::new(self.role)
+    }
+
+    /// The main menu as a layout draws it, while the person is at it. `None` on every other
+    /// page, which keep their own drawing.
+    #[must_use]
+    pub fn menu_page(&self) -> Option<MenuPage> {
+        matches!(self.page, Page::Home).then(|| self.menu.page(&self.access()))
     }
 
     fn settings_input(&mut self, input: MemberInput) -> MemberEffect {
@@ -320,22 +352,11 @@ impl MemberFlow {
         }
     }
 
+    /// The content part of the home page: who is signed in. The menu itself is
+    /// [`MemberFlow::menu_page`].
     fn home_view(&self, view: &mut View) {
-        view.heading = strings::HOME_HEADING;
         view.body
             .push(fill(strings::SIGNED_IN_AS, &[("handle", &self.handle)]));
-        view.note = Some(strings::PLACEHOLDER_NOTE);
-        view.menu = vec![
-            MenuItemView {
-                key: 's',
-                label: strings::MENU_SETTINGS,
-            },
-            MenuItemView {
-                key: 'l',
-                label: strings::MENU_LOGOFF,
-            },
-        ];
-        view.footer = strings::HOME_FOOTER;
     }
 
     fn settings_view(&self, view: &mut View) {

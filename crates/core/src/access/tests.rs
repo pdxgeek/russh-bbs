@@ -57,3 +57,32 @@ fn fingerprint_parse_rejects_bad_shapes() {
         assert_eq!(Fingerprint::parse(bad), Err(InvalidFingerprint), "{bad:?}");
     }
 }
+
+#[test]
+fn placeholder_permissions_have_unique_area_verb_names() {
+    use super::Permission;
+    let mut seen = std::collections::HashSet::new();
+    for permission in Permission::ALL {
+        let name = permission.name();
+        assert!(seen.insert(name), "{name} is listed twice");
+        let (area, verb) = name.split_once('.').unwrap();
+        assert!(!area.is_empty() && !verb.is_empty(), "{name}");
+    }
+}
+
+#[test]
+fn a_member_lacks_approval_and_a_sysop_holds_everything() {
+    use super::{Permission, PermissionCheck, RolePermissions};
+    use crate::store::Role;
+    let member = RolePermissions::new(Role::Member);
+    let sysop = RolePermissions::new(Role::Sysop);
+    for permission in Permission::ALL {
+        assert!(sysop.allows(permission), "{}", permission.name());
+        assert_eq!(
+            member.allows(permission),
+            permission != Permission::MembersApprove,
+            "{}",
+            permission.name()
+        );
+    }
+}
