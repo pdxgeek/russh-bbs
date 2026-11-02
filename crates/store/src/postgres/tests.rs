@@ -12,7 +12,8 @@
 //!   see D44.)
 //! - `RUSSH_BBS_TEST_POSTGRES_TLS_URL` and `RUSSH_BBS_TEST_POSTGRES_ROOT_CERT`: a server that
 //!   **requires** TLS (non-TLS clients refused) and the PEM that signs its certificate; used by
-//!   the production [`PostgresStore::open`] path.
+//!   the production [`PostgresStore::open`] path. The tests that migrate make a scratch database
+//!   on it (created over TLS, dropped afterwards) rather than touching the shared one.
 #![allow(clippy::unwrap_used, clippy::panic)]
 
 use std::fmt::Write as _;
@@ -41,6 +42,17 @@ pub(super) struct PgHarness {
     options: PgConnectOptions,
     name: String,
     store: PostgresStore,
+}
+
+/// `url` with its database name replaced by `database`, keeping the rest (credentials,
+/// host, query).
+fn url_with_database(url: &str, database: &str) -> String {
+    let (scheme, rest) = url.split_once("://").unwrap();
+    let (authority, tail) = rest.split_once('/').unwrap_or((rest, ""));
+    let query = tail
+        .split_once('?')
+        .map_or(String::new(), |(_, q)| format!("?{q}"));
+    format!("{scheme}://{authority}/{database}{query}")
 }
 
 fn settings_for_tests(url: &str) -> PostgresSettings {
@@ -655,8 +667,10 @@ async fn require_never_falls_back_to_plaintext_on_a_server_without_tls() {
     // The test URL must point at a server that does not offer TLS for this to be meaningful;
     // when it does offer TLS the connection succeeds encrypted, which is also correct. What must
     // never happen is a successful *unencrypted* session.
+    // Into a scratch database, so the shared one is never migrated (QA M2 L1).
+    let h = PgHarness::fresh().await;
     let url = env("RUSSH_BBS_TEST_POSTGRES_URL");
-    let bare = url.split('?').next().unwrap().to_owned();
+    let bare = url_with_database(url.split('?').next().unwrap(), &h.name);
     match PostgresStore::open(&PostgresSettings::new(bare, TlsMode::Require, None)).await {
         Ok(store) => {
             let encrypted: bool = sqlx::query_scalar(
@@ -680,15 +694,83 @@ mod tls {
     use super::*;
 
     fn tls_settings(mode: TlsMode, with_root: bool) -> PostgresSettings {
+        tls_settings_for(&env("RUSSH_BBS_TEST_POSTGRES_TLS_URL"), mode, with_root)
+    }
+
+    fn tls_settings_for(url: &str, mode: TlsMode, with_root: bool) -> PostgresSettings {
         let root: Option<PathBuf> =
             with_root.then(|| PathBuf::from(env("RUSSH_BBS_TEST_POSTGRES_ROOT_CERT")));
-        PostgresSettings::new(env("RUSSH_BBS_TEST_POSTGRES_TLS_URL"), mode, root)
+        PostgresSettings::new(url, mode, root)
+    }
+
+    /// A scratch database on the TLS-required server, created over TLS and dropped at the end,
+    /// so these tests never migrate the shared `postgres` database (QA M2 L1).
+    struct TlsScratch {
+        admin: PgConnectOptions,
+        name: String,
+        url: String,
+    }
+
+    impl TlsScratch {
+        async fn new() -> Self {
+            static COUNTER: AtomicU32 = AtomicU32::new(0);
+            let base = env("RUSSH_BBS_TEST_POSTGRES_TLS_URL");
+            let admin = PgConnectOptions::from_str(&base)
+                .unwrap()
+                .ssl_mode(sqlx::postgres::PgSslMode::Require);
+            let nanos = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .subsec_nanos();
+            let name = format!(
+                "bbs_tls_test_{}_{}_{nanos}",
+                std::process::id(),
+                COUNTER.fetch_add(1, Ordering::Relaxed)
+            );
+            let mut conn = PgConnection::connect_with(&admin).await.unwrap();
+            // The name is generated above from digits and underscores only.
+            conn.execute(format!("CREATE DATABASE {name}").as_str())
+                .await
+                .unwrap();
+            conn.close().await.unwrap();
+            let url = super::url_with_database(&base, &name);
+            Self { admin, name, url }
+        }
+
+        fn settings(&self, mode: TlsMode, with_root: bool) -> PostgresSettings {
+            tls_settings_for(&self.url, mode, with_root)
+        }
+    }
+
+    impl Drop for TlsScratch {
+        fn drop(&mut self) {
+            let (admin, name) = (self.admin.clone(), self.name.clone());
+            let _ = std::thread::spawn(move || {
+                let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
+                    .enable_all()
+                    .build()
+                else {
+                    return;
+                };
+                runtime.block_on(async {
+                    if let Ok(mut conn) = PgConnection::connect_with(&admin).await {
+                        let _ = conn
+                            .execute(
+                                format!("DROP DATABASE IF EXISTS {name} WITH (FORCE)").as_str(),
+                            )
+                            .await;
+                    }
+                });
+            })
+            .join();
+        }
     }
 
     #[tokio::test]
     #[ignore = "needs a TLS-required Postgres: set RUSSH_BBS_TEST_POSTGRES_TLS_URL and _ROOT_CERT"]
     async fn verify_full_with_the_root_cert_connects_over_tls_and_migrates() {
-        let store = PostgresStore::open(&tls_settings(TlsMode::VerifyFull, true))
+        let scratch = TlsScratch::new().await;
+        let store = PostgresStore::open(&scratch.settings(TlsMode::VerifyFull, true))
             .await
             .unwrap();
         let encrypted: bool =
@@ -711,7 +793,8 @@ mod tls {
     #[tokio::test]
     #[ignore = "needs a TLS-required Postgres: set RUSSH_BBS_TEST_POSTGRES_TLS_URL and _ROOT_CERT"]
     async fn require_connects_over_tls_without_a_root_cert() {
-        let store = PostgresStore::open(&tls_settings(TlsMode::Require, false))
+        let scratch = TlsScratch::new().await;
+        let store = PostgresStore::open(&scratch.settings(TlsMode::Require, false))
             .await
             .unwrap();
         let encrypted: bool =

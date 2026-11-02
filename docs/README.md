@@ -1,6 +1,6 @@
 # russh-bbs documentation index
 
-Status of the project: M0 and M1 are merged (the M1 QA gate has not passed yet; see [qa/m1.md](qa/m1.md)). [features.md](features.md) holds the status of every feature.
+Status of the project: M0, M1 and M2 are merged. M1's QA gate passed except the v0.1.0 image, which is withdrawn (D76; see [qa/m1.md](qa/m1.md)). M2's QA gate passed with the FIX-M2 slices still open (see [qa/m2.md](qa/m2.md) and [coordination.md](coordination.md)). [features.md](features.md) holds the status of every feature.
 
 ## Read first (everyone)
 

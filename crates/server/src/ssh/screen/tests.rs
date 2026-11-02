@@ -335,3 +335,82 @@ fn which_setsid() -> Option<std::path::PathBuf> {
         .map(std::path::PathBuf::from)
         .find(|path| path.exists())
 }
+
+fn open_screen() -> Screen {
+    let config = RoomConfig {
+        mode: russh_bbs_core::store::RegistrationMode::Open,
+        ..RoomConfig::default()
+    };
+    Screen::new(
+        PtySize::from_request(80, 24),
+        RenderCap::default(),
+        super::Content::Room(WaitingRoom::new(&config, 5)),
+        std::sync::Arc::new(crate::ui::Ui::standard().unwrap()),
+    )
+    .unwrap()
+}
+
+fn room_of(screen: &Screen) -> &WaitingRoom {
+    let super::Content::Room(room) = &screen.content else {
+        unreachable!("these tests only build room screens");
+    };
+    room
+}
+
+/// Open the create-account form and submit a handle, as a visitor does.
+fn submit_a_handle(screen: &mut Screen) {
+    let mut typed = vec![Key::Char('n')];
+    typed.extend("visitor".chars().map(Key::Char));
+    typed.push(Key::Enter);
+    let (effects, _) = keys(screen, &typed);
+    assert!(effects.redeem.is_some());
+}
+
+/// FIX-M2-4 (QA M2 L3): the form shows the one refusal sentence when the day's last place went;
+/// leaving the form shows the `apply` room and its notice, without a reconnect.
+#[test]
+fn a_create_account_form_open_across_the_cap_degrades_when_the_visitor_leaves_it() {
+    use russh_bbs_core::store::RegistrationMode;
+    use russh_bbs_core::waiting_room::{Page, strings};
+
+    let mut screen = open_screen();
+    submit_a_handle(&mut screen);
+    screen.open_cap_reached();
+    // Still on the form, with exactly the sentence every other refusal shows, and nothing about
+    // the cap yet.
+    let room = room_of(&screen);
+    assert_eq!(room.page(), Page::CreateAccount);
+    assert_eq!(room.mode(), RegistrationMode::Open);
+    let view = room.view();
+    assert_eq!(view.notice.unwrap().text, strings::CREATE_ACCOUNT_FAILED);
+    assert_eq!(view.note, None);
+
+    keys(&mut screen, &[Key::Escape]);
+    let room = room_of(&screen);
+    assert_eq!(room.page(), Page::Home);
+    assert_eq!(room.mode(), RegistrationMode::Apply);
+    let view = room.view();
+    assert_eq!(view.note, Some(strings::OPEN_CAPPED_NOTICE));
+    assert!(
+        view.menu
+            .iter()
+            .all(|m| m.label != strings::MENU_CREATE_ACCOUNT)
+    );
+    assert!(view.menu.iter().any(|m| m.label == strings::MENU_APPLY));
+}
+
+/// Any other refusal leaves the room as it was: only a full day changes it.
+#[test]
+fn an_ordinary_refusal_does_not_degrade_the_open_room() {
+    use russh_bbs_core::store::RegistrationMode;
+    use russh_bbs_core::waiting_room::Page;
+
+    let mut screen = open_screen();
+    submit_a_handle(&mut screen);
+    screen.redeem_refused();
+    keys(&mut screen, &[Key::Escape]);
+    let room = room_of(&screen);
+    assert_eq!(room.page(), Page::Home);
+    assert_eq!(room.mode(), RegistrationMode::Open);
+    assert_eq!(room.view().note, None);
+}

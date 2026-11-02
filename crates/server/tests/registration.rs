@@ -719,6 +719,12 @@ async fn the_daily_cap_degrades_open_to_apply_for_the_rest_of_the_utc_day() {
     assert!(flat(&refused).contains(NOT_CREATED), "{refused}");
     assert!(!is_a_member(&rig, &late_key).await);
     assert_eq!(count(&rig, "accounts").await, 2);
+    // Leaving the form shows the apply room and its notice on the same connection (FIX-M2-4).
+    let left = press(&mut late, "\u{1b}").await;
+    let words = flat(&left);
+    assert!(words.contains(CAPPED), "{left}");
+    assert!(words.contains("[a] Apply for membership"), "{left}");
+    assert!(!words.contains("Create an account"), "{left}");
 
     // The next connection sees the apply screens with an honest notice instead of the form.
     let (_s, mut channel, key, home) = visitor(&rig).await;

@@ -35,7 +35,7 @@ use russh_bbs_core::invites::{
 };
 use russh_bbs_core::limits::{LimitError, MemberMeter, SystemClock};
 use russh_bbs_core::queue::{InviteAsk, RequestKind, submit_request};
-use russh_bbs_core::registration::{open_account, submit_application};
+use russh_bbs_core::registration::{OpenError, open_account, submit_application};
 use russh_bbs_core::store::{Account, AccountId};
 use russh_bbs_core::terminal_settings::{MemberFlow, MemberStart, TerminalSettings};
 use russh_bbs_core::waiting_room::{JoinKind, RedeemRequest};
@@ -463,26 +463,33 @@ impl<D: Backend> Shell<D> {
         };
         let RedeemRequest { join, handle } = request;
         let work = async {
-            let access = self.parts.directory.access_for(None).await.ok()?;
+            let Ok(access) = self.parts.directory.access_for(None).await else {
+                return Made::Refused;
+            };
             let directory = &*self.parts.directory;
             match join {
                 JoinKind::Invite { code } => {
-                    redeem_invite(directory, &access, &code, handle, &fingerprint)
-                        .await
-                        .ok()
-                        .map(|redeemed| redeemed.account)
+                    match redeem_invite(directory, &access, &code, handle, &fingerprint).await {
+                        Ok(redeemed) => Made::Account(redeemed.account),
+                        Err(_) => Made::Refused,
+                    }
                 }
-                JoinKind::Open => open_account(
-                    directory,
-                    self.parts.session.open_gate(),
-                    &access,
-                    handle,
-                    &fingerprint,
-                    self.parts.peer_ip,
-                )
-                .await
-                .ok()
-                .map(|opened| opened.account),
+                JoinKind::Open => {
+                    match open_account(
+                        directory,
+                        self.parts.session.open_gate(),
+                        &access,
+                        handle,
+                        &fingerprint,
+                        self.parts.peer_ip,
+                    )
+                    .await
+                    {
+                        Ok(opened) => Made::Account(opened.account),
+                        Err(OpenError::CapReached) => Made::CapReached,
+                        Err(_) => Made::Refused,
+                    }
+                }
             }
         };
         let Ok(made) = timeout(MEMBER_START_TIMEOUT, work).await else {
@@ -490,9 +497,16 @@ impl<D: Backend> Shell<D> {
             self.parts.screen.redeem_refused();
             return;
         };
-        let Some(account) = made else {
-            self.parts.screen.redeem_refused();
-            return;
+        let account = match made {
+            Made::Account(account) => account,
+            Made::CapReached => {
+                self.parts.screen.open_cap_reached();
+                return;
+            }
+            Made::Refused => {
+                self.parts.screen.redeem_refused();
+                return;
+            }
         };
         self.parts
             .session
@@ -701,4 +715,12 @@ fn failed(error: InviteError) -> InviteOutcome {
             InviteOutcome::Failed
         }
     }
+}
+
+/// What a registration attempt came to, for [`Shell::try_redeem`]. Everything but a success looks
+/// the same to the visitor; only a full day also degrades the room once they leave the form.
+enum Made {
+    Account(Account),
+    CapReached,
+    Refused,
 }
