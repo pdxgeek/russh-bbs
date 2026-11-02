@@ -127,7 +127,7 @@ docker run -d --name bbs -p 2222:2222 -v bbs-data:/data \
 
 Cutting a tag and publishing the package are the repository owner's actions; nothing in CI or the agent sessions does them. Until they are done, `ghcr.io/pdxgeek/russh-bbs` does not exist.
 
-1. **Prove the workflow first (optional, pushes nothing).** GitHub: Actions, "Publish image", "Run workflow" (a `workflow_dispatch` dry run builds amd64 and arm64 and never logs in or pushes). Expect the arm64 half to take a long time under QEMU.
+1. **Prove the workflow first (optional, pushes nothing).** GitHub: Actions, "Publish image", "Run workflow" (a `workflow_dispatch` dry run builds amd64 and arm64 and never logs in or pushes). The arm64 half compiles the whole workspace under QEMU emulation and was still running after more than an hour when first tried (FIX-M1-2, PR #26), so expect a long run and check the job's limit; if it proves too slow, the follow-up is to build arm64 on a native arm64 runner and merge the manifests.
 2. **Cut the tag** from the commit on `main` you want to ship:
    ```bash
    git checkout main && git pull
