@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM access_grant\n              WHERE COALESCE(account_id, 0) = COALESCE(?, 0)\n                AND COALESCE(group_id, 0) = COALESCE(?, 0)\n                AND COALESCE(role, '') = COALESCE(?, '')\n                AND COALESCE(permission, '') = COALESCE(?, '')\n                AND resource_kind = ? AND resource_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": []
+  },
+  "hash": "89fe40756bef798376d6736b8c2ae5def654214f35cca7f000c4eb3a1eaa2128"
+}

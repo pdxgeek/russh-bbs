@@ -34,9 +34,27 @@ pub enum Action {
     /// A group was deleted.
     #[strum(serialize = "group.deleted")]
     GroupDeleted,
-    /// A role or permission was granted to an account or group.
-    #[strum(serialize = "grant.added")]
-    GrantAdded,
+    /// A custom role was created (M2-B2).
+    #[strum(serialize = "role.created")]
+    RoleCreated,
+    /// A role's permission set was replaced (M2-B2).
+    #[strum(serialize = "role.permissions_set")]
+    RolePermissionsSet,
+    /// A custom role was deleted (M2-B2).
+    #[strum(serialize = "role.deleted")]
+    RoleDeleted,
+    /// A role was granted to an account or group, globally or on a resource.
+    #[strum(serialize = "role.granted")]
+    RoleGranted,
+    /// A role grant was taken away (M2-B2).
+    #[strum(serialize = "role.revoked")]
+    RoleRevoked,
+    /// One permission was granted to an account or group: an allow-list entry.
+    #[strum(serialize = "permission.granted")]
+    PermissionGranted,
+    /// An allow-list entry was taken away (M2-B2).
+    #[strum(serialize = "permission.revoked")]
+    PermissionRevoked,
     /// A setting was changed (the member's own terminal settings today).
     #[strum(serialize = "setting.changed")]
     SettingChanged,

@@ -59,7 +59,7 @@ pub(crate) async fn append_and_page_round_trip_newest_first_with_the_injected_cl
     };
     let first = AuditEvent::new(
         Actor::Account(russh_bbs_core::store::AccountId::from_raw(5)),
-        Action::GrantAdded,
+        Action::PermissionGranted,
         Target::Role(Slug::parse("moderator").unwrap()),
     )
     .on(resource)
@@ -94,8 +94,8 @@ pub(crate) async fn paging_filters_combine_and_time_bounds_are_since_inclusive_u
     for (at, actor, action) in [
         (100, Actor::System, Action::GroupCreated),
         (200, one, Action::GroupCreated),
-        (300, one, Action::GrantAdded),
-        (400, two, Action::GrantAdded),
+        (300, one, Action::PermissionGranted),
+        (400, two, Action::PermissionGranted),
     ] {
         clock.set(at);
         store.append(&event(actor, action)).await.unwrap();
@@ -128,7 +128,7 @@ pub(crate) async fn paging_filters_combine_and_time_bounds_are_since_inclusive_u
     );
     assert_eq!(
         by(AuditQuery {
-            action: Some(Action::GrantAdded),
+            action: Some(Action::PermissionGranted),
             ..q()
         })
         .await,
@@ -137,7 +137,7 @@ pub(crate) async fn paging_filters_combine_and_time_bounds_are_since_inclusive_u
     assert_eq!(
         by(AuditQuery {
             actor: Some(one),
-            action: Some(Action::GrantAdded),
+            action: Some(Action::PermissionGranted),
             ..q()
         })
         .await,
@@ -445,7 +445,7 @@ pub(crate) async fn a_new_grant_writes_one_row_and_a_repeat_or_a_bad_grant_none<
     let rows: Vec<_> = all(store)
         .await
         .into_iter()
-        .filter(|row| row.event.action == Action::GrantAdded)
+        .filter(|row| row.event.action == Action::PermissionGranted)
         .collect();
     assert_eq!(rows.len(), 1);
     assert_eq!(rows[0].event.actor, by);

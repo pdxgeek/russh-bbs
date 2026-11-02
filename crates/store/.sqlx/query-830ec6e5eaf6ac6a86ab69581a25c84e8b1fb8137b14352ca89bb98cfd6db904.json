@@ -1,0 +1,20 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT COUNT(*) AS \"count!\" FROM access_grant\n                    WHERE role = 'sysop' AND resource_id = 0 -- postgres",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "count!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "830ec6e5eaf6ac6a86ab69581a25c84e8b1fb8137b14352ca89bb98cfd6db904"
+}
