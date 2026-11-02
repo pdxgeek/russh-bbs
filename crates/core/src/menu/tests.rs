@@ -1,8 +1,33 @@
 #![allow(clippy::unwrap_used, clippy::items_after_statements)]
 
 use super::*;
-use crate::access::{Permission, PermissionCheck, RolePermissions};
-use crate::store::Role;
+use crate::access::{Permission, PermissionCheck, Slug, Snapshot, Via};
+use crate::store::AccountId;
+
+/// A session holding the `member` stand-in: everything that exists except `members.approve`.
+fn member() -> Snapshot {
+    Snapshot::from_role(
+        Some(AccountId::from_raw(1)),
+        &Slug::MEMBER,
+        10,
+        &Via::Account,
+        Permission::ALL
+            .iter()
+            .copied()
+            .filter(|p| *p != Permission::MembersApprove),
+    )
+}
+
+/// A session holding every permission.
+fn sysop() -> Snapshot {
+    Snapshot::from_role(
+        Some(AccountId::from_raw(1)),
+        &Slug::SYSOP,
+        100,
+        &Via::Account,
+        Permission::ALL.iter().copied(),
+    )
+}
 
 /// A session holding nothing, for filtering tests.
 struct Nothing;
@@ -209,9 +234,9 @@ fn the_access_hook_filters_what_a_session_sees() {
         "l",
         "log off needs no permission"
     );
-    let member = RolePermissions::new(Role::Member);
+    let member = member();
     assert_eq!(hotkeys(&session, &member), "fmausl");
-    let sysop = RolePermissions::new(Role::Sysop);
+    let sysop = sysop();
     assert_eq!(hotkeys(&session, &sysop), "fmausol");
     assert_eq!(
         hotkeys(&session, &Only(&[Permission::AccountEditSettings])),
@@ -221,7 +246,7 @@ fn the_access_hook_filters_what_a_session_sees() {
 
 #[test]
 fn a_hidden_item_cannot_be_picked_by_its_hotkey() {
-    let member = RolePermissions::new(Role::Member);
+    let member = member();
     let mut session = MenuSession::new(main_tree());
     // `o` opens the sysop menu for a sysop only.
     assert_eq!(
@@ -246,11 +271,11 @@ fn a_hidden_item_cannot_be_picked_by_its_hotkey() {
 
 #[test]
 fn a_permission_lost_mid_session_hides_the_menu_you_are_in() {
-    let sysop = RolePermissions::new(Role::Sysop);
+    let sysop = sysop();
     let mut session = MenuSession::new(main_tree());
     session.press(&sysop, MenuKey::Char('o'));
     assert_eq!(session.current(), "sysop");
-    let member = RolePermissions::new(Role::Member);
+    let member = member();
     assert!(session.page(&member).items.is_empty(), "nothing is offered");
     assert_eq!(
         session.press(&member, MenuKey::Char('q')),
@@ -263,7 +288,7 @@ fn a_permission_lost_mid_session_hides_the_menu_you_are_in() {
 
 #[test]
 fn hotkeys_ignore_case_and_menus_nest_and_unwind() {
-    let sysop = RolePermissions::new(Role::Sysop);
+    let sysop = sysop();
     let mut session = MenuSession::new(main_tree());
     session.press(&sysop, MenuKey::Char('O'));
     assert_eq!(session.current(), "sysop");
@@ -274,7 +299,7 @@ fn hotkeys_ignore_case_and_menus_nest_and_unwind() {
 
 #[test]
 fn a_placeholder_says_so_and_the_notice_clears_on_the_next_key() {
-    let member = RolePermissions::new(Role::Member);
+    let member = member();
     let mut session = MenuSession::new(main_tree());
     session.press(&member, MenuKey::Char('f'));
     assert_eq!(session.page(&member).notice, Some("placeholder.forums"));
@@ -304,7 +329,7 @@ fn paths_to_every_menu(access: &dyn PermissionCheck) -> Vec<(&'static str, Vec<c
 
 #[test]
 fn universal_keys_work_identically_in_every_menu() {
-    let sysop = RolePermissions::new(Role::Sysop);
+    let sysop = sysop();
     let paths = paths_to_every_menu(&sysop);
     assert_eq!(
         paths.len(),

@@ -1,11 +1,11 @@
 //! Account, fingerprint, settings and membership behaviour, against any backend.
 #![allow(clippy::unwrap_used)]
 
-use russh_bbs_core::access::MemberDirectory;
+use russh_bbs_core::access::{AccessStore, MemberDirectory, Slug};
 use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::{
-    Account, AccountState, AccountStore, NewAccount, RegistrationMode, Role, SettingKey,
-    SettingsStore, StoreError, registration_mode, set_registration_mode,
+    Account, AccountState, AccountStore, NewAccount, RegistrationMode, SettingKey, SettingsStore,
+    StoreError, registration_mode, set_registration_mode,
 };
 
 use super::{Harness, fingerprint};
@@ -13,7 +13,7 @@ use super::{Harness, fingerprint};
 fn new_account(name: &str, state: AccountState) -> NewAccount {
     NewAccount {
         username: sanitize_username(name).unwrap(),
-        role: Role::Member,
+        role: Slug::MEMBER,
         state,
     }
 }
@@ -31,13 +31,15 @@ pub(crate) async fn creates_an_account_with_its_fields<H: Harness>() {
     let created = store
         .create_account(NewAccount {
             username: sanitize_username("alice").unwrap(),
-            role: Role::Sysop,
+            role: Slug::SYSOP,
             state: AccountState::Active,
         })
         .await
         .unwrap();
     assert_eq!(created.username.as_str(), "alice");
-    assert_eq!(created.role, Role::Sysop);
+    // Authority is the sysop grant, not the legacy `role` column.
+    let snapshot = store.snapshot(Some(created.id)).await.unwrap();
+    assert_eq!(snapshot.top_role(), Some(&Slug::SYSOP));
     assert_eq!(created.state, AccountState::Active);
     assert!(created.created_at.as_raw() > 0);
 }

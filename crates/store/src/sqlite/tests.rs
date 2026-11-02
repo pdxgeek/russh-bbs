@@ -4,9 +4,9 @@
 
 use std::fmt::Write as _;
 
-use russh_bbs_core::access::MemberDirectory;
+use russh_bbs_core::access::{MemberDirectory, Slug};
 use russh_bbs_core::sanitize::sanitize_username;
-use russh_bbs_core::store::{AccountState, AccountStore, NewAccount, Role, StoreError};
+use russh_bbs_core::store::{AccountState, AccountStore, NewAccount, StoreError};
 use russh_bbs_core::terminal_settings::{TerminalSettings, TerminalSettingsStore};
 use sqlx::migrate::{MigrateError, Migrator};
 use sqlx::sqlite::SqliteConnectOptions;
@@ -69,6 +69,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         2,
         "3ae29f30adad2c56599553cbe66dd207e6d14f1c51259c1b14390438eb3223e1865afc5e5df34e89700fba52ba1f0b66",
     ),
+    (
+        3,
+        "6addf0696c99af4807e315c720136c0e847dc6f1709f1a9657b55a51bdf5bb40a0f4ec23c2becd98740e33a41157b05d",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {
@@ -120,9 +124,15 @@ async fn a_fresh_database_gets_every_migration() {
     assert_eq!(
         tables,
         [
+            "access_grant",
             "account_keys",
             "account_logins",
             "accounts",
+            "group_closure",
+            "group_member",
+            "member_group",
+            "role",
+            "role_permission",
             "settings",
             "terminal_settings"
         ]
@@ -265,7 +275,7 @@ async fn corrupt_stored_values_are_reported_not_trusted() {
     let alice = store
         .create_account(NewAccount {
             username: sanitize_username("alice").unwrap(),
-            role: Role::Member,
+            role: Slug::MEMBER,
             state: AccountState::Active,
         })
         .await
@@ -292,7 +302,7 @@ async fn account(store: &SqliteStore, name: &str) -> russh_bbs_core::store::Acco
     store
         .create_account(NewAccount {
             username: sanitize_username(name).unwrap(),
-            role: Role::Member,
+            role: Slug::MEMBER,
             state: AccountState::Active,
         })
         .await
@@ -406,9 +416,21 @@ async fn a_database_made_before_the_restructure_still_opens_and_keeps_its_data()
     assert_eq!(before.len(), 2);
     pool.close().await;
 
-    // The new code opens it: no VersionMismatch, nothing re-applied, data intact.
+    // The new code opens it: no VersionMismatch, the two landed migrations are not re-applied
+    // (same install times), the M2-B migration is applied on top, data intact.
     let store = SqliteStore::open(&path).await.unwrap();
-    assert_eq!(recorded(store.pool().clone()).await, before);
+    let after = recorded(store.pool().clone()).await;
+    assert_eq!(after[..2], before[..]);
+    assert_eq!(after.len(), 3);
+    // The M1 sysop (legacy role column) is backfilled with a `sysop` grant (M2-B).
+    let sysops: Vec<String> = sqlx::query_scalar(
+        "SELECT a.username FROM access_grant g JOIN accounts a ON a.id = g.account_id \
+         WHERE g.role = 'sysop'",
+    )
+    .fetch_all(store.pool())
+    .await
+    .unwrap();
+    assert_eq!(sysops, ["alice"]);
     let mode = russh_bbs_core::store::registration_mode(&store)
         .await
         .unwrap();

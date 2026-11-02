@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO access_grant\n                 (account_id, group_id, role, permission, resource_kind, resource_id)\n             VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": []
+  },
+  "hash": "1d4be818bedfea3ab9b8c4693d622c9e1bc6779c96c678abbbe0b89627ef7731"
+}

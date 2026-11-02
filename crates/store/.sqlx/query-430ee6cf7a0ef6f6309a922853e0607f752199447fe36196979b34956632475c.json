@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT group_id AS \"group_id!\", account_id, child_group_id FROM group_member",
+  "describe": {
+    "columns": [
+      {
+        "name": "group_id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "account_id",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "child_group_id",
+        "ordinal": 2,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "430ee6cf7a0ef6f6309a922853e0607f752199447fe36196979b34956632475c"
+}

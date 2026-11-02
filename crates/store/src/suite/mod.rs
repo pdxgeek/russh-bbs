@@ -6,11 +6,12 @@
 //! rows, PRAGMAs, TLS) does not belong here; it lives in that backend's own test module.
 #![allow(clippy::unwrap_used)]
 
+pub(crate) mod access;
 pub(crate) mod accounts;
 pub(crate) mod founder;
 pub(crate) mod terminal_settings;
 
-use russh_bbs_core::access::{Fingerprint, MemberDirectory, RoleDirectory};
+use russh_bbs_core::access::{AccessStore, Fingerprint, MemberDirectory, Slug};
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::store::{AccountStore, SettingsStore};
 use russh_bbs_core::terminal_settings::{MemberSessions, TerminalSettingsStore};
@@ -19,11 +20,11 @@ use russh_bbs_core::terminal_settings::{MemberSessions, TerminalSettingsStore};
 /// concurrent checks can share it.
 pub(crate) trait TestStore:
     AccountStore
+    + AccessStore
     + SettingsStore
     + FounderStore
     + TerminalSettingsStore
     + MemberDirectory
-    + RoleDirectory
     + MemberSessions
     + Clone
     + Send
@@ -34,11 +35,11 @@ pub(crate) trait TestStore:
 
 impl<T> TestStore for T where
     T: AccountStore
+        + AccessStore
         + SettingsStore
         + FounderStore
         + TerminalSettingsStore
         + MemberDirectory
-        + RoleDirectory
         + MemberSessions
         + Clone
         + Send
@@ -65,6 +66,18 @@ pub(crate) trait Harness: Sized {
     async fn close(&self);
 }
 
+/// The highest role the account behind `key` holds right now: `None` for an unknown key,
+/// `waiting` for an account that is not active (it gets the waiting snapshot).
+pub(crate) async fn top_role_of<S: TestStore>(store: &S, key: &Fingerprint) -> Option<Slug> {
+    let account = store.account_by_fingerprint(key).await.unwrap()?;
+    store
+        .snapshot(Some(account.id))
+        .await
+        .unwrap()
+        .top_role()
+        .cloned()
+}
+
 /// A valid-shaped fingerprint that differs per `n`.
 pub(crate) fn fingerprint(n: u32) -> Fingerprint {
     Fingerprint::parse(&format!("SHA256:{n:A>43}")).unwrap()
@@ -77,9 +90,27 @@ macro_rules! shared_suite {
         mod $name {
             #[allow(unused_imports)]
             use super::*;
-            use $crate::suite::{accounts, founder, terminal_settings};
+            use $crate::suite::{access, accounts, founder, terminal_settings};
 
             $crate::suite::shared_suite!(@tests $harness, $attr;
+                access::the_built_in_roles_have_their_ranks_and_kinds,
+                access::waiting_holds_exactly_the_waiting_room_permissions,
+                access::each_role_contains_the_one_below_and_sysop_holds_everything,
+                access::the_built_in_groups_exist,
+                access::an_active_member_holds_member_through_everyone,
+                access::the_founder_holds_every_permission_as_sysop,
+                access::unknown_and_inactive_accounts_get_the_waiting_snapshot,
+                access::staff_members_hold_moderator,
+                access::nested_groups_reach_accounts_through_the_closure,
+                access::a_rejected_cycle_leaves_everything_unchanged,
+                access::nesting_deeper_than_the_cap_is_refused,
+                access::concurrent_opposite_nesting_makes_exactly_one_edge,
+                access::a_scoped_role_grant_reaches_only_its_resource,
+                access::allow_entries_name_accounts_and_groups,
+                access::adding_a_grant_twice_is_not_an_error_and_adds_nothing,
+                access::bad_grants_are_refused_by_name,
+                access::access_data_survives_a_reopen,
+                access::a_broken_store_fails_the_snapshot_instead_of_granting,
                 accounts::creates_an_account_with_its_fields,
                 accounts::a_known_fingerprint_returns_its_account_and_an_unknown_one_returns_none,
                 accounts::an_account_can_have_several_keys,

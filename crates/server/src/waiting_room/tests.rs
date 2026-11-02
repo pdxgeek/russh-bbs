@@ -5,11 +5,10 @@
 
 use ratatui::Terminal;
 use ratatui::backend::TestBackend;
+use russh_bbs_core::access::Slug;
 use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::RegistrationMode;
-use russh_bbs_core::store::{
-    AccountState, AccountStore, NewAccount, Role, SettingKey, SettingsStore,
-};
+use russh_bbs_core::store::{AccountState, AccountStore, NewAccount, SettingKey, SettingsStore};
 use russh_bbs_core::waiting_room::{
     RoomConfig, RoomInput, WaitingRoom, WaitingRoomSource, screens, strings,
 };
@@ -49,9 +48,9 @@ fn draw(room: &WaitingRoom, cols: u16, rows: u16) -> String {
 async fn seeded_store(dir: &std::path::Path, mode: RegistrationMode) -> SqliteStore {
     let store = SqliteStore::open(&dir.join("bbs.db")).await.unwrap();
     for (name, role) in [
-        (MEMBER_NAMES[0], Role::Member),
-        (MEMBER_NAMES[1], Role::Sysop),
-        (MEMBER_NAMES[2], Role::Member),
+        (MEMBER_NAMES[0], Slug::MEMBER),
+        (MEMBER_NAMES[1], Slug::SYSOP),
+        (MEMBER_NAMES[2], Slug::MEMBER),
     ] {
         store
             .create_account(NewAccount {

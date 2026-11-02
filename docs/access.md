@@ -1,6 +1,6 @@
 # Permissions and roles
 
-Status: **Planned** (M2). The model is decision D33 in [decisions.md](decisions.md). This page is the working list the M2 slice implements; it grows as milestones add actions, and every new action adds a row here in the same PR.
+Status: **Implemented** (M2-B, not yet Verified: the QA gate has not run). The model is decision D33 in [decisions.md](decisions.md); how it was built is D55 and the "Implementation plan" at the end of this page. This page grows as milestones add actions, and every new action adds a row here in the same PR.
 
 ## Permissions
 
@@ -104,25 +104,31 @@ This is the most intricate feature in the MVP, so the M2 access slice starts wit
 
 ## Implemented / Verified
 
-**Placeholder for the menu framework (M2-A, `core::access::permission`).** M2-B owns the real enum, roles and resolution; this only lets a menu item carry a permission and ask one question.
+### Implemented (M2-B, `m2/access`)
 
-- `Permission` has the six permissions the menus name: `account.edit_settings`, `members.view`, `members.approve`, `forum.list`, `mail.read`, `files.list`. M2-B extends it to the full list above.
-- `PermissionCheck::allows(Permission)` is the single hook. Menus show an item only if it passes, and the same check decides whether its hotkey does anything. `RolePermissions(Role)` is today's stand-in: `member` holds everything except `members.approve`, `sysop` holds everything.
-- Menu items and their gates:
+- **`core::access`:** the closed `Permission` enum (all 56 rows of the table above, names via `strum`), `Slug`, `Snapshot`, the pure `resolve` and `reach`, the `Granted` proof returned by `Snapshot::require`, `GroupGraph` (nesting rules and the closure) and the `AccessStore` trait. The menu hook `PermissionCheck::allows` (M2-A) is implemented by `Snapshot`, so menus now ask the real resolution; the placeholder `RolePermissions` and the `Role` enum are gone.
+- **Storage, both backends:** six tables (`role`, `role_permission`, `member_group`, `group_member`, `group_closure`, `access_grant`) in migration `0003_access` for SQLite and for Postgres, with the built-in roles, groups and grants as migration rows, and a backfill of a `sysop` grant for every M1 account whose legacy `accounts.role` is `sysop`. `accounts.role` is still written (a label) and is read by nothing.
+- **Per action, not per session:** the SSH shell loads the account's snapshot (one query) before each batch of keys, so a role or group change applies to the next action. A store failure or timeout leaves the session holding nothing for that action. Nothing is cached between actions.
+- **Wired paths:** the menu items (`forum.list`, `mail.read`, `files.list`, `members.view`, `members.approve`), the terminal settings page and the save of settings (`account.edit_settings`; the save needs the `Granted` proof and names the account itself), and the waiting room (`waiting.view`; without it the shell is refused). The founder claim is the one documented exception: it has no account yet, and the setup token is its gate. Founder sessions are `sysop` through a grant row written in the claim's transaction.
+- **Group changes:** `change_groups` (add, remove, delete) validates cycles and depth (at most 8 groups deep) in core and rewrites `group_closure` in the same transaction; SQLite takes the write lock first (`BEGIN IMMEDIATE`), Postgres locks `group_member`.
 
-| Menu item | Needs | Notes |
-|---|---|---|
-| Terminal settings | `account.edit_settings` | an action |
-| Forums, Mail, Files, Members | `forum.list`, `mail.read`, `files.list`, `members.view` | placeholders, shown only to a session that would hold them; picking one says "not built yet" |
-| Sysop tools, Approval queue | `members.approve` | a submenu and a placeholder |
-| Log off | none | every signed-in session may end itself; there is nothing to grant |
-| Help, Back, Quit keys | none | universal keys, not actions |
+### Tested
 
-- **Tested:** the visible set follows the hook, a hidden item's hotkey does nothing, and every action item in the tree takes its permission from the action. **Not done (M2-B):** real roles, groups, scoped grants, "every front-end action path calls `core::access`" tests.
+- `resolve` table test (16 cases) and two property tests (an independent oracle; `reach` agrees with `resolve`); `GroupGraph` tests (self loop, two and three cycles, diamond, depth 8 and 9, remove, delete, locked and built-in groups); a test that the enum equals the table in this page.
+- The shared store suite (`suite/access.rs`, 18 checks) on SQLite, on Postgres 16 and on a TLS-required Postgres 16: seeded ranks and kinds, `waiting` has exactly three permissions, each role contains the one below, `sysop` holds every `Permission`, the founder and a plain member, unknown and inactive accounts get only the waiting snapshot (even a suspended sysop), staff, nested groups through the closure, a rejected cycle changes nothing, the depth cap, two concurrent opposite nestings make exactly one edge, scoped grants, allow entries for accounts and groups, idempotent grants, bad grants refused by name, reopen, and a closed store fails the snapshot.
+- A migration test per backend that an M1-era database (migrations 1 and 2, with a sysop) gets `0003` applied and the sysop grant.
+- `crates/server/tests/access_paths.rs` over a real russh client and the real SQLite store: each wired permission is taken away from the roles that give it and the path refuses (menu items vanish and their hotkeys do nothing, settings are not saved, the waiting room is refused a shell), then put back and works again; a removal applies on the very next key of an open session; and a guard test that every `Permission` is in exactly one of `WIRED` and `NOT_YET_WIRED`.
+
+### Not done / not verified
+
+- The editing services (create or change a role, grant or revoke, with the rank rules) are **M2-B2**; nothing writes roles or grants except the founder claim, account creation, group changes and the tests. Role, group and grant changes are not audited yet (M2-C adds that).
+- Resource limits are **M2-H**. `sysop` and `cosysop` over telnet (D27) is the M3 telnet slice. Resource-owner-managed allow lists wait for the resources (M3, M4).
+- Not exercised: a deployment with two server processes on one database (nothing is cached, so it should hold, but it was not run), a database with thousands of groups, and the Postgres `LOCK TABLE` under load beyond the two-task race. A suspended account's open session is not disconnected; it simply holds the waiting snapshot from its next action.
+- The first-run icon check stores its answer without `account.edit_settings` being checked as a page (it runs before the menu); the save itself is refused if the permission is not held, and the choice then lasts for the session only.
 
 ## Implementation plan
 
-Status: **Phase 1 plan for review** (slice M2-B). Nothing below is built. The orchestrator reviews this for simplicity before Phase 2. The goal is the fewest tables and code paths that satisfy this page: **six tables, one resolution function, one loader query, one write path for group changes.**
+Status: **Approved and implemented** (slice M2-B), with the changes recorded in "As built" at the end of this section. The goal was the fewest tables and code paths that satisfy this page: **six tables, one resolution function, one loader query, one write path for group changes.**
 
 ### 0. Where this plan simplifies this page
 
@@ -345,7 +351,9 @@ Groups: `everyone` (`locked`), `staff` (`builtin`, editable members). Grants: (`
 
 **6.4 Telnet (D27).** `sysop` and `cosysop` over telnet are refused by the M3 telnet slice by dropping any `Held` whose role rank is 40 or more before `resolve`. This slice does nothing for it except keep the rank on `Source::Role` so the telnet slice can; it is noted in coordination.
 
-**6.5 Write path (core services over `AccessStore`).** No UI in this slice (the sysop admin screens are M5); these are the functions that screens, tests and later slices call. Each takes the actor's `Snapshot` and refuses without the matching permission:
+**6.5 Write path (core services over `AccessStore`) - DEFERRED to M2-B2.** The orchestrator cut the editing services from this PR: no UI calls them until M5. What stayed is the group-change path (`change_groups`, `GroupGraph`) and the plain store writes the founder claim, the backfill and the suite need. The text below is kept as the plan for M2-B2.
+
+**6.5 (plan for M2-B2).** No UI in this slice (the sysop admin screens are M5); these are the functions that screens, tests and later slices call. Each takes the actor's `Snapshot` and refuses without the matching permission:
 
 - `create_role`, `set_role_permissions`, `delete_role` (`roles.edit`). Rules: target rank strictly below the actor's top rank; `locked` roles refused; the actor may only put a permission in a role if the actor holds it globally (no escalation by editing a role).
 - `grant_role` / `revoke_role` (account or group, global or on a resource) and `grant_permission` / `revoke_permission` (allow-list entries): `roles.edit` in this slice, with the same rank rule for roles. Letting a resource's owner manage its own allow list is added by the resource's slice (M3+) because resource owners do not exist yet. `waiting` cannot be granted; the (`everyone`, `member`) grant cannot be revoked.
@@ -387,3 +395,13 @@ Storage traits (`core::access`): `AccessStore` with a few methods only: `snapsho
 Phase 2 is one PR in this order: migrations for both backends and the sqlx offline cache; `Permission`, `Snapshot`, `resolve`, `reach`, `GroupGraph` with their tests; `AccessStore` for SQLite then Postgres with the shared suite; founder and `create_account` re-pointing; the write-path services; front-end call sites and `access_paths`; docs, `features.md`, coordination, one decision (next free ID at push time). Rough size: about 700 lines of core plus tests, about 350 lines per backend plus about 250 lines of shared suite, and two migrations. If review finds it too large, the write-path services in 6.5 are the clean cut: they can land as a follow-up PR without changing the schema.
 
 Risks to flag: (a) front-end call sites sit in `crates/server/src/{ssh,settings,waiting_room}` while M2-A works in `ui`; Phase 2 merges main first and, if M2-A landed, wires only its menu access hook instead of adding call sites; (b) the legacy `accounts.role` column lives until M2-D; (c) `LOCK TABLE` on Postgres is the one piece of backend-specific locking and has its own concurrent test.
+
+### As built (differences from the plan above)
+
+- **Editing services:** not built (section 6.5), see M2-B2 in [coordination.md](coordination.md). `AccessStore` has `snapshot`, `roles`, `groups`, `create_group`, `change_groups` and `add_grant` (a plain write that refuses `waiting` and unknown targets; no rank rules, no permission check).
+- **`strum`** derives the name, parsing and the variant list of `Permission` (`Permission::ALL`), as recommended in section 5. It was already in `Cargo.lock` (transitive); it is now a direct dependency of `russh-bbs-core`.
+- **One statement per active account** also reads the account's state (it joins `accounts`), so "inactive gets the waiting snapshot" costs no second query. The waiting snapshot is a second, trivial query on `role_permission`.
+- **Waiting room:** the SSH shell refuses the session (a failed shell request) if the unauthenticated snapshot does not hold `waiting.view`. The forms inside the room (`invite.redeem`, `membership.apply`) store nothing yet, so those two permissions are in `NOT_YET_WIRED` until M2-D, M2-E and M2-G wire them.
+- **`MemberSessions`** gained `access_for(Option<AccountId>)` and `save_settings(&Granted, ..)`; `MemberStart` carries a `Snapshot` instead of a `Role`; `RoleDirectory`, the `Role` enum and `Account.role` are removed. The login and menu code read `Snapshot::top_role()`.
+- **Test constructor:** `Snapshot::from_role` builds "an account holding one role globally"; the store uses it for the waiting snapshot and tests use it to say "a session that holds exactly these".
+- **Query text:** the offline query cache is keyed by query text, so a query that is word for word the same on both backends would collide; the Postgres copies of parameterless queries end in `-- postgres` for that reason.

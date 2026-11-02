@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM group_member WHERE group_id = $1\n                       AND COALESCE(account_id, 0) = COALESCE($2::bigint, 0)\n                       AND COALESCE(child_group_id, 0) = COALESCE($3::bigint, 0)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "73f09613a52792454d5441c5762864514a17b10192656e2e9a52b598dba70b44"
+}
