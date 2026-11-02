@@ -375,7 +375,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
         }
         session.channel_success(channel)?;
         let content = if self.claim_requested {
-            // The same prompt for every key on every board, claimed or not (D38).
+            // The same prompt for every key on every board, claimed or not (D41).
             Content::Claim(ClaimForm::new(MAX_ATTEMPTS_PER_SESSION))
         } else if let Some(role) = self.role {
             Content::SignedIn(role)

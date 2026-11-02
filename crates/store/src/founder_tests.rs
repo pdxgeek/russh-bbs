@@ -12,7 +12,7 @@ use crate::SqliteStore;
 use crate::tests::{fingerprint, temp_store};
 
 fn name() -> russh_bbs_core::sanitize::Username {
-    sanitize_username("sysop").unwrap()
+    sanitize_username(russh_bbs_core::founder::FOUNDER_USERNAME).unwrap()
 }
 
 #[tokio::test]

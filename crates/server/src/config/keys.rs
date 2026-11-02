@@ -1,0 +1,269 @@
+//! The registry of every setting: its dotted key, environment variable, command-line flag and
+//! kind. It drives environment parsing, unknown-key detection and the docs test. A test applies
+//! every entry to [`super::Config`], so a key missing from the struct (or the registry) fails CI.
+
+/// How an environment value is turned into a TOML value.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Kind {
+    /// Text, taken as is (paths, addresses, enum names, URLs).
+    Str,
+    /// A whole number.
+    Int,
+    /// `true` or `false`.
+    Bool,
+}
+
+/// One setting.
+#[derive(Debug)]
+pub(crate) struct KeyDef {
+    /// Dotted key: `ssh.listen`, or a bare name for top-level keys.
+    pub(crate) path: &'static str,
+    /// Environment variable.
+    pub(crate) env: &'static str,
+    /// Command-line flag, if there is one. Secrets never have one (argv is visible in `ps`).
+    pub(crate) flag: Option<&'static str>,
+    /// Value type.
+    pub(crate) kind: Kind,
+    /// The value is a secret: errors never echo it.
+    pub(crate) secret: bool,
+    /// A valid example value, used by tests.
+    #[allow(dead_code)] // read only by the test that applies every key
+    pub(crate) sample: &'static str,
+}
+
+const fn key(
+    path: &'static str,
+    env: &'static str,
+    flag: Option<&'static str>,
+    kind: Kind,
+    sample: &'static str,
+) -> KeyDef {
+    KeyDef {
+        path,
+        env,
+        flag,
+        kind,
+        secret: false,
+        sample,
+    }
+}
+
+use Kind::{Bool, Int, Str};
+
+/// Every setting. Environment names that predate this module (`RUSSH_BBS_LISTEN`, `_HOST_KEY`,
+/// `_DB`, the timeout, limit and rate names) are kept; new ones are `RUSSH_BBS_<SECTION>_<KEY>`.
+pub(crate) static KEYS: &[KeyDef] = &[
+    key(
+        "registration_mode",
+        "RUSSH_BBS_REGISTRATION_MODE",
+        None,
+        Str,
+        "apply",
+    ),
+    key(
+        "ssh.listen",
+        "RUSSH_BBS_LISTEN",
+        Some("--listen"),
+        Str,
+        "127.0.0.1:2200",
+    ),
+    key(
+        "ssh.host_key",
+        "RUSSH_BBS_HOST_KEY",
+        Some("--host-key"),
+        Str,
+        "/tmp/hk",
+    ),
+    key(
+        "ssh.auth_timeout_secs",
+        "RUSSH_BBS_AUTH_TIMEOUT_SECS",
+        Some("--auth-timeout-secs"),
+        Int,
+        "20",
+    ),
+    key(
+        "ssh.idle_timeout_secs",
+        "RUSSH_BBS_IDLE_TIMEOUT_SECS",
+        Some("--idle-timeout-secs"),
+        Int,
+        "300",
+    ),
+    key(
+        "ssh.keepalive_interval_secs",
+        "RUSSH_BBS_SSH_KEEPALIVE_INTERVAL_SECS",
+        None,
+        Int,
+        "15",
+    ),
+    key(
+        "ssh.max_connections",
+        "RUSSH_BBS_MAX_CONNECTIONS",
+        Some("--max-connections"),
+        Int,
+        "100",
+    ),
+    key(
+        "ssh.max_auth_attempts",
+        "RUSSH_BBS_SSH_MAX_AUTH_ATTEMPTS",
+        None,
+        Int,
+        "3",
+    ),
+    key(
+        "ssh.auth_rejection_millis",
+        "RUSSH_BBS_SSH_AUTH_REJECTION_MILLIS",
+        None,
+        Int,
+        "500",
+    ),
+    key(
+        "ssh.allow_password_login",
+        "RUSSH_BBS_SSH_ALLOW_PASSWORD_LOGIN",
+        None,
+        Bool,
+        "false",
+    ),
+    key(
+        "datasource.kind",
+        "RUSSH_BBS_DATASOURCE_KIND",
+        None,
+        Str,
+        "sqlite",
+    ),
+    key(
+        "datasource.path",
+        "RUSSH_BBS_DB",
+        Some("--db"),
+        Str,
+        "/tmp/bbs.db",
+    ),
+    KeyDef {
+        secret: true,
+        ..key(
+            "datasource.url",
+            "RUSSH_BBS_DATASOURCE_URL",
+            None,
+            Str,
+            "postgres://u:p@h/db",
+        )
+    },
+    key(
+        "datasource.tls_mode",
+        "RUSSH_BBS_DATASOURCE_TLS_MODE",
+        None,
+        Str,
+        "verify-full",
+    ),
+    key(
+        "datasource.tls_root_cert",
+        "RUSSH_BBS_DATASOURCE_TLS_ROOT_CERT",
+        None,
+        Str,
+        "/tmp/ca.pem",
+    ),
+    key(
+        "datasource.iam_auth",
+        "RUSSH_BBS_DATASOURCE_IAM_AUTH",
+        None,
+        Bool,
+        "true",
+    ),
+    key("blobs.backend", "RUSSH_BBS_BLOBS_BACKEND", None, Str, "s3"),
+    key("blobs.dir", "RUSSH_BBS_BLOBS_DIR", None, Str, "/tmp/blobs"),
+    key(
+        "blobs.endpoint",
+        "RUSSH_BBS_BLOBS_ENDPOINT",
+        None,
+        Str,
+        "https://s3.example",
+    ),
+    key("blobs.bucket", "RUSSH_BBS_BLOBS_BUCKET", None, Str, "bbs"),
+    key(
+        "blobs.region",
+        "RUSSH_BBS_BLOBS_REGION",
+        None,
+        Str,
+        "us-east-1",
+    ),
+    key(
+        "telnet.enabled",
+        "RUSSH_BBS_TELNET_ENABLED",
+        None,
+        Bool,
+        "true",
+    ),
+    key(
+        "telnet.allow_login",
+        "RUSSH_BBS_TELNET_ALLOW_LOGIN",
+        None,
+        Bool,
+        "true",
+    ),
+    key(
+        "telnet.listen",
+        "RUSSH_BBS_TELNET_LISTEN",
+        None,
+        Str,
+        "127.0.0.1:2300",
+    ),
+    key(
+        "waiting_room.ip_burst",
+        "RUSSH_BBS_IP_BURST",
+        Some("--ip-burst"),
+        Int,
+        "4",
+    ),
+    key(
+        "waiting_room.ip_interval_secs",
+        "RUSSH_BBS_IP_INTERVAL_SECS",
+        Some("--ip-interval-secs"),
+        Int,
+        "3",
+    ),
+    key(
+        "waiting_room.key_burst",
+        "RUSSH_BBS_KEY_BURST",
+        Some("--key-burst"),
+        Int,
+        "2",
+    ),
+    key(
+        "waiting_room.key_interval_secs",
+        "RUSSH_BBS_KEY_INTERVAL_SECS",
+        Some("--key-interval-secs"),
+        Int,
+        "20",
+    ),
+    key(
+        "waiting_room.max_form_submissions",
+        "RUSSH_BBS_MAX_FORM_SUBMISSIONS",
+        Some("--max-form-submissions"),
+        Int,
+        "7",
+    ),
+    key(
+        "waiting_room.max_tracked_sources",
+        "RUSSH_BBS_WAITING_ROOM_MAX_TRACKED_SOURCES",
+        None,
+        Int,
+        "500",
+    ),
+];
+
+/// The setting with this dotted key.
+pub(crate) fn by_path(path: &str) -> Option<&'static KeyDef> {
+    KEYS.iter().find(|k| k.path == path)
+}
+
+/// The setting read from this environment variable.
+pub(crate) fn by_env(name: &str) -> Option<&'static KeyDef> {
+    KEYS.iter().find(|k| k.env == name)
+}
+
+/// `path` as `(section, leaf)`; top-level keys have no section.
+pub(crate) fn split(path: &str) -> (Option<&str>, &str) {
+    match path.split_once('.') {
+        Some((section, leaf)) => (Some(section), leaf),
+        None => (None, path),
+    }
+}

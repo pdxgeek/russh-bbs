@@ -1,5 +1,5 @@
 //! The founder claim: how the first person to present the one-time setup token becomes the
-//! sysop (M1-D, decision D38).
+//! sysop (M1-D, decision D41).
 //!
 //! The pieces:
 //!

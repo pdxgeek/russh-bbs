@@ -9,8 +9,11 @@ use crate::access::Fingerprint;
 use crate::sanitize::{Username, sanitize_username};
 use crate::store::{Account, StoreError};
 
-/// The name the founder's account gets. It can be changed by the sysop later (M2).
-pub const FOUNDER_USERNAME: &str = "sysop";
+/// The name the founder's account gets. It is deliberately not `sysop`: that name is reserved
+/// against member registration (FIX-M0-1), and the claim goes through the same
+/// `sanitize_username` as everyone, with no bypass, so it must be an ordinary valid handle.
+/// The sysop can rename the account later (M2).
+pub const FOUNDER_USERNAME: &str = "founder";
 
 /// The store half of the claim.
 pub trait FounderStore: Send + Sync {

@@ -1,6 +1,6 @@
 //! The claim screen: one field for the token, a few attempts, one generic failure.
 //!
-//! The screen is identical whether or not the board is claimed (D38): it never learns the
+//! The screen is identical whether or not the board is claimed (D41): it never learns the
 //! state. After a rejection it says the same words every time.
 
 use super::token::TOKEN_TEXT_MAX_CHARS;

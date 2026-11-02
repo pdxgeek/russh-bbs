@@ -8,7 +8,7 @@
 //! secrets. This secret has 160 random bits, so brute force is impossible with any hash and a
 //! slow one would only add cost to every guess against the server. The hash exists so the
 //! token is never held in plaintext by anything that outlives the console print. A fixed
-//! domain-separation prefix keeps the hash from being reused for anything else (D38).
+//! domain-separation prefix keeps the hash from being reused for anything else (D41).
 
 use std::fmt;
 

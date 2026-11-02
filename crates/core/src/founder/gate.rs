@@ -9,7 +9,7 @@ use super::token::{SetupToken, TokenHash};
 /// Whether the claim is open and, if so, the hash that opens it. Shared by every session.
 ///
 /// The gate lives in memory only: a restart issues a new token, and the database holds nothing
-/// but the "claimed" flag (D38). The mutex is held for a copy of 32 bytes and never across an
+/// but the "claimed" flag (D41). The mutex is held for a copy of 32 bytes and never across an
 /// `.await`.
 #[derive(Debug)]
 pub struct FounderGate {

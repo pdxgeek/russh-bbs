@@ -1,5 +1,5 @@
 //! The founder claim in the server: issuing the one-time setup token at start-up, the claim
-//! rate limits, and the bundle the SSH handler uses (M1-D, decision D38).
+//! rate limits, and the bundle the SSH handler uses (M1-D, decision D41).
 //!
 //! The rules (token, hash, constant-time check, the atomic claim) are in
 //! `russh_bbs_core::founder`. This module only generates the randomness, prints the token once
@@ -25,7 +25,7 @@ use russh_bbs_core::waiting_room::{
 use tracing::info;
 
 /// The SSH user name that opens the claim prompt: `ssh claim@host`. It is not a secret and
-/// the prompt is the same on a claimed board (D38).
+/// the prompt is the same on a claimed board (D41).
 pub const CLAIM_USER: &str = "claim";
 
 /// Token attempts one key may make: a burst of 3, then one more every 30 seconds.
