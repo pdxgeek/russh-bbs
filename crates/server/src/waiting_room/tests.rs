@@ -253,3 +253,63 @@ fn small_terminals_do_not_panic_on_any_page() {
         }
     }
 }
+
+/// A banner of words that wrap badly: lines at the line cap, each just over the box width.
+fn wide_words(lines: usize, width: usize) -> String {
+    let word = "wordy ";
+    let line: String = word.repeat(width / word.len() + 1);
+    vec![line; lines].join("\n")
+}
+
+#[test]
+fn a_banner_and_rules_at_their_caps_keep_every_menu_entry_at_80x24() {
+    use russh_bbs_core::waiting_room::{BANNER_MAX_CHARS, BANNER_MAX_LINES, RULES_MAX_LINES};
+    for mode in MODES {
+        let config = RoomConfig {
+            mode,
+            banner: Some(wide_words(
+                BANNER_MAX_LINES,
+                BANNER_MAX_CHARS / BANNER_MAX_LINES,
+            )),
+            rules: Some(wide_words(RULES_MAX_LINES, 90)),
+        };
+        let mut room = WaitingRoom::new(&config, 5);
+        let home = draw(&room, 80, 24);
+        for entry in screens::menu(mode) {
+            assert!(
+                home.contains(&format!("[{}] {}", entry.key, entry.label)),
+                "{mode:?}: menu entry {} missing:\n{home}",
+                entry.key
+            );
+        }
+        assert!(
+            home.contains("[q]"),
+            "{mode:?}: quit entry missing:\n{home}"
+        );
+        room.input(RoomInput::Char('r'));
+        let rules = draw(&room, 80, 24);
+        assert!(
+            rules.contains(strings::FOOTER_PAGE),
+            "{mode:?}: footer missing on the rules page:\n{rules}"
+        );
+    }
+}
+
+#[test]
+fn text_longer_than_the_caps_cannot_push_the_menu_off_screen() {
+    // Not reachable through `WaitingRoom` (the core caps the text); this pins the renderer's
+    // own guarantee for any view it is handed, including a small terminal.
+    for (cols, rows) in [(80, 24), (60, 20), (40, 16)] {
+        let mut room = WaitingRoom::new(&RoomConfig::default(), 5);
+        let mut view = room.view();
+        view.banner = (0..200)
+            .map(|i| format!("line {i} {}", "x".repeat(150)))
+            .collect();
+        let mut terminal = Terminal::new(TestBackend::new(cols, rows)).unwrap();
+        terminal.draw(|frame| render(frame, &view)).unwrap();
+        let text = format!("{:?}", terminal.backend().buffer());
+        assert!(text.contains("[q]"), "{cols}x{rows}: quit entry missing");
+        assert!(text.contains(&view.menu[0].label[..4]), "{cols}x{rows}");
+        room.input(RoomInput::Quit);
+    }
+}

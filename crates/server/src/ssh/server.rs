@@ -215,6 +215,11 @@ impl<D: Backend> AcceptLoop<D> {
         // Per-network limit, before any handler or task exists. A dropped connection costs us
         // one accept and nothing else; the client sees the connection close. Logged at debug
         // so a flood does not become a log flood.
+        //
+        // This is also the founder claim's gate (FIX-M1-L1, D65): the user name `claim` is not
+        // known until the SSH handshake, so a connection cannot be told apart here and an
+        // address that has used its allowance is dropped whatever it wanted. Kept on purpose;
+        // `docs/deploy.md` has the operator's workaround.
         if let Verdict::Limited { retry_after } = self.throttle.admit_connection(peer.ip()) {
             debug!(%peer, ?retry_after, "connection rate limit; dropping connection");
             return;
