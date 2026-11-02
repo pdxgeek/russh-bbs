@@ -5,11 +5,11 @@
 //! `window-change`. ratatui therefore never asks the host's own tty for its size, and a session
 //! cannot affect another or the server's console.
 //!
-//! **Render cost does not follow the window (D52).** The viewport is the window size capped at
-//! [`RENDER_COLS`] x [`RENDER_ROWS`] and centered in it; the rest of a bigger window stays blank.
-//! A session therefore holds at most two buffers of that many cells whatever size the client asks
-//! for, and a window change that leaves the drawn rectangle unchanged repaints in place instead
-//! of building a new terminal.
+//! **Render cost is bounded by the sysop's cap, not the window (D52, D53).** The viewport is the
+//! window size capped at the [`RenderCap`] and centered in it; the rest of a bigger window stays
+//! blank. A session therefore holds at most two buffers of that many cells whatever size the
+//! client asks for. A window change that leaves the drawn rectangle unchanged repaints in place,
+//! and one that changes it resizes the buffers in place; the terminal is built once per session.
 //!
 //! **What is drawn.** One of three [`Content`]s, each a core state machine that produces a
 //! [`View`]: the waiting room (M1-C, drawn by `crate::waiting_room`), the founder token prompt
@@ -32,7 +32,7 @@ use russh_bbs_core::founder::{ClaimEffect, ClaimForm, ClaimInput};
 use russh_bbs_core::terminal_settings::{MemberEffect, MemberFlow, MemberInput, TerminalSettings};
 use russh_bbs_core::waiting_room::{RoomEffect, RoomInput, View, WaitingRoom};
 
-use super::terminal::{Key, PtySize, RENDER_COLS, RENDER_ROWS};
+use super::terminal::{Key, PtySize, RenderCap};
 use crate::settings::{self, Look};
 use crate::waiting_room::render;
 
@@ -109,8 +109,10 @@ pub(super) struct Screen {
     output: OutputBuffer,
     /// The rectangle `terminal` draws into.
     viewport: Rect,
-    /// How many terminals this screen has built (tests assert an unchanged size builds none).
-    builds: u32,
+    /// Widest and tallest `viewport` allowed.
+    cap: RenderCap,
+    /// How many times `viewport` changed (tests assert an unchanged size changes nothing).
+    resizes: u32,
     content: Content,
     /// What the client reported. The drawn size is this with the member's overrides applied.
     pty: PtySize,
@@ -122,15 +124,17 @@ pub(super) struct Screen {
 }
 
 impl Screen {
-    /// Create a screen of `size` showing `content`. Nothing is drawn until [`Screen::enter`].
-    pub(super) fn new(size: PtySize, content: Content) -> io::Result<Self> {
+    /// Create a screen of `size` showing `content`, drawing into at most `cap`. Nothing is drawn
+    /// until [`Screen::enter`].
+    pub(super) fn new(size: PtySize, cap: RenderCap, content: Content) -> io::Result<Self> {
         let output = OutputBuffer::default();
-        let viewport = viewport(drawn_size(size, &content));
+        let viewport = viewport(drawn_size(size, &content), cap);
         Ok(Self {
             terminal: new_terminal(&output, viewport)?,
             output,
             viewport,
-            builds: 1,
+            cap,
+            resizes: 0,
             content,
             pty: size,
             dirty: false,
@@ -219,12 +223,12 @@ impl Screen {
     /// many sizes arrived since the last frame. A size equal to the current one still asks for
     /// a full redraw: clients use a window change to repaint a screen.
     ///
-    /// ratatui's own `Terminal::resize` and `clear` ask the backend for its size or cursor, and
-    /// the crossterm backend answers by querying the *server process's* terminal, which is wrong
-    /// here and fails without a tty. So a changed drawn rectangle clears the client's screen and
-    /// builds a fresh fixed-viewport terminal over the same output buffer, and an unchanged one
-    /// clears the screen and forgets what was drawn (no allocation); nothing ever consults the
-    /// host tty.
+    /// ratatui's `autoresize` and `clear` ask the backend for its size or cursor, and the
+    /// crossterm backend answers by querying the *server process's* terminal, which is wrong here
+    /// and fails without a tty. `Terminal::resize` on a fixed viewport does not (ratatui-core
+    /// 0.1.2, `resize.rs`): it resizes the two buffers in place and emits a clear. So a changed
+    /// drawn rectangle resizes and an unchanged one only forgets what was drawn; neither builds a
+    /// terminal and nothing ever consults the host tty.
     pub(super) fn set_size(&mut self, size: PtySize) {
         self.pty = size;
         self.rebuild = true;
@@ -244,20 +248,20 @@ impl Screen {
         Ok(None)
     }
 
-    /// Clear the client's screen and draw everything. The terminal is rebuilt only when the
-    /// rectangle to draw into changed; otherwise its buffers are reset in place.
+    /// Clear the client's screen and draw everything. The buffers are resized in place when the
+    /// rectangle to draw into changed (a shrink keeps the allocation); otherwise they are reset.
     fn rebuild_now(&mut self) -> io::Result<Vec<u8>> {
         queue!(self.terminal.backend_mut(), Clear(ClearType::All))?;
-        let target = viewport(drawn_size(self.pty, &self.content));
+        let target = viewport(drawn_size(self.pty, &self.content), self.cap);
         if target == self.viewport {
             // `swap_buffers` resets the buffer it leaves behind, so two swaps blank both and the
             // next draw diffs against an empty frame: every cell is written again.
             self.terminal.swap_buffers();
             self.terminal.swap_buffers();
         } else {
-            self.terminal = new_terminal(&self.output, target)?;
+            self.terminal.resize(target)?;
             self.viewport = target;
-            self.builds += 1;
+            self.resizes += 1;
         }
         self.draw()
     }
@@ -314,11 +318,11 @@ fn drawn_size(pty: PtySize, content: &Content) -> PtySize {
     }
 }
 
-/// The rectangle to draw into: `drawn` capped at [`RENDER_COLS`] x [`RENDER_ROWS`] and centered
-/// in it, so the cost of a session does not depend on the window the client chose (D52).
-fn viewport(drawn: PtySize) -> Rect {
-    let cols = drawn.cols().min(RENDER_COLS);
-    let rows = drawn.rows().min(RENDER_ROWS);
+/// The rectangle to draw into: `drawn` capped at `cap` and centered in it, so the cost of a
+/// session is bounded by the sysop's choice, not the window the client chose (D52, D53).
+fn viewport(drawn: PtySize, cap: RenderCap) -> Rect {
+    let cols = drawn.cols().min(cap.cols());
+    let rows = drawn.rows().min(cap.rows());
     Rect::new(
         (drawn.cols() - cols) / 2,
         (drawn.rows() - rows) / 2,

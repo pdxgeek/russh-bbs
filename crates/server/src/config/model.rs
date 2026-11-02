@@ -11,7 +11,7 @@ use russh_bbs_core::waiting_room::RatePolicy;
 use serde::{Deserialize, Deserializer, de};
 
 use super::SecretUrl;
-use crate::ssh::Limits;
+use crate::ssh::{Limits, RenderCap};
 
 /// The whole configuration.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
@@ -61,6 +61,10 @@ pub struct SshConfig {
     pub keepalive_interval_secs: u64,
     /// Concurrent connections.
     pub max_connections: usize,
+    /// Widest area one session draws into, in cells (D53).
+    pub render_cols: u16,
+    /// Tallest area one session draws into, in cells (D53).
+    pub render_rows: u16,
     /// Authentication attempts per connection.
     pub max_auth_attempts: u32,
     /// Milliseconds a failed authentication is delayed.
@@ -89,6 +93,8 @@ impl Default for SshConfig {
             idle_timeout_secs: limits.idle_timeout.as_secs(),
             keepalive_interval_secs: limits.keepalive_interval.as_secs(),
             max_connections: limits.max_connections,
+            render_cols: limits.render_cap.cols(),
+            render_rows: limits.render_cap.rows(),
             max_auth_attempts: limits.max_auth_attempts,
             auth_rejection_millis: u64::try_from(limits.auth_rejection_time.as_millis())
                 .unwrap_or(u64::MAX),
@@ -259,6 +265,7 @@ impl Config {
             idle_timeout: Duration::from_secs(self.ssh.idle_timeout_secs),
             keepalive_interval: Duration::from_secs(self.ssh.keepalive_interval_secs),
             max_connections: self.ssh.max_connections,
+            render_cap: RenderCap::new(self.ssh.render_cols, self.ssh.render_rows),
             ip_rate: RatePolicy::new(
                 self.waiting_room.ip_burst,
                 Duration::from_secs(self.waiting_room.ip_interval_secs),

@@ -103,6 +103,20 @@ pub(crate) static KEYS: &[KeyDef] = &[
         "100",
     ),
     key(
+        "ssh.render_cols",
+        "RUSSH_BBS_SSH_RENDER_COLS",
+        None,
+        Int,
+        "132",
+    ),
+    key(
+        "ssh.render_rows",
+        "RUSSH_BBS_SSH_RENDER_ROWS",
+        None,
+        Int,
+        "50",
+    ),
+    key(
         "ssh.max_auth_attempts",
         "RUSSH_BBS_SSH_MAX_AUTH_ATTEMPTS",
         None,

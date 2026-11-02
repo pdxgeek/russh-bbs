@@ -17,12 +17,63 @@ pub const MAX_COLS: u16 = 500;
 /// See [`MAX_COLS`].
 pub const MAX_ROWS: u16 = 200;
 
-/// Widest and tallest area a session draws into (D52). The screens are 76-column boxes, so this
-/// loses nothing on a normal terminal; it bounds a session's render buffers to
-/// `2 * RENDER_COLS * RENDER_ROWS` cells however large a window the client asks for.
-pub const RENDER_COLS: u16 = 100;
-/// See [`RENDER_COLS`].
-pub const RENDER_ROWS: u16 = 40;
+/// Widest and tallest area a session draws into (D53). A session's render buffers hold at most
+/// `2 * cols * rows` cells however large a window the client asks for; the rest of a bigger
+/// window stays blank. The sysop sets it (`ssh.render_cols`, `ssh.render_rows`); the default is
+/// the whole clamped window, so by default nothing is cut off.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct RenderCap {
+    cols: u16,
+    rows: u16,
+}
+
+impl RenderCap {
+    /// Smallest cap accepted: the classic 80x24 screen.
+    pub const MIN_COLS: u16 = 80;
+    /// See [`RenderCap::MIN_COLS`].
+    pub const MIN_ROWS: u16 = 24;
+
+    /// A cap of `cols` x `rows` cells, kept within `MIN..=MAX` in each dimension.
+    #[must_use]
+    pub fn new(cols: u16, rows: u16) -> Self {
+        Self {
+            cols: cols.clamp(Self::MIN_COLS, MAX_COLS),
+            rows: rows.clamp(Self::MIN_ROWS, MAX_ROWS),
+        }
+    }
+
+    /// Width in cells.
+    #[must_use]
+    pub fn cols(self) -> u16 {
+        self.cols
+    }
+
+    /// Height in cells.
+    #[must_use]
+    pub fn rows(self) -> u16 {
+        self.rows
+    }
+
+    /// Cells in one render buffer at the cap.
+    #[must_use]
+    pub fn cells(self) -> usize {
+        usize::from(self.cols) * usize::from(self.rows)
+    }
+
+    /// Bytes one session's two render buffers take at the cap. For the sysop's memory bill:
+    /// multiply by the connection cap.
+    #[must_use]
+    pub fn bytes_per_session(self) -> usize {
+        2 * self.cells() * std::mem::size_of::<ratatui::buffer::Cell>()
+    }
+}
+
+impl Default for RenderCap {
+    /// The whole clamped window.
+    fn default() -> Self {
+        Self::new(MAX_COLS, MAX_ROWS)
+    }
+}
 
 /// A terminal size in character cells, always within `1..=MAX`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -16,7 +16,8 @@ use common::{
 };
 use russh::ChannelMsg;
 use russh_bbs_core::access::Access;
-use russh_bbs_server::ssh::terminal::{MAX_COLS, MAX_ROWS, PtySize};
+use russh_bbs_server::ssh::Limits;
+use russh_bbs_server::ssh::terminal::{MAX_COLS, MAX_ROWS, PtySize, RenderCap};
 use tokio::time::timeout;
 
 // ---- the waiting-room screen ----
@@ -292,12 +293,16 @@ fn cursor_moves(frame: &str) -> Vec<(u16, u16)> {
         .collect()
 }
 
-/// D52 (QA M1 N1): a 500x200 window is drawn into a capped, centered rectangle, so a session's
-/// render buffers (and the per-frame work) do not follow the size the client picked. Fails on a
-/// server that draws the box across the whole window.
+/// D52, D53 (QA M1 N1): with a render cap set, a 500x200 window is drawn into that capped,
+/// centered rectangle, so a session's render buffers (and the per-frame work) do not follow the
+/// size the client picked. Fails on a server that draws the box across the whole window.
 #[tokio::test]
 async fn a_huge_window_is_drawn_into_a_bounded_rectangle() {
-    let t = start_server(fast_limits()).await;
+    let limits = Limits {
+        render_cap: RenderCap::new(100, 40),
+        ..fast_limits()
+    };
+    let t = start_server(limits).await;
     let (session, _) = login(t.addr()).await;
     let mut channel = open_shell(&session, u32::from(MAX_COLS), u32::from(MAX_ROWS)).await;
     let first = read_until(&mut channel, "Disconnect").await;
@@ -311,7 +316,7 @@ async fn a_huge_window_is_drawn_into_a_bounded_rectangle() {
             "{what} drawn over {lo}..={hi}, limit {limit}"
         );
     };
-    // Fixed numbers, not the server's constants: the test must fail if the cap is raised.
+    // Fixed numbers, not the server's values: the test must fail if the cap is not applied.
     span(|m| m.0, 50, "rows");
     span(|m| m.1, 120, "columns");
 
@@ -323,5 +328,28 @@ async fn a_huge_window_is_drawn_into_a_bounded_rectangle() {
             .iter()
             .all(|m| m.0 <= MAX_ROWS && m.1 <= MAX_COLS),
         "{again:?}"
+    );
+}
+
+/// D53: by default the cap is the whole clamped window, so a 500x200 client gets its screen
+/// centered in the window instead of in a 100x40 corner. Fails on a server that still caps at
+/// D52's 100x40.
+#[tokio::test]
+async fn the_default_cap_centers_the_screen_in_the_whole_window() {
+    let t = start_server(fast_limits()).await;
+    let (session, _) = login(t.addr()).await;
+    let mut channel = open_shell(&session, u32::from(MAX_COLS), u32::from(MAX_ROWS)).await;
+    let first = read_until(&mut channel, "Disconnect").await;
+    let moves = cursor_moves(&first);
+    let bottom = moves.iter().map(|m| m.0).max().unwrap();
+    let left = moves.iter().map(|m| m.1).min().unwrap();
+    // The room box is centered across the width and fills the height (minus a margin).
+    assert!(
+        left > 150,
+        "box starts at column {left} of 500; frame {first:?}"
+    );
+    assert!(
+        bottom > 150,
+        "box ends at row {bottom} of 200; frame {first:?}"
     );
 }

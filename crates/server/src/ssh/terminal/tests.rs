@@ -1,6 +1,8 @@
 use std::time::{Duration, Instant};
 
-use super::{ESC_TIMEOUT, Key, KeyParser, MAX_COLS, MAX_ROWS, PASTE_IDLE, PtySize, parse_keys};
+use super::{
+    ESC_TIMEOUT, Key, KeyParser, MAX_COLS, MAX_ROWS, PASTE_IDLE, PtySize, RenderCap, parse_keys,
+};
 
 #[test]
 fn zero_means_default_size() {
@@ -24,6 +26,26 @@ fn hostile_sizes_are_clamped() {
             "{cols}x{rows}"
         );
     }
+}
+
+#[test]
+fn render_cap_defaults_to_the_whole_clamped_window() {
+    let cap = RenderCap::default();
+    assert_eq!((cap.cols(), cap.rows()), (MAX_COLS, MAX_ROWS));
+    assert_eq!(cap.cells(), 100_000);
+}
+
+#[test]
+fn render_cap_is_kept_between_the_smallest_screen_and_the_clamp() {
+    assert_eq!(RenderCap::new(1, 1), RenderCap::new(80, 24));
+    assert_eq!(RenderCap::new(u16::MAX, u16::MAX), RenderCap::default());
+    let cap = RenderCap::new(300, 100);
+    assert_eq!((cap.cols(), cap.rows()), (300, 100));
+    // Two buffers of cells; the bill the sysop multiplies by the connection cap.
+    assert_eq!(
+        cap.bytes_per_session(),
+        2 * 30_000 * std::mem::size_of::<ratatui::buffer::Cell>()
+    );
 }
 
 #[test]
