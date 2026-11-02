@@ -81,14 +81,16 @@ pub enum ConfigError {
         /// What is wrong and what is allowed. Never contains the value of a secret key.
         message: String,
     },
-    /// The datasource is `postgres`, which is not built yet (M1-G).
+    /// `datasource.iam_auth` is on, but IAM token authentication is not built (D31: parsed, not
+    /// built). Refused so a sysop never believes tokens are in use while a password is.
     #[error(
-        "datasource.kind = \"postgres\" (from {origin}) is selected, but the postgres backend \
-         is not built yet; use kind = \"sqlite\" for now. The server will not fall back to \
-         SQLite on its own."
+        "datasource.iam_auth = true (from {origin}) is set, but IAM token authentication is not \
+         built yet; it is parsed and refused rather than ignored. Put the database password in \
+         the datasource.url, or turn iam_auth off. The server will not fall back to a different \
+         authentication on its own."
     )]
-    PostgresNotBuilt {
-        /// Where `kind = "postgres"` came from.
+    IamAuthNotBuilt {
+        /// Where `iam_auth = true` came from.
         origin: Source,
     },
     /// No data directory can be worked out and none was configured.

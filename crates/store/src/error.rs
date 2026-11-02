@@ -18,6 +18,13 @@ pub enum OpenError {
     /// SQLite refused to open the database.
     #[error("cannot open database")]
     Connect(#[source] sqlx::Error),
+    /// The Postgres URL or TLS settings are unusable. The message never contains the password.
+    #[error("invalid postgres settings: {0}")]
+    PostgresSettings(String),
+    /// Postgres could not be reached or refused the connection: network, TLS or authentication.
+    /// The message never contains the password.
+    #[error("cannot connect to postgres: {0}")]
+    PostgresConnect(String),
     /// A migration failed, or a landed migration was edited or is unknown to this binary.
     #[error("cannot apply migrations")]
     Migrate(#[source] sqlx::migrate::MigrateError),

@@ -23,6 +23,7 @@ use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 
 use russh_bbs_core::store::RegistrationMode;
+use russh_bbs_store::{PostgresSettings, TlsMode as StoreTlsMode};
 
 pub use cli::Cli;
 pub use error::{ConfigError, Source};
@@ -53,13 +54,22 @@ pub struct Loaded {
     dirs: Dirs,
 }
 
-/// File locations after defaults are applied.
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// Where the board's data lives, after defaults are applied.
+#[derive(Debug, Clone)]
+pub enum ResolvedDatasource {
+    /// A SQLite file.
+    Sqlite(PathBuf),
+    /// A Postgres server, always over TLS (D31). `Debug` hides the URL.
+    Postgres(PostgresSettings),
+}
+
+/// File locations and the datasource after defaults are applied.
+#[derive(Debug, Clone)]
 pub struct ResolvedPaths {
     /// The SSH host key.
     pub host_key: PathBuf,
-    /// The SQLite file.
-    pub database: PathBuf,
+    /// The database to open.
+    pub datasource: ResolvedDatasource,
 }
 
 impl Loaded {
@@ -105,15 +115,16 @@ impl Loaded {
         Ok(loaded)
     }
 
-    /// Selecting a backend that is not built is a boot error, never a silent fallback.
-    /// M1-G removes the `Postgres` arm.
+    /// Selecting something that is not built is a boot error, never a silent fallback. Both
+    /// backends are built (M1-G); what is parsed but not built is IAM token authentication.
     fn ensure_backend_built(&self) -> Result<(), ConfigError> {
-        match self.config.datasource.kind {
-            DatasourceKind::Sqlite => Ok(()),
-            DatasourceKind::Postgres => Err(ConfigError::PostgresNotBuilt {
-                origin: validate::kind_origin(&self.sources),
-            }),
+        let ds = &self.config.datasource;
+        if ds.kind == DatasourceKind::Postgres && ds.iam_auth {
+            return Err(ConfigError::IamAuthNotBuilt {
+                origin: validate::iam_auth_origin(&self.sources),
+            });
         }
+        Ok(())
     }
 
     /// The host key and database paths, with defaults filled in.
@@ -127,16 +138,39 @@ impl Loaded {
                     key: "ssh.host_key",
                 })?,
         };
-        let database = match &self.config.datasource.path {
-            Some(p) => p.clone(),
-            None => self
-                .dirs
-                .data_path(paths::DB_FILE)
-                .ok_or(ConfigError::NoDataDir {
-                    key: "datasource.path",
-                })?,
+        let ds = &self.config.datasource;
+        let datasource = match ds.kind {
+            DatasourceKind::Sqlite => ResolvedDatasource::Sqlite(match &ds.path {
+                Some(p) => p.clone(),
+                None => self
+                    .dirs
+                    .data_path(paths::DB_FILE)
+                    .ok_or(ConfigError::NoDataDir {
+                        key: "datasource.path",
+                    })?,
+            }),
+            DatasourceKind::Postgres => {
+                // Validation guarantees the URL is present for postgres.
+                let url = ds.url.as_ref().ok_or_else(|| ConfigError::Invalid {
+                    key: "datasource.url".into(),
+                    origin: self.sources.get("datasource.url"),
+                    message: "is required when datasource.kind = \"postgres\"".into(),
+                })?;
+                ResolvedDatasource::Postgres(PostgresSettings::new(
+                    url.expose(),
+                    match ds.tls_mode {
+                        TlsMode::Require => StoreTlsMode::Require,
+                        TlsMode::VerifyCa => StoreTlsMode::VerifyCa,
+                        TlsMode::VerifyFull => StoreTlsMode::VerifyFull,
+                    },
+                    ds.tls_root_cert.clone(),
+                ))
+            }
         };
-        Ok(ResolvedPaths { host_key, database })
+        Ok(ResolvedPaths {
+            host_key,
+            datasource,
+        })
     }
 
     /// The registration mode to write to the store at boot, if the sysop set one in the file,

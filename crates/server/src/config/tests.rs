@@ -292,8 +292,47 @@ fn load(env_pairs: &[(&str, &str)], dirs: Dirs) -> Result<Loaded, ConfigError> {
 }
 
 #[test]
-fn selecting_postgres_is_a_clear_boot_error() {
-    let dirs = Dirs::default();
+fn selecting_postgres_is_accepted_and_resolves_to_settings_that_hide_the_password() {
+    let loaded = load(
+        &[
+            ("RUSSH_BBS_DATASOURCE_KIND", "postgres"),
+            (
+                "RUSSH_BBS_DATASOURCE_URL",
+                "postgres://bbs:hunter2@db.example/bbs",
+            ),
+            ("RUSSH_BBS_DATASOURCE_TLS_MODE", "verify-full"),
+        ],
+        // No HOME or XDG: postgres needs no data directory for the database.
+        Dirs {
+            home: None,
+            ..Dirs::default()
+        },
+    )
+    .expect("postgres is built");
+    let paths = loaded.paths();
+    // The host key still needs a location, so only the datasource part is checked here.
+    let ds = match paths {
+        Err(ConfigError::NoDataDir {
+            key: "ssh.host_key",
+        }) => {
+            let mut with_key = loaded.clone();
+            with_key.config.ssh.host_key = Some("/k".into());
+            with_key.paths().expect("paths").datasource
+        }
+        other => other.expect("paths").datasource,
+    };
+    let super::ResolvedDatasource::Postgres(settings) = &ds else {
+        panic!("expected postgres, got {ds:?}");
+    };
+    let shown = format!("{settings:?} {ds:?}");
+    assert!(
+        !shown.contains("hunter2") && !shown.contains("db.example"),
+        "{shown}"
+    );
+}
+
+#[test]
+fn iam_auth_is_refused_at_boot_with_a_clear_error() {
     let err = load(
         &[
             ("RUSSH_BBS_DATASOURCE_KIND", "postgres"),
@@ -301,14 +340,18 @@ fn selecting_postgres_is_a_clear_boot_error() {
                 "RUSSH_BBS_DATASOURCE_URL",
                 "postgres://bbs:hunter2@db.example/bbs",
             ),
+            ("RUSSH_BBS_DATASOURCE_IAM_AUTH", "true"),
         ],
-        dirs,
+        Dirs::default(),
     )
-    .expect_err("postgres is not built");
+    .expect_err("iam auth is not built");
     let msg = err.to_string();
-    assert!(matches!(err, ConfigError::PostgresNotBuilt { .. }), "{msg}");
-    assert!(msg.contains("postgres backend is not built yet"), "{msg}");
-    assert!(msg.contains("RUSSH_BBS_DATASOURCE_KIND"), "{msg}");
+    assert!(matches!(err, ConfigError::IamAuthNotBuilt { .. }), "{msg}");
+    assert!(
+        msg.contains("IAM token authentication is not built"),
+        "{msg}"
+    );
+    assert!(msg.contains("RUSSH_BBS_DATASOURCE_IAM_AUTH"), "{msg}");
     assert!(msg.contains("will not fall back"), "{msg}");
     assert!(!msg.contains("hunter2"), "{msg}");
 }
@@ -531,7 +574,12 @@ fn default_paths_are_resolved_and_a_missing_home_is_an_error() {
         paths.host_key,
         PathBuf::from("/xdg/russh-bbs/host_ed25519_key")
     );
-    assert_eq!(paths.database, PathBuf::from("/xdg/russh-bbs/russh-bbs.db"));
+    assert!(
+        matches!(&paths.datasource, super::ResolvedDatasource::Sqlite(p)
+            if p == &PathBuf::from("/xdg/russh-bbs/russh-bbs.db")),
+        "{:?}",
+        paths.datasource
+    );
 
     let none = Loaded {
         dirs: Dirs::default(),
@@ -541,9 +589,10 @@ fn default_paths_are_resolved_and_a_missing_home_is_an_error() {
     let mut explicit = none;
     explicit.config.ssh.host_key = Some("/k".into());
     explicit.config.datasource.path = Some("/d.db".into());
-    assert_eq!(
-        explicit.paths().expect("explicit").database,
-        PathBuf::from("/d.db")
+    let explicit = explicit.paths().expect("explicit").datasource;
+    assert!(
+        matches!(&explicit, super::ResolvedDatasource::Sqlite(p) if p == &PathBuf::from("/d.db")),
+        "{explicit:?}"
     );
 }
 

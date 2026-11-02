@@ -6,26 +6,20 @@
 //! first to commit, then finds the row present and changes nothing. The account, its key and
 //! the flag commit together or not at all.
 
-use russh_bbs_core::access::{Fingerprint, RoleDirectory};
+use russh_bbs_core::access::{Fingerprint, MemberDirectory, RoleDirectory};
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::sanitize::Username;
-use russh_bbs_core::store::{
-    Account, AccountState, AccountStore, Role, SettingKey, SettingsStore, StoreError,
-};
+use russh_bbs_core::store::{Account, AccountState, Role, SettingKey, StoreError};
 use sqlx::error::ErrorKind;
-use tracing::warn;
 
-use crate::SqliteStore;
+use super::SqliteStore;
+use crate::directory;
 use crate::error::{backend, kind};
 use crate::rows::AccountRow;
 
 impl FounderStore for SqliteStore {
     async fn founder_claimed(&self) -> Result<bool, StoreError> {
-        // Any stored value counts as claimed: fail closed on a hand-edited row.
-        Ok(self
-            .get_setting(SettingKey::FounderClaimed)
-            .await?
-            .is_some())
+        directory::founder_claimed(self).await
     }
 
     async fn claim_founder(
@@ -86,13 +80,12 @@ impl FounderStore for SqliteStore {
 
 impl RoleDirectory for SqliteStore {
     async fn role_of(&self, key: &Fingerprint) -> Option<Role> {
-        match self.account_by_fingerprint(key).await {
-            Ok(Some(account)) if account.state.is_member_access() => Some(account.role),
-            Ok(_) => None,
-            Err(error) => {
-                warn!(%error, fingerprint = %key, "role lookup failed; treating key as unknown");
-                None
-            }
-        }
+        directory::role_of(self, key).await
+    }
+}
+
+impl MemberDirectory for SqliteStore {
+    async fn is_member(&self, key: &Fingerprint) -> bool {
+        directory::is_member(self, key).await
     }
 }
