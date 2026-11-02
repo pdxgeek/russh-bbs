@@ -18,9 +18,13 @@ A slice with an unmet dependency is not claimable.
 | M1-F Container image, compose example, GHCR publish | `Dockerfile`, `compose.yaml`, the publish workflow in `.github/`, `docs/deploy.md` | M1-A, M1-B, M1-D | In review | `m1/container`, [PR #20](https://github.com/pdxgeek/russh-bbs/pull/20) |
 | M1-G Postgres backend and migrations | `crates/store/src/postgres`, the Postgres CI job, and the restructure of `crates/store` into per-backend modules | M1-B | Open | Note: move the SQLite code to `crates/store/src/sqlite` with migrations under `crates/store/migrations/sqlite/`; add the `datasource` setting (sqlite path \| postgres URL); turn the store behavior tests into one suite generic over the core Store traits and run it against both backends (PGlite via pglite-socket, or a Postgres service in CI). |
 
-| FIX-M0-1 Security markers unforgeable, reserved usernames, sanitizer second pass | `crates/core/src/sanitize`, `crates/core/src/icons`, AGENTS.md wording, sanitizer and icon docs | M0-B, M0-C | In review | `fix/m0-markers`, [PR #18](https://github.com/pdxgeek/russh-bbs/pull/18) |
+| FIX-M0-1 Security markers unforgeable, reserved usernames, sanitizer second pass | `crates/core/src/sanitize`, `crates/core/src/icons`, AGENTS.md wording, sanitizer and icon docs | M0-B, M0-C | Done | `fix/m0-markers`, [PR #18](https://github.com/pdxgeek/russh-bbs/pull/18) |
+| FIX-M0-N1 "Unforgeable" wording (QA M0 N1) | docs, icon and sanitizer module docs | FIX-M0-1 | In review | `fix/m0-cleanup` (D44) |
+| FIX-M0-N2/N4 Joiner-proof mark cap, property-based format stripping | `crates/core/src/sanitize` | FIX-M0-1 | In review | `fix/m0-cleanup` (D44) |
+| FIX-M0-N3 Reserved-name separators, leet folds, staff words | `crates/core/src/sanitize/username.rs` | FIX-M0-1 | In review | `fix/m0-cleanup` (D44) |
+| FIX-M0-N5 Threat-model wording, stale FIX-M0-1 row | `docs/threat-model.md`, `docs/coordination.md` | FIX-M0-1 | In review | `fix/m0-cleanup` |
 | FIX-M0-F5 Emoji-capable Unicode glyphs (U+26A0, U+2709) vs D18 (QA M0 F5) | `crates/core/src/icons` | M0-C | Open | Needs a real-terminal check |
-| FIX-M0-F11 Stale status text in `docs/features.md` and PR text (QA M0 F11) | `docs/features.md` | none | Open | |
+| FIX-M0-F11 Stale status text in `docs/features.md` and PR text (QA M0 F11) | `docs/features.md` | none | In review | `fix/m0-cleanup` (PR below) |
 | FIX-M0-F12 SHA-pin CI actions (QA M0 F12) | `.github/workflows/ci.yml` | M0-A | Open | Before the closed beta |
 
 Later milestones are not claimable until the owner adds their slices here.
