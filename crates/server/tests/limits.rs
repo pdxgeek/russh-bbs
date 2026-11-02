@@ -150,8 +150,6 @@ async fn send(channel: &mut Channel<client::Msg>, bytes: &str) -> (String, bool)
     words(channel).await
 }
 
-/// Claim the board as the founder with `key`; returns the open channel and the login screen.
-
 /// Connect and read the first screen: a signed-in member sees "Signed in as", a refused one the
 /// limit message. Returns the screen and whether the server already closed the channel.
 async fn connect_as(
@@ -175,7 +173,7 @@ async fn calls_per_day_refuse_the_next_sign_in_with_the_reset_time() {
     assert!(screen.contains("Signed in as ann"), "{screen}");
     drop((first_channel, first));
 
-    let (_s, _c, screen, closed) = connect_as(&rig, &key).await;
+    let (_session, mut channel, screen, closed) = connect_as(&rig, &key).await;
     assert!(screen.contains("Limit reached"), "{screen}");
     assert!(
         screen.contains("You have used your 1 sign in for today."),
@@ -184,7 +182,6 @@ async fn calls_per_day_refuse_the_next_sign_in_with_the_reset_time() {
     assert!(screen.contains("resets at 00:00 UTC"), "{screen}");
     assert!(!screen.contains("Signed in as"), "{screen}");
     // The message ends the session on its own.
-    let mut channel = _c;
     assert!(
         closed || words(&mut channel).await.1,
         "the session should end"
