@@ -14,6 +14,13 @@
 pub(crate) mod chrome;
 pub(crate) mod classic;
 pub(crate) mod keys;
+// No screen has text long enough to page yet; the first long-text screen (the message reader,
+// M3) uses this. The expectation fails the build when that happens, as a reminder to drop it.
+#[cfg_attr(
+    not(test),
+    expect(dead_code, reason = "no long-text screen exists yet (D65)")
+)]
+pub(crate) mod pager;
 pub mod strings;
 
 use russh_bbs_core::menu::{MenuError, main_tree};
@@ -53,6 +60,7 @@ impl Ui {
             .iter()
             .copied()
             .chain(tree.text_keys())
+            .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
             .collect();
         Ok(Self {
             strings: StringTable::parse(toml, &required)?,

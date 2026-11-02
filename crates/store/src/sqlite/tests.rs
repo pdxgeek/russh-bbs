@@ -99,6 +99,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         "dc0b92309b186cd248415cffe0fe6c407afea360a22ed0525bcc652242ddaae8d39f41ac2235f05d8a1cb832214f0f9d",
     ),
     (
+        5,
+        "9ecd872b24dcef690f2a366d025b4566df941aa81d8e816b99e8f285cee5c39ffb8dffbdce35b432a7f7213de73f4c8d",
+    ),
+    (
         6,
         "b6b8bb05d697513a30a254b0f1aee5c2579dacd330f66952b872398680fa94f7e58a94fbc8cbccfa511be5ada8098f30",
     ),
@@ -163,6 +167,7 @@ async fn a_fresh_database_gets_every_migration() {
             "limit_usage",
             "member_group",
             "member_limit",
+            "profiles",
             "role",
             "role_limit",
             "role_permission",
@@ -450,7 +455,7 @@ async fn a_database_made_before_the_restructure_still_opens_and_keeps_its_data()
     pool.close().await;
 
     // The new code opens it: no VersionMismatch, the two landed migrations are not re-applied
-    // (same install times), the M2-B and M2-C migrations are applied on top, data intact.
+    // (same install times), the later migrations (M2-B, M2-C, M2-F) are applied on top, data intact.
     let store = SqliteStore::open(&path).await.unwrap();
     let after = recorded(store.pool().clone()).await;
     assert_eq!(after[..2], before[..]);

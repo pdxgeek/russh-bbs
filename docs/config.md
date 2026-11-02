@@ -112,7 +112,9 @@ Parsed, not yet used (M3). Turning telnet on is "low-security mode".
 | `waiting_room.max_form_submissions` | integer 1–1000 | `5` | `RUSSH_BBS_MAX_FORM_SUBMISSIONS` | `--max-form-submissions` | Waiting-room forms (M1-C) |
 | `waiting_room.max_tracked_sources` | integer 1–1000000 | `10000` | `RUSSH_BBS_WAITING_ROOM_MAX_TRACKED_SOURCES` | none | Rate-limiter memory bound (M1-C) |
 
-The waiting-room banner and rules text are stored settings (D37), not config keys.
+The waiting-room banner and rules text are stored settings (D37), not config keys. They are limited so the menu always fits an 80x24 terminal (D64): the banner to 300 characters and 5 lines, the rules to 900 characters and 10 lines. Text stored past that is cut when shown and ends with an ellipsis; the screen that sets them (M2) refuses longer text with an error that names the limit.
+
+The per-address connection limit (`waiting_room.ip_burst`, `waiting_room.ip_interval_secs`) also applies to the founder claim; see "If the claim connection is dropped" in [deploy.md](deploy.md) (D65).
 
 ## Resource limits (M2-H)
 

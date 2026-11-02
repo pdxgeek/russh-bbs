@@ -15,6 +15,7 @@ Status of the project: M0 and M1 are merged (the M1 QA gate has not passed yet; 
 | Area | Documents |
 |---|---|
 | Whole system | [architecture.md](architecture.md), [threat-model.md](threat-model.md), [access.md](access.md), [audit.md](audit.md) |
+| Profiles and the members list | [profiles.md](profiles.md) |
 | Configuration keys, env vars, flags | [config.md](config.md) |
 | Scope and order of work | [features.md](features.md), [mvp-scope.md](mvp-scope.md), [milestones.md](milestones.md) |
 | Terminal UI, menus, layouts, themes, icons | [ui.md](ui.md) |

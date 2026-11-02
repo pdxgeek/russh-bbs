@@ -41,6 +41,9 @@ pub enum Action {
     /// A resource limit was set or an override cleared (M2-H).
     #[strum(serialize = "limit.changed")]
     LimitChanged,
+    /// Staff edited another member's profile (M2-F). The owner's own edits are not audited.
+    #[strum(serialize = "profile.edited")]
+    ProfileEdited,
 }
 
 impl Action {

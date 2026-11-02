@@ -6,6 +6,7 @@
 //! * [`TerminalSettings`]: size overrides, color, pause and icon tier, with the rules that turn
 //!   them into what is drawn. **The safe default is ASCII icons and no color**: until a person
 //!   has answered the glyph test, and whenever they skip it or say "no", that is what they get.
+//! * [`Pager`]: pages long text and honors the pause setting (D65).
 //! * [`GlyphTest`]: asks "do these look like icons?" per tier, using only registry glyphs.
 //! * [`MemberFlow`]: the signed-in session as a state machine (login screen, glyph test on
 //!   first login, a placeholder home, the settings screen, logoff) producing a [`View`].
@@ -20,6 +21,7 @@
 
 mod flow;
 mod glyph;
+mod pager;
 mod sessions;
 mod settings;
 pub mod strings;
@@ -27,6 +29,7 @@ mod time;
 
 pub use flow::{MemberEffect, MemberFlow, MemberInput};
 pub use glyph::{GlyphAnswer, GlyphProgress, GlyphStep, GlyphTest};
+pub use pager::{Pager, PagerEffect, PagerKey, PagerPrompt, PagerView};
 pub use sessions::{MemberSessions, MemberStart, SaveError, TerminalSettingsStore};
 pub use settings::{
     MAX_HEIGHT, MAX_WIDTH, MIN_HEIGHT, MIN_WIDTH, SAFE_TIER, SettingsError, TerminalSettings,

@@ -1,0 +1,36 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT a.id AS \"id!\", a.username AS \"username!\",\n                      COALESCE(p.display_name, '') AS \"display_name!\"\n               FROM accounts a LEFT JOIN profiles p ON p.account_id = a.id\n               WHERE a.state = 'active'\n                 AND lower(a.username) COLLATE \"C\" > $1\n                 AND substr(lower(a.username), 1, length($2)) = $2\n               ORDER BY lower(a.username) COLLATE \"C\"\n               LIMIT $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "username!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "display_name!",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "5014652062c132bae0caacb71b68c653499da11bf17c1696f47e61800b74c0c2"
+}

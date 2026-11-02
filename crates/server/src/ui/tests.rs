@@ -32,6 +32,7 @@ fn the_shipped_table_and_tree_are_valid() {
         .iter()
         .copied()
         .chain(main_tree().text_keys())
+        .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
     {
         assert_ne!(ui.strings().text(key), key, "{key} has no text");
     }
@@ -43,6 +44,7 @@ fn the_table_holds_exactly_the_keys_the_code_uses() {
         .iter()
         .copied()
         .chain(main_tree().text_keys())
+        .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
         .collect();
     let ui = ui();
     let held: std::collections::BTreeSet<&str> = ui.strings().keys().collect();
@@ -441,4 +443,100 @@ fn nothing_on_the_menu_screen_claims_privacy() {
         !lower.contains("encrypted") || lower.contains("pgp"),
         "{out}"
     );
+}
+
+// ---- pager (FIX-M1-L8) ----
+
+mod pager {
+    use ratatui::layout::Rect;
+    use russh_bbs_core::terminal_settings::{Pager, PagerEffect, PagerKey};
+
+    use super::*;
+    use crate::ui::pager::{render, text_rows, text_width, wrap};
+
+    fn frame_text(pager: &Pager, size: (u16, u16)) -> String {
+        let ui = ui();
+        let mut terminal = Terminal::new(TestBackend::new(size.0, size.1)).unwrap();
+        terminal
+            .draw(|frame| {
+                render(
+                    frame,
+                    pager,
+                    "Reader",
+                    ui.strings(),
+                    Look::of(&TerminalSettings::default().with_tier(Tier::Ascii)),
+                    Tier::Ascii,
+                    &MENU_MARKERS,
+                );
+            })
+            .unwrap();
+        text(terminal.backend().buffer())
+    }
+
+    fn lines(n: usize) -> Vec<String> {
+        (1..=n).map(|i| format!("entry {i:02}")).collect()
+    }
+
+    #[test]
+    fn pause_on_shows_one_page_and_a_more_prompt_at_80x24() {
+        let area = Rect::new(0, 0, 80, 24);
+        let rows = text_rows(area);
+        assert!(rows >= 15, "a page is most of the screen: {rows}");
+        let mut pager = Pager::new(lines(60), &TerminalSettings::default().with_pause(true));
+        let first = frame_text(&pager, (80, 24));
+        assert!(first.contains("entry 01"));
+        assert!(first.contains(&format!("entry {rows:02}")), "{first}");
+        assert!(
+            !first.contains(&format!("entry {:02}", rows + 1)),
+            "one page only"
+        );
+        assert!(first.contains("-- More (1 of "), "{first}");
+        assert!(first.contains("server can read"), "status row survives");
+        assert_eq!(pager.input(PagerKey::Next, rows), PagerEffect::Stay);
+        let second = frame_text(&pager, (80, 24));
+        assert!(
+            second.contains(&format!("entry {:02}", rows + 1)),
+            "{second}"
+        );
+        assert!(!second.contains("entry 01 "), "the first page is gone");
+    }
+
+    #[test]
+    fn pause_off_shows_the_first_screenful_and_says_what_is_hidden() {
+        let pager = Pager::new(lines(60), &TerminalSettings::default().with_pause(false));
+        let shown = frame_text(&pager, (80, 24));
+        let rows = text_rows(Rect::new(0, 0, 80, 24));
+        assert!(shown.contains("entry 01"));
+        assert!(!shown.contains("More ("), "no more prompt: {shown}");
+        assert!(
+            shown.contains(&format!("{} more lines are not shown", 60 - rows)),
+            "{shown}"
+        );
+        assert!(shown.contains("Turn Pause on"), "{shown}");
+    }
+
+    #[test]
+    fn short_text_draws_without_a_prompt_and_tiny_windows_do_not_panic() {
+        for pause in [true, false] {
+            let pager = Pager::new(lines(3), &TerminalSettings::default().with_pause(pause));
+            let shown = frame_text(&pager, (80, 24));
+            assert!(shown.contains("entry 03") && !shown.contains("More ("));
+        }
+        for size in [(1, 1), (10, 3), (20, 5), (40, 8)] {
+            let pager = Pager::new(lines(30), &TerminalSettings::default());
+            let _ = frame_text(&pager, size);
+        }
+    }
+
+    #[test]
+    fn wrap_splits_long_lines_to_the_box_width_and_keeps_blank_rows() {
+        assert_eq!(text_width(Rect::new(0, 0, 80, 24)), 74);
+        let wrapped = wrap(&["abcdefghij".into(), String::new(), "xy".into()], 4);
+        assert_eq!(wrapped, ["abcd", "efgh", "ij", "", "xy"]);
+        assert_eq!(
+            wrap(&["abc".into()], 0),
+            ["a", "b", "c"],
+            "zero width is one"
+        );
+    }
 }

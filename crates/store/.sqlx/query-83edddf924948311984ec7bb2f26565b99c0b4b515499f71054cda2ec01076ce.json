@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT a.id AS \"id!\", a.username AS \"username!\",\n                      COALESCE(p.display_name, '') AS \"display_name!\"\n               FROM accounts a LEFT JOIN profiles p ON p.account_id = a.id\n               WHERE a.state = 'active'\n                 AND lower(a.username) > ?\n                 AND substr(lower(a.username), 1, length(?)) = ?\n               ORDER BY lower(a.username)\n               LIMIT ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "username!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "display_name!",
+        "ordinal": 2,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "83edddf924948311984ec7bb2f26565b99c0b4b515499f71054cda2ec01076ce"
+}

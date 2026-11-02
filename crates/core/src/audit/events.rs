@@ -30,6 +30,14 @@ pub fn account_created(account: AccountId, role: &Slug, state: AccountState) -> 
     .detail(&format!("role {} state {}", role.as_str(), state.as_str()))
 }
 
+/// `actor`, holding `members.edit`, changed `target`'s profile. `fields` are the **names** of the
+/// fields that changed, never their values.
+#[must_use]
+pub fn profile_edited(actor: Actor, target: AccountId, fields: &[&str]) -> AuditEvent {
+    AuditEvent::new(actor, Action::ProfileEdited, Target::Account(target))
+        .detail(&format!("fields {}", fields.join(" ")))
+}
+
 /// A custom group was created.
 #[must_use]
 pub fn group_created(actor: Actor, group: GroupId, name: &Slug) -> AuditEvent {

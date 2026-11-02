@@ -172,6 +172,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         "dd825623b1277a602de93a586ff964de23e6295be36aed810538127136ba3f2f47dce6db449d36269da7a0beb7031c60",
     ),
     (
+        5,
+        "e3af2b2e1262291ab3dee3895958b454bea8b70a27b980a12b23caea35ef22055bb6dc92843281d81d021b60fd5e4555",
+    ),
+    (
         6,
         "5d9c76a2f3ac95187ed3db3b92b68e8b7df7f99aba86d74c9dfe49070b5f7f2e6f963f1308a6bda9b8b0ef5b4c766219",
     ),
@@ -237,6 +241,7 @@ async fn a_fresh_database_gets_every_migration_and_only_these_tables() {
             "limit_usage",
             "member_group",
             "member_limit",
+            "profiles",
             "role",
             "role_limit",
             "role_permission",

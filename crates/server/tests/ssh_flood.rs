@@ -305,3 +305,41 @@ async fn a_client_that_never_reads_is_dropped_with_a_bounded_queue() {
     );
     assert!(started.elapsed() < Duration::from_secs(15));
 }
+
+/// Whether a plain TCP connection to `addr` is served: the SSH banner arrives. A connection
+/// dropped by the per-address limit closes with no bytes.
+async fn is_served(addr: std::net::SocketAddr) -> bool {
+    use tokio::io::AsyncReadExt;
+    let mut stream = tokio::net::TcpStream::connect(addr).await.unwrap();
+    let mut banner = [0_u8; 8];
+    match timeout(Duration::from_secs(5), stream.read(&mut banner)).await {
+        Ok(Ok(n)) if n >= 4 => banner.starts_with(b"SSH-"),
+        _ => false,
+    }
+}
+
+/// FIX-M1-L1 (D65): the per-address allowance is shared by everything behind one address,
+/// including the founder claim, which cannot be told apart at accept time. This pins the
+/// documented behavior: a flood locks the address out, nothing else is affected, and the
+/// address is served again once the allowance refills.
+#[tokio::test]
+async fn a_flood_from_one_address_blocks_that_address_until_the_allowance_refills() {
+    let server = start_server(Limits {
+        ip_rate: russh_bbs_core::waiting_room::RatePolicy::new(3, Duration::from_secs(2)),
+        ..limits()
+    })
+    .await;
+    let addr = server.addr();
+    // The burst is served, the next connection from the same address is dropped...
+    for n in 0..3 {
+        assert!(is_served(addr).await, "connection {n} is inside the burst");
+    }
+    assert!(!is_served(addr).await, "the flood is dropped at accept");
+    // ...and the server is fine: after one refill interval the address is served again, which
+    // is the operator's wait-it-out answer for a blocked claim (docs/deploy.md).
+    tokio::time::sleep(Duration::from_millis(2_300)).await;
+    assert!(
+        is_served(addr).await,
+        "served again after the allowance refilled"
+    );
+}
