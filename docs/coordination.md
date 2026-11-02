@@ -26,6 +26,7 @@ A slice with an unmet dependency is not claimable.
 | FIX-M0-N3 Sanitizer: reserved-name check ignores separators (`sys_op`, `ad-min`), unfolded leet (`4dmin`, `syst3m`) and more staff words (`administrator`, `support`, `owner`, ...) (QA M0 re-check N3, low) | `crates/core/src/sanitize` | M0-B | In review | Best effort per D40; staff status must come from chrome, not names Branch `fix/m0-cleanup`, [PR #23](https://github.com/pdxgeek/russh-bbs/pull/23), D45. |
 | FIX-M0-N5 Threat-model wording: the Output safety invariant ("cannot spoof UI icons or security badges") is unqualified, and line 70 says "unforgeable even without color" (QA M0 re-check N5, low) | docs (`docs/threat-model.md`) | none | In review | Qualify with the per-tier limits already in lines 66-73; overlaps FIX-M0-N1 on line 70 Branch `fix/m0-cleanup`, [PR #23](https://github.com/pdxgeek/russh-bbs/pull/23), D45. |
 | FIX-M0-F12 SHA-pin CI actions (QA M0 F12) | `.github/workflows/ci.yml` | M0-A | Open | Before the closed beta |
+| FIX-M1-2 Container publish readiness (QA M1 H2, M1, L4) | `Dockerfile`, `.dockerignore`, `compose.yaml`, `.github/workflows/publish-image.yml`, `.github/workflows/container-build.yml`, `docs/deploy.md`, container row in `docs/features.md`, `crates/server/src/config/paths.rs` | M1-F, M1-G | In review | `fix/m1-image`, [PR #26](https://github.com/pdxgeek/russh-bbs/pull/26). Tag and package visibility are the owner's actions (see `docs/deploy.md`, "Owner action: release"). |
 
 ### M2: Invites and members
 

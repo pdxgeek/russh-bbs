@@ -1,6 +1,6 @@
 # Deploying with a container
 
-Status: **Implemented** in M1-F (D25, D43). Verified items are listed at the end.
+Status: **Implemented** in M1-F (D25, D43) and FIX-M1-2 (D46). **The published image does not exist until the owner cuts the first release tag** (see [Owner action: release](#owner-action-release)); until then build locally. What is verified is in `docs/features.md`.
 
 The server ships as one static (musl) binary in a `scratch` image: no shell, no package manager, no libc. It runs as a non-root user, listens on port 2222, and keeps **all state in one volume mounted at `/data`**.
 
@@ -10,15 +10,41 @@ The server ships as one static (musl) binary in a `scratch` image: no shell, no 
 
 ## Run
 
+### Published image (after the first release)
+
 ```bash
 docker run -d --name bbs --restart unless-stopped \
   -p 2222:2222 -v bbs-data:/data \
   ghcr.io/pdxgeek/russh-bbs:latest
 ```
 
-Images are published to GHCR on version tags (`v*`) only; `latest` follows the newest tag. To build from a checkout instead: `docker build -t russh-bbs .`.
+Images are published to GHCR on version tags (`v*`) only. `latest` follows the newest **stable** tag (a pre-release tag such as `v0.2.0-rc1` does not move it); `0.1.0` and `0.1` tags are published too. Pin a version tag in production. Both `linux/amd64` and `linux/arm64` are published. If `docker pull` answers `denied`, the package has not been published or made public yet.
 
-With compose, use [`compose.yaml`](../compose.yaml): one service, one named volume (`bbs-data`), port 2222.
+### Local build (works today)
+
+```bash
+docker build -t russh-bbs .
+docker run -d --name bbs -p 2222:2222 -v bbs-data:/data russh-bbs
+```
+
+With compose, use [`compose.yaml`](../compose.yaml): one service, one named volume (`bbs-data`), port 2222. It points at the published image; for a local build, uncomment `build: .` and comment out `image:`.
+
+### Building behind a TLS-intercepting proxy
+
+The builder stage downloads the Rust toolchain (rust-lang.org) and crates (crates.io) over HTTPS. A proxy that re-signs TLS makes those downloads fail with `invalid peer certificate: UnknownIssuer`. Two ways out:
+
+1. **Give the builder the proxy's CA.** Mount or `COPY` the CA into the builder image and point `SSL_CERT_FILE` / `CARGO_HTTP_CAINFO` at it (this needs a Dockerfile change on your side; the project's Dockerfile does not ship one).
+2. **Build the static musl binary on the host and package it** with the same final stage:
+
+```bash
+rustup target add x86_64-unknown-linux-musl     # aarch64-unknown-linux-musl on arm64
+sudo apt-get install -y musl-tools
+SQLX_OFFLINE=true cargo build --release --locked -p russh-bbs-server --target x86_64-unknown-linux-musl
+docker build --build-arg BIN_STAGE=prebuilt \
+  --build-context hostbin=target/x86_64-unknown-linux-musl/release -t russh-bbs .
+```
+
+The `prebuilt` stage copies `russh-bbs-server` into the same `scratch` final stage (user, `/data`, entrypoint) and needs to pull `alpine:3` once. Or skip building: use the published image.
 
 ## What is in `/data`
 
@@ -29,7 +55,7 @@ With compose, use [`compose.yaml`](../compose.yaml): one service, one named volu
 | `/data/config.toml` | Optional config (default location; see [config.md](config.md)) | you |
 | `/data/` blobs directory | Member-uploaded bytes (D30), later | when files land |
 
-The image sets `RUSSH_BBS_LISTEN=0.0.0.0:2222`, `RUSSH_BBS_HOST_KEY=/data/host_ed25519_key` and `RUSSH_BBS_DB=/data/russh-bbs.db`. A `/data/config.toml` is picked up automatically; the environment overrides the file and flags override both (D38). Only set `RUSSH_BBS_*` names listed in [config.md](config.md): an unknown one stops the server at start. Logs go to stdout (`docker logs`); set `RUST_LOG` (e.g. `debug`) to change the level.
+The image sets only `RUSSH_BBS_LISTEN=0.0.0.0:2222`. It has no `HOME`, so the server's default data directory is `/data` itself (D46): the host key and the SQLite database land there with no further setting. The image deliberately does **not** set `RUSSH_BBS_DB`: that variable is a boot error with `datasource.kind = "postgres"`, and a variable baked into an image cannot be unset by `docker run`. A `/data/config.toml` is picked up automatically; the environment overrides the file and flags override both (D38). Only set `RUSSH_BBS_*` names listed in [config.md](config.md): an unknown one stops the server at start. Logs go to stdout (`docker logs`); set `RUST_LOG` (e.g. `debug`) to change the level.
 
 ## Volume permissions and the non-root user
 
@@ -77,6 +103,42 @@ docker start bbs
 
 The archive holds the host key and the member list: store it like a secret. Do not copy the `.db` file of a running server without its `-wal` file.
 
+## Postgres
+
+SQLite on the volume is the default. To use Postgres instead, select it with environment variables (or `/data/config.toml`); do **not** also set `RUSSH_BBS_DB` or `datasource.path`, which are SQLite-only and refused:
+
+```bash
+docker run -d --name bbs -p 2222:2222 -v bbs-data:/data \
+  -e RUSSH_BBS_DATASOURCE_KIND=postgres \
+  -e RUSSH_BBS_DATASOURCE_URL='postgres://bbs:PASSWORD@db.example.com:5432/bbs' \
+  -e RUSSH_BBS_DATASOURCE_TLS_MODE=verify-full \
+  -e RUSSH_BBS_DATASOURCE_TLS_ROOT_CERT=/data/ca.crt \
+  ghcr.io/pdxgeek/russh-bbs:latest
+```
+
+- **TLS is always on** (D31). `tls_mode` is `require` (encrypts, checks no certificate unless `tls_root_cert` is set), `verify-ca` or `verify-full`. A server that does not offer TLS is an error, never a plaintext fallback.
+- **The image has no CA store** (`scratch`). `require` works as is. For `verify-ca` and `verify-full`, put the CA that signed the server certificate (a private CA, or the cloud provider's bundle such as the RDS one) in a PEM file **on the `/data` volume** and name it with `tls_root_cert`. A self-signed server certificate that is not itself a CA is rejected; give clients the CA. Without `tls_root_cert`, `verify-*` fails at start rather than weakening.
+- Put the file on the volume with a throwaway container, e.g. `docker run --rm -v bbs-data:/data -v "$PWD:/in:ro" alpine sh -c 'cp /in/ca.crt /data/ca.crt && chown 65532:65532 /data/ca.crt'`.
+- The URL carries the password: set it through an environment file or your orchestrator's secret store, not on a shared shell history. The server never logs it, and boot errors scrub it.
+- The host key still lives on the volume (`/data/host_ed25519_key`), so the volume must persist even with Postgres, or members see a changed host key. Back up the database with your Postgres tooling.
+- See [config.md](config.md) for every `datasource.*` key.
+
+## Owner action: release
+
+Cutting a tag and publishing the package are the repository owner's actions; nothing in CI or the agent sessions does them. Until they are done, `ghcr.io/pdxgeek/russh-bbs` does not exist.
+
+1. **Prove the workflow first (optional, pushes nothing).** GitHub: Actions, "Publish image", "Run workflow" (a `workflow_dispatch` dry run builds amd64 and arm64 and never logs in or pushes). Expect the arm64 half to take a long time under QEMU.
+2. **Cut the tag** from the commit on `main` you want to ship:
+   ```bash
+   git checkout main && git pull
+   git tag -a v0.1.0 -m "russh-bbs 0.1.0"
+   git push origin v0.1.0
+   ```
+   (or create a release for the tag in the GitHub UI). The "Publish image" workflow runs on the tag and pushes `ghcr.io/pdxgeek/russh-bbs:0.1.0`, `:0.1` and `:latest` for both architectures.
+3. **Make the package public.** A new GHCR package starts private. GitHub: your profile or organization, Packages, `russh-bbs`, Package settings, "Danger Zone", Change visibility, Public. Until then `docker pull` answers `denied` for everyone but you. If the package is not linked to the repository, connect it there too.
+4. **Check it from a clean machine, not logged in:** `docker pull ghcr.io/pdxgeek/russh-bbs:latest` and `docker buildx imagetools inspect ghcr.io/pdxgeek/russh-bbs:latest` (both `linux/amd64` and `linux/arm64` listed), then repeat the first-start walk above (empty volume, token in logs, waiting room, `claim@`, restart keeps the fingerprint, clean `docker stop`) and the Postgres run.
+5. Record the result in `docs/features.md` (container row) and mark QA M1 H2 closed.
+
 ## Not covered here
 
-Postgres (M1-G), TLS termination or reverse proxies (SSH is not HTTP; publish port 2222 or map another host port), and door sandboxing.
+TLS termination or reverse proxies (SSH is not HTTP; publish port 2222 or map another host port), and door sandboxing.

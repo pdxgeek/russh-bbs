@@ -11,7 +11,14 @@ pub struct Dirs {
     pub xdg_config_home: Option<PathBuf>,
     /// `HOME`.
     pub home: Option<PathBuf>,
+    /// The container data directory, set only when `CONTAINER_DATA` exists as a directory.
+    /// Used as the data directory when neither `XDG_DATA_HOME` nor `HOME` gives one (the
+    /// `scratch` image has no home: Docker sets `HOME=/`), so the image needs no `RUSSH_BBS_DB` (D46).
+    pub container_data: Option<PathBuf>,
 }
+
+/// The container's data volume (decision D25).
+const CONTAINER_DATA: &str = "/data";
 
 /// Where the container image keeps its config (decision D25).
 pub const CONTAINER_CONFIG: &str = "/data/config.toml";
@@ -29,19 +36,31 @@ impl Dirs {
             xdg_data_home: std::env::var_os("XDG_DATA_HOME").map(PathBuf::from),
             xdg_config_home: std::env::var_os("XDG_CONFIG_HOME").map(PathBuf::from),
             home: std::env::var_os("HOME").map(PathBuf::from),
+            container_data: Some(PathBuf::from(CONTAINER_DATA)).filter(|p| p.is_dir()),
         }
     }
 
     /// `name` inside the default data directory: `$XDG_DATA_HOME/russh-bbs/`, else
-    /// `$HOME/.local/share/russh-bbs/`. `None` if neither can be worked out.
+    /// `$HOME/.local/share/russh-bbs/` (`HOME=/` counts as unset: that is what Docker gives a
+    /// UID with no passwd entry), else (container) `/data/` itself.
+    /// `None` if none can be worked out.
     #[must_use]
     pub fn data_path(&self, name: &str) -> Option<PathBuf> {
         let base = self
             .xdg_data_home
             .clone()
             .filter(|p| p.is_absolute())
-            .or_else(|| self.home.as_ref().map(|h| h.join(".local").join("share")))?;
-        Some(base.join("russh-bbs").join(name))
+            .or_else(|| {
+                self.home
+                    .as_ref()
+                    // Docker gives a UID with no passwd entry HOME=/. That is no home at all.
+                    .filter(|h| h.parent().is_some())
+                    .map(|h| h.join(".local").join("share"))
+            });
+        match base {
+            Some(b) => Some(b.join("russh-bbs").join(name)),
+            None => self.container_data.as_ref().map(|d| d.join(name)),
+        }
     }
 
     /// Where to look for a config file when none was named, in order: the XDG config path
@@ -75,6 +94,7 @@ mod tests {
             xdg_data_home: data.map(PathBuf::from),
             xdg_config_home: None,
             home: home.map(PathBuf::from),
+            container_data: None,
         }
     }
 
@@ -110,6 +130,34 @@ mod tests {
     fn the_database_lives_beside_the_host_key() {
         let path = dirs(Some("/xdg"), None).data_path(DB_FILE);
         assert_eq!(path, Some(PathBuf::from("/xdg/russh-bbs/russh-bbs.db")));
+    }
+
+    #[test]
+    fn container_data_is_the_last_resort_and_has_no_subdirectory() {
+        let mut d = dirs(None, None);
+        d.container_data = Some("/data".into());
+        assert_eq!(
+            d.data_path(HOST_KEY_FILE),
+            Some(PathBuf::from("/data/host_ed25519_key"))
+        );
+        assert_eq!(
+            d.data_path(DB_FILE),
+            Some(PathBuf::from("/data/russh-bbs.db"))
+        );
+        // Docker's HOME=/ for a user with no passwd entry is not a home.
+        let mut d = dirs(None, Some("/"));
+        d.container_data = Some("/data".into());
+        assert_eq!(
+            d.data_path(DB_FILE),
+            Some(PathBuf::from("/data/russh-bbs.db"))
+        );
+        // HOME or XDG still win, so a bare-metal run never writes to /data by accident.
+        let mut d = dirs(None, Some("/home/u"));
+        d.container_data = Some("/data".into());
+        assert_eq!(
+            d.data_path(DB_FILE),
+            Some(PathBuf::from("/home/u/.local/share/russh-bbs/russh-bbs.db"))
+        );
     }
 
     #[test]

@@ -46,7 +46,7 @@ A key's environment variable is listed below. Names that existed before this fil
 | Key | Type | Default | Environment | Flag | Used by |
 |---|---|---|---|---|---|
 | `ssh.listen` | address `host:port`, port 1–65535 | `0.0.0.0:2222` | `RUSSH_BBS_LISTEN` | `--listen` | SSH listener (M1-A) |
-| `ssh.host_key` | path | `$XDG_DATA_HOME/russh-bbs/host_ed25519_key`, else `~/.local/share/russh-bbs/host_ed25519_key` | `RUSSH_BBS_HOST_KEY` | `--host-key` | Host key (M1-A, D20). With no default location and no value the server refuses to start |
+| `ssh.host_key` | path | `$XDG_DATA_HOME/russh-bbs/host_ed25519_key`, else `~/.local/share/russh-bbs/host_ed25519_key`; in the container (no usable `HOME`, `/data` exists) `/data/host_ed25519_key` (D46) | `RUSSH_BBS_HOST_KEY` | `--host-key` | Host key (M1-A, D20). With no default location and no value the server refuses to start |
 | `ssh.auth_timeout_secs` | integer 1–3600 | `30` | `RUSSH_BBS_AUTH_TIMEOUT_SECS` | `--auth-timeout-secs` | Accept loop (M1-A, D22) |
 | `ssh.idle_timeout_secs` | integer 1–86400 | `600` | `RUSSH_BBS_IDLE_TIMEOUT_SECS` | `--idle-timeout-secs` | SSH sessions (M1-A) |
 | `ssh.keepalive_interval_secs` | integer 1–3600 | `30` | `RUSSH_BBS_SSH_KEEPALIVE_INTERVAL_SECS` | none | SSH sessions (M1-A) |
@@ -60,7 +60,7 @@ A key's environment variable is listed below. Names that existed before this fil
 | Key | Type | Default | Environment | Flag | Used by |
 |---|---|---|---|---|---|
 | `datasource.kind` | `"sqlite"`, `"postgres"` | `"sqlite"` | `RUSSH_BBS_DATASOURCE_KIND` | none | Store selection (M1-G). Both kinds are built; there is no fallback between them |
-| `datasource.path` | path (only with `sqlite`) | `$XDG_DATA_HOME/russh-bbs/russh-bbs.db`, else `~/.local/share/russh-bbs/russh-bbs.db` | `RUSSH_BBS_DB` | `--db` | SQLite store (M1-B) |
+| `datasource.path` | path (only with `sqlite`) | `$XDG_DATA_HOME/russh-bbs/russh-bbs.db`, else `~/.local/share/russh-bbs/russh-bbs.db`; in the container `/data/russh-bbs.db` (D46) | `RUSSH_BBS_DB` | `--db` | SQLite store (M1-B) |
 | `datasource.url` | `postgres://` or `postgresql://` URL, required and only with `postgres` | unset | `RUSSH_BBS_DATASOURCE_URL` | none (secret) | Postgres store (M1-G). Put the host name, not a unix socket path. Do not put `sslmode` in the URL: it must equal `tls_mode` or boot is refused |
 | `datasource.tls_mode` | `"require"`, `"verify-ca"`, `"verify-full"` (only with `postgres`) | `"require"` | `RUSSH_BBS_DATASOURCE_TLS_MODE` | none | Postgres store (M1-G, D31). There is no value that turns TLS off. **`require` encrypts but does not check the certificate unless `tls_root_cert` is set**; use `verify-full` (with `tls_root_cert` for a private CA or the RDS bundle) to defend against an active attacker |
 | `datasource.tls_root_cert` | path to a PEM file that exists (only with `postgres`) | unset | `RUSSH_BBS_DATASOURCE_TLS_ROOT_CERT` | none | Postgres store (M1-G). The CA that signed the server certificate; a self-signed server certificate that is not itself a CA is rejected. Without it the platform CA store is used; **the published container image is `scratch` and has none, so with `verify-ca`/`verify-full` in the container set `tls_root_cert` to a file on the `/data` volume** (`require` works without) |
