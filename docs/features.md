@@ -15,10 +15,10 @@ Update this table in the same pass as the code.
 | Per-user terminal settings | M1 | Planned | width, height, color, pause, tier |
 | Login and logoff screens, themeable strings | M1 | Planned | |
 | SQLite store and migrations | M1 | Implemented | `m1/store`. `sqlx` (D24), WAL, forward-only checksummed migrations (D26), accounts, key fingerprints, settings; `MemberDirectory` over the store (active accounts only, fails closed). Tested on temp-file DBs and with OpenSSH. Account/state transitions beyond create, and the founder flow, are M1-D/M2 |
-| Store traits, SQLite backend and migrations | M1 | Planned | Default datasource; D6, D24 |
-| Postgres backend (also used with PGlite) | M1 | Planned | Same behavior tests as SQLite; D6, D24 |
+| Store traits, SQLite backend and migrations | M1 | Planned | Default datasource; D6, D27 |
+| Postgres backend (also used with PGlite) | M1 | Planned | Same behavior tests as SQLite; D6, D27 |
 | Datasource selection in config | M1 | Planned | `sqlite` or `postgres`; never MySQL |
-| Container image, compose example, GHCR publish | M1 | Planned | D25 |
+| Container image, compose example, GHCR publish | M1 | Planned | D28 |
 | Invite codes, quotas, invite tree | M2 | Planned | |
 | Sysop approval queue and vouching | M2 | Planned | |
 | Registration mode setting (`invite`, `apply`, `open`) | M2 | Planned | Default `invite`; D2, D23. Waiting room built mode-aware in M1 |
@@ -32,8 +32,8 @@ Update this table in the same pass as the code.
 | Polls and voting booths | M3 | Planned | |
 | RSS in (feeds as boards) and RSS out | M3 | Planned | SSRF guard required |
 | Internal mail (stage 1) | M3 | Planned | |
-| Telnet transport, disabled by default (low-security mode) | M3 | Planned | D27; `UNENCRYPTED` marker; password login is a second opt-in |
-| Password login over SSH, disabled by default | M3 | Planned | D28; shares the password store with telnet |
+| Telnet transport, disabled by default (low-security mode) | M3 | Planned | D29; `UNENCRYPTED` marker; password login is a second opt-in |
+| Password login over SSH, disabled by default | M3 | Planned | D30; shares the password store with telnet |
 | Credits ledger | M3 | Planned | Non-transferable |
 | Event scheduler | M3 | Planned | |
 | File areas over SFTP, scanning, quarantine | M4 | Planned | |

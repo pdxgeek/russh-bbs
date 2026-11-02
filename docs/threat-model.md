@@ -30,8 +30,8 @@ Member identities and key fingerprints, the invite tree, message and mail conten
 
 | Area | Guarantee |
 |---|---|
-| Transport | SSH by default. Host key is persistent and its fingerprint is published by the sysop. Telnet is off unless the sysop enables it (D27); a telnet session is plaintext and every screen says so with a fixed `UNENCRYPTED` marker. |
-| Authentication | Public-key over SSH by default. Password login over SSH is a sysop opt-in (D28), encrypted on the wire, with lockout. Over telnet, login is off unless the sysop also enables it; then a per-member argon2id password that is set over SSH. SFTP, invite redemption, and sysop functions never work over telnet. |
+| Transport | SSH by default. Host key is persistent and its fingerprint is published by the sysop. Telnet is off unless the sysop enables it (D29); a telnet session is plaintext and every screen says so with a fixed `UNENCRYPTED` marker. |
+| Authentication | Public-key over SSH by default. Password login over SSH is a sysop opt-in (D30), encrypted on the wire, with lockout. Over telnet, login is off unless the sysop also enables it; then a per-member argon2id password that is set over SSH. SFTP, invite redemption, and sysop functions never work over telnet. |
 | Waiting room | An unknown key sees only the banner, rules, request-invite, and redeem-invite, plus apply or create-account when the registration mode (D2) allows it. No member list, board list, or stats in any mode. |
 | Registration | Default mode is `invite`. `apply` creates an inactive account visible only to the sysop queue. `open` creates an active account only within per-IP and per-key creation limits and an optional cap on new accounts per day; when the cap is hit the stranger sees the `apply` path instead. |
 | Output safety | Untrusted text cannot inject terminal escapes or spoof UI icons or security badges. |
