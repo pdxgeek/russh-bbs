@@ -9,6 +9,7 @@ use std::time::Duration;
 use anyhow::Context as _;
 use clap::Parser;
 use russh_bbs_core::waiting_room::RatePolicy;
+use russh_bbs_server::founder;
 use russh_bbs_server::ssh::{HostKey, Limits, ServerConfig, SshServer};
 use russh_bbs_store::SqliteStore;
 use tracing::info;
@@ -152,7 +153,15 @@ async fn main() -> anyhow::Result<()> {
         limits: cli.limits(),
     };
     // The store decides who is a member; an unknown key or a store error is Restricted.
-    let server = SshServer::start(&config, &host_key, Arc::new(store.clone())).await?;
+    // First run: print the one-time setup token to the console (D38).
+    let founder = founder::start(&store, &mut std::io::stdout()).await?;
+    let server = SshServer::start_with_founder(
+        &config,
+        &host_key,
+        Arc::new(store.clone()),
+        Arc::new(founder),
+    )
+    .await?;
 
     tokio::signal::ctrl_c()
         .await

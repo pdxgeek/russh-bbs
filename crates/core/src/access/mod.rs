@@ -11,6 +11,8 @@
 use std::fmt;
 use std::future::Future;
 
+use crate::store::Role;
+
 /// Length of the base64 (unpadded) part of a SHA-256 fingerprint: 32 bytes encode to 43 chars.
 const SHA256_BASE64_LEN: usize = 43;
 
@@ -95,6 +97,22 @@ pub struct NoMembers;
 impl MemberDirectory for NoMembers {
     fn is_member(&self, _key: &Fingerprint) -> impl Future<Output = bool> + Send {
         std::future::ready(false)
+    }
+}
+
+/// Looks up the role of a member's key, so a session can say what it is signed in as.
+///
+/// Like [`MemberDirectory`] it **fails closed**: an unknown key, an account that is not
+/// active, or any error answers `None`. Roles are a stored value only in M1; the permission
+/// model that gives them meaning is M2's (D33).
+pub trait RoleDirectory: Send + Sync {
+    /// The role of the active account `key` is bound to.
+    fn role_of(&self, key: &Fingerprint) -> impl Future<Output = Option<Role>> + Send;
+}
+
+impl RoleDirectory for NoMembers {
+    fn role_of(&self, _key: &Fingerprint) -> impl Future<Output = Option<Role>> + Send {
+        std::future::ready(None)
     }
 }
 

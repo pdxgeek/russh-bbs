@@ -19,3 +19,20 @@ pub use host_key::{HostKey, HostKeyError};
 pub use limits::Limits;
 pub use registry::{SessionId, SessionRegistry, SessionSnapshot};
 pub use server::{ServerConfig, SshServer};
+
+use russh_bbs_core::access::{MemberDirectory, RoleDirectory};
+use russh_bbs_core::founder::FounderStore;
+use russh_bbs_core::waiting_room::WaitingRoomSource;
+
+/// Everything the SSH front end asks of the board's store: who is a member and in what role,
+/// the waiting room's settings, and the founder claim. The SQLite store is one; so is the
+/// empty `NoMembers` directory used by tests.
+pub trait Backend:
+    MemberDirectory + RoleDirectory + WaitingRoomSource + FounderStore + 'static
+{
+}
+
+impl<T> Backend for T where
+    T: MemberDirectory + RoleDirectory + WaitingRoomSource + FounderStore + 'static
+{
+}

@@ -5,8 +5,9 @@
 //! `window-change`. ratatui therefore never asks the host's own tty for its size, and a session
 //! cannot affect another or the server's console.
 //!
-//! **What is drawn.** The waiting room (`russh_bbs_core::waiting_room`, M1-C): the core's
-//! [`WaitingRoom`] decides the page and its contents, `crate::waiting_room` draws them.
+//! **What is drawn.** One of three [`Content`]s, each a core state machine that produces a
+//! [`View`] which `crate::waiting_room` draws: the waiting room (M1-C), the founder token
+//! prompt (`ssh claim@host`, M1-D) or the signed-in placeholder for a member.
 //!
 //! **Output safety.** Every string is fixed UI chrome or has passed the core sanitizer (the
 //! sysop's banner and rules, and what the visitor typed). The SSH username is never rendered.
@@ -20,7 +21,9 @@ use ratatui::crossterm::queue;
 use ratatui::crossterm::terminal::{Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen};
 use ratatui::layout::Rect;
 use ratatui::{Terminal, TerminalOptions, Viewport};
-use russh_bbs_core::waiting_room::{RoomEffect, RoomInput, WaitingRoom};
+use russh_bbs_core::founder::{ClaimEffect, ClaimForm, ClaimInput, signed_in_view};
+use russh_bbs_core::store::Role;
+use russh_bbs_core::waiting_room::{RoomEffect, RoomInput, View, WaitingRoom};
 
 use super::terminal::{Key, PtySize};
 use crate::waiting_room::render;
@@ -58,40 +61,106 @@ pub(super) struct ScreenUpdate {
     pub(super) bytes: Vec<u8>,
     /// Whether the session should end after sending them.
     pub(super) disconnect: bool,
+    /// A token the person submitted at the claim prompt. The handler checks it (it needs the
+    /// store) and reports back through [`Screen::claim_rejected`] or [`Screen::claim_accepted`].
+    pub(super) claim_token: Option<String>,
+}
+
+/// What a session is looking at.
+pub(super) enum Content {
+    /// The waiting room, for a key that is not a member.
+    Room(WaitingRoom),
+    /// The founder token prompt.
+    Claim(ClaimForm),
+    /// The placeholder shown to a signed-in account of this role.
+    SignedIn(Role),
+}
+
+impl Content {
+    fn view(&self) -> View {
+        match self {
+            Self::Room(room) => room.view(),
+            Self::Claim(form) => form.view(),
+            Self::SignedIn(role) => signed_in_view(*role),
+        }
+    }
 }
 
 /// One session's screen.
 pub(super) struct Screen {
     terminal: Terminal<CrosstermBackend<OutputBuffer>>,
     output: OutputBuffer,
-    room: WaitingRoom,
+    content: Content,
 }
 
 impl Screen {
-    /// Create a screen of `size` showing `room`. Nothing is drawn until [`Screen::enter`].
-    pub(super) fn new(size: PtySize, room: WaitingRoom) -> io::Result<Self> {
+    /// Create a screen of `size` showing `content`. Nothing is drawn until [`Screen::enter`].
+    pub(super) fn new(size: PtySize, content: Content) -> io::Result<Self> {
         let output = OutputBuffer::default();
         Ok(Self {
             terminal: new_terminal(&output, size)?,
             output,
-            room,
+            content,
         })
     }
 
-    /// Feed keypresses to the room and redraw once. Stops at the first key that ends the
-    /// session; keys after it are ignored.
+    /// Feed keypresses to the current content and redraw once. Stops at the first key that
+    /// ends the session or submits a token; keys after it are ignored.
     pub(super) fn keys(&mut self, keys: &[Key]) -> io::Result<ScreenUpdate> {
         let mut disconnect = false;
-        for input in keys.iter().copied().filter_map(room_input) {
-            if self.room.input(input) == RoomEffect::Disconnect {
-                disconnect = true;
-                break;
+        let mut claim_token = None;
+        match &mut self.content {
+            Content::Room(room) => {
+                for input in keys.iter().copied().filter_map(room_input) {
+                    if room.input(input) == RoomEffect::Disconnect {
+                        disconnect = true;
+                        break;
+                    }
+                }
+            }
+            Content::Claim(form) => {
+                for input in keys.iter().copied().filter_map(claim_input) {
+                    match form.input(input) {
+                        ClaimEffect::Stay => {}
+                        ClaimEffect::Disconnect => {
+                            disconnect = true;
+                            break;
+                        }
+                        ClaimEffect::Submit(token) => {
+                            claim_token = Some(token);
+                            break;
+                        }
+                    }
+                }
+            }
+            Content::SignedIn(_) => {
+                disconnect = keys.iter().any(|key| matches!(key, Key::Ctrl('c' | 'd')));
             }
         }
         Ok(ScreenUpdate {
             bytes: self.draw()?,
             disconnect,
+            claim_token,
         })
+    }
+
+    /// The submitted token failed. Redraws with the one generic message; the bool is whether
+    /// the session should now end (attempts used up).
+    pub(super) fn claim_rejected(&mut self) -> io::Result<(Vec<u8>, bool)> {
+        let disconnect = match &mut self.content {
+            Content::Claim(form) => form.rejected() == ClaimEffect::Disconnect,
+            Content::Room(_) | Content::SignedIn(_) => false,
+        };
+        Ok((self.draw()?, disconnect))
+    }
+
+    /// The claim succeeded: show the signed-in placeholder for `role`.
+    pub(super) fn claim_accepted(&mut self, role: Role) -> io::Result<Vec<u8>> {
+        if let Content::Claim(form) = &mut self.content {
+            form.accepted();
+        }
+        self.content = Content::SignedIn(role);
+        self.draw()
     }
 
     /// Switch the client to the alternate screen, hide the cursor and draw. Returns the bytes
@@ -120,7 +189,7 @@ impl Screen {
     }
 
     fn draw(&mut self) -> io::Result<Vec<u8>> {
-        let view = self.room.view();
+        let view = self.content.view();
         self.terminal.draw(|frame| render(frame, &view))?;
         Ok(self.take_output())
     }
@@ -152,6 +221,18 @@ fn room_input(key: Key) -> Option<RoomInput> {
         Key::Backspace => Some(RoomInput::Backspace),
         Key::Escape => Some(RoomInput::Escape),
         Key::Ctrl('c' | 'd') => Some(RoomInput::Quit),
+        Key::Ctrl(_) | Key::Other => None,
+    }
+}
+
+/// Translate a keypress for the claim prompt.
+fn claim_input(key: Key) -> Option<ClaimInput> {
+    match key {
+        Key::Char(c) => Some(ClaimInput::Char(c)),
+        Key::Enter => Some(ClaimInput::Enter),
+        Key::Backspace => Some(ClaimInput::Backspace),
+        Key::Escape => Some(ClaimInput::Escape),
+        Key::Ctrl('c' | 'd') => Some(ClaimInput::Quit),
         Key::Ctrl(_) | Key::Other => None,
     }
 }

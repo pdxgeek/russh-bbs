@@ -10,7 +10,11 @@ fn text(bytes: &[u8]) -> String {
 }
 
 fn screen(size: PtySize) -> Screen {
-    Screen::new(size, WaitingRoom::new(&RoomConfig::default(), 5)).unwrap()
+    Screen::new(
+        size,
+        super::Content::Room(WaitingRoom::new(&RoomConfig::default(), 5)),
+    )
+    .unwrap()
 }
 
 fn default_screen() -> Screen {

@@ -7,12 +7,15 @@
 
 mod directory;
 mod error;
+mod founder;
 mod rows;
 mod sqlite;
 
 pub use error::OpenError;
 pub use sqlite::SqliteStore;
 
+#[cfg(test)]
+mod founder_tests;
 #[cfg(test)]
 mod migrate_tests;
 #[cfg(test)]
