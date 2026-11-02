@@ -2,7 +2,7 @@
 
 use russh_bbs_core::waiting_room::{RoomConfig, WaitingRoom};
 
-use super::Screen;
+use super::{KeyEffects, Screen};
 use crate::ssh::terminal::{Key, PtySize};
 
 fn text(bytes: &[u8]) -> String {
@@ -15,6 +15,17 @@ fn screen(size: PtySize) -> Screen {
         super::Content::Room(WaitingRoom::new(&RoomConfig::default(), 5)),
     )
     .unwrap()
+}
+
+/// Apply keys and render once, as a session does for one batch.
+fn keys(screen: &mut Screen, keys: &[Key]) -> (KeyEffects, String) {
+    let effects = screen.apply_keys(keys);
+    let frame = screen
+        .render()
+        .unwrap()
+        .map(|b| text(&b))
+        .unwrap_or_default();
+    (effects, frame)
 }
 
 fn default_screen() -> Screen {
@@ -45,8 +56,37 @@ fn leaving_restores_the_cursor_and_main_screen() {
 fn resize_redraws_for_the_new_size() {
     let mut screen = default_screen();
     screen.enter().unwrap();
-    let out = text(&screen.resize(PtySize::from_request(120, 40)).unwrap());
+    screen.set_size(PtySize::from_request(120, 40));
+    let out = text(&screen.render().unwrap().unwrap());
+    assert!(out.contains("\x1b[2J"), "screen cleared");
     assert!(out.contains("Waiting"), "full redraw after resize");
+}
+
+#[test]
+fn many_resizes_cost_one_redraw() {
+    let mut screen = default_screen();
+    screen.enter().unwrap();
+    for width in 30..130 {
+        screen.set_size(PtySize::from_request(width, 24));
+    }
+    let frame = text(&screen.render().unwrap().unwrap());
+    assert!(frame.contains("Waiting"));
+    assert!(screen.render().unwrap().is_none(), "nothing left to draw");
+}
+
+#[test]
+fn a_batch_of_keys_costs_one_redraw() {
+    let mut screen = default_screen();
+    screen.enter().unwrap();
+    let many = vec![Key::Char('z'); 10_000];
+    let (effects, frame) = keys(&mut screen, &many);
+    assert!(!effects.disconnect);
+    assert!(
+        frame.len() < 4096,
+        "one small frame, not one per key: {}",
+        frame.len()
+    );
+    assert!(screen.render().unwrap().is_none(), "nothing left to draw");
 }
 
 #[test]
@@ -54,8 +94,9 @@ fn tiny_and_huge_windows_do_not_panic() {
     for (cols, rows) in [(1, 1), (2, 2), (10, 3), (u32::MAX, u32::MAX)] {
         let mut screen = screen(PtySize::from_request(cols, rows));
         screen.enter().unwrap();
-        screen.resize(PtySize::from_request(rows, cols)).unwrap();
-        screen.keys(&[Key::Char('r'), Key::Char('x')]).unwrap();
+        screen.set_size(PtySize::from_request(rows, cols));
+        screen.render().unwrap();
+        keys(&mut screen, &[Key::Char('r'), Key::Char('x')]);
         screen.leave().unwrap();
     }
 }
@@ -64,26 +105,26 @@ fn tiny_and_huge_windows_do_not_panic() {
 fn keys_navigate_and_redraw() {
     let mut screen = default_screen();
     screen.enter().unwrap();
-    let update = screen.keys(&[Key::Char('r')]).unwrap();
-    assert!(!update.disconnect);
-    assert!(text(&update.bytes).contains("House"), "rules page drawn");
+    let (effects, frame) = keys(&mut screen, &[Key::Char('r')]);
+    assert!(!effects.disconnect);
+    assert!(frame.contains("House"), "rules page drawn");
 }
 
 #[test]
 fn q_on_the_home_page_and_ctrl_c_anywhere_disconnect() {
     let mut home = default_screen();
     home.enter().unwrap();
-    assert!(home.keys(&[Key::Char('q')]).unwrap().disconnect);
+    assert!(keys(&mut home, &[Key::Char('q')]).0.disconnect);
 
     let mut form = default_screen();
     form.enter().unwrap();
-    form.keys(&[Key::Char('i')]).unwrap();
+    keys(&mut form, &[Key::Char('i')]);
     assert!(
-        !form.keys(&[Key::Char('q')]).unwrap().disconnect,
+        !keys(&mut form, &[Key::Char('q')]).0.disconnect,
         "q is text in a form"
     );
-    assert!(form.keys(&[Key::Ctrl('c')]).unwrap().disconnect);
-    assert!(default_screen().keys(&[Key::Ctrl('d')]).unwrap().disconnect);
+    assert!(keys(&mut form, &[Key::Ctrl('c')]).0.disconnect);
+    assert!(keys(&mut default_screen(), &[Key::Ctrl('d')]).0.disconnect);
 }
 
 #[test]
@@ -91,7 +132,7 @@ fn keys_after_a_disconnecting_key_are_ignored() {
     let mut screen = default_screen();
     screen.enter().unwrap();
     // 'q' ends the session; the 'r' behind it must not run.
-    let update = screen.keys(&[Key::Char('q'), Key::Char('r')]).unwrap();
-    assert!(update.disconnect);
-    assert!(!text(&update.bytes).contains("House"));
+    let (effects, frame) = keys(&mut screen, &[Key::Char('q'), Key::Char('r')]);
+    assert!(effects.disconnect);
+    assert!(!frame.contains("House"));
 }

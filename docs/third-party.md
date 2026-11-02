@@ -10,7 +10,7 @@ The security rules still win: the shared sanitizer is the only place untrusted t
 |---|---|---|---|
 | Key input from raw SSH bytes, buffering sequences split across packets | termwiz `InputParser` (large, documented as unstable), `anes` (with the `parser` feature), `term-parser` | FIX-M1-1 | FIX-M1-1 is adopting one now |
 | Single-line inputs | `tui-input` | M2-A | |
-| Multi-line editor | `tui-textarea-2` | M3 | Decision D46 |
+| Multi-line editor | `tui-textarea-2` | M3 | Decision D48 |
 | Popups; scroll views | `tui-popup`; `tui-scrollview` (both in `tui-widgets`) | M2-E, M2-F, M3 | |
 | Trees | `tui-tree-widget` | M2-D (invite tree), M3 | |
 | Banner text | `tui-big-text` | M2-A, M3 | |

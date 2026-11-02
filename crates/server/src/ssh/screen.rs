@@ -56,17 +56,15 @@ impl Write for OutputBuffer {
     }
 }
 
-/// What a batch of keypresses did.
-#[derive(Debug)]
-pub(super) struct ScreenUpdate {
-    /// Bytes to send to the client (the redraw).
-    pub(super) bytes: Vec<u8>,
-    /// Whether the session should end after sending them.
+/// What a batch of keypresses asked the session to do besides redraw.
+#[derive(Debug, Default)]
+pub(super) struct KeyEffects {
+    /// Whether the session should end.
     pub(super) disconnect: bool,
-    /// A token the person submitted at the claim prompt. The handler checks it (it needs the
+    /// A token the person submitted at the claim prompt. The session checks it (it needs the
     /// store) and reports back through [`Screen::claim_rejected`] or [`Screen::claim_accepted`].
     pub(super) claim_token: Option<String>,
-    /// Terminal settings the member changed. The handler stores them.
+    /// Terminal settings the member changed. The session stores them.
     pub(super) save_settings: Option<TerminalSettings>,
 }
 
@@ -106,6 +104,10 @@ pub(super) struct Screen {
     content: Content,
     /// What the client reported. The drawn size is this with the member's overrides applied.
     pty: PtySize,
+    /// The content changed since the last frame; the next [`Screen::render`] draws it.
+    dirty: bool,
+    /// The drawn size changed (or the screen must be cleared); the next render starts over.
+    rebuild: bool,
 }
 
 impl Screen {
@@ -118,20 +120,21 @@ impl Screen {
             output,
             content,
             pty: size,
+            dirty: false,
+            rebuild: false,
         })
     }
 
-    /// Feed keypresses to the current content and redraw once. Stops at the first key that
-    /// ends the session or submits a token; keys after it are ignored.
-    pub(super) fn keys(&mut self, keys: &[Key]) -> io::Result<ScreenUpdate> {
-        let mut disconnect = false;
-        let mut claim_token = None;
-        let mut save_settings = None;
+    /// Feed keypresses to the current content. Stops at the first key that ends the session or
+    /// submits a token; keys after it are ignored. Nothing is drawn: call [`Screen::render`]
+    /// once for the whole batch, so a flood of keys costs one redraw, not one per key.
+    pub(super) fn apply_keys(&mut self, keys: &[Key]) -> KeyEffects {
+        let mut effects = KeyEffects::default();
         match &mut self.content {
             Content::Room(room) => {
                 for input in keys.iter().copied().filter_map(room_input) {
                     if room.input(input) == RoomEffect::Disconnect {
-                        disconnect = true;
+                        effects.disconnect = true;
                         break;
                     }
                 }
@@ -141,11 +144,11 @@ impl Screen {
                     match form.input(input) {
                         ClaimEffect::Stay => {}
                         ClaimEffect::Disconnect => {
-                            disconnect = true;
+                            effects.disconnect = true;
                             break;
                         }
                         ClaimEffect::Submit(token) => {
-                            claim_token = Some(token);
+                            effects.claim_token = Some(token);
                             break;
                         }
                     }
@@ -155,46 +158,41 @@ impl Screen {
                 for input in keys.iter().copied().filter_map(member_input) {
                     match flow.input(input) {
                         MemberEffect::Stay => {}
-                        MemberEffect::Save(settings) => save_settings = Some(settings),
+                        MemberEffect::Save(settings) => effects.save_settings = Some(settings),
                         MemberEffect::Disconnect => {
-                            disconnect = true;
+                            effects.disconnect = true;
                             break;
                         }
                     }
                 }
             }
         }
-        let bytes = if save_settings.is_some() {
+        self.dirty = true;
+        if effects.save_settings.is_some() {
             // A size override changes the drawn size; rebuild so the old cells are cleared.
-            self.rebuild()?
-        } else {
-            self.draw()?
-        };
-        Ok(ScreenUpdate {
-            bytes,
-            disconnect,
-            claim_token,
-            save_settings,
-        })
+            self.rebuild = true;
+        }
+        effects
     }
 
-    /// The submitted token failed. Redraws with the one generic message; the bool is whether
-    /// the session should now end (attempts used up).
-    pub(super) fn claim_rejected(&mut self) -> io::Result<(Vec<u8>, bool)> {
+    /// The submitted token failed. The screen shows the one generic message on the next render;
+    /// the bool is whether the session should now end (attempts used up).
+    pub(super) fn claim_rejected(&mut self) -> bool {
         let disconnect = match &mut self.content {
             Content::Claim(form) => form.rejected() == ClaimEffect::Disconnect,
             Content::Room(_) | Content::Member(_) => false,
         };
-        Ok((self.draw()?, disconnect))
+        self.dirty = true;
+        disconnect
     }
 
     /// The claim succeeded: the new sysop's session starts at the login screen.
-    pub(super) fn claim_accepted(&mut self, flow: MemberFlow) -> io::Result<Vec<u8>> {
+    pub(super) fn claim_accepted(&mut self, flow: MemberFlow) {
         if let Content::Claim(form) = &mut self.content {
             form.accepted();
         }
         self.content = Content::Member(Box::new(flow));
-        self.rebuild()
+        self.rebuild = true;
     }
 
     /// Switch the client to the alternate screen, hide the cursor and draw. Returns the bytes
@@ -204,20 +202,36 @@ impl Screen {
         self.draw()
     }
 
-    /// Apply a new window size and redraw. Returns the bytes to send.
+    /// Record a new window size. Nothing is drawn; [`Screen::render`] does that once, however
+    /// many sizes arrived since the last frame. A size equal to the current one still asks for
+    /// a full redraw: clients use a window change to repaint a screen.
     ///
     /// ratatui's own `Terminal::resize` asks the backend for its size, and the crossterm
     /// backend answers by querying the *server process's* terminal, which is wrong here and
-    /// fails without a tty. So we clear the client's screen and build a fresh fixed-viewport
-    /// terminal over the same output buffer; nothing ever consults the host tty.
-    pub(super) fn resize(&mut self, size: PtySize) -> io::Result<Vec<u8>> {
+    /// fails without a tty. So a changed size clears the client's screen and builds a fresh
+    /// fixed-viewport terminal over the same output buffer; nothing ever consults the host tty.
+    pub(super) fn set_size(&mut self, size: PtySize) {
         self.pty = size;
-        self.rebuild()
+        self.rebuild = true;
+    }
+
+    /// Draw whatever changed since the last frame, once. `None` when nothing did.
+    pub(super) fn render(&mut self) -> io::Result<Option<Vec<u8>>> {
+        if self.rebuild {
+            self.rebuild = false;
+            self.dirty = false;
+            return self.rebuild_now().map(Some);
+        }
+        if self.dirty {
+            self.dirty = false;
+            return self.draw().map(Some);
+        }
+        Ok(None)
     }
 
     /// Clear the client's screen, size a fresh terminal from the client's size and the member's
     /// overrides, and draw.
-    fn rebuild(&mut self) -> io::Result<Vec<u8>> {
+    fn rebuild_now(&mut self) -> io::Result<Vec<u8>> {
         queue!(self.terminal.backend_mut(), Clear(ClearType::All))?;
         self.terminal = new_terminal(&self.output, drawn_size(self.pty, &self.content))?;
         self.draw()

@@ -5,7 +5,7 @@
 //! connections, (b) enforce an authentication deadline that russh does not provide, and (c) rate
 //! limit each network before any SSH work is done (M1-C).
 
-use std::net::SocketAddr;
+use std::net::{Shutdown, SocketAddr};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -20,8 +20,9 @@ use tokio::time::{Instant, timeout, timeout_at};
 use tracing::{debug, info, warn};
 
 use super::Backend;
+use super::abort::Abort;
 use super::error::ServerError;
-use super::handler::ClientHandler;
+use super::handler::{ClientHandler, HandlerParts};
 use super::host_key::HostKey;
 use super::limits::Limits;
 use super::registry::{SessionRegistry, SessionSnapshot};
@@ -217,7 +218,7 @@ impl<D: Backend> AcceptLoop<D> {
             founder: Arc::clone(&self.founder),
             registry: Arc::clone(&self.registry),
             throttle: Arc::clone(&self.throttle),
-            max_form_submissions: self.limits.max_form_submissions,
+            limits: self.limits,
             stopped: stopped.clone(),
             _permit: permit,
         };
@@ -233,7 +234,7 @@ struct Connection<D> {
     founder: Arc<Founder>,
     registry: Arc<SessionRegistry>,
     throttle: Arc<Throttle>,
-    max_form_submissions: u32,
+    limits: Limits,
     stopped: watch::Receiver<bool>,
     /// Released when the connection ends, freeing a slot under `max_connections`.
     _permit: OwnedSemaphorePermit,
@@ -244,14 +245,27 @@ impl<D: Backend> Connection<D> {
         let deadline = Instant::now() + self.auth_timeout;
         let (authenticated_tx, authenticated_rx) = oneshot::channel();
         let guard = self.registry.register(Some(peer));
+        let abort = Arc::new(Abort::default());
+        // A second handle on the socket, kept only to be able to cut the connection when a
+        // session's own tasks ask for it (a peer that stopped reading).
+        let (stream, killer) = match split_killer(stream) {
+            Ok(pair) => pair,
+            Err(error) => {
+                warn!(%peer, %error, "could not prepare the connection; dropping it");
+                return;
+            }
+        };
         let handler = ClientHandler::new(
-            Arc::clone(&self.directory),
-            Arc::clone(&self.founder),
+            HandlerParts {
+                directory: Arc::clone(&self.directory),
+                founder: Arc::clone(&self.founder),
+                throttle: Arc::clone(&self.throttle),
+                limits: self.limits,
+                abort: Arc::clone(&abort),
+            },
             Some(peer),
             guard,
             authenticated_tx,
-            Arc::clone(&self.throttle),
-            self.max_form_submissions,
         );
 
         let started = timeout_at(
@@ -273,6 +287,7 @@ impl<D: Backend> Connection<D> {
         let mut auth_wait = Box::pin(timeout_at(deadline, authenticated_rx));
         let mut authed = false;
         let mut disconnecting = false;
+        let mut aborted = false;
 
         loop {
             tokio::select! {
@@ -291,6 +306,13 @@ impl<D: Backend> Connection<D> {
                         disconnecting = true;
                     }
                 }
+                () = abort.triggered(), if !aborted => {
+                    aborted = true;
+                    // The polite disconnect would queue behind the data the peer is not
+                    // reading. Closing the socket ends the session task at once.
+                    let _ = killer.shutdown(Shutdown::Both);
+                    disconnecting = true;
+                }
                 _ = self.stopped.changed(), if !disconnecting => {
                     disconnect(&handle, "server shutting down").await;
                     disconnecting = true;
@@ -300,6 +322,14 @@ impl<D: Backend> Connection<D> {
         }
         debug!(%peer, "connection closed");
     }
+}
+
+/// Split a socket into the stream the SSH session uses and a second handle on the same socket
+/// that can shut it down from outside the session.
+fn split_killer(stream: TcpStream) -> std::io::Result<(TcpStream, std::net::TcpStream)> {
+    let std_stream = stream.into_std()?;
+    let killer = std_stream.try_clone()?;
+    Ok((TcpStream::from_std(std_stream)?, killer))
 }
 
 async fn disconnect(handle: &russh::server::Handle, reason: &str) {

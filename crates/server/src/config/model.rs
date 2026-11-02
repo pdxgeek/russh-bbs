@@ -67,6 +67,16 @@ pub struct SshConfig {
     pub auth_rejection_millis: u64,
     /// Opt-in password login over SSH (D28). Parsed only: nothing reads it yet.
     pub allow_password_login: bool,
+    /// Milliseconds between two redraws of one session at the fastest (D49).
+    pub redraw_interval_millis: u64,
+    /// Requests per second one session may send after login (D49).
+    pub requests_per_second: u32,
+    /// Input bytes per second one session may send (D49).
+    pub input_bytes_per_second: u32,
+    /// Over-budget events before a session is disconnected (D49).
+    pub flood_strikes: u32,
+    /// Seconds a peer may leave the server unable to send it output before it is dropped (D49).
+    pub write_stall_secs: u64,
 }
 
 impl Default for SshConfig {
@@ -83,6 +93,12 @@ impl Default for SshConfig {
             auth_rejection_millis: u64::try_from(limits.auth_rejection_time.as_millis())
                 .unwrap_or(u64::MAX),
             allow_password_login: false,
+            redraw_interval_millis: u64::try_from(limits.redraw_interval.as_millis())
+                .unwrap_or(u64::MAX),
+            requests_per_second: limits.requests_per_second,
+            input_bytes_per_second: limits.input_bytes_per_second,
+            flood_strikes: limits.flood_strikes,
+            write_stall_secs: limits.write_stall.as_secs(),
         }
     }
 }
@@ -253,6 +269,11 @@ impl Config {
             ),
             max_tracked_sources: self.waiting_room.max_tracked_sources,
             max_form_submissions: self.waiting_room.max_form_submissions,
+            redraw_interval: Duration::from_millis(self.ssh.redraw_interval_millis),
+            requests_per_second: self.ssh.requests_per_second,
+            input_bytes_per_second: self.ssh.input_bytes_per_second,
+            flood_strikes: self.ssh.flood_strikes,
+            write_stall: Duration::from_secs(self.ssh.write_stall_secs),
         }
     }
 }
