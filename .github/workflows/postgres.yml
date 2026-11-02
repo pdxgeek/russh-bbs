@@ -36,10 +36,10 @@ jobs:
           --health-timeout 5s
           --health-retries 12
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Install toolchain (from rust-toolchain.toml)
         run: rustup show active-toolchain || rustup toolchain install
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
       - name: Shared suite and Postgres-only checks (TLS-only tests are skipped here)
         run: |
           cargo test -p russh-bbs-store -- --ignored --skip tls:: --test-threads=8
@@ -50,10 +50,10 @@ jobs:
     name: shared suite on Postgres that requires TLS (D31)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Install toolchain (from rust-toolchain.toml)
         run: rustup show active-toolchain || rustup toolchain install
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
       - name: Install the Postgres server binaries
         run: sudo apt-get update && sudo apt-get install -y postgresql
       - name: Start a Postgres with ssl=on and a hostssl-only pg_hba

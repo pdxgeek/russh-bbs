@@ -137,6 +137,35 @@ fn unknown_environment_variable_is_rejected_by_name() {
 }
 
 #[test]
+fn kubernetes_service_links_are_ignored_with_a_warning_naming_them() {
+    let links = [
+        ("RUSSH_BBS_PORT", "tcp://10.0.0.1:2222"),
+        ("RUSSH_BBS_PORT_2222_TCP", "tcp://10.0.0.1:2222"),
+        ("RUSSH_BBS_PORT_2222_TCP_ADDR", "10.0.0.1"),
+        ("RUSSH_BBS_SERVICE_HOST", "10.0.0.1"),
+        ("RUSSH_BBS_SERVICE_PORT", "2222"),
+        ("RUSSH_BBS_SERVICE_PORT_SSH", "2222"),
+    ];
+    let ok = assemble(None, &env(&links), &[]).expect("service links do not stop boot");
+    for (name, _) in links {
+        assert!(
+            ok.warnings.iter().any(|w| w.contains(name)),
+            "no warning names {name}: {:?}",
+            ok.warnings
+        );
+    }
+    // A real setting still wins, and a typo next to a link is still an error.
+    let err = assemble(
+        None,
+        &env(&[("RUSSH_BBS_PORT", "x"), ("RUSSH_BBS_LISTN", "x")]),
+        &[],
+    )
+    .expect_err("typo still rejected");
+    assert!(err.to_string().contains("RUSSH_BBS_LISTN"), "{err}");
+    assert!(assemble(None, &env(&[("RUSSH_BBS_SERVICE_PORTS", "x")]), &[]).is_err());
+}
+
+#[test]
 fn bad_values_name_the_key_and_the_source() {
     let msg = message(from_file("[ssh]\nmax_connections = \"lots\"\n"));
     assert!(

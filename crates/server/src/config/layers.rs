@@ -94,8 +94,17 @@ pub fn assemble(
         .collect();
     env.sort_by(|a, b| a.0.cmp(&b.0));
     for (name, raw) in env {
-        let def =
-            keys::by_env(name).ok_or_else(|| ConfigError::UnknownEnv { name: name.clone() })?;
+        let Some(def) = keys::by_env(name) else {
+            if is_service_link(name) {
+                warnings.push(format!(
+                    "ignoring environment variable {name}: it matches a Kubernetes service link \
+                     for a service named `russh-bbs`, not a setting (set `enableServiceLinks: \
+                     false` on the pod to stop injecting these)"
+                ));
+                continue;
+            }
+            return Err(ConfigError::UnknownEnv { name: name.clone() });
+        };
         let origin = Source::Env(def.env);
         let text = raw
             .to_str()
@@ -238,4 +247,16 @@ fn insert_path(table: &mut Table, path: &str, value: Value) {
             }
         }
     }
+}
+
+/// Variables Kubernetes injects for a service named `russh-bbs` (D56): `RUSSH_BBS_SERVICE_HOST`,
+/// `RUSSH_BBS_SERVICE_PORT[_<NAME>]`, `RUSSH_BBS_PORT` and `RUSSH_BBS_PORT_<port>_<PROTO>[_...]`.
+/// None of these is a setting, and the list is checked only after the real names, so a typo in a
+/// real setting (`RUSSH_BBS_LISTN`) is still an error.
+fn is_service_link(name: &str) -> bool {
+    matches!(
+        name,
+        "RUSSH_BBS_PORT" | "RUSSH_BBS_SERVICE_HOST" | "RUSSH_BBS_SERVICE_PORT"
+    ) || name.starts_with("RUSSH_BBS_SERVICE_PORT_")
+        || name.starts_with("RUSSH_BBS_PORT_")
 }

@@ -55,7 +55,7 @@ The `prebuilt` stage copies `russh-bbs-server` into the same `scratch` final sta
 | `/data/config.toml` | Optional config (default location; see [config.md](config.md)) | you |
 | `/data/` blobs directory | Member-uploaded bytes (D30), later | when files land |
 
-The image sets only `RUSSH_BBS_LISTEN=0.0.0.0:2222`. It has no `HOME`, so the server's default data directory is `/data` itself (D46): the host key and the SQLite database land there with no further setting. The image deliberately does **not** set `RUSSH_BBS_DB`: that variable is a boot error with `datasource.kind = "postgres"`, and a variable baked into an image cannot be unset by `docker run`. A `/data/config.toml` is picked up automatically; the environment overrides the file and flags override both (D38). Only set `RUSSH_BBS_*` names listed in [config.md](config.md): an unknown one stops the server at start. Logs go to stdout (`docker logs`); set `RUST_LOG` (e.g. `debug`) to change the level.
+The image sets only `RUSSH_BBS_LISTEN=0.0.0.0:2222`. It has no `HOME`, so the server's default data directory is `/data` itself (D46): the host key and the SQLite database land there with no further setting. The image deliberately does **not** set `RUSSH_BBS_DB`: that variable is a boot error with `datasource.kind = "postgres"`, and a variable baked into an image cannot be unset by `docker run`. A `/data/config.toml` is picked up automatically; the environment overrides the file and flags override both (D38). Only set `RUSSH_BBS_*` names listed in [config.md](config.md): an unknown one stops the server at start, except the Kubernetes service-link names listed in [config.md](config.md#kubernetes-service-links), which are ignored with a warning. If the service is named `russh-bbs`, you can also set `enableServiceLinks: false` on the pod so they are never injected. Logs go to stdout (`docker logs`); set `RUST_LOG` (e.g. `debug`) to change the level.
 
 ## Volume permissions and the non-root user
 
@@ -78,8 +78,12 @@ ssh -p 2222 claim@localhost     # paste the token to become sysop (D41)
 ```
 
 - The token is held in memory only. **Restarting before the claim prints a new token and voids the old one**; read it again from `docker logs`.
-- After the claim nothing is printed. Anyone who can read `docker logs` before the claim can claim the board, so do not use a log driver that ships stdout to a third party before you claim it, and claim promptly.
+- The token goes to the console only; the server does not write it through its logger. A container runtime still keeps everything on stdout, so `docker logs` retains the token after the claim (it is void by then, so the only cost is confusion). After the claim nothing more is printed. Anyone who can read `docker logs` before the claim can claim the board, so do not use a log driver that ships stdout to a third party before you claim it, and claim promptly.
 - `ssh -p 2222 localhost` (any other user name) reaches the waiting room.
+
+## Memory after a connection flood
+
+The image uses the system allocator of the static musl build. Measured on a release musl binary (D57): about 8 MB idle, and after a local flood of 200 sessions with constant resizes and input about 28 MB ten seconds later, i.e. roughly 20 MB stays with the process until restart. Peak memory is bounded by `ssh.max_connections` and the render cap (`ssh.render_cols` x `ssh.render_rows`, D53), not by the allocator. Swapping in `mimalloc` used more memory and was not adopted.
 
 ## Host key fingerprint
 
