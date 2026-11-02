@@ -108,7 +108,7 @@ fn resources_round_trip_and_bad_pairs_are_refused() {
         kind: ResourceKind::Forum,
         id: ResourceId::new(4).unwrap(),
     };
-    let event = AuditEvent::new(Actor::System, Action::GrantAdded, Target::None).on(r);
+    let event = AuditEvent::new(Actor::System, Action::PermissionGranted, Target::None).on(r);
     let (kind, id) = event.resource_parts();
     assert_eq!(AuditEvent::resource_from_parts(kind, id), Some(Some(r)));
     assert_eq!(AuditEvent::resource_from_parts("", 0), Some(None));
@@ -165,7 +165,7 @@ fn the_events_the_store_writes_say_what_changed() {
             scope: Scope::Resource(resource),
         },
     );
-    assert_eq!(grant.action, Action::GrantAdded);
+    assert_eq!(grant.action, Action::PermissionGranted);
     assert_eq!(grant.target, Target::Account(alice()));
     assert_eq!(grant.resource, Some(resource));
     assert_eq!(grant.detail.as_str(), "permission forum.read");

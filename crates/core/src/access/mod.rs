@@ -14,6 +14,7 @@
 //! from the same facts. [`Snapshot::require`] returns the [`Granted`] proof that action
 //! functions take. Group nesting rules are in [`GroupGraph`].
 
+mod edit;
 mod groups;
 mod permission;
 mod slug;
@@ -23,6 +24,10 @@ mod store;
 use std::fmt;
 use std::future::Future;
 
+pub use edit::{
+    EditError, MIN_CUSTOM_RANK, NewRole, create_role, delete_role, grant_permission, grant_role,
+    revoke_permission, revoke_role, set_role_permissions,
+};
 pub use groups::{
     Child, GroupChange, GroupError, GroupGraph, GroupId, GroupInfo, Kind, MAX_GROUP_DEPTH,
 };
@@ -140,5 +145,7 @@ pub async fn decide_access<D: MemberDirectory>(directory: &D, key: &Fingerprint)
     }
 }
 
+#[cfg(test)]
+mod edit_tests;
 #[cfg(test)]
 mod tests;

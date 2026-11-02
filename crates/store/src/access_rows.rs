@@ -5,8 +5,8 @@
 use std::collections::BTreeSet;
 
 use russh_bbs_core::access::{
-    Child, GroupGraph, GroupId, Held, Kind, Permission, ResourceId, ResourceKind, ResourceRef,
-    RoleInfo, Scope, Slug, Snapshot, Source, Via,
+    Child, Granting, GroupGraph, GroupId, Held, Kind, NewGrant, Permission, ResourceId,
+    ResourceKind, ResourceRef, RoleInfo, Scope, Slug, Snapshot, Source, Subject, Via,
 };
 use russh_bbs_core::store::{AccountId, AccountState, StoreError};
 use tracing::warn;
@@ -225,4 +225,76 @@ pub(crate) fn deleted_group_name(
         .iter()
         .find(|row| row.id == group.as_raw())
         .and_then(|row| Slug::parse(&row.name).ok())
+}
+
+/// A grant as the columns of `access_grant`: a global one stores `''` and `0`, never NULL.
+pub(crate) struct GrantColumns<'a> {
+    pub(crate) account: Option<i64>,
+    pub(crate) group: Option<i64>,
+    pub(crate) role: Option<&'a str>,
+    pub(crate) permission: Option<&'static str>,
+    pub(crate) resource_kind: &'static str,
+    pub(crate) resource_id: i64,
+}
+
+impl<'a> GrantColumns<'a> {
+    pub(crate) fn of(grant: &'a NewGrant) -> Self {
+        let (account, group) = match grant.subject {
+            Subject::Account(id) => (Some(id.as_raw()), None),
+            Subject::Group(id) => (None, Some(id.as_raw())),
+        };
+        let (role, permission) = match &grant.granting {
+            Granting::Role(role) => (Some(role.as_str()), None),
+            Granting::Permission(permission) => (None, Some(permission.name())),
+        };
+        let (resource_kind, resource_id) = match grant.scope {
+            Scope::Global => ("", 0),
+            Scope::Resource(r) => (r.kind.name(), r.id.as_raw()),
+        };
+        Self {
+            account,
+            group,
+            role,
+            permission,
+            resource_kind,
+            resource_id,
+        }
+    }
+
+    /// The grant of `sysop` everywhere: the one whose last copy may not be revoked.
+    pub(crate) fn is_global_sysop(&self) -> bool {
+        self.role == Some(Slug::SYSOP.as_str()) && self.resource_id == 0
+    }
+}
+
+/// What replacing a role's stored permission names with a wanted set changes.
+pub(crate) struct PermissionDiff {
+    /// Stored names that are not wanted (an unknown stored name counts: it is dropped).
+    pub(crate) removed: Vec<String>,
+    /// Wanted permissions that are not stored.
+    pub(crate) added: Vec<Permission>,
+}
+
+impl PermissionDiff {
+    pub(crate) fn is_empty(&self) -> bool {
+        self.removed.is_empty() && self.added.is_empty()
+    }
+}
+
+pub(crate) fn permission_diff(stored: &[String], wanted: &[Permission]) -> PermissionDiff {
+    let wanted_names: BTreeSet<&str> = wanted.iter().map(|p| p.name()).collect();
+    let stored_names: BTreeSet<&str> = stored.iter().map(String::as_str).collect();
+    PermissionDiff {
+        removed: stored_names
+            .difference(&wanted_names)
+            .map(|&name| name.to_owned())
+            .collect(),
+        added: wanted
+            .iter()
+            .copied()
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .filter(|p| !stored_names.contains(p.name()))
+            .collect(),
+    }
 }

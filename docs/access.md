@@ -180,12 +180,25 @@ This is the most intricate feature in the MVP, so the M2 access slice starts wit
 
 - See "Resource limits" above: `core::limits`, migration `0006_limits` on both backends, the `limits.edit` permission (one new row in the table), session hooks in `crates/server/src/ssh` (`handler.rs` starts the meter, `shell.rs` ticks it at each action and settles it at the end, `screen.rs` has the limit screen, `registry.rs` holds the in-process session count).
 
+### Implemented (M2-B2, `m2/access-editing`)
+
+- **Editing services** in `core::access::edit` (D69, D70): `create_role`, `set_role_permissions`, `delete_role`, `grant_role`, `revoke_role`, `grant_permission`, `revoke_permission`. Each takes the actor's `Snapshot`, checks `roles.edit` through `Snapshot::require` (and `groups.edit` as well when the subject is a group) and returns a typed `EditError`. No UI (M5).
+- **Rules:** rank strictly below the actor's top global rank (with the one `sysop` exception in D69); locked roles refused; no escalation (a permission goes into a role, is granted, or a role is granted, only if the actor holds it where it applies); the last global `sysop` grant and `everyone`'s `member` grant cannot be revoked; `waiting` is never granted; built-in roles can be changed but not deleted; a role in use cannot be deleted.
+- **Store, both backends:** `role`, `put_role`, `set_role_permissions`, `delete_role`, `remove_grant`, each in one transaction with its audit row (`role.created`, `role.permissions_set`, `role.deleted`, `role.revoked`, `permission.revoked`; `add_grant` now writes `role.granted` or `permission.granted`). A no-op (same permission set, a grant that is not there) writes no row. No migration.
+- `Snapshot::top_rank()` (highest global role rank), for these rules and for other slices' rank checks.
+
 ### Tested
 
 - `resolve` table test (16 cases) and two property tests (an independent oracle; `reach` agrees with `resolve`); `GroupGraph` tests (self loop, two and three cycles, diamond, depth 8 and 9, remove, delete, locked and built-in groups); a test that the enum equals the table in this page.
 - The shared store suite (`suite/access.rs`, 18 checks) on SQLite, on Postgres 16 and on a TLS-required Postgres 16: seeded ranks and kinds, `waiting` has exactly three permissions, each role contains the one below, `sysop` holds every `Permission`, the founder and a plain member, unknown and inactive accounts get only the waiting snapshot (even a suspended sysop), staff, nested groups through the closure, a rejected cycle changes nothing, the depth cap, two concurrent opposite nestings make exactly one edge, scoped grants, allow entries for accounts and groups, idempotent grants, bad grants refused by name, reopen, and a closed store fails the snapshot.
 - A migration test per backend that an M1-era database (migrations 1 and 2, with a sysop) gets `0003` applied and the sysop grant.
 - `crates/server/tests/access_paths.rs` over a real russh client and the real SQLite store: each wired permission is taken away from the roles that give it and the path refuses (menu items vanish and their hotkeys do nothing, settings are not saved, the waiting room is refused a shell), then put back and works again; a removal applies on the very next key of an open session; and a guard test that every `Permission` is in exactly one of `WIRED` and `NOT_YET_WIRED`.
+
+### Tested (M2-B2)
+
+- `core::access::edit_tests` (an in-memory store that keeps state and mirrors the two store-side rules): every service refused without `roles.edit` and writing nothing; a session with no account; rank for create (0, equal, above refused), change, delete, grant and revoke; locked and built-in roles; no escalation for create, change (only additions), role grant and allow entries (global and on one resource, and a holding on one resource does not cover a wider grant); the `sysop` exception and nobody else's; the last `sysop` grant (a scoped one does not count); `everyone`'s `member` grant; a group grant needs `groups.edit`; repeated grants and revokes change nothing; `top_rank` counts global roles only.
+- The shared store suite (`suite/access_edit.rs`, 9 checks) on SQLite, Postgres 16 and a TLS-required Postgres 16: a role put, changed and deleted with one audit row each and none for a repeat; deleting a granted role refused with nothing cascaded; removing a grant (role and permission, scoped) writes a row and removing nothing writes none; the last sysop grant cannot be removed even by two concurrent revokes (exactly one wins); the rules on the real seeded roles end to end; a revoked role and a role edit are seen by the next snapshot; refused edits write no audit row; **no edit lands when the audit insert fails**; the role survives a reopen.
+- `crates/server/tests/access_paths.rs`: a role granted and revoked through the services over a real russh client: the next key offers (then stops offering) the `Sysop tools` item and its hotkey stops working.
 
 ### Tested (M2-H)
 
@@ -196,7 +209,7 @@ This is the most intricate feature in the MVP, so the M2 access slice starts wit
 
 ### Not done / not verified
 
-- The editing services (create or change a role, grant or revoke, with the rank rules) are **M2-B2**; nothing writes roles or grants except the founder claim, account creation, group changes and the tests. Group changes and grants written by `add_grant` are audited since M2-C ([audit.md](audit.md)); the editing services add their own rows.
+- Services for group create, delete and membership gated by `groups.edit` alone are **not built** (D69 (5)): a `groups.edit` holder (a `cosysop`) could add an account to a group that holds a role above their rank. They need a rank rule over the group's grants first. `create_group` and `change_groups` remain plain store writes with no check. A group with no members still counts as a global `sysop` grant for the last-sysop rule. Not exercised: the editing services through a real `ssh` session beyond the grant-and-revoke path above (there is no sysop screen until M5).
 - Resource limits: see M2-H above. Not verified: a two-process deployment (concurrent sessions are counted in-process), a session that stays open across several UTC days, real `ssh` for the limit screens (driven with russh clients only; see the PR report), and the posts, mail, upload and invite limits (stored and resolved, not yet enforced; the owning slices enforce them). `sysop` and `cosysop` over telnet (D27) is the M3 telnet slice. Resource-owner-managed allow lists wait for the resources (M3, M4).
 - Not exercised: a deployment with two server processes on one database (nothing is cached, so it should hold, but it was not run), a database with thousands of groups, and the Postgres `LOCK TABLE` under load beyond the two-task race. A suspended account's open session is not disconnected; it simply holds the waiting snapshot from its next action.
 - The first-run icon check stores its answer without `account.edit_settings` being checked as a page (it runs before the menu); the save itself is refused if the permission is not held, and the choice then lasts for the session only.
@@ -426,9 +439,9 @@ Groups: `everyone` (`locked`), `staff` (`builtin`, editable members). Grants: (`
 
 **6.4 Telnet (D27).** `sysop` and `cosysop` over telnet are refused by the M3 telnet slice by dropping any `Held` whose role rank is 40 or more before `resolve`. This slice does nothing for it except keep the rank on `Source::Role` so the telnet slice can; it is noted in coordination.
 
-**6.5 Write path (core services over `AccessStore`) - DEFERRED to M2-B2.** The orchestrator cut the editing services from this PR: no UI calls them until M5. What stayed is the group-change path (`change_groups`, `GroupGraph`) and the plain store writes the founder claim, the backfill and the suite need. The text below is kept as the plan for M2-B2.
+**6.5 Write path (core services over `AccessStore`) - implemented in M2-B2** (`core::access::edit`, D69, D70; see "Implemented (M2-B2)" and "As built"). The group-change path (`change_groups`, `GroupGraph`) and the plain store writes came with M2-B. The text below is the plan; "As built" lists where the build differs.
 
-**6.5 (plan for M2-B2).** No UI in this slice (the sysop admin screens are M5); these are the functions that screens, tests and later slices call. Each takes the actor's `Snapshot` and refuses without the matching permission:
+**6.5 (the plan for M2-B2, now built).** No UI in this slice (the sysop admin screens are M5); these are the functions that screens, tests and later slices call. Each takes the actor's `Snapshot` and refuses without the matching permission:
 
 - `create_role`, `set_role_permissions`, `delete_role` (`roles.edit`). Rules: target rank strictly below the actor's top rank; `locked` roles refused; the actor may only put a permission in a role if the actor holds it globally (no escalation by editing a role).
 - `grant_role` / `revoke_role` (account or group, global or on a resource) and `grant_permission` / `revoke_permission` (allow-list entries): `roles.edit` in this slice, with the same rank rule for roles. Letting a resource's owner manage its own allow list is added by the resource's slice (M3+) because resource owners do not exist yet. `waiting` cannot be granted; the (`everyone`, `member`) grant cannot be revoked.
@@ -450,7 +463,7 @@ Storage traits (`core::access`): `AccessStore` with a few methods only: `snapsho
 - **Role inheritance**: not needed; layered inserts give the same data.
 - **Resource-owner-managed allow lists** and an `owner` column on resources: the resources do not exist until M3/M4; each resource slice adds its owner and uses `grant_permission`.
 - **Checking that a scoped permission matches the resource's kind** at write time: harmless without it (a mismatched grant never matches); add when the sysop UI exists.
-- **Audit rows** for role, group and grant changes: group changes and `add_grant` done in M2-C ([audit.md](audit.md)); the M2-B2 editing services add theirs. **Retention** and the sysop screen: M5.
+- **Audit rows** for role, group and grant changes: done in M2-C and M2-B2 ([audit.md](audit.md)). **Retention** and the sysop screen: M5.
 - **Sysop/cosysop refused over telnet** (D27): M3 telnet slice.
 - **Sysop UI** to edit roles, groups and allow lists, and the "visible to the sysop" wording on allow-list screens: M5 and the resource slices.
 - **RFC 9068 claim names** (`roles`, `groups`, `entitlements`) on API tokens: M5.
@@ -473,7 +486,7 @@ Risks to flag: (a) front-end call sites sit in `crates/server/src/{ssh,settings,
 
 ### As built (differences from the plan above)
 
-- **Editing services:** not built (section 6.5), see M2-B2 in [coordination.md](coordination.md). `AccessStore` has `snapshot`, `roles`, `groups`, `create_group`, `change_groups` and `add_grant` (a plain write that refuses `waiting` and unknown targets; no rank rules, no permission check).
+- **Editing services:** built in M2-B2 (D69, D70) in `core::access::edit`. Differences from the plan: (1) a `sysop` may grant and revoke `sysop` despite the strict rank rule; (2) granting a role also needs the actor to hold every permission of that role (the plan checked only role edits); (3) a grant to a group needs `groups.edit` too, and the `create_group`/`delete_group`/membership services are not added (see "Not done"); (4) delete refuses while the role is granted; (5) the rank of a role never changes, so there is no "change rank" service; (6) no `grant.revoked` audit action, `role.revoked` and `permission.revoked` cover it. `AccessStore` gained `role`, `put_role`, `set_role_permissions`, `delete_role` and `remove_grant`; `add_grant` stays a plain write (no rank rules, no permission check) that the services call.
 - **`strum`** derives the name, parsing and the variant list of `Permission` (`Permission::ALL`), as recommended in section 5. It was already in `Cargo.lock` (transitive); it is now a direct dependency of `russh-bbs-core`.
 - **One statement per active account** also reads the account's state (it joins `accounts`), so "inactive gets the waiting snapshot" costs no second query. The waiting snapshot is a second, trivial query on `role_permission`.
 - **Waiting room:** the SSH shell refuses the session (a failed shell request) if the unauthenticated snapshot does not hold `waiting.view`. The forms inside the room (`invite.redeem`, `membership.apply`) store nothing yet, so those two permissions are in `NOT_YET_WIRED` until M2-D, M2-E and M2-G wire them.
