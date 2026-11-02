@@ -1,0 +1,58 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT r.id, r.handle, r.message, r.created_at, r.expires_at,\n                      v.account_id AS \"voucher_id?\", a.username AS \"voucher_handle?\"\n               FROM invite_request r\n               LEFT JOIN invite_request_vouch v ON v.request_id = r.id\n               LEFT JOIN accounts a ON a.id = v.account_id AND a.state = 'active'\n               WHERE r.id IN (SELECT id FROM invite_request ORDER BY id LIMIT $1)\n               ORDER BY r.id, v.created_at, v.account_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "handle",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "message",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "created_at",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 4,
+        "name": "expires_at",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 5,
+        "name": "voucher_id?",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 6,
+        "name": "voucher_handle?",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "f36edb56881940c1833d30cf5f3eb8f766b5d5d4f919306c010807d6ea8e8fe0"
+}

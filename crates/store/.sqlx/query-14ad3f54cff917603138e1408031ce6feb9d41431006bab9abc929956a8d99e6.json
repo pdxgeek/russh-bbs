@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO request_denial (key_hash, expires_at) VALUES (?, ?)\n             ON CONFLICT (key_hash) DO UPDATE SET expires_at = excluded.expires_at",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "14ad3f54cff917603138e1408031ce6feb9d41431006bab9abc929956a8d99e6"
+}

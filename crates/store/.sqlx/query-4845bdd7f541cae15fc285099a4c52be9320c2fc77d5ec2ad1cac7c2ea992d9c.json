@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO request_denial (key_hash, expires_at) VALUES ($1, $2)\n             ON CONFLICT (key_hash) DO UPDATE SET expires_at = excluded.expires_at",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4845bdd7f541cae15fc285099a4c52be9320c2fc77d5ec2ad1cac7c2ea992d9c"
+}

@@ -61,6 +61,7 @@ impl Ui {
             .copied()
             .chain(tree.text_keys())
             .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
+            .chain(russh_bbs_core::queue::keys::TEXT_KEYS.iter().copied())
             .collect();
         Ok(Self {
             strings: StringTable::parse(toml, &required)?,

@@ -59,13 +59,16 @@ pub const LABEL_ABOUT: &str = "A line about yourself";
 /// See [`LABEL_HANDLE`].
 pub const LABEL_CODE: &str = "Invite code";
 
+/// The one answer to the request-an-invite form (M2-E). It is the same whether the request was
+/// kept or dropped (a rate limit, a full queue, a repeat, a recent refusal), so it tells a
+/// stranger nothing about the board. It says what is true either way: who can read the text if
+/// it is kept, and that nobody is notified.
+pub const REQUEST_INVITE_ANSWER: &str = "Thank you. If your request is kept, the staff and trusted members here can read your handle, your message and this key's fingerprint, and the staff decide when they can. Nobody is notified: connect again later with this same key to find out.";
+
 /// Form results. Each says plainly that nothing was stored or sent, because nothing was.
-pub const REQUEST_INVITE_UNAVAILABLE: &str =
-    "Invite requests are not open yet. Nothing you typed was stored or sent.";
-/// See [`REQUEST_INVITE_UNAVAILABLE`].
 pub const APPLY_UNAVAILABLE: &str =
     "Applications are not open yet. Nothing you typed was stored or sent.";
-/// See [`REQUEST_INVITE_UNAVAILABLE`].
+/// See [`APPLY_UNAVAILABLE`].
 pub const CREATE_ACCOUNT_UNAVAILABLE: &str =
     "Account creation is not open yet. Nothing you typed was stored or sent.";
 

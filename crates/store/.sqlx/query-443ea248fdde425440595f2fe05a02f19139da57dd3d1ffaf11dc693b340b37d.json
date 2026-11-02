@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO invite_request_vouch (request_id, account_id, created_at)\n             SELECT r.id, $1, $2 FROM invite_request r WHERE r.id = $3 AND r.expires_at > $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "443ea248fdde425440595f2fe05a02f19139da57dd3d1ffaf11dc693b340b37d"
+}

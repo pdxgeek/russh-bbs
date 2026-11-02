@@ -22,6 +22,8 @@ mod invite_rows;
 mod limit_rows;
 mod profile_rows;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
+mod queue_rows;
+#[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod rows;
 
 #[cfg(feature = "postgres")]

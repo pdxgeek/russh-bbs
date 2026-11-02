@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO invite_request_vouch (request_id, account_id, created_at)\n             SELECT r.id, ?1, ?2 FROM invite_request r WHERE r.id = ?3 AND r.expires_at > ?2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "e6023ee6b34148e71581588a24b9d8f94ef21384ee5ade4acfe4532672165ee9"
+}

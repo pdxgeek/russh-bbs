@@ -137,6 +137,9 @@ pub enum SettingKey {
     WaitingRoomBanner,
     /// The sysop's waiting-room rules text. Raw; sanitized when shown.
     WaitingRoomRules,
+    /// The most invite requests that may wait in the sysop queue (M2-E, D72). A number from 1
+    /// to 10,000; unset or invalid means 200.
+    QueueMaxPending,
 }
 
 impl SettingKey {
@@ -148,6 +151,7 @@ impl SettingKey {
             Self::FounderClaimed => "founder_claimed",
             Self::WaitingRoomBanner => "waiting_room_banner",
             Self::WaitingRoomRules => "waiting_room_rules",
+            Self::QueueMaxPending => "queue_max_pending",
         }
     }
 }
