@@ -17,6 +17,13 @@ pub const MAX_COLS: u16 = 500;
 /// See [`MAX_COLS`].
 pub const MAX_ROWS: u16 = 200;
 
+/// Widest and tallest area a session draws into (D52). The screens are 76-column boxes, so this
+/// loses nothing on a normal terminal; it bounds a session's render buffers to
+/// `2 * RENDER_COLS * RENDER_ROWS` cells however large a window the client asks for.
+pub const RENDER_COLS: u16 = 100;
+/// See [`RENDER_COLS`].
+pub const RENDER_ROWS: u16 = 40;
+
 /// A terminal size in character cells, always within `1..=MAX`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PtySize {

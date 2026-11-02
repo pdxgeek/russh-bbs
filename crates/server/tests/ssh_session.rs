@@ -16,7 +16,7 @@ use common::{
 };
 use russh::ChannelMsg;
 use russh_bbs_core::access::Access;
-use russh_bbs_server::ssh::terminal::{MAX_COLS, MAX_ROWS, PtySize};
+use russh_bbs_server::ssh::terminal::{MAX_COLS, MAX_ROWS, PtySize, RENDER_COLS, RENDER_ROWS};
 use tokio::time::timeout;
 
 // ---- the waiting-room screen ----
@@ -277,4 +277,47 @@ async fn the_waiting_room_names_no_members_boards_or_stats() {
     for word in ["member list", "online", "board", "post", "caller", "users"] {
         assert!(!screen.contains(word), "screen leaks {word:?}: {screen:?}");
     }
+}
+
+/// The (row, column) of every cursor-position escape (`ESC [ row ; col H`, 1-based) in `frame`.
+fn cursor_moves(frame: &str) -> Vec<(u16, u16)> {
+    frame
+        .split("\x1b[")
+        .skip(1)
+        .filter_map(|rest| {
+            let params = rest.split('H').next().filter(|_| rest.contains('H'))?;
+            let (row, col) = params.split_once(';')?;
+            Some((row.parse().ok()?, col.parse().ok()?))
+        })
+        .collect()
+}
+
+/// D52 (QA M1 N1): a 500x200 window is drawn into a capped, centered rectangle, so a session's
+/// render buffers (and the per-frame work) do not follow the size the client picked. Fails on a
+/// server that draws the box across the whole window.
+#[tokio::test]
+async fn a_huge_window_is_drawn_into_a_bounded_rectangle() {
+    let t = start_server(fast_limits()).await;
+    let (session, _) = login(t.addr()).await;
+    let mut channel = open_shell(&session, u32::from(MAX_COLS), u32::from(MAX_ROWS)).await;
+    let first = read_until(&mut channel, "Disconnect").await;
+    let moves = cursor_moves(&first);
+    assert!(!moves.is_empty(), "no cursor moves in {first:?}");
+    let span = |f: fn(&(u16, u16)) -> u16, limit: u16, what: &str| {
+        let lo = moves.iter().map(f).min().unwrap();
+        let hi = moves.iter().map(f).max().unwrap();
+        assert!(hi - lo < limit, "{what} drawn over {lo}..={hi}, limit {limit}");
+    };
+    span(|m| m.0, RENDER_ROWS, "rows");
+    span(|m| m.1, RENDER_COLS, "columns");
+
+    // A window change to another huge size still redraws, inside the same bound.
+    channel.window_change(400, 150, 0, 0).await.unwrap();
+    let again = read_until(&mut channel, "Disconnect").await;
+    assert!(
+        cursor_moves(&again)
+            .iter()
+            .all(|m| m.0 <= MAX_ROWS && m.1 <= MAX_COLS),
+        "{again:?}"
+    );
 }

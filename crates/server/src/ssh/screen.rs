@@ -5,6 +5,12 @@
 //! `window-change`. ratatui therefore never asks the host's own tty for its size, and a session
 //! cannot affect another or the server's console.
 //!
+//! **Render cost does not follow the window (D52).** The viewport is the window size capped at
+//! [`RENDER_COLS`] x [`RENDER_ROWS`] and centered in it; the rest of a bigger window stays blank.
+//! A session therefore holds at most two buffers of that many cells whatever size the client asks
+//! for, and a window change that leaves the drawn rectangle unchanged repaints in place instead
+//! of building a new terminal.
+//!
 //! **What is drawn.** One of three [`Content`]s, each a core state machine that produces a
 //! [`View`]: the waiting room (M1-C, drawn by `crate::waiting_room`), the founder token prompt
 //! (`ssh claim@host`, M1-D), or a member's signed-in session (M1-E, drawn by
@@ -26,7 +32,7 @@ use russh_bbs_core::founder::{ClaimEffect, ClaimForm, ClaimInput};
 use russh_bbs_core::terminal_settings::{MemberEffect, MemberFlow, MemberInput, TerminalSettings};
 use russh_bbs_core::waiting_room::{RoomEffect, RoomInput, View, WaitingRoom};
 
-use super::terminal::{Key, PtySize};
+use super::terminal::{Key, PtySize, RENDER_COLS, RENDER_ROWS};
 use crate::settings::{self, Look};
 use crate::waiting_room::render;
 
@@ -101,12 +107,15 @@ impl Content {
 pub(super) struct Screen {
     terminal: Terminal<CrosstermBackend<OutputBuffer>>,
     output: OutputBuffer,
+    /// The rectangle `terminal` draws into.
+    viewport: Rect,
     content: Content,
     /// What the client reported. The drawn size is this with the member's overrides applied.
     pty: PtySize,
     /// The content changed since the last frame; the next [`Screen::render`] draws it.
     dirty: bool,
-    /// The drawn size changed (or the screen must be cleared); the next render starts over.
+    /// The window or the drawn size changed (or the screen must be cleared); the next render
+    /// clears the client's screen and repaints everything.
     rebuild: bool,
 }
 
@@ -114,10 +123,11 @@ impl Screen {
     /// Create a screen of `size` showing `content`. Nothing is drawn until [`Screen::enter`].
     pub(super) fn new(size: PtySize, content: Content) -> io::Result<Self> {
         let output = OutputBuffer::default();
-        let drawn = drawn_size(size, &content);
+        let viewport = viewport(drawn_size(size, &content));
         Ok(Self {
-            terminal: new_terminal(&output, drawn)?,
+            terminal: new_terminal(&output, viewport)?,
             output,
+            viewport,
             content,
             pty: size,
             dirty: false,
@@ -206,10 +216,12 @@ impl Screen {
     /// many sizes arrived since the last frame. A size equal to the current one still asks for
     /// a full redraw: clients use a window change to repaint a screen.
     ///
-    /// ratatui's own `Terminal::resize` asks the backend for its size, and the crossterm
-    /// backend answers by querying the *server process's* terminal, which is wrong here and
-    /// fails without a tty. So a changed size clears the client's screen and builds a fresh
-    /// fixed-viewport terminal over the same output buffer; nothing ever consults the host tty.
+    /// ratatui's own `Terminal::resize` and `clear` ask the backend for its size or cursor, and
+    /// the crossterm backend answers by querying the *server process's* terminal, which is wrong
+    /// here and fails without a tty. So a changed drawn rectangle clears the client's screen and
+    /// builds a fresh fixed-viewport terminal over the same output buffer, and an unchanged one
+    /// clears the screen and forgets what was drawn (no allocation); nothing ever consults the
+    /// host tty.
     pub(super) fn set_size(&mut self, size: PtySize) {
         self.pty = size;
         self.rebuild = true;
@@ -229,11 +241,20 @@ impl Screen {
         Ok(None)
     }
 
-    /// Clear the client's screen, size a fresh terminal from the client's size and the member's
-    /// overrides, and draw.
+    /// Clear the client's screen and draw everything. The terminal is rebuilt only when the
+    /// rectangle to draw into changed; otherwise its buffers are reset in place.
     fn rebuild_now(&mut self) -> io::Result<Vec<u8>> {
         queue!(self.terminal.backend_mut(), Clear(ClearType::All))?;
-        self.terminal = new_terminal(&self.output, drawn_size(self.pty, &self.content))?;
+        let target = viewport(drawn_size(self.pty, &self.content));
+        if target == self.viewport {
+            // `swap_buffers` resets the buffer it leaves behind, so two swaps blank both and the
+            // next draw diffs against an empty frame: every cell is written again.
+            self.terminal.swap_buffers();
+            self.terminal.swap_buffers();
+        } else {
+            self.terminal = new_terminal(&self.output, target)?;
+            self.viewport = target;
+        }
         self.draw()
     }
 
@@ -270,10 +291,10 @@ impl Screen {
 
 fn new_terminal(
     output: &OutputBuffer,
-    size: PtySize,
+    area: Rect,
 ) -> io::Result<Terminal<CrosstermBackend<OutputBuffer>>> {
     let options = TerminalOptions {
-        viewport: Viewport::Fixed(rect(size)),
+        viewport: Viewport::Fixed(area),
     };
     Terminal::with_options(CrosstermBackend::new(output.clone()), options)
 }
@@ -289,8 +310,17 @@ fn drawn_size(pty: PtySize, content: &Content) -> PtySize {
     }
 }
 
-fn rect(size: PtySize) -> Rect {
-    Rect::new(0, 0, size.cols(), size.rows())
+/// The rectangle to draw into: `drawn` capped at [`RENDER_COLS`] x [`RENDER_ROWS`] and centered
+/// in it, so the cost of a session does not depend on the window the client chose (D52).
+fn viewport(drawn: PtySize) -> Rect {
+    let cols = drawn.cols().min(RENDER_COLS);
+    let rows = drawn.rows().min(RENDER_ROWS);
+    Rect::new(
+        (drawn.cols() - cols) / 2,
+        (drawn.rows() - rows) / 2,
+        cols,
+        rows,
+    )
 }
 
 /// Translate a keypress for the room. Keys the room has no use for are dropped.
