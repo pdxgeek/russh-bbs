@@ -43,10 +43,13 @@ jobs:
           docker run -d --name bbs -p 2222:2222 -v bbs-data:/data russh-bbs:ci
           for i in $(seq 1 30); do docker logs bbs 2>&1 | grep -q "ssh server listening" && break; sleep 1; done
           docker logs bbs
-          docker logs bbs 2>&1 | grep -q "ssh server listening"
+          docker logs bbs >/dev/null 2>&1
           # The image sets no RUSSH_BBS_DB or HOST_KEY (D46): the defaults must land on the volume.
-          docker logs bbs 2>&1 | grep -q "host key ready path=/data/host_ed25519_key"
-          docker logs bbs 2>&1 | grep -q 'database ready backend="sqlite" path=/data/russh-bbs.db'
+          # Log lines carry ANSI colour between key and value; strip it, and capture the text so
+          # `grep -q` closing the pipe early cannot fail the step under pipefail.
+          plain="$(docker logs bbs 2>&1 | sed 's/\x1b\[[0-9;]*m//g')"
+          grep -q "host key ready path=/data/host_ed25519_key" <<<"$plain"
+          grep -q 'database ready backend="sqlite" path=/data/russh-bbs.db' <<<"$plain"
           if docker image inspect russh-bbs:ci --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -q '^RUSSH_BBS_DB='; then
             echo "::error::the image must not bake RUSSH_BBS_DB (it breaks datasource.kind = postgres)"; exit 1
           fi
@@ -76,9 +79,10 @@ jobs:
               -e RUSSH_BBS_DATASOURCE_KIND=postgres -e RUSSH_BBS_DATASOURCE_URL="$url" \
               -e RUSSH_BBS_DATASOURCE_TLS_MODE="$mode" $extra russh-bbs:ci
             for i in $(seq 1 30); do docker logs "bbs-pg-$mode" 2>&1 | grep -q "ssh server listening" && break; sleep 1; done
-            docker logs "bbs-pg-$mode" 2>&1 | grep -E "database ready|listening|Error"
-            docker logs "bbs-pg-$mode" 2>&1 | grep -q 'database ready backend="postgres" tls=true'
-            docker logs "bbs-pg-$mode" 2>&1 | grep -q "ssh server listening"
+            plain="$(docker logs "bbs-pg-$mode" 2>&1 | sed 's/\x1b\[[0-9;]*m//g')"
+            grep -E "database ready|listening|Error" <<<"$plain" || true
+            grep -q 'database ready backend="postgres" tls=true' <<<"$plain"
+            grep -q "ssh server listening" <<<"$plain"
             docker stop --time 10 "bbs-pg-$mode"
             test "$(docker inspect --format '{{.State.ExitCode}}' "bbs-pg-$mode")" = 0
           done
