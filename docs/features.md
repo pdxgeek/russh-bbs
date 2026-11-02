@@ -21,13 +21,13 @@ Update this table in the same pass as the code.
 | Container image, compose example, GHCR publish | M1 | Planned | D25 |
 | Config file (TOML) with env overrides, documented keys | M1 | Planned | `docs/config.md`; all sections present with defaults |
 | Menu tree, classic hotkey layout, string table | M2 | Planned | Moved from M3; foundation for every later screen |
-| Named permissions per action, roles as permission sets, per-area policies | M2 | Planned | D33; `core::access`; before invites and queue |
+| Named permissions per action, roles as permission sets, per-resource policies and limits | M2 | Planned | D33, [access.md](access.md); `core::access`; before invites and queue |
 | Audit log (append-only table, write helper) | M2 | Planned | Moved from M5; sysop UI over it stays in M5 |
 | Invite codes, quotas, invite tree | M2 | Planned | |
 | Sysop approval queue and vouching | M2 | Planned | |
 | Registration mode setting (`invite`, `apply`, `open`) | M2 | Planned | Default `invite`; D2, D23. Waiting room built mode-aware in M1 |
 | User profiles and members list | M2 | Planned | |
-| Time and call limits (optional) | M2 | Planned | |
+| Resource limits per role (time, calls, sessions, rates, bytes) | M2 | Planned | Part of the access slice; per-member override |
 | Lightbar and compact layouts, theme packs, live switching | M3 | Planned | See [ui.md](ui.md); menu tree and classic layout are M2 |
 | Forums with search | M3 | Planned | FTS5 |
 | Full-screen message editor | M3 | Planned | quoting, drafts |

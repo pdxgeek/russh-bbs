@@ -42,6 +42,16 @@ Rank only orders roles and stops an account from granting or editing a role at o
 
 The sysop (and any role holding `roles.edit`) can create a role with a name, a rank below their own, and any set of permissions, globally or scoped. Examples the docs will show: a `door-admin` that holds `doors.manage` and nothing else above `member`; a `feed-curator` with `feeds.manage`; a per-board moderator made by scoping `forum.moderate` to one board.
 
+## Resource security
+
+Permissions say what a role may do. Resource security says it on **each thing**: every board, file area, chat room, door, feed, poll, and event is a resource with its own policy, and every post, file, and message has an owner.
+
+- **Per-resource policy.** Each resource carries: an owner; for each role, which of the resource's permissions that role holds there (default: the role's global set); an explicit **allow list** of members who get a permission regardless of role (how a private board or an invite-only room works in the plain-ssh MVP, labeled "visible to the sysop" as always); and an explicit **deny list** that strips a permission from a member regardless of role. Deny wins over allow, allow wins over role, role wins over nothing.
+- **Visibility follows policy.** A resource a member cannot `list` or `read` is absent from menus, search, new-scan, feeds out, and the SFTP tree, and is not reachable by name or ID. Tests cover every one of those paths, since a leak through search or SFTP is the same leak as one through the menu.
+- **Ownership.** `*.edit_own` and delete-own apply to the member's own posts, files, and profile. Moderators act on others' through `*.moderate`. Ownership transfers are audited.
+- **Resource limits per role**, overridable per member: minutes per day, calls per day, maximum concurrent sessions, posts per hour, upload bytes per day and per file, mail per day, invites per month, credits earn rate. Exceeding a limit is a normal, honest message, never a silent drop. Limits are checked in core next to permissions, so a front end cannot forget them.
+- **Sysop sees everything.** The `sysop` role is not subject to allow and deny lists; the UI says so wherever a member sets one, in keeping with the honesty rule.
+
 ## Rules
 
 - Every check goes through `core::access`. A front end never decides.
