@@ -5,9 +5,10 @@ name: Postgres
 # `cargo test --workspace` needs no server; these jobs run them with `--ignored`, and a missing
 # connection variable fails the test (it never skips silently).
 
+# Manual only (owner, D51): no push, pull_request or tag triggers until the first production
+# release; CI runs locally. Start it from the Actions tab when wanted.
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read

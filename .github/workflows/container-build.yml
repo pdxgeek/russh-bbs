@@ -4,18 +4,9 @@ name: Container build
 # workflow does still works. Never pushes. The amd64 job runs when anything that affects the image
 # changes. The amd64+arm64 job (arm64 under QEMU, slow) runs on the same pull requests and on
 # demand, so a release's build is proven before a tag exists.
+# Manual only (owner, D51): no push, pull_request or tag triggers until the first production
+# release; CI runs locally. Start it from the Actions tab when wanted.
 on:
-  pull_request:
-    paths:
-      - Dockerfile
-      - .dockerignore
-      - Cargo.toml
-      - Cargo.lock
-      - rust-toolchain.toml
-      - crates/**
-      - .github/workflows/container-build.yml
-      - .github/workflows/publish-image.yml
-      - .github/scripts/postgres-tls-*.sh
   workflow_dispatch:
 
 permissions:
