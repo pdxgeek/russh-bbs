@@ -1,10 +1,11 @@
 //! Terminal settings and login times, against any backend.
 #![allow(clippy::unwrap_used)]
 
+use russh_bbs_core::access::{AccessStore, Permission, Slug};
 use russh_bbs_core::icons::Tier;
 use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::{
-    Account, AccountId, AccountState, AccountStore, NewAccount, Role, StoreError,
+    Account, AccountId, AccountState, AccountStore, NewAccount, StoreError,
 };
 use russh_bbs_core::terminal_settings::{MemberSessions, TerminalSettings, TerminalSettingsStore};
 
@@ -14,7 +15,7 @@ async fn account<S: AccountStore>(store: &S, name: &str, state: AccountState) ->
     store
         .create_account(NewAccount {
             username: sanitize_username(name).unwrap(),
-            role: Role::Member,
+            role: Slug::MEMBER,
             state,
         })
         .await
@@ -148,12 +149,28 @@ pub(crate) async fn sessions_start_from_stored_state<H: Harness>() {
     let first = store.start_for_key(&key).await.unwrap().unwrap();
     assert_eq!(first.account, alice.id);
     assert_eq!(first.handle.as_str(), "alice");
-    assert_eq!(first.role, Role::Member);
     assert_eq!(first.settings, TerminalSettings::default());
     assert_eq!(first.previous_login, None);
 
     let chosen = first.settings.with_tier(Tier::Unicode);
-    store.save_settings(alice.id, &chosen).await.unwrap();
+    let granted = first
+        .access
+        .require(Permission::AccountEditSettings, None)
+        .unwrap();
+    store.save_settings(&granted, &chosen).await.unwrap();
+    // Proof of some other permission does not save settings, and an account that cannot hold
+    // the permission cannot get the proof at all.
+    let wrong = first.access.require(Permission::MailRead, None).unwrap();
+    assert!(matches!(
+        store.save_settings(&wrong, &chosen.with_color(false)).await,
+        Err(russh_bbs_core::terminal_settings::SaveError::NotPermitted)
+    ));
+    let waiting = store.snapshot(None).await.unwrap();
+    assert!(
+        waiting
+            .require(Permission::AccountEditSettings, None)
+            .is_err()
+    );
     let second = store.start_for_key(&key).await.unwrap().unwrap();
     assert_eq!(second.settings, chosen, "the stored tier is used");
     assert!(second.previous_login.is_some());

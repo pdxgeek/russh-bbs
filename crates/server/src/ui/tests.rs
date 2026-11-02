@@ -6,10 +6,10 @@ use ratatui::Terminal;
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
 use ratatui::style::Modifier;
-use russh_bbs_core::access::RolePermissions;
+use russh_bbs_core::access::{Permission, Slug, Snapshot, Via};
 use russh_bbs_core::icons::{Icon, SecurityMarker, Tier};
 use russh_bbs_core::menu::{MenuKey, MenuPage, MenuSession, main_tree};
-use russh_bbs_core::store::Role;
+use russh_bbs_core::store::AccountId;
 use russh_bbs_core::terminal_settings::TerminalSettings;
 use russh_bbs_core::waiting_room::{Notice, NoticeKind};
 
@@ -138,8 +138,34 @@ fn placeholders_are_filled_in_one_pass() {
 
 // ---- drawing ----
 
+/// Which stand-in session a drawing test uses.
+#[derive(Clone, Copy)]
+enum Role {
+    /// Holds everything except `members.approve`.
+    Member,
+    /// Holds everything.
+    Sysop,
+}
+
+fn holding(role: Role) -> Snapshot {
+    let (name, rank) = match role {
+        Role::Member => (Slug::MEMBER, 10),
+        Role::Sysop => (Slug::SYSOP, 100),
+    };
+    Snapshot::from_role(
+        Some(AccountId::from_raw(1)),
+        &name,
+        rank,
+        &Via::Account,
+        Permission::ALL
+            .iter()
+            .copied()
+            .filter(|p| matches!(role, Role::Sysop) || *p != Permission::MembersApprove),
+    )
+}
+
 fn page_for(role: Role, keys_pressed: &[char]) -> MenuPage {
-    let access = RolePermissions::new(role);
+    let access = holding(role);
     let mut session = MenuSession::new(main_tree());
     for key in keys_pressed {
         session.press(&access, MenuKey::Char(*key));

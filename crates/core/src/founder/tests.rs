@@ -12,7 +12,7 @@ use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use super::*;
 use crate::access::Fingerprint;
 use crate::sanitize::Username;
-use crate::store::{Account, AccountId, AccountState, Role, StoreError, UnixSeconds};
+use crate::store::{Account, AccountId, AccountState, StoreError, UnixSeconds};
 
 fn fingerprint(n: u32) -> Fingerprint {
     Fingerprint::parse(&format!("SHA256:{n:A>43}")).unwrap()
@@ -134,7 +134,6 @@ impl FounderStore for FakeStore {
         Ok(Some(Account {
             id: AccountId::from_raw(1),
             username,
-            role: Role::Sysop,
             state: AccountState::Active,
             created_at: UnixSeconds::from_raw(0),
         }))
@@ -150,7 +149,6 @@ async fn the_right_token_claims_once_as_an_active_sysop() {
     let ClaimOutcome::Claimed(account) = outcome else {
         panic!("expected a claim");
     };
-    assert_eq!(account.role, Role::Sysop);
     assert_eq!(account.state, AccountState::Active);
     assert!(!gate.is_open());
 }
@@ -265,15 +263,4 @@ fn escape_and_quit_leave() {
     let mut form = ClaimForm::new(3);
     assert_eq!(form.input(ClaimInput::Escape), ClaimEffect::Disconnect);
     assert_eq!(form.input(ClaimInput::Quit), ClaimEffect::Disconnect);
-}
-
-#[test]
-fn the_signed_in_placeholder_names_the_role_and_admits_it_is_a_placeholder() {
-    let sysop = signed_in_view(Role::Sysop);
-    assert_eq!(sysop.body, vec![strings::SIGNED_IN_SYSOP.to_owned()]);
-    assert_eq!(sysop.note, Some(strings::PLACEHOLDER_NOTE));
-    assert_eq!(
-        signed_in_view(Role::Member).body,
-        vec![strings::SIGNED_IN_MEMBER.to_owned()]
-    );
 }

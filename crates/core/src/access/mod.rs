@@ -7,15 +7,32 @@
 //!
 //! The member lookup is a trait ([`MemberDirectory`]) so the SQLite store (M1-B) can plug in
 //! without this crate knowing about it. Until then [`NoMembers`] knows nobody.
+//!
+//! **Permissions (M2-B, D33).** Beyond "is this a member", every action has a named
+//! [`Permission`]. What an account holds is a [`Snapshot`] the store loads at the start of each
+//! action; [`resolve`] (pure, additive) answers a check and [`reach`] answers "which resources",
+//! from the same facts. [`Snapshot::require`] returns the [`Granted`] proof that action
+//! functions take. Group nesting rules are in [`GroupGraph`].
+
+mod groups;
+mod permission;
+mod slug;
+mod snapshot;
+mod store;
 
 use std::fmt;
 use std::future::Future;
 
-use crate::store::Role;
-
-mod permission;
-
-pub use permission::{Permission, PermissionCheck, RolePermissions};
+pub use groups::{
+    Child, GroupChange, GroupError, GroupGraph, GroupId, GroupInfo, Kind, MAX_GROUP_DEPTH,
+};
+pub use permission::Permission;
+pub use slug::{InvalidSlug, SLUG_MAX_CHARS, Slug};
+pub use snapshot::{
+    Decision, Denied, Granted, Held, Reach, Reason, ResourceId, ResourceKind, ResourceRef, Scope,
+    Snapshot, Source, Via, reach, resolve,
+};
+pub use store::{AccessError, AccessStore, Granting, NewGrant, RoleInfo, Subject};
 
 /// Length of the base64 (unpadded) part of a SHA-256 fingerprint: 32 bytes encode to 43 chars.
 const SHA256_BASE64_LEN: usize = 43;
@@ -104,20 +121,14 @@ impl MemberDirectory for NoMembers {
     }
 }
 
-/// Looks up the role of a member's key, so a session can say what it is signed in as.
+/// The single access hook for menus: may this session use something that needs `permission`?
 ///
-/// Like [`MemberDirectory`] it **fails closed**: an unknown key, an account that is not
-/// active, or any error answers `None`. Roles are a stored value only in M1; the permission
-/// model that gives them meaning is M2's (D33).
-pub trait RoleDirectory: Send + Sync {
-    /// The role of the active account `key` is bound to.
-    fn role_of(&self, key: &Fingerprint) -> impl Future<Output = Option<Role>> + Send;
-}
-
-impl RoleDirectory for NoMembers {
-    fn role_of(&self, _key: &Fingerprint) -> impl Future<Output = Option<Role>> + Send {
-        std::future::ready(None)
-    }
+/// Menu code asks nothing else. Visibility and activation use the same answer, so an item a
+/// session cannot see is also not reachable by its hotkey. [`Snapshot`] is the production
+/// implementation; it answers with [`resolve`].
+pub trait PermissionCheck {
+    /// Whether the session holds `permission` globally.
+    fn allows(&self, permission: Permission) -> bool;
 }
 
 /// Decide the access level for an authenticated key. Unknown keys are [`Access::Restricted`].

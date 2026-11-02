@@ -1,0 +1,58 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT a.state AS \"state!\",\n                          g.role AS \"role?\",\n                          r.rank::bigint AS \"rank?\",\n                          COALESCE(g.permission, rp.permission) AS \"permission?\",\n                          g.resource_kind AS \"resource_kind?\",\n                          g.resource_id AS \"resource_id?\",\n                          mg.name AS \"group_name?\"\n                   FROM accounts a\n                   LEFT JOIN access_grant g\n                          ON g.account_id = a.id\n                          OR g.group_id IN (SELECT c.group_id FROM group_closure c\n                                            WHERE c.account_id = a.id)\n                          OR g.group_id = (SELECT e.id FROM member_group e WHERE e.name = 'everyone')\n                   LEFT JOIN member_group mg ON mg.id = g.group_id\n                   LEFT JOIN role r ON r.name = g.role\n                   LEFT JOIN role_permission rp ON rp.role = g.role\n                   WHERE a.id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "state!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "role?",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "rank?",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "permission?",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "resource_kind?",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "resource_id?",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 6,
+        "name": "group_name?",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      null,
+      null,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "b6e252da0b6756917d0d339237e3947dea2d7c7fc65fa289f51d1f19bdeea1ca"
+}

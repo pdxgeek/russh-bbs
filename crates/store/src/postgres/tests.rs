@@ -142,6 +142,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         2,
         "fd0ced89bb0415a28f3e7fa2127bd74aa224284f800c5a8acc8b101db8f6f82e39e877c39b4b4f6bd5564a63186c0078",
     ),
+    (
+        3,
+        "30d33c5c10004f05324ac2943ad60731fc2d2779a11faa408b3eda531081b5b90148958a1a603a2c94521b21ab0b6a64",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {
@@ -194,13 +198,71 @@ async fn a_fresh_database_gets_every_migration_and_only_these_tables() {
     assert_eq!(
         tables,
         [
+            "access_grant",
             "account_keys",
             "account_logins",
             "accounts",
+            "group_closure",
+            "group_member",
+            "member_group",
+            "role",
+            "role_permission",
             "settings",
             "terminal_settings"
         ]
     );
+}
+
+/// An M1-era database (migrations 0001 and 0002 only, with a sysop and a member) opens with the
+/// M2-B migration applied on top, and the sysop is backfilled with a `sysop` grant.
+#[tokio::test]
+#[ignore = "needs a Postgres server: set RUSSH_BBS_TEST_POSTGRES_URL"]
+async fn an_m1_database_gets_the_access_migration_and_a_sysop_grant() {
+    let h = PgHarness::fresh().await;
+    let mut conn = PgConnection::connect_with(&h.options).await.unwrap();
+    conn.execute("DROP SCHEMA public CASCADE").await.unwrap();
+    conn.execute("CREATE SCHEMA public").await.unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("0001_initial.sql"),
+        include_str!("../../migrations/postgres/0001_initial.sql"),
+    )
+    .unwrap();
+    std::fs::write(
+        dir.path().join("0002_terminal_settings.sql"),
+        include_str!("../../migrations/postgres/0002_terminal_settings.sql"),
+    )
+    .unwrap();
+    Migrator::new(dir.path())
+        .await
+        .unwrap()
+        .run(&mut conn)
+        .await
+        .unwrap();
+    conn.execute(
+        "INSERT INTO accounts (username, username_skeleton, role, state) VALUES \
+         ('alice', 'alice', 'sysop', 'active'), ('bob', 'bob', 'member', 'active')",
+    )
+    .await
+    .unwrap();
+    conn.close().await.unwrap();
+
+    let url = env("RUSSH_BBS_TEST_POSTGRES_URL");
+    let store = open_test_database(h.options.clone(), &url).await;
+    let sysops: Vec<String> = sqlx::query_scalar(
+        "SELECT a.username FROM access_grant g JOIN accounts a ON a.id = g.account_id \
+         WHERE g.role = 'sysop'",
+    )
+    .fetch_all(store.pool())
+    .await
+    .unwrap();
+    assert_eq!(sysops, ["alice"]);
+    let versions: Vec<i64> =
+        sqlx::query_scalar("SELECT version FROM _sqlx_migrations ORDER BY version")
+            .fetch_all(store.pool())
+            .await
+            .unwrap();
+    assert_eq!(versions, [1, 2, 3]);
 }
 
 #[tokio::test]
@@ -272,14 +334,15 @@ async fn a_database_from_a_newer_binary_is_refused() {
 #[ignore = "needs a Postgres server: set RUSSH_BBS_TEST_POSTGRES_URL"]
 async fn corrupt_stored_values_are_reported_not_trusted() {
     use russh_bbs_core::access::MemberDirectory as _;
+    use russh_bbs_core::access::Slug;
     use russh_bbs_core::sanitize::sanitize_username;
-    use russh_bbs_core::store::{AccountState, NewAccount, Role};
+    use russh_bbs_core::store::{AccountState, NewAccount};
     let h = PgHarness::fresh().await;
     let store = h.store();
     let alice = store
         .create_account(NewAccount {
             username: sanitize_username("alice").unwrap(),
-            role: Role::Member,
+            role: Slug::MEMBER,
             state: AccountState::Active,
         })
         .await
@@ -298,15 +361,16 @@ async fn corrupt_stored_values_are_reported_not_trusted() {
 #[tokio::test]
 #[ignore = "needs a Postgres server: set RUSSH_BBS_TEST_POSTGRES_URL"]
 async fn a_terminal_setting_the_code_could_not_have_written_is_corrupt_not_a_default() {
+    use russh_bbs_core::access::Slug;
     use russh_bbs_core::sanitize::sanitize_username;
-    use russh_bbs_core::store::{AccountState, NewAccount, Role};
+    use russh_bbs_core::store::{AccountState, NewAccount};
     use russh_bbs_core::terminal_settings::TerminalSettingsStore as _;
     let h = PgHarness::fresh().await;
     let store = h.store();
     let alice = store
         .create_account(NewAccount {
             username: sanitize_username("alice").unwrap(),
-            role: Role::Member,
+            role: Slug::MEMBER,
             state: AccountState::Active,
         })
         .await
@@ -327,14 +391,15 @@ async fn a_terminal_setting_the_code_could_not_have_written_is_corrupt_not_a_def
 #[tokio::test]
 #[ignore = "needs a Postgres server: set RUSSH_BBS_TEST_POSTGRES_URL"]
 async fn the_database_refuses_an_unknown_tier() {
+    use russh_bbs_core::access::Slug;
     use russh_bbs_core::sanitize::sanitize_username;
-    use russh_bbs_core::store::{AccountState, NewAccount, Role};
+    use russh_bbs_core::store::{AccountState, NewAccount};
     let h = PgHarness::fresh().await;
     let store = h.store();
     let alice = store
         .create_account(NewAccount {
             username: sanitize_username("alice").unwrap(),
-            role: Role::Member,
+            role: Slug::MEMBER,
             state: AccountState::Active,
         })
         .await
@@ -352,15 +417,16 @@ async fn the_database_refuses_an_unknown_tier() {
 #[tokio::test]
 #[ignore = "needs a Postgres server: set RUSSH_BBS_TEST_POSTGRES_URL"]
 async fn deleting_an_account_deletes_its_dependent_rows() {
+    use russh_bbs_core::access::Slug;
     use russh_bbs_core::sanitize::sanitize_username;
-    use russh_bbs_core::store::{AccountState, NewAccount, Role};
+    use russh_bbs_core::store::{AccountState, NewAccount};
     use russh_bbs_core::terminal_settings::{TerminalSettings, TerminalSettingsStore as _};
     let h = PgHarness::fresh().await;
     let store = h.store();
     let alice = store
         .create_account(NewAccount {
             username: sanitize_username("alice").unwrap(),
-            role: Role::Member,
+            role: Slug::MEMBER,
             state: AccountState::Active,
         })
         .await
@@ -391,14 +457,15 @@ async fn deleting_an_account_deletes_its_dependent_rows() {
 #[tokio::test]
 #[ignore = "needs a Postgres server: set RUSSH_BBS_TEST_POSTGRES_URL"]
 async fn timestamps_are_integer_unix_seconds_set_by_the_database() {
+    use russh_bbs_core::access::Slug;
     use russh_bbs_core::sanitize::sanitize_username;
-    use russh_bbs_core::store::{AccountState, NewAccount, Role};
+    use russh_bbs_core::store::{AccountState, NewAccount};
     let h = PgHarness::fresh().await;
     let alice = h
         .store()
         .create_account(NewAccount {
             username: sanitize_username("alice").unwrap(),
-            role: Role::Member,
+            role: Slug::MEMBER,
             state: AccountState::Active,
         })
         .await

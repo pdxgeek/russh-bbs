@@ -26,3 +26,6 @@ serde = { workspace = true }
 
 [dev-dependencies]
 tempfile = { workspace = true }
+# Test-only: the access-path tests take a permission away with raw SQL (the role editing
+# services are a later slice). Already a dependency of the store crate; no new crate.
+sqlx = { workspace = true }

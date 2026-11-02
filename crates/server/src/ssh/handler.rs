@@ -19,9 +19,10 @@ use std::time::Instant;
 
 use russh::server::{Auth, Handler, Msg, PublicKeyOffer, Session, VerifiedPublicKey};
 use russh::{Channel, ChannelId, ChannelOpenFailure, Pty};
+use russh_bbs_core::access::Permission;
 use russh_bbs_core::access::{Access, Fingerprint, decide_access};
 use russh_bbs_core::founder::{ClaimForm, MAX_ATTEMPTS_PER_SESSION};
-use russh_bbs_core::store::{AccountId, Role};
+use russh_bbs_core::store::AccountId;
 use russh_bbs_core::terminal_settings::{MemberFlow, MemberStart};
 use russh_bbs_core::waiting_room::{RoomConfig, Verdict, WaitingRoom};
 use tokio::sync::oneshot;
@@ -91,8 +92,8 @@ pub(crate) struct ClientHandler<D> {
     abort: Arc<Abort>,
     /// The key this session authenticated with.
     fingerprint: Option<Fingerprint>,
-    /// The role of the account behind the key, if it is a member.
-    role: Option<Role>,
+    /// Whether the key is bound to an active account (a member).
+    member: bool,
     /// Whether the SSH user name asked for the founder token prompt (`ssh claim@host`).
     claim_requested: bool,
     /// The account behind a signed-in session, so changed terminal settings can be stored.
@@ -132,7 +133,7 @@ impl<D> ClientHandler<D> {
             reported_dropped: 0,
             abort,
             fingerprint: None,
-            role: None,
+            member: false,
             claim_requested: false,
             account: None,
         }
@@ -167,18 +168,39 @@ impl<D> ClientHandler<D> {
         WaitingRoom::new(&config, self.limits.max_form_submissions)
     }
 
+    /// Whether the waiting room may be shown: the unauthenticated snapshot must hold
+    /// `waiting.view` (D33). Any failure answers no.
+    async fn waiting_room_allowed(&self) -> bool
+    where
+        D: Backend,
+    {
+        match timeout(MEMBER_START_TIMEOUT, self.directory.access_for(None)).await {
+            Ok(Ok(access)) => access.require(Permission::WaitingView, None).is_ok(),
+            Ok(Err(error)) => {
+                warn!(session = ?self.guard.id(), %error, "waiting-room access unreadable; refusing");
+                false
+            }
+            Err(_) => {
+                warn!(session = ?self.guard.id(), "waiting-room access timed out; refusing");
+                false
+            }
+        }
+    }
+
     /// The signed-in session for a member key, or `None` for everyone else.
     async fn member_content(&mut self) -> Option<Content>
     where
         D: Backend,
     {
-        self.role?;
+        if !self.member {
+            return None;
+        }
         let fingerprint = self.fingerprint.clone()?;
         let start = self.member_start(&fingerprint).await?;
         self.account = Some(start.account);
         Some(Content::Member(Box::new(MemberFlow::new(
             &start.handle,
-            start.role,
+            start.access,
             start.previous_login,
             start.settings,
         ))))
@@ -282,10 +304,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
         );
         // The user name only selects the claim prompt. It is never rendered or logged.
         self.claim_requested = user == CLAIM_USER;
-        self.role = match access {
-            Access::Member => self.directory.role_of(&fingerprint).await,
-            Access::Restricted => None,
-        };
+        self.member = access == Access::Member;
         self.guard.set_authenticated(fingerprint.clone(), access);
         self.fingerprint = Some(fingerprint);
         // Both levels authenticate. `Restricted` limits the session to the waiting room;
@@ -423,15 +442,22 @@ impl<D: Backend> Handler for ClientHandler<D> {
             session.channel_failure(channel)?;
             return Ok(());
         }
-        session.channel_success(channel)?;
         let content = if self.claim_requested {
-            // The same prompt for every key on every board, claimed or not (D41).
+            // The same prompt for every key on every board, claimed or not (D41). The setup
+            // token is its gate; there is no account yet to hold a permission.
             Content::Claim(ClaimForm::new(MAX_ATTEMPTS_PER_SESSION))
         } else if let Some(start) = self.member_content().await {
             start
-        } else {
+        } else if self.waiting_room_allowed().await {
             Content::Room(self.waiting_room().await)
+        } else {
+            // `waiting.view` could not be confirmed (the store failed, or the permission was
+            // removed): the session gets nothing, not a looser screen.
+            self.refused("no-access");
+            session.channel_failure(channel)?;
+            return Ok(());
         };
+        session.channel_success(channel)?;
         // The window may have changed while the content was loading.
         let size = self.pty.unwrap_or(size);
         let screen = Screen::new(size, self.limits.render_cap, content, Arc::clone(&self.ui))?;

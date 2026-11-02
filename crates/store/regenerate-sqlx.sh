@@ -22,6 +22,7 @@ for f in sorted(pathlib.Path(sys.argv[1]).glob("*.sql")):
     db.executescript(f.read_text())
 db.commit()
 PY
+touch "$here/src/lib.rs" # cargo skips macro expansion (and so the .sqlx write) for an up-to-date crate
 (cd "$here" && SQLX_OFFLINE=false DATABASE_URL="sqlite://$scratch/regen.db" SQLX_OFFLINE_DIR="$here/.sqlx" \
     cargo check -p russh-bbs-store --no-default-features --features sqlite)
 
@@ -34,6 +35,7 @@ regen_url="${POSTGRES_ADMIN_URL%/*}/$name"
 for f in "$here"/migrations/postgres/*.sql; do
     psql "$regen_url" -v ON_ERROR_STOP=1 -q -f "$f"
 done
+touch "$here/src/lib.rs"
 (cd "$here" && SQLX_OFFLINE=false DATABASE_URL="$regen_url" SQLX_OFFLINE_DIR="$here/.sqlx" \
     cargo check -p russh-bbs-store --no-default-features --features postgres)
 echo "wrote $(ls "$here/.sqlx" | wc -l) query files to $here/.sqlx"

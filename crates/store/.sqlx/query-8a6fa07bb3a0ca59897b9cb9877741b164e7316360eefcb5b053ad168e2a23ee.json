@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO access_grant (account_id, role) VALUES (?, 'sysop')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "8a6fa07bb3a0ca59897b9cb9877741b164e7316360eefcb5b053ad168e2a23ee"
+}

@@ -30,6 +30,7 @@ use ratatui::crossterm::queue;
 use ratatui::crossterm::terminal::{Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen};
 use ratatui::layout::Rect;
 use ratatui::{Terminal, TerminalOptions, Viewport};
+use russh_bbs_core::access::Snapshot;
 use russh_bbs_core::founder::{ClaimEffect, ClaimForm, ClaimInput};
 use russh_bbs_core::icons::Tier;
 use russh_bbs_core::menu::MenuPage;
@@ -221,6 +222,22 @@ impl Screen {
             self.rebuild = true;
         }
         effects
+    }
+
+    /// What the signed-in session holds, for the front end's own checks. `None` outside a
+    /// member session.
+    pub(super) fn access(&self) -> Option<&Snapshot> {
+        match &self.content {
+            Content::Member(flow) => Some(flow.access_snapshot()),
+            Content::Room(_) | Content::Claim(_) => None,
+        }
+    }
+
+    /// Replace what a member session holds, for the next action (D33).
+    pub(super) fn set_access(&mut self, access: Snapshot) {
+        if let Content::Member(flow) = &mut self.content {
+            flow.set_access(access);
+        }
     }
 
     /// The submitted token failed. The screen shows the one generic message on the next render;

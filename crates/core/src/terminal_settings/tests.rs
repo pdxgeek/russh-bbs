@@ -2,18 +2,39 @@
 
 use super::strings::{self, fill};
 use super::*;
+use crate::access::{Permission, Slug, Snapshot, Via};
 use crate::icons::{ContentIcon, Icon, Tier};
 use crate::sanitize::sanitize_username;
-use crate::store::{Role, UnixSeconds};
+use crate::store::{AccountId, UnixSeconds};
+
+/// A session holding the `member` stand-in: everything that exists except `members.approve`.
+fn member() -> Snapshot {
+    Snapshot::from_role(
+        Some(AccountId::from_raw(1)),
+        &Slug::MEMBER,
+        10,
+        &Via::Account,
+        Permission::ALL
+            .iter()
+            .copied()
+            .filter(|p| *p != Permission::MembersApprove),
+    )
+}
+
+/// A session holding every permission.
+fn sysop() -> Snapshot {
+    Snapshot::from_role(
+        Some(AccountId::from_raw(1)),
+        &Slug::SYSOP,
+        100,
+        &Via::Account,
+        Permission::ALL.iter().copied(),
+    )
+}
 
 fn flow(settings: TerminalSettings, last: Option<i64>) -> MemberFlow {
     let handle = sanitize_username("alice").unwrap();
-    MemberFlow::new(
-        &handle,
-        Role::Member,
-        last.map(UnixSeconds::from_raw),
-        settings,
-    )
+    MemberFlow::new(&handle, member(), last.map(UnixSeconds::from_raw), settings)
 }
 
 fn press(flow: &mut MemberFlow, keys: &str) -> Vec<MemberEffect> {
@@ -311,20 +332,20 @@ fn log_off_from_the_menu_and_quit_from_every_page_end_the_session() {
 #[test]
 fn a_member_never_sees_the_sysop_menu_and_a_sysop_does() {
     let handle = sanitize_username("alice").unwrap();
-    let make = |role| {
+    let make = |access: Snapshot| {
         let mut f = MemberFlow::new(
             &handle,
-            role,
+            access,
             None,
             TerminalSettings::default().with_tier(Tier::Ascii),
         );
         press(&mut f, "x");
         f
     };
-    let mut member = make(Role::Member);
+    let mut member = make(member());
     press(&mut member, "o");
     assert_eq!(member.menu_page().unwrap().title, "menu.main.title");
-    let mut sysop = make(Role::Sysop);
+    let mut sysop = make(sysop());
     press(&mut sysop, "o");
     assert_eq!(sysop.menu_page().unwrap().title, "menu.sysop.title");
     press(&mut sysop, "\u{1b}");
@@ -484,9 +505,9 @@ fn the_handle_is_sanitized_again_before_it_is_shown() {
     // A `Username` is already strict ASCII, so this pins that the flow still passes it
     // through the shared sanitizer rather than trusting the caller.
     let handle = sanitize_username("bob_2").unwrap();
-    let f = MemberFlow::new(&handle, Role::Sysop, None, TerminalSettings::default());
+    let f = MemberFlow::new(&handle, sysop(), None, TerminalSettings::default());
     assert!(text(&f.view()).contains("Signed in as bob_2."));
-    assert_eq!(f.role(), Role::Sysop);
+    assert_eq!(f.top_role(), Some(&Slug::SYSOP));
 }
 
 // ---- strings ----

@@ -27,7 +27,7 @@ mod time;
 
 pub use flow::{MemberEffect, MemberFlow, MemberInput};
 pub use glyph::{GlyphAnswer, GlyphProgress, GlyphStep, GlyphTest};
-pub use sessions::{MemberSessions, MemberStart, TerminalSettingsStore};
+pub use sessions::{MemberSessions, MemberStart, SaveError, TerminalSettingsStore};
 pub use settings::{
     MAX_HEIGHT, MAX_WIDTH, MIN_HEIGHT, MIN_WIDTH, SAFE_TIER, SettingsError, TerminalSettings,
     tier_from_stored, tier_name, tier_to_stored,

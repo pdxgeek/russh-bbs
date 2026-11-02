@@ -6,9 +6,11 @@
 
 use std::future::Future;
 
-use crate::access::{Fingerprint, NoMembers};
+use crate::access::{
+    AccessStore, Fingerprint, Granted, NoMembers, Permission, Slug, Snapshot, Via,
+};
 use crate::sanitize::Username;
-use crate::store::{Account, AccountId, AccountStore, Role, StoreError, UnixSeconds};
+use crate::store::{Account, AccountId, AccountStore, StoreError, UnixSeconds};
 
 use super::settings::TerminalSettings;
 
@@ -42,8 +44,8 @@ pub struct MemberStart {
     pub account: AccountId,
     /// The validated handle (also run through the sanitizer before it is drawn).
     pub handle: Username,
-    /// The stored role.
-    pub role: Role,
+    /// What the account holds, loaded as the session starts (D33).
+    pub access: Snapshot,
     /// The stored settings, or the defaults.
     pub settings: TerminalSettings,
     /// When the account last signed in, before this session.
@@ -65,15 +67,36 @@ pub trait MemberSessions: Send + Sync {
         account: &Account,
     ) -> impl Future<Output = Result<MemberStart, StoreError>> + Send;
 
-    /// Save settings changed during the session.
+    /// What the account holds now; `None` is a key with no account (the waiting room). The
+    /// front end calls this at the start of every action (D33), so a role or group change
+    /// applies on the next one.
+    fn access_for(
+        &self,
+        account: Option<AccountId>,
+    ) -> impl Future<Output = Result<Snapshot, StoreError>> + Send;
+
+    /// Save settings changed during the session. `granted` must be the proof of
+    /// `account.edit_settings` from [`Snapshot::require`]; it also names the account, so a
+    /// session can only ever save its own.
     fn save_settings(
         &self,
-        account: AccountId,
+        granted: &Granted,
         settings: &TerminalSettings,
-    ) -> impl Future<Output = Result<(), StoreError>> + Send;
+    ) -> impl Future<Output = Result<(), SaveError>> + Send;
 }
 
-impl<S: AccountStore + TerminalSettingsStore> MemberSessions for S {
+/// Why settings were not saved.
+#[derive(Debug, thiserror::Error)]
+pub enum SaveError {
+    /// The proof was not for editing the signed-in account's settings.
+    #[error("not permitted to save these settings")]
+    NotPermitted,
+    /// The store failed.
+    #[error(transparent)]
+    Store(#[from] StoreError),
+}
+
+impl<S: AccountStore + TerminalSettingsStore + AccessStore> MemberSessions for S {
     async fn start_for_key(&self, key: &Fingerprint) -> Result<Option<MemberStart>, StoreError> {
         match self.account_by_fingerprint(key).await? {
             Some(account) if account.state.is_member_access() => {
@@ -86,21 +109,31 @@ impl<S: AccountStore + TerminalSettingsStore> MemberSessions for S {
     async fn start_for_account(&self, account: &Account) -> Result<MemberStart, StoreError> {
         let settings = self.terminal_settings(account.id).await?;
         let previous_login = self.record_login(account.id).await?;
+        let access = self.snapshot(Some(account.id)).await?;
         Ok(MemberStart {
             account: account.id,
             handle: account.username.clone(),
-            role: account.role,
+            access,
             settings,
             previous_login,
         })
     }
 
+    async fn access_for(&self, account: Option<AccountId>) -> Result<Snapshot, StoreError> {
+        self.snapshot(account).await
+    }
+
     async fn save_settings(
         &self,
-        account: AccountId,
+        granted: &Granted,
         settings: &TerminalSettings,
-    ) -> Result<(), StoreError> {
-        self.set_terminal_settings(account, settings).await
+    ) -> Result<(), SaveError> {
+        match (granted.permission(), granted.account()) {
+            (Permission::AccountEditSettings, Some(account)) => {
+                Ok(self.set_terminal_settings(account, settings).await?)
+            }
+            _ => Err(SaveError::NotPermitted),
+        }
     }
 }
 
@@ -120,11 +153,33 @@ impl MemberSessions for NoMembers {
         std::future::ready(Err(StoreError::AccountNotFound))
     }
 
+    /// The empty directory still has the waiting room: the built-in `waiting` role's
+    /// permissions, as the stores seed them. Nobody else exists.
+    fn access_for(
+        &self,
+        account: Option<AccountId>,
+    ) -> impl Future<Output = Result<Snapshot, StoreError>> + Send {
+        std::future::ready(match account {
+            None => Ok(Snapshot::from_role(
+                None,
+                &Slug::WAITING,
+                0,
+                &Via::Waiting,
+                [
+                    Permission::WaitingView,
+                    Permission::InviteRedeem,
+                    Permission::MembershipApply,
+                ],
+            )),
+            Some(_) => Err(StoreError::AccountNotFound),
+        })
+    }
+
     fn save_settings(
         &self,
-        _account: AccountId,
+        _granted: &Granted,
         _settings: &TerminalSettings,
-    ) -> impl Future<Output = Result<(), StoreError>> + Send {
-        std::future::ready(Err(StoreError::AccountNotFound))
+    ) -> impl Future<Output = Result<(), SaveError>> + Send {
+        std::future::ready(Err(SaveError::NotPermitted))
     }
 }

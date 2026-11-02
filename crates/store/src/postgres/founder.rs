@@ -8,10 +8,10 @@
 //! flag commit together or not at all. No explicit isolation level is needed: the unique index
 //! is the compare-and-set.
 
-use russh_bbs_core::access::{Fingerprint, MemberDirectory, RoleDirectory};
+use russh_bbs_core::access::{Fingerprint, MemberDirectory, Slug};
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::sanitize::Username;
-use russh_bbs_core::store::{Account, AccountState, Role, SettingKey, StoreError};
+use russh_bbs_core::store::{Account, AccountState, SettingKey, StoreError};
 use sqlx::error::ErrorKind;
 
 use super::PostgresStore;
@@ -32,7 +32,8 @@ impl FounderStore for PostgresStore {
         let flag = SettingKey::FounderClaimed.as_str();
         let skeleton = username.skeleton();
         let name = username.as_str();
-        let role = Role::Sysop.as_str();
+        // Legacy label only; the authority is the `sysop` grant inserted below.
+        let label = crate::legacy_role_label(&Slug::SYSOP);
         let state = AccountState::Active.as_str();
         let fingerprint = fingerprint.as_str();
 
@@ -52,10 +53,10 @@ impl FounderStore for PostgresStore {
             AccountRow,
             "INSERT INTO accounts (username, username_skeleton, role, state)
              VALUES ($1, $2, $3, $4)
-             RETURNING id, username, role, state, created_at",
+             RETURNING id, username, state, created_at",
             name,
             skeleton,
-            role,
+            label,
             state,
         )
         .fetch_one(&mut *tx)
@@ -64,6 +65,13 @@ impl FounderStore for PostgresStore {
             Some(ErrorKind::UniqueViolation) => StoreError::UsernameTaken,
             _ => backend(error),
         })?;
+        sqlx::query!(
+            "INSERT INTO access_grant (account_id, role) VALUES ($1, 'sysop')",
+            row.id,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(backend)?;
         sqlx::query!(
             "INSERT INTO account_keys (fingerprint, account_id) VALUES ($1, $2)",
             fingerprint,
@@ -77,12 +85,6 @@ impl FounderStore for PostgresStore {
         })?;
         tx.commit().await.map_err(backend)?;
         row.into_account().map(Some)
-    }
-}
-
-impl RoleDirectory for PostgresStore {
-    async fn role_of(&self, key: &Fingerprint) -> Option<Role> {
-        directory::role_of(self, key).await
     }
 }
 

@@ -20,9 +20,10 @@ use russh::Channel;
 use russh::ChannelMsg;
 use russh::client::{self, AuthResult, Handle, Msg};
 use russh::keys::{PrivateKey, PrivateKeyWithHashAlg};
+use russh_bbs_core::access::Slug;
 use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::{
-    AccountState, AccountStore, NewAccount, RegistrationMode, Role, SettingKey, SettingsStore,
+    AccountState, AccountStore, NewAccount, RegistrationMode, SettingKey, SettingsStore,
     set_registration_mode,
 };
 use russh_bbs_core::waiting_room::RatePolicy;
@@ -58,7 +59,7 @@ impl Rig {
             store
                 .create_account(NewAccount {
                     username: sanitize_username(name).unwrap(),
-                    role: Role::Member,
+                    role: Slug::MEMBER,
                     state: AccountState::Active,
                 })
                 .await
