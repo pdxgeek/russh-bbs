@@ -119,7 +119,17 @@ For each finished worker:
 **Unattended (owner-authorized, per run):** the owner tells the orchestrator in its session that it may merge. Then:
 
 - Workers branch from `main` and open PRs against `main`. Up to four run in parallel when their Owns paths do not overlap and their dependencies are already on `main`.
-- A PR merges only when **both** gates pass: the orchestrator's own review (validation commands run on the branch, definition of done checked, fixes sent back until clean) **and** the repository CI check on the PR is green. The orchestrator reads the check run with the GitHub tools and waits for it; it never merges on its own run alone.
+- A PR merges only when **both** gates pass: the orchestrator's own review (validation commands run on the branch, definition of done checked, fixes sent back until clean) **and** the CI half of the gate, defined next.
+- **Local CI is the CI half of the gate until the first production release** (decided by the owner on 2026-11-02, D51). It is a local run on the PR's exact head commit. The orchestrator runs it before merging, or the worker runs it and the orchestrator repeats it. It covers:
+  - `cargo fmt --all --check`
+  - `cargo clippy --workspace --all-targets -- -D warnings`
+  - `cargo test --workspace` (with `SQLX_OFFLINE=true`)
+  - `cargo deny check`
+  - the Postgres store suite with `-- --ignored`, against a plain Postgres 16 and against a TLS-required Postgres (`.github/scripts/postgres-tls-server.sh`)
+  - the container smoke test (empty volume, token, waiting room, restart, clean stop) when the PR touches the image
+
+  GitHub Actions still run, but the orchestrator does not wait on them to merge. A red GitHub run that the local run did not catch is investigated as a bug in the local gate. After the first production release, the GitHub CI check is required again.
+- **Docker caution.** Docker may be used for local databases and images, but other apps on the machine may run Docker databases too. Use only uniquely named containers, volumes and networks with a `russh-bbs-` prefix, and pick non-default ports. Never run `docker system prune` or `docker volume prune`, and never stop or remove containers or volumes you did not create.
 - Merge commits only. The orchestrator never pushes to `main` directly.
 - When the last slice of a milestone merges, the orchestrator launches a **QA worker** with the QA gate brief from `docs/milestones.md` (a separate Sonnet session that wrote none of the code, on `main`). It reviews the QA report like any PR, merges it, adds the fix slices the report names to `docs/coordination.md` through that merge, runs the fix slices, re-runs QA on the fixes, and only then starts the next milestone. The orchestrator does not skip the gate to keep moving.
 - Each merge gets a progress report in the orchestrator's session: slice, PR, what was verified, what was not.
