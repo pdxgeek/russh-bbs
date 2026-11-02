@@ -259,16 +259,16 @@ async fn an_unknown_key_walks_every_invite_mode_screen() {
     type_line(&mut channel, "ABC-123").await;
     let result = type_line(&mut channel, "newcomer").await;
     let result = flat(&result);
-    assert!(result.contains("cannot be redeemed yet"), "{result}");
-    assert!(result.contains("not checked, stored or sent"), "{result}");
+    assert!(result.contains("That invite could not be used"), "{result}");
 
-    // The same reply for a name that belongs to a member: nothing is looked up.
+    // The same reply, word for word, for a name that belongs to a member: the answer to a
+    // refused redemption does not depend on who is on the board.
     press(&mut channel, b"\x1b").await;
     press(&mut channel, b"c").await;
     type_line(&mut channel, "ABC-123").await;
     let again = type_line(&mut channel, "zorgon_member").await;
     let again = flat(&again);
-    assert!(again.contains("cannot be redeemed yet"), "{again}");
+    assert_eq!(again, result, "a member's handle changed the reply");
 
     rig.stop().await;
 }

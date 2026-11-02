@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE accounts SET state = state WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "45e492cbf98b43f37fc20e8d0c316afb2c6d7487857803503bf4c4d1bee83d58"
+}

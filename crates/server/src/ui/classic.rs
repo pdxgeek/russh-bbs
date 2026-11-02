@@ -14,7 +14,7 @@ use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use russh_bbs_core::icons::{SecurityMarker, Tier};
 use russh_bbs_core::menu::{MenuPage, PageItem};
-use russh_bbs_core::waiting_room::{Notice, NoticeKind};
+use russh_bbs_core::waiting_room::{Notice, NoticeKind, View};
 
 use super::chrome;
 use super::keys;
@@ -83,6 +83,28 @@ pub(crate) fn render_content(frame: &mut Frame<'_>, screen: ContentScreen<'_>) {
     if let Some(row) = status {
         chrome::render_status(frame, row, screen.markers, screen.tier, screen.strings);
     }
+}
+
+/// The lines of a [`View`] (the invite screens, M2-D): heading, body, note, notice and footer,
+/// ready for [`render_content`]. Everything in the view is chrome or already sanitized.
+pub(crate) fn view_lines(strings: &StringTable, view: &View, look: Look) -> Vec<Line<'static>> {
+    let (bold, dim, heading, _) = styles(look);
+    let mut out = vec![
+        Line::styled(view.heading.to_owned(), heading),
+        Line::raw(""),
+    ];
+    out.extend(view.body.iter().map(|text| Line::raw(text.clone())));
+    if let Some(note) = view.note {
+        out.push(Line::raw(""));
+        out.push(Line::styled(note.to_owned(), dim));
+    }
+    if let Some(notice) = view.notice {
+        out.push(Line::raw(""));
+        out.push(notice_line(strings, notice.kind, notice.text, look, bold));
+    }
+    out.push(Line::raw(""));
+    out.push(Line::styled(view.footer.to_owned(), dim));
+    out
 }
 
 /// The styles screens built on this layout share: bold, dim, heading and hotkey.

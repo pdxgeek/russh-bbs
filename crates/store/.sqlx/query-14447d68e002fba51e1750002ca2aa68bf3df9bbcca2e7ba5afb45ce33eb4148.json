@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO accounts (username, username_skeleton, state)\n               VALUES (?, ?, ?)\n               RETURNING id AS \"id!\", username, state, created_at",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "username",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "state",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 3,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "14447d68e002fba51e1750002ca2aa68bf3df9bbcca2e7ba5afb45ce33eb4148"
+}

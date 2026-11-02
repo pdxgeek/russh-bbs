@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT state FROM accounts WHERE id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "state",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "3fbf2c478ba20ff699dde071eaa196ad4fe14898e8e6ae180137eaea99fc1867"
+}

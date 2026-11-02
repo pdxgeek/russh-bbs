@@ -8,7 +8,7 @@
 //! flag commit together or not at all. No explicit isolation level is needed: the unique index
 //! is the compare-and-set.
 
-use russh_bbs_core::access::{Fingerprint, MemberDirectory, Slug};
+use russh_bbs_core::access::{Fingerprint, MemberDirectory};
 use russh_bbs_core::audit::events;
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::sanitize::Username;
@@ -33,8 +33,6 @@ impl FounderStore for PostgresStore {
         let flag = SettingKey::FounderClaimed.as_str();
         let skeleton = username.skeleton();
         let name = username.as_str();
-        // Legacy label only; the authority is the `sysop` grant inserted below.
-        let label = crate::legacy_role_label(&Slug::SYSOP);
         let state = AccountState::Active.as_str();
         let fingerprint = fingerprint.as_str();
 
@@ -52,12 +50,11 @@ impl FounderStore for PostgresStore {
         }
         let row = sqlx::query_as!(
             AccountRow,
-            "INSERT INTO accounts (username, username_skeleton, role, state)
-             VALUES ($1, $2, $3, $4)
+            "INSERT INTO accounts (username, username_skeleton, state)
+             VALUES ($1, $2, $3)
              RETURNING id, username, state, created_at",
             name,
             skeleton,
-            label,
             state,
         )
         .fetch_one(&mut *tx)

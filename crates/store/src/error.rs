@@ -28,6 +28,16 @@ pub enum OpenError {
     /// A migration failed, or a landed migration was edited or is unknown to this binary.
     #[error("cannot apply migrations")]
     Migrate(#[source] sqlx::migrate::MigrateError),
+    /// After the migrations ran, SQLite found rows whose foreign keys point nowhere. A table
+    /// rebuild (which has to run with foreign keys off) must never leave any; the database is
+    /// not opened rather than served in that state.
+    #[error(
+        "migrations left {rows} row(s) with a dangling foreign key; the database was not opened"
+    )]
+    ForeignKeys {
+        /// How many offending rows `PRAGMA foreign_key_check` reported.
+        rows: usize,
+    },
 }
 
 /// Map an unexpected database error. Constraint violations the caller can name are handled

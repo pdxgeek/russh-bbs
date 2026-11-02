@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO accounts (username, username_skeleton, role, state)\n             VALUES ($1, $2, $3, $4)\n             RETURNING id, username, state, created_at",
+  "query": "INSERT INTO accounts (username, username_skeleton, state)\n             VALUES ($1, $2, $3)\n             RETURNING id, username, state, created_at",
   "describe": {
     "columns": [
       {
@@ -28,7 +28,6 @@
       "Left": [
         "Text",
         "Text",
-        "Text",
         "Text"
       ]
     },
@@ -39,5 +38,5 @@
       false
     ]
   },
-  "hash": "7827ba0a7eef0a63e95012532777970787f4ef3d802572be6e08264259f33203"
+  "hash": "049d9e5cc10a4eafef624c67ba42d0dfffa4a442acafe2deea210aed9ccfe5c0"
 }

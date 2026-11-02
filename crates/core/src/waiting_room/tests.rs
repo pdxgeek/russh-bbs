@@ -9,8 +9,8 @@ use std::sync::Mutex;
 
 use super::screens::{entry_for, menu, pages};
 use super::{
-    NoticeKind, Page, RoomConfig, RoomEffect, RoomInput, View, WaitingRoom, WaitingRoomSource,
-    strings,
+    NoticeKind, Page, RedeemRequest, RoomConfig, RoomEffect, RoomInput, View, WaitingRoom,
+    WaitingRoomSource, strings,
 };
 use crate::access::NoMembers;
 use crate::store::{
@@ -161,12 +161,6 @@ fn a_valid_submission_says_it_is_not_open_and_keeps_nothing() {
             RegistrationMode::Invite,
             'i',
             strings::REQUEST_INVITE_UNAVAILABLE,
-            2,
-        ),
-        (
-            RegistrationMode::Invite,
-            'c',
-            strings::REDEEM_INVITE_UNAVAILABLE,
             2,
         ),
         (RegistrationMode::Apply, 'a', strings::APPLY_UNAVAILABLE, 2),
@@ -483,4 +477,122 @@ async fn the_empty_directory_gives_defaults() {
         NoMembers.load_room_config().await.unwrap(),
         RoomConfig::default()
     );
+}
+
+// ---- the redeem form (M2-D) --------------------------------------------------------------
+
+fn redeem_room() -> WaitingRoom {
+    let mut room = room(RegistrationMode::Invite);
+    room.input(RoomInput::Char('c'));
+    assert_eq!(room.page(), Page::RedeemInvite);
+    room
+}
+
+fn fill_redeem(room: &mut WaitingRoom, code: &str, handle: &str) -> RoomEffect {
+    type_text(room, code);
+    room.input(RoomInput::Enter);
+    type_text(room, handle);
+    room.input(RoomInput::Enter)
+}
+
+#[test]
+fn a_filled_redeem_form_hands_the_front_end_a_request_and_forgets_what_was_typed() {
+    let mut room = redeem_room();
+    let effect = fill_redeem(&mut room, "  ABCD-EFGH  ", "newcomer");
+    let RoomEffect::Redeem(RedeemRequest { code, handle }) = effect else {
+        unreachable!("expected a redeem request, got {effect:?}");
+    };
+    assert_eq!(code, "ABCD-EFGH");
+    assert_eq!(handle.as_str(), "newcomer");
+    let view = room.view();
+    assert!(view.fields.iter().all(|f| f.value.is_empty()));
+    assert!(
+        view.notice.is_none(),
+        "nothing is claimed before the store answers"
+    );
+}
+
+#[test]
+fn a_bad_handle_or_an_empty_field_never_reaches_the_front_end() {
+    for (code, handle, message) in [
+        ("ABCD", "x", strings::ERR_HANDLE_TOO_SHORT),
+        ("ABCD", "bad name!", strings::ERR_HANDLE_CHARS),
+        ("ABCD", "sysop", strings::ERR_HANDLE_RESERVED),
+        ("", "newcomer", strings::ERR_EMPTY),
+        ("   ", "newcomer", strings::ERR_EMPTY),
+    ] {
+        let mut room = redeem_room();
+        let effect = fill_redeem(&mut room, code, handle);
+        assert_eq!(effect, RoomEffect::Stay, "{code:?} {handle:?}");
+        let notice = room.view().notice.expect("a problem is shown");
+        assert_eq!((notice.kind, notice.text), (NoticeKind::Error, message));
+    }
+}
+
+#[test]
+fn a_refused_redemption_shows_one_fixed_message_and_the_form_is_ready_again() {
+    let mut room = redeem_room();
+    assert!(matches!(
+        fill_redeem(&mut room, "ABCD", "newcomer"),
+        RoomEffect::Redeem(_)
+    ));
+    room.redeem_refused();
+    let view = room.view();
+    let notice = view.notice.expect("a result");
+    assert_eq!(
+        (notice.kind, notice.text),
+        (NoticeKind::Error, strings::REDEEM_FAILED)
+    );
+    assert_eq!(view.fields.len(), 2);
+    assert!(view.fields[0].active, "the cursor is back on the code");
+    // The message names no reason: it would read the same for every kind of refusal.
+    let lower = strings::REDEEM_FAILED.to_lowercase();
+    for reason in [
+        "expired",
+        "already used",
+        "unknown",
+        "taken",
+        "no such",
+        "member",
+        "not found",
+    ] {
+        assert!(!lower.contains(reason), "{reason}");
+    }
+}
+
+#[test]
+fn redemptions_count_against_the_session_cap() {
+    let mut room = WaitingRoom::new(
+        &RoomConfig {
+            mode: RegistrationMode::Invite,
+            ..RoomConfig::default()
+        },
+        2,
+    );
+    room.input(RoomInput::Char('c'));
+    for _ in 0..2 {
+        assert!(matches!(
+            fill_redeem(&mut room, "ABCD", "newcomer"),
+            RoomEffect::Redeem(_)
+        ));
+        room.redeem_refused();
+    }
+    assert_eq!(
+        fill_redeem(&mut room, "ABCD", "newcomer"),
+        RoomEffect::Disconnect
+    );
+}
+
+#[test]
+fn the_request_does_not_print_the_code() {
+    let mut room = redeem_room();
+    let effect = fill_redeem(&mut room, "SECRET-CODE", "newcomer");
+    assert!(!format!("{effect:?}").contains("SECRET"));
+}
+
+#[test]
+fn the_redeem_form_exists_only_in_invite_mode() {
+    for mode in [RegistrationMode::Apply, RegistrationMode::Open] {
+        assert!(!pages(mode).contains(&Page::RedeemInvite), "{mode:?}");
+    }
 }

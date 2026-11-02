@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT i.id AS \"id!\", i.created_at, i.expires_at, i.redeemed_at,\n                      a.username AS \"redeemed_username?\"\n               FROM invite i LEFT JOIN accounts a ON a.id = i.redeemed_by\n               WHERE i.inviter_id = ?\n               ORDER BY i.id DESC\n               LIMIT ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "expires_at",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "redeemed_at",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "redeemed_username?",
+        "ordinal": 4,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "4e193e09a731c95a8d13f79b11a054b2c039dd9c62a518ea528d555b7f1e0db5"
+}
