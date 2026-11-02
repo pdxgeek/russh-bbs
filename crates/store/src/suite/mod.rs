@@ -242,6 +242,7 @@ macro_rules! shared_suite {
                 profiles::paging_by_cursor_neither_skips_nor_repeats,
                 profiles::the_list_carries_the_display_name,
                 profiles::profiles_survive_a_reopen,
+                profiles::standing_is_the_top_global_rank_and_none_for_inactive_accounts,
                 profiles::a_staff_edit_writes_its_audit_row_and_a_failed_audit_rolls_the_edit_back,
                 profiles::a_broken_store_fails_instead_of_answering,
                 queue::a_request_stores_only_the_documented_fields_and_writes_no_audit_row,

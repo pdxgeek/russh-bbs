@@ -42,6 +42,8 @@ struct Fake {
     calls: Mutex<u32>,
     saves: Mutex<u32>,
     audits: Mutex<Vec<crate::audit::AuditEvent>>,
+    /// Top global rank per account; an account not listed holds no role.
+    ranks: Mutex<Vec<(AccountId, u8)>>,
 }
 
 impl Fake {
@@ -58,6 +60,10 @@ impl Fake {
                 row.3 = raw.clone();
             }
         }
+    }
+
+    fn set_rank(&self, n: i64, rank: u8) {
+        self.ranks.lock().unwrap().push((id(n), rank));
     }
 
     fn calls(&self) -> u32 {
@@ -118,6 +124,16 @@ impl ProfileStore for Fake {
                 handle: sanitize_username(&row.1).unwrap(),
                 profile: Profile::from_stored(&row.3),
             }))
+    }
+
+    async fn standing(&self, who: AccountId) -> Result<Option<u8>, StoreError> {
+        Ok(self
+            .ranks
+            .lock()
+            .unwrap()
+            .iter()
+            .find(|row| row.0 == who)
+            .map(|row| row.1))
     }
 
     async fn save_profile(
@@ -448,6 +464,112 @@ fn staff_with_members_edit_edit_another_profile_and_it_is_flagged_for_audit() {
         run(execute(&store, &staff, Request::Edit(id(1)))),
         Response::NotPermitted
     );
+}
+
+fn ranked(account: i64, rank: u8, permissions: &[Permission]) -> Snapshot {
+    Snapshot::from_role(
+        Some(id(account)),
+        &Slug::MEMBER,
+        rank,
+        &Via::Account,
+        permissions.iter().copied(),
+    )
+}
+
+#[test]
+fn staff_edit_another_profile_only_when_the_target_ranks_strictly_below() {
+    let store = seeded();
+    store.set_rank(2, 20); // bob: below the editor
+    store.set_rank(4, 50); // carol: equal to the editor
+    store.set_rank(5, 100); // dave: above the editor
+    store.add(5, "dave", true);
+    let staff = ranked(1, 50, &[Permission::MembersView, Permission::MembersEdit]);
+    let raw = RawProfile {
+        about: "rewritten".to_owned(),
+        ..RawProfile::default()
+    };
+    for (target, expect_saved) in [(2, true), (3, true), (4, false), (5, false)] {
+        let before = *store.saves.lock().unwrap();
+        for request in [
+            Request::Edit(id(target)),
+            Request::Save(id(target), raw.clone()),
+        ] {
+            let got = run(execute(&store, &staff, request));
+            if expect_saved {
+                assert!(
+                    matches!(
+                        got,
+                        Response::EditForm(_) | Response::Saved(_) | Response::NotFound
+                    ),
+                    "{target}: {got:?}"
+                );
+            } else {
+                assert_eq!(got, Response::RankTooLow, "{target}");
+            }
+        }
+        let wrote = *store.saves.lock().unwrap() - before;
+        assert_eq!(
+            wrote == 1,
+            expect_saved && target != 3,
+            "writes for {target}"
+        );
+    }
+    // Only the permitted edit (bob) was audited; the refused ones wrote nothing.
+    let audits = store.audits.lock().unwrap();
+    assert_eq!(audits.len(), 1);
+    assert_eq!(audits[0].target, crate::audit::Target::Account(id(2)));
+}
+
+#[test]
+fn an_editor_with_no_global_rank_edits_nobody_else_but_still_edits_their_own() {
+    let store = seeded();
+    // A scoped-only holder: has the permission but no global role.
+    let lone = Snapshot::new(
+        Some(id(1)),
+        vec![crate::access::Held {
+            permission: Permission::MembersEdit,
+            scope: crate::access::Scope::Global,
+            source: crate::access::Source::Allow { via: Via::Account },
+        }],
+    );
+    assert_eq!(
+        run(execute(&store, &lone, Request::Edit(id(2)))),
+        Response::RankTooLow
+    );
+    // Own profile is unchanged by the rank rule, even at equal rank.
+    store.set_rank(1, 10);
+    let own = ranked(1, 10, MEMBER_SET);
+    assert!(matches!(
+        run(execute(
+            &store,
+            &own,
+            Request::Save(id(1), RawProfile::default())
+        )),
+        Response::Saved(_)
+    ));
+}
+
+#[test]
+fn a_session_without_the_permission_learns_nothing_from_the_rank_rule() {
+    let store = seeded();
+    store.set_rank(2, 100);
+    let member = ranked(1, 10, MEMBER_SET);
+    assert_eq!(
+        run(execute(&store, &member, Request::Edit(id(2)))),
+        Response::NotPermitted
+    );
+}
+
+#[test]
+fn the_refusal_is_an_honest_notice_on_the_screen() {
+    let store = seeded();
+    store.set_rank(2, 100);
+    let staff = ranked(1, 50, &[Permission::MembersView, Permission::MembersEdit]);
+    let mut screen = MembersScreen::list(Some(id(1)));
+    pump(&mut screen, &store, &staff);
+    press(&mut screen, &store, &staff, "2e");
+    let shown = text_of(&screen.view(&staff));
+    assert!(shown.contains("members.notice.rank"), "{shown:?}");
 }
 
 #[test]

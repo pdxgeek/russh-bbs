@@ -4,6 +4,7 @@
 //! unique ignoring case, so `lower(username)` is both the sort key and the paging cursor, and
 //! the `"C"` collation is byte order, the same order SQLite's BINARY gives.
 
+use russh_bbs_core::access::AccessStore;
 use russh_bbs_core::audit::AuditEvent;
 use russh_bbs_core::profiles::{MemberQuery, MemberRecord, MemberSummary, Profile, ProfileStore};
 use russh_bbs_core::store::{AccountId, StoreError};
@@ -60,6 +61,12 @@ impl ProfileStore for PostgresStore {
         .await
         .map_err(backend)?;
         row.map(RecordRow::into_record).transpose()
+    }
+
+    async fn standing(&self, id: AccountId) -> Result<Option<u8>, StoreError> {
+        // The same facts the editing services use, read the same way (D69), so the rank rule
+        // for profiles cannot drift from the one for roles.
+        Ok(self.snapshot(Some(id)).await?.top_rank())
     }
 
     async fn save_profile(
