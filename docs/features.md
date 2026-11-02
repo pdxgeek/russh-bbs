@@ -18,9 +18,9 @@ Update this table in the same pass as the code.
 | Login and logoff screens, themeable strings | M1 | Planned | |
 | SQLite store and migrations | M1 | Implemented | `m1/store`. `sqlx` (D34), WAL, forward-only checksummed migrations (D36), accounts, key fingerprints, settings; `MemberDirectory` over the store (active accounts only, fails closed). Tested on temp-file DBs and with OpenSSH. Account/state transitions beyond create, and the founder flow, are M1-D/M2 |
 | Postgres backend (also used with PGlite) | M1 | Planned | M1-G. Same behavior tests as SQLite, one suite generic over the core store traits; D6, D24 |
-| Datasource selection in config | M1 | Planned | `sqlite` or `postgres`; never MySQL |
+| Datasource selection in config | M1 | Partially implemented | `datasource.kind` = `sqlite` (works, with `path`) or `postgres` (url, TLS mode, root cert, IAM flag, D31: all parsed and validated, but **selecting it fails at boot** with "postgres backend is not built yet" until M1-G; no silent fallback); never MySQL. Unit-tested; the postgres error and the sqlite path were exercised with the real binary (M1-H) |
 | Container image, compose example, GHCR publish | M1 | Planned | D25 |
-| Config file (TOML) with env overrides, documented keys | M1 | Planned | `docs/config.md`; all sections present with defaults |
+| Config file (TOML) with env overrides, documented keys | M1 | Implemented | M1-H. `russh-bbs-server::config`: defaults < file < `RUSSH_BBS_*` env < CLI flags, unknown keys and bad values rejected naming key and source, URL password redacted, `config.example.toml` equals the defaults (tested). `ssh`, `datasource`, `blobs`, `telnet`, `waiting_room` and `registration_mode` are present; `allow_password_login`, `telnet.*`, `blobs.*` and the postgres fields are parsed only. File and env layers verified with OpenSSH. `docs/config.md`, D38 |
 | Menu tree, classic hotkey layout, string table | M2 | Planned | Moved from M3; foundation for every later screen |
 | Named permissions per action, roles as permission sets, groups, per-resource policies and limits | M2 | Planned | D33, [access.md](access.md); `core::access`; before invites and queue |
 | Audit log (append-only table, write helper) | M2 | Planned | Moved from M5; sysop UI over it stays in M5 |
