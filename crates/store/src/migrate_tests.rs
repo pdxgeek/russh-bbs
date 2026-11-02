@@ -15,10 +15,16 @@ use crate::tests::temp_store;
 /// SHA-384 of every landed migration, in version order, as hex. **Append only.** A migration
 /// that has landed on a branch others build from must never change; add a new numbered file
 /// instead. This test is the "no editing landed migrations" rule from AGENTS.md.
-const LANDED_CHECKSUMS: &[(i64, &str)] = &[(
-    1,
-    "3c94eba4f5f0a5b6c23bf6bacc296ad5b992162c0e67b9fb9ae8638a6abd4356909a1ee095bb45837bf12943936fdb2b",
-)];
+const LANDED_CHECKSUMS: &[(i64, &str)] = &[
+    (
+        1,
+        "3c94eba4f5f0a5b6c23bf6bacc296ad5b992162c0e67b9fb9ae8638a6abd4356909a1ee095bb45837bf12943936fdb2b",
+    ),
+    (
+        2,
+        "3ae29f30adad2c56599553cbe66dd207e6d14f1c51259c1b14390438eb3223e1865afc5e5df34e89700fba52ba1f0b66",
+    ),
+];
 
 fn hex(bytes: &[u8]) -> String {
     bytes.iter().fold(String::new(), |mut out, b| {
@@ -66,7 +72,16 @@ async fn a_fresh_database_gets_every_migration() {
     .fetch_all(store.pool())
     .await
     .unwrap();
-    assert_eq!(tables, ["account_keys", "accounts", "settings"]);
+    assert_eq!(
+        tables,
+        [
+            "account_keys",
+            "account_logins",
+            "accounts",
+            "settings",
+            "terminal_settings"
+        ]
+    );
 }
 
 /// Version and install time of every applied migration, as text.
