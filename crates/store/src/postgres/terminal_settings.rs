@@ -1,4 +1,4 @@
-//! Per-account terminal settings and login times over SQLite (M1-E).
+//! Per-account terminal settings and login times over Postgres (M1-E).
 //!
 //! Rows are plain columns mapped to core's [`TerminalSettings`] in one place. A stored value the
 //! code could not have written is [`StoreError::Corrupt`], never a default.
@@ -9,27 +9,22 @@ use russh_bbs_core::terminal_settings::{
 };
 use sqlx::error::ErrorKind;
 
-use crate::SqliteStore;
+use super::PostgresStore;
 use crate::error::{backend, kind};
 
 /// A `terminal_settings` row as read by the checked query.
 struct SettingsRow {
-    width_override: Option<i64>,
-    height_override: Option<i64>,
-    color: i64,
-    pause: i64,
+    width_override: Option<i32>,
+    height_override: Option<i32>,
+    color: bool,
+    pause: bool,
     icon_tier: Option<String>,
 }
 
 impl SettingsRow {
     fn into_settings(self) -> Result<TerminalSettings, StoreError> {
         let corrupt = |what: &str| StoreError::Corrupt(format!("stored terminal setting {what}"));
-        let flag = |value: i64, what: &str| match value {
-            0 => Ok(false),
-            1 => Ok(true),
-            _ => Err(corrupt(what)),
-        };
-        let size = |value: Option<i64>, what: &str| {
+        let size = |value: Option<i32>, what: &str| {
             value
                 .map(|n| u16::try_from(n).map_err(|_| corrupt(what)))
                 .transpose()
@@ -41,21 +36,21 @@ impl SettingsRow {
         TerminalSettings::new(
             size(self.width_override, "width is not valid")?,
             size(self.height_override, "height is not valid")?,
-            flag(self.color, "color is not valid")?,
-            flag(self.pause, "pause is not valid")?,
+            self.color,
+            self.pause,
             tier,
         )
         .map_err(|_| corrupt("is out of range"))
     }
 }
 
-impl TerminalSettingsStore for SqliteStore {
+impl TerminalSettingsStore for PostgresStore {
     async fn terminal_settings(&self, account: AccountId) -> Result<TerminalSettings, StoreError> {
         let id = account.as_raw();
         let row = sqlx::query_as!(
             SettingsRow,
             "SELECT width_override, height_override, color, pause, icon_tier
-             FROM terminal_settings WHERE account_id = ?",
+             FROM terminal_settings WHERE account_id = $1",
             id,
         )
         .fetch_optional(self.pool())
@@ -73,22 +68,22 @@ impl TerminalSettingsStore for SqliteStore {
         settings: &TerminalSettings,
     ) -> Result<(), StoreError> {
         let id = account.as_raw();
-        let width = settings.width().map(i64::from);
-        let height = settings.height().map(i64::from);
-        let color = i64::from(settings.color());
-        let pause = i64::from(settings.pause());
+        let width = settings.width().map(i32::from);
+        let height = settings.height().map(i32::from);
+        let color = settings.color();
+        let pause = settings.pause();
         let tier = settings.chosen_tier().map(tier_to_stored);
         sqlx::query!(
             "INSERT INTO terminal_settings
                  (account_id, width_override, height_override, color, pause, icon_tier)
-             VALUES (?, ?, ?, ?, ?, ?)
+             VALUES ($1, $2, $3, $4, $5, $6)
              ON CONFLICT (account_id) DO UPDATE SET
                  width_override  = excluded.width_override,
                  height_override = excluded.height_override,
                  color           = excluded.color,
                  pause           = excluded.pause,
                  icon_tier       = excluded.icon_tier,
-                 updated_at      = unixepoch()",
+                 updated_at      = extract(epoch FROM now())::bigint",
             id,
             width,
             height,
@@ -111,10 +106,10 @@ impl TerminalSettingsStore for SqliteStore {
         // time: on conflict the old `last_login_at` becomes `previous_login_at`.
         sqlx::query_scalar!(
             "INSERT INTO account_logins (account_id, last_login_at)
-             VALUES (?, unixepoch())
+             VALUES ($1, extract(epoch FROM now())::bigint)
              ON CONFLICT (account_id) DO UPDATE SET
                  previous_login_at = account_logins.last_login_at,
-                 last_login_at     = unixepoch()
+                 last_login_at     = extract(epoch FROM now())::bigint
              RETURNING previous_login_at",
             id,
         )

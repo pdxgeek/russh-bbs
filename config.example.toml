@@ -35,16 +35,17 @@ auth_rejection_millis = 1000
 allow_password_login = false
 
 [datasource]
-# "sqlite" (default) or "postgres". "postgres" is refused at boot until the backend is built.
+# "sqlite" (default) or "postgres". There is no fallback from one to the other.
 kind = "sqlite"
 # SQLite file. Default: $XDG_DATA_HOME/russh-bbs/russh-bbs.db, else
 # ~/.local/share/russh-bbs/russh-bbs.db. Only with kind = "sqlite".
 # path = "/data/russh-bbs.db"
 # The settings below apply only with kind = "postgres" (D31). There is no way to turn TLS off.
+# Use the host name in the URL (not a unix socket) and leave sslmode out: tls_mode decides.
 # url = "postgres://user:password@host:5432/dbname"
-tls_mode = "require"          # "require", "verify-ca" or "verify-full"
+tls_mode = "require"          # "require" (encrypt only unless tls_root_cert is set), "verify-ca" or "verify-full"
 # tls_root_cert = "/data/rds-ca.pem"
-iam_auth = false
+iam_auth = false              # true is refused at boot: IAM token auth is not built
 
 [blobs]
 # Parsed only: no blob store exists yet (D30).

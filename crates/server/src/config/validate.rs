@@ -246,7 +246,7 @@ fn blobs(c: &Check<'_>, config: &Config) -> Result<(), ConfigError> {
     Ok(())
 }
 
-/// Where a postgres selection came from, for the "not built yet" error.
-pub(crate) fn kind_origin(sources: &Sources) -> Source {
-    sources.get("datasource.kind")
+/// Where `datasource.iam_auth` came from, for the "not built yet" error.
+pub(crate) fn iam_auth_origin(sources: &Sources) -> Source {
+    sources.get("datasource.iam_auth")
 }

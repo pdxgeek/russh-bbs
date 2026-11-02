@@ -1,0 +1,68 @@
+name: Postgres
+
+# The shared store behaviour suite (crates/store/src/suite) runs against a real Postgres, and
+# against one that REQUIRES TLS (decisions D24, D31, D32). The tests are #[ignore]d so a plain
+# `cargo test --workspace` needs no server; these jobs run them with `--ignored`, and a missing
+# connection variable fails the test (it never skips silently).
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  # sqlx checks queries against the committed crates/store/.sqlx data, never a live database.
+  SQLX_OFFLINE: "true"
+
+jobs:
+  postgres:
+    name: shared suite on Postgres 16
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: bbs
+          # A throwaway server that lives for this job only; not a credential.
+          POSTGRES_PASSWORD: ci-throwaway
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U bbs"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain (from rust-toolchain.toml)
+        run: rustup show active-toolchain || rustup toolchain install
+      - uses: Swatinem/rust-cache@v2
+      - name: Shared suite and Postgres-only checks (TLS-only tests are skipped here)
+        run: cargo test -p russh-bbs-store -- --ignored --skip tls:: --test-threads=8
+        env:
+          RUSSH_BBS_TEST_POSTGRES_URL: postgres://bbs:ci-throwaway@localhost:5432/postgres?sslmode=disable
+
+  postgres-tls:
+    name: shared suite on Postgres that requires TLS (D31)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain (from rust-toolchain.toml)
+        run: rustup show active-toolchain || rustup toolchain install
+      - uses: Swatinem/rust-cache@v2
+      - name: Install the Postgres server binaries
+        run: sudo apt-get update && sudo apt-get install -y postgresql
+      - name: Start a Postgres with ssl=on and hostssl-only pg_hba (a non-TLS client is refused)
+        run: .github/scripts/postgres-tls-server.sh "$RUNNER_TEMP/pg-tls" 5433 >> "$GITHUB_ENV"
+      - name: A client without TLS is refused (proves the server requires it)
+        run: |
+          if psql "${RUSSH_BBS_TEST_POSTGRES_TLS_URL/localhost/127.0.0.1}?sslmode=disable" -c 'select 1' 2>refused.txt; then
+            echo "::error::the server accepted a non-TLS connection"; exit 1
+          fi
+          cat refused.txt
+          grep -q "no encryption" refused.txt
+      - name: Shared suite over verify-full TLS, plus the TLS-only checks
+        run: cargo test -p russh-bbs-store -- --ignored --test-threads=8

@@ -5,11 +5,11 @@ use std::sync::Arc;
 
 use anyhow::Context as _;
 use clap::Parser;
-use russh_bbs_core::store::set_registration_mode;
-use russh_bbs_server::config::{Cli, Loaded};
+use russh_bbs_core::store::{SettingsStore, set_registration_mode};
+use russh_bbs_server::config::{Cli, Loaded, ResolvedDatasource};
 use russh_bbs_server::founder;
-use russh_bbs_server::ssh::{HostKey, ServerConfig, SshServer};
-use russh_bbs_store::SqliteStore;
+use russh_bbs_server::ssh::{Backend, HostKey, ServerConfig, SshServer};
+use russh_bbs_store::{PostgresStore, SqliteStore};
 use tracing::{info, warn};
 use tracing_subscriber::EnvFilter;
 
@@ -37,11 +37,38 @@ async fn main() -> anyhow::Result<()> {
     // The fingerprint is public: the sysop publishes it so users can verify the first connect.
     info!(path = %paths.host_key.display(), fingerprint = %host_key.fingerprint(), "host key ready");
 
-    let store = SqliteStore::open(&paths.database)
-        .await
-        .with_context(|| format!("opening database {}", paths.database.display()))?;
-    info!(path = %paths.database.display(), "database ready");
+    // The datasource is chosen by configuration and never falls back (D6, D38): a Postgres
+    // that cannot be reached or verified is a boot error, not a SQLite file.
+    match &paths.datasource {
+        ResolvedDatasource::Sqlite(path) => {
+            let store = SqliteStore::open(path)
+                .await
+                .with_context(|| format!("opening database {}", path.display()))?;
+            info!(backend = "sqlite", path = %path.display(), "database ready");
+            serve(store.clone(), &loaded, &host_key).await?;
+            // Flushes the WAL.
+            store.close().await;
+        }
+        ResolvedDatasource::Postgres(settings) => {
+            // The error text never contains the password (see `PostgresSettings`).
+            let store = PostgresStore::open(settings)
+                .await
+                .context("opening the postgres datasource (TLS is required)")?;
+            info!(backend = "postgres", tls = true, "database ready");
+            serve(store.clone(), &loaded, &host_key).await?;
+            store.close().await;
+        }
+    }
+    Ok(())
+}
 
+/// Run the board on `store` until a shutdown signal. Everything past store selection is
+/// backend-independent (core traits only).
+async fn serve<S: Backend + SettingsStore + Clone>(
+    store: S,
+    loaded: &Loaded,
+    host_key: &HostKey,
+) -> anyhow::Result<()> {
     // A registration mode set in the file, environment or flags wins over the stored value
     // (decision D38); when none is set the stored value stands.
     if let Some(mode) = loaded.registration_mode_override() {
@@ -64,7 +91,7 @@ async fn main() -> anyhow::Result<()> {
     // The store decides who is a member; an unknown key or a store error is Restricted.
     let server = SshServer::start_with_founder(
         &config,
-        &host_key,
+        host_key,
         Arc::new(store.clone()),
         Arc::new(founder),
     )
@@ -75,6 +102,5 @@ async fn main() -> anyhow::Result<()> {
         .context("waiting for shutdown signal")?;
     info!("shutting down");
     server.shutdown().await;
-    store.close().await;
     Ok(())
 }
