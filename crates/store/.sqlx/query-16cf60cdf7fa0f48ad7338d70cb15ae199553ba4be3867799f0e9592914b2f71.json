@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT width_override, height_override, color, pause, icon_tier\n             FROM terminal_settings WHERE account_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "width_override",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "height_override",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "color",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "pause",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "icon_tier",
+        "ordinal": 4,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      true,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "16cf60cdf7fa0f48ad7338d70cb15ae199553ba4be3867799f0e9592914b2f71"
+}

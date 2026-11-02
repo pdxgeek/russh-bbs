@@ -20,7 +20,8 @@ use russh::server::{Auth, Handler, Msg, PublicKeyOffer, Session, VerifiedPublicK
 use russh::{Channel, ChannelId, ChannelOpenFailure, Pty};
 use russh_bbs_core::access::{Access, Fingerprint, decide_access};
 use russh_bbs_core::founder::{ClaimForm, ClaimOutcome, MAX_ATTEMPTS_PER_SESSION, claim_founder};
-use russh_bbs_core::store::Role;
+use russh_bbs_core::store::{Account, AccountId, Role};
+use russh_bbs_core::terminal_settings::{MemberFlow, MemberStart, TerminalSettings};
 use russh_bbs_core::waiting_room::{RoomConfig, Verdict, WaitingRoom};
 use tokio::sync::oneshot;
 use tokio::time::timeout;
@@ -42,6 +43,10 @@ const MAX_SESSION_CHANNELS: usize = 4;
 /// How long a new shell waits for the waiting-room settings before using the built-in
 /// defaults. A slow store must not hold a stranger's screen hostage.
 const ROOM_CONFIG_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(2);
+
+/// How long a member's session start (settings and login time) may take before the shell
+/// falls back to the waiting room. A slow store must not hang the screen.
+const MEMBER_START_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(2);
 
 /// Handler for one client connection.
 pub(crate) struct ClientHandler<D> {
@@ -65,6 +70,8 @@ pub(crate) struct ClientHandler<D> {
     role: Option<Role>,
     /// Whether the SSH user name asked for the founder token prompt (`ssh claim@host`).
     claim_requested: bool,
+    /// The account behind a signed-in session, so changed terminal settings can be stored.
+    account: Option<AccountId>,
 }
 
 impl<D> ClientHandler<D> {
@@ -92,6 +99,7 @@ impl<D> ClientHandler<D> {
             fingerprint: None,
             role: None,
             claim_requested: false,
+            account: None,
         }
     }
 
@@ -124,6 +132,85 @@ impl<D> ClientHandler<D> {
         WaitingRoom::new(&config, self.max_form_submissions)
     }
 
+    /// The signed-in session for a member key, or `None` for everyone else.
+    async fn member_content(&mut self) -> Option<Content>
+    where
+        D: Backend,
+    {
+        self.role?;
+        let fingerprint = self.fingerprint.clone()?;
+        let start = self.member_start(&fingerprint).await?;
+        self.account = Some(start.account);
+        Some(Content::Member(Box::new(MemberFlow::new(
+            &start.handle,
+            start.role,
+            start.previous_login,
+            start.settings,
+        ))))
+    }
+
+    /// Start a signed-in session for the account behind this session's key. Any failure (no
+    /// account, a store error, a timeout) is logged and answers `None`, which sends the shell
+    /// back to the waiting room: the member path fails closed, like the directory.
+    async fn member_start(&self, fingerprint: &Fingerprint) -> Option<MemberStart>
+    where
+        D: Backend,
+    {
+        match timeout(
+            MEMBER_START_TIMEOUT,
+            self.directory.start_for_key(fingerprint),
+        )
+        .await
+        {
+            Ok(Ok(start)) => start,
+            Ok(Err(error)) => {
+                warn!(session = ?self.guard.id(), %error, "member session could not start");
+                None
+            }
+            Err(_) => {
+                warn!(session = ?self.guard.id(), "member session start timed out");
+                None
+            }
+        }
+    }
+
+    /// The session start for a founder who just claimed. If the store fails right after the
+    /// claim, the sysop still gets a working session on the defaults (nothing is saved).
+    async fn founder_start(&self, account: &Account) -> MemberStart
+    where
+        D: Backend,
+    {
+        let started = timeout(
+            MEMBER_START_TIMEOUT,
+            self.directory.start_for_account(account),
+        )
+        .await;
+        if let Ok(Ok(start)) = started {
+            return start;
+        }
+        warn!(session = ?self.guard.id(), "founder session start failed; using defaults");
+        MemberStart {
+            account: account.id,
+            handle: account.username.clone(),
+            role: account.role,
+            settings: TerminalSettings::default(),
+            previous_login: None,
+        }
+    }
+
+    /// Store settings the member changed. A failure is logged; the session keeps its choice.
+    async fn persist_settings(&self, settings: &TerminalSettings)
+    where
+        D: Backend,
+    {
+        let Some(account) = self.account else {
+            return;
+        };
+        if let Err(error) = self.directory.save_settings(account, settings).await {
+            warn!(session = ?self.guard.id(), %error, "terminal settings could not be saved");
+        }
+    }
+
     /// Check a token typed at the claim prompt and update the screen. Every failure (limited,
     /// wrong token, already claimed, store error) is the same generic message.
     async fn try_claim(
@@ -149,16 +236,26 @@ impl<D> ClientHandler<D> {
             info!(session = ?self.guard.id(), fingerprint = %fingerprint, "founder claim rate limited");
             ClaimOutcome::Rejected
         };
-        let Some(screen) = self.screen.as_mut() else {
-            return Ok(());
-        };
         match outcome {
             ClaimOutcome::Claimed(account) => {
                 self.role = Some(account.role);
                 self.guard.set_authenticated(fingerprint, Access::Member);
-                session.data(channel, screen.claim_accepted(account.role)?)?;
+                let start = self.founder_start(&account).await;
+                self.account = Some(start.account);
+                let flow = MemberFlow::new(
+                    &start.handle,
+                    start.role,
+                    start.previous_login,
+                    start.settings,
+                );
+                if let Some(screen) = self.screen.as_mut() {
+                    session.data(channel, screen.claim_accepted(flow)?)?;
+                }
             }
             ClaimOutcome::Rejected => {
+                let Some(screen) = self.screen.as_mut() else {
+                    return Ok(());
+                };
                 let (bytes, disconnect) = screen.claim_rejected()?;
                 session.data(channel, bytes)?;
                 if disconnect {
@@ -377,8 +474,8 @@ impl<D: Backend> Handler for ClientHandler<D> {
         let content = if self.claim_requested {
             // The same prompt for every key on every board, claimed or not (D41).
             Content::Claim(ClaimForm::new(MAX_ATTEMPTS_PER_SESSION))
-        } else if let Some(role) = self.role {
-            Content::SignedIn(role)
+        } else if let Some(start) = self.member_content().await {
+            start
         } else {
             Content::Room(self.waiting_room().await)
         };
@@ -424,6 +521,9 @@ impl<D: Backend> Handler for ClientHandler<D> {
         };
         let update = screen.keys(&parse_keys(data))?;
         session.data(channel, update.bytes)?;
+        if let Some(settings) = &update.save_settings {
+            self.persist_settings(settings).await;
+        }
         if update.disconnect {
             self.finish(channel, session)?;
         } else if let Some(token) = update.claim_token {

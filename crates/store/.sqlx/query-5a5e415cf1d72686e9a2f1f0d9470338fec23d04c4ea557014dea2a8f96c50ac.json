@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO account_logins (account_id, last_login_at)\n             VALUES (?, unixepoch())\n             ON CONFLICT (account_id) DO UPDATE SET\n                 previous_login_at = account_logins.last_login_at,\n                 last_login_at     = unixepoch()\n             RETURNING previous_login_at",
+  "describe": {
+    "columns": [
+      {
+        "name": "previous_login_at",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "5a5e415cf1d72686e9a2f1f0d9470338fec23d04c4ea557014dea2a8f96c50ac"
+}

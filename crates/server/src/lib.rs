@@ -3,5 +3,6 @@
 
 pub mod config;
 pub mod founder;
+pub mod settings;
 pub mod ssh;
 pub mod waiting_room;

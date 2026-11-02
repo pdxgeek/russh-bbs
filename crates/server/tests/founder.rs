@@ -175,15 +175,16 @@ async fn the_full_claim_story() {
     let (mut channel, prompt) = shell(&session).await;
     assert!(prompt.contains("Setup token"), "{prompt}");
     let after = submit(&mut channel, &token).await;
-    assert!(after.contains("You are signed in as sysop."), "{after}");
+    assert!(after.contains("Signed in as founder."), "{after}");
     assert!(!after.contains(&token));
     assert_eq!(access_of(&rig, &key_a).await, Access::Member);
 
-    // Key A reconnects with an ordinary user name and sees the sysop placeholder.
+    // Key A reconnects with an ordinary user name and sees the login screen (M1-E), which
+    // reports the earlier login from the claim session.
     let again = login(rig.addr(), "anyone", &key_a).await;
     let (_c, screen) = shell(&again).await;
-    assert!(screen.contains("You are signed in as sysop."), "{screen}");
-    assert!(screen.contains("placeholder"), "{screen}");
+    assert!(screen.contains("Signed in as founder."), "{screen}");
+    assert!(screen.contains("Last login:"), "{screen}");
     assert!(!screen.contains("Waiting room"));
 
     // Key B presents the same token: refused with the generic message, no access.
@@ -191,7 +192,7 @@ async fn the_full_claim_story() {
     let (mut b_channel, _) = shell(&other).await;
     let refused = submit(&mut b_channel, &token).await;
     assert!(refused.contains(REJECTED), "{refused}");
-    assert!(!refused.contains("signed in"));
+    assert!(!refused.contains("Signed in"));
     assert_eq!(access_of(&rig, &key_b).await, Access::Restricted);
 
     // Restart on the same database: key A is still the sysop, no new token is printed, and
@@ -200,7 +201,7 @@ async fn the_full_claim_story() {
     assert!(rig.token.is_none(), "a claimed board prints no token");
     let back = login(rig.addr(), "anyone", &key_a).await;
     let (_c, screen) = shell(&back).await;
-    assert!(screen.contains("You are signed in as sysop."), "{screen}");
+    assert!(screen.contains("Signed in as founder."), "{screen}");
     let late = login(rig.addr(), "claim", &key_b).await;
     let (mut late_channel, _) = shell(&late).await;
     assert!(submit(&mut late_channel, &token).await.contains(REJECTED));
@@ -225,7 +226,7 @@ async fn two_keys_racing_with_the_same_token_make_exactly_one_sysop() {
     let mut wins = 0;
     for task in tasks {
         let screen = task.await.unwrap();
-        if screen.contains("You are signed in as sysop.") {
+        if screen.contains("Signed in as founder.") {
             wins += 1;
         } else {
             assert!(screen.contains(REJECTED), "{screen}");
@@ -273,7 +274,7 @@ async fn a_wrong_token_and_a_claimed_board_answer_with_the_same_words() {
 
     // And the unclaimed board is still claimable afterwards.
     let ok = submit(&mut channel, &token).await;
-    assert!(ok.contains("signed in as sysop"), "{ok}");
+    assert!(ok.contains("Signed in as founder"), "{ok}");
     unclaimed.server.shutdown().await;
     claimed.server.shutdown().await;
 }
@@ -351,7 +352,7 @@ async fn claim_attempts_are_rate_limited_per_key_across_connections() {
     let (mut c, _) = shell(&s).await;
     let limited = submit(&mut c, &token).await;
     assert!(limited.contains(REJECTED), "{limited}");
-    assert!(!limited.contains("signed in"));
+    assert!(!limited.contains("Signed in"));
     assert_eq!(access_of(&rig, &key).await, Access::Restricted);
     rig.server.shutdown().await;
 }
