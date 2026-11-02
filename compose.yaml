@@ -1,13 +1,15 @@
 # Example: one service, one named volume, port 2222. See docs/deploy.md.
 services:
   bbs:
+    # Exists only after the owner cuts the first release tag (docs/deploy.md).
     image: ghcr.io/pdxgeek/russh-bbs:latest
-    # Or build from a checkout:
+    # Or build from a checkout (replace the image: line):
     # build: .
     ports:
       - "2222:2222"
     volumes:
-      # SQLite database, host key and /data/config.toml all live here.
+      # SQLite database, host key and /data/config.toml all live here. For Postgres see
+      # docs/deploy.md: set RUSSH_BBS_DATASOURCE_* (not RUSSH_BBS_DB); the CA file goes here too.
       - bbs-data:/data
     restart: unless-stopped
     # The server stops within 8 s of SIGTERM; give it room before SIGKILL.

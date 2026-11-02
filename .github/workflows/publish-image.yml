@@ -1,11 +1,13 @@
 name: Publish image
 
-# Publishes the container image to GHCR on version tags only (D25). Never on pull requests or
-# pushes to main: the trigger below is the whole gate.
+# Publishes the container image to GHCR on version tags only (D25, D46). Never on pull requests
+# or pushes to main. `workflow_dispatch` is a DRY RUN: it builds both architectures exactly as
+# a release would and pushes nothing (no registry login, `push` is false).
 on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
 
 # No permissions by default; the one job asks for exactly what it needs.
 permissions: {}
@@ -23,7 +25,9 @@ jobs:
       # amd64 + arm64. arm64 is built under QEMU emulation, which is slow but needs no extra runners.
       - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
       - uses: docker/setup-buildx-action@f7ce87c1d6bead3e36075b2ce75da1f6cc28aaca # v3.9.0
-      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+      # Only a tag push logs in; a dry run never holds a registry credential.
+      - if: github.ref_type == 'tag'
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -36,12 +40,16 @@ jobs:
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest
+            # `latest` follows stable tags only; a pre-release tag (v0.1.0-rc1) does not move it.
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' && !contains(github.ref_name, '-') }}
+            # A dry run needs a tag to build with; it is never pushed.
+            type=raw,value=dry-run,enable=${{ github.ref_type != 'tag' }}
       - uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           platforms: linux/amd64,linux/arm64
-          push: true
+          # Tag pushes publish; a manual dispatch builds both architectures and discards them.
+          push: ${{ github.ref_type == 'tag' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
