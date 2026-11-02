@@ -1,26 +1,14 @@
-//! Store behaviour against a real temporary SQLite file with the real migrations.
+//! Account, fingerprint, settings and membership behaviour, against any backend.
 #![allow(clippy::unwrap_used)]
 
-use russh_bbs_core::access::{Fingerprint, MemberDirectory};
+use russh_bbs_core::access::MemberDirectory;
 use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::{
     Account, AccountState, AccountStore, NewAccount, RegistrationMode, Role, SettingKey,
     SettingsStore, StoreError, registration_mode, set_registration_mode,
 };
-use tempfile::TempDir;
 
-use crate::SqliteStore;
-
-/// A valid-shaped fingerprint that differs per `n`.
-pub(crate) fn fingerprint(n: u32) -> Fingerprint {
-    Fingerprint::parse(&format!("SHA256:{n:A>43}")).unwrap()
-}
-
-pub(crate) async fn temp_store() -> (TempDir, SqliteStore) {
-    let dir = tempfile::tempdir().unwrap();
-    let store = SqliteStore::open(&dir.path().join("bbs.db")).await.unwrap();
-    (dir, store)
-}
+use super::{Harness, fingerprint};
 
 fn new_account(name: &str, state: AccountState) -> NewAccount {
     NewAccount {
@@ -30,16 +18,16 @@ fn new_account(name: &str, state: AccountState) -> NewAccount {
     }
 }
 
-async fn account(store: &SqliteStore, name: &str, state: AccountState) -> Account {
+async fn account<S: AccountStore>(store: &S, name: &str, state: AccountState) -> Account {
     store
         .create_account(new_account(name, state))
         .await
         .unwrap()
 }
 
-#[tokio::test]
-async fn creates_an_account_with_its_fields() {
-    let (_dir, store) = temp_store().await;
+pub(crate) async fn creates_an_account_with_its_fields<H: Harness>() {
+    let h = H::fresh().await;
+    let store = h.store();
     let created = store
         .create_account(NewAccount {
             username: sanitize_username("alice").unwrap(),
@@ -54,10 +42,12 @@ async fn creates_an_account_with_its_fields() {
     assert!(created.created_at.as_raw() > 0);
 }
 
-#[tokio::test]
-async fn a_known_fingerprint_returns_its_account_and_an_unknown_one_returns_none() {
-    let (_dir, store) = temp_store().await;
-    let alice = account(&store, "alice", AccountState::Active).await;
+pub(crate) async fn a_known_fingerprint_returns_its_account_and_an_unknown_one_returns_none<
+    H: Harness,
+>() {
+    let h = H::fresh().await;
+    let store = h.store();
+    let alice = account(store, "alice", AccountState::Active).await;
     store
         .attach_fingerprint(alice.id, &fingerprint(1))
         .await
@@ -69,10 +59,10 @@ async fn a_known_fingerprint_returns_its_account_and_an_unknown_one_returns_none
     assert_eq!(unknown, None);
 }
 
-#[tokio::test]
-async fn an_account_can_have_several_keys() {
-    let (_dir, store) = temp_store().await;
-    let alice = account(&store, "alice", AccountState::Active).await;
+pub(crate) async fn an_account_can_have_several_keys<H: Harness>() {
+    let h = H::fresh().await;
+    let store = h.store();
+    let alice = account(store, "alice", AccountState::Active).await;
     for n in [1, 2] {
         store
             .attach_fingerprint(alice.id, &fingerprint(n))
@@ -85,11 +75,11 @@ async fn an_account_can_have_several_keys() {
     }
 }
 
-#[tokio::test]
-async fn two_accounts_cannot_share_a_fingerprint() {
-    let (_dir, store) = temp_store().await;
-    let alice = account(&store, "alice", AccountState::Active).await;
-    let bob = account(&store, "bob", AccountState::Active).await;
+pub(crate) async fn two_accounts_cannot_share_a_fingerprint<H: Harness>() {
+    let h = H::fresh().await;
+    let store = h.store();
+    let alice = account(store, "alice", AccountState::Active).await;
+    let bob = account(store, "bob", AccountState::Active).await;
     store
         .attach_fingerprint(alice.id, &fingerprint(1))
         .await
@@ -110,9 +100,9 @@ async fn two_accounts_cannot_share_a_fingerprint() {
     assert_eq!(found.map(|a| a.id), Some(alice.id));
 }
 
-#[tokio::test]
-async fn attaching_to_a_missing_account_is_an_error() {
-    let (_dir, store) = temp_store().await;
+pub(crate) async fn attaching_to_a_missing_account_is_an_error<H: Harness>() {
+    let h = H::fresh().await;
+    let store = h.store();
     let ghost = russh_bbs_core::store::AccountId::from_raw(9999);
     let result = store.attach_fingerprint(ghost, &fingerprint(1)).await;
     assert!(
@@ -121,10 +111,10 @@ async fn attaching_to_a_missing_account_is_an_error() {
     );
 }
 
-#[tokio::test]
-async fn usernames_are_unique_including_lookalikes() {
-    let (_dir, store) = temp_store().await;
-    account(&store, "alice", AccountState::Active).await;
+pub(crate) async fn usernames_are_unique_including_lookalikes<H: Harness>() {
+    let h = H::fresh().await;
+    let store = h.store();
+    account(store, "alice", AccountState::Active).await;
     let same = store
         .create_account(new_account("alice", AccountState::Active))
         .await;
@@ -139,9 +129,9 @@ async fn usernames_are_unique_including_lookalikes() {
     );
 }
 
-#[tokio::test]
-async fn registration_mode_defaults_to_invite_and_can_change() {
-    let (_dir, store) = temp_store().await;
+pub(crate) async fn registration_mode_defaults_to_invite_and_can_change<H: Harness>() {
+    let h = H::fresh().await;
+    let store = h.store();
     assert_eq!(
         store
             .get_setting(SettingKey::RegistrationMode)
@@ -151,22 +141,22 @@ async fn registration_mode_defaults_to_invite_and_can_change() {
         Some("invite")
     );
     assert_eq!(
-        registration_mode(&store).await.unwrap(),
+        registration_mode(store).await.unwrap(),
         RegistrationMode::Invite
     );
 
-    set_registration_mode(&store, RegistrationMode::Open)
+    set_registration_mode(store, RegistrationMode::Open)
         .await
         .unwrap();
     assert_eq!(
-        registration_mode(&store).await.unwrap(),
+        registration_mode(store).await.unwrap(),
         RegistrationMode::Open
     );
 }
 
-#[tokio::test]
-async fn settings_get_set_and_overwrite() {
-    let (_dir, store) = temp_store().await;
+pub(crate) async fn settings_get_set_and_overwrite<H: Harness>() {
+    let h = H::fresh().await;
+    let store = h.store();
     assert_eq!(
         store.get_setting(SettingKey::FounderClaimed).await.unwrap(),
         None
@@ -189,20 +179,20 @@ async fn settings_get_set_and_overwrite() {
     );
 }
 
-#[tokio::test]
-async fn an_unrecognised_registration_mode_is_an_error_not_a_default() {
-    let (_dir, store) = temp_store().await;
+pub(crate) async fn an_unrecognised_registration_mode_is_an_error_not_a_default<H: Harness>() {
+    let h = H::fresh().await;
+    let store = h.store();
     store
         .set_setting(SettingKey::RegistrationMode, "wide-open")
         .await
         .unwrap();
-    let result = registration_mode(&store).await;
+    let result = registration_mode(store).await;
     assert!(matches!(result, Err(StoreError::Corrupt(_))), "{result:?}");
 }
 
-#[tokio::test]
-async fn only_active_accounts_are_members() {
-    let (_dir, store) = temp_store().await;
+pub(crate) async fn only_active_accounts_are_members<H: Harness>() {
+    let h = H::fresh().await;
+    let store = h.store();
     let states = [
         (1, "active_one", AccountState::Active, true),
         (2, "pending_one", AccountState::Pending, false),
@@ -210,7 +200,7 @@ async fn only_active_accounts_are_members() {
         (4, "suspended_one", AccountState::Suspended, false),
     ];
     for (n, name, state, _) in states {
-        let created = account(&store, name, state).await;
+        let created = account(store, name, state).await;
         store
             .attach_fingerprint(created.id, &fingerprint(n))
             .await
@@ -222,38 +212,31 @@ async fn only_active_accounts_are_members() {
     assert!(!store.is_member(&fingerprint(99)).await, "unknown key");
 }
 
-#[tokio::test]
-async fn the_directory_fails_closed_when_the_store_is_broken() {
-    let (_dir, store) = temp_store().await;
-    let alice = account(&store, "alice", AccountState::Active).await;
+pub(crate) async fn the_directory_fails_closed_when_the_store_is_broken<H: Harness>() {
+    let h = H::fresh().await;
+    let store = h.store();
+    let alice = account(store, "alice", AccountState::Active).await;
     store
         .attach_fingerprint(alice.id, &fingerprint(1))
         .await
         .unwrap();
     assert!(store.is_member(&fingerprint(1)).await);
 
-    store.close().await;
+    h.close().await;
     assert!(!store.is_member(&fingerprint(1)).await);
 }
 
-#[tokio::test]
-async fn corrupt_stored_values_are_reported_not_trusted() {
-    let (_dir, store) = temp_store().await;
-    let alice = account(&store, "alice", AccountState::Active).await;
-    store
-        .attach_fingerprint(alice.id, &fingerprint(1))
+pub(crate) async fn data_survives_a_reopen<H: Harness>() {
+    let mut h = H::fresh().await;
+    h.store()
+        .set_setting(SettingKey::FounderClaimed, "true")
         .await
         .unwrap();
-    // Bypass the CHECK constraint the way a future/buggy writer might: rename a username to
-    // something the sanitizer rejects.
-    sqlx::query("UPDATE accounts SET username = 'bad name'")
-        .execute(store.pool())
+    h.reopen().await;
+    let value = h
+        .store()
+        .get_setting(SettingKey::FounderClaimed)
         .await
         .unwrap();
-    let result = store.account_by_fingerprint(&fingerprint(1)).await;
-    assert!(matches!(result, Err(StoreError::Corrupt(_))), "{result:?}");
-    assert!(
-        !store.is_member(&fingerprint(1)).await,
-        "corrupt row must fail closed"
-    );
+    assert_eq!(value.as_deref(), Some("true"));
 }

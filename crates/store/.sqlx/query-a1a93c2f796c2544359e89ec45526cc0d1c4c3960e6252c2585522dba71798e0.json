@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO account_logins (account_id, last_login_at)\n             VALUES ($1, extract(epoch FROM now())::bigint)\n             ON CONFLICT (account_id) DO UPDATE SET\n                 previous_login_at = account_logins.last_login_at,\n                 last_login_at     = extract(epoch FROM now())::bigint\n             RETURNING previous_login_at",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "previous_login_at",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "a1a93c2f796c2544359e89ec45526cc0d1c4c3960e6252c2585522dba71798e0"
+}

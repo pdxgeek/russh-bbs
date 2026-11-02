@@ -19,7 +19,7 @@
 //! |---|---|
 //! | C0 controls, DEL, C1 controls | removed (newline and tab per context) |
 //! | `ESC` + CSI/OSC/DCS/SOS/PM/APC/nF/Fe sequences, 8-bit C1 equivalents | removed entirely |
-//! | Every character with general category `Cf` or the `Default_Ignorable_Code_Point` property (bidi controls, zero-width space, BOM, word joiner, tag characters, fillers, soft hyphen, variation selectors, unassigned reserved ranges, ...), plus braille blank U+2800 and U+FFFC; read from `icu_properties`, not a hand list (D44). Kept: U+FE0F after an emoji base, and ZWJ/ZWNJ only straight after a non-ASCII character that is not itself a joiner | removed |
+//! | Every character with general category `Cf` or the `Default_Ignorable_Code_Point` property (bidi controls, zero-width space, BOM, word joiner, tag characters, fillers, soft hyphen, variation selectors, unassigned reserved ranges, ...), plus braille blank U+2800 and U+FFFC; read from `icu_properties`, not a hand list (D45). Kept: U+FE0F after an emoji base, and ZWJ/ZWNJ only straight after a non-ASCII character that is not itself a joiner | removed |
 //! | VT, FF, NEL, LS, PS | a space in [`SingleLine`], a newline in [`MultiLine`] |
 //! | Unicode spaces (U+00A0, U+2000-200A, U+202F, U+205F, U+3000, U+1680) | ASCII space |
 //! | Combining marks beyond [`MAX_COMBINING_MARKS`] per base character (ZWJ/ZWNJ do not reset the run) | removed |
@@ -28,7 +28,7 @@
 //! The reserved chrome set (security-marker delimiters and glyphs) means content cannot emit
 //! the *exact codepoints* of the Unicode and Nerd Font tiers of a security marker. It does not
 //! stop lookalike characters, and the ASCII tier cannot be protected by text at all; the
-//! reserved style and a chrome-only position are the final cue. See `icons` and D39, D44.
+//! reserved style and a chrome-only position are the final cue. See `icons` and D39, D45.
 
 mod scan;
 mod username;

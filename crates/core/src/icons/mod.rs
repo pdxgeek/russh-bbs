@@ -37,7 +37,7 @@
 //!   U+FFFD in all content ([`crate::sanitize::RESERVED_CHROME`]). A test proves the registry
 //!   uses exactly that set. It does **not** block lookalikes (`〚☉〛`, `◉`, fullwidth
 //!   brackets), which may render like a marker in some fonts, so on a terminal that ignores
-//!   styling the Unicode tier also depends on the chrome-only position (D44).
+//!   styling the Unicode tier also depends on the chrome-only position (D45).
 //! * **Nerd Font tier:** the glyph is private-use, which the sanitizer replaces.
 //! * **ASCII tier: style and position only.** Content can type any ASCII, so the text
 //!   `E2EE` or `SERVER-READABLE` is *not* unforgeable. The distinction is the reserved

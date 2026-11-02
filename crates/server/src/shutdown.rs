@@ -2,7 +2,7 @@
 
 use std::time::Duration;
 
-use russh_bbs_store::SqliteStore;
+use russh_bbs_store::Close;
 use tracing::{info, warn};
 
 use crate::ssh::SshServer;
@@ -32,9 +32,9 @@ pub async fn wait_for_signal() -> std::io::Result<()> {
     }
 }
 
-/// Stop accepting, close the sessions, then checkpoint and close the store, all within
+/// Stop accepting, close the sessions, then close the store (SQLite checkpoints its WAL; Postgres closes the pool), all within
 /// `deadline`. Returns `false` when the deadline passed first.
-pub async fn graceful(server: SshServer, store: &SqliteStore, deadline: Duration) -> bool {
+pub async fn graceful<S: Close>(server: SshServer, store: &S, deadline: Duration) -> bool {
     let work = async {
         server.shutdown().await;
         store.close().await;

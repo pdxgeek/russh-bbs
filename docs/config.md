@@ -20,7 +20,8 @@ Relative paths inside the file are relative to the server's working directory. U
 
 - **Unknown keys are rejected.** In the file the message names the key and the file (`unknown key `ssh.listn` in config file …`); an unknown `RUSSH_BBS_*` environment variable is rejected too, so a typo cannot silently do nothing.
 - **Bad values** (wrong type, out of range, bad path, inconsistent with another key) name the key and where the value came from: the file, the environment variable or the flag.
-- **A backend that is not built is a boot error.** `datasource.kind = "postgres"` fails with "postgres backend is not built yet" until M1-G. The server never falls back to SQLite on its own.
+- **Something that is parsed but not built is a boot error, not ignored.** `datasource.iam_auth = true` fails with "IAM token authentication is not built yet" (D31, D44). The server never falls back to SQLite from Postgres, or to another kind of authentication, on its own.
+- **Postgres failures stop the boot.** A bad URL, an unreachable server, a TLS check that fails, a server that does not offer TLS, or a refused login is a boot error that names the cause and never contains the password.
 - **Settings that parse but do nothing yet** log a warning when turned on (password login, telnet, S3 blobs), so the sysop is not misled.
 - **Secrets are redacted.** `datasource.url` may contain a password. It has no command-line flag (argv is visible in `ps`), it is masked in `Debug`, `Display` and logs (`postgres://user:***@host/db`), and no error message quotes it or the line it was on. If a config file sets it and is readable by group or others the server warns; use `chmod 600`. Object-store credentials are never read from this file: they come from the environment (D30).
 
@@ -58,12 +59,12 @@ A key's environment variable is listed below. Names that existed before this fil
 
 | Key | Type | Default | Environment | Flag | Used by |
 |---|---|---|---|---|---|
-| `datasource.kind` | `"sqlite"`, `"postgres"` | `"sqlite"` | `RUSSH_BBS_DATASOURCE_KIND` | none | Store selection. `"postgres"` is refused at boot until M1-G |
+| `datasource.kind` | `"sqlite"`, `"postgres"` | `"sqlite"` | `RUSSH_BBS_DATASOURCE_KIND` | none | Store selection (M1-G). Both kinds are built; there is no fallback between them |
 | `datasource.path` | path (only with `sqlite`) | `$XDG_DATA_HOME/russh-bbs/russh-bbs.db`, else `~/.local/share/russh-bbs/russh-bbs.db` | `RUSSH_BBS_DB` | `--db` | SQLite store (M1-B) |
-| `datasource.url` | `postgres://` or `postgresql://` URL, required and only with `postgres` | unset | `RUSSH_BBS_DATASOURCE_URL` | none (secret) | Parsed, not yet used (M1-G) |
-| `datasource.tls_mode` | `"require"`, `"verify-ca"`, `"verify-full"` (only with `postgres`) | `"require"` | `RUSSH_BBS_DATASOURCE_TLS_MODE` | none | Parsed, not yet used (M1-G, D31). There is no value that turns TLS off |
-| `datasource.tls_root_cert` | path to a PEM file that exists (only with `postgres`) | unset | `RUSSH_BBS_DATASOURCE_TLS_ROOT_CERT` | none | Parsed, not yet used (M1-G) |
-| `datasource.iam_auth` | boolean (only with `postgres`) | `false` | `RUSSH_BBS_DATASOURCE_IAM_AUTH` | none | Parsed, not yet used (M1-G, D31) |
+| `datasource.url` | `postgres://` or `postgresql://` URL, required and only with `postgres` | unset | `RUSSH_BBS_DATASOURCE_URL` | none (secret) | Postgres store (M1-G). Put the host name, not a unix socket path. Do not put `sslmode` in the URL: it must equal `tls_mode` or boot is refused |
+| `datasource.tls_mode` | `"require"`, `"verify-ca"`, `"verify-full"` (only with `postgres`) | `"require"` | `RUSSH_BBS_DATASOURCE_TLS_MODE` | none | Postgres store (M1-G, D31). There is no value that turns TLS off. **`require` encrypts but does not check the certificate unless `tls_root_cert` is set**; use `verify-full` (with `tls_root_cert` for a private CA or the RDS bundle) to defend against an active attacker |
+| `datasource.tls_root_cert` | path to a PEM file that exists (only with `postgres`) | unset | `RUSSH_BBS_DATASOURCE_TLS_ROOT_CERT` | none | Postgres store (M1-G). The CA that signed the server certificate; a self-signed server certificate that is not itself a CA is rejected. Without it the platform CA store is used; **the published container image is `scratch` and has none, so with `verify-ca`/`verify-full` in the container set `tls_root_cert` to a file on the `/data` volume** (`require` works without) |
+| `datasource.iam_auth` | boolean (only with `postgres`) | `false` | `RUSSH_BBS_DATASOURCE_IAM_AUTH` | none | Parsed, **refused at boot when `true`** (not built; D31, D44) |
 
 Setting a key that belongs to the other backend (for example `datasource.url` with `kind = "sqlite"`) is an error, not something silently ignored. MySQL is not a choice.
 
@@ -112,6 +113,7 @@ The waiting-room banner and rules text are stored settings (D37), not config key
 
 ## Implemented / Planned / Verified
 
-- **Implemented and tested (M1-H):** all of the above; unit tests cover each layer, precedence, unknown keys, bad values with their source, the postgres boot error, redaction in `Debug`, `Display` and captured logs, default file search, the example file equalling the defaults, and this document naming every key, variable and flag.
-- **Planned:** a backend for `postgres` (M1-G), a blob store reading `[blobs]`, telnet (M3), SSH password login.
+- **Implemented and tested (M1-H):** all of the above; unit tests cover each layer, precedence, unknown keys, bad values with their source, the IAM refusal, redaction in `Debug`, `Display` and captured logs, default file search, the example file equalling the defaults, and this document naming every key, variable and flag.
+- **Implemented and tested (M1-G):** the `postgres` datasource (D44): config wiring and the `iam_auth` refusal in the config tests, the store itself in the shared suite on Postgres 16 and on a TLS-required Postgres.
+- **Planned:** IAM token authentication, a blob store reading `[blobs]`, telnet (M3), SSH password login.
 - **Verified end to end:** see the M1-H pull request for the `ssh` session against a file and against environment overrides.

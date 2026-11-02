@@ -1,4 +1,13 @@
-//! The SQLite-backed store: opening, migrating, and the storage trait implementations.
+//! The SQLite-backed store: opening, migrating, and the storage trait implementations (D6, D24).
+//!
+//! SQLite-only SQL: `?` placeholders, `unixepoch()`, `INTEGER PRIMARY KEY AUTOINCREMENT`. The
+//! migration set is `migrations/sqlite/`; the Postgres backend has its own.
+
+mod founder;
+mod terminal_settings;
+
+#[cfg(test)]
+mod tests;
 
 use std::path::Path;
 use std::time::Duration;
@@ -16,7 +25,7 @@ use crate::error::{OpenError, backend, kind};
 use crate::rows::AccountRow;
 
 /// The migrations embedded at build time, in version order.
-pub(crate) static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
+pub(crate) static MIGRATOR: Migrator = sqlx::migrate!("./migrations/sqlite");
 
 /// How long a writer waits for the lock before failing with "busy".
 const BUSY_TIMEOUT: Duration = Duration::from_secs(5);

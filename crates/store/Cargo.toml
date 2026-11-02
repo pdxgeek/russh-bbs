@@ -1,12 +1,20 @@
 [package]
 name = "russh-bbs-store"
-description = "russh-bbs SQLite implementation of the core storage traits"
+description = "russh-bbs SQLite and Postgres implementations of the core storage traits"
 version.workspace = true
 edition.workspace = true
 publish.workspace = true
 
 [lints]
 workspace = true
+
+[features]
+# Both backends are on by default (the datasource is chosen at run time, D6). Each feature
+# exists so `.sqlx` query data can be regenerated for one backend at a time: sqlx checks every
+# `query!` against the single database named by DATABASE_URL.
+default = ["sqlite", "postgres"]
+sqlite = []
+postgres = []
 
 [dependencies]
 russh-bbs-core = { workspace = true }

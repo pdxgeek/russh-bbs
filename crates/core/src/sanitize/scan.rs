@@ -98,7 +98,7 @@ pub(super) fn clean(input: &str, layout: Layout, max_chars: usize) -> String {
             c if is_unicode_space(c) => Some(' '),
             // U+FE0F keeps emoji presentation, but only straight after an emoji base.
             '\u{FE0F}' if last.is_some_and(is_emoji_base) => Some('\u{FE0F}'),
-            // ZWNJ and ZWJ are kept only in a joining context (D44); elsewhere they hide text.
+            // ZWNJ and ZWJ are kept only in a joining context (D45); elsewhere they hide text.
             ZWNJ | ZWJ if last.is_some_and(is_joiner_context) => Some(c),
             ZWNJ | ZWJ => None,
             c if c.is_control() || is_invisible_format(c) => None,
@@ -181,13 +181,13 @@ const fn is_emoji_base(c: char) -> bool {
 /// Whether a ZWNJ or ZWJ may follow `prev`: only after a non-ASCII character that is not
 /// itself a joiner. That keeps emoji sequences (after an emoji base or U+FE0F), Persian and
 /// Indic shaping (after a letter or a virama), and drops a joiner after ASCII, after
-/// another joiner, or at the start, where it can only hide or split text (D44).
+/// another joiner, or at the start, where it can only hide or split text (D45).
 const fn is_joiner_context(prev: char) -> bool {
     !prev.is_ascii() && !matches!(prev, ZWNJ | ZWJ)
 }
 
 /// Invisible and format characters that can hide, reorder or fake text, decided by Unicode
-/// property rather than a hand-kept list (D44): general category `Cf`, or
+/// property rather than a hand-kept list (D45): general category `Cf`, or
 /// `Default_Ignorable_Code_Point` (which also covers assigned fillers and unassigned
 /// reserved ranges), plus two visible-blank characters that have neither property.
 ///

@@ -556,8 +556,8 @@ fn assert_clean(out: &str, allow_nl_tab: bool) {
             "tag or invisible U+{:04X}",
             c as u32
         );
-        // Independent of the implementation: Unicode data (a different crate) and a
-        // transcribed Default_Ignorable table, so a character the scanner misses fails here.
+        // Independent of the implementation: transcribed `Cf` and Default_Ignorable
+        // tables, so a character the scanner misses fails here.
         assert!(
             !is_format_or_default_ignorable(c) || matches!(c, '\u{FE0F}' | '\u{200C}' | '\u{200D}'),
             "invisible format U+{:04X}",
@@ -656,10 +656,36 @@ const DEFAULT_IGNORABLE: &[(u32, u32)] = &[
     (0xE0000, 0xE0FFF),
 ];
 
+/// General category `Cf`, transcribed from `UnicodeData.txt` (Unicode 16). The
+/// implementation reads the same facts from `icu_properties`; a second copy typed here is
+/// what lets a missing character fail a test.
+const FORMAT_CF: &[(u32, u32)] = &[
+    (0x00AD, 0x00AD),
+    (0x0600, 0x0605),
+    (0x061C, 0x061C),
+    (0x06DD, 0x06DD),
+    (0x070F, 0x070F),
+    (0x0890, 0x0891),
+    (0x08E2, 0x08E2),
+    (0x180E, 0x180E),
+    (0x200B, 0x200F),
+    (0x202A, 0x202E),
+    (0x2060, 0x2064),
+    (0x2066, 0x206F),
+    (0xFEFF, 0xFEFF),
+    (0xFFF9, 0xFFFB),
+    (0x110BD, 0x110BD),
+    (0x110CD, 0x110CD),
+    (0x13430, 0x1343F),
+    (0x1BCA0, 0x1BCA3),
+    (0x1D173, 0x1D17A),
+    (0xE0001, 0xE0001),
+    (0xE0020, 0xE007F),
+];
+
 fn is_format_or_default_ignorable(c: char) -> bool {
-    use unicode_properties::{GeneralCategory, UnicodeGeneralCategory};
     let v = c as u32;
-    c.general_category() == GeneralCategory::Format
+    FORMAT_CF.iter().any(|&(lo, hi)| (lo..=hi).contains(&v))
         || DEFAULT_IGNORABLE
             .iter()
             .any(|&(lo, hi)| (lo..=hi).contains(&v))
@@ -806,9 +832,9 @@ fn reserved_names_ignore_separators_and_fold_more_leet() {
 
 #[test]
 fn lookalike_brackets_and_glyphs_are_not_blocked_and_the_docs_say_so() {
-    // N1/D44: only the exact reserved codepoints are neutralized. These pass through, so
+    // N1/D45: only the exact reserved codepoints are neutralized. These pass through, so
     // the Unicode tier depends on style and position like the ASCII tier. If the reserved
-    // set is ever widened, change this test and D44 together.
+    // set is ever widened, change this test and D45 together.
     for fake in [
         "\u{301A}\u{2609}\u{301B}",
         "\u{2E28}\u{25C9}\u{2E29}",

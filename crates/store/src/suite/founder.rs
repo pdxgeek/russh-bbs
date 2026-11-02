@@ -1,4 +1,4 @@
-//! The founder claim against a real SQLite file: atomicity, the race, and rollback.
+//! The founder claim: atomicity, the race, and rollback, against any backend.
 #![allow(clippy::unwrap_used)]
 
 use russh_bbs_core::access::{MemberDirectory, RoleDirectory};
@@ -8,16 +8,15 @@ use russh_bbs_core::store::{
     AccountState, AccountStore, NewAccount, Role, SettingKey, SettingsStore, StoreError,
 };
 
-use crate::SqliteStore;
-use crate::tests::{fingerprint, temp_store};
+use super::{Harness, fingerprint};
 
 fn name() -> russh_bbs_core::sanitize::Username {
     sanitize_username(russh_bbs_core::founder::FOUNDER_USERNAME).unwrap()
 }
 
-#[tokio::test]
-async fn a_claim_creates_an_active_sysop_bound_to_the_key() {
-    let (_dir, store) = temp_store().await;
+pub(crate) async fn a_claim_creates_an_active_sysop_bound_to_the_key<H: Harness>() {
+    let h = H::fresh().await;
+    let store = h.store();
     assert!(!store.founder_claimed().await.unwrap());
     let key = fingerprint(1);
     let account = store.claim_founder(name(), &key).await.unwrap().unwrap();
@@ -36,9 +35,9 @@ async fn a_claim_creates_an_active_sysop_bound_to_the_key() {
     );
 }
 
-#[tokio::test]
-async fn a_second_claim_changes_nothing() {
-    let (_dir, store) = temp_store().await;
+pub(crate) async fn a_second_claim_changes_nothing<H: Harness>() {
+    let h = H::fresh().await;
+    let store = h.store();
     store
         .claim_founder(name(), &fingerprint(1))
         .await
@@ -59,10 +58,10 @@ async fn a_second_claim_changes_nothing() {
     );
 }
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
-async fn two_concurrent_claims_produce_exactly_one_sysop() {
+pub(crate) async fn two_concurrent_claims_produce_exactly_one_sysop<H: Harness>() {
     for round in 0..20_u32 {
-        let (_dir, store) = temp_store().await;
+        let h = H::fresh().await;
+        let store = h.store().clone();
         let (a, b) = {
             let (s1, s2) = (store.clone(), store.clone());
             let k1 = fingerprint(100 + round);
@@ -87,9 +86,9 @@ async fn two_concurrent_claims_produce_exactly_one_sysop() {
     }
 }
 
-#[tokio::test]
-async fn a_failed_claim_rolls_back_and_leaves_the_board_unclaimed() {
-    let (_dir, store) = temp_store().await;
+pub(crate) async fn a_failed_claim_rolls_back_and_leaves_the_board_unclaimed<H: Harness>() {
+    let h = H::fresh().await;
+    let store = h.store();
     // The key is already bound to an ordinary member, so the claim must fail on the key and
     // must not leave the flag or a half-made account behind.
     let member = store
@@ -116,18 +115,15 @@ async fn a_failed_claim_rolls_back_and_leaves_the_board_unclaimed() {
     assert!(account.is_some());
 }
 
-#[tokio::test]
-async fn the_claim_survives_reopening_the_database() {
-    let dir = tempfile::tempdir().unwrap();
-    let path = dir.path().join("bbs.db");
-    let store = SqliteStore::open(&path).await.unwrap();
-    store
+pub(crate) async fn the_claim_survives_reopening_the_database<H: Harness>() {
+    let mut h = H::fresh().await;
+    h.store()
         .claim_founder(name(), &fingerprint(1))
         .await
         .unwrap()
         .unwrap();
-    store.close().await;
-    let reopened = SqliteStore::open(&path).await.unwrap();
+    h.reopen().await;
+    let reopened = h.store();
     assert!(reopened.founder_claimed().await.unwrap());
     assert_eq!(reopened.role_of(&fingerprint(1)).await, Some(Role::Sysop));
     assert!(
@@ -139,9 +135,9 @@ async fn the_claim_survives_reopening_the_database() {
     );
 }
 
-#[tokio::test]
-async fn role_lookup_is_only_for_active_accounts() {
-    let (_dir, store) = temp_store().await;
+pub(crate) async fn role_lookup_is_only_for_active_accounts<H: Harness>() {
+    let h = H::fresh().await;
+    let store = h.store();
     let pending = store
         .create_account(NewAccount {
             username: sanitize_username("carol").unwrap(),

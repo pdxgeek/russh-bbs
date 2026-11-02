@@ -20,4 +20,3 @@ icu_properties = "2.4.0"
 proptest = { workspace = true }
 
 tokio = { workspace = true }
-unicode-properties = "0.1.5"
