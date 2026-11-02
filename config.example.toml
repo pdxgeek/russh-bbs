@@ -2,7 +2,7 @@
 #
 # Every key is shown with its built-in default, so this file changes nothing: a server started
 # with it behaves exactly like one started with no config file. Delete what you do not change.
-# Keys that have no fixed default are commented out. Unknown keys are an error.
+# Keys with no fixed default, and keys that would pin a stored setting, are commented out. Unknown keys are an error.
 #
 # Precedence, lowest to highest: built-in defaults < this file < RUSSH_BBS_* environment
 # variables < command-line flags. Every key, its environment variable and its status is in
@@ -14,10 +14,11 @@
 # Never put object-store credentials here (they come from the environment, D30). A postgres
 # URL may hold a password: keep this file at mode 0600 if it does.
 
-# Who may register: "invite" (default), "apply" or "open". When set here (or by environment or
-# flag) it is written to the board's stored setting at every start and wins over it; when left
-# out, the stored value stands. Decision D38.
-registration_mode = "invite"
+# Who may register: "invite", "apply" or "open". Commented out on purpose: the default is
+# "invite", but any value set here (or by environment or flag) is written to the board's stored
+# setting at every start and wins over it, which would override a mode chosen later in the
+# admin UI. Uncomment only to pin the mode from config. Decision D38.
+# registration_mode = "invite"
 
 [ssh]
 listen = "0.0.0.0:2222"
