@@ -16,6 +16,10 @@ Lowest to highest: **built-in defaults < config file < environment < command-lin
 
 Relative paths inside the file are relative to the server's working directory. Use absolute paths.
 
+## Kubernetes service links
+
+A strict rule applies to the environment: a `RUSSH_BBS_*` variable that no setting reads stops boot, naming the variable, so a typo in a real setting is an error (D56). Kubernetes injects service-link variables for every service in the namespace, and a service called `russh-bbs` yields `RUSSH_BBS_PORT`, `RUSSH_BBS_PORT_<port>_<PROTO>` (and `_PROTO`, `_PORT`, `_ADDR` suffixes), `RUSSH_BBS_SERVICE_HOST` and `RUSSH_BBS_SERVICE_PORT[_<NAME>]`. These exact names and prefixes are ignored, each with a boot warning naming the variable. Nothing else is ignored. Set `enableServiceLinks: false` on the pod to stop the injection altogether.
+
 ## Validation at boot
 
 - **Unknown keys are rejected.** In the file the message names the key and the file (`unknown key `ssh.listn` in config file …`); an unknown `RUSSH_BBS_*` environment variable is rejected too, so a typo cannot silently do nothing.
@@ -69,7 +73,7 @@ A key's environment variable is listed below. Names that existed before this fil
 | `datasource.kind` | `"sqlite"`, `"postgres"` | `"sqlite"` | `RUSSH_BBS_DATASOURCE_KIND` | none | Store selection (M1-G). Both kinds are built; there is no fallback between them |
 | `datasource.path` | path (only with `sqlite`) | `$XDG_DATA_HOME/russh-bbs/russh-bbs.db`, else `~/.local/share/russh-bbs/russh-bbs.db`; in the container `/data/russh-bbs.db` (D46) | `RUSSH_BBS_DB` | `--db` | SQLite store (M1-B) |
 | `datasource.url` | `postgres://` or `postgresql://` URL, required and only with `postgres` | unset | `RUSSH_BBS_DATASOURCE_URL` | none (secret) | Postgres store (M1-G). Put the host name, not a unix socket path. Do not put `sslmode` in the URL: it must equal `tls_mode` or boot is refused |
-| `datasource.tls_mode` | `"require"`, `"verify-ca"`, `"verify-full"` (only with `postgres`) | `"require"` | `RUSSH_BBS_DATASOURCE_TLS_MODE` | none | Postgres store (M1-G, D31). There is no value that turns TLS off. **`require` encrypts but does not check the certificate unless `tls_root_cert` is set**; use `verify-full` (with `tls_root_cert` for a private CA or the RDS bundle) to defend against an active attacker |
+| `datasource.tls_mode` | `"require"`, `"verify-ca"`, `"verify-full"` (only with `postgres`) | `"require"` | `RUSSH_BBS_DATASOURCE_TLS_MODE` | none | Postgres store (M1-G, D31). There is no value that turns TLS off. **`verify-ca` is currently as strict as `verify-full`: it also fails on a host name that is not in the certificate** (sqlx 0.8.6 means to ignore a name mismatch for `verify-ca`, but it only matches rustls's `NotValidForName` error and rustls 0.23.46 returns `NotValidForNameContext`, so the relaxation never applies; checked in the sqlx and rustls sources and live in QA M1). Do not rely on the difference; a dependency upgrade may restore it. **`require` encrypts but does not check the certificate unless `tls_root_cert` is set**; use `verify-full` (with `tls_root_cert` for a private CA or the RDS bundle) to defend against an active attacker |
 | `datasource.tls_root_cert` | path to a PEM file that exists (only with `postgres`) | unset | `RUSSH_BBS_DATASOURCE_TLS_ROOT_CERT` | none | Postgres store (M1-G). The CA that signed the server certificate; a self-signed server certificate that is not itself a CA is rejected. Without it the platform CA store is used; **the published container image is `scratch` and has none, so with `verify-ca`/`verify-full` in the container set `tls_root_cert` to a file on the `/data` volume** (`require` works without) |
 | `datasource.iam_auth` | boolean (only with `postgres`) | `false` | `RUSSH_BBS_DATASOURCE_IAM_AUTH` | none | Parsed, **refused at boot when `true`** (not built; D31, D44) |
 
