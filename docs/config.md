@@ -53,6 +53,11 @@ A key's environment variable is listed below. Names that existed before this fil
 | `ssh.max_connections` | integer 1–1000000 | `256` | `RUSSH_BBS_MAX_CONNECTIONS` | `--max-connections` | Accept loop (M1-A) |
 | `ssh.max_auth_attempts` | integer 1–100 | `6` | `RUSSH_BBS_SSH_MAX_AUTH_ATTEMPTS` | none | SSH handler (M1-A) |
 | `ssh.auth_rejection_millis` | integer 0–60000 | `1000` | `RUSSH_BBS_SSH_AUTH_REJECTION_MILLIS` | none | SSH handler (M1-A) |
+| `ssh.redraw_interval_millis` | integer 10–5000 | `50` | `RUSSH_BBS_SSH_REDRAW_INTERVAL_MILLIS` | none | SSH sessions (FIX-M1-1, D46). One session redraws at most `1000 / value` times a second (20 by default). Window changes are folded into the latest size and keys into one batch per redraw |
+| `ssh.requests_per_second` | integer 10–100000 | `200` | `RUSSH_BBS_SSH_REQUESTS_PER_SECOND` | none | SSH sessions (FIX-M1-1, D46). Data packets and window changes per second one session may send, with a two-second burst. Excess data packets are dropped; an excess window change only updates the size to apply |
+| `ssh.input_bytes_per_second` | integer 64–10000000 | `8192` | `RUSSH_BBS_SSH_INPUT_BYTES_PER_SECOND` | none | SSH sessions (FIX-M1-1, D46). Input bytes per second one session may send, with a two-second burst (16 KiB by default, enough for a long paste). Excess bytes are dropped |
+| `ssh.flood_strikes` | integer 1–1000000 | `1000` | `RUSSH_BBS_SSH_FLOOD_STRIKES` | none | SSH sessions (FIX-M1-1, D46). Over-budget events (each excess request; each started KiB of excess input) before the session is disconnected. Forgotten after 10 quiet seconds |
+| `ssh.write_stall_secs` | integer 1–3600 | `10` | `RUSSH_BBS_SSH_WRITE_STALL_SECS` | none | SSH sessions (FIX-M1-1, D46). How long a peer may leave output waiting (its window or socket full) before the connection is dropped instead of queueing without bound |
 | `ssh.allow_password_login` | boolean | `false` | `RUSSH_BBS_SSH_ALLOW_PASSWORD_LOGIN` | none | Parsed, not yet used (D28; warns when on) |
 
 ### `[datasource]`

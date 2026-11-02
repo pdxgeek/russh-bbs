@@ -70,6 +70,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "anes"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc43e46599f3d77fcf2f2ca89e4d962910b0c19c44e7b58679cbbdfd1820a662"
+dependencies = [
+ "bitflags",
+]
+
+[[package]]
 name = "anstream"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2511,6 +2520,7 @@ version = "0.0.0"
 name = "russh-bbs-server"
 version = "0.0.0"
 dependencies = [
+ "anes",
  "anyhow",
  "clap",
  "rand 0.10.3",

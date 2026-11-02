@@ -32,6 +32,15 @@ pub struct SessionSnapshot {
     pub pty_size: Option<PtySize>,
     /// Whether the interactive shell screen is up.
     pub shell_open: bool,
+    /// Frames sent to the client so far (a frame is one redraw: at most one per
+    /// `Limits::redraw_interval`). Lets tests and the sysop console see how much work a session
+    /// caused.
+    pub frames_sent: u64,
+    /// Bytes in those frames. A peer that never reads makes the server drop the connection
+    /// once its output has been stuck for `Limits::write_stall`, so this stays bounded.
+    pub bytes_sent: u64,
+    /// Input bytes dropped because the session was over its input budget.
+    pub input_dropped: u64,
 }
 
 /// Shared registry of live sessions.
@@ -54,12 +63,15 @@ impl SessionRegistry {
                 access: None,
                 pty_size: None,
                 shell_open: false,
+                frames_sent: 0,
+                bytes_sent: 0,
+                input_dropped: 0,
             },
         );
-        SessionGuard {
+        SessionGuard(SessionRef {
             id,
             registry: Arc::clone(self),
-        }
+        })
     }
 
     /// Copies of every live session, ordered by id.
@@ -83,14 +95,15 @@ impl SessionRegistry {
     }
 }
 
-/// Removes its session from the registry on drop and is the handle for updating it.
-#[derive(Debug)]
-pub struct SessionGuard {
+/// A cloneable reference to one session's registry entry, for the tasks of that session. It can
+/// update the entry but does not remove it: only the [`SessionGuard`] does.
+#[derive(Debug, Clone)]
+pub struct SessionRef {
     id: SessionId,
     registry: Arc<SessionRegistry>,
 }
 
-impl SessionGuard {
+impl SessionRef {
     /// This session's id.
     #[must_use]
     pub fn id(&self) -> SessionId {
@@ -114,11 +127,46 @@ impl SessionGuard {
     pub fn set_shell_open(&self, open: bool) {
         self.registry.update(self.id, |s| s.shell_open = open);
     }
+
+    /// Count one frame of `bytes` bytes handed to the client's output queue.
+    pub fn add_frame(&self, bytes: usize) {
+        self.registry.update(self.id, |s| {
+            s.frames_sent = s.frames_sent.saturating_add(1);
+            s.bytes_sent = s
+                .bytes_sent
+                .saturating_add(u64::try_from(bytes).unwrap_or(u64::MAX));
+        });
+    }
+
+    /// Record the running total of input bytes dropped for being over budget.
+    pub fn set_input_dropped(&self, total: u64) {
+        self.registry.update(self.id, |s| s.input_dropped = total);
+    }
+}
+
+/// Removes its session from the registry on drop. It owns the entry; [`SessionRef`]s borrow it.
+#[derive(Debug)]
+pub struct SessionGuard(SessionRef);
+
+impl SessionGuard {
+    /// A reference the session's other tasks can hold.
+    #[must_use]
+    pub fn reference(&self) -> SessionRef {
+        self.0.clone()
+    }
+}
+
+impl std::ops::Deref for SessionGuard {
+    type Target = SessionRef;
+
+    fn deref(&self) -> &SessionRef {
+        &self.0
+    }
 }
 
 impl Drop for SessionGuard {
     fn drop(&mut self) {
-        self.registry.lock().remove(&self.id);
+        self.0.registry.lock().remove(&self.0.id);
     }
 }
 

@@ -15,24 +15,29 @@
 use std::collections::HashSet;
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::time::Instant;
 
 use russh::server::{Auth, Handler, Msg, PublicKeyOffer, Session, VerifiedPublicKey};
 use russh::{Channel, ChannelId, ChannelOpenFailure, Pty};
 use russh_bbs_core::access::{Access, Fingerprint, decide_access};
-use russh_bbs_core::founder::{ClaimForm, ClaimOutcome, MAX_ATTEMPTS_PER_SESSION, claim_founder};
-use russh_bbs_core::store::{Account, AccountId, Role};
-use russh_bbs_core::terminal_settings::{MemberFlow, MemberStart, TerminalSettings};
+use russh_bbs_core::founder::{ClaimForm, MAX_ATTEMPTS_PER_SESSION};
+use russh_bbs_core::store::{AccountId, Role};
+use russh_bbs_core::terminal_settings::{MemberFlow, MemberStart};
 use russh_bbs_core::waiting_room::{RoomConfig, Verdict, WaitingRoom};
 use tokio::sync::oneshot;
 use tokio::time::timeout;
 use tracing::{debug, info, warn};
 
 use super::Backend;
+use super::abort::Abort;
+use super::budget::SessionBudget;
 use super::error::SessionError;
 use super::host_key::fingerprint_of;
+use super::limits::Limits;
 use super::registry::SessionGuard;
 use super::screen::{Content, Screen};
-use super::terminal::{PtySize, parse_keys};
+use super::shell::{Inbox, MEMBER_START_TIMEOUT, Shell, ShellParts};
+use super::terminal::PtySize;
 use crate::founder::{CLAIM_USER, Founder};
 use crate::waiting_room::Throttle;
 
@@ -44,11 +49,21 @@ const MAX_SESSION_CHANNELS: usize = 4;
 /// defaults. A slow store must not hold a stranger's screen hostage.
 const ROOM_CONFIG_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(2);
 
-/// How long a member's session start (settings and login time) may take before the shell
-/// falls back to the waiting room. A slow store must not hang the screen.
-const MEMBER_START_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(2);
+/// What a connection's handler is built from.
+pub(crate) struct HandlerParts<D> {
+    pub(crate) directory: Arc<D>,
+    pub(crate) founder: Arc<Founder>,
+    pub(crate) throttle: Arc<Throttle>,
+    pub(crate) limits: Limits,
+    /// Fired by the session's own tasks to have the connection dropped.
+    pub(crate) abort: Arc<Abort>,
+}
 
 /// Handler for one client connection.
+///
+/// It receives and refuses; the work a shell session causes (parsing keys, drawing, the founder
+/// claim) is done by the session's [`Shell`] task, which the handler feeds through an [`Inbox`]
+/// and a per-session budget (D46).
 pub(crate) struct ClientHandler<D> {
     directory: Arc<D>,
     founder: Arc<Founder>,
@@ -61,9 +76,15 @@ pub(crate) struct ClientHandler<D> {
     /// The one channel that was granted a PTY and may run the shell.
     shell_channel: Option<ChannelId>,
     pty: Option<PtySize>,
-    screen: Option<Screen>,
+    /// Whether the shell task has been started on `shell_channel`.
+    shell_started: bool,
     throttle: Arc<Throttle>,
-    max_form_submissions: u32,
+    limits: Limits,
+    inbox: Arc<Inbox>,
+    budget: SessionBudget,
+    /// Input bytes dropped as last reported to the registry.
+    reported_dropped: u64,
+    abort: Arc<Abort>,
     /// The key this session authenticated with.
     fingerprint: Option<Fingerprint>,
     /// The role of the account behind the key, if it is a member.
@@ -76,14 +97,18 @@ pub(crate) struct ClientHandler<D> {
 
 impl<D> ClientHandler<D> {
     pub(crate) fn new(
-        directory: Arc<D>,
-        founder: Arc<Founder>,
+        parts: HandlerParts<D>,
         peer: Option<SocketAddr>,
         guard: SessionGuard,
         authenticated: oneshot::Sender<()>,
-        throttle: Arc<Throttle>,
-        max_form_submissions: u32,
     ) -> Self {
+        let HandlerParts {
+            directory,
+            founder,
+            throttle,
+            limits,
+            abort,
+        } = parts;
         Self {
             directory,
             founder,
@@ -93,9 +118,13 @@ impl<D> ClientHandler<D> {
             open_channels: HashSet::new(),
             shell_channel: None,
             pty: None,
-            screen: None,
+            shell_started: false,
             throttle,
-            max_form_submissions,
+            budget: SessionBudget::new(&limits, Instant::now()),
+            limits,
+            inbox: Arc::new(Inbox::default()),
+            reported_dropped: 0,
+            abort,
             fingerprint: None,
             role: None,
             claim_requested: false,
@@ -129,7 +158,7 @@ impl<D> ClientHandler<D> {
                 RoomConfig::default()
             }
         };
-        WaitingRoom::new(&config, self.max_form_submissions)
+        WaitingRoom::new(&config, self.limits.max_form_submissions)
     }
 
     /// The signed-in session for a member key, or `None` for everyone else.
@@ -174,108 +203,26 @@ impl<D> ClientHandler<D> {
         }
     }
 
-    /// The session start for a founder who just claimed. If the store fails right after the
-    /// claim, the sysop still gets a working session on the defaults (nothing is saved).
-    async fn founder_start(&self, account: &Account) -> MemberStart
-    where
-        D: Backend,
-    {
-        let started = timeout(
-            MEMBER_START_TIMEOUT,
-            self.directory.start_for_account(account),
-        )
-        .await;
-        if let Ok(Ok(start)) = started {
-            return start;
-        }
-        warn!(session = ?self.guard.id(), "founder session start failed; using defaults");
-        MemberStart {
-            account: account.id,
-            handle: account.username.clone(),
-            role: account.role,
-            settings: TerminalSettings::default(),
-            previous_login: None,
-        }
-    }
-
-    /// Store settings the member changed. A failure is logged; the session keeps its choice.
-    async fn persist_settings(&self, settings: &TerminalSettings)
-    where
-        D: Backend,
-    {
-        let Some(account) = self.account else {
-            return;
-        };
-        if let Err(error) = self.directory.save_settings(account, settings).await {
-            warn!(session = ?self.guard.id(), %error, "terminal settings could not be saved");
-        }
-    }
-
-    /// Check a token typed at the claim prompt and update the screen. Every failure (limited,
-    /// wrong token, already claimed, store error) is the same generic message.
-    async fn try_claim(
-        &mut self,
-        channel: ChannelId,
-        token: &str,
-        session: &mut Session,
-    ) -> Result<(), SessionError>
-    where
-        D: Backend,
-    {
-        let Some(fingerprint) = self.fingerprint.clone() else {
-            return Ok(());
-        };
-        let peer_ip = self.peer.map(|peer| peer.ip());
-        let outcome = if self
-            .founder
-            .admit_attempt(&fingerprint, peer_ip)
-            .is_allowed()
-        {
-            claim_founder(self.founder.gate(), &*self.directory, token, &fingerprint).await
-        } else {
-            info!(session = ?self.guard.id(), fingerprint = %fingerprint, "founder claim rate limited");
-            ClaimOutcome::Rejected
-        };
-        match outcome {
-            ClaimOutcome::Claimed(account) => {
-                self.role = Some(account.role);
-                self.guard.set_authenticated(fingerprint, Access::Member);
-                let start = self.founder_start(&account).await;
-                self.account = Some(start.account);
-                let flow = MemberFlow::new(
-                    &start.handle,
-                    start.role,
-                    start.previous_login,
-                    start.settings,
-                );
-                if let Some(screen) = self.screen.as_mut() {
-                    session.data(channel, screen.claim_accepted(flow)?)?;
-                }
-            }
-            ClaimOutcome::Rejected => {
-                let Some(screen) = self.screen.as_mut() else {
-                    return Ok(());
-                };
-                let (bytes, disconnect) = screen.claim_rejected()?;
-                session.data(channel, bytes)?;
-                if disconnect {
-                    self.finish(channel, session)?;
-                }
-            }
+    /// Drop the connection if this session has pushed past its budgets (D46). Nothing it sent
+    /// is logged, only the fact.
+    fn check_budget(&self) -> Result<(), SessionError> {
+        if self.budget.exceeded() {
+            info!(
+                session = ?self.guard.id(),
+                peer = ?self.peer,
+                dropped_input_bytes = self.budget.dropped_bytes(),
+                "session is over its request budget; disconnecting"
+            );
+            return Err(SessionError::OverBudget);
         }
         Ok(())
     }
+}
 
-    /// End the shell: restore the client's terminal, then close the channel.
-    fn finish(&mut self, channel: ChannelId, session: &mut Session) -> Result<(), SessionError> {
-        if let Some(mut screen) = self.screen.take() {
-            session.data(channel, screen.leave()?)?;
-        }
-        self.guard.set_shell_open(false);
-        session.exit_status_request(channel, 0)?;
-        session.eof(channel)?;
-        session.close(channel)?;
-        Ok(())
+impl<D> Drop for ClientHandler<D> {
+    fn drop(&mut self) {
+        // The connection is over: tell the shell task to stop without sending anything.
+        self.inbox.close();
     }
 }
 
@@ -465,7 +412,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
             session.channel_failure(channel)?;
             return Ok(());
         };
-        if self.screen.is_some() {
+        if self.shell_started {
             self.refused("second-shell");
             session.channel_failure(channel)?;
             return Ok(());
@@ -479,9 +426,26 @@ impl<D: Backend> Handler for ClientHandler<D> {
         } else {
             Content::Room(self.waiting_room().await)
         };
-        let mut screen = Screen::new(size, content)?;
-        session.data(channel, screen.enter()?)?;
-        self.screen = Some(screen);
+        // The window may have changed while the content was loading.
+        let size = self.pty.unwrap_or(size);
+        let screen = Screen::new(size, content)?;
+        let shell = Shell::new(ShellParts {
+            handle: session.handle(),
+            channel,
+            screen,
+            inbox: Arc::clone(&self.inbox),
+            directory: Arc::clone(&self.directory),
+            founder: Arc::clone(&self.founder),
+            session: self.guard.reference(),
+            abort: Arc::clone(&self.abort),
+            fingerprint: self.fingerprint.clone(),
+            peer_ip: self.peer.map(|peer| peer.ip()),
+            account: self.account,
+            redraw_interval: self.limits.redraw_interval,
+            write_stall: self.limits.write_stall,
+        });
+        tokio::spawn(shell.run());
+        self.shell_started = true;
         self.guard.set_shell_open(true);
         Ok(())
     }
@@ -493,7 +457,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
         row_height: u32,
         _pix_width: u32,
         _pix_height: u32,
-        session: &mut Session,
+        _session: &mut Session,
     ) -> Result<(), Self::Error> {
         if !self.is_shell_channel(channel) {
             return Ok(());
@@ -501,44 +465,47 @@ impl<D: Backend> Handler for ClientHandler<D> {
         let size = PtySize::from_request(col_width, row_height);
         self.pty = Some(size);
         self.guard.set_size(size);
-        if let Some(screen) = self.screen.as_mut() {
-            session.data(channel, screen.resize(size)?)?;
+        // Over budget or not, only the latest size is kept, so the trailing size always takes
+        // effect and a flood costs a store and a wake-up, not a redraw.
+        let _ = self.budget.request(Instant::now());
+        if self.shell_started {
+            self.inbox.set_resize(size);
         }
-        Ok(())
+        self.check_budget()
     }
 
     async fn data(
         &mut self,
         channel: ChannelId,
         data: &[u8],
-        session: &mut Session,
+        _session: &mut Session,
     ) -> Result<(), Self::Error> {
-        if !self.is_shell_channel(channel) {
+        if !self.is_shell_channel(channel) || !self.shell_started {
             return Ok(());
         }
-        let Some(screen) = self.screen.as_mut() else {
-            return Ok(());
-        };
-        let update = screen.keys(&parse_keys(data))?;
-        session.data(channel, update.bytes)?;
-        if let Some(settings) = &update.save_settings {
-            self.persist_settings(settings).await;
+        let now = Instant::now();
+        if self.budget.request(now) {
+            let allowed = self.budget.input(now, data.len());
+            if let Some(part) = data.get(..allowed) {
+                self.inbox.push_input(part);
+            }
+            let dropped = self.budget.dropped_bytes();
+            if dropped != self.reported_dropped {
+                self.reported_dropped = dropped;
+                self.guard.set_input_dropped(dropped);
+            }
         }
-        if update.disconnect {
-            self.finish(channel, session)?;
-        } else if let Some(token) = update.claim_token {
-            self.try_claim(channel, &token, session).await?;
-        }
-        Ok(())
+        self.check_budget()
     }
 
     async fn channel_eof(
         &mut self,
         channel: ChannelId,
-        session: &mut Session,
+        _session: &mut Session,
     ) -> Result<(), Self::Error> {
-        if self.is_shell_channel(channel) {
-            self.finish(channel, session)?;
+        if self.is_shell_channel(channel) && self.shell_started {
+            // The shell restores the client's terminal and closes the channel.
+            self.inbox.finish();
         }
         Ok(())
     }
@@ -551,7 +518,9 @@ impl<D: Backend> Handler for ClientHandler<D> {
         self.open_channels.remove(&channel);
         if self.is_shell_channel(channel) {
             // The client closed first; there is no terminal left to restore.
-            self.screen = None;
+            self.inbox.close();
+            self.inbox = Arc::new(Inbox::default());
+            self.shell_started = false;
             self.shell_channel = None;
             self.pty = None;
             self.guard.set_shell_open(false);
