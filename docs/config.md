@@ -18,7 +18,7 @@ Relative paths inside the file are relative to the server's working directory. U
 
 ## Kubernetes service links
 
-A strict rule applies to the environment: a `RUSSH_BBS_*` variable that no setting reads stops boot, naming the variable, so a typo in a real setting is an error (D54). Kubernetes injects service-link variables for every service in the namespace, and a service called `russh-bbs` yields `RUSSH_BBS_PORT`, `RUSSH_BBS_PORT_<port>_<PROTO>` (and `_PROTO`, `_PORT`, `_ADDR` suffixes), `RUSSH_BBS_SERVICE_HOST` and `RUSSH_BBS_SERVICE_PORT[_<NAME>]`. These exact names and prefixes are ignored, each with a boot warning naming the variable. Nothing else is ignored. Set `enableServiceLinks: false` on the pod to stop the injection altogether.
+A strict rule applies to the environment: a `RUSSH_BBS_*` variable that no setting reads stops boot, naming the variable, so a typo in a real setting is an error (D56). Kubernetes injects service-link variables for every service in the namespace, and a service called `russh-bbs` yields `RUSSH_BBS_PORT`, `RUSSH_BBS_PORT_<port>_<PROTO>` (and `_PROTO`, `_PORT`, `_ADDR` suffixes), `RUSSH_BBS_SERVICE_HOST` and `RUSSH_BBS_SERVICE_PORT[_<NAME>]`. These exact names and prefixes are ignored, each with a boot warning naming the variable. Nothing else is ignored. Set `enableServiceLinks: false` on the pod to stop the injection altogether.
 
 ## Validation at boot
 

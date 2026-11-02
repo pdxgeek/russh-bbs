@@ -39,6 +39,7 @@ use super::screen::{Content, Screen};
 use super::shell::{Inbox, MEMBER_START_TIMEOUT, Shell, ShellParts};
 use super::terminal::PtySize;
 use crate::founder::{CLAIM_USER, Founder};
+use crate::ui::Ui;
 use crate::waiting_room::Throttle;
 
 /// Session channels one connection may hold open at once. OpenSSH multiplexing and refused
@@ -55,6 +56,8 @@ pub(crate) struct HandlerParts<D> {
     pub(crate) founder: Arc<Founder>,
     pub(crate) throttle: Arc<Throttle>,
     pub(crate) limits: Limits,
+    /// The validated string table and menu tree (M2-A).
+    pub(crate) ui: Arc<Ui>,
     /// Fired by the session's own tasks to have the connection dropped.
     pub(crate) abort: Arc<Abort>,
 }
@@ -80,6 +83,7 @@ pub(crate) struct ClientHandler<D> {
     shell_started: bool,
     throttle: Arc<Throttle>,
     limits: Limits,
+    ui: Arc<Ui>,
     inbox: Arc<Inbox>,
     budget: SessionBudget,
     /// Input bytes dropped as last reported to the registry.
@@ -107,6 +111,7 @@ impl<D> ClientHandler<D> {
             founder,
             throttle,
             limits,
+            ui,
             abort,
         } = parts;
         Self {
@@ -122,6 +127,7 @@ impl<D> ClientHandler<D> {
             throttle,
             budget: SessionBudget::new(&limits, Instant::now()),
             limits,
+            ui,
             inbox: Arc::new(Inbox::default()),
             reported_dropped: 0,
             abort,
@@ -428,7 +434,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
         };
         // The window may have changed while the content was loading.
         let size = self.pty.unwrap_or(size);
-        let screen = Screen::new(size, self.limits.render_cap, content)?;
+        let screen = Screen::new(size, self.limits.render_cap, content, Arc::clone(&self.ui))?;
         let shell = Shell::new(ShellParts {
             handle: session.handle(),
             channel,

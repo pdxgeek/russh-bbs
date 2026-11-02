@@ -2,7 +2,7 @@
 //! and a locked-down PTY session.
 //!
 //! A key that is not a member sees the waiting room (M1-C). A member's key sees the login screen, the glyph
-//! test on first login, and a placeholder home with terminal settings and logoff (M1-E); the
+//! test on first login, and the main menu (M2-A) with terminal settings and logoff; the
 //! real member experience arrives in later slices. The SSH user name
 //! `claim` opens the founder token prompt for every key (D41). Rules (who is restricted, which screens exist,
 //! rate limits) live in `russh-bbs-core`; this module is transport and rendering only.

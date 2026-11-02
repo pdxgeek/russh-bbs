@@ -13,6 +13,10 @@ use std::future::Future;
 
 use crate::store::Role;
 
+mod permission;
+
+pub use permission::{Permission, PermissionCheck, RolePermissions};
+
 /// Length of the base64 (unpadded) part of a SHA-256 fingerprint: 32 bytes encode to 43 chars.
 const SHA256_BASE64_LEN: usize = 43;
 

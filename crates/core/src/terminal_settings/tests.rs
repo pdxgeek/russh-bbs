@@ -250,7 +250,10 @@ fn first_login_walks_login_then_glyph_test_then_home() {
     assert_eq!(f.settings(), &expected);
     let home = text(&f.view());
     assert!(home.contains("Icons set to Nerd Font."), "{home}");
-    assert!(home.contains("[s] Terminal settings"), "{home}");
+    assert!(home.contains("Signed in as alice."), "{home}");
+    let page = f.menu_page().unwrap();
+    assert_eq!(page.title, "menu.main.title");
+    assert!(page.items.iter().any(|i| i.hotkey == 's'));
 }
 
 #[test]
@@ -267,7 +270,65 @@ fn a_stored_tier_skips_the_glyph_test_and_the_login_screen_names_it() {
         "{login}"
     );
     press(&mut f, "x");
-    assert!(text(&f.view()).contains("Main"), "straight to home");
+    assert!(f.menu_page().is_some(), "straight to the main menu");
+}
+
+#[test]
+fn the_main_menu_opens_settings_and_back_returns_to_the_same_menu() {
+    let mut f = flow(TerminalSettings::default().with_tier(Tier::Ascii), None);
+    press(&mut f, "x");
+    assert!(f.menu_page().is_some());
+    press(&mut f, "s");
+    assert!(f.menu_page().is_none(), "the settings screen is showing");
+    assert!(text(&f.view()).contains("Terminal settings"));
+    press(&mut f, "\u{1b}");
+    assert!(f.menu_page().is_some(), "Esc is back to the menu");
+    press(&mut f, "s");
+    press(&mut f, "b");
+    assert!(f.menu_page().is_some(), "the Back item is back too");
+}
+
+#[test]
+fn log_off_from_the_menu_and_quit_from_every_page_end_the_session() {
+    let mut f = flow(TerminalSettings::default().with_tier(Tier::Ascii), None);
+    press(&mut f, "x");
+    assert_eq!(press(&mut f, "l"), vec![MemberEffect::Disconnect]);
+    assert!(f.is_logged_off());
+    assert!(f.menu_page().is_none());
+    // Quit works on the menu, in a submenu and on the settings page.
+    for keys in ["", "s"] {
+        let mut f = flow(TerminalSettings::default().with_tier(Tier::Ascii), None);
+        press(&mut f, "x");
+        press(&mut f, keys);
+        assert_eq!(
+            f.input(MemberInput::Quit),
+            MemberEffect::Disconnect,
+            "{keys:?}"
+        );
+    }
+}
+
+#[test]
+fn a_member_never_sees_the_sysop_menu_and_a_sysop_does() {
+    let handle = sanitize_username("alice").unwrap();
+    let make = |role| {
+        let mut f = MemberFlow::new(
+            &handle,
+            role,
+            None,
+            TerminalSettings::default().with_tier(Tier::Ascii),
+        );
+        press(&mut f, "x");
+        f
+    };
+    let mut member = make(Role::Member);
+    press(&mut member, "o");
+    assert_eq!(member.menu_page().unwrap().title, "menu.main.title");
+    let mut sysop = make(Role::Sysop);
+    press(&mut sysop, "o");
+    assert_eq!(sysop.menu_page().unwrap().title, "menu.sysop.title");
+    press(&mut sysop, "\u{1b}");
+    assert_eq!(sysop.menu_page().unwrap().title, "menu.main.title");
 }
 
 #[test]

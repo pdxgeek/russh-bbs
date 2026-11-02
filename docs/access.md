@@ -104,4 +104,18 @@ This is the most intricate feature in the MVP, so the M2 access slice starts wit
 
 ## Implemented / Verified
 
-Nothing yet.
+**Placeholder for the menu framework (M2-A, `core::access::permission`).** M2-B owns the real enum, roles and resolution; this only lets a menu item carry a permission and ask one question.
+
+- `Permission` has the six permissions the menus name: `account.edit_settings`, `members.view`, `members.approve`, `forum.list`, `mail.read`, `files.list`. M2-B extends it to the full list above.
+- `PermissionCheck::allows(Permission)` is the single hook. Menus show an item only if it passes, and the same check decides whether its hotkey does anything. `RolePermissions(Role)` is today's stand-in: `member` holds everything except `members.approve`, `sysop` holds everything.
+- Menu items and their gates:
+
+| Menu item | Needs | Notes |
+|---|---|---|
+| Terminal settings | `account.edit_settings` | an action |
+| Forums, Mail, Files, Members | `forum.list`, `mail.read`, `files.list`, `members.view` | placeholders, shown only to a session that would hold them; picking one says "not built yet" |
+| Sysop tools, Approval queue | `members.approve` | a submenu and a placeholder |
+| Log off | none | every signed-in session may end itself; there is nothing to grant |
+| Help, Back, Quit keys | none | universal keys, not actions |
+
+- **Tested:** the visible set follows the hook, a hidden item's hotkey does nothing, and every action item in the tree takes its permission from the action. **Not done (M2-B):** real roles, groups, scoped grants, "every front-end action path calls `core::access`" tests.

@@ -249,7 +249,7 @@ fn insert_path(table: &mut Table, path: &str, value: Value) {
     }
 }
 
-/// Variables Kubernetes injects for a service named `russh-bbs` (D54): `RUSSH_BBS_SERVICE_HOST`,
+/// Variables Kubernetes injects for a service named `russh-bbs` (D56): `RUSSH_BBS_SERVICE_HOST`,
 /// `RUSSH_BBS_SERVICE_PORT[_<NAME>]`, `RUSSH_BBS_PORT` and `RUSSH_BBS_PORT_<port>_<PROTO>[_...]`.
 /// None of these is a setting, and the list is checked only after the real names, so a typo in a
 /// real setting (`RUSSH_BBS_LISTN`) is still an error.

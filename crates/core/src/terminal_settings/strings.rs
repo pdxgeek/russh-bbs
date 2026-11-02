@@ -45,17 +45,6 @@ pub const GLYPH_FOOTER_FIRST: &str =
 /// Footer on a re-run.
 pub const GLYPH_FOOTER_AGAIN: &str = "y: yes   n: no   Esc: cancel   Ctrl-C: log off";
 
-/// Home heading.
-pub const HOME_HEADING: &str = "Main";
-/// Honest note that the real screens do not exist yet.
-pub const PLACEHOLDER_NOTE: &str = "This is a placeholder. The board itself is not built yet.";
-/// Home menu label.
-pub const MENU_SETTINGS: &str = "Terminal settings";
-/// Home menu label.
-pub const MENU_LOGOFF: &str = "Log off";
-/// Home footer.
-pub const HOME_FOOTER: &str = "s: settings   l: log off   Ctrl-C: log off";
-
 /// Settings heading.
 pub const SETTINGS_HEADING: &str = "Terminal settings";
 /// `{value}` is a number or "automatic".

@@ -83,7 +83,7 @@ ssh -p 2222 claim@localhost     # paste the token to become sysop (D41)
 
 ## Memory after a connection flood
 
-The image uses the system allocator of the static musl build. Measured on a release musl binary (D55): about 8 MB idle, and after a local flood of 200 sessions with constant resizes and input about 28 MB ten seconds later, i.e. roughly 20 MB stays with the process until restart. Peak memory is bounded by `ssh.max_connections` and the render cap (`ssh.render_cols` x `ssh.render_rows`, D53), not by the allocator. Swapping in `mimalloc` used more memory and was not adopted.
+The image uses the system allocator of the static musl build. Measured on a release musl binary (D57): about 8 MB idle, and after a local flood of 200 sessions with constant resizes and input about 28 MB ten seconds later, i.e. roughly 20 MB stays with the process until restart. Peak memory is bounded by `ssh.max_connections` and the render cap (`ssh.render_cols` x `ssh.render_rows`, D53), not by the allocator. Swapping in `mimalloc` used more memory and was not adopted.
 
 ## Host key fingerprint
 
