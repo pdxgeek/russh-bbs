@@ -9,6 +9,7 @@
 //! is the compare-and-set.
 
 use russh_bbs_core::access::{Fingerprint, MemberDirectory, Slug};
+use russh_bbs_core::audit::events;
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::sanitize::Username;
 use russh_bbs_core::store::{Account, AccountState, SettingKey, StoreError};
@@ -83,8 +84,12 @@ impl FounderStore for PostgresStore {
             Some(ErrorKind::UniqueViolation) => StoreError::FingerprintTaken,
             _ => backend(error),
         })?;
+        let account = row.into_account()?;
+        // The claim and its audit row commit together or not at all.
+        self.audit_in(&mut tx, &events::founder_claimed(account.id))
+            .await?;
         tx.commit().await.map_err(backend)?;
-        row.into_account().map(Some)
+        Ok(Some(account))
     }
 }
 

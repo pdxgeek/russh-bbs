@@ -21,6 +21,7 @@ use russh::ChannelMsg;
 use russh::client::{self, AuthResult, Handle};
 use russh::keys::{HashAlg, PrivateKey, PrivateKeyWithHashAlg};
 use russh_bbs_core::access::{Access, Fingerprint};
+use russh_bbs_core::audit::{Action, AuditQuery, AuditStore};
 use russh_bbs_server::founder;
 use russh_bbs_server::ssh::{HostKey, Limits, ServerConfig, SshServer};
 use russh_bbs_store::SqliteStore;
@@ -178,6 +179,11 @@ async fn the_full_claim_story() {
     assert!(after.contains("Signed in as founder."), "{after}");
     assert!(!after.contains(&token));
     assert_eq!(access_of(&rig, &key_a).await, Access::Member);
+    // The claim wrote its audit row in its transaction (M2-C): one row, no token in it.
+    let rows = rig.store.page(&AuditQuery::default()).await.unwrap();
+    assert_eq!(rows.len(), 1, "{rows:?}");
+    assert_eq!(rows[0].event.action, Action::FounderClaimed);
+    assert!(!format!("{rows:?}").contains(&token));
 
     // Key A reconnects with an ordinary user name and sees the login screen (M1-E), which
     // reports the earlier login from the claim session.
@@ -194,6 +200,11 @@ async fn the_full_claim_story() {
     assert!(refused.contains(REJECTED), "{refused}");
     assert!(!refused.contains("Signed in"));
     assert_eq!(access_of(&rig, &key_b).await, Access::Restricted);
+    // A refused claim writes no audit row.
+    assert_eq!(
+        rig.store.page(&AuditQuery::default()).await.unwrap().len(),
+        1
+    );
 
     // Restart on the same database: key A is still the sysop, no new token is printed, and
     // the old token still fails.
