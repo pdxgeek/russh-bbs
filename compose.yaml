@@ -1,0 +1,17 @@
+# Example: one service, one named volume, port 2222. See docs/deploy.md.
+services:
+  bbs:
+    image: ghcr.io/pdxgeek/russh-bbs:latest
+    # Or build from a checkout:
+    # build: .
+    ports:
+      - "2222:2222"
+    volumes:
+      # SQLite database, host key and /data/config.toml all live here.
+      - bbs-data:/data
+    restart: unless-stopped
+    # The server stops within 8 s of SIGTERM; give it room before SIGKILL.
+    stop_grace_period: 15s
+
+volumes:
+  bbs-data:

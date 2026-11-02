@@ -7,10 +7,10 @@ use russh_bbs_core::access::Fingerprint;
 use russh_bbs_core::store::{
     Account, AccountId, AccountStore, NewAccount, SettingKey, SettingsStore, StoreError,
 };
-use sqlx::SqlitePool;
 use sqlx::error::ErrorKind;
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions, SqliteSynchronous};
+use sqlx::{Connection as _, SqlitePool};
 
 use crate::error::{OpenError, backend, kind};
 use crate::rows::AccountRow;
@@ -68,8 +68,26 @@ impl SqliteStore {
         &self.pool
     }
 
-    /// Close the pool, flushing the WAL.
+    /// Checkpoint the WAL into the main file (truncating it), then close the pool. The
+    /// checkpoint is best effort: a failure is only reported, because SQLite recovers an
+    /// un-checkpointed WAL on the next open. The connection used for it is closed explicitly,
+    /// not returned to the pool, so that nothing is still settling when this returns.
     pub async fn close(&self) {
+        match self.pool.acquire().await {
+            Ok(connection) => {
+                let mut connection = connection.detach();
+                if let Err(error) = sqlx::query("PRAGMA wal_checkpoint(TRUNCATE)")
+                    .execute(&mut connection)
+                    .await
+                {
+                    tracing::warn!(%error, "WAL checkpoint failed at close");
+                }
+                if let Err(error) = connection.close().await {
+                    tracing::warn!(%error, "closing the checkpoint connection failed");
+                }
+            }
+            Err(error) => tracing::warn!(%error, "no connection for the WAL checkpoint at close"),
+        }
         self.pool.close().await;
     }
 }
