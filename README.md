@@ -8,6 +8,7 @@ Built on the [`russh`](https://crates.io/crates/russh) crate. This project is no
 
 ## What it is
 
+- **SSH by default.** Telnet can be switched on by the sysop; it is off out of the box and every telnet screen says the connection is unencrypted.
 - **Invite-only by default.** An unknown SSH key lands in a waiting room where it can only request or redeem an invite. The sysop can switch registration to apply-and-approve or open.
 - **No install.** The whole MVP works over `ssh` and `sftp`. No custom client.
 - **Forums, chat rooms, mail, files, RSS, and door games**, rendered as a themeable terminal UI.
