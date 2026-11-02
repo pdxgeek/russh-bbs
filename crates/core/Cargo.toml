@@ -14,7 +14,7 @@ thiserror = { workspace = true }
 tracing = { workspace = true }
 sha2 = { workspace = true }
 subtle = { workspace = true }
-icu_properties = "2.4.0"
+icu_properties = { workspace = true }
 
 [dev-dependencies]
 proptest = { workspace = true }
