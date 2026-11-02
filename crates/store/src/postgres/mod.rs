@@ -10,8 +10,10 @@
 mod access;
 mod audit;
 mod founder;
+mod invites;
 mod limits;
 mod profiles;
+mod state;
 mod terminal_settings;
 
 #[cfg(test)]
@@ -245,20 +247,17 @@ impl AccountStore for PostgresStore {
     async fn create_account(&self, account: NewAccount) -> Result<Account, StoreError> {
         let skeleton = account.username.skeleton();
         let username = account.username.as_str();
-        // The legacy `role` column is a label only (nothing reads it for a decision); the
-        // authority is the grant below. `member` needs no grant: `everyone` carries it.
-        let label = crate::legacy_role_label(&account.role);
+        // The authority is the grant below (D33); `member` needs no grant: `everyone` carries it.
         let state = account.state.as_str();
         let input_role = account.role.clone();
         let mut tx = self.pool().begin().await.map_err(backend)?;
         let row = sqlx::query_as!(
             AccountRow,
-            "INSERT INTO accounts (username, username_skeleton, role, state)
-             VALUES ($1, $2, $3, $4)
+            "INSERT INTO accounts (username, username_skeleton, state)
+             VALUES ($1, $2, $3)
              RETURNING id, username, state, created_at",
             username,
             skeleton,
-            label,
             state,
         )
         .fetch_one(&mut *tx)

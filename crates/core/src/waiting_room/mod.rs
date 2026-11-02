@@ -25,8 +25,9 @@ pub use limits::{
 };
 pub use room::{
     BANNER_MAX_CHARS, BANNER_MAX_LINES, CODE_MAX_CHARS, DEFAULT_MAX_SUBMISSIONS, FieldView,
-    LINE_MAX_CHARS, MenuItemView, Notice, NoticeKind, RULES_MAX_CHARS, RULES_MAX_LINES, RoomEffect,
-    RoomInput, RoomText, TextLimitError, View, WaitingRoom, check_room_text,
+    LINE_MAX_CHARS, MenuItemView, Notice, NoticeKind, RULES_MAX_CHARS, RULES_MAX_LINES,
+    RedeemRequest, RoomEffect, RoomInput, RoomText, TextLimitError, View, WaitingRoom,
+    check_room_text,
 };
 pub use screens::{MenuEntry, Page};
 pub use source::{RoomConfig, WaitingRoomSource};

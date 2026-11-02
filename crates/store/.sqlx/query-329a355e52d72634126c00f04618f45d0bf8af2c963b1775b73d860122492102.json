@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE invite SET redeemed_at = $1\n             WHERE code_hash = $2 AND redeemed_at IS NULL AND expires_at > $1\n               AND EXISTS (SELECT 1 FROM accounts a\n                           WHERE a.id = invite.inviter_id AND a.state = 'active')\n             RETURNING id, inviter_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "inviter_id",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "329a355e52d72634126c00f04618f45d0bf8af2c963b1775b73d860122492102"
+}

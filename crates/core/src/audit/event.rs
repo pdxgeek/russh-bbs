@@ -3,6 +3,7 @@
 use strum::{EnumString, IntoStaticStr, VariantArray};
 
 use crate::access::{Fingerprint, GroupId, ResourceKind, ResourceRef, Slug};
+use crate::invites::InviteId;
 use crate::sanitize::{Sanitized, SingleLine};
 use crate::store::AccountId;
 
@@ -56,6 +57,15 @@ pub enum Action {
     /// A setting was changed (the member's own terminal settings today).
     #[strum(serialize = "setting.changed")]
     SettingChanged,
+    /// A member made an invite code (M2-D). The target is the invite's id, never the code.
+    #[strum(serialize = "invite.created")]
+    InviteCreated,
+    /// An invite code was redeemed and made an account (M2-D).
+    #[strum(serialize = "invite.redeemed")]
+    InviteRedeemed,
+    /// An account moved from one state to another (M2-D).
+    #[strum(serialize = "account.state_changed")]
+    AccountStateChanged,
     /// A resource limit was set or an override cleared (M2-H).
     #[strum(serialize = "limit.changed")]
     LimitChanged,
@@ -103,6 +113,8 @@ pub enum Target {
     Role(Slug),
     /// A key, by its public SHA256 fingerprint. Never key material.
     Key(Fingerprint),
+    /// An invite, by its row id. Never the code, which is stored only as a hash (M2-D).
+    Invite(InviteId),
 }
 
 impl Target {
@@ -116,6 +128,7 @@ impl Target {
             Self::Group(id) => ("group", id.to_string()),
             Self::Role(name) => ("role", name.as_str().to_owned()),
             Self::Key(fingerprint) => ("key", fingerprint.as_str().to_owned()),
+            Self::Invite(id) => ("invite", id.to_string()),
         }
     }
 
@@ -136,6 +149,11 @@ impl Target {
                 .map(Self::Group),
             "role" => Slug::parse(reference).ok().map(Self::Role),
             "key" => Fingerprint::parse(reference).ok().map(Self::Key),
+            "invite" => reference
+                .parse()
+                .ok()
+                .map(InviteId::from_raw)
+                .map(Self::Invite),
             _ => None,
         }
     }

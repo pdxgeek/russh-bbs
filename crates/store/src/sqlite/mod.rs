@@ -6,8 +6,10 @@
 mod access;
 mod audit;
 mod founder;
+mod invites;
 mod limits;
 mod profiles;
+mod state;
 mod terminal_settings;
 
 #[cfg(test)]
@@ -71,12 +73,12 @@ impl SqliteStore {
             .synchronous(SqliteSynchronous::Normal)
             .foreign_keys(true)
             .busy_timeout(BUSY_TIMEOUT);
+        migrate(&options).await?;
         let pool = SqlitePoolOptions::new()
             .max_connections(MAX_CONNECTIONS)
             .connect_with(options)
             .await
             .map_err(OpenError::Connect)?;
-        MIGRATOR.run(&pool).await.map_err(OpenError::Migrate)?;
         Ok(Self {
             pool,
             clock: Arc::new(SystemWallClock),
@@ -124,6 +126,47 @@ impl SqliteStore {
     }
 }
 
+/// Apply pending migrations on one dedicated connection that has **foreign keys off**, then
+/// verify no foreign key dangles, then close it. Only after that does the pool (foreign keys on)
+/// exist.
+///
+/// Why: SQLite's table rebuild (the 12-step procedure, used by `0007_invites.sql` to drop a
+/// column) has to run with foreign keys off, or `DROP TABLE accounts` deletes the table's rows
+/// first and the `ON DELETE CASCADE` of every table that references it deletes theirs. The
+/// `PRAGMA foreign_keys` switch is a no-op inside a transaction and sqlx wraps each migration in
+/// one, so it cannot be done from the migration file; it has to be the connection's setting. The
+/// price is that no migration is checked row by row as it runs, so the check at the end is not
+/// optional: `PRAGMA foreign_key_check` must come back empty or the database is refused.
+async fn migrate(options: &SqliteConnectOptions) -> Result<(), OpenError> {
+    let mut connection = sqlx::SqliteConnection::connect_with(&options.clone().foreign_keys(false))
+        .await
+        .map_err(OpenError::Connect)?;
+    let result = migrate_on(&mut connection).await;
+    if let Err(error) = connection.close().await {
+        tracing::warn!(%error, "closing the migration connection failed");
+    }
+    result
+}
+
+/// Run the migrations on `connection` and refuse a result with dangling foreign keys.
+pub(crate) async fn migrate_on(connection: &mut sqlx::SqliteConnection) -> Result<(), OpenError> {
+    MIGRATOR
+        .run(&mut *connection)
+        .await
+        .map_err(OpenError::Migrate)?;
+    let dangling = sqlx::query("PRAGMA foreign_key_check")
+        .fetch_all(&mut *connection)
+        .await
+        .map_err(OpenError::Connect)?;
+    if dangling.is_empty() {
+        Ok(())
+    } else {
+        Err(OpenError::ForeignKeys {
+            rows: dangling.len(),
+        })
+    }
+}
+
 /// Create the directory and an empty owner-only file so SQLite does not create them with the
 /// process umask. An existing file is left alone.
 async fn prepare_path(path: &Path) -> std::io::Result<()> {
@@ -148,20 +191,17 @@ impl AccountStore for SqliteStore {
     async fn create_account(&self, account: NewAccount) -> Result<Account, StoreError> {
         let skeleton = account.username.skeleton();
         let username = account.username.as_str();
-        // The legacy `role` column is a label only (nothing reads it for a decision); the
-        // authority is the grant below. `member` needs no grant: `everyone` carries it.
-        let label = crate::legacy_role_label(&account.role);
+        // The authority is the grant below (D33); `member` needs no grant: `everyone` carries it.
         let state = account.state.as_str();
         let input_role = account.role.clone();
         let mut tx = self.pool().begin().await.map_err(backend)?;
         let row = sqlx::query_as!(
             AccountRow,
-            r#"INSERT INTO accounts (username, username_skeleton, role, state)
-               VALUES (?, ?, ?, ?)
+            r#"INSERT INTO accounts (username, username_skeleton, state)
+               VALUES (?, ?, ?)
                RETURNING id AS "id!", username, state, created_at"#,
             username,
             skeleton,
-            label,
             state,
         )
         .fetch_one(&mut *tx)

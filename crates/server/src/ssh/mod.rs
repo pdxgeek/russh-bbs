@@ -28,6 +28,7 @@ pub use terminal::RenderCap;
 
 use russh_bbs_core::access::MemberDirectory;
 use russh_bbs_core::founder::FounderStore;
+use russh_bbs_core::invites::InviteStore;
 use russh_bbs_core::limits::LimitStore;
 use russh_bbs_core::profiles::ProfileStore;
 use russh_bbs_core::terminal_settings::MemberSessions;
@@ -42,6 +43,7 @@ pub trait Backend:
     + WaitingRoomSource
     + FounderStore
     + MemberSessions
+    + InviteStore
     + ProfileStore
     + LimitStore
     + 'static
@@ -53,6 +55,7 @@ impl<T> Backend for T where
         + WaitingRoomSource
         + FounderStore
         + MemberSessions
+        + InviteStore
         + ProfileStore
         + LimitStore
         + 'static

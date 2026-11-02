@@ -1,0 +1,47 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT i.id, i.created_at, i.expires_at, i.redeemed_at,\n                      a.username AS \"redeemed_username?\"\n               FROM invite i LEFT JOIN accounts a ON a.id = i.redeemed_by\n               WHERE i.inviter_id = $1\n               ORDER BY i.id DESC\n               LIMIT $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "created_at",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "expires_at",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "redeemed_at",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 4,
+        "name": "redeemed_username?",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "c4054353c840bb9b5aca5aa86c15fe347c13786b73d32cf78b8871d1adce967b"
+}

@@ -5,6 +5,7 @@ pub mod access;
 pub mod audit;
 pub mod founder;
 pub mod icons;
+pub mod invites;
 pub mod limits;
 pub mod menu;
 pub mod profiles;

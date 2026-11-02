@@ -51,6 +51,10 @@ sysop screen over it is M5; the board has no audit screen yet.
 | `delete_role` (M2-B2) | `role.deleted` | caller | the role | none |
 | `set_role_limit` / `set_member_limit` (M2-H) | `limit.changed` | caller | the role or the account | `<kind> set to <n>`, `<kind> set to unlimited` or `<kind> override cleared`; a repeat of the same value, or clearing an override that is not set, writes no row |
 | `set_terminal_settings` | `setting.changed` | the account | the account | `terminal settings` |
+| `create_invite` (M2-D) | `invite.created` | the inviter | the invite (row id, never the code) | `expires at <unix seconds>` |
+| `redeem_invite` (M2-D) | `account.created` | the new account | the new account | `via invite <id> by account <id> state active` |
+| `redeem_invite` (M2-D) | `invite.redeemed` | the new account | the invite | `account <id> inviter <id>` |
+| `change_state` (M2-D) | `account.state_changed` | caller | the account | `<from> to <to>` |
 | `save_profile` by staff (M2-F) | `profile.edited` | the editor (`members.edit`) | the edited account | `fields <names>`: field names only, never values. The owner's own edits write no row |
 
 A write that changed nothing (adding a member already in the group, removing one who is not, a
@@ -63,9 +67,11 @@ who is calling.
 
 ## Planned
 
-- **M2-D/M2-E** (approvals, denials, bans, role
-  changes): see the handoff row in [coordination.md](coordination.md). Add the `Action` variants
-  there and call `audit_in` in the same transaction.
+- **M2-E** (approvals, denials, bans, role changes):
+  see the handoff row in [coordination.md](coordination.md). Add the `Action` variants there and
+  call `audit_in` in the same transaction. **M2-D** wrote `invite.created`, `invite.redeemed`,
+  `account.created` (by invite) and `account.state_changed`; `invite.revoked` waits for a revoke
+  action (nothing revokes an invite yet) and `quota.changed` for M2-H's editable limits.
 - **M5**: the sysop screen over the log; **retention** (trimming old rows: a sysop-set policy and
   a way to prune an append-only table, for example a dated archive table or a partition drop).
   Nothing prunes the log today, so it grows without bound; that is accepted until M5.
@@ -84,6 +90,8 @@ who is calling.
   waiting room may not).
 - SQLite only: `INSERT OR REPLACE`, `REPLACE` and upsert by id fail. Postgres only: `TRUNCATE`
   and upsert by id fail.
+
+Invites (M2-D) are in the same shared suite, on both backends: the created invite's row names the invite by id and neither the code nor its hash appears in the log, a redemption writes `account.created` and `invite.redeemed` in its transaction and a refusal writes none, a state change writes its row and a refused one writes none, and creating, redeeming and changing a state each fail whole when the audit insert is made to fail.
 
 Not verified: no screen exists, so there is no `ssh` session that reads the log; the wired writes
 were exercised through the store and the existing server tests, not by a new SSH path.

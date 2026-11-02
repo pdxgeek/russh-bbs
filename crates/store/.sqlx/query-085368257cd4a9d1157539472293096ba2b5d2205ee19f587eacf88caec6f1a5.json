@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE invite SET redeemed_at = ?1\n               WHERE code_hash = ?2 AND redeemed_at IS NULL AND expires_at > ?1\n                 AND EXISTS (SELECT 1 FROM accounts a\n                             WHERE a.id = invite.inviter_id AND a.state = 'active')\n               RETURNING id AS \"id!\", inviter_id",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "inviter_id",
+        "ordinal": 1,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true,
+      false
+    ]
+  },
+  "hash": "085368257cd4a9d1157539472293096ba2b5d2205ee19f587eacf88caec6f1a5"
+}

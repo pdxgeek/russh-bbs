@@ -33,13 +33,14 @@ use ratatui::{Terminal, TerminalOptions, Viewport};
 use russh_bbs_core::access::Snapshot;
 use russh_bbs_core::founder::{ClaimEffect, ClaimForm, ClaimInput};
 use russh_bbs_core::icons::Tier;
+use russh_bbs_core::invites::{InviteOutcome, InviteRequest};
 use russh_bbs_core::menu::MenuPage;
 use russh_bbs_core::profiles::{
     Request as MembersRequest, Response as MembersResponse, ScreenView,
 };
 use russh_bbs_core::terminal_settings::strings::TITLE;
 use russh_bbs_core::terminal_settings::{MemberEffect, MemberFlow, MemberInput, TerminalSettings};
-use russh_bbs_core::waiting_room::{RoomEffect, RoomInput, View, WaitingRoom};
+use russh_bbs_core::waiting_room::{RedeemRequest, RoomEffect, RoomInput, View, WaitingRoom};
 
 use super::terminal::{Key, PtySize, RenderCap};
 use crate::members;
@@ -87,6 +88,13 @@ pub(super) struct KeyEffects {
     pub(super) claim_token: Option<String>,
     /// Terminal settings the member changed. The session stores them.
     pub(super) save_settings: Option<TerminalSettings>,
+    /// An invite the visitor asked to redeem in the waiting room (M2-D). The session redeems it
+    /// (it needs the store) and reports back through [`Screen::redeem_refused`] or
+    /// [`Screen::redeemed`].
+    pub(super) redeem: Option<RedeemRequest>,
+    /// An invite screen the member asked for (M2-D). The session carries it out and reports
+    /// back through [`Screen::invite_done`].
+    pub(super) invite: Option<InviteRequest>,
     /// A members request (list page, profile, save) the screen is waiting on. The session runs
     /// it against the store and gives the answer to [`Screen::deliver_members`].
     pub(super) members_request: Option<MembersRequest>,
@@ -101,6 +109,8 @@ impl KeyEffects {
         self.disconnect |= later.disconnect;
         self.claim_token = later.claim_token.or(self.claim_token.take());
         self.save_settings = later.save_settings.or(self.save_settings.take());
+        self.redeem = later.redeem.or(self.redeem.take());
+        self.invite = later.invite.or(self.invite.take());
         self.members_request = later.members_request;
         self.held_back = later.held_back;
     }
@@ -145,6 +155,15 @@ impl Content {
         match self {
             Self::Member(flow) => flow.menu_page(),
             Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
+        }
+    }
+
+    /// Whether the content is a member screen drawn in the framed layout with the status row
+    /// but is not the menu (the invite screens, M2-D).
+    fn is_framed_screen(&self) -> bool {
+        match self {
+            Self::Member(flow) => flow.is_invite_screen(),
+            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => false,
         }
     }
 
@@ -232,9 +251,16 @@ impl Screen {
         match &mut self.content {
             Content::Room(room) => {
                 for input in keys.iter().copied().filter_map(room_input) {
-                    if room.input(input) == RoomEffect::Disconnect {
-                        effects.disconnect = true;
-                        break;
+                    match room.input(input) {
+                        RoomEffect::Stay => {}
+                        RoomEffect::Disconnect => {
+                            effects.disconnect = true;
+                            break;
+                        }
+                        RoomEffect::Redeem(request) => {
+                            effects.redeem = Some(request);
+                            break;
+                        }
                     }
                 }
             }
@@ -264,6 +290,10 @@ impl Screen {
                     match flow.input(input) {
                         MemberEffect::Stay => {}
                         MemberEffect::Save(settings) => effects.save_settings = Some(settings),
+                        MemberEffect::Invite(request) => {
+                            effects.invite = Some(request);
+                            break;
+                        }
                         MemberEffect::Disconnect => {
                             effects.disconnect = true;
                             break;
@@ -347,6 +377,30 @@ impl Screen {
         self.rebuild = true;
     }
 
+    /// The redemption did not work. The room shows its one fixed message on the next render.
+    pub(super) fn redeem_refused(&mut self) {
+        if let Content::Room(room) = &mut self.content {
+            room.redeem_refused();
+        }
+        self.dirty = true;
+    }
+
+    /// The redemption worked: the visitor's session continues as the new member, at the login
+    /// screen.
+    pub(super) fn redeemed(&mut self, flow: MemberFlow) {
+        self.content = Content::Member(Box::new(flow));
+        tell_flow_the_terminal(&mut self.content, self.pty);
+        self.rebuild = true;
+    }
+
+    /// An invite request finished: show its screen.
+    pub(super) fn invite_done(&mut self, outcome: InviteOutcome) {
+        if let Content::Member(flow) = &mut self.content {
+            flow.invite_done(outcome);
+        }
+        self.dirty = true;
+    }
+
     /// Switch the client to the alternate screen, hide the cursor and draw. Returns the bytes
     /// to send.
     pub(super) fn enter(&mut self) -> io::Result<Vec<u8>> {
@@ -426,6 +480,7 @@ impl Screen {
         let members_view = self.content.members_view();
         let tier = self.content.tier();
         let ui = &self.ui;
+        let framed = self.content.is_framed_screen();
         self.terminal.draw(|frame| match (look, &menu) {
             // A members screen: the same classic layout and status row, with its own lines.
             (Some(look), None) if members_view.is_some() => {
@@ -452,6 +507,17 @@ impl Screen {
                     page,
                     body: &view.body,
                     notice: view.notice,
+                    look,
+                    tier,
+                    markers: &MENU_MARKERS,
+                },
+            ),
+            // The invite screens (M2-D): the same framed layout, with the reserved status row.
+            (Some(look), None) if framed => classic::render_content(
+                frame,
+                ContentScreen {
+                    strings: ui.strings(),
+                    lines: classic::view_lines(ui.strings(), &view, look),
                     look,
                     tier,
                     markers: &MENU_MARKERS,

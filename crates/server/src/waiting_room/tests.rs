@@ -10,7 +10,7 @@ use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::RegistrationMode;
 use russh_bbs_core::store::{AccountState, AccountStore, NewAccount, SettingKey, SettingsStore};
 use russh_bbs_core::waiting_room::{
-    RoomConfig, RoomInput, WaitingRoom, WaitingRoomSource, screens, strings,
+    RoomConfig, RoomEffect, RoomInput, WaitingRoom, WaitingRoomSource, screens, strings,
 };
 use russh_bbs_store::SqliteStore;
 
@@ -152,6 +152,50 @@ async fn a_member_name_typed_into_a_form_is_not_confirmed_or_denied() {
     };
     assert_eq!(reply(MEMBER_NAMES[0]), reply("not_a_member"));
     assert_eq!(reply(MEMBER_NAMES[0]), strings::CREATE_ACCOUNT_UNAVAILABLE);
+}
+
+#[tokio::test]
+async fn a_refused_redemption_reads_the_same_for_a_members_handle_and_a_strangers() {
+    // M2-D: the redeem form really redeems now, so the no-leak rule has to hold for its
+    // answer too. Whatever the store said (unknown code, taken handle, ...), the room is told
+    // only "refused", and the screen it then draws is identical and holds nothing typed.
+    let dir = tempfile::tempdir().unwrap();
+    let store = seeded_store(dir.path(), RegistrationMode::Invite).await;
+    let config = store.load_room_config().await.unwrap();
+
+    let refused_screen = |handle: &str| {
+        let mut room = WaitingRoom::new(&config, 5);
+        room.input(RoomInput::Char('c'));
+        for c in "ABCD-EFGH".chars() {
+            room.input(RoomInput::Char(c));
+        }
+        room.input(RoomInput::Enter);
+        for c in handle.chars() {
+            room.input(RoomInput::Char(c));
+        }
+        let effect = room.input(RoomInput::Enter);
+        assert!(
+            matches!(effect, RoomEffect::Redeem(_)),
+            "the room asks the front end; it never consults the store itself: {effect:?}"
+        );
+        room.redeem_refused();
+        draw(&room, 80, 24)
+    };
+    let member = refused_screen(MEMBER_NAMES[0]);
+    let stranger = refused_screen("not_a_member");
+    assert_eq!(member, stranger);
+    assert!(member.contains("That invite could not be used"), "{member}");
+    let lower = member.to_lowercase();
+    for name in MEMBER_NAMES.iter().chain(&BOARD_NAMES) {
+        assert!(
+            !lower.contains(&name.to_lowercase()),
+            "leaks {name}:\n{member}"
+        );
+    }
+    assert!(
+        !member.contains("ABCD-EFGH"),
+        "the typed code is not kept:\n{member}"
+    );
 }
 
 #[test]

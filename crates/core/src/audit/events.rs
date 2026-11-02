@@ -3,8 +3,9 @@
 
 use super::event::{Action, Actor, AuditEvent, Target};
 use crate::access::{Child, Granting, GroupChange, GroupId, NewGrant, Scope, Slug, Subject};
+use crate::invites::InviteId;
 use crate::limits::{Limit, LimitKind};
-use crate::store::{AccountId, AccountState};
+use crate::store::{AccountId, AccountState, UnixSeconds};
 
 /// The founder claim made `account` the first sysop. The actor is the new account itself.
 #[must_use]
@@ -173,4 +174,62 @@ pub fn terminal_settings_changed(account: AccountId) -> AuditEvent {
         Target::Account(account),
     )
     .detail("terminal settings")
+}
+
+/// A member made an invite. The target is the invite's id; the code is not known here and is
+/// never written. `expires_at` goes in the note.
+#[must_use]
+pub fn invite_created(inviter: AccountId, invite: InviteId, expires_at: UnixSeconds) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(inviter),
+        Action::InviteCreated,
+        Target::Invite(invite),
+    )
+    .detail(&format!("expires at {}", expires_at.as_raw()))
+}
+
+/// A redemption made `account`. Written beside [`invite_redeemed`] in the same transaction;
+/// unlike [`account_created`] it knows who asked (the new account's own key) and who vouched.
+#[must_use]
+pub fn account_created_via_invite(
+    account: AccountId,
+    invite: InviteId,
+    inviter: AccountId,
+    state: AccountState,
+) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(account),
+        Action::AccountCreated,
+        Target::Account(account),
+    )
+    .detail(&format!(
+        "via invite {invite} by account {inviter} state {}",
+        state.as_str()
+    ))
+}
+
+/// An invite was redeemed. The actor is the new account; the target is the invite.
+#[must_use]
+pub fn invite_redeemed(account: AccountId, invite: InviteId, inviter: AccountId) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(account),
+        Action::InviteRedeemed,
+        Target::Invite(invite),
+    )
+    .detail(&format!("account {account} inviter {inviter}"))
+}
+
+/// `account` moved from `from` to `to`, by `actor`.
+#[must_use]
+pub fn account_state_changed(
+    actor: Actor,
+    account: AccountId,
+    from: AccountState,
+    to: AccountState,
+) -> AuditEvent {
+    AuditEvent::new(actor, Action::AccountStateChanged, Target::Account(account)).detail(&format!(
+        "{} to {}",
+        from.as_str(),
+        to.as_str()
+    ))
 }

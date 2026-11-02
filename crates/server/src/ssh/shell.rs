@@ -23,13 +23,20 @@ use std::net::IpAddr;
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 use std::time::{Duration, Instant};
 
+use rand::TryRng as _;
+use rand::rngs::SysRng;
 use russh::ChannelId;
 use russh::server::Handle;
 use russh_bbs_core::access::{Access, Fingerprint, Permission, Snapshot};
 use russh_bbs_core::founder::{ClaimOutcome, claim_founder};
+use russh_bbs_core::invites::{
+    CODE_BYTES, InviteError, InviteOutcome, InviteRequest, RedeemError, create_invite, invite_tree,
+    my_invites, redeem_invite,
+};
 use russh_bbs_core::limits::{LimitError, MemberMeter, SystemClock};
 use russh_bbs_core::store::{Account, AccountId};
 use russh_bbs_core::terminal_settings::{MemberFlow, MemberStart, TerminalSettings};
+use russh_bbs_core::waiting_room::RedeemRequest;
 use tokio::sync::Notify;
 use tokio::time::{sleep_until, timeout, timeout_at};
 use tracing::{debug, info, warn};
@@ -227,7 +234,13 @@ impl<D: Backend> Shell<D> {
                 let later = self.parts.screen.apply_keys(&rest);
                 effects.absorb(later);
             }
+            if let Some(request) = effects.invite.take() {
+                self.run_invite(request).await;
+            }
             let mut leaving = effects.disconnect || batch.finish || out_of_time;
+            if !leaving && let Some(request) = effects.redeem {
+                self.try_redeem(request).await;
+            }
             if !leaving
                 && let Some(token) = effects.claim_token
                 && self.try_claim(&token).await
@@ -410,7 +423,7 @@ impl<D: Backend> Shell<D> {
                 self.parts
                     .session
                     .set_authenticated(fingerprint, Access::Member);
-                let start = self.founder_start(&account).await;
+                let start = self.account_start(&account).await;
                 self.parts.account = Some(start.account);
                 self.parts.screen.claim_accepted(MemberFlow::new(
                     &start.handle,
@@ -422,6 +435,96 @@ impl<D: Backend> Shell<D> {
             }
             ClaimOutcome::Rejected => self.parts.screen.claim_rejected(),
         }
+    }
+
+    /// Redeem an invite typed in the waiting room (M2-D). The waiting snapshot must hold
+    /// `invite.redeem` (checked in core). Success turns the visitor into the new member; every
+    /// failure (a bad code, a taken handle, a key that already has an account, a slow or broken
+    /// store) is the same refusal on screen, and the reason goes to the log only, never the
+    /// code.
+    async fn try_redeem(&mut self, request: RedeemRequest) {
+        let Some(fingerprint) = self.parts.fingerprint.clone() else {
+            self.parts.screen.redeem_refused();
+            return;
+        };
+        let work = async {
+            let access = self.parts.directory.access_for(None).await?;
+            Ok::<_, RedeemError>(
+                redeem_invite(
+                    &*self.parts.directory,
+                    &access,
+                    &request.code,
+                    request.handle,
+                    &fingerprint,
+                )
+                .await,
+            )
+        };
+        let result = match timeout(MEMBER_START_TIMEOUT, work).await {
+            Ok(Ok(result)) => result,
+            Ok(Err(error)) => Err(error),
+            Err(_) => {
+                warn!(session = ?self.parts.session.id(), "invite redemption timed out");
+                self.parts.screen.redeem_refused();
+                return;
+            }
+        };
+        match result {
+            Ok(redeemed) => {
+                self.parts
+                    .session
+                    .set_authenticated(fingerprint, Access::Member);
+                let start = self.account_start(&redeemed.account).await;
+                self.parts.account = Some(start.account);
+                self.parts.screen.redeemed(MemberFlow::new(
+                    &start.handle,
+                    start.access,
+                    start.previous_login,
+                    start.settings,
+                ));
+            }
+            Err(_) => self.parts.screen.redeem_refused(),
+        }
+    }
+
+    /// Carry out an invite request for the signed-in member and show its screen. The checks
+    /// (permission, quota) are core's; this only supplies the session's snapshot and, for a new
+    /// code, bytes from the OS random source.
+    async fn run_invite(&mut self, request: InviteRequest) {
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let directory = Arc::clone(&self.parts.directory);
+        let work = async {
+            match request {
+                InviteRequest::Create => {
+                    let mut bytes = [0_u8; CODE_BYTES];
+                    if SysRng.try_fill_bytes(&mut bytes).is_err() {
+                        warn!("the operating system random source failed; no invite made");
+                        return InviteOutcome::Failed;
+                    }
+                    match create_invite(&*directory, &access, bytes).await {
+                        Ok(made) => InviteOutcome::Created(made),
+                        Err(error) => failed(error),
+                    }
+                }
+                InviteRequest::List => match my_invites(&*directory, &access).await {
+                    Ok(items) => InviteOutcome::List(items),
+                    Err(error) => failed(error),
+                },
+                InviteRequest::Tree => match invite_tree(&*directory, &access).await {
+                    Ok(lines) => InviteOutcome::Tree(lines),
+                    Err(error) => failed(error),
+                },
+            }
+        };
+        let outcome = timeout(MEMBER_START_TIMEOUT, work)
+            .await
+            .unwrap_or_else(|_| {
+                warn!(session = ?self.parts.session.id(), "invite request timed out");
+                InviteOutcome::Failed
+            });
+        self.parts.screen.invite_done(outcome);
     }
 
     /// Reload the signed-in account's permissions for the action about to run. If the store
@@ -450,9 +553,10 @@ impl<D: Backend> Shell<D> {
         self.parts.screen.set_access(access);
     }
 
-    /// The session start for a founder who just claimed. If the store fails right after the
-    /// claim, the sysop still gets a working session on the defaults (nothing is saved).
-    async fn founder_start(&self, account: &Account) -> MemberStart {
+    /// The session start for an account that was just made (the founder claim, an invite
+    /// redemption). If the store fails right after, the person still gets a working session on
+    /// the defaults (nothing is saved).
+    async fn account_start(&self, account: &Account) -> MemberStart {
         let started = timeout(
             MEMBER_START_TIMEOUT,
             self.parts.directory.start_for_account(account),
@@ -461,7 +565,7 @@ impl<D: Backend> Shell<D> {
         if let Ok(Ok(start)) = started {
             return start;
         }
-        warn!(session = ?self.parts.session.id(), "founder session start failed; using defaults");
+        warn!(session = ?self.parts.session.id(), "new account's session start failed; using defaults");
         MemberStart {
             account: account.id,
             handle: account.username.clone(),
@@ -509,6 +613,20 @@ impl<D: Backend> Shell<D> {
             Err(_) => {
                 warn!(session = ?self.parts.session.id(), "terminal settings save timed out");
             }
+        }
+    }
+}
+
+/// What an invite error looks like to the member. A store failure's cause is logged, not shown.
+fn failed(error: InviteError) -> InviteOutcome {
+    match error {
+        InviteError::Denied(_) => InviteOutcome::Denied,
+        InviteError::QuotaReached { limit, resets_at } => {
+            InviteOutcome::QuotaReached { limit, resets_at }
+        }
+        InviteError::Store(error) => {
+            warn!(%error, "invite request failed in the store");
+            InviteOutcome::Failed
         }
     }
 }

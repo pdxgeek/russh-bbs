@@ -18,6 +18,7 @@ mod audit_rows;
 mod directory;
 mod error;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
+mod invite_rows;
 mod limit_rows;
 mod profile_rows;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
@@ -29,6 +30,8 @@ mod postgres;
 mod sqlite;
 
 #[cfg(test)]
+mod migration_fixture;
+#[cfg(test)]
 mod suite;
 
 pub use error::OpenError;
@@ -36,19 +39,6 @@ pub use error::OpenError;
 pub use postgres::{PostgresSettings, PostgresStore, TlsMode};
 #[cfg(feature = "sqlite")]
 pub use sqlite::SqliteStore;
-
-/// The value written to the legacy `accounts.role` column: `sysop` or `member`. Nothing reads
-/// it for a decision any more (D33: the authority is a grant, and `member` comes from the
-/// `everyone` group); it stays because SQLite cannot cheaply change its CHECK and migrations
-/// are forward-only. M2-D rebuilds `accounts` and drops it.
-#[cfg(any(feature = "sqlite", feature = "postgres"))]
-pub(crate) fn legacy_role_label(role: &russh_bbs_core::access::Slug) -> &'static str {
-    if *role == russh_bbs_core::access::Slug::SYSOP {
-        "sysop"
-    } else {
-        "member"
-    }
-}
 
 /// Release a store's resources at shutdown: SQLite checkpoints its WAL and closes the pool,
 /// Postgres closes the pool. After this, calls on the store fail (and callers fail closed).

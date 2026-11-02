@@ -235,9 +235,9 @@ fn the_access_hook_filters_what_a_session_sees() {
         "log off needs no permission"
     );
     let member = member();
-    assert_eq!(hotkeys(&session, &member), "fmausl");
+    assert_eq!(hotkeys(&session, &member), "fmauisl");
     let sysop = sysop();
-    assert_eq!(hotkeys(&session, &sysop), "fmausol");
+    assert_eq!(hotkeys(&session, &sysop), "fmauisol");
     assert_eq!(
         hotkeys(&session, &Only(&[Permission::AccountEditSettings])),
         "sl"
@@ -402,4 +402,51 @@ fn text_keys_cover_titles_labels_and_placeholder_notes() {
     ] {
         assert!(keys.contains(&expected), "{expected}");
     }
+}
+
+#[test]
+fn the_invite_actions_need_their_permissions_and_a_hidden_one_cannot_be_picked() {
+    use super::Action;
+    assert_eq!(
+        Action::InviteCreate.permission(),
+        Some(Permission::InvitesCreate)
+    );
+    assert_eq!(
+        Action::InviteList.permission(),
+        Some(Permission::InvitesCreate)
+    );
+    assert_eq!(
+        Action::InviteTree.permission(),
+        Some(Permission::InvitesViewTree)
+    );
+
+    // A member holds `invites.create` but not `invites.view_tree` (trusted and up): the
+    // submenu opens, and the tree item is neither listed nor pickable.
+    let member = Only(&[Permission::InvitesCreate]);
+    let mut session = MenuSession::new(main_tree());
+    assert_eq!(
+        session.press(&member, MenuKey::Char('i')),
+        MenuOutcome::Stay
+    );
+    assert_eq!(session.current(), "invites");
+    assert_eq!(hotkeys(&session, &member), "cy");
+    assert_eq!(
+        session.press(&member, MenuKey::Char('t')),
+        MenuOutcome::Stay,
+        "a hidden item does nothing"
+    );
+    assert_eq!(
+        session.press(&member, MenuKey::Char('c')),
+        MenuOutcome::Action(Action::InviteCreate)
+    );
+    let trusted = Only(&[Permission::InvitesCreate, Permission::InvitesViewTree]);
+    assert_eq!(hotkeys(&session, &trusted), "cyt");
+    assert_eq!(
+        session.press(&trusted, MenuKey::Char('t')),
+        MenuOutcome::Action(Action::InviteTree)
+    );
+    // Without `invites.create` the submenu itself is hidden from the main menu.
+    let mut other = MenuSession::new(main_tree());
+    assert_eq!(other.press(&Nothing, MenuKey::Char('i')), MenuOutcome::Stay);
+    assert_eq!(other.current(), "main");
 }

@@ -63,14 +63,17 @@ pub const LABEL_CODE: &str = "Invite code";
 pub const REQUEST_INVITE_UNAVAILABLE: &str =
     "Invite requests are not open yet. Nothing you typed was stored or sent.";
 /// See [`REQUEST_INVITE_UNAVAILABLE`].
-pub const REDEEM_INVITE_UNAVAILABLE: &str =
-    "Invite codes cannot be redeemed yet. Your code was not checked, stored or sent.";
-/// See [`REQUEST_INVITE_UNAVAILABLE`].
 pub const APPLY_UNAVAILABLE: &str =
     "Applications are not open yet. Nothing you typed was stored or sent.";
 /// See [`REQUEST_INVITE_UNAVAILABLE`].
 pub const CREATE_ACCOUNT_UNAVAILABLE: &str =
     "Account creation is not open yet. Nothing you typed was stored or sent.";
+
+/// The one answer to a redemption that did not work. It is the same for a code that does not
+/// exist, one that was used or has expired, a handle that is taken, a key that already has an
+/// account and a store that failed, so it is not an oracle for any of them (D67).
+pub const REDEEM_FAILED: &str =
+    "That invite could not be used. Check the code, or try a different handle.";
 
 /// Validation messages. They depend only on what was typed, never on who is a member, so they
 /// cannot tell a member from a stranger.

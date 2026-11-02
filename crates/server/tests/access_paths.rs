@@ -42,8 +42,15 @@ use tokio::time::timeout;
 
 /// Permissions whose path is exercised below. Menu items: the hotkey, and the label the screen
 /// shows while the permission is held.
+///
+/// `InviteRedeem` and `InvitesViewTree` have their path tests in `tests/invites.rs` (the
+/// redeem form refuses without the permission on every attempt; the tree item and screen follow
+/// `invites.view_tree` on the next action); `InvitesCreate` is in the menu-path test below.
 const WIRED: &[Permission] = &[
     Permission::WaitingView,
+    Permission::InviteRedeem,
+    Permission::InvitesCreate,
+    Permission::InvitesViewTree,
     Permission::AccountEditSettings,
     Permission::MembersView,
     Permission::MembersApprove,
@@ -58,16 +65,13 @@ const WIRED: &[Permission] = &[
 /// Permissions with no front-end action yet. A slice that builds one moves it to `WIRED` in the
 /// same PR, with a path test, and adds its row to `docs/access.md`.
 const NOT_YET_WIRED: &[Permission] = &[
-    Permission::InviteRedeem,
     Permission::MembershipApply,
     Permission::AccountSetPassword,
     Permission::MembersDeny,
     Permission::MembersVouch,
     Permission::MembersSuspend,
     Permission::MembersDeleteData,
-    Permission::InvitesCreate,
     Permission::InvitesRevoke,
-    Permission::InvitesViewTree,
     Permission::ForumRead,
     Permission::ForumPost,
     Permission::ForumReply,
@@ -346,6 +350,12 @@ async fn menu_paths_follow_their_permission_on_the_next_action() {
             "File areas are not built yet.",
         ),
         (Permission::MembersView, 'u', "[u] Members", "Member list"),
+        (
+            Permission::InvitesCreate,
+            'i',
+            "[i] Invites",
+            "Create an invite",
+        ),
         (
             Permission::MembersApprove,
             'o',

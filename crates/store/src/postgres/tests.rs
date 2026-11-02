@@ -111,6 +111,13 @@ impl Harness for PgHarness {
             .map_err(|error| error.to_string())
     }
 
+    async fn texts(&self, sql: &str) -> Vec<String> {
+        sqlx::query_scalar::<_, String>(sql)
+            .fetch_all(self.store.pool())
+            .await
+            .unwrap()
+    }
+
     async fn break_audit_inserts(&self) {
         // A constraint no new row can satisfy; NOT VALID skips the (empty) existing rows.
         self.raw(
@@ -179,6 +186,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         6,
         "5d9c76a2f3ac95187ed3db3b92b68e8b7df7f99aba86d74c9dfe49070b5f7f2e6f963f1308a6bda9b8b0ef5b4c766219",
     ),
+    (
+        7,
+        "5654596047e96eaadd400d261dbf2d19995517d82017170a86288e5a0c161f106541d82001114c50f1c698e79cc5c569",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {
@@ -238,6 +249,7 @@ async fn a_fresh_database_gets_every_migration_and_only_these_tables() {
             "audit_log",
             "group_closure",
             "group_member",
+            "invite",
             "limit_usage",
             "member_group",
             "member_limit",
@@ -782,4 +794,130 @@ async fn a_hand_written_audit_row_with_an_unknown_action_is_corrupt() {
         store.page(&AuditQuery::default()).await,
         Err(StoreError::Corrupt(_))
     ));
+}
+
+// ---- migration 0007 (M2-D) --------------------------------------------------------------
+
+/// A database as the code before M2-D left it, filled with rows from every earlier slice (the
+/// same fixture as SQLite's), then opened by the current code: every row and id survives, the
+/// `role` column is gone, `invited_by` is empty, and the foreign keys still act.
+#[tokio::test]
+#[ignore = "needs a Postgres server: set RUSSH_BBS_TEST_POSTGRES_URL"]
+#[allow(clippy::too_many_lines)] // one story: seed, migrate, compare, then use the result
+async fn the_invites_migration_keeps_every_row_id_and_dependent_table() {
+    use crate::migration_fixture::{DUMPS, KEY_ALICE, NEXT_ACCOUNT_ID, SEED};
+    use russh_bbs_core::access::{AccessStore as _, Fingerprint, Slug};
+    use russh_bbs_core::sanitize::sanitize_username;
+    use russh_bbs_core::store::{AccountState, NewAccount};
+
+    let h = PgHarness::fresh().await;
+    let mut conn = PgConnection::connect_with(&h.options).await.unwrap();
+    conn.execute("DROP SCHEMA public CASCADE").await.unwrap();
+    conn.execute("CREATE SCHEMA public").await.unwrap();
+    let mut older = Migrator::DEFAULT;
+    older.migrations =
+        std::borrow::Cow::Owned(MIGRATOR.iter().filter(|m| m.version < 7).cloned().collect());
+    older.run(&mut conn).await.unwrap();
+    for sql in SEED {
+        conn.execute(*sql).await.unwrap();
+    }
+    let mut before = Vec::new();
+    for (name, sql) in DUMPS {
+        let rows: Vec<String> = sqlx::query_scalar(sql).fetch_all(&mut conn).await.unwrap();
+        before.push((*name, rows));
+    }
+    // The forcing check: every table that references `accounts` must have rows in the fixture
+    // (a slice that adds one adds a seed row and a read), or the comparison proves nothing
+    // about it.
+    let referencing: Vec<String> = sqlx::query_scalar(
+        "SELECT DISTINCT c.conrelid::regclass::text FROM pg_constraint c \
+         WHERE c.contype = 'f' AND c.confrelid = 'accounts'::regclass ORDER BY 1",
+    )
+    .fetch_all(&mut conn)
+    .await
+    .unwrap();
+    for table in referencing {
+        let rows = before.iter().find(|(name, _)| *name == table);
+        assert!(
+            rows.is_some_and(|(_, rows)| !rows.is_empty()),
+            "table `{table}` references accounts but the migration fixture has no rows for it: \
+             add a seed row to migration_fixture::SEED and a read to DUMPS"
+        );
+    }
+    conn.close().await.unwrap();
+
+    let url = env("RUSSH_BBS_TEST_POSTGRES_URL");
+    let store = open_test_database(h.options.clone(), &url).await;
+    let mut after = Vec::new();
+    for (name, sql) in DUMPS {
+        let rows: Vec<String> = sqlx::query_scalar(sql)
+            .fetch_all(store.pool())
+            .await
+            .unwrap();
+        after.push((*name, rows));
+    }
+    assert_eq!(
+        after, before,
+        "a row changed, vanished or was cascaded away"
+    );
+
+    let columns: Vec<String> = sqlx::query_scalar(
+        "SELECT column_name::text FROM information_schema.columns \
+         WHERE table_schema = current_schema() AND table_name = 'accounts' ORDER BY ordinal_position",
+    )
+    .fetch_all(store.pool())
+    .await
+    .unwrap();
+    assert_eq!(
+        columns,
+        [
+            "id",
+            "username",
+            "username_skeleton",
+            "state",
+            "created_at",
+            "invited_by"
+        ]
+    );
+    let invited: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM accounts WHERE invited_by IS NOT NULL")
+            .fetch_one(store.pool())
+            .await
+            .unwrap();
+    assert_eq!(invited, 0);
+
+    let alice = store
+        .account_by_fingerprint(&Fingerprint::parse(KEY_ALICE).unwrap())
+        .await
+        .unwrap()
+        .unwrap();
+    let snapshot = store.snapshot(Some(alice.id)).await.unwrap();
+    assert_eq!(snapshot.top_role(), Some(&Slug::SYSOP));
+
+    // Ids are never reused: the next account follows the burned `ghost` id.
+    let next = store
+        .create_account(NewAccount {
+            username: sanitize_username("erin").unwrap(),
+            role: Slug::MEMBER,
+            state: AccountState::Active,
+        })
+        .await
+        .unwrap();
+    assert_eq!(next.id.as_raw(), NEXT_ACCOUNT_ID);
+
+    // The foreign keys still act: deleting bob takes his own rows and nothing else.
+    sqlx::query("DELETE FROM accounts WHERE username = 'bob'")
+        .execute(store.pool())
+        .await
+        .unwrap();
+    let keys: i64 = sqlx::query_scalar("SELECT count(*) FROM account_keys")
+        .fetch_one(store.pool())
+        .await
+        .unwrap();
+    assert_eq!(keys, 2);
+    let audit: i64 = sqlx::query_scalar("SELECT count(*) FROM audit_log")
+        .fetch_one(store.pool())
+        .await
+        .unwrap();
+    assert!(audit >= 3);
 }
