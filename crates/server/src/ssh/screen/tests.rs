@@ -265,3 +265,73 @@ fn a_stored_override_larger_than_the_window_is_drawn_inside_it() {
         "{v:?} is outside 120x40"
     );
 }
+
+// D75: nothing in the render path may ask the server process's own terminal anything.
+
+#[test]
+fn the_backend_answers_size_and_cursor_from_the_session() {
+    use ratatui::backend::Backend;
+    use ratatui::layout::{Position, Size};
+
+    let mut screen = default_screen();
+    screen.enter().unwrap();
+    let backend = screen.terminal.backend_mut();
+    assert_eq!(backend.size().unwrap(), Size::new(80, 24));
+    backend.set_cursor_position(Position::new(7, 3)).unwrap();
+    assert_eq!(backend.get_cursor_position().unwrap(), Position::new(7, 3));
+    assert!(backend.window_size().is_err(), "no pixel size to report");
+
+    // A window change moves the answer with it, whatever the host's own terminal is.
+    screen.set_size(PtySize::from_request(132, 43));
+    screen.render().unwrap();
+    assert_eq!(
+        screen.terminal.backend().size().unwrap(),
+        Size::new(132, 43)
+    );
+}
+
+#[test]
+fn resizes_work_in_a_process_with_no_terminal() {
+    // The tests that resize, run in a child with stdin, stdout and stderr not a tty, an empty
+    // environment (no TERM, no PATH, so crossterm's `tput` fallback cannot answer) and, where
+    // `setsid` exists, no controlling terminal. Before D75 these failed with `NotFound` or
+    // `WouldBlock` on a CI runner.
+    use std::process::{Command, Stdio};
+
+    const NAMES: [&str; 4] = [
+        "ssh::screen::tests::resize_redraws_for_the_new_size",
+        "ssh::screen::tests::many_resizes_cost_one_redraw",
+        "ssh::screen::tests::a_changed_drawn_rectangle_resizes_the_buffers_in_place",
+        "ssh::screen::tests::tiny_and_huge_windows_do_not_panic",
+    ];
+    let exe = std::env::current_exe().unwrap();
+    let mut command = match which_setsid() {
+        Some(setsid) => {
+            let mut command = Command::new(setsid);
+            command.arg("-w").arg(&exe);
+            command
+        }
+        None => Command::new(&exe),
+    };
+    command.args(["--test-threads=1", "--exact"]).args(NAMES);
+    let output = command
+        .env_clear()
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .output()
+        .unwrap();
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        output.status.success() && stdout.contains("4 passed"),
+        "{stdout}\n{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
+fn which_setsid() -> Option<std::path::PathBuf> {
+    ["/usr/bin/setsid", "/bin/setsid"]
+        .into_iter()
+        .map(std::path::PathBuf::from)
+        .find(|path| path.exists())
+}
