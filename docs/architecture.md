@@ -35,7 +35,7 @@ Rules never live in a front end. A rule that exists in both the TUI and GraphQL 
 
 ## Core responsibilities
 
-- **Identity and access:** accounts, SSH key fingerprints, roles with rank and capabilities, per-area access policies, one `access` module that answers every "may this account do this here" question (D33). Front ends call it; they never decide.
+- **Identity and access:** accounts, SSH key fingerprints, a named permission per action, roles as sets of permissions (globally or scoped to an area), per-area policies, one `access` module that answers every "may this account do this here" question (D33). Front ends call it; they never decide.
 - **Invites:** states (pending, approved, active, suspended), codes, quotas, invite tree.
 - **Content:** boards, threads, posts, read pointers, search.
 - **Chat:** rooms, presence, whispers (public tier).
