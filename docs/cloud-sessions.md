@@ -51,6 +51,8 @@ Report: what you built, what you tested (and how), what you did not verify,
 ## Definition of done for a slice
 
 - Code and tests merged-ready on the branch; `cargo fmt`, `clippy -D warnings`, `cargo test`, and `cargo deny check` are clean.
+- **Local CI is the gate until the first production release** (D51, decided by the owner on 2026-11-02). On the PR's head commit, also run `cargo test --workspace` with `SQLX_OFFLINE=true`, the Postgres store suite with `-- --ignored` against a plain Postgres 16 and a TLS-required Postgres (`.github/scripts/postgres-tls-server.sh`), and the container smoke test (empty volume, token, waiting room, restart, clean stop) when the PR touches the image. Report the results. GitHub Actions still run but do not gate merges until production.
+- **Docker caution.** Docker is allowed for local databases and images, but other apps on the machine may run Docker databases. Use only containers, volumes and networks named with a `russh-bbs-` prefix, on non-default ports. Never `docker system prune` or `docker volume prune`, and never stop or remove containers or volumes you did not create.
 - User-visible behavior exercised with a real `ssh` or `sftp` client, and the report says what was and was not exercised.
 - `docs/features.md` status updated honestly (Implemented vs. Verified), the area doc updated, and `docs/coordination.md` set to `In review` with the PR link.
 - Any new decision recorded in `docs/decisions.md`.
