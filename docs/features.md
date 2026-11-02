@@ -35,7 +35,8 @@ Update this table in the same pass as the code.
 | Password login over SSH, disabled by default | M3 | Planned | D28; shares the password store with telnet |
 | Credits ledger | M3 | Planned | Non-transferable |
 | Event scheduler | M3 | Planned | |
-| File areas over SFTP, scanning, quarantine | M4 | Planned | |
+| Blob store trait, local and S3-compatible backends | M4 | Planned | D30; `object_store`; one test suite |
+| File areas over SFTP, scanning, quarantine | M4 | Planned | Streams through the blob store |
 | File tagging and batch download | M4 | Planned | |
 | Global new-scan (posts, files, feeds) | M4 | Planned | |
 | Door framework and first games | M4 | Planned | Rust-native |

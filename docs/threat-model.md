@@ -65,7 +65,7 @@ Lock, signature, key-changed, and server-readable markers are drawn only by chro
 For every server-side fetch of a user-supplied URL: only `http` and `https`, resolve DNS and re-check the IP at connect time, block loopback, link-local, private, and metadata ranges, cap redirects, set connect and total timeouts, cap response size, and disallow credentials in URLs.
 
 ### Uploads
-Quarantine until scanned (antivirus hook), detect type by content not extension, cap size and archive expansion depth and ratio, map the SFTP view to IDs (no path traversal), never render or execute uploaded content on the server.
+Quarantine until scanned (antivirus hook), detect type by content not extension, cap size and archive expansion depth and ratio, map the SFTP view to IDs (no path traversal), never render or execute uploaded content on the server. Blobs are reached only through the `BlobStore` interface (D30); object-store credentials come from the environment, are never logged, and the bucket policy denies public reads. Quarantined objects are under a separate prefix and are never served.
 
 ### Invites, registration, and abuse
 Rate-limit the waiting room per key and per IP, with a small cost or queue cap against floods. Expire denied requests quickly and keep minimal personal data. Invite codes are single-use, expiring, and bound to an inviter. Bans act on keys and affect the inviter's standing.

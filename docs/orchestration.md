@@ -17,7 +17,7 @@ owner  ──brief──▶  orchestrator (Opus, one long-lived session)
 
 - The orchestrator never writes project code. It plans, briefs, reviews, and reports.
 - A worker does exactly one slice from [coordination.md](coordination.md) and opens one PR against `main`.
-- Nobody merges. The owner reviews and merges between batches.
+- By default nobody merges and the owner reviews between batches. The owner may instead authorize the orchestrator to merge a worker's PR into `main` once the orchestrator's own review passes (validation commands run on the branch, definition of done checked); that authorization is given per run, in the orchestrator's session, and is recorded in its progress reports.
 
 ## Launching the orchestrator
 
@@ -114,7 +114,7 @@ For each finished worker:
 
 ## What this does not solve
 
-- **Merging.** The owner still reviews and merges each PR. The orchestrator cannot and must not.
+- **Merging.** Unless the owner authorizes auto-merge for a run, the owner reviews and merges each PR. Auto-merge means the orchestrator's review is the only review, so the owner should read the progress reports and spot-check merged PRs.
 - **End-to-end ssh checks.** The orchestrator can run the cargo checks on a worker's branch but may not be able to reach a listening port in its container. Its report says what it could not exercise.
 - **Billing.** See the billing note in [cloud-sessions.md](cloud-sessions.md). An orchestrator plus four workers is five concurrent sessions; watch usage after the first batch.
 - **Environment tooling.** The `russh-bbs` cloud environment has Rust stable and a C compiler but not `cargo-deny`. Workers install it at start. Adding it to the environment setup script saves a few minutes per session.
