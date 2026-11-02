@@ -188,6 +188,8 @@ impl Screen {
         ui: Arc<Ui>,
     ) -> io::Result<Self> {
         let output = OutputBuffer::default();
+        let mut content = content;
+        tell_flow_the_terminal(&mut content, size);
         let viewport = viewport(drawn_size(size, &content), cap);
         Ok(Self {
             terminal: new_terminal(&output, viewport)?,
@@ -307,6 +309,7 @@ impl Screen {
             form.accepted();
         }
         self.content = Content::Member(Box::new(flow));
+        tell_flow_the_terminal(&mut self.content, self.pty);
         self.rebuild = true;
     }
 
@@ -329,6 +332,7 @@ impl Screen {
     /// terminal and nothing ever consults the host tty.
     pub(super) fn set_size(&mut self, size: PtySize) {
         self.pty = size;
+        tell_flow_the_terminal(&mut self.content, size);
         self.rebuild = true;
     }
 
@@ -437,6 +441,14 @@ fn new_terminal(
         viewport: Viewport::Fixed(area),
     };
     Terminal::with_options(CrosstermBackend::new(output.clone()), options)
+}
+
+/// Give a member session the real terminal size, so its settings screen can say when a stored
+/// size override is cut down to fit (D64). Other content has no overrides.
+fn tell_flow_the_terminal(content: &mut Content, pty: PtySize) {
+    if let Content::Member(flow) = content {
+        flow.set_terminal(pty.cols(), pty.rows());
+    }
 }
 
 /// The size to draw at: the client's, with a member's width and height overrides applied.

@@ -93,6 +93,29 @@ pub(crate) fn boxed(
     frame.render_widget(paragraph, fit(middle));
 }
 
+/// The columns and rows inside the box [`boxed`] draws in `area`: what a caller has to fit its
+/// text into if it wants to page or wrap it itself.
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "only the pager uses it, and no screen pages yet (D65)"
+    )
+)]
+pub(crate) fn inner_size(area: Rect) -> (usize, usize) {
+    let [_, middle, _] = Layout::horizontal([
+        Constraint::Fill(1),
+        Constraint::Length(MAX_WIDTH.min(area.width)),
+        Constraint::Fill(1),
+    ])
+    .areas(area);
+    let boxed = fit(middle);
+    (
+        usize::from(boxed.width.saturating_sub(2)),
+        usize::from(boxed.height.saturating_sub(2)),
+    )
+}
+
 /// Keep the box off the very edge of a roomy terminal; use all of a small one.
 fn fit(area: Rect) -> Rect {
     if area.height > 6 {

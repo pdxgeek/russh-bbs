@@ -31,6 +31,11 @@ key_quit = "Ctrl-C   log off from anywhere (Ctrl-D does the same)"
 menu = "To choose an item, press the letter shown in brackets."
 footer = "Any key: close help"
 
+[ui.pager]
+more = "-- More ({page} of {pages}) --   Space/Enter: next page   b: back   Esc: stop"
+end = "-- End ({page} of {pages}) --   Space/Enter: finish   b: back"
+clipped = "{hidden} more lines are not shown. Turn Pause on under Terminal settings to page through long text."
+
 [ui.status]
 server_readable = "The server can read what you do here."
 unavailable = "security markers unavailable"

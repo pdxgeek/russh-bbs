@@ -217,3 +217,51 @@ fn a_changed_drawn_rectangle_resizes_the_buffers_in_place() {
     // A shrink keeps the allocation: no new terminal, no new buffers.
     assert_eq!(big.terminal.current_buffer_mut().content.capacity(), before);
 }
+
+#[test]
+fn a_stored_override_larger_than_the_window_is_drawn_inside_it() {
+    use russh_bbs_core::access::{Permission, Slug, Snapshot, Via};
+    use russh_bbs_core::icons::Tier;
+    use russh_bbs_core::sanitize::sanitize_username;
+    use russh_bbs_core::store::AccountId;
+    use russh_bbs_core::terminal_settings::{MemberFlow, TerminalSettings};
+
+    // The QA M1 re-check case (L7): 500x200 stored, a 200x60 window.
+    let settings = TerminalSettings::default()
+        .with_tier(Tier::Ascii)
+        .with_width(Some(500))
+        .unwrap()
+        .with_height(Some(200))
+        .unwrap();
+    let flow = MemberFlow::new(
+        &sanitize_username("alice").unwrap(),
+        Snapshot::from_role(
+            Some(AccountId::from_raw(1)),
+            &Slug::MEMBER,
+            10,
+            &Via::Account,
+            Permission::ALL.iter().copied(),
+        ),
+        None,
+        settings,
+    );
+    let mut screen = Screen::new(
+        PtySize::from_request(200, 60),
+        RenderCap::default(),
+        super::Content::Member(Box::new(flow)),
+        std::sync::Arc::new(crate::ui::Ui::standard().unwrap()),
+    )
+    .unwrap();
+    let v = screen.viewport;
+    assert!(
+        v.x + v.width <= 200 && v.y + v.height <= 60,
+        "{v:?} is outside 200x60"
+    );
+    screen.set_size(PtySize::from_request(120, 40));
+    screen.render().unwrap();
+    let v = screen.viewport;
+    assert!(
+        v.x + v.width <= 120 && v.y + v.height <= 40,
+        "{v:?} is outside 120x40"
+    );
+}

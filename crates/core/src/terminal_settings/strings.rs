@@ -54,7 +54,13 @@ pub const SETTING_HEIGHT: &str = "Height: {value}";
 /// `{value}` is on/off.
 pub const SETTING_COLOR: &str = "Color: {value}";
 /// `{value}` is on/off.
-pub const SETTING_PAUSE: &str = "Pause at screen end: {value} (no screen pages yet)";
+pub const SETTING_PAUSE: &str =
+    "Pause at screen end: {value} (applies to long text; no screen pages yet)";
+/// Added to the width line when the stored value is wider than the terminal. `{terminal}` is
+/// the terminal's width. The value is kept; it applies again in a wider window.
+pub const CLAMPED_WIDTH: &str = " (your terminal is {terminal} wide, so {terminal} is used)";
+/// Like [`CLAMPED_WIDTH`] for the height; `{terminal}` is the terminal's height.
+pub const CLAMPED_HEIGHT: &str = " (your terminal is {terminal} tall, so {terminal} is used)";
 /// `{value}` is the tier name, or [`NOT_CHOSEN`].
 pub const SETTING_ICONS: &str = "Icons: {value}";
 /// Value text for "follow the terminal".

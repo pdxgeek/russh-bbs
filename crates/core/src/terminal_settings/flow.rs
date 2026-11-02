@@ -74,6 +74,9 @@ pub struct MemberFlow {
     /// Where the person is in the menu tree. Kept while the settings screen is open, so
     /// "back" returns to the same menu.
     menu: MenuSession,
+    /// The real terminal's size, when the front end has told us (it does at start and on every
+    /// window change). Only used to say when an override is cut down to fit.
+    terminal: Option<(u16, u16)>,
 }
 
 impl MemberFlow {
@@ -96,7 +99,14 @@ impl MemberFlow {
             page: Page::Login,
             notice: None,
             menu: MenuSession::new(main_tree()),
+            terminal: None,
         }
+    }
+
+    /// Tell the flow how big the real terminal is, so the settings screen can say when a
+    /// stored size override is larger than it and is being cut down (D64).
+    pub fn set_terminal(&mut self, cols: u16, rows: u16) {
+        self.terminal = Some((cols, rows));
     }
 
     /// The settings in force, for the renderer (tier, color, size overrides).
@@ -491,9 +501,27 @@ impl MemberFlow {
             value.map_or_else(|| strings::AUTOMATIC.to_owned(), |n| n.to_string())
         };
         view.heading = strings::SETTINGS_HEADING;
+        let (cut_width, cut_height) = self.terminal.map_or((false, false), |(cols, rows)| {
+            s.overrides_clamped(cols, rows)
+        });
+        let (cols, rows) = self.terminal.unwrap_or_default();
+        let mut width = fill(strings::SETTING_WIDTH, &[("value", &number(s.width()))]);
+        if cut_width {
+            width.push_str(&fill(
+                strings::CLAMPED_WIDTH,
+                &[("terminal", &cols.to_string())],
+            ));
+        }
+        let mut height = fill(strings::SETTING_HEIGHT, &[("value", &number(s.height()))]);
+        if cut_height {
+            height.push_str(&fill(
+                strings::CLAMPED_HEIGHT,
+                &[("terminal", &rows.to_string())],
+            ));
+        }
         view.body = vec![
-            fill(strings::SETTING_WIDTH, &[("value", &number(s.width()))]),
-            fill(strings::SETTING_HEIGHT, &[("value", &number(s.height()))]),
+            width,
+            height,
             fill(strings::SETTING_COLOR, &[("value", on_off(s.color()))]),
             fill(strings::SETTING_PAUSE, &[("value", on_off(s.pause()))]),
             fill(
