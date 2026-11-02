@@ -51,7 +51,8 @@ Rules never live in a front end. A rule that exists in both the TUI and GraphQL 
 
 - **SSH TUI:** `russh` server, public-key auth, restricted session for unknown keys. `ratatui` rendering on the channel PTY with resize handling.
   - **Implemented (M1-A, `russh-bbs-server::ssh`):** persistent Ed25519 host key, public-key-only auth, our own accept loop (connection cap, auth deadline), one PTY shell per connection, `ratatui` over an in-memory backend flushed to the channel (D19), resize, and the lockdown in the threat model. The access rule lives in `russh-bbs-core::access` (`decide_access`: unknown key => `Restricted`); the server only calls it. The server is started with a `MemberDirectory`; the binary passes the SQLite store (M1-B), so a key bound to an active account is `Member`. Both access levels still see the same placeholder screen until M1-C.
-  - **Planned:** the real waiting room (M1-C), per-IP and per-key limits (M1-C), SFTP (M4), timer-driven screen updates.
+  - **Implemented (FIX-M1-1, D46, D47):** the handler only receives; a per-session shell task (`ssh/shell.rs`) owns the screen, parses keys with a stateful parser that survives packet boundaries (`anes` plus bracketed paste, `ssh/terminal.rs`), folds window changes and keys into one redraw per interval, and writes through a bounded queue with a stall cut-off. Per-session budgets are in `ssh/budget.rs`.
+  - **Planned:** SFTP (M4), screens that update on a timer rather than on input.
 - **Telnet (optional, off by default, M3):** separate listener in `crates/server/src/telnet`, option negotiation via a crate, drives the same `Screen` abstraction as SSH. Adds the `UNENCRYPTED` marker to chrome. See D27.
 - **SFTP:** virtual filesystem mapped to file areas by ID, never raw paths.
 - **GraphQL (M5):** `async-graphql` on `axum`, dataloaders for nested fields.
