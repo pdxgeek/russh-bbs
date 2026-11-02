@@ -1,8 +1,9 @@
 name: CI
 
+# Manual only (owner, D51): no push, pull_request or tag triggers until the first production
+# release; CI runs locally. Start it from the Actions tab when wanted.
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
