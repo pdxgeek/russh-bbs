@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO registration_day (day, opened) VALUES (?1, 1)\n               ON CONFLICT (day) DO UPDATE SET opened = registration_day.opened + 1\n               WHERE ?2 IS NULL OR registration_day.opened < ?2\n               RETURNING opened AS \"opened!: i64\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "opened!: i64",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "6c3530697b3128b40184fea6f3b0a8e52bea2fc5d2fcc6ffb719eb6a169c0bba"
+}

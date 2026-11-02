@@ -126,6 +126,9 @@ pub(crate) async fn the_cap_degrades_open_for_the_rest_of_the_utc_day_and_the_ne
     assert!(store.open_cap_reached(cap).await.unwrap());
     assert!(!store.open_cap_reached(DailyCap::Unlimited).await.unwrap());
     assert!(!store.open_cap_reached(DailyCap::Limited(3)).await.unwrap());
+    // The account that took the last place wrote the day's one audit row, before anyone was
+    // turned away.
+    assert_eq!(count_of(&all(store).await, Action::RegistrationCapped), 1);
 
     // Everyone after that is refused, whoever they are, and no account is made.
     for n in 3..=6_u32 {
@@ -136,7 +139,8 @@ pub(crate) async fn the_cap_degrades_open_for_the_rest_of_the_utc_day_and_the_ne
     }
     assert_eq!(count(&h, "accounts").await, "2");
     assert_eq!(opened_today(&h, day).await, "2");
-    // The first refusal wrote the day's one audit row, by the board, with no person in it.
+    // However many were turned away, the day has its one audit row, by the board, with no
+    // person in it.
     let rows = all(store).await;
     assert_eq!(count_of(&rows, Action::RegistrationCapped), 1);
     let capped = rows

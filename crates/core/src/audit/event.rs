@@ -87,9 +87,9 @@ pub enum Action {
     /// the request's id; nothing the applicant typed is written.
     #[strum(serialize = "application.submitted")]
     ApplicationSubmitted,
-    /// `open` registration refused its first applicant of a UTC day because the daily cap was
-    /// used up, so the board answered with the `apply` form for the rest of that day (M2-G).
-    /// Written once per day.
+    /// `open` registration used up its daily cap, so the board answers with the `apply` form
+    /// for the rest of that UTC day (M2-G). Written once per day, by the account that took the
+    /// last place (or by the first refusal, if the cap was lowered below the day's count).
     #[strum(serialize = "registration.capped")]
     RegistrationCapped,
 }

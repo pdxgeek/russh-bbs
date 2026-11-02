@@ -4,7 +4,9 @@
 //! upsert on the day's counter (`ON CONFLICT .. DO UPDATE .. WHERE opened < cap`); it takes the
 //! row lock on the day, so two sessions cannot both take the last place. No row affected means
 //! the day is full. The account, its key and the audit row follow in the same transaction; a
-//! taken handle or a bound key rolls the count back with the rest.
+//! taken handle or a bound key rolls the count back with the rest. The account that takes the
+//! day's last place also writes the day's one `registration.capped` row (so the audit log says
+//! the cap was reached even if nobody is turned away afterwards).
 
 use russh_bbs_core::access::Fingerprint;
 use russh_bbs_core::audit::events;
@@ -22,6 +24,35 @@ use crate::rows::AccountRow;
 
 /// Counter rows older than this many days are deleted by the next account creation.
 const KEEP_DAYS: i64 = 7;
+
+impl PostgresStore {
+    /// Record, once per UTC day, that the cap was reached: set the day's `capped_at` and write
+    /// the `registration.capped` audit row in the same transaction. A day that is already
+    /// flagged writes nothing, so strangers cannot grow the append-only log.
+    async fn note_capped(
+        &self,
+        tx: &mut sqlx::PgConnection,
+        day: i64,
+        at: i64,
+        cap: DailyCap,
+    ) -> Result<(), StoreError> {
+        let first = sqlx::query!(
+            "UPDATE registration_day SET capped_at = $1 WHERE day = $2 AND capped_at IS NULL",
+            at,
+            day,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(backend)?
+        .rows_affected();
+        if first == 1 {
+            let shown = cap.limit().unwrap_or(0);
+            self.audit_in(tx, &events::registration_capped(day, shown))
+                .await?;
+        }
+        Ok(())
+    }
+}
 
 impl RegistrationStore for PostgresStore {
     async fn registration_mode(&self) -> Result<RegistrationMode, StoreError> {
@@ -66,37 +97,30 @@ impl RegistrationStore for PostgresStore {
             .execute(&mut *tx)
             .await
             .map_err(backend)?;
-        let counted = sqlx::query!(
+        let opened = sqlx::query_scalar!(
             "INSERT INTO registration_day (day, opened) VALUES ($1, 1)
              ON CONFLICT (day) DO UPDATE SET opened = registration_day.opened + 1
-             WHERE $2::BIGINT IS NULL OR registration_day.opened < $2",
+             WHERE $2::BIGINT IS NULL OR registration_day.opened < $2
+             RETURNING opened",
             day,
             limit,
         )
-        .execute(&mut *tx)
+        .fetch_optional(&mut *tx)
         .await
-        .map_err(backend)?
-        .rows_affected();
-        if counted == 0 {
-            // The day is full. The first refusal of the day leaves one audit row; the count
-            // and the flag commit, nothing else was written.
-            let at = now.as_raw();
-            let first = sqlx::query!(
-                "UPDATE registration_day SET capped_at = $1 WHERE day = $2 AND capped_at IS NULL",
-                at,
-                day,
-            )
-            .execute(&mut *tx)
-            .await
-            .map_err(backend)?
-            .rows_affected();
-            if first == 1 {
-                let shown = cap.limit().unwrap_or(0);
-                self.audit_in(&mut tx, &events::registration_capped(day, shown))
-                    .await?;
-            }
+        .map_err(backend)?;
+        let at = now.as_raw();
+        let Some(opened) = opened else {
+            // The day is full (a cap lowered below today's count lands here too). The day's
+            // one audit row is written now if the last place did not already write it; the
+            // flag commits, nothing else was written.
+            self.note_capped(&mut tx, day, at, cap).await?;
             tx.commit().await.map_err(backend)?;
             return Err(OpenError::CapReached);
+        };
+        if limit.is_some_and(|limit| opened >= limit) {
+            // This account takes the day's last place: the cap is reached now, whether or not
+            // anyone is turned away afterwards.
+            self.note_capped(&mut tx, day, at, cap).await?;
         }
         let row = sqlx::query_as!(
             AccountRow,

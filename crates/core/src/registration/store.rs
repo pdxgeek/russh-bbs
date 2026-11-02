@@ -71,10 +71,12 @@ pub trait RegistrationStore: Send + Sync {
 
     /// Make an `active` account named `username`, bound to `fingerprint`, with no inviter. In
     /// **one transaction**: count it against today's cap (a capped increment, so concurrent
-    /// callers cannot take the last place twice; at the cap, write the day's one
-    /// `registration.capped` audit row, commit that and return [`OpenError::CapReached`]),
-    /// insert the account and its key, and write `account.created` (actor: the board). A taken
-    /// handle or a bound key rolls everything back, including the count.
+    /// callers cannot take the last place twice; at the cap, flag the day, write its one
+    /// `registration.capped` audit row if the last place did not already, commit that and
+    /// return [`OpenError::CapReached`]), insert the account and its key, and write
+    /// `account.created` (actor: the board). The account that takes the day's last place also
+    /// writes the day's one `registration.capped` row, in the same transaction. A taken handle
+    /// or a bound key rolls everything back, including the count and that row.
     fn open_account(
         &self,
         username: Username,

@@ -61,7 +61,7 @@ sysop screen over it is M5; the board has no audit screen yet.
 | `vouch_request` (M2-E) | `member.vouched` | the voucher | the request (`request`, its id) | none |
 | `open_account` (M2-G) | `account.created` | `system` | the new account | `via open state active` |
 | `submit_request` of an application (M2-G) | `application.submitted` | `system` | the request (`request`, its id) | none: no handle, no message, no key. Written only when the application is kept, in the insert's transaction. An invite request writes no row (D71) |
-| `open_account` at the cap (M2-G) | `registration.capped` | `system` | none | `day <n> cap <n>` (the UTC day number). Written **once per UTC day**, on the first refusal, so strangers cannot grow the log |
+| `open_account` that reaches the cap (M2-G) | `registration.capped` | `system` | none | `day <n> cap <n>` (the UTC day number). Written **once per UTC day**: by the `open` account that takes the day's last place, in its transaction (or by the first refusal if the cap was lowered below the count), so strangers cannot grow the log |
 | `save_profile` by staff (M2-F) | `profile.edited` | the editor (`members.edit`) | the edited account | `fields <names>`: field names only, never values. The owner's own edits write no row |
 
 A write that changed nothing (adding a member already in the group, removing one who is not, a

@@ -14,8 +14,9 @@
 //!   sentence on screen; the reason is logged.
 //! * **The cap degrades `open` to `apply`** for the rest of the UTC day: the room is built in
 //!   `apply` mode with an honest notice ([`RegistrationStore::open_cap_reached`]), and an
-//!   attempt that meets the cap is refused. The first refusal of a day writes one
-//!   `registration.capped` audit row (never more, so strangers cannot grow the log).
+//!   attempt that meets the cap is refused. The account that takes the day's last place writes
+//!   one `registration.capped` audit row in its own transaction (never more than one a day, so
+//!   strangers cannot grow the log).
 //!
 //! **No oracle.** Neither form's answer depends on who is on the board or how full the queue
 //! is. The one thing a stranger can read about the cap is the degrade notice itself, which D2
