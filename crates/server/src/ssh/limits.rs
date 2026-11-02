@@ -3,7 +3,7 @@
 //! These keep a stranger from holding connections open forever or hammering the door. They are
 //! per connection, global, per network (checked at accept, before a handler exists) or per key
 //! (checked at the top of `ClientHandler::auth_publickey`). The per-session budgets after login
-//! (redraw rate, request and input rates, the output stall) are decision D46. The rate policy itself lives in
+//! (redraw rate, request and input rates, the output stall) are decision D49. The rate policy itself lives in
 //! `russh_bbs_core::waiting_room`; the defaults are decision D37.
 
 use std::time::Duration;
@@ -39,7 +39,7 @@ pub struct Limits {
     /// Waiting-room form submissions one session may make before it is disconnected.
     pub max_form_submissions: u32,
     /// Shortest time between two redraws of one session. A session redraws at most
-    /// `1 / redraw_interval` times a second however much it sends (D46).
+    /// `1 / redraw_interval` times a second however much it sends (D49).
     pub redraw_interval: Duration,
     /// Requests per second one session may send after login (data packets and window changes
     /// together). Excess data packets are dropped; excess window changes are folded into the

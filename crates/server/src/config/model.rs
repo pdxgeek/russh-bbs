@@ -67,15 +67,15 @@ pub struct SshConfig {
     pub auth_rejection_millis: u64,
     /// Opt-in password login over SSH (D28). Parsed only: nothing reads it yet.
     pub allow_password_login: bool,
-    /// Milliseconds between two redraws of one session at the fastest (D46).
+    /// Milliseconds between two redraws of one session at the fastest (D49).
     pub redraw_interval_millis: u64,
-    /// Requests per second one session may send after login (D46).
+    /// Requests per second one session may send after login (D49).
     pub requests_per_second: u32,
-    /// Input bytes per second one session may send (D46).
+    /// Input bytes per second one session may send (D49).
     pub input_bytes_per_second: u32,
-    /// Over-budget events before a session is disconnected (D46).
+    /// Over-budget events before a session is disconnected (D49).
     pub flood_strikes: u32,
-    /// Seconds a peer may leave the server unable to send it output before it is dropped (D46).
+    /// Seconds a peer may leave the server unable to send it output before it is dropped (D49).
     pub write_stall_secs: u64,
 }
 

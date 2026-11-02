@@ -1,4 +1,4 @@
-//! Per-session budgets for what a connected client may ask of the server (D46).
+//! Per-session budgets for what a connected client may ask of the server (D49).
 //!
 //! The connection-setup limits (D22, D37) stop at authentication. After it, every request a
 //! client sends costs the server something, and an unknown key is authenticated by design. These

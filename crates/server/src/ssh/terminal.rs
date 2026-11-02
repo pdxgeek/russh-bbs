@@ -3,7 +3,7 @@
 //! Both come from an untrusted peer, so sizes are clamped (a 65535x65535 window would allocate
 //! gigabytes of cells) and the key parser never fails.
 //!
-//! Keys are parsed by [`KeyParser`], which keeps its state between SSH data packets (D46): an
+//! Keys are parsed by [`KeyParser`], which keeps its state between SSH data packets (D50): an
 //! escape sequence cut in two by the network is still one key, and a lone `Esc` becomes the
 //! Escape key after a short timeout instead of being guessed from where a packet ends.
 
@@ -101,7 +101,7 @@ const PASTE_END: &[u8] = b"\x1b[201~";
 
 /// A stateful key parser for the bytes of a PTY session.
 ///
-/// The escape-sequence, UTF-8 and control-character handling is the `anes` crate's parser (D46).
+/// The escape-sequence, UTF-8 and control-character handling is the `anes` crate's parser (D50).
 /// This wrapper adds the two things a network needs on top of it:
 ///
 /// - **Holding a partial start.** An `Esc` byte, or the first bytes of a sequence that might be a

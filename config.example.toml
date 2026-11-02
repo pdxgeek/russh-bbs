@@ -31,7 +31,7 @@ keepalive_interval_secs = 30
 max_connections = 256
 max_auth_attempts = 6
 auth_rejection_millis = 1000
-# Per-session limits after login (D46). One session redraws at most 1000 / redraw_interval_millis
+# Per-session limits after login (D49). One session redraws at most 1000 / redraw_interval_millis
 # times a second; window changes are folded into the latest size and keys into one batch.
 redraw_interval_millis = 50
 # Requests per second (data packets and window changes together) and input bytes per second.

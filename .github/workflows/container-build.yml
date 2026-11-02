@@ -1,7 +1,9 @@
 name: Container build
 
-# Proves the Dockerfile builds and the image starts. Builds only (never pushes), amd64 only,
-# and only when something that affects the image changes.
+# Proves the Dockerfile builds and the image starts, and that the multi-arch build the release
+# workflow does still works. Never pushes. The amd64 job runs when anything that affects the image
+# changes. The amd64+arm64 job (arm64 under QEMU, slow) runs on the same pull requests and on
+# demand, so a release's build is proven before a tag exists.
 on:
   pull_request:
     paths:
@@ -12,12 +14,16 @@ on:
       - rust-toolchain.toml
       - crates/**
       - .github/workflows/container-build.yml
+      - .github/workflows/publish-image.yml
+      - .github/scripts/postgres-tls-*.sh
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
   build:
+    name: amd64 build, SQLite and Postgres smoke
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -32,13 +38,70 @@ jobs:
           tags: russh-bbs:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      - name: Smoke test (starts, prints a founder token, stops cleanly on SIGTERM)
+      - name: Smoke test (starts, prints a founder token, state under /data, stops cleanly on SIGTERM)
         run: |
-          docker run -d --name bbs -p 2222:2222 russh-bbs:ci
+          docker run -d --name bbs -p 2222:2222 -v bbs-data:/data russh-bbs:ci
           for i in $(seq 1 30); do docker logs bbs 2>&1 | grep -q "ssh server listening" && break; sleep 1; done
           docker logs bbs
-          docker logs bbs 2>&1 | grep -q "ssh server listening"
+          docker logs bbs >/dev/null 2>&1
+          # The image sets no RUSSH_BBS_DB or HOST_KEY (D46): the defaults must land on the volume.
+          # Log lines carry ANSI colour between key and value; strip it, and capture the text so
+          # `grep -q` closing the pipe early cannot fail the step under pipefail.
+          plain="$(docker logs bbs 2>&1 | sed 's/\x1b\[[0-9;]*m//g')"
+          grep -q "host key ready path=/data/host_ed25519_key" <<<"$plain"
+          grep -q 'database ready backend="sqlite" path=/data/russh-bbs.db' <<<"$plain"
+          if docker image inspect russh-bbs:ci --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -q '^RUSSH_BBS_DB='; then
+            echo "::error::the image must not bake RUSSH_BBS_DB (it breaks datasource.kind = postgres)"; exit 1
+          fi
           docker stop --time 10 bbs
           test "$(docker inspect --format '{{.State.ExitCode}}' bbs)" = 0
           docker inspect --format '{{.Config.User}}' russh-bbs:ci
           docker image ls russh-bbs:ci
+      - name: Install the Postgres server binaries
+        run: sudo apt-get update && sudo apt-get install -y postgresql
+      - name: Start a Postgres that requires TLS (same script as the postgres-tls job)
+        run: |
+          .github/scripts/postgres-tls-server.sh /var/tmp/russh-bbs-pg-tls 5433 > "$RUNNER_TEMP/pg.env"
+          # The script's password is fresh per run; keep it out of the logs.
+          sed -n 's#^RUSSH_BBS_TEST_POSTGRES_TLS_URL=postgres://bbs:\([^@]*\)@.*#\1#p' "$RUNNER_TEMP/pg.env" | while read -r pw; do echo "::add-mask::$pw"; done
+      - name: Smoke test with RUSSH_BBS_DATASOURCE_KIND=postgres (require, then verify-full with the CA on the volume)
+        run: |
+          set -eu
+          url="$(sed -n 's/^RUSSH_BBS_TEST_POSTGRES_TLS_URL=//p' "$RUNNER_TEMP/pg.env")"
+          # A fresh volume gets the image's /data ownership (UID 65532); put the CA on it.
+          docker create --name init -v pgdata:/data russh-bbs:ci >/dev/null && docker rm init >/dev/null
+          docker run --rm -v pgdata:/data -v /var/tmp/russh-bbs-pg-tls/certs:/certs:ro alpine \
+            sh -c 'cp /certs/ca.crt /data/ca.crt && chown 65532:65532 /data/ca.crt'
+          for mode in require verify-full; do
+            extra=""
+            [ "$mode" = verify-full ] && extra="-e RUSSH_BBS_DATASOURCE_TLS_ROOT_CERT=/data/ca.crt"
+            docker run -d --name "bbs-pg-$mode" --network host -v pgdata:/data \
+              -e RUSSH_BBS_DATASOURCE_KIND=postgres -e RUSSH_BBS_DATASOURCE_URL="$url" \
+              -e RUSSH_BBS_DATASOURCE_TLS_MODE="$mode" $extra russh-bbs:ci
+            for i in $(seq 1 30); do docker logs "bbs-pg-$mode" 2>&1 | grep -q "ssh server listening" && break; sleep 1; done
+            plain="$(docker logs "bbs-pg-$mode" 2>&1 | sed 's/\x1b\[[0-9;]*m//g')"
+            grep -E "database ready|listening|Error" <<<"$plain" || true
+            grep -q 'database ready backend="postgres" tls=true' <<<"$plain"
+            grep -q "ssh server listening" <<<"$plain"
+            docker stop --time 10 "bbs-pg-$mode"
+            test "$(docker inspect --format '{{.State.ExitCode}}' "bbs-pg-$mode")" = 0
+          done
+
+  multiarch:
+    name: amd64 + arm64 build (not pushed)
+    # Same build as the release workflow (publish-image.yml), minus the push.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
+      - uses: docker/setup-buildx-action@f7ce87c1d6bead3e36075b2ce75da1f6cc28aaca # v3.9.0
+      - uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: false
+          cache-from: type=gha,scope=multiarch
+          cache-to: type=gha,mode=max,scope=multiarch

@@ -63,7 +63,7 @@ pub(crate) struct HandlerParts<D> {
 ///
 /// It receives and refuses; the work a shell session causes (parsing keys, drawing, the founder
 /// claim) is done by the session's [`Shell`] task, which the handler feeds through an [`Inbox`]
-/// and a per-session budget (D46).
+/// and a per-session budget (D49).
 pub(crate) struct ClientHandler<D> {
     directory: Arc<D>,
     founder: Arc<Founder>,
@@ -203,7 +203,7 @@ impl<D> ClientHandler<D> {
         }
     }
 
-    /// Drop the connection if this session has pushed past its budgets (D46). Nothing it sent
+    /// Drop the connection if this session has pushed past its budgets (D49). Nothing it sent
     /// is logged, only the fact.
     fn check_budget(&self) -> Result<(), SessionError> {
         if self.budget.exceeded() {

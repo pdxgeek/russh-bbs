@@ -1,5 +1,5 @@
 //! The shell of one session: the task that owns its screen, parses its keys and writes its
-//! output (D46).
+//! output (D49).
 //!
 //! The SSH handler (`handler.rs`) only *receives*: it records what the client sent in an
 //! [`Inbox`] and wakes this task. The task does the work, at a pace the server sets:

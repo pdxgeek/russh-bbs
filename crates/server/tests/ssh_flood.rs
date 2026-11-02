@@ -1,4 +1,4 @@
-//! What one connected client can make the server do (D46, QA M1 H1/M2): a flood of window
+//! What one connected client can make the server do (D49, QA M1 H1/M2): a flood of window
 //! changes or keystrokes costs a bounded number of redraws and ends the session; a concurrent
 //! login is not held up; a client that never reads is dropped instead of being queued for.
 //! Real russh clients throughout. Assertions are on counts and bytes (frames drawn, bytes

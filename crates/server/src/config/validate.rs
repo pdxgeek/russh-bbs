@@ -63,7 +63,7 @@ impl Check<'_> {
     }
 }
 
-/// The per-session limits of D46.
+/// The per-session limits of D49.
 fn session_limits(c: &Check<'_>, ssh: &SshConfig) -> Result<(), ConfigError> {
     c.range(
         "ssh.redraw_interval_millis",
