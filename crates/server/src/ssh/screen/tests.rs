@@ -3,7 +3,7 @@
 use russh_bbs_core::waiting_room::{RoomConfig, WaitingRoom};
 
 use super::{KeyEffects, Screen};
-use crate::ssh::terminal::{Key, PtySize};
+use crate::ssh::terminal::{Key, PtySize, RENDER_COLS, RENDER_ROWS};
 
 fn text(bytes: &[u8]) -> String {
     String::from_utf8_lossy(bytes).into_owned()
@@ -135,4 +135,53 @@ fn keys_after_a_disconnecting_key_are_ignored() {
     let (effects, frame) = keys(&mut screen, &[Key::Char('q'), Key::Char('r')]);
     assert!(effects.disconnect);
     assert!(!frame.contains("House"));
+}
+
+fn buffer_cells(screen: &mut Screen) -> usize {
+    let area = screen.terminal.current_buffer_mut().area;
+    usize::from(area.width) * usize::from(area.height)
+}
+
+#[test]
+fn render_buffers_do_not_grow_with_the_window() {
+    let cap = usize::from(RENDER_COLS) * usize::from(RENDER_ROWS);
+    for (cols, rows) in [(80, 24), (500, 200), (u32::MAX, u32::MAX)] {
+        let mut screen = screen(PtySize::from_request(cols, rows));
+        assert!(buffer_cells(&mut screen) <= cap, "{cols}x{rows}");
+        screen.enter().unwrap();
+        screen.set_size(PtySize::from_request(400, 150));
+        screen.render().unwrap();
+        assert!(buffer_cells(&mut screen) <= cap, "after resize");
+    }
+}
+
+#[test]
+fn a_large_window_is_drawn_centered_in_the_capped_viewport() {
+    let mut screen = screen(PtySize::from_request(500, 200));
+    assert_eq!(
+        screen.viewport,
+        ratatui::layout::Rect::new(200, 80, RENDER_COLS, RENDER_ROWS)
+    );
+    assert!(text(&screen.enter().unwrap()).contains("Waiting"));
+}
+
+#[test]
+fn an_unchanged_drawn_rectangle_repaints_without_rebuilding() {
+    let mut screen = default_screen();
+    screen.enter().unwrap();
+    screen.set_size(PtySize::from_request(80, 24));
+    let out = text(&screen.render().unwrap().unwrap());
+    assert!(out.contains("\x1b[2J"), "screen cleared");
+    assert!(out.contains("Waiting"), "everything drawn again");
+    assert_eq!(screen.builds, 1, "terminal was rebuilt");
+
+    let mut big = self::screen(PtySize::from_request(500, 200));
+    big.enter().unwrap();
+    big.set_size(PtySize::from_request(500, 200));
+    let out = text(&big.render().unwrap().unwrap());
+    assert!(out.contains("Waiting"));
+    assert_eq!(big.builds, 1, "terminal was rebuilt");
+    big.set_size(PtySize::from_request(300, 100));
+    big.render().unwrap();
+    assert_eq!(big.builds, 2, "a different rectangle does rebuild");
 }

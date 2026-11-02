@@ -109,6 +109,8 @@ pub(super) struct Screen {
     output: OutputBuffer,
     /// The rectangle `terminal` draws into.
     viewport: Rect,
+    /// How many terminals this screen has built (tests assert an unchanged size builds none).
+    builds: u32,
     content: Content,
     /// What the client reported. The drawn size is this with the member's overrides applied.
     pty: PtySize,
@@ -128,6 +130,7 @@ impl Screen {
             terminal: new_terminal(&output, viewport)?,
             output,
             viewport,
+            builds: 1,
             content,
             pty: size,
             dirty: false,
@@ -254,6 +257,7 @@ impl Screen {
         } else {
             self.terminal = new_terminal(&self.output, target)?;
             self.viewport = target;
+            self.builds += 1;
         }
         self.draw()
     }

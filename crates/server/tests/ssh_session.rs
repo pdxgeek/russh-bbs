@@ -16,7 +16,7 @@ use common::{
 };
 use russh::ChannelMsg;
 use russh_bbs_core::access::Access;
-use russh_bbs_server::ssh::terminal::{MAX_COLS, MAX_ROWS, PtySize, RENDER_COLS, RENDER_ROWS};
+use russh_bbs_server::ssh::terminal::{MAX_COLS, MAX_ROWS, PtySize};
 use tokio::time::timeout;
 
 // ---- the waiting-room screen ----
@@ -308,8 +308,9 @@ async fn a_huge_window_is_drawn_into_a_bounded_rectangle() {
         let hi = moves.iter().map(f).max().unwrap();
         assert!(hi - lo < limit, "{what} drawn over {lo}..={hi}, limit {limit}");
     };
-    span(|m| m.0, RENDER_ROWS, "rows");
-    span(|m| m.1, RENDER_COLS, "columns");
+    // Fixed numbers, not the server's constants: the test must fail if the cap is raised.
+    span(|m| m.0, 50, "rows");
+    span(|m| m.1, 120, "columns");
 
     // A window change to another huge size still redraws, inside the same bound.
     channel.window_change(400, 150, 0, 0).await.unwrap();
