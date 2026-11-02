@@ -21,7 +21,7 @@ Update this table in the same pass as the code.
 | Container image, compose example, GHCR publish | M1 | Planned | D25 |
 | Config file (TOML) with env overrides, documented keys | M1 | Planned | `docs/config.md`; all sections present with defaults |
 | Menu tree, classic hotkey layout, string table | M2 | Planned | Moved from M3; foundation for every later screen |
-| Named permissions per action, roles as permission sets, per-resource policies and limits | M2 | Planned | D33, [access.md](access.md); `core::access`; before invites and queue |
+| Named permissions per action, roles as permission sets, groups, per-resource policies and limits | M2 | Planned | D33, [access.md](access.md); `core::access`; before invites and queue |
 | Audit log (append-only table, write helper) | M2 | Planned | Moved from M5; sysop UI over it stays in M5 |
 | Invite codes, quotas, invite tree | M2 | Planned | |
 | Sysop approval queue and vouching | M2 | Planned | |
