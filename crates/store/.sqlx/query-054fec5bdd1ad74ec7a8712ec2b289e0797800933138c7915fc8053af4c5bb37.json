@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE limit_usage SET amount = amount + ?\n             WHERE account_id = ? AND kind = ? AND day = ? AND amount <= ? - ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": []
+  },
+  "hash": "054fec5bdd1ad74ec7a8712ec2b289e0797800933138c7915fc8053af4c5bb37"
+}

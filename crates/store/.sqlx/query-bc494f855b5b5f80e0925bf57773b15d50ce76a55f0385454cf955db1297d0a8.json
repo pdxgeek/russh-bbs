@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM limit_usage WHERE account_id = ? AND day < ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "bc494f855b5b5f80e0925bf57773b15d50ce76a55f0385454cf955db1297d0a8"
+}

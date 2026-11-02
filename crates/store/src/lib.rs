@@ -16,6 +16,8 @@ mod access_rows;
 mod directory;
 mod error;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
+mod limit_rows;
+#[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod rows;
 
 #[cfg(feature = "postgres")]

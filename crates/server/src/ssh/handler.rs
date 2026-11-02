@@ -22,6 +22,7 @@ use russh::{Channel, ChannelId, ChannelOpenFailure, Pty};
 use russh_bbs_core::access::Permission;
 use russh_bbs_core::access::{Access, Fingerprint, decide_access};
 use russh_bbs_core::founder::{ClaimForm, MAX_ATTEMPTS_PER_SESSION};
+use russh_bbs_core::limits::{LimitError, MemberMeter, SystemClock, begin_member_session};
 use russh_bbs_core::store::AccountId;
 use russh_bbs_core::terminal_settings::{MemberFlow, MemberStart};
 use russh_bbs_core::waiting_room::{RoomConfig, Verdict, WaitingRoom};
@@ -187,8 +188,11 @@ impl<D> ClientHandler<D> {
         }
     }
 
-    /// The signed-in session for a member key, or `None` for everyone else.
-    async fn member_content(&mut self) -> Option<Content>
+    /// The signed-in session for a member key, or `None` for everyone else. Core's limits
+    /// decide whether the session may start (concurrent sessions, calls and minutes per day,
+    /// M2-H): a refusal becomes a screen that says which limit, then ends. If the limits cannot
+    /// be checked the member path fails closed, like every other store failure here.
+    async fn member_content(&mut self) -> Option<(Content, Option<MemberMeter>)>
     where
         D: Backend,
     {
@@ -197,13 +201,39 @@ impl<D> ClientHandler<D> {
         }
         let fingerprint = self.fingerprint.clone()?;
         let start = self.member_start(&fingerprint).await?;
+        let begun = timeout(
+            MEMBER_START_TIMEOUT,
+            begin_member_session(
+                &*self.directory,
+                &SystemClock,
+                &self.guard.reference().member_sessions(),
+                &start.access,
+            ),
+        )
+        .await;
+        let meter = match begun {
+            Ok(Ok(meter)) => meter,
+            Ok(Err(LimitError::Refused(refusal))) => {
+                info!(session = ?self.guard.id(), limit = refusal.kind.name(), "session refused by a limit");
+                return Some((Content::Limited(refusal.lines()), None));
+            }
+            Ok(Err(error)) => {
+                warn!(session = ?self.guard.id(), %error, "limits could not be checked");
+                return None;
+            }
+            Err(_) => {
+                warn!(session = ?self.guard.id(), "limit check timed out");
+                return None;
+            }
+        };
         self.account = Some(start.account);
-        Some(Content::Member(Box::new(MemberFlow::new(
+        let flow = MemberFlow::new(
             &start.handle,
             start.access,
             start.previous_login,
             start.settings,
-        ))))
+        );
+        Some((Content::Member(Box::new(flow)), Some(meter)))
     }
 
     /// Start a signed-in session for the account behind this session's key. Any failure (no
@@ -442,12 +472,14 @@ impl<D: Backend> Handler for ClientHandler<D> {
             session.channel_failure(channel)?;
             return Ok(());
         }
+        let mut meter = None;
         let content = if self.claim_requested {
             // The same prompt for every key on every board, claimed or not (D41). The setup
             // token is its gate; there is no account yet to hold a permission.
             Content::Claim(ClaimForm::new(MAX_ATTEMPTS_PER_SESSION))
-        } else if let Some(start) = self.member_content().await {
-            start
+        } else if let Some((content, metered)) = self.member_content().await {
+            meter = metered;
+            content
         } else if self.waiting_room_allowed().await {
             Content::Room(self.waiting_room().await)
         } else {
@@ -473,6 +505,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
             fingerprint: self.fingerprint.clone(),
             peer_ip: self.peer.map(|peer| peer.ip()),
             account: self.account,
+            meter,
             redraw_interval: self.limits.redraw_interval,
             write_stall: self.limits.write_stall,
         });

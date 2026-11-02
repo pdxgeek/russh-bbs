@@ -9,6 +9,7 @@
 
 mod access;
 mod founder;
+mod limits;
 mod terminal_settings;
 
 #[cfg(test)]

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO role_limit (role, kind, value) VALUES (?, ?, ?)\n             ON CONFLICT (role, kind) DO UPDATE SET value = excluded.value",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "f7f3b4bfd8de544d7085ba3296241bbc9c73af1a4fb8819dbd6688ab392c5def"
+}

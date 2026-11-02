@@ -146,6 +146,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         3,
         "30d33c5c10004f05324ac2943ad60731fc2d2779a11faa408b3eda531081b5b90148958a1a603a2c94521b21ab0b6a64",
     ),
+    (
+        6,
+        "5d9c76a2f3ac95187ed3db3b92b68e8b7df7f99aba86d74c9dfe49070b5f7f2e6f963f1308a6bda9b8b0ef5b4c766219",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {
@@ -204,8 +208,11 @@ async fn a_fresh_database_gets_every_migration_and_only_these_tables() {
             "accounts",
             "group_closure",
             "group_member",
+            "limit_usage",
             "member_group",
+            "member_limit",
             "role",
+            "role_limit",
             "role_permission",
             "settings",
             "terminal_settings"
@@ -262,7 +269,8 @@ async fn an_m1_database_gets_the_access_migration_and_a_sysop_grant() {
             .fetch_all(store.pool())
             .await
             .unwrap();
-    assert_eq!(versions, [1, 2, 3]);
+    let expected: Vec<i64> = MIGRATOR.iter().map(|m| m.version).collect();
+    assert_eq!(versions, expected);
 }
 
 #[tokio::test]

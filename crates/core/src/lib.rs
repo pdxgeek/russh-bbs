@@ -4,6 +4,7 @@
 pub mod access;
 pub mod founder;
 pub mod icons;
+pub mod limits;
 pub mod menu;
 pub mod sanitize;
 pub mod store;

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM member_limit WHERE account_id = ? AND kind = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "570d49fc7e8dbe196cb70429b68d2b37d98e69f83ea5344b758bd608c7e47e78"
+}
