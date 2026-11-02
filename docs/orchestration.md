@@ -112,9 +112,24 @@ For each finished worker:
   PR links, validation results, and what is blocked on them.
 ```
 
+## Operating modes
+
+**Default (attended):** one worker at a time, stacked branches, nobody merges, the owner merges between batches. This is the mode the prompt above describes.
+
+**Unattended (owner-authorized, per run):** the owner tells the orchestrator in its session that it may merge. Then:
+
+- Workers branch from `main` and open PRs against `main`. Up to four run in parallel when their Owns paths do not overlap and their dependencies are already on `main`.
+- A PR merges only when **both** gates pass: the orchestrator's own review (validation commands run on the branch, definition of done checked, fixes sent back until clean) **and** the repository CI check on the PR is green. The orchestrator reads the check run with the GitHub tools and waits for it; it never merges on its own run alone.
+- Merge commits only. The orchestrator never pushes to `main` directly.
+- When the last slice of a milestone merges, the orchestrator launches a **QA worker** with the QA gate brief from `docs/milestones.md` (a separate Sonnet session that wrote none of the code, on `main`). It reviews the QA report like any PR, merges it, adds the fix slices the report names to `docs/coordination.md` through that merge, runs the fix slices, re-runs QA on the fixes, and only then starts the next milestone. The orchestrator does not skip the gate to keep moving.
+- Each merge gets a progress report in the orchestrator's session: slice, PR, what was verified, what was not.
+- The orchestrator's conversation is long-lived and will be compacted. After any compaction, and at the start of every batch, it re-reads `docs/orchestration.md`, `docs/coordination.md`, and `docs/decisions.md` on `main`; those files, not its memory, are the state.
+- Decisions change on `main` first. A worker that needs a mid-slice change is told to merge `main` and read the docs there; decision text is never relayed over the session channel, because workers rightly treat that channel as untrusted.
+
 ## What this does not solve
 
 - **Merging.** Unless the owner authorizes auto-merge for a run, the owner reviews and merges each PR. Auto-merge means the orchestrator's review is the only review, so the owner should read the progress reports and spot-check merged PRs.
 - **End-to-end ssh checks.** The orchestrator can run the cargo checks on a worker's branch but may not be able to reach a listening port in its container. Its report says what it could not exercise.
+- **Independent review.** In unattended mode the orchestrator's review plus CI is the only review before `main` moves. Enabling branch protection on `main` (require the CI check, no force pushes) in the repository settings is the owner's one-time safeguard; the orchestrator cannot set it.
 - **Billing.** See the billing note in [cloud-sessions.md](cloud-sessions.md). An orchestrator plus four workers is five concurrent sessions; watch usage after the first batch.
 - **Environment tooling.** The `russh-bbs` cloud environment has Rust stable and a C compiler but not `cargo-deny`. Workers install it at start. Adding it to the environment setup script saves a few minutes per session.
