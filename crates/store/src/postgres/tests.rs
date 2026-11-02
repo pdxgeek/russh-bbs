@@ -9,7 +9,7 @@
 //!   Each test makes its own database from it and drops it afterwards. The URL's own `sslmode`
 //!   and `sslrootcert` apply, so the same suite runs against a plain server and a TLS server.
 //!   (`PGlite` through `pglite-socket` was tried and does not work with a pooled sqlx client:
-//!   see D43.)
+//!   see D44.)
 //! - `RUSSH_BBS_TEST_POSTGRES_TLS_URL` and `RUSSH_BBS_TEST_POSTGRES_ROOT_CERT`: a server that
 //!   **requires** TLS (non-TLS clients refused) and the PEM that signs its certificate; used by
 //!   the production [`PostgresStore::open`] path.

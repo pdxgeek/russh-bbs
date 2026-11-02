@@ -1,0 +1,44 @@
+name: Container build
+
+# Proves the Dockerfile builds and the image starts. Builds only (never pushes), amd64 only,
+# and only when something that affects the image changes.
+on:
+  pull_request:
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - Cargo.toml
+      - Cargo.lock
+      - rust-toolchain.toml
+      - crates/**
+      - .github/workflows/container-build.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@f7ce87c1d6bead3e36075b2ce75da1f6cc28aaca # v3.9.0
+      - uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
+        with:
+          context: .
+          load: true
+          push: false
+          tags: russh-bbs:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Smoke test (starts, prints a founder token, stops cleanly on SIGTERM)
+        run: |
+          docker run -d --name bbs -p 2222:2222 russh-bbs:ci
+          for i in $(seq 1 30); do docker logs bbs 2>&1 | grep -q "ssh server listening" && break; sleep 1; done
+          docker logs bbs
+          docker logs bbs 2>&1 | grep -q "ssh server listening"
+          docker stop --time 10 bbs
+          test "$(docker inspect --format '{{.State.ExitCode}}' bbs)" = 0
+          docker inspect --format '{{.Config.User}}' russh-bbs:ci
+          docker image ls russh-bbs:ci

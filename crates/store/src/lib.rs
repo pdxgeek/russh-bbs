@@ -29,3 +29,24 @@ pub use error::OpenError;
 pub use postgres::{PostgresSettings, PostgresStore, TlsMode};
 #[cfg(feature = "sqlite")]
 pub use sqlite::SqliteStore;
+
+/// Release a store's resources at shutdown: SQLite checkpoints its WAL and closes the pool,
+/// Postgres closes the pool. After this, calls on the store fail (and callers fail closed).
+pub trait Close: Send + Sync {
+    /// Close the store.
+    fn close(&self) -> impl std::future::Future<Output = ()> + Send;
+}
+
+#[cfg(feature = "sqlite")]
+impl Close for SqliteStore {
+    async fn close(&self) {
+        SqliteStore::close(self).await;
+    }
+}
+
+#[cfg(feature = "postgres")]
+impl Close for PostgresStore {
+    async fn close(&self) {
+        PostgresStore::close(self).await;
+    }
+}

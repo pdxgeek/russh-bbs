@@ -8,8 +8,9 @@ use clap::Parser;
 use russh_bbs_core::store::{SettingsStore, set_registration_mode};
 use russh_bbs_server::config::{Cli, Loaded, ResolvedDatasource};
 use russh_bbs_server::founder;
+use russh_bbs_server::shutdown;
 use russh_bbs_server::ssh::{Backend, HostKey, ServerConfig, SshServer};
-use russh_bbs_store::{PostgresStore, SqliteStore};
+use russh_bbs_store::{Close, PostgresStore, SqliteStore};
 use tracing::{info, warn};
 use tracing_subscriber::EnvFilter;
 
@@ -45,9 +46,7 @@ async fn main() -> anyhow::Result<()> {
                 .await
                 .with_context(|| format!("opening database {}", path.display()))?;
             info!(backend = "sqlite", path = %path.display(), "database ready");
-            serve(store.clone(), &loaded, &host_key).await?;
-            // Flushes the WAL.
-            store.close().await;
+            serve(store, &loaded, &host_key).await?;
         }
         ResolvedDatasource::Postgres(settings) => {
             // The error text never contains the password (see `PostgresSettings`).
@@ -55,8 +54,7 @@ async fn main() -> anyhow::Result<()> {
                 .await
                 .context("opening the postgres datasource (TLS is required)")?;
             info!(backend = "postgres", tls = true, "database ready");
-            serve(store.clone(), &loaded, &host_key).await?;
-            store.close().await;
+            serve(store, &loaded, &host_key).await?;
         }
     }
     Ok(())
@@ -64,7 +62,7 @@ async fn main() -> anyhow::Result<()> {
 
 /// Run the board on `store` until a shutdown signal. Everything past store selection is
 /// backend-independent (core traits only).
-async fn serve<S: Backend + SettingsStore + Clone>(
+async fn serve<S: Backend + SettingsStore + Close + Clone>(
     store: S,
     loaded: &Loaded,
     host_key: &HostKey,
@@ -97,10 +95,11 @@ async fn serve<S: Backend + SettingsStore + Clone>(
     )
     .await?;
 
-    tokio::signal::ctrl_c()
+    shutdown::wait_for_signal()
         .await
         .context("waiting for shutdown signal")?;
     info!("shutting down");
-    server.shutdown().await;
+    // Closes the sessions, then the store (SQLite checkpoints its WAL, Postgres closes the pool).
+    shutdown::graceful(server, &store, shutdown::SHUTDOWN_TIMEOUT).await;
     Ok(())
 }
