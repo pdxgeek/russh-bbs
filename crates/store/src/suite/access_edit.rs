@@ -46,7 +46,8 @@ fn board(n: i64) -> Scope {
 }
 
 async fn log<S: AuditStore>(store: &S) -> Vec<AuditEntry> {
-    let mut rows = store.page(&AuditQuery::default()).await.unwrap();
+    let mut rows =
+        russh_bbs_core::audit::known_events(store.page(&AuditQuery::default()).await.unwrap());
     rows.reverse(); // oldest first
     rows
 }

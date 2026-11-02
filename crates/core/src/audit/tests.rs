@@ -206,7 +206,7 @@ impl AuditStore for CountingStore {
         Ok(AuditId::from_raw(1))
     }
 
-    async fn page(&self, _: &AuditQuery) -> Result<Vec<AuditEntry>, StoreError> {
+    async fn page(&self, _: &AuditQuery) -> Result<Vec<LogEntry>, StoreError> {
         self.pages.fetch_add(1, Ordering::SeqCst);
         Ok(Vec::new())
     }
@@ -268,4 +268,55 @@ fn a_permission_on_one_resource_does_not_open_the_log() {
         }],
     );
     assert!(snapshot.require(Permission::AuditView, None).is_err());
+}
+
+#[test]
+fn an_unknown_action_name_is_sanitized_and_capped() {
+    let hostile = format!("evil\u{1b}[2J\u{27e6}\u{2299}\u{27e7}\n{}", "x".repeat(500));
+    let name = UnknownAction::from_stored(&hostile);
+    let shown = name.as_str();
+    assert!(
+        shown.chars().count() <= UNKNOWN_ACTION_MAX_CHARS,
+        "{shown:?}"
+    );
+    assert!(
+        !shown.chars().any(char::is_control)
+            && !shown.contains('\u{27e6}')
+            && !shown.contains('\u{2299}'),
+        "{shown:?}"
+    );
+    assert_eq!(UnknownAction::from_stored("made.up").as_str(), "made.up");
+}
+
+/// The unknown name is a read-only type: it is not an `Action` and no event takes it.
+///
+/// ```compile_fail
+/// use russh_bbs_core::audit::{Actor, AuditEvent, Target, UnknownAction};
+///
+/// let name = UnknownAction::from_stored("made.up");
+/// let _ = AuditEvent::new(Actor::System, name, Target::None);
+/// ```
+#[allow(dead_code)]
+fn unknown_actions_cannot_be_written() {}
+
+#[test]
+fn known_events_drops_only_the_unknown_rows() {
+    let known = AuditEntry {
+        id: AuditId::from_raw(2),
+        at: UnixSeconds::from_raw(5),
+        event: AuditEvent::new(Actor::System, Action::GroupCreated, Target::None),
+    };
+    let unknown = LogEntry::Unknown(UnknownEntry {
+        id: AuditId::from_raw(1),
+        at: UnixSeconds::from_raw(4),
+        action: UnknownAction::from_stored("made.up"),
+        actor: Actor::System,
+        target: None,
+        detail: Detail::default(),
+    });
+    let rows = vec![LogEntry::Event(known.clone()), unknown.clone()];
+    assert_eq!(rows[1].id(), AuditId::from_raw(1));
+    assert_eq!(rows[1].at(), UnixSeconds::from_raw(4));
+    assert_eq!(known_events(rows), vec![known]);
+    assert_eq!(unknown.into_event(), None);
 }

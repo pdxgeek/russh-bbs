@@ -1,6 +1,6 @@
 //! The read service: `audit.view`, checked in core.
 
-use super::store::{AuditEntry, AuditQuery, AuditStore};
+use super::store::{AuditQuery, AuditStore, LogEntry};
 use crate::access::{Denied, Permission, Snapshot};
 use crate::store::StoreError;
 
@@ -21,7 +21,7 @@ pub async fn view_log<S: AuditStore>(
     store: &S,
     snapshot: &Snapshot,
     query: &AuditQuery,
-) -> Result<Vec<AuditEntry>, AuditViewError> {
+) -> Result<Vec<LogEntry>, AuditViewError> {
     snapshot.require(Permission::AuditView, None)?;
     Ok(store.page(query).await?)
 }

@@ -9,7 +9,8 @@ use russh_bbs_core::access::{
     ResourceKind, ResourceRef, Scope, Slug, Subject,
 };
 use russh_bbs_core::audit::{
-    Action, Actor, AuditEntry, AuditEvent, AuditQuery, AuditStore, FixedClock, MAX_PAGE, Target,
+    Action, Actor, AuditEntry, AuditEvent, AuditQuery, AuditStore, FixedClock, LogEntry, MAX_PAGE,
+    Target, known_events,
 };
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::sanitize::sanitize_username;
@@ -37,8 +38,14 @@ async fn account<S: AccountStore>(store: &S, name: &str) -> Account {
         .unwrap()
 }
 
+/// Every row, which must all be events this binary knows (the unknown-row tests read the raw
+/// [`LogEntry`] list themselves).
 async fn all<S: AuditStore>(store: &S) -> Vec<AuditEntry> {
-    store.page(&AuditQuery::default()).await.unwrap()
+    let raw = store.page(&AuditQuery::default()).await.unwrap();
+    let count = raw.len();
+    let known = known_events(raw);
+    assert_eq!(known.len(), count, "an unknown row where none was expected");
+    known
 }
 
 fn actions(rows: &[AuditEntry]) -> Vec<Action> {
@@ -107,7 +114,7 @@ pub(crate) async fn paging_filters_combine_and_time_bounds_are_since_inclusive_u
 
     let by = |query: AuditQuery| {
         let store = store.clone();
-        async move { times(store.page(&query).await.unwrap()) }
+        async move { times(known_events(store.page(&query).await.unwrap())) }
     };
     assert_eq!(by(q()).await, [400, 300, 200, 100]);
     assert_eq!(
@@ -214,8 +221,8 @@ pub(crate) async fn pages_are_bounded_and_the_cursor_walks_every_row_once<H: Har
             .unwrap();
         assert!(page.len() <= 40);
         let Some(last) = page.last() else { break };
-        before = Some(last.id);
-        seen.extend(page.iter().map(|row| row.id));
+        before = Some(last.id());
+        seen.extend(page.iter().map(LogEntry::id));
     }
     assert_eq!(seen.len(), total);
     assert!(
@@ -606,7 +613,7 @@ pub(crate) async fn the_read_service_follows_the_role_data<H: Harness>() {
 
     let sysop = store.snapshot(Some(founder.id)).await.unwrap();
     let rows = view_log(store, &sysop, &query).await.unwrap();
-    assert_eq!(actions(&rows), [Action::FounderClaimed]);
+    assert_eq!(actions(&known_events(rows)), [Action::FounderClaimed]);
 
     for (name, role, may) in [
         ("jordan", "cosysop", true),
@@ -636,4 +643,233 @@ pub(crate) async fn the_read_service_follows_the_role_data<H: Harness>() {
     }
     let waiting = store.snapshot(None).await.unwrap();
     assert!(view_log(store, &waiting, &query).await.is_err());
+}
+
+// ---- rows whose action this binary does not know (D77) ----------------------------------
+
+/// A hand-written row, as another binary version would have left it. `at` doubles as the id's
+/// order, so the tests can filter by time.
+async fn plant<H: Harness>(h: &H, at: i64, actor: &str, action: &str, target: &str, detail: &str) {
+    let (actor_kind, actor_id) = match actor {
+        "system" => ("system", "NULL".to_owned()),
+        id => ("account", id.to_owned()),
+    };
+    let (target_kind, target_ref) = target.split_once(':').unwrap_or(("", ""));
+    h.raw(&format!(
+        "INSERT INTO audit_log (at, actor_kind, actor_id, action, target_kind, target_ref, detail) \
+         VALUES ({at}, '{actor_kind}', {actor_id}, '{action}', '{target_kind}', '{target_ref}', '{detail}')"
+    ))
+    .await
+    .unwrap();
+}
+
+/// A mix of known and unknown rows, oldest first: known, unknown, known, unknown, known.
+async fn mixed<H: Harness>(h: &mut H) {
+    let clock = clock_at(h, 100);
+    let store = h.store().clone();
+    store
+        .append(&event(Actor::System, Action::GroupCreated))
+        .await
+        .unwrap();
+    plant(h, 200, "system", "made.up", "", "from the future").await;
+    clock.set(300);
+    store
+        .append(&event(Actor::Account(account_id(7)), Action::GroupDeleted))
+        .await
+        .unwrap();
+    plant(h, 400, "7", "renamed.thing", "account:5", "").await;
+    clock.set(500);
+    store
+        .append(&event(Actor::System, Action::GroupCreated))
+        .await
+        .unwrap();
+}
+
+fn account_id(n: i64) -> russh_bbs_core::store::AccountId {
+    russh_bbs_core::store::AccountId::from_raw(n)
+}
+
+fn label(entry: &LogEntry) -> String {
+    match entry {
+        LogEntry::Event(e) => e.event.action.name().to_owned(),
+        LogEntry::Unknown(u) => format!("?{}", u.action.as_str()),
+    }
+}
+
+pub(crate) async fn an_unknown_action_reads_as_a_labelled_entry_beside_known_rows<H: Harness>() {
+    let mut h = H::fresh().await;
+    mixed(&mut h).await;
+    let rows = h.store().page(&AuditQuery::default()).await.unwrap();
+    // The page is whole and newest first: one unreadable name did not fail it.
+    assert_eq!(
+        rows.iter().map(label).collect::<Vec<_>>(),
+        [
+            "group.created",
+            "?renamed.thing",
+            "group.deleted",
+            "?made.up",
+            "group.created"
+        ]
+    );
+    let LogEntry::Unknown(renamed) = &rows[1] else {
+        panic!("not unknown")
+    };
+    assert_eq!(renamed.at.as_raw(), 400);
+    assert_eq!(renamed.actor, Actor::Account(account_id(7)));
+    assert_eq!(renamed.target, Some(Target::Account(account_id(5))));
+    let LogEntry::Unknown(made_up) = &rows[3] else {
+        panic!("not unknown")
+    };
+    assert_eq!(made_up.actor, Actor::System);
+    assert_eq!(made_up.target, Some(Target::None));
+    assert_eq!(made_up.detail.as_str(), "from the future");
+    // The known rows are exactly what was written.
+    assert_eq!(known_events(rows).len(), 3);
+}
+
+pub(crate) async fn paging_across_known_and_unknown_rows_neither_skips_nor_repeats<H: Harness>() {
+    let mut h = H::fresh().await;
+    mixed(&mut h).await;
+    let store = h.store();
+    let mut before = None;
+    let mut seen = Vec::new();
+    loop {
+        let page = store
+            .page(&AuditQuery {
+                limit: 2,
+                before,
+                ..AuditQuery::default()
+            })
+            .await
+            .unwrap();
+        assert!(page.len() <= 2);
+        let Some(last) = page.last() else { break };
+        before = Some(last.id());
+        seen.extend(page.iter().map(label));
+    }
+    assert_eq!(
+        seen,
+        [
+            "group.created",
+            "?renamed.thing",
+            "group.deleted",
+            "?made.up",
+            "group.created"
+        ]
+    );
+}
+
+pub(crate) async fn filters_apply_to_unknown_rows_by_actor_and_time_and_never_by_action<
+    H: Harness,
+>() {
+    let mut h = H::fresh().await;
+    mixed(&mut h).await;
+    let store = h.store();
+    let labels = |rows: Vec<LogEntry>| rows.iter().map(label).collect::<Vec<_>>();
+
+    // By actor: account 7 wrote one known and one unknown row.
+    let by_seven = store
+        .page(&AuditQuery {
+            actor: Some(Actor::Account(account_id(7))),
+            ..AuditQuery::default()
+        })
+        .await
+        .unwrap();
+    assert_eq!(labels(by_seven), ["?renamed.thing", "group.deleted"]);
+    let by_system = store
+        .page(&AuditQuery {
+            actor: Some(Actor::System),
+            ..AuditQuery::default()
+        })
+        .await
+        .unwrap();
+    assert_eq!(
+        labels(by_system),
+        ["group.created", "?made.up", "group.created"]
+    );
+
+    // By time: the window [200, 400) holds the unknown row at 200, the known one at 300.
+    let window = store
+        .page(&AuditQuery {
+            since: Some(UnixSeconds::from_raw(200)),
+            until: Some(UnixSeconds::from_raw(400)),
+            ..AuditQuery::default()
+        })
+        .await
+        .unwrap();
+    assert_eq!(labels(window), ["group.deleted", "?made.up"]);
+
+    // By action: a known action matches only that action; an unknown row matches no filter.
+    for action in Action::ALL {
+        let rows = store
+            .page(&AuditQuery {
+                action: Some(*action),
+                ..AuditQuery::default()
+            })
+            .await
+            .unwrap();
+        assert!(
+            rows.iter()
+                .all(|row| matches!(row, LogEntry::Event(e) if e.event.action == *action)),
+            "{action:?}"
+        );
+    }
+}
+
+pub(crate) async fn an_unknown_name_is_sanitized_when_read<H: Harness>() {
+    let h = H::fresh().await;
+    plant(
+        &h,
+        1,
+        "system",
+        "evil\u{1b}[2J\u{27e6}\u{2299}\u{27e7}name",
+        "flying:7",
+        "note\u{1b}[31m red",
+    )
+    .await;
+    let rows = h.store().page(&AuditQuery::default()).await.unwrap();
+    let [LogEntry::Unknown(row)] = rows.as_slice() else {
+        panic!("{rows:?}")
+    };
+    for text in [row.action.as_str(), row.detail.as_str()] {
+        assert!(
+            !text.chars().any(char::is_control)
+                && !text.contains('\u{27e6}')
+                && !text.contains('\u{2299}'),
+            "{text:?}"
+        );
+    }
+    assert!(row.action.as_str().starts_with("evil"));
+    // Another version's target kind does not make the row unreadable (D77): it reads as none.
+    assert_eq!(row.target, None);
+}
+
+/// Only the action name is forgiven (D77): a row whose structure is invalid is still `Corrupt`,
+/// and a known action with a target or resource the code could not have written is too.
+pub(crate) async fn structurally_invalid_rows_are_still_corrupt<H: Harness>() {
+    let corrupt = |result: Result<Vec<LogEntry>, StoreError>| {
+        assert!(matches!(result, Err(StoreError::Corrupt(_))), "{result:?}");
+    };
+    // A known action with a target kind the code never wrote.
+    let h = H::fresh().await;
+    plant(&h, 1, "system", "group.created", "flying:7", "").await;
+    corrupt(h.store().page(&AuditQuery::default()).await);
+
+    // A known action with an impossible target reference.
+    let h = H::fresh().await;
+    plant(&h, 1, "system", "group.created", "account:not-a-number", "").await;
+    corrupt(h.store().page(&AuditQuery::default()).await);
+
+    // A known action with a resource kind the code never wrote.
+    let h = H::fresh().await;
+    h.raw("INSERT INTO audit_log (at, actor_kind, action, resource_kind, resource_id) VALUES (1, 'system', 'group.created', 'banana', 3)")
+        .await
+        .unwrap();
+    corrupt(h.store().page(&AuditQuery::default()).await);
+
+    // One such row fails the page, and a good row beside it does not hide that.
+    let mut h = H::fresh().await;
+    mixed(&mut h).await;
+    plant(&h, 600, "system", "group.created", "flying:7", "").await;
+    corrupt(h.store().page(&AuditQuery::default()).await);
 }

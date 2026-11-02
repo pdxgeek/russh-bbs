@@ -2,7 +2,7 @@
 //! and the bounded read. The table is append-only in the database itself (migration 0004);
 //! there is deliberately no update or delete here.
 
-use russh_bbs_core::audit::{AuditEntry, AuditEvent, AuditId, AuditQuery, AuditStore};
+use russh_bbs_core::audit::{AuditEvent, AuditId, AuditQuery, AuditStore, LogEntry};
 use russh_bbs_core::store::StoreError;
 use sqlx::SqliteConnection;
 
@@ -52,7 +52,7 @@ impl AuditStore for SqliteStore {
         Ok(id)
     }
 
-    async fn page(&self, query: &AuditQuery) -> Result<Vec<AuditEntry>, StoreError> {
+    async fn page(&self, query: &AuditQuery) -> Result<Vec<LogEntry>, StoreError> {
         let f = Filter::of(query);
         let rows = sqlx::query_as!(
             AuditRow,

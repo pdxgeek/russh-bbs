@@ -488,6 +488,69 @@ async fn staff_edit_another_profile_and_a_member_cannot() {
 }
 
 #[tokio::test]
+async fn a_cosysop_cannot_edit_a_sysops_profile_but_can_edit_a_members() {
+    let rig = Rig::start().await;
+    // Handles sort: aaron_sysop, carol, dina.
+    let (sysop, _) = rig
+        .account("aaron_sysop", Slug::SYSOP, AccountState::Active)
+        .await;
+    let (_, staff_key) = rig
+        .account("carol", Slug::COSYSOP, AccountState::Active)
+        .await;
+    let (dina, _) = rig.member("dina").await;
+    let sysop_before = rig.profile_of(sysop).await;
+
+    let (_s, mut staff) = at_menu(&rig, &staff_key).await;
+    send(&mut staff, "ul").await;
+    send(&mut staff, "1").await;
+    let view = full(&mut staff).await;
+    assert!(view.contains("Handle: aaron_sysop"), "{view}");
+    send(&mut staff, "e").await;
+    let refused = full(&mut staff).await;
+    assert!(
+        refused.contains("You cannot edit the profile of someone whose role ranks at or above yours. Nothing was changed.")
+            && !refused.contains("> Display name:"),
+        "{refused}"
+    );
+    // The rank rule is the whole story: nothing was written and nothing was audited.
+    assert_eq!(rig.profile_of(sysop).await, sysop_before);
+    let audited: (i64,) =
+        sqlx::query_as("SELECT count(*) FROM audit_log WHERE action = 'profile.edited'")
+            .fetch_one(&rig.db)
+            .await
+            .unwrap();
+    assert_eq!(audited.0, 0);
+
+    // A member below the cosysop still works, and is audited.
+    send(&mut staff, "\u{1b}").await;
+    send(&mut staff, "3").await;
+    assert!(full(&mut staff).await.contains("Handle: dina"));
+    send(&mut staff, "e").await;
+    let form = full(&mut staff).await;
+    assert!(
+        form.contains("Editing the profile of dina (staff edit)"),
+        "{form}"
+    );
+    send(&mut staff, "Dina D\r\r\r\r\r").await;
+    let saved = full(&mut staff).await;
+    assert!(saved.contains("Profile saved."), "{saved}");
+    assert_eq!(rig.profile_of(dina).await.get(Field::DisplayName), "Dina D");
+    let rows: Vec<(String, String)> =
+        sqlx::query_as("SELECT action, detail FROM audit_log WHERE action = 'profile.edited'")
+            .fetch_all(&rig.db)
+            .await
+            .unwrap();
+    assert_eq!(
+        rows,
+        [(
+            "profile.edited".to_owned(),
+            "fields display_name".to_owned()
+        )]
+    );
+    rig.server.shutdown().await;
+}
+
+#[tokio::test]
 async fn stored_text_that_was_edited_by_hand_is_cleaned_on_render() {
     let rig = Rig::start().await;
     let (_, key) = rig.member("alice").await;

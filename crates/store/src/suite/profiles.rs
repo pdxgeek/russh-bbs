@@ -300,5 +300,42 @@ async fn profile_rows<S: russh_bbs_core::audit::AuditStore>(
         action: Some(russh_bbs_core::audit::Action::ProfileEdited),
         ..russh_bbs_core::audit::AuditQuery::default()
     };
-    store.page(&query).await.unwrap()
+    russh_bbs_core::audit::known_events(store.page(&query).await.unwrap())
+}
+
+/// The rank rule for staff edits reads a target's standing (D60 (6), D77): the top global rank
+/// of the roles it holds, the same number the editing services use.
+pub(crate) async fn standing_is_the_top_global_rank_and_none_for_inactive_accounts<H: Harness>() {
+    let h = H::fresh().await;
+    let store = h.store();
+    let member = account(store, "mia", AccountState::Active).await;
+    let cosysop = NewAccount {
+        username: sanitize_username("cora").unwrap(),
+        role: Slug::COSYSOP,
+        state: AccountState::Active,
+    };
+    let cosysop = store.create_account(cosysop).await.unwrap();
+    let sysop = NewAccount {
+        username: sanitize_username("sam").unwrap(),
+        role: Slug::SYSOP,
+        state: AccountState::Active,
+    };
+    let sysop = store.create_account(sysop).await.unwrap();
+    let pending = account(store, "pat", AccountState::Pending).await;
+
+    let rank = |id: AccountId| async move { store.standing(id).await.unwrap() };
+    let (m, c, s) = (
+        rank(member.id).await,
+        rank(cosysop.id).await,
+        rank(sysop.id).await,
+    );
+    assert!(
+        m.is_some() && c.is_some() && s.is_some(),
+        "{m:?} {c:?} {s:?}"
+    );
+    assert!(m < c && c < s, "member {m:?} < cosysop {c:?} < sysop {s:?}");
+    // Not active: it holds only the waiting room's role, which ranks below a member.
+    assert!(rank(pending.id).await < m);
+    // Unknown id: no standing at all, never an error.
+    assert!(rank(AccountId::from_raw(9_999)).await < m);
 }

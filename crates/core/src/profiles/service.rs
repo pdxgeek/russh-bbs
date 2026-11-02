@@ -22,6 +22,10 @@ pub enum ProfileError {
     /// The proof is for a different permission, or for editing someone it does not cover.
     #[error("not permitted")]
     NotPermitted,
+    /// The target's top rank is not strictly below the editor's (D60 (6)): staff cannot edit the
+    /// profile of someone of equal or higher rank.
+    #[error("target ranks at or above the editor")]
+    RankTooLow,
     /// No active member has this id.
     #[error("no such member")]
     NotFound,
@@ -144,15 +148,38 @@ pub async fn edit_profile<S: ProfileStore>(
 /// profile, `members.edit` for anyone else's. There is no fallback between them, so removing
 /// `account.edit_profile` from every role stops everyone, staff included, from editing their
 /// own, and `members.edit` is only ever about other people.
-pub fn edit_grant(access: &Snapshot, target: AccountId) -> Result<Granted, ProfileError> {
-    let permission = if access.account() == Some(target) {
+///
+/// **Rank rule (D60 (6), D77):** editing someone else's profile is also refused unless the
+/// target's top global rank is strictly below the editor's ([`Snapshot::top_rank`]); a target
+/// that holds no role counts as below. An editor with no global rank edits nobody else's. The
+/// permission is checked first, so a session without it never learns anything about ranks. The
+/// target's rank is read at this moment; a promotion between this check and the write is not
+/// guarded (the edit is audited, and only text is at stake).
+pub async fn edit_grant<S: ProfileStore>(
+    store: &S,
+    access: &Snapshot,
+    target: AccountId,
+) -> Result<Granted, ProfileError> {
+    let own = access.account() == Some(target);
+    let permission = if own {
         Permission::AccountEditProfile
     } else {
         Permission::MembersEdit
     };
-    access
+    let granted = access
         .require(permission, None)
-        .map_err(|_| ProfileError::NotPermitted)
+        .map_err(|_| ProfileError::NotPermitted)?;
+    if !own {
+        let editor = access.top_rank().ok_or(ProfileError::RankTooLow)?;
+        if store
+            .standing(target)
+            .await?
+            .is_some_and(|rank| rank >= editor)
+        {
+            return Err(ProfileError::RankTooLow);
+        }
+    }
+    Ok(granted)
 }
 
 /// What a screen asks for. The front end runs it with [`execute`] and gives the answer back.
@@ -181,6 +208,8 @@ pub enum Response {
     Saved(Saved),
     /// The member is gone or not an active member.
     NotFound,
+    /// The permission is held, but the member's top rank is not below the editor's.
+    RankTooLow,
     /// The permission is not held.
     NotPermitted,
     /// The store failed or timed out; nothing is claimed about what was written.
@@ -193,6 +222,7 @@ pub async fn execute<S: ProfileStore>(store: &S, access: &Snapshot, request: Req
     match run(store, access, request).await {
         Ok(response) => response,
         Err(ProfileError::NotPermitted) => Response::NotPermitted,
+        Err(ProfileError::RankTooLow) => Response::RankTooLow,
         Err(ProfileError::NotFound) => Response::NotFound,
         Err(ProfileError::Store(error)) => {
             tracing::warn!(%error, "profile request failed");
@@ -218,11 +248,11 @@ async fn run<S: ProfileStore>(
         }
         Request::View(id) => Response::Profile(view_profile(store, &view()?, id).await?),
         Request::Edit(id) => {
-            let granted = edit_grant(access, id)?;
+            let granted = edit_grant(store, access, id).await?;
             Response::EditForm(load_for_edit(store, &granted, id).await?)
         }
         Request::Save(id, raw) => {
-            let granted = edit_grant(access, id)?;
+            let granted = edit_grant(store, access, id).await?;
             Response::Saved(edit_profile(store, &granted, id, &raw).await?)
         }
     })

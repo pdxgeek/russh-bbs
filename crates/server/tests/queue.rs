@@ -406,7 +406,8 @@ async fn a_stranger_reads_the_same_words_whatever_the_queue_does_with_the_reques
     // After all of that exactly the one request exists, and nothing else was written.
     assert_eq!(count(&rig, "invite_request").await, 1);
     assert_eq!(count(&rig, "request_denial").await, 1);
-    let audit = rig.store.page(&AuditQuery::default()).await.unwrap();
+    let audit =
+        russh_bbs_core::audit::known_events(rig.store.page(&AuditQuery::default()).await.unwrap());
     assert!(
         audit.iter().all(|row| !matches!(
             row.event.action,
@@ -559,7 +560,8 @@ async fn the_sysop_approves_from_the_screen_and_the_requester_becomes_a_member()
     )
     .await;
     assert_eq!(inviter, ["1"], "the approving sysop is recorded");
-    let audit = rig.store.page(&AuditQuery::default()).await.unwrap();
+    let audit =
+        russh_bbs_core::audit::known_events(rig.store.page(&AuditQuery::default()).await.unwrap());
     let approved: Vec<_> = audit
         .iter()
         .filter(|row| row.event.action == Action::MemberApproved)
@@ -614,7 +616,8 @@ async fn the_sysop_denies_and_the_key_is_turned_away_with_the_same_words() {
         None,
         "no account"
     );
-    let audit = rig.store.page(&AuditQuery::default()).await.unwrap();
+    let audit =
+        russh_bbs_core::audit::known_events(rig.store.page(&AuditQuery::default()).await.unwrap());
     let denied: Vec<_> = audit
         .iter()
         .filter(|row| row.event.action == Action::MemberDenied)
@@ -697,7 +700,8 @@ async fn a_trusted_member_vouches_once_and_the_sysop_sees_the_name() {
     assert!(list.contains("vouches: 1"), "{list}");
     let detail = flat(&press(&mut founder, "1").await);
     assert!(detail.contains("Vouched for by: voucher"), "{detail}");
-    let audit = rig.store.page(&AuditQuery::default()).await.unwrap();
+    let audit =
+        russh_bbs_core::audit::known_events(rig.store.page(&AuditQuery::default()).await.unwrap());
     assert_eq!(
         audit
             .iter()
