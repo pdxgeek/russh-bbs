@@ -72,6 +72,10 @@ This was the hand-run sequence. When an orchestrator runs the build, [orchestrat
 3. Then **M1-C**, **M1-D**, and **M1-E**.
 4. Review each PR before starting the next batch. After M1, decide whether to adjust the plan from what was learned.
 
+## QA session
+
+The QA gate in [milestones.md](milestones.md) is a session of its own. Brief it with the gate text, the milestone, and `main`. It owns `docs/qa/<milestone>.md` and rows it adds to `docs/coordination.md`, and nothing else. It needs the `ssh` and `sftp` clients and, from M1-F, a container runtime; it says which of those it lacked.
+
 ## Reviewing a session's PR
 
 Check the report against the diff. Run the validation commands yourself. Exercise the feature with `ssh`. Confirm the docs match what the code does. Treat "implemented" claims without tests as unverified.

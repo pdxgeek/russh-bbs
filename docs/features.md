@@ -6,6 +6,7 @@ Update this table in the same pass as the code.
 
 | Feature | Milestone | Status | Notes |
 |---|---|---|---|
+| QA pass per milestone (`docs/qa/`) | all | Planned | Gate before the next milestone starts |
 | Workspace, CI, threat model | M0 | Implemented | Workspace, toolchain, deny and CI exist and pass locally (fmt, clippy, test, deny); CI itself not yet seen running on GitHub. Threat model is a doc. Not yet Verified |
 | Shared sanitizer | M0 | Implemented | `russh-bbs-core::sanitize`: controls, ANSI/CSI/OSC/DCS/APC/PM/SOS and 8-bit C1 sequences, bidi and invisible characters, private-use neutralization, char-count limits, `Sanitized` newtype, NFKC + strict ASCII usernames, ASCII lookalike skeleton. Unit and property tests; no fuzz target yet (Planned). Not yet used by any front end. Not yet Verified |
 | Icon registry and width table | M0 | Implemented | `russh-bbs-core::icons`: closed enums (`ContentIcon`, `SecurityMarker`, `Icon`), three tiers, text labels, explicit width table, padded `render`. Unit tested incl. sanitizer round-trip. Not used by any front end yet. Multi-terminal alignment **not verified** (needs real terminals). Not yet Verified |
