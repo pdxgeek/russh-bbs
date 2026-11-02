@@ -21,7 +21,7 @@ Member identities and key fingerprints, the invite tree, message and mail conten
 | Adversary | Goal |
 |---|---|
 | Unauthenticated stranger | Learn who is on the board, get in without an invite, flood the waiting room, mass-create accounts when registration is `apply` or `open`, squat usernames |
-| Malicious member | Spam, impersonate, inject terminal escapes, abuse invites, cheat in doors, exfiltrate others' data |
+| Malicious member | Spam, impersonate, inject terminal escapes, abuse invites, cheat in doors, exfiltrate others' data, reach areas or actions above their role |
 | Malicious external content (feeds, mail, files) | Terminal injection, SSRF, malware, resource exhaustion |
 | Curious or compromised operator or server | Read private content |
 | Network attacker | Impersonate the server, downgrade, read or alter a telnet session on the wire, replay a telnet password |
@@ -38,6 +38,7 @@ Member identities and key fingerprints, the invite tree, message and mail conten
 | Outbound fetching | User-supplied URLs cannot reach private networks. |
 | Uploads | Files are quarantined and scanned before becoming visible. |
 | Honesty | Nothing is labeled private unless the server genuinely cannot read it. |
+| Access control | Every read, post, upload, moderation and admin action is checked in core against the account's role and the area's policy (D33); an area a role cannot see is not listed and not reachable by name; role changes are audited. |
 | Container | The image runs as a non-root user on an unprivileged port with no added capabilities. The founder setup token is printed to stdout, so anyone who can read the container logs during first run can claim sysop; the docs say so. The container boundary is a second layer, not the door sandbox. |
 
 ## What the MVP does not guarantee

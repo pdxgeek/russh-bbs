@@ -35,6 +35,7 @@ The QA pass never fixes code. It reports. Low findings go into the coordination 
 
 ## M2: Invites and members
 - **Screen framework first** (moved from M3): the menu tree, the **classic hotkey** layout, the universal keys, and the themeable string table. Every M2 screen (queue, profiles, members list) is built on it so nothing is written ad hoc and reworked in M3. Lightbar, compact, and themes stay in M3.
+- **Roles and access control** (D33), right after the screen framework and before invites: `core::access` with roles, rank, capabilities, per-area policies, the built-in roles, store tables and migrations for both backends, and tests that every front-end action path calls it. The founder claim from M1-D is re-pointed at the `sysop` role. The sysop queue, invites, and profiles are built on it.
 - **Audit log early** (moved from M5): an append-only `audit` table and one write helper in core, used from the first approval, denial, ban, role change, and setting change. The M5 slice becomes the sysop UI over it.
 - States (pending, approved, active, suspended), codes (single-use, expiring, bound to inviter), quotas, invite tree.
 - Sysop queue UI with approve, deny, and vouch. Flood defenses and quick expiry of denied requests.
