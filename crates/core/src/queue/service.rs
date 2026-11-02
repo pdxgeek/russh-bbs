@@ -3,7 +3,8 @@
 //! [`Snapshot::require`] returns, so a front end cannot call one without passing `core::access`
 //! (docs/access.md, "Rules"). A proof for the wrong permission is refused as well.
 //!
-//! * `submit_request` needs `invite.request`.
+//! * `submit_request` needs `invite.request` for an invite request and `membership.apply` for a
+//!   membership application (M2-G).
 //! * `list_pending` needs `members.approve`, `members.deny` or `members.vouch`.
 //! * `approve_request` needs `members.approve`, `deny_request` needs `members.deny` and
 //!   `vouch_request` needs `members.vouch`.
@@ -21,7 +22,7 @@ use tracing::{info, warn};
 use super::gate::{RequestGate, SubmitLimited};
 use super::request::{
     DEFAULT_MAX_PENDING, DENIAL_COOLDOWN_SECS, InviteAsk, MAX_MAX_PENDING, Message, NewRequest,
-    PENDING_TTL_SECS, RequestId,
+    PENDING_TTL_SECS, RequestId, RequestKind,
 };
 use super::store::{
     ApproveError, DecideError, Purged, Queue, QueueStore, Refusal, SubmitTerms, Submitted,
@@ -45,6 +46,9 @@ pub enum DropReason {
     RateLimited(SubmitLimited),
     /// The store's rules refused it.
     Refused(Refusal),
+    /// The stored registration mode is not taking this kind of request (an application when the
+    /// board is in `invite` mode; M2-G).
+    WrongMode,
     /// The store failed.
     Store,
 }
@@ -80,8 +84,8 @@ pub async fn max_pending<S: QueueStore>(store: &S) -> u32 {
     }
 }
 
-/// Offer a request from the waiting room. Needs `invite.request` in `access` (the waiting
-/// snapshot), then the per-key and per-network limits, then the store's rules. Every outcome is
+/// Offer a request from the waiting room. Needs `invite.request` (or `membership.apply` for an
+/// application) in `access` (the waiting snapshot), then the per-key and per-network limits, then the store's rules. Every outcome is
 /// returned for the log and the tests; the front end must show the same words for all of them.
 ///
 /// `peer` is used for the network limit only and is not kept.
@@ -97,8 +101,15 @@ where
     S: QueueStore,
     C: Clock,
 {
-    if access.require(Permission::InviteRequest, None).is_err() {
-        info!("invite request dropped: permission not held");
+    let needed = match ask.kind {
+        RequestKind::Invite => Permission::InviteRequest,
+        RequestKind::Application => Permission::MembershipApply,
+    };
+    if access.require(needed, None).is_err() {
+        info!(
+            kind = ask.kind.as_str(),
+            "request dropped: permission not held"
+        );
         return Submission::Dropped(DropReason::NotPermitted);
     }
     if let Err(limited) = gate.admit(fingerprint, peer) {
@@ -113,6 +124,7 @@ where
         handle: ask.handle,
         message: Message::new(&ask.message),
         fingerprint: fingerprint.clone(),
+        kind: ask.kind,
     };
     match store.submit_request(&new, terms).await {
         Ok(Submitted::Stored(id)) => {

@@ -141,17 +141,21 @@ async fn a_member_name_typed_into_a_form_is_not_confirmed_or_denied() {
     let store = seeded_store(dir.path(), RegistrationMode::Open).await;
     let config = store.load_room_config().await.unwrap();
 
+    // The form hands the handle to the front end, which asks the store; whatever it learns, the
+    // room is told only "refused" and draws one sentence (M2-G).
     let reply = |name: &str| {
         let mut room = WaitingRoom::new(&config, 5);
         room.input(RoomInput::Char('n'));
         for c in name.chars() {
             room.input(RoomInput::Char(c));
         }
-        room.input(RoomInput::Enter);
+        let effect = room.input(RoomInput::Enter);
+        assert!(matches!(effect, RoomEffect::Redeem(_)), "{effect:?}");
+        room.redeem_refused();
         room.view().notice.unwrap().text
     };
     assert_eq!(reply(MEMBER_NAMES[0]), reply("not_a_member"));
-    assert_eq!(reply(MEMBER_NAMES[0]), strings::CREATE_ACCOUNT_UNAVAILABLE);
+    assert_eq!(reply(MEMBER_NAMES[0]), strings::CREATE_ACCOUNT_FAILED);
 }
 
 #[tokio::test]

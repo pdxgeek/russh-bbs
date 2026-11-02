@@ -30,14 +30,15 @@ use russh::server::Handle;
 use russh_bbs_core::access::{Access, Fingerprint, Permission, Snapshot};
 use russh_bbs_core::founder::{ClaimOutcome, claim_founder};
 use russh_bbs_core::invites::{
-    CODE_BYTES, InviteError, InviteOutcome, InviteRequest, RedeemError, create_invite, invite_tree,
-    my_invites, redeem_invite,
+    CODE_BYTES, InviteError, InviteOutcome, InviteRequest, create_invite, invite_tree, my_invites,
+    redeem_invite,
 };
 use russh_bbs_core::limits::{LimitError, MemberMeter, SystemClock};
-use russh_bbs_core::queue::{InviteAsk, submit_request};
+use russh_bbs_core::queue::{InviteAsk, RequestKind, submit_request};
+use russh_bbs_core::registration::{open_account, submit_application};
 use russh_bbs_core::store::{Account, AccountId};
 use russh_bbs_core::terminal_settings::{MemberFlow, MemberStart, TerminalSettings};
-use russh_bbs_core::waiting_room::RedeemRequest;
+use russh_bbs_core::waiting_room::{JoinKind, RedeemRequest};
 use tokio::sync::Notify;
 use tokio::time::{sleep_until, timeout, timeout_at};
 use tracing::{debug, info, warn};
@@ -449,57 +450,65 @@ impl<D: Backend> Shell<D> {
         }
     }
 
-    /// Redeem an invite typed in the waiting room (M2-D). The waiting snapshot must hold
-    /// `invite.redeem` (checked in core). Success turns the visitor into the new member; every
-    /// failure (a bad code, a taken handle, a key that already has an account, a slow or broken
-    /// store) is the same refusal on screen, and the reason goes to the log only, never the
-    /// code.
+    /// Redeem an invite typed in the waiting room (M2-D), or create an account in `open` mode
+    /// (M2-G). The waiting snapshot must hold `invite.redeem` (or `membership.open`, with the
+    /// stored mode `open` now; both checked in core). Success turns the visitor into the new
+    /// member; every failure (a bad code, a taken handle, a key that already has an account, a
+    /// rate limit, a full day, a slow or broken store) is the same refusal on screen, and the
+    /// reason goes to the log only, never the code.
     async fn try_redeem(&mut self, request: RedeemRequest) {
         let Some(fingerprint) = self.parts.fingerprint.clone() else {
             self.parts.screen.redeem_refused();
             return;
         };
+        let RedeemRequest { join, handle } = request;
         let work = async {
-            let access = self.parts.directory.access_for(None).await?;
-            Ok::<_, RedeemError>(
-                redeem_invite(
-                    &*self.parts.directory,
+            let access = self.parts.directory.access_for(None).await.ok()?;
+            let directory = &*self.parts.directory;
+            match join {
+                JoinKind::Invite { code } => {
+                    redeem_invite(directory, &access, &code, handle, &fingerprint)
+                        .await
+                        .ok()
+                        .map(|redeemed| redeemed.account)
+                }
+                JoinKind::Open => open_account(
+                    directory,
+                    self.parts.session.open_gate(),
                     &access,
-                    &request.code,
-                    request.handle,
+                    handle,
                     &fingerprint,
+                    self.parts.peer_ip,
                 )
-                .await,
-            )
-        };
-        let result = match timeout(MEMBER_START_TIMEOUT, work).await {
-            Ok(Ok(result)) => result,
-            Ok(Err(error)) => Err(error),
-            Err(_) => {
-                warn!(session = ?self.parts.session.id(), "invite redemption timed out");
-                self.parts.screen.redeem_refused();
-                return;
+                .await
+                .ok()
+                .map(|opened| opened.account),
             }
         };
-        match result {
-            Ok(redeemed) => {
-                self.parts
-                    .session
-                    .set_authenticated(fingerprint, Access::Member);
-                let start = self.account_start(&redeemed.account).await;
-                self.parts.account = Some(start.account);
-                self.parts.screen.redeemed(MemberFlow::new(
-                    &start.handle,
-                    start.access,
-                    start.previous_login,
-                    start.settings,
-                ));
-            }
-            Err(_) => self.parts.screen.redeem_refused(),
-        }
+        let Ok(made) = timeout(MEMBER_START_TIMEOUT, work).await else {
+            warn!(session = ?self.parts.session.id(), "registration timed out");
+            self.parts.screen.redeem_refused();
+            return;
+        };
+        let Some(account) = made else {
+            self.parts.screen.redeem_refused();
+            return;
+        };
+        self.parts
+            .session
+            .set_authenticated(fingerprint, Access::Member);
+        let start = self.account_start(&account).await;
+        self.parts.account = Some(start.account);
+        self.parts.screen.redeemed(MemberFlow::new(
+            &start.handle,
+            start.access,
+            start.previous_login,
+            start.settings,
+        ));
     }
 
-    /// Offer a request for an invite typed in the waiting room to the queue (M2-E). The room
+    /// Offer a request for an invite, or a membership application, typed in the waiting room to
+    /// the queue (M2-E, M2-G). The room
     /// has already shown its one fixed answer, and the frame carrying it is sent before this
     /// runs, so nothing here reaches the screen or delays it: a drop (a
     /// rate limit, a full queue, a repeat, a recent refusal, a slow or broken store) is logged
@@ -511,17 +520,17 @@ impl<D: Backend> Shell<D> {
         };
         let work = async {
             let access = self.parts.directory.access_for(None).await.ok()?;
-            Some(
-                submit_request(
-                    &*self.parts.directory,
-                    self.parts.session.request_gate(),
-                    &access,
-                    ask,
-                    &fingerprint,
-                    self.parts.peer_ip,
-                )
-                .await,
-            )
+            let directory = &*self.parts.directory;
+            let gate = self.parts.session.request_gate();
+            let peer = self.parts.peer_ip;
+            Some(match ask.kind {
+                RequestKind::Invite => {
+                    submit_request(directory, gate, &access, ask, &fingerprint, peer).await
+                }
+                RequestKind::Application => {
+                    submit_application(directory, gate, &access, ask, &fingerprint, peer).await
+                }
+            })
         };
         if timeout(MEMBER_START_TIMEOUT, work).await.is_err() {
             warn!(session = ?self.parts.session.id(), "invite request timed out; dropped");

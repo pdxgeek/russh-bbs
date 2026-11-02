@@ -1,0 +1,136 @@
+//! `open` registration over Postgres (M2-G, D73, D74).
+//!
+//! **The cap is enforced where the account is made.** The transaction's first write is a capped
+//! upsert on the day's counter (`ON CONFLICT .. DO UPDATE .. WHERE opened < cap`); it takes the
+//! row lock on the day, so two sessions cannot both take the last place. No row affected means
+//! the day is full. The account, its key and the audit row follow in the same transaction; a
+//! taken handle or a bound key rolls the count back with the rest.
+
+use russh_bbs_core::access::Fingerprint;
+use russh_bbs_core::audit::events;
+use russh_bbs_core::limits::Day;
+use russh_bbs_core::registration::{DailyCap, OpenError, OpenRefusal, Opened, RegistrationStore};
+use russh_bbs_core::sanitize::Username;
+use russh_bbs_core::store::{
+    AccountState, RegistrationMode, SettingKey, SettingsStore as _, StoreError, registration_mode,
+};
+use sqlx::error::ErrorKind;
+
+use super::PostgresStore;
+use crate::error::{backend, kind};
+use crate::rows::AccountRow;
+
+/// Counter rows older than this many days are deleted by the next account creation.
+const KEEP_DAYS: i64 = 7;
+
+impl RegistrationStore for PostgresStore {
+    async fn registration_mode(&self) -> Result<RegistrationMode, StoreError> {
+        registration_mode(self).await
+    }
+
+    async fn open_cap_setting(&self) -> Result<Option<String>, StoreError> {
+        self.get_setting(SettingKey::OpenDailyCap).await
+    }
+
+    async fn open_cap_reached(&self, cap: DailyCap) -> Result<bool, StoreError> {
+        let Some(limit) = cap.limit() else {
+            return Ok(false);
+        };
+        let day = Day::of(self.clock().now()).as_raw();
+        let opened =
+            sqlx::query_scalar!("SELECT opened FROM registration_day WHERE day = $1", day,)
+                .fetch_optional(self.pool())
+                .await
+                .map_err(backend)?;
+        Ok(opened.is_some_and(|n| n >= i64::from(limit)))
+    }
+
+    async fn open_account(
+        &self,
+        username: Username,
+        fingerprint: &Fingerprint,
+        cap: DailyCap,
+    ) -> Result<Opened, OpenError> {
+        let now = self.clock().now();
+        let day = Day::of(now).as_raw();
+        let oldest = day.saturating_sub(KEEP_DAYS);
+        let limit = cap.limit().map(i64::from);
+        let skeleton = username.skeleton();
+        let name = username.as_str();
+        let state = AccountState::Active;
+        let state_text = state.as_str();
+        let fingerprint = fingerprint.as_str();
+
+        let mut tx = self.pool().begin().await.map_err(backend)?;
+        sqlx::query!("DELETE FROM registration_day WHERE day < $1", oldest)
+            .execute(&mut *tx)
+            .await
+            .map_err(backend)?;
+        let counted = sqlx::query!(
+            "INSERT INTO registration_day (day, opened) VALUES ($1, 1)
+             ON CONFLICT (day) DO UPDATE SET opened = registration_day.opened + 1
+             WHERE $2::BIGINT IS NULL OR registration_day.opened < $2",
+            day,
+            limit,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(backend)?
+        .rows_affected();
+        if counted == 0 {
+            // The day is full. The first refusal of the day leaves one audit row; the count
+            // and the flag commit, nothing else was written.
+            let at = now.as_raw();
+            let first = sqlx::query!(
+                "UPDATE registration_day SET capped_at = $1 WHERE day = $2 AND capped_at IS NULL",
+                at,
+                day,
+            )
+            .execute(&mut *tx)
+            .await
+            .map_err(backend)?
+            .rows_affected();
+            if first == 1 {
+                let shown = cap.limit().unwrap_or(0);
+                self.audit_in(&mut tx, &events::registration_capped(day, shown))
+                    .await?;
+            }
+            tx.commit().await.map_err(backend)?;
+            return Err(OpenError::CapReached);
+        }
+        let row = sqlx::query_as!(
+            AccountRow,
+            "INSERT INTO accounts (username, username_skeleton, state)
+             VALUES ($1, $2, $3)
+             RETURNING id, username, state, created_at",
+            name,
+            skeleton,
+            state_text,
+        )
+        .fetch_one(&mut *tx)
+        .await
+        .map_err(|error| match kind(&error) {
+            Some(ErrorKind::UniqueViolation) => OpenError::Rejected(OpenRefusal::Handle),
+            _ => OpenError::Store(backend(error)),
+        })?;
+        sqlx::query!(
+            "INSERT INTO account_keys (fingerprint, account_id) VALUES ($1, $2)",
+            fingerprint,
+            row.id,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|error| match kind(&error) {
+            Some(ErrorKind::UniqueViolation) => OpenError::Rejected(OpenRefusal::Key),
+            _ => OpenError::Store(backend(error)),
+        })?;
+        let account = row.into_account()?;
+        self.audit_in(
+            &mut tx,
+            &events::account_created_via_open(account.id, account.state),
+        )
+        .await?;
+        tx.commit().await.map_err(backend)?;
+        Ok(Opened { account })
+    }
+}

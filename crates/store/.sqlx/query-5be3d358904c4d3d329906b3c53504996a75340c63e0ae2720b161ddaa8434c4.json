@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO registration_day (day, opened) VALUES ($1, 1)\n             ON CONFLICT (day) DO UPDATE SET opened = registration_day.opened + 1\n             WHERE $2::BIGINT IS NULL OR registration_day.opened < $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "5be3d358904c4d3d329906b3c53504996a75340c63e0ae2720b161ddaa8434c4"
+}

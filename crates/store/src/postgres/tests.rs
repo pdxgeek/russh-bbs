@@ -194,6 +194,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         9,
         "28447d9f438d504c5f8d870b39f034c8c4cff5e0f42a0208263440b523e1f18ac33c74e6a76214cb0440611fc002190b",
     ),
+    (
+        10,
+        "811fc48a6f813dc2484a306dac74298bd38b3667b56bc045e25b161dbd21e8b8737f26ca259bc7299e22e2718c1d2a09",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {
@@ -260,6 +264,7 @@ async fn a_fresh_database_gets_every_migration_and_only_these_tables() {
             "member_group",
             "member_limit",
             "profiles",
+            "registration_day",
             "request_denial",
             "role",
             "role_limit",

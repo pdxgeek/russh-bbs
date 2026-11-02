@@ -83,6 +83,15 @@ pub enum Action {
     /// A member vouched for a queue request (M2-E). The target is the request's id.
     #[strum(serialize = "member.vouched")]
     MemberVouched,
+    /// A stranger's membership application was kept in the sysop queue (M2-G). The target is
+    /// the request's id; nothing the applicant typed is written.
+    #[strum(serialize = "application.submitted")]
+    ApplicationSubmitted,
+    /// `open` registration refused its first applicant of a UTC day because the daily cap was
+    /// used up, so the board answered with the `apply` form for the rest of that day (M2-G).
+    /// Written once per day.
+    #[strum(serialize = "registration.capped")]
+    RegistrationCapped,
 }
 
 impl Action {

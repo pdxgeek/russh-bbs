@@ -33,6 +33,7 @@ fn ask(name: &str, message: &str) -> InviteAsk {
     InviteAsk {
         handle: handle(name),
         message: message.to_owned(),
+        kind: RequestKind::Invite,
     }
 }
 
@@ -211,6 +212,7 @@ fn nothing_the_requester_typed_is_in_a_debug_line() {
         handle: handle("secretname"),
         message: Message::new("secret message"),
         fingerprint: key(7),
+        kind: RequestKind::Invite,
     };
     for shown in [
         format!("{new:?}"),
@@ -468,6 +470,7 @@ fn request(id: i64, name: &str, vouchers: &[(i64, &str)]) -> PendingRequest {
         message: Message::new("a friend"),
         created_at: UnixSeconds::from_raw(10_000 - 7_300),
         expires_at: UnixSeconds::from_raw(10_000 + 86_400),
+        kind: RequestKind::Invite,
         vouchers: vouchers
             .iter()
             .map(|(account, name)| Voucher {

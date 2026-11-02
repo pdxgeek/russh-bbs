@@ -288,7 +288,11 @@ async fn switching_the_registration_mode_changes_the_screen_set() {
     type_line(&mut channel, "applicant").await;
     let result = type_line(&mut channel, "I like boards").await;
     let result = flat(&result);
-    assert!(result.contains("Applications are not open yet"), "{result}");
+    // M2-G: the application form is live and answers with one fixed text.
+    assert!(
+        result.contains("Thank you. If your application is kept"),
+        "{result}"
+    );
     // The invite-mode keys do nothing here.
     press(&mut channel, b"\x1b").await;
     let still_home = press(&mut channel, b"i").await;
@@ -302,10 +306,8 @@ async fn switching_the_registration_mode_changes_the_screen_set() {
     assert!(!home.contains("Request an invite") && !home.contains("Apply for membership"));
     press(&mut channel2, b"n").await;
     let result = type_line(&mut channel2, "freshname").await;
-    assert!(
-        result.contains("Account creation is not open yet"),
-        "{result}"
-    );
+    // M2-G: the create-account form is live; a stranger's handle makes a member at once.
+    assert!(flat(&result).contains("Signed in as freshname"), "{result}");
 
     rig.stop().await;
 }

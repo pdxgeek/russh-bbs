@@ -29,6 +29,40 @@ pub const DEFAULT_MAX_PENDING: u32 = 200;
 /// default, so a typo cannot turn the cap off.
 pub const MAX_MAX_PENDING: u32 = 10_000;
 
+/// What a queued request asks for. Both kinds share the queue's table, caps, rate limits,
+/// expiry, screens and decisions (M2-G, D73); the kind is what the sysop reads on the detail
+/// screen and nothing else treats them differently.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub enum RequestKind {
+    /// A stranger asked for an invite in `invite` mode (M2-E).
+    #[default]
+    Invite,
+    /// A stranger applied for membership in `apply` mode, or in `open` mode on a day the cap
+    /// was used up (M2-G).
+    Application,
+}
+
+impl RequestKind {
+    /// The text stored in the `kind` column.
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Invite => "invite",
+            Self::Application => "application",
+        }
+    }
+
+    /// Parse a stored value.
+    #[must_use]
+    pub fn parse(text: &str) -> Option<Self> {
+        match text {
+            "invite" => Some(Self::Invite),
+            "application" => Some(Self::Application),
+            _ => None,
+        }
+    }
+}
+
 /// Store-assigned id of a request. What the audit log and the screens name; never reused.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct RequestId(i64);
@@ -87,6 +121,8 @@ pub struct InviteAsk {
     pub handle: Username,
     /// The message, as the room holds it.
     pub message: String,
+    /// Which form it came from.
+    pub kind: RequestKind,
 }
 
 impl fmt::Debug for InviteAsk {
@@ -104,6 +140,8 @@ pub struct NewRequest {
     pub message: Message,
     /// The presenting key's public fingerprint: the key the account will be bound to.
     pub fingerprint: Fingerprint,
+    /// Which form it came from.
+    pub kind: RequestKind,
 }
 
 impl fmt::Debug for NewRequest {
@@ -139,6 +177,8 @@ pub struct PendingRequest {
     pub expires_at: UnixSeconds,
     /// Active members who have vouched, oldest vouch first.
     pub vouchers: Vec<Voucher>,
+    /// An invite request or a membership application.
+    pub kind: RequestKind,
 }
 
 /// The stored form of a denied key: SHA-256 over a domain prefix and the fingerprint text, as

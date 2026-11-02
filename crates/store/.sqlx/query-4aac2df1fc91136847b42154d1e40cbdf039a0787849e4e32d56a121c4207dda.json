@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT opened AS \"opened!: i64\" FROM registration_day WHERE day = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "opened!: i64",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "4aac2df1fc91136847b42154d1e40cbdf039a0787849e4e32d56a121c4207dda"
+}

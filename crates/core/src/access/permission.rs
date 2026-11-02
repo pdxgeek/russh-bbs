@@ -38,6 +38,9 @@ pub enum Permission {
     /// `membership.apply`.
     #[strum(serialize = "membership.apply")]
     MembershipApply,
+    /// `membership.open`.
+    #[strum(serialize = "membership.open")]
+    MembershipOpen,
     /// `account.edit_profile`.
     #[strum(serialize = "account.edit_profile")]
     AccountEditProfile,

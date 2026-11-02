@@ -53,9 +53,17 @@ use tokio::time::timeout;
 /// does nothing and nothing is written, on the very next action. `MembersApprove` is also
 /// exercised there (the screen it opens and the approve key), as well as in the menu-path test
 /// below.
+///
+/// `MembershipApply` and `MembershipOpen` (M2-G) have their path tests in
+/// `tests/registration.rs`: with `membership.apply` taken from the `waiting` role the application
+/// form gives the same words and stores nothing, and with `membership.open` taken the
+/// create-account form gives its one refusal and makes no account, each on the very next
+/// attempt.
 const WIRED: &[Permission] = &[
     Permission::WaitingView,
     Permission::InviteRequest,
+    Permission::MembershipApply,
+    Permission::MembershipOpen,
     Permission::InviteRedeem,
     Permission::InvitesCreate,
     Permission::InvitesViewTree,
@@ -75,7 +83,6 @@ const WIRED: &[Permission] = &[
 /// Permissions with no front-end action yet. A slice that builds one moves it to `WIRED` in the
 /// same PR, with a path test, and adds its row to `docs/access.md`.
 const NOT_YET_WIRED: &[Permission] = &[
-    Permission::MembershipApply,
     Permission::AccountSetPassword,
     Permission::MembersSuspend,
     Permission::MembersDeleteData,

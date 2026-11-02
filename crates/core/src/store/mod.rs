@@ -140,6 +140,9 @@ pub enum SettingKey {
     /// The most invite requests that may wait in the sysop queue (M2-E, D72). A number from 1
     /// to 10,000; unset or invalid means 200.
     QueueMaxPending,
+    /// The most accounts `open` registration may create in one UTC day (M2-G, D73). A number
+    /// from 1 to 100,000, or `0` for no cap; unset or invalid means 25.
+    OpenDailyCap,
 }
 
 impl SettingKey {
@@ -152,6 +155,7 @@ impl SettingKey {
             Self::WaitingRoomBanner => "waiting_room_banner",
             Self::WaitingRoomRules => "waiting_room_rules",
             Self::QueueMaxPending => "queue_max_pending",
+            Self::OpenDailyCap => "open_daily_cap",
         }
     }
 }

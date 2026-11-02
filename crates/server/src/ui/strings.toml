@@ -130,8 +130,8 @@ sysop = "Invite requests"
 vouch = "Vouch for a request"
 
 [queue.intro]
-sysop = "People who asked for an invite. Approving makes an account for the key they asked with."
-vouch = "People who asked for an invite. Your vouch adds your name for the sysops to see; it admits no one."
+sysop = "Invite requests and applications. Approving makes an account for the key that asked."
+vouch = "Invite requests and applications. Your vouch adds your name for the sysops to see; it admits no one."
 
 [queue.row]
 meta = "asked {age} ago   vouches: {vouches}"
@@ -144,6 +144,7 @@ confirm = "y: yes   any other key: cancel"
 
 [queue.detail]
 title = "Request {id}: {handle}"
+title_application = "Application {id}: {handle}"
 when = "Asked {age} ago. Kept until {until} unless someone decides."
 vouches = "Vouched for by"
 no_vouches = "Vouched for by: nobody yet"

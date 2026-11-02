@@ -169,6 +169,7 @@ impl MemberSessions for NoMembers {
                     Permission::WaitingView,
                     Permission::InviteRedeem,
                     Permission::MembershipApply,
+                    Permission::MembershipOpen,
                 ],
             )),
             Some(_) => Err(StoreError::AccountNotFound),

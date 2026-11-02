@@ -12,6 +12,7 @@ use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 use russh_bbs_core::access::{Access, Fingerprint};
 use russh_bbs_core::limits::SessionCounter;
 use russh_bbs_core::queue::RequestGate;
+use russh_bbs_core::registration::OpenGate;
 
 use super::terminal::PtySize;
 
@@ -56,6 +57,9 @@ pub struct SessionRegistry {
     /// The per-key and per-network limits on submitting an invite request (M2-E, D72), shared
     /// by every session of this server and kept in memory only.
     request_gate: RequestGate,
+    /// The per-key and per-network limits on creating an account in `open` mode (M2-G, D74),
+    /// separate from the request gate and kept in memory only.
+    open_gate: OpenGate,
 }
 
 impl SessionRegistry {
@@ -128,6 +132,12 @@ impl SessionRef {
     #[must_use]
     pub fn request_gate(&self) -> &RequestGate {
         &self.registry.request_gate
+    }
+
+    /// The limits on creating an `open` account, shared by every session of this server.
+    #[must_use]
+    pub fn open_gate(&self) -> &OpenGate {
+        &self.registry.open_gate
     }
 
     /// Record the authenticated key and the access decided for it.

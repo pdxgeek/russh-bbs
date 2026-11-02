@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT opened FROM registration_day WHERE day = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "opened",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "adbdc0bd9abcb5c8d016719770b84fa2ec81db003e932a2d0c70d855c656ffea"
+}
