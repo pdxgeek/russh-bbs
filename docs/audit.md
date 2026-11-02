@@ -51,6 +51,10 @@ sysop screen over it is M5; the board has no audit screen yet.
 | `redeem_invite` (M2-D) | `account.created` | the new account | the new account | `via invite <id> by account <id> state active` |
 | `redeem_invite` (M2-D) | `invite.redeemed` | the new account | the invite | `account <id> inviter <id>` |
 | `change_state` (M2-D) | `account.state_changed` | caller | the account | `<from> to <to>` |
+| `approve_request` (M2-E) | `account.created` | the approver | the new account | `via request <id> state active` |
+| `approve_request` (M2-E) | `member.approved` | the approver | the new account | `request <id>` |
+| `deny_request` (M2-E) | `member.denied` | the denier | the request (`request`, its id) | none: no text, no handle, no key |
+| `vouch_request` (M2-E) | `member.vouched` | the voucher | the request (`request`, its id) | none |
 | `save_profile` by staff (M2-F) | `profile.edited` | the editor (`members.edit`) | the edited account | `fields <names>`: field names only, never values. The owner's own edits write no row |
 
 A write that changed nothing (adding a member already in the group, removing one who is not, a
@@ -61,8 +65,11 @@ who is calling.
 
 ## Planned
 
-- **M2-B2** (role, grant, revoke editing), **M2-E** (approvals, denials, bans, role changes):
-  see the handoff row in [coordination.md](coordination.md). Add the `Action` variants there and
+- **M2-B2** (role, grant, revoke editing), and the rest of M2-E's list (`member.suspended`,
+  `member.banned`, `member.unbanned`, `member.role_changed`; M2-E wrote `member.approved`,
+  `member.denied` and `member.vouched`): see the handoff row in [coordination.md](coordination.md).
+  A queue **submission** and the **purge** of expired requests write no row, on purpose (the log
+  is append-only and an unauthenticated flood must not grow it; D71). Add the `Action` variants there and
   call `audit_in` in the same transaction. **M2-D** wrote `invite.created`, `invite.redeemed`,
   `account.created` (by invite) and `account.state_changed`; `invite.revoked` waits for a revoke
   action (nothing revokes an invite yet) and `quota.changed` for M2-H's editable limits.
