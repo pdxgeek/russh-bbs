@@ -17,6 +17,7 @@ The MVP is a closed-beta board that works with plain `ssh` and `sftp`. No instal
 - Door framework and one or two Rust-native games.
 - Datasource selection: SQLite (default) or Postgres, the latter also against PGlite. No MySQL.
 - Container image with a compose example.
+- Blob storage behind one object-store interface: local directory (default) or S3-compatible (D30). Managed Postgres works as the Postgres backend with TLS (D31).
 - Password login over SSH, disabled by default (D28). Telnet transport, disabled by default and labeled low-security mode when on, with telnet login as a further opt-in (D27).
 - Sysop admin TUI, page the sysop, moderation workflow, audit log.
 - Notifications and digests, backups with a tested restore, data export and deletion.

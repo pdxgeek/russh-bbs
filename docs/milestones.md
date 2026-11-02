@@ -13,7 +13,7 @@ Each milestone ends with something runnable. Estimates are guesses for one devel
 - `russh` server, persistent host key, public-key auth, restricted session for unknown keys.
 - TUI over the PTY with resize handling (resolve Q5, record it in decisions).
 - Store traits in core, SQLite backend and migrations (resolve Q4), with the backend selected by config (D6, D24).
-- Postgres backend with its own migrations, behavior tests shared with SQLite, run in CI against PGlite or a Postgres service.
+- Postgres backend with its own migrations, behavior tests shared with SQLite, run in CI against PGlite or a Postgres service, and against a Postgres that requires TLS (D31).
 - Container image: Dockerfile, compose example, GHCR publish in CI, one `/data` volume (D25).
 - Waiting room screens, per-IP and per-key rate limits.
 - Founder flow: one-time setup token printed to the console claims sysop.
@@ -36,10 +36,11 @@ Each milestone ends with something runnable. Estimates are guesses for one devel
 - **Done when:** three users post and chat over plain `ssh`, a malicious feed (escape codes, SSRF attempt) is neutralized by tests, and the layout can be switched live.
 
 ## M4: Files and doors
-- File areas over SFTP (virtual filesystem by ID), quarantine and scanning hook, tagging and batch download, metadata and search.
+- `BlobStore` trait with object-store semantics and the local backend (D30); S3-compatible backend tested against MinIO in CI, same test suite.
+- File areas over SFTP (virtual filesystem by ID), quarantine and scanning hook, tagging and batch download, metadata and search. Everything streams through `BlobStore`; no module touches a blob path.
 - Global new-scan across posts, files, and feeds.
 - Door framework and one or two Rust-native games (a small daily-turn RPG as the flagship).
-- **Done when:** upload, scan, approve, and download work over `sftp`; a door runs in a session with no filesystem or network access.
+- **Done when:** upload, scan, approve, and download work over `sftp` on both the local and the S3-compatible blob backend with the same tests; a door runs in a session with no filesystem or network access.
 
 ## M5: Sysop tooling and API
 - Admin TUI (user editor, live sessions, logs), page the sysop and split chat, moderation workflow and audit log.

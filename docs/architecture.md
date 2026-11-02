@@ -59,13 +59,13 @@ Rules never live in a front end. A rule that exists in both the TUI and GraphQL 
 ## Storage
 
 - Datasource chosen in config (D6, D24): SQLite in WAL mode (default) or Postgres. The Postgres backend is also what runs against PGlite in development and CI. No MySQL. Each backend has its own forward-only migrations and passes the same behavior test suite.
-- File blobs on disk, addressed by BLAKE3 hash; metadata in SQLite.
+- File blobs behind one `BlobStore` trait with object-store semantics (D30), addressed by BLAKE3 hash; metadata in the database. Backends: local directory (default) and S3-compatible, both through `object_store`, both behaving identically, including quarantine as a prefix plus a database flag. Managed Postgres such as RDS is just the Postgres backend with TLS (D31).
 - Backups with a tested restore procedure (M5).
 
 ## Cross-cutting
 
 - **Config:** TOML, with environment-variable overrides for container use. Hot-reload for themes and layouts, with validation and fallback.
-- **Deployment:** a container image is a first-class deliverable (D25): static binary, non-root, one `/data` volume, logs to stdout.
+- **Deployment:** a container image is a first-class deliverable (D25): static binary, non-root, one `/data` volume, logs to stdout. With Postgres and an object store configured, the only state left on the volume is the SSH host key, which can instead be supplied from a secret or environment variable, making the container replaceable.
 - **Logging:** `tracing`, structured, never logging content, keys, or invite codes.
 - **Time:** injected `Clock` trait.
 - **Doors:** `Door` trait in core; Rust-native runtime in M4; WASM runtime later.
