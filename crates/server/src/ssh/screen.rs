@@ -6,8 +6,9 @@
 //! cannot affect another or the server's console.
 //!
 //! **What is drawn.** One of three [`Content`]s, each a core state machine that produces a
-//! [`View`] which `crate::waiting_room` draws: the waiting room (M1-C), the founder token
-//! prompt (`ssh claim@host`, M1-D) or the signed-in placeholder for a member.
+//! [`View`]: the waiting room (M1-C, drawn by `crate::waiting_room`), the founder token prompt
+//! (`ssh claim@host`, M1-D), or a member's signed-in session (M1-E, drawn by
+//! `crate::settings` according to the member's terminal settings).
 //!
 //! **Output safety.** Every string is fixed UI chrome or has passed the core sanitizer (the
 //! sysop's banner and rules, and what the visitor typed). The SSH username is never rendered.
@@ -21,11 +22,12 @@ use ratatui::crossterm::queue;
 use ratatui::crossterm::terminal::{Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen};
 use ratatui::layout::Rect;
 use ratatui::{Terminal, TerminalOptions, Viewport};
-use russh_bbs_core::founder::{ClaimEffect, ClaimForm, ClaimInput, signed_in_view};
-use russh_bbs_core::store::Role;
+use russh_bbs_core::founder::{ClaimEffect, ClaimForm, ClaimInput};
+use russh_bbs_core::terminal_settings::{MemberEffect, MemberFlow, MemberInput, TerminalSettings};
 use russh_bbs_core::waiting_room::{RoomEffect, RoomInput, View, WaitingRoom};
 
 use super::terminal::{Key, PtySize};
+use crate::settings::{self, Look};
 use crate::waiting_room::render;
 
 /// Bytes the backend has written and the handler has not yet sent. The backend owns one handle
@@ -64,6 +66,8 @@ pub(super) struct ScreenUpdate {
     /// A token the person submitted at the claim prompt. The handler checks it (it needs the
     /// store) and reports back through [`Screen::claim_rejected`] or [`Screen::claim_accepted`].
     pub(super) claim_token: Option<String>,
+    /// Terminal settings the member changed. The handler stores them.
+    pub(super) save_settings: Option<TerminalSettings>,
 }
 
 /// What a session is looking at.
@@ -72,8 +76,8 @@ pub(super) enum Content {
     Room(WaitingRoom),
     /// The founder token prompt.
     Claim(ClaimForm),
-    /// The placeholder shown to a signed-in account of this role.
-    SignedIn(Role),
+    /// A member's signed-in session: login, glyph test, settings, home, logoff.
+    Member(Box<MemberFlow>),
 }
 
 impl Content {
@@ -81,7 +85,16 @@ impl Content {
         match self {
             Self::Room(room) => room.view(),
             Self::Claim(form) => form.view(),
-            Self::SignedIn(role) => signed_in_view(*role),
+            Self::Member(flow) => flow.view(),
+        }
+    }
+
+    /// How to draw: a member's settings choose color and borders; everyone else gets the
+    /// plain layout (the waiting room and claim prompt predate settings and use no color).
+    fn look(&self) -> Option<Look> {
+        match self {
+            Self::Member(flow) => Some(Look::of(flow.settings())),
+            Self::Room(_) | Self::Claim(_) => None,
         }
     }
 }
@@ -91,16 +104,20 @@ pub(super) struct Screen {
     terminal: Terminal<CrosstermBackend<OutputBuffer>>,
     output: OutputBuffer,
     content: Content,
+    /// What the client reported. The drawn size is this with the member's overrides applied.
+    pty: PtySize,
 }
 
 impl Screen {
     /// Create a screen of `size` showing `content`. Nothing is drawn until [`Screen::enter`].
     pub(super) fn new(size: PtySize, content: Content) -> io::Result<Self> {
         let output = OutputBuffer::default();
+        let drawn = drawn_size(size, &content);
         Ok(Self {
-            terminal: new_terminal(&output, size)?,
+            terminal: new_terminal(&output, drawn)?,
             output,
             content,
+            pty: size,
         })
     }
 
@@ -109,6 +126,7 @@ impl Screen {
     pub(super) fn keys(&mut self, keys: &[Key]) -> io::Result<ScreenUpdate> {
         let mut disconnect = false;
         let mut claim_token = None;
+        let mut save_settings = None;
         match &mut self.content {
             Content::Room(room) => {
                 for input in keys.iter().copied().filter_map(room_input) {
@@ -133,14 +151,30 @@ impl Screen {
                     }
                 }
             }
-            Content::SignedIn(_) => {
-                disconnect = keys.iter().any(|key| matches!(key, Key::Ctrl('c' | 'd')));
+            Content::Member(flow) => {
+                for input in keys.iter().copied().filter_map(member_input) {
+                    match flow.input(input) {
+                        MemberEffect::Stay => {}
+                        MemberEffect::Save(settings) => save_settings = Some(settings),
+                        MemberEffect::Disconnect => {
+                            disconnect = true;
+                            break;
+                        }
+                    }
+                }
             }
         }
+        let bytes = if save_settings.is_some() {
+            // A size override changes the drawn size; rebuild so the old cells are cleared.
+            self.rebuild()?
+        } else {
+            self.draw()?
+        };
         Ok(ScreenUpdate {
-            bytes: self.draw()?,
+            bytes,
             disconnect,
             claim_token,
+            save_settings,
         })
     }
 
@@ -149,18 +183,18 @@ impl Screen {
     pub(super) fn claim_rejected(&mut self) -> io::Result<(Vec<u8>, bool)> {
         let disconnect = match &mut self.content {
             Content::Claim(form) => form.rejected() == ClaimEffect::Disconnect,
-            Content::Room(_) | Content::SignedIn(_) => false,
+            Content::Room(_) | Content::Member(_) => false,
         };
         Ok((self.draw()?, disconnect))
     }
 
-    /// The claim succeeded: show the signed-in placeholder for `role`.
-    pub(super) fn claim_accepted(&mut self, role: Role) -> io::Result<Vec<u8>> {
+    /// The claim succeeded: the new sysop's session starts at the login screen.
+    pub(super) fn claim_accepted(&mut self, flow: MemberFlow) -> io::Result<Vec<u8>> {
         if let Content::Claim(form) = &mut self.content {
             form.accepted();
         }
-        self.content = Content::SignedIn(role);
-        self.draw()
+        self.content = Content::Member(Box::new(flow));
+        self.rebuild()
     }
 
     /// Switch the client to the alternate screen, hide the cursor and draw. Returns the bytes
@@ -177,20 +211,41 @@ impl Screen {
     /// fails without a tty. So we clear the client's screen and build a fresh fixed-viewport
     /// terminal over the same output buffer; nothing ever consults the host tty.
     pub(super) fn resize(&mut self, size: PtySize) -> io::Result<Vec<u8>> {
+        self.pty = size;
+        self.rebuild()
+    }
+
+    /// Clear the client's screen, size a fresh terminal from the client's size and the member's
+    /// overrides, and draw.
+    fn rebuild(&mut self) -> io::Result<Vec<u8>> {
         queue!(self.terminal.backend_mut(), Clear(ClearType::All))?;
-        self.terminal = new_terminal(&self.output, size)?;
+        self.terminal = new_terminal(&self.output, drawn_size(self.pty, &self.content))?;
         self.draw()
     }
 
-    /// Restore the client's terminal (cursor, main screen). Returns the bytes to send.
+    /// Restore the client's terminal (cursor, main screen). After a logoff the goodbye is
+    /// printed on the main screen, so it stays in the scrollback. Returns the bytes to send.
     pub(super) fn leave(&mut self) -> io::Result<Vec<u8>> {
         queue!(self.terminal.backend_mut(), Show, LeaveAlternateScreen)?;
-        Ok(self.take_output())
+        let mut bytes = self.take_output();
+        if let Content::Member(flow) = &self.content
+            && let Some(lines) = flow.farewell()
+        {
+            for line in lines {
+                bytes.extend_from_slice(line.as_bytes());
+                bytes.extend_from_slice(b"\r\n");
+            }
+        }
+        Ok(bytes)
     }
 
     fn draw(&mut self) -> io::Result<Vec<u8>> {
         let view = self.content.view();
-        self.terminal.draw(|frame| render(frame, &view))?;
+        let look = self.content.look();
+        self.terminal.draw(|frame| match look {
+            Some(look) => settings::render(frame, &view, look),
+            None => render(frame, &view),
+        })?;
         Ok(self.take_output())
     }
 
@@ -207,6 +262,17 @@ fn new_terminal(
         viewport: Viewport::Fixed(rect(size)),
     };
     Terminal::with_options(CrosstermBackend::new(output.clone()), options)
+}
+
+/// The size to draw at: the client's, with a member's width and height overrides applied.
+fn drawn_size(pty: PtySize, content: &Content) -> PtySize {
+    match content {
+        Content::Member(flow) => {
+            let (cols, rows) = flow.settings().size(pty.cols(), pty.rows());
+            PtySize::from_request(u32::from(cols), u32::from(rows))
+        }
+        Content::Room(_) | Content::Claim(_) => pty,
+    }
 }
 
 fn rect(size: PtySize) -> Rect {
@@ -233,6 +299,18 @@ fn claim_input(key: Key) -> Option<ClaimInput> {
         Key::Backspace => Some(ClaimInput::Backspace),
         Key::Escape => Some(ClaimInput::Escape),
         Key::Ctrl('c' | 'd') => Some(ClaimInput::Quit),
+        Key::Ctrl(_) | Key::Other => None,
+    }
+}
+
+/// Translate a keypress for a member's session.
+fn member_input(key: Key) -> Option<MemberInput> {
+    match key {
+        Key::Char(c) => Some(MemberInput::Char(c)),
+        Key::Enter => Some(MemberInput::Enter),
+        Key::Backspace => Some(MemberInput::Backspace),
+        Key::Escape => Some(MemberInput::Escape),
+        Key::Ctrl('c' | 'd') => Some(MemberInput::Quit),
         Key::Ctrl(_) | Key::Other => None,
     }
 }

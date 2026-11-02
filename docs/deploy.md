@@ -1,6 +1,6 @@
 # Deploying with a container
 
-Status: **Implemented** in M1-F (D25, D42). Verified items are listed at the end.
+Status: **Implemented** in M1-F (D25, D43). Verified items are listed at the end.
 
 The server ships as one static (musl) binary in a `scratch` image: no shell, no package manager, no libc. It runs as a non-root user, listens on port 2222, and keeps **all state in one volume mounted at `/data`**.
 

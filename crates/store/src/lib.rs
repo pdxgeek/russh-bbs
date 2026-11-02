@@ -10,6 +10,7 @@ mod error;
 mod founder;
 mod rows;
 mod sqlite;
+mod terminal_settings;
 
 pub use error::OpenError;
 pub use sqlite::SqliteStore;
@@ -18,5 +19,7 @@ pub use sqlite::SqliteStore;
 mod founder_tests;
 #[cfg(test)]
 mod migrate_tests;
+#[cfg(test)]
+mod terminal_settings_tests;
 #[cfg(test)]
 mod tests;
