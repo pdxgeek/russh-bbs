@@ -1,0 +1,73 @@
+# russh-bbs example configuration.
+#
+# Every key is shown with its built-in default, so this file changes nothing: a server started
+# with it behaves exactly like one started with no config file. Delete what you do not change.
+# Keys with no fixed default, and keys that would pin a stored setting, are commented out. Unknown keys are an error.
+#
+# Precedence, lowest to highest: built-in defaults < this file < RUSSH_BBS_* environment
+# variables < command-line flags. Every key, its environment variable and its status is in
+# docs/config.md.
+#
+# Default location: $XDG_CONFIG_HOME/russh-bbs/config.toml (else ~/.config/russh-bbs/config.toml),
+# then /data/config.toml in the container. Choose another with --config or RUSSH_BBS_CONFIG.
+#
+# Never put object-store credentials here (they come from the environment, D30). A postgres
+# URL may hold a password: keep this file at mode 0600 if it does.
+
+# Who may register: "invite", "apply" or "open". Commented out on purpose: the default is
+# "invite", but any value set here (or by environment or flag) is written to the board's stored
+# setting at every start and wins over it, which would override a mode chosen later in the
+# admin UI. Uncomment only to pin the mode from config. Decision D38.
+# registration_mode = "invite"
+
+[ssh]
+listen = "0.0.0.0:2222"
+# Host key path. Default: $XDG_DATA_HOME/russh-bbs/host_ed25519_key, else
+# ~/.local/share/russh-bbs/host_ed25519_key. Generated with mode 0600 on first start.
+# host_key = "/data/host_ed25519_key"
+auth_timeout_secs = 30
+idle_timeout_secs = 600
+keepalive_interval_secs = 30
+max_connections = 256
+max_auth_attempts = 6
+auth_rejection_millis = 1000
+# Opt-in password login over SSH (D28). Parsed only: not built yet, has no effect.
+allow_password_login = false
+
+[datasource]
+# "sqlite" (default) or "postgres". "postgres" is refused at boot until the backend is built.
+kind = "sqlite"
+# SQLite file. Default: $XDG_DATA_HOME/russh-bbs/russh-bbs.db, else
+# ~/.local/share/russh-bbs/russh-bbs.db. Only with kind = "sqlite".
+# path = "/data/russh-bbs.db"
+# The settings below apply only with kind = "postgres" (D31). There is no way to turn TLS off.
+# url = "postgres://user:password@host:5432/dbname"
+tls_mode = "require"          # "require", "verify-ca" or "verify-full"
+# tls_root_cert = "/data/rds-ca.pem"
+iam_auth = false
+
+[blobs]
+# Parsed only: no blob store exists yet (D30).
+backend = "local"             # "local" or "s3"
+# dir = "/data/blobs"         # with backend = "local"
+# endpoint = "https://minio.example:9000"   # with backend = "s3"; credentials come from the environment
+# bucket = "russh-bbs"
+# region = "us-east-1"
+
+[telnet]
+# Parsed only: telnet is not built yet (D27). Turning it on is low-security mode.
+enabled = false
+allow_login = false           # second opt-in; needs enabled = true
+listen = "0.0.0.0:2323"
+
+[waiting_room]
+# Rate limits (D37). Per network: a burst, then one new connection per interval.
+ip_burst = 10
+ip_interval_secs = 2
+# Per key: authentication attempts.
+key_burst = 5
+key_interval_secs = 10
+# Form submissions one session may make before it is disconnected.
+max_form_submissions = 5
+# Networks and keys each limiter remembers before evicting the oldest.
+max_tracked_sources = 10000

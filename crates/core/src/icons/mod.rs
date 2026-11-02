@@ -23,7 +23,7 @@
 //!
 //! # Security chrome
 //!
-//! [`SecurityMarker`] icons are system chrome. What is and is not guaranteed (decision D38):
+//! [`SecurityMarker`] icons are system chrome. What is and is not guaranteed (decision D39):
 //!
 //! * **Reserved presentation.** [`Rendered`] carries a [`ChromeStyle`] (bold + reverse
 //!   video) for every marker in every tier. Content can never emit terminal styling, because

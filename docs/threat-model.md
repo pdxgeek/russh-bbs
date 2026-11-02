@@ -53,7 +53,7 @@ Member identities and key fingerprints, the invite tree, message and mail conten
 Applied to every string that is not UI chrome: usernames, post bodies, subjects, chat lines, feed items, mail headers and bodies, file names and descriptions, door output, LLM or NPC text.
 - Remove C0 and C1 control characters (except explicit newline and tab where allowed), ANSI/CSI/OSC/DCS sequences, and bidi override characters.
 - Neutralize the Unicode **private-use ranges** used by Nerd Fonts and the **reserved chrome set** (U+27E6/U+27E7 and the four Unicode marker glyphs), so content cannot draw the Nerd Font or delimited Unicode-tier markers.
-- Remove invisible filler and format characters (Hangul and Khmer fillers, braille blank, soft hyphen, U+2060-206F, variation selectors except U+FE0F after an emoji base), map Unicode spaces to ASCII space, treat VT, FF, NEL, LS and PS as line separators, and cap combining marks at 4 per base character (D39).
+- Remove invisible filler and format characters (Hangul and Khmer fillers, braille blank, soft hyphen, U+2060-206F, variation selectors except U+FE0F after an emoji base), map Unicode spaces to ASCII space, treat VT, FF, NEL, LS and PS as line separators, and cap combining marks at 4 per base character (D40).
 - Normalize Unicode for usernames and block confusables for names.
 - Enforce length limits.
 - Ship fuzz and property tests.
@@ -61,7 +61,7 @@ Applied to every string that is not UI chrome: usernames, post bodies, subjects,
 Implementation status (`russh-bbs-core::sanitize`): **Implemented and unit/property tested:** control and escape-sequence removal, bidi and invisible-character removal (including the filler and format class), Unicode-space mapping, combining-mark cap, private-use and reserved-chrome neutralization (replaced with U+FFFD), length limits (in `char`s), NFKC and a strict ASCII allowed set for usernames, reserved usernames compared on the skeleton, and an ASCII lookalike skeleton with digit and multi-letter folds (best effort, errs toward collisions). **Still planned:** a `cargo-fuzz` target; wiring into front ends, which is each consuming slice's job. Cross-script confusables are blocked by rejection (non-ASCII names are not allowed in the MVP), not by a confusables table.
 
 ### Security chrome
-Lock, signature, key-changed, and server-readable markers are drawn only by chrome code. Layouts and themes can position them but cannot hide, recolor to mislead, or replace them. Every icon tier has a text fallback ("E2EE", "SERVER-READABLE"). What is guaranteed, per tier (D38):
+Lock, signature, key-changed, and server-readable markers are drawn only by chrome code. Layouts and themes can position them but cannot hide, recolor to mislead, or replace them. Every icon tier has a text fallback ("E2EE", "SERVER-READABLE"). What is guaranteed, per tier (D39):
 
 | Tier | What content cannot produce | Tested |
 |---|---|---|

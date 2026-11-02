@@ -42,7 +42,7 @@ The server-readable marker, the (future) E2EE lock, signature badges, and the ke
 - Every icon tier has a text fallback.
 - Every marker is drawn with a **reserved style** (bold + reverse video) that content cannot emit, because the sanitizer strips all escape sequences. The renderer never applies that style to sanitized content.
 - Unicode-tier markers are drawn inside the reserved delimiters `⟦ ⟧`, which the sanitizer replaces in all content; Nerd Font glyphs are private-use and replaced likewise.
-- **ASCII-tier markers cannot be made unforgeable by text** (content can type `E2EE`). Draw them only in a chrome-only position (status line or fixed gutter). On a no-color terminal that position is the only cue, so a screen that cannot guarantee one must say "security markers unavailable" instead of drawing them. See D38.
+- **ASCII-tier markers cannot be made unforgeable by text** (content can type `E2EE`). Draw them only in a chrome-only position (status line or fixed gutter). On a no-color terminal that position is the only cue, so a screen that cannot guarantee one must say "security markers unavailable" instead of drawing them. See D39.
 
 ## Accessibility
 

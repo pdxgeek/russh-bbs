@@ -244,7 +244,7 @@ fn registry_source_uses_escapes_not_raw_private_use_characters() {
     }
 }
 
-// ---- Security chrome (decision D38) ----
+// ---- Security chrome (decision D39) ----
 
 #[test]
 fn restricted_says_restricted_and_is_not_a_padlock_or_a_privacy_claim() {
@@ -388,7 +388,7 @@ proptest! {
 
 #[test]
 fn ascii_tier_text_is_not_protected_by_the_sanitizer_and_the_docs_say_so() {
-    // Honest limit (D38): content can type any ASCII, so the ASCII-tier label is not
+    // Honest limit (D39): content can type any ASCII, so the ASCII-tier label is not
     // unforgeable text. Only the reserved style and a chrome-only position distinguish the
     // real marker. This test pins the limit so nobody "fixes" the docs without a mechanism.
     for m in SecurityMarker::ALL {

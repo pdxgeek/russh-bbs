@@ -11,7 +11,7 @@ use unicode_normalization::char::is_combining_mark;
 /// line height and on column arithmetic.
 pub const MAX_COMBINING_MARKS: usize = 4;
 
-/// Characters reserved for security chrome (decision D38). Content can never produce them:
+/// Characters reserved for security chrome (decision D39). Content can never produce them:
 /// the sanitizer turns each into [`REPLACEMENT`]. The icon registry draws its Unicode-tier
 /// markers with exactly these (delimiters and glyphs); a test in `icons` proves the
 /// registry stays inside this set.

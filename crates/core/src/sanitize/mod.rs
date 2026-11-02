@@ -27,7 +27,7 @@
 //!
 //! The reserved chrome set (security-marker delimiters and glyphs) is what lets the Unicode
 //! and Nerd Font tiers of a security marker be unforgeable by content. The ASCII tier cannot
-//! be protected by text; see `icons` and decision D38.
+//! be protected by text; see `icons` and decision D39.
 
 mod scan;
 mod username;

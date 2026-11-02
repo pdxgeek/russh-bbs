@@ -406,7 +406,7 @@ fn unicode_spaces_become_ascii_space() {
 
 #[test]
 fn fe0f_is_kept_only_after_an_emoji_base() {
-    // Decision D38: emoji presentation is kept (a heart stays a red heart); a variation
+    // Decision D40: emoji presentation is kept (a heart stays a red heart); a variation
     // selector anywhere else is invisible and removed.
     assert_eq!(line("\u{2764}\u{FE0F}"), "\u{2764}\u{FE0F}");
     assert_eq!(line("\u{1F600}\u{FE0F}"), "\u{1F600}\u{FE0F}");
