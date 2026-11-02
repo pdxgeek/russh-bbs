@@ -38,6 +38,8 @@ tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "time",
 # Storage (decisions D6, D24, D34): SQLite and Postgres only. The default features would add the MySQL driver, whose `rsa` dependency has an unfixed advisory (D21).
 # Postgres TLS uses rustls with the ring provider and the platform CA store (no native-tls, no aws-lc, no webpki-roots whose license is not on the allow list).
 sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio", "sqlite", "postgres", "tls-rustls-ring-native-roots", "macros", "migrate"] }
+# Unicode property lookups (Default_Ignorable_Code_Point, general category) for the shared sanitizer. Already in the tree via sqlx/idna; Unicode-3.0 license.
+icu_properties = "2.4.0"
 # Structured logging (architecture.md Cross-cutting).
 tracing = "0.1"
 # Log output for the binary.

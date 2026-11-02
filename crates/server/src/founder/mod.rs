@@ -145,7 +145,7 @@ fn announce(out: &mut impl Write, token: &SetupToken) -> io::Result<()> {
     writeln!(out)?;
     writeln!(
         out,
-        "=== russh-bbs FIRST-RUN SETUP TOKEN (shown once; not logged) ==="
+        "=== russh-bbs FIRST-RUN SETUP TOKEN (printed to the console only) ==="
     )?;
     writeln!(
         out,
@@ -158,6 +158,10 @@ fn announce(out: &mut impl Write, token: &SetupToken) -> io::Result<()> {
     writeln!(
         out,
         "Anyone who can read this console or its logs can claim the board."
+    )?;
+    writeln!(
+        out,
+        "It is not written through the logger, but container logs keep console output."
     )?;
     writeln!(
         out,
