@@ -5,9 +5,11 @@
 //! `window-change`. ratatui therefore never asks the host's own tty for its size, and a session
 //! cannot affect another or the server's console.
 //!
-//! **Output safety.** The only text drawn here is fixed UI chrome. Nothing from the client is
-//! rendered, not even the SSH username. Any later screen that shows user-supplied text must
-//! pass it through `russh_bbs_core::sanitize` first.
+//! **What is drawn.** The waiting room (`russh_bbs_core::waiting_room`, M1-C): the core's
+//! [`WaitingRoom`] decides the page and its contents, `crate::waiting_room` draws them.
+//!
+//! **Output safety.** Every string is fixed UI chrome or has passed the core sanitizer (the
+//! sysop's banner and rules, and what the visitor typed). The SSH username is never rendered.
 
 use std::io::{self, Write};
 use std::sync::{Arc, Mutex, PoisonError};
@@ -16,20 +18,12 @@ use ratatui::backend::CrosstermBackend;
 use ratatui::crossterm::cursor::{Hide, Show};
 use ratatui::crossterm::queue;
 use ratatui::crossterm::terminal::{Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen};
-use ratatui::layout::{Alignment, Constraint, Layout, Rect};
-use ratatui::style::{Modifier, Style};
-use ratatui::text::Line;
-use ratatui::widgets::{Block, Borders, Paragraph};
-use ratatui::{Frame, Terminal, TerminalOptions, Viewport};
+use ratatui::layout::Rect;
+use ratatui::{Terminal, TerminalOptions, Viewport};
+use russh_bbs_core::waiting_room::{RoomEffect, RoomInput, WaitingRoom};
 
-use super::terminal::PtySize;
-
-/// The placeholder waiting-room text. Fixed chrome: it names no member, board or statistic.
-/// The real waiting room is M1-C.
-const BANNER: &str = "russh-bbs";
-const SUBTITLE: &str = "Waiting room (placeholder)";
-const NOTICE: &str = "This key is not recognised as a member.";
-const HINT: &str = "Press q to disconnect.";
+use super::terminal::{Key, PtySize};
+use crate::waiting_room::render;
 
 /// Bytes the backend has written and the handler has not yet sent. The backend owns one handle
 /// and the screen keeps another to drain it, because ratatui does not expose its writer.
@@ -57,19 +51,46 @@ impl Write for OutputBuffer {
     }
 }
 
+/// What a batch of keypresses did.
+#[derive(Debug)]
+pub(super) struct ScreenUpdate {
+    /// Bytes to send to the client (the redraw).
+    pub(super) bytes: Vec<u8>,
+    /// Whether the session should end after sending them.
+    pub(super) disconnect: bool,
+}
+
 /// One session's screen.
 pub(super) struct Screen {
     terminal: Terminal<CrosstermBackend<OutputBuffer>>,
     output: OutputBuffer,
+    room: WaitingRoom,
 }
 
 impl Screen {
-    /// Create a screen of `size`. Nothing is drawn until [`Screen::enter`].
-    pub(super) fn new(size: PtySize) -> io::Result<Self> {
+    /// Create a screen of `size` showing `room`. Nothing is drawn until [`Screen::enter`].
+    pub(super) fn new(size: PtySize, room: WaitingRoom) -> io::Result<Self> {
         let output = OutputBuffer::default();
         Ok(Self {
             terminal: new_terminal(&output, size)?,
             output,
+            room,
+        })
+    }
+
+    /// Feed keypresses to the room and redraw once. Stops at the first key that ends the
+    /// session; keys after it are ignored.
+    pub(super) fn keys(&mut self, keys: &[Key]) -> io::Result<ScreenUpdate> {
+        let mut disconnect = false;
+        for input in keys.iter().copied().filter_map(room_input) {
+            if self.room.input(input) == RoomEffect::Disconnect {
+                disconnect = true;
+                break;
+            }
+        }
+        Ok(ScreenUpdate {
+            bytes: self.draw()?,
+            disconnect,
         })
     }
 
@@ -99,7 +120,8 @@ impl Screen {
     }
 
     fn draw(&mut self) -> io::Result<Vec<u8>> {
-        self.terminal.draw(render_waiting_room)?;
+        let view = self.room.view();
+        self.terminal.draw(|frame| render(frame, &view))?;
         Ok(self.take_output())
     }
 
@@ -122,30 +144,16 @@ fn rect(size: PtySize) -> Rect {
     Rect::new(0, 0, size.cols(), size.rows())
 }
 
-/// Draw the placeholder: a bordered box centered in the window.
-fn render_waiting_room(frame: &mut Frame<'_>) {
-    let area = frame.area();
-    let lines = vec![
-        Line::styled(BANNER, Style::new().add_modifier(Modifier::BOLD)),
-        Line::raw(SUBTITLE),
-        Line::raw(""),
-        Line::raw(NOTICE),
-        Line::raw(HINT),
-    ];
-    // The block is 4 border/padding rows taller than the text, clamped to the window.
-    let height = u16::try_from(lines.len())
-        .unwrap_or(u16::MAX)
-        .saturating_add(2);
-    let [_, middle, _] = Layout::vertical([
-        Constraint::Fill(1),
-        Constraint::Length(height.min(area.height)),
-        Constraint::Fill(1),
-    ])
-    .areas(area);
-    let paragraph = Paragraph::new(lines)
-        .alignment(Alignment::Center)
-        .block(Block::default().borders(Borders::ALL));
-    frame.render_widget(paragraph, middle);
+/// Translate a keypress for the room. Keys the room has no use for are dropped.
+fn room_input(key: Key) -> Option<RoomInput> {
+    match key {
+        Key::Char(c) => Some(RoomInput::Char(c)),
+        Key::Enter => Some(RoomInput::Enter),
+        Key::Backspace => Some(RoomInput::Backspace),
+        Key::Escape => Some(RoomInput::Escape),
+        Key::Ctrl('c' | 'd') => Some(RoomInput::Quit),
+        Key::Ctrl(_) | Key::Other => None,
+    }
 }
 
 #[cfg(test)]

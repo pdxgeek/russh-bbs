@@ -1,11 +1,15 @@
 //! Connection and authentication limits.
 //!
-//! These keep a stranger from holding connections open forever. They are per connection or
-//! global. **Per-IP and per-key rate limits are M1-C**: they plug in at the admission point in
-//! `server::accept_loop` (before a handler exists) and in `ClientHandler::auth_publickey`
-//! (per key), both marked in the code.
+//! These keep a stranger from holding connections open forever or hammering the door. They are
+//! per connection, global, per network (checked at accept, before a handler exists) or per key
+//! (checked at the top of `ClientHandler::auth_publickey`). The rate policy itself lives in
+//! `russh_bbs_core::waiting_room`; the defaults are decision D37.
 
 use std::time::Duration;
+
+use russh_bbs_core::waiting_room::{DEFAULT_MAX_SUBMISSIONS, RatePolicy};
+
+use crate::waiting_room::{DEFAULT_IP_RATE, DEFAULT_KEY_RATE, DEFAULT_MAX_TRACKED};
 
 /// Timeouts and caps for the SSH front end.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -23,6 +27,16 @@ pub struct Limits {
     pub keepalive_interval: Duration,
     /// Concurrent connections, authenticated or not. Excess connections are dropped on accept.
     pub max_connections: usize,
+    /// New connections per network (an IPv4 address or an IPv6 /64). Excess are dropped on
+    /// accept, before any SSH work is done.
+    pub ip_rate: RatePolicy,
+    /// Authentication attempts per key. Excess are rejected without a membership lookup.
+    pub key_rate: RatePolicy,
+    /// Distinct networks and keys each limiter remembers; beyond it the oldest are evicted, so
+    /// a flood of distinct sources cannot grow memory without bound.
+    pub max_tracked_sources: usize,
+    /// Waiting-room form submissions one session may make before it is disconnected.
+    pub max_form_submissions: u32,
 }
 
 impl Default for Limits {
@@ -34,6 +48,10 @@ impl Default for Limits {
             idle_timeout: Duration::from_secs(600),
             keepalive_interval: Duration::from_secs(30),
             max_connections: 256,
+            ip_rate: DEFAULT_IP_RATE,
+            key_rate: DEFAULT_KEY_RATE,
+            max_tracked_sources: DEFAULT_MAX_TRACKED,
+            max_form_submissions: DEFAULT_MAX_SUBMISSIONS,
         }
     }
 }

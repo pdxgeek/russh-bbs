@@ -50,8 +50,8 @@ Rules never live in a front end. A rule that exists in both the TUI and GraphQL 
 ## Front ends
 
 - **SSH TUI:** `russh` server, public-key auth, restricted session for unknown keys. `ratatui` rendering on the channel PTY with resize handling.
-  - **Implemented (M1-A, `russh-bbs-server::ssh`):** persistent Ed25519 host key, public-key-only auth, our own accept loop (connection cap, auth deadline), one PTY shell per connection, `ratatui` over an in-memory backend flushed to the channel (D19), resize, and the lockdown in the threat model. The access rule lives in `russh-bbs-core::access` (`decide_access`: unknown key => `Restricted`); the server only calls it. Today every key is restricted and sees a placeholder screen.
-  - **Planned:** the real waiting room (M1-C), a member store behind `MemberDirectory` (M1-B), per-IP and per-key limits (M1-C), SFTP (M4), timer-driven screen updates.
+  - **Implemented (M1-A, `russh-bbs-server::ssh`):** persistent Ed25519 host key, public-key-only auth, our own accept loop (connection cap, auth deadline), one PTY shell per connection, `ratatui` over an in-memory backend flushed to the channel (D19), resize, and the lockdown in the threat model. The access rule lives in `russh-bbs-core::access` (`decide_access`: unknown key => `Restricted`); the server only calls it. The server is started with a `MemberDirectory`; the binary passes the SQLite store (M1-B), so a key bound to an active account is `Member`. Both access levels still see the same placeholder screen until M1-C.
+  - **Planned:** the real waiting room (M1-C), per-IP and per-key limits (M1-C), SFTP (M4), timer-driven screen updates.
 - **Telnet (optional, off by default, M3):** separate listener in `crates/server/src/telnet`, option negotiation via a crate, drives the same `Screen` abstraction as SSH. Adds the `UNENCRYPTED` marker to chrome. See D27.
 - **SFTP:** virtual filesystem mapped to file areas by ID, never raw paths.
 - **GraphQL (M5):** `async-graphql` on `axum`, dataloaders for nested fields.
@@ -59,6 +59,7 @@ Rules never live in a front end. A rule that exists in both the TUI and GraphQL 
 ## Storage
 
 - Datasource chosen in config (D6, D24): SQLite in WAL mode (default) or Postgres. The Postgres backend is also what runs against PGlite in development and CI. No MySQL. Each backend has its own forward-only migrations and passes the same behavior test suite.
+  - **Implemented (M1-B, `russh-bbs-store`):** `SqliteStore` over `sqlx` (D34, D35, D36): `accounts`, `account_keys`, `settings`; core traits in `russh-bbs-core::store` (`AccountStore`, `SettingsStore`); `MemberDirectory` implemented for the store. Opened at start-up with `--db` / `RUSSH_BBS_DB`. Planned: boards, posts, mail, files and invites in their milestones.
 - File blobs behind one `BlobStore` trait with object-store semantics (D30), addressed by BLAKE3 hash; metadata in the database. Backends: local directory (default) and S3-compatible, both through `object_store`, both behaving identically, including quarantine as a prefix plus a database flag. Managed Postgres such as RDS is just the Postgres backend with TLS (D31).
 - Backups with a tested restore procedure (M5).
 

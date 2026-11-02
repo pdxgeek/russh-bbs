@@ -58,6 +58,12 @@ pub enum Key {
     Char(char),
     /// Control plus a letter, lowercase (`Ctrl-C` is `Ctrl('c')`).
     Ctrl(char),
+    /// Return (CR or LF).
+    Enter,
+    /// Backspace (BS or DEL).
+    Backspace,
+    /// A lone Escape byte: the last byte of a chunk, not the start of a sequence.
+    Escape,
     /// Anything else: escape sequences, arrows, non-ASCII bytes. Consumed and ignored.
     Other,
 }
@@ -82,10 +88,15 @@ pub fn parse_keys(bytes: &[u8]) -> Vec<Key> {
     while let Some((&first, tail)) = rest.split_first() {
         rest = tail;
         match first {
+            // ESC with nothing after it in this chunk is the Escape key. A terminal sends an
+            // arrow or function key as one chunk, so a sequence is never mistaken for it.
+            0x1b if rest.is_empty() => keys.push(Key::Escape),
             0x1b => {
                 rest = skip_escape(rest);
                 keys.push(Key::Other);
             }
+            b'\r' | b'\n' => keys.push(Key::Enter),
+            0x08 | 0x7f => keys.push(Key::Backspace),
             0x01..=0x1a => keys.push(Key::Ctrl(char::from(first + 0x60))),
             0x20..=0x7e => keys.push(Key::Char(char::from(first))),
             _ => keys.push(Key::Other),

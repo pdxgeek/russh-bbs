@@ -1,0 +1,2 @@
+# Migration checksums hash raw bytes; never let a checkout change line endings.
+*.sql text eol=lf

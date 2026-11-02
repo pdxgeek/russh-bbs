@@ -52,7 +52,7 @@ fn arrow_keys_are_not_read_as_letters() {
 
 #[test]
 fn a_truncated_escape_sequence_is_dropped_without_panicking() {
-    assert_eq!(parse_keys(b"\x1b"), vec![Key::Other]);
+    assert_eq!(parse_keys(b"\x1b"), vec![Key::Escape]);
     assert_eq!(parse_keys(b"\x1b[12"), vec![Key::Other]);
 }
 
@@ -66,4 +66,16 @@ fn arbitrary_bytes_never_panic() {
     for first in 0..=255_u8 {
         let _ = parse_keys(&[first, 0x1b, first, b'[', first]);
     }
+}
+
+#[test]
+fn enter_backspace_and_escape_are_distinct_keys() {
+    assert_eq!(parse_keys(b"\r"), vec![Key::Enter]);
+    assert_eq!(parse_keys(b"\n"), vec![Key::Enter]);
+    assert_eq!(parse_keys(&[0x7f]), vec![Key::Backspace]);
+    assert_eq!(parse_keys(&[0x08]), vec![Key::Backspace]);
+    assert_eq!(
+        parse_keys(b"ab\x1b"),
+        vec![Key::Char('a'), Key::Char('b'), Key::Escape]
+    );
 }

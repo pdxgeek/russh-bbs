@@ -1,10 +1,9 @@
 //! The SSH front end: a `russh` server with a persistent host key, public-key authentication,
 //! and a locked-down PTY session.
 //!
-//! In this slice no member store exists, so every authenticated key is
-//! [`Access::Restricted`](russh_bbs_core::access::Access::Restricted) and sees only a
-//! placeholder waiting-room screen. Rules (who is restricted) live in `russh-bbs-core`; this
-//! module is transport and rendering only.
+//! Every authenticated key gets a restricted session that shows the waiting room (M1-C); the
+//! member experience arrives in later slices. Rules (who is restricted, which screens exist,
+//! rate limits) live in `russh-bbs-core`; this module is transport and rendering only.
 
 mod error;
 mod handler;
