@@ -18,6 +18,8 @@ mod audit_rows;
 mod directory;
 mod error;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
+mod profile_rows;
+#[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod rows;
 
 #[cfg(feature = "postgres")]

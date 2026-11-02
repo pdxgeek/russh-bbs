@@ -98,6 +98,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         4,
         "dc0b92309b186cd248415cffe0fe6c407afea360a22ed0525bcc652242ddaae8d39f41ac2235f05d8a1cb832214f0f9d",
     ),
+    (
+        5,
+        "9ecd872b24dcef690f2a366d025b4566df941aa81d8e816b99e8f285cee5c39ffb8dffbdce35b432a7f7213de73f4c8d",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {
@@ -157,6 +161,7 @@ async fn a_fresh_database_gets_every_migration() {
             "group_closure",
             "group_member",
             "member_group",
+            "profiles",
             "role",
             "role_permission",
             "settings",
@@ -443,11 +448,11 @@ async fn a_database_made_before_the_restructure_still_opens_and_keeps_its_data()
     pool.close().await;
 
     // The new code opens it: no VersionMismatch, the two landed migrations are not re-applied
-    // (same install times), the M2-B and M2-C migrations are applied on top, data intact.
+    // (same install times), the later migrations (M2-B, M2-C, M2-F) are applied on top, data intact.
     let store = SqliteStore::open(&path).await.unwrap();
     let after = recorded(store.pool().clone()).await;
     assert_eq!(after[..2], before[..]);
-    assert_eq!(after.len(), 4);
+    assert_eq!(after.len(), 5);
     // The M1 sysop (legacy role column) is backfilled with a `sysop` grant (M2-B).
     let sysops: Vec<String> = sqlx::query_scalar(
         "SELECT a.username FROM access_grant g JOIN accounts a ON a.id = g.account_id \

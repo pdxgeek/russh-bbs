@@ -6,6 +6,7 @@
 mod access;
 mod audit;
 mod founder;
+mod profiles;
 mod terminal_settings;
 
 #[cfg(test)]

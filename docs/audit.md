@@ -46,6 +46,7 @@ sysop screen over it is M5; the board has no audit screen yet.
 | `change_groups` delete | `group.deleted` | caller | the group | `name <name>` |
 | `add_grant` | `grant.added` | caller | the subject (account or group) | `role <name>` or `permission <name>`; the grant's resource, if scoped |
 | `set_terminal_settings` | `setting.changed` | the account | the account | `terminal settings` |
+| `save_profile` by staff (M2-F) | `profile.edited` | the editor (`members.edit`) | the edited account | `fields <names>`: field names only, never values. The owner's own edits write no row |
 
 A write that changed nothing (adding a member already in the group, removing one who is not, a
 grant already held, a refused change) writes no row.

@@ -15,6 +15,7 @@ use super::{format_utc, tier_name};
 use crate::access::{Permission, PermissionCheck, Slug, Snapshot};
 use crate::icons::Tier;
 use crate::menu::{Action, MenuKey, MenuOutcome, MenuPage, MenuSession, main_tree};
+use crate::profiles::{MembersScreen, Request, Response, ScreenKey, ScreenView, Step};
 use crate::sanitize::{SingleLine, USERNAME_MAX_CHARS, Username};
 use crate::store::UnixSeconds;
 use crate::waiting_room::{FieldView, MenuItemView, Notice, NoticeKind, View};
@@ -53,6 +54,8 @@ enum Page {
     Login,
     GlyphTest(GlyphTest),
     Home,
+    /// The members list, a profile or the profile form (M2-F).
+    Members(Box<MembersScreen>),
     Settings,
     EditWidth(String),
     EditHeight(String),
@@ -153,6 +156,17 @@ impl MemberFlow {
             });
             return MemberEffect::Stay;
         }
+        if let Page::Members(screen) = &self.page
+            && !screen.still_permitted(&self.access)
+        {
+            // Same rule as the settings page: the permission went away since the screen opened.
+            self.page = Page::Home;
+            self.notice = Some(Notice {
+                kind: NoticeKind::Error,
+                text: strings::MEMBERS_NOT_PERMITTED,
+            });
+            return MemberEffect::Stay;
+        }
         match &mut self.page {
             Page::Login => {
                 self.page = if self.settings.needs_glyph_test() {
@@ -164,6 +178,7 @@ impl MemberFlow {
             }
             Page::GlyphTest(_) => self.glyph_input(input),
             Page::Home => self.home_input(input),
+            Page::Members(_) => self.members_input(input),
             Page::Settings => self.settings_input(input),
             Page::EditWidth(_) | Page::EditHeight(_) => self.edit_input(input),
             Page::Logoff => MemberEffect::Disconnect,
@@ -177,7 +192,7 @@ impl MemberFlow {
         match &self.page {
             Page::Settings | Page::EditWidth(_) | Page::EditHeight(_) => true,
             Page::GlyphTest(test) => !test.is_first_run(),
-            Page::Login | Page::Home | Page::Logoff => false,
+            Page::Login | Page::Home | Page::Members(_) | Page::Logoff => false,
         }
     }
 
@@ -232,6 +247,83 @@ impl MemberFlow {
                 MemberEffect::Stay
             }
             MenuOutcome::Action(Action::LogOff) => self.log_off(),
+            MenuOutcome::Action(
+                action @ (Action::MemberList | Action::OwnProfile | Action::EditOwnProfile),
+            ) => {
+                if let Some(screen) = self.open_members(action) {
+                    self.page = Page::Members(Box::new(screen));
+                }
+                MemberEffect::Stay
+            }
+        }
+    }
+
+    /// The members screen an action opens. `None` if the session has no account to be
+    /// "own" (it cannot happen after login, and then nothing opens).
+    fn open_members(&self, action: Action) -> Option<MembersScreen> {
+        let own = self.access.account();
+        match action {
+            Action::MemberList => Some(MembersScreen::list(own)),
+            Action::OwnProfile => own.map(MembersScreen::own_profile),
+            Action::EditOwnProfile => own.map(MembersScreen::edit_own),
+            Action::TerminalSettings | Action::LogOff => None,
+        }
+    }
+
+    fn members_input(&mut self, input: MemberInput) -> MemberEffect {
+        let key = match input {
+            MemberInput::Char(c) => ScreenKey::Char(c),
+            MemberInput::Enter => ScreenKey::Enter,
+            MemberInput::Backspace => ScreenKey::Backspace,
+            MemberInput::Escape => ScreenKey::Escape,
+            MemberInput::Quit => return MemberEffect::Stay,
+        };
+        let Page::Members(screen) = &mut self.page else {
+            return MemberEffect::Stay;
+        };
+        let step = screen.press(&self.access, key);
+        self.after_members(step);
+        MemberEffect::Stay
+    }
+
+    fn after_members(&mut self, step: Step) {
+        match step {
+            Step::Stay => {}
+            Step::Leave => self.page = Page::Home,
+            Step::Denied => {
+                self.page = Page::Home;
+                self.notice = Some(Notice {
+                    kind: NoticeKind::Error,
+                    text: strings::MEMBERS_NOT_PERMITTED,
+                });
+            }
+        }
+    }
+
+    /// The members request the screen is waiting on, once. The front end runs it with
+    /// `profiles::execute` and gives the answer to [`MemberFlow::deliver_members`].
+    pub fn take_members_request(&mut self) -> Option<Request> {
+        match &mut self.page {
+            Page::Members(screen) => screen.take_request(),
+            _ => None,
+        }
+    }
+
+    /// Hand the answer of a members request to the screen.
+    pub fn deliver_members(&mut self, response: Response) {
+        let step = match &mut self.page {
+            Page::Members(screen) => screen.deliver(response),
+            _ => return,
+        };
+        self.after_members(step);
+    }
+
+    /// The members screen as a layout draws it, while one is open. `None` on every other page.
+    #[must_use]
+    pub fn members_view(&self) -> Option<ScreenView> {
+        match &self.page {
+            Page::Members(screen) => Some(screen.view(&self.access)),
+            _ => None,
         }
     }
 
@@ -360,6 +452,7 @@ impl MemberFlow {
             Page::Login => self.login_view(&mut view),
             Page::GlyphTest(test) => glyph_view(&mut view, *test),
             Page::Home => self.home_view(&mut view),
+            Page::Members(_) => {}
             Page::Settings => self.settings_view(&mut view),
             Page::EditWidth(typed) => edit_view(&mut view, strings::FIELD_WIDTH, typed),
             Page::EditHeight(typed) => edit_view(&mut view, strings::FIELD_HEIGHT, typed),

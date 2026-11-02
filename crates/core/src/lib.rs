@@ -6,6 +6,7 @@ pub mod audit;
 pub mod founder;
 pub mod icons;
 pub mod menu;
+pub mod profiles;
 pub mod sanitize;
 pub mod store;
 pub mod terminal_settings;

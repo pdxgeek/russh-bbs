@@ -42,6 +42,8 @@ const WIRED: &[Permission] = &[
     Permission::AccountEditSettings,
     Permission::MembersView,
     Permission::MembersApprove,
+    Permission::AccountEditProfile,
+    Permission::MembersEdit,
     Permission::ForumList,
     Permission::MailRead,
     Permission::FilesList,
@@ -52,12 +54,10 @@ const WIRED: &[Permission] = &[
 const NOT_YET_WIRED: &[Permission] = &[
     Permission::InviteRedeem,
     Permission::MembershipApply,
-    Permission::AccountEditProfile,
     Permission::AccountSetPassword,
     Permission::MembersDeny,
     Permission::MembersVouch,
     Permission::MembersSuspend,
-    Permission::MembersEdit,
     Permission::MembersDeleteData,
     Permission::InvitesCreate,
     Permission::InvitesRevoke,
@@ -212,6 +212,27 @@ impl Rig {
         }
     }
 
+    /// Another active member, by name, for the profile paths.
+    async fn other_member(&self, name: &str) -> russh_bbs_core::store::AccountId {
+        self.store
+            .create_account(russh_bbs_core::store::NewAccount {
+                username: russh_bbs_core::sanitize::sanitize_username(name).unwrap(),
+                role: russh_bbs_core::access::Slug::MEMBER,
+                state: russh_bbs_core::store::AccountState::Active,
+            })
+            .await
+            .unwrap()
+            .id
+    }
+
+    async fn profile_of(
+        &self,
+        id: russh_bbs_core::store::AccountId,
+    ) -> russh_bbs_core::profiles::Profile {
+        use russh_bbs_core::profiles::ProfileStore;
+        self.store.member(id).await.unwrap().unwrap().profile
+    }
+
     async fn stored(&self, key: &PrivateKey) -> TerminalSettings {
         let fp =
             Fingerprint::parse(&key.public_key().fingerprint(HashAlg::Sha256).to_string()).unwrap();
@@ -318,12 +339,7 @@ async fn menu_paths_follow_their_permission_on_the_next_action() {
             "[a] Files",
             "File areas are not built yet.",
         ),
-        (
-            Permission::MembersView,
-            'u',
-            "[u] Members",
-            "The members list is not built yet.",
-        ),
+        (Permission::MembersView, 'u', "[u] Members", "Member list"),
         (
             Permission::MembersApprove,
             'o',
@@ -438,5 +454,125 @@ async fn the_waiting_room_needs_waiting_view_and_refuses_the_shell_without_it() 
     let session = login(rig.addr(), "anyone", &stranger).await;
     let mut channel = common::open_shell(&session, 80, 24).await;
     assert!(words(&mut channel).await.contains("Waiting room"));
+    rig.server.shutdown().await;
+}
+
+#[tokio::test]
+async fn editing_your_own_profile_needs_account_edit_profile_and_a_removal_saves_nothing() {
+    use russh_bbs_core::profiles::Field;
+    let rig = Rig::start().await;
+    let key = new_client_key();
+    let (_session, mut channel) = founder_at_menu(&rig, &key).await;
+    let founder_id = {
+        let fp =
+            Fingerprint::parse(&key.public_key().fingerprint(HashAlg::Sha256).to_string()).unwrap();
+        rig.store
+            .account_by_fingerprint(&fp)
+            .await
+            .unwrap()
+            .unwrap()
+            .id
+    };
+
+    // Held: the item is offered and a save is stored.
+    send(&mut channel, "u").await;
+    assert!(full(&mut channel).await.contains("[e] Edit my profile"));
+    send(&mut channel, "e").await;
+    assert!(full(&mut channel).await.contains("> Display name:"));
+    send(&mut channel, "Founder\r\r\r\r\r").await;
+    assert_eq!(
+        rig.profile_of(founder_id).await.get(Field::DisplayName),
+        "Founder"
+    );
+
+    // Taken away while the form is open: the next key closes it, says why and writes nothing.
+    // (Staff keep `members.edit`, which is about other people and does not stand in.)
+    send(&mut channel, "e").await;
+    assert!(full(&mut channel).await.contains("> Display name:"));
+    let taken = rig.revoke(Permission::AccountEditProfile).await;
+    let first = send(&mut channel, "!").await;
+    let screen = format!(
+        "{first} {} {}",
+        send(&mut channel, "\r\r\r\r\r").await,
+        full(&mut channel).await
+    );
+    assert!(
+        screen.contains("You are not allowed to do that."),
+        "{screen}"
+    );
+    assert_eq!(
+        rig.profile_of(founder_id).await.get(Field::DisplayName),
+        "Founder",
+        "nothing written"
+    );
+    // The item is gone and its hotkey does nothing.
+    assert!(!full(&mut channel).await.contains("Edit my profile"));
+    send(&mut channel, "e").await;
+    assert!(!full(&mut channel).await.contains("> Display name:"));
+
+    // Put back: it works again on the next action.
+    rig.restore(&taken, Permission::AccountEditProfile).await;
+    send(&mut channel, "x").await;
+    send(&mut channel, "e").await;
+    assert!(full(&mut channel).await.contains("> Display name:"));
+    rig.server.shutdown().await;
+}
+
+#[tokio::test]
+async fn editing_another_profile_needs_members_edit_and_a_removal_saves_nothing() {
+    use russh_bbs_core::profiles::Field;
+    let rig = Rig::start().await;
+    let bob = rig.other_member("bob").await;
+    let key = new_client_key();
+    let (_session, mut channel) = founder_at_menu(&rig, &key).await;
+
+    // Held: Bob (sorts first) offers the edit key and the form says whose profile it is.
+    send(&mut channel, "ul1").await;
+    let view = full(&mut channel).await;
+    assert!(
+        view.contains("Handle: bob") && view.contains("e: edit"),
+        "{view}"
+    );
+
+    // Taken away: the footer stops offering it on the very next action, and the key does nothing.
+    let taken = rig.revoke(Permission::MembersEdit).await;
+    send(&mut channel, "x").await;
+    assert!(!full(&mut channel).await.contains("e: edit"));
+    send(&mut channel, "e").await;
+    assert!(!full(&mut channel).await.contains("staff edit"));
+    assert_eq!(rig.profile_of(bob).await.get(Field::Location), "");
+
+    // Put back: the form opens; then it is taken away again while open, and the save is refused.
+    rig.restore(&taken, Permission::MembersEdit).await;
+    send(&mut channel, "x").await;
+    send(&mut channel, "e").await;
+    assert!(
+        full(&mut channel)
+            .await
+            .contains("Editing the profile of bob (staff edit)")
+    );
+    let taken = rig.revoke(Permission::MembersEdit).await;
+    let first = send(&mut channel, "!").await;
+    let screen = format!(
+        "{first} {} {}",
+        send(&mut channel, "\r\r\r\r\r").await,
+        full(&mut channel).await
+    );
+    assert!(
+        screen.contains("You are not allowed to do that."),
+        "{screen}"
+    );
+    assert_eq!(
+        rig.profile_of(bob).await.get(Field::DisplayName),
+        "",
+        "nothing written"
+    );
+
+    // Put back once more: a staff edit is stored.
+    rig.restore(&taken, Permission::MembersEdit).await;
+    send(&mut channel, "x").await;
+    send(&mut channel, "ul1e").await;
+    send(&mut channel, "Bobby\r\r\r\r\r").await;
+    assert_eq!(rig.profile_of(bob).await.get(Field::DisplayName), "Bobby");
     rig.server.shutdown().await;
 }

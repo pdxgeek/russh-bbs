@@ -58,9 +58,55 @@ title = "Sysop tools"
 [menu.sysop.item]
 queue = "Approval queue"
 
+[menu.members]
+title = "Members"
+
+[menu.members.item]
+list = "Member list"
+profile = "My profile"
+edit = "Edit my profile"
+
+[members.list]
+title = "Members"
+search = "Handles starting with: {prefix}"
+search_none = "Showing everyone. Press / to search by the start of a handle."
+empty = "There are no members to show."
+no_match = "No member's handle starts with that."
+page = "Page {page}"
+footer = "1-9: open   n: next   p: previous   /: search   c: clear   Esc: back"
+footer_search = "Type the start of a handle   Enter: search   Esc: cancel"
+
+[members.view]
+title = "Profile"
+footer = "Esc: back"
+footer_edit = "e: edit   Esc: back"
+
+[members.edit]
+title = "Edit your profile"
+title_other = "Editing the profile of {handle} (staff edit)"
+readable = "The sysop and every member can read this profile."
+plain_text = "Plain text only. A website is never opened or made a link."
+footer = "Enter: next field, then save   Backspace: erase   Esc: cancel"
+
+[members.label]
+handle = "Handle"
+display_name = "Display name"
+pronouns = "Pronouns"
+location = "Location"
+about = "About"
+website = "Website"
+
+[members.value]
+not_set = "(not set)"
+
+[members.notice]
+saved = "Profile saved."
+unchanged = "Nothing changed, so nothing was saved."
+not_found = "That member is not available."
+failed = "That did not work. Nothing was changed. Try again."
+
 [placeholder]
 forums = "Forums are not built yet."
 mail = "Mail is not built yet."
 files = "File areas are not built yet."
-members = "The members list is not built yet."
 queue = "The approval queue is not built yet."

@@ -59,7 +59,34 @@ pub(crate) fn render(frame: &mut Frame<'_>, screen: &MenuScreen<'_>) {
     }
 }
 
-fn styles(look: Look) -> (Style, Style, Style, Style) {
+/// Everything the layout needs to draw a content screen (a list, a profile, a form): lines the
+/// caller built from sanitized content, in the same box as a menu, with the same reserved
+/// status row underneath. The lines are given a rectangle that excludes the status row.
+pub(crate) struct ContentScreen<'a> {
+    pub(crate) strings: &'a StringTable,
+    pub(crate) lines: Vec<Line<'static>>,
+    pub(crate) look: Look,
+    pub(crate) tier: Tier,
+    pub(crate) markers: &'a [SecurityMarker],
+}
+
+/// Draw a content screen: content box above, status row below.
+pub(crate) fn render_content(frame: &mut Frame<'_>, screen: ContentScreen<'_>) {
+    let (content, status) = chrome::split_status(frame.area());
+    settings::boxed(
+        frame,
+        content,
+        screen.strings.text(keys::TITLE),
+        screen.lines,
+        screen.look,
+    );
+    if let Some(row) = status {
+        chrome::render_status(frame, row, screen.markers, screen.tier, screen.strings);
+    }
+}
+
+/// The styles screens built on this layout share: bold, dim, heading and hotkey.
+pub(crate) fn styles(look: Look) -> (Style, Style, Style, Style) {
     let bold = Style::new().add_modifier(Modifier::BOLD);
     let dim = Style::new().add_modifier(Modifier::DIM);
     (
@@ -127,7 +154,7 @@ fn item_line(strings: &StringTable, item: &PageItem, key: Style, dim: Style) -> 
 }
 
 /// The word, not only a color: the message must read correctly on a mono terminal.
-fn notice_line(
+pub(crate) fn notice_line(
     strings: &StringTable,
     kind: NoticeKind,
     text: &str,

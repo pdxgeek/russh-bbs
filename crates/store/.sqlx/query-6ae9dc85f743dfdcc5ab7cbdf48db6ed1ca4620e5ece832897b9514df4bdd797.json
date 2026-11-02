@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO profiles (account_id, display_name, pronouns, location, about, website)\n             VALUES (?, ?, ?, ?, ?, ?)\n             ON CONFLICT (account_id) DO UPDATE SET\n                 display_name = excluded.display_name,\n                 pronouns     = excluded.pronouns,\n                 location     = excluded.location,\n                 about        = excluded.about,\n                 website      = excluded.website,\n                 updated_at   = unixepoch()",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": []
+  },
+  "hash": "6ae9dc85f743dfdcc5ab7cbdf48db6ed1ca4620e5ece832897b9514df4bdd797"
+}
