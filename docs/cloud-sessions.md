@@ -65,6 +65,8 @@ Report: what you built, what you tested (and how), what you did not verify,
 
 ## First batch
 
+This was the hand-run sequence. When an orchestrator runs the build, [orchestration.md](orchestration.md) is the current sequence and this list is history.
+
 1. **M0-A** alone. It creates the workspace the others need.
 2. After M0-A merges, run **M0-B**, **M0-C**, **M1-A**, and **M1-B** in parallel. Their owned paths do not overlap.
 3. Then **M1-C**, **M1-D**, and **M1-E**.
