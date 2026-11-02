@@ -18,6 +18,11 @@ A slice with an unmet dependency is not claimable.
 | M1-F Container image, compose example, GHCR publish | `Dockerfile`, `compose.yaml`, the publish workflow in `.github/`, `docs/deploy.md` | M1-A, M1-B, M1-D | Open | |
 | M1-G Postgres backend and migrations | `crates/store/src/postgres`, the Postgres CI job, and the restructure of `crates/store` into per-backend modules | M1-B | Open | Note: move the SQLite code to `crates/store/src/sqlite` with migrations under `crates/store/migrations/sqlite/`; add the `datasource` setting (sqlite path \| postgres URL); turn the store behavior tests into one suite generic over the core Store traits and run it against both backends (PGlite via pglite-socket, or a Postgres service in CI). |
 
+| FIX-M0-1 Security markers unforgeable, reserved usernames, sanitizer second pass | `crates/core/src/sanitize`, `crates/core/src/icons`, AGENTS.md wording, sanitizer and icon docs | M0-B, M0-C | In review | `fix/m0-markers`, [PR #18](https://github.com/pdxgeek/russh-bbs/pull/18) |
+| FIX-M0-F5 Emoji-capable Unicode glyphs (U+26A0, U+2709) vs D18 (QA M0 F5) | `crates/core/src/icons` | M0-C | Open | Needs a real-terminal check |
+| FIX-M0-F11 Stale status text in `docs/features.md` and PR text (QA M0 F11) | `docs/features.md` | none | Open | |
+| FIX-M0-F12 SHA-pin CI actions (QA M0 F12) | `.github/workflows/ci.yml` | M0-A | Open | Before the closed beta |
+
 Later milestones are not claimable until the owner adds their slices here.
 
 ## Cross-slice requests
@@ -36,3 +41,6 @@ Add a line here if you need a change in code another slice owns. Do not make it 
 | M1-H | M1-G | `datasource.kind = "postgres"` is parsed and validated (`url`, `tls_mode`, `tls_root_cert`, `iam_auth`) but refused at boot in `Loaded::ensure_backend_built` (`crates/server/src/config/mod.rs`). When the backend exists, delete the `Postgres` arm there, read `config.datasource` in `main.rs` to choose the store, and update `docs/config.md` and `docs/features.md`. | |
 | M1-H | M1-D | `main.rs` now builds everything from `Loaded` (`loaded.config`, `loaded.paths()`); add your start-up hook after the store opens, next to the `registration_mode_override` block. Do not re-read flags or env in your slice; add a key to `config/keys.rs`, the model, `docs/config.md` and `config.example.toml` (a test fails if any is missed). | |
 | M1-H | M1-F | The container needs no `RUSSH_BBS_CONFIG`: `/data/config.toml` is a default location. Set `RUSSH_BBS_HOST_KEY`, `RUSSH_BBS_DB` (or a config file) to paths under `/data`, and `RUSSH_BBS_LISTEN=0.0.0.0:2222`. An unknown `RUSSH_BBS_*` variable is a boot error, so only set names listed in `docs/config.md`. | |
+| FIX-M0-1 | M2 screen framework | Draw every `SecurityMarker` with `Rendered::to_terminal()` (or apply `chrome_style()` through the ratatui `Style`), in a chrome-only screen position (status line or fixed gutter) that sanitized content is never drawn into; never apply that style to content. On a screen that cannot guarantee the position, say "security markers unavailable". D39. No front end draws markers yet. | |
+| FIX-M0-1 | M1-C | FYI: `UsernameError::Reserved` is new, so `waiting_room::room::username_error` gained one arm and `strings::ERR_HANDLE_RESERVED` was added (the minimum the new variant forces). | |
+| FIX-M0-1 | M1-D | FYI: `sanitize_username` now rejects reserved names (`sysop`, `admin`, `root`, `system`, `staff`, `everyone`, `moderator`, `cosysop`, `waiting`, `member`, `trusted`, the marker labels) and their skeleton lookalikes. Pick a founder handle outside that list. `username_skeleton` is now private; use `Username::skeleton()`. | |
