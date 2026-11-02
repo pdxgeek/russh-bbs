@@ -211,3 +211,18 @@ pub(crate) fn closure_diff(old: &[(i64, i64)], graph: &GroupGraph) -> ClosureDif
         add: new.difference(&old).copied().collect(),
     }
 }
+
+/// The name of the group a `Delete` change removes, read before it is gone so its audit row can
+/// say which group it was. `None` for other changes or an unparseable stored name.
+pub(crate) fn deleted_group_name(
+    change: russh_bbs_core::access::GroupChange,
+    groups: &[GroupRow],
+) -> Option<Slug> {
+    let russh_bbs_core::access::GroupChange::Delete(group) = change else {
+        return None;
+    };
+    groups
+        .iter()
+        .find(|row| row.id == group.as_raw())
+        .and_then(|row| Slug::parse(&row.name).ok())
+}

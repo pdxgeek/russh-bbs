@@ -12,8 +12,8 @@ use sqlx::error::ErrorKind;
 
 use super::PostgresStore;
 use crate::access_rows::{
-    EdgeRow, GroupRow, RoleRow, SnapshotRow, closure_diff, graph_from_rows, roles_from_rows,
-    snapshot_from_rows, waiting_snapshot,
+    ClosureDiff, EdgeRow, GroupRow, RoleRow, SnapshotRow, closure_diff, deleted_group_name,
+    graph_from_rows, roles_from_rows, snapshot_from_rows, waiting_snapshot,
 };
 use crate::error::{backend, kind};
 
@@ -152,14 +152,7 @@ impl AccessStore for PostgresStore {
         let mut graph = graph_from_rows(&groups, &edges)?;
         graph.apply(change)?;
 
-        // Naming a deleted group in its audit row needs the name before it is gone.
-        let deleted_name = match change {
-            GroupChange::Delete(group) => groups
-                .iter()
-                .find(|row| row.id == group.as_raw())
-                .and_then(|row| Slug::parse(&row.name).ok()),
-            _ => None,
-        };
+        let deleted_name = deleted_group_name(change, &groups);
         // Adding a member that is already there, or removing one that is not, changes nothing
         // and writes no audit row.
         let mut changed = true;
@@ -207,28 +200,7 @@ impl AccessStore for PostgresStore {
             }
         }
 
-        let diff = closure_diff(&old, &graph);
-        for (group, account) in diff.remove {
-            sqlx::query!(
-                "DELETE FROM group_closure WHERE group_id = $1 AND account_id = $2",
-                group,
-                account,
-            )
-            .execute(&mut *tx)
-            .await
-            .map_err(backend)?;
-        }
-        for (group, account) in diff.add {
-            sqlx::query!(
-                "INSERT INTO group_closure (group_id, account_id) VALUES ($1, $2)
-                 ON CONFLICT DO NOTHING",
-                group,
-                account,
-            )
-            .execute(&mut *tx)
-            .await
-            .map_err(backend)?;
-        }
+        rewrite_closure(&mut tx, closure_diff(&old, &graph)).await?;
         if changed {
             self.audit_in(
                 &mut tx,
@@ -316,4 +288,33 @@ const fn split(child: Child) -> (Option<i64>, Option<i64>) {
         Child::Account(account) => (Some(account.as_raw()), None),
         Child::Group(group) => (None, Some(group.as_raw())),
     }
+}
+
+/// Rewrite the cached closure to match the new graph, in the change's own transaction.
+async fn rewrite_closure(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    diff: ClosureDiff,
+) -> Result<(), AccessError> {
+    for (group, account) in diff.remove {
+        sqlx::query!(
+            "DELETE FROM group_closure WHERE group_id = $1 AND account_id = $2",
+            group,
+            account,
+        )
+        .execute(&mut **tx)
+        .await
+        .map_err(backend)?;
+    }
+    for (group, account) in diff.add {
+        sqlx::query!(
+            "INSERT INTO group_closure (group_id, account_id) VALUES ($1, $2)
+                 ON CONFLICT DO NOTHING",
+            group,
+            account,
+        )
+        .execute(&mut **tx)
+        .await
+        .map_err(backend)?;
+    }
+    Ok(())
 }

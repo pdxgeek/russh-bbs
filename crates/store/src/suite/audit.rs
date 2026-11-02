@@ -168,14 +168,14 @@ pub(crate) async fn paging_filters_combine_and_time_bounds_are_since_inclusive_u
         .await,
         [300, 200]
     );
-    assert!(
+    assert_eq!(
         by(AuditQuery {
             actor: Some(two),
             action: Some(Action::GroupCreated),
             ..q()
         })
-        .await
-        .is_empty()
+        .await,
+        Vec::<i64>::new()
     );
 }
 
@@ -237,7 +237,7 @@ pub(crate) async fn update_and_delete_by_raw_sql_fail_and_leave_the_row<H: Harne
         "DELETE FROM audit_log",
         "DELETE FROM audit_log WHERE id > 0",
     ] {
-        let error = h.raw(sql).await.expect_err(sql);
+        let error = h.raw(sql).await.unwrap_err();
         assert!(error.contains("append-only"), "{sql}: {error}");
     }
     let rows = all(store).await;

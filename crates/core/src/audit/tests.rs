@@ -1,5 +1,5 @@
 //! Audit event shape, the read gate, and the sanitizing of detail text.
-#![allow(clippy::unwrap_used, clippy::panic)]
+#![allow(clippy::unwrap_used, clippy::panic, clippy::unused_async_trait_impl)]
 
 use std::collections::HashSet;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -23,7 +23,7 @@ fn action_names_are_unique_area_dot_verb_and_round_trip() {
     for &action in Action::ALL {
         let name = action.name();
         assert!(seen.insert(name), "{name} is used twice");
-        let (area, verb) = name.split_once('.').expect("area.verb");
+        let (area, verb) = name.split_once('.').unwrap();
         assert!(!area.is_empty() && !verb.is_empty(), "{name}");
         assert!(
             name.chars()
@@ -244,7 +244,7 @@ async fn reading_the_log_needs_audit_view() {
     );
 
     let with = holding(&[Permission::AuditView]);
-    assert!(view_log(&store, &with, &query).await.unwrap().is_empty());
+    assert_eq!(view_log(&store, &with, &query).await.unwrap(), []);
     assert_eq!(store.pages.load(Ordering::SeqCst), 1);
 }
 
