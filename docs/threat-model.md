@@ -38,7 +38,7 @@ Member identities and key fingerprints, the invite tree, message and mail conten
 | Outbound fetching | User-supplied URLs cannot reach private networks. |
 | Uploads | Files are quarantined and scanned before becoming visible. |
 | Honesty | Nothing is labeled private unless the server genuinely cannot read it. |
-| Access control | Every read, post, upload, moderation and admin action is checked in core against the account's role and the area's policy (D33); an area a role cannot see is not listed and not reachable by name; role changes are audited. |
+| Access control | Every read, post, upload, moderation and admin action is a named permission checked in core against the account's roles and the area's policy (D33); an area a role cannot see is not listed and not reachable by name; role changes are audited. |
 | Container | The image runs as a non-root user on an unprivileged port with no added capabilities. The founder setup token is printed to stdout, so anyone who can read the container logs during first run can claim sysop; the docs say so. The container boundary is a second layer, not the door sandbox. |
 
 ## What the MVP does not guarantee
