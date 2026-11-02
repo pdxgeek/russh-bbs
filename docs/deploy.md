@@ -141,14 +141,16 @@ docker run -d --name bbs -p 2222:2222 -v bbs-data:/data \
 
 Cutting a tag and publishing the package are the repository owner's actions; nothing in CI or the agent sessions does them. Until they are done, `ghcr.io/pdxgeek/russh-bbs` does not exist.
 
-1. **Prove the workflow first (optional, pushes nothing).** GitHub: Actions, "Publish image", "Run workflow" (a `workflow_dispatch` dry run builds amd64 and arm64 and never logs in or pushes). Expect the arm64 half to take a long time under QEMU.
+Publishing is manual: pushing a tag no longer starts any workflow (all workflows are `workflow_dispatch` only; see docs/orchestration.md). GitHub Actions minutes are billed for private repositories, and the arm64 half of the image build takes hours under QEMU until FIX-REL-1 lands.
+
+1. **Prove the workflow first (optional, pushes nothing).** GitHub: Actions, "Publish image", "Run workflow" on `main` (a dry run builds amd64 and arm64 and never logs in or pushes).
 2. **Cut the tag** from the commit on `main` you want to ship:
    ```bash
    git checkout main && git pull
    git tag -a v0.1.0 -m "russh-bbs 0.1.0"
    git push origin v0.1.0
    ```
-   (or create a release for the tag in the GitHub UI). The "Publish image" workflow runs on the tag and pushes `ghcr.io/pdxgeek/russh-bbs:0.1.0`, `:0.1` and `:latest` for both architectures.
+   (or create a release for the tag in the GitHub UI). Then start it by hand: Actions, "Publish image", "Run workflow", and pick the tag as the ref. Run on a tag, it pushes `ghcr.io/pdxgeek/russh-bbs:0.1.0`, `:0.1` and `:latest` for both architectures.
 3. **Make the package public.** A new GHCR package starts private. GitHub: your profile or organization, Packages, `russh-bbs`, Package settings, "Danger Zone", Change visibility, Public. Until then `docker pull` answers `denied` for everyone but you. If the package is not linked to the repository, connect it there too.
 4. **Check it from a clean machine, not logged in:** `docker pull ghcr.io/pdxgeek/russh-bbs:latest` and `docker buildx imagetools inspect ghcr.io/pdxgeek/russh-bbs:latest` (both `linux/amd64` and `linux/arm64` listed), then repeat the first-start walk above (empty volume, token in logs, waiting room, `claim@`, restart keeps the fingerprint, clean `docker stop`) and the Postgres run.
 5. Record the result in `docs/features.md` (container row) and mark QA M1 H2 closed.

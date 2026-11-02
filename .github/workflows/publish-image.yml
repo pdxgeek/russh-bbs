@@ -3,10 +3,9 @@ name: Publish image
 # Publishes the container image to GHCR on version tags only (D25, D46). Never on pull requests
 # or pushes to main. `workflow_dispatch` is a DRY RUN: it builds both architectures exactly as
 # a release would and pushes nothing (no registry login, `push` is false).
+# Manual only (owner, D51): no push, pull_request or tag triggers until the first production
+# release; CI runs locally. Start it from the Actions tab when wanted.
 on:
-  push:
-    tags:
-      - "v*"
   workflow_dispatch:
 
 # No permissions by default; the one job asks for exactly what it needs.
