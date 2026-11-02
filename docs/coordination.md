@@ -18,7 +18,7 @@ A slice with an unmet dependency is not claimable.
 | M1-F Container image, compose example, GHCR publish | `Dockerfile`, `compose.yaml`, the publish workflow in `.github/`, `docs/deploy.md` | M1-A, M1-B, M1-D | Open | |
 | M1-G Postgres backend and migrations | `crates/store/src/postgres`, the Postgres CI job, and the restructure of `crates/store` into per-backend modules | M1-B | Open | Note: move the SQLite code to `crates/store/src/sqlite` with migrations under `crates/store/migrations/sqlite/`; add the `datasource` setting (sqlite path \| postgres URL); turn the store behavior tests into one suite generic over the core Store traits and run it against both backends (PGlite via pglite-socket, or a Postgres service in CI). |
 
-| FIX-M0-1 Security markers unforgeable, reserved usernames, sanitizer second pass | `crates/core/src/sanitize`, `crates/core/src/icons`, AGENTS.md wording, sanitizer and icon docs | M0-B, M0-C | Claimed | `fix/m0-markers` |
+| FIX-M0-1 Security markers unforgeable, reserved usernames, sanitizer second pass | `crates/core/src/sanitize`, `crates/core/src/icons`, AGENTS.md wording, sanitizer and icon docs | M0-B, M0-C | In review | `fix/m0-markers`, [PR #18](https://github.com/pdxgeek/russh-bbs/pull/18) |
 | FIX-M0-F5 Emoji-capable Unicode glyphs (U+26A0, U+2709) vs D18 (QA M0 F5) | `crates/core/src/icons` | M0-C | Open | Needs a real-terminal check |
 | FIX-M0-F11 Stale status text in `docs/features.md` and PR text (QA M0 F11) | `docs/features.md` | none | Open | |
 | FIX-M0-F12 SHA-pin CI actions (QA M0 F12) | `.github/workflows/ci.yml` | M0-A | Open | Before the closed beta |
