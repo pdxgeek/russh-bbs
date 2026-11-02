@@ -26,6 +26,7 @@ A slice with an unmet dependency is not claimable.
 | FIX-M0-N3 Sanitizer: reserved-name check ignores separators (`sys_op`, `ad-min`), unfolded leet (`4dmin`, `syst3m`) and more staff words (`administrator`, `support`, `owner`, ...) (QA M0 re-check N3, low) | `crates/core/src/sanitize` | M0-B | In review | Best effort per D40; staff status must come from chrome, not names Branch `fix/m0-cleanup`, [PR #23](https://github.com/pdxgeek/russh-bbs/pull/23), D45. |
 | FIX-M0-N5 Threat-model wording: the Output safety invariant ("cannot spoof UI icons or security badges") is unqualified, and line 70 says "unforgeable even without color" (QA M0 re-check N5, low) | docs (`docs/threat-model.md`) | none | In review | Qualify with the per-tier limits already in lines 66-73; overlaps FIX-M0-N1 on line 70 Branch `fix/m0-cleanup`, [PR #23](https://github.com/pdxgeek/russh-bbs/pull/23), D45. |
 | FIX-M0-F12 SHA-pin CI actions (QA M0 F12) | `.github/workflows/ci.yml` | M0-A | Open | Before the closed beta |
+| FIX-M1-1 Bound per-session work | `crates/server/src/ssh`, the new `ssh.*` limit keys (`crates/server/src/config`, `docs/config.md`, `config.example.toml`), `docs/threat-model.md` "Flood limits", the rate-limit row in `docs/features.md`, decisions | QA M1 H1, M2 | Claimed | `fix/m1-session-bounds` |
 
 Later milestones are not claimable until the owner adds their slices here.
 
