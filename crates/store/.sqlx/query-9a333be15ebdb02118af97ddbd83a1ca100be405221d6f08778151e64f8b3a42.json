@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT a.id AS \"id!\", a.username, a.role, a.state, a.created_at\n               FROM account_keys k JOIN accounts a ON a.id = k.account_id\n               WHERE k.fingerprint = ?",
+  "query": "SELECT a.id AS \"id!\", a.username, a.state, a.created_at\n               FROM account_keys k JOIN accounts a ON a.id = k.account_id\n               WHERE k.fingerprint = ?",
   "describe": {
     "columns": [
       {
@@ -14,18 +14,13 @@
         "type_info": "Text"
       },
       {
-        "name": "role",
+        "name": "state",
         "ordinal": 2,
         "type_info": "Text"
       },
       {
-        "name": "state",
-        "ordinal": 3,
-        "type_info": "Text"
-      },
-      {
         "name": "created_at",
-        "ordinal": 4,
+        "ordinal": 3,
         "type_info": "Integer"
       }
     ],
@@ -36,9 +31,8 @@
       true,
       false,
       false,
-      false,
       false
     ]
   },
-  "hash": "283cd04493241fadb4d0f213bbe933c24f9a676f286ad11289d5377027d88d77"
+  "hash": "9a333be15ebdb02118af97ddbd83a1ca100be405221d6f08778151e64f8b3a42"
 }

@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT group_id AS \"group_id!\", account_id AS \"account_id!\" FROM group_closure",
+  "describe": {
+    "columns": [
+      {
+        "name": "group_id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "account_id!",
+        "ordinal": 1,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "8e249844be60ddcc48491251189aa7cda23db869079478439ec54ceba04fc37d"
+}

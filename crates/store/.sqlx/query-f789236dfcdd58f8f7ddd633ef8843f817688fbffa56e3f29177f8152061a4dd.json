@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO access_grant\n                 (account_id, group_id, role, permission, resource_kind, resource_id)\n             VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Text",
+        "Text",
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f789236dfcdd58f8f7ddd633ef8843f817688fbffa56e3f29177f8152061a4dd"
+}

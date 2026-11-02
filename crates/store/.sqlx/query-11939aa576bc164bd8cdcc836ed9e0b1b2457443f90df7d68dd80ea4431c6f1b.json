@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO accounts (username, username_skeleton, role, state)\n             VALUES ($1, $2, $3, $4)\n             RETURNING id, username, role, state, created_at",
+  "query": "SELECT a.id, a.username, a.state, a.created_at\n             FROM account_keys k JOIN accounts a ON a.id = k.account_id\n             WHERE k.fingerprint = $1",
   "describe": {
     "columns": [
       {
@@ -15,25 +15,17 @@
       },
       {
         "ordinal": 2,
-        "name": "role",
-        "type_info": "Text"
-      },
-      {
-        "ordinal": 3,
         "name": "state",
         "type_info": "Text"
       },
       {
-        "ordinal": 4,
+        "ordinal": 3,
         "name": "created_at",
         "type_info": "Int8"
       }
     ],
     "parameters": {
       "Left": [
-        "Text",
-        "Text",
-        "Text",
         "Text"
       ]
     },
@@ -41,9 +33,8 @@
       false,
       false,
       false,
-      false,
       false
     ]
   },
-  "hash": "bb251113979a56748c48a50d10b6a3c82df6e760229030b8d7bc0b91ebdbc5e5"
+  "hash": "11939aa576bc164bd8cdcc836ed9e0b1b2457443f90df7d68dd80ea4431c6f1b"
 }

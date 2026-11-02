@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM group_member WHERE group_id = ?\n                       AND COALESCE(account_id, 0) = COALESCE(?, 0)\n                       AND COALESCE(child_group_id, 0) = COALESCE(?, 0)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "e36cdb5c5644187e17f9c44b9ec3a654bbef809b55ac9c5822c9ba506bf25232"
+}

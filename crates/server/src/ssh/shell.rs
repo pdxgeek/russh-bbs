@@ -25,7 +25,7 @@ use std::time::{Duration, Instant};
 
 use russh::ChannelId;
 use russh::server::Handle;
-use russh_bbs_core::access::{Access, Fingerprint};
+use russh_bbs_core::access::{Access, Fingerprint, Permission, Snapshot};
 use russh_bbs_core::founder::{ClaimOutcome, claim_founder};
 use russh_bbs_core::store::{Account, AccountId};
 use russh_bbs_core::terminal_settings::{MemberFlow, MemberStart, TerminalSettings};
@@ -190,6 +190,9 @@ impl<D: Backend> Shell<D> {
             let effects = if keys.is_empty() {
                 super::screen::KeyEffects::default()
             } else {
+                // One action: load what the account holds now (D33), so a role or group change
+                // applies to the very next key batch. Nothing is cached between actions.
+                self.refresh_access().await;
                 self.parts.screen.apply_keys(&keys)
             };
             if let Some(settings) = &effects.save_settings {
@@ -324,7 +327,7 @@ impl<D: Backend> Shell<D> {
                 self.parts.account = Some(start.account);
                 self.parts.screen.claim_accepted(MemberFlow::new(
                     &start.handle,
-                    start.role,
+                    start.access,
                     start.previous_login,
                     start.settings,
                 ));
@@ -332,6 +335,32 @@ impl<D: Backend> Shell<D> {
             }
             ClaimOutcome::Rejected => self.parts.screen.claim_rejected(),
         }
+    }
+
+    /// Reload the signed-in account's permissions for the action about to run. If the store
+    /// fails or is slow the session holds nothing for this action (menus show only what needs no
+    /// permission): access fails closed.
+    async fn refresh_access(&mut self) {
+        let Some(account) = self.parts.account else {
+            return;
+        };
+        let loaded = timeout(
+            MEMBER_START_TIMEOUT,
+            self.parts.directory.access_for(Some(account)),
+        )
+        .await;
+        let access = match loaded {
+            Ok(Ok(access)) => access,
+            Ok(Err(error)) => {
+                warn!(session = ?self.parts.session.id(), %error, "permissions could not be loaded; holding none");
+                Snapshot::empty()
+            }
+            Err(_) => {
+                warn!(session = ?self.parts.session.id(), "permission load timed out; holding none");
+                Snapshot::empty()
+            }
+        };
+        self.parts.screen.set_access(access);
     }
 
     /// The session start for a founder who just claimed. If the store fails right after the
@@ -349,7 +378,8 @@ impl<D: Backend> Shell<D> {
         MemberStart {
             account: account.id,
             handle: account.username.clone(),
-            role: account.role,
+            // Nothing is granted from here: the next action loads what the account holds.
+            access: Snapshot::empty(),
             settings: TerminalSettings::default(),
             previous_login: None,
         }
@@ -357,12 +387,19 @@ impl<D: Backend> Shell<D> {
 
     /// Store settings the member changed. A failure is logged; the session keeps its choice.
     async fn persist_settings(&self, settings: &TerminalSettings) {
-        let Some(account) = self.parts.account else {
+        // Saving settings is an action (`account.edit_settings`): no proof, no write.
+        let Some(granted) = self
+            .parts
+            .screen
+            .access()
+            .and_then(|access| access.require(Permission::AccountEditSettings, None).ok())
+        else {
+            info!(session = ?self.parts.session.id(), "terminal settings not saved: permission not held");
             return;
         };
         let saved = timeout(
             MEMBER_START_TIMEOUT,
-            self.parts.directory.save_settings(account, settings),
+            self.parts.directory.save_settings(&granted, settings),
         )
         .await;
         match saved {

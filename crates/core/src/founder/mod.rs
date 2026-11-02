@@ -20,9 +20,7 @@ mod gate;
 mod token;
 
 pub use claim::{ClaimOutcome, FOUNDER_USERNAME, FounderStore, claim_founder};
-pub use form::{
-    ClaimEffect, ClaimForm, ClaimInput, MAX_ATTEMPTS_PER_SESSION, signed_in_view, strings,
-};
+pub use form::{ClaimEffect, ClaimForm, ClaimInput, MAX_ATTEMPTS_PER_SESSION, strings};
 pub use gate::FounderGate;
 pub use token::{SetupToken, TOKEN_BYTES, TOKEN_TEXT_MAX_CHARS, TokenHash};
 

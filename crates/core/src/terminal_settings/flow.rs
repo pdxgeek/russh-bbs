@@ -12,11 +12,11 @@ use super::glyph::{GlyphAnswer, GlyphProgress, GlyphTest};
 use super::settings::{SettingsError, TerminalSettings};
 use super::strings::{self, fill};
 use super::{format_utc, tier_name};
-use crate::access::RolePermissions;
+use crate::access::{Permission, PermissionCheck, Slug, Snapshot};
 use crate::icons::Tier;
 use crate::menu::{Action, MenuKey, MenuOutcome, MenuPage, MenuSession, main_tree};
 use crate::sanitize::{SingleLine, USERNAME_MAX_CHARS, Username};
-use crate::store::{Role, UnixSeconds};
+use crate::store::UnixSeconds;
 use crate::waiting_room::{FieldView, MenuItemView, Notice, NoticeKind, View};
 
 /// Most digits a size field accepts. Anything longer is out of range anyway.
@@ -63,7 +63,7 @@ enum Page {
 #[derive(Debug)]
 pub struct MemberFlow {
     handle: String,
-    role: Role,
+    access: Snapshot,
     last_login: Option<UnixSeconds>,
     settings: TerminalSettings,
     page: Page,
@@ -79,7 +79,7 @@ impl MemberFlow {
     #[must_use]
     pub fn new(
         handle: &Username,
-        role: Role,
+        access: Snapshot,
         last_login: Option<UnixSeconds>,
         settings: TerminalSettings,
     ) -> Self {
@@ -87,7 +87,7 @@ impl MemberFlow {
             handle: SingleLine::new(USERNAME_MAX_CHARS)
                 .sanitize(handle.as_str())
                 .into_string(),
-            role,
+            access,
             last_login,
             settings,
             page: Page::Login,
@@ -102,11 +102,23 @@ impl MemberFlow {
         &self.settings
     }
 
-    /// The account's role. It decides what the menus offer, through [`RolePermissions`] today
-    /// and M2-B's resolved permission set later (D33).
+    /// The highest role the account holds, for "signed in as ...". `None` only if the store
+    /// answered with an empty snapshot (it failed closed).
     #[must_use]
-    pub const fn role(&self) -> Role {
-        self.role
+    pub fn top_role(&self) -> Option<&Slug> {
+        self.access.top_role()
+    }
+
+    /// Replace what the session holds. The front end calls this at the start of every action
+    /// with a freshly loaded snapshot (D33), so a change applies on the next action.
+    pub fn set_access(&mut self, access: Snapshot) {
+        self.access = access;
+    }
+
+    /// What the session holds now, for the front end's own checks (saving settings).
+    #[must_use]
+    pub const fn access_snapshot(&self) -> &Snapshot {
+        &self.access
     }
 
     /// Whether the logoff screen is showing.
@@ -121,6 +133,16 @@ impl MemberFlow {
             return self.log_off();
         }
         self.notice = None;
+        if self.settings_page_open() && !self.access.allows(Permission::AccountEditSettings) {
+            // The permission went away since the page opened (a role change applies on the next
+            // action): leave the page instead of saving something that would be refused.
+            self.page = Page::Home;
+            self.notice = Some(Notice {
+                kind: NoticeKind::Error,
+                text: strings::NOT_PERMITTED,
+            });
+            return MemberEffect::Stay;
+        }
         match &mut self.page {
             Page::Login => {
                 self.page = if self.settings.needs_glyph_test() {
@@ -135,6 +157,17 @@ impl MemberFlow {
             Page::Settings => self.settings_input(input),
             Page::EditWidth(_) | Page::EditHeight(_) => self.edit_input(input),
             Page::Logoff => MemberEffect::Disconnect,
+        }
+    }
+
+    /// Whether a page that changes the account's terminal settings is showing. The first-run
+    /// glyph test is not one: it runs before the menu, and what it picks is kept for the session
+    /// (the store refuses to save it without the permission).
+    const fn settings_page_open(&self) -> bool {
+        match &self.page {
+            Page::Settings | Page::EditWidth(_) | Page::EditHeight(_) => true,
+            Page::GlyphTest(test) => !test.is_first_run(),
+            Page::Login | Page::Home | Page::Logoff => false,
         }
     }
 
@@ -182,7 +215,7 @@ impl MemberFlow {
                 return MemberEffect::Stay;
             }
         };
-        match self.menu.press(&self.access(), key) {
+        match self.menu.press(&self.access, key) {
             MenuOutcome::Stay => MemberEffect::Stay,
             MenuOutcome::Action(Action::TerminalSettings) => {
                 self.page = Page::Settings;
@@ -193,15 +226,15 @@ impl MemberFlow {
     }
 
     /// What this session may do. The one place the menus get their access from.
-    fn access(&self) -> RolePermissions {
-        RolePermissions::new(self.role)
+    const fn access(&self) -> &Snapshot {
+        &self.access
     }
 
     /// The main menu as a layout draws it, while the person is at it. `None` on every other
     /// page, which keep their own drawing.
     #[must_use]
     pub fn menu_page(&self) -> Option<MenuPage> {
-        matches!(self.page, Page::Home).then(|| self.menu.page(&self.access()))
+        matches!(self.page, Page::Home).then(|| self.menu.page(self.access()))
     }
 
     fn settings_input(&mut self, input: MemberInput) -> MemberEffect {

@@ -92,6 +92,10 @@ pub const ERR_WIDTH: &str = "Width must be from 20 to 500.";
 pub const ERR_HEIGHT: &str = "Height must be from 6 to 200.";
 /// Notice: saved.
 pub const SAVED: &str = "Saved.";
+
+/// Shown when the account no longer holds `account.edit_settings`: the change applies on the
+/// next action, so the page the person was on closes instead of pretending to save.
+pub const NOT_PERMITTED: &str = "You are not allowed to change these settings.";
 /// Notice: tier chosen.
 pub const CHOSE_NERD: &str = "Icons set to Nerd Font.";
 /// Notice: tier chosen.

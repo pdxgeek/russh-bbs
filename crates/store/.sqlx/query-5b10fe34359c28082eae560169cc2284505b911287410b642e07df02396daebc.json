@@ -1,0 +1,56 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT a.state AS \"state!\",\n                          g.role AS \"role?\",\n                          r.rank AS \"rank?\",\n                          COALESCE(g.permission, rp.permission) AS \"permission?\",\n                          g.resource_kind AS \"resource_kind?\",\n                          g.resource_id AS \"resource_id?\",\n                          mg.name AS \"group_name?\"\n                   FROM accounts a\n                   LEFT JOIN access_grant g\n                          ON g.account_id = a.id\n                          OR g.group_id IN (SELECT c.group_id FROM group_closure c\n                                            WHERE c.account_id = a.id)\n                          OR g.group_id = (SELECT e.id FROM member_group e WHERE e.name = 'everyone')\n                   LEFT JOIN member_group mg ON mg.id = g.group_id\n                   LEFT JOIN role r ON r.name = g.role\n                   LEFT JOIN role_permission rp ON rp.role = g.role\n                   WHERE a.id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "state!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "role?",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "rank?",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "permission?",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "resource_kind?",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "resource_id?",
+        "ordinal": 5,
+        "type_info": "Integer"
+      },
+      {
+        "name": "group_name?",
+        "ordinal": 6,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      true,
+      true,
+      true,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "5b10fe34359c28082eae560169cc2284505b911287410b642e07df02396daebc"
+}

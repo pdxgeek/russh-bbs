@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO group_closure (group_id, account_id) VALUES (?, ?)\n                 ON CONFLICT DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "7292ee1d7b4d1c17c791ebc223c01de5c78b7ec3d614c76c70371e000b9ac9a2"
+}

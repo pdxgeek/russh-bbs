@@ -3,7 +3,7 @@
 //! any error, is "not a member" (fail closed).
 
 use russh_bbs_core::access::Fingerprint;
-use russh_bbs_core::store::{AccountStore, Role, SettingKey, SettingsStore, StoreError};
+use russh_bbs_core::store::{AccountStore, SettingKey, SettingsStore, StoreError};
 use tracing::warn;
 
 pub(crate) async fn is_member<S: AccountStore>(store: &S, key: &Fingerprint) -> bool {
@@ -14,17 +14,6 @@ pub(crate) async fn is_member<S: AccountStore>(store: &S, key: &Fingerprint) -> 
             // Fail closed: a broken store must never grant access.
             warn!(%error, fingerprint = %key, "member lookup failed; treating key as unknown");
             false
-        }
-    }
-}
-
-pub(crate) async fn role_of<S: AccountStore>(store: &S, key: &Fingerprint) -> Option<Role> {
-    match store.account_by_fingerprint(key).await {
-        Ok(Some(account)) if account.state.is_member_access() => Some(account.role),
-        Ok(_) => None,
-        Err(error) => {
-            warn!(%error, fingerprint = %key, "role lookup failed; treating key as unknown");
-            None
         }
     }
 }

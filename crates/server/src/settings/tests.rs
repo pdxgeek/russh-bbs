@@ -7,9 +7,10 @@ use ratatui::Terminal;
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
 use ratatui::style::Color;
+use russh_bbs_core::access::{Permission, Slug, Snapshot, Via};
 use russh_bbs_core::icons::{ContentIcon, Icon, Tier};
 use russh_bbs_core::sanitize::sanitize_username;
-use russh_bbs_core::store::Role;
+use russh_bbs_core::store::AccountId;
 use russh_bbs_core::terminal_settings::{MemberFlow, MemberInput, TerminalSettings};
 
 use super::{Look, render};
@@ -17,7 +18,13 @@ use super::{Look, render};
 fn flow(settings: TerminalSettings) -> MemberFlow {
     MemberFlow::new(
         &sanitize_username("alice").unwrap(),
-        Role::Member,
+        Snapshot::from_role(
+            Some(AccountId::from_raw(1)),
+            &Slug::MEMBER,
+            10,
+            &Via::Account,
+            Permission::ALL.iter().copied(),
+        ),
         None,
         settings,
     )

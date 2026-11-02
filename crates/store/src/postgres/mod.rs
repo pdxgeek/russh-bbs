@@ -7,6 +7,7 @@
 //! similar) and against `PGlite` through its wire-protocol socket server: both are deployments of
 //! this code, not other backends.
 
+mod access;
 mod founder;
 mod terminal_settings;
 
@@ -18,7 +19,7 @@ use std::path::PathBuf;
 use std::str::FromStr as _;
 use std::time::Duration;
 
-use russh_bbs_core::access::Fingerprint;
+use russh_bbs_core::access::{Fingerprint, Slug};
 use russh_bbs_core::store::{
     Account, AccountId, AccountStore, NewAccount, SettingKey, SettingsStore, StoreError,
 };
@@ -222,24 +223,44 @@ impl AccountStore for PostgresStore {
     async fn create_account(&self, account: NewAccount) -> Result<Account, StoreError> {
         let skeleton = account.username.skeleton();
         let username = account.username.as_str();
-        let role = account.role.as_str();
+        // The legacy `role` column is a label only (nothing reads it for a decision); the
+        // authority is the grant below. `member` needs no grant: `everyone` carries it.
+        let label = crate::legacy_role_label(&account.role);
         let state = account.state.as_str();
+        let mut tx = self.pool().begin().await.map_err(backend)?;
         let row = sqlx::query_as!(
             AccountRow,
             "INSERT INTO accounts (username, username_skeleton, role, state)
              VALUES ($1, $2, $3, $4)
-             RETURNING id, username, role, state, created_at",
+             RETURNING id, username, state, created_at",
             username,
             skeleton,
-            role,
+            label,
             state,
         )
-        .fetch_one(self.pool())
+        .fetch_one(&mut *tx)
         .await
         .map_err(|error| match kind(&error) {
             Some(ErrorKind::UniqueViolation) => StoreError::UsernameTaken,
             _ => backend(error),
         })?;
+        if account.role != Slug::MEMBER {
+            let role = account.role.as_str();
+            sqlx::query!(
+                "INSERT INTO access_grant (account_id, role) VALUES ($1, $2)",
+                row.id,
+                role,
+            )
+            .execute(&mut *tx)
+            .await
+            .map_err(|error| match kind(&error) {
+                Some(ErrorKind::ForeignKeyViolation) => {
+                    StoreError::Corrupt("the role to grant does not exist".into())
+                }
+                _ => backend(error),
+            })?;
+        }
+        tx.commit().await.map_err(backend)?;
         row.into_account()
     }
 
@@ -272,7 +293,7 @@ impl AccountStore for PostgresStore {
         let fingerprint = fingerprint.as_str();
         let row = sqlx::query_as!(
             AccountRow,
-            "SELECT a.id, a.username, a.role, a.state, a.created_at
+            "SELECT a.id, a.username, a.state, a.created_at
              FROM account_keys k JOIN accounts a ON a.id = k.account_id
              WHERE k.fingerprint = $1",
             fingerprint,

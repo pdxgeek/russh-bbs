@@ -8,7 +8,7 @@
 use std::fmt;
 use std::future::Future;
 
-use crate::access::Fingerprint;
+use crate::access::{Fingerprint, Slug};
 use crate::sanitize::Username;
 
 /// Store-assigned identifier of an account.
@@ -51,36 +51,6 @@ impl UnixSeconds {
     #[must_use]
     pub const fn as_raw(self) -> i64 {
         self.0
-    }
-}
-
-/// What an account may administer.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum Role {
-    /// An ordinary member.
-    Member,
-    /// The board operator.
-    Sysop,
-}
-
-impl Role {
-    /// The stable text stored in the database. Never rename a value; add a migration instead.
-    #[must_use]
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            Self::Member => "member",
-            Self::Sysop => "sysop",
-        }
-    }
-
-    /// Parse the stored text.
-    #[must_use]
-    pub fn parse(text: &str) -> Option<Self> {
-        match text {
-            "member" => Some(Self::Member),
-            "sysop" => Some(Self::Sysop),
-            _ => None,
-        }
     }
 }
 
@@ -137,8 +107,9 @@ impl AccountState {
 pub struct NewAccount {
     /// Validated display name; also the uniqueness key through its skeleton (D17).
     pub username: Username,
-    /// Role to grant.
-    pub role: Role,
+    /// Role to give besides `member`, which every active account has through the `everyone`
+    /// group (D33). `member` writes no grant; any other built-in or custom role does.
+    pub role: Slug,
     /// Initial state.
     pub state: AccountState,
 }
@@ -150,8 +121,6 @@ pub struct Account {
     pub id: AccountId,
     /// Display name, re-validated when read.
     pub username: Username,
-    /// Role.
-    pub role: Role,
     /// State.
     pub state: AccountState,
     /// When the account was created.

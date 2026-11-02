@@ -1,85 +1,214 @@
-//! Named permissions and the one question a menu asks: "may this session do that?".
+//! The closed set of named permissions (D33): one per action, `area.verb`.
 //!
-//! **This is a minimal placeholder for M2-B.** The closed enum of every permission in
-//! `docs/access.md`, roles as permission sets, groups and per-resource policies are M2-B's
-//! (D33). This file holds only the permissions the M2-A menu framework names, so a menu item
-//! can carry one, plus the single hook ([`PermissionCheck`]) the menu code calls. M2-B replaces
-//! [`RolePermissions`] with the real resolution and adds the remaining variants; menu code does
-//! not change, because it only ever calls [`PermissionCheck::allows`].
+//! The enum is the code half of the list in `docs/access.md`; a test keeps the two equal. A new
+//! action adds its variant, its row in that table and a migration giving the built-in roles
+//! their rows (`sysop` always) in the same PR. Matches over [`Permission`] have no wildcard
+//! arm, so adding a variant is a compile error wherever a decision depends on it.
+//!
+//! The `strum` derives give the stored/doc name, parsing and the list of variants, so the names
+//! are written once (D47). A name read back from the database that is not here fails to parse
+//! and is skipped by the loader (fail closed).
 
-use crate::store::Role;
+use strum::{EnumString, IntoStaticStr, VariantArray};
 
-/// A named permission (`area.verb`, as in `docs/access.md`). Closed on purpose: an action
-/// cannot be offered without a name here and a row in `docs/access.md`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+/// A named permission (`area.verb`, as in `docs/access.md`).
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    EnumString,
+    IntoStaticStr,
+    VariantArray,
+)]
 pub enum Permission {
-    /// `account.edit_settings`: change one's own terminal settings.
+    /// `waiting.view`.
+    #[strum(serialize = "waiting.view")]
+    WaitingView,
+    /// `invite.redeem`.
+    #[strum(serialize = "invite.redeem")]
+    InviteRedeem,
+    /// `membership.apply`.
+    #[strum(serialize = "membership.apply")]
+    MembershipApply,
+    /// `account.edit_profile`.
+    #[strum(serialize = "account.edit_profile")]
+    AccountEditProfile,
+    /// `account.edit_settings`.
+    #[strum(serialize = "account.edit_settings")]
     AccountEditSettings,
-    /// `members.view`: see the members list.
+    /// `account.set_password`.
+    #[strum(serialize = "account.set_password")]
+    AccountSetPassword,
+    /// `members.view`.
+    #[strum(serialize = "members.view")]
     MembersView,
-    /// `members.approve`: approve a membership request.
+    /// `members.approve`.
+    #[strum(serialize = "members.approve")]
     MembersApprove,
-    /// `forum.list`: see that forums exist.
+    /// `members.deny`.
+    #[strum(serialize = "members.deny")]
+    MembersDeny,
+    /// `members.vouch`.
+    #[strum(serialize = "members.vouch")]
+    MembersVouch,
+    /// `members.suspend`.
+    #[strum(serialize = "members.suspend")]
+    MembersSuspend,
+    /// `members.edit`.
+    #[strum(serialize = "members.edit")]
+    MembersEdit,
+    /// `members.delete_data`.
+    #[strum(serialize = "members.delete_data")]
+    MembersDeleteData,
+    /// `invites.create`.
+    #[strum(serialize = "invites.create")]
+    InvitesCreate,
+    /// `invites.revoke`.
+    #[strum(serialize = "invites.revoke")]
+    InvitesRevoke,
+    /// `invites.view_tree`.
+    #[strum(serialize = "invites.view_tree")]
+    InvitesViewTree,
+    /// `forum.list`.
+    #[strum(serialize = "forum.list")]
     ForumList,
-    /// `mail.read`: open one's mailbox.
+    /// `forum.read`.
+    #[strum(serialize = "forum.read")]
+    ForumRead,
+    /// `forum.post`.
+    #[strum(serialize = "forum.post")]
+    ForumPost,
+    /// `forum.reply`.
+    #[strum(serialize = "forum.reply")]
+    ForumReply,
+    /// `forum.edit_own`.
+    #[strum(serialize = "forum.edit_own")]
+    ForumEditOwn,
+    /// `forum.moderate`.
+    #[strum(serialize = "forum.moderate")]
+    ForumModerate,
+    /// `forum.manage`.
+    #[strum(serialize = "forum.manage")]
+    ForumManage,
+    /// `chat.join`.
+    #[strum(serialize = "chat.join")]
+    ChatJoin,
+    /// `chat.speak`.
+    #[strum(serialize = "chat.speak")]
+    ChatSpeak,
+    /// `chat.whisper`.
+    #[strum(serialize = "chat.whisper")]
+    ChatWhisper,
+    /// `chat.moderate`.
+    #[strum(serialize = "chat.moderate")]
+    ChatModerate,
+    /// `chat.manage_rooms`.
+    #[strum(serialize = "chat.manage_rooms")]
+    ChatManageRooms,
+    /// `mail.read`.
+    #[strum(serialize = "mail.read")]
     MailRead,
-    /// `files.list`: see file areas.
+    /// `mail.send`.
+    #[strum(serialize = "mail.send")]
+    MailSend,
+    /// `files.list`.
+    #[strum(serialize = "files.list")]
     FilesList,
+    /// `files.download`.
+    #[strum(serialize = "files.download")]
+    FilesDownload,
+    /// `files.upload`.
+    #[strum(serialize = "files.upload")]
+    FilesUpload,
+    /// `files.tag`.
+    #[strum(serialize = "files.tag")]
+    FilesTag,
+    /// `files.approve`.
+    #[strum(serialize = "files.approve")]
+    FilesApprove,
+    /// `files.manage_areas`.
+    #[strum(serialize = "files.manage_areas")]
+    FilesManageAreas,
+    /// `feeds.read`.
+    #[strum(serialize = "feeds.read")]
+    FeedsRead,
+    /// `feeds.manage`.
+    #[strum(serialize = "feeds.manage")]
+    FeedsManage,
+    /// `doors.run`.
+    #[strum(serialize = "doors.run")]
+    DoorsRun,
+    /// `doors.manage`.
+    #[strum(serialize = "doors.manage")]
+    DoorsManage,
+    /// `oneliners.post`.
+    #[strum(serialize = "oneliners.post")]
+    OnelinersPost,
+    /// `graffiti.post`.
+    #[strum(serialize = "graffiti.post")]
+    GraffitiPost,
+    /// `polls.vote`.
+    #[strum(serialize = "polls.vote")]
+    PollsVote,
+    /// `polls.create`.
+    #[strum(serialize = "polls.create")]
+    PollsCreate,
+    /// `events.view`.
+    #[strum(serialize = "events.view")]
+    EventsView,
+    /// `events.manage`.
+    #[strum(serialize = "events.manage")]
+    EventsManage,
+    /// `sysop.page`.
+    #[strum(serialize = "sysop.page")]
+    SysopPage,
+    /// `sysop.chat`.
+    #[strum(serialize = "sysop.chat")]
+    SysopChat,
+    /// `sessions.view`.
+    #[strum(serialize = "sessions.view")]
+    SessionsView,
+    /// `sessions.disconnect`.
+    #[strum(serialize = "sessions.disconnect")]
+    SessionsDisconnect,
+    /// `audit.view`.
+    #[strum(serialize = "audit.view")]
+    AuditView,
+    /// `settings.edit`.
+    #[strum(serialize = "settings.edit")]
+    SettingsEdit,
+    /// `roles.edit`.
+    #[strum(serialize = "roles.edit")]
+    RolesEdit,
+    /// `groups.edit`.
+    #[strum(serialize = "groups.edit")]
+    GroupsEdit,
+    /// `themes.manage`.
+    #[strum(serialize = "themes.manage")]
+    ThemesManage,
+    /// `backups.run`.
+    #[strum(serialize = "backups.run")]
+    BackupsRun,
 }
 
 impl Permission {
-    /// Every permission this placeholder knows.
-    pub const ALL: [Self; 6] = [
-        Self::AccountEditSettings,
-        Self::MembersView,
-        Self::MembersApprove,
-        Self::ForumList,
-        Self::MailRead,
-        Self::FilesList,
-    ];
+    /// Every permission, in the order of `docs/access.md`.
+    pub const ALL: &'static [Self] = <Self as VariantArray>::VARIANTS;
 
-    /// The `area.verb` name used in `docs/access.md`.
+    /// The `area.verb` name used in `docs/access.md` and stored in the database.
     #[must_use]
-    pub const fn name(self) -> &'static str {
-        match self {
-            Self::AccountEditSettings => "account.edit_settings",
-            Self::MembersView => "members.view",
-            Self::MembersApprove => "members.approve",
-            Self::ForumList => "forum.list",
-            Self::MailRead => "mail.read",
-            Self::FilesList => "files.list",
-        }
+    pub fn name(self) -> &'static str {
+        self.into()
     }
-}
 
-/// The single access hook for menus: may this session use something that needs `permission`?
-///
-/// Menu code asks nothing else. Visibility and activation use the same answer, so an item a
-/// session cannot see is also not reachable by its hotkey.
-pub trait PermissionCheck {
-    /// Whether the session holds `permission`.
-    fn allows(&self, permission: Permission) -> bool;
-}
-
-/// Today's stand-in: permissions follow the stored [`Role`]. A `member` holds everything that
-/// exists except `members.approve`; the `sysop` holds everything (`docs/access.md`, "Default
-/// roles"). M2-B replaces this with the resolved permission set of the session.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct RolePermissions(Role);
-
-impl RolePermissions {
-    /// The permissions of a session whose account has `role`.
+    /// Parse a stored or documented name. `None` for anything that is not a permission.
     #[must_use]
-    pub const fn new(role: Role) -> Self {
-        Self(role)
-    }
-}
-
-impl PermissionCheck for RolePermissions {
-    fn allows(&self, permission: Permission) -> bool {
-        match self.0 {
-            Role::Sysop => true,
-            Role::Member => !matches!(permission, Permission::MembersApprove),
-        }
+    pub fn parse(text: &str) -> Option<Self> {
+        text.parse().ok()
     }
 }

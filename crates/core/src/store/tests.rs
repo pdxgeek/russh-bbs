@@ -1,12 +1,9 @@
 #![allow(clippy::unwrap_used)]
 
-use super::{AccountState, RegistrationMode, Role, SettingKey};
+use super::{AccountState, RegistrationMode, SettingKey};
 
 #[test]
 fn enums_round_trip_through_their_stored_text() {
-    for role in [Role::Member, Role::Sysop] {
-        assert_eq!(Role::parse(role.as_str()), Some(role));
-    }
     for state in [
         AccountState::Pending,
         AccountState::Approved,
@@ -26,7 +23,6 @@ fn enums_round_trip_through_their_stored_text() {
 
 #[test]
 fn unknown_text_does_not_parse() {
-    assert_eq!(Role::parse("root"), None);
     assert_eq!(AccountState::parse("ACTIVE"), None);
     assert_eq!(RegistrationMode::parse(""), None);
 }

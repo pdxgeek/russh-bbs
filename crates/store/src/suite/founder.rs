@@ -1,14 +1,14 @@
 //! The founder claim: atomicity, the race, and rollback, against any backend.
 #![allow(clippy::unwrap_used)]
 
-use russh_bbs_core::access::{MemberDirectory, RoleDirectory};
+use russh_bbs_core::access::{MemberDirectory, Slug};
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::{
-    AccountState, AccountStore, NewAccount, Role, SettingKey, SettingsStore, StoreError,
+    AccountState, AccountStore, NewAccount, SettingKey, SettingsStore, StoreError,
 };
 
-use super::{Harness, fingerprint};
+use super::{Harness, fingerprint, top_role_of};
 
 fn name() -> russh_bbs_core::sanitize::Username {
     sanitize_username(russh_bbs_core::founder::FOUNDER_USERNAME).unwrap()
@@ -20,11 +20,10 @@ pub(crate) async fn a_claim_creates_an_active_sysop_bound_to_the_key<H: Harness>
     assert!(!store.founder_claimed().await.unwrap());
     let key = fingerprint(1);
     let account = store.claim_founder(name(), &key).await.unwrap().unwrap();
-    assert_eq!(account.role, Role::Sysop);
     assert_eq!(account.state, AccountState::Active);
     assert!(store.founder_claimed().await.unwrap());
     assert!(store.is_member(&key).await);
-    assert_eq!(store.role_of(&key).await, Some(Role::Sysop));
+    assert_eq!(top_role_of(store, &key).await, Some(Slug::SYSOP));
     assert_eq!(
         store
             .get_setting(SettingKey::FounderClaimed)
@@ -78,7 +77,7 @@ pub(crate) async fn two_concurrent_claims_produce_exactly_one_sysop<H: Harness>(
         let members = [fingerprint(100 + round), fingerprint(200 + round)];
         let mut sysops = 0;
         for key in &members {
-            if store.role_of(key).await == Some(Role::Sysop) {
+            if top_role_of(&store, key).await == Some(Slug::SYSOP) {
                 sysops += 1;
             }
         }
@@ -94,7 +93,7 @@ pub(crate) async fn a_failed_claim_rolls_back_and_leaves_the_board_unclaimed<H: 
     let member = store
         .create_account(NewAccount {
             username: sanitize_username("alice").unwrap(),
-            role: Role::Member,
+            role: Slug::MEMBER,
             state: AccountState::Active,
         })
         .await
@@ -125,7 +124,10 @@ pub(crate) async fn the_claim_survives_reopening_the_database<H: Harness>() {
     h.reopen().await;
     let reopened = h.store();
     assert!(reopened.founder_claimed().await.unwrap());
-    assert_eq!(reopened.role_of(&fingerprint(1)).await, Some(Role::Sysop));
+    assert_eq!(
+        top_role_of(reopened, &fingerprint(1)).await,
+        Some(Slug::SYSOP)
+    );
     assert!(
         reopened
             .claim_founder(name(), &fingerprint(2))
@@ -141,7 +143,7 @@ pub(crate) async fn role_lookup_is_only_for_active_accounts<H: Harness>() {
     let pending = store
         .create_account(NewAccount {
             username: sanitize_username("carol").unwrap(),
-            role: Role::Sysop,
+            role: Slug::SYSOP,
             state: AccountState::Pending,
         })
         .await
@@ -150,6 +152,11 @@ pub(crate) async fn role_lookup_is_only_for_active_accounts<H: Harness>() {
         .attach_fingerprint(pending.id, &fingerprint(3))
         .await
         .unwrap();
-    assert_eq!(store.role_of(&fingerprint(3)).await, None);
-    assert_eq!(store.role_of(&fingerprint(4)).await, None);
+    // A pending account gets the waiting snapshot whatever role it was created with, and an
+    // unknown key has no account at all.
+    assert_eq!(
+        top_role_of(store, &fingerprint(3)).await,
+        Some(Slug::WAITING)
+    );
+    assert_eq!(top_role_of(store, &fingerprint(4)).await, None);
 }

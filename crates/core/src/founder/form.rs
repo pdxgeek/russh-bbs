@@ -27,16 +27,6 @@ pub mod strings {
     pub const TOO_MANY: &str = "Too many attempts. Goodbye.";
     /// Shown while a claim is being checked.
     pub const WORKING: &str = "Checking...";
-    /// Heading of the signed-in placeholder.
-    pub const SIGNED_IN_HEADING: &str = "Signed in";
-    /// Placeholder body for a sysop. The member and sysop experience are later work.
-    pub const SIGNED_IN_SYSOP: &str = "You are signed in as sysop.";
-    /// Placeholder body for a member.
-    pub const SIGNED_IN_MEMBER: &str = "You are signed in as a member.";
-    /// Honest note that the real screens do not exist yet.
-    pub const PLACEHOLDER_NOTE: &str = "This is a placeholder. The board itself is not built yet.";
-    /// Key hint on the placeholder.
-    pub const SIGNED_IN_FOOTER: &str = "Ctrl-C: disconnect";
 }
 
 /// What the person did.
@@ -165,25 +155,5 @@ impl ClaimForm {
             notice: self.notice,
             footer: strings::FOOTER,
         }
-    }
-}
-
-/// The signed-in placeholder for an account with `role`.
-#[must_use]
-pub fn signed_in_view(role: crate::store::Role) -> View {
-    let body = match role {
-        crate::store::Role::Sysop => strings::SIGNED_IN_SYSOP,
-        crate::store::Role::Member => strings::SIGNED_IN_MEMBER,
-    };
-    View {
-        title: strings::TITLE,
-        heading: strings::SIGNED_IN_HEADING,
-        banner: Vec::new(),
-        body: vec![body.to_owned()],
-        note: Some(strings::PLACEHOLDER_NOTE),
-        menu: Vec::new(),
-        fields: Vec::new(),
-        notice: None,
-        footer: strings::SIGNED_IN_FOOTER,
     }
 }

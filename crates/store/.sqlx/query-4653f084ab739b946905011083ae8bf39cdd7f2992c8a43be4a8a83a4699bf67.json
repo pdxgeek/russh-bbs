@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT group_id AS \"group_id!\", account_id AS \"account_id!\" FROM group_closure -- postgres",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "group_id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "account_id!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "4653f084ab739b946905011083ae8bf39cdd7f2992c8a43be4a8a83a4699bf67"
+}

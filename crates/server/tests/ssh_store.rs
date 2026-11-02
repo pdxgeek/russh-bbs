@@ -15,9 +15,10 @@ use std::sync::Arc;
 use common::{connect, eventually, fast_limits, new_client_key};
 use russh::client::AuthResult;
 use russh::keys::{HashAlg, PrivateKey, PrivateKeyWithHashAlg};
+use russh_bbs_core::access::Slug;
 use russh_bbs_core::access::{Access, Fingerprint};
 use russh_bbs_core::sanitize::sanitize_username;
-use russh_bbs_core::store::{AccountState, AccountStore, NewAccount, Role};
+use russh_bbs_core::store::{AccountState, AccountStore, NewAccount};
 use russh_bbs_server::ssh::{HostKey, ServerConfig, SshServer};
 use russh_bbs_store::SqliteStore;
 
@@ -64,7 +65,7 @@ async fn a_stored_member_key_is_member_and_an_unknown_key_is_restricted() {
     let account = store
         .create_account(NewAccount {
             username: sanitize_username("alice").unwrap(),
-            role: Role::Member,
+            role: Slug::MEMBER,
             state: AccountState::Active,
         })
         .await
@@ -105,7 +106,7 @@ async fn a_suspended_members_key_is_restricted() {
     let account = store
         .create_account(NewAccount {
             username: sanitize_username("mallory").unwrap(),
-            role: Role::Member,
+            role: Slug::MEMBER,
             state: AccountState::Suspended,
         })
         .await

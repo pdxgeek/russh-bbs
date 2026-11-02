@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT r.name AS \"name!\", r.rank AS \"rank!\", r.kind AS \"kind!\",\n                      rp.permission AS \"permission?\"\n               FROM role r LEFT JOIN role_permission rp ON rp.role = r.name\n               ORDER BY r.name, rp.permission",
+  "describe": {
+    "columns": [
+      {
+        "name": "name!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "rank!",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "kind!",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "permission?",
+        "ordinal": 3,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "00d3c172bd2231779c826ea771daa4ac1ada089956bdda47d523bb0f1bbc82fb"
+}

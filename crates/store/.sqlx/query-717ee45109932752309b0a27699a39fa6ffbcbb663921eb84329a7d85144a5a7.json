@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO access_grant (account_id, role) VALUES (?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "717ee45109932752309b0a27699a39fa6ffbcbb663921eb84329a7d85144a5a7"
+}
