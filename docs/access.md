@@ -105,3 +105,271 @@ This is the most intricate feature in the MVP, so the M2 access slice starts wit
 ## Implemented / Verified
 
 Nothing yet.
+
+## Implementation plan
+
+Status: **Phase 1 plan for review** (slice M2-B). Nothing below is built. The orchestrator reviews this for simplicity before Phase 2. The goal is the fewest tables and code paths that satisfy this page: **six tables, one resolution function, one loader query, one write path for group changes.**
+
+### 0. Where this plan simplifies this page
+
+These are choices the reviewer should confirm or reject; each removes a code path without removing a stated capability.
+
+| Page says | Plan does | Why |
+|---|---|---|
+| "One grant table `grant(subject, permission, resource)` where subject is a member, a group, or a role" | One `access_grant` table for **account or group** subjects, granting **either a role or a permission**, global or on one resource. A role's own permission set is `role_permission` (a role definition, not a grant). | The owner asked for one shape for "a role given to a member or group" and "an allow-list entry". Putting role definitions in the same table would add a third subject kind and a third reading of every row. |
+| A role "holds a permission scoped to one resource" | Done by **granting the role scoped** to a resource: the holder gets that role's permissions on that resource only. A per-board moderator is a custom role (`forum.moderate`) granted on that board, or a single allow entry for `forum.moderate`. | Same capability; no scope column on `role_permission`, no second scoped path. |
+| Resource policy: "for each role, which permissions that role holds there" | **Dropped.** A resource's policy is its allow list (accounts and groups). "All members" is the `everyone` group; "staff only" is the `staff` group. | A per-resource, per-role matrix is a third grant shape. Groups already express it. |
+| Role inheritance ("`trusted` = `member` plus ...") | **No inheritance.** Each role's permission set is stored in full; the migration builds them by layered `INSERT ... SELECT` so the SQL stays short. | Inheritance would need a parent column and recursion in the loader. |
+| `everyone` = "all approved members" | **Implicit group**: no membership rows. The loader always adds it for an active account. It carries one locked grant, role `member`, so no per-account `member` grant row exists. | No rows to keep in sync on approve, suspend or delete. |
+| Per-member limit overrides, limits in general | **Not in this slice.** See section 7. | M2-H. |
+
+### 1. Schema: six tables, one grant shape
+
+Tables: `role`, `role_permission`, `member_group`, `group_member`, `group_closure`, `access_grant`. Names avoid the reserved words `group` and `grant`. Roles and groups are keyed by a validated ASCII slug (`[a-z0-9-]{1,32}`, a `Slug` type in core; not content, so it does not need the sanitizer) so a decision reason reads `moderator via staff` without a join. Account ids reference `accounts(id)` and cascade on delete. A global grant stores `resource_kind = ''` and `resource_id = 0` (no NULLs, so the uniqueness index works on both backends; SQLite has no `NULLS NOT DISTINCT`).
+
+```text
+role(name PK, rank 0..100, kind: locked | builtin | custom)
+role_permission(role -> role.name, permission, PK(role, permission))
+member_group(id PK, name UNIQUE, kind: locked | builtin | custom)
+group_member(group_id -> member_group, account_id? , child_group_id? , exactly one of the two)   -- direct edges only
+group_closure(group_id -> member_group, account_id -> accounts, PK(group_id, account_id))        -- cached transitive closure
+access_grant(id PK,
+             account_id? | group_id?          -- exactly one: who
+             role? | permission?              -- exactly one: what (a role, or one permission)
+             resource_kind, resource_id)      -- where: ('' , 0) = global
+```
+
+**SQLite** (`crates/store/migrations/sqlite/0003_access.sql`; the number is whatever is free at merge time; STRICT tables like 0001):
+
+```sql
+CREATE TABLE role (
+    name TEXT    NOT NULL PRIMARY KEY CHECK (length(name) BETWEEN 1 AND 32),
+    rank INTEGER NOT NULL CHECK (rank BETWEEN 0 AND 100),
+    kind TEXT    NOT NULL CHECK (kind IN ('locked', 'builtin', 'custom'))
+) STRICT;
+
+CREATE TABLE role_permission (
+    role       TEXT NOT NULL REFERENCES role (name) ON DELETE CASCADE,
+    permission TEXT NOT NULL,
+    PRIMARY KEY (role, permission)
+) STRICT;
+
+CREATE TABLE member_group (
+    id   INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT    NOT NULL UNIQUE CHECK (length(name) BETWEEN 1 AND 32),
+    kind TEXT    NOT NULL CHECK (kind IN ('locked', 'builtin', 'custom'))
+) STRICT;
+
+CREATE TABLE group_member (
+    group_id       INTEGER NOT NULL REFERENCES member_group (id) ON DELETE CASCADE,
+    account_id     INTEGER REFERENCES accounts (id)     ON DELETE CASCADE,
+    child_group_id INTEGER REFERENCES member_group (id) ON DELETE CASCADE,
+    CHECK ((account_id IS NULL) <> (child_group_id IS NULL))
+) STRICT;
+CREATE UNIQUE INDEX group_member_unique
+    ON group_member (group_id, COALESCE(account_id, 0), COALESCE(child_group_id, 0));
+CREATE INDEX group_member_by_account ON group_member (account_id) WHERE account_id IS NOT NULL;
+CREATE INDEX group_member_by_child   ON group_member (child_group_id) WHERE child_group_id IS NOT NULL;
+
+CREATE TABLE group_closure (
+    group_id   INTEGER NOT NULL REFERENCES member_group (id) ON DELETE CASCADE,
+    account_id INTEGER NOT NULL REFERENCES accounts (id)     ON DELETE CASCADE,
+    PRIMARY KEY (group_id, account_id)
+) STRICT;
+CREATE INDEX group_closure_by_account ON group_closure (account_id);
+
+CREATE TABLE access_grant (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    account_id    INTEGER REFERENCES accounts (id)     ON DELETE CASCADE,
+    group_id      INTEGER REFERENCES member_group (id) ON DELETE CASCADE,
+    role          TEXT    REFERENCES role (name)       ON DELETE CASCADE,
+    permission    TEXT,
+    resource_kind TEXT    NOT NULL DEFAULT '',
+    resource_id   INTEGER NOT NULL DEFAULT 0,
+    CHECK ((account_id IS NULL) <> (group_id IS NULL)),
+    CHECK ((role IS NULL) <> (permission IS NULL)),
+    CHECK ((resource_kind = '' AND resource_id = 0) OR (resource_kind <> '' AND resource_id > 0))
+) STRICT;
+CREATE UNIQUE INDEX access_grant_unique
+    ON access_grant (COALESCE(account_id, 0), COALESCE(group_id, 0),
+                     COALESCE(role, ''), COALESCE(permission, ''), resource_kind, resource_id);
+CREATE INDEX access_grant_by_account  ON access_grant (account_id) WHERE account_id IS NOT NULL;
+CREATE INDEX access_grant_by_group    ON access_grant (group_id)   WHERE group_id   IS NOT NULL;
+CREATE INDEX access_grant_by_resource ON access_grant (resource_kind, resource_id) WHERE resource_id > 0;
+```
+
+**Postgres** (`migrations/postgres/0003_access.sql`, same tables and same index names, Postgres-native types as in 0001, D24):
+
+```sql
+CREATE TABLE role (
+    name TEXT     NOT NULL PRIMARY KEY CHECK (length(name) BETWEEN 1 AND 32),
+    rank SMALLINT NOT NULL CHECK (rank BETWEEN 0 AND 100),
+    kind TEXT     NOT NULL CHECK (kind IN ('locked', 'builtin', 'custom'))
+);
+CREATE TABLE role_permission (
+    role       TEXT NOT NULL REFERENCES role (name) ON DELETE CASCADE,
+    permission TEXT NOT NULL,
+    PRIMARY KEY (role, permission)
+);
+CREATE TABLE member_group (
+    id   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name TEXT   NOT NULL UNIQUE CHECK (length(name) BETWEEN 1 AND 32),
+    kind TEXT   NOT NULL CHECK (kind IN ('locked', 'builtin', 'custom'))
+);
+CREATE TABLE group_member (
+    group_id       BIGINT NOT NULL REFERENCES member_group (id) ON DELETE CASCADE,
+    account_id     BIGINT REFERENCES accounts (id)     ON DELETE CASCADE,
+    child_group_id BIGINT REFERENCES member_group (id) ON DELETE CASCADE,
+    CHECK ((account_id IS NULL) <> (child_group_id IS NULL))
+);
+-- indexes: identical statements to SQLite (partial and expression indexes are supported)
+CREATE TABLE group_closure (
+    group_id   BIGINT NOT NULL REFERENCES member_group (id) ON DELETE CASCADE,
+    account_id BIGINT NOT NULL REFERENCES accounts (id)     ON DELETE CASCADE,
+    PRIMARY KEY (group_id, account_id)
+);
+CREATE TABLE access_grant (
+    id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    account_id    BIGINT REFERENCES accounts (id)     ON DELETE CASCADE,
+    group_id      BIGINT REFERENCES member_group (id) ON DELETE CASCADE,
+    role          TEXT   REFERENCES role (name)       ON DELETE CASCADE,
+    permission    TEXT,
+    resource_kind TEXT   NOT NULL DEFAULT '',
+    resource_id   BIGINT NOT NULL DEFAULT 0,
+    CHECK ((account_id IS NULL) <> (group_id IS NULL)),
+    CHECK ((role IS NULL) <> (permission IS NULL)),
+    CHECK ((resource_kind = '' AND resource_id = 0) OR (resource_kind <> '' AND resource_id > 0))
+);
+```
+
+Indexes (both backends): `group_member_unique`, `group_member_by_account`, `group_member_by_child`, `group_closure_by_account` (the per-check lookup), `access_grant_unique` (idempotent grants, no duplicate rows), `access_grant_by_account` and `access_grant_by_group` (the loader), `access_grant_by_resource` (list or clear a resource's allow list when it is deleted). The primary keys of `role_permission` and `group_closure` cover their joins.
+
+`accounts.role` (the M1 `CHECK (role IN ('member','sysop'))` column) is **left in place and no longer read for any decision**: SQLite cannot cheaply change a CHECK and migrations are forward-only. It stays as a legacy label until M2-D, which rebuilds `accounts` for the new states and drops it. The Rust `Role` enum in `core::store` goes away; `NewAccount` takes a `Slug` role name instead (section 6).
+
+### 2. The resolution function
+
+One pure function, no I/O, no async, no clock. The loader (section 3) flattens everything a member holds into a list of `Held` facts; the function only matches them.
+
+```rust
+// core::access
+pub fn resolve(snapshot: &Snapshot, permission: Permission, resource: Option<ResourceRef>) -> Decision;
+
+pub struct Snapshot { account: Option<AccountId>, held: Vec<Held> }   // built only by the store loader
+pub struct Held { permission: Permission, scope: Scope, source: Source }
+pub enum Scope  { Global, Resource(ResourceRef) }
+pub struct ResourceRef { kind: ResourceKind, id: ResourceId }          // ResourceKind: closed enum (forum, file_area, room, door, feed, poll, event)
+pub enum Source { Role { role: Slug, via: Via }, Allow { via: Via } }
+pub enum Via    { Account, Group(Slug), Waiting }                      // Waiting = the role every unknown or inactive key gets
+
+pub enum Decision { Granted(Reason), Denied }
+pub struct Reason(Source);                                             // enough for "moderator, via staff" or "allow list, via group lounge"
+```
+
+Rules, in this order, first match wins so the reason is deterministic: (1) a `Held` with the permission and `Scope::Global` from a role; (2) one with `Scope::Resource(r)` from a role, when `resource == Some(r)`; (3) an `Allow` entry for `r`. A check with `resource: None` only matches global role holdings (rule 1). There is no deny arm, no precedence and no rank in the function. Rank is used only by the write path (section 6.5). A scoped grant of a permission to a resource of the wrong kind simply never matches; the write path does not police that in this slice (deferred).
+
+The only way to obtain the `Granted` capability token is `snapshot.require(permission, resource) -> Result<Granted, Denied>`, which calls `resolve`. Core action functions (every later slice) take `&Granted` as a parameter, so an action cannot be performed without passing the check, which is the compile-time half of "adding an action without its permission does not compile".
+
+### 3. Where a check gets its data
+
+**Decision: load a snapshot at the start of each user action, one query, no cache across actions.** An action is one dispatched command (a menu choice, a form submit, an SFTP request), not a redraw. The snapshot is used for every check inside that action (a menu with 30 entries, a search with 200 candidate boards) and then dropped. The session stores only its `AccountId`.
+
+- Invalidation rule: **none is needed**, because nothing is cached between actions. A role or group change is visible to the next action, which is the page's "apply on the next action", and it is correct across processes and over both backends.
+- Per-session permission sets were rejected: they add a version counter, an invalidation call on every write path (suspend, role change, group change, account delete) and a staleness bug class, to save one indexed query per keypress.
+- The loader for an **active** account is one statement (the same text on both backends apart from parameter syntax), returning one row per (grant x role permission):
+
+```sql
+SELECT g.role, r.rank, COALESCE(g.permission, rp.permission) AS permission,
+       g.resource_kind, g.resource_id, mg.name AS group_name
+FROM access_grant g
+LEFT JOIN member_group    mg ON mg.id   = g.group_id
+LEFT JOIN role            r  ON r.name  = g.role
+LEFT JOIN role_permission rp ON rp.role = g.role
+WHERE g.account_id = $1
+   OR g.group_id IN (SELECT group_id FROM group_closure WHERE account_id = $1)
+   OR g.group_id = (SELECT id FROM member_group WHERE name = 'everyone');
+```
+
+  An unknown stored permission name (for example a row from a newer build) is skipped and logged, so the loader fails closed.
+- For an **unknown key or an account that is not `active`** (pending, approved, suspended) the loader returns the `waiting` role's permissions with `Via::Waiting` (one query on `role_permission`). So suspension and the waiting room need no special case in `resolve`, and the waiting room still reveals nothing: that role holds only `waiting.view`, `invite.redeem`, `membership.apply`.
+- **Group membership is a cached transitive closure**, kept in `group_closure` and rebuilt inside the same transaction as every change to `group_member`. The checking path never recurses. The rebuild is done in Rust by `GroupGraph` (pure, in core): load all direct edges (a board has tens of groups), apply the change, **reject a cycle or a depth over 8**, compute the closure, then delete and re-insert `group_closure` in the transaction. Rebuilding the whole table is chosen over incremental delete logic because it cannot drift. SQLite serializes writers; on Postgres the transaction first takes `LOCK TABLE group_member IN EXCLUSIVE MODE` so two concurrent changes cannot each pass the cycle check and together create a cycle. Deleting a group, or an account, cascades through the foreign keys and the closure is rebuilt in the same transaction.
+- `everyone` has no rows in either group table: the loader always adds it. It may not be a child of another group and has no members to edit.
+
+### 4. Visibility from the same function
+
+A resource a member cannot `list` or `read` is absent everywhere, and there is no second mechanism. `Snapshot` offers exactly two readers over the same `held` list:
+
+```rust
+pub fn resolve(&self, permission, resource) -> Decision;                 // the function above
+pub fn reach(&self, permission, kind: ResourceKind) -> Reach;            // Reach::All | Reach::Only(Vec<ResourceId>) | Reach::None
+```
+
+`reach` is built from the same matching rules (`resolve(p, Some(r))` is `Granted` exactly when `reach(p, r.kind)` contains `r.id`; a property test pins that). Menus, search, new-scan, feeds out and the SFTP tree use it like this: list-style screens call `reach(*.list, kind)` and put the ids in their query (`WHERE id IN (...)` or no filter for `All`); by-name or by-id access calls `resolve(*.read, Some(r))` and answers "not found" identically for "absent" and "denied". This slice delivers the two functions, the tests, and the rule; forums, files and search are later slices, and each adds its own visibility test to the QA matrix. M2-A's menu hook takes `&Snapshot` and an optional `(Permission, ResourceRef)` per entry and calls `resolve`.
+
+### 5. The permission enum
+
+`core::access::Permission` is a closed enum with one variant per row of the "Permissions" table above (all of them, so roles are complete data from the start), plus `ALL`, `name() -> &'static str` (`"forum.read"`), and `parse`. Matches over it have no wildcard arm. Recommended: derive `ALL`/`name`/`parse` with the `strum` crate (`EnumIter`, `EnumString`, `IntoStaticStr`, `#[strum(serialize = "forum.read")]`), already in `Cargo.lock` through a transitive dependency and covered by `cargo deny`, per D47. Fallback if the owner prefers no new direct dependency: one declarative `permissions! { ForumRead => "forum.read", ... }` macro that generates the same four items.
+
+Later slices add a permission in **the same PR as the action**: (1) a variant, (2) its row in the table above, (3) a forward migration that inserts its `role_permission` rows for the roles that hold it by default (the sysop row is mandatory). Two tests enforce this and fail the slice that forgets: an enum-versus-docs test (every variant appears in the table above and every name in the table parses) and a store-suite test that the `sysop` role holds every `Permission::ALL` on both backends.
+
+### 6. Built-in roles, groups, the founder, and the write path
+
+**6.1 Seed data (migration rows).** Roles and ranks are those in "Default roles" above (`waiting` 0, `member` 10, `trusted` 20, `moderator` 30, `cosysop` 40, `sysop` 100). `sysop` and `waiting` are `locked` (not editable); the others are `builtin` (editable, not deletable). Permission sets are inserted in layers, so the SQL is short and identical on both backends:
+
+```sql
+-- member: explicit list (account, members.view, invites.create, read/post set per this page)
+-- trusted:   INSERT INTO role_permission SELECT 'trusted', permission FROM role_permission WHERE role = 'member';  + polls.create, members.vouch, invites.view_tree
+-- moderator: copy of trusted + every *.moderate, files.approve, members.deny, sessions.view
+-- cosysop:   copy of moderator + every *.manage (the `*.manage` and `manage_*` names), members.approve, members.suspend, members.edit, groups.edit, audit.view, events.manage, sysop.chat
+-- sysop:     explicit full list; waiting: waiting.view, invite.redeem, membership.apply
+```
+
+Groups: `everyone` (`locked`), `staff` (`builtin`, editable members). Grants: (`everyone`, role `member`, global, protected: cannot be revoked) and (`staff`, role `moderator`, global). The first migration step lists the exact `member` permission set in the PR description so the reviewer can check it against this page; `files.upload` sits in `member` and the quarantine is the files slice's rule (M4).
+
+**6.2 Existing accounts.** The migration backfills one `access_grant` (account, role `sysop`, global) for every account whose legacy `accounts.role` is `'sysop'`. Members need no row because `everyone` carries `member`.
+
+**6.3 Founder re-pointing (M1-D).** `claim_founder` keeps its single compare-and-set transaction and adds one statement: insert the `sysop` grant for the new account. `NewAccount` and `AccountStore::create_account` take a role name (`sysop` only from the founder path and tests; `member` writes no grant). `RoleDirectory::role_of` and the login screen's "signed in as" read the **highest-rank role in the snapshot** (`Snapshot::top_role()`), not `accounts.role`. Tests: existing founder suite plus an assertion that the founder's snapshot grants every `Permission::ALL`.
+
+**6.4 Telnet (D27).** `sysop` and `cosysop` over telnet are refused by the M3 telnet slice by dropping any `Held` whose role rank is 40 or more before `resolve`. This slice does nothing for it except keep the rank on `Source::Role` so the telnet slice can; it is noted in coordination.
+
+**6.5 Write path (core services over `AccessStore`).** No UI in this slice (the sysop admin screens are M5); these are the functions that screens, tests and later slices call. Each takes the actor's `Snapshot` and refuses without the matching permission:
+
+- `create_role`, `set_role_permissions`, `delete_role` (`roles.edit`). Rules: target rank strictly below the actor's top rank; `locked` roles refused; the actor may only put a permission in a role if the actor holds it globally (no escalation by editing a role).
+- `grant_role` / `revoke_role` (account or group, global or on a resource) and `grant_permission` / `revoke_permission` (allow-list entries): `roles.edit` in this slice, with the same rank rule for roles. Letting a resource's owner manage its own allow list is added by the resource's slice (M3+) because resource owners do not exist yet. `waiting` cannot be granted; the (`everyone`, `member`) grant cannot be revoked.
+- `create_group`, `delete_group`, `add_group_member`, `remove_group_member` (`groups.edit`): cycles and depth rejected by `GroupGraph`; `everyone` immutable; `staff` not deletable.
+
+Storage traits (`core::access`): `AccessStore` with a few methods only: `snapshot(Option<AccountId>)`, `role(name)`, `put_role` / `set_role_permissions` / `delete_role`, `add_grant` / `remove_grant`, and `change_groups(GroupChange)` (which runs the transaction, lock, `GroupGraph` and closure rewrite described above). The rules live in core; the two backends are persistence only. Role, group and grant changes are audited by M2-C, which depends on this slice and adds the audit call inside these functions; this slice writes no audit rows and says so in the docs.
+
+### 7. Per-role resource limits: what stays and what goes
+
+| Stays in M2-B | Goes to M2-H |
+|---|---|
+| The ordering rule: permission is checked first, limits second, both in core. Documented here. | Everything else: the `limits` module, `role_limit` and `member_limit` tables for both backends, the limit kinds (minutes, calls, sessions, posts per hour, upload bytes, mail, invites, credits), per-member override, and the SSH session enforcement hooks. |
+| Nothing in the schema. No limit columns on `role`. | M2-H adds its own tables keyed by `role.name` and `accounts.id`, so it needs no change to anything in this plan. |
+
+### 8. Deferred, and why
+
+- **Limits** (above): their own slice, no speculative columns.
+- **Per-resource role matrix**: dropped in favor of the allow list and groups (section 0).
+- **Role inheritance**: not needed; layered inserts give the same data.
+- **Resource-owner-managed allow lists** and an `owner` column on resources: the resources do not exist until M3/M4; each resource slice adds its owner and uses `grant_permission`.
+- **Checking that a scoped permission matches the resource's kind** at write time: harmless without it (a mismatched grant never matches); add when the sysop UI exists.
+- **Audit rows** for role, group and grant changes: M2-C.
+- **Sysop/cosysop refused over telnet** (D27): M3 telnet slice.
+- **Sysop UI** to edit roles, groups and allow lists, and the "visible to the sysop" wording on allow-list screens: M5 and the resource slices.
+- **RFC 9068 claim names** (`roles`, `groups`, `entitlements`) on API tokens: M5.
+- **Cross-process cache or push invalidation**: not needed, nothing is cached.
+
+### 9. Test plan
+
+1. **Table-driven test of `resolve`** (`core::access::tests`, no database): one row per case, with the expected decision and reason. Cases: global role; role granted on another resource (denied); role granted on this resource; allow entry for the account; allow entry via a group; role via a group; allow entry for another permission (denied); `resource: None` with only a scoped holding (denied); a global holding answers a resource check; the `waiting` snapshot denies `members.view` and grants `waiting.view`; an empty snapshot denies everything; rule order (global role beats scoped beats allow, so the reason is stable). A property test with an independent oracle: `resolve` is `Granted` iff some held fact covers it, and `resolve` and `reach` agree for every resource.
+2. **`GroupGraph` table tests** (pure): self loop, two-cycle, three-cycle, diamond (allowed), depth 8 allowed and depth 9 rejected, remove edge shrinks the closure, `everyone` refused as a child or parent, unknown group.
+3. **Shared store suite on both backends** (`crates/store/src/suite/access.rs`, run by the SQLite tests and by the Postgres `--ignored` tests, plain and TLS-required, per D24 and D51): seeded roles, ranks and kinds; `waiting` has exactly three permissions; `member` lacks `polls.create` and `events.manage`; each layer contains the one below it; **`sysop` holds every `Permission::ALL`**; every stored permission name parses; backfill of an M1-era database (create at the old schema, migrate, check the sysop grant); founder snapshot grants everything and a restart keeps it; unknown and suspended accounts get exactly the `waiting` snapshot; closure after add, remove, nest and delete group; a rejected cycle leaves rows unchanged; two concurrent opposite-edge adds produce exactly one success and no cycle; scoped grant reaches only its resource; duplicate grant is idempotent; deleting a role, a group or an account cascades.
+4. **Every front-end action path calls `core::access`.** Compile-time: core action functions take `&Granted`, so a path that skips the check does not build. Behavioral (`crates/server/tests/access_paths.rs`, real russh client): a table `ACTION_PATHS` lists each existing action with its permission and a driver (waiting-room views and forms, the settings screen, the signed-in home, the founder prompt). Each driver runs twice against a store where that permission has been removed from the role (refused, nothing written) and where it is present (works). A guard test requires every `Permission::ALL` variant to be either in `ACTION_PATHS` or in an explicit `NOT_YET_WIRED` list, so a later slice cannot add an action without moving its permission across. The founder claim is the one documented exception (it has no account yet; the setup token is its gate) and is pinned by its own test.
+5. **Docs tests**: enum versus the "Permissions" table above (section 5).
+6. **No-leak regression**: the existing waiting-room no-leak tests still pass unchanged in all three registration modes.
+
+### 10. Size, order and risk for Phase 2
+
+Phase 2 is one PR in this order: migrations for both backends and the sqlx offline cache; `Permission`, `Snapshot`, `resolve`, `reach`, `GroupGraph` with their tests; `AccessStore` for SQLite then Postgres with the shared suite; founder and `create_account` re-pointing; the write-path services; front-end call sites and `access_paths`; docs, `features.md`, coordination, one decision (next free ID at push time). Rough size: about 700 lines of core plus tests, about 350 lines per backend plus about 250 lines of shared suite, and two migrations. If review finds it too large, the write-path services in 6.5 are the clean cut: they can land as a follow-up PR without changing the schema.
+
+Risks to flag: (a) front-end call sites sit in `crates/server/src/{ssh,settings,waiting_room}` while M2-A works in `ui`; Phase 2 merges main first and, if M2-A landed, wires only its menu access hook instead of adding call sites; (b) the legacy `accounts.role` column lives until M2-D; (c) `LOCK TABLE` on Postgres is the one piece of backend-specific locking and has its own concurrent test.
