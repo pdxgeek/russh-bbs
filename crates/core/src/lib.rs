@@ -5,6 +5,7 @@ pub mod access;
 pub mod audit;
 pub mod founder;
 pub mod icons;
+pub mod invites;
 pub mod menu;
 pub mod sanitize;
 pub mod store;

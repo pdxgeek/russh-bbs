@@ -55,6 +55,12 @@ impl UniversalKey {
 pub enum Action {
     /// Open the terminal settings screen.
     TerminalSettings,
+    /// Make an invite code and show it once (`invites.create`, M2-D).
+    InviteCreate,
+    /// List the member's own invites (`invites.create`, M2-D).
+    InviteList,
+    /// Show the invite tree (`invites.view_tree`, M2-D).
+    InviteTree,
     /// End the session.
     LogOff,
 }
@@ -66,6 +72,8 @@ impl Action {
     pub const fn permission(self) -> Option<Permission> {
         match self {
             Self::TerminalSettings => Some(Permission::AccountEditSettings),
+            Self::InviteCreate | Self::InviteList => Some(Permission::InvitesCreate),
+            Self::InviteTree => Some(Permission::InvitesViewTree),
             Self::LogOff => None,
         }
     }

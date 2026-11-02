@@ -10,7 +10,7 @@ use russh_bbs_core::store::{AccountState, AccountStore, NewAccount, StoreError};
 use russh_bbs_core::terminal_settings::{TerminalSettings, TerminalSettingsStore};
 use sqlx::migrate::{MigrateError, Migrator};
 use sqlx::sqlite::SqliteConnectOptions;
-use sqlx::{Row as _, SqlitePool};
+use sqlx::{Connection as _, Row as _, SqlitePool};
 use tempfile::TempDir;
 
 use super::{MIGRATOR, SqliteStore};
@@ -61,6 +61,13 @@ impl Harness for SqliteHarness {
             .map_err(|error| error.to_string())
     }
 
+    async fn texts(&self, sql: &str) -> Vec<String> {
+        sqlx::query_scalar::<_, String>(sql)
+            .fetch_all(self.store.pool())
+            .await
+            .unwrap()
+    }
+
     async fn break_audit_inserts(&self) {
         self.raw(
             "CREATE TRIGGER audit_insert_broken BEFORE INSERT ON audit_log
@@ -97,6 +104,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
     (
         4,
         "dc0b92309b186cd248415cffe0fe6c407afea360a22ed0525bcc652242ddaae8d39f41ac2235f05d8a1cb832214f0f9d",
+    ),
+    (
+        7,
+        "0c98a1383826cbf44f87f15e0bf4a091bbc78a72ee98ee0841911afec3497e5e43368afdb59526c15de1355dfd351939",
     ),
 ];
 
@@ -156,6 +167,7 @@ async fn a_fresh_database_gets_every_migration() {
             "audit_log",
             "group_closure",
             "group_member",
+            "invite",
             "member_group",
             "role",
             "role_permission",
@@ -447,7 +459,7 @@ async fn a_database_made_before_the_restructure_still_opens_and_keeps_its_data()
     let store = SqliteStore::open(&path).await.unwrap();
     let after = recorded(store.pool().clone()).await;
     assert_eq!(after[..2], before[..]);
-    assert_eq!(after.len(), 4);
+    assert_eq!(after.len(), MIGRATOR.iter().count());
     // The M1 sysop (legacy role column) is backfilled with a `sysop` grant (M2-B).
     let sysops: Vec<String> = sqlx::query_scalar(
         "SELECT a.username FROM access_grant g JOIN accounts a ON a.id = g.account_id \
@@ -519,4 +531,279 @@ async fn a_hand_written_audit_row_with_an_unknown_action_is_corrupt() {
         store.page(&AuditQuery::default()).await,
         Err(StoreError::Corrupt(_))
     ));
+}
+
+// ---- migration 0007: the accounts rebuild (M2-D) -----------------------------------------
+
+/// Migrations below 0007, as a migrator: the database as the code before M2-D left it.
+fn before_invites() -> Migrator {
+    let mut older = Migrator::DEFAULT;
+    older.migrations =
+        std::borrow::Cow::Owned(MIGRATOR.iter().filter(|m| m.version < 7).cloned().collect());
+    older
+}
+
+async fn dump(pool: &SqlitePool) -> Vec<(&'static str, Vec<String>)> {
+    let mut out = Vec::new();
+    for (name, sql) in crate::migration_fixture::DUMPS {
+        let rows: Vec<String> = sqlx::query_scalar(sql).fetch_all(pool).await.unwrap();
+        out.push((*name, rows));
+    }
+    out
+}
+
+/// A database at the last pre-0007 version, filled with rows from every earlier slice. The
+/// connection has foreign keys ON, as the pool of the code that wrote these rows did.
+async fn seeded_before_invites(path: &std::path::Path) -> Vec<(&'static str, Vec<String>)> {
+    let pool = scratch_pool(path).await;
+    before_invites().run(&pool).await.unwrap();
+    for sql in crate::migration_fixture::SEED {
+        sqlx::query(sql).execute(&pool).await.unwrap();
+    }
+    let before = dump(&pool).await;
+    // The forcing check: every table that references `accounts` must have rows in the fixture,
+    // or the comparison below says nothing about it. A slice that adds such a table (profiles,
+    // limits, ...) must add a row to `migration_fixture::SEED` and a read to `DUMPS`.
+    let referencing: Vec<String> = sqlx::query_scalar(
+        "SELECT DISTINCT m.name FROM sqlite_master m, pragma_foreign_key_list(m.name) f \
+         WHERE m.type = 'table' AND f.\"table\" = 'accounts' ORDER BY m.name",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+    for table in referencing {
+        let rows = before.iter().find(|(name, _)| *name == table);
+        assert!(
+            rows.is_some_and(|(_, rows)| !rows.is_empty()),
+            "table `{table}` references accounts but the migration fixture has no rows for it: \
+             add a seed row to migration_fixture::SEED and a read to DUMPS, so the accounts \
+             rebuild is proven not to cascade into it"
+        );
+    }
+    pool.close().await;
+    before
+}
+
+#[tokio::test]
+#[allow(clippy::too_many_lines)] // one story: seed, migrate, compare, then use the result
+async fn the_accounts_rebuild_keeps_every_row_id_and_dependent_table() {
+    use crate::migration_fixture::{KEY_ALICE, KEY_BOB, KEY_DAVE, NEXT_ACCOUNT_ID};
+    use russh_bbs_core::access::{AccessStore as _, Fingerprint};
+
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("m2c.db");
+    let before = seeded_before_invites(&path).await;
+    let count = |table: &str| before.iter().find(|(n, _)| *n == table).unwrap().1.len();
+    // The fixture really has something in every dependent table, or the comparison proves nothing.
+    assert_eq!(count("accounts"), 4);
+    for table in [
+        "account_keys",
+        "terminal_settings",
+        "account_logins",
+        "access_grant",
+        "group_member",
+        "group_closure",
+        "audit_log",
+    ] {
+        assert!(count(table) > 0, "{table} is empty in the fixture");
+    }
+    assert!(count("access_grant") >= 4, "grants of every shape");
+
+    let store = SqliteStore::open(&path).await.unwrap();
+    let after = dump(store.pool()).await;
+    assert_eq!(
+        after, before,
+        "a row changed, vanished or was cascaded away"
+    );
+
+    // The new shape: no `role`, an `invited_by` that is empty for everyone made before.
+    let columns: Vec<String> = sqlx::query_scalar("SELECT name FROM pragma_table_info('accounts')")
+        .fetch_all(store.pool())
+        .await
+        .unwrap();
+    assert_eq!(
+        columns,
+        [
+            "id",
+            "username",
+            "username_skeleton",
+            "state",
+            "created_at",
+            "invited_by"
+        ]
+    );
+    let invited: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM accounts WHERE invited_by IS NOT NULL")
+            .fetch_one(store.pool())
+            .await
+            .unwrap();
+    assert_eq!(invited, 0);
+
+    // Nothing dangles, foreign keys are on for every pooled connection, and the tables that
+    // reference `accounts` reference the new one (they were never rebuilt, so they still name it).
+    let dangling = sqlx::query("PRAGMA foreign_key_check")
+        .fetch_all(store.pool())
+        .await
+        .unwrap();
+    assert!(dangling.is_empty());
+    let on: i64 = sqlx::query_scalar("PRAGMA foreign_keys")
+        .fetch_one(store.pool())
+        .await
+        .unwrap();
+    assert_eq!(on, 1);
+    for table in [
+        "account_keys",
+        "terminal_settings",
+        "account_logins",
+        "access_grant",
+        "group_member",
+        "group_closure",
+        "invite",
+    ] {
+        let parents: Vec<String> = sqlx::query_scalar(&format!(
+            "SELECT \"table\" FROM pragma_foreign_key_list('{table}')"
+        ))
+        .fetch_all(store.pool())
+        .await
+        .unwrap();
+        assert!(
+            parents.iter().any(|p| p == "accounts"),
+            "{table}: {parents:?}"
+        );
+        assert!(
+            !parents.iter().any(|p| p.ends_with("_new")),
+            "{table}: {parents:?}"
+        );
+    }
+    let sql: String = sqlx::query_scalar("SELECT sql FROM sqlite_master WHERE name = 'accounts'")
+        .fetch_one(store.pool())
+        .await
+        .unwrap();
+    assert!(!sql.contains("accounts_new"), "{sql}");
+
+    // The old accounts still work.
+    let account = |key: &str| {
+        let store = store.clone();
+        let key = Fingerprint::parse(key).unwrap();
+        async move { store.account_by_fingerprint(&key).await.unwrap().unwrap() }
+    };
+    let (alice, bob, dave) = (
+        account(KEY_ALICE).await,
+        account(KEY_BOB).await,
+        account(KEY_DAVE).await,
+    );
+    let top = |id| {
+        let store = store.clone();
+        async move { store.snapshot(Some(id)).await.unwrap().top_role().cloned() }
+    };
+    assert_eq!(top(alice.id).await, Some(Slug::SYSOP));
+    assert_eq!(
+        top(bob.id).await.map(|r| r.as_str().to_owned()).as_deref(),
+        Some("moderator")
+    );
+    assert_eq!(
+        top(dave.id).await,
+        Some(Slug::WAITING),
+        "suspended still waits"
+    );
+
+    // Ids are never reused: the next account follows the burned `ghost` id.
+    let next = store
+        .create_account(NewAccount {
+            username: sanitize_username("erin").unwrap(),
+            role: Slug::MEMBER,
+            state: AccountState::Active,
+        })
+        .await
+        .unwrap();
+    assert_eq!(next.id.as_raw(), NEXT_ACCOUNT_ID);
+
+    // The foreign keys still act: deleting bob takes his own rows and nothing else.
+    sqlx::query("DELETE FROM accounts WHERE username = 'bob'")
+        .execute(store.pool())
+        .await
+        .unwrap();
+    for (table, left) in [
+        ("account_keys", 2),
+        ("account_logins", 0),
+        ("group_member", 0),
+        ("group_closure", 0),
+    ] {
+        let rows: i64 = sqlx::query_scalar(&format!("SELECT count(*) FROM {table}"))
+            .fetch_one(store.pool())
+            .await
+            .unwrap();
+        assert!(rows >= left, "{table}");
+    }
+    let alice_keys: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM account_keys WHERE account_id = 1")
+            .fetch_one(store.pool())
+            .await
+            .unwrap();
+    assert_eq!(alice_keys, 1);
+    let audit: i64 = sqlx::query_scalar("SELECT count(*) FROM audit_log")
+        .fetch_one(store.pool())
+        .await
+        .unwrap();
+    assert!(audit >= 3, "audit rows are not touched by account deletion");
+}
+
+/// Why the migrations run on a connection with foreign keys off: with them on, the rebuild's
+/// `DROP TABLE accounts` deletes every row first and every `ON DELETE CASCADE` follows. This
+/// runs the migration SQL by hand on a connection with foreign keys on, as the pool would have,
+/// and shows the damage, so nobody "simplifies" `migrate` back to the pool.
+#[tokio::test]
+async fn the_rebuild_would_destroy_data_with_foreign_keys_on() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("unsafe.db");
+    seeded_before_invites(&path).await;
+    let pool = scratch_pool(&path).await; // foreign keys ON, like every pooled connection
+    let sql: String = include_str!("../../migrations/sqlite/0007_invites.sql")
+        .lines()
+        .filter(|l| !l.trim_start().starts_with("--"))
+        .collect::<Vec<_>>()
+        .join("\n");
+    // Statement by statement, in one transaction: what sqlx does with a migration.
+    let mut tx = pool.begin().await.unwrap();
+    for statement in sql.split(';').map(str::trim).filter(|s| !s.is_empty()) {
+        sqlx::query(statement).execute(&mut *tx).await.unwrap();
+    }
+    let keys: i64 = sqlx::query_scalar("SELECT count(*) FROM account_keys")
+        .fetch_one(&mut *tx)
+        .await
+        .unwrap();
+    assert_eq!(
+        keys, 0,
+        "the cascade deleted the keys: this is what foreign_keys=OFF prevents"
+    );
+    tx.rollback().await.unwrap();
+}
+
+/// The check at the end of the migrations is not decoration: a database with a row whose foreign
+/// key points nowhere is refused, not served.
+#[tokio::test]
+async fn a_database_left_with_a_dangling_foreign_key_is_refused() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("dangling.db");
+    seeded_before_invites(&path).await;
+    // Plant an orphan the way a buggy migration would have: foreign keys off.
+    let options = SqliteConnectOptions::new()
+        .filename(&path)
+        .foreign_keys(false);
+    let mut conn = sqlx::SqliteConnection::connect_with(&options)
+        .await
+        .unwrap();
+    sqlx::query(
+        "INSERT INTO account_keys (fingerprint, account_id) \
+         VALUES ('SHA256:CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC', 999)",
+    )
+    .execute(&mut conn)
+    .await
+    .unwrap();
+    conn.close().await.unwrap();
+    let error = SqliteStore::open(&path).await.unwrap_err();
+    assert!(
+        matches!(error, crate::OpenError::ForeignKeys { rows: 1 }),
+        "{error:?}"
+    );
 }

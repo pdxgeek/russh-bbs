@@ -6,7 +6,7 @@
 //! first to commit, then finds the row present and changes nothing. The account, its key and
 //! the flag commit together or not at all.
 
-use russh_bbs_core::access::{Fingerprint, MemberDirectory, Slug};
+use russh_bbs_core::access::{Fingerprint, MemberDirectory};
 use russh_bbs_core::audit::events;
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::sanitize::Username;
@@ -31,8 +31,6 @@ impl FounderStore for SqliteStore {
         let flag = SettingKey::FounderClaimed.as_str();
         let skeleton = username.skeleton();
         let name = username.as_str();
-        // Legacy label only; the authority is the `sysop` grant inserted below.
-        let label = crate::legacy_role_label(&Slug::SYSOP);
         let state = AccountState::Active.as_str();
         let fingerprint = fingerprint.as_str();
 
@@ -50,12 +48,11 @@ impl FounderStore for SqliteStore {
         }
         let row = sqlx::query_as!(
             AccountRow,
-            r#"INSERT INTO accounts (username, username_skeleton, role, state)
-               VALUES (?, ?, ?, ?)
+            r#"INSERT INTO accounts (username, username_skeleton, state)
+               VALUES (?, ?, ?)
                RETURNING id AS "id!", username, state, created_at"#,
             name,
             skeleton,
-            label,
             state,
         )
         .fetch_one(&mut *tx)

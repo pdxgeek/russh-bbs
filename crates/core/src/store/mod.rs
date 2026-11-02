@@ -11,6 +11,10 @@ use std::future::Future;
 use crate::access::{Fingerprint, Slug};
 use crate::sanitize::Username;
 
+mod state;
+
+pub use state::{AccountState, AccountStateStore, StateChange, StateChangeError};
+
 /// Store-assigned identifier of an account.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct AccountId(i64);
@@ -51,54 +55,6 @@ impl UnixSeconds {
     #[must_use]
     pub const fn as_raw(self) -> i64 {
         self.0
-    }
-}
-
-/// Where an account is in its life. Only [`AccountState::Active`] grants member access in M1;
-/// the other states exist so M2 (invites, applications, suspension) needs no schema change.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum AccountState {
-    /// Applied or registered, awaiting a decision. Not a member.
-    Pending,
-    /// Accepted but not yet activated. Not a member.
-    Approved,
-    /// A working account.
-    Active,
-    /// Locked out by the sysop. Not a member.
-    Suspended,
-}
-
-impl AccountState {
-    /// The stable text stored in the database.
-    #[must_use]
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            Self::Pending => "pending",
-            Self::Approved => "approved",
-            Self::Active => "active",
-            Self::Suspended => "suspended",
-        }
-    }
-
-    /// Parse the stored text.
-    #[must_use]
-    pub fn parse(text: &str) -> Option<Self> {
-        match text {
-            "pending" => Some(Self::Pending),
-            "approved" => Some(Self::Approved),
-            "active" => Some(Self::Active),
-            "suspended" => Some(Self::Suspended),
-            _ => None,
-        }
-    }
-
-    /// Whether this state may use the board as a member.
-    #[must_use]
-    pub const fn is_member_access(self) -> bool {
-        match self {
-            Self::Active => true,
-            Self::Pending | Self::Approved | Self::Suspended => false,
-        }
     }
 }
 

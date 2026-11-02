@@ -9,8 +9,11 @@
 //! Both pass through the shared sanitizer ([`crate::sanitize`]) before they are stored here, so
 //! every string in a [`View`] is either fixed chrome or sanitized.
 //!
-//! **Forms are honest.** In M1 no invite, application or account can be created (that is M2),
-//! so a valid submission ends in a message saying nothing was stored or sent.
+//! **Forms are honest.** The redeem form (M2-D) really redeems: a valid submission becomes a
+//! [`RoomEffect::Redeem`] for the front end, which has the store, and the room shows one fixed
+//! failure message whatever went wrong (no oracle). The request and apply forms store nothing
+//! yet (M2-E, M2-G), so a valid submission there ends in a message saying nothing was stored or
+//! sent.
 
 use std::fmt;
 
@@ -18,7 +21,7 @@ use super::screens::{self, Page, QUIT_KEY};
 use super::source::RoomConfig;
 use super::strings;
 use crate::sanitize::USERNAME_MAX_CHARS;
-use crate::sanitize::{MultiLine, SingleLine, UsernameError, sanitize_username};
+use crate::sanitize::{MultiLine, SingleLine, Username, UsernameError, sanitize_username};
 use crate::store::RegistrationMode;
 
 /// Longest banner kept, in characters (D64). Small enough that the home page's menu fits at
@@ -159,13 +162,35 @@ pub enum RoomInput {
     Quit,
 }
 
+/// A redemption the front end should attempt. Built from a form that passed the room's own
+/// checks (both fields filled, the handle valid), so the front end only needs the store.
+#[derive(Clone, PartialEq, Eq)]
+pub struct RedeemRequest {
+    /// The code as typed (sanitized and length-capped, not yet normalized or hashed).
+    pub code: String,
+    /// The handle the new account will have.
+    pub handle: Username,
+}
+
+impl fmt::Debug for RedeemRequest {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // The code is a credential: never in a log or a test failure message.
+        f.debug_struct("RedeemRequest")
+            .field("code", &"<redacted>")
+            .field("handle", &self.handle)
+            .finish()
+    }
+}
+
 /// What the front end should do after an input.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RoomEffect {
     /// Redraw and keep going.
     Stay,
     /// Redraw once, then close the session.
     Disconnect,
+    /// Try to redeem an invite, then call [`WaitingRoom::redeem_refused`] if it did not work.
+    Redeem(RedeemRequest),
 }
 
 /// Whether a notice is good news or a problem.
@@ -290,7 +315,8 @@ fn fields_of(page: Page) -> &'static [FieldSpec] {
 fn unavailable(page: Page) -> &'static str {
     match page {
         Page::RequestInvite => strings::REQUEST_INVITE_UNAVAILABLE,
-        Page::RedeemInvite => strings::REDEEM_INVITE_UNAVAILABLE,
+        // The redeem form is live (M2-D) and never gets here; the words stay honest anyway.
+        Page::RedeemInvite => strings::REDEEM_FAILED,
         Page::Apply => strings::APPLY_UNAVAILABLE,
         Page::CreateAccount => strings::CREATE_ACCOUNT_UNAVAILABLE,
         // Not forms; never submitted.
@@ -443,6 +469,15 @@ impl WaitingRoom {
             return RoomEffect::Disconnect;
         }
         self.active = 0;
+        if self.page == Page::RedeemInvite
+            && self.validate().is_ok()
+            && let Some(request) = self.redeem_request()
+        {
+            // What was typed is dropped at once: the code does not stay in the room.
+            self.clear_form();
+            self.notice = None;
+            return RoomEffect::Redeem(request);
+        }
         self.notice = Some(match self.validate() {
             Ok(()) => {
                 // Nothing is stored or sent in M1; say so, and do not keep what was typed.
@@ -458,6 +493,23 @@ impl WaitingRoom {
             },
         });
         RoomEffect::Stay
+    }
+
+    /// The redemption the redeem form describes, if its handle is valid.
+    fn redeem_request(&self) -> Option<RedeemRequest> {
+        let code = self.values.first()?.trim().to_owned();
+        let handle = sanitize_username(self.values.get(1)?).ok()?;
+        Some(RedeemRequest { code, handle })
+    }
+
+    /// The redemption did not work. Whatever the reason (an unknown, wrong, used or expired
+    /// code, a taken handle, a key that already has an account, a store failure) the visitor
+    /// reads the same words, so the answer tells a stranger nothing about the board.
+    pub fn redeem_refused(&mut self) {
+        self.notice = Some(Notice {
+            kind: NoticeKind::Error,
+            text: strings::REDEEM_FAILED,
+        });
     }
 
     /// Check what was typed. The checks depend only on the text, never on the board's members.

@@ -10,6 +10,7 @@ pub(crate) mod access;
 pub(crate) mod accounts;
 pub(crate) mod audit;
 pub(crate) mod founder;
+pub(crate) mod invites;
 pub(crate) mod terminal_settings;
 
 use std::sync::Arc;
@@ -17,13 +18,16 @@ use std::sync::Arc;
 use russh_bbs_core::access::{AccessStore, Fingerprint, MemberDirectory, Slug};
 use russh_bbs_core::audit::{AuditStore, WallClock};
 use russh_bbs_core::founder::FounderStore;
-use russh_bbs_core::store::{AccountStore, SettingsStore};
+use russh_bbs_core::invites::InviteStore;
+use russh_bbs_core::store::{AccountStateStore, AccountStore, SettingsStore};
 use russh_bbs_core::terminal_settings::{MemberSessions, TerminalSettingsStore};
 
 /// Everything the suite needs from a store: all the core traits, and cheap to clone so
 /// concurrent checks can share it.
 pub(crate) trait TestStore:
     AccountStore
+    + AccountStateStore
+    + InviteStore
     + AccessStore
     + AuditStore
     + SettingsStore
@@ -40,6 +44,8 @@ pub(crate) trait TestStore:
 
 impl<T> TestStore for T where
     T: AccountStore
+        + AccountStateStore
+        + InviteStore
         + AccessStore
         + AuditStore
         + SettingsStore
@@ -78,6 +84,10 @@ pub(crate) trait Harness: Sized {
     /// fails. For proving what the database itself refuses.
     async fn raw(&self, sql: &str) -> Result<u64, String>;
 
+    /// Run one raw `SELECT` whose first column is text (cast it in the query) and return that
+    /// column of every row. For looking at what is really stored.
+    async fn texts(&self, sql: &str) -> Vec<String>;
+
     /// Make every insert into `audit_log` fail, so a test can prove the change that wanted to
     /// write the row did not land either.
     async fn break_audit_inserts(&self);
@@ -107,7 +117,7 @@ macro_rules! shared_suite {
         mod $name {
             #[allow(unused_imports)]
             use super::*;
-            use $crate::suite::{access, accounts, audit, founder, terminal_settings};
+            use $crate::suite::{access, accounts, audit, founder, invites, terminal_settings};
 
             $crate::suite::shared_suite!(@tests $harness, $attr;
                 access::the_built_in_roles_have_their_ranks_and_kinds,
@@ -158,6 +168,24 @@ macro_rules! shared_suite {
                 founder::a_failed_claim_rolls_back_and_leaves_the_board_unclaimed,
                 founder::the_claim_survives_reopening_the_database,
                 founder::role_lookup_is_only_for_active_accounts,
+                invites::a_created_invite_is_stored_hashed_bound_to_the_inviter_and_audited,
+                invites::redeeming_makes_an_active_member_with_the_inviter_recorded,
+                invites::a_code_works_once,
+                invites::every_kind_of_bad_code_is_the_same_refusal,
+                invites::expiry_is_exact_and_uses_the_store_clock,
+                invites::a_refused_redemption_consumes_nothing,
+                invites::a_suspended_inviter_voids_their_open_codes,
+                invites::concurrent_redemptions_of_one_code_make_exactly_one_account,
+                invites::the_quota_counts_a_rolling_window_and_a_missing_inviter_is_an_error,
+                invites::concurrent_creations_cannot_exceed_the_quota,
+                invites::the_tree_lists_members_with_their_inviters_and_never_applicants,
+                invites::my_invites_are_newest_first_with_their_status,
+                invites::deleting_accounts_keeps_invites_and_the_tree_intact,
+                invites::invite_and_state_writes_never_land_without_their_audit_row,
+                invites::invites_survive_a_reopen,
+                invites::allowed_state_changes_are_made_and_audited,
+                invites::refused_state_changes_write_nothing,
+                invites::racing_state_changes_apply_once,
                 terminal_settings::defaults_when_missing,
                 terminal_settings::set_then_get_round_trips,
                 terminal_settings::every_tier_and_unset_round_trip,

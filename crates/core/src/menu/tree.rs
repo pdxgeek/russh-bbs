@@ -9,6 +9,7 @@ use crate::access::Permission;
 
 const MAIN: &str = "main";
 const SYSOP: &str = "sysop";
+const INVITES: &str = "invites";
 
 const fn item(hotkey: char, label: &'static str, target: Target) -> Item {
     Item {
@@ -28,7 +29,7 @@ const fn gated(hotkey: char, label: &'static str, target: Target, requires: Perm
     }
 }
 
-static MAIN_ITEMS: [Item; 7] = [
+static MAIN_ITEMS: [Item; 8] = [
     gated(
         'f',
         "menu.main.item.forums",
@@ -53,6 +54,12 @@ static MAIN_ITEMS: [Item; 7] = [
         Target::Placeholder("placeholder.members"),
         Permission::MembersView,
     ),
+    gated(
+        'i',
+        "menu.main.item.invites",
+        Target::Menu(INVITES),
+        Permission::InvitesCreate,
+    ),
     item(
         's',
         "menu.main.item.settings",
@@ -74,7 +81,25 @@ static SYSOP_ITEMS: [Item; 1] = [gated(
     Permission::MembersApprove,
 )];
 
-static MENUS: [Menu; 2] = [
+static INVITES_ITEMS: [Item; 3] = [
+    item(
+        'c',
+        "menu.invites.item.create",
+        Target::Action(Action::InviteCreate),
+    ),
+    item(
+        'y',
+        "menu.invites.item.list",
+        Target::Action(Action::InviteList),
+    ),
+    item(
+        't',
+        "menu.invites.item.tree",
+        Target::Action(Action::InviteTree),
+    ),
+];
+
+static MENUS: [Menu; 3] = [
     Menu {
         id: MAIN,
         title: "menu.main.title",
@@ -84,6 +109,11 @@ static MENUS: [Menu; 2] = [
         id: SYSOP,
         title: "menu.sysop.title",
         items: &SYSOP_ITEMS,
+    },
+    Menu {
+        id: INVITES,
+        title: "menu.invites.title",
+        items: &INVITES_ITEMS,
     },
 ];
 

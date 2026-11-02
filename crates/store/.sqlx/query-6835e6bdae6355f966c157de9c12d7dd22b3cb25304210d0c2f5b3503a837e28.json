@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO invite (code_hash, inviter_id, created_at, expires_at)\n               SELECT ?1, a.id, ?2, ?3 FROM accounts a\n               WHERE a.id = ?4\n                 AND (?5 IS NULL\n                      OR (SELECT count(*) FROM invite\n                          WHERE inviter_id = a.id AND created_at > ?6) < ?5)\n               RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "6835e6bdae6355f966c157de9c12d7dd22b3cb25304210d0c2f5b3503a837e28"
+}

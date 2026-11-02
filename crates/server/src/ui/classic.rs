@@ -14,7 +14,7 @@ use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use russh_bbs_core::icons::{SecurityMarker, Tier};
 use russh_bbs_core::menu::{MenuPage, PageItem};
-use russh_bbs_core::waiting_room::{Notice, NoticeKind};
+use russh_bbs_core::waiting_room::{Notice, NoticeKind, View};
 
 use super::chrome;
 use super::keys;
@@ -29,6 +29,19 @@ pub(crate) struct MenuScreen<'a> {
     pub(crate) body: &'a [String],
     /// A notice from the session (saved, icon choice), shown after the menu.
     pub(crate) notice: Option<Notice>,
+    pub(crate) look: Look,
+    /// Icon tier the markers are drawn in.
+    pub(crate) tier: Tier,
+    /// Markers for the status row.
+    pub(crate) markers: &'a [SecurityMarker],
+}
+
+/// Everything the layout needs to draw one content screen that is not a menu (the invite
+/// screens, M2-D): a [`View`] of chrome and sanitized lines, in the same frame and with the same
+/// reserved status row as the menu.
+pub(crate) struct ContentScreen<'a> {
+    pub(crate) strings: &'a StringTable,
+    pub(crate) view: &'a View,
     pub(crate) look: Look,
     /// Icon tier the markers are drawn in.
     pub(crate) tier: Tier,
@@ -57,6 +70,49 @@ pub(crate) fn render(frame: &mut Frame<'_>, screen: &MenuScreen<'_>) {
     if let Some(row) = status {
         chrome::render_status(frame, row, screen.markers, screen.tier, screen.strings);
     }
+}
+
+/// Draw a content screen: the box above, the status row below. The view's lines go in the box
+/// only; the status row is split off first and nothing in the view can reach it.
+pub(crate) fn render_content(frame: &mut Frame<'_>, screen: &ContentScreen<'_>) {
+    let (content, status) = chrome::split_status(frame.area());
+    settings::boxed(
+        frame,
+        content,
+        screen.strings.text(keys::TITLE),
+        content_lines(screen),
+        screen.look,
+    );
+    if let Some(row) = status {
+        chrome::render_status(frame, row, screen.markers, screen.tier, screen.strings);
+    }
+}
+
+fn content_lines(screen: &ContentScreen<'_>) -> Vec<Line<'static>> {
+    let (bold, dim, heading, _) = styles(screen.look);
+    let view = screen.view;
+    let mut out = vec![
+        Line::styled(view.heading.to_owned(), heading),
+        Line::raw(""),
+    ];
+    out.extend(view.body.iter().map(|text| Line::raw(text.clone())));
+    if let Some(note) = view.note {
+        out.push(Line::raw(""));
+        out.push(Line::styled(note.to_owned(), dim));
+    }
+    if let Some(notice) = view.notice {
+        out.push(Line::raw(""));
+        out.push(notice_line(
+            screen.strings,
+            notice.kind,
+            notice.text,
+            screen.look,
+            bold,
+        ));
+    }
+    out.push(Line::raw(""));
+    out.push(Line::styled(view.footer.to_owned(), dim));
+    out
 }
 
 fn styles(look: Look) -> (Style, Style, Style, Style) {

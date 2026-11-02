@@ -14,6 +14,7 @@ use super::strings::{self, fill};
 use super::{format_utc, tier_name};
 use crate::access::{Permission, PermissionCheck, Slug, Snapshot};
 use crate::icons::Tier;
+use crate::invites::{InviteOutcome, InviteRequest, InviteScreen};
 use crate::menu::{Action, MenuKey, MenuOutcome, MenuPage, MenuSession, main_tree};
 use crate::sanitize::{SingleLine, USERNAME_MAX_CHARS, Username};
 use crate::store::UnixSeconds;
@@ -44,11 +45,14 @@ pub enum MemberEffect {
     Stay,
     /// Store these settings, then redraw. The flow already holds them.
     Save(TerminalSettings),
+    /// Carry out an invite request with the store, then report it with
+    /// [`MemberFlow::invite_done`]. Nothing is shown until then (M2-D).
+    Invite(InviteRequest),
     /// Redraw (the logoff screen is showing) and close the session.
     Disconnect,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug)]
 enum Page {
     Login,
     GlyphTest(GlyphTest),
@@ -56,6 +60,8 @@ enum Page {
     Settings,
     EditWidth(String),
     EditHeight(String),
+    /// An invite screen (create, list, tree). Not `PartialEq`: it may hold a one-time code.
+    Invites(InviteScreen),
     Logoff,
 }
 
@@ -166,6 +172,7 @@ impl MemberFlow {
             Page::Home => self.home_input(input),
             Page::Settings => self.settings_input(input),
             Page::EditWidth(_) | Page::EditHeight(_) => self.edit_input(input),
+            Page::Invites(_) => self.invite_input(input),
             Page::Logoff => MemberEffect::Disconnect,
         }
     }
@@ -177,7 +184,7 @@ impl MemberFlow {
         match &self.page {
             Page::Settings | Page::EditWidth(_) | Page::EditHeight(_) => true,
             Page::GlyphTest(test) => !test.is_first_run(),
-            Page::Login | Page::Home | Page::Logoff => false,
+            Page::Login | Page::Home | Page::Invites(_) | Page::Logoff => false,
         }
     }
 
@@ -231,8 +238,41 @@ impl MemberFlow {
                 self.page = Page::Settings;
                 MemberEffect::Stay
             }
+            MenuOutcome::Action(Action::InviteCreate) => {
+                MemberEffect::Invite(InviteRequest::Create)
+            }
+            MenuOutcome::Action(Action::InviteList) => MemberEffect::Invite(InviteRequest::List),
+            MenuOutcome::Action(Action::InviteTree) => MemberEffect::Invite(InviteRequest::Tree),
             MenuOutcome::Action(Action::LogOff) => self.log_off(),
         }
+    }
+
+    /// The front end finished an invite request: show what came of it. Any key closes the
+    /// screen (a tree also pages), and a code shown once is dropped with it.
+    pub fn invite_done(&mut self, outcome: InviteOutcome) {
+        self.page = Page::Invites(InviteScreen::new(outcome));
+        self.notice = None;
+    }
+
+    fn invite_input(&mut self, input: MemberInput) -> MemberEffect {
+        let Page::Invites(screen) = &mut self.page else {
+            return MemberEffect::Stay;
+        };
+        if let MemberInput::Char(c) = input
+            && screen.page_key(c)
+        {
+            return MemberEffect::Stay;
+        }
+        // Dropping the screen drops the code it showed.
+        self.page = Page::Home;
+        MemberEffect::Stay
+    }
+
+    /// Whether an invite screen is showing, so the front end draws it in the framed layout
+    /// with the status row.
+    #[must_use]
+    pub const fn is_invite_screen(&self) -> bool {
+        matches!(self.page, Page::Invites(_))
     }
 
     /// What this session may do. The one place the menus get their access from.
@@ -363,6 +403,7 @@ impl MemberFlow {
             Page::Settings => self.settings_view(&mut view),
             Page::EditWidth(typed) => edit_view(&mut view, strings::FIELD_WIDTH, typed),
             Page::EditHeight(typed) => edit_view(&mut view, strings::FIELD_HEIGHT, typed),
+            Page::Invites(screen) => return screen.view(),
             Page::Logoff => self.logoff_view(&mut view),
         }
         view

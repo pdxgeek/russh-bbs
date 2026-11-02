@@ -48,9 +48,18 @@ forums = "Forums"
 mail = "Mail"
 files = "Files"
 members = "Members"
+invites = "Invites"
 settings = "Terminal settings"
 sysop = "Sysop tools"
 logoff = "Log off"
+
+[menu.invites]
+title = "Invites"
+
+[menu.invites.item]
+create = "Create an invite"
+list = "Your invites"
+tree = "Invite tree"
 
 [menu.sysop]
 title = "Sysop tools"

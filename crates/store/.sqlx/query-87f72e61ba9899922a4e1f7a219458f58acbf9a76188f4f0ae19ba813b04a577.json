@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "INSERT INTO accounts (username, username_skeleton, role, state)\n               VALUES (?, ?, ?, ?)\n               RETURNING id AS \"id!\", username, state, created_at",
+  "query": "INSERT INTO accounts (username, username_skeleton, state, invited_by)\n               VALUES (?, ?, ?, ?)\n               RETURNING id AS \"id!\", username, state, created_at",
   "describe": {
     "columns": [
       {
@@ -34,5 +34,5 @@
       false
     ]
   },
-  "hash": "e55b52846cc9e916411783b4a6a459c56c5f4236320c585fc1f5f3dbc3c05868"
+  "hash": "87f72e61ba9899922a4e1f7a219458f58acbf9a76188f4f0ae19ba813b04a577"
 }
