@@ -46,14 +46,24 @@ use tokio::time::timeout;
 /// `InviteRedeem` and `InvitesViewTree` have their path tests in `tests/invites.rs` (the
 /// redeem form refuses without the permission on every attempt; the tree item and screen follow
 /// `invites.view_tree` on the next action); `InvitesCreate` is in the menu-path test below.
+///
+/// `InviteRequest`, `MembersDeny` and `MembersVouch` (M2-E) have their path tests in
+/// `tests/queue.rs`: without `invite.request` the request form gives the same answer and stores
+/// nothing, and without `members.deny` or `members.vouch` the key is not offered, pressing it
+/// does nothing and nothing is written, on the very next action. `MembersApprove` is also
+/// exercised there (the screen it opens and the approve key), as well as in the menu-path test
+/// below.
 const WIRED: &[Permission] = &[
     Permission::WaitingView,
+    Permission::InviteRequest,
     Permission::InviteRedeem,
     Permission::InvitesCreate,
     Permission::InvitesViewTree,
     Permission::AccountEditSettings,
     Permission::MembersView,
     Permission::MembersApprove,
+    Permission::MembersDeny,
+    Permission::MembersVouch,
     Permission::AccountEditProfile,
     Permission::MembersEdit,
     Permission::ForumList,
@@ -67,8 +77,6 @@ const WIRED: &[Permission] = &[
 const NOT_YET_WIRED: &[Permission] = &[
     Permission::MembershipApply,
     Permission::AccountSetPassword,
-    Permission::MembersDeny,
-    Permission::MembersVouch,
     Permission::MembersSuspend,
     Permission::MembersDeleteData,
     Permission::InvitesRevoke,

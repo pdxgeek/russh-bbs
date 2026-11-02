@@ -67,6 +67,10 @@ pub enum Action {
     OwnProfile,
     /// Open the form to edit the signed-in member's own profile (M2-F).
     EditOwnProfile,
+    /// Open the sysop's queue of invite requests (`members.approve`, M2-E).
+    SysopQueue,
+    /// Open the vouch screen: pending requests a member can speak for (`members.vouch`, M2-E).
+    VouchQueue,
     /// End the session.
     LogOff,
 }
@@ -82,6 +86,8 @@ impl Action {
             Self::InviteTree => Some(Permission::InvitesViewTree),
             Self::MemberList | Self::OwnProfile => Some(Permission::MembersView),
             Self::EditOwnProfile => Some(Permission::AccountEditProfile),
+            Self::SysopQueue => Some(Permission::MembersApprove),
+            Self::VouchQueue => Some(Permission::MembersVouch),
             Self::LogOff => None,
         }
     }

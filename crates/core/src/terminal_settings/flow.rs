@@ -17,6 +17,10 @@ use crate::icons::Tier;
 use crate::invites::{InviteOutcome, InviteRequest, InviteScreen};
 use crate::menu::{Action, MenuKey, MenuOutcome, MenuPage, MenuSession, main_tree};
 use crate::profiles::{MembersScreen, Request, Response, ScreenKey, ScreenView, Step};
+use crate::queue::{
+    QueueKey, QueueMode, QueueScreen, QueueStep, QueueView, Request as QueueRequest,
+    Response as QueueResponse,
+};
 use crate::sanitize::{SingleLine, USERNAME_MAX_CHARS, Username};
 use crate::store::UnixSeconds;
 use crate::waiting_room::{FieldView, MenuItemView, Notice, NoticeKind, View};
@@ -60,6 +64,8 @@ enum Page {
     Home,
     /// The members list, a profile or the profile form (M2-F).
     Members(Box<MembersScreen>),
+    /// The sysop queue or the vouch screen (M2-E).
+    Queue(Box<QueueScreen>),
     Settings,
     EditWidth(String),
     EditHeight(String),
@@ -173,6 +179,17 @@ impl MemberFlow {
             });
             return MemberEffect::Stay;
         }
+        if let Page::Queue(screen) = &self.page
+            && !screen.still_permitted(&self.access)
+        {
+            // Same rule again: the permission went away since the screen opened.
+            self.page = Page::Home;
+            self.notice = Some(Notice {
+                kind: NoticeKind::Error,
+                text: strings::MEMBERS_NOT_PERMITTED,
+            });
+            return MemberEffect::Stay;
+        }
         match &mut self.page {
             Page::Login => {
                 self.page = if self.settings.needs_glyph_test() {
@@ -185,6 +202,7 @@ impl MemberFlow {
             Page::GlyphTest(_) => self.glyph_input(input),
             Page::Home => self.home_input(input),
             Page::Members(_) => self.members_input(input),
+            Page::Queue(_) => self.queue_input(input),
             Page::Settings => self.settings_input(input),
             Page::EditWidth(_) | Page::EditHeight(_) => self.edit_input(input),
             Page::Invites(_) => self.invite_input(input),
@@ -199,7 +217,12 @@ impl MemberFlow {
         match &self.page {
             Page::Settings | Page::EditWidth(_) | Page::EditHeight(_) => true,
             Page::GlyphTest(test) => !test.is_first_run(),
-            Page::Login | Page::Home | Page::Members(_) | Page::Invites(_) | Page::Logoff => false,
+            Page::Login
+            | Page::Home
+            | Page::Members(_)
+            | Page::Queue(_)
+            | Page::Invites(_)
+            | Page::Logoff => false,
         }
     }
 
@@ -258,6 +281,20 @@ impl MemberFlow {
             }
             MenuOutcome::Action(Action::InviteList) => MemberEffect::Invite(InviteRequest::List),
             MenuOutcome::Action(Action::InviteTree) => MemberEffect::Invite(InviteRequest::Tree),
+            MenuOutcome::Action(Action::SysopQueue) => {
+                self.page = Page::Queue(Box::new(QueueScreen::open(
+                    QueueMode::Sysop,
+                    self.access.account(),
+                )));
+                MemberEffect::Stay
+            }
+            MenuOutcome::Action(Action::VouchQueue) => {
+                self.page = Page::Queue(Box::new(QueueScreen::open(
+                    QueueMode::Vouch,
+                    self.access.account(),
+                )));
+                MemberEffect::Stay
+            }
             MenuOutcome::Action(Action::LogOff) => self.log_off(),
             MenuOutcome::Action(
                 action @ (Action::MemberList | Action::OwnProfile | Action::EditOwnProfile),
@@ -280,6 +317,8 @@ impl MemberFlow {
             Action::EditOwnProfile => own.map(MembersScreen::edit_own),
             Action::TerminalSettings
             | Action::LogOff
+            | Action::SysopQueue
+            | Action::VouchQueue
             | Action::InviteCreate
             | Action::InviteList
             | Action::InviteTree => None,
@@ -339,6 +378,62 @@ impl MemberFlow {
     pub fn members_view(&self) -> Option<ScreenView> {
         match &self.page {
             Page::Members(screen) => Some(screen.view(&self.access)),
+            _ => None,
+        }
+    }
+
+    fn queue_input(&mut self, input: MemberInput) -> MemberEffect {
+        let key = match input {
+            MemberInput::Char(c) => QueueKey::Char(c),
+            MemberInput::Enter => QueueKey::Enter,
+            MemberInput::Escape => QueueKey::Escape,
+            MemberInput::Backspace | MemberInput::Quit => return MemberEffect::Stay,
+        };
+        let Page::Queue(screen) = &mut self.page else {
+            return MemberEffect::Stay;
+        };
+        let step = screen.press(&self.access, key);
+        self.after_queue(step);
+        MemberEffect::Stay
+    }
+
+    fn after_queue(&mut self, step: QueueStep) {
+        match step {
+            QueueStep::Stay => {}
+            QueueStep::Leave => self.page = Page::Home,
+            QueueStep::Denied => {
+                self.page = Page::Home;
+                self.notice = Some(Notice {
+                    kind: NoticeKind::Error,
+                    text: strings::MEMBERS_NOT_PERMITTED,
+                });
+            }
+        }
+    }
+
+    /// The queue request the screen is waiting on, once. The front end runs it with
+    /// `queue::execute` and gives the answer to [`MemberFlow::deliver_queue`].
+    pub fn take_queue_request(&mut self) -> Option<QueueRequest> {
+        match &mut self.page {
+            Page::Queue(screen) => screen.take_request(),
+            _ => None,
+        }
+    }
+
+    /// Hand the answer of a queue request to the screen.
+    pub fn deliver_queue(&mut self, response: QueueResponse) {
+        let step = match &mut self.page {
+            Page::Queue(screen) => screen.deliver(response),
+            _ => return,
+        };
+        self.after_queue(step);
+    }
+
+    /// The queue screen as a layout draws it, while one is open. `None` on every other page.
+    #[must_use]
+    pub fn queue_view(&self) -> Option<QueueView> {
+        match &self.page {
+            Page::Queue(screen) => Some(screen.view(&self.access)),
             _ => None,
         }
     }
@@ -496,7 +591,7 @@ impl MemberFlow {
             Page::Login => self.login_view(&mut view),
             Page::GlyphTest(test) => glyph_view(&mut view, *test),
             Page::Home => self.home_view(&mut view),
-            Page::Members(_) => {}
+            Page::Members(_) | Page::Queue(_) => {}
             Page::Settings => self.settings_view(&mut view),
             Page::EditWidth(typed) => edit_view(&mut view, strings::FIELD_WIDTH, typed),
             Page::EditHeight(typed) => edit_view(&mut view, strings::FIELD_HEIGHT, typed),

@@ -223,7 +223,8 @@ async fn help_back_and_quit_are_the_same_on_the_submenu() {
     send(&mut channel, "o").await;
     let sub = full(&mut channel).await;
     assert!(sub.contains("Sysop tools"), "{sub}");
-    assert!(sub.contains("[q] Approval queue (not built yet)"), "{sub}");
+    assert!(sub.contains("[q] Invite requests"), "{sub}");
+    assert!(!sub.contains("not built yet"), "{sub}");
     send(&mut channel, "?").await;
     assert!(full(&mut channel).await.contains("Any key: close help"));
     send(&mut channel, "x").await;

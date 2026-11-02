@@ -93,6 +93,7 @@ pub(crate) async fn waiting_holds_exactly_the_waiting_room_permissions<H: Harnes
     let set = role_set(h.store(), &Slug::WAITING).await;
     let want: BTreeSet<_> = [
         Permission::WaitingView,
+        Permission::InviteRequest,
         Permission::InviteRedeem,
         Permission::MembershipApply,
     ]
@@ -252,7 +253,10 @@ pub(crate) async fn unknown_and_inactive_accounts_get_the_waiting_snapshot<H: Ha
         for &permission in Permission::ALL {
             let want = matches!(
                 permission,
-                Permission::WaitingView | Permission::InviteRedeem | Permission::MembershipApply
+                Permission::WaitingView
+                    | Permission::InviteRequest
+                    | Permission::InviteRedeem
+                    | Permission::MembershipApply
             );
             assert_eq!(
                 snapshot.resolve(permission, None).is_granted(),

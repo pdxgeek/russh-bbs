@@ -11,6 +11,7 @@ use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 
 use russh_bbs_core::access::{Access, Fingerprint};
 use russh_bbs_core::limits::SessionCounter;
+use russh_bbs_core::queue::RequestGate;
 
 use super::terminal::PtySize;
 
@@ -52,6 +53,9 @@ pub struct SessionRegistry {
     /// Signed-in sessions per account, for the concurrent-session limit (M2-H). In this
     /// process only: a second process has its own count.
     member_sessions: SessionCounter,
+    /// The per-key and per-network limits on submitting an invite request (M2-E, D72), shared
+    /// by every session of this server and kept in memory only.
+    request_gate: RequestGate,
 }
 
 impl SessionRegistry {
@@ -118,6 +122,12 @@ impl SessionRef {
     #[must_use]
     pub fn member_sessions(&self) -> SessionCounter {
         self.registry.member_sessions.clone()
+    }
+
+    /// The limits on submitting an invite request, shared by every session of this server.
+    #[must_use]
+    pub fn request_gate(&self) -> &RequestGate {
+        &self.registry.request_gate
     }
 
     /// Record the authenticated key and the access decided for it.

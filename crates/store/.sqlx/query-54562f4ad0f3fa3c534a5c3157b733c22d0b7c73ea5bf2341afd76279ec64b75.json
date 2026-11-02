@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT expires_at AS \"until!\" FROM request_denial WHERE key_hash = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "until!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "54562f4ad0f3fa3c534a5c3157b733c22d0b7c73ea5bf2341afd76279ec64b75"
+}

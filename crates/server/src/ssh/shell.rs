@@ -34,6 +34,7 @@ use russh_bbs_core::invites::{
     my_invites, redeem_invite,
 };
 use russh_bbs_core::limits::{LimitError, MemberMeter, SystemClock};
+use russh_bbs_core::queue::{InviteAsk, submit_request};
 use russh_bbs_core::store::{Account, AccountId};
 use russh_bbs_core::terminal_settings::{MemberFlow, MemberStart, TerminalSettings};
 use russh_bbs_core::waiting_room::RedeemRequest;
@@ -224,8 +225,14 @@ impl<D: Backend> Shell<D> {
             // A members screen needs the store before it can take the next key. Answer it, then
             // apply the keys that were held back, with the account's permissions loaded again
             // (every action sees what the account holds now).
-            while let Some(request) = effects.members_request.take() {
-                self.run_members(request).await;
+            loop {
+                if let Some(request) = effects.members_request.take() {
+                    self.run_members(request).await;
+                } else if let Some(request) = effects.queue_request.take() {
+                    self.run_queue(request).await;
+                } else {
+                    break;
+                }
                 let rest = std::mem::take(&mut effects.held_back);
                 if rest.is_empty() {
                     break;
@@ -263,6 +270,11 @@ impl<D: Backend> Shell<D> {
                         return;
                     }
                 }
+            }
+            // After the frame: the room's answer to a request does not wait for the store, so how
+            // long it takes cannot tell a kept request from a dropped one (D71).
+            if let Some(ask) = effects.request_invite.take() {
+                self.try_request_invite(ask).await;
             }
             if leaving {
                 self.finish().await;
@@ -487,6 +499,35 @@ impl<D: Backend> Shell<D> {
         }
     }
 
+    /// Offer a request for an invite typed in the waiting room to the queue (M2-E). The room
+    /// has already shown its one fixed answer, and the frame carrying it is sent before this
+    /// runs, so nothing here reaches the screen or delays it: a drop (a
+    /// rate limit, a full queue, a repeat, a recent refusal, a slow or broken store) is logged
+    /// by core without the request's text and looks like a kept request to the person. The
+    /// waiting snapshot must hold `invite.request` (checked in core).
+    async fn try_request_invite(&mut self, ask: InviteAsk) {
+        let Some(fingerprint) = self.parts.fingerprint.clone() else {
+            return;
+        };
+        let work = async {
+            let access = self.parts.directory.access_for(None).await.ok()?;
+            Some(
+                submit_request(
+                    &*self.parts.directory,
+                    self.parts.session.request_gate(),
+                    &access,
+                    ask,
+                    &fingerprint,
+                    self.parts.peer_ip,
+                )
+                .await,
+            )
+        };
+        if timeout(MEMBER_START_TIMEOUT, work).await.is_err() {
+            warn!(session = ?self.parts.session.id(), "invite request timed out; dropped");
+        }
+    }
+
     /// Carry out an invite request for the signed-in member and show its screen. The checks
     /// (permission, quota) are core's; this only supplies the session's snapshot and, for a new
     /// code, bytes from the OS random source.
@@ -586,6 +627,28 @@ impl<D: Backend> Shell<D> {
         };
         let response = crate::members::run(&*self.parts.directory, &access, request).await;
         self.parts.screen.deliver_members(response);
+    }
+
+    /// Run the queue request a sysop or vouch screen is waiting on and give it the answer.
+    /// Core checks the permission against the snapshot loaded for this action
+    /// (`queue::execute`); a session without one gets "not permitted", and a slow or failing
+    /// store gets "failed". Nothing is cached.
+    ///
+    /// A decision asks for the list again so the screen shows the queue as it is now; that
+    /// follow-up runs here, not at the next key, with the same permissions (a few at most).
+    async fn run_queue(&mut self, request: russh_bbs_core::queue::Request) {
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let mut request = request;
+        for _ in 0..3 {
+            let response = crate::sysop::queue::run(&*self.parts.directory, &access, request).await;
+            self.parts.screen.deliver_queue(response);
+            match self.parts.screen.take_queue_request() {
+                Some(next) => request = next,
+                None => break,
+            }
+        }
     }
 
     /// Store settings the member changed. A failure is logged; the session keeps its choice.

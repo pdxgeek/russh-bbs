@@ -7,5 +7,6 @@ pub mod members;
 pub mod settings;
 pub mod shutdown;
 pub mod ssh;
+pub mod sysop;
 pub mod ui;
 pub mod waiting_room;

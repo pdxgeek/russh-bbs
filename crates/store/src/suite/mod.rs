@@ -14,6 +14,7 @@ pub(crate) mod founder;
 pub(crate) mod invites;
 pub(crate) mod limits;
 pub(crate) mod profiles;
+pub(crate) mod queue;
 pub(crate) mod terminal_settings;
 
 use std::sync::Arc;
@@ -24,6 +25,7 @@ use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::invites::InviteStore;
 use russh_bbs_core::limits::LimitStore;
 use russh_bbs_core::profiles::ProfileStore;
+use russh_bbs_core::queue::QueueStore;
 use russh_bbs_core::store::{AccountStateStore, AccountStore, SettingsStore};
 use russh_bbs_core::terminal_settings::{MemberSessions, TerminalSettingsStore};
 
@@ -40,6 +42,7 @@ pub(crate) trait TestStore:
     + LimitStore
     + TerminalSettingsStore
     + ProfileStore
+    + QueueStore
     + MemberDirectory
     + MemberSessions
     + Clone
@@ -60,6 +63,7 @@ impl<T> TestStore for T where
         + LimitStore
         + TerminalSettingsStore
         + ProfileStore
+        + QueueStore
         + MemberDirectory
         + MemberSessions
         + Clone
@@ -127,7 +131,7 @@ macro_rules! shared_suite {
             #[allow(unused_imports)]
             use super::*;
             use $crate::suite::{
-                access, access_edit, accounts, audit, founder, invites, limits, profiles,
+                access, access_edit, accounts, audit, founder, invites, limits, profiles, queue,
                 terminal_settings,
             };
 
@@ -236,6 +240,21 @@ macro_rules! shared_suite {
                 profiles::profiles_survive_a_reopen,
                 profiles::a_staff_edit_writes_its_audit_row_and_a_failed_audit_rolls_the_edit_back,
                 profiles::a_broken_store_fails_instead_of_answering,
+                queue::a_request_stores_only_the_documented_fields_and_writes_no_audit_row,
+                queue::one_request_per_key_and_a_full_queue_refuses_with_the_slot_freed_by_a_decision,
+                queue::a_key_that_already_has_an_account_is_refused,
+                queue::concurrent_submissions_never_pass_the_cap_or_the_one_per_key_rule,
+                queue::approving_makes_an_active_member_bound_to_the_key_and_audits_without_content,
+                queue::approval_refused_for_a_taken_handle_or_a_bound_key_changes_nothing,
+                queue::denying_deletes_the_request_and_keeps_only_a_hash_and_an_expiry,
+                queue::a_denied_key_is_turned_away_until_the_cooldown_ends_and_then_nothing_remains,
+                queue::requests_expire_after_the_ttl_and_the_purge_removes_every_trace,
+                queue::vouching_adds_a_name_once_and_the_queue_shows_active_vouchers_only,
+                queue::the_queue_lists_oldest_first_and_a_limit_cuts_the_newest,
+                queue::racing_decisions_on_one_request_have_exactly_one_winner,
+                queue::queue_writes_never_land_without_their_audit_row,
+                queue::the_queue_survives_a_reopen,
+                queue::a_broken_store_errors_instead_of_answering,
                 terminal_settings::defaults_when_missing,
                 terminal_settings::set_then_get_round_trips,
                 terminal_settings::every_tier_and_unset_round_trip,

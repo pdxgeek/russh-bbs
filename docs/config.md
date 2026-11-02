@@ -114,6 +114,8 @@ Parsed, not yet used (M3). Turning telnet on is "low-security mode".
 
 The waiting-room banner and rules text are stored settings (D37), not config keys. They are limited so the menu always fits an 80x24 terminal (D64): the banner to 300 characters and 5 lines, the rules to 900 characters and 10 lines. Text stored past that is cut when shown and ends with an ellipsis; the screen that sets them (M2) refuses longer text with an error that names the limit.
 
+The invite-request queue's cap is a stored setting too (M2-E, D72): `queue_max_pending`, a whole number from 1 to 10,000, **default 200**. A stored value that is not such a number is read as the default (it is logged), never as "no cap". Until the M5 settings screen exists, set it in the `settings` table (`INSERT INTO settings (key, value) VALUES ('queue_max_pending', '50') ON CONFLICT (key) DO UPDATE SET value = excluded.value`); it is read on every submission, so it applies at once. The other numbers of the queue (one request per key, the rate limits, the 14-day expiry, the 24-hour cooldown after a denial) are constants in `core::queue`; see [queue.md](queue.md).
+
 The per-address connection limit (`waiting_room.ip_burst`, `waiting_room.ip_interval_secs`) also applies to the founder claim; see "If the claim connection is dropped" in [deploy.md](deploy.md) (D65).
 
 ## Resource limits (M2-H)

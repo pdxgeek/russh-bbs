@@ -4,6 +4,7 @@ use strum::{EnumString, IntoStaticStr, VariantArray};
 
 use crate::access::{Fingerprint, GroupId, ResourceKind, ResourceRef, Slug};
 use crate::invites::InviteId;
+use crate::queue::RequestId;
 use crate::sanitize::{Sanitized, SingleLine};
 use crate::store::AccountId;
 
@@ -72,6 +73,16 @@ pub enum Action {
     /// Staff edited another member's profile (M2-F). The owner's own edits are not audited.
     #[strum(serialize = "profile.edited")]
     ProfileEdited,
+    /// A queue request was approved and became an account (M2-E). The target is the account.
+    #[strum(serialize = "member.approved")]
+    MemberApproved,
+    /// A queue request was denied (M2-E). The target is the request's id; nothing of its
+    /// content, and not the key, is written.
+    #[strum(serialize = "member.denied")]
+    MemberDenied,
+    /// A member vouched for a queue request (M2-E). The target is the request's id.
+    #[strum(serialize = "member.vouched")]
+    MemberVouched,
 }
 
 impl Action {
@@ -115,6 +126,8 @@ pub enum Target {
     Key(Fingerprint),
     /// An invite, by its row id. Never the code, which is stored only as a hash (M2-D).
     Invite(InviteId),
+    /// A queue request, by its row id. Never its text and never the key (M2-E).
+    Request(RequestId),
 }
 
 impl Target {
@@ -129,6 +142,7 @@ impl Target {
             Self::Role(name) => ("role", name.as_str().to_owned()),
             Self::Key(fingerprint) => ("key", fingerprint.as_str().to_owned()),
             Self::Invite(id) => ("invite", id.to_string()),
+            Self::Request(id) => ("request", id.to_string()),
         }
     }
 
@@ -154,6 +168,11 @@ impl Target {
                 .ok()
                 .map(InviteId::from_raw)
                 .map(Self::Invite),
+            "request" => reference
+                .parse()
+                .ok()
+                .map(RequestId::from_raw)
+                .map(Self::Request),
             _ => None,
         }
     }

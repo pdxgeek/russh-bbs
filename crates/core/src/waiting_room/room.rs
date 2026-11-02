@@ -11,15 +11,19 @@
 //!
 //! **Forms are honest.** The redeem form (M2-D) really redeems: a valid submission becomes a
 //! [`RoomEffect::Redeem`] for the front end, which has the store, and the room shows one fixed
-//! failure message whatever went wrong (no oracle). The request and apply forms store nothing
-//! yet (M2-E, M2-G), so a valid submission there ends in a message saying nothing was stored or
-//! sent.
+//! failure message whatever went wrong (no oracle). The request-an-invite form (M2-E) hands a
+//! valid submission to the front end as [`RoomEffect::RequestInvite`] and shows **one fixed
+//! answer at once**, before anything is stored: the queue may keep the request or drop it (a
+//! rate limit, a full queue, a repeat), and the person cannot tell which, so the answer cannot
+//! be an oracle for the board's state. The apply and create-account forms store nothing yet
+//! (M2-G), so a valid submission there ends in a message saying nothing was stored or sent.
 
 use std::fmt;
 
 use super::screens::{self, Page, QUIT_KEY};
 use super::source::RoomConfig;
 use super::strings;
+use crate::queue::InviteAsk;
 use crate::sanitize::USERNAME_MAX_CHARS;
 use crate::sanitize::{MultiLine, SingleLine, Username, UsernameError, sanitize_username};
 use crate::store::RegistrationMode;
@@ -191,6 +195,10 @@ pub enum RoomEffect {
     Disconnect,
     /// Try to redeem an invite, then call [`WaitingRoom::redeem_refused`] if it did not work.
     Redeem(RedeemRequest),
+    /// Offer a request for an invite to the queue (M2-E). The room has already shown its one
+    /// fixed answer; the front end does not report back, because nothing it learns may change
+    /// what the person reads.
+    RequestInvite(InviteAsk),
 }
 
 /// Whether a notice is good news or a problem.
@@ -314,7 +322,8 @@ fn fields_of(page: Page) -> &'static [FieldSpec] {
 /// The honest "not available yet" message for a form page.
 fn unavailable(page: Page) -> &'static str {
     match page {
-        Page::RequestInvite => strings::REQUEST_INVITE_UNAVAILABLE,
+        // The request form is live (M2-E) and never gets here; the words stay honest anyway.
+        Page::RequestInvite => strings::REQUEST_INVITE_ANSWER,
         // The redeem form is live (M2-D) and never gets here; the words stay honest anyway.
         Page::RedeemInvite => strings::REDEEM_FAILED,
         Page::Apply => strings::APPLY_UNAVAILABLE,
@@ -478,6 +487,18 @@ impl WaitingRoom {
             self.notice = None;
             return RoomEffect::Redeem(request);
         }
+        if self.page == Page::RequestInvite
+            && self.validate().is_ok()
+            && let Some(ask) = self.invite_ask()
+        {
+            // What was typed leaves the room with the effect; the answer is fixed.
+            self.clear_form();
+            self.notice = Some(Notice {
+                kind: NoticeKind::Info,
+                text: strings::REQUEST_INVITE_ANSWER,
+            });
+            return RoomEffect::RequestInvite(ask);
+        }
         self.notice = Some(match self.validate() {
             Ok(()) => {
                 // Nothing is stored or sent in M1; say so, and do not keep what was typed.
@@ -500,6 +521,13 @@ impl WaitingRoom {
         let code = self.values.first()?.trim().to_owned();
         let handle = sanitize_username(self.values.get(1)?).ok()?;
         Some(RedeemRequest { code, handle })
+    }
+
+    /// The request the invite form describes, if its handle is valid.
+    fn invite_ask(&self) -> Option<InviteAsk> {
+        let handle = sanitize_username(self.values.first()?).ok()?;
+        let message = self.values.get(1)?.trim().to_owned();
+        Some(InviteAsk { handle, message })
     }
 
     /// The redemption did not work. Whatever the reason (an unknown, wrong, used or expired

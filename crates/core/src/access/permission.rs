@@ -32,6 +32,9 @@ pub enum Permission {
     /// `invite.redeem`.
     #[strum(serialize = "invite.redeem")]
     InviteRedeem,
+    /// `invite.request`.
+    #[strum(serialize = "invite.request")]
+    InviteRequest,
     /// `membership.apply`.
     #[strum(serialize = "membership.apply")]
     MembershipApply,
