@@ -2,12 +2,24 @@
 
 Each milestone ends with something runnable. Estimates are guesses for one developer and are not commitments. A cloud session takes one slice (see [cloud-sessions.md](cloud-sessions.md)).
 
+## QA gate at the end of every milestone
+
+A milestone is not done when its last slice merges. It is done when a **QA pass** on `main` passes. The QA pass is its own session (or a human) that did not write the code, with this brief:
+
+1. Build from `main`, run the server (the container image from M1-F onward, from an empty volume), and walk every "Done when" line of the milestone with a real `ssh` and `sftp` client. Record the exact commands and what appeared on screen.
+2. Try to break it along the threat model: unknown key probing for member or board information, control characters and ANSI and private-use glyphs in every input, oversized input, rate-limit floods, concurrent sessions, resize storms, disconnect mid-screen, restart with the same volume (host key fingerprint unchanged, data intact).
+3. Audit honesty: every `docs/features.md` row marked Implemented has a test, every row marked Verified was exercised in step 1, no screen labels anything private that the server can read, security markers cannot be hidden by the layouts that exist.
+4. Run the validation commands and `cargo deny check` on `main`, and check `Cargo.toml` for dependencies without a justification in their PR.
+5. Write `docs/qa/<milestone>.md`: what was exercised, what passed, every finding with severity and reproduction, and what could not be tested in the environment. Open one fix slice per finding of severity high or above in `docs/coordination.md`; the next milestone does not start until those are merged and re-checked.
+
+The QA pass never fixes code. It reports. Low findings go into the coordination table as open slices for later.
+
 ## M0: Foundations
 - Cargo workspace (`core`, `store`, `server`; `proto` and `api` as empty reserved crates), `rust-toolchain.toml`, `deny.toml`, CI.
 - Shared **sanitizer** in core with fuzz or property tests.
 - **Icon registry** (logical names to glyph per tier) and a width table.
 - Threat model and decisions already in `docs/`.
-- **Done when:** CI is green on fmt, clippy, tests, and cargo-deny; sanitizer and icon registry have tests.
+- **Done when:** CI is green on fmt, clippy, tests, and cargo-deny; sanitizer and icon registry have tests; QA pass written to `docs/qa/m0.md`.
 
 ## M1: SSH server and waiting room
 - `russh` server, persistent host key, public-key auth, restricted session for unknown keys.
