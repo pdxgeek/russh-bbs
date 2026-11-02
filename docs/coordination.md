@@ -14,6 +14,8 @@ A slice with an unmet dependency is not claimable.
 | M1-C Waiting room screens and rate limits | `crates/server/src/waiting_room` | M1-A, M0-B | Open | |
 | M1-D Founder claim flow | `crates/server/src/founder`, store | M1-A, M1-B | Open | |
 | M1-E Terminal settings and glyph test screen | `crates/server/src/settings` | M1-A, M0-C | Open | |
+| M1-F Container image, compose example, GHCR publish | `Dockerfile`, `compose.yaml`, the publish workflow in `.github/`, `docs/deploy.md` | M1-A, M1-B, M1-D | Open | |
+| M1-G Postgres backend and migrations | `crates/store/src/postgres`, the Postgres CI job, and the restructure of `crates/store` into per-backend modules | M1-B | Open | Note: move the SQLite code to `crates/store/src/sqlite` with migrations under `crates/store/migrations/sqlite/`; add the `datasource` setting (sqlite path \| postgres URL); turn the store behavior tests into one suite generic over the core Store traits and run it against both backends (PGlite via pglite-socket, or a Postgres service in CI). |
 
 Later milestones are not claimable until the owner adds their slices here.
 
