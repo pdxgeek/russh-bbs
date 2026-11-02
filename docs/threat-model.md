@@ -52,15 +52,25 @@ Member identities and key fingerprints, the invite tree, message and mail conten
 ### Sanitization (one shared implementation in core)
 Applied to every string that is not UI chrome: usernames, post bodies, subjects, chat lines, feed items, mail headers and bodies, file names and descriptions, door output, LLM or NPC text.
 - Remove C0 and C1 control characters (except explicit newline and tab where allowed), ANSI/CSI/OSC/DCS sequences, and bidi override characters.
-- Neutralize the Unicode **private-use ranges** used by Nerd Fonts, so content cannot draw lock icons or badges.
+- Neutralize the Unicode **private-use ranges** used by Nerd Fonts and the **reserved chrome set** (U+27E6/U+27E7 and the four Unicode marker glyphs), so content cannot draw the Nerd Font or delimited Unicode-tier markers.
+- Remove invisible filler and format characters (Hangul and Khmer fillers, braille blank, soft hyphen, U+2060-206F, variation selectors except U+FE0F after an emoji base), map Unicode spaces to ASCII space, treat VT, FF, NEL, LS and PS as line separators, and cap combining marks at 4 per base character (D39).
 - Normalize Unicode for usernames and block confusables for names.
 - Enforce length limits.
 - Ship fuzz and property tests.
 
-Implementation status (`russh-bbs-core::sanitize`): **Implemented and unit/property tested:** control and escape-sequence removal, bidi and invisible-character removal, private-use neutralization (replaced with U+FFFD), length limits (in `char`s), NFKC and a strict ASCII allowed set for usernames, and a minimal ASCII lookalike skeleton (`0`/`o`, `1`/`i`/`l`, `-`/`_`). **Still planned:** a `cargo-fuzz` target; multi-letter lookalikes (`rn`/`m`); wiring into front ends, which is each consuming slice's job. Cross-script confusables are blocked by rejection (non-ASCII names are not allowed in the MVP), not by a confusables table.
+Implementation status (`russh-bbs-core::sanitize`): **Implemented and unit/property tested:** control and escape-sequence removal, bidi and invisible-character removal (including the filler and format class), Unicode-space mapping, combining-mark cap, private-use and reserved-chrome neutralization (replaced with U+FFFD), length limits (in `char`s), NFKC and a strict ASCII allowed set for usernames, reserved usernames compared on the skeleton, and an ASCII lookalike skeleton with digit and multi-letter folds (best effort, errs toward collisions). **Still planned:** a `cargo-fuzz` target; wiring into front ends, which is each consuming slice's job. Cross-script confusables are blocked by rejection (non-ASCII names are not allowed in the MVP), not by a confusables table.
 
 ### Security chrome
-Lock, signature, key-changed, and server-readable markers are drawn only by chrome code. Layouts and themes can position them but cannot hide, recolor to mislead, or replace them. Every icon tier has a text fallback ("E2EE", "SERVER-READABLE").
+Lock, signature, key-changed, and server-readable markers are drawn only by chrome code. Layouts and themes can position them but cannot hide, recolor to mislead, or replace them. Every icon tier has a text fallback ("E2EE", "SERVER-READABLE"). What is guaranteed, per tier (D38):
+
+| Tier | What content cannot produce | Tested |
+|---|---|---|
+| All | The reserved style (bold + reverse video): the sanitizer removes every escape sequence | Property test: no sanitized string contains ESC or the style bytes |
+| Nerd Font | The marker glyph (private-use, replaced by the sanitizer) | Property test |
+| Unicode | The delimiters U+27E6/U+27E7 and the marker glyphs (replaced by the sanitizer), so `⟦glyph⟧` is unforgeable even without color | Property test |
+| ASCII | **Nothing textual.** Content can type `E2EE` or `SERVER-READABLE`; only the reserved style and a chrome-only screen position tell the real marker apart | A test pins this limit |
+
+On a terminal with no color or styling, **position is the only cue** for the ASCII tier, so markers must be drawn in a chrome-only place (status line or fixed gutter) that content is never drawn into. Usernames equal to a marker label, a staff word or a default role or group name are rejected. Not yet exercised end to end: no front end draws markers, so the renderer applying the style and position is an M2 screen-framework task.
 
 ### SSRF guard
 For every server-side fetch of a user-supplied URL: only `http` and `https`, resolve DNS and re-check the IP at connect time, block loopback, link-local, private, and metadata ranges, cap redirects, set connect and total timeouts, cap response size, and disallow credentials in URLs.

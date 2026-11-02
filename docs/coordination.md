@@ -17,6 +17,11 @@ A slice with an unmet dependency is not claimable.
 | M1-F Container image, compose example, GHCR publish | `Dockerfile`, `compose.yaml`, the publish workflow in `.github/`, `docs/deploy.md` | M1-A, M1-B, M1-D | Open | |
 | M1-G Postgres backend and migrations | `crates/store/src/postgres`, the Postgres CI job, and the restructure of `crates/store` into per-backend modules | M1-B | Open | Note: move the SQLite code to `crates/store/src/sqlite` with migrations under `crates/store/migrations/sqlite/`; add the `datasource` setting (sqlite path \| postgres URL); turn the store behavior tests into one suite generic over the core Store traits and run it against both backends (PGlite via pglite-socket, or a Postgres service in CI). |
 
+| FIX-M0-1 Security markers unforgeable, reserved usernames, sanitizer second pass | `crates/core/src/sanitize`, `crates/core/src/icons`, AGENTS.md wording, sanitizer and icon docs | M0-B, M0-C | Claimed | `fix/m0-markers` |
+| FIX-M0-F5 Emoji-capable Unicode glyphs (U+26A0, U+2709) vs D18 (QA M0 F5) | `crates/core/src/icons` | M0-C | Open | Needs a real-terminal check |
+| FIX-M0-F11 Stale status text in `docs/features.md` and PR text (QA M0 F11) | `docs/features.md` | none | Open | |
+| FIX-M0-F12 SHA-pin CI actions (QA M0 F12) | `.github/workflows/ci.yml` | M0-A | Open | Before the closed beta |
+
 Later milestones are not claimable until the owner adds their slices here.
 
 ## Cross-slice requests
@@ -32,3 +37,6 @@ Add a line here if you need a change in code another slice owns. Do not make it 
 | M1-B | M1-A / owner | CI sets `SQLX_OFFLINE: "true"` in `.github/workflows/ci.yml` (M0-A owned; one env line). Please keep it. | |
 | M1-C | M1-B | FYI, no action: M1-C added `SettingKey::WaitingRoomBanner` and `WaitingRoomRules` to `russh-bbs-core::store` (stored in the existing `settings` table, no migration). A sysop-facing way to set them arrives with the sysop console; until then edit the `settings` rows. | |
 | M1-C | M1-D | The waiting room is built per shell from `WaitingRoomSource` (implemented for every `SettingsStore`). When the founder flow lands, a member's key still sees the same room; add the founder claim screen as a new page in `russh_bbs_core::waiting_room::screens` or a separate screen, not by branching on membership inside the room. | |
+| FIX-M0-1 | M2 screen framework | Draw every `SecurityMarker` with `Rendered::to_terminal()` (or apply `chrome_style()` through the ratatui `Style`), in a chrome-only screen position (status line or fixed gutter) that sanitized content is never drawn into; never apply that style to content. On a screen that cannot guarantee the position, say "security markers unavailable". D38. No front end draws markers yet. | |
+| FIX-M0-1 | M1-C | FYI: `UsernameError::Reserved` is new, so `waiting_room::room::username_error` gained one arm and `strings::ERR_HANDLE_RESERVED` was added (the minimum the new variant forces). | |
+| FIX-M0-1 | M1-D | FYI: `sanitize_username` now rejects reserved names (`sysop`, `admin`, `root`, `system`, `staff`, `everyone`, `moderator`, `cosysop`, `waiting`, `member`, `trusted`, the marker labels) and their skeleton lookalikes. Pick a founder handle outside that list. `username_skeleton` is now private; use `Username::skeleton()`. | |

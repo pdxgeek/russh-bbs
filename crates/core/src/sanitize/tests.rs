@@ -3,7 +3,10 @@
 use proptest::prelude::*;
 
 use super::scan::is_private_use;
-use super::{MultiLine, SingleLine, UsernameError, sanitize_username, username_skeleton};
+use super::scan::{is_invisible_format, is_noncharacter};
+use super::{
+    MAX_COMBINING_MARKS, MultiLine, RESERVED_CHROME, SingleLine, UsernameError, sanitize_username,
+};
 
 const BIG: usize = 10_000;
 
@@ -23,13 +26,13 @@ fn plain_text_is_unchanged() {
 
 #[test]
 fn c0_controls_are_removed() {
-    assert_eq!(line("a\x00b\x01c\x07d\x08e\x0bf\x0cg\x7fh"), "abcdefgh");
+    assert_eq!(line("a\x00b\x01c\x07d\x08e\x0bf\x0cg\x7fh"), "abcde f gh");
     assert_eq!(body("a\x00b\x1fc"), "abc");
 }
 
 #[test]
 fn c1_controls_are_removed() {
-    assert_eq!(line("a\u{80}b\u{85}c\u{8d}d\u{9c}e"), "abcde");
+    assert_eq!(line("a\u{80}b\u{85}c\u{8d}d\u{9c}e"), "ab cde");
 }
 
 #[test]
@@ -145,7 +148,7 @@ fn noncharacters_are_replaced() {
 fn newline_and_tab_per_context() {
     assert_eq!(line("a\nb\r\nc\rd\te"), "a b c d e");
     assert_eq!(body("a\nb\r\nc\rd\te"), "a\nb\nc\nd\te");
-    assert_eq!(body("a\u{2028}b\u{2029}c"), "abc");
+    assert_eq!(body("a\u{2028}b\u{2029}c"), "a\nb\nc");
 }
 
 #[test]
@@ -210,44 +213,373 @@ fn username_rejects_everything_else() {
     assert_eq!(err(&"a".repeat(10_000)), Err(TooLong));
 }
 
-#[test]
-fn skeleton_blocks_ascii_lookalikes() {
-    assert_eq!(username_skeleton("Admin"), username_skeleton("AdmIn"));
-    assert_eq!(username_skeleton("Admin"), username_skeleton("admln"));
-    assert_eq!(username_skeleton("r00t"), username_skeleton("root"));
-    assert_eq!(username_skeleton("a-b"), username_skeleton("a_b"));
-    assert_ne!(username_skeleton("alice"), username_skeleton("alicf"));
-    let u = sanitize_username("R00t");
-    assert_eq!(u.map(|u| u.skeleton()), Ok("root".into()));
+fn skel(name: &str) -> String {
+    super::username::skeleton_of(name)
 }
 
-/// Inputs weighted toward the characters that matter.
-fn nasty_string() -> impl Strategy<Value = String> {
-    let piece = prop_oneof![
-        4 => any::<char>(),
-        3 => (0u32..0xA0).prop_filter_map("scalar", char::from_u32),
-        2 => prop_oneof![Just('\u{1b}'), Just('['), Just(']'), Just('\\'), Just('\u{07}'),
-                         Just('\u{9b}'), Just('\u{9d}'), Just('\u{9c}'), Just('P'), Just(';')],
-        2 => prop_oneof![
-            (0xE000u32..=0xF8FF), (0xF0000u32..=0xFFFFD), (0x10_0000_u32..=0x10_FFFD),
-            (0x202Au32..=0x202E), (0x2066u32..=0x2069)
-        ].prop_filter_map("scalar", char::from_u32),
+#[test]
+fn skeleton_blocks_ascii_lookalikes() {
+    assert_eq!(skel("Admin"), skel("AdmIn"));
+    assert_eq!(skel("Admin"), skel("admln"));
+    assert_eq!(skel("Admin"), skel("Adm1n"));
+    assert_eq!(skel("tom"), skel("t0m"));
+    assert_eq!(skel("a-b"), skel("a_b"));
+    assert_ne!(skel("alice"), skel("alicf"));
+    assert_eq!(skel("R00t"), "root");
+}
+
+#[test]
+fn skeleton_folds_digit_and_multi_letter_lookalikes() {
+    // F8: pairs and the digit/letter shapes the QA run found distinct.
+    for (a, b) in [
+        ("vvally", "wally"),
+        ("clan", "dan"),
+        ("mark", "rnark"),
+        ("mike", "nnike"),
+        ("5am", "sam"),
+        ("zed", "2ed"),
+        ("bob", "8ob"),
+        ("greg", "qreg"),
+    ] {
+        assert_eq!(skel(a), skel(b), "{a} vs {b}");
+    }
+    assert_ne!(skel("alice"), skel("bob"));
+}
+
+#[test]
+fn reserved_usernames_are_rejected_on_the_skeleton() {
+    let reserved = [
+        "sysop",
+        "cosysop",
+        "admin",
+        "root",
+        "system",
+        "staff",
+        "everyone",
+        "moderator",
+        "waiting",
+        "member",
+        "trusted",
     ];
-    prop::collection::vec(piece, 0..64).prop_map(|v| v.into_iter().collect())
+    for name in reserved {
+        assert_eq!(
+            sanitize_username(name).err(),
+            Some(UsernameError::Reserved),
+            "{name}"
+        );
+        let upper = name.to_uppercase();
+        assert_eq!(
+            sanitize_username(&upper).err(),
+            Some(UsernameError::Reserved),
+            "{upper}"
+        );
+    }
+    // Lookalikes: digit and letter substitutions, and the full-width form.
+    for name in [
+        "Sy50p",
+        "sys0p",
+        "r00t",
+        "Adm1n",
+        "ADMLN",
+        "5taff",
+        "rnoderator",
+        "Ｓysop",
+        "cl-sysop",
+    ] {
+        let got = sanitize_username(name);
+        if name == "cl-sysop" {
+            assert!(
+                got.is_ok(),
+                "only exact skeleton matches are reserved: {got:?}"
+            );
+        } else {
+            assert_eq!(got.err(), Some(UsernameError::Reserved), "{name}");
+        }
+    }
+}
+
+#[test]
+fn security_marker_labels_are_reserved_usernames() {
+    for name in [
+        "E2EE",
+        "e2ee",
+        "SIGNED",
+        "KEY-CHANGED",
+        "key_changed",
+        "KEY-CHANGED",
+        "SERVER-READABLE",
+        "Server-Readable",
+    ] {
+        assert_eq!(
+            sanitize_username(name).err(),
+            Some(UsernameError::Reserved),
+            "{name}"
+        );
+    }
+    // Neighbours that are not the label are fine.
+    assert!(sanitize_username("signed2").is_ok());
+    assert!(sanitize_username("keychanged").is_ok());
+}
+
+#[test]
+fn reserved_is_a_distinct_error_from_malformed() {
+    assert_eq!(sanitize_username("a").err(), Some(UsernameError::TooShort));
+    assert_eq!(
+        sanitize_username("root!").err(),
+        Some(UsernameError::DisallowedCharacter)
+    );
+    assert_eq!(
+        sanitize_username("root").err(),
+        Some(UsernameError::Reserved)
+    );
+}
+
+// ---- F3: invisible filler and format characters ----
+
+const F3_CLASS: &[char] = &[
+    '\u{3164}',
+    '\u{115F}',
+    '\u{1160}',
+    '\u{FFA0}',
+    '\u{2800}',
+    '\u{17B4}',
+    '\u{17B5}',
+    '\u{034F}',
+    '\u{00AD}',
+    '\u{180B}',
+    '\u{180C}',
+    '\u{180D}',
+    '\u{180E}',
+    '\u{180F}',
+    '\u{206A}',
+    '\u{206B}',
+    '\u{206C}',
+    '\u{206D}',
+    '\u{206E}',
+    '\u{206F}',
+    '\u{FFF9}',
+    '\u{FFFA}',
+    '\u{FFFB}',
+    '\u{FFFC}',
+    '\u{0600}',
+    '\u{0601}',
+    '\u{0602}',
+    '\u{0603}',
+    '\u{0604}',
+    '\u{0605}',
+    '\u{06DD}',
+    '\u{070F}',
+    '\u{08E2}',
+    '\u{110BD}',
+    '\u{1D173}',
+    '\u{1D17A}',
+    '\u{1BCA0}',
+    '\u{1BCA3}',
+    '\u{2065}',
+    '\u{FE00}',
+    '\u{FE0E}',
+    '\u{E0100}',
+    '\u{E01EF}',
+];
+
+#[test]
+fn invisible_filler_and_format_characters_are_removed() {
+    for &c in F3_CLASS {
+        assert!(is_invisible_format(c), "U+{:04X}", c as u32);
+        assert_eq!(line(&format!("a{c}b")), "ab", "U+{:04X}", c as u32);
+        assert_eq!(body(&format!("a{c}b")), "ab", "U+{:04X}", c as u32);
+    }
+    // A name made only of filler becomes empty, so "is empty" checks work.
+    assert_eq!(line("\u{3164}\u{2800}\u{115F}"), "");
+}
+
+#[test]
+fn unicode_spaces_become_ascii_space() {
+    for c in [
+        '\u{00A0}', '\u{1680}', '\u{2000}', '\u{2005}', '\u{200A}', '\u{202F}', '\u{205F}',
+        '\u{3000}',
+    ] {
+        assert_eq!(line(&format!("a{c}b")), "a b", "U+{:04X}", c as u32);
+        assert_eq!(body(&format!("a{c}b")), "a b", "U+{:04X}", c as u32);
+    }
+}
+
+#[test]
+fn fe0f_is_kept_only_after_an_emoji_base() {
+    // Decision D38: emoji presentation is kept (a heart stays a red heart); a variation
+    // selector anywhere else is invisible and removed.
+    assert_eq!(line("\u{2764}\u{FE0F}"), "\u{2764}\u{FE0F}");
+    assert_eq!(line("\u{1F600}\u{FE0F}"), "\u{1F600}\u{FE0F}");
+    assert_eq!(line("a\u{FE0F}b"), "ab");
+    assert_eq!(line("\u{FE0F}x"), "x");
+    assert_eq!(line("\u{2764}\u{FE0F}\u{FE0F}"), "\u{2764}\u{FE0F}");
+    assert_eq!(line("a\u{FE0E}b\u{E0100}"), "ab");
+}
+
+// ---- F4: combining marks ----
+
+#[test]
+fn combining_marks_are_capped_per_base() {
+    let flood = format!("a{}b", "\u{0301}".repeat(500));
+    let out = line(&flood);
+    assert_eq!(out.chars().count(), 1 + MAX_COMBINING_MARKS + 1);
+    assert_eq!(MAX_COMBINING_MARKS, 4);
+    // The cap is per base, not per string.
+    let two = format!("a{}b{}", "\u{0301}".repeat(4), "\u{0302}".repeat(4));
+    assert_eq!(line(&two).chars().count(), 10);
+    // Real text is untouched: Vietnamese with stacked marks, NFD form.
+    assert_eq!(line("e\u{0302}\u{0301}"), "e\u{0302}\u{0301}");
+    // Marks at the very start count against the same cap.
+    assert_eq!(
+        line(&"\u{0301}".repeat(9)).chars().count(),
+        MAX_COMBINING_MARKS
+    );
+}
+
+// ---- F9: separators ----
+
+#[test]
+fn vt_ff_nel_ls_ps_are_separators_not_deletions() {
+    for c in ['\u{0B}', '\u{0C}', '\u{85}', '\u{2028}', '\u{2029}'] {
+        assert_eq!(line(&format!("a{c}b")), "a b", "U+{:04X}", c as u32);
+        assert_eq!(body(&format!("a{c}b")), "a\nb", "U+{:04X}", c as u32);
+    }
+}
+
+#[test]
+fn escape_residue_is_not_left_after_an_escape() {
+    assert_eq!(line("a\u{1b}[31mb"), "ab");
+    assert_eq!(line("a\u{1b}[31"), "a");
+    assert!(!line("\u{1b}[31;1m\u{1b}[0m").contains("31"));
+}
+
+/// Inputs weighted toward the characters that matter: controls and escape fragments, every
+/// class the sanitizer neutralizes, the F3 filler list, spaces, separators, combining marks,
+/// and the reserved chrome set.
+fn nasty_string() -> impl Strategy<Value = String> {
+    let ranges = prop_oneof![
+        (0xE000u32..=0xF8FF),
+        (0xF0000u32..=0xFFFFD),
+        (0x10_0000_u32..=0x10_FFFD),
+        (0x202Au32..=0x202E),
+        (0x2066u32..=0x2069),
+        (0xFDD0u32..=0xFDEF),
+        (0xE0000u32..=0xE007F),
+        (0xE0100u32..=0xE01EF),
+        (0x2000u32..=0x206F),
+        (0x0300u32..=0x036F),
+        (0xFE00u32..=0xFE0F),
+        (0xFFF0u32..=0xFFFF),
+    ]
+    .prop_filter_map("scalar", char::from_u32);
+    let fixed = prop_oneof![
+        Just('\u{1b}'),
+        Just('['),
+        Just(']'),
+        Just('\\'),
+        Just('\u{07}'),
+        Just('\u{9b}'),
+        Just('\u{9d}'),
+        Just('\u{9c}'),
+        Just('P'),
+        Just(';'),
+        Just('3'),
+        Just('1'),
+        Just('m'),
+        Just('\u{200B}'),
+        Just('\u{2060}'),
+        Just('\u{FEFF}'),
+        Just('\u{FFFE}'),
+        Just('\u{1FFFF}'),
+        Just('\u{10FFFF}'),
+        Just('\u{0B}'),
+        Just('\u{0C}'),
+        Just('\u{85}'),
+        Just('\u{2028}'),
+        Just('\u{2029}'),
+        Just('\u{200D}'),
+        Just('\u{200C}'),
+        Just('\u{FE0F}'),
+        Just('\u{2764}'),
+        Just('\u{FFFD}'),
+    ];
+    let piece = prop_oneof![
+        3 => any::<char>(),
+        3 => (0u32..0xA0).prop_filter_map("scalar", char::from_u32),
+        3 => fixed,
+        2 => ranges,
+        2 => prop::sample::select(F3_CLASS.to_vec()),
+        1 => prop::sample::select(RESERVED_CHROME.to_vec()),
+        1 => prop::sample::select(vec!['\u{00A0}', '\u{1680}', '\u{202F}', '\u{205F}', '\u{3000}']),
+    ];
+    // Some strings are built around an escape introducer so a stray `31m` can follow it.
+    let escape_tail = prop::collection::vec(
+        prop_oneof![
+            Just("\u{1b}["),
+            Just("31m"),
+            Just("\u{1b}]0;x"),
+            Just("1;7m")
+        ],
+        0..6,
+    )
+    .prop_map(|v| v.concat());
+    (prop::collection::vec(piece, 0..64), escape_tail)
+        .prop_map(|(v, tail)| v.into_iter().collect::<String>() + &tail)
 }
 
 fn assert_clean(out: &str, allow_nl_tab: bool) {
+    let mut marks = 0usize;
     for c in out.chars() {
         let ok_ctrl = allow_nl_tab && (c == '\n' || c == '\t');
         assert!(ok_ctrl || !c.is_control(), "control U+{:04X}", c as u32);
         assert!(!is_private_use(c), "private use U+{:04X}", c as u32);
+        assert!(!is_noncharacter(c), "noncharacter U+{:04X}", c as u32);
+        assert!(
+            !RESERVED_CHROME.contains(&c),
+            "reserved chrome U+{:04X}",
+            c as u32
+        );
         assert!(
             !matches!(c, '\u{202A}'..='\u{202E}' | '\u{2066}'..='\u{2069}' | '\u{200E}' | '\u{200F}'),
             "bidi U+{:04X}",
             c as u32
         );
+        assert!(
+            !matches!(
+                c,
+                '\u{E0000}'
+                    ..='\u{E007F}' | '\u{200B}' | '\u{2060}' | '\u{FEFF}' | '\u{2028}' | '\u{2029}'
+            ),
+            "tag or invisible U+{:04X}",
+            c as u32
+        );
+        assert!(
+            !is_invisible_format(c) || c == '\u{FE0F}',
+            "invisible format U+{:04X}",
+            c as u32
+        );
+        assert!(
+            !matches!(
+                c,
+                '\u{00A0}' | '\u{1680}' | '\u{2000}'
+                    ..='\u{200A}' | '\u{202F}' | '\u{205F}' | '\u{3000}'
+            ),
+            "unicode space U+{:04X}",
+            c as u32
+        );
+        if c == '\u{FE0F}' {
+            // Variation selector: not counted, kept only after an emoji base.
+        } else if unicode_normalization::char::is_combining_mark(c) {
+            marks += 1;
+            assert!(marks <= MAX_COMBINING_MARKS, "too many marks");
+        } else {
+            marks = 0;
+        }
     }
     assert!(!out.contains('\u{1b}'));
+    // Escape residue: a CSI/OSC remnant (`[31m`, `]0;`) cannot be told from real text
+    // like "[31m", so assert only the strong form: no ESC and no C1 introducer survive.
+    assert!(!out.chars().any(|c| ('\u{80}'..='\u{9f}').contains(&c)));
 }
 
 proptest! {

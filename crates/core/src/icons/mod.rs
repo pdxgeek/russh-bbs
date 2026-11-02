@@ -23,11 +23,29 @@
 //!
 //! # Security chrome
 //!
-//! [`SecurityMarker`] icons are system chrome. They are a separate type, so layout and theme
-//! code that accepts only [`ContentIcon`] cannot be handed one, and [`Rendered`] carries
-//! [`Rendered::is_security_chrome`] so a renderer must not restyle or drop it. Their ASCII
-//! tier is the honest text label (`SERVER-READABLE`, `E2EE`), also available from
-//! [`Icon::text_label`] for every icon.
+//! [`SecurityMarker`] icons are system chrome. What is and is not guaranteed (decision D38):
+//!
+//! * **Reserved presentation.** [`Rendered`] carries a [`ChromeStyle`] (bold + reverse
+//!   video) for every marker in every tier. Content can never emit terminal styling, because
+//!   the sanitizer removes every escape sequence, so a styled marker cannot be forged by
+//!   text. [`Rendered::to_terminal`] is the only way to get a terminal-ready string and it
+//!   includes the style; [`Rendered::plain`] is for width measurement and for renderers that
+//!   apply [`Rendered::chrome_style`] themselves (a ratatui `Style`). Nothing in the
+//!   renderer may apply that style to sanitized content.
+//! * **Unicode tier: reserved delimiters and glyphs.** Markers are drawn as `⟦glyph⟧`.
+//!   The sanitizer turns the delimiters U+27E6/U+27E7 and the four marker glyphs into U+FFFD
+//!   in all content ([`crate::sanitize::RESERVED_CHROME`]), so even a terminal that ignores
+//!   styling keeps the distinction. A test proves the registry uses exactly that set.
+//! * **Nerd Font tier:** the glyph is private-use, which the sanitizer replaces.
+//! * **ASCII tier: style and position only.** Content can type any ASCII, so the text
+//!   `E2EE` or `SERVER-READABLE` is *not* unforgeable. The distinction is the reserved
+//!   style plus a reserved screen position (a chrome-only status line or gutter that content
+//!   is never drawn into). On a terminal with no styling at all, position is the only cue.
+//!   Callers must draw ASCII-tier markers in a chrome-only position.
+//!
+//! The marker *type* is separate from [`ContentIcon`], so layout and theme code that accepts
+//! only content icons cannot be handed one. [`Rendered::is_security_chrome`] tells a renderer
+//! it must not hide, replace or restyle the marker.
 
 mod width;
 
@@ -35,6 +53,24 @@ mod width;
 mod tests;
 
 pub use width::{GlyphWidth, char_width};
+
+/// Terminal styling reserved for security chrome: bold plus reverse video.
+///
+/// Only chrome code applies it. Sanitized content cannot contain it, because the sanitizer
+/// removes every escape sequence and control character.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ChromeStyle;
+
+impl ChromeStyle {
+    /// SGR sequence that turns the reserved style on.
+    pub const SGR_ON: &'static str = "\u{1b}[1;7m";
+    /// SGR sequence that resets all attributes.
+    pub const SGR_OFF: &'static str = "\u{1b}[0m";
+    /// Whether the style is bold.
+    pub const BOLD: bool = true;
+    /// Whether the style is reverse video.
+    pub const REVERSE: bool = true;
+}
 
 /// Which glyph set to draw from. The server cannot detect the client font, so this is a
 /// per-user setting chosen on the glyph test screen.
@@ -68,8 +104,9 @@ pub enum ContentIcon {
     /// A message board or forum.
     Board,
     /// Access restriction (a closed board, invite-only). **Not a privacy claim**: it is
-    /// deliberately a different glyph from [`SecurityMarker::E2eeLock`].
-    Lock,
+    /// deliberately a different glyph from [`SecurityMarker::E2eeLock`], and every tier says
+    /// "restricted" or draws a key or a prohibition sign, never a padlock.
+    Restricted,
     /// Something unread.
     Unread,
     /// An RSS feed.
@@ -84,7 +121,7 @@ impl ContentIcon {
     /// Every content icon.
     pub const ALL: [Self; 6] = [
         Self::Board,
-        Self::Lock,
+        Self::Restricted,
         Self::Unread,
         Self::Feed,
         Self::Mail,
@@ -101,10 +138,10 @@ impl ContentIcon {
                 ascii: "[#]",
                 label: "board",
             },
-            Self::Lock => Entry {
-                nerd: "\u{f084}", // fa-key (not the padlock: that is E2EE chrome)
-                unicode: "\u{26b7}",
-                ascii: "[x]",
+            Self::Restricted => Entry {
+                nerd: "\u{f084}",    // fa-key (not the padlock: that is E2EE chrome)
+                unicode: "\u{2298}", // circled division slash: "not open to everyone"
+                ascii: "[restricted]",
                 label: "restricted",
             },
             Self::Unread => Entry {
@@ -157,30 +194,38 @@ impl SecurityMarker {
         Self::KeyChanged,
     ];
 
-    // The ASCII tier is the honest label itself, and equals `label`.
+    /// The text label, also the ASCII-tier form.
+    #[must_use]
+    pub const fn label(self) -> &'static str {
+        self.entry().label
+    }
+
+    // The ASCII tier is the honest label itself, and equals `label`. It is *not*
+    // unforgeable by content; see the module docs. Unicode forms sit inside the reserved
+    // delimiters U+27E6 and U+27E7.
     const fn entry(self) -> Entry {
         match self {
             Self::ServerReadable => Entry {
-                nerd: "\u{f06e}", // fa-eye
-                unicode: "\u{2298}",
+                nerd: "\u{f06e}",                    // fa-eye
+                unicode: "\u{27e6}\u{2299}\u{27e7}", // circled dot: an eye, "someone can look"
                 ascii: "SERVER-READABLE",
                 label: "SERVER-READABLE",
             },
             Self::E2eeLock => Entry {
                 nerd: "\u{f023}", // fa-lock (the padlock)
-                unicode: "\u{229b}",
+                unicode: "\u{27e6}\u{229b}\u{27e7}",
                 ascii: "E2EE",
                 label: "E2EE",
             },
             Self::Signature => Entry {
                 nerd: "\u{f0a3}", // fa-certificate
-                unicode: "\u{270e}",
+                unicode: "\u{27e6}\u{270e}\u{27e7}",
                 ascii: "SIGNED",
                 label: "SIGNED",
             },
             Self::KeyChanged => Entry {
                 nerd: "\u{f071}", // fa-warning
-                unicode: "\u{26a0}",
+                unicode: "\u{27e6}\u{26a0}\u{27e7}",
                 ascii: "KEY-CHANGED",
                 label: "KEY-CHANGED",
             },
@@ -210,32 +255,61 @@ impl From<SecurityMarker> for Icon {
 }
 
 /// An icon ready to write to a terminal.
+///
+/// For a security marker the reserved [`ChromeStyle`] is part of the value: there is no
+/// accessor that returns a marker's text as a bare `&str` under a name that suggests it is
+/// ready to print. Use [`Rendered::to_terminal`] (styled) or [`Rendered::plain`] plus
+/// [`Rendered::chrome_style`].
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Rendered {
     text: String,
     width: usize,
-    security_chrome: bool,
+    chrome: Option<ChromeStyle>,
     tier: Tier,
 }
 
 impl Rendered {
-    /// The text to write, including any alignment padding.
+    /// The text without any styling, including alignment padding and (for Unicode-tier
+    /// markers) the reserved delimiters. For measuring and for renderers that apply
+    /// [`Rendered::chrome_style`] through their own style type. Never print a marker's
+    /// `plain()` text unstyled.
     #[must_use]
-    pub fn as_str(&self) -> &str {
+    pub fn plain(&self) -> &str {
         &self.text
     }
 
-    /// The terminal cells `as_str` occupies.
+    /// The text to write to a terminal. For a security marker this wraps the text in the
+    /// reserved style; content icons are returned as is.
+    #[must_use]
+    pub fn to_terminal(&self) -> String {
+        match self.chrome {
+            Some(_) => format!(
+                "{}{}{}",
+                ChromeStyle::SGR_ON,
+                self.text,
+                ChromeStyle::SGR_OFF
+            ),
+            None => self.text.clone(),
+        }
+    }
+
+    /// The terminal cells the text occupies (style sequences take none).
     #[must_use]
     pub const fn width(&self) -> usize {
         self.width
+    }
+
+    /// The reserved style a renderer must apply, if this is security chrome.
+    #[must_use]
+    pub const fn chrome_style(&self) -> Option<ChromeStyle> {
+        self.chrome
     }
 
     /// Whether this is security chrome that a layout or theme must not hide, replace or
     /// restyle misleadingly.
     #[must_use]
     pub const fn is_security_chrome(&self) -> bool {
-        self.security_chrome
+        self.chrome.is_some()
     }
 
     /// The tier actually used (the ASCII tier when a wider tier had no known width).
@@ -302,7 +376,7 @@ impl Icon {
         Rendered {
             text,
             width,
-            security_chrome: self.is_security_chrome(),
+            chrome: self.is_security_chrome().then_some(ChromeStyle),
             tier,
         }
     }
