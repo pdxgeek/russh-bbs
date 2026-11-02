@@ -9,11 +9,11 @@ The security rules still win: the shared sanitizer is the only place untrusted t
 | Need | Crate | Slice | Notes |
 |---|---|---|---|
 | Key input from raw SSH bytes, buffering sequences split across packets | termwiz `InputParser` (large, documented as unstable), `anes` (with the `parser` feature), `term-parser` | FIX-M1-1 | FIX-M1-1 is adopting one now |
-| Single-line inputs | `tui-input` | M2-A | |
+| Single-line inputs | `tui-input` | M2-A | Evaluated in M2-A and not adopted yet (no new input; existing entry is core state machines with no ratatui dependency, D54). Default again for the M2-D/E forms |
 | Multi-line editor | `tui-textarea-2` | M3 | Decision D48 |
 | Popups; scroll views | `tui-popup`; `tui-scrollview` (both in `tui-widgets`) | M2-E, M2-F, M3 | |
 | Trees | `tui-tree-widget` | M2-D (invite tree), M3 | |
-| Banner text | `tui-big-text` | M2-A, M3 | |
+| Banner text | `tui-big-text` | M2-A, M3 | Evaluated in M2-A and not needed (no banner drawn, D54); M3 themes |
 | Sysop-supplied ANSI art | `ansi-to-tui` | M3 themes | **Never use it on member or external content**: it turns escapes into styles, so content could imitate the reserved marker style (D39) |
 | Markdown display | `tui-markdown` | M3 | It must never produce the reserved marker style (bold+reverse); disable `highlight-code`/syntect unless needed |
 | Wrapping and width | `textwrap`, `unicode-width`, `unicode-segmentation` | any | |

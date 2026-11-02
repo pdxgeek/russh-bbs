@@ -6,4 +6,5 @@ pub mod founder;
 pub mod settings;
 pub mod shutdown;
 pub mod ssh;
+pub mod ui;
 pub mod waiting_room;

@@ -1,0 +1,61 @@
+# The string table: every fixed, user-facing string of the screens built on the menu framework
+# (M2-A). Keys are dotted paths; TOML tables nest them. A theme or translation replaces values
+# and keeps the keys. `{name}` marks a placeholder filled by the code.
+#
+# Rules (checked at boot, see `ui::strings`):
+#   * every key the menu tree and the layout use must be present, and no other key may be;
+#   * a value is non-empty plain text: no control characters, escape sequences, invisible
+#     characters, private-use characters or the reserved security-marker characters;
+#   * nothing here may call content "private" or draw a lock: the server can read everything
+#     except PGP-encrypted mail and files members encrypt themselves.
+
+[ui]
+title = "russh-bbs"
+
+[ui.footer]
+menu = "?: help   Esc: back   Ctrl-C: log off"
+
+[ui.notice]
+info = "Notice"
+error = "Problem"
+
+[ui.tag]
+not_built = "not built yet"
+
+[ui.help]
+title = "Help"
+intro = "These keys work the same on every menu:"
+key_help = "?        this help"
+key_back = "Esc      back one menu (nothing at the main menu)"
+key_quit = "Ctrl-C   log off from anywhere (Ctrl-D does the same)"
+menu = "To choose an item, press the letter shown in brackets."
+footer = "Any key: close help"
+
+[ui.status]
+server_readable = "The server can read what you do here."
+unavailable = "security markers unavailable"
+
+[menu.main]
+title = "Main menu"
+
+[menu.main.item]
+forums = "Forums"
+mail = "Mail"
+files = "Files"
+members = "Members"
+settings = "Terminal settings"
+sysop = "Sysop tools"
+logoff = "Log off"
+
+[menu.sysop]
+title = "Sysop tools"
+
+[menu.sysop.item]
+queue = "Approval queue"
+
+[placeholder]
+forums = "Forums are not built yet."
+mail = "Mail is not built yet."
+files = "File areas are not built yet."
+members = "The members list is not built yet."
+queue = "The approval queue is not built yet."
