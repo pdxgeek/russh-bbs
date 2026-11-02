@@ -193,6 +193,7 @@ fn username_error(error: UsernameError) -> &'static str {
         UsernameError::DisallowedCharacter | UsernameError::BadFirstCharacter => {
             strings::ERR_HANDLE_CHARS
         }
+        UsernameError::Reserved => strings::ERR_HANDLE_RESERVED,
     }
 }
 

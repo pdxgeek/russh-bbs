@@ -82,6 +82,8 @@ pub const ERR_HANDLE_TOO_LONG: &str = "A handle can have at most 24 characters."
 /// See [`ERR_EMPTY`].
 pub const ERR_HANDLE_CHARS: &str =
     "A handle may use letters, digits, _ and -, and must start with a letter or digit.";
+/// See [`ERR_EMPTY`]. The reserved list is fixed and public, so this says nothing about members.
+pub const ERR_HANDLE_RESERVED: &str = "That handle is reserved. Please choose another.";
 
 /// Shown when a connection has used up its form submissions.
 pub const ERR_TOO_MANY: &str = "Too many attempts on this connection. Goodbye.";

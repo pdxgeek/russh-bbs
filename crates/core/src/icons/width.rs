@@ -2,7 +2,7 @@
 //!
 //! A generic `wcwidth` is not trusted: private-use characters are "ambiguous" and fonts
 //! disagree. Policy: printable ASCII is 1 cell; plain-Unicode tier symbols are East Asian
-//! Width *Neutral* (narrow everywhere, including CJK locales) and are 1 cell; Nerd Font
+//! Width *Neutral* or *Narrow* (narrow everywhere, including CJK locales) and are 1 cell; Nerd Font
 //! glyphs are **reserved at 2 cells** and rendered with one trailing space, which is
 //! correct whether the terminal draws the glyph in one cell or overflows into a second.
 
@@ -41,12 +41,14 @@ pub(super) const TABLE: &[(char, GlyphWidth)] = &[
     ('\u{f071}', GlyphWidth::Two),
     // Plain Unicode tier, East Asian Width Neutral.
     ('\u{2263}', GlyphWidth::One),
-    ('\u{26b7}', GlyphWidth::One),
     ('\u{25c9}', GlyphWidth::One),
     ('\u{223f}', GlyphWidth::One),
     ('\u{2709}', GlyphWidth::One),
     ('\u{2731}', GlyphWidth::One),
     ('\u{2298}', GlyphWidth::One),
+    ('\u{2299}', GlyphWidth::One),
+    ('\u{27e6}', GlyphWidth::One),
+    ('\u{27e7}', GlyphWidth::One),
     ('\u{229b}', GlyphWidth::One),
     ('\u{270e}', GlyphWidth::One),
     ('\u{26a0}', GlyphWidth::One),

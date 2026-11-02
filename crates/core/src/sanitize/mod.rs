@@ -19,8 +19,15 @@
 //! |---|---|
 //! | C0 controls, DEL, C1 controls | removed (newline and tab per context) |
 //! | `ESC` + CSI/OSC/DCS/SOS/PM/APC/nF/Fe sequences, 8-bit C1 equivalents | removed entirely |
-//! | Bidi overrides, embeddings, isolates, marks; zero-width space, BOM, word joiner, line and paragraph separators, tag characters | removed |
-//! | Private-use ranges (BMP and planes 15 and 16) and noncharacters | replaced with U+FFFD |
+//! | Bidi overrides, embeddings, isolates, marks; zero-width space, BOM, word joiner, tag characters; invisible fillers and format characters (Hangul and Khmer fillers, braille blank, soft hyphen, U+2060-206F, interlinear annotation, ...); variation selectors except U+FE0F after an emoji base | removed |
+//! | VT, FF, NEL, LS, PS | a space in [`SingleLine`], a newline in [`MultiLine`] |
+//! | Unicode spaces (U+00A0, U+2000-200A, U+202F, U+205F, U+3000, U+1680) | ASCII space |
+//! | Combining marks beyond [`MAX_COMBINING_MARKS`] per base character | removed |
+//! | Private-use ranges (BMP and planes 15 and 16), noncharacters, and the reserved security-chrome set [`RESERVED_CHROME`] | replaced with U+FFFD |
+//!
+//! The reserved chrome set (security-marker delimiters and glyphs) is what lets the Unicode
+//! and Nerd Font tiers of a security marker be unforgeable by content. The ASCII tier cannot
+//! be protected by text; see `icons` and decision D39.
 
 mod scan;
 mod username;
@@ -30,9 +37,9 @@ mod tests;
 
 use std::fmt;
 
+pub use scan::{MAX_COMBINING_MARKS, RESERVED_CHROME};
 pub use username::{
     USERNAME_MAX_CHARS, USERNAME_MIN_CHARS, Username, UsernameError, sanitize_username,
-    username_skeleton,
 };
 
 /// Text that has passed through the sanitizer.
