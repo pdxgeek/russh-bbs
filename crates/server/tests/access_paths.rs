@@ -669,3 +669,104 @@ async fn editing_another_profile_needs_members_edit_and_a_removal_saves_nothing(
     assert_eq!(rig.profile_of(bob).await.get(Field::DisplayName), "Bobby");
     rig.server.shutdown().await;
 }
+
+/// A member (not the founder) with a key, signed in and at the menu.
+async fn member_at_menu(
+    rig: &Rig,
+    name: &str,
+) -> (
+    russh_bbs_core::store::AccountId,
+    Handle<Client>,
+    Channel<client::Msg>,
+) {
+    use russh_bbs_core::store::{AccountState, AccountStore, NewAccount};
+    let key = new_client_key();
+    let fp =
+        Fingerprint::parse(&key.public_key().fingerprint(HashAlg::Sha256).to_string()).unwrap();
+    let account = rig
+        .store
+        .create_account(NewAccount {
+            username: russh_bbs_core::sanitize::sanitize_username(name).unwrap(),
+            role: Slug::MEMBER,
+            state: AccountState::Active,
+        })
+        .await
+        .unwrap();
+    rig.store.attach_fingerprint(account.id, &fp).await.unwrap();
+    let session = login(rig.addr(), name, &key).await;
+    let mut channel = common::open_shell(&session, 80, 24).await;
+    words(&mut channel).await;
+    // First login: any key, then the icon check (pick Unicode).
+    for key in ["x", "n", "y"] {
+        send(&mut channel, key).await;
+    }
+    (account.id, session, channel)
+}
+
+#[tokio::test]
+async fn a_role_revoked_by_the_editing_service_stops_working_on_the_next_key() {
+    use russh_bbs_core::access::{
+        NewRole, Scope, Subject, create_role, delete_role, grant_role, revoke_role,
+    };
+    use russh_bbs_core::founder::FounderStore;
+    let rig = Rig::start().await;
+    let boss = rig
+        .store
+        .claim_founder(
+            russh_bbs_core::sanitize::sanitize_username("boss").unwrap(),
+            &Fingerprint::parse(&format!("SHA256:{:A>43}", 1)).unwrap(),
+        )
+        .await
+        .unwrap()
+        .unwrap();
+    let boss_snap = rig.store.snapshot(Some(boss.id)).await.unwrap();
+    let greeter = Slug::parse("greeter").unwrap();
+    create_role(
+        &rig.store,
+        &boss_snap,
+        NewRole {
+            name: greeter.clone(),
+            rank: 20,
+            permissions: vec![Permission::MembersApprove],
+        },
+    )
+    .await
+    .unwrap();
+    let (pat, _session, mut channel) = member_at_menu(&rig, "pat").await;
+    let who = Subject::Account(pat);
+
+    // Not held: a plain member has no Sysop tools.
+    assert!(!full(&mut channel).await.contains("[o] Sysop tools"));
+
+    // Granted by the service: the next action offers it and the hotkey works.
+    grant_role(&rig.store, &boss_snap, who, &greeter, Scope::Global)
+        .await
+        .unwrap();
+    send(&mut channel, "x").await;
+    let menu = full(&mut channel).await;
+    assert!(menu.contains("[o] Sysop tools"), "{menu}");
+
+    // Revoked by the service: the very next key no longer offers it or does it.
+    revoke_role(&rig.store, &boss_snap, who, &greeter, Scope::Global)
+        .await
+        .unwrap();
+    let after = send(&mut channel, "o").await;
+    let screen = format!("{after} {}", full(&mut channel).await);
+    assert!(
+        !screen.contains("[o] Sysop tools"),
+        "still offered: {screen}"
+    );
+    assert!(
+        !screen.contains("Sysop tools"),
+        "the hotkey still worked: {screen}"
+    );
+
+    // With no grant left the role can go, and a later grant of it is refused (it is gone).
+    delete_role(&rig.store, &boss_snap, &greeter).await.unwrap();
+    assert!(
+        grant_role(&rig.store, &boss_snap, who, &greeter, Scope::Global)
+            .await
+            .is_err()
+    );
+    rig.server.shutdown().await;
+}

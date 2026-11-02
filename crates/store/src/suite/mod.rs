@@ -7,6 +7,7 @@
 #![allow(clippy::unwrap_used)]
 
 pub(crate) mod access;
+pub(crate) mod access_edit;
 pub(crate) mod accounts;
 pub(crate) mod audit;
 pub(crate) mod founder;
@@ -126,7 +127,8 @@ macro_rules! shared_suite {
             #[allow(unused_imports)]
             use super::*;
             use $crate::suite::{
-                access, accounts, audit, founder, invites, limits, profiles, terminal_settings,
+                access, access_edit, accounts, audit, founder, invites, limits, profiles,
+                terminal_settings,
             };
 
             $crate::suite::shared_suite!(@tests $harness, $attr;
@@ -148,6 +150,17 @@ macro_rules! shared_suite {
                 access::bad_grants_are_refused_by_name,
                 access::access_data_survives_a_reopen,
                 access::a_broken_store_fails_the_snapshot_instead_of_granting,
+                access_edit::a_role_is_put_changed_and_deleted_with_one_audit_row_each,
+                access_edit::deleting_a_granted_role_is_refused_and_nothing_cascades,
+                access_edit::removing_a_grant_writes_a_row_and_removing_nothing_writes_none,
+                access_edit::the_last_sysop_grant_cannot_be_removed_even_by_two_at_once,
+                access_edit::rank_and_locked_roles_hold_on_the_real_role_data,
+                access_edit::escalation_is_refused_on_the_real_role_data,
+                access_edit::protected_grants_hold_on_the_real_role_data,
+                access_edit::a_revoked_role_stops_working_on_the_next_snapshot,
+                access_edit::refused_edits_write_no_audit_rows,
+                access_edit::an_edit_never_lands_without_its_audit_row,
+                access_edit::role_edits_survive_a_reopen,
                 audit::append_and_page_round_trip_newest_first_with_the_injected_clock,
                 audit::paging_filters_combine_and_time_bounds_are_since_inclusive_until_exclusive,
                 audit::pages_are_bounded_and_the_cursor_walks_every_row_once,

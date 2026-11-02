@@ -75,6 +75,16 @@ pub enum AccessError {
     /// The `waiting` role is only for unknown and inactive keys and cannot be granted.
     #[error("that role cannot be granted")]
     RoleNotGrantable,
+    /// A role with this name already exists.
+    #[error("a role with that name already exists")]
+    RoleNameTaken,
+    /// The role is still granted to someone, so it was not deleted. Revoke its grants first.
+    #[error("the role is still granted")]
+    RoleInUse,
+    /// The change would remove the last global `sysop` grant, which would lock the board out
+    /// of its own administration.
+    #[error("that is the last sysop grant")]
+    LastSysop,
 }
 
 /// Roles, groups, grants and the per-action snapshot.
@@ -89,6 +99,48 @@ pub trait AccessStore: Send + Sync {
 
     /// Every role with its permission set.
     fn roles(&self) -> impl Future<Output = Result<Vec<RoleInfo>, StoreError>> + Send;
+
+    /// One role with its permission set, or `None`.
+    fn role(
+        &self,
+        name: &Slug,
+    ) -> impl Future<Output = Result<Option<RoleInfo>, StoreError>> + Send {
+        async move {
+            Ok(self
+                .roles()
+                .await?
+                .into_iter()
+                .find(|role| role.name == *name))
+        }
+    }
+
+    /// Insert a new role with its permission set (a plain write: the rank and escalation rules
+    /// are the editing services'). A name already taken is [`AccessError::RoleNameTaken`].
+    /// Audited in the same transaction (`role.created`, by `actor`).
+    fn put_role(
+        &self,
+        role: &RoleInfo,
+        actor: Actor,
+    ) -> impl Future<Output = Result<(), AccessError>> + Send;
+
+    /// Replace a role's whole permission set. An unknown role is [`AccessError::UnknownRole`].
+    /// Audited in the same transaction (`role.permissions_set`, by `actor`); a set equal to the
+    /// stored one changes nothing and writes no row.
+    fn set_role_permissions(
+        &self,
+        name: &Slug,
+        permissions: &[Permission],
+        actor: Actor,
+    ) -> impl Future<Output = Result<(), AccessError>> + Send;
+
+    /// Delete a role and its permission set. Refused with [`AccessError::RoleInUse`] while any
+    /// grant names it (decision D69: refuse, never cascade away someone's access). The check and
+    /// the delete are one transaction. Audited (`role.deleted`, by `actor`).
+    fn delete_role(
+        &self,
+        name: &Slug,
+        actor: Actor,
+    ) -> impl Future<Output = Result<(), AccessError>> + Send;
 
     /// Every group.
     fn groups(&self) -> impl Future<Output = Result<Vec<GroupInfo>, StoreError>> + Send;
@@ -110,10 +162,20 @@ pub trait AccessStore: Send + Sync {
     ) -> impl Future<Output = Result<(), AccessError>> + Send;
 
     /// Add a grant. Adding one that exists is not an error. This is a plain write: who may call
-    /// it, and the rank rules, belong to the editing services (M2-B2). A grant that is new is
-    /// audited in the same transaction (`grant.added`, by `actor`); one that already existed
-    /// changed nothing and writes no row.
+    /// it, and the rank rules, belong to the editing services. A grant that is new is audited
+    /// in the same transaction (`role.granted` or `permission.granted`, by `actor`); one that
+    /// already existed changed nothing and writes no row.
     fn add_grant(
+        &self,
+        grant: &NewGrant,
+        actor: Actor,
+    ) -> impl Future<Output = Result<(), AccessError>> + Send;
+
+    /// Remove a grant. Removing one that is not there is not an error and writes no row.
+    /// Removing the last global `sysop` grant is refused ([`AccessError::LastSysop`]) in the
+    /// same transaction as the delete, so two concurrent revokes cannot both pass. Audited
+    /// (`role.revoked` or `permission.revoked`, by `actor`).
+    fn remove_grant(
         &self,
         grant: &NewGrant,
         actor: Actor,

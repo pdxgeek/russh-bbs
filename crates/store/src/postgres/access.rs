@@ -3,8 +3,8 @@
 //! core and `access_rows`; this file is SQL and a transaction.
 
 use russh_bbs_core::access::{
-    AccessError, AccessStore, Child, Granting, GroupChange, GroupId, GroupInfo, NewGrant, RoleInfo,
-    Scope, Slug, Snapshot, Subject,
+    AccessError, AccessStore, Child, Granting, GroupChange, GroupId, GroupInfo, NewGrant,
+    Permission, RoleInfo, Scope, Slug, Snapshot, Subject,
 };
 use russh_bbs_core::audit::{Actor, events};
 use russh_bbs_core::store::{AccountId, StoreError};
@@ -12,8 +12,9 @@ use sqlx::error::ErrorKind;
 
 use super::PostgresStore;
 use crate::access_rows::{
-    ClosureDiff, EdgeRow, GroupRow, RoleRow, SnapshotRow, closure_diff, deleted_group_name,
-    graph_from_rows, roles_from_rows, snapshot_from_rows, waiting_snapshot,
+    ClosureDiff, EdgeRow, GrantColumns, GroupRow, RoleRow, SnapshotRow, closure_diff,
+    deleted_group_name, graph_from_rows, permission_diff, roles_from_rows, snapshot_from_rows,
+    waiting_snapshot,
 };
 use crate::error::{backend, kind};
 
@@ -258,6 +259,182 @@ impl AccessStore for PostgresStore {
             }
             Err(error) => Err(backend(error).into()),
         }
+    }
+    async fn put_role(&self, role: &RoleInfo, actor: Actor) -> Result<(), AccessError> {
+        let name = role.name.as_str();
+        let rank = i16::from(role.rank);
+        let mut tx = self.pool().begin().await.map_err(backend)?;
+        sqlx::query!(
+            "INSERT INTO role (name, rank, kind) VALUES ($1, $2, 'custom')",
+            name,
+            rank,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|error| match kind(&error) {
+            Some(ErrorKind::UniqueViolation) => AccessError::RoleNameTaken,
+            _ => backend(error).into(),
+        })?;
+        for permission in &role.permissions {
+            let permission = permission.name();
+            sqlx::query!(
+                "INSERT INTO role_permission (role, permission) VALUES ($1, $2)
+                 ON CONFLICT DO NOTHING",
+                name,
+                permission,
+            )
+            .execute(&mut *tx)
+            .await
+            .map_err(backend)?;
+        }
+        let event = events::role_created(actor, &role.name, role.rank, role.permissions.len());
+        self.audit_in(&mut tx, &event).await?;
+        tx.commit().await.map_err(backend)?;
+        Ok(())
+    }
+
+    async fn set_role_permissions(
+        &self,
+        name: &Slug,
+        permissions: &[Permission],
+        actor: Actor,
+    ) -> Result<(), AccessError> {
+        let text = name.as_str();
+        // The write lock first, so the diff is against what is really stored.
+        let mut tx = self.pool().begin().await.map_err(backend)?;
+        if sqlx::query_scalar!(
+            "SELECT name FROM role WHERE name = $1 FOR NO KEY UPDATE",
+            text
+        )
+        .fetch_optional(&mut *tx)
+        .await
+        .map_err(backend)?
+        .is_none()
+        {
+            return Err(AccessError::UnknownRole);
+        }
+        let stored: Vec<String> = sqlx::query_scalar!(
+            "SELECT permission FROM role_permission WHERE role = $1",
+            text
+        )
+        .fetch_all(&mut *tx)
+        .await
+        .map_err(backend)?;
+        let diff = permission_diff(&stored, permissions);
+        if diff.is_empty() {
+            return Ok(());
+        }
+        for permission in &diff.removed {
+            sqlx::query!(
+                "DELETE FROM role_permission WHERE role = $1 AND permission = $2",
+                text,
+                permission,
+            )
+            .execute(&mut *tx)
+            .await
+            .map_err(backend)?;
+        }
+        for permission in &diff.added {
+            let permission = permission.name();
+            sqlx::query!(
+                "INSERT INTO role_permission (role, permission) VALUES ($1, $2)",
+                text,
+                permission,
+            )
+            .execute(&mut *tx)
+            .await
+            .map_err(backend)?;
+        }
+        let event = events::role_permissions_set(actor, name, diff.added.len(), diff.removed.len());
+        self.audit_in(&mut tx, &event).await?;
+        tx.commit().await.map_err(backend)?;
+        Ok(())
+    }
+
+    async fn delete_role(&self, name: &Slug, actor: Actor) -> Result<(), AccessError> {
+        let text = name.as_str();
+        // The write lock first: no grant can slip in between the check and the delete, which
+        // would otherwise be cascaded away with the role.
+        let mut tx = self.pool().begin().await.map_err(backend)?;
+        // FOR UPDATE conflicts with the key-share lock a grant insert takes on its role, so a
+        // grant is either seen by the count below or waits and then fails on the missing role.
+        if sqlx::query_scalar!("SELECT name FROM role WHERE name = $1 FOR UPDATE", text)
+            .fetch_optional(&mut *tx)
+            .await
+            .map_err(backend)?
+            .is_none()
+        {
+            return Err(AccessError::UnknownRole);
+        }
+        let granted = sqlx::query_scalar!(
+            r#"SELECT COUNT(*) AS "count!" FROM access_grant WHERE role = $1"#,
+            text
+        )
+        .fetch_one(&mut *tx)
+        .await
+        .map_err(backend)?;
+        if granted > 0 {
+            return Err(AccessError::RoleInUse);
+        }
+        sqlx::query!("DELETE FROM role WHERE name = $1", text)
+            .execute(&mut *tx)
+            .await
+            .map_err(backend)?;
+        self.audit_in(&mut tx, &events::role_deleted(actor, name))
+            .await?;
+        tx.commit().await.map_err(backend)?;
+        Ok(())
+    }
+
+    async fn remove_grant(&self, grant: &NewGrant, actor: Actor) -> Result<(), AccessError> {
+        let cols = GrantColumns::of(grant);
+        // The write lock first, so two revokes cannot both see "another sysop grant remains".
+        let mut tx = self.pool().begin().await.map_err(backend)?;
+        if cols.is_global_sysop() {
+            // One revoke of a sysop grant at a time, so two cannot both see another remain.
+            sqlx::query_scalar!(
+                "SELECT name FROM role WHERE name = 'sysop' FOR NO KEY UPDATE -- postgres"
+            )
+            .fetch_one(&mut *tx)
+            .await
+            .map_err(backend)?;
+        }
+        let done = sqlx::query!(
+            "DELETE FROM access_grant
+              WHERE COALESCE(account_id, 0) = COALESCE($1::bigint, 0)
+                AND COALESCE(group_id, 0) = COALESCE($2::bigint, 0)
+                AND COALESCE(role, '') = COALESCE($3::text, '')
+                AND COALESCE(permission, '') = COALESCE($4::text, '')
+                AND resource_kind = $5 AND resource_id = $6",
+            cols.account,
+            cols.group,
+            cols.role,
+            cols.permission,
+            cols.resource_kind,
+            cols.resource_id,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(backend)?;
+        if done.rows_affected() == 0 {
+            return Ok(());
+        }
+        if cols.is_global_sysop() {
+            let left = sqlx::query_scalar!(
+                r#"SELECT COUNT(*) AS "count!" FROM access_grant
+                    WHERE role = 'sysop' AND resource_id = 0 -- postgres"#
+            )
+            .fetch_one(&mut *tx)
+            .await
+            .map_err(backend)?;
+            if left == 0 {
+                return Err(AccessError::LastSysop);
+            }
+        }
+        self.audit_in(&mut tx, &events::grant_removed(actor, grant))
+            .await?;
+        tx.commit().await.map_err(backend)?;
+        Ok(())
     }
 }
 

@@ -218,6 +218,21 @@ impl Snapshot {
             .map(|(_, role)| role)
     }
 
+    /// The rank of the highest-ranked role held **globally**, or `None` when it holds none (a
+    /// role held on one resource gives no standing over roles board-wide). The editing services
+    /// compare it with the rank of the role they are asked to change.
+    #[must_use]
+    pub fn top_rank(&self) -> Option<u8> {
+        self.held
+            .iter()
+            .filter(|h| h.scope == Scope::Global)
+            .filter_map(|h| match &h.source {
+                Source::Role { rank, .. } => Some(*rank),
+                Source::Allow { .. } => None,
+            })
+            .max()
+    }
+
     /// May the account do `permission` (on `resource`, when given)? See [`resolve`].
     #[must_use]
     pub fn resolve(&self, permission: Permission, resource: Option<ResourceRef>) -> Decision {

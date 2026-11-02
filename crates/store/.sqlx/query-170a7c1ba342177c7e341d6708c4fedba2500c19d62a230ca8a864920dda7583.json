@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO role (name, rank, kind) VALUES ($1, $2, 'custom')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int2"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "170a7c1ba342177c7e341d6708c4fedba2500c19d62a230ca8a864920dda7583"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO role (name, rank, kind) VALUES (?, ?, 'custom')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "22a28a56cc03c06d9ae6ea6889c5c06576b42d7b996781a0223d8d52f8d369bb"
+}

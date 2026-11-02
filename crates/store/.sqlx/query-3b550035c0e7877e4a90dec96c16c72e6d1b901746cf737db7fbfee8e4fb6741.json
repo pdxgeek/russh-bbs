@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO role_permission (role, permission) VALUES (?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "3b550035c0e7877e4a90dec96c16c72e6d1b901746cf737db7fbfee8e4fb6741"
+}

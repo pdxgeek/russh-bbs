@@ -44,7 +44,11 @@ sysop screen over it is M5; the board has no audit screen yet.
 | `create_group` | `group.created` | caller | the group | `name <name>` |
 | `change_groups` add / remove | `group.member_added` / `group.member_removed` | caller | the group | `account <id>` or `group <id>` |
 | `change_groups` delete | `group.deleted` | caller | the group | `name <name>` |
-| `add_grant` | `grant.added` | caller | the subject (account or group) | `role <name>` or `permission <name>`; the grant's resource, if scoped |
+| `add_grant` | `role.granted` / `permission.granted` | caller | the subject (account or group) | `role <name>` or `permission <name>`; the grant's resource, if scoped |
+| `remove_grant` (M2-B2) | `role.revoked` / `permission.revoked` | caller | the subject | same wording as the grant; the grant's resource, if scoped |
+| `put_role` (M2-B2) | `role.created` | caller | the role | `rank <n> permissions <count>` |
+| `set_role_permissions` (M2-B2) | `role.permissions_set` | caller | the role | `added <n> removed <n>` (counts; the names are in the role) |
+| `delete_role` (M2-B2) | `role.deleted` | caller | the role | none |
 | `set_role_limit` / `set_member_limit` (M2-H) | `limit.changed` | caller | the role or the account | `<kind> set to <n>`, `<kind> set to unlimited` or `<kind> override cleared`; a repeat of the same value, or clearing an override that is not set, writes no row |
 | `set_terminal_settings` | `setting.changed` | the account | the account | `terminal settings` |
 | `create_invite` (M2-D) | `invite.created` | the inviter | the invite (row id, never the code) | `expires at <unix seconds>` |
@@ -54,14 +58,16 @@ sysop screen over it is M5; the board has no audit screen yet.
 | `save_profile` by staff (M2-F) | `profile.edited` | the editor (`members.edit`) | the edited account | `fields <names>`: field names only, never values. The owner's own edits write no row |
 
 A write that changed nothing (adding a member already in the group, removing one who is not, a
-grant already held, a refused change) writes no row.
+grant already held or not there, the same permission set again, a refused change) writes no row.
+The M2-B2 services refuse before any write, so a refused edit (rank, locked, escalation, last
+sysop) writes no row either; audit.md does not log refusals.
 
-`create_group`, `change_groups` and `add_grant` take an `Actor` argument; the store cannot know
+`create_group`, `change_groups`, `add_grant` and the M2-B2 role and revoke writes take an `Actor` argument; the store cannot know
 who is calling.
 
 ## Planned
 
-- **M2-B2** (role, grant, revoke editing), **M2-E** (approvals, denials, bans, role changes):
+- **M2-E** (approvals, denials, bans, role changes):
   see the handoff row in [coordination.md](coordination.md). Add the `Action` variants there and
   call `audit_in` in the same transaction. **M2-D** wrote `invite.created`, `invite.redeemed`,
   `account.created` (by invite) and `account.state_changed`; `invite.revoked` waits for a revoke

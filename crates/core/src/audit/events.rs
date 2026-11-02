@@ -72,10 +72,8 @@ pub fn group_changed(actor: Actor, change: GroupChange, group_name: Option<&Slug
     }
 }
 
-/// A grant was added: the target is the subject, the note says what it gives, and the grant's
-/// resource (if scoped) is the event's resource.
-#[must_use]
-pub fn grant_added(actor: Actor, grant: &NewGrant) -> AuditEvent {
+/// The target (the subject) and the note ("role x" / "permission y") shared by grant and revoke.
+fn grant_parts(grant: &NewGrant) -> (Target, String) {
     let target = match grant.subject {
         Subject::Account(id) => Target::Account(id),
         Subject::Group(id) => Target::Group(id),
@@ -84,11 +82,70 @@ pub fn grant_added(actor: Actor, grant: &NewGrant) -> AuditEvent {
         Granting::Role(role) => format!("role {}", role.as_str()),
         Granting::Permission(permission) => format!("permission {}", permission.name()),
     };
-    let event = AuditEvent::new(actor, Action::GrantAdded, target).detail(&what);
-    match grant.scope {
+    (target, what)
+}
+
+/// A scoped grant names its resource on the event; a global one has none.
+fn with_scope(event: AuditEvent, scope: Scope) -> AuditEvent {
+    match scope {
         Scope::Global => event,
         Scope::Resource(resource) => event.on(resource),
     }
+}
+
+/// A grant was added: the target is the subject, the note says what it gives, and the grant's
+/// resource (if scoped) is the event's resource. A role is `role.granted`, one permission
+/// `permission.granted`.
+#[must_use]
+pub fn grant_added(actor: Actor, grant: &NewGrant) -> AuditEvent {
+    let (target, what) = grant_parts(grant);
+    let action = match grant.granting {
+        Granting::Role(_) => Action::RoleGranted,
+        Granting::Permission(_) => Action::PermissionGranted,
+    };
+    with_scope(
+        AuditEvent::new(actor, action, target).detail(&what),
+        grant.scope,
+    )
+}
+
+/// A grant was taken away: `role.revoked` or `permission.revoked`, worded like [`grant_added`].
+#[must_use]
+pub fn grant_removed(actor: Actor, grant: &NewGrant) -> AuditEvent {
+    let (target, what) = grant_parts(grant);
+    let action = match grant.granting {
+        Granting::Role(_) => Action::RoleRevoked,
+        Granting::Permission(_) => Action::PermissionRevoked,
+    };
+    with_scope(
+        AuditEvent::new(actor, action, target).detail(&what),
+        grant.scope,
+    )
+}
+
+/// A custom role was created with `rank` and `permissions` permissions.
+#[must_use]
+pub fn role_created(actor: Actor, role: &Slug, rank: u8, permissions: usize) -> AuditEvent {
+    AuditEvent::new(actor, Action::RoleCreated, Target::Role(role.clone()))
+        .detail(&format!("rank {rank} permissions {permissions}"))
+}
+
+/// A role's permission set was replaced: how many were added and removed (the names are in the
+/// role itself; a long list would not fit the 120-character note).
+#[must_use]
+pub fn role_permissions_set(actor: Actor, role: &Slug, added: usize, removed: usize) -> AuditEvent {
+    AuditEvent::new(
+        actor,
+        Action::RolePermissionsSet,
+        Target::Role(role.clone()),
+    )
+    .detail(&format!("added {added} removed {removed}"))
+}
+
+/// A custom role was deleted.
+#[must_use]
+pub fn role_deleted(actor: Actor, role: &Slug) -> AuditEvent {
+    AuditEvent::new(actor, Action::RoleDeleted, Target::Role(role.clone()))
 }
 
 /// A resource limit was set (`Some`) or a member override cleared (`None`). The target is the
