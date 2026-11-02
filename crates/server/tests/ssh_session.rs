@@ -306,7 +306,10 @@ async fn a_huge_window_is_drawn_into_a_bounded_rectangle() {
     let span = |f: fn(&(u16, u16)) -> u16, limit: u16, what: &str| {
         let lo = moves.iter().map(f).min().unwrap();
         let hi = moves.iter().map(f).max().unwrap();
-        assert!(hi - lo < limit, "{what} drawn over {lo}..={hi}, limit {limit}");
+        assert!(
+            hi - lo < limit,
+            "{what} drawn over {lo}..={hi}, limit {limit}"
+        );
     };
     // Fixed numbers, not the server's constants: the test must fail if the cap is raised.
     span(|m| m.0, 50, "rows");
