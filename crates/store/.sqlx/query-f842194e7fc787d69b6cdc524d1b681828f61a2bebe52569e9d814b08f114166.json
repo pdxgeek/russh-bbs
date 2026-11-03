@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO mail_report\n                   (reporter_id, sender_id, message_id, reported_at, copy_subject, copy_body)\n               SELECT $1, $2, $3, $4, $5, $6\n               WHERE (SELECT count(*) FROM mail_report\n                      WHERE reporter_id = $1 AND closed_at IS NULL) < $7\n               RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Int8",
+        "Int8",
+        "Text",
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "f842194e7fc787d69b6cdc524d1b681828f61a2bebe52569e9d814b08f114166"
+}

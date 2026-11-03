@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM mail_message WHERE id = $1 AND recipient_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "93fc0c6b4ffd64b0c11ee84be0ea168b5d9b87d9230f6d0ec06edaf41ee9e330"
+}

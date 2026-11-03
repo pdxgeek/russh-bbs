@@ -1,0 +1,68 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT m.id AS \"id!\", m.recipient_id AS \"recipient_id!\", m.sender_id,\n                      a.username AS \"sender?\", m.sent_at AS \"sent_at!\", m.read_at,\n                      m.key_id AS \"key_id!\", m.subject AS \"subject!: Vec<u8>\",\n                      m.body AS \"body!: Vec<u8>\"\n               FROM mail_message m LEFT JOIN accounts a ON a.id = m.sender_id\n               WHERE m.recipient_id = ?\n               ORDER BY m.sent_at DESC, m.id DESC LIMIT ? OFFSET ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "recipient_id!",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "sender_id",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "sender?",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "sent_at!",
+        "ordinal": 4,
+        "type_info": "Integer"
+      },
+      {
+        "name": "read_at",
+        "ordinal": 5,
+        "type_info": "Integer"
+      },
+      {
+        "name": "key_id!",
+        "ordinal": 6,
+        "type_info": "Integer"
+      },
+      {
+        "name": "subject!: Vec<u8>",
+        "ordinal": 7,
+        "type_info": "Blob"
+      },
+      {
+        "name": "body!: Vec<u8>",
+        "ordinal": 8,
+        "type_info": "Blob"
+      }
+    ],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": [
+      true,
+      false,
+      true,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "184de6c4480228071060f4d8d8cef1e32442b1ff5ae66fce12a5cbac5b3d3b17"
+}

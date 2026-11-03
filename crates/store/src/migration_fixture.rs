@@ -119,10 +119,11 @@ pub(crate) const DUMPS: &[(&str, &str)] = &[
     (
         "role_permission",
         // Rows that later migrations add are left out (0009 gave `waiting` and `sysop`
-        // `invite.request`, 0010 `membership.open`): the fixture compares what existed before 0007 with what is there
+        // `invite.request`, 0010 `membership.open`, 0019 `mail.report` and `mail.moderate`): the fixture compares what existed before 0007 with what is there
         // after it. Add the name of a permission here when a migration adds its rows.
         "SELECT role || '|' || permission FROM role_permission \
-         WHERE permission NOT IN ('invite.request', 'membership.open') ORDER BY 1",
+         WHERE permission NOT IN ('invite.request', 'membership.open', 'mail.report', 'mail.moderate') \
+         ORDER BY 1",
     ),
     (
         "settings",

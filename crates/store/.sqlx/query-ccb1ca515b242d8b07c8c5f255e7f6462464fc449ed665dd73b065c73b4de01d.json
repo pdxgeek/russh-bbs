@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT count(*) AS \"total!: i64\",\n                      coalesce(sum(read_at IS NULL), 0) AS \"unread!: i64\"\n               FROM mail_message WHERE recipient_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "total!: i64",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "unread!: i64",
+        "ordinal": 1,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "ccb1ca515b242d8b07c8c5f255e7f6462464fc449ed665dd73b065c73b4de01d"
+}

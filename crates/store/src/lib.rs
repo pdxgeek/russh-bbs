@@ -27,6 +27,8 @@ mod forum_rows;
 mod invite_rows;
 mod limit_rows;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
+mod mail_rows;
+#[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod password_rows;
 mod profile_rows;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]

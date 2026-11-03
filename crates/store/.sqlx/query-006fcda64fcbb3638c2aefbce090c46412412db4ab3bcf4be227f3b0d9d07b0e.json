@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT r.id AS \"id!\", ra.username AS \"reporter?\", sa.username AS \"sender?\",\n                      r.message_id AS \"message_id!\", r.reported_at AS \"reported_at!\",\n                      r.copy_subject, r.copy_body, r.closed_at\n               FROM mail_report r\n               LEFT JOIN accounts ra ON ra.id = r.reporter_id\n               LEFT JOIN accounts sa ON sa.id = r.sender_id\n               ORDER BY (r.closed_at IS NOT NULL), r.reported_at DESC, r.id DESC\n               LIMIT ? OFFSET ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "reporter?",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "sender?",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "message_id!",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "reported_at!",
+        "ordinal": 4,
+        "type_info": "Integer"
+      },
+      {
+        "name": "copy_subject",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "copy_body",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "closed_at",
+        "ordinal": 7,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "006fcda64fcbb3638c2aefbce090c46412412db4ab3bcf4be227f3b0d9d07b0e"
+}

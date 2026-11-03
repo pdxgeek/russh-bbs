@@ -18,6 +18,9 @@ subtle = { workspace = true }
 icu_properties = { workspace = true }
 argon2 = { workspace = true }
 zeroize = { workspace = true }
+# Mail sealing (D90): the AEAD, and the OS random source for nonces and message ids.
+chacha20poly1305 = { workspace = true }
+rand = { workspace = true }
 # The scheduler spawns, times out and isolates job tasks; the workspace already builds tokio.
 tokio = { workspace = true }
 

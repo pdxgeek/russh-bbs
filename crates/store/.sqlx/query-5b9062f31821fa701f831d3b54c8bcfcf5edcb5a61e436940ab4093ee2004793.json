@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM mail_message WHERE id = ? AND recipient_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "5b9062f31821fa701f831d3b54c8bcfcf5edcb5a61e436940ab4093ee2004793"
+}

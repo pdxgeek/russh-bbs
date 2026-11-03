@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO mail_report\n                   (reporter_id, sender_id, message_id, reported_at, copy_subject, copy_body)\n               SELECT ?, ?, ?, ?, ?, ?\n               WHERE (SELECT count(*) FROM mail_report\n                      WHERE reporter_id = ? AND closed_at IS NULL) < ?\n               RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 8
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "3bbb6d7d126b4de2298544ebb35ec5eafcb3e3a68aa1d5b0f73efc35b85b661a"
+}

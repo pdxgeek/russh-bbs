@@ -387,3 +387,28 @@ pub fn post_removed(
             }
         ))
 }
+
+/// `reporter` reported mail message `message` (sent by `sender`, when known) to staff as report
+/// `report` (M3-I, D90). Ids only: never a subject, a text or a handle.
+#[must_use]
+pub fn mail_reported(
+    reporter: AccountId,
+    sender: Option<AccountId>,
+    report: i64,
+    message: i64,
+) -> AuditEvent {
+    let target = sender.map_or(Target::None, Target::Account);
+    AuditEvent::new(Actor::Account(reporter), Action::MailReported, target)
+        .detail(&format!("report {report} message {message}"))
+}
+
+/// Staff member `actor` closed mail report `report` (M3-I).
+#[must_use]
+pub fn mail_report_closed(actor: AccountId, report: i64) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(actor),
+        Action::MailReportClosed,
+        Target::None,
+    )
+    .detail(&format!("report {report}"))
+}

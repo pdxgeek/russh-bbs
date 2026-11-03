@@ -17,6 +17,7 @@ pub(crate) mod forums;
 pub(crate) mod founder;
 pub(crate) mod invites;
 pub(crate) mod limits;
+pub(crate) mod mail;
 pub(crate) mod passwords;
 pub(crate) mod profiles;
 pub(crate) mod queue;
@@ -35,6 +36,7 @@ use russh_bbs_core::forums::ForumStore;
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::invites::InviteStore;
 use russh_bbs_core::limits::LimitStore;
+use russh_bbs_core::mail::MailStore;
 use russh_bbs_core::passwords::PasswordStore;
 use russh_bbs_core::profiles::ProfileStore;
 use russh_bbs_core::queue::QueueStore;
@@ -58,6 +60,7 @@ pub(crate) trait TestStore:
     + LimitStore
     + DraftStore
     + ForumStore
+    + MailStore
     + TerminalSettingsStore
     + ProfileStore
     + PasswordStore
@@ -86,6 +89,7 @@ impl<T> TestStore for T where
         + LimitStore
         + DraftStore
         + ForumStore
+        + MailStore
         + TerminalSettingsStore
         + ProfileStore
         + PasswordStore
@@ -129,6 +133,9 @@ pub(crate) trait Harness: Sized {
     /// column of every row. For looking at what is really stored.
     async fn texts(&self, sql: &str) -> Vec<String>;
 
+    /// The raw bytes of one column of `mail_message`, as lower-case hex, one string per row.
+    async fn hex(&self, column: &str) -> Vec<String>;
+
     /// Make every insert into `audit_log` fail, so a test can prove the change that wanted to
     /// write the row did not land either.
     async fn break_audit_inserts(&self);
@@ -159,7 +166,7 @@ macro_rules! shared_suite {
             #[allow(unused_imports)]
             use super::*;
             use $crate::suite::{
-                access, access_edit, accounts, audit, chat, credits, drafts, forums, founder, invites, limits, passwords, profiles,
+                access, access_edit, accounts, audit, chat, credits, drafts, forums, founder, invites, limits, mail, passwords, profiles,
                 queue, registration, scheduler, terminal_settings,
             };
 
@@ -240,6 +247,19 @@ macro_rules! shared_suite {
                 forums::search_finds_words_and_never_reaches_unreadable_boards,
                 forums::hostile_queries_are_handled_not_errors,
                 forums::forum_data_survives_a_reopen,
+                mail::mail_round_trips_and_the_stored_row_holds_no_plaintext,
+                mail::a_row_is_only_ever_reachable_through_its_recipients_mailbox,
+                mail::a_tampered_moved_or_swapped_row_is_an_error_entry_not_a_crash,
+                mail::a_different_key_cannot_open_and_start_up_checks_say_so,
+                mail::unknown_and_not_active_handles_get_one_answer,
+                mail::mail_per_day_is_enforced_per_utc_day,
+                mail::the_inbox_cap_refuses_new_mail_and_deleting_makes_room,
+                mail::replies_go_to_the_sender_by_account_and_only_while_they_are_active,
+                mail::reports_copy_what_the_reporter_sends_and_are_audited_by_id,
+                mail::the_open_report_cap_counts_open_reports_only,
+                mail::mail_cannot_be_read_back_through_a_report_or_the_audit_log,
+                mail::mail_survives_a_reopen_and_a_closed_store_fails_closed,
+                mail::deleting_an_account_deletes_its_mailbox_and_keeps_the_senders_mail,
                 drafts::deleting_an_account_deletes_its_drafts,
                 drafts::the_database_refuses_what_core_would_never_write,
                 drafts::a_stored_row_the_code_could_not_have_written_is_corrupt_not_shown,
