@@ -14,7 +14,7 @@ use russh_bbs_core::terminal_settings::{TerminalSettings, format_utc};
 use russh_bbs_core::forums::{SearchPage, ThreadPage};
 
 use super::exec::BoardList;
-use super::flow::{ForumsScreen, Input, InputKind, State, confirm_text, reader_title};
+use super::flow::{ForumsScreen, Input, InputKind, ListView, State, confirm_text, reader_title};
 use super::strings;
 use crate::settings::{self, Look};
 use crate::ui::classic::{self, ContentScreen, MENU_MARKERS};
@@ -85,12 +85,13 @@ pub(crate) fn render(frame: &mut Frame<'_>, screen: &ForumsScreen, ctx: &DrawCtx
         render_reader(frame, area, screen, reader, stored, width, ctx);
         return;
     }
-    let width = usize::from(area.width.min(settings::MAX_WIDTH)).saturating_sub(2);
+    let (content, _) = chrome::split_status(area);
+    let (width, rows) = settings::inner_size(content);
     classic::render_content(
         frame,
         ContentScreen {
             strings: ctx.strings,
-            lines: lines(screen, width, ctx),
+            lines: lines(screen, Space { width, rows }, ctx),
             look: ctx.look,
             tier: ctx.tier,
             markers: &MENU_MARKERS,
@@ -163,7 +164,140 @@ struct Styles {
     heading: Style,
 }
 
-fn lines(screen: &ForumsScreen, width: usize, ctx: &DrawCtx<'_>) -> Vec<Line<'static>> {
+/// The room inside the box: columns and rows.
+#[derive(Clone, Copy)]
+struct Space {
+    width: usize,
+    rows: usize,
+}
+
+/// How many terminal rows `text` takes when the box wraps it at `width` columns (words wrap,
+/// a word longer than a row is cut). Counts a little high rather than low.
+fn wrapped_rows(text: &str, width: usize) -> usize {
+    let width = width.max(1);
+    let mut rows = 1;
+    let mut used = 0;
+    for word in text.split(' ') {
+        let w = Span::raw(word).width();
+        if used > 0 && used + 1 + w > width {
+            rows += 1;
+            used = 0;
+        }
+        if used > 0 {
+            used += 1;
+        }
+        let mut w = w;
+        while w > width {
+            rows += 1;
+            w -= width;
+        }
+        used += w;
+    }
+    rows
+}
+
+fn rows_of(lines: &[Line<'_>], width: usize) -> usize {
+    lines
+        .iter()
+        .map(|line| wrapped_rows(&line.to_string(), width))
+        .sum()
+}
+
+/// One list screen: what goes above the items, the items, what goes below them.
+struct ListScreen<'a> {
+    head: Vec<Line<'static>>,
+    /// Shown instead of items when there are none.
+    empty: Option<&'a str>,
+    total: usize,
+    cursor: usize,
+    /// Terminal rows one item takes.
+    item_rows: usize,
+    /// Lines under the items and above the help (a page number). Dropped first when short.
+    extra: Vec<Line<'static>>,
+    help: &'a str,
+}
+
+/// Lay out a list so the selected item is always drawn and the notice line is never pushed
+/// off (FIX-M3-4). The window follows the cursor and is remembered in `screen.view`. When
+/// the items do not all fit, a position line says which ones are shown; when even that does
+/// not leave room for one item, the help and the page line go first.
+fn list_lines(
+    screen: &ForumsScreen,
+    space: Space,
+    ctx: &DrawCtx<'_>,
+    styles: Styles,
+    list: ListScreen<'_>,
+    item: impl Fn(usize, usize) -> Vec<Line<'static>>,
+) -> Vec<Line<'static>> {
+    let mut notice_lines = Vec::new();
+    notice(screen, ctx, &mut notice_lines);
+    let mut tail = list.extra;
+    tail.push(Line::raw(""));
+    tail.push(Line::styled(list.help.to_owned(), styles.dim));
+    let used_notice = rows_of(&notice_lines, space.width);
+    let item_rows = list.item_rows.max(1);
+    // On a very small screen the selected row and the notice outrank the heading's extra
+    // lines (a description, a blank): drop those until one row fits.
+    let mut head = list.head;
+    while head.len() > 1 && rows_of(&head, space.width) + used_notice + item_rows > space.rows {
+        head.remove(1);
+    }
+    let used_head = rows_of(&head, space.width);
+    let used_tail = rows_of(&tail, space.width);
+
+    let room = |tail_rows: usize, position: usize| {
+        space
+            .rows
+            .saturating_sub(used_head + used_notice + tail_rows + position)
+            / item_rows
+    };
+    // Prefer everything; then drop the help and page lines; the position line goes last
+    // because it only helps, while the selected row and the notice must stay.
+    let total = list.total;
+    let (show_tail, position, fits) = [(true, false), (true, true), (false, false), (false, true)]
+        .into_iter()
+        .map(|(tail, pos)| {
+            let fits = room(if tail { used_tail } else { 0 }, usize::from(pos));
+            (tail, pos, fits)
+        })
+        .find(|&(_, pos, fits)| fits >= 1 && (pos || total <= fits))
+        .unwrap_or((false, false, 1));
+    let position = usize::from(position);
+    let visible = fits.max(1).min(list.total.max(1));
+
+    let previous = screen.view.get();
+    let mut top = previous.top.min(list.total.saturating_sub(visible));
+    let cursor = list.cursor.min(list.total.saturating_sub(1));
+    if cursor < top {
+        top = cursor;
+    } else if cursor >= top + visible {
+        top = cursor + 1 - visible;
+    }
+    let shown = visible.min(list.total.saturating_sub(top));
+    screen.view.set(ListView { top, shown });
+
+    let mut out = head;
+    match list.empty {
+        Some(text) if list.total == 0 => out.push(Line::raw(text.to_owned())),
+        _ => {}
+    }
+    for at in top..top + shown {
+        out.extend(item(at, at - top));
+    }
+    if position == 1 && list.total > 0 {
+        out.push(Line::styled(
+            format!("{}-{} of {}", top + 1, top + shown, list.total),
+            styles.dim,
+        ));
+    }
+    out.extend(notice_lines);
+    if show_tail {
+        out.extend(tail);
+    }
+    out
+}
+
+fn lines(screen: &ForumsScreen, space: Space, ctx: &DrawCtx<'_>) -> Vec<Line<'static>> {
     let (bold, dim, heading, _) = classic::styles(ctx.look);
     let styles = Styles { bold, dim, heading };
     let mut out = Vec::new();
@@ -174,75 +308,64 @@ fn lines(screen: &ForumsScreen, width: usize, ctx: &DrawCtx<'_>) -> Vec<Line<'st
             notice(screen, ctx, &mut out);
         }
         State::Boards { list, cursor } => {
-            board_lines(list, *cursor, width, styles, &mut out);
-            notice(screen, ctx, &mut out);
-            footer(
-                &mut out,
-                match (list.can_manage, list.can_feeds) {
-                    (true, true) => strings::HELP_BOARDS_FEEDS,
-                    (false, true) => strings::HELP_BOARDS_FEEDS_ONLY,
-                    (true, false) => strings::HELP_BOARDS_MANAGE,
-                    (false, false) => strings::HELP_BOARDS,
-                },
-                dim,
-            );
+            let help = match (list.can_manage, list.can_feeds) {
+                (true, true) => strings::HELP_BOARDS_FEEDS,
+                (false, true) => strings::HELP_BOARDS_FEEDS_ONLY,
+                (true, false) => strings::HELP_BOARDS_MANAGE,
+                (false, false) => strings::HELP_BOARDS,
+            };
+            return board_screen(screen, space, ctx, styles, list, *cursor, help);
         }
         State::Threads { page, cursor } => {
-            thread_lines(page, *cursor, width, styles, &mut out);
-            notice(screen, ctx, &mut out);
-            footer(
-                &mut out,
-                if page.board.feed {
-                    if page.can_feeds {
-                        strings::HELP_THREADS_FEED_STAFF
-                    } else {
-                        strings::HELP_THREADS_FEED
-                    }
-                } else if page.can_manage && page.board.restricted {
-                    strings::HELP_THREADS_MANAGE
-                } else if page.can_feeds && !page.board.restricted {
-                    strings::HELP_THREADS_STAFF
+            let help = if page.board.feed {
+                if page.can_feeds {
+                    strings::HELP_THREADS_FEED_STAFF
                 } else {
-                    strings::HELP_THREADS
-                },
-                dim,
-            );
+                    strings::HELP_THREADS_FEED
+                }
+            } else if page.can_manage && page.board.restricted {
+                strings::HELP_THREADS_MANAGE
+            } else if page.can_feeds && !page.board.restricted {
+                strings::HELP_THREADS_STAFF
+            } else {
+                strings::HELP_THREADS
+            };
+            return thread_screen(screen, space, ctx, styles, page, *cursor, help);
         }
         State::Results {
             page,
             query,
             cursor,
-        } => {
-            result_lines(page, query, *cursor, width, styles, &mut out);
-            notice(screen, ctx, &mut out);
-            footer(&mut out, strings::HELP_RESULTS, dim);
-        }
+        } => return result_screen(screen, space, ctx, styles, page, query, *cursor),
         State::Input(input) => input_lines(screen, input, heading, dim, ctx, &mut out),
     }
     out
 }
 
-fn footer(out: &mut Vec<Line<'static>>, text: &str, dim: Style) {
-    out.push(Line::raw(""));
-    out.push(Line::styled(text.to_owned(), dim));
-}
-
-fn board_lines(
+fn board_screen(
+    screen: &ForumsScreen,
+    space: Space,
+    ctx: &DrawCtx<'_>,
+    styles: Styles,
     list: &BoardList,
     cursor: usize,
-    width: usize,
-    styles: Styles,
-    out: &mut Vec<Line<'static>>,
-) {
-    out.push(Line::styled(
-        strings::TITLE_BOARDS.to_owned(),
-        styles.heading,
-    ));
-    out.push(Line::raw(""));
-    if list.boards.is_empty() {
-        out.push(Line::raw(strings::NO_BOARDS.to_owned()));
-    }
-    for (at, board) in list.boards.iter().enumerate() {
+    help: &str,
+) -> Vec<Line<'static>> {
+    let head = vec![
+        Line::styled(strings::TITLE_BOARDS.to_owned(), styles.heading),
+        Line::raw(""),
+    ];
+    let plan = ListScreen {
+        head,
+        empty: Some(strings::NO_BOARDS),
+        total: list.boards.len(),
+        cursor,
+        item_rows: 1,
+        extra: Vec::new(),
+        help,
+    };
+    list_lines(screen, space, ctx, styles, plan, |at, number| {
+        let board = &list.boards[at];
         let threads = if board.threads == 1 {
             "thread"
         } else {
@@ -263,29 +386,41 @@ fn board_lines(
             clean(&board.name, 40),
             board.threads
         );
-        out.push(row(at == cursor, at, &text, width, styles.bold));
-    }
+        vec![row(at == cursor, number, &text, space.width, styles.bold)]
+    })
 }
 
-fn thread_lines(
+fn thread_screen(
+    screen: &ForumsScreen,
+    space: Space,
+    ctx: &DrawCtx<'_>,
+    styles: Styles,
     page: &ThreadPage,
     cursor: usize,
-    width: usize,
-    styles: Styles,
-    out: &mut Vec<Line<'static>>,
-) {
-    out.push(Line::styled(clean(&page.board.name, 40), styles.heading));
+    help: &str,
+) -> Vec<Line<'static>> {
+    let mut head = vec![Line::styled(clean(&page.board.name, 40), styles.heading)];
     if !page.board.description.is_empty() {
-        out.push(Line::styled(
+        head.push(Line::styled(
             clean(&page.board.description, 160),
             styles.dim,
         ));
     }
-    out.push(Line::raw(""));
-    if page.threads.is_empty() {
-        out.push(Line::raw(strings::NO_THREADS.to_owned()));
-    }
-    for (at, thread) in page.threads.iter().enumerate() {
+    head.push(Line::raw(""));
+    let plan = ListScreen {
+        head,
+        empty: Some(strings::NO_THREADS),
+        total: page.threads.len(),
+        cursor,
+        item_rows: 1,
+        extra: vec![
+            Line::raw(""),
+            Line::styled(format!("Page {}", page.page + 1), styles.dim),
+        ],
+        help,
+    };
+    list_lines(screen, space, ctx, styles, plan, |at, number| {
+        let thread = &page.threads[at];
         let who = thread.author.as_deref().unwrap_or(strings::GONE_MEMBER);
         let text = format!(
             "{}  [{}, {} {}, {}]",
@@ -295,49 +430,56 @@ fn thread_lines(
             if thread.posts == 1 { "post" } else { "posts" },
             format_utc(thread.last_post_at)
         );
-        out.push(row(at == cursor, at, &text, width, styles.bold));
-    }
-    out.push(Line::raw(""));
-    out.push(Line::styled(format!("Page {}", page.page + 1), styles.dim));
+        vec![row(at == cursor, number, &text, space.width, styles.bold)]
+    })
 }
 
-fn result_lines(
+fn result_screen(
+    screen: &ForumsScreen,
+    space: Space,
+    ctx: &DrawCtx<'_>,
+    styles: Styles,
     page: &SearchPage,
     query: &str,
     cursor: usize,
-    width: usize,
-    styles: Styles,
-    out: &mut Vec<Line<'static>>,
-) {
-    out.push(Line::styled(
-        strings::TITLE_SEARCH.to_owned(),
-        styles.heading,
-    ));
-    out.push(Line::styled(
-        format!("for: {}", clean(query, 200)),
-        styles.dim,
-    ));
-    out.push(Line::raw(""));
-    if !page.searched {
-        out.push(Line::raw(strings::NOT_SEARCHED.to_owned()));
-    } else if page.hits.is_empty() {
-        out.push(Line::raw(strings::NO_RESULTS.to_owned()));
-    }
-    for (at, hit) in page.hits.iter().enumerate() {
+) -> Vec<Line<'static>> {
+    let head = vec![
+        Line::styled(strings::TITLE_SEARCH.to_owned(), styles.heading),
+        Line::styled(format!("for: {}", clean(query, 200)), styles.dim),
+        Line::raw(""),
+    ];
+    let empty = if page.searched {
+        strings::NO_RESULTS
+    } else {
+        strings::NOT_SEARCHED
+    };
+    let plan = ListScreen {
+        head,
+        empty: Some(empty),
+        total: page.hits.len(),
+        cursor,
+        item_rows: 2,
+        extra: Vec::new(),
+        help: strings::HELP_RESULTS,
+    };
+    list_lines(screen, space, ctx, styles, plan, |at, number| {
+        let hit = &page.hits[at];
         let text = format!(
             "{} / {}",
             clean(&hit.board_name, 40),
             clean(&hit.subject, 120)
         );
-        out.push(row(at == cursor, at, &text, width, styles.bold));
-        out.push(Line::styled(
-            format!(
-                "      {}",
-                fit(&clean(&hit.snippet, 120), width.saturating_sub(6))
+        vec![
+            row(at == cursor, number, &text, space.width, styles.bold),
+            Line::styled(
+                format!(
+                    "      {}",
+                    fit(&clean(&hit.snippet, 120), space.width.saturating_sub(6))
+                ),
+                styles.dim,
             ),
-            styles.dim,
-        ));
-    }
+        ]
+    })
 }
 
 fn input_lines(
