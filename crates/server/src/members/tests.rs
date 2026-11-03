@@ -291,3 +291,50 @@ fn the_form_says_plainly_who_can_read_a_profile_and_claims_no_privacy() {
         assert!(lower.contains("never opened or made a link"), "{out}");
     }
 }
+
+/// QA M3 L6: one vote reads as well as many (no "1 votes"), at 80x24.
+#[test]
+fn the_poll_vote_counts_read_right_for_one_and_for_many() {
+    use russh_bbs_core::community::keys as community;
+    for votes in ["0", "1", "2"] {
+        let view = ScreenView {
+            lines: vec![
+                Line::Filled {
+                    key: community::POLL_ROW_OPEN,
+                    values: vec![
+                        ("key", "1".to_owned()),
+                        ("question", "Best?".to_owned()),
+                        ("votes", votes.to_owned()),
+                    ],
+                },
+                Line::Filled {
+                    key: community::POLL_ROW_CLOSED,
+                    values: vec![
+                        ("key", "2".to_owned()),
+                        ("question", "Worst?".to_owned()),
+                        ("votes", votes.to_owned()),
+                    ],
+                },
+                Line::Filled {
+                    key: community::POLL_TOTAL,
+                    values: vec![("total", votes.to_owned())],
+                },
+            ],
+            footer: keys::LIST_FOOTER,
+        };
+        let shown = text(&draw(&view, Tier::Ascii, (80, 24)));
+        assert!(
+            shown.contains(&format!("(open, votes: {votes})")),
+            "{shown}"
+        );
+        assert!(
+            shown.contains(&format!("(closed, votes: {votes})")),
+            "{shown}"
+        );
+        assert!(shown.contains(&format!("Votes in all: {votes}")), "{shown}");
+        assert!(
+            !shown.contains(" votes)") && !shown.contains("votes in all"),
+            "{shown}"
+        );
+    }
+}

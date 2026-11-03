@@ -809,3 +809,60 @@ mod drawing {
         assert!(text.contains("Esc back"));
     }
 }
+
+/// QA M3 L6: coming into a room drew a bare "You are in" with nothing after it. It now names the
+/// room, at 80x24.
+#[test]
+fn coming_into_a_room_says_which_room_you_are_in() {
+    use ratatui::Terminal;
+    use ratatui::backend::TestBackend;
+    use russh_bbs_core::chat::{ChatResponse, ChatScreen, Entered, Room, RoomId};
+    use russh_bbs_core::icons::Tier;
+    use russh_bbs_core::store::UnixSeconds;
+    use russh_bbs_core::terminal_settings::TerminalSettings;
+
+    use crate::settings::Look;
+    use crate::ui::Ui;
+    use crate::ui::classic::{ContentScreen, MENU_MARKERS, render_content};
+
+    let mut screen = ChatScreen::open();
+    screen.deliver(ChatResponse::Joined {
+        room: Room {
+            id: RoomId::from_raw(2),
+            name: Slug::parse("lobby").unwrap(),
+            created_at: UnixSeconds::from_raw(0),
+        },
+        entered: Entered {
+            roster: vec![handle("ann")],
+            history: Vec::new(),
+        },
+    });
+    let ui = Ui::standard().unwrap();
+    let look = Look::of(&TerminalSettings::default().with_tier(Tier::Ascii));
+    let mut terminal = Terminal::new(TestBackend::new(80, 24)).unwrap();
+    terminal
+        .draw(|frame| {
+            render_content(
+                frame,
+                ContentScreen {
+                    strings: ui.strings(),
+                    lines: super::render::lines(&screen, ui.strings(), look, 78, 20),
+                    look,
+                    tier: Tier::Ascii,
+                    markers: &MENU_MARKERS,
+                },
+            );
+        })
+        .unwrap();
+    let buffer = terminal.backend().buffer().clone();
+    let shown: String = (0..buffer.area.height)
+        .map(|y| {
+            (0..buffer.area.width)
+                .map(|x| buffer[(x, y)].symbol().to_owned())
+                .collect::<String>()
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    assert!(shown.contains("You are in #lobby."), "{shown}");
+    assert!(shown.contains("Here: ann"), "{shown}");
+}

@@ -207,7 +207,8 @@ impl<D: Backend> Connection<D> {
                 let flow =
                     MemberFlow::new(&start.handle, access, start.previous_login, start.settings)
                         .signed_in_with_password()
-                        .without_password_screen();
+                        .without_password_screen()
+                        .without_mail_note();
                 (Content::Member(Box::new(flow)), Some(meter))
             }
             Ok(Err(LimitError::Refused(refusal))) => {

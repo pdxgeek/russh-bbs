@@ -216,6 +216,8 @@ pub enum Row {
     Missed(u32),
     /// Who is here.
     Here(Vec<Username>),
+    /// The member came into this room: drawn as "You are in #name." (QA M3 L6).
+    Entered(Slug),
     /// A fixed line from [`strings`].
     Info(&'static str),
 }
@@ -366,7 +368,7 @@ impl ChatScreen {
             ChatResponse::Joined { room, entered } => {
                 let mut rows = VecDeque::new();
                 rows.extend(entered.history.into_iter().map(Row::Say));
-                rows.push_back(Row::Info(strings::YOU_ARE_IN));
+                rows.push_back(Row::Entered(room.name.clone()));
                 rows.push_back(Row::Here(entered.roster));
                 self.mode = Mode::Room(RoomPage {
                     room,

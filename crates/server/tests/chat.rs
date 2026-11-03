@@ -249,7 +249,7 @@ async fn into_the_lobby(channel: &mut Channel<client::Msg>) {
     send(channel, "\r").await;
     let room = full(channel).await;
     assert!(
-        room.contains("#lobby") && room.contains("You are in"),
+        room.contains("#lobby") && room.contains("You are in #lobby."),
         "{room}"
     );
 }

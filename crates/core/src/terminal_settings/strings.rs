@@ -29,6 +29,8 @@ pub const TERMINAL_LINE_UNSET: &str = "member.terminal_line_unset";
 /// The one D78 (7) explanation about mail, in the welcome message. Shown to a member who may
 /// read mail; no mail, chat or board screen carries it (D78).
 pub const MAIL_NOTE: &str = "member.mail_note";
+/// Said instead of [`MAIL_NOTE`] where mail is withheld (telnet, D85/D90).
+pub const MAIL_SSH_ONLY: &str = "member.mail_ssh_only";
 /// Login footer.
 pub const LOGIN_FOOTER: &str = "member.login_footer";
 
@@ -144,8 +146,9 @@ pub const LAYOUT_LIGHTBAR: &str = "member.layout_lightbar";
 pub const LAYOUT_COMPACT: &str = "member.layout_compact";
 
 /// Every key above except [`TITLE`]; the string table must hold exactly these in `member.*`.
-pub const TEXT_KEYS: [&str; 58] = [
+pub const TEXT_KEYS: [&str; 59] = [
     MAIL_NOTE,
+    MAIL_SSH_ONLY,
     LOGIN_HEADING,
     SIGNED_IN_AS,
     LAST_LOGIN,
