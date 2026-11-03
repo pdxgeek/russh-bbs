@@ -98,6 +98,9 @@ pub struct MemberFlow {
     /// How the session signed in. A password session must give the current password again to
     /// set or clear one (M3-D, D79).
     login: LoginMethod,
+    /// Whether the settings offer the password screen. Off for a transport that is not
+    /// encrypted (telnet, M3-H): a password is set only over SSH (D27).
+    password_screen: bool,
 }
 
 impl MemberFlow {
@@ -122,7 +125,20 @@ impl MemberFlow {
             menu: MenuSession::new(main_tree()),
             terminal: None,
             login: LoginMethod::Key,
+            password_screen: true,
         }
+    }
+
+    /// Do not offer the password screen in the settings (the transport is not encrypted, so
+    /// nothing typed there may cross it: D27). The screen cannot be opened by its key either.
+    #[must_use]
+    pub const fn without_password_screen(mut self) -> Self {
+        self.password_screen = false;
+        self
+    }
+
+    const fn password_screen_open(&self) -> bool {
+        self.password_screen
     }
 
     /// Mark the session as signed in with a password instead of a key (M3-D, D28).
@@ -528,7 +544,10 @@ impl MemberFlow {
                 self.page = Page::GlyphTest(GlyphTest::new(self.settings.needs_glyph_test()));
                 MemberEffect::Stay
             }
-            MemberInput::Char('s' | 'S') if self.access.allows(Permission::AccountSetPassword) => {
+            MemberInput::Char('s' | 'S')
+                if self.password_screen_open()
+                    && self.access.allows(Permission::AccountSetPassword) =>
+            {
                 self.page = Page::Password(Box::new(PasswordScreen::open(self.login)));
                 MemberEffect::Stay
             }
@@ -777,7 +796,7 @@ impl MemberFlow {
                 label: strings::MENU_ICONS,
             },
         ];
-        if self.access.allows(Permission::AccountSetPassword) {
+        if self.password_screen_open() && self.access.allows(Permission::AccountSetPassword) {
             view.menu.push(MenuItemView {
                 key: 's',
                 label: password_strings::MENU_PASSWORD,

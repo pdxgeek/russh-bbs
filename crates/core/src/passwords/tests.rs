@@ -787,6 +787,16 @@ mod in_the_session {
     }
 
     #[test]
+    fn a_transport_that_is_not_encrypted_never_gets_the_password_screen() {
+        let mut f = flow(settings_and_password(), true).without_password_screen();
+        press(&mut f, "xs");
+        assert!(!lines(&f).contains("Password"));
+        press(&mut f, "s");
+        assert!(f.take_password_request().is_none());
+        assert!(!lines(&f).contains("password is set"));
+    }
+
+    #[test]
     fn the_flow_hands_the_screen_the_login_method() {
         for (password_session, method) in [(false, LoginMethod::Key), (true, LoginMethod::Password)]
         {
