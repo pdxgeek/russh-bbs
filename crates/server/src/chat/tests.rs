@@ -75,7 +75,7 @@ struct World {
     hub: Arc<Hub>,
     clock: ManualClock,
     store: SqliteStore,
-    _dir: TempDir,
+    dir: TempDir,
 }
 
 async fn world(limits: ChatLimits) -> World {
@@ -97,7 +97,7 @@ async fn world(limits: ChatLimits) -> World {
         hub: Hub::new(limits, Arc::new(clock.clone())),
         clock,
         store,
-        _dir: dir,
+        dir,
     }
 }
 
@@ -329,7 +329,7 @@ async fn a_whisper_reaches_only_its_target_and_a_miss_says_the_same_thing_every_
     );
     assert_eq!(ann.drain().len(), 1, "the sender's echo");
     assert!(cy.drain().is_empty(), "a third member sees nothing");
-    assert!(elsewhere.drain().is_empty());
+    assert_eq!(elsewhere.drain().len(), 0);
     for target in ["dee", "nobody", "zzz", "ann", "", "\u{1b}[31m"] {
         let miss = ChatRequest::Whisper {
             to: target.into(),
@@ -615,8 +615,8 @@ async fn nothing_said_reaches_the_database() {
     // Close the store's pool and read the file itself: the canaries are not in it, and the audit
     // log has no chat row (only staff room actions write one).
     w.store.close().await;
-    let bytes = std::fs::read(w._dir.path().join("bbs.db")).unwrap();
-    let wal = std::fs::read(w._dir.path().join("bbs.db-wal")).unwrap_or_default();
+    let bytes = std::fs::read(w.dir.path().join("bbs.db")).unwrap();
+    let wal = std::fs::read(w.dir.path().join("bbs.db-wal")).unwrap_or_default();
     for blob in [&bytes, &wal] {
         let text = String::from_utf8_lossy(blob);
         assert!(!text.contains("DB-CANARY"));

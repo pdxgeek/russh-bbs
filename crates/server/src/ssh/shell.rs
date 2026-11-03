@@ -224,10 +224,7 @@ impl<D: Backend> Shell<D> {
             if batch.closed {
                 return;
             }
-            // What the room sent since the last cycle (M3-F). Shown before the keys act, so a key
-            // meets the page as it is now (a closed room has already sent the member back to the
-            // list).
-            self.pump_chat().await;
+            self.pump_chat().await; // what the room sent, before the keys act (M3-F)
             let now = Instant::now();
             let mut keys = if batch.input.is_empty() {
                 Vec::new()
@@ -256,12 +253,7 @@ impl<D: Backend> Shell<D> {
             // A members screen needs the store before it can take the next key. Answer it, then
             // apply the keys that were held back, with the account's permissions loaded again
             // (every action sees what the account holds now).
-            if effects.chat_exit {
-                self.chat = None;
-            }
-            if effects.chat_open {
-                self.connect_chat();
-            }
+            self.apply_chat_effects(&effects);
             loop {
                 if let Some(request) = effects.members_request.take() {
                     self.run_members(request).await;
@@ -295,22 +287,8 @@ impl<D: Backend> Shell<D> {
             {
                 leaving = true;
             }
-            // The last frame goes out before the terminal is restored, so a final message (the
-            // too-many-attempts notice) is seen. A client that already left gets no frame.
-            if !batch.finish {
-                match self.parts.screen.render() {
-                    Ok(Some(frame)) => {
-                        if !self.send(frame).await {
-                            return;
-                        }
-                    }
-                    Ok(None) => {}
-                    Err(error) => {
-                        warn!(session = ?self.parts.session.id(), %error, "frame could not be drawn");
-                        self.parts.abort.trigger();
-                        return;
-                    }
-                }
+            if !batch.finish && !self.draw_frame().await {
+                return;
             }
             // After the frame: the room's answer to a request does not wait for the store, so how
             // long it takes cannot tell a kept request from a dropped one (D71).
@@ -322,6 +300,21 @@ impl<D: Backend> Shell<D> {
                 return;
             }
             next_cycle = tokio::time::Instant::now() + self.parts.redraw_interval;
+        }
+    }
+
+    /// Draw what changed and send it. The last frame goes out before the terminal is restored,
+    /// so a final message (the too-many-attempts notice) is seen. `false` means the shell must
+    /// stop: the connection is gone or the frame could not be drawn.
+    async fn draw_frame(&mut self) -> bool {
+        match self.parts.screen.render() {
+            Ok(Some(frame)) => self.send(frame).await,
+            Ok(None) => true,
+            Err(error) => {
+                warn!(session = ?self.parts.session.id(), %error, "frame could not be drawn");
+                self.parts.abort.trigger();
+                false
+            }
         }
     }
 
@@ -408,6 +401,16 @@ impl<D: Backend> Shell<D> {
         }
     }
 
+    /// The chat screen opened or was left by these keys: join or leave the hub.
+    fn apply_chat_effects(&mut self, effects: &super::screen::KeyEffects) {
+        if effects.chat_exit {
+            self.chat = None;
+        }
+        if effects.chat_open {
+            self.connect_chat();
+        }
+    }
+
     /// Put the member in chat (the chat screen just opened). A full hub leaves the session
     /// without one; the screen's first request then says chat is full.
     fn connect_chat(&mut self) {
@@ -426,7 +429,9 @@ impl<D: Backend> Shell<D> {
         }
     }
 
-    /// Show what the member's room sent, and now and then check that they may still be in it.
+    /// Show what the member's room sent since the last cycle, before the keys act, so a key
+    /// meets the page as it is now (a closed room has already sent the member back to the
+    /// list); and now and then check that they may still be in the room.
     async fn pump_chat(&mut self) {
         let Some(events) = self.chat.as_ref().map(ChatSession::drain) else {
             return;

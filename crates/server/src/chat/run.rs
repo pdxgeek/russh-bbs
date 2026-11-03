@@ -105,13 +105,12 @@ impl ChatSession {
                         self.hub.room_closed(id);
                         ChatNotice::Closed
                     }
-                    Ok(Ok(false)) => ChatNotice::NotFound,
                     Ok(Err(RoomError::Denied)) => ChatNotice::NotPermitted,
                     Ok(Err(RoomError::Store(error))) => {
                         warn!(%error, "closing a chat room failed in the store");
                         ChatNotice::Failed
                     }
-                    Ok(Err(_)) => ChatNotice::NotFound,
+                    Ok(Ok(false) | Err(_)) => ChatNotice::NotFound,
                     Err(_) => {
                         warn!("closing a chat room timed out");
                         ChatNotice::Failed

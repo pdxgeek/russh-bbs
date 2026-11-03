@@ -477,7 +477,11 @@ impl Screen {
                             break;
                         }
                         MemberEffect::OpenChat => {
-                            self.chat = Some(ChatScreen::open());
+                            let mut chat = ChatScreen::open();
+                            chat.set_manage(
+                                flow.access_snapshot().allows(Permission::ChatManageRooms),
+                            );
+                            self.chat = Some(chat);
                             effects.chat_open = true;
                             effects.chat_request = Some(ChatRequest::List);
                             effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
@@ -605,6 +609,9 @@ impl Screen {
 
     /// Replace what a member session holds, for the next action (D33).
     pub(super) fn set_access(&mut self, access: Snapshot) {
+        if let Some(chat) = &mut self.chat {
+            chat.set_manage(access.allows(Permission::ChatManageRooms));
+        }
         if let Content::Member(flow) = &mut self.content {
             flow.set_access(access);
         }
