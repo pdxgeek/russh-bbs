@@ -8,6 +8,7 @@ mod audit;
 mod chat;
 mod credits;
 mod drafts;
+mod forums;
 mod founder;
 mod invites;
 mod limits;

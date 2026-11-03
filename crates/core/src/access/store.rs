@@ -181,3 +181,79 @@ pub trait AccessStore: Send + Sync {
         actor: Actor,
     ) -> impl Future<Output = Result<(), AccessError>> + Send;
 }
+
+/// The empty directory holds no roles, groups or grants: the snapshot is empty (nothing is
+/// held) and every write is refused.
+impl AccessStore for super::NoMembers {
+    fn snapshot(
+        &self,
+        _account: Option<AccountId>,
+    ) -> impl Future<Output = Result<Snapshot, StoreError>> + Send {
+        std::future::ready(Ok(Snapshot::empty()))
+    }
+
+    fn roles(&self) -> impl Future<Output = Result<Vec<RoleInfo>, StoreError>> + Send {
+        std::future::ready(Ok(Vec::new()))
+    }
+
+    fn put_role(
+        &self,
+        _role: &RoleInfo,
+        _actor: Actor,
+    ) -> impl Future<Output = Result<(), AccessError>> + Send {
+        std::future::ready(Err(AccessError::UnknownAccount))
+    }
+
+    fn set_role_permissions(
+        &self,
+        _name: &Slug,
+        _permissions: &[Permission],
+        _actor: Actor,
+    ) -> impl Future<Output = Result<(), AccessError>> + Send {
+        std::future::ready(Err(AccessError::UnknownRole))
+    }
+
+    fn delete_role(
+        &self,
+        _name: &Slug,
+        _actor: Actor,
+    ) -> impl Future<Output = Result<(), AccessError>> + Send {
+        std::future::ready(Err(AccessError::UnknownRole))
+    }
+
+    fn groups(&self) -> impl Future<Output = Result<Vec<GroupInfo>, StoreError>> + Send {
+        std::future::ready(Ok(Vec::new()))
+    }
+
+    fn create_group(
+        &self,
+        _name: &Slug,
+        _actor: Actor,
+    ) -> impl Future<Output = Result<GroupId, AccessError>> + Send {
+        std::future::ready(Err(AccessError::UnknownAccount))
+    }
+
+    fn change_groups(
+        &self,
+        _change: GroupChange,
+        _actor: Actor,
+    ) -> impl Future<Output = Result<(), AccessError>> + Send {
+        std::future::ready(Err(AccessError::UnknownAccount))
+    }
+
+    fn add_grant(
+        &self,
+        _grant: &NewGrant,
+        _actor: Actor,
+    ) -> impl Future<Output = Result<(), AccessError>> + Send {
+        std::future::ready(Err(AccessError::UnknownAccount))
+    }
+
+    fn remove_grant(
+        &self,
+        _grant: &NewGrant,
+        _actor: Actor,
+    ) -> impl Future<Output = Result<(), AccessError>> + Send {
+        std::future::ready(Err(AccessError::UnknownAccount))
+    }
+}

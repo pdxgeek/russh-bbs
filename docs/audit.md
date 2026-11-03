@@ -76,6 +76,9 @@ sysop screen over it is M5; the board has no audit screen yet.
 | `set_password` / `clear_password` (M3-D) | `password.set` / `password.cleared` | the member (their own account) | the same account | `key session` or `password session`: which kind of session did it. Never a password, hash or salt. `password.cleared` is written only when there was a password to clear. |
 | `create_room` (M3-F) | `chat.room_created` | the staff member (`chat.manage_rooms`) | none; the **resource** is the room (`room`, its id) | `name <room name>`. Nothing said in a room is ever written (D78) |
 | `close_room` (M3-F) | `chat.room_closed` | the staff member | none; the resource is the room | none. Written only when the room was open |
+| `create_board` (M3-E) | `board.created` | the creator (`forum.manage`) | none; the resource is the board | `open` or `restricted`: never the name or description |
+| `remove_post` (M3-E) | `post.removed` | the moderator (`forum.moderate` on the board) | the post's author account (none if the account is gone); the resource is the board | `post <id>` or `post <id> with its thread`: ids only, never the text |
+| `allow_member` (M3-E) | `permission.granted` | the creator (`forum.manage`) | the member; the resource is the board | `forum.list`, `forum.read`, `forum.post` and `forum.reply`: one row each, none when already held |
 | `save_profile` by staff (M2-F) | `profile.edited` | the editor (`members.edit`) | the edited account | `fields <names>`: field names only, never values. The owner's own edits write no row |
 
 A write that changed nothing (adding a member already in the group, removing one who is not, a

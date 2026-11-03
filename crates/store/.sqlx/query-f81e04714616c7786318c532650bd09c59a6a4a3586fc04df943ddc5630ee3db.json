@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) AS \"n!\" FROM thread t\n               WHERE t.id = $1 AND NOT EXISTS (SELECT 1 FROM post p WHERE p.thread_id = t.id AND p.id < $2)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "n!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "f81e04714616c7786318c532650bd09c59a6a4a3586fc04df943ddc5630ee3db"
+}

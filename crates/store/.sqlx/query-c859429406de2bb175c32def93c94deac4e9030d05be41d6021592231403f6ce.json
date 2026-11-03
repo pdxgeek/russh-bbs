@@ -1,0 +1,58 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT t.id AS \"id!\", t.board_id AS \"board_id!\", b.name AS board_name, t.subject,\n                      a.username AS \"author?\",\n                      (SELECT count(*) FROM post p WHERE p.thread_id = t.id) AS \"posts!\",\n                      t.last_post_at AS \"last_post_at!\"\n               FROM thread t\n               JOIN board b ON b.id = t.board_id\n               LEFT JOIN accounts a ON a.id = t.author_id\n               WHERE t.id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "board_id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "board_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "subject",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "author?",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "posts!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 6,
+        "name": "last_post_at!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      null,
+      false
+    ]
+  },
+  "hash": "c859429406de2bb175c32def93c94deac4e9030d05be41d6021592231403f6ce"
+}

@@ -1,0 +1,27 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO post (thread_id, board_id, author_id, subject, body, created_at)\n               SELECT t.id, t.board_id, $1, '', $2, $3 FROM thread t\n               WHERE t.id = $4\n                 AND ($5::BIGINT IS NULL\n                      OR (SELECT count(*) FROM post WHERE author_id = $1 AND created_at >= $6) < $5)\n               RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text",
+        "Int8",
+        "Int8",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "0643a741b6ec04fcae2f3babc2031580e4f0016a01238727a38cfb864a66cbcc"
+}

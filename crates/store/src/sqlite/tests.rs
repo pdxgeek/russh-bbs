@@ -142,6 +142,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         "d098408186779f2898926d5fdd73dd5cbf2e5b88f35aaf9fcb54087613ab5aaf633dafbb4130f35c8404a9f337853b86",
     ),
     (
+        15,
+        "54e726f76f6cfdedbb5dea6469c4ec93ec0523d39393f85cd7689d6f3424ccb2a0802419e396554723086a49a35700f9",
+    ),
+    (
         16,
         "f97841a321ab60625b96b1219b74ea61f541e6b7884deb2b97d7576de852bc2578c84beabb099e8bab42ae7b1594f346",
     ),
@@ -202,6 +206,7 @@ async fn a_fresh_database_gets_every_migration() {
             "account_password",
             "accounts",
             "audit_log",
+            "board",
             "chat_room",
             "credit_ledger",
             "draft",
@@ -213,6 +218,12 @@ async fn a_fresh_database_gets_every_migration() {
             "limit_usage",
             "member_group",
             "member_limit",
+            "post",
+            "post_fts",
+            "post_fts_config",
+            "post_fts_data",
+            "post_fts_docsize",
+            "post_fts_idx",
             "profiles",
             "registration_day",
             "request_denial",
@@ -221,7 +232,8 @@ async fn a_fresh_database_gets_every_migration() {
             "role_permission",
             "scheduler_job",
             "settings",
-            "terminal_settings"
+            "terminal_settings",
+            "thread"
         ]
     );
 }

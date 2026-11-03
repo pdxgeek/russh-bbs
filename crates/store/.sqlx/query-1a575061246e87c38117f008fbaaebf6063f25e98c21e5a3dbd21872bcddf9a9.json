@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT count(*) AS \"n!: i64\" FROM thread t\n               WHERE t.id = ? AND NOT EXISTS (SELECT 1 FROM post p WHERE p.thread_id = t.id AND p.id < ?)",
+  "describe": {
+    "columns": [
+      {
+        "name": "n!: i64",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "1a575061246e87c38117f008fbaaebf6063f25e98c21e5a3dbd21872bcddf9a9"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE thread SET last_post_at = COALESCE(\n                     (SELECT max(created_at) FROM post WHERE thread_id = thread.id), created_at)\n                 WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "7e21a4a0012c5ee88370f19d47be9d96737722eb714c9cafc153ff2397860745"
+}

@@ -285,30 +285,8 @@ impl<D: Backend> Shell<D> {
             if let Some(settings) = &effects.save_settings {
                 self.persist_settings(settings).await;
             }
-            // A members screen needs the store before it can take the next key. Answer it, then
-            // apply the keys that were held back, with the account's permissions loaded again
-            // (every action sees what the account holds now).
             self.apply_chat_effects(&effects);
-            loop {
-                if let Some(request) = effects.members_request.take() {
-                    self.run_members(request).await;
-                } else if let Some(request) = effects.chat_request.take() {
-                    self.run_chat(request).await;
-                } else if let Some(request) = effects.queue_request.take() {
-                    self.run_queue(request).await;
-                } else if let Some(request) = effects.password_request.take() {
-                    self.run_password(request).await;
-                } else {
-                    break;
-                }
-                let rest = std::mem::take(&mut effects.held_back);
-                if rest.is_empty() {
-                    break;
-                }
-                self.refresh_access().await;
-                let later = self.parts.screen.apply_keys(&rest);
-                effects.absorb(later);
-            }
+            self.answer_requests(&mut effects).await;
             if let Some(request) = effects.invite.take() {
                 self.run_invite(request).await;
             }
@@ -350,6 +328,34 @@ impl<D: Backend> Shell<D> {
                 self.parts.abort.trigger();
                 false
             }
+        }
+    }
+
+    /// A members, queue, password or forum screen needs the store before it can take the next
+    /// key. Answer it, then apply the keys that were held back, with the account's
+    /// permissions loaded again (every action sees what the account holds now).
+    async fn answer_requests(&mut self, effects: &mut super::screen::KeyEffects) {
+        loop {
+            if let Some(request) = effects.members_request.take() {
+                self.run_members(request).await;
+            } else if let Some(request) = effects.chat_request.take() {
+                self.run_chat(request).await;
+            } else if let Some(request) = effects.queue_request.take() {
+                self.run_queue(request).await;
+            } else if let Some(request) = effects.password_request.take() {
+                self.run_password(request).await;
+            } else if let Some(request) = effects.forum_request.take() {
+                self.run_forums(request).await;
+            } else {
+                break;
+            }
+            let rest = std::mem::take(&mut effects.held_back);
+            if rest.is_empty() {
+                break;
+            }
+            self.refresh_access().await;
+            let later = self.parts.screen.apply_keys(&rest);
+            effects.absorb(later);
         }
     }
 
@@ -814,6 +820,24 @@ impl<D: Backend> Shell<D> {
             let response = crate::sysop::queue::run(&*self.parts.directory, &access, request).await;
             self.parts.screen.deliver_queue(response);
             match self.parts.screen.take_queue_request() {
+                Some(next) => request = next,
+                None => break,
+            }
+        }
+    }
+
+    /// Run the forum request a screen is waiting on and give it the answer (M3-E). Core checks
+    /// every permission against the snapshot loaded for this action; a slow or failing store
+    /// is a plain failure on screen. A removal or a post asks for the list or thread again, so
+    /// the follow-up runs here with the same permissions (a few at most).
+    async fn run_forums(&mut self, request: crate::forums::Request) {
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let mut request = request;
+        for _ in 0..3 {
+            let response = crate::forums::run(&*self.parts.directory, &access, request).await;
+            match self.parts.screen.deliver_forum(response) {
                 Some(next) => request = next,
                 None => break,
             }

@@ -31,12 +31,7 @@ const fn gated(hotkey: char, label: &'static str, target: Target, requires: Perm
 }
 
 static MAIN_ITEMS: [Item; 9] = [
-    gated(
-        'f',
-        "menu.main.item.forums",
-        Target::Placeholder("placeholder.forums"),
-        Permission::ForumList,
-    ),
+    item('f', "menu.main.item.forums", Target::Action(Action::Forums)),
     gated(
         'm',
         "menu.main.item.mail",

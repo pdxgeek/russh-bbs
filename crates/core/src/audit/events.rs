@@ -356,3 +356,34 @@ pub fn chat_room_created(actor: AccountId, room: ResourceRef, name: &Slug) -> Au
 pub fn chat_room_closed(actor: AccountId, room: ResourceRef) -> AuditEvent {
     AuditEvent::new(Actor::Account(actor), Action::ChatRoomClosed, Target::None).on(room)
 }
+
+/// `actor` created `board`, `restricted` or open (M3-E, D83). The name is not written.
+#[must_use]
+pub fn board_created(actor: AccountId, board: ResourceRef, restricted: bool) -> AuditEvent {
+    AuditEvent::new(Actor::Account(actor), Action::BoardCreated, Target::None)
+        .on(board)
+        .detail(if restricted { "restricted" } else { "open" })
+}
+
+/// `actor`, holding `forum.moderate` on `board`, removed post `post` written by `author`; when
+/// `thread_removed` it was the opening post and the whole thread went (M3-E). Ids only.
+#[must_use]
+pub fn post_removed(
+    actor: AccountId,
+    author: Option<AccountId>,
+    board: ResourceRef,
+    post: i64,
+    thread_removed: bool,
+) -> AuditEvent {
+    let target = author.map_or(Target::None, Target::Account);
+    AuditEvent::new(Actor::Account(actor), Action::PostRemoved, target)
+        .on(board)
+        .detail(&format!(
+            "post {post}{}",
+            if thread_removed {
+                " with its thread"
+            } else {
+                ""
+            }
+        ))
+}
