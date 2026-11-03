@@ -501,13 +501,15 @@ async fn a_member_signs_in_with_a_password_and_every_screen_carries_the_marker()
     }
     assert!(screens[0].contains("Main menu"), "{:?}", screens[0]);
     assert!(screens[1].contains("Terminal settings"), "{:?}", screens[1]);
-    // The password page is not offered over telnet (D27): there is no entry for it.
-    assert!(!screens[1].contains("Password"), "{:?}", screens[1]);
+    // The password page never opens over telnet (D27, D91): the entry is listed, and choosing
+    // it is refused with a line.
+    tn.keys("s").await;
     let after_s = tn.keys("s").await;
     assert!(
         !after_s.contains("Current password") && !after_s.contains("New password"),
         "{after_s}"
     );
+    assert!(after_s.contains("Set your password over ssh."), "{after_s}");
 }
 
 #[tokio::test]
@@ -909,4 +911,69 @@ async fn mail_is_withheld_over_telnet_with_one_line_and_nothing_is_read_or_sent(
         .await
         .unwrap();
     assert!(stored.is_empty(), "nothing was sent");
+}
+
+/// How many codes the account holds (created and not yet redeemed or expired).
+async fn invites_held(rig: &Rig, id: AccountId) -> usize {
+    russh_bbs_core::invites::InviteStore::invites_by(&rig.store, id, 50)
+        .await
+        .unwrap()
+        .len()
+}
+
+#[tokio::test]
+async fn creating_an_invite_is_withheld_over_telnet_and_no_code_is_made_or_shown() {
+    let rig = Rig::start(true).await;
+    let alice = rig.member("alice").await;
+    let mut tn = at_menu(&rig, "alice").await;
+    let menu = words_of(&tn.keys("i").await);
+    assert!(
+        menu.contains("Invites") || menu.contains("invite"),
+        "{menu}"
+    );
+    let screen = words_of(&tn.keys("c").await);
+    assert!(
+        screen.contains("Invites are available over ssh."),
+        "{screen}"
+    );
+    assert!(!screen.contains("Invite code"), "{screen}");
+    assert_eq!(invites_held(&rig, alice).await, 0, "no code was made");
+}
+
+#[tokio::test]
+async fn the_invite_list_and_tree_are_withheld_over_telnet() {
+    let rig = Rig::start(true).await;
+    let alice = rig.account("alice", Slug::TRUSTED, Some(SECRET)).await;
+    let mut tn = at_menu(&rig, "alice").await;
+    tn.keys("i").await;
+    for key in ["y", "t"] {
+        let screen = words_of(&tn.keys(key).await);
+        assert!(
+            screen.contains("Invites are available over ssh."),
+            "{key}: {screen}"
+        );
+    }
+    assert_eq!(invites_held(&rig, alice).await, 0);
+}
+
+#[tokio::test]
+async fn setting_a_password_is_refused_over_telnet_with_one_line() {
+    let rig = Rig::start(true).await;
+    let alice = rig.member("alice").await;
+    let mut tn = at_menu(&rig, "alice").await;
+    let settings = words_of(&tn.keys("s").await);
+    assert!(settings.contains("Password"), "{settings}");
+    let refused = words_of(&tn.keys("s").await);
+    assert!(refused.contains("Set your password over ssh."), "{refused}");
+    assert!(
+        !refused.contains("Set or change password"),
+        "the password screen did not open: {refused}"
+    );
+    // The stored password is untouched: the original still signs in.
+    assert!(
+        russh_bbs_core::passwords::PasswordStore::stored_hash(&rig.store, alice)
+            .await
+            .unwrap()
+            .is_some()
+    );
 }

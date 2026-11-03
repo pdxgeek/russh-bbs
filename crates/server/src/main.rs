@@ -256,7 +256,7 @@ where
         );
     }
     // `feeds.ca_file` replaces the platform store; an unusable file is a boot error, never a
-    // silent fall back to the platform store (D91).
+    // silent fall back to the platform store (D92).
     let roots = match ca_file {
         Some(path) => Roots::Only(
             load_ca_file(path)

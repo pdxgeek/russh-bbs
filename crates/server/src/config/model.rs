@@ -256,7 +256,7 @@ pub struct FeedsConfig {
     /// used in the documents' links. Required when `rss_out_enabled`.
     pub rss_out_base_url: Option<String>,
     /// A PEM file of the CA certificates https feeds are verified against. When set it replaces
-    /// the platform store for feed fetching only (D91). Unset: the platform store.
+    /// the platform store for feed fetching only (D92). Unset: the platform store.
     pub ca_file: Option<PathBuf>,
 }
 

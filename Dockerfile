@@ -4,7 +4,7 @@
 #   docker build --build-arg BIN_STAGE=prebuilt \
 #     --build-context hostbin=target/x86_64-unknown-linux-musl/release -t russh-bbs .
 # russh-bbs server image (D25): static musl binary on `scratch`, non-root, all state in /data,
-# plus the build stage's CA bundle so https feeds can be verified (D91).
+# plus the build stage's CA bundle so https feeds can be verified (D92).
 # This is NOT the door sandbox: doors get their own isolation inside the process (D25).
 
 # --- build: static musl binary. rust-toolchain.toml pins the exact compiler version; the

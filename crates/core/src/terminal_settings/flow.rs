@@ -690,11 +690,16 @@ impl MemberFlow {
                 self.page = Page::GlyphTest(GlyphTest::new(self.settings.needs_glyph_test()));
                 MemberEffect::Stay
             }
-            MemberInput::Char('s' | 'S')
-                if self.password_screen_open()
-                    && self.access.allows(Permission::AccountSetPassword) =>
-            {
-                self.page = Page::Password(Box::new(PasswordScreen::open(self.login)));
+            MemberInput::Char('s' | 'S') if self.access.allows(Permission::AccountSetPassword) => {
+                if self.password_screen_open() {
+                    self.page = Page::Password(Box::new(PasswordScreen::open(self.login)));
+                } else {
+                    // Refused on a transport that is not encrypted (D91).
+                    self.notice = Some(Notice {
+                        kind: NoticeKind::Error,
+                        text: strings::PASSWORD_SSH_ONLY,
+                    });
+                }
                 MemberEffect::Stay
             }
             MemberInput::Char('b' | 'B') | MemberInput::Escape => {
@@ -983,7 +988,7 @@ impl MemberFlow {
             entry('t', strings::MENU_THEME),
             entry('i', strings::MENU_ICONS),
         ];
-        if self.password_screen_open() && self.access.allows(Permission::AccountSetPassword) {
+        if self.access.allows(Permission::AccountSetPassword) {
             view.menu.push(MenuItemView {
                 key: 's',
                 label: password_strings::MENU_PASSWORD,

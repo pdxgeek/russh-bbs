@@ -159,7 +159,7 @@ docker run -d --name bbs -p 2222:2222 -v bbs-data:/data \
 
 ## Feeds and CA certificates
 
-The image is `scratch` plus the binary, an empty `/data` and **one extra file: Alpine's Mozilla CA bundle** at `/etc/ssl/certs/ca-certificates.crt` (about 0.3 MB; the image went from 35,201,696 to 35,503,383 bytes). The image sets `SSL_CERT_FILE` to it, so with `feeds.enabled = true` the feed fetcher verifies https feeds out of the box and the boot log does not say `no CA certificates found` (D91, QA M3 M3). The bundle is as old as the image: pull a new image to get new roots.
+The image is `scratch` plus the binary, an empty `/data` and **one extra file: Alpine's Mozilla CA bundle** at `/etc/ssl/certs/ca-certificates.crt` (about 0.3 MB; the image went from 35,201,696 to 35,503,383 bytes). The image sets `SSL_CERT_FILE` to it, so with `feeds.enabled = true` the feed fetcher verifies https feeds out of the box and the boot log does not say `no CA certificates found` (D92, QA M3 M3). The bundle is as old as the image: pull a new image to get new roots.
 
 - **A private CA, or a smaller trusted set:** put a PEM file on the `/data` volume (same steps as the Postgres CA below) and set `feeds.ca_file = "/data/feeds-ca.pem"` or `RUSSH_BBS_FEEDS_CA_FILE`. It **replaces** the bundle for feed fetching only; it does not add to it, so include every CA your feeds need. A missing, empty or malformed file is a boot error.
 - **No CA found** (a binary run outside the image on a host with no store): the log warns `no CA certificates found: https feeds cannot be verified and will not load` and names `feeds.ca_file`. https feeds then fail closed; plain `http` feeds still need their per-feed flag.
