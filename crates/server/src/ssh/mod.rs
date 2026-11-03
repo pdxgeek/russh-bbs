@@ -31,6 +31,7 @@ use russh_bbs_core::access::{AccessStore, MemberDirectory};
 use russh_bbs_core::chat::RoomStore;
 use russh_bbs_core::community::CommunityStore;
 use russh_bbs_core::drafts::DraftStore;
+use russh_bbs_core::feeds::FeedStore;
 use russh_bbs_core::forums::ForumStore;
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::invites::InviteStore;
@@ -64,6 +65,7 @@ pub trait Backend:
     + AccessStore
     + DraftStore
     + ForumStore
+    + FeedStore
     + MailStore
     + 'static
 {
@@ -85,6 +87,7 @@ impl<T> Backend for T where
         + AccessStore
         + DraftStore
         + ForumStore
+        + FeedStore
         + MailStore
         + 'static
 {

@@ -6,6 +6,7 @@ use russh_bbs_core::access::{AccessStore, Permission, Snapshot};
 use russh_bbs_core::drafts::{
     Body, ContextKey, DraftError, DraftStore, SaveOutcome, discard_draft, save_draft,
 };
+use russh_bbs_core::feeds::{self, FeedError, FeedStore};
 use russh_bbs_core::forums::{
     self, BoardId, BoardSummary, ForumError, ForumStore, Gone, PostId, Posted, SearchPage,
     ThreadId, ThreadPage, ThreadView, body_limits,
@@ -63,6 +64,8 @@ pub(crate) struct BoardList {
     pub(crate) boards: Vec<BoardSummary>,
     /// Whether the session holds `forum.manage` (may create boards).
     pub(crate) can_manage: bool,
+    /// Whether the session holds `feeds.manage` (may add a feed).
+    pub(crate) can_feeds: bool,
 }
 
 /// A request a screen is waiting on.
@@ -101,6 +104,24 @@ pub(crate) enum Request {
         board: BoardId,
         handle: String,
     },
+    /// Subscribe to a feed: a new read-only board (`feeds.manage`).
+    AddFeed {
+        url: String,
+        name: String,
+        allow_http: bool,
+    },
+    /// Remove the feed behind a board, with the board.
+    RemoveFeed(BoardId),
+    /// Make a board readable as RSS by outside readers, or stop.
+    TogglePublic(BoardId),
+}
+
+/// What a feed action did, as the words the screen shows.
+#[derive(Debug)]
+pub(crate) struct FeedDone {
+    pub(crate) text: &'static str,
+    /// The board list or the board itself is gone or changed: reload the list.
+    pub(crate) reload: bool,
 }
 
 /// Why a request did not work, as words for the member.
@@ -117,6 +138,7 @@ impl Fail {
     fn of(error: &ForumError) -> Self {
         let (text, gone) = match error {
             ForumError::NotFound => (strings::GONE.to_owned(), true),
+            ForumError::ReadOnly => (strings::READ_ONLY.to_owned(), false),
             ForumError::NotPermitted(_) => (strings::DENIED.to_owned(), false),
             ForumError::NotSignedIn => (strings::NOT_SIGNED_IN.to_owned(), false),
             ForumError::Limit(refusal) => (format!("{refusal} {}", strings::ROLLING_HOUR), false),
@@ -164,6 +186,7 @@ pub(crate) enum Response {
     Removed(Result<Gone, Fail>),
     Created(Result<BoardId, Fail>),
     Allowed(Result<(), Fail>),
+    Feed(Result<FeedDone, Fail>),
 }
 
 fn fail<T>(error: &ForumError) -> Result<T, Fail> {
@@ -192,6 +215,9 @@ impl Request {
             Self::Remove(_) => Response::Removed(Err(failed)),
             Self::CreateBoard { .. } => Response::Created(Err(failed)),
             Self::Allow { .. } => Response::Allowed(Err(failed)),
+            Self::AddFeed { .. } | Self::RemoveFeed(_) | Self::TogglePublic(_) => {
+                Response::Feed(Err(failed))
+            }
         }
     }
 }
@@ -200,7 +226,7 @@ impl Request {
 /// claimed about a write beyond what the store reported.
 pub(crate) async fn run<S>(store: &S, access: &Snapshot, request: Request) -> Response
 where
-    S: ForumStore + LimitStore + AccessStore + DraftStore,
+    S: ForumStore + LimitStore + AccessStore + DraftStore + FeedStore,
 {
     let on_timeout = request.failure();
     if let Ok(response) = timeout(REQUEST_TIMEOUT, execute(store, access, request)).await {
@@ -213,7 +239,7 @@ where
 
 async fn execute<S>(store: &S, access: &Snapshot, request: Request) -> Response
 where
-    S: ForumStore + LimitStore + AccessStore + DraftStore,
+    S: ForumStore + LimitStore + AccessStore + DraftStore + FeedStore,
 {
     let now = SystemClock.now();
     match request {
@@ -221,6 +247,7 @@ where
             Ok(boards) => Ok(BoardList {
                 boards,
                 can_manage: access.resolve(Permission::ForumManage, None).is_granted(),
+                can_feeds: access.resolve(Permission::FeedsManage, None).is_granted(),
             }),
             Err(error) => fail(&error),
         }),
@@ -258,7 +285,91 @@ where
         Request::Allow { board, handle } => Response::Allowed(lift(
             forums::allow_member(store, access, board, &handle).await,
         )),
+        Request::AddFeed {
+            url,
+            name,
+            allow_http,
+        } => Response::Feed(
+            feeds::add_feed(store, access, now, &url, &name, allow_http, None)
+                .await
+                .map(|_| FeedDone {
+                    text: strings::OK_FEED_ADDED,
+                    reload: true,
+                })
+                .map_err(|error| feed_fail(&error)),
+        ),
+        Request::RemoveFeed(board) => Response::Feed(remove_feed(store, access, board).await),
+        Request::TogglePublic(board) => {
+            Response::Feed(toggle_public(store, access, now, board).await)
+        }
     }
+}
+
+/// Words for a feed action that did not happen.
+fn feed_fail(error: &FeedError) -> Fail {
+    let (text, gone) = match error {
+        FeedError::NotPermitted | FeedError::NotSignedIn => (strings::DENIED.to_owned(), false),
+        FeedError::Url(_) => (strings::FEED_URL_BAD.to_owned(), false),
+        FeedError::Text(error) => (capitalize(&error.to_string()), false),
+        FeedError::Interval => (strings::FAILED.to_owned(), false),
+        FeedError::NameTaken => (strings::NAME_TAKEN.to_owned(), false),
+        FeedError::UrlTaken => (strings::FEED_TAKEN.to_owned(), false),
+        FeedError::TooMany => (strings::FEED_LIMIT.to_owned(), false),
+        FeedError::Restricted => (strings::FEED_RESTRICTED.to_owned(), false),
+        FeedError::NotFound => (strings::GONE.to_owned(), true),
+        FeedError::Store(error) => {
+            warn!(%error, "a feed request failed in the store");
+            (strings::FAILED.to_owned(), false)
+        }
+    };
+    Fail {
+        text,
+        gone,
+        kept_draft: false,
+    }
+}
+
+async fn remove_feed<S: FeedStore>(
+    store: &S,
+    access: &Snapshot,
+    board: BoardId,
+) -> Result<FeedDone, Fail> {
+    let row = store
+        .feed_of_board(board)
+        .await
+        .map_err(|e| feed_fail(&FeedError::Store(e)))?
+        .ok_or_else(|| feed_fail(&FeedError::NotFound))?;
+    feeds::remove_feed(store, access, row.id)
+        .await
+        .map(|_| FeedDone {
+            text: strings::OK_FEED_REMOVED,
+            reload: true,
+        })
+        .map_err(|e| feed_fail(&e))
+}
+
+async fn toggle_public<S: FeedStore + ForumStore>(
+    store: &S,
+    access: &Snapshot,
+    now: russh_bbs_core::store::UnixSeconds,
+    board: BoardId,
+) -> Result<FeedDone, Fail> {
+    let was_public = store
+        .public_boards()
+        .await
+        .map_err(|e| feed_fail(&FeedError::Store(e)))?
+        .contains(&board);
+    feeds::publish_board(store, access, now, board, !was_public)
+        .await
+        .map(|()| FeedDone {
+            text: if was_public {
+                strings::OK_NOT_PUBLIC
+            } else {
+                strings::OK_PUBLIC
+            },
+            reload: false,
+        })
+        .map_err(|e| feed_fail(&e))
 }
 
 /// Check the member may write here, then open the editor (resuming a draft).

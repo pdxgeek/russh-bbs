@@ -14,6 +14,7 @@ pub(crate) mod chat;
 pub(crate) mod community;
 pub(crate) mod credits;
 pub(crate) mod drafts;
+pub(crate) mod feeds;
 pub(crate) mod forums;
 pub(crate) mod founder;
 pub(crate) mod invites;
@@ -34,6 +35,7 @@ use russh_bbs_core::chat::RoomStore;
 use russh_bbs_core::community::CommunityStore;
 use russh_bbs_core::credits::CreditStore;
 use russh_bbs_core::drafts::DraftStore;
+use russh_bbs_core::feeds::FeedStore;
 use russh_bbs_core::forums::ForumStore;
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::invites::InviteStore;
@@ -63,6 +65,7 @@ pub(crate) trait TestStore:
     + LimitStore
     + DraftStore
     + ForumStore
+    + FeedStore
     + MailStore
     + TerminalSettingsStore
     + ProfileStore
@@ -93,6 +96,7 @@ impl<T> TestStore for T where
         + LimitStore
         + DraftStore
         + ForumStore
+        + FeedStore
         + MailStore
         + TerminalSettingsStore
         + ProfileStore
@@ -170,8 +174,8 @@ macro_rules! shared_suite {
             #[allow(unused_imports)]
             use super::*;
             use $crate::suite::{
-                access, access_edit, accounts, audit, chat, community, credits, drafts, forums, founder, invites, limits, mail,
-                passwords, profiles,
+                access, access_edit, accounts, audit, chat, community, credits, drafts, feeds, forums, founder, invites, limits,
+                mail, passwords, profiles,
                 queue, registration, scheduler, terminal_settings,
             };
 
@@ -273,6 +277,14 @@ macro_rules! shared_suite {
                 forums::search_finds_words_and_never_reaches_unreadable_boards,
                 forums::hostile_queries_are_handled_not_errors,
                 forums::forum_data_survives_a_reopen,
+                feeds::staff_add_feeds_as_read_only_boards_with_an_audit_row_and_no_address,
+                feeds::the_number_of_feeds_is_limited_even_when_added_at_once,
+                feeds::posting_and_replying_on_a_feed_board_are_refused_by_core,
+                feeds::items_become_authorless_threads_once_and_the_newest_are_kept,
+                feeds::a_failed_read_is_a_closed_outcome_and_a_good_one_resets_it,
+                feeds::removing_a_feed_removes_its_board_threads_and_search_hits,
+                feeds::a_board_is_public_as_rss_only_when_marked_open_and_readable,
+                feeds::feed_data_survives_a_reopen,
                 mail::mail_round_trips_and_the_stored_row_holds_no_plaintext,
                 mail::a_row_is_only_ever_reachable_through_its_recipients_mailbox,
                 mail::a_tampered_moved_or_swapped_row_is_an_error_entry_not_a_crash,

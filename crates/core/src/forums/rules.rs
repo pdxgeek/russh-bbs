@@ -26,6 +26,10 @@ pub fn can(snapshot: &Snapshot, permission: Permission, board: &BoardRow) -> boo
     let Some(resource) = board.id.resource() else {
         return false;
     };
+    // A feed board is read-only for everyone (M3-G, D89): its items come from the feed.
+    if board.feed && matches!(permission, Permission::ForumPost | Permission::ForumReply) {
+        return false;
+    }
     if !snapshot.resolve(permission, Some(resource)).is_granted() {
         return false;
     }

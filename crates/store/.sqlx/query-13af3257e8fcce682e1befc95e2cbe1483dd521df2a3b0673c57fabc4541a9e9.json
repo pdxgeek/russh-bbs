@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT b.id AS \"id!\", b.name, b.description, b.restricted AS \"restricted!: bool\",\n                      (SELECT count(*) FROM thread t WHERE t.board_id = b.id) AS \"threads!: i64\"\n               FROM board b ORDER BY b.id",
+  "query": "SELECT b.id AS \"id!\", b.name, b.description, b.restricted AS \"restricted!: bool\", b.feed AS \"feed!: bool\",\n                      (SELECT count(*) FROM thread t WHERE t.board_id = b.id) AS \"threads!: i64\"\n               FROM board b ORDER BY b.id",
   "describe": {
     "columns": [
       {
@@ -24,8 +24,13 @@
         "type_info": "Integer"
       },
       {
-        "name": "threads!: i64",
+        "name": "feed!: bool",
         "ordinal": 4,
+        "type_info": "Integer"
+      },
+      {
+        "name": "threads!: i64",
+        "ordinal": 5,
         "type_info": "Integer"
       }
     ],
@@ -37,8 +42,9 @@
       false,
       false,
       false,
+      false,
       false
     ]
   },
-  "hash": "8d7cf584324bda04a0bfde7716d4dca5dd092f4c9433380d8c99c9fb4fe9e394"
+  "hash": "13af3257e8fcce682e1befc95e2cbe1483dd521df2a3b0673c57fabc4541a9e9"
 }

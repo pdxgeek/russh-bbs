@@ -90,6 +90,19 @@ enabled = false
 allow_login = false           # second opt-in: members may sign in with a password over telnet
 listen = "0.0.0.0:2323"
 
+[feeds]
+# RSS in (M3-G, D89). Off by default: with it off the server makes no outbound request for feeds.
+# On, the sysop's feeds (added on the forums screen with `f`) are read on a schedule through an
+# SSRF-guarded fetcher: https only unless a feed is flagged otherwise, no private or loopback
+# addresses, no proxy. Items appear as read-only boards.
+enabled = false
+# RSS out. Off by default; when off no port is bound. On, boards the sysop marked public are
+# served as RSS 2.0 at <base_url>/rss/<board id> over plain HTTP on this address, so put a TLS
+# proxy in front or keep it on a private address.
+rss_out_enabled = false
+rss_out_listen = "127.0.0.1:8081"
+# rss_out_base_url = "https://bbs.example/feeds"   # required with rss_out_enabled; no trailing slash
+
 [waiting_room]
 # Rate limits (D37). Per network: a burst, then one new connection per interval.
 ip_burst = 10

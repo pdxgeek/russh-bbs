@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE feed_item SET thread_id = ? WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "d9bbe765d64e478aa46aaa60730aa6fc45f6c2c9ddfc472b17e294b702a9f2fd"
+}

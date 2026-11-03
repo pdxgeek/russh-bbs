@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM board_public WHERE board_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "af1ca8b8622c5c80746c5a49724bf118ed1105cce3f697296892de19260203db"
+}

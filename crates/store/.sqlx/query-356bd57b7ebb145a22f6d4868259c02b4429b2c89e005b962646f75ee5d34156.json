@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM thread WHERE board_id = ? AND id NOT IN\n                 (SELECT id FROM thread WHERE board_id = ?\n                  ORDER BY last_post_at DESC, id DESC LIMIT ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "356bd57b7ebb145a22f6d4868259c02b4429b2c89e005b962646f75ee5d34156"
+}

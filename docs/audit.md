@@ -79,6 +79,9 @@ sysop screen over it is M5; the board has no audit screen yet.
 | `create_board` (M3-E) | `board.created` | the creator (`forum.manage`) | none; the resource is the board | `open` or `restricted`: never the name or description |
 | `remove_post` (M3-E) | `post.removed` | the moderator (`forum.moderate` on the board) | the post's author account (none if the account is gone); the resource is the board | `post <id>` or `post <id> with its thread`: ids only, never the text |
 | `allow_member` (M3-E) | `permission.granted` | the creator (`forum.manage`) | the member; the resource is the board | `forum.list`, `forum.read`, `forum.post` and `forum.reply`: one row each, none when already held |
+| `add_feed` (M3-G) | `feed.added` | the staff member (`feeds.manage`) | none; the resource is the new feed board | `https` or `http allowed`. **Never the address** (it can carry a token) |
+| `remove_feed` (M3-G) | `feed.removed` | the staff member | none (the board is gone) | `board <id>` |
+| `publish_board` (M3-G) | `board.published` / `board.unpublished` | the staff member | none; the resource is the board | none. Written only when the mark changed |
 | `report` (M3-I) | `mail.reported` | the reporter (the recipient) | the message's sender account (none if unknown or gone) | `report <id> message <id>`: ids only, never a subject, a text or a handle. The copy the reporter sent is stored as the report, not in the log |
 | `close_report` (M3-I) | `mail.report_closed` | the staff member (`mail.moderate`) | none | `report <id>`. Written only when an open report was closed |
 | `save_profile` by staff (M2-F) | `profile.edited` | the editor (`members.edit`) | the edited account | `fields <names>`: field names only, never values. The owner's own edits write no row |

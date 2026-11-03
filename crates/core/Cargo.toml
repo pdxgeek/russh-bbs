@@ -23,6 +23,9 @@ chacha20poly1305 = { workspace = true }
 rand = { workspace = true }
 # The scheduler spawns, times out and isolates job tasks; the workspace already builds tokio.
 tokio = { workspace = true }
+feed-rs = "3"
+quick-xml = "0.42"
+url = "2"
 
 [dev-dependencies]
 proptest = { workspace = true }

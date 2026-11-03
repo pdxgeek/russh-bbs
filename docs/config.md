@@ -111,6 +111,19 @@ What a telnet session is: a password login for members who set a password over S
 | `telnet.allow_login` | boolean, needs `telnet.enabled` | `false` | `RUSSH_BBS_TELNET_ALLOW_LOGIN` | none | Member password login over telnet; off shows a two-line refusal and closes |
 | `telnet.listen` | address, port 1–65535, not the SSH port when enabled | `0.0.0.0:2323` | `RUSSH_BBS_TELNET_LISTEN` | none | The telnet listener's address |
 
+### `[feeds]` (D89)
+
+Built in M3-G. **RSS in:** the sysop adds a feed on the forums screen (`f` on the board list, needs `feeds.manage`); the feed becomes a read-only board and a scheduled job reads it. **With `feeds.enabled = false` (the default) the server makes no outbound request for feeds**; feeds can still be added and removed, they are just not read. The fetcher resolves the name, refuses every private, loopback, link-local (cloud metadata), carrier-grade NAT, multicast, unspecified, documentation and reserved address (and IPv6 forms that embed one), and connects to the address it checked. Redirects are re-checked hop by hop (at most 3, never from https to http); the whole fetch is capped at 20 seconds, 5 seconds to connect, 1 MiB of body and 100 items. https is required unless the sysop flags that one feed as allowing plain http. **It never uses a proxy:** `HTTPS_PROXY`, `HTTP_PROXY` and `ALL_PROXY` are ignored (a proxy resolves the name itself, so the guard could not check the address it connects to) and the server logs a warning at start when one is set; a board that can only reach the internet through a proxy cannot read feeds.
+
+**RSS out:** boards the sysop marked public (`p` on a board's thread list) are served as RSS 2.0 at `<rss_out_base_url>/rss/<board id>` by a small HTTP listener. **When `feeds.rss_out_enabled` is `false` (the default) no port is bound.** The listener speaks plain HTTP and serves GET only; put a TLS proxy in front of it or keep it on a private address. It serves exactly what an anonymous reader may read: a board that is absent, not public or restricted gets the same 404.
+
+| Key | Type | Default | Environment | Flag | Used by |
+|---|---|---|---|---|---|
+| `feeds.enabled` | boolean | `false` | `RUSSH_BBS_FEEDS_ENABLED` | none | Registers the feed-reading job with the scheduler (M3-G); off makes no outbound request |
+| `feeds.rss_out_enabled` | boolean, needs `feeds.rss_out_base_url` | `false` | `RUSSH_BBS_FEEDS_RSS_OUT_ENABLED` | none | The RSS listener (M3-G); off binds no port |
+| `feeds.rss_out_listen` | address, port 1–65535, not the SSH or telnet port | `127.0.0.1:8081` | `RUSSH_BBS_FEEDS_RSS_OUT_LISTEN` | none | The RSS listener's address |
+| `feeds.rss_out_base_url` | http or https address, no trailing slash, no credentials or query | none | `RUSSH_BBS_FEEDS_RSS_OUT_BASE_URL` | none | The public address readers reach the listener at, used in the documents' links; required with `feeds.rss_out_enabled` |
+
 ### `[waiting_room]` (D37)
 
 | Key | Type | Default | Environment | Flag | Used by |
@@ -157,5 +170,6 @@ Usage counters (`limit_usage`) are per account per UTC day and survive a restart
 - **Implemented and tested (M1-H):** all of the above; unit tests cover each layer, precedence, unknown keys, bad values with their source, the IAM refusal, redaction in `Debug`, `Display` and captured logs, default file search, the example file equalling the defaults, and this document naming every key, variable and flag.
 - **Implemented and tested (M1-G):** the `postgres` datasource (D44): config wiring and the `iam_auth` refusal in the config tests, the store itself in the shared suite on Postgres 16 and on a TLS-required Postgres.
 - **Implemented and tested (M3-H):** the `[telnet]` section is used. Off binds nothing; on starts the listener, warns, and sets `Limits::low_security`. Config tests cover the defaults, the warning and the limits flag; the transport is covered in `tests/telnet.rs` (see D85 and [features.md](features.md)).
+- **Implemented and tested (M3-G):** the `[feeds]` section is used (D89). Config tests cover the defaults, the base-URL rule and port clashes; the fetcher and the listener are covered by the feed tests in `crates/server/src/feeds` (see D89 and [features.md](features.md)).
 - **Planned:** IAM token authentication, a blob store reading `[blobs]`.
 - **Verified end to end:** see the M1-H pull request for the `ssh` session against a file and against environment overrides.

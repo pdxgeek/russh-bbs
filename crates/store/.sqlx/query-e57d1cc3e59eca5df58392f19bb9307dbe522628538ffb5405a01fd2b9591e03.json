@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE feed SET last_attempt_at = ?, last_outcome = ?, failures = min(failures + 1, 1000)\n             WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "e57d1cc3e59eca5df58392f19bb9307dbe522628538ffb5405a01fd2b9591e03"
+}

@@ -16,7 +16,7 @@ use crate::forum_rows::{board, cap, fts5_match, hit, int, json_ids, name_key, po
 impl ForumStore for SqliteStore {
     async fn boards(&self) -> Result<Vec<BoardRow>, StoreError> {
         sqlx::query!(
-            r#"SELECT b.id AS "id!", b.name, b.description, b.restricted AS "restricted!: bool",
+            r#"SELECT b.id AS "id!", b.name, b.description, b.restricted AS "restricted!: bool", b.feed AS "feed!: bool",
                       (SELECT count(*) FROM thread t WHERE t.board_id = b.id) AS "threads!: i64"
                FROM board b ORDER BY b.id"#
         )
@@ -24,14 +24,14 @@ impl ForumStore for SqliteStore {
         .await
         .map_err(backend)?
         .into_iter()
-        .map(|r| board(r.id, r.name, r.description, r.restricted, r.threads))
+        .map(|r| board(r.id, r.name, r.description, r.restricted, r.feed, r.threads))
         .collect()
     }
 
     async fn board(&self, id: BoardId) -> Result<Option<BoardRow>, StoreError> {
         let id = id.as_raw();
         sqlx::query!(
-            r#"SELECT b.id AS "id!", b.name, b.description, b.restricted AS "restricted!: bool",
+            r#"SELECT b.id AS "id!", b.name, b.description, b.restricted AS "restricted!: bool", b.feed AS "feed!: bool",
                       (SELECT count(*) FROM thread t WHERE t.board_id = b.id) AS "threads!: i64"
                FROM board b WHERE b.id = ?"#,
             id
@@ -39,7 +39,7 @@ impl ForumStore for SqliteStore {
         .fetch_optional(self.pool())
         .await
         .map_err(backend)?
-        .map(|r| board(r.id, r.name, r.description, r.restricted, r.threads))
+        .map(|r| board(r.id, r.name, r.description, r.restricted, r.feed, r.threads))
         .transpose()
     }
 

@@ -73,6 +73,21 @@ ratatui = { version = "0.30", default-features = false, features = ["crossterm"]
 # input conversion: keys come from our own parser and are built by hand.
 tui-textarea-2 = { version = "=0.13.2", default-features = false, features = ["no-backend"] }
 
+# Feed fetcher (M3-G, D89). `hyper` parses HTTP/1.1 (status, headers, chunked bodies) over a socket the
+# fetcher opened itself, so the SSRF guard connects to the address it checked; it also serves RSS out.
+# Only the client, server and http1 features: no HTTP/2, no connection pool, no redirect or cookie logic.
+hyper = { version = "1", default-features = false, features = ["client", "server", "http1"] }
+# `TokioIo` adapter between tokio sockets and hyper; nothing else of hyper-util is built.
+hyper-util = { version = "0.1", default-features = false, features = ["tokio"] }
+# Body type for the requests and the streaming read with a size cap.
+http-body-util = "0.1"
+# TLS for https feeds over the fetcher's own socket, ring provider only (no aws-lc, as in D44).
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12"] }
+# The platform's CA certificates for https feeds (already in the tree through sqlx).
+rustls-native-certs = "0.8"
+# Server name type for TLS verification (already in the tree through rustls).
+rustls-pki-types = "1"
+
 [workspace.lints.rust]
 unsafe_code = "forbid"
 missing_docs = "warn"

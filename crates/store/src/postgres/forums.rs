@@ -16,7 +16,7 @@ use crate::forum_rows::{board, cap, hit, int, name_key, plain_terms, post, raw_i
 impl ForumStore for PostgresStore {
     async fn boards(&self) -> Result<Vec<BoardRow>, StoreError> {
         sqlx::query!(
-            r#"SELECT b.id AS "id!", b.name, b.description, b.restricted AS "restricted!",
+            r#"SELECT b.id AS "id!", b.name, b.description, b.restricted AS "restricted!", b.feed AS "feed!",
                       (SELECT count(*) FROM thread t WHERE t.board_id = b.id) AS "threads!"
                FROM board b ORDER BY b.id -- postgres"#
         )
@@ -24,14 +24,14 @@ impl ForumStore for PostgresStore {
         .await
         .map_err(backend)?
         .into_iter()
-        .map(|r| board(r.id, r.name, r.description, r.restricted, r.threads))
+        .map(|r| board(r.id, r.name, r.description, r.restricted, r.feed, r.threads))
         .collect()
     }
 
     async fn board(&self, id: BoardId) -> Result<Option<BoardRow>, StoreError> {
         let id = id.as_raw();
         sqlx::query!(
-            r#"SELECT b.id AS "id!", b.name, b.description, b.restricted AS "restricted!",
+            r#"SELECT b.id AS "id!", b.name, b.description, b.restricted AS "restricted!", b.feed AS "feed!",
                       (SELECT count(*) FROM thread t WHERE t.board_id = b.id) AS "threads!"
                FROM board b WHERE b.id = $1"#,
             id
@@ -39,7 +39,7 @@ impl ForumStore for PostgresStore {
         .fetch_optional(self.pool())
         .await
         .map_err(backend)?
-        .map(|r| board(r.id, r.name, r.description, r.restricted, r.threads))
+        .map(|r| board(r.id, r.name, r.description, r.restricted, r.feed, r.threads))
         .transpose()
     }
 
