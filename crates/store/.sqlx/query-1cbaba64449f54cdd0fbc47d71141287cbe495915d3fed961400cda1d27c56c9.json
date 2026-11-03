@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE draft SET body = $1, updated_at = $2 WHERE account_id = $3 AND context = $4",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8",
+        "Int8",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1cbaba64449f54cdd0fbc47d71141287cbe495915d3fed961400cda1d27c56c9"
+}

@@ -13,6 +13,7 @@
 
 pub(crate) mod chrome;
 pub(crate) mod classic;
+pub mod editor;
 pub(crate) mod keys;
 // No screen has text long enough to page yet; the first long-text screen (the message reader,
 // M3) uses this. The expectation fails the build when that happens, as a reminder to drop it.

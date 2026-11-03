@@ -11,6 +11,7 @@ pub(crate) mod access_edit;
 pub(crate) mod accounts;
 pub(crate) mod audit;
 pub(crate) mod credits;
+pub(crate) mod drafts;
 pub(crate) mod founder;
 pub(crate) mod invites;
 pub(crate) mod limits;
@@ -26,6 +27,7 @@ use std::sync::Arc;
 use russh_bbs_core::access::{AccessStore, Fingerprint, MemberDirectory, Slug};
 use russh_bbs_core::audit::{AuditStore, WallClock};
 use russh_bbs_core::credits::CreditStore;
+use russh_bbs_core::drafts::DraftStore;
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::invites::InviteStore;
 use russh_bbs_core::limits::LimitStore;
@@ -50,6 +52,7 @@ pub(crate) trait TestStore:
     + SettingsStore
     + FounderStore
     + LimitStore
+    + DraftStore
     + TerminalSettingsStore
     + ProfileStore
     + PasswordStore
@@ -75,6 +78,7 @@ impl<T> TestStore for T where
         + SettingsStore
         + FounderStore
         + LimitStore
+        + DraftStore
         + TerminalSettingsStore
         + ProfileStore
         + PasswordStore
@@ -147,8 +151,8 @@ macro_rules! shared_suite {
             #[allow(unused_imports)]
             use super::*;
             use $crate::suite::{
-                access, access_edit, accounts, audit, credits, founder, invites, limits, passwords,
-                profiles, queue, registration, scheduler, terminal_settings,
+                access, access_edit, accounts, audit, credits, drafts, founder, invites, limits, passwords, profiles,
+                queue, registration, scheduler, terminal_settings,
             };
 
             $crate::suite::shared_suite!(@tests $harness, $attr;
@@ -210,6 +214,19 @@ macro_rules! shared_suite {
                 accounts::only_active_accounts_are_members,
                 accounts::the_directory_fails_closed_when_the_store_is_broken,
                 accounts::data_survives_a_reopen,
+                drafts::a_saved_draft_reads_back_and_a_second_save_replaces_it,
+                drafts::drafts_are_per_member_and_per_context,
+                drafts::the_list_is_newest_first_without_text,
+                drafts::the_cap_refuses_a_new_context_but_always_allows_a_replacement,
+                drafts::concurrent_saves_never_pass_the_cap,
+                drafts::the_text_is_sanitized_on_save_and_bounded,
+                drafts::blank_text_removes_the_draft,
+                drafts::saving_a_draft_for_an_unknown_account_fails,
+                drafts::deleting_an_account_deletes_its_drafts,
+                drafts::the_database_refuses_what_core_would_never_write,
+                drafts::a_stored_row_the_code_could_not_have_written_is_corrupt_not_shown,
+                drafts::drafts_survive_a_reopen,
+                drafts::a_broken_store_errors_instead_of_pretending_there_is_no_draft,
                 founder::a_claim_creates_an_active_sysop_bound_to_the_key,
                 founder::a_second_claim_changes_nothing,
                 founder::two_concurrent_claims_produce_exactly_one_sysop,
