@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT p.id AS \"id!\", p.question, p.closed_at IS NOT NULL AS \"closed!: bool\",\n                      (SELECT count(*) FROM poll_vote v WHERE v.poll_id = p.id) AS \"votes!: i64\"\n               FROM poll p ORDER BY p.id DESC LIMIT ? OFFSET ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "question",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "closed!: bool",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "votes!: i64",
+        "ordinal": 3,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "23004096071fc40eee92c9c5be08ac34c1640586d474fcc0451eb3a59ad5bce9"
+}

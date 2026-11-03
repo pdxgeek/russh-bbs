@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE poll SET closed_at = $1 WHERE id = $2 AND closed_at IS NULL\n             AND (creator_id = $3 OR $4::bool) RETURNING creator_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "creator_id",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Int8",
+        "Bool"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "1e7390b478c75907d0001fb3c97238f886c3360702ba06f7f932337e917d6462"
+}

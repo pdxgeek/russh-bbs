@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM community_line WHERE kind = $1\n             AND id NOT IN (SELECT id FROM community_line WHERE kind = $1 ORDER BY id DESC LIMIT $2)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c40a1c7f0cf0072fee4083cb01137192dfa28a7775ce0994dff704f480815f9b"
+}

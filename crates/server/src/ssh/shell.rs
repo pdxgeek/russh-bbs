@@ -233,24 +233,7 @@ impl<D: Backend> Shell<D> {
             // A members screen needs the store before it can take the next key. Answer it, then
             // apply the keys that were held back, with the account's permissions loaded again
             // (every action sees what the account holds now).
-            loop {
-                if let Some(request) = effects.members_request.take() {
-                    self.run_members(request).await;
-                } else if let Some(request) = effects.queue_request.take() {
-                    self.run_queue(request).await;
-                } else if let Some(request) = effects.password_request.take() {
-                    self.run_password(request).await;
-                } else {
-                    break;
-                }
-                let rest = std::mem::take(&mut effects.held_back);
-                if rest.is_empty() {
-                    break;
-                }
-                self.refresh_access().await;
-                let later = self.parts.screen.apply_keys(&rest);
-                effects.absorb(later);
-            }
+            self.run_requests(&mut effects).await;
             if let Some(request) = effects.invite.take() {
                 self.run_invite(request).await;
             }
@@ -291,6 +274,32 @@ impl<D: Backend> Shell<D> {
                 return;
             }
             next_cycle = tokio::time::Instant::now() + self.parts.redraw_interval;
+        }
+    }
+
+    /// Answer the store requests a screen is waiting on, then apply the keys that were held back
+    /// with the account's permissions loaded again (every action sees what the account holds
+    /// now), until none is left.
+    async fn run_requests(&mut self, effects: &mut super::screen::KeyEffects) {
+        loop {
+            if let Some(request) = effects.members_request.take() {
+                self.run_members(request).await;
+            } else if let Some(request) = effects.queue_request.take() {
+                self.run_queue(request).await;
+            } else if let Some(request) = effects.password_request.take() {
+                self.run_password(request).await;
+            } else if let Some(request) = effects.community_request.take() {
+                self.run_community(request).await;
+            } else {
+                break;
+            }
+            let rest = std::mem::take(&mut effects.held_back);
+            if rest.is_empty() {
+                break;
+            }
+            self.refresh_access().await;
+            let later = self.parts.screen.apply_keys(&rest);
+            effects.absorb(later);
         }
     }
 
@@ -521,6 +530,8 @@ impl<D: Backend> Shell<D> {
             .session
             .set_authenticated(fingerprint, Access::Member);
         let start = self.account_start(&account).await;
+        // A member who just joined starts a member session: last callers lists them.
+        crate::community::note_sign_in(&*self.parts.directory, start.account).await;
         self.parts.account = Some(start.account);
         self.parts.screen.redeemed(MemberFlow::new(
             &start.handle,
@@ -677,6 +688,26 @@ impl<D: Backend> Shell<D> {
             let response = crate::sysop::queue::run(&*self.parts.directory, &access, request).await;
             self.parts.screen.deliver_queue(response);
             match self.parts.screen.take_queue_request() {
+                Some(next) => request = next,
+                None => break,
+            }
+        }
+    }
+
+    /// Run the community request a community screen is waiting on and give it the answer. Core
+    /// checks the permission against the snapshot loaded for this action (`community::execute`);
+    /// a session without one gets "not permitted", and a slow or failing store gets "failed".
+    /// A screen that needs a follow-up (an emptied poll page asks for the first one) gets it
+    /// here, with the same permissions (a few at most).
+    async fn run_community(&mut self, request: russh_bbs_core::community::Request) {
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let mut request = request;
+        for _ in 0..3 {
+            let response = crate::community::run(&*self.parts.directory, &access, request).await;
+            self.parts.screen.deliver_community(response);
+            match self.parts.screen.take_community_request() {
                 Some(next) => request = next,
                 None => break,
             }

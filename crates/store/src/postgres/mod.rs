@@ -9,6 +9,7 @@
 
 mod access;
 mod audit;
+mod community;
 mod credits;
 mod drafts;
 mod founder;

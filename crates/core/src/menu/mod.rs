@@ -71,6 +71,14 @@ pub enum Action {
     SysopQueue,
     /// Open the vouch screen: pending requests a member can speak for (`members.vouch`, M2-E).
     VouchQueue,
+    /// Open the one-liners (`community.view`, M3-J).
+    Oneliners,
+    /// Open the graffiti wall (`community.view`, M3-J).
+    GraffitiWall,
+    /// Open last callers (`community.view`, M3-J).
+    LastCallers,
+    /// Open the polls (`community.view`, M3-J).
+    Polls,
     /// End the session.
     LogOff,
 }
@@ -88,6 +96,9 @@ impl Action {
             Self::EditOwnProfile => Some(Permission::AccountEditProfile),
             Self::SysopQueue => Some(Permission::MembersApprove),
             Self::VouchQueue => Some(Permission::MembersVouch),
+            Self::Oneliners | Self::GraffitiWall | Self::LastCallers | Self::Polls => {
+                Some(Permission::CommunityView)
+            }
             Self::LogOff => None,
         }
     }

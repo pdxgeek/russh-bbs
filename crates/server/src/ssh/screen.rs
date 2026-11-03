@@ -33,6 +33,9 @@ use ratatui::crossterm::terminal::{Clear, ClearType, EnterAlternateScreen, Leave
 use ratatui::layout::{Position, Rect, Size};
 use ratatui::{Terminal, TerminalOptions, Viewport};
 use russh_bbs_core::access::Snapshot;
+use russh_bbs_core::community::{
+    EditorAsk, NewPoll, Request as CommunityRequest, Response as CommunityResponse,
+};
 use russh_bbs_core::founder::{ClaimEffect, ClaimForm, ClaimInput};
 use russh_bbs_core::icons::Tier;
 use russh_bbs_core::invites::{InviteOutcome, InviteRequest};
@@ -44,6 +47,7 @@ use russh_bbs_core::profiles::{
 use russh_bbs_core::queue::{
     InviteAsk, QueueView, Request as QueueRequest, Response as QueueResponse,
 };
+use russh_bbs_core::sanitize::{MultiLine, SingleLine};
 use russh_bbs_core::terminal_settings::strings::TITLE;
 use russh_bbs_core::terminal_settings::{
     LayoutId, MemberEffect, MemberFlow, MemberInput, TerminalSettings,
@@ -55,6 +59,7 @@ use crate::members;
 use crate::settings::{self, Look};
 use crate::sysop;
 use crate::ui::classic::{self, ContentScreen, MENU_MARKERS, MenuScreen};
+use crate::ui::editor::{Editor, EditorEffect, EditorRequest, EditorView, Outcome};
 use crate::ui::strings::StringTable;
 use crate::ui::{Ui, layout};
 use crate::waiting_room::render;
@@ -211,6 +216,10 @@ pub(super) struct KeyEffects {
     /// A password request (status, set, clear) the password screen is waiting on (M3-D). The
     /// session runs it against the store and gives the answer to [`Screen::deliver_password`].
     pub(super) password_request: Option<PasswordRequest>,
+    /// A community request (a list, a post, a vote) the community screen is waiting on (M3-J).
+    /// The session runs it against the store and gives the answer to
+    /// [`Screen::deliver_community`].
+    pub(super) community_request: Option<CommunityRequest>,
     /// Keys held back because `members_request` has to be answered first. The session applies
     /// them after delivering the answer, so a fast typist's next key is not lost.
     pub(super) held_back: Vec<Key>,
@@ -228,6 +237,7 @@ impl KeyEffects {
         self.members_request = later.members_request;
         self.queue_request = later.queue_request;
         self.password_request = later.password_request;
+        self.community_request = later.community_request;
         self.held_back = later.held_back;
     }
 }
@@ -287,6 +297,14 @@ impl Content {
     fn members_view(&self) -> Option<ScreenView> {
         match self {
             Self::Member(flow) => flow.members_view(),
+            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
+        }
+    }
+
+    /// The community screens, while a member is at one (M3-J).
+    fn community_view(&self) -> Option<ScreenView> {
+        match self {
+            Self::Member(flow) => flow.community_view(),
             Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
         }
     }
@@ -362,6 +380,11 @@ pub(super) struct Screen {
     /// The day's last `open` place went while this visitor's create-account form was open: the
     /// room becomes the `apply` room, with its notice, as soon as they leave the form (FIX-M2-4).
     degrade_on_leave: bool,
+    /// The full-screen editor, while the poll form has one open (M3-J, using M3-B's widget).
+    /// While it is open every key goes to it and it is drawn instead of the content.
+    /// Held in a `Mutex` only to make the session future `Send`: the widget's caches are
+    /// `Cell`s. It is always reached with `get_mut`, so nothing ever waits on the lock.
+    editor: Option<Mutex<Editor>>,
 }
 
 impl Screen {
@@ -390,6 +413,7 @@ impl Screen {
             dirty: false,
             rebuild: false,
             degrade_on_leave: false,
+            editor: None,
         })
     }
 
@@ -398,6 +422,12 @@ impl Screen {
     /// once for the whole batch, so a flood of keys costs one redraw, not one per key.
     pub(super) fn apply_keys(&mut self, keys: &[Key]) -> KeyEffects {
         let mut effects = KeyEffects::default();
+        if self.editor.is_some() {
+            self.editor_keys(keys, &mut effects);
+            self.dirty = true;
+            return effects;
+        }
+        let mut open_editor_at = None;
         match &mut self.content {
             Content::Room(room) => {
                 for input in keys.iter().copied().filter_map(room_input) {
@@ -459,26 +489,26 @@ impl Screen {
                             break;
                         }
                     }
-                    // A members screen that needs the store stops the batch: keys after it
-                    // would act on a list that is about to be replaced.
-                    if let Some(request) = flow.take_members_request() {
-                        effects.members_request = Some(request);
+                    // A screen that needs the store stops the batch: keys after it would act on
+                    // a list that is about to be replaced.
+                    if take_request(flow, &mut effects) {
                         effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
                         break;
                     }
-                    // The same for the queue screens (M2-E).
-                    if let Some(request) = flow.take_queue_request() {
-                        effects.queue_request = Some(request);
-                        effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
-                        break;
-                    }
-                    // And the password screen (M3-D).
-                    if let Some(request) = flow.take_password_request() {
-                        effects.password_request = Some(request);
-                        effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
+                    // The poll form asked for the full-screen editor: the keys after it in
+                    // this batch are the editor's.
+                    if let Some(ask) = flow.take_community_editor() {
+                        open_editor_at = Some((index + 1, ask));
                         break;
                     }
                 }
+            }
+        }
+        if let Some((from, ask)) = open_editor_at {
+            self.open_editor(&ask);
+            let rest = keys.get(from..).unwrap_or_default();
+            if self.editor.is_some() && !rest.is_empty() {
+                self.editor_keys(rest, &mut effects);
             }
         }
         self.dirty = true;
@@ -530,6 +560,75 @@ impl Screen {
             flow.deliver_password(response);
         }
         self.dirty = true;
+    }
+
+    /// The answer to the community request taken from [`KeyEffects`]. The screen shows it on the
+    /// next render.
+    pub(super) fn deliver_community(&mut self, response: CommunityResponse) {
+        if let Content::Member(flow) = &mut self.content {
+            flow.deliver_community(response);
+        }
+        self.dirty = true;
+    }
+
+    /// The community request the screen asked for after an answer (an emptied poll page asks for
+    /// the first one), once.
+    pub(super) fn take_community_request(&mut self) -> Option<CommunityRequest> {
+        match &mut self.content {
+            Content::Member(flow) => flow.take_community_request(),
+            Content::Room(_) | Content::Claim(_) | Content::Limited(_) => None,
+        }
+    }
+
+    /// Open the editor for a poll description. If its text does not fit the editor's bounds
+    /// (it cannot: the screen only holds text the editor returned) nothing opens.
+    fn open_editor(&mut self, ask: &EditorAsk) {
+        let title = SingleLine::new(40).sanitize(
+            self.content
+                .strings(&self.ui)
+                .text(russh_bbs_core::community::keys::FORM_EDITOR_TITLE),
+        );
+        let initial =
+            MultiLine::new(NewPoll::description_limits().max_chars()).sanitize(&ask.initial);
+        let request = EditorRequest::new(title)
+            .initial(initial)
+            .limits(NewPoll::description_limits());
+        match Editor::open(request, None) {
+            Ok(editor) => self.editor = Some(Mutex::new(editor)),
+            Err(_) => {
+                if let Content::Member(flow) = &mut self.content {
+                    flow.deliver_community_description(None);
+                }
+            }
+        }
+    }
+
+    /// Feed keys to the open editor. A finished editor hands its text to the poll form. There
+    /// is no draft context, so there is nothing to save: leaving with changes asks only whether
+    /// to keep editing or discard.
+    fn editor_keys(&mut self, keys: &[Key], effects: &mut KeyEffects) {
+        for key in keys.iter().copied() {
+            let Some(editor) = &mut self.editor else {
+                return;
+            };
+            let editor = editor.get_mut().unwrap_or_else(PoisonError::into_inner);
+            let text = match editor.input(key) {
+                EditorEffect::Stay => continue,
+                EditorEffect::Done(Outcome::Submitted(body)) => Some(body.trimmed().to_owned()),
+                EditorEffect::Done(Outcome::Cancelled | Outcome::SavedDraft)
+                | EditorEffect::SaveDraft(_) => None,
+                EditorEffect::LogOff(_) => {
+                    effects.disconnect = true;
+                    return;
+                }
+            };
+            self.editor = None;
+            if let Content::Member(flow) = &mut self.content {
+                flow.deliver_community_description(text);
+            }
+            self.rebuild = true;
+            return;
+        }
     }
 
     /// The queue request the screen asked for after an answer (a decision asks for the list
@@ -693,10 +792,39 @@ impl Screen {
         let menu = self.content.menu_page();
         let members_view = self.content.members_view();
         let queue_view = self.content.queue_view();
+        let community_view = self.content.community_view();
         let tier = self.content.tier();
         let strings = self.content.strings(&self.ui);
         let framed = self.content.is_framed_screen();
+        if let (Some(editor), Content::Member(flow)) = (&mut self.editor, &self.content) {
+            let editor = editor.get_mut().unwrap_or_else(PoisonError::into_inner);
+            let view = EditorView {
+                ui: &self.ui,
+                settings: flow.settings(),
+                markers: &MENU_MARKERS,
+            };
+            self.terminal.draw(|frame| editor.render(frame, &view))?;
+            return Ok(self.take_output());
+        }
         self.terminal.draw(|frame| match (look, &menu) {
+            // The community screens (M3-J): the same layout and status row, drawn like the
+            // members screens because they produce the same view.
+            (Some(look), None) if community_view.is_some() => {
+                if let Some(screen) = &community_view {
+                    let width =
+                        usize::from(frame.area().width.min(settings::MAX_WIDTH)).saturating_sub(2);
+                    classic::render_content(
+                        frame,
+                        ContentScreen {
+                            strings,
+                            lines: members::lines(screen, strings, look, width),
+                            look,
+                            tier,
+                            markers: &MENU_MARKERS,
+                        },
+                    );
+                }
+            }
             // The sysop queue and the vouch screen (M2-E): the same layout and status row. The
             // requester's text is drawn in the content box only.
             (Some(look), None) if queue_view.is_some() => {
@@ -824,6 +952,23 @@ fn viewport(drawn: PtySize, cap: RenderCap) -> Rect {
         cols,
         rows,
     )
+}
+
+/// Move the store request a member screen is waiting on (members M2-F, queue M2-E, password
+/// M3-D, community M3-J) into `effects`. `true` when there was one.
+fn take_request(flow: &mut MemberFlow, effects: &mut KeyEffects) -> bool {
+    if let Some(request) = flow.take_members_request() {
+        effects.members_request = Some(request);
+    } else if let Some(request) = flow.take_queue_request() {
+        effects.queue_request = Some(request);
+    } else if let Some(request) = flow.take_password_request() {
+        effects.password_request = Some(request);
+    } else if let Some(request) = flow.take_community_request() {
+        effects.community_request = Some(request);
+    } else {
+        return false;
+    }
+    true
 }
 
 /// Translate a keypress for the room. Keys the room has no use for are dropped.

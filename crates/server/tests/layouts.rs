@@ -207,7 +207,9 @@ async fn the_layout_and_theme_switch_live_and_are_remembered() {
     assert!(moved.contains("> [o] Sysop tools"), "{moved}");
     send(&mut channel, UP).await;
     assert!(full(&mut channel).await.contains("> [s] Terminal settings"));
-    for _ in 0..4 {
+    // The Community item (M3-J) sits above Invites, so Mail is one row further up from Terminal
+    // settings than before: five moves.
+    for _ in 0..5 {
         send(&mut channel, UP).await;
     }
     assert!(full(&mut channel).await.contains("> [m] Mail"));

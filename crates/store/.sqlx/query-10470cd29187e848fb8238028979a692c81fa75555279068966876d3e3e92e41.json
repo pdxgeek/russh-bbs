@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT a.username, c.last_at FROM last_caller c JOIN accounts a ON a.id = c.account_id\n             WHERE a.state = 'active' ORDER BY c.last_at DESC, a.id LIMIT $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "username",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "last_at",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "10470cd29187e848fb8238028979a692c81fa75555279068966876d3e3e92e41"
+}

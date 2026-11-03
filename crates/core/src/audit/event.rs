@@ -99,6 +99,15 @@ pub enum Action {
     /// A member removed their own password (M3-D, D81). Written only when there was one.
     #[strum(serialize = "password.cleared")]
     PasswordCleared,
+    /// Staff removed a one-liner or a graffiti wall line (M3-J, D86). The target is the author.
+    #[strum(serialize = "community.entry_removed")]
+    CommunityEntryRemoved,
+    /// Staff closed a poll someone else created (M3-J, D86). The target is the creator.
+    #[strum(serialize = "community.poll_closed")]
+    CommunityPollClosed,
+    /// Staff removed a poll with its votes (M3-J, D86). The target is the creator.
+    #[strum(serialize = "community.poll_removed")]
+    CommunityPollRemoved,
 }
 
 impl Action {

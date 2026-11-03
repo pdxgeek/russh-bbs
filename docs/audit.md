@@ -75,6 +75,9 @@ sysop screen over it is M5; the board has no audit screen yet.
 | `open_account` that reaches the cap (M2-G) | `registration.capped` | `system` | none | `day <n> cap <n>` (the UTC day number). Written **once per UTC day**: by the `open` account that takes the day's last place, in its transaction and after that account's `account.created` row (or by the first refusal if the cap was lowered below the count), so strangers cannot grow the log |
 | `set_password` / `clear_password` (M3-D) | `password.set` / `password.cleared` | the member (their own account) | the same account | `key session` or `password session`: which kind of session did it. Never a password, hash or salt. `password.cleared` is written only when there was a password to clear. |
 | `save_profile` by staff (M2-F) | `profile.edited` | the editor (`members.edit`) | the edited account | `fields <names>`: field names only, never values. The owner's own edits write no row |
+| `remove_line` (M3-J) | `community.entry_removed` | the staff member (`community.moderate`) | the author | `oneliner <id>` or `graffiti <id>`: the kind and the row id, never the text |
+| `close_poll` by staff on another member's poll (M3-J) | `community.poll_closed` | the staff member | the poll's creator | `poll <id>`. The creator closing their own poll writes no row |
+| `remove_poll` (M3-J) | `community.poll_removed` | the staff member | the poll's creator | `poll <id>`; the options and votes go with the poll |
 
 A write that changed nothing (adding a member already in the group, removing one who is not, a
 grant already held or not there, the same permission set again, a refused change) writes no row.

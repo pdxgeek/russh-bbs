@@ -28,6 +28,7 @@ pub use server::{ServerConfig, SshServer};
 pub use terminal::RenderCap;
 
 use russh_bbs_core::access::MemberDirectory;
+use russh_bbs_core::community::CommunityStore;
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::invites::InviteStore;
 use russh_bbs_core::limits::LimitStore;
@@ -52,6 +53,7 @@ pub trait Backend:
     + ProfileStore
     + PasswordStore
     + QueueStore
+    + CommunityStore
     + RegistrationStore
     + LimitStore
     + 'static
@@ -67,6 +69,7 @@ impl<T> Backend for T where
         + ProfileStore
         + PasswordStore
         + QueueStore
+        + CommunityStore
         + RegistrationStore
         + LimitStore
         + 'static
