@@ -14,6 +14,9 @@ use super::settings::{SettingsError, TerminalSettings};
 use super::strings::{self, TextSource, fill};
 use super::{format_utc, tier_name};
 use crate::access::{Permission, PermissionCheck, Slug, Snapshot};
+use crate::community::{
+    CommunityScreen, EditorAsk, Request as CommunityRequest, Response as CommunityResponse, Section,
+};
 use crate::icons::Tier;
 use crate::invites::{InviteOutcome, InviteRequest, InviteScreen};
 use crate::menu::{Action, MenuKey, MenuOutcome, MenuPage, MenuSession, main_tree};
@@ -84,6 +87,8 @@ enum Page {
     Members(Box<MembersScreen>),
     /// The sysop queue or the vouch screen (M2-E).
     Queue(Box<QueueScreen>),
+    /// One-liners, the graffiti wall, last callers or the polls (M3-J).
+    Community(Box<CommunityScreen>),
     Settings,
     /// The password screen, opened from the settings (M3-D).
     Password(Box<PasswordScreen>),
@@ -264,6 +269,17 @@ impl MemberFlow {
             });
             return MemberEffect::Stay;
         }
+        if let Page::Community(screen) = &self.page
+            && !screen.still_permitted(&self.access)
+        {
+            // Same rule again: the permission went away since the screen opened.
+            self.page = Page::Home;
+            self.notice = Some(Notice {
+                kind: NoticeKind::Error,
+                text: strings::MEMBERS_NOT_PERMITTED,
+            });
+            return MemberEffect::Stay;
+        }
         match &mut self.page {
             Page::Login => {
                 self.page = if self.settings.needs_glyph_test() {
@@ -277,6 +293,7 @@ impl MemberFlow {
             Page::Home => self.home_input(input),
             Page::Members(_) => self.members_input(input),
             Page::Queue(_) => self.queue_input(input),
+            Page::Community(_) => self.community_input(input),
             Page::Settings => self.settings_input(input),
             Page::Password(_) => self.password_input(input),
             Page::EditWidth(_) | Page::EditHeight(_) => self.edit_input(input),
@@ -296,6 +313,7 @@ impl MemberFlow {
             | Page::Home
             | Page::Members(_)
             | Page::Queue(_)
+            | Page::Community(_)
             | Page::Invites(_)
             | Page::Password(_)
             | Page::Logoff => false,
@@ -385,6 +403,21 @@ impl MemberFlow {
             MenuOutcome::Action(Action::Chat) => MemberEffect::OpenChat,
             MenuOutcome::Action(Action::LogOff) => self.log_off(),
             MenuOutcome::Action(
+                action @ (Action::Oneliners
+                | Action::GraffitiWall
+                | Action::LastCallers
+                | Action::Polls),
+            ) => {
+                let section = match action {
+                    Action::Oneliners => Section::Oneliners,
+                    Action::GraffitiWall => Section::Graffiti,
+                    Action::LastCallers => Section::LastCallers,
+                    _ => Section::Polls,
+                };
+                self.page = Page::Community(Box::new(CommunityScreen::open(section)));
+                MemberEffect::Stay
+            }
+            MenuOutcome::Action(
                 action @ (Action::MemberList | Action::OwnProfile | Action::EditOwnProfile),
             ) => {
                 if let Some(screen) = self.open_members(action) {
@@ -412,7 +445,11 @@ impl MemberFlow {
             | Action::VouchQueue
             | Action::InviteCreate
             | Action::InviteList
-            | Action::InviteTree => None,
+            | Action::InviteTree
+            | Action::Oneliners
+            | Action::GraffitiWall
+            | Action::LastCallers
+            | Action::Polls => None,
         }
     }
 
@@ -527,6 +564,64 @@ impl MemberFlow {
     pub fn queue_view(&self) -> Option<QueueView> {
         match &self.page {
             Page::Queue(screen) => Some(screen.view(&self.access)),
+            _ => None,
+        }
+    }
+
+    fn community_input(&mut self, input: MemberInput) -> MemberEffect {
+        let key = match input {
+            MemberInput::Char(c) => ScreenKey::Char(c),
+            MemberInput::Enter => ScreenKey::Enter,
+            MemberInput::Backspace => ScreenKey::Backspace,
+            MemberInput::Escape => ScreenKey::Escape,
+            MemberInput::Up | MemberInput::Down | MemberInput::Quit => return MemberEffect::Stay,
+        };
+        let Page::Community(screen) = &mut self.page else {
+            return MemberEffect::Stay;
+        };
+        let step = screen.press(&self.access, key);
+        self.after_members(step);
+        MemberEffect::Stay
+    }
+
+    /// The community request the screen is waiting on, once. The front end runs it with
+    /// `community::execute` and gives the answer to [`MemberFlow::deliver_community`].
+    pub fn take_community_request(&mut self) -> Option<CommunityRequest> {
+        match &mut self.page {
+            Page::Community(screen) => screen.take_request(),
+            _ => None,
+        }
+    }
+
+    /// Hand the answer of a community request to the screen.
+    pub fn deliver_community(&mut self, response: CommunityResponse) {
+        let step = match &mut self.page {
+            Page::Community(screen) => screen.deliver(response),
+            _ => return,
+        };
+        self.after_members(step);
+    }
+
+    /// The editor the poll form wants opened, once (M3-B editor, drawn by the front end).
+    pub fn take_community_editor(&mut self) -> Option<EditorAsk> {
+        match &mut self.page {
+            Page::Community(screen) => screen.take_editor(),
+            _ => None,
+        }
+    }
+
+    /// The editor closed: `Some(text)` is the description to keep, `None` leaves it as it was.
+    pub fn deliver_community_description(&mut self, text: Option<String>) {
+        if let Page::Community(screen) = &mut self.page {
+            screen.deliver_description(text);
+        }
+    }
+
+    /// The community screen as a layout draws it, while one is open.
+    #[must_use]
+    pub fn community_view(&self) -> Option<ScreenView> {
+        match &self.page {
+            Page::Community(screen) => Some(screen.view(&self.access)),
             _ => None,
         }
     }
@@ -765,7 +860,7 @@ impl MemberFlow {
             Page::Login => self.login_view(&mut view, words),
             Page::GlyphTest(test) => glyph_view(&mut view, *test, words),
             Page::Home => self.home_view(&mut view, words),
-            Page::Members(_) | Page::Queue(_) => {}
+            Page::Members(_) | Page::Queue(_) | Page::Community(_) => {}
             Page::Settings => self.settings_view(&mut view, words),
             Page::EditWidth(typed) => edit_view(&mut view, strings::FIELD_WIDTH, typed),
             Page::EditHeight(typed) => edit_view(&mut view, strings::FIELD_HEIGHT, typed),

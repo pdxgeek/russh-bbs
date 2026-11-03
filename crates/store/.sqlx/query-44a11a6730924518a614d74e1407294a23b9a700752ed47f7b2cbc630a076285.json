@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT position, count(*) AS \"n!: i64\" FROM poll_vote WHERE poll_id = ? GROUP BY position",
+  "describe": {
+    "columns": [
+      {
+        "name": "position",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "n!: i64",
+        "ordinal": 1,
+        "type_info": "Null"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      null
+    ]
+  },
+  "hash": "44a11a6730924518a614d74e1407294a23b9a700752ed47f7b2cbc630a076285"
+}

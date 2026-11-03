@@ -1,0 +1,27 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO community_line (kind, account_id, body, created_at)\n               SELECT $1::text, $2::bigint, $3::text, $4::bigint\n               WHERE (SELECT count(*) FROM community_line\n                      WHERE account_id = $2 AND kind = $1 AND created_at > $5) < $6\n               RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8",
+        "Text",
+        "Int8",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "182c762eaed75bf407a892b60fd55a3de911573bedacc6a34d405fc39883df1d"
+}

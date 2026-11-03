@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO community_line (kind, account_id, body, created_at)\n               SELECT ?1, ?2, ?3, ?4\n               WHERE (SELECT count(*) FROM community_line\n                      WHERE account_id = ?2 AND kind = ?1 AND created_at > ?5) < ?6\n               RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "b32475b1c1b3025d24fd3fd4c70f7440db3d9e8ecbee196d0e5acbda752a4683"
+}

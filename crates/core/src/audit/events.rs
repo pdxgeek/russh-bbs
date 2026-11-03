@@ -342,6 +342,46 @@ pub fn registration_capped(day: i64, cap: u32) -> AuditEvent {
         .detail(&format!("day {day} cap {cap}"))
 }
 
+/// Staff (`actor`) removed `author`'s `kind` entry number `entry` (M3-J, D86). The text is not
+/// recorded: only that a one-liner or wall line was removed, and whose it was.
+#[must_use]
+pub fn community_entry_removed(
+    actor: AccountId,
+    author: AccountId,
+    kind: &str,
+    entry: i64,
+) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(actor),
+        Action::CommunityEntryRemoved,
+        Target::Account(author),
+    )
+    .detail(&format!("{kind} {entry}"))
+}
+
+/// Staff (`actor`) closed poll `poll`, which `creator` made (M3-J, D86). Not written when the
+/// creator closes their own poll.
+#[must_use]
+pub fn community_poll_closed(actor: AccountId, creator: AccountId, poll: i64) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(actor),
+        Action::CommunityPollClosed,
+        Target::Account(creator),
+    )
+    .detail(&format!("poll {poll}"))
+}
+
+/// Staff (`actor`) removed poll `poll`, which `creator` made, and its votes (M3-J, D86).
+#[must_use]
+pub fn community_poll_removed(actor: AccountId, creator: AccountId, poll: i64) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(actor),
+        Action::CommunityPollRemoved,
+        Target::Account(creator),
+    )
+    .detail(&format!("poll {poll}"))
+}
+
 /// Staff opened the chat room `room` named `name`. Only the name is written; nothing is ever
 /// said in a room that the log could hold.
 #[must_use]

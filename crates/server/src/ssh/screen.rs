@@ -36,6 +36,9 @@ use russh_bbs_core::access::{Permission, PermissionCheck, Snapshot};
 use russh_bbs_core::chat::{
     ChatEffect, ChatKey, ChatRequest, ChatResponse, ChatScreen, Event as ChatEvent, RoomId,
 };
+use russh_bbs_core::community::{
+    EditorAsk, NewPoll, Request as CommunityRequest, Response as CommunityResponse,
+};
 use russh_bbs_core::founder::{ClaimEffect, ClaimForm, ClaimInput};
 use russh_bbs_core::icons::{SecurityMarker, Tier};
 use russh_bbs_core::invites::{InviteOutcome, InviteRequest};
@@ -47,6 +50,7 @@ use russh_bbs_core::profiles::{
 use russh_bbs_core::queue::{
     InviteAsk, QueueView, Request as QueueRequest, Response as QueueResponse,
 };
+use russh_bbs_core::sanitize::{MultiLine, SingleLine};
 use russh_bbs_core::terminal_settings::strings::TITLE;
 use russh_bbs_core::terminal_settings::{
     LayoutId, MemberEffect, MemberFlow, MemberInput, TerminalSettings,
@@ -60,6 +64,7 @@ use crate::members;
 use crate::settings::{self, Look};
 use crate::sysop;
 use crate::ui::classic::{self, ContentScreen, MENU_MARKERS, MenuScreen};
+use crate::ui::editor::{Editor, EditorEffect, EditorRequest, EditorView, Outcome};
 use crate::ui::strings::StringTable;
 use crate::ui::{Ui, chrome, layout};
 use crate::waiting_room::render;
@@ -230,6 +235,10 @@ pub(crate) struct KeyEffects {
     /// runs it against the hub and the room store and gives the answer to
     /// [`Screen::chat_deliver`].
     pub(crate) chat_request: Option<ChatRequest>,
+    /// A community request (a list, a post, a vote) the community screen is waiting on (M3-J).
+    /// The session runs it against the store and gives the answer to
+    /// [`Screen::deliver_community`].
+    pub(crate) community_request: Option<CommunityRequest>,
     /// A forum request (board list, thread, search, post, ...) the forum screens are waiting
     /// on (M3-E). The session runs it against the store and gives the answer to
     /// [`Screen::deliver_forum`].
@@ -260,6 +269,7 @@ impl KeyEffects {
         self.chat_request = later.chat_request;
         self.forum_request = later.forum_request;
         self.mail_request = later.mail_request;
+        self.community_request = later.community_request;
         self.held_back = later.held_back;
     }
 }
@@ -370,6 +380,16 @@ impl Content {
         }
     }
 
+    /// The community screens, while a member is at one (M3-J).
+    fn community_view(&self) -> Option<ScreenView> {
+        match self {
+            Self::Member(flow) => flow.community_view(),
+            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Mail(_) | Self::Limited(_) => {
+                None
+            }
+        }
+    }
+
     /// The sysop queue or the vouch screen, while a member is at one (M2-E).
     fn queue_view(&self) -> Option<QueueView> {
         match self {
@@ -437,6 +457,11 @@ pub(crate) struct Screen {
     /// The day's last `open` place went while this visitor's create-account form was open: the
     /// room becomes the `apply` room, with its notice, as soon as they leave the form (FIX-M2-4).
     degrade_on_leave: bool,
+    /// The full-screen editor, while the poll form has one open (M3-J, using M3-B's widget).
+    /// While it is open every key goes to it and it is drawn instead of the content.
+    /// Held in a `Mutex` only to make the session future `Send`: the widget's caches are
+    /// `Cell`s. It is always reached with `get_mut`, so nothing ever waits on the lock.
+    editor: Option<Mutex<Editor>>,
     /// The chat screen, while the member is in chat (M3-F). It sits over the member's main
     /// menu: while it is `Some` every key goes to it, and the menu comes back when it is left.
     chat: Option<ChatScreen>,
@@ -513,6 +538,7 @@ impl Screen {
             dirty: false,
             rebuild: false,
             degrade_on_leave: false,
+            editor: None,
             chat: None,
             transport: Transport {
                 footer,
@@ -538,6 +564,12 @@ impl Screen {
             return self.apply_chat_keys(keys);
         }
         let mut effects = KeyEffects::default();
+        if self.editor.is_some() {
+            self.editor_keys(keys, &mut effects);
+            self.dirty = true;
+            return effects;
+        }
+        let mut open_editor_at = None;
         // Set when the keys moved the session into or out of the forum screens (M3-E).
         let mut moved = ForumMove::Stay;
         // The same for the mail screens (M3-I).
@@ -647,11 +679,30 @@ impl Screen {
                         effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
                         break;
                     }
+                    // And the community screens (M3-J).
+                    if let Some(request) = flow.take_community_request() {
+                        effects.community_request = Some(request);
+                        effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
+                        break;
+                    }
+                    // The poll form asked for the full-screen editor: the keys after it in
+                    // this batch are the editor's.
+                    if let Some(ask) = flow.take_community_editor() {
+                        open_editor_at = Some((index + 1, ask));
+                        break;
+                    }
                 }
             }
         }
         self.forum_transitions(&mut effects, keys, moved);
         self.mail_transitions(&mut effects, keys, mail_moved);
+        if let Some((from, ask)) = open_editor_at {
+            self.open_editor(&ask);
+            let rest = keys.get(from..).unwrap_or_default();
+            if self.editor.is_some() && !rest.is_empty() {
+                self.editor_keys(rest, &mut effects);
+            }
+        }
         self.dirty = true;
         if effects.save_settings.is_some() {
             // A size override changes the drawn size; rebuild so the old cells are cleared.
@@ -912,6 +963,94 @@ impl Screen {
         self.dirty = true;
     }
 
+    /// The answer to the community request taken from [`KeyEffects`]. The screen shows it on the
+    /// next render.
+    pub(crate) fn deliver_community(&mut self, response: CommunityResponse) {
+        if let Content::Member(flow) = &mut self.content {
+            flow.deliver_community(response);
+        }
+        self.dirty = true;
+    }
+
+    /// The community request the screen asked for after an answer (an emptied poll page asks for
+    /// the first one), once.
+    pub(crate) fn take_community_request(&mut self) -> Option<CommunityRequest> {
+        match &mut self.content {
+            Content::Member(flow) => flow.take_community_request(),
+            Content::Room(_)
+            | Content::Claim(_)
+            | Content::Forums(_)
+            | Content::Mail(_)
+            | Content::Limited(_) => None,
+        }
+    }
+
+    /// Open the editor for a poll description. If its text does not fit the editor's bounds
+    /// (it cannot: the screen only holds text the editor returned) nothing opens.
+    fn open_editor(&mut self, ask: &EditorAsk) {
+        let title = SingleLine::new(40).sanitize(
+            self.content
+                .strings(&self.ui)
+                .text(russh_bbs_core::community::keys::FORM_EDITOR_TITLE),
+        );
+        let initial =
+            MultiLine::new(NewPoll::description_limits().max_chars()).sanitize(&ask.initial);
+        let request = EditorRequest::new(title)
+            .initial(initial)
+            .limits(NewPoll::description_limits());
+        match Editor::open(request, None) {
+            Ok(editor) => self.editor = Some(Mutex::new(editor)),
+            Err(_) => {
+                if let Content::Member(flow) = &mut self.content {
+                    flow.deliver_community_description(None);
+                }
+            }
+        }
+    }
+
+    /// Feed keys to the open editor. A finished editor hands its text to the poll form. There
+    /// is no draft context, so there is nothing to save: leaving with changes asks only whether
+    /// to keep editing or discard.
+    fn editor_keys(&mut self, keys: &[Key], effects: &mut KeyEffects) {
+        for key in keys.iter().copied() {
+            let Some(editor) = &mut self.editor else {
+                return;
+            };
+            let editor = editor.get_mut().unwrap_or_else(PoisonError::into_inner);
+            let text = match editor.input(key) {
+                EditorEffect::Stay => continue,
+                EditorEffect::Done(Outcome::Submitted(body)) => Some(body.trimmed().to_owned()),
+                EditorEffect::Done(Outcome::Cancelled | Outcome::SavedDraft)
+                | EditorEffect::SaveDraft(_) => None,
+                EditorEffect::LogOff(_) => {
+                    effects.disconnect = true;
+                    return;
+                }
+            };
+            self.editor = None;
+            if let Content::Member(flow) = &mut self.content {
+                flow.deliver_community_description(text);
+            }
+            self.rebuild = true;
+            return;
+        }
+    }
+
+    /// Draw the open editor, if there is one. `true` when it was drawn.
+    fn draw_editor(&mut self) -> io::Result<bool> {
+        let (Some(editor), Content::Member(flow)) = (&mut self.editor, &self.content) else {
+            return Ok(false);
+        };
+        let editor = editor.get_mut().unwrap_or_else(PoisonError::into_inner);
+        let view = EditorView {
+            ui: &self.ui,
+            settings: flow.settings(),
+            markers: &MENU_MARKERS,
+        };
+        self.terminal.draw(|frame| editor.render(frame, &view))?;
+        Ok(true)
+    }
+
     /// The queue request the screen asked for after an answer (a decision asks for the list
     /// again), once.
     pub(crate) fn take_queue_request(&mut self) -> Option<QueueRequest> {
@@ -1116,11 +1255,18 @@ impl Screen {
                 .draw(|frame| mail::render(frame, &session.screen, &ctx))?;
             return Ok(self.take_output());
         }
+        // While the editor is open it is drawn instead of the content (the transport's footer
+        // row below still follows it).
+        let drew_editor = self.draw_editor()?;
         let view = self.content.view(&self.ui);
         let look = self.content.look(&self.ui, self.viewport);
         let layout = self.content.layout(self.viewport);
         let menu = self.content.menu_page();
-        let members_view = self.content.members_view();
+        // The community screens (M3-J) produce the members screens' view and are drawn the same.
+        let members_view = self
+            .content
+            .members_view()
+            .or_else(|| self.content.community_view());
         let queue_view = self.content.queue_view();
         let tier = self.content.tier();
         let strings = self.content.strings(&self.ui);
@@ -1132,76 +1278,78 @@ impl Screen {
         } else {
             &MENU_MARKERS
         };
-        self.terminal.draw(|frame| match (look, &menu) {
-            // The chat screen (M3-F): the same box and status row, with the room's lines.
-            (Some(look), _) if chat.is_some() => {
-                if let Some(screen) = chat {
-                    crate::chat::render(frame, screen, strings, look, tier);
+        if !drew_editor {
+            self.terminal.draw(|frame| match (look, &menu) {
+                // The chat screen (M3-F): the same box and status row, with the room's lines.
+                (Some(look), _) if chat.is_some() => {
+                    if let Some(screen) = chat {
+                        crate::chat::render(frame, screen, strings, look, tier);
+                    }
                 }
-            }
-            // The sysop queue and the vouch screen (M2-E): the same layout and status row. The
-            // requester's text is drawn in the content box only.
-            (Some(look), None) if queue_view.is_some() => {
-                if let Some(screen) = &queue_view {
-                    let width =
-                        usize::from(frame.area().width.min(settings::MAX_WIDTH)).saturating_sub(2);
-                    classic::render_content(
-                        frame,
-                        ContentScreen {
-                            strings,
-                            lines: sysop::queue::lines(screen, strings, look, width),
-                            look,
-                            tier,
-                            markers: staff_markers,
-                        },
-                    );
+                // The sysop queue and the vouch screen (M2-E): the same layout and status row. The
+                // requester's text is drawn in the content box only.
+                (Some(look), None) if queue_view.is_some() => {
+                    if let Some(screen) = &queue_view {
+                        let width = usize::from(frame.area().width.min(settings::MAX_WIDTH))
+                            .saturating_sub(2);
+                        classic::render_content(
+                            frame,
+                            ContentScreen {
+                                strings,
+                                lines: sysop::queue::lines(screen, strings, look, width),
+                                look,
+                                tier,
+                                markers: staff_markers,
+                            },
+                        );
+                    }
                 }
-            }
-            // A members screen: the same classic layout and status row, with its own lines.
-            (Some(look), None) if members_view.is_some() => {
-                if let Some(screen) = &members_view {
-                    let width =
-                        usize::from(frame.area().width.min(settings::MAX_WIDTH)).saturating_sub(2);
-                    classic::render_content(
-                        frame,
-                        ContentScreen {
-                            strings,
-                            lines: members::lines(screen, strings, look, width),
-                            look,
-                            tier,
-                            markers: &MENU_MARKERS,
-                        },
-                    );
+                // A members screen: the same classic layout and status row, with its own lines.
+                (Some(look), None) if members_view.is_some() => {
+                    if let Some(screen) = &members_view {
+                        let width = usize::from(frame.area().width.min(settings::MAX_WIDTH))
+                            .saturating_sub(2);
+                        classic::render_content(
+                            frame,
+                            ContentScreen {
+                                strings,
+                                lines: members::lines(screen, strings, look, width),
+                                look,
+                                tier,
+                                markers: &MENU_MARKERS,
+                            },
+                        );
+                    }
                 }
-            }
-            // The main menu: the classic hotkey layout, with the reserved status row.
-            (Some(look), Some(page)) => layout::render_menu(
-                frame,
-                layout,
-                &MenuScreen {
-                    strings,
-                    page,
-                    body: &view.body,
-                    notice: view.notice,
-                    look,
-                    tier,
-                    markers: &MENU_MARKERS,
-                },
-            ),
-            // The invite screens (M2-D): the same framed layout, with the reserved status row.
-            (Some(look), None) if framed => classic::render_content(
-                frame,
-                ContentScreen {
-                    strings,
-                    lines: classic::view_lines(strings, &view, look),
-                    look,
-                    tier,
-                    markers: &MENU_MARKERS,
-                },
-            ),
-            (Some(look), None) => settings::render(frame, &view, look, strings),
-            (None, _) => render(frame, &view),
-        })?;
+                // The main menu: the classic hotkey layout, with the reserved status row.
+                (Some(look), Some(page)) => layout::render_menu(
+                    frame,
+                    layout,
+                    &MenuScreen {
+                        strings,
+                        page,
+                        body: &view.body,
+                        notice: view.notice,
+                        look,
+                        tier,
+                        markers: &MENU_MARKERS,
+                    },
+                ),
+                // The invite screens (M2-D): the same framed layout, with the reserved status row.
+                (Some(look), None) if framed => classic::render_content(
+                    frame,
+                    ContentScreen {
+                        strings,
+                        lines: classic::view_lines(strings, &view, look),
+                        look,
+                        tier,
+                        markers: &MENU_MARKERS,
+                    },
+                ),
+                (Some(look), None) => settings::render(frame, &view, look, strings),
+                (None, _) => render(frame, &view),
+            })?;
+        }
         let mut bytes = self.take_output();
         if let Some(footer) = self.transport.footer {
             // After the frame, so a repaint or a clear never leaves the row bare.

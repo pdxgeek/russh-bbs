@@ -29,6 +29,7 @@ pub use terminal::RenderCap;
 
 use russh_bbs_core::access::{AccessStore, MemberDirectory};
 use russh_bbs_core::chat::RoomStore;
+use russh_bbs_core::community::CommunityStore;
 use russh_bbs_core::drafts::DraftStore;
 use russh_bbs_core::forums::ForumStore;
 use russh_bbs_core::founder::FounderStore;
@@ -56,6 +57,7 @@ pub trait Backend:
     + ProfileStore
     + PasswordStore
     + QueueStore
+    + CommunityStore
     + RoomStore
     + RegistrationStore
     + LimitStore
@@ -76,6 +78,7 @@ impl<T> Backend for T where
         + ProfileStore
         + PasswordStore
         + QueueStore
+        + CommunityStore
         + RoomStore
         + RegistrationStore
         + LimitStore

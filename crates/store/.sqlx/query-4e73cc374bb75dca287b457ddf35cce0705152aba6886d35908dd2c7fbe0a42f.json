@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT text FROM poll_option WHERE poll_id = ? ORDER BY position",
+  "describe": {
+    "columns": [
+      {
+        "name": "text",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "4e73cc374bb75dca287b457ddf35cce0705152aba6886d35908dd2c7fbe0a42f"
+}

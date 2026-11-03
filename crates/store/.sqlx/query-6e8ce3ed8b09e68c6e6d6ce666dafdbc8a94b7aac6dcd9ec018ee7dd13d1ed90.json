@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT closed_at FROM poll WHERE id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "closed_at",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "6e8ce3ed8b09e68c6e6d6ce666dafdbc8a94b7aac6dcd9ec018ee7dd13d1ed90"
+}

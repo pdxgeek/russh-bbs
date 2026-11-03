@@ -6,6 +6,7 @@
 mod access;
 mod audit;
 mod chat;
+mod community;
 mod credits;
 mod drafts;
 mod forums;

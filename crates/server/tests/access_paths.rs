@@ -65,6 +65,10 @@ use tokio::time::timeout;
 /// form gives the same words and stores nothing, and with `membership.open` taken the
 /// create-account form gives its one refusal and makes no account, each on the very next
 /// attempt.
+///
+/// The community permissions (M3-J) have their path tests at the end of this file: posting a
+/// one-liner or a wall line, voting, making a poll, reading, and moderating each refuse and write
+/// nothing once the permission is taken away, on the very next key.
 const WIRED: &[Permission] = &[
     Permission::WaitingView,
     Permission::InviteRequest,
@@ -95,6 +99,12 @@ const WIRED: &[Permission] = &[
     Permission::ChatSpeak,
     Permission::ChatWhisper,
     Permission::ChatManageRooms,
+    Permission::OnelinersPost,
+    Permission::GraffitiPost,
+    Permission::PollsVote,
+    Permission::PollsCreate,
+    Permission::CommunityView,
+    Permission::CommunityModerate,
 ];
 
 /// Permissions with no front-end action yet. A slice that builds one moves it to `WIRED` in the
@@ -118,10 +128,6 @@ const NOT_YET_WIRED: &[Permission] = &[
     Permission::FeedsManage,
     Permission::DoorsRun,
     Permission::DoorsManage,
-    Permission::OnelinersPost,
-    Permission::GraffitiPost,
-    Permission::PollsVote,
-    Permission::PollsCreate,
     Permission::EventsView,
     Permission::EventsManage,
     Permission::SysopPage,
@@ -976,5 +982,253 @@ async fn mail_paths_follow_their_permissions_on_the_next_action() {
     let screen = press_full(&mut channel, "y").await;
     assert!(screen.contains("Deleted."), "{screen}");
     assert_eq!(count(&rig, "mail_message").await, 0);
+    rig.server.shutdown().await;
+}
+
+// ---- community (M3-J) ----
+
+#[tokio::test]
+async fn posting_a_one_liner_needs_oneliners_post_and_a_removal_writes_nothing() {
+    let rig = Rig::start().await;
+    let (_alice, _session, mut channel) = member_at_menu(&rig, "alice").await;
+
+    // Held: the menu offers Community, the screen offers the key, and a line is stored.
+    assert!(full(&mut channel).await.contains("[y] Community"));
+    send(&mut channel, "y").await;
+    assert!(full(&mut channel).await.contains("[o] One liners"));
+    send(&mut channel, "o").await;
+    assert!(full(&mut channel).await.contains("p: add a line"));
+    send(&mut channel, "p").await;
+    send(&mut channel, "hello there\r").await;
+    assert!(full(&mut channel).await.contains("1. alice: hello there"));
+    assert_eq!(count(&rig, "community_line").await, 1);
+
+    // Taken away while the line is being typed: refused in words, nothing written.
+    send(&mut channel, "p").await;
+    let taken = rig.revoke(Permission::OnelinersPost).await;
+    let first = send(&mut channel, "sneaky\r").await;
+    let screen = format!("{first} {}", full(&mut channel).await);
+    assert!(
+        screen.contains("You are not allowed to do that."),
+        "{screen}"
+    );
+    assert_eq!(count(&rig, "community_line").await, 1, "nothing written");
+
+    // The key is no longer offered and does nothing.
+    send(&mut channel, "yo").await;
+    assert!(!full(&mut channel).await.contains("p: add a line"));
+    send(&mut channel, "p").await;
+    assert!(!full(&mut channel).await.contains("Your line"));
+
+    // Put back: it works on the next action.
+    rig.restore(&taken, Permission::OnelinersPost).await;
+    send(&mut channel, "x").await;
+    assert!(full(&mut channel).await.contains("p: add a line"));
+    send(&mut channel, "p").await;
+    send(&mut channel, "second\r").await;
+    assert_eq!(count(&rig, "community_line").await, 2);
+
+    // `community.view` taken away while the screen is open: the next key closes it and says why.
+    let view = rig.revoke(Permission::CommunityView).await;
+    let first = send(&mut channel, "x").await;
+    let screen = format!("{first} {}", full(&mut channel).await);
+    assert!(
+        screen.contains("You are not allowed to do that."),
+        "{screen}"
+    );
+    assert!(!full(&mut channel).await.contains("[y] Community"));
+    rig.restore(&view, Permission::CommunityView).await;
+    rig.server.shutdown().await;
+}
+
+#[tokio::test]
+async fn writing_on_the_wall_needs_graffiti_post_and_a_removal_writes_nothing() {
+    let rig = Rig::start().await;
+    let (_alice, _session, mut channel) = member_at_menu(&rig, "alice").await;
+    send(&mut channel, "yg").await;
+    assert!(full(&mut channel).await.contains("Graffiti wall"));
+    send(&mut channel, "p").await;
+    send(&mut channel, "was here\r").await;
+    assert!(full(&mut channel).await.contains("1. alice: was here"));
+    assert_eq!(count(&rig, "community_line").await, 1);
+    send(&mut channel, "p").await;
+    let taken = rig.revoke(Permission::GraffitiPost).await;
+    let first = send(&mut channel, "nope\r").await;
+    let screen = format!("{first} {}", full(&mut channel).await);
+    assert!(
+        screen.contains("You are not allowed to do that."),
+        "{screen}"
+    );
+    assert_eq!(count(&rig, "community_line").await, 1, "nothing written");
+    rig.restore(&taken, Permission::GraffitiPost).await;
+    rig.server.shutdown().await;
+}
+
+#[tokio::test]
+async fn voting_and_making_polls_need_their_permissions_and_a_second_vote_is_refused() {
+    use russh_bbs_core::community::{
+        CommunityStore, CreatePoll, NewPoll, PollRules, ResultsVisibility,
+    };
+    use russh_bbs_core::store::UnixSeconds;
+    let rig = Rig::start().await;
+    let (alice, _session, mut channel) = member_at_menu(&rig, "alice").await;
+    let options = vec!["red".to_owned(), "blue".to_owned()];
+    let poll = NewPoll::build("Best colour?", &options, "", ResultsVisibility::Always).unwrap();
+    let rules = PollRules {
+        max_polls: 90,
+        per_day: 3,
+    };
+    let made = rig
+        .store
+        .create_poll(alice, &poll, rules, UnixSeconds::from_raw(1))
+        .await
+        .unwrap();
+    assert!(matches!(made, CreatePoll::Created(_)));
+
+    // A member cannot make polls: no hint, and the key does nothing.
+    send(&mut channel, "yp").await;
+    let list = full(&mut channel).await;
+    assert!(
+        list.contains("[1] Best colour?") && !list.contains("c: make a poll"),
+        "{list}"
+    );
+    send(&mut channel, "c").await;
+    assert!(!full(&mut channel).await.contains("New poll"));
+
+    // Voting: offered, then taken away (nothing written), then put back and counted once.
+    send(&mut channel, "1").await;
+    assert!(full(&mut channel).await.contains("1 6: vote"));
+    let taken = rig.revoke(Permission::PollsVote).await;
+    send(&mut channel, "2").await;
+    assert!(!full(&mut channel).await.contains("1 6: vote"));
+    assert_eq!(count(&rig, "poll_vote").await, 0, "nothing written");
+    rig.restore(&taken, Permission::PollsVote).await;
+    send(&mut channel, "2").await;
+    let after = full(&mut channel).await;
+    assert!(after.contains("Your vote is counted."), "{after}");
+    assert_eq!(count(&rig, "poll_vote").await, 1);
+    // The second vote is refused in words and changes nothing.
+    send(&mut channel, "1").await;
+    let again = full(&mut channel).await;
+    assert!(
+        again.contains("You have already voted on this poll."),
+        "{again}"
+    );
+    assert_eq!(count(&rig, "poll_vote").await, 1);
+
+    // Making a poll: granted to members for this test, then taken away while the form is open.
+    sqlx::query("INSERT INTO role_permission (role, permission) VALUES ('member', 'polls.create')")
+        .execute(&rig.db)
+        .await
+        .unwrap();
+    send(&mut channel, "\u{1b}").await;
+    assert!(full(&mut channel).await.contains("c: make a poll"));
+    send(&mut channel, "c").await;
+    send(&mut channel, "Pick one?\ra\rb\r\r").await;
+    assert!(full(&mut channel).await.contains("Enter: make the poll"));
+    let taken = rig.revoke(Permission::PollsCreate).await;
+    let first = send(&mut channel, "\r").await;
+    let screen = format!("{first} {}", full(&mut channel).await);
+    assert!(
+        screen.contains("You are not allowed to do that."),
+        "{screen}"
+    );
+    assert_eq!(count(&rig, "poll").await, 1, "nothing written");
+    rig.restore(&taken, Permission::PollsCreate).await;
+    send(&mut channel, "x").await;
+    send(&mut channel, "ypc").await;
+    send(&mut channel, "Pick one?\ra\rb\r\r").await;
+    send(&mut channel, "\r").await;
+    assert_eq!(count(&rig, "poll").await, 2);
+    rig.server.shutdown().await;
+}
+
+#[tokio::test]
+async fn moderating_needs_community_moderate_and_is_audited_and_last_callers_lists_members() {
+    use russh_bbs_core::community::{AddLine, CommunityStore, LineKind, LineText};
+    use russh_bbs_core::store::{AccountState, AccountStore, NewAccount, UnixSeconds};
+    let rig = Rig::start().await;
+    let (alice, _alice_session, mut alice_channel) = member_at_menu(&rig, "alice").await;
+    let added = rig
+        .store
+        .add_line(
+            alice,
+            LineKind::Oneliner,
+            &LineText::parse(LineKind::Oneliner, "remove me").unwrap(),
+            UnixSeconds::from_raw(1),
+        )
+        .await
+        .unwrap();
+    assert!(matches!(added, AddLine::Added(_)));
+    // A moderator.
+    let key = new_client_key();
+    let fp =
+        Fingerprint::parse(&key.public_key().fingerprint(HashAlg::Sha256).to_string()).unwrap();
+    let maude = rig
+        .store
+        .create_account(NewAccount {
+            username: russh_bbs_core::sanitize::sanitize_username("maude").unwrap(),
+            role: Slug::MODERATOR,
+            state: AccountState::Active,
+        })
+        .await
+        .unwrap();
+    rig.store.attach_fingerprint(maude.id, &fp).await.unwrap();
+    let session = login(rig.addr(), "maude", &key).await;
+    let mut channel = common::open_shell(&session, 80, 24).await;
+    words(&mut channel).await;
+    for key in ["x", "n", "y"] {
+        send(&mut channel, key).await;
+    }
+
+    // Last callers: both sessions began, so both members are listed, newest first.
+    send(&mut channel, "yl").await;
+    let callers = full(&mut channel).await;
+    assert!(
+        callers.contains("Last callers") && callers.contains("alice") && callers.contains("maude"),
+        "{callers}"
+    );
+    send(&mut channel, "\u{1b}").await;
+
+    // Held: the moderator is offered the key; taken away: it is not, and nothing is removed.
+    send(&mut channel, "o").await;
+    assert!(
+        full(&mut channel)
+            .await
+            .contains("d: remove a line (staff)")
+    );
+    sqlx::query("DELETE FROM role_permission WHERE permission = 'community.moderate'")
+        .execute(&rig.db)
+        .await
+        .unwrap();
+    send(&mut channel, "d").await;
+    send(&mut channel, "1\r").await;
+    let view = full(&mut channel).await;
+    assert!(
+        !view.contains("d: remove a line (staff)") && view.contains("remove me"),
+        "{view}"
+    );
+    assert_eq!(count(&rig, "community_line").await, 1, "nothing removed");
+    assert_eq!(
+        count(&rig, "audit_log WHERE action = 'community.entry_removed'").await,
+        0
+    );
+
+    // Put back: the removal happens and is audited.
+    sqlx::query(
+        "INSERT INTO role_permission (role, permission) VALUES ('moderator', 'community.moderate')",
+    )
+    .execute(&rig.db)
+    .await
+    .unwrap();
+    send(&mut channel, "x").await;
+    send(&mut channel, "d").await;
+    send(&mut channel, "1\r").await;
+    assert_eq!(count(&rig, "community_line").await, 0);
+    assert_eq!(
+        count(&rig, "audit_log WHERE action = 'community.entry_removed'").await,
+        1
+    );
+    let _ = &mut alice_channel;
     rig.server.shutdown().await;
 }

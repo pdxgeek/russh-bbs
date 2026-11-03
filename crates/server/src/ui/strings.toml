@@ -53,10 +53,20 @@ chat = "Chat"
 mail = "Mail"
 files = "Files"
 members = "Members"
+community = "Community"
 invites = "Invites"
 settings = "Terminal settings"
 sysop = "Sysop tools"
 logoff = "Log off"
+
+[menu.community]
+title = "Community"
+
+[menu.community.item]
+oneliners = "One-liners"
+graffiti = "Graffiti wall"
+callers = "Last callers"
+polls = "Polls"
 
 [menu.invites]
 title = "Invites"
@@ -234,3 +244,105 @@ menu_theme = "Next theme"
 layout_classic = "classic"
 layout_lightbar = "lightbar"
 layout_compact = "compact"
+
+[community.oneliners]
+title = "One-liners"
+empty = "No one-liners yet. Be the first."
+
+[community.graffiti]
+title = "Graffiti wall"
+intro = "Short lines on a shared wall. The newest {keep} stay; older ones roll off."
+empty = "The wall is blank."
+
+[community]
+entry = "{n}. {handle}: {text}"
+
+[community.field]
+line = "Your line"
+remove = "Remove which number"
+
+[community.callers]
+title = "Last callers"
+empty = "Nobody has called yet."
+row = "{handle}  {when}"
+
+[community.polls]
+title = "Polls"
+empty = "There are no polls yet."
+page = "Page {page} of {pages}"
+row_open = "[{key}] {question}  (open, {votes} votes)"
+row_closed = "[{key}] {question}  (closed, {votes} votes)"
+
+[community.poll]
+title = "Poll"
+by = "Asked by {handle}"
+closed = "This poll is closed."
+description_line = "  {text}"
+option = "[{key}] {text}"
+option_count = "[{key}] {text}  {count} ({percent}%)"
+option_mine = "[{key}] {text}  (your vote)"
+option_count_mine = "[{key}] {text}  {count} ({percent}%)  (your vote)"
+total = "{total} votes in all."
+hidden_vote = "The counts show once you have voted."
+hidden_close = "The counts show when the poll closes."
+visibility_always = "Counts: shown to everyone, any time."
+visibility_after_vote = "Counts: shown after a member has voted, and to everyone once closed."
+visibility_after_close = "Counts: shown only when the poll is closed."
+
+[community.form]
+title = "New poll"
+question = "Question"
+option_1 = "Option 1"
+option_2 = "Option 2"
+option_3 = "Option 3"
+option_4 = "Option 4"
+option_5 = "Option 5"
+option_6 = "Option 6"
+editor_title = "Poll description"
+review = "Review"
+description = "Description"
+description_none = "No description."
+
+[community.hint]
+post = "p: add a line"
+remove = "d: remove a line (staff)"
+create = "c: make a poll"
+next = "n: next page"
+previous = "p: previous page"
+open = "1-9: open a poll"
+vote = "1-6: vote (one vote each, and it cannot be changed)"
+close = "c: close this poll"
+remove_poll = "x: remove this poll (staff)"
+review = "Enter: make the poll   d: description   r: who sees the counts   Backspace: edit options"
+
+[community.footer]
+back = "Esc: back"
+typing = "Enter: add   Backspace: erase   Esc: cancel"
+remove = "Type the number   Enter: remove   Esc: cancel"
+form = "Enter: next   Backspace: erase   Esc: cancel the poll"
+
+[community.note]
+posted = "Added."
+removed = "Removed."
+blank = "Type something first."
+too_long = "That line is too long."
+rate_limited = "You have added a lot lately. Try again in a while."
+not_found = "That is not there any more."
+voted = "Your vote is counted."
+already_voted = "You have already voted on this poll. A vote cannot be changed."
+poll_created = "Poll made."
+poll_closed = "This poll is closed."
+poll_closed_now = "Poll closed."
+poll_removed = "Poll removed."
+poll_gone = "That poll is not there any more."
+poll_not_yours = "Only the person who made a poll, or staff, can do that."
+poll_full = "The board holds as many polls as it keeps. Ask staff to remove an old one."
+poll_rate_limited = "You have made enough polls for today."
+poll_question_blank = "A poll needs a question."
+poll_question_long = "The question is too long."
+poll_too_few = "A poll needs at least two options."
+poll_too_many = "A poll has at most six options."
+poll_option_long = "An option is too long."
+poll_duplicate = "Two options are the same."
+poll_description = "The description is too long."
+failed = "That did not work. Nothing was changed. Try again."

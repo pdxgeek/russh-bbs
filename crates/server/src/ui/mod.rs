@@ -121,6 +121,7 @@ impl Ui {
             .copied()
             .chain(tree.text_keys())
             .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
+            .chain(russh_bbs_core::community::TEXT_KEYS.iter().copied())
             .chain(russh_bbs_core::queue::keys::TEXT_KEYS.iter().copied())
             .chain(
                 russh_bbs_core::terminal_settings::strings::TEXT_KEYS

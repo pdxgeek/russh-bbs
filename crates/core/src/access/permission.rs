@@ -170,6 +170,12 @@ pub enum Permission {
     /// `polls.create`.
     #[strum(serialize = "polls.create")]
     PollsCreate,
+    /// `community.view` (M3-J): read the one-liners, the graffiti wall, last callers and polls.
+    #[strum(serialize = "community.view")]
+    CommunityView,
+    /// `community.moderate` (M3-J): remove a one-liner, a wall line or a poll, and close any poll.
+    #[strum(serialize = "community.moderate")]
+    CommunityModerate,
     /// `events.view`.
     #[strum(serialize = "events.view")]
     EventsView,

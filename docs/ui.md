@@ -48,7 +48,7 @@ The server-readable marker, the (future) E2EE lock, signature badges, and the ke
 
 ## Message editor
 
-The full-screen editor the forum, mail and poll screens call to compose text (M3-B, D48, D80). It is `russh-bbs-server::ui::editor`, built on `tui-textarea-2`; drafts, bounds and quoting are `russh-bbs-core::drafts`. Status: implemented and tested; called by the forum screens (M3-E) and the mail screens (M3-I).
+The full-screen editor the forum, mail and poll screens call to compose text (M3-B, D48, D80). It is `russh-bbs-server::ui::editor`, built on `tui-textarea-2`; drafts, bounds and quoting are `russh-bbs-core::drafts`. Status: implemented and tested; the first caller is the poll form (M3-J), which opens it for a poll's description **without a draft context**. The wiring is in `ssh/screen.rs`: `Screen.editor` takes every key while it is open and is drawn instead of the content; it sits in a `Mutex` only because the widget's caches are `Cell`s and the session future must be `Send` (it is reached with `get_mut`, so nothing waits). The forum (M3-E) and mail (M3-I) screens each hold their own editor inside their own state (`Content::Forums`, `Content::Mail`) and do not use this slot; later callers can reuse it: open it with `Screen::open_editor`-style code and hand the finished `Body` to their own flow.
 
 ### Calling it
 

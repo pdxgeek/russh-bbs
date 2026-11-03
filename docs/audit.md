@@ -82,6 +82,9 @@ sysop screen over it is M5; the board has no audit screen yet.
 | `report` (M3-I) | `mail.reported` | the reporter (the recipient) | the message's sender account (none if unknown or gone) | `report <id> message <id>`: ids only, never a subject, a text or a handle. The copy the reporter sent is stored as the report, not in the log |
 | `close_report` (M3-I) | `mail.report_closed` | the staff member (`mail.moderate`) | none | `report <id>`. Written only when an open report was closed |
 | `save_profile` by staff (M2-F) | `profile.edited` | the editor (`members.edit`) | the edited account | `fields <names>`: field names only, never values. The owner's own edits write no row |
+| `remove_line` (M3-J) | `community.entry_removed` | the staff member (`community.moderate`) | the author | `oneliner <id>` or `graffiti <id>`: the kind and the row id, never the text |
+| `close_poll` by staff on another member's poll (M3-J) | `community.poll_closed` | the staff member | the poll's creator | `poll <id>`. The creator closing their own poll writes no row |
+| `remove_poll` (M3-J) | `community.poll_removed` | the staff member | the poll's creator | `poll <id>`; the options and votes go with the poll |
 
 A write that changed nothing (adding a member already in the group, removing one who is not, a
 grant already held or not there, the same permission set again, a refused change) writes no row.

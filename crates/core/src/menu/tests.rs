@@ -235,9 +235,9 @@ fn the_access_hook_filters_what_a_session_sees() {
         "log off needs no permission"
     );
     let member = member();
-    assert_eq!(hotkeys(&session, &member), "fmacuisl");
+    assert_eq!(hotkeys(&session, &member), "fmacuyisl");
     let sysop = sysop();
-    assert_eq!(hotkeys(&session, &sysop), "fmacuisol");
+    assert_eq!(hotkeys(&session, &sysop), "fmacuyisol");
     assert_eq!(
         hotkeys(&session, &Only(&[Permission::AccountEditSettings])),
         "sl"
