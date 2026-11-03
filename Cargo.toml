@@ -54,6 +54,9 @@ clap = { version = "4", features = ["derive", "env"] }
 toml = { version = "0.9", default-features = false, features = ["parse", "serde", "std"] }
 # Typed config structs (M1-H); derive only, no format of its own.
 serde = { version = "1", features = ["derive"] }
+# Password hashing (D79, M3-D): argon2id from RustCrypto. Already in the tree through `ssh-key`; the default features
+# (`alloc`, `getrandom`, `password-hash`) give the PHC string format and the OS salt source.
+argon2 = "0.6"
 # Terminal input parser (D50): escape sequences, UTF-8 and the Esc-vs-sequence decision, with the parser
 # state kept across SSH data packets. Only the `parser` feature; its one dependency (`bitflags`) is already in the tree.
 anes = { version = "0.2", default-features = false, features = ["parser"] }

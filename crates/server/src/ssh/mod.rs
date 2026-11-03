@@ -13,6 +13,7 @@ mod error;
 mod handler;
 pub mod host_key;
 pub mod limits;
+mod password;
 pub mod registry;
 mod screen;
 mod server;
@@ -30,6 +31,7 @@ use russh_bbs_core::access::MemberDirectory;
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::invites::InviteStore;
 use russh_bbs_core::limits::LimitStore;
+use russh_bbs_core::passwords::PasswordStore;
 use russh_bbs_core::profiles::ProfileStore;
 use russh_bbs_core::queue::QueueStore;
 use russh_bbs_core::registration::RegistrationStore;
@@ -48,6 +50,7 @@ pub trait Backend:
     + MemberSessions
     + InviteStore
     + ProfileStore
+    + PasswordStore
     + QueueStore
     + RegistrationStore
     + LimitStore
@@ -62,6 +65,7 @@ impl<T> Backend for T where
         + MemberSessions
         + InviteStore
         + ProfileStore
+        + PasswordStore
         + QueueStore
         + RegistrationStore
         + LimitStore

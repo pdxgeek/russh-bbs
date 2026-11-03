@@ -210,6 +210,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         10,
         "811fc48a6f813dc2484a306dac74298bd38b3667b56bc045e25b161dbd21e8b8737f26ca259bc7299e22e2718c1d2a09",
     ),
+    (
+        12,
+        "9b9b4f4422ae3bedb4df92705221f15d8927497f2e8f81e81668e8cdc839cbaa3cf8becb0aec02e89f76a2d9d82d69cc",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {
@@ -265,6 +269,7 @@ async fn a_fresh_database_gets_every_migration_and_only_these_tables() {
             "access_grant",
             "account_keys",
             "account_logins",
+            "account_password",
             "accounts",
             "audit_log",
             "group_closure",

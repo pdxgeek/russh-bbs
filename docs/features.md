@@ -37,8 +37,9 @@ Update this table in the same pass as the code.
 | Polls and voting booths | M3 | Planned | |
 | RSS in (feeds as boards) and RSS out | M3 | Planned | SSRF guard required |
 | Internal mail (stage 1) | M3 | Planned | Encrypted at rest with a server-held key, no staff reader (D78); not end-to-end |
+| Member passwords (argon2id, set over a signed-in session) | M3 | Implemented and tested | M3-D (D79). `account_password` table (migration 0012), PHC string with its parameters, rehash on login, 12–128 characters, audited as `password.set`/`password.cleared` with no secret. |
 | Telnet transport, disabled by default (low-security mode) | M3 | Planned | D27; `UNENCRYPTED` marker; password login is a second opt-in |
-| Password login over SSH, disabled by default | M3 | Planned | D28; shares the password store with telnet |
+| Password login over SSH, disabled by default | M3 | Implemented and tested; real OpenSSH not yet exercised, see below | M3-D (D79). `ssh.allow_password_login` (off: only `publickey` is advertised). SSH `password` method, not keyboard-interactive. Unknown name, no password, non-active account and wrong password get the same refusal and one argon2id verification each; per-handle and per-network limits. Tests: core (fake store), the shared store suite on SQLite and Postgres, and a real russh client against SQLite. Members set or clear it under Terminal settings, Password; a password session must give the current one. Shares the store with telnet (M3-H). |
 | Credits ledger | M3 | Planned | Non-transferable |
 | Event scheduler | M3 | Planned | |
 | Blob store trait, local and S3-compatible backends | M4 | Planned | D30; `object_store`; one test suite |

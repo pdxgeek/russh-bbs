@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE account_password SET hash = ? WHERE account_id = ? AND hash = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "c660c6921b8de4a435606d272fc04e54a9551603e7865d7d1ecae7a0d0dbb9b3"
+}

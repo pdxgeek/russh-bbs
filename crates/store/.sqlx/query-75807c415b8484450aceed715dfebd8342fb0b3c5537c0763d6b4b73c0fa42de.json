@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT a.id AS \"id!\", p.hash AS \"hash?\"\n               FROM accounts a LEFT JOIN account_password p ON p.account_id = a.id\n               WHERE a.id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "hash?",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "75807c415b8484450aceed715dfebd8342fb0b3c5537c0763d6b4b73c0fa42de"
+}

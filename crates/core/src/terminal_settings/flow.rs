@@ -16,6 +16,10 @@ use crate::access::{Permission, PermissionCheck, Slug, Snapshot};
 use crate::icons::Tier;
 use crate::invites::{InviteOutcome, InviteRequest, InviteScreen};
 use crate::menu::{Action, MenuKey, MenuOutcome, MenuPage, MenuSession, main_tree};
+use crate::passwords::{
+    LoginMethod, PasswordKey, PasswordScreen, Request as PasswordRequest,
+    Response as PasswordResponse, Step as PasswordStep, strings as password_strings,
+};
 use crate::profiles::{MembersScreen, Request, Response, ScreenKey, ScreenView, Step};
 use crate::queue::{
     QueueKey, QueueMode, QueueScreen, QueueStep, QueueView, Request as QueueRequest,
@@ -67,6 +71,8 @@ enum Page {
     /// The sysop queue or the vouch screen (M2-E).
     Queue(Box<QueueScreen>),
     Settings,
+    /// The password screen, opened from the settings (M3-D).
+    Password(Box<PasswordScreen>),
     EditWidth(String),
     EditHeight(String),
     /// An invite screen (create, list, tree). Not `PartialEq`: it may hold a one-time code.
@@ -89,6 +95,9 @@ pub struct MemberFlow {
     /// The real terminal's size, when the front end has told us (it does at start and on every
     /// window change). Only used to say when an override is cut down to fit.
     terminal: Option<(u16, u16)>,
+    /// How the session signed in. A password session must give the current password again to
+    /// set or clear one (M3-D, D79).
+    login: LoginMethod,
 }
 
 impl MemberFlow {
@@ -112,7 +121,15 @@ impl MemberFlow {
             notice: None,
             menu: MenuSession::new(main_tree()),
             terminal: None,
+            login: LoginMethod::Key,
         }
+    }
+
+    /// Mark the session as signed in with a password instead of a key (M3-D, D28).
+    #[must_use]
+    pub const fn signed_in_with_password(mut self) -> Self {
+        self.login = LoginMethod::Password;
+        self
     }
 
     /// Tell the flow how big the real terminal is, so the settings screen can say when a
@@ -168,6 +185,17 @@ impl MemberFlow {
             });
             return MemberEffect::Stay;
         }
+        if matches!(self.page, Page::Password(_))
+            && !self.access.allows(Permission::AccountSetPassword)
+        {
+            // Same rule: the permission went away since the screen opened.
+            self.page = Page::Home;
+            self.notice = Some(Notice {
+                kind: NoticeKind::Error,
+                text: strings::NOT_PERMITTED,
+            });
+            return MemberEffect::Stay;
+        }
         if let Page::Members(screen) = &self.page
             && !screen.still_permitted(&self.access)
         {
@@ -204,6 +232,7 @@ impl MemberFlow {
             Page::Members(_) => self.members_input(input),
             Page::Queue(_) => self.queue_input(input),
             Page::Settings => self.settings_input(input),
+            Page::Password(_) => self.password_input(input),
             Page::EditWidth(_) | Page::EditHeight(_) => self.edit_input(input),
             Page::Invites(_) => self.invite_input(input),
             Page::Logoff => MemberEffect::Disconnect,
@@ -222,6 +251,7 @@ impl MemberFlow {
             | Page::Members(_)
             | Page::Queue(_)
             | Page::Invites(_)
+            | Page::Password(_)
             | Page::Logoff => false,
         }
     }
@@ -498,12 +528,64 @@ impl MemberFlow {
                 self.page = Page::GlyphTest(GlyphTest::new(self.settings.needs_glyph_test()));
                 MemberEffect::Stay
             }
+            MemberInput::Char('s' | 'S') if self.access.allows(Permission::AccountSetPassword) => {
+                self.page = Page::Password(Box::new(PasswordScreen::open(self.login)));
+                MemberEffect::Stay
+            }
             MemberInput::Char('b' | 'B') | MemberInput::Escape => {
                 self.page = Page::Home;
                 MemberEffect::Stay
             }
             _ => MemberEffect::Stay,
         }
+    }
+
+    fn password_input(&mut self, input: MemberInput) -> MemberEffect {
+        let key = match input {
+            MemberInput::Char(c) => PasswordKey::Char(c),
+            MemberInput::Enter => PasswordKey::Enter,
+            MemberInput::Backspace => PasswordKey::Backspace,
+            MemberInput::Escape => PasswordKey::Escape,
+            MemberInput::Quit => return MemberEffect::Stay,
+        };
+        let Page::Password(screen) = &mut self.page else {
+            return MemberEffect::Stay;
+        };
+        let step = screen.press(key);
+        self.after_password(step);
+        MemberEffect::Stay
+    }
+
+    fn after_password(&mut self, step: PasswordStep) {
+        match step {
+            PasswordStep::Stay => {}
+            PasswordStep::Leave => self.page = Page::Settings,
+            PasswordStep::Denied => {
+                self.page = Page::Settings;
+                self.notice = Some(Notice {
+                    kind: NoticeKind::Error,
+                    text: strings::NOT_PERMITTED,
+                });
+            }
+        }
+    }
+
+    /// The password request the screen is waiting on, once. The front end runs it with
+    /// `passwords::execute` and gives the answer to [`MemberFlow::deliver_password`].
+    pub fn take_password_request(&mut self) -> Option<PasswordRequest> {
+        match &mut self.page {
+            Page::Password(screen) => screen.take_request(),
+            _ => None,
+        }
+    }
+
+    /// Hand the answer of a password request to the screen.
+    pub fn deliver_password(&mut self, response: PasswordResponse) {
+        let step = match &mut self.page {
+            Page::Password(screen) => screen.deliver(response),
+            _ => return,
+        };
+        self.after_password(step);
     }
 
     fn save(&mut self, settings: TerminalSettings) -> MemberEffect {
@@ -596,6 +678,7 @@ impl MemberFlow {
             Page::EditWidth(typed) => edit_view(&mut view, strings::FIELD_WIDTH, typed),
             Page::EditHeight(typed) => edit_view(&mut view, strings::FIELD_HEIGHT, typed),
             Page::Invites(screen) => return screen.view(),
+            Page::Password(screen) => return screen.view(),
             Page::Logoff => self.logoff_view(&mut view),
         }
         view
@@ -693,11 +776,17 @@ impl MemberFlow {
                 key: 'i',
                 label: strings::MENU_ICONS,
             },
-            MenuItemView {
-                key: 'b',
-                label: strings::MENU_BACK,
-            },
         ];
+        if self.access.allows(Permission::AccountSetPassword) {
+            view.menu.push(MenuItemView {
+                key: 's',
+                label: password_strings::MENU_PASSWORD,
+            });
+        }
+        view.menu.push(MenuItemView {
+            key: 'b',
+            label: strings::MENU_BACK,
+        });
         view.footer = strings::SETTINGS_FOOTER;
     }
 

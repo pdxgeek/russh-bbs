@@ -5,9 +5,9 @@
 //! Every other request is refused *explicitly*: russh sends no reply by default, which would
 //! leave a client hanging, so each handler below answers. Refused: exec, subsystem (including
 //! sftp, for now), env, agent forwarding, X11, direct-tcpip, forwarded-tcpip, streamlocal, and
-//! both tcpip-forward and streamlocal-forward. Authentication is public-key only; the method
-//! list advertised in `server::russh_config` says so, and the password and keyboard-interactive
-//! handlers are the trait defaults, which reject.
+//! both tcpip-forward and streamlocal-forward. Authentication is public-key, plus `password` only
+//! when the sysop opted in (D28); the method list advertised in `server::russh_config` says so.
+//! Keyboard-interactive is the trait default, which rejects (D79).
 //!
 //! Logs carry fingerprints, request kinds and sizes. They never carry key material, command
 //! lines, environment values or anything the client typed.
@@ -23,9 +23,10 @@ use russh_bbs_core::access::Permission;
 use russh_bbs_core::access::{Access, Fingerprint, decide_access};
 use russh_bbs_core::founder::{ClaimForm, MAX_ATTEMPTS_PER_SESSION};
 use russh_bbs_core::limits::{LimitError, MemberMeter, SystemClock, begin_member_session};
+use russh_bbs_core::passwords::{Login, authenticate};
 use russh_bbs_core::registration::open_cap_reached;
-use russh_bbs_core::store::AccountId;
 use russh_bbs_core::store::RegistrationMode;
+use russh_bbs_core::store::{Account, AccountId};
 use russh_bbs_core::terminal_settings::{MemberFlow, MemberStart};
 use russh_bbs_core::waiting_room::{RoomConfig, Verdict, WaitingRoom};
 use tokio::sync::oneshot;
@@ -38,6 +39,7 @@ use super::budget::SessionBudget;
 use super::error::SessionError;
 use super::host_key::fingerprint_of;
 use super::limits::Limits;
+use super::password::PasswordLogin;
 use super::registry::SessionGuard;
 use super::screen::{Content, Screen};
 use super::shell::{Inbox, MEMBER_START_TIMEOUT, Shell, ShellParts};
@@ -54,11 +56,17 @@ const MAX_SESSION_CHANNELS: usize = 4;
 /// defaults. A slow store must not hold a stranger's screen hostage.
 const ROOM_CONFIG_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(2);
 
+/// How long one password check may take, queueing for a hashing turn included. Inside the
+/// 30 s authentication deadline; a busy or failing store refuses the login instead of holding it.
+const PASSWORD_CHECK_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
+
 /// What a connection's handler is built from.
 pub(crate) struct HandlerParts<D> {
     pub(crate) directory: Arc<D>,
     pub(crate) founder: Arc<Founder>,
     pub(crate) throttle: Arc<Throttle>,
+    /// SSH password login: the switch, its limiters and the hashing pool (M3-D).
+    pub(crate) passwords: Arc<PasswordLogin>,
     pub(crate) limits: Limits,
     /// The validated string table and menu tree (M2-A).
     pub(crate) ui: Arc<Ui>,
@@ -101,6 +109,10 @@ pub(crate) struct ClientHandler<D> {
     claim_requested: bool,
     /// The account behind a signed-in session, so changed terminal settings can be stored.
     account: Option<AccountId>,
+    passwords: Arc<PasswordLogin>,
+    /// The account a password login matched. Set only by `auth_password`; such a session has no
+    /// key, and starts from this account instead of a fingerprint.
+    password_account: Option<Account>,
 }
 
 impl<D> ClientHandler<D> {
@@ -114,6 +126,7 @@ impl<D> ClientHandler<D> {
             directory,
             founder,
             throttle,
+            passwords,
             limits,
             ui,
             abort,
@@ -139,6 +152,8 @@ impl<D> ClientHandler<D> {
             member: false,
             claim_requested: false,
             account: None,
+            passwords,
+            password_account: None,
         }
     }
 
@@ -219,8 +234,13 @@ impl<D> ClientHandler<D> {
         if !self.member {
             return None;
         }
-        let fingerprint = self.fingerprint.clone()?;
-        let start = self.member_start(&fingerprint).await?;
+        let start = match self.password_account.clone() {
+            Some(account) => self.password_start(&account).await?,
+            None => {
+                let fingerprint = self.fingerprint.clone()?;
+                self.member_start(&fingerprint).await?
+            }
+        };
         let begun = timeout(
             MEMBER_START_TIMEOUT,
             begin_member_session(
@@ -247,12 +267,15 @@ impl<D> ClientHandler<D> {
             }
         };
         self.account = Some(start.account);
-        let flow = MemberFlow::new(
+        let mut flow = MemberFlow::new(
             &start.handle,
             start.access,
             start.previous_login,
             start.settings,
         );
+        if self.password_account.is_some() {
+            flow = flow.signed_in_with_password();
+        }
         Some((Content::Member(Box::new(flow)), Some(meter)))
     }
 
@@ -276,6 +299,36 @@ impl<D> ClientHandler<D> {
             }
             Err(_) => {
                 warn!(session = ?self.guard.id(), "member session start timed out");
+                None
+            }
+        }
+    }
+
+    /// Start the signed-in session for an account a password login just matched. The account
+    /// is read again as the session starts (its role and state may have changed since the
+    /// password was checked): one that is no longer an active member gets nothing, and the
+    /// session ends instead of falling back to a waiting room it has no key for.
+    async fn password_start(&self, account: &Account) -> Option<MemberStart>
+    where
+        D: Backend,
+    {
+        let started = timeout(
+            MEMBER_START_TIMEOUT,
+            self.directory.start_for_account(account),
+        )
+        .await;
+        match started {
+            Ok(Ok(start)) if start.access.account() == Some(account.id) => Some(start),
+            Ok(Ok(_)) => {
+                info!(session = ?self.guard.id(), "password session no longer holds member access");
+                None
+            }
+            Ok(Err(error)) => {
+                warn!(session = ?self.guard.id(), %error, "password session could not start");
+                None
+            }
+            Err(_) => {
+                warn!(session = ?self.guard.id(), "password session start timed out");
                 None
             }
         }
@@ -311,7 +364,61 @@ impl<D> Drop for ClientHandler<D> {
 impl<D: Backend> Handler for ClientHandler<D> {
     type Error = SessionError;
 
-    // `none`, `password` and `keyboard-interactive` keep the trait defaults, which reject.
+    // `none` and `keyboard-interactive` keep the trait defaults, which reject. `password` is
+    // answered below, and only when the sysop opted in (D28).
+
+    async fn auth_password(&mut self, user: &str, password: &str) -> Result<Auth, Self::Error> {
+        // The method is not advertised when off, so a client has no reason to try it; one that
+        // does anyway is refused without a single hash.
+        if !self.passwords.enabled() {
+            return Ok(Auth::reject());
+        }
+        // Limits first, for every handle alike (known or not), so a limited reply is the same
+        // plain refusal and says nothing about members. Nothing typed is logged.
+        if let Verdict::Limited { retry_after } =
+            self.passwords.admit(self.peer.map(|peer| peer.ip()), user)
+        {
+            info!(
+                session = ?self.guard.id(),
+                peer = ?self.peer,
+                ?retry_after,
+                "password rate limit; rejecting"
+            );
+            return Ok(Auth::reject());
+        }
+        let checked = timeout(
+            PASSWORD_CHECK_TIMEOUT,
+            authenticate(&*self.directory, self.passwords.pool(), user, password),
+        )
+        .await;
+        match checked {
+            Ok(Ok(Login::Accepted(account))) => {
+                info!(
+                    session = ?self.guard.id(),
+                    peer = ?self.peer,
+                    account = %account.id,
+                    "password authenticated"
+                );
+                self.claim_requested = false;
+                self.member = true;
+                self.guard.set_authenticated_by_password(Access::Member);
+                self.password_account = Some(account);
+                Ok(Auth::Accept)
+            }
+            Ok(Ok(Login::Denied)) => {
+                info!(session = ?self.guard.id(), peer = ?self.peer, "password rejected");
+                Ok(Auth::reject())
+            }
+            Ok(Err(error)) => {
+                warn!(session = ?self.guard.id(), %error, "password check failed in the store; rejecting");
+                Ok(Auth::reject())
+            }
+            Err(_) => {
+                warn!(session = ?self.guard.id(), "password check timed out; rejecting");
+                Ok(Auth::reject())
+            }
+        }
+    }
 
     async fn auth_publickey_offered(
         &mut self,
@@ -500,6 +607,12 @@ impl<D: Backend> Handler for ClientHandler<D> {
         } else if let Some((content, metered)) = self.member_content().await {
             meter = metered;
             content
+        } else if self.password_account.is_some() {
+            // A password login has no key to show the waiting room to. If the member session
+            // cannot start, the shell is refused; nothing looser is offered.
+            self.refused("no-access");
+            session.channel_failure(channel)?;
+            return Ok(());
         } else if self.waiting_room_allowed().await {
             Content::Room(self.waiting_room().await)
         } else {
@@ -525,6 +638,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
             fingerprint: self.fingerprint.clone(),
             peer_ip: self.peer.map(|peer| peer.ip()),
             account: self.account,
+            passwords: Arc::clone(&self.passwords),
             meter,
             redraw_interval: self.limits.redraw_interval,
             write_stall: self.limits.write_stall,
