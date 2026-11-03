@@ -5,9 +5,11 @@
 
 mod access;
 mod audit;
+mod chat;
 mod community;
 mod credits;
 mod drafts;
+mod forums;
 mod founder;
 mod invites;
 mod limits;

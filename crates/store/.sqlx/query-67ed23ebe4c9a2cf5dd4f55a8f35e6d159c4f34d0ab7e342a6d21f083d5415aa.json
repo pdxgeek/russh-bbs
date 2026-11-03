@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM post WHERE id = $1\n               RETURNING thread_id AS \"thread_id!\", board_id AS \"board_id!\", author_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "thread_id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "board_id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "author_id",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "67ed23ebe4c9a2cf5dd4f55a8f35e6d159c4f34d0ab7e342a6d21f083d5415aa"
+}

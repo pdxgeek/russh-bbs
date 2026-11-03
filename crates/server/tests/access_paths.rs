@@ -54,6 +54,12 @@ use tokio::time::timeout;
 /// exercised there (the screen it opens and the approve key), as well as in the menu-path test
 /// below.
 ///
+/// `ChatJoin`, `ChatSpeak`, `ChatWhisper` and `ChatManageRooms` (M3-F) have their path tests in
+/// `tests/chat.rs`: with `chat.speak` or `chat.whisper` taken a line or whisper is refused and
+/// nobody hears it; with `chat.join` taken the member is put out of the room on the next action and
+/// the menu stops offering Chat; room management keys do nothing without `chat.manage_rooms`; each
+/// is back on the next action once restored. `ChatModerate` is not built yet.
+///
 /// `MembershipApply` and `MembershipOpen` (M2-G) have their path tests in
 /// `tests/registration.rs`: with `membership.apply` taken from the `waiting` role the application
 /// form gives the same words and stores nothing, and with `membership.open` taken the
@@ -79,9 +85,18 @@ const WIRED: &[Permission] = &[
     Permission::AccountEditProfile,
     Permission::MembersEdit,
     Permission::ForumList,
+    Permission::ForumRead,
+    Permission::ForumPost,
+    Permission::ForumReply,
+    Permission::ForumModerate,
+    Permission::ForumManage,
     Permission::MailRead,
     Permission::FilesList,
     Permission::LimitsEdit,
+    Permission::ChatJoin,
+    Permission::ChatSpeak,
+    Permission::ChatWhisper,
+    Permission::ChatManageRooms,
     Permission::OnelinersPost,
     Permission::GraffitiPost,
     Permission::PollsVote,
@@ -97,17 +112,8 @@ const NOT_YET_WIRED: &[Permission] = &[
     Permission::MembersSuspend,
     Permission::MembersDeleteData,
     Permission::InvitesRevoke,
-    Permission::ForumRead,
-    Permission::ForumPost,
-    Permission::ForumReply,
     Permission::ForumEditOwn,
-    Permission::ForumModerate,
-    Permission::ForumManage,
-    Permission::ChatJoin,
-    Permission::ChatSpeak,
-    Permission::ChatWhisper,
     Permission::ChatModerate,
-    Permission::ChatManageRooms,
     Permission::MailSend,
     Permission::FilesDownload,
     Permission::FilesUpload,
@@ -356,7 +362,7 @@ async fn menu_paths_follow_their_permission_on_the_next_action() {
             Permission::ForumList,
             'f',
             "[f] Forums",
-            "Forums are not built yet.",
+            "There are no boards you can open yet.",
         ),
         (
             Permission::MailRead,
@@ -792,14 +798,100 @@ async fn a_role_revoked_by_the_editing_service_stops_working_on_the_next_key() {
     rig.server.shutdown().await;
 }
 
-// ---- community (M3-J) ----
-
 async fn count(rig: &Rig, table: &str) -> i64 {
-    sqlx::query_scalar::<_, i64>(&format!("SELECT count(*) FROM {table}"))
+    sqlx::query_scalar(&format!("SELECT count(*) FROM {table}"))
         .fetch_one(&rig.db)
         .await
         .unwrap()
 }
+
+/// Send `bytes`, wait, and return the whole screen as words (a redraw sends only changed cells,
+/// so the words of a plain `send` can be missing the unchanged letters of a message).
+async fn press_full(channel: &mut Channel<client::Msg>, bytes: &str) -> String {
+    send(channel, bytes).await;
+    full(channel).await
+}
+
+#[tokio::test]
+async fn forum_paths_follow_their_permissions_on_the_next_action() {
+    const SEND: &str = "\u{18}";
+    let rig = Rig::start().await;
+    let key = new_client_key();
+    let (_session, mut channel) = founder_at_menu(&rig, &key).await;
+    let refused = "You may not do that.";
+
+    // forum.manage: a board is made only while it is held.
+    let screen = press_full(&mut channel, "f").await;
+    assert!(screen.contains("n new board"), "{screen}");
+    let taken = rig.revoke(Permission::ForumManage).await;
+    for typed in ["n", "Alpha\r", "\r"] {
+        press_full(&mut channel, typed).await;
+    }
+    let screen = press_full(&mut channel, "n").await;
+    assert!(screen.contains(refused), "{screen}");
+    assert_eq!(count(&rig, "board").await, 0, "nothing was written");
+    press_full(&mut channel, "\u{1b}").await;
+    rig.restore(&taken, Permission::ForumManage).await;
+    for typed in ["n", "Alpha\r", "\r"] {
+        press_full(&mut channel, typed).await;
+    }
+    let screen = press_full(&mut channel, "n").await;
+    assert!(screen.contains("Board created."), "{screen}");
+    assert_eq!(count(&rig, "board").await, 1);
+
+    // forum.post: a thread is started only while it is held.
+    press_full(&mut channel, "1").await;
+    let taken = rig.revoke(Permission::ForumPost).await;
+    press_full(&mut channel, "w").await;
+    let screen = press_full(&mut channel, "First\r").await;
+    assert!(screen.contains(refused), "{screen}");
+    assert_eq!(count(&rig, "thread").await, 0);
+    rig.restore(&taken, Permission::ForumPost).await;
+    let editor = press_full(&mut channel, "\r").await;
+    assert!(editor.contains("Alpha: First"), "{editor}");
+    press_full(&mut channel, "opening post").await;
+    let screen = press_full(&mut channel, SEND).await;
+    assert!(screen.contains("Posted."), "{screen}");
+    assert_eq!(count(&rig, "post").await, 1);
+
+    // forum.read: a thread that was listed is no longer opened, and the answer is the plain
+    // "not available".
+    press_full(&mut channel, "\u{1b}").await;
+    let taken = rig.revoke(Permission::ForumRead).await;
+    let screen = press_full(&mut channel, "\r").await;
+    assert!(screen.contains("That is not available."), "{screen}");
+    rig.restore(&taken, Permission::ForumRead).await;
+    press_full(&mut channel, "1").await;
+    let screen = press_full(&mut channel, "\r").await;
+    assert!(screen.contains("opening post"), "{screen}");
+
+    // forum.reply: a reply is written only while it is held.
+    let taken = rig.revoke(Permission::ForumReply).await;
+    let screen = press_full(&mut channel, "r").await;
+    assert!(screen.contains(refused), "{screen}");
+    assert_eq!(count(&rig, "post").await, 1);
+    rig.restore(&taken, Permission::ForumReply).await;
+    press_full(&mut channel, "r").await;
+    press_full(&mut channel, "a reply").await;
+    let screen = press_full(&mut channel, SEND).await;
+    assert!(screen.contains("Post 2 of 2"), "{screen}");
+    assert_eq!(count(&rig, "post").await, 2);
+
+    // forum.moderate: a post is removed only while it is held.
+    let taken = rig.revoke(Permission::ForumModerate).await;
+    press_full(&mut channel, "x").await;
+    let screen = press_full(&mut channel, "y").await;
+    assert!(screen.contains(refused), "{screen}");
+    assert_eq!(count(&rig, "post").await, 2);
+    rig.restore(&taken, Permission::ForumModerate).await;
+    press_full(&mut channel, "x").await;
+    let screen = press_full(&mut channel, "y").await;
+    assert!(screen.contains("Removed."), "{screen}");
+    assert_eq!(count(&rig, "post").await, 1);
+    rig.server.shutdown().await;
+}
+
+// ---- community (M3-J) ----
 
 #[tokio::test]
 async fn posting_a_one_liner_needs_oneliners_post_and_a_removal_writes_nothing() {
@@ -807,8 +899,8 @@ async fn posting_a_one_liner_needs_oneliners_post_and_a_removal_writes_nothing()
     let (_alice, _session, mut channel) = member_at_menu(&rig, "alice").await;
 
     // Held: the menu offers Community, the screen offers the key, and a line is stored.
-    assert!(full(&mut channel).await.contains("[c] Community"));
-    send(&mut channel, "c").await;
+    assert!(full(&mut channel).await.contains("[y] Community"));
+    send(&mut channel, "y").await;
     assert!(full(&mut channel).await.contains("[o] One liners"));
     send(&mut channel, "o").await;
     assert!(full(&mut channel).await.contains("p: add a line"));
@@ -829,7 +921,7 @@ async fn posting_a_one_liner_needs_oneliners_post_and_a_removal_writes_nothing()
     assert_eq!(count(&rig, "community_line").await, 1, "nothing written");
 
     // The key is no longer offered and does nothing.
-    send(&mut channel, "co").await;
+    send(&mut channel, "yo").await;
     assert!(!full(&mut channel).await.contains("p: add a line"));
     send(&mut channel, "p").await;
     assert!(!full(&mut channel).await.contains("Your line"));
@@ -850,7 +942,7 @@ async fn posting_a_one_liner_needs_oneliners_post_and_a_removal_writes_nothing()
         screen.contains("You are not allowed to do that."),
         "{screen}"
     );
-    assert!(!full(&mut channel).await.contains("[c] Community"));
+    assert!(!full(&mut channel).await.contains("[y] Community"));
     rig.restore(&view, Permission::CommunityView).await;
     rig.server.shutdown().await;
 }
@@ -859,7 +951,7 @@ async fn posting_a_one_liner_needs_oneliners_post_and_a_removal_writes_nothing()
 async fn writing_on_the_wall_needs_graffiti_post_and_a_removal_writes_nothing() {
     let rig = Rig::start().await;
     let (_alice, _session, mut channel) = member_at_menu(&rig, "alice").await;
-    send(&mut channel, "cg").await;
+    send(&mut channel, "yg").await;
     assert!(full(&mut channel).await.contains("Graffiti wall"));
     send(&mut channel, "p").await;
     send(&mut channel, "was here\r").await;
@@ -900,7 +992,7 @@ async fn voting_and_making_polls_need_their_permissions_and_a_second_vote_is_ref
     assert!(matches!(made, CreatePoll::Created(_)));
 
     // A member cannot make polls: no hint, and the key does nothing.
-    send(&mut channel, "cp").await;
+    send(&mut channel, "yp").await;
     let list = full(&mut channel).await;
     assert!(
         list.contains("[1] Best colour?") && !list.contains("c: make a poll"),
@@ -950,7 +1042,7 @@ async fn voting_and_making_polls_need_their_permissions_and_a_second_vote_is_ref
     assert_eq!(count(&rig, "poll").await, 1, "nothing written");
     rig.restore(&taken, Permission::PollsCreate).await;
     send(&mut channel, "x").await;
-    send(&mut channel, "cpc").await;
+    send(&mut channel, "ypc").await;
     send(&mut channel, "Pick one?\ra\rb\r\r").await;
     send(&mut channel, "\r").await;
     assert_eq!(count(&rig, "poll").await, 2);
@@ -996,7 +1088,7 @@ async fn moderating_needs_community_moderate_and_is_audited_and_last_callers_lis
     }
 
     // Last callers: both sessions began, so both members are listed, newest first.
-    send(&mut channel, "cl").await;
+    send(&mut channel, "yl").await;
     let callers = full(&mut channel).await;
     assert!(
         callers.contains("Last callers") && callers.contains("alice") && callers.contains("maude"),

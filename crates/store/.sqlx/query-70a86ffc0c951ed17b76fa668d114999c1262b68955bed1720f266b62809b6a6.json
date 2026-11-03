@@ -1,0 +1,56 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT t.id AS \"id!\", t.board_id AS \"board_id!\", b.name AS board_name, t.subject,\n                      a.username AS \"author?\",\n                      (SELECT count(*) FROM post p WHERE p.thread_id = t.id) AS \"posts!: i64\",\n                      t.last_post_at AS \"last_post_at!\"\n               FROM thread t\n               JOIN board b ON b.id = t.board_id\n               LEFT JOIN accounts a ON a.id = t.author_id\n               WHERE t.id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "board_id!",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "board_name",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "subject",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "author?",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "posts!: i64",
+        "ordinal": 5,
+        "type_info": "Integer"
+      },
+      {
+        "name": "last_post_at!",
+        "ordinal": 6,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "70a86ffc0c951ed17b76fa668d114999c1262b68955bed1720f266b62809b6a6"
+}

@@ -44,6 +44,7 @@ use super::registry::SessionGuard;
 use super::screen::{Content, Screen};
 use super::shell::{Inbox, MEMBER_START_TIMEOUT, Output, Shell, ShellParts};
 use super::terminal::PtySize;
+use crate::chat::Hub;
 use crate::founder::{CLAIM_USER, Founder};
 use crate::ui::Ui;
 use crate::waiting_room::Throttle;
@@ -67,6 +68,8 @@ pub(crate) struct HandlerParts<D> {
     pub(crate) throttle: Arc<Throttle>,
     /// SSH password login: the switch, its limiters and the hashing pool (M3-D).
     pub(crate) passwords: Arc<PasswordLogin>,
+    /// The chat hub (M3-F).
+    pub(crate) chat: Arc<Hub>,
     pub(crate) limits: Limits,
     /// The validated string table and menu tree (M2-A).
     pub(crate) ui: Arc<Ui>,
@@ -110,6 +113,7 @@ pub(crate) struct ClientHandler<D> {
     /// The account behind a signed-in session, so changed terminal settings can be stored.
     account: Option<AccountId>,
     passwords: Arc<PasswordLogin>,
+    chat: Arc<Hub>,
     /// The account a password login matched. Set only by `auth_password`; such a session has no
     /// key, and starts from this account instead of a fingerprint.
     password_account: Option<Account>,
@@ -127,6 +131,7 @@ impl<D> ClientHandler<D> {
             founder,
             throttle,
             passwords,
+            chat,
             limits,
             ui,
             abort,
@@ -153,6 +158,7 @@ impl<D> ClientHandler<D> {
             claim_requested: false,
             account: None,
             passwords,
+            chat,
             password_account: None,
         }
     }
@@ -644,6 +650,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
             peer_ip: self.peer.map(|peer| peer.ip()),
             account: self.account,
             passwords: Arc::clone(&self.passwords),
+            chat: Arc::clone(&self.chat),
             meter,
             redraw_interval: self.limits.redraw_interval,
             write_stall: self.limits.write_stall,

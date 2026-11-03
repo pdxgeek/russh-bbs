@@ -281,6 +281,7 @@ impl<D: Backend> Connection<D> {
             peer_ip: Some(peer.ip()),
             account: Some(account),
             passwords: Arc::clone(&self.passwords),
+            chat: Arc::clone(self.registry.chat()),
             meter,
             redraw_interval: self.limits.redraw_interval,
             write_stall: self.limits.write_stall,

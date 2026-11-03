@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO chat_room (name, created_at, created_by)\n               SELECT ?1, ?2, ?3\n               WHERE (SELECT count(*) FROM chat_room WHERE closed_at IS NULL) < ?4\n               RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "430417de6169af7f0cca1e56a11eb4308426a57bdc02390a184a0feb1c14fa44"
+}

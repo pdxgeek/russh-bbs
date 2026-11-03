@@ -250,7 +250,7 @@ fn the_main_menu_lists_its_items_with_hotkeys_and_the_footer() {
         "Signed in as alice.",
         "[s] Terminal settings",
         "[l] Log off",
-        "[f] Forums  (not built yet)",
+        "[m] Mail  (not built yet)",
         "?: help   Esc: back   Ctrl-C: log off",
     ] {
         assert!(out.contains(expected), "{expected:?} missing:\n{out}");
@@ -272,13 +272,13 @@ fn the_main_menu_lists_its_items_with_hotkeys_and_the_footer() {
 #[test]
 fn a_placeholder_says_it_is_not_built_in_words() {
     let out = text(&draw(
-        &page_for(Role::Member, &['f']),
+        &page_for(Role::Member, &['m']),
         &[],
         None,
         Tier::Ascii,
         (80, 24),
     ));
-    assert!(out.contains("Notice: Forums are not built yet."), "{out}");
+    assert!(out.contains("Notice: Mail is not built yet."), "{out}");
 }
 
 #[test]

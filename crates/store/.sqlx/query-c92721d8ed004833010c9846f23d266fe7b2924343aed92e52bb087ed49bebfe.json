@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE thread SET last_post_at = max(last_post_at, ?) WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "c92721d8ed004833010c9846f23d266fe7b2924343aed92e52bb087ed49bebfe"
+}

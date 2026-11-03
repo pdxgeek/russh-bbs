@@ -27,6 +27,7 @@ use super::host_key::HostKey;
 use super::limits::Limits;
 use super::password::PasswordLogin;
 use super::registry::{SessionRegistry, SessionSnapshot};
+use crate::chat::Hub;
 use crate::founder::Founder;
 use crate::ui::Ui;
 use crate::waiting_room::Throttle;
@@ -118,6 +119,7 @@ impl SshServer {
                 &SystemClock::new(),
             )),
             passwords: Arc::new(PasswordLogin::new(&config.limits)),
+            chat: Arc::clone(registry.chat()),
         };
         let task = tokio::spawn(accept.run(stopped));
         let limits = &config.limits;
@@ -216,6 +218,7 @@ struct AcceptLoop<D> {
     permits: Arc<Semaphore>,
     throttle: Arc<Throttle>,
     passwords: Arc<PasswordLogin>,
+    chat: Arc<Hub>,
 }
 
 impl<D: Backend> AcceptLoop<D> {
@@ -272,6 +275,7 @@ impl<D: Backend> AcceptLoop<D> {
             registry: Arc::clone(&self.registry),
             throttle: Arc::clone(&self.throttle),
             passwords: Arc::clone(&self.passwords),
+            chat: Arc::clone(&self.chat),
             limits: self.limits,
             ui: Arc::clone(&self.ui),
             stopped: stopped.clone(),
@@ -290,6 +294,7 @@ struct Connection<D> {
     registry: Arc<SessionRegistry>,
     throttle: Arc<Throttle>,
     passwords: Arc<PasswordLogin>,
+    chat: Arc<Hub>,
     limits: Limits,
     ui: Arc<Ui>,
     stopped: watch::Receiver<bool>,
@@ -318,6 +323,7 @@ impl<D: Backend> Connection<D> {
                 founder: Arc::clone(&self.founder),
                 throttle: Arc::clone(&self.throttle),
                 passwords: Arc::clone(&self.passwords),
+                chat: Arc::clone(&self.chat),
                 limits: self.limits,
                 ui: Arc::clone(&self.ui),
                 abort: Arc::clone(&abort),

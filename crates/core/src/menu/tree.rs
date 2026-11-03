@@ -31,13 +31,8 @@ const fn gated(hotkey: char, label: &'static str, target: Target, requires: Perm
     }
 }
 
-static MAIN_ITEMS: [Item; 9] = [
-    gated(
-        'f',
-        "menu.main.item.forums",
-        Target::Placeholder("placeholder.forums"),
-        Permission::ForumList,
-    ),
+static MAIN_ITEMS: [Item; 10] = [
+    item('f', "menu.main.item.forums", Target::Action(Action::Forums)),
     gated(
         'm',
         "menu.main.item.mail",
@@ -50,6 +45,7 @@ static MAIN_ITEMS: [Item; 9] = [
         Target::Placeholder("placeholder.files"),
         Permission::FilesList,
     ),
+    item('c', "menu.main.item.chat", Target::Action(Action::Chat)),
     gated(
         'u',
         "menu.main.item.members",
@@ -57,7 +53,7 @@ static MAIN_ITEMS: [Item; 9] = [
         Permission::MembersView,
     ),
     gated(
-        'c',
+        'y',
         "menu.main.item.community",
         Target::Menu(COMMUNITY),
         Permission::CommunityView,

@@ -60,9 +60,16 @@ pub struct SessionRegistry {
     /// The per-key and per-network limits on creating an account in `open` mode (M2-G, D74),
     /// separate from the request gate and kept in memory only.
     open_gate: OpenGate,
+    /// The chat hub (M3-F), shared by every transport.
+    chat: crate::chat::SharedHub,
 }
 
 impl SessionRegistry {
+    /// The chat hub every session of this server shares (M3-F).
+    pub(crate) fn chat(&self) -> &Arc<crate::chat::Hub> {
+        self.chat.hub()
+    }
+
     /// Register a new connection. The returned guard removes it when dropped.
     pub fn register(self: &Arc<Self>, peer: Option<SocketAddr>) -> SessionGuard {
         let id = SessionId(self.next_id.fetch_add(1, Ordering::Relaxed));

@@ -27,8 +27,11 @@ pub use registry::{SessionId, SessionRef, SessionRegistry, SessionSnapshot};
 pub use server::{ServerConfig, SshServer};
 pub use terminal::RenderCap;
 
-use russh_bbs_core::access::MemberDirectory;
+use russh_bbs_core::access::{AccessStore, MemberDirectory};
+use russh_bbs_core::chat::RoomStore;
 use russh_bbs_core::community::CommunityStore;
+use russh_bbs_core::drafts::DraftStore;
+use russh_bbs_core::forums::ForumStore;
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::invites::InviteStore;
 use russh_bbs_core::limits::LimitStore;
@@ -54,8 +57,12 @@ pub trait Backend:
     + PasswordStore
     + QueueStore
     + CommunityStore
+    + RoomStore
     + RegistrationStore
     + LimitStore
+    + AccessStore
+    + DraftStore
+    + ForumStore
     + 'static
 {
 }
@@ -70,8 +77,12 @@ impl<T> Backend for T where
         + PasswordStore
         + QueueStore
         + CommunityStore
+        + RoomStore
         + RegistrationStore
         + LimitStore
+        + AccessStore
+        + DraftStore
+        + ForumStore
         + 'static
 {
 }

@@ -48,6 +48,7 @@ title = "Main menu"
 
 [menu.main.item]
 forums = "Forums"
+chat = "Chat"
 mail = "Mail"
 files = "Files"
 members = "Members"
@@ -130,7 +131,6 @@ failed = "That did not work. Nothing was changed. Try again."
 rank = "You cannot edit the profile of someone whose role ranks at or above yours. Nothing was changed."
 
 [placeholder]
-forums = "Forums are not built yet."
 mail = "Mail is not built yet."
 files = "File areas are not built yet."
 

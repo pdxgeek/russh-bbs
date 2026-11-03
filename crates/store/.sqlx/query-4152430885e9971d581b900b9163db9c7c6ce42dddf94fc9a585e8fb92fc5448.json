@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE thread SET last_post_at = COALESCE(\n                     (SELECT max(created_at) FROM post WHERE thread_id = thread.id), created_at)\n                 WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4152430885e9971d581b900b9163db9c7c6ce42dddf94fc9a585e8fb92fc5448"
+}

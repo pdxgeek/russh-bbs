@@ -6,7 +6,7 @@ These are the small classic BBS features. Each is a bounded list of short, sanit
 
 ## Where it is
 
-Main menu `c` (Community, shown with `community.view`) opens `o` One-liners, `g` Graffiti wall, `l` Last callers, `p` Polls. The waiting room never offers it and an unauthenticated key reaches none of it.
+Main menu `y` (Community, shown with `community.view`) opens `o` One-liners, `g` Graffiti wall, `l` Last callers, `p` Polls. The waiting room never offers it and an unauthenticated key reaches none of it.
 
 ## Permissions
 

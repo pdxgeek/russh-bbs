@@ -108,6 +108,20 @@ pub enum Action {
     /// Staff removed a poll with its votes (M3-J, D86). The target is the creator.
     #[strum(serialize = "community.poll_removed")]
     CommunityPollRemoved,
+    /// Staff opened a chat room (M3-F). The resource is the room; the note is its name.
+    #[strum(serialize = "chat.room_created")]
+    ChatRoomCreated,
+    /// Staff closed a chat room (M3-F). The resource is the room; nothing said in it was kept.
+    #[strum(serialize = "chat.room_closed")]
+    ChatRoomClosed,
+    /// A board was created (M3-E, D83). The resource is the board; the detail says whether it
+    /// is restricted. The name is not written.
+    #[strum(serialize = "board.created")]
+    BoardCreated,
+    /// Staff removed a post, or a whole thread with its opening post (M3-E). The target is the
+    /// author's account, the resource the board; the detail holds ids only, never the text.
+    #[strum(serialize = "post.removed")]
+    PostRemoved,
 }
 
 impl Action {

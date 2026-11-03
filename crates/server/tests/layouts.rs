@@ -207,9 +207,9 @@ async fn the_layout_and_theme_switch_live_and_are_remembered() {
     assert!(moved.contains("> [o] Sysop tools"), "{moved}");
     send(&mut channel, UP).await;
     assert!(full(&mut channel).await.contains("> [s] Terminal settings"));
-    // The Community item (M3-J) sits above Invites, so Mail is one row further up from Terminal
-    // settings than before: five moves.
-    for _ in 0..5 {
+    // Six rows up from "Terminal settings": Invites, Community (M3-J), Members, Chat (M3-F),
+    // Files, Mail.
+    for _ in 0..6 {
         send(&mut channel, UP).await;
     }
     assert!(full(&mut channel).await.contains("> [m] Mail"));
@@ -220,11 +220,11 @@ async fn the_layout_and_theme_switch_live_and_are_remembered() {
         "{picked}"
     );
     // Hotkeys still work in the lightbar.
-    send(&mut channel, "f").await;
+    send(&mut channel, "m").await;
     assert!(
         full(&mut channel)
             .await
-            .contains("Notice: Forums are not built yet.")
+            .contains("Notice: Mail is not built yet.")
     );
 
     // Compact: no box.

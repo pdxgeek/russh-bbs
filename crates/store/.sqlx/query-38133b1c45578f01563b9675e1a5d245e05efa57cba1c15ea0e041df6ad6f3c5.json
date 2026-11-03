@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT b.id AS \"id!\", b.name, b.description, b.restricted AS \"restricted!\",\n                      (SELECT count(*) FROM thread t WHERE t.board_id = b.id) AS \"threads!\"\n               FROM board b WHERE b.id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "restricted!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 4,
+        "name": "threads!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "38133b1c45578f01563b9675e1a5d245e05efa57cba1c15ea0e041df6ad6f3c5"
+}
