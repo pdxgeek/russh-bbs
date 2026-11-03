@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO account_password (account_id, hash) VALUES (?, ?)\n                 ON CONFLICT (account_id) DO UPDATE SET\n                     hash = excluded.hash, updated_at = unixepoch()",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "bfdbd86d163c97792f6fd9ef3068b0cfb7a790167880c7572088fe31f646a1ca"
+}

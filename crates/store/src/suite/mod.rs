@@ -15,6 +15,7 @@ pub(crate) mod drafts;
 pub(crate) mod founder;
 pub(crate) mod invites;
 pub(crate) mod limits;
+pub(crate) mod passwords;
 pub(crate) mod profiles;
 pub(crate) mod queue;
 pub(crate) mod registration;
@@ -30,6 +31,7 @@ use russh_bbs_core::drafts::DraftStore;
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::invites::InviteStore;
 use russh_bbs_core::limits::LimitStore;
+use russh_bbs_core::passwords::PasswordStore;
 use russh_bbs_core::profiles::ProfileStore;
 use russh_bbs_core::queue::QueueStore;
 use russh_bbs_core::registration::RegistrationStore;
@@ -53,6 +55,7 @@ pub(crate) trait TestStore:
     + DraftStore
     + TerminalSettingsStore
     + ProfileStore
+    + PasswordStore
     + QueueStore
     + RegistrationStore
     + MemberDirectory
@@ -78,6 +81,7 @@ impl<T> TestStore for T where
         + DraftStore
         + TerminalSettingsStore
         + ProfileStore
+        + PasswordStore
         + QueueStore
         + RegistrationStore
         + MemberDirectory
@@ -147,7 +151,7 @@ macro_rules! shared_suite {
             #[allow(unused_imports)]
             use super::*;
             use $crate::suite::{
-                access, access_edit, accounts, audit, credits, drafts, founder, invites, limits, profiles,
+                access, access_edit, accounts, audit, credits, drafts, founder, invites, limits, passwords, profiles,
                 queue, registration, scheduler, terminal_settings,
             };
 
@@ -263,6 +267,16 @@ macro_rules! shared_suite {
                 limits::limits_and_usage_survive_a_reopen,
                 limits::a_broken_store_errors_instead_of_reading_as_unlimited,
                 limits::a_session_start_counts_calls_in_the_store,
+                passwords::a_new_account_has_no_password,
+                passwords::a_hash_round_trips_and_a_later_one_replaces_it,
+                passwords::the_login_lookup_ignores_case_and_finds_every_state,
+                passwords::clearing_removes_the_hash_and_audits_only_a_real_change,
+                passwords::the_audit_row_holds_no_hash,
+                passwords::an_unknown_account_is_not_found_on_every_call,
+                passwords::an_upgrade_replaces_only_the_hash_it_was_read_from,
+                passwords::a_failed_audit_write_leaves_the_password_unchanged,
+                passwords::the_database_refuses_anything_but_an_argon2id_string,
+                passwords::a_hash_survives_a_reopen_and_goes_with_its_account,
                 profiles::an_active_member_without_a_profile_has_an_empty_one,
                 profiles::a_saved_profile_round_trips_and_a_later_save_replaces_it,
                 profiles::saving_a_profile_for_an_unknown_account_fails,

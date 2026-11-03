@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT a.id AS \"id!\", a.username AS \"username!\", a.state AS \"state!\",\n                      a.created_at AS \"created_at!\", p.hash AS \"hash?\"\n               FROM accounts a LEFT JOIN account_password p ON p.account_id = a.id\n               WHERE lower(a.username) = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "username!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "state!",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at!",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "hash?",
+        "ordinal": 4,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "aac146d73dd3757b2d4297c4b26eab84376319a08141f11ee85455a60a9387d9"
+}

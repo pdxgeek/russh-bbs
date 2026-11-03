@@ -45,6 +45,7 @@ use tracing::{debug, info, warn};
 
 use super::Backend;
 use super::abort::Abort;
+use super::password::PasswordLogin;
 use super::registry::SessionRef;
 use super::screen::Screen;
 use super::terminal::{KeyParser, PtySize};
@@ -53,6 +54,10 @@ use crate::founder::Founder;
 /// How long a member's session start (settings and login time) may take before the shell
 /// falls back. A slow store must not hang the screen.
 pub(super) const MEMBER_START_TIMEOUT: Duration = Duration::from_secs(2);
+
+/// How long one password screen request may take: hashing a new password and writing it. Longer
+/// than a store call because argon2id is slow on purpose and waits its turn on the pool.
+const PASSWORD_REQUEST_TIMEOUT: Duration = Duration::from_secs(10);
 
 /// Most input bytes the inbox holds between two cycles. The input budget is far below this; it
 /// is a hard ceiling on memory in case the cycle is delayed.
@@ -146,6 +151,8 @@ pub(super) struct ShellParts<D> {
     pub(super) fingerprint: Option<Fingerprint>,
     pub(super) peer_ip: Option<IpAddr>,
     pub(super) account: Option<AccountId>,
+    /// Password login's hashing pool, for the password screen (M3-D).
+    pub(super) passwords: Arc<PasswordLogin>,
     /// The signed-in session's place in the resource limits (M2-H): its session slot and the
     /// minutes it has used. `None` for the waiting room, the founder claim and a refused start.
     pub(super) meter: Option<MemberMeter>,
@@ -231,6 +238,8 @@ impl<D: Backend> Shell<D> {
                     self.run_members(request).await;
                 } else if let Some(request) = effects.queue_request.take() {
                     self.run_queue(request).await;
+                } else if let Some(request) = effects.password_request.take() {
+                    self.run_password(request).await;
                 } else {
                     break;
                 }
@@ -672,6 +681,31 @@ impl<D: Backend> Shell<D> {
                 None => break,
             }
         }
+    }
+
+    /// Run the password request the password screen is waiting on and give it the answer.
+    /// Core checks `account.set_password` against the snapshot loaded for this action and hashes
+    /// on the pool; a slow or failing store, or a timeout, is "failed" and nothing changes. The
+    /// request is not logged: it holds what was typed.
+    async fn run_password(&mut self, request: russh_bbs_core::passwords::Request) {
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let response = timeout(
+            PASSWORD_REQUEST_TIMEOUT,
+            russh_bbs_core::passwords::execute(
+                &*self.parts.directory,
+                self.parts.passwords.pool(),
+                &access,
+                request,
+            ),
+        )
+        .await
+        .unwrap_or_else(|_| {
+            warn!(session = ?self.parts.session.id(), "password request timed out");
+            russh_bbs_core::passwords::Response::Refused(russh_bbs_core::passwords::Refusal::Failed)
+        });
+        self.parts.screen.deliver_password(response);
     }
 
     /// Store settings the member changed. A failure is logged; the session keeps its choice.

@@ -10,6 +10,7 @@ pub mod icons;
 pub mod invites;
 pub mod limits;
 pub mod menu;
+pub mod passwords;
 pub mod profiles;
 pub mod queue;
 pub mod registration;

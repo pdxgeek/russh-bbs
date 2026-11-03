@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE account_password SET hash = $1 WHERE account_id = $2 AND hash = $3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a815eed71f10334488f9f52ce41866618feb38b5345e83f329ce1e12725012ed"
+}

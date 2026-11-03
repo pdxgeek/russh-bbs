@@ -23,6 +23,8 @@ mod error;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod invite_rows;
 mod limit_rows;
+#[cfg(any(feature = "sqlite", feature = "postgres"))]
+mod password_rows;
 mod profile_rows;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod queue_rows;
