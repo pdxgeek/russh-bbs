@@ -134,11 +134,39 @@ enum Pending {
     Feed,
 }
 
+/// Which rows of the current list the last draw showed. Drawing is the only thing that knows
+/// how many rows fit, so it records the window here and the keys read it back (FIX-M3-4):
+/// a digit picks among the drawn rows, and Page Up / Page Down move by one drawn page.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(super) struct ListView {
+    /// Index of the first drawn item.
+    pub(super) top: usize,
+    /// How many items were drawn (0 before the first draw).
+    pub(super) shown: usize,
+}
+
+/// A [`ListView`] shared between drawing (`&self`) and keys. A mutex because the screen is held
+/// across awaits and so must be `Sync`; the value is `Copy` and never held across a call.
+#[derive(Debug, Default)]
+pub(super) struct ViewCell(Mutex<ListView>);
+
+impl ViewCell {
+    pub(super) fn get(&self) -> ListView {
+        *self.0.lock().unwrap_or_else(PoisonError::into_inner)
+    }
+
+    pub(super) fn set(&self, view: ListView) {
+        *self.0.lock().unwrap_or_else(PoisonError::into_inner) = view;
+    }
+}
+
 /// The forum screens.
 #[derive(Debug)]
 pub(crate) struct ForumsScreen {
     pub(super) state: State,
     pub(super) notice: Option<(NoticeKind, String)>,
+    /// Set by drawing; see [`ListView`].
+    pub(super) view: ViewCell,
     pending: Option<Pending>,
     settings: TerminalSettings,
 }
@@ -151,13 +179,6 @@ fn problem(text: &str) -> (NoticeKind, String) {
     (NoticeKind::Error, text.to_owned())
 }
 
-fn digit(key: Key) -> Option<usize> {
-    match key {
-        Key::Char(c @ '1'..='9') => c.to_digit(10).map(|d| d as usize - 1),
-        _ => None,
-    }
-}
-
 /// The row a list key lands on, if it moves or picks one.
 enum Pick {
     Move(usize),
@@ -165,17 +186,30 @@ enum Pick {
     None,
 }
 
-fn pick(key: Key, cursor: usize, len: usize) -> Pick {
+/// What a list key does. `view` is what the last draw showed: digits count the drawn rows, so
+/// `Enter` and a digit can only ever open a row that is on screen.
+fn pick(key: Key, cursor: usize, len: usize, view: ListView) -> Pick {
     if len == 0 {
         return Pick::None;
     }
+    let page = view.shown.max(1);
+    let cursor = cursor.min(len - 1);
     match key {
         Key::Up => Pick::Move(cursor.saturating_sub(1)),
         Key::Down => Pick::Move((cursor + 1).min(len - 1)),
-        Key::Enter => Pick::Open(cursor.min(len - 1)),
-        key => digit(key)
-            .filter(|n| *n < len)
+        Key::PageUp => Pick::Move(cursor.saturating_sub(page)),
+        Key::PageDown => Pick::Move((cursor + page).min(len - 1)),
+        Key::Home => Pick::Move(0),
+        Key::End => Pick::Move(len - 1),
+        Key::Enter => Pick::Open(cursor),
+        Key::Char(c @ '1'..='9') => c
+            .to_digit(10)
+            .and_then(|d| usize::try_from(d - 1).ok())
+            .filter(|n| *n < view.shown)
+            .map(|n| view.top + n)
+            .filter(|at| *at < len)
             .map_or(Pick::None, Pick::Open),
+        _ => Pick::None,
     }
 }
 
@@ -186,6 +220,7 @@ impl ForumsScreen {
             Self {
                 state: State::Start,
                 notice: None,
+                view: ViewCell::default(),
                 pending: Some(Pending::Boards),
                 settings,
             },
@@ -251,7 +286,7 @@ impl ForumsScreen {
     }
 
     fn boards_key(&mut self, key: Key, list: BoardList, mut cursor: usize) -> ForumEffect {
-        match pick(key, cursor, list.boards.len()) {
+        match pick(key, cursor, list.boards.len(), self.view.get()) {
             Pick::Move(to) => cursor = to,
             Pick::Open(at) => {
                 let board = list.boards[at].id;
@@ -290,7 +325,7 @@ impl ForumsScreen {
 
     fn threads_key(&mut self, key: Key, page: ThreadPage, mut cursor: usize) -> ForumEffect {
         let board = page.board.id;
-        match pick(key, cursor, page.threads.len()) {
+        match pick(key, cursor, page.threads.len(), self.view.get()) {
             Pick::Move(to) => cursor = to,
             Pick::Open(at) => {
                 let thread = page.threads[at].id;
@@ -360,7 +395,7 @@ impl ForumsScreen {
         query: String,
         mut cursor: usize,
     ) -> ForumEffect {
-        match pick(key, cursor, page.hits.len()) {
+        match pick(key, cursor, page.hits.len(), self.view.get()) {
             Pick::Move(to) => cursor = to,
             Pick::Open(at) => {
                 let hit = &page.hits[at];

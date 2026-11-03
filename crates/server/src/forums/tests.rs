@@ -17,6 +17,7 @@ use russh_bbs_core::icons::Tier;
 use russh_bbs_core::sanitize::MultiLine;
 use russh_bbs_core::store::UnixSeconds;
 use russh_bbs_core::terminal_settings::TerminalSettings;
+use russh_bbs_core::waiting_room::NoticeKind;
 
 use super::exec::{BoardList, Fail, Purpose, Request, Response};
 use super::flow::{ForumEffect, ForumsScreen};
@@ -648,4 +649,81 @@ fn page_keys_turn_the_readers_pages_and_other_editing_keys_do_nothing() {
     assert_eq!(text(&screen), before, "those keys changed nothing");
     press(&mut screen, Key::PageUp);
     assert_eq!(text(&screen), first, "back on the first page");
+}
+
+// ---- long lists (FIX-M3-4, QA M3 M2) ----
+
+fn text_at(screen: &ForumsScreen, area: Rect) -> String {
+    let buffer = draw(screen, area);
+    (0..buffer.area.height)
+        .map(|y| {
+            (0..buffer.area.width)
+                .map(|x| buffer[(x, y)].symbol().to_owned())
+                .collect::<String>()
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+fn many_boards(count: i64) -> ForumsScreen {
+    let (mut screen, _) = ForumsScreen::open(settings());
+    let boards = (1..=count).map(|n| board(n, &format!("Board{n:03}"))).collect();
+    assert!(
+        screen
+            .deliver(Response::Boards(Ok(BoardList {
+                boards,
+                can_manage: true,
+                can_feeds: true,
+            })))
+            .is_none()
+    );
+    screen.notice = None;
+    screen
+}
+
+/// The name on the drawn selected row, if one is drawn.
+fn selected_row(shown: &str) -> Option<String> {
+    shown
+        .lines()
+        .find_map(|line| line.split_once("> ").map(|(_, rest)| rest.to_owned()))
+        .filter(|rest| rest.contains("Board"))
+}
+
+const SMALL: Rect = Rect::new(0, 0, 40, 10);
+const TINY: Rect = Rect::new(0, 0, 30, 8);
+
+fn info_notice(screen: &mut ForumsScreen) {
+    screen.notice = Some((NoticeKind::Info, "Feed added".to_owned()));
+}
+
+#[test]
+fn the_board_list_always_draws_the_selected_row_and_the_notice() {
+    for area in [AREA, SMALL, TINY] {
+        for count in [1_i64, 20, 23, 100] {
+            for step in 0..count {
+                let mut screen = many_boards(count);
+                for _ in 0..step {
+                    // Draw between keys, as the session does, so the window can follow.
+                    let _ = text_at(&screen, area);
+                    screen.input(Key::Down, area);
+                }
+                info_notice(&mut screen);
+                let shown = text_at(&screen, area);
+                let expected = format!("Board{:03}", step + 1);
+                assert!(
+                    selected_row(&shown).is_some_and(|r| r.contains(&expected)),
+                    "{area:?} {count} boards, cursor {step}: selected row missing\n{shown}"
+                );
+                assert!(
+                    shown.contains("Feed added"),
+                    "{area:?} {count} boards, cursor {step}: notice missing\n{shown}"
+                );
+                let Request::Threads { board, .. } = expect_request(screen.input(Key::Enter, area))
+                else {
+                    panic!("Enter did not open a board");
+                };
+                assert_eq!(board, BoardId::from_raw(step + 1));
+            }
+        }
+    }
 }
