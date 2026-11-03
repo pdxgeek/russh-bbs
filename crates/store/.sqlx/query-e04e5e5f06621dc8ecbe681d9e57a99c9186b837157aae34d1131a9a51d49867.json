@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT context, body, updated_at FROM draft WHERE account_id = ? AND context = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "context",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "body",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 2,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "e04e5e5f06621dc8ecbe681d9e57a99c9186b837157aae34d1131a9a51d49867"
+}

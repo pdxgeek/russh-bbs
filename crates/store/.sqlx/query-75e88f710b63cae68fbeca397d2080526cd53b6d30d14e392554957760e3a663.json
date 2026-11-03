@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT context, updated_at, length(body) AS \"chars!: i64\"\n               FROM draft WHERE account_id = ? ORDER BY updated_at DESC, context",
+  "describe": {
+    "columns": [
+      {
+        "name": "context",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "chars!: i64",
+        "ordinal": 2,
+        "type_info": "Null"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "75e88f710b63cae68fbeca397d2080526cd53b6d30d14e392554957760e3a663"
+}

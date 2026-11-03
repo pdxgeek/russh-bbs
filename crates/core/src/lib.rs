@@ -3,6 +3,7 @@
 
 pub mod access;
 pub mod audit;
+pub mod drafts;
 pub mod founder;
 pub mod icons;
 pub mod invites;

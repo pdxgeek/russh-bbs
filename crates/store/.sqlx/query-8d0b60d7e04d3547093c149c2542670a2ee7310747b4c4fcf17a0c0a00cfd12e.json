@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT context, updated_at, char_length(body)::bigint AS \"chars!\"\n               FROM draft WHERE account_id = $1 ORDER BY updated_at DESC, context",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "context",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "updated_at",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "chars!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "8d0b60d7e04d3547093c149c2542670a2ee7310747b4c4fcf17a0c0a00cfd12e"
+}

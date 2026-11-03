@@ -61,6 +61,9 @@ anes = { version = "0.2", default-features = false, features = ["parser"] }
 strum = { version = "0.28", features = ["derive"] }
 # Terminal rendering over the PTY (decision D7, Q5/D19).
 ratatui = { version = "0.30", default-features = false, features = ["crossterm"] }
+# Multi-line editor widget for the M3 message editor (D48). `no-backend` drops its crossterm
+# input conversion: keys come from our own parser and are built by hand.
+tui-textarea-2 = { version = "=0.13.2", default-features = false, features = ["no-backend"] }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
