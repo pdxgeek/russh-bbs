@@ -1,0 +1,68 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT p.id AS \"id!\", p.thread_id AS \"thread_id!\", p.board_id AS \"board_id!\",\n                      b.name AS board_name, t.subject AS subject, a.username AS \"author?\",\n                      p.body AS body, p.created_at AS \"created_at!\",\n                      (SELECT count(*) FROM post q\n                       WHERE q.thread_id = p.thread_id AND q.id < p.id) AS \"pos!: i64\"\n               FROM post_fts\n               JOIN post p ON p.id = post_fts.rowid\n               JOIN thread t ON t.id = p.thread_id\n               JOIN board b ON b.id = p.board_id\n               LEFT JOIN accounts a ON a.id = p.author_id\n               WHERE post_fts MATCH ?\n                 AND p.board_id IN (SELECT CAST(value AS INTEGER) FROM json_each(?))\n               ORDER BY post_fts.rank, p.id DESC\n               LIMIT ? OFFSET ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "thread_id!",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "board_id!",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "board_name",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "subject",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "author?",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "body",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at!",
+        "ordinal": 7,
+        "type_info": "Integer"
+      },
+      {
+        "name": "pos!: i64",
+        "ordinal": 8,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "b3390f00ceb1bd044ef89d23b2b8fdc998f1b6cde4766b4486324755c5dd3e09"
+}

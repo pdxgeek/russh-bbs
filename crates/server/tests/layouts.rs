@@ -218,11 +218,11 @@ async fn the_layout_and_theme_switch_live_and_are_remembered() {
         "{picked}"
     );
     // Hotkeys still work in the lightbar.
-    send(&mut channel, "f").await;
+    send(&mut channel, "m").await;
     assert!(
         full(&mut channel)
             .await
-            .contains("Notice: Forums are not built yet.")
+            .contains("Notice: Mail is not built yet.")
     );
 
     // Compact: no box.

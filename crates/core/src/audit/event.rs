@@ -99,6 +99,14 @@ pub enum Action {
     /// A member removed their own password (M3-D, D81). Written only when there was one.
     #[strum(serialize = "password.cleared")]
     PasswordCleared,
+    /// A board was created (M3-E, D83). The resource is the board; the detail says whether it
+    /// is restricted. The name is not written.
+    #[strum(serialize = "board.created")]
+    BoardCreated,
+    /// Staff removed a post, or a whole thread with its opening post (M3-E). The target is the
+    /// author's account, the resource the board; the detail holds ids only, never the text.
+    #[strum(serialize = "post.removed")]
+    PostRemoved,
 }
 
 impl Action {

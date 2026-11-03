@@ -51,6 +51,7 @@ use russh_bbs_core::terminal_settings::{
 use russh_bbs_core::waiting_room::{Page, RedeemRequest, RoomEffect, RoomInput, View, WaitingRoom};
 
 use super::terminal::{Key, PtySize, RenderCap};
+use crate::forums::{self, DrawCtx, ForumEffect, ForumsScreen};
 use crate::members;
 use crate::settings::{self, Look};
 use crate::sysop;
@@ -211,6 +212,10 @@ pub(super) struct KeyEffects {
     /// A password request (status, set, clear) the password screen is waiting on (M3-D). The
     /// session runs it against the store and gives the answer to [`Screen::deliver_password`].
     pub(super) password_request: Option<PasswordRequest>,
+    /// A forum request (board list, thread, search, post, ...) the forum screens are waiting
+    /// on (M3-E). The session runs it against the store and gives the answer to
+    /// [`Screen::deliver_forum`].
+    pub(super) forum_request: Option<forums::Request>,
     /// Keys held back because `members_request` has to be answered first. The session applies
     /// them after delivering the answer, so a fast typist's next key is not lost.
     pub(super) held_back: Vec<Key>,
@@ -228,6 +233,7 @@ impl KeyEffects {
         self.members_request = later.members_request;
         self.queue_request = later.queue_request;
         self.password_request = later.password_request;
+        self.forum_request = later.forum_request;
         self.held_back = later.held_back;
     }
 }
@@ -240,18 +246,46 @@ pub(super) enum Content {
     Claim(ClaimForm),
     /// A member's signed-in session: login, glyph test, settings, home, logoff.
     Member(Box<MemberFlow>),
+    /// The forum screens (M3-E). The member's flow waits inside and comes back when they leave.
+    Forums(Box<ForumsContent>),
     /// A resource limit refused the session (M2-H): the honest message, then the session ends.
     /// The lines are fixed words and numbers from core's `LimitRefusal`, so they need no
     /// sanitizing.
     Limited(Vec<String>),
 }
 
+/// A member in the forums: the screens, and the flow that is given back at the main menu.
+pub(super) struct ForumsContent {
+    flow: Box<MemberFlow>,
+    screen: ForumsScreen,
+}
+
 impl Content {
+    /// The member's flow, while the content is a member's session (at the menu or in the forums).
+    fn flow(&self) -> Option<&MemberFlow> {
+        match self {
+            Self::Member(flow) => Some(flow),
+            Self::Forums(session) => Some(&session.flow),
+            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
+        }
+    }
+
+    fn flow_mut(&mut self) -> Option<&mut MemberFlow> {
+        match self {
+            Self::Member(flow) => Some(flow),
+            Self::Forums(session) => Some(&mut session.flow),
+            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
+        }
+    }
+
     fn view(&self, ui: &Ui) -> View {
         match self {
             Self::Room(room) => room.view(),
             Self::Claim(form) => form.view(),
             Self::Member(flow) => flow.view(ui.theme(flow.settings().theme()).strings()),
+            Self::Forums(session) => session
+                .flow
+                .view(ui.theme(session.flow.settings().theme()).strings()),
             Self::Limited(lines) => View {
                 title: TITLE,
                 heading: LIMIT_HEADING,
@@ -270,7 +304,7 @@ impl Content {
     fn menu_page(&self) -> Option<MenuPage> {
         match self {
             Self::Member(flow) => flow.menu_page(),
-            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
+            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Limited(_) => None,
         }
     }
 
@@ -279,7 +313,7 @@ impl Content {
     fn is_framed_screen(&self) -> bool {
         match self {
             Self::Member(flow) => flow.is_invite_screen(),
-            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => false,
+            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Limited(_) => false,
         }
     }
 
@@ -287,7 +321,7 @@ impl Content {
     fn members_view(&self) -> Option<ScreenView> {
         match self {
             Self::Member(flow) => flow.members_view(),
-            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
+            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Limited(_) => None,
         }
     }
 
@@ -295,47 +329,41 @@ impl Content {
     fn queue_view(&self) -> Option<QueueView> {
         match self {
             Self::Member(flow) => flow.queue_view(),
-            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
+            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Limited(_) => None,
         }
     }
 
     /// The icon tier markers are drawn in: the member's, which is ASCII until the glyph test
     /// is answered.
     fn tier(&self) -> Tier {
-        match self {
-            Self::Member(flow) => flow.settings().icon_tier(),
-            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => Tier::Ascii,
-        }
+        self.flow()
+            .map_or(Tier::Ascii, |flow| flow.settings().icon_tier())
     }
 
     /// How to draw: a member's settings choose color and borders; everyone else gets the
     /// plain layout (the waiting room and claim prompt predate settings and use no color).
     fn look(&self, ui: &Ui, area: Rect) -> Option<Look> {
-        match self {
-            Self::Member(flow) => {
-                let settings = flow.settings();
-                let theme = ui.theme(settings.theme());
-                let layout = layout::effective(settings.layout(), area);
-                Some(Look::themed(settings, layout, theme.palette()))
-            }
-            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
-        }
+        self.flow().map(|flow| {
+            let settings = flow.settings();
+            let theme = ui.theme(settings.theme());
+            let layout = layout::effective(settings.layout(), area);
+            Look::themed(settings, layout, theme.palette())
+        })
     }
 
     /// The layout in force for a member at `area` (their choice, or a fallback that fits).
     fn layout(&self, area: Rect) -> LayoutId {
-        match self {
-            Self::Member(flow) => layout::effective(flow.settings().layout(), area),
-            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => LayoutId::Classic,
-        }
+        self.flow().map_or(LayoutId::Classic, |flow| {
+            layout::effective(flow.settings().layout(), area)
+        })
     }
 
     /// The strings to draw with: the member's theme, or the default for everyone else.
     fn strings<'a>(&self, ui: &'a Ui) -> &'a StringTable {
-        match self {
-            Self::Member(flow) => ui.theme(flow.settings().theme()).strings(),
-            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => ui.strings(),
-        }
+        self.flow().map_or_else(
+            || ui.strings(),
+            |flow| ui.theme(flow.settings().theme()).strings(),
+        )
     }
 }
 
@@ -398,6 +426,8 @@ impl Screen {
     /// once for the whole batch, so a flood of keys costs one redraw, not one per key.
     pub(super) fn apply_keys(&mut self, keys: &[Key]) -> KeyEffects {
         let mut effects = KeyEffects::default();
+        // Set when the keys moved the session into or out of the forum screens (M3-E).
+        let mut moved = ForumMove::Stay;
         match &mut self.content {
             Content::Room(room) => {
                 for input in keys.iter().copied().filter_map(room_input) {
@@ -440,6 +470,9 @@ impl Screen {
                 }
             }
             Content::Limited(_) => effects.disconnect = true,
+            Content::Forums(session) => {
+                moved = forum_keys(&mut session.screen, keys, self.viewport, &mut effects);
+            }
             Content::Member(flow) => {
                 for (index, input) in keys
                     .iter()
@@ -452,6 +485,10 @@ impl Screen {
                         MemberEffect::Save(settings) => effects.save_settings = Some(settings),
                         MemberEffect::Invite(request) => {
                             effects.invite = Some(request);
+                            break;
+                        }
+                        MemberEffect::Forums => {
+                            moved = ForumMove::Open(index);
                             break;
                         }
                         MemberEffect::Disconnect => {
@@ -481,6 +518,7 @@ impl Screen {
                 }
             }
         }
+        self.forum_transitions(&mut effects, keys, moved);
         self.dirty = true;
         if effects.save_settings.is_some() {
             // A size override changes the drawn size; rebuild so the old cells are cleared.
@@ -492,15 +530,12 @@ impl Screen {
     /// What the signed-in session holds, for the front end's own checks. `None` outside a
     /// member session.
     pub(super) fn access(&self) -> Option<&Snapshot> {
-        match &self.content {
-            Content::Member(flow) => Some(flow.access_snapshot()),
-            Content::Room(_) | Content::Claim(_) | Content::Limited(_) => None,
-        }
+        self.content.flow().map(MemberFlow::access_snapshot)
     }
 
     /// Replace what a member session holds, for the next action (D33).
     pub(super) fn set_access(&mut self, access: Snapshot) {
-        if let Content::Member(flow) = &mut self.content {
+        if let Some(flow) = self.content.flow_mut() {
             flow.set_access(access);
         }
     }
@@ -512,6 +547,67 @@ impl Screen {
             flow.deliver_members(response);
         }
         self.dirty = true;
+    }
+
+    /// Carry out a move into or out of the forum screens that the keys asked for.
+    fn forum_transitions(&mut self, effects: &mut KeyEffects, keys: &[Key], moved: ForumMove) {
+        match moved {
+            ForumMove::Stay => {}
+            ForumMove::Open(index) => {
+                effects.forum_request = Some(self.open_forums());
+                effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
+            }
+            ForumMove::Leave => self.close_forums(),
+            ForumMove::LogOff(save) => {
+                self.close_forums();
+                if let Content::Member(flow) = &mut self.content {
+                    // Ctrl-C and Ctrl-D end the session from anywhere (D54): the flow shows its
+                    // goodbye. The editor's changed draft is stored first.
+                    let _ = flow.input(MemberInput::Quit);
+                }
+                effects.disconnect = true;
+                effects.forum_request = save.map(forums::Request::SaveDraft);
+            }
+        }
+    }
+
+    /// Move the member into the forum screens; the request loads the board list.
+    fn open_forums(&mut self) -> forums::Request {
+        let placeholder = Content::Limited(Vec::new());
+        match std::mem::replace(&mut self.content, placeholder) {
+            Content::Member(flow) => {
+                let (screen, request) = ForumsScreen::open(*flow.settings());
+                self.content = Content::Forums(Box::new(ForumsContent { flow, screen }));
+                self.rebuild = true;
+                request
+            }
+            other => {
+                self.content = other;
+                forums::Request::Boards
+            }
+        }
+    }
+
+    /// Give the member back to the main menu.
+    fn close_forums(&mut self) {
+        let placeholder = Content::Limited(Vec::new());
+        match std::mem::replace(&mut self.content, placeholder) {
+            Content::Forums(session) => {
+                self.content = Content::Member(session.flow);
+                self.rebuild = true;
+            }
+            other => self.content = other,
+        }
+    }
+
+    /// The answer to the forum request taken from [`KeyEffects`]. Returns a follow-up request
+    /// when the answer calls for one (the list again after a removal).
+    pub(super) fn deliver_forum(&mut self, response: forums::Response) -> Option<forums::Request> {
+        self.dirty = true;
+        match &mut self.content {
+            Content::Forums(session) => session.screen.deliver(response),
+            Content::Room(_) | Content::Claim(_) | Content::Member(_) | Content::Limited(_) => None,
+        }
     }
 
     /// The answer to the queue request taken from [`KeyEffects`]. The screen shows it on the
@@ -537,7 +633,7 @@ impl Screen {
     pub(super) fn take_queue_request(&mut self) -> Option<QueueRequest> {
         match &mut self.content {
             Content::Member(flow) => flow.take_queue_request(),
-            Content::Room(_) | Content::Claim(_) | Content::Limited(_) => None,
+            Content::Room(_) | Content::Claim(_) | Content::Forums(_) | Content::Limited(_) => None,
         }
     }
 
@@ -546,7 +642,9 @@ impl Screen {
     pub(super) fn claim_rejected(&mut self) -> bool {
         let disconnect = match &mut self.content {
             Content::Claim(form) => form.rejected() == ClaimEffect::Disconnect,
-            Content::Room(_) | Content::Member(_) | Content::Limited(_) => false,
+            Content::Room(_) | Content::Member(_) | Content::Forums(_) | Content::Limited(_) => {
+                false
+            }
         };
         self.dirty = true;
         disconnect
@@ -677,7 +775,7 @@ impl Screen {
         let farewell = match &self.content {
             Content::Member(flow) => flow.farewell(self.content.strings(&self.ui)),
             Content::Limited(lines) => Some(lines.clone()),
-            Content::Room(_) | Content::Claim(_) => None,
+            Content::Room(_) | Content::Claim(_) | Content::Forums(_) => None,
         };
         for line in farewell.into_iter().flatten() {
             bytes.extend_from_slice(line.as_bytes());
@@ -687,6 +785,21 @@ impl Screen {
     }
 
     fn draw(&mut self) -> io::Result<Vec<u8>> {
+        if let Content::Forums(session) = &self.content {
+            let settings = session.flow.settings();
+            let theme = self.ui.theme(settings.theme());
+            let layout = layout::effective(settings.layout(), self.viewport);
+            let ctx = DrawCtx {
+                ui: &self.ui,
+                strings: theme.strings(),
+                settings,
+                look: Look::themed(settings, layout, theme.palette()),
+                tier: settings.icon_tier(),
+            };
+            self.terminal
+                .draw(|frame| forums::render(frame, &session.screen, &ctx))?;
+            return Ok(self.take_output());
+        }
         let view = self.content.view(&self.ui);
         let look = self.content.look(&self.ui, self.viewport);
         let layout = self.content.layout(self.viewport);
@@ -789,7 +902,7 @@ fn window_size(window: PtySize) -> Size {
 /// screen (start, claim, redeem) calls this, so none can forget the theme list.
 fn prepare_member(content: &mut Content, pty: PtySize, ui: &Ui) {
     tell_flow_the_terminal(content, pty);
-    if let Content::Member(flow) = content {
+    if let Some(flow) = content.flow_mut() {
         flow.set_themes(ui.theme_names());
     }
 }
@@ -797,7 +910,7 @@ fn prepare_member(content: &mut Content, pty: PtySize, ui: &Ui) {
 /// Give a member session the real terminal size, so its settings screen can say when a stored
 /// size override is cut down to fit (D64). Other content has no overrides.
 fn tell_flow_the_terminal(content: &mut Content, pty: PtySize) {
-    if let Content::Member(flow) = content {
+    if let Some(flow) = content.flow_mut() {
         flow.set_terminal(pty.cols(), pty.rows());
     }
 }
@@ -805,10 +918,10 @@ fn tell_flow_the_terminal(content: &mut Content, pty: PtySize) {
 /// The size to draw at: the client's, with a member's width and height overrides applied.
 fn drawn_size(pty: PtySize, content: &Content) -> PtySize {
     match content {
-        Content::Member(flow) => {
+        Content::Member(_) | Content::Forums(_) => content.flow().map_or(pty, |flow| {
             let (cols, rows) = flow.settings().size(pty.cols(), pty.rows());
             PtySize::from_request(u32::from(cols), u32::from(rows))
-        }
+        }),
         Content::Room(_) | Content::Claim(_) | Content::Limited(_) => pty,
     }
 }
@@ -824,6 +937,42 @@ fn viewport(drawn: PtySize, cap: RenderCap) -> Rect {
         cols,
         rows,
     )
+}
+
+/// What a batch of keys did to the forum screens' place in the session (M3-E).
+enum ForumMove {
+    /// Nothing: the keys stayed where they were.
+    Stay,
+    /// The menu chose Forums at this key.
+    Open(usize),
+    /// The forums asked to go back to the main menu.
+    Leave,
+    /// The member logged off from inside the forums, with the editor's changed draft (if any)
+    /// to store first.
+    LogOff(Option<crate::ui::editor::DraftSave>),
+}
+
+/// Feed `keys` to the forum screens until one needs the store (the rest are held back, like the
+/// other screens) or leaves.
+fn forum_keys(
+    screen: &mut ForumsScreen,
+    keys: &[Key],
+    area: Rect,
+    effects: &mut KeyEffects,
+) -> ForumMove {
+    for (index, key) in keys.iter().copied().enumerate() {
+        match screen.input(key, area) {
+            ForumEffect::Stay => {}
+            ForumEffect::Exit => return ForumMove::Leave,
+            ForumEffect::Request(request) => {
+                effects.forum_request = Some(request);
+                effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
+                break;
+            }
+            ForumEffect::LogOff(save) => return ForumMove::LogOff(save),
+        }
+    }
+    ForumMove::Stay
 }
 
 /// Translate a keypress for the room. Keys the room has no use for are dropped.

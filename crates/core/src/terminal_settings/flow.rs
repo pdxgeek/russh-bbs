@@ -62,6 +62,9 @@ pub enum MemberEffect {
     /// Carry out an invite request with the store, then report it with
     /// [`MemberFlow::invite_done`]. Nothing is shown until then (M2-D).
     Invite(InviteRequest),
+    /// The member chose Forums: the front end hands the session to the forum screens (M3-E)
+    /// and gives the flow back when they end. The flow stays on its home page meanwhile.
+    Forums,
     /// Redraw (the logoff screen is showing) and close the session.
     Disconnect,
 }
@@ -342,6 +345,7 @@ impl MemberFlow {
         };
         match self.menu.press(&self.access, key) {
             MenuOutcome::Stay => MemberEffect::Stay,
+            MenuOutcome::Action(Action::Forums) => MemberEffect::Forums,
             MenuOutcome::Action(Action::TerminalSettings) => {
                 self.page = Page::Settings;
                 MemberEffect::Stay
@@ -385,7 +389,8 @@ impl MemberFlow {
             Action::MemberList => Some(MembersScreen::list(own)),
             Action::OwnProfile => own.map(MembersScreen::own_profile),
             Action::EditOwnProfile => own.map(MembersScreen::edit_own),
-            Action::TerminalSettings
+            Action::Forums
+            | Action::TerminalSettings
             | Action::LogOff
             | Action::SysopQueue
             | Action::VouchQueue

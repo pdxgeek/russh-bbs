@@ -53,6 +53,8 @@ impl UniversalKey {
 /// `docs/access.md` and its variant to [`Permission`] in the same change.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Action {
+    /// Open the forums: the board list (`forum.list`, M3-E).
+    Forums,
     /// Open the terminal settings screen.
     TerminalSettings,
     /// Make an invite code and show it once (`invites.create`, M2-D).
@@ -81,6 +83,7 @@ impl Action {
     #[must_use]
     pub const fn permission(self) -> Option<Permission> {
         match self {
+            Self::Forums => Some(Permission::ForumList),
             Self::TerminalSettings => Some(Permission::AccountEditSettings),
             Self::InviteCreate | Self::InviteList => Some(Permission::InvitesCreate),
             Self::InviteTree => Some(Permission::InvitesViewTree),

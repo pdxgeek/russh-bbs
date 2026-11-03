@@ -301,8 +301,8 @@ fn hotkeys_ignore_case_and_menus_nest_and_unwind() {
 fn a_placeholder_says_so_and_the_notice_clears_on_the_next_key() {
     let member = member();
     let mut session = MenuSession::new(main_tree());
-    session.press(&member, MenuKey::Char('f'));
-    assert_eq!(session.page(&member).notice, Some("placeholder.forums"));
+    session.press(&member, MenuKey::Char('m'));
+    assert_eq!(session.page(&member).notice, Some("placeholder.mail"));
     session.press(&member, MenuKey::Char('x'));
     assert_eq!(session.page(&member).notice, None);
 }
@@ -397,7 +397,7 @@ fn text_keys_cover_titles_labels_and_placeholder_notes() {
     for expected in [
         "menu.main.title",
         "menu.main.item.settings",
-        "placeholder.forums",
+        "placeholder.mail",
         "menu.sysop.title",
     ] {
         assert!(keys.contains(&expected), "{expected}");

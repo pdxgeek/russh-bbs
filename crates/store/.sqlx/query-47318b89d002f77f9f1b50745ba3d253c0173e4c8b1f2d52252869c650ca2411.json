@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT b.id AS \"id!\", b.name, b.description, b.restricted AS \"restricted!: bool\",\n                      (SELECT count(*) FROM thread t WHERE t.board_id = b.id) AS \"threads!: i64\"\n               FROM board b WHERE b.id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "description",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "restricted!: bool",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "threads!: i64",
+        "ordinal": 4,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "47318b89d002f77f9f1b50745ba3d253c0173e4c8b1f2d52252869c650ca2411"
+}

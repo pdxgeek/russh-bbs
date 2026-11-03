@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM post WHERE id = ?\n               RETURNING thread_id AS \"thread_id!\", board_id AS \"board_id!\", author_id",
+  "describe": {
+    "columns": [
+      {
+        "name": "thread_id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "board_id!",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "author_id",
+        "ordinal": 2,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "027af85fa68e0609cebd8f4e16cabf4abd853935ac108b4152badec5f1ff1f54"
+}

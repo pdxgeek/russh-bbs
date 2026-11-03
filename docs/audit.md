@@ -74,6 +74,9 @@ sysop screen over it is M5; the board has no audit screen yet.
 | `submit_request` of an application (M2-G) | `application.submitted` | `system` | the request (`request`, its id) | none: no handle, no message, no key. Written only when the application is kept, in the insert's transaction. An invite request writes no row (D71) |
 | `open_account` that reaches the cap (M2-G) | `registration.capped` | `system` | none | `day <n> cap <n>` (the UTC day number). Written **once per UTC day**: by the `open` account that takes the day's last place, in its transaction and after that account's `account.created` row (or by the first refusal if the cap was lowered below the count), so strangers cannot grow the log |
 | `set_password` / `clear_password` (M3-D) | `password.set` / `password.cleared` | the member (their own account) | the same account | `key session` or `password session`: which kind of session did it. Never a password, hash or salt. `password.cleared` is written only when there was a password to clear. |
+| `create_board` (M3-E) | `board.created` | the creator (`forum.manage`) | none; the resource is the board | `open` or `restricted`: never the name or description |
+| `remove_post` (M3-E) | `post.removed` | the moderator (`forum.moderate` on the board) | the post's author account (none if the account is gone); the resource is the board | `post <id>` or `post <id> with its thread`: ids only, never the text |
+| `allow_member` (M3-E) | `permission.granted` | the creator (`forum.manage`) | the member; the resource is the board | `forum.list`, `forum.read`, `forum.post` and `forum.reply`: one row each, none when already held |
 | `save_profile` by staff (M2-F) | `profile.edited` | the editor (`members.edit`) | the edited account | `fields <names>`: field names only, never values. The owner's own edits write no row |
 
 A write that changed nothing (adding a member already in the group, removing one who is not, a

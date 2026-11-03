@@ -2,6 +2,7 @@
 //! everything is testable. SFTP and the full TUI arrive in later slices.
 
 pub mod config;
+pub mod forums;
 pub mod founder;
 pub mod members;
 pub mod settings;
