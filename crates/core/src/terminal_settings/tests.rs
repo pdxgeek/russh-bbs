@@ -662,8 +662,28 @@ fn the_pause_line_does_not_overstate_what_it_does() {
     let f = at_settings();
     let shown = text(&f.view(words()));
     assert!(
-        shown.contains("applies to long text; no screen pages yet"),
+        shown.contains("long text stops at the end of each screen"),
         "{shown}"
+    );
+}
+
+/// QA M3 L7: where mail is withheld (telnet) the welcome does not describe mail at rest; over ssh
+/// it is unchanged (D78).
+#[test]
+fn the_welcome_over_telnet_says_mail_is_ssh_only_instead_of_the_d78_sentence() {
+    let sentence = "No one, the sysop included, can read your mail through the board.";
+    let ssh = text(&flow(TerminalSettings::default(), None).view(words()));
+    assert!(ssh.contains(sentence), "{ssh}");
+    assert!(!ssh.contains("Mail is available over ssh."), "{ssh}");
+    let telnet = text(
+        &flow(TerminalSettings::default(), None)
+            .without_mail_note()
+            .view(words()),
+    );
+    assert!(telnet.contains("Mail is available over ssh."), "{telnet}");
+    assert!(
+        !telnet.contains("can read your mail") && !telnet.contains("encrypted at rest"),
+        "{telnet}"
     );
 }
 

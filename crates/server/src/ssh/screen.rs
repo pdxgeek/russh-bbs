@@ -1349,6 +1349,7 @@ impl Screen {
                         look,
                         tier,
                         markers: &MENU_MARKERS,
+                        mail_over_ssh_only: self.transport.footer.is_some(),
                     },
                 ),
                 // The invite screens (M2-D): the same framed layout, with the reserved status row.

@@ -93,6 +93,10 @@ fn row_text(row: &Row) -> (String, Option<RowKind>) {
             format!("{}: {}", strings::HERE, names(who)),
             Some(RowKind::Dim),
         ),
+        Row::Entered(name) => (
+            format!("{} #{}.", strings::YOU_ARE_IN, clean(name.as_str())),
+            Some(RowKind::Dim),
+        ),
         Row::Info(text) => ((*text).to_owned(), Some(RowKind::Dim)),
     }
 }

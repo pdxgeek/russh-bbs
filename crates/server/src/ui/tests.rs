@@ -210,6 +210,7 @@ fn draw(
                     look: Look::of(&TerminalSettings::default().with_tier(tier)),
                     tier,
                     markers: &MENU_MARKERS,
+                    mail_over_ssh_only: false,
                 },
             );
         })

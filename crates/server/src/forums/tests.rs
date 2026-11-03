@@ -17,6 +17,7 @@ use russh_bbs_core::icons::Tier;
 use russh_bbs_core::sanitize::MultiLine;
 use russh_bbs_core::store::UnixSeconds;
 use russh_bbs_core::terminal_settings::TerminalSettings;
+use russh_bbs_core::waiting_room::NoticeKind;
 
 use super::exec::{BoardList, Fail, Purpose, Request, Response};
 use super::flow::{ForumEffect, ForumsScreen};
@@ -648,4 +649,198 @@ fn page_keys_turn_the_readers_pages_and_other_editing_keys_do_nothing() {
     assert_eq!(text(&screen), before, "those keys changed nothing");
     press(&mut screen, Key::PageUp);
     assert_eq!(text(&screen), first, "back on the first page");
+}
+
+// ---- long lists (FIX-M3-4, QA M3 M2) ----
+
+fn text_at(screen: &ForumsScreen, area: Rect) -> String {
+    let buffer = draw(screen, area);
+    (0..buffer.area.height)
+        .map(|y| {
+            (0..buffer.area.width)
+                .map(|x| buffer[(x, y)].symbol().to_owned())
+                .collect::<String>()
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+fn many_boards(count: i64) -> ForumsScreen {
+    let (mut screen, _) = ForumsScreen::open(settings());
+    let boards = (1..=count)
+        .map(|n| board(n, &format!("Board{n:03}")))
+        .collect();
+    assert!(
+        screen
+            .deliver(Response::Boards(Ok(BoardList {
+                boards,
+                can_manage: true,
+                can_feeds: true,
+            })))
+            .is_none()
+    );
+    screen.notice = None;
+    screen
+}
+
+/// The name on the drawn selected row, if one is drawn.
+fn selected_row(shown: &str) -> Option<String> {
+    shown
+        .lines()
+        .find_map(|line| line.split_once("> ").map(|(_, rest)| rest.to_owned()))
+        .filter(|rest| rest.contains("Board"))
+}
+
+const SMALL: Rect = Rect::new(0, 0, 40, 10);
+const TINY: Rect = Rect::new(0, 0, 30, 8);
+
+fn info_notice(screen: &mut ForumsScreen) {
+    screen.notice = Some((NoticeKind::Info, "Feed added".to_owned()));
+}
+
+#[test]
+fn the_board_list_always_draws_the_selected_row_and_the_notice() {
+    for area in [AREA, SMALL, TINY] {
+        for count in [1_i64, 20, 23, 100] {
+            let mut screen = many_boards(count);
+            for step in 0..count {
+                info_notice(&mut screen);
+                let shown = text_at(&screen, area);
+                let expected = format!("Board{:03}", step + 1);
+                assert!(
+                    selected_row(&shown).is_some_and(|r| r.contains(&expected)),
+                    "{area:?} {count} boards, cursor {step}: selected row missing\n{shown}"
+                );
+                assert!(
+                    shown.contains("Feed added"),
+                    "{area:?} {count} boards, cursor {step}: notice missing\n{shown}"
+                );
+                if step + 1 < count {
+                    screen.input(Key::Down, area);
+                }
+            }
+            // Enter opens the board drawn as selected: the last one, then (after Home) the first.
+            let Request::Threads { board, .. } = expect_request(screen.input(Key::Enter, area))
+            else {
+                panic!("Enter did not open a board");
+            };
+            assert_eq!(board, BoardId::from_raw(count));
+        }
+    }
+}
+
+#[test]
+fn page_keys_home_end_and_digits_stay_on_drawn_rows() {
+    let mut screen = many_boards(100);
+    let _ = text_at(&screen, AREA);
+    screen.input(Key::PageDown, AREA);
+    let shown = text_at(&screen, AREA);
+    let row = selected_row(&shown).unwrap();
+    assert!(!row.contains("Board001"), "{shown}");
+    // A digit opens the n-th drawn row, whichever board that is.
+    let n = shown
+        .lines()
+        .find(|l| l.contains("1. Board"))
+        .and_then(|l| l.split("1. Board").nth(1))
+        .map(|rest| rest[..3].parse::<i64>().unwrap())
+        .unwrap();
+    let Request::Threads { board, .. } = expect_request(screen.input(Key::Char('1'), AREA)) else {
+        panic!("digit did not open a board");
+    };
+    assert_eq!(board, BoardId::from_raw(n));
+    let mut screen = many_boards(100);
+    let _ = text_at(&screen, AREA);
+    screen.input(Key::End, AREA);
+    assert!(
+        selected_row(&text_at(&screen, AREA))
+            .unwrap()
+            .contains("Board100")
+    );
+    screen.input(Key::Home, AREA);
+    assert!(
+        selected_row(&text_at(&screen, AREA))
+            .unwrap()
+            .contains("Board001")
+    );
+}
+
+fn many_threads(count: i64) -> ForumsScreen {
+    let mut screen = open(false);
+    let page = ThreadPage {
+        board: board(1, "General"),
+        threads: (1..=count)
+            .map(|n| thread(n, &format!("Subject{n:03}")))
+            .collect(),
+        page: 0,
+        more: false,
+        can_post: true,
+        can_manage: false,
+        can_feeds: false,
+    };
+    screen.state = super::flow::State::Threads { page, cursor: 0 };
+    screen
+}
+
+fn many_results(count: i64) -> ForumsScreen {
+    let mut screen = open(false);
+    let hits = (1..=count)
+        .map(|n| Hit {
+            thread: ThreadId::from_raw(n),
+            post: PostId::from_raw(n),
+            board: BoardId::from_raw(1),
+            author: Some("ann".to_owned()),
+            index: 0,
+            board_name: "General".to_owned(),
+            subject: format!("Subject{n:03}"),
+            snippet: "a snippet".to_owned(),
+            at: UnixSeconds::from_raw(1),
+        })
+        .collect();
+    let page = SearchPage {
+        hits,
+        page: 0,
+        more: false,
+        searched: true,
+    };
+    screen.state = super::flow::State::Results {
+        page,
+        query: "word".to_owned(),
+        cursor: 0,
+    };
+    screen
+}
+
+fn selected_subject(shown: &str) -> Option<String> {
+    shown
+        .lines()
+        .find_map(|l| l.split_once("> ").map(|(_, r)| r.to_owned()))
+        .filter(|r| r.contains("Subject"))
+}
+
+#[test]
+fn thread_list_and_search_results_always_draw_the_selected_row_and_the_notice() {
+    for area in [AREA, SMALL, TINY] {
+        for count in [1_i64, 20, 23, 100] {
+            for results in [false, true] {
+                let mut screen = if results {
+                    many_results(count)
+                } else {
+                    many_threads(count)
+                };
+                for step in 0..count {
+                    info_notice(&mut screen);
+                    let shown = text_at(&screen, area);
+                    let expected = format!("Subject{:03}", step + 1);
+                    assert!(
+                        selected_subject(&shown).is_some_and(|r| r.contains(&expected)),
+                        "{area:?} {count} results={results} cursor {step}\n{shown}"
+                    );
+                    assert!(shown.contains("Feed added"), "{area:?} {count}\n{shown}");
+                    if step + 1 < count {
+                        screen.input(Key::Down, area);
+                    }
+                }
+            }
+        }
+    }
 }
