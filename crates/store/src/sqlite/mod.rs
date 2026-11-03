@@ -9,6 +9,7 @@ mod chat;
 mod community;
 mod credits;
 mod drafts;
+mod feeds;
 mod forums;
 mod founder;
 mod invites;

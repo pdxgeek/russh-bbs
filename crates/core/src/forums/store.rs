@@ -23,6 +23,9 @@ pub struct BoardRow {
     pub restricted: bool,
     /// Threads on it.
     pub threads: u64,
+    /// Whether it shows a feed's items (M3-G, D89): nobody posts or replies on it, whatever
+    /// they hold. Set when the feed is added, never by a member.
+    pub feed: bool,
 }
 
 /// A board to create.

@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO feed_item (feed_id, key_hash, content_hash, thread_id, seen_at)\n               VALUES ($1, $2, $3, NULL, $4) ON CONFLICT DO NOTHING RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text",
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "86a483190470180115ab3b401aa2f900260f181738a91e8839a1dc9dd292d051"
+}

@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO board (name, name_key, description, restricted, feed, created_by, created_at)\n               VALUES ($1, $2, $3, FALSE, TRUE, $4, $5)\n               ON CONFLICT (name_key) DO NOTHING\n               RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "7576cc07f332a021ae574f5d6e20439bd9e29ce37d8aee663125d1e72e03f69e"
+}

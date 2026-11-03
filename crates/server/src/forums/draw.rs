@@ -178,10 +178,11 @@ fn lines(screen: &ForumsScreen, width: usize, ctx: &DrawCtx<'_>) -> Vec<Line<'st
             notice(screen, ctx, &mut out);
             footer(
                 &mut out,
-                if list.can_manage {
-                    strings::HELP_BOARDS_MANAGE
-                } else {
-                    strings::HELP_BOARDS
+                match (list.can_manage, list.can_feeds) {
+                    (true, true) => strings::HELP_BOARDS_FEEDS,
+                    (false, true) => strings::HELP_BOARDS_FEEDS_ONLY,
+                    (true, false) => strings::HELP_BOARDS_MANAGE,
+                    (false, false) => strings::HELP_BOARDS,
                 },
                 dim,
             );
@@ -191,8 +192,16 @@ fn lines(screen: &ForumsScreen, width: usize, ctx: &DrawCtx<'_>) -> Vec<Line<'st
             notice(screen, ctx, &mut out);
             footer(
                 &mut out,
-                if page.can_manage && page.board.restricted {
+                if page.board.feed {
+                    if page.can_feeds {
+                        strings::HELP_THREADS_FEED_STAFF
+                    } else {
+                        strings::HELP_THREADS_FEED
+                    }
+                } else if page.can_manage && page.board.restricted {
                     strings::HELP_THREADS_MANAGE
+                } else if page.can_feeds && !page.board.restricted {
+                    strings::HELP_THREADS_STAFF
                 } else {
                     strings::HELP_THREADS
                 },
@@ -244,8 +253,13 @@ fn board_lines(
         } else {
             format!(" - {}", clean(&board.description, 160))
         };
+        let tag = if board.feed {
+            format!(" [{}]", strings::FEED_BOARD_TAG)
+        } else {
+            String::new()
+        };
         let text = format!(
-            "{} ({} {threads}){about}",
+            "{}{tag} ({} {threads}){about}",
             clean(&board.name, 40),
             board.threads
         );
@@ -345,11 +359,20 @@ fn input_lines(
             (strings::TITLE_NEW_BOARD, strings::PROMPT_BOARD_RESTRICTED)
         }
         InputKind::Allow { .. } => (strings::TITLE_ALLOW, strings::PROMPT_ALLOW),
+        InputKind::FeedUrl => (strings::TITLE_FEED, strings::PROMPT_FEED_URL),
+        InputKind::FeedName { .. } => (strings::TITLE_FEED, strings::PROMPT_FEED_NAME),
+        InputKind::FeedHttp { .. } => (strings::TITLE_FEED, strings::PROMPT_FEED_HTTP),
+        InputKind::FeedRemove { .. } => (strings::TITLE_FEED_REMOVE, strings::PROMPT_FEED_REMOVE),
     };
     out.push(Line::styled(title.to_owned(), heading));
     out.push(Line::raw(""));
     out.push(Line::raw(prompt.to_owned()));
-    if !matches!(input.kind, InputKind::BoardRestricted { .. }) {
+    if !matches!(
+        input.kind,
+        InputKind::BoardRestricted { .. }
+            | InputKind::FeedHttp { .. }
+            | InputKind::FeedRemove { .. }
+    ) {
         out.push(Line::raw(format!("> {}_", clean(&input.text, 200))));
     }
     out.push(Line::raw(""));

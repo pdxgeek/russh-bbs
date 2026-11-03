@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO board_public (board_id, published_by, published_at)\n                 VALUES (?, ?, ?) ON CONFLICT DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "8e4e9ff901b0619495ce62bb69cdc5ab128479b2c14388d706342c2776192a5e"
+}

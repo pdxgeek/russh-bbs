@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO thread (board_id, subject, author_id, created_at, last_post_at)\n               VALUES (?, ?, NULL, ?, ?) RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "b369dd0c705ed49d0d85a2df2068f5e0fb07df380c4ec02db6c56f612a09fe71"
+}

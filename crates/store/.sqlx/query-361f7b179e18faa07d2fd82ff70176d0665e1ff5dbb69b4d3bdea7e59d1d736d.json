@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM feed_item WHERE feed_id = ? AND id NOT IN\n                 (SELECT id FROM feed_item WHERE feed_id = ? ORDER BY id DESC LIMIT ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "361f7b179e18faa07d2fd82ff70176d0665e1ff5dbb69b4d3bdea7e59d1d736d"
+}

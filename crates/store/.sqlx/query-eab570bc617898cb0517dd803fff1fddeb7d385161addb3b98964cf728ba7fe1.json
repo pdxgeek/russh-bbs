@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT b.id AS \"id!\", b.name, b.description, b.restricted AS \"restricted!\",\n                      (SELECT count(*) FROM thread t WHERE t.board_id = b.id) AS \"threads!\"\n               FROM board b ORDER BY b.id -- postgres",
+  "query": "SELECT b.id AS \"id!\", b.name, b.description, b.restricted AS \"restricted!\", b.feed AS \"feed!\",\n                      (SELECT count(*) FROM thread t WHERE t.board_id = b.id) AS \"threads!\"\n               FROM board b ORDER BY b.id -- postgres",
   "describe": {
     "columns": [
       {
@@ -25,6 +25,11 @@
       },
       {
         "ordinal": 4,
+        "name": "feed!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 5,
         "name": "threads!",
         "type_info": "Int8"
       }
@@ -37,8 +42,9 @@
       false,
       false,
       false,
+      false,
       null
     ]
   },
-  "hash": "5cdd6822d66915c83ed84d80a67c8c072781f0024b198bd644c27975a449ed19"
+  "hash": "eab570bc617898cb0517dd803fff1fddeb7d385161addb3b98964cf728ba7fe1"
 }

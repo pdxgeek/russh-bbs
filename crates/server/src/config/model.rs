@@ -28,6 +28,8 @@ pub struct Config {
     pub blobs: BlobsConfig,
     /// The optional telnet transport (D27). Parsed only.
     pub telnet: TelnetConfig,
+    /// RSS in (feeds as boards) and RSS out (M3-G, D89).
+    pub feeds: FeedsConfig,
     /// Waiting-room rate limits (D37).
     pub waiting_room: WaitingRoomConfig,
 }
@@ -40,6 +42,7 @@ impl Default for Config {
             datasource: DatasourceConfig::default(),
             blobs: BlobsConfig::default(),
             telnet: TelnetConfig::default(),
+            feeds: FeedsConfig::default(),
             waiting_room: WaitingRoomConfig::default(),
         }
     }
@@ -219,6 +222,35 @@ impl Default for TelnetConfig {
             enabled: false,
             allow_login: false,
             listen: SocketAddr::from(([0, 0, 0, 0], 2323)),
+        }
+    }
+}
+
+/// `[feeds]` (M3-G, D89): reading feeds into read-only boards, and serving public boards as RSS.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct FeedsConfig {
+    /// Read the feeds the sysop added (an outbound fetch job). Off by default: with it off the
+    /// server makes no outbound request for feeds.
+    pub enabled: bool,
+    /// Serve public boards as RSS over a small HTTP listener. Off by default; when off no port
+    /// is bound.
+    pub rss_out_enabled: bool,
+    /// Address and port of the RSS listener (plain HTTP: put a TLS proxy in front, or keep it
+    /// on a private address).
+    pub rss_out_listen: SocketAddr,
+    /// The public address of the RSS listener as readers reach it, with no trailing slash;
+    /// used in the documents' links. Required when `rss_out_enabled`.
+    pub rss_out_base_url: Option<String>,
+}
+
+impl Default for FeedsConfig {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            rss_out_enabled: false,
+            rss_out_listen: SocketAddr::from(([127, 0, 0, 1], 8081)),
+            rss_out_base_url: None,
         }
     }
 }

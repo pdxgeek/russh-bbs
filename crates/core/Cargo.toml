@@ -20,6 +20,9 @@ argon2 = { workspace = true }
 zeroize = { workspace = true }
 # The scheduler spawns, times out and isolates job tasks; the workspace already builds tokio.
 tokio = { workspace = true }
+feed-rs = "3"
+quick-xml = "0.42"
+url = "2"
 
 [dev-dependencies]
 proptest = { workspace = true }
