@@ -23,6 +23,8 @@ pub(crate) const HELP_KEY_BACK: &str = "ui.help.key_back";
 pub(crate) const HELP_KEY_QUIT: &str = "ui.help.key_quit";
 /// Help line about choosing items.
 pub(crate) const HELP_MENU: &str = "ui.help.menu";
+/// The one D78 (7) explanation about mail, on the help screen.
+pub(crate) const HELP_MAIL: &str = "ui.help.mail";
 /// Help footer.
 pub(crate) const HELP_FOOTER: &str = "ui.help.footer";
 /// Footer hint on a lightbar menu.
@@ -45,7 +47,8 @@ pub(crate) const PAGER_END: &str = "ui.pager.end";
 pub(crate) const PAGER_CLIPPED: &str = "ui.pager.clipped";
 
 /// Every key above; the table must hold these plus the menu tree's keys.
-pub(crate) const FRAMEWORK: [&str; 20] = [
+pub(crate) const FRAMEWORK: [&str; 21] = [
+    HELP_MAIL,
     FOOTER_LIGHTBAR,
     HELP_LIGHTBAR,
     POINTER,

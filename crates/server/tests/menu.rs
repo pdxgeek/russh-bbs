@@ -171,7 +171,7 @@ async fn the_founder_walks_main_menu_settings_back_and_log_off() {
         "[s] Terminal settings",
         "[l] Log off",
         "[o] Sysop tools",
-        "[m] Mail (not built yet)",
+        "[a] Files (not built yet)",
         "?: help Esc: back Ctrl C: log off",
     ] {
         assert!(menu.contains(expected), "{expected:?} missing: {menu}");
@@ -195,9 +195,12 @@ async fn the_founder_walks_main_menu_settings_back_and_log_off() {
     assert!(full(&mut channel).await.contains("Main menu"));
 
     // A placeholder says so and nothing else happens.
-    send(&mut channel, "m").await;
+    send(&mut channel, "a").await;
     let note = full(&mut channel).await;
-    assert!(note.contains("Notice: Mail is not built yet."), "{note}");
+    assert!(
+        note.contains("Notice: File areas are not built yet."),
+        "{note}"
+    );
 
     let (bye, closed) = send(&mut channel, "l").await;
     assert!(bye.contains("Goodbye, founder."), "{bye}");

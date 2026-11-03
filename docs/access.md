@@ -14,7 +14,7 @@ One named permission per action, a closed enum in `core::access`. Names are `are
 | Invites | `invites.create`, `invites.revoke`, `invites.view_tree` |
 | Forums | `forum.list`, `forum.read`, `forum.post`, `forum.reply`, `forum.edit_own`, `forum.moderate`, `forum.manage` |
 | Chat | `chat.join`, `chat.speak`, `chat.whisper`, `chat.moderate`, `chat.manage_rooms` |
-| Mail | `mail.read`, `mail.send` |
+| Mail | `mail.read`, `mail.send`, `mail.report`, `mail.moderate` |
 | Files | `files.list`, `files.download`, `files.upload`, `files.tag`, `files.approve`, `files.manage_areas` |
 | Feeds | `feeds.read`, `feeds.manage` |
 | Doors | `doors.run`, `doors.manage` |
@@ -24,6 +24,8 @@ One named permission per action, a closed enum in `core::access`. Names are `are
 A permission is held either globally (from the role) or scoped to one area (one board, file area, room, or door). Scoped grants are how a trusted member moderates one board without becoming a moderator everywhere.
 
 **`account.set_password` (M3-D, D81)** gates every part of the Password screen under Terminal settings: seeing whether a password is set, setting or changing it, clearing it. It is checked in `core::passwords` against the snapshot loaded for the action, not by the screen. `member` and above hold it. It does not gate password *login*: an existing password still signs in if the permission is later revoked (see D81 for how a sysop stops that).
+
+**Mail permissions (M3-I, D90).** `mail.read` covers **your own mailbox only**: the inbox, reading a message, deleting it. `mail.send` covers writing and replying. `mail.report` (new; `member` and every role above it) lets a recipient send staff a copy of a message they received. `mail.moderate` (new; `moderator`, `cosysop`, `sysop`) **lists and closes reports and nothing else: no role, permission or scope opens another member's mailbox.** A message is read by `(recipient, id)`, so another member, a moderator and the sysop all get the same "not found" as for an id that does not exist. Rows are in migration `0019_mail`. Path tests are in `crates/server/tests/access_paths.rs`.
 
 ## Default roles
 
@@ -167,7 +169,7 @@ This is the most intricate feature in the MVP, so the M2 access slice starts wit
 
 ### Implemented (M2-B, `m2/access`)
 
-- **`core::access`:** the closed `Permission` enum (all 56 rows of the table above, names via `strum`), `Slug`, `Snapshot`, the pure `resolve` and `reach`, the `Granted` proof returned by `Snapshot::require`, `GroupGraph` (nesting rules and the closure) and the `AccessStore` trait. The menu hook `PermissionCheck::allows` (M2-A) is implemented by `Snapshot`, so menus now ask the real resolution; the placeholder `RolePermissions` and the `Role` enum are gone.
+- **`core::access`:** the closed `Permission` enum (all 58 rows of the table above, names via `strum`), `Slug`, `Snapshot`, the pure `resolve` and `reach`, the `Granted` proof returned by `Snapshot::require`, `GroupGraph` (nesting rules and the closure) and the `AccessStore` trait. The menu hook `PermissionCheck::allows` (M2-A) is implemented by `Snapshot`, so menus now ask the real resolution; the placeholder `RolePermissions` and the `Role` enum are gone.
 - **Storage, both backends:** six tables (`role`, `role_permission`, `member_group`, `group_member`, `group_closure`, `access_grant`) in migration `0003_access` for SQLite and for Postgres, with the built-in roles, groups and grants as migration rows, and a backfill of a `sysop` grant for every M1 account whose legacy `accounts.role` is `sysop`. `accounts.role` is still written (a label) and is read by nothing.
 - **Per action, not per session:** the SSH shell loads the account's snapshot (one query) before each batch of keys, so a role or group change applies to the next action. A store failure or timeout leaves the session holding nothing for that action. Nothing is cached between actions.
 - **Wired paths:** the menu items (`forum.list`, `mail.read`, `files.list`, `members.view`, `members.approve`), the forum screens (M3-E, below), the terminal settings page and the save of settings, which since M3-A include the layout and theme keys (`account.edit_settings`; the save needs the `Granted` proof and names the account itself), and the waiting room (`waiting.view`; without it the shell is refused). The founder claim is the one documented exception: it has no account yet, and the setup token is its gate. Founder sessions are `sysop` through a grant row written in the claim's transaction.
@@ -510,3 +512,8 @@ Forums are the first resource kind with real resources (D83; Status: **Implement
 - **Restricted boards.** `member` holds the forum permissions globally and access is additive, so a board that only some may use is marked `restricted` when it is created. A restricted board is reached only through a grant **scoped to that board** (an allow entry or a scoped role, to the account or a group it is in) or by a session holding `forum.manage` globally. An open board needs only the permission. `core::forums::rules::can` is the one function; lists and search use `rules::reachable`, built on `Snapshot::reach`. Staff let a member in with the `a` key on the board (`allow_member`): four allow entries (list, read, post, reply) scoped to the board, each audited as `permission.granted`. Taking access back, or restricting an existing board, is for the M5 console.
 - **Search never leaks.** The boards the reader may read are part of the query, so a title, a snippet or even a count from another board is never fetched; the screen for a hidden word is the screen for a word nobody wrote. A member's query is cut into plain word terms in core before any database sees it (D83 (5)).
 - **Limits:** `posts_per_hour` is enforced from the post rows inside the write (see [Resource limits](#resource-limits), the "Enforced by" column is now M3-E for this kind).
+
+### Implemented (M3-I, `m3/mail`)
+
+- **Permissions:** `mail.read` (the Mail menu item opens the inbox; read and delete), `mail.send` (new message and reply), `mail.report` and `mail.moderate` (new, above). The first three are in `WIRED` in `tests/access_paths.rs` with a path test (`mail_paths_follow_their_permissions_on_the_next_action` in `tests/mail.rs`: each is taken away while a mail screen is open and the next key is refused in words and writes nothing; put back, it works again). `mail.moderate` is core-only (the staff report list is an M5 console screen) and tested in the shared store suite.
+- **Limit:** `mail_per_day` is enforced (see D90 (7)): `add_usage` after the permission, text and recipient checks; a refusal says how long until the UTC day ends.

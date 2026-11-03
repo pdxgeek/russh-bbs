@@ -68,6 +68,9 @@ pub enum MemberEffect {
     /// The member chose Forums: the front end hands the session to the forum screens (M3-E)
     /// and gives the flow back when they end. The flow stays on its home page meanwhile.
     Forums,
+    /// The member chose Mail: the front end hands the session to the mail screens (M3-I) and
+    /// gives the flow back when they end, like [`MemberEffect::Forums`].
+    Mail,
     /// Redraw (the logoff screen is showing) and close the session.
     Disconnect,
 }
@@ -355,6 +358,7 @@ impl MemberFlow {
         match self.menu.press(&self.access, key) {
             MenuOutcome::Stay => MemberEffect::Stay,
             MenuOutcome::Action(Action::Forums) => MemberEffect::Forums,
+            MenuOutcome::Action(Action::Mail) => MemberEffect::Mail,
             MenuOutcome::Action(Action::TerminalSettings) => {
                 self.page = Page::Settings;
                 MemberEffect::Stay
@@ -400,6 +404,7 @@ impl MemberFlow {
             Action::OwnProfile => own.map(MembersScreen::own_profile),
             Action::EditOwnProfile => own.map(MembersScreen::edit_own),
             Action::Forums
+            | Action::Mail
             | Action::TerminalSettings
             | Action::Chat
             | Action::LogOff
@@ -786,6 +791,10 @@ impl MemberFlow {
         });
         view.body.push(String::new());
         view.body.push(self.terminal_line(words));
+        if self.access.allows(Permission::MailRead) {
+            view.body.push(String::new());
+            view.body.push(words.text(strings::MAIL_NOTE).to_owned());
+        }
         view.footer = strings::LOGIN_FOOTER;
     }
 

@@ -30,7 +30,8 @@ pub use key::{FILE_BYTES, KEY_BYTES, KeyId, MailKey, MailKeys};
 pub use seal::{Field, SealError};
 pub use service::{
     INBOX_CAP, InboxEntry, InboxPage, KeyCheckError, MAX_OPEN_REPORTS, MessageView, PAGE_SIZE,
-    ReportView, Sent, close_report, delete, inbox, read, reply, report, reports, send, verify_keys,
+    ReportView, Sent, check_recipient, close_report, delete, inbox, read, reply, report, reports,
+    send, verify_keys,
 };
 pub use store::{MailRow, MailStore, MailWrite, NewMail, NewReport, ReportRow, ReportWrite};
 pub use text::{

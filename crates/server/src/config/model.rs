@@ -30,6 +30,8 @@ pub struct Config {
     pub telnet: TelnetConfig,
     /// Waiting-room rate limits (D37).
     pub waiting_room: WaitingRoomConfig,
+    /// Internal mail (M3-I, D90): where the key that seals stored mail lives.
+    pub mail: MailConfig,
 }
 
 impl Default for Config {
@@ -41,8 +43,19 @@ impl Default for Config {
             blobs: BlobsConfig::default(),
             telnet: TelnetConfig::default(),
             waiting_room: WaitingRoomConfig::default(),
+            mail: MailConfig::default(),
         }
     }
+}
+
+/// `[mail]` (M3-I, D90).
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Default)]
+#[serde(default, deny_unknown_fields)]
+pub struct MailConfig {
+    /// The mail key file; `None` means `mail.key` in the data directory, beside the host key.
+    /// Generated with mode 0600 on the first start of a board that has no mail. **Back it up
+    /// separately from the database: without it stored mail cannot be read.**
+    pub key_file: Option<PathBuf>,
 }
 
 /// `[ssh]`.

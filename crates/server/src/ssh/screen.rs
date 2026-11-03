@@ -55,6 +55,7 @@ use russh_bbs_core::waiting_room::{Page, RedeemRequest, RoomEffect, RoomInput, V
 
 use super::terminal::{Key, PtySize, RenderCap};
 use crate::forums::{self, DrawCtx, ForumEffect, ForumsScreen};
+use crate::mail::{self, MailEffect, MailScreen};
 use crate::members;
 use crate::settings::{self, Look};
 use crate::sysop;
@@ -233,6 +234,10 @@ pub(crate) struct KeyEffects {
     /// on (M3-E). The session runs it against the store and gives the answer to
     /// [`Screen::deliver_forum`].
     pub(crate) forum_request: Option<forums::Request>,
+    /// A mail request (inbox, message, send, delete, report) the mail screens are waiting on
+    /// (M3-I). The session runs it against the store and the mail key and gives the answer to
+    /// [`Screen::deliver_mail`].
+    pub(crate) mail_request: Option<mail::Request>,
     /// Keys held back because `members_request` has to be answered first. The session applies
     /// them after delivering the answer, so a fast typist's next key is not lost.
     pub(crate) held_back: Vec<Key>,
@@ -254,6 +259,7 @@ impl KeyEffects {
         self.chat_exit |= later.chat_exit;
         self.chat_request = later.chat_request;
         self.forum_request = later.forum_request;
+        self.mail_request = later.mail_request;
         self.held_back = later.held_back;
     }
 }
@@ -268,6 +274,8 @@ pub(crate) enum Content {
     Member(Box<MemberFlow>),
     /// The forum screens (M3-E). The member's flow waits inside and comes back when they leave.
     Forums(Box<ForumsContent>),
+    /// The mail screens (M3-I). The member's flow waits inside and comes back when they leave.
+    Mail(Box<MailContent>),
     /// A resource limit refused the session (M2-H): the honest message, then the session ends.
     /// The lines are fixed words and numbers from core's `LimitRefusal`, so they need no
     /// sanitizing.
@@ -280,12 +288,19 @@ pub(crate) struct ForumsContent {
     screen: ForumsScreen,
 }
 
+/// A member in mail: the screens, and the flow that is given back at the main menu.
+pub(crate) struct MailContent {
+    flow: Box<MemberFlow>,
+    screen: MailScreen,
+}
+
 impl Content {
     /// The member's flow, while the content is a member's session (at the menu or in the forums).
     fn flow(&self) -> Option<&MemberFlow> {
         match self {
             Self::Member(flow) => Some(flow),
             Self::Forums(session) => Some(&session.flow),
+            Self::Mail(session) => Some(&session.flow),
             Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
         }
     }
@@ -294,6 +309,7 @@ impl Content {
         match self {
             Self::Member(flow) => Some(flow),
             Self::Forums(session) => Some(&mut session.flow),
+            Self::Mail(session) => Some(&mut session.flow),
             Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
         }
     }
@@ -304,6 +320,9 @@ impl Content {
             Self::Claim(form) => form.view(),
             Self::Member(flow) => flow.view(ui.theme(flow.settings().theme()).strings()),
             Self::Forums(session) => session
+                .flow
+                .view(ui.theme(session.flow.settings().theme()).strings()),
+            Self::Mail(session) => session
                 .flow
                 .view(ui.theme(session.flow.settings().theme()).strings()),
             Self::Limited(lines) => View {
@@ -324,7 +343,9 @@ impl Content {
     fn menu_page(&self) -> Option<MenuPage> {
         match self {
             Self::Member(flow) => flow.menu_page(),
-            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Limited(_) => None,
+            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Mail(_) | Self::Limited(_) => {
+                None
+            }
         }
     }
 
@@ -333,7 +354,9 @@ impl Content {
     fn is_framed_screen(&self) -> bool {
         match self {
             Self::Member(flow) => flow.is_invite_screen(),
-            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Limited(_) => false,
+            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Mail(_) | Self::Limited(_) => {
+                false
+            }
         }
     }
 
@@ -341,7 +364,9 @@ impl Content {
     fn members_view(&self) -> Option<ScreenView> {
         match self {
             Self::Member(flow) => flow.members_view(),
-            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Limited(_) => None,
+            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Mail(_) | Self::Limited(_) => {
+                None
+            }
         }
     }
 
@@ -349,7 +374,9 @@ impl Content {
     fn queue_view(&self) -> Option<QueueView> {
         match self {
             Self::Member(flow) => flow.queue_view(),
-            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Limited(_) => None,
+            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Mail(_) | Self::Limited(_) => {
+                None
+            }
         }
     }
 
@@ -513,6 +540,8 @@ impl Screen {
         let mut effects = KeyEffects::default();
         // Set when the keys moved the session into or out of the forum screens (M3-E).
         let mut moved = ForumMove::Stay;
+        // The same for the mail screens (M3-I).
+        let mut mail_moved = MailMove::Stay;
         match &mut self.content {
             Content::Room(room) => {
                 for input in keys.iter().copied().filter_map(room_input) {
@@ -558,6 +587,9 @@ impl Screen {
             Content::Forums(session) => {
                 moved = forum_keys(&mut session.screen, keys, self.viewport, &mut effects);
             }
+            Content::Mail(session) => {
+                mail_moved = mail_keys(&mut session.screen, keys, self.viewport, &mut effects);
+            }
             Content::Member(flow) => {
                 for (index, input) in keys
                     .iter()
@@ -585,6 +617,10 @@ impl Screen {
                         }
                         MemberEffect::Forums => {
                             moved = ForumMove::Open(index);
+                            break;
+                        }
+                        MemberEffect::Mail => {
+                            mail_moved = MailMove::Open(index);
                             break;
                         }
                         MemberEffect::Disconnect => {
@@ -615,6 +651,7 @@ impl Screen {
             }
         }
         self.forum_transitions(&mut effects, keys, moved);
+        self.mail_transitions(&mut effects, keys, mail_moved);
         self.dirty = true;
         if effects.save_settings.is_some() {
             // A size override changes the drawn size; rebuild so the old cells are cleared.
@@ -743,6 +780,77 @@ impl Screen {
         }
     }
 
+    /// Carry out a move into or out of the mail screens that the keys asked for.
+    fn mail_transitions(&mut self, effects: &mut KeyEffects, keys: &[Key], moved: MailMove) {
+        match moved {
+            MailMove::Stay => {}
+            MailMove::Open(index) => {
+                effects.mail_request = Some(self.open_mail());
+                effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
+            }
+            MailMove::Leave => self.close_mail(),
+            MailMove::LogOff(save) => {
+                self.close_mail();
+                if let Content::Member(flow) = &mut self.content {
+                    // Ctrl-C and Ctrl-D end the session from anywhere (D54). The editor's
+                    // changed draft is stored first.
+                    let _ = flow.input(MemberInput::Quit);
+                }
+                effects.disconnect = true;
+                effects.mail_request = save.map(mail::Request::SaveDraft);
+            }
+        }
+    }
+
+    /// Move the member into the mail screens; the request loads the inbox.
+    fn open_mail(&mut self) -> mail::Request {
+        let placeholder = Content::Limited(Vec::new());
+        match std::mem::replace(&mut self.content, placeholder) {
+            Content::Member(flow) => {
+                let (screen, request) = MailScreen::open(*flow.settings());
+                self.content = Content::Mail(Box::new(MailContent { flow, screen }));
+                self.rebuild = true;
+                request
+            }
+            other => {
+                self.content = other;
+                mail::Request::Inbox { page: 0 }
+            }
+        }
+    }
+
+    /// Give the member back to the main menu.
+    fn close_mail(&mut self) {
+        let placeholder = Content::Limited(Vec::new());
+        match std::mem::replace(&mut self.content, placeholder) {
+            Content::Mail(session) => {
+                self.content = Content::Member(session.flow);
+                self.rebuild = true;
+            }
+            other => self.content = other,
+        }
+    }
+
+    /// The answer to the mail request taken from [`KeyEffects`]. Returns a follow-up request
+    /// when the answer calls for one (the inbox again after a send or a delete).
+    pub(super) fn deliver_mail(&mut self, response: mail::Response) -> Option<mail::Request> {
+        self.dirty = true;
+        match &mut self.content {
+            Content::Mail(session) => session.screen.deliver(response),
+            Content::Room(_)
+            | Content::Claim(_)
+            | Content::Member(_)
+            | Content::Forums(_)
+            | Content::Limited(_) => None,
+        }
+    }
+
+    /// The mail keys the board loaded at start-up, for running mail requests (`None` on a
+    /// board built without them: every mail request then says mail is not available).
+    pub(super) fn mail_keys(&self) -> Option<Arc<russh_bbs_core::mail::MailKeys>> {
+        self.ui.mail_keys()
+    }
+
     /// Move the member into the forum screens; the request loads the board list.
     fn open_forums(&mut self) -> forums::Request {
         let placeholder = Content::Limited(Vec::new());
@@ -778,7 +886,11 @@ impl Screen {
         self.dirty = true;
         match &mut self.content {
             Content::Forums(session) => session.screen.deliver(response),
-            Content::Room(_) | Content::Claim(_) | Content::Member(_) | Content::Limited(_) => None,
+            Content::Room(_)
+            | Content::Claim(_)
+            | Content::Member(_)
+            | Content::Mail(_)
+            | Content::Limited(_) => None,
         }
     }
 
@@ -805,7 +917,11 @@ impl Screen {
     pub(crate) fn take_queue_request(&mut self) -> Option<QueueRequest> {
         match &mut self.content {
             Content::Member(flow) => flow.take_queue_request(),
-            Content::Room(_) | Content::Claim(_) | Content::Forums(_) | Content::Limited(_) => None,
+            Content::Room(_)
+            | Content::Claim(_)
+            | Content::Forums(_)
+            | Content::Mail(_)
+            | Content::Limited(_) => None,
         }
     }
 
@@ -814,9 +930,11 @@ impl Screen {
     pub(crate) fn claim_rejected(&mut self) -> bool {
         let disconnect = match &mut self.content {
             Content::Claim(form) => form.rejected() == ClaimEffect::Disconnect,
-            Content::Room(_) | Content::Member(_) | Content::Forums(_) | Content::Limited(_) => {
-                false
-            }
+            Content::Room(_)
+            | Content::Member(_)
+            | Content::Forums(_)
+            | Content::Mail(_)
+            | Content::Limited(_) => false,
         };
         self.dirty = true;
         disconnect
@@ -954,7 +1072,7 @@ impl Screen {
         let farewell = match &self.content {
             Content::Member(flow) => flow.farewell(self.content.strings(&self.ui)),
             Content::Limited(lines) => Some(lines.clone()),
-            Content::Room(_) | Content::Claim(_) | Content::Forums(_) => None,
+            Content::Room(_) | Content::Claim(_) | Content::Forums(_) | Content::Mail(_) => None,
         };
         for line in farewell.into_iter().flatten() {
             bytes.extend_from_slice(line.as_bytes());
@@ -981,6 +1099,21 @@ impl Screen {
             };
             self.terminal
                 .draw(|frame| forums::render(frame, &session.screen, &ctx))?;
+            return Ok(self.take_output());
+        }
+        if let Content::Mail(session) = &self.content {
+            let settings = session.flow.settings();
+            let theme = self.ui.theme(settings.theme());
+            let layout = layout::effective(settings.layout(), self.viewport);
+            let ctx = mail::DrawCtx {
+                ui: &self.ui,
+                strings: theme.strings(),
+                settings,
+                look: Look::themed(settings, layout, theme.palette()),
+                tier: settings.icon_tier(),
+            };
+            self.terminal
+                .draw(|frame| mail::render(frame, &session.screen, &ctx))?;
             return Ok(self.take_output());
         }
         let view = self.content.view(&self.ui);
@@ -1124,10 +1257,12 @@ fn tell_flow_the_terminal(content: &mut Content, pty: PtySize) {
 /// The size to draw at: the client's, with a member's width and height overrides applied.
 fn drawn_size(pty: PtySize, content: &Content) -> PtySize {
     match content {
-        Content::Member(_) | Content::Forums(_) => content.flow().map_or(pty, |flow| {
-            let (cols, rows) = flow.settings().size(pty.cols(), pty.rows());
-            PtySize::from_request(u32::from(cols), u32::from(rows))
-        }),
+        Content::Member(_) | Content::Forums(_) | Content::Mail(_) => {
+            content.flow().map_or(pty, |flow| {
+                let (cols, rows) = flow.settings().size(pty.cols(), pty.rows());
+                PtySize::from_request(u32::from(cols), u32::from(rows))
+            })
+        }
         Content::Room(_) | Content::Claim(_) | Content::Limited(_) => pty,
     }
 }
@@ -1156,6 +1291,42 @@ enum ForumMove {
     /// The member logged off from inside the forums, with the editor's changed draft (if any)
     /// to store first.
     LogOff(Option<crate::ui::editor::DraftSave>),
+}
+
+/// What a batch of keys did to the mail screens' place in the session (M3-I).
+enum MailMove {
+    /// Nothing: the keys stayed where they were.
+    Stay,
+    /// The menu chose Mail at this key.
+    Open(usize),
+    /// Mail asked to go back to the main menu.
+    Leave,
+    /// The member logged off from inside mail, with the editor's changed draft (if any) to
+    /// store first.
+    LogOff(Option<crate::ui::editor::DraftSave>),
+}
+
+/// Feed `keys` to the mail screens until one needs the store (the rest are held back, like the
+/// other screens) or leaves.
+fn mail_keys(
+    screen: &mut MailScreen,
+    keys: &[Key],
+    area: Rect,
+    effects: &mut KeyEffects,
+) -> MailMove {
+    for (index, key) in keys.iter().copied().enumerate() {
+        match screen.input(key, area) {
+            MailEffect::Stay => {}
+            MailEffect::Exit => return MailMove::Leave,
+            MailEffect::Request(request) => {
+                effects.mail_request = Some(request);
+                effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
+                break;
+            }
+            MailEffect::LogOff(save) => return MailMove::LogOff(save),
+        }
+    }
+    MailMove::Stay
 }
 
 /// Feed `keys` to the forum screens until one needs the store (the rest are held back, like the

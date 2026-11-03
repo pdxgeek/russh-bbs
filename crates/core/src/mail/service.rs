@@ -288,6 +288,29 @@ pub async fn send<S: MailStore + LimitStore>(
     .await
 }
 
+/// Whether a message to `to` could be addressed now: the session may send mail and `to` is an
+/// active member. Used before the editor opens, so a wrong handle is caught before anything
+/// is typed. The same one answer for unknown and not active as [`send`].
+///
+/// # Errors
+/// [`MailError::NotPermitted`], [`MailError::UnknownRecipient`] or storage.
+pub async fn check_recipient<S: MailStore>(
+    store: &S,
+    snapshot: &Snapshot,
+    to: &str,
+) -> Result<(), MailError> {
+    require(snapshot, Permission::MailSend)?;
+    let to = to.trim();
+    if to.is_empty() || to.chars().count() > 64 {
+        return Err(MailError::UnknownRecipient);
+    }
+    store
+        .mail_recipient(to)
+        .await?
+        .map(|_| ())
+        .ok_or(MailError::UnknownRecipient)
+}
+
 /// Reply to a message in your mailbox: to its sender, by account (not by handle, so a handle
 /// reused later cannot receive it).
 ///

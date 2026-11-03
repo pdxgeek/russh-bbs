@@ -188,6 +188,33 @@ fn a_submenu_and_help_draw_in_every_layout() {
     }
 }
 
+/// The D78 (7) explanation makes the help screen two lines longer; the sysop's help (the longest
+/// menu) in every layout must still end with its footer on a standard 80x24 screen.
+#[test]
+fn the_help_screen_with_the_mail_explanation_fits_80x24_in_every_layout() {
+    let ui = ui();
+    let theme = ui.theme(ThemeName::default_theme());
+    for chosen in LayoutId::ALL {
+        let help = text(&draw(
+            chosen,
+            theme,
+            &page(&[MenuKey::Char('?')]),
+            &[],
+            Tier::Ascii,
+            false,
+            (80, 24),
+        ));
+        for expected in [
+            "Sysop tools",
+            "No one, the sysop included, can read your mail through the board.",
+            "It is not end-to-end encrypted.",
+            "Any key: close help",
+        ] {
+            assert!(help.contains(expected), "{chosen:?} {expected:?}:\n{help}");
+        }
+    }
+}
+
 #[test]
 fn classic_draws_a_box_and_compact_draws_none() {
     let ui = ui();

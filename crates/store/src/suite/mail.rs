@@ -120,7 +120,11 @@ pub(crate) async fn mail_round_trips_and_the_stored_row_holds_no_plaintext<H: Ha
     let body_hex = h.hex("body").await;
     assert_eq!((subject_hex.len(), body_hex.len()), (1, 1));
     for plain in [SUBJECT, TEXT, "kumquat", "pelican"] {
-        let needle: String = plain.bytes().map(|b| format!("{b:02x}")).collect();
+        let needle = plain.bytes().fold(String::new(), |mut hex, b| {
+            use std::fmt::Write as _;
+            let _ = write!(hex, "{b:02x}");
+            hex
+        });
         for stored in [&subject_hex[0], &body_hex[0]] {
             assert!(!stored.contains(&needle), "{plain} is in a stored row");
         }
@@ -207,14 +211,14 @@ pub(crate) async fn a_tampered_moved_or_swapped_row_is_an_error_entry_not_a_cras
     let s = h.store();
     let w = world(s).await;
     let keys = keys();
-    let a = send_one(s, &keys, &w.ann, "bob", 1).await.unwrap();
-    let b = send_one(s, &keys, &w.ann, "bob", 2).await.unwrap();
-    let c = send_one(s, &keys, &w.ann, "bob", 3).await.unwrap();
-    let d = send_one(s, &keys, &w.ann, "bob", 4).await.unwrap();
+    let first = send_one(s, &keys, &w.ann, "bob", 1).await.unwrap();
+    let second = send_one(s, &keys, &w.ann, "bob", 2).await.unwrap();
+    let third = send_one(s, &keys, &w.ann, "bob", 3).await.unwrap();
+    let fourth = send_one(s, &keys, &w.ann, "bob", 4).await.unwrap();
     // a: the body replaced by the sealed subject (a subject presented as a body).
     h.raw(&format!(
         "UPDATE mail_message SET body = subject WHERE id = {}",
-        a.id
+        first.id
     ))
     .await
     .unwrap();
@@ -222,14 +226,14 @@ pub(crate) async fn a_tampered_moved_or_swapped_row_is_an_error_entry_not_a_cras
     h.raw(&format!(
         "UPDATE mail_message SET subject = (SELECT m.subject FROM mail_message m WHERE m.id = {}) \
          WHERE id = {}",
-        c.id, b.id
+        third.id, second.id
     ))
     .await
     .unwrap();
     // d: moved to another mailbox, where its recipient id no longer matches what it was sealed for.
     h.raw(&format!(
         "UPDATE mail_message SET recipient_id = {} WHERE id = {}",
-        w.cat.id, d.id
+        w.cat.id, fourth.id
     ))
     .await
     .unwrap();
@@ -239,18 +243,18 @@ pub(crate) async fn a_tampered_moved_or_swapped_row_is_an_error_entry_not_a_cras
     assert_eq!(page.entries.len(), 3, "a, b and c; d moved away");
     let by_id = |id: MessageId| page.entries.iter().find(|e| e.id == id).unwrap();
     assert_eq!(
-        by_id(a.id).subject.as_deref(),
+        by_id(first.id).subject.as_deref(),
         Some(SUBJECT),
         "its subject is intact; its body is not"
     );
-    assert_eq!(by_id(b.id).subject, None, "an error entry");
-    assert_eq!(by_id(c.id).subject.as_deref(), Some(SUBJECT));
+    assert_eq!(by_id(second.id).subject, None, "an error entry");
+    assert_eq!(by_id(third.id).subject.as_deref(), Some(SUBJECT));
     assert!(matches!(
-        mail::read(s, &keys, &bob, at(5), a.id).await,
+        mail::read(s, &keys, &bob, at(5), first.id).await,
         Err(MailError::Unreadable)
     ));
     assert!(matches!(
-        mail::read(s, &keys, &bob, at(5), b.id).await,
+        mail::read(s, &keys, &bob, at(5), second.id).await,
         Err(MailError::Unreadable)
     ));
     // The moved row shows to its new mailbox as an error entry that can be deleted.
@@ -261,13 +265,13 @@ pub(crate) async fn a_tampered_moved_or_swapped_row_is_an_error_entry_not_a_cras
         (1, None)
     );
     assert!(matches!(
-        mail::read(s, &keys, &cat, at(5), d.id).await,
+        mail::read(s, &keys, &cat, at(5), fourth.id).await,
         Err(MailError::Unreadable)
     ));
-    mail::delete(s, &cat, d.id).await.unwrap();
+    mail::delete(s, &cat, fourth.id).await.unwrap();
     // The untouched message still reads.
     assert_eq!(
-        mail::read(s, &keys, &bob, at(5), c.id)
+        mail::read(s, &keys, &bob, at(5), third.id)
             .await
             .unwrap()
             .body
@@ -275,7 +279,7 @@ pub(crate) async fn a_tampered_moved_or_swapped_row_is_an_error_entry_not_a_cras
         TEXT
     );
     // An unreadable message was not marked read by being opened.
-    assert!(!s.message(w.bob.id, b.id).await.unwrap().unwrap().read);
+    assert!(!s.message(w.bob.id, second.id).await.unwrap().unwrap().read);
 }
 
 pub(crate) async fn a_different_key_cannot_open_and_start_up_checks_say_so<H: Harness>() {
@@ -420,7 +424,7 @@ pub(crate) async fn the_inbox_cap_refuses_new_mail_and_deleting_makes_room<H: Ha
             s,
             &keys,
             &snap(s, &w.sysop).await,
-            at(n as i64),
+            at(i64::try_from(n).unwrap()),
             "bob",
             "x",
             &body("y"),
@@ -446,7 +450,7 @@ pub(crate) async fn the_inbox_cap_refuses_new_mail_and_deleting_makes_room<H: Ha
     for n in 0..4 {
         let (store, keys_n, sys) = (s.clone(), keys.clone(), snap(s, &w.sysop).await);
         tasks.push(tokio::spawn(async move {
-            mail::send(&store, &*keys_n, &sys, at(2000 + n), "bob", "r", &body("r"))
+            mail::send(&store, &keys_n, &sys, at(2000 + n), "bob", "r", &body("r"))
                 .await
                 .is_ok()
         }));
@@ -622,18 +626,26 @@ pub(crate) async fn the_open_report_cap_counts_open_reports_only<H: Harness>() {
     let mut ids = Vec::new();
     for n in 0..=MAX_OPEN_REPORTS {
         ids.push(
-            mail::send(s, &keys, &sys, at(n as i64), "bob", "s", &body("b"))
-                .await
-                .unwrap()
-                .id,
+            mail::send(
+                s,
+                &keys,
+                &sys,
+                at(i64::try_from(n).unwrap()),
+                "bob",
+                "s",
+                &body("b"),
+            )
+            .await
+            .unwrap()
+            .id,
         );
     }
-    for id in &ids[..MAX_OPEN_REPORTS as usize] {
+    for id in &ids[..usize::try_from(MAX_OPEN_REPORTS).unwrap()] {
         mail::report(s, &bob, at(100), *id, "r", &body("r"))
             .await
             .unwrap();
     }
-    let last = ids[MAX_OPEN_REPORTS as usize];
+    let last = ids[usize::try_from(MAX_OPEN_REPORTS).unwrap()];
     assert!(matches!(
         mail::report(s, &bob, at(101), last, "r", &body("r")).await,
         Err(MailError::TooManyReports)

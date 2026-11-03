@@ -32,6 +32,7 @@ key_back = "Esc      back one menu (nothing at the main menu)"
 key_quit = "Ctrl-C   log off from anywhere (Ctrl-D does the same)"
 menu = "To choose an item, press the letter shown in brackets."
 lightbar = "In the lightbar layout, Up and Down move the highlighted row and Enter chooses it."
+mail = "No one, the sysop included, can read your mail through the board. Mail is encrypted at rest. It is not end-to-end encrypted."
 footer = "Any key: close help"
 
 [ui.pager]
@@ -121,7 +122,6 @@ failed = "That did not work. Nothing was changed. Try again."
 rank = "You cannot edit the profile of someone whose role ranks at or above yours. Nothing was changed."
 
 [placeholder]
-mail = "Mail is not built yet."
 files = "File areas are not built yet."
 
 [queue]
@@ -183,6 +183,7 @@ last_login = "Last login: {when}"
 first_login = "This is your first login."
 terminal_line = "Terminal: {icons} icons, color {color}, pause {pause}"
 terminal_line_unset = "Terminal: icon style not chosen yet (plain ASCII, no color until you do)"
+mail_note = "No one, the sysop included, can read your mail through the board. Mail is encrypted at rest. It is not end-to-end encrypted."
 login_footer = "Any key: continue   Ctrl-C: log off"
 glyph_heading = "Icon check"
 glyph_why = "The server cannot see your terminal font, so it asks. This shows one icon style."

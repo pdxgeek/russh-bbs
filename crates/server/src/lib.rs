@@ -5,6 +5,7 @@ pub(crate) mod chat;
 pub mod config;
 pub mod forums;
 pub mod founder;
+pub mod mail;
 pub mod members;
 pub mod settings;
 pub mod shutdown;

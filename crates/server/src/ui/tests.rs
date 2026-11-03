@@ -248,7 +248,7 @@ fn the_main_menu_lists_its_items_with_hotkeys_and_the_footer() {
         "Signed in as alice.",
         "[s] Terminal settings",
         "[l] Log off",
-        "[m] Mail  (not built yet)",
+        "[a] Files  (not built yet)",
         "?: help   Esc: back   Ctrl-C: log off",
     ] {
         assert!(out.contains(expected), "{expected:?} missing:\n{out}");
@@ -270,13 +270,16 @@ fn the_main_menu_lists_its_items_with_hotkeys_and_the_footer() {
 #[test]
 fn a_placeholder_says_it_is_not_built_in_words() {
     let out = text(&draw(
-        &page_for(Role::Member, &['m']),
+        &page_for(Role::Member, &['a']),
         &[],
         None,
         Tier::Ascii,
         (80, 24),
     ));
-    assert!(out.contains("Notice: Mail is not built yet."), "{out}");
+    assert!(
+        out.contains("Notice: File areas are not built yet."),
+        "{out}"
+    );
 }
 
 #[test]
@@ -453,12 +456,23 @@ fn nothing_on_the_menu_screen_claims_privacy() {
         Tier::Unicode,
         (100, 30),
     ));
-    let lower = out.to_lowercase();
+    // The one D78 (7) explanation is on the help screen, once, and is the only place these words
+    // may appear on a menu screen; everything else must stay clear of them.
+    let explanation = "No one, the sysop included, can read your mail through the board. Mail is \
+                       encrypted at rest. It is not end-to-end encrypted.";
+    let flat = out
+        .replace(['│', '┌', '┐', '└', '┘', '─'], " ")
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    assert_eq!(flat.matches(explanation).count(), 1, "{out}");
+    let lower = flat.replace(explanation, "").to_lowercase();
     assert!(!lower.contains("private"), "{out}");
     assert!(
         !lower.contains("encrypted") || lower.contains("pgp"),
         "{out}"
     );
+    assert!(!lower.contains("secure"), "{out}");
 }
 
 // ---- pager (FIX-M1-L8) ----

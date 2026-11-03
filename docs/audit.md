@@ -79,6 +79,8 @@ sysop screen over it is M5; the board has no audit screen yet.
 | `create_board` (M3-E) | `board.created` | the creator (`forum.manage`) | none; the resource is the board | `open` or `restricted`: never the name or description |
 | `remove_post` (M3-E) | `post.removed` | the moderator (`forum.moderate` on the board) | the post's author account (none if the account is gone); the resource is the board | `post <id>` or `post <id> with its thread`: ids only, never the text |
 | `allow_member` (M3-E) | `permission.granted` | the creator (`forum.manage`) | the member; the resource is the board | `forum.list`, `forum.read`, `forum.post` and `forum.reply`: one row each, none when already held |
+| `report` (M3-I) | `mail.reported` | the reporter (the recipient) | the message's sender account (none if unknown or gone) | `report <id> message <id>`: ids only, never a subject, a text or a handle. The copy the reporter sent is stored as the report, not in the log |
+| `close_report` (M3-I) | `mail.report_closed` | the staff member (`mail.moderate`) | none | `report <id>`. Written only when an open report was closed |
 | `save_profile` by staff (M2-F) | `profile.edited` | the editor (`members.edit`) | the edited account | `fields <names>`: field names only, never values. The owner's own edits write no row |
 
 A write that changed nothing (adding a member already in the group, removing one who is not, a
@@ -131,3 +133,5 @@ Invites (M2-D) are in the same shared suite, on both backends: the created invit
 
 Not verified: no screen exists, so there is no `ssh` session that reads the log; the wired writes
 were exercised through the store and the existing server tests, not by a new SSH path.
+
+**Mail writes no audit row** for sending, reading or deleting (D90): the log would hold who writes to whom, and volume. Only a report and the closing of one are audited, by ids only.

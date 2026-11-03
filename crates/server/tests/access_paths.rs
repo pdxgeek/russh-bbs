@@ -87,6 +87,8 @@ const WIRED: &[Permission] = &[
     Permission::ForumModerate,
     Permission::ForumManage,
     Permission::MailRead,
+    Permission::MailSend,
+    Permission::MailReport,
     Permission::FilesList,
     Permission::LimitsEdit,
     Permission::ChatJoin,
@@ -104,7 +106,9 @@ const NOT_YET_WIRED: &[Permission] = &[
     Permission::InvitesRevoke,
     Permission::ForumEditOwn,
     Permission::ChatModerate,
-    Permission::MailSend,
+    // Lists and closes reports only; its screen is the M5 sysop console's (D90). Tested in the
+    // shared store suite.
+    Permission::MailModerate,
     Permission::FilesDownload,
     Permission::FilesUpload,
     Permission::FilesTag,
@@ -183,11 +187,19 @@ impl Rig {
             listen: "127.0.0.1:0".parse().unwrap(),
             limits,
         };
-        let server = SshServer::start_with_founder(
+        let keys = russh_bbs_core::mail::MailKeys::single(
+            russh_bbs_core::mail::KeyId::FIRST,
+            russh_bbs_core::mail::MailKey::generate().unwrap(),
+        );
+        let ui = russh_bbs_server::ui::Ui::standard()
+            .unwrap()
+            .with_mail_keys(Arc::new(keys));
+        let server = SshServer::start_with_ui(
             &config,
             &host_key,
             Arc::new(store.clone()),
             Arc::new(gate),
+            Arc::new(ui),
         )
         .await
         .unwrap();
@@ -362,7 +374,7 @@ async fn menu_paths_follow_their_permission_on_the_next_action() {
             Permission::MailRead,
             'm',
             "[m] Mail",
-            "Mail is not built yet.",
+            "Your mailbox is empty.",
         ),
         (
             Permission::FilesList,
@@ -882,5 +894,87 @@ async fn forum_paths_follow_their_permissions_on_the_next_action() {
     let screen = press_full(&mut channel, "y").await;
     assert!(screen.contains("Removed."), "{screen}");
     assert_eq!(count(&rig, "post").await, 1);
+    rig.server.shutdown().await;
+}
+
+#[tokio::test]
+async fn mail_paths_follow_their_permissions_on_the_next_action() {
+    const SEND: &str = "\u{18}";
+    let rig = Rig::start().await;
+    let key = new_client_key();
+    let (_session, mut channel) = founder_at_menu(&rig, &key).await;
+    let refused = "You may not do that.";
+    let me: String = sqlx::query_scalar("SELECT username FROM accounts LIMIT 1")
+        .fetch_one(&rig.db)
+        .await
+        .unwrap();
+
+    // mail.send: a message is written only while it is held (the founder writes to themselves).
+    press_full(&mut channel, "m").await;
+    let taken = rig.revoke(Permission::MailSend).await;
+    press_full(&mut channel, "c").await;
+    press_full(&mut channel, &format!("{me}\r")).await;
+    let screen = press_full(&mut channel, "Hello\r").await;
+    assert!(screen.contains(refused), "{screen}");
+    assert_eq!(count(&rig, "mail_message").await, 0, "nothing was written");
+    rig.restore(&taken, Permission::MailSend).await;
+    // The subject prompt is still open with its text; Enter tries again.
+    let editor = press_full(&mut channel, "\r").await;
+    assert!(editor.contains(&format!("To {me}: Hello")), "{editor}");
+    press_full(&mut channel, "a note").await;
+    // Taken away between opening the editor and sending: the send is refused, the text is kept.
+    let taken = rig.revoke(Permission::MailSend).await;
+    let screen = press_full(&mut channel, SEND).await;
+    assert!(screen.contains(refused), "{screen}");
+    assert_eq!(count(&rig, "mail_message").await, 0);
+    rig.restore(&taken, Permission::MailSend).await;
+    press_full(&mut channel, "c").await;
+    press_full(&mut channel, &format!("{me}\r")).await;
+    let editor = press_full(&mut channel, "Hello\r").await;
+    assert!(
+        editor.contains("a note"),
+        "the refused text was kept as a draft: {editor}"
+    );
+    let screen = press_full(&mut channel, SEND).await;
+    assert!(screen.contains("Sent."), "{screen}");
+    assert_eq!(count(&rig, "mail_message").await, 1);
+
+    // mail.read: a message that was listed is no longer opened, and it is not deleted either.
+    let taken = rig.revoke(Permission::MailRead).await;
+    let screen = press_full(&mut channel, "\r").await;
+    assert!(screen.contains(refused), "{screen}");
+    press_full(&mut channel, "d").await;
+    let screen = press_full(&mut channel, "y").await;
+    assert!(screen.contains(refused), "{screen}");
+    assert_eq!(count(&rig, "mail_message").await, 1);
+    rig.restore(&taken, Permission::MailRead).await;
+    let screen = press_full(&mut channel, "\r").await;
+    assert!(screen.contains("a note"), "{screen}");
+
+    // mail.report: a copy goes to staff only while it is held.
+    let taken = rig.revoke(Permission::MailReport).await;
+    press_full(&mut channel, "x").await;
+    let screen = press_full(&mut channel, "y").await;
+    assert!(
+        !screen.contains("The staff have a copy") && count(&rig, "mail_report").await == 0,
+        "{screen}"
+    );
+    rig.restore(&taken, Permission::MailReport).await;
+    press_full(&mut channel, "x").await;
+    let screen = press_full(&mut channel, "y").await;
+    assert!(screen.contains("The staff have a copy"), "{screen}");
+    assert_eq!(count(&rig, "mail_report").await, 1);
+
+    // mail.read again: deleting is refused while it is taken, and works when it is back.
+    let taken = rig.revoke(Permission::MailRead).await;
+    press_full(&mut channel, "d").await;
+    let screen = press_full(&mut channel, "y").await;
+    assert!(screen.contains(refused), "{screen}");
+    assert_eq!(count(&rig, "mail_message").await, 1);
+    rig.restore(&taken, Permission::MailRead).await;
+    press_full(&mut channel, "d").await;
+    let screen = press_full(&mut channel, "y").await;
+    assert!(screen.contains("Deleted."), "{screen}");
+    assert_eq!(count(&rig, "mail_message").await, 0);
     rig.server.shutdown().await;
 }

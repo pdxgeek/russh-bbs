@@ -20,6 +20,12 @@
 # admin UI. Uncomment only to pin the mode from config. Decision D38.
 # registration_mode = "invite"
 
+[mail]
+# The key that seals stored mail (M3-I, D90). Default: mail.key beside the host key (in the
+# data directory). Created with mode 0600 on the first start of a board with no mail; the server
+# refuses to start if it is missing while mail exists. BACK IT UP SEPARATELY FROM THE DATABASE.
+# key_file = "/data/mail.key"
+
 [ssh]
 listen = "0.0.0.0:2222"
 # Host key path. Default: $XDG_DATA_HOME/russh-bbs/host_ed25519_key, else

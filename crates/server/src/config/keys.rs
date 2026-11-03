@@ -75,6 +75,13 @@ pub(crate) static KEYS: &[KeyDef] = &[
         "/tmp/hk",
     ),
     key(
+        "mail.key_file",
+        "RUSSH_BBS_MAIL_KEY_FILE",
+        None,
+        Str,
+        "/tmp/mk",
+    ),
+    key(
         "ssh.auth_timeout_secs",
         "RUSSH_BBS_AUTH_TIMEOUT_SECS",
         Some("--auth-timeout-secs"),

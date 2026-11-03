@@ -29,8 +29,8 @@ pub use cli::Cli;
 pub use error::{ConfigError, Source};
 pub use layers::{Assembled, CliValue, FileInput, Sources, assemble};
 pub use model::{
-    BlobBackend, BlobsConfig, Config, DatasourceConfig, DatasourceKind, SshConfig, TelnetConfig,
-    TlsMode, WaitingRoomConfig,
+    BlobBackend, BlobsConfig, Config, DatasourceConfig, DatasourceKind, MailConfig, SshConfig,
+    TelnetConfig, TlsMode, WaitingRoomConfig,
 };
 pub use paths::{CONTAINER_CONFIG, Dirs};
 pub use secret::SecretUrl;
@@ -68,6 +68,8 @@ pub enum ResolvedDatasource {
 pub struct ResolvedPaths {
     /// The SSH host key.
     pub host_key: PathBuf,
+    /// The mail key file (M3-I, D90).
+    pub mail_key: PathBuf,
     /// The database to open.
     pub datasource: ResolvedDatasource,
 }
@@ -138,6 +140,15 @@ impl Loaded {
                     key: "ssh.host_key",
                 })?,
         };
+        let mail_key = match &self.config.mail.key_file {
+            Some(p) => p.clone(),
+            None => self
+                .dirs
+                .data_path(paths::MAIL_KEY_FILE)
+                .ok_or(ConfigError::NoDataDir {
+                    key: "mail.key_file",
+                })?,
+        };
         let ds = &self.config.datasource;
         let datasource = match ds.kind {
             DatasourceKind::Sqlite => ResolvedDatasource::Sqlite(match &ds.path {
@@ -169,6 +180,7 @@ impl Loaded {
         };
         Ok(ResolvedPaths {
             host_key,
+            mail_key,
             datasource,
         })
     }

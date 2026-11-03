@@ -55,6 +55,8 @@ impl UniversalKey {
 pub enum Action {
     /// Open the forums: the board list (`forum.list`, M3-E).
     Forums,
+    /// Open the mailbox: the inbox (`mail.read`, M3-I).
+    Mail,
     /// Open the terminal settings screen.
     TerminalSettings,
     /// Make an invite code and show it once (`invites.create`, M2-D).
@@ -86,6 +88,7 @@ impl Action {
     pub const fn permission(self) -> Option<Permission> {
         match self {
             Self::Forums => Some(Permission::ForumList),
+            Self::Mail => Some(Permission::MailRead),
             Self::TerminalSettings => Some(Permission::AccountEditSettings),
             Self::InviteCreate | Self::InviteList => Some(Permission::InvitesCreate),
             Self::InviteTree => Some(Permission::InvitesViewTree),

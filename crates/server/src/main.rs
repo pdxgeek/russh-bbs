@@ -52,7 +52,14 @@ async fn main() -> anyhow::Result<()> {
                 .await
                 .with_context(|| format!("opening database {}", path.display()))?;
             info!(backend = "sqlite", path = %path.display(), "database ready");
-            serve(store, &loaded, &host_key, themes_dir.as_deref()).await?;
+            serve(
+                store,
+                &loaded,
+                &host_key,
+                &paths.mail_key,
+                themes_dir.as_deref(),
+            )
+            .await?;
         }
         ResolvedDatasource::Postgres(settings) => {
             // The error text never contains the password (see `PostgresSettings`).
@@ -60,7 +67,14 @@ async fn main() -> anyhow::Result<()> {
                 .await
                 .context("opening the postgres datasource (TLS is required)")?;
             info!(backend = "postgres", tls = true, "database ready");
-            serve(store, &loaded, &host_key, themes_dir.as_deref()).await?;
+            serve(
+                store,
+                &loaded,
+                &host_key,
+                &paths.mail_key,
+                themes_dir.as_deref(),
+            )
+            .await?;
         }
     }
     Ok(())
@@ -72,6 +86,7 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
     store: S,
     loaded: &Loaded,
     host_key: &HostKey,
+    mail_key_path: &std::path::Path,
     themes_dir: Option<&std::path::Path>,
 ) -> anyhow::Result<()> {
     // A registration mode set in the file, environment or flags wins over the stored value
@@ -86,6 +101,14 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
         );
     }
 
+    // The mail key (D78, D90): created only on a fresh install, never replaced. A missing, damaged
+    // or wrong key file with mail in the database stops the boot here, before anything listens.
+    let mail_keys = russh_bbs_server::mail::load_keys(&store, mail_key_path)
+        .await
+        .context("loading the mail key")?;
+    // The path and the key's id are not secrets; the key itself is never logged.
+    info!(path = %mail_key_path.display(), key_id = %mail_keys.active(), "mail key ready");
+
     // First run: print the one-time setup token to the console (D41).
     let founder = founder::start(&store, &mut std::io::stdout()).await?;
 
@@ -99,7 +122,8 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
         Some(dir) => Ui::standard_with_themes(dir),
         None => Ui::standard(),
     }
-    .context("building the screens")?;
+    .context("building the screens")?
+    .with_mail_keys(Arc::new(mail_keys));
     // The store decides who is a member; an unknown key or a store error is Restricted.
     let ui = Arc::new(ui);
     let server = SshServer::start_with_ui(

@@ -23,6 +23,7 @@ pub mod strings;
 pub mod theme;
 
 use std::path::Path;
+use std::sync::Arc;
 
 use russh_bbs_core::menu::{MenuError, main_tree};
 use russh_bbs_core::terminal_settings::ThemeName;
@@ -49,6 +50,35 @@ pub enum UiError {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Ui {
     themes: ThemeSet,
+    mail: MailKeysHandle,
+}
+
+/// The keys mail is sealed with (M3-I), carried to the sessions beside the screens' words because
+/// every transport already hands the one shared [`Ui`] to each session. Not presentation: it is
+/// compared by identity and prints nothing of the keys.
+#[derive(Clone, Default)]
+struct MailKeysHandle(Option<Arc<russh_bbs_core::mail::MailKeys>>);
+
+impl PartialEq for MailKeysHandle {
+    fn eq(&self, other: &Self) -> bool {
+        match (&self.0, &other.0) {
+            (Some(a), Some(b)) => Arc::ptr_eq(a, b),
+            (None, None) => true,
+            _ => false,
+        }
+    }
+}
+
+impl Eq for MailKeysHandle {}
+
+impl std::fmt::Debug for MailKeysHandle {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(if self.0.is_some() {
+            "MailKeys(held)"
+        } else {
+            "MailKeys(none)"
+        })
+    }
 }
 
 impl Ui {
@@ -56,6 +86,20 @@ impl Ui {
     /// which a unit test also catches.
     pub fn standard() -> Result<Self, UiError> {
         Self::from_table(strings::DEFAULT_TOML)
+    }
+
+    /// The same screens with the board's mail keys, so sessions can open and seal mail. A board
+    /// built without them says honestly that mail is not available.
+    #[must_use]
+    pub fn with_mail_keys(mut self, keys: Arc<russh_bbs_core::mail::MailKeys>) -> Self {
+        self.mail = MailKeysHandle(Some(keys));
+        self
+    }
+
+    /// The mail keys, if the board has them.
+    #[must_use]
+    pub fn mail_keys(&self) -> Option<Arc<russh_bbs_core::mail::MailKeys>> {
+        self.mail.0.clone()
     }
 
     /// Like [`Ui::standard`], with the sysop's themes from `dir` added. A bad theme file never
@@ -87,6 +131,7 @@ impl Ui {
         let strings = StringTable::parse(toml, &required)?;
         Ok(Self {
             themes: ThemeSet::shipped(&strings)?,
+            mail: MailKeysHandle::default(),
         })
     }
 
