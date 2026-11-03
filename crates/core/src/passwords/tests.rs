@@ -765,8 +765,17 @@ mod in_the_session {
         }
     }
 
+    /// Returns each key as its own text: these tests look at the password screens and the
+    /// settings menu entry, whose labels are not string-table keys.
+    struct Keys;
+    impl crate::terminal_settings::strings::TextSource for Keys {
+        fn text<'a>(&'a self, key: &'a str) -> &'a str {
+            key
+        }
+    }
+
     fn lines(flow: &MemberFlow) -> String {
-        let view = flow.view();
+        let view = flow.view(&Keys);
         let mut all = vec![view.heading.to_owned()];
         all.extend(view.body);
         all.extend(

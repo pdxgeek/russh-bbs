@@ -7,7 +7,9 @@ use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::{
     Account, AccountId, AccountState, AccountStore, NewAccount, StoreError,
 };
-use russh_bbs_core::terminal_settings::{MemberSessions, TerminalSettings, TerminalSettingsStore};
+use russh_bbs_core::terminal_settings::{
+    LayoutId, MemberSessions, TerminalSettings, TerminalSettingsStore, ThemeName,
+};
 
 use super::{Harness, fingerprint};
 
@@ -66,6 +68,28 @@ pub(crate) async fn every_tier_and_unset_round_trip<H: Harness>() {
     let unset = TerminalSettings::default();
     store.set_terminal_settings(alice.id, &unset).await.unwrap();
     assert_eq!(store.terminal_settings(alice.id).await.unwrap(), unset);
+}
+
+pub(crate) async fn layout_and_theme_round_trip_and_default_for_new_rows<H: Harness>() {
+    let h = H::fresh().await;
+    let store = h.store();
+    let alice = account(store, "alice", AccountState::Active).await;
+    // A row written without a choice reads back as classic and the default theme.
+    let plain = TerminalSettings::default().with_tier(Tier::Unicode);
+    store.set_terminal_settings(alice.id, &plain).await.unwrap();
+    let read = store.terminal_settings(alice.id).await.unwrap();
+    assert_eq!(read.layout(), LayoutId::Classic);
+    assert_eq!(read.theme().as_str(), "default");
+    for layout in LayoutId::ALL {
+        let wanted = plain
+            .with_layout(layout)
+            .with_theme(ThemeName::new("amber-2").unwrap());
+        store
+            .set_terminal_settings(alice.id, &wanted)
+            .await
+            .unwrap();
+        assert_eq!(store.terminal_settings(alice.id).await.unwrap(), wanted);
+    }
 }
 
 pub(crate) async fn a_later_set_replaces_and_clears_overrides<H: Harness>() {

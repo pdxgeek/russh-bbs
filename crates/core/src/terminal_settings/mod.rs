@@ -21,6 +21,7 @@
 
 mod flow;
 mod glyph;
+mod layout;
 mod pager;
 mod sessions;
 mod settings;
@@ -29,6 +30,10 @@ mod time;
 
 pub use flow::{MemberEffect, MemberFlow, MemberInput};
 pub use glyph::{GlyphAnswer, GlyphProgress, GlyphStep, GlyphTest};
+pub use layout::{
+    DEFAULT_THEME, LayoutId, THEME_NAME_MAX, ThemeName, ThemeNameError, layout_from_stored,
+    layout_to_stored,
+};
 pub use pager::{Pager, PagerEffect, PagerKey, PagerPrompt, PagerView};
 pub use sessions::{MemberSessions, MemberStart, SaveError, TerminalSettingsStore};
 pub use settings::{

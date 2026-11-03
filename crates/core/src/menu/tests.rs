@@ -450,3 +450,112 @@ fn the_invite_actions_need_their_permissions_and_a_hidden_one_cannot_be_picked()
     assert_eq!(other.press(&Nothing, MenuKey::Char('i')), MenuOutcome::Stay);
     assert_eq!(other.current(), "main");
 }
+
+// ---- cursor (layouts with a cursor, M3-A) ----
+
+#[test]
+fn the_cursor_starts_on_the_first_item_and_stops_at_both_ends() {
+    let member = member();
+    let mut session = MenuSession::new(main_tree());
+    assert_eq!(session.page(&member).cursor, 0);
+    session.press(&member, MenuKey::Up);
+    assert_eq!(session.page(&member).cursor, 0, "no wrap above the first");
+    let last = session.page(&member).items.len() - 1;
+    for _ in 0..50 {
+        session.press(&member, MenuKey::Down);
+    }
+    assert_eq!(session.page(&member).cursor, last, "no wrap below the last");
+    session.press(&member, MenuKey::Up);
+    assert_eq!(session.page(&member).cursor, last - 1);
+}
+
+#[test]
+fn select_picks_the_item_under_the_cursor_like_its_hotkey() {
+    let member = member();
+    let mut session = MenuSession::new(main_tree());
+    // Down to "Mail" (second): a placeholder, so a notice and nothing else.
+    session.press(&member, MenuKey::Down);
+    assert_eq!(session.press(&member, MenuKey::Select), MenuOutcome::Stay);
+    assert_eq!(session.notice_for_tests(), Some("placeholder.mail"));
+    // Down to the last item (Log off): an action.
+    for _ in 0..50 {
+        session.press(&member, MenuKey::Down);
+    }
+    assert_eq!(
+        session.press(&member, MenuKey::Select),
+        MenuOutcome::Action(Action::LogOff)
+    );
+}
+
+#[test]
+fn a_hotkey_moves_the_cursor_to_the_item_it_picked() {
+    let member = member();
+    let mut session = MenuSession::new(main_tree());
+    session.press(&member, MenuKey::Char('s'));
+    let page = session.page(&member);
+    assert_eq!(page.items[page.cursor].hotkey, 's');
+    // And a key that picks nothing leaves it where it was.
+    session.press(&member, MenuKey::Char('z'));
+    assert_eq!(session.page(&member).cursor, page.cursor);
+}
+
+#[test]
+fn the_cursor_resets_when_the_open_menu_changes() {
+    let sysop = sysop();
+    let mut session = MenuSession::new(main_tree());
+    session.press(&sysop, MenuKey::Down);
+    session.press(&sysop, MenuKey::Down);
+    session.press(&sysop, MenuKey::Char('o'));
+    assert_eq!(session.current(), "sysop");
+    assert_eq!(
+        session.page(&sysop).cursor,
+        0,
+        "a new menu starts at the top"
+    );
+    session.press(&sysop, MenuKey::Back);
+    assert_eq!(session.current(), "main");
+    assert_eq!(session.page(&sysop).cursor, 0);
+}
+
+#[test]
+fn select_on_a_submenu_item_opens_it() {
+    let sysop = sysop();
+    let mut session = MenuSession::new(main_tree());
+    let target = session
+        .page(&sysop)
+        .items
+        .iter()
+        .position(|item| item.hotkey == 'o')
+        .unwrap();
+    for _ in 0..target {
+        session.press(&sysop, MenuKey::Down);
+    }
+    assert_eq!(session.press(&sysop, MenuKey::Select), MenuOutcome::Stay);
+    assert_eq!(session.current(), "sysop");
+}
+
+#[test]
+fn the_cursor_is_clamped_when_permissions_shrink_the_menu() {
+    let sysop = sysop();
+    let mut session = MenuSession::new(main_tree());
+    for _ in 0..50 {
+        session.press(&sysop, MenuKey::Down);
+    }
+    // The same cursor against a session that sees fewer items stays in range.
+    let few = Only(&[Permission::AccountEditSettings]);
+    let page = session.page(&few);
+    assert!(
+        page.cursor < page.items.len(),
+        "{} of {}",
+        page.cursor,
+        page.items.len()
+    );
+    // A session that holds nothing still sees Log off, so select has a row to act on.
+    let nothing = Nothing;
+    let mut empty = MenuSession::new(main_tree());
+    assert_eq!(empty.press(&nothing, MenuKey::Down), MenuOutcome::Stay);
+    assert_eq!(
+        empty.press(&nothing, MenuKey::Select),
+        MenuOutcome::Action(Action::LogOff)
+    );
+}

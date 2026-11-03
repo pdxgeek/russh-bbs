@@ -1,6 +1,9 @@
 #![allow(clippy::unwrap_used)]
 
-use super::strings::{self, fill};
+use std::collections::BTreeMap;
+use std::sync::OnceLock;
+
+use super::strings::{self, TextSource, fill};
 use super::*;
 use crate::access::{Permission, Slug, Snapshot, Via};
 use crate::icons::{ContentIcon, Icon, Tier};
@@ -50,13 +53,57 @@ fn press(flow: &mut MemberFlow, keys: &str) -> Vec<MemberEffect> {
         .collect()
 }
 
+/// The shipped string table, read from the server's TOML so these tests assert on the real
+/// text and cannot drift from it.
+struct Words(BTreeMap<String, String>);
+
+impl TextSource for Words {
+    fn text<'a>(&'a self, key: &'a str) -> &'a str {
+        self.0.get(key).map_or(key, String::as_str)
+    }
+}
+
+fn flatten(table: &toml::Table, prefix: &str, out: &mut BTreeMap<String, String>) {
+    for (name, value) in table {
+        let key = if prefix.is_empty() {
+            name.clone()
+        } else {
+            format!("{prefix}.{name}")
+        };
+        match value {
+            toml::Value::String(text) => {
+                out.insert(key, text.clone());
+            }
+            toml::Value::Table(inner) => flatten(inner, &key, out),
+            other => unreachable!("string table key {key} is not text: {other:?}"),
+        }
+    }
+}
+
+fn words() -> &'static Words {
+    static WORDS: OnceLock<Words> = OnceLock::new();
+    WORDS.get_or_init(|| {
+        let root: toml::Table = include_str!("../../../server/src/ui/strings.toml")
+            .parse()
+            .unwrap();
+        let mut map = BTreeMap::new();
+        flatten(&root, "", &mut map);
+        Words(map)
+    })
+}
+
 fn text(view: &crate::waiting_room::View) -> String {
-    let mut out = vec![view.heading.to_owned()];
+    let words = words();
+    let mut out = vec![words.text(view.heading).to_owned()];
     out.extend(view.body.iter().cloned());
-    out.extend(view.menu.iter().map(|m| format!("[{}] {}", m.key, m.label)));
-    out.extend(view.fields.iter().map(|f| f.label.to_owned()));
-    out.extend(view.notice.map(|n| n.text.to_owned()));
-    out.push(view.footer.to_owned());
+    out.extend(
+        view.menu
+            .iter()
+            .map(|m| format!("[{}] {}", m.key, words.text(m.label))),
+    );
+    out.extend(view.fields.iter().map(|f| words.text(f.label).to_owned()));
+    out.extend(view.notice.map(|n| words.text(n.text).to_owned()));
+    out.push(words.text(view.footer).to_owned());
     out.join("\n")
 }
 
@@ -274,19 +321,19 @@ fn the_glyph_test_shows_no_security_marker() {
 #[test]
 fn first_login_walks_login_then_glyph_test_then_home() {
     let mut f = flow(TerminalSettings::default(), None);
-    let login = text(&f.view());
+    let login = text(&f.view(words()));
     assert!(login.contains("Signed in as alice."), "{login}");
     assert!(login.contains("This is your first login."), "{login}");
     assert!(login.contains("icon style not chosen yet"), "{login}");
 
     assert_eq!(press(&mut f, "x"), vec![MemberEffect::Stay]);
-    assert!(text(&f.view()).contains("Do these look like icons?"));
+    assert!(text(&f.view(words())).contains("Do these look like icons?"));
 
     let effects = press(&mut f, "y");
     let expected = TerminalSettings::default().with_tier(Tier::NerdFont);
     assert_eq!(effects, vec![MemberEffect::Save(expected)]);
     assert_eq!(f.settings(), &expected);
-    let home = text(&f.view());
+    let home = text(&f.view(words()));
     assert!(home.contains("Icons set to Nerd Font."), "{home}");
     assert!(home.contains("Signed in as alice."), "{home}");
     let page = f.menu_page().unwrap();
@@ -298,7 +345,7 @@ fn first_login_walks_login_then_glyph_test_then_home() {
 fn a_stored_tier_skips_the_glyph_test_and_the_login_screen_names_it() {
     let settings = TerminalSettings::default().with_tier(Tier::Unicode);
     let mut f = flow(settings, Some(1_762_078_500));
-    let login = text(&f.view());
+    let login = text(&f.view(words()));
     assert!(
         login.contains("Last login: 2025-11-02 10:15 UTC"),
         "{login}"
@@ -318,7 +365,7 @@ fn the_main_menu_opens_settings_and_back_returns_to_the_same_menu() {
     assert!(f.menu_page().is_some());
     press(&mut f, "s");
     assert!(f.menu_page().is_none(), "the settings screen is showing");
-    assert!(text(&f.view()).contains("Terminal settings"));
+    assert!(text(&f.view(words())).contains("Terminal settings"));
     press(&mut f, "\u{1b}");
     assert!(f.menu_page().is_some(), "Esc is back to the menu");
     press(&mut f, "s");
@@ -376,7 +423,7 @@ fn escape_at_the_first_glyph_test_stores_ascii_without_color() {
     let effects = press(&mut f, "\u{1b}");
     let expected = TerminalSettings::default().safe_fallback();
     assert_eq!(effects, vec![MemberEffect::Save(expected)]);
-    assert!(text(&f.view()).contains("plain ASCII icons and no color"));
+    assert!(text(&f.view(words())).contains("plain ASCII icons and no color"));
 }
 
 #[test]
@@ -405,7 +452,7 @@ fn other_keys_do_not_answer_the_glyph_test() {
     let mut f = flow(TerminalSettings::default(), None);
     press(&mut f, "x");
     assert_eq!(press(&mut f, "q\n z"), vec![MemberEffect::Stay; 4]);
-    assert!(text(&f.view()).contains("Do these look like icons?"));
+    assert!(text(&f.view(words())).contains("Do these look like icons?"));
 }
 
 fn at_settings() -> MemberFlow {
@@ -426,7 +473,7 @@ fn settings_toggles_color_and_pause_and_asks_to_save() {
         press(&mut f, "p"),
         vec![MemberEffect::Save(s.with_color(false).with_pause(false))]
     );
-    let view = text(&f.view());
+    let view = text(&f.view(words()));
     assert!(view.contains("Color: off"), "{view}");
     assert!(view.contains("Pause at screen end: off"), "{view}");
 }
@@ -439,10 +486,10 @@ fn settings_sets_and_clears_size_overrides() {
     assert!(matches!(effects.last(), Some(MemberEffect::Save(_))));
     press(&mut f, "h40\n");
     assert_eq!(f.settings().size(200, 60), (120, 40));
-    assert!(text(&f.view()).contains("Width: 120"));
+    assert!(text(&f.view(words())).contains("Width: 120"));
     press(&mut f, "w\n");
     assert_eq!(f.settings().width(), None);
-    assert!(text(&f.view()).contains("Width: automatic"));
+    assert!(text(&f.view(words())).contains("Width: automatic"));
 }
 
 #[test]
@@ -451,23 +498,23 @@ fn settings_rejects_out_of_range_sizes_with_words() {
     let effects = press(&mut f, "w9999\n");
     assert_eq!(effects.last(), Some(&MemberEffect::Stay));
     assert_eq!(f.settings().width(), None);
-    assert!(text(&f.view()).contains(strings::ERR_WIDTH));
+    assert!(text(&f.view(words())).contains(words().text(strings::ERR_WIDTH)));
     press(&mut f, "h5\n");
-    assert!(text(&f.view()).contains(strings::ERR_HEIGHT));
+    assert!(text(&f.view(words())).contains(words().text(strings::ERR_HEIGHT)));
 }
 
 #[test]
 fn settings_number_fields_take_digits_only_and_cap_their_length() {
     let mut f = at_settings();
     press(&mut f, "wa1b2\u{8}3");
-    let view = f.view();
+    let view = f.view(words());
     assert_eq!(view.fields.first().map(|x| x.value.as_str()), Some("13"));
     press(&mut f, "99999");
-    let view = f.view();
+    let view = f.view(words());
     assert_eq!(view.fields.first().map(|x| x.value.len()), Some(4));
     press(&mut f, "\u{1b}");
     assert!(
-        text(&f.view()).contains("Width:"),
+        text(&f.view(words())).contains("Width:"),
         "escape cancels the edit"
     );
     assert_eq!(f.settings().width(), None);
@@ -478,7 +525,7 @@ fn the_glyph_test_is_reachable_again_and_a_skip_cancels() {
     let mut f = at_settings();
     let before = *f.settings();
     press(&mut f, "i");
-    assert!(text(&f.view()).contains("Esc: cancel"));
+    assert!(text(&f.view(words())).contains("Esc: cancel"));
     assert_eq!(press(&mut f, "\u{1b}"), vec![MemberEffect::Stay]);
     assert_eq!(f.settings(), &before);
     press(&mut f, "iy");
@@ -488,14 +535,14 @@ fn the_glyph_test_is_reachable_again_and_a_skip_cancels() {
 #[test]
 fn logging_off_shows_the_goodbye_and_has_a_farewell() {
     let mut f = flow(TerminalSettings::default().with_tier(Tier::Ascii), None);
-    assert_eq!(f.farewell(), None);
+    assert_eq!(f.farewell(words()), None);
     press(&mut f, "x");
     assert_eq!(press(&mut f, "l"), vec![MemberEffect::Disconnect]);
-    let view = text(&f.view());
+    let view = text(&f.view(words()));
     assert!(view.contains("Logged off"), "{view}");
     assert!(view.contains("Goodbye, alice."), "{view}");
     assert_eq!(
-        f.farewell()
+        f.farewell(words())
             .map(|l| l.join("\n"))
             .as_deref()
             .map(|s| s.contains("Goodbye")),
@@ -523,7 +570,7 @@ fn the_handle_is_sanitized_again_before_it_is_shown() {
     // through the shared sanitizer rather than trusting the caller.
     let handle = sanitize_username("bob_2").unwrap();
     let f = MemberFlow::new(&handle, sysop(), None, TerminalSettings::default());
-    assert!(text(&f.view()).contains("Signed in as bob_2."));
+    assert!(text(&f.view(words())).contains("Signed in as bob_2."));
     assert_eq!(f.top_role(), Some(&Slug::SYSOP));
 }
 
@@ -540,16 +587,16 @@ fn fill_substitutes_once_and_never_rescans_a_value() {
 #[test]
 fn range_messages_state_the_real_limits() {
     for (msg, lo, hi) in [
-        (strings::ERR_WIDTH, MIN_WIDTH, MAX_WIDTH),
-        (strings::ERR_HEIGHT, MIN_HEIGHT, MAX_HEIGHT),
+        (words().text(strings::ERR_WIDTH), MIN_WIDTH, MAX_WIDTH),
+        (words().text(strings::ERR_HEIGHT), MIN_HEIGHT, MAX_HEIGHT),
     ] {
         assert!(
             msg.contains(&lo.to_string()) && msg.contains(&hi.to_string()),
             "{msg}"
         );
     }
-    assert!(strings::FIELD_WIDTH.contains("20 to 500"));
-    assert!(strings::FIELD_HEIGHT.contains("6 to 200"));
+    assert!(words().text(strings::FIELD_WIDTH).contains("20 to 500"));
+    assert!(words().text(strings::FIELD_HEIGHT).contains("6 to 200"));
 }
 
 #[test]
@@ -563,7 +610,7 @@ fn the_settings_screen_says_when_an_override_is_cut_down_to_the_terminal() {
     let mut f = flow(stored, None);
     f.set_terminal(200, 60);
     press(&mut f, "xs");
-    let shown = text(&f.view());
+    let shown = text(&f.view(words()));
     assert!(
         shown.contains("Width: 500 (your terminal is 200 wide, so 200 is used)"),
         "{shown}"
@@ -574,13 +621,13 @@ fn the_settings_screen_says_when_an_override_is_cut_down_to_the_terminal() {
     );
     // A window that fits the override says nothing; one that shrinks again says so again.
     f.set_terminal(500, 200);
-    let shown = text(&f.view());
+    let shown = text(&f.view(words()));
     assert!(
         shown.contains("Width: 500\n") && !shown.contains("so 500 is used"),
         "{shown}"
     );
     f.set_terminal(80, 24);
-    assert!(text(&f.view()).contains("so 80 is used"));
+    assert!(text(&f.view(words())).contains("so 80 is used"));
 }
 
 #[test]
@@ -602,7 +649,7 @@ fn blind_recovery_clears_a_bad_override_with_s_w_enter_h_enter() {
         effects.iter().any(|e| matches!(e, MemberEffect::Save(_))),
         "the cleared overrides are saved"
     );
-    let shown = text(&f.view());
+    let shown = text(&f.view(words()));
     assert!(shown.contains("Width: automatic") && shown.contains("Height: automatic"));
     assert!(
         !shown.contains("so "),
@@ -613,7 +660,7 @@ fn blind_recovery_clears_a_bad_override_with_s_w_enter_h_enter() {
 #[test]
 fn the_pause_line_does_not_overstate_what_it_does() {
     let f = at_settings();
-    let shown = text(&f.view());
+    let shown = text(&f.view(words()));
     assert!(
         shown.contains("applies to long text; no screen pages yet"),
         "{shown}"
@@ -696,10 +743,10 @@ fn previous_and_stop_work_and_a_resize_keeps_the_reader_on_a_valid_page() {
 #[test]
 fn no_screen_claims_privacy() {
     let mut f = at_settings();
-    let mut all = text(&f.view());
+    let mut all = text(&f.view(words()));
     for keys in ["\u{1b}", "l"] {
         press(&mut f, keys);
-        all.push_str(&text(&f.view()));
+        all.push_str(&text(&f.view(words())));
     }
     let lower = all.to_lowercase();
     assert!(!lower.contains("private") && !lower.contains("secure") && !lower.contains("encrypt"));
@@ -722,4 +769,187 @@ fn format_utc_never_panics_at_the_extremes() {
     for s in [i64::MIN, i64::MAX, i64::MIN + 1, i64::MAX - 1] {
         let _ = format_utc(UnixSeconds::from_raw(s));
     }
+}
+
+// ---- layout and theme (M3-A) ----
+
+fn at_settings_with_themes() -> MemberFlow {
+    let mut f = at_settings();
+    f.set_themes(vec![
+        ThemeName::new("default").unwrap(),
+        ThemeName::new("amber").unwrap(),
+        ThemeName::new("mono").unwrap(),
+    ]);
+    f
+}
+
+#[test]
+fn layout_and_theme_default_to_classic_and_default() {
+    let s = TerminalSettings::default();
+    assert_eq!(s.layout(), LayoutId::Classic);
+    assert_eq!(s.theme().as_str(), DEFAULT_THEME);
+    assert_eq!(
+        ThemeName::default_theme(),
+        ThemeName::new(DEFAULT_THEME).unwrap()
+    );
+}
+
+#[test]
+fn size_changes_keep_the_layout_and_theme() {
+    let s = TerminalSettings::default()
+        .with_layout(LayoutId::Compact)
+        .with_theme(ThemeName::new("amber").unwrap())
+        .with_width(Some(100))
+        .unwrap()
+        .with_height(Some(30))
+        .unwrap();
+    assert_eq!(s.layout(), LayoutId::Compact);
+    assert_eq!(s.theme().as_str(), "amber");
+}
+
+#[test]
+fn stored_layout_text_round_trips_and_unknown_text_is_refused() {
+    for layout in LayoutId::ALL {
+        assert_eq!(layout_from_stored(layout_to_stored(layout)), Some(layout));
+    }
+    assert_eq!(layout_from_stored("two-pane"), None);
+    assert_eq!(layout_from_stored(""), None);
+}
+
+#[test]
+fn the_next_layout_cycles_through_every_layout_and_wraps() {
+    let mut seen = vec![LayoutId::Classic];
+    let mut at = LayoutId::Classic.next();
+    while at != LayoutId::Classic {
+        seen.push(at);
+        at = at.next();
+    }
+    assert_eq!(seen, LayoutId::ALL);
+}
+
+#[test]
+fn theme_names_are_bounded_ascii() {
+    for good in ["default", "a", "amber-2", "high_contrast", "0day"] {
+        assert_eq!(ThemeName::new(good).unwrap().as_str(), good);
+    }
+    let longest = "a".repeat(THEME_NAME_MAX);
+    assert!(ThemeName::new(&longest).is_ok());
+    for bad in [
+        "",
+        "-lead",
+        "_lead",
+        "Upper",
+        "has space",
+        "dot.ted",
+        "slash/es",
+        "caf\u{e9}",
+        "esc\u{1b}[31m",
+        "nul\0",
+        "\u{e000}",
+        "\u{27e6}x",
+        &"a".repeat(THEME_NAME_MAX + 1),
+    ] {
+        assert!(ThemeName::new(bad).is_err(), "{bad:?} must be refused");
+    }
+}
+
+#[test]
+fn the_settings_screen_switches_layout_live_and_saves_it() {
+    let mut f = at_settings_with_themes();
+    assert!(text(&f.view(words())).contains("Layout: classic"));
+    let effects = press(&mut f, "l");
+    assert_eq!(f.settings().layout(), LayoutId::Lightbar);
+    assert!(
+        matches!(effects.last(), Some(MemberEffect::Save(s)) if s.layout() == LayoutId::Lightbar)
+    );
+    assert!(text(&f.view(words())).contains("Layout: lightbar"));
+    press(&mut f, "l");
+    assert_eq!(f.settings().layout(), LayoutId::Compact);
+    press(&mut f, "l");
+    assert_eq!(f.settings().layout(), LayoutId::Classic);
+}
+
+#[test]
+fn the_settings_screen_cycles_themes_and_wraps() {
+    let mut f = at_settings_with_themes();
+    press(&mut f, "t");
+    assert_eq!(f.settings().theme().as_str(), "amber");
+    assert!(text(&f.view(words())).contains("Theme: amber"));
+    press(&mut f, "tt");
+    assert_eq!(f.settings().theme().as_str(), "default");
+}
+
+#[test]
+fn a_stored_theme_that_is_not_loaded_moves_to_the_first_one() {
+    let gone = ThemeName::new("removed-by-sysop").unwrap();
+    let mut f = flow(
+        TerminalSettings::default()
+            .with_tier(Tier::Ascii)
+            .with_theme(gone),
+        None,
+    );
+    press(&mut f, "xs");
+    f.set_themes(vec![
+        ThemeName::new("default").unwrap(),
+        ThemeName::new("amber").unwrap(),
+    ]);
+    press(&mut f, "t");
+    assert_eq!(f.settings().theme().as_str(), "default");
+}
+
+#[test]
+fn the_theme_key_does_nothing_when_no_themes_are_loaded() {
+    let mut f = at_settings();
+    let effects = press(&mut f, "t");
+    assert_eq!(effects, [MemberEffect::Stay]);
+    assert_eq!(f.settings().theme().as_str(), DEFAULT_THEME);
+}
+
+#[test]
+fn layout_and_theme_changes_need_the_settings_permission() {
+    // The same gate as every settings change: the page closes when the permission is gone.
+    let mut f = at_settings_with_themes();
+    f.set_access(Snapshot::from_role(
+        Some(AccountId::from_raw(1)),
+        &Slug::MEMBER,
+        10,
+        &Via::Account,
+        std::iter::empty(),
+    ));
+    let effects = press(&mut f, "l");
+    assert_eq!(effects, [MemberEffect::Stay]);
+    assert_eq!(f.settings().layout(), LayoutId::Classic);
+}
+
+#[test]
+fn cursor_keys_move_the_menu_only_in_a_layout_with_a_cursor() {
+    let mut f = flow(
+        TerminalSettings::default()
+            .with_tier(Tier::Ascii)
+            .with_layout(LayoutId::Classic),
+        None,
+    );
+    press(&mut f, "x");
+    // Classic draws no cursor: Down and Enter must not act on an unseen selection.
+    f.input(MemberInput::Down);
+    assert_eq!(f.input(MemberInput::Enter), MemberEffect::Stay);
+    assert_eq!(f.menu_page().unwrap().cursor, 0);
+    assert!(!f.is_logged_off());
+
+    let mut f = flow(
+        TerminalSettings::default()
+            .with_tier(Tier::Ascii)
+            .with_layout(LayoutId::Lightbar),
+        None,
+    );
+    press(&mut f, "x");
+    f.input(MemberInput::Down);
+    assert_eq!(f.menu_page().unwrap().cursor, 1);
+    f.input(MemberInput::Up);
+    f.input(MemberInput::Up);
+    assert_eq!(
+        f.menu_page().unwrap().cursor,
+        0,
+        "the cursor stops at the first item"
+    );
 }

@@ -11,6 +11,12 @@ pub enum MenuKey {
     Char(char),
     /// Esc.
     Back,
+    /// Move the cursor to the previous item (a layout with a cursor, such as the lightbar).
+    Up,
+    /// Move the cursor to the next item.
+    Down,
+    /// Pick the item under the cursor, as if its hotkey had been typed.
+    Select,
 }
 
 /// What the front end must do after a key.
@@ -46,6 +52,10 @@ pub struct MenuPage {
     pub notice: Option<&'static str>,
     /// Whether the help overlay is showing.
     pub help: bool,
+    /// Index into [`MenuPage::items`] of the item under the cursor. Every layout may ignore it
+    /// (the classic hotkey layout does); the lightbar highlights it. Always in range, or 0 for
+    /// a menu with no visible items.
+    pub cursor: usize,
 }
 
 /// Where a session is in a menu tree.
@@ -55,6 +65,10 @@ pub struct MenuSession {
     stack: Vec<&'static str>,
     help: bool,
     notice: Option<&'static str>,
+    /// Index of the item under the cursor among the visible items of the open menu. Reset to the
+    /// first item whenever the open menu changes. Clamped when read, because the visible set
+    /// can shrink between actions (a permission goes away).
+    cursor: usize,
 }
 
 impl MenuSession {
@@ -66,6 +80,7 @@ impl MenuSession {
             stack: vec![tree.root],
             help: false,
             notice: None,
+            cursor: 0,
         }
     }
 
@@ -92,9 +107,20 @@ impl MenuSession {
             MenuKey::Back => {
                 if self.stack.len() > 1 {
                     self.stack.pop();
+                    self.cursor = 0;
                 }
                 MenuOutcome::Stay
             }
+            MenuKey::Up => {
+                self.cursor = self.cursor_in(access).saturating_sub(1);
+                MenuOutcome::Stay
+            }
+            MenuKey::Down => {
+                let last = self.visible_count(access).saturating_sub(1);
+                self.cursor = (self.cursor_in(access) + 1).min(last);
+                MenuOutcome::Stay
+            }
+            MenuKey::Select => self.select(access),
             MenuKey::Char(c) if c == super::HELP_KEY => {
                 self.help = true;
                 MenuOutcome::Stay
@@ -103,20 +129,50 @@ impl MenuSession {
         }
     }
 
+    fn visible_count(&self, access: &dyn PermissionCheck) -> usize {
+        self.tree
+            .menu(self.current())
+            .map_or(0, |menu| MenuTree::visible_items(menu, access).count())
+    }
+
+    /// The cursor, kept inside the visible items.
+    fn cursor_in(&self, access: &dyn PermissionCheck) -> usize {
+        self.cursor
+            .min(self.visible_count(access).saturating_sub(1))
+    }
+
     fn pick(&mut self, access: &dyn PermissionCheck, typed: char) -> MenuOutcome {
         let Some(menu) = self.tree.menu(self.current()) else {
             return MenuOutcome::Stay;
         };
         // Only visible items can be picked: hiding an item also makes it unreachable.
-        let Some(item) = MenuTree::visible_items(menu, access)
-            .find(|item| item.hotkey.eq_ignore_ascii_case(&typed))
+        let Some(index) = MenuTree::visible_items(menu, access)
+            .position(|item| item.hotkey.eq_ignore_ascii_case(&typed))
         else {
+            return MenuOutcome::Stay;
+        };
+        self.cursor = index;
+        self.activate(access, index)
+    }
+
+    fn select(&mut self, access: &dyn PermissionCheck) -> MenuOutcome {
+        let index = self.cursor_in(access);
+        self.activate(access, index)
+    }
+
+    /// Carry out the `index`th visible item of the open menu.
+    fn activate(&mut self, access: &dyn PermissionCheck, index: usize) -> MenuOutcome {
+        let Some(menu) = self.tree.menu(self.current()) else {
+            return MenuOutcome::Stay;
+        };
+        let Some(item) = MenuTree::visible_items(menu, access).nth(index) else {
             return MenuOutcome::Stay;
         };
         match item.target {
             Target::Menu(id) => {
                 if self.stack.len() < MAX_DEPTH {
                     self.stack.push(id);
+                    self.cursor = 0;
                 }
                 MenuOutcome::Stay
             }
@@ -153,6 +209,7 @@ impl MenuSession {
                 .unwrap_or_default(),
             notice: self.notice,
             help: self.help,
+            cursor: self.cursor_in(access),
         }
     }
 }

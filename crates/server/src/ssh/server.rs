@@ -74,6 +74,20 @@ impl SshServer {
         directory: Arc<D>,
         founder: Arc<Founder>,
     ) -> Result<Self, ServerError> {
+        // A bad menu tree or string table stops the boot here, naming the key (M2-A).
+        let ui = Arc::new(Ui::standard()?);
+        Self::start_with_ui(config, host_key, directory, founder, ui).await
+    }
+
+    /// Like [`SshServer::start_with_founder`], with the screen framework's [`Ui`] chosen by the
+    /// caller (M3-A): `main` passes one that also holds the sysop's themes.
+    pub async fn start_with_ui<D: Backend>(
+        config: &ServerConfig,
+        host_key: &HostKey,
+        directory: Arc<D>,
+        founder: Arc<Founder>,
+        ui: Arc<Ui>,
+    ) -> Result<Self, ServerError> {
         let listener =
             TcpListener::bind(config.listen)
                 .await
@@ -85,8 +99,6 @@ impl SshServer {
             addr: config.listen,
             source,
         })?;
-        // A bad menu tree or string table stops the boot here, naming the key (M2-A).
-        let ui = Arc::new(Ui::standard()?);
         let russh_config = Arc::new(russh_config(host_key, &config.limits));
         let registry = Arc::new(SessionRegistry::default());
         let (stop, stopped) = watch::channel(false);

@@ -45,15 +45,18 @@ use russh_bbs_core::queue::{
     InviteAsk, QueueView, Request as QueueRequest, Response as QueueResponse,
 };
 use russh_bbs_core::terminal_settings::strings::TITLE;
-use russh_bbs_core::terminal_settings::{MemberEffect, MemberFlow, MemberInput, TerminalSettings};
+use russh_bbs_core::terminal_settings::{
+    LayoutId, MemberEffect, MemberFlow, MemberInput, TerminalSettings,
+};
 use russh_bbs_core::waiting_room::{Page, RedeemRequest, RoomEffect, RoomInput, View, WaitingRoom};
 
 use super::terminal::{Key, PtySize, RenderCap};
 use crate::members;
 use crate::settings::{self, Look};
 use crate::sysop;
-use crate::ui::Ui;
 use crate::ui::classic::{self, ContentScreen, MENU_MARKERS, MenuScreen};
+use crate::ui::strings::StringTable;
+use crate::ui::{Ui, layout};
 use crate::waiting_room::render;
 
 /// The heading of the screen a refused session sees.
@@ -244,11 +247,11 @@ pub(super) enum Content {
 }
 
 impl Content {
-    fn view(&self) -> View {
+    fn view(&self, ui: &Ui) -> View {
         match self {
             Self::Room(room) => room.view(),
             Self::Claim(form) => form.view(),
-            Self::Member(flow) => flow.view(),
+            Self::Member(flow) => flow.view(ui.theme(flow.settings().theme()).strings()),
             Self::Limited(lines) => View {
                 title: TITLE,
                 heading: LIMIT_HEADING,
@@ -307,10 +310,31 @@ impl Content {
 
     /// How to draw: a member's settings choose color and borders; everyone else gets the
     /// plain layout (the waiting room and claim prompt predate settings and use no color).
-    fn look(&self) -> Option<Look> {
+    fn look(&self, ui: &Ui, area: Rect) -> Option<Look> {
         match self {
-            Self::Member(flow) => Some(Look::of(flow.settings())),
+            Self::Member(flow) => {
+                let settings = flow.settings();
+                let theme = ui.theme(settings.theme());
+                let layout = layout::effective(settings.layout(), area);
+                Some(Look::themed(settings, layout, theme.palette()))
+            }
             Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
+        }
+    }
+
+    /// The layout in force for a member at `area` (their choice, or a fallback that fits).
+    fn layout(&self, area: Rect) -> LayoutId {
+        match self {
+            Self::Member(flow) => layout::effective(flow.settings().layout(), area),
+            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => LayoutId::Classic,
+        }
+    }
+
+    /// The strings to draw with: the member's theme, or the default for everyone else.
+    fn strings<'a>(&self, ui: &'a Ui) -> &'a StringTable {
+        match self {
+            Self::Member(flow) => ui.theme(flow.settings().theme()).strings(),
+            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => ui.strings(),
         }
     }
 }
@@ -351,7 +375,7 @@ impl Screen {
     ) -> io::Result<Self> {
         let output = OutputBuffer::default();
         let mut content = content;
-        tell_flow_the_terminal(&mut content, size);
+        prepare_member(&mut content, size, &ui);
         let drawn = drawn_size(size, &content);
         let viewport = viewport(drawn, cap);
         Ok(Self {
@@ -548,7 +572,7 @@ impl Screen {
             form.accepted();
         }
         self.content = Content::Member(Box::new(flow));
-        tell_flow_the_terminal(&mut self.content, self.pty);
+        prepare_member(&mut self.content, self.pty, &self.ui);
         self.rebuild = true;
     }
 
@@ -575,7 +599,7 @@ impl Screen {
     /// screen.
     pub(super) fn redeemed(&mut self, flow: MemberFlow) {
         self.content = Content::Member(Box::new(flow));
-        tell_flow_the_terminal(&mut self.content, self.pty);
+        prepare_member(&mut self.content, self.pty, &self.ui);
         self.rebuild = true;
     }
 
@@ -651,7 +675,7 @@ impl Screen {
         queue!(self.terminal.backend_mut(), Show, LeaveAlternateScreen)?;
         let mut bytes = self.take_output();
         let farewell = match &self.content {
-            Content::Member(flow) => flow.farewell(),
+            Content::Member(flow) => flow.farewell(self.content.strings(&self.ui)),
             Content::Limited(lines) => Some(lines.clone()),
             Content::Room(_) | Content::Claim(_) => None,
         };
@@ -663,13 +687,14 @@ impl Screen {
     }
 
     fn draw(&mut self) -> io::Result<Vec<u8>> {
-        let view = self.content.view();
-        let look = self.content.look();
+        let view = self.content.view(&self.ui);
+        let look = self.content.look(&self.ui, self.viewport);
+        let layout = self.content.layout(self.viewport);
         let menu = self.content.menu_page();
         let members_view = self.content.members_view();
         let queue_view = self.content.queue_view();
         let tier = self.content.tier();
-        let ui = &self.ui;
+        let strings = self.content.strings(&self.ui);
         let framed = self.content.is_framed_screen();
         self.terminal.draw(|frame| match (look, &menu) {
             // The sysop queue and the vouch screen (M2-E): the same layout and status row. The
@@ -681,8 +706,8 @@ impl Screen {
                     classic::render_content(
                         frame,
                         ContentScreen {
-                            strings: ui.strings(),
-                            lines: sysop::queue::lines(screen, ui.strings(), look, width),
+                            strings,
+                            lines: sysop::queue::lines(screen, strings, look, width),
                             look,
                             tier,
                             markers: &MENU_MARKERS,
@@ -698,8 +723,8 @@ impl Screen {
                     classic::render_content(
                         frame,
                         ContentScreen {
-                            strings: ui.strings(),
-                            lines: members::lines(screen, ui.strings(), look, width),
+                            strings,
+                            lines: members::lines(screen, strings, look, width),
                             look,
                             tier,
                             markers: &MENU_MARKERS,
@@ -708,10 +733,11 @@ impl Screen {
                 }
             }
             // The main menu: the classic hotkey layout, with the reserved status row.
-            (Some(look), Some(page)) => classic::render(
+            (Some(look), Some(page)) => layout::render_menu(
                 frame,
+                layout,
                 &MenuScreen {
-                    strings: ui.strings(),
+                    strings,
                     page,
                     body: &view.body,
                     notice: view.notice,
@@ -724,14 +750,14 @@ impl Screen {
             (Some(look), None) if framed => classic::render_content(
                 frame,
                 ContentScreen {
-                    strings: ui.strings(),
-                    lines: classic::view_lines(ui.strings(), &view, look),
+                    strings,
+                    lines: classic::view_lines(strings, &view, look),
                     look,
                     tier,
                     markers: &MENU_MARKERS,
                 },
             ),
-            (Some(look), None) => settings::render(frame, &view, look),
+            (Some(look), None) => settings::render(frame, &view, look, strings),
             (None, _) => render(frame, &view),
         })?;
         Ok(self.take_output())
@@ -756,6 +782,16 @@ fn new_terminal(
 /// A window as the backend reports it.
 fn window_size(window: PtySize) -> Size {
     Size::new(window.cols(), window.rows())
+}
+
+/// Give a new member session what it needs from the server: the real terminal size and the
+/// themes the settings screen can switch between. Every place that puts a member flow on a
+/// screen (start, claim, redeem) calls this, so none can forget the theme list.
+fn prepare_member(content: &mut Content, pty: PtySize, ui: &Ui) {
+    tell_flow_the_terminal(content, pty);
+    if let Content::Member(flow) = content {
+        flow.set_themes(ui.theme_names());
+    }
 }
 
 /// Give a member session the real terminal size, so its settings screen can say when a stored
@@ -798,7 +834,7 @@ fn room_input(key: Key) -> Option<RoomInput> {
         Key::Backspace => Some(RoomInput::Backspace),
         Key::Escape => Some(RoomInput::Escape),
         Key::Ctrl('c' | 'd') => Some(RoomInput::Quit),
-        Key::Ctrl(_) | Key::Other => None,
+        Key::Ctrl(_) | Key::Up | Key::Down | Key::Other => None,
     }
 }
 
@@ -810,7 +846,7 @@ fn claim_input(key: Key) -> Option<ClaimInput> {
         Key::Backspace => Some(ClaimInput::Backspace),
         Key::Escape => Some(ClaimInput::Escape),
         Key::Ctrl('c' | 'd') => Some(ClaimInput::Quit),
-        Key::Ctrl(_) | Key::Other => None,
+        Key::Ctrl(_) | Key::Up | Key::Down | Key::Other => None,
     }
 }
 
@@ -821,6 +857,8 @@ fn member_input(key: Key) -> Option<MemberInput> {
         Key::Enter => Some(MemberInput::Enter),
         Key::Backspace => Some(MemberInput::Backspace),
         Key::Escape => Some(MemberInput::Escape),
+        Key::Up => Some(MemberInput::Up),
+        Key::Down => Some(MemberInput::Down),
         Key::Ctrl('c' | 'd') => Some(MemberInput::Quit),
         Key::Ctrl(_) | Key::Other => None,
     }

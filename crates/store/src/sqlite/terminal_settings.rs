@@ -6,7 +6,8 @@
 use russh_bbs_core::audit::events;
 use russh_bbs_core::store::{AccountId, StoreError, UnixSeconds};
 use russh_bbs_core::terminal_settings::{
-    TerminalSettings, TerminalSettingsStore, tier_from_stored, tier_to_stored,
+    TerminalSettings, TerminalSettingsStore, ThemeName, layout_from_stored, layout_to_stored,
+    tier_from_stored, tier_to_stored,
 };
 use sqlx::error::ErrorKind;
 
@@ -20,6 +21,8 @@ struct SettingsRow {
     color: i64,
     pause: i64,
     icon_tier: Option<String>,
+    layout: String,
+    theme: String,
 }
 
 impl SettingsRow {
@@ -39,14 +42,18 @@ impl SettingsRow {
             .icon_tier
             .map(|text| tier_from_stored(&text).ok_or_else(|| corrupt("icon_tier is not known")))
             .transpose()?;
-        TerminalSettings::new(
+        let layout =
+            layout_from_stored(&self.layout).ok_or_else(|| corrupt("layout is not known"))?;
+        let theme = ThemeName::new(&self.theme).map_err(|_| corrupt("theme is not valid"))?;
+        let settings = TerminalSettings::new(
             size(self.width_override, "width is not valid")?,
             size(self.height_override, "height is not valid")?,
             flag(self.color, "color is not valid")?,
             flag(self.pause, "pause is not valid")?,
             tier,
         )
-        .map_err(|_| corrupt("is out of range"))
+        .map_err(|_| corrupt("is out of range"))?;
+        Ok(settings.with_layout(layout).with_theme(theme))
     }
 }
 
@@ -55,7 +62,7 @@ impl TerminalSettingsStore for SqliteStore {
         let id = account.as_raw();
         let row = sqlx::query_as!(
             SettingsRow,
-            "SELECT width_override, height_override, color, pause, icon_tier
+            "SELECT width_override, height_override, color, pause, icon_tier, layout, theme
              FROM terminal_settings WHERE account_id = ?",
             id,
         )
@@ -79,17 +86,22 @@ impl TerminalSettingsStore for SqliteStore {
         let color = i64::from(settings.color());
         let pause = i64::from(settings.pause());
         let tier = settings.chosen_tier().map(tier_to_stored);
+        let layout = layout_to_stored(settings.layout());
+        let theme = settings.theme();
+        let theme = theme.as_str();
         let mut tx = self.pool().begin().await.map_err(backend)?;
         sqlx::query!(
             "INSERT INTO terminal_settings
-                 (account_id, width_override, height_override, color, pause, icon_tier)
-             VALUES (?, ?, ?, ?, ?, ?)
+                 (account_id, width_override, height_override, color, pause, icon_tier, layout, theme)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
              ON CONFLICT (account_id) DO UPDATE SET
                  width_override  = excluded.width_override,
                  height_override = excluded.height_override,
                  color           = excluded.color,
                  pause           = excluded.pause,
                  icon_tier       = excluded.icon_tier,
+                 layout          = excluded.layout,
+                 theme           = excluded.theme,
                  updated_at      = unixepoch()",
             id,
             width,
@@ -97,6 +109,8 @@ impl TerminalSettingsStore for SqliteStore {
             color,
             pause,
             tier,
+            layout,
+            theme,
         )
         .execute(&mut *tx)
         .await

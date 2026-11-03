@@ -1,0 +1,10 @@
+# Shipped theme: amber on dark. Colors only; every string is inherited from the default table.
+name = "amber"
+
+[colors]
+heading = "yellow"
+key = "white"
+border = "yellow"
+info = "yellow"
+error = "lightred"
+selected = "lightyellow"

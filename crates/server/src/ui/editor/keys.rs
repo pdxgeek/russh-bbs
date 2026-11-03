@@ -79,8 +79,9 @@ impl EditorKey {
             Key::Ctrl('g') => Self::Help,
             Key::Ctrl('b') => Self::Left,
             Key::Ctrl('f') => Self::Right,
-            Key::Ctrl('p') => Self::Up,
-            Key::Ctrl('n') => Self::Down,
+            // The arrow keys the parser delivers since M3-A, and Ctrl-P and Ctrl-N.
+            Key::Up | Key::Ctrl('p') => Self::Up,
+            Key::Down | Key::Ctrl('n') => Self::Down,
             Key::Ctrl('a') => Self::Home,
             Key::Ctrl('e') => Self::End,
             Key::Ctrl('t') => Self::PageUp,

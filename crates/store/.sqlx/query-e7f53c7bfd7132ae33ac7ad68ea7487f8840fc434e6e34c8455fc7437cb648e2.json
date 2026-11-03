@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO terminal_settings\n                 (account_id, width_override, height_override, color, pause, icon_tier, layout, theme)\n             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)\n             ON CONFLICT (account_id) DO UPDATE SET\n                 width_override  = excluded.width_override,\n                 height_override = excluded.height_override,\n                 color           = excluded.color,\n                 pause           = excluded.pause,\n                 icon_tier       = excluded.icon_tier,\n                 layout          = excluded.layout,\n                 theme           = excluded.theme,\n                 updated_at      = extract(epoch FROM now())::bigint",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int4",
+        "Int4",
+        "Bool",
+        "Bool",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e7f53c7bfd7132ae33ac7ad68ea7487f8840fc434e6e34c8455fc7437cb648e2"
+}
