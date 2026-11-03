@@ -25,6 +25,8 @@ pub(crate) const HELP_KEY_QUIT: &str = "ui.help.key_quit";
 pub(crate) const HELP_MENU: &str = "ui.help.menu";
 /// Notice when Mail is chosen over telnet, where it is withheld (D90).
 pub(crate) const NOTICE_MAIL_SSH_ONLY: &str = "ui.notice.mail_ssh_only";
+/// Notice when an invite screen is chosen over telnet, where codes would cross the wire in clear (D91).
+pub(crate) const NOTICE_INVITES_SSH_ONLY: &str = "ui.notice.invites_ssh_only";
 /// The one D78 (7) explanation about mail, on the help screen.
 pub(crate) const HELP_MAIL: &str = "ui.help.mail";
 /// Help footer.
@@ -49,8 +51,9 @@ pub(crate) const PAGER_END: &str = "ui.pager.end";
 pub(crate) const PAGER_CLIPPED: &str = "ui.pager.clipped";
 
 /// Every key above; the table must hold these plus the menu tree's keys.
-pub(crate) const FRAMEWORK: [&str; 22] = [
+pub(crate) const FRAMEWORK: [&str; 23] = [
     NOTICE_MAIL_SSH_ONLY,
+    NOTICE_INVITES_SSH_ONLY,
     HELP_MAIL,
     FOOTER_LIGHTBAR,
     HELP_LIGHTBAR,
