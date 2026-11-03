@@ -56,6 +56,21 @@ fn draw(
     color: bool,
     size: (u16, u16),
 ) -> Buffer {
+    draw_on(chosen, theme, page, body, tier, color, size, false)
+}
+
+/// [`draw`] on a transport that withholds mail (`mail_over_ssh_only`, telnet).
+#[allow(clippy::too_many_arguments)]
+fn draw_on(
+    chosen: LayoutId,
+    theme: &Theme,
+    page: &MenuPage,
+    body: &[String],
+    tier: Tier,
+    color: bool,
+    size: (u16, u16),
+    mail_over_ssh_only: bool,
+) -> Buffer {
     let settings = TerminalSettings::default()
         .with_tier(tier)
         .with_color(color)
@@ -80,6 +95,7 @@ fn draw(
                     look,
                     tier,
                     markers: &MENU_MARKERS,
+                    mail_over_ssh_only,
                 },
             );
         })
@@ -211,6 +227,34 @@ fn the_help_screen_with_the_mail_explanation_fits_80x24_in_every_layout() {
             "Any key: close help",
         ] {
             assert!(help.contains(expected), "{chosen:?} {expected:?}:\n{help}");
+        }
+    }
+}
+
+/// QA M3 L7: over telnet mail is withheld, so the help does not talk about mail at rest; it says
+/// where mail is available. Over ssh (above) it is unchanged.
+#[test]
+fn the_help_screen_over_telnet_says_mail_is_ssh_only_and_not_the_d78_sentence() {
+    let ui = ui();
+    let theme = ui.theme(ThemeName::default_theme());
+    for chosen in LayoutId::ALL {
+        let help = text(&draw_on(
+            chosen,
+            theme,
+            &page(&[MenuKey::Char('?')]),
+            &[],
+            Tier::Ascii,
+            false,
+            (80, 24),
+            true,
+        ));
+        assert!(
+            help.contains("Mail is available over ssh."),
+            "{chosen:?}:\n{help}"
+        );
+        assert!(help.contains("Any key: close help"), "{chosen:?}:\n{help}");
+        for gone in ["can read your mail", "encrypted at rest", "end-to-end"] {
+            assert!(!help.contains(gone), "{chosen:?} {gone:?}:\n{help}");
         }
     }
 }

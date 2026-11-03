@@ -16,6 +16,7 @@ use russh_bbs_core::terminal_settings::TerminalSettings;
 
 use super::exec::{Fail, Purpose, Request, Response};
 use super::flow::{MailEffect, MailScreen};
+use super::strings;
 use super::{DrawCtx, render};
 use crate::settings::Look;
 use crate::ssh::terminal::Key;
@@ -323,6 +324,43 @@ fn a_reply_quotes_and_the_reader_reports_only_after_asking() {
         russh_bbs_core::mail::ReportId::from_raw(4),
     )));
     assert!(text(&screen).contains("The staff have a copy of that message."));
+}
+
+/// QA M3 L6: the confirmation wrapped `from` into `fr` and `om` at 80x24.
+#[test]
+fn the_report_confirmation_wraps_at_spaces_and_never_inside_a_word() {
+    let mut screen = open(vec![entry(1, "ann", Some("Hello"), true)]);
+    expect_request(press(&mut screen, Key::Enter));
+    screen.deliver(Response::Message(Ok(message(1, "Hello", "body"))));
+    press(&mut screen, Key::Char('x'));
+    let shown = text(&screen);
+    let rows: Vec<String> = shown
+        .lines()
+        .map(|row| row.trim_matches(|c| c == '|' || c == ' ').to_owned())
+        .collect();
+    // Every row of the confirmation ends at a word end and starts at a word start.
+    let sentence = strings::CONFIRM_REPORT;
+    let confirmation: Vec<&String> = rows
+        .iter()
+        .filter(|row| !row.is_empty() && sentence.contains(row.as_str()))
+        .collect();
+    assert!(confirmation.len() >= 2, "{shown}");
+    for row in &confirmation {
+        let start = sentence.find(row.as_str()).unwrap();
+        let end = start + row.len();
+        assert!(
+            start == 0 || sentence.as_bytes()[start - 1] == b' ',
+            "{row:?}\n{shown}"
+        );
+        assert!(
+            end == sentence.len() || sentence.as_bytes()[end] == b' ',
+            "{row:?}\n{shown}"
+        );
+    }
+    assert!(
+        flat(&screen).contains("and who it is from? The message stays"),
+        "{shown}"
+    );
 }
 
 #[test]

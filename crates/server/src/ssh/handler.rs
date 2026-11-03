@@ -18,7 +18,7 @@ use std::sync::Arc;
 use std::time::Instant;
 
 use russh::server::{Auth, Handler, Msg, PublicKeyOffer, Session, VerifiedPublicKey};
-use russh::{Channel, ChannelId, ChannelOpenFailure, Pty};
+use russh::{Channel, ChannelId, ChannelOpenFailure, MethodKind, MethodSet, Pty};
 use russh_bbs_core::access::Permission;
 use russh_bbs_core::access::{Access, Fingerprint, decide_access};
 use russh_bbs_core::founder::{ClaimForm, MAX_ATTEMPTS_PER_SESSION};
@@ -392,7 +392,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
                 ?retry_after,
                 "password rate limit; rejecting"
             );
-            return Ok(Auth::reject());
+            return Ok(retry_password());
         }
         let checked = timeout(
             PASSWORD_CHECK_TIMEOUT,
@@ -415,15 +415,15 @@ impl<D: Backend> Handler for ClientHandler<D> {
             }
             Ok(Ok(Login::Denied)) => {
                 info!(session = ?self.guard.id(), peer = ?self.peer, "password rejected");
-                Ok(Auth::reject())
+                Ok(retry_password())
             }
             Ok(Err(error)) => {
                 warn!(session = ?self.guard.id(), %error, "password check failed in the store; rejecting");
-                Ok(Auth::reject())
+                Ok(retry_password())
             }
             Err(_) => {
                 warn!(session = ?self.guard.id(), "password check timed out; rejecting");
-                Ok(Auth::reject())
+                Ok(retry_password())
             }
         }
     }
@@ -833,5 +833,18 @@ impl<D: Backend> Handler for ClientHandler<D> {
         _session: &mut Session,
     ) -> Result<bool, Self::Error> {
         Ok(false)
+    }
+}
+
+/// The reply to a refused password. A bare `Auth::reject()` makes russh drop `password` from
+/// the methods the client is told remain, so the client gives up after one try (QA M3 L9). This
+/// keeps both methods on offer; russh's `max_auth_attempts` still ends the connection, and the
+/// per-account and per-IP limits (D81) are checked before every try.
+fn retry_password() -> Auth {
+    Auth::Reject {
+        proceed_with_methods: Some(MethodSet::from(
+            &[MethodKind::PublicKey, MethodKind::Password][..],
+        )),
+        partial_success: false,
     }
 }

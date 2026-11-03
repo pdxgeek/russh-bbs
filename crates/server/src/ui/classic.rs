@@ -34,6 +34,9 @@ pub(crate) struct MenuScreen<'a> {
     pub(crate) tier: Tier,
     /// Markers for the status row.
     pub(crate) markers: &'a [SecurityMarker],
+    /// Mail is withheld on this transport (telnet): the help says so instead of giving the D78
+    /// sentence about mail at rest.
+    pub(crate) mail_over_ssh_only: bool,
 }
 
 /// The markers a menu screen shows: the whole signed-in session is server-readable (MVP).
@@ -219,7 +222,12 @@ pub(crate) fn help_lines(screen: &MenuScreen<'_>, extra: Option<&str>) -> Vec<Li
     ] {
         out.push(Line::styled(format!("  {}", strings.text(line)), key));
     }
-    out.push(Line::raw(strings.text(keys::HELP_MAIL).to_owned()));
+    let mail = if screen.mail_over_ssh_only {
+        keys::NOTICE_MAIL_SSH_ONLY
+    } else {
+        keys::HELP_MAIL
+    };
+    out.push(Line::raw(strings.text(mail).to_owned()));
     out.push(Line::raw(strings.text(keys::HELP_MENU).to_owned()));
     if let Some(extra) = extra {
         out.push(Line::raw(strings.text(extra).to_owned()));

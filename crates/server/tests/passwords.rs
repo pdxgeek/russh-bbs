@@ -315,6 +315,69 @@ async fn when_on_the_method_is_offered_and_the_right_password_signs_in() {
     assert_eq!(mine.access, Some(russh_bbs_core::access::Access::Member));
 }
 
+/// QA M3 L9: a refused password used to drop `password` from the methods the client was told
+/// remain, so an interactive client gave up after one try.
+#[tokio::test]
+async fn several_wrong_passwords_then_the_right_one_work_on_one_connection() {
+    let limits = Limits {
+        max_auth_attempts: 4,
+        ..lenient(true)
+    };
+    let rig = Rig::start(limits).await;
+    let (id, _) = rig.member("alice").await;
+    rig.give_password(id, SECRET).await;
+    let mut session = common::connect(rig.addr()).await;
+    for _ in 0..2 {
+        let AuthResult::Failure {
+            remaining_methods, ..
+        } = session
+            .authenticate_password("alice", "wrong password here")
+            .await
+            .unwrap()
+        else {
+            panic!("a wrong password must fail");
+        };
+        assert!(
+            remaining_methods.contains(&MethodKind::Password),
+            "password must stay on offer: {remaining_methods:?}"
+        );
+    }
+    let result = session
+        .authenticate_password("alice", SECRET)
+        .await
+        .unwrap();
+    assert!(matches!(result, AuthResult::Success), "{result:?}");
+}
+
+/// The retry allowance is `ssh.max_auth_attempts`; past it the server hangs up (D81 still
+/// limits per account and per network on top).
+#[tokio::test]
+async fn password_tries_on_one_connection_stop_at_the_configured_limit() {
+    let limits = Limits {
+        max_auth_attempts: 3,
+        ..lenient(true)
+    };
+    let rig = Rig::start(limits).await;
+    let (id, _) = rig.member("alice").await;
+    rig.give_password(id, SECRET).await;
+    let mut session = common::connect(rig.addr()).await;
+    let mut hung_up = false;
+    for _ in 0..10 {
+        match session
+            .authenticate_password("alice", "wrong password here")
+            .await
+        {
+            Ok(AuthResult::Success) => panic!("a wrong password must not sign in"),
+            Ok(AuthResult::Failure { .. }) => {}
+            Err(_) => {
+                hung_up = true;
+                break;
+            }
+        }
+    }
+    assert!(hung_up, "the server kept taking tries past the limit");
+}
+
 #[tokio::test]
 async fn every_refusal_looks_the_same_to_the_client() {
     let rig = Rig::start(lenient(true)).await;

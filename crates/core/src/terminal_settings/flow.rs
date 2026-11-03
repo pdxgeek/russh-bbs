@@ -123,6 +123,9 @@ pub struct MemberFlow {
     /// Whether the settings offer the password screen. Off for a transport that is not
     /// encrypted (telnet, M3-H): a password is set only over SSH (D27).
     password_screen: bool,
+    /// Whether the welcome carries the D78 mail sentence. Off where mail is withheld (telnet):
+    /// it says "Mail is available over ssh." instead.
+    mail_note: bool,
 }
 
 impl MemberFlow {
@@ -149,6 +152,7 @@ impl MemberFlow {
             themes: Vec::new(),
             login: LoginMethod::Key,
             password_screen: true,
+            mail_note: true,
         }
     }
 
@@ -157,6 +161,14 @@ impl MemberFlow {
     #[must_use]
     pub const fn without_password_screen(mut self) -> Self {
         self.password_screen = false;
+        self
+    }
+
+    /// Say "Mail is available over ssh." instead of the D78 mail sentence (the transport
+    /// withholds mail, so a sentence about mail at rest would be misleading there).
+    #[must_use]
+    pub const fn without_mail_note(mut self) -> Self {
+        self.mail_note = false;
         self
     }
 
@@ -894,7 +906,12 @@ impl MemberFlow {
         view.body.push(self.terminal_line(words));
         if self.access.allows(Permission::MailRead) {
             view.body.push(String::new());
-            view.body.push(words.text(strings::MAIL_NOTE).to_owned());
+            let note = if self.mail_note {
+                strings::MAIL_NOTE
+            } else {
+                strings::MAIL_SSH_ONLY
+            };
+            view.body.push(words.text(note).to_owned());
         }
         view.footer = strings::LOGIN_FOOTER;
     }

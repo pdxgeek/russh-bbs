@@ -133,7 +133,7 @@ fn render_reader(
             Line::styled(clean(&reader_title(reader), 120), bold),
             Line::raw(""),
         ];
-        for wrapped in pager::wrap(&[text.to_owned()], width) {
+        for wrapped in wrap_words(text, width) {
             lines.push(Line::raw(wrapped));
         }
         settings::boxed(frame, content, strings::TITLE_INBOX, lines, ctx.look);
@@ -259,4 +259,27 @@ fn input_lines(
     out.push(Line::raw(""));
     notice(screen, ctx, out);
     out.push(Line::styled(strings::HELP_INPUT.to_owned(), dim));
+}
+
+/// Break fixed chrome text into rows of at most `width` characters at spaces, so a word is never
+/// split (QA M3 L6). A word longer than a row is cut, which the confirmation texts never need.
+fn wrap_words(text: &str, width: usize) -> Vec<String> {
+    let width = width.max(1);
+    let mut rows = Vec::new();
+    let mut row = String::new();
+    for word in text.split_whitespace() {
+        let word_len = word.chars().count();
+        let row_len = row.chars().count();
+        if !row.is_empty() && row_len + 1 + word_len > width {
+            rows.push(std::mem::take(&mut row));
+        }
+        if !row.is_empty() {
+            row.push(' ');
+        }
+        row.push_str(word);
+    }
+    if !row.is_empty() {
+        rows.push(row);
+    }
+    rows
 }
