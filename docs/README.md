@@ -21,6 +21,7 @@ Status of the project: M0, M1 and M2 are merged. M1's QA gate passed except the 
 | Configuration keys, env vars, flags | [config.md](config.md) |
 | Scope and order of work | [features.md](features.md), [mvp-scope.md](mvp-scope.md), [milestones.md](milestones.md) |
 | Terminal UI, menus, layouts, themes, icons | [ui.md](ui.md) |
+| Chat rooms, presence, whispers | [chat.md](chat.md) |
 | Running cloud sessions | [cloud-sessions.md](cloud-sessions.md), [orchestration.md](orchestration.md) |
 | Third-party crates (default choices, library-first D47) | [third-party.md](third-party.md) |
 | Coding standards (Rust) | [../.claude/skills/rust-coding/SKILL.md](../.claude/skills/rust-coding/SKILL.md), copied from [pdxgeek/ai-skills](https://github.com/pdxgeek/ai-skills) (upstream is the source of truth) |

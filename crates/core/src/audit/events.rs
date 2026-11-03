@@ -342,6 +342,21 @@ pub fn registration_capped(day: i64, cap: u32) -> AuditEvent {
         .detail(&format!("day {day} cap {cap}"))
 }
 
+/// Staff opened the chat room `room` named `name`. Only the name is written; nothing is ever
+/// said in a room that the log could hold.
+#[must_use]
+pub fn chat_room_created(actor: AccountId, room: ResourceRef, name: &Slug) -> AuditEvent {
+    AuditEvent::new(Actor::Account(actor), Action::ChatRoomCreated, Target::None)
+        .on(room)
+        .detail(&format!("name {}", name.as_str()))
+}
+
+/// Staff closed the chat room `room`.
+#[must_use]
+pub fn chat_room_closed(actor: AccountId, room: ResourceRef) -> AuditEvent {
+    AuditEvent::new(Actor::Account(actor), Action::ChatRoomClosed, Target::None).on(room)
+}
+
 /// `actor` created `board`, `restricted` or open (M3-E, D83). The name is not written.
 #[must_use]
 pub fn board_created(actor: AccountId, board: ResourceRef, restricted: bool) -> AuditEvent {

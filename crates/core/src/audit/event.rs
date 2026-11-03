@@ -99,6 +99,12 @@ pub enum Action {
     /// A member removed their own password (M3-D, D81). Written only when there was one.
     #[strum(serialize = "password.cleared")]
     PasswordCleared,
+    /// Staff opened a chat room (M3-F). The resource is the room; the note is its name.
+    #[strum(serialize = "chat.room_created")]
+    ChatRoomCreated,
+    /// Staff closed a chat room (M3-F). The resource is the room; nothing said in it was kept.
+    #[strum(serialize = "chat.room_closed")]
+    ChatRoomClosed,
     /// A board was created (M3-E, D83). The resource is the board; the detail says whether it
     /// is restricted. The name is not written.
     #[strum(serialize = "board.created")]

@@ -3,6 +3,7 @@
 
 pub mod access;
 pub mod audit;
+pub mod chat;
 pub mod credits;
 pub mod drafts;
 pub mod forums;

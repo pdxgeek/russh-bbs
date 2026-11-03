@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO chat_room (name, created_at, created_by)\n               SELECT $1, $2, $3\n               WHERE (SELECT count(*) FROM chat_room WHERE closed_at IS NULL) < $4\n               RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "4d3303f065a18a91d2b6b653cf16bef64df1b6cfede41a6cdd21e092a592161c"
+}

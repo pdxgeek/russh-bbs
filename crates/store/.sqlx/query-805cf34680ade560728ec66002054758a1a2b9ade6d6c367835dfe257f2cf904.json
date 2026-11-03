@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE chat_room SET closed_at = max(?1, created_at) WHERE id = ?2 AND closed_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "805cf34680ade560728ec66002054758a1a2b9ade6d6c367835dfe257f2cf904"
+}

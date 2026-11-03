@@ -10,6 +10,7 @@ pub(crate) mod access;
 pub(crate) mod access_edit;
 pub(crate) mod accounts;
 pub(crate) mod audit;
+pub(crate) mod chat;
 pub(crate) mod credits;
 pub(crate) mod drafts;
 pub(crate) mod forums;
@@ -27,6 +28,7 @@ use std::sync::Arc;
 
 use russh_bbs_core::access::{AccessStore, Fingerprint, MemberDirectory, Slug};
 use russh_bbs_core::audit::{AuditStore, WallClock};
+use russh_bbs_core::chat::RoomStore;
 use russh_bbs_core::credits::CreditStore;
 use russh_bbs_core::drafts::DraftStore;
 use russh_bbs_core::forums::ForumStore;
@@ -60,6 +62,7 @@ pub(crate) trait TestStore:
     + ProfileStore
     + PasswordStore
     + QueueStore
+    + RoomStore
     + RegistrationStore
     + MemberDirectory
     + MemberSessions
@@ -87,6 +90,7 @@ impl<T> TestStore for T where
         + ProfileStore
         + PasswordStore
         + QueueStore
+        + RoomStore
         + RegistrationStore
         + MemberDirectory
         + MemberSessions
@@ -155,7 +159,7 @@ macro_rules! shared_suite {
             #[allow(unused_imports)]
             use super::*;
             use $crate::suite::{
-                access, access_edit, accounts, audit, credits, drafts, forums, founder, invites, limits, passwords, profiles,
+                access, access_edit, accounts, audit, chat, credits, drafts, forums, founder, invites, limits, passwords, profiles,
                 queue, registration, scheduler, terminal_settings,
             };
 
@@ -330,6 +334,17 @@ macro_rules! shared_suite {
                 registration::an_application_is_a_queue_row_of_its_kind_with_one_audit_row_and_no_content,
                 registration::an_application_never_lands_without_its_audit_row,
                 registration::registration_data_survives_a_reopen,
+                chat::a_new_board_has_a_lobby_and_the_roles_hold_the_chat_permissions,
+                chat::creating_and_closing_a_room_are_audited_with_the_name_and_nothing_else,
+                chat::a_name_is_unique_among_open_rooms_and_ids_are_never_reused,
+                chat::the_room_cap_refuses_and_concurrent_creations_never_pass_it,
+                chat::an_unknown_actor_is_refused_and_nothing_is_written,
+                chat::room_writes_never_land_without_their_audit_row,
+                chat::the_database_refuses_names_the_code_would_never_write,
+                chat::a_stored_name_the_code_could_not_have_written_is_corrupt_not_shown,
+                chat::nothing_a_member_says_has_a_table_to_land_in,
+                chat::rooms_survive_a_reopen,
+                chat::a_broken_store_errors_instead_of_listing_no_rooms,
                 credits::earn_and_spend_derive_the_balance,
                 credits::an_overdraft_is_refused_and_changes_nothing,
                 credits::concurrent_spends_never_overdraw,

@@ -32,7 +32,10 @@ use ratatui::crossterm::queue;
 use ratatui::crossterm::terminal::{Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen};
 use ratatui::layout::{Position, Rect, Size};
 use ratatui::{Terminal, TerminalOptions, Viewport};
-use russh_bbs_core::access::Snapshot;
+use russh_bbs_core::access::{Permission, PermissionCheck, Snapshot};
+use russh_bbs_core::chat::{
+    ChatEffect, ChatKey, ChatRequest, ChatResponse, ChatScreen, Event as ChatEvent, RoomId,
+};
 use russh_bbs_core::founder::{ClaimEffect, ClaimForm, ClaimInput};
 use russh_bbs_core::icons::{SecurityMarker, Tier};
 use russh_bbs_core::invites::{InviteOutcome, InviteRequest};
@@ -217,6 +220,15 @@ pub(crate) struct KeyEffects {
     /// A password request (status, set, clear) the password screen is waiting on (M3-D). The
     /// session runs it against the store and gives the answer to [`Screen::deliver_password`].
     pub(crate) password_request: Option<PasswordRequest>,
+    /// The member opened the chat screen (M3-F): the session joins the hub before it runs
+    /// `chat_request`.
+    pub(crate) chat_open: bool,
+    /// The member left the chat screen: the session leaves the hub.
+    pub(crate) chat_exit: bool,
+    /// A chat request (list, join, say, whisper, ...) the chat screen is waiting on. The session
+    /// runs it against the hub and the room store and gives the answer to
+    /// [`Screen::chat_deliver`].
+    pub(crate) chat_request: Option<ChatRequest>,
     /// A forum request (board list, thread, search, post, ...) the forum screens are waiting
     /// on (M3-E). The session runs it against the store and gives the answer to
     /// [`Screen::deliver_forum`].
@@ -238,6 +250,9 @@ impl KeyEffects {
         self.members_request = later.members_request;
         self.queue_request = later.queue_request;
         self.password_request = later.password_request;
+        self.chat_open |= later.chat_open;
+        self.chat_exit |= later.chat_exit;
+        self.chat_request = later.chat_request;
         self.forum_request = later.forum_request;
         self.held_back = later.held_back;
     }
@@ -395,6 +410,9 @@ pub(crate) struct Screen {
     /// The day's last `open` place went while this visitor's create-account form was open: the
     /// room becomes the `apply` room, with its notice, as soon as they leave the form (FIX-M2-4).
     degrade_on_leave: bool,
+    /// The chat screen, while the member is in chat (M3-F). It sits over the member's main
+    /// menu: while it is `Some` every key goes to it, and the menu comes back when it is left.
+    chat: Option<ChatScreen>,
     /// What the transport adds to the screens (M3-H).
     transport: Transport,
 }
@@ -468,6 +486,7 @@ impl Screen {
             dirty: false,
             rebuild: false,
             degrade_on_leave: false,
+            chat: None,
             transport: Transport {
                 footer,
                 low_security: false,
@@ -483,7 +502,14 @@ impl Screen {
     /// Feed keypresses to the current content. Stops at the first key that ends the session or
     /// submits a token; keys after it are ignored. Nothing is drawn: call [`Screen::render`]
     /// once for the whole batch, so a flood of keys costs one redraw, not one per key.
+    #[allow(
+        clippy::too_many_lines,
+        reason = "one match over every screen the session can show; splitting it hides the flow"
+    )]
     pub(crate) fn apply_keys(&mut self, keys: &[Key]) -> KeyEffects {
+        if self.chat.is_some() {
+            return self.apply_chat_keys(keys);
+        }
         let mut effects = KeyEffects::default();
         // Set when the keys moved the session into or out of the forum screens (M3-E).
         let mut moved = ForumMove::Stay;
@@ -546,6 +572,17 @@ impl Screen {
                             effects.invite = Some(request);
                             break;
                         }
+                        MemberEffect::OpenChat => {
+                            let mut chat = ChatScreen::open();
+                            chat.set_manage(
+                                flow.access_snapshot().allows(Permission::ChatManageRooms),
+                            );
+                            self.chat = Some(chat);
+                            effects.chat_open = true;
+                            effects.chat_request = Some(ChatRequest::List);
+                            effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
+                            break;
+                        }
                         MemberEffect::Forums => {
                             moved = ForumMove::Open(index);
                             break;
@@ -586,6 +623,79 @@ impl Screen {
         effects
     }
 
+    /// Keys while the chat screen is up: they all go to it. Leaving it (Esc at the room list)
+    /// drops the overlay and applies the remaining keys to the menu; Ctrl-C/Ctrl-D logs off
+    /// from chat like from every page.
+    fn apply_chat_keys(&mut self, keys: &[Key]) -> KeyEffects {
+        let mut effects = KeyEffects::default();
+        let manage = self
+            .access()
+            .is_some_and(|access| access.allows(Permission::ChatManageRooms));
+        for (index, key) in keys.iter().copied().enumerate() {
+            let rest = keys.get(index + 1..).unwrap_or_default();
+            let Some(chat) = self.chat.as_mut() else {
+                break;
+            };
+            chat.set_manage(manage);
+            let outcome = match key {
+                Key::Ctrl('c' | 'd') => {
+                    // Log off from here: leave chat, let the menu handle the quit.
+                    self.chat = None;
+                    effects.chat_exit = true;
+                    let later = self.apply_keys(keys.get(index..).unwrap_or_default());
+                    effects.absorb(later);
+                    break;
+                }
+                other => match chat_key(other) {
+                    Some(chat_key) => chat.input(chat_key),
+                    None => continue,
+                },
+            };
+            match outcome {
+                ChatEffect::Stay => {}
+                ChatEffect::Exit => {
+                    self.chat = None;
+                    effects.chat_exit = true;
+                    let later = self.apply_keys(rest);
+                    effects.absorb(later);
+                    break;
+                }
+                ChatEffect::Request(request) => {
+                    effects.chat_request = Some(request);
+                    effects.held_back = rest.to_vec();
+                    break;
+                }
+            }
+        }
+        self.dirty = true;
+        effects
+    }
+
+    /// The answer to the chat request taken from [`KeyEffects`]. The screen shows it on the next
+    /// render.
+    pub(super) fn chat_deliver(&mut self, response: ChatResponse) {
+        if let Some(chat) = &mut self.chat {
+            chat.deliver(response);
+        }
+        self.dirty = true;
+    }
+
+    /// Show what the room sent (M3-F push path). Returns a request when the screen needs one.
+    pub(super) fn chat_receive(&mut self, events: Vec<ChatEvent>) -> Option<ChatRequest> {
+        self.dirty = true;
+        self.chat.as_mut().and_then(|chat| chat.receive(events))
+    }
+
+    /// The signed-in member's handle (sanitized), for the chat hub.
+    pub(super) fn member_handle(&self) -> Option<&str> {
+        self.content.flow().map(MemberFlow::handle)
+    }
+
+    /// The room the chat screen shows, if it is in one.
+    pub(super) fn chat_room(&self) -> Option<RoomId> {
+        self.chat.as_ref().and_then(ChatScreen::room_id)
+    }
+
     /// What the signed-in session holds, for the front end's own checks. `None` outside a
     /// member session.
     pub(crate) fn access(&self) -> Option<&Snapshot> {
@@ -594,6 +704,9 @@ impl Screen {
 
     /// Replace what a member session holds, for the next action (D33).
     pub(crate) fn set_access(&mut self, access: Snapshot) {
+        if let Some(chat) = &mut self.chat {
+            chat.set_manage(access.allows(Permission::ChatManageRooms));
+        }
         if let Some(flow) = self.content.flow_mut() {
             flow.set_access(access);
         }
@@ -850,6 +963,10 @@ impl Screen {
         Ok(bytes)
     }
 
+    #[allow(
+        clippy::too_many_lines,
+        reason = "one match over every screen the session can show; splitting it hides the flow"
+    )]
     fn draw(&mut self) -> io::Result<Vec<u8>> {
         if let Content::Forums(session) = &self.content {
             let settings = session.flow.settings();
@@ -875,6 +992,7 @@ impl Screen {
         let tier = self.content.tier();
         let strings = self.content.strings(&self.ui);
         let framed = self.content.is_framed_screen();
+        let chat = self.chat.as_ref();
         // Staff screens add the low-security marker while the board is in that mode (D27).
         let staff_markers: &[SecurityMarker] = if self.transport.low_security {
             &STAFF_MARKERS_LOW_SECURITY
@@ -882,6 +1000,12 @@ impl Screen {
             &MENU_MARKERS
         };
         self.terminal.draw(|frame| match (look, &menu) {
+            // The chat screen (M3-F): the same box and status row, with the room's lines.
+            (Some(look), _) if chat.is_some() => {
+                if let Some(screen) = chat {
+                    crate::chat::render(frame, screen, strings, look, tier);
+                }
+            }
             // The sysop queue and the vouch screen (M2-E): the same layout and status row. The
             // requester's text is drawn in the content box only.
             (Some(look), None) if queue_view.is_some() => {
@@ -1066,6 +1190,19 @@ fn room_input(key: Key) -> Option<RoomInput> {
         Key::Escape => Some(RoomInput::Escape),
         Key::Ctrl('c' | 'd') => Some(RoomInput::Quit),
         Key::Ctrl(_) | Key::Up | Key::Down | Key::Other => None,
+    }
+}
+
+/// Translate a keypress for the chat screen. Keys it has no use for are dropped.
+fn chat_key(key: Key) -> Option<ChatKey> {
+    match key {
+        Key::Char(c) => Some(ChatKey::Char(c)),
+        Key::Enter => Some(ChatKey::Enter),
+        Key::Backspace => Some(ChatKey::Backspace),
+        Key::Escape => Some(ChatKey::Escape),
+        Key::Up => Some(ChatKey::Up),
+        Key::Down => Some(ChatKey::Down),
+        Key::Ctrl(_) | Key::Other => None,
     }
 }
 

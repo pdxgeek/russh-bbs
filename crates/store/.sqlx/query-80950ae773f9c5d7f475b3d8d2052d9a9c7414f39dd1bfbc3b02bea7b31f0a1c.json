@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE chat_room SET closed_at = GREATEST($1::bigint, created_at)\n             WHERE id = $2 AND closed_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "80950ae773f9c5d7f475b3d8d2052d9a9c7414f39dd1bfbc3b02bea7b31f0a1c"
+}

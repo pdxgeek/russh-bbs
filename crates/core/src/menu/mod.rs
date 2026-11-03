@@ -73,6 +73,8 @@ pub enum Action {
     SysopQueue,
     /// Open the vouch screen: pending requests a member can speak for (`members.vouch`, M2-E).
     VouchQueue,
+    /// Open the chat room list (`chat.join`, M3-F).
+    Chat,
     /// End the session.
     LogOff,
 }
@@ -91,6 +93,7 @@ impl Action {
             Self::EditOwnProfile => Some(Permission::AccountEditProfile),
             Self::SysopQueue => Some(Permission::MembersApprove),
             Self::VouchQueue => Some(Permission::MembersVouch),
+            Self::Chat => Some(Permission::ChatJoin),
             Self::LogOff => None,
         }
     }

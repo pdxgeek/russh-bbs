@@ -54,11 +54,11 @@ use tokio::time::timeout;
 /// exercised there (the screen it opens and the approve key), as well as in the menu-path test
 /// below.
 ///
-/// `ForumRead`, `ForumPost`, `ForumReply`, `ForumModerate` and `ForumManage` (M3-E) have their
-/// path test below, `forum_paths_follow_their_permissions_on_the_next_action`: each is taken
-/// away while a forum screen that was loaded with it is open, the next key is refused in words
-/// and writes nothing, and put back it works again. `ForumList` is the menu item (above) and
-/// the board list.
+/// `ChatJoin`, `ChatSpeak`, `ChatWhisper` and `ChatManageRooms` (M3-F) have their path tests in
+/// `tests/chat.rs`: with `chat.speak` or `chat.whisper` taken a line or whisper is refused and
+/// nobody hears it; with `chat.join` taken the member is put out of the room on the next action and
+/// the menu stops offering Chat; room management keys do nothing without `chat.manage_rooms`; each
+/// is back on the next action once restored. `ChatModerate` is not built yet.
 ///
 /// `MembershipApply` and `MembershipOpen` (M2-G) have their path tests in
 /// `tests/registration.rs`: with `membership.apply` taken from the `waiting` role the application
@@ -89,6 +89,10 @@ const WIRED: &[Permission] = &[
     Permission::MailRead,
     Permission::FilesList,
     Permission::LimitsEdit,
+    Permission::ChatJoin,
+    Permission::ChatSpeak,
+    Permission::ChatWhisper,
+    Permission::ChatManageRooms,
 ];
 
 /// Permissions with no front-end action yet. A slice that builds one moves it to `WIRED` in the
@@ -99,11 +103,7 @@ const NOT_YET_WIRED: &[Permission] = &[
     Permission::MembersDeleteData,
     Permission::InvitesRevoke,
     Permission::ForumEditOwn,
-    Permission::ChatJoin,
-    Permission::ChatSpeak,
-    Permission::ChatWhisper,
     Permission::ChatModerate,
-    Permission::ChatManageRooms,
     Permission::MailSend,
     Permission::FilesDownload,
     Permission::FilesUpload,
