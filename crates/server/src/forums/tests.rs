@@ -552,3 +552,99 @@ fn hostile_member_text_stays_in_the_content_box_and_never_gets_the_marker_style(
         }
     }
 }
+
+/// FIX-M3-1: a pasted line break is not Enter in a single-line forum input, and Left, Right,
+/// Home, End, Delete and the paging keys do nothing there.
+#[test]
+fn a_pasted_line_break_in_the_search_box_does_not_send_it_and_cursor_keys_do_nothing() {
+    let mut screen = open(false);
+    press(&mut screen, Key::Char('s'));
+    for key in crate::ssh::terminal::parse_keys(b"\x1b[200~tom\nato\r\nes\x1b[201~") {
+        assert!(
+            matches!(press(&mut screen, key), ForumEffect::Stay),
+            "{key:?} must not send the search"
+        );
+    }
+    for key in [
+        Key::Left,
+        Key::Right,
+        Key::Home,
+        Key::End,
+        Key::Delete,
+        Key::PageUp,
+        Key::PageDown,
+        Key::PasteBreak,
+    ] {
+        assert!(matches!(press(&mut screen, key), ForumEffect::Stay));
+    }
+    let Request::Search { query, .. } = expect_request(press(&mut screen, Key::Enter)) else {
+        panic!("expected a search")
+    };
+    assert_eq!(
+        query, "tomatoes",
+        "the breaks were dropped, nothing else typed"
+    );
+}
+
+/// Inside the forum's editor screen a paste keeps its line breaks and the arrows move.
+#[test]
+fn the_forum_editor_keeps_pasted_line_breaks_and_takes_the_arrows() {
+    let mut screen = open(false);
+    expect_request(press(&mut screen, Key::Enter));
+    screen.deliver(Response::Threads(Ok(ThreadPage {
+        board: board(1, "General"),
+        threads: Vec::new(),
+        page: 0,
+        more: false,
+        can_post: true,
+        can_manage: false,
+    })));
+    press(&mut screen, Key::Char('w'));
+    for c in "Hello".chars() {
+        press(&mut screen, Key::Char(c));
+    }
+    expect_request(press(&mut screen, Key::Enter));
+    let editor = Editor::open(
+        EditorRequest::new(russh_bbs_core::sanitize::SingleLine::new(40).sanitize("Reply")),
+        None,
+    )
+    .unwrap();
+    screen.deliver(Response::Compose(Ok(Box::new(editor))));
+    for key in crate::ssh::terminal::parse_keys(b"\x1b[200~one\r\ntwo\x1b[201~\x1b[A\x1b[H>") {
+        assert!(matches!(press(&mut screen, key), ForumEffect::Stay));
+    }
+    let Request::Submit { body, .. } = expect_request(press(&mut screen, Key::Ctrl('x'))) else {
+        panic!("expected a submit")
+    };
+    assert_eq!(body.as_str(), ">one\ntwo");
+}
+
+/// FIX-M3-1: `PageDown` and `PageUp` turn the reader's pages; Home, End, the horizontal arrows
+/// and a pasted line break do nothing there.
+#[test]
+fn page_keys_turn_the_readers_pages_and_other_editing_keys_do_nothing() {
+    let mut screen = open(false);
+    let body: String = (0..70)
+        .map(|i| ["line ", &i.to_string(), "\n"].concat())
+        .collect();
+    into_reader(&mut screen, view(0, 1, &body, false));
+    let first = text(&screen);
+    assert!(first.contains("line 0"), "{first}");
+    press(&mut screen, Key::PageDown);
+    let second = text(&screen);
+    assert!(!second.contains("line 0\n") && second != first, "{second}");
+    let before = text(&screen);
+    for key in [
+        Key::Home,
+        Key::End,
+        Key::Left,
+        Key::Right,
+        Key::Delete,
+        Key::PasteBreak,
+    ] {
+        assert!(matches!(press(&mut screen, key), ForumEffect::Stay));
+    }
+    assert_eq!(text(&screen), before, "those keys changed nothing");
+    press(&mut screen, Key::PageUp);
+    assert_eq!(text(&screen), first, "back on the first page");
+}

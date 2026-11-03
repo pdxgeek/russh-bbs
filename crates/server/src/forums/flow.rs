@@ -454,7 +454,7 @@ impl ForumsScreen {
         }
         let step = |to: u64| Request::Post { thread, index: to };
         let (effect, follow) = match key {
-            Key::Char(' ') | Key::Enter => {
+            Key::Char(' ') | Key::Enter | Key::PageDown => {
                 let done = reader.pager.input(PagerKey::Next, rows) == PagerEffect::Done;
                 if done && index + 1 < reader.view.total {
                     (None, Some(step(index + 1)))
@@ -462,7 +462,7 @@ impl ForumsScreen {
                     (None, None)
                 }
             }
-            Key::Char('b' | 'B') => {
+            Key::Char('b' | 'B') | Key::PageUp => {
                 reader.pager.input(PagerKey::Previous, rows);
                 (None, None)
             }

@@ -132,8 +132,26 @@ pub enum Key {
     Up,
     /// The down arrow.
     Down,
-    /// Anything else: other arrows, function keys, Alt chords, mouse reports, non-ASCII text. Consumed
-    /// and ignored.
+    /// The left arrow (CSI `ESC [ D` or SS3 `ESC O D`).
+    Left,
+    /// The right arrow.
+    Right,
+    /// Home (`ESC [ H`, `ESC O H`, `ESC [ 1 ~`, `ESC [ 7 ~`).
+    Home,
+    /// End (`ESC [ F`, `ESC O F`, `ESC [ 4 ~`, `ESC [ 8 ~`).
+    End,
+    /// Delete forward (`ESC [ 3 ~`).
+    Delete,
+    /// Page up (`ESC [ 5 ~`).
+    PageUp,
+    /// Page down (`ESC [ 6 ~`).
+    PageDown,
+    /// A line break inside a bracketed paste (CR, LF or CRLF is one). It is not Enter: only the
+    /// message editor turns it into a new line; every other screen drops it, so a paste can
+    /// never submit a form or run a second command.
+    PasteBreak,
+    /// Anything else: function keys, Alt chords, mouse reports, non-ASCII text. Consumed and
+    /// ignored.
     Other,
 }
 
@@ -160,6 +178,9 @@ const MAX_PASTE: usize = 16 * 1024;
 const ESC: u8 = 0x1b;
 const PASTE_START: &[u8] = b"\x1b[200~";
 const PASTE_END: &[u8] = b"\x1b[201~";
+/// `ESC O`, the SS3 introducer. anes reads only F1 to F4 after it, so the wrapper reads the
+/// arrows and Home/End (`ESC O A..D`, `ESC O H`, `ESC O F`) itself.
+const SS3: &[u8] = b"\x1bO";
 
 /// A stateful key parser for the bytes of a PTY session.
 ///
@@ -171,8 +192,9 @@ const PASTE_END: &[u8] = b"\x1b[201~";
 ///   arrives in another packet it is joined; if nothing arrives, [`KeyParser::expire`] (called at
 ///   [`KeyParser::deadline`]) turns a lone `Esc` into [`Key::Escape`].
 /// - **Bracketed paste.** Between `ESC [ 200 ~` and `ESC [ 201 ~` the bytes are text, not
-///   commands: printable ASCII becomes [`Key::Char`], and everything else (newlines, tabs,
-///   escapes, controls, non-ASCII) is dropped, so a paste can neither press Enter nor quit.
+///   commands: printable ASCII becomes [`Key::Char`], a line break becomes [`Key::PasteBreak`]
+///   (never [`Key::Enter`]), and everything else (tabs, escapes, controls, non-ASCII) is
+///   dropped, so a paste can neither press Enter nor quit.
 ///   Where the text is used it still passes the shared sanitizer.
 ///
 /// A sequence that anes accepted into its own state and that is then cut off (for example
@@ -184,6 +206,8 @@ pub struct KeyParser {
     held: Vec<u8>,
     paste: bool,
     paste_len: usize,
+    /// The last paste byte was CR, so an LF right after it is the same line break.
+    paste_cr: bool,
     /// When the last input arrived, to time out `held` and an open paste.
     last_input: Option<Instant>,
 }
@@ -212,6 +236,7 @@ impl KeyParser {
             held: Vec::new(),
             paste: false,
             paste_len: 0,
+            paste_cr: false,
             last_input: None,
         }
     }
@@ -271,9 +296,20 @@ impl KeyParser {
             if candidate.len() == PASTE_START.len() {
                 self.paste = true;
                 self.paste_len = 0;
+                self.paste_cr = false;
             } else {
                 self.held = candidate;
             }
+            return;
+        }
+        if candidate == SS3 {
+            self.held = candidate;
+            return;
+        }
+        if let [ESC, b'O', final_byte] = candidate.as_slice()
+            && let Some(key) = ss3_key(*final_byte)
+        {
+            keys.push(key);
             return;
         }
         if byte == ESC {
@@ -317,8 +353,12 @@ impl KeyParser {
             return;
         }
         self.paste_len += 1;
-        if (0x20..=0x7e).contains(&byte) {
-            keys.push(Key::Char(char::from(byte)));
+        let after_cr = std::mem::replace(&mut self.paste_cr, byte == b'\r');
+        match byte {
+            b'\r' => keys.push(Key::PasteBreak),
+            b'\n' if !after_cr => keys.push(Key::PasteBreak),
+            0x20..=0x7e => keys.push(Key::Char(char::from(byte))),
+            _ => {}
         }
     }
 
@@ -351,6 +391,13 @@ fn key_of(sequence: anes::parser::Sequence) -> Key {
         KeyCode::Tab => Key::Ctrl('i'),
         KeyCode::Up => Key::Up,
         KeyCode::Down => Key::Down,
+        KeyCode::Left => Key::Left,
+        KeyCode::Right => Key::Right,
+        KeyCode::Home => Key::Home,
+        KeyCode::End => Key::End,
+        KeyCode::Delete => Key::Delete,
+        KeyCode::PageUp => Key::PageUp,
+        KeyCode::PageDown => Key::PageDown,
         KeyCode::Char(c) => match c {
             '\x1b' => Key::Escape,
             '\r' | '\n' => Key::Enter,
@@ -362,6 +409,20 @@ fn key_of(sequence: anes::parser::Sequence) -> Key {
         },
         _ => Key::Other,
     }
+}
+
+/// The key after `ESC O` for the SS3 cursor keys, or `None` for anything else (which anes
+/// then reads, for F1 to F4).
+fn ss3_key(byte: u8) -> Option<Key> {
+    Some(match byte {
+        b'A' => Key::Up,
+        b'B' => Key::Down,
+        b'C' => Key::Right,
+        b'D' => Key::Left,
+        b'H' => Key::Home,
+        b'F' => Key::End,
+        _ => return None,
+    })
 }
 
 /// Parse a complete input stream in one go, treating its end as the timeout. For tests and

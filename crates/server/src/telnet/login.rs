@@ -148,7 +148,19 @@ impl Link {
                     }
                     Key::Enter => return Line::Text(line),
                     Key::Ctrl('c' | 'd') => return Line::Quit,
-                    Key::Ctrl(_) | Key::Escape | Key::Up | Key::Down | Key::Other => {}
+                    Key::Ctrl(_)
+                    | Key::Escape
+                    | Key::Up
+                    | Key::Down
+                    | Key::Left
+                    | Key::Right
+                    | Key::Home
+                    | Key::End
+                    | Key::Delete
+                    | Key::PageUp
+                    | Key::PageDown
+                    | Key::PasteBreak
+                    | Key::Other => {}
                 }
             }
             let decoded = if let Some(deadline) = self.keys.deadline() {
