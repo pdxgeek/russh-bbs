@@ -633,8 +633,14 @@ impl Screen {
                         MemberEffect::Stay => {}
                         MemberEffect::Save(settings) => effects.save_settings = Some(settings),
                         MemberEffect::Invite(request) => {
-                            effects.invite = Some(request);
-                            break;
+                            // Withheld over telnet (D91): a new or listed code would cross the
+                            // wire in clear. No request is made, so nothing is created.
+                            if self.transport.footer.is_some() {
+                                flow.menu_notice(crate::ui::keys::NOTICE_INVITES_SSH_ONLY);
+                            } else {
+                                effects.invite = Some(request);
+                                break;
+                            }
                         }
                         MemberEffect::OpenChat => {
                             let mut chat = ChatScreen::open();

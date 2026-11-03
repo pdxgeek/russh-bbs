@@ -21,6 +21,7 @@ lightbar = "Up/Down: move   Enter: choose   ?: help   Esc: back   Ctrl-C: log of
 info = "Notice"
 error = "Problem"
 mail_ssh_only = "Mail is available over ssh."
+invites_ssh_only = "Invites are available over ssh."
 
 [ui.tag]
 not_built = "not built yet"
@@ -231,6 +232,7 @@ err_height = "Height must be from 6 to 200."
 saved = "Saved."
 not_permitted = "You are not allowed to change these settings."
 members_not_permitted = "You are not allowed to do that."
+password_ssh_only = "Set your password over ssh."
 chose_nerd = "Icons set to Nerd Font."
 chose_unicode = "Icons set to Unicode."
 chose_ascii = "Using plain ASCII icons and no color. Change this any time under Terminal settings."
