@@ -17,8 +17,12 @@ use ratatui::symbols::border;
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
 use russh_bbs_core::icons::Tier;
-use russh_bbs_core::terminal_settings::TerminalSettings;
-use russh_bbs_core::waiting_room::{NoticeKind, View};
+use russh_bbs_core::terminal_settings::{LayoutId, TerminalSettings};
+use russh_bbs_core::waiting_room::View;
+
+use crate::ui::classic::notice_line;
+use crate::ui::strings::StringTable;
+use crate::ui::theme::Palette;
 
 /// Widest the box is drawn, so long lines stay readable on a wide terminal.
 pub(crate) const MAX_WIDTH: u16 = 76;
@@ -40,16 +44,33 @@ const ASCII_BORDER: border::Set = border::Set {
 pub(crate) struct Look {
     color: bool,
     ascii_borders: bool,
+    /// The compact layout draws no box (M3-A).
+    borderless: bool,
+    palette: Palette,
 }
 
 impl Look {
     /// The look for `settings`: unanswered glyph test and a rejected one both give the plain
     /// layout (ASCII, no color), because [`TerminalSettings`] says so.
+    #[cfg(test)]
     pub(crate) fn of(settings: &TerminalSettings) -> Self {
+        Self::themed(settings, settings.layout(), Palette::DEFAULT)
+    }
+
+    /// The look for `settings` drawn in `layout` (the layout actually in force, which may be a
+    /// fallback for a small terminal) with a theme's `palette`.
+    pub(crate) fn themed(settings: &TerminalSettings, layout: LayoutId, palette: Palette) -> Self {
         Self {
             color: settings.use_color(),
             ascii_borders: settings.icon_tier() == Tier::Ascii,
+            borderless: layout == LayoutId::Compact,
+            palette,
         }
+    }
+
+    /// The theme's colors.
+    pub(crate) const fn palette(self) -> Palette {
+        self.palette
     }
 
     pub(crate) fn accent(self, style: Style, color: Color) -> Style {
@@ -57,9 +78,16 @@ impl Look {
     }
 }
 
-/// Draw `view` centered in the frame.
-pub(crate) fn render(frame: &mut Frame<'_>, view: &View, look: Look) {
-    boxed(frame, frame.area(), view.title, lines(view, look), look);
+/// Draw `view` centered in the frame. The view's fixed fields are string-table keys (the member
+/// screens) or text (anything else); `strings` resolves the keys and leaves other text alone.
+pub(crate) fn render(frame: &mut Frame<'_>, view: &View, look: Look, strings: &StringTable) {
+    boxed(
+        frame,
+        frame.area(),
+        view.title,
+        lines(view, look, strings),
+        look,
+    );
 }
 
 /// Draw `lines` in the bordered box, centered in `area`. Shared with the menu framework's
@@ -78,12 +106,15 @@ pub(crate) fn boxed(
         Constraint::Fill(1),
     ])
     .areas(area);
-    let border_style = look.accent(Style::new(), Color::Cyan);
-    let mut block = Block::default()
-        .borders(Borders::ALL)
-        .border_style(border_style)
-        .title(format!(" {title} "))
-        .title_alignment(Alignment::Center);
+    let border_style = look.accent(Style::new(), look.palette.border);
+    let mut block = Block::default();
+    if !look.borderless {
+        block = block
+            .borders(Borders::ALL)
+            .border_style(border_style)
+            .title(format!(" {title} "))
+            .title_alignment(Alignment::Center);
+    }
     if look.ascii_borders {
         block = block.border_set(ASCII_BORDER);
     }
@@ -116,9 +147,10 @@ pub(crate) fn inner_size(area: Rect) -> (usize, usize) {
     )
 }
 
-/// Keep the box off the very edge of a roomy terminal; use all of a small one.
+/// Keep the box off the very edge of a roomy terminal; use all of a small one, and all of an
+/// 80x24 screen (the settings screen needs those two rows, M3-A).
 fn fit(area: Rect) -> Rect {
-    if area.height > 6 {
+    if area.height > 24 {
         area.inner(Margin {
             horizontal: 0,
             vertical: 1,
@@ -128,14 +160,14 @@ fn fit(area: Rect) -> Rect {
     }
 }
 
-fn lines(view: &View, look: Look) -> Vec<Line<'static>> {
+fn lines(view: &View, look: Look, strings: &StringTable) -> Vec<Line<'static>> {
     let bold = Style::new().add_modifier(Modifier::BOLD);
     let dim = Style::new().add_modifier(Modifier::DIM);
-    let heading = look.accent(bold, Color::Cyan);
-    let key = look.accent(bold, Color::Yellow);
+    let heading = look.accent(bold, look.palette.heading);
+    let key = look.accent(bold, look.palette.key);
     let mut out = Vec::new();
     if !view.heading.is_empty() {
-        out.push(Line::styled(view.heading, heading));
+        out.push(Line::styled(strings.text(view.heading).to_owned(), heading));
         out.push(Line::raw(""));
     }
     for text in view.banner.iter().chain(&view.body) {
@@ -143,7 +175,7 @@ fn lines(view: &View, look: Look) -> Vec<Line<'static>> {
     }
     if let Some(note) = view.note {
         out.push(Line::raw(""));
-        out.push(Line::styled(note, dim));
+        out.push(Line::styled(strings.text(note).to_owned(), dim));
     }
     if !view.menu.is_empty() {
         out.push(Line::raw(""));
@@ -151,29 +183,25 @@ fn lines(view: &View, look: Look) -> Vec<Line<'static>> {
     for item in &view.menu {
         out.push(Line::from(vec![
             Span::styled(format!("[{}]", item.key), key),
-            Span::raw(format!(" {}", item.label)),
+            Span::raw(format!(" {}", strings.text(item.label))),
         ]));
     }
     for field in &view.fields {
         let cursor = if field.active { "_" } else { "" };
-        out.push(Line::styled(format!("{}:", field.label), bold));
+        out.push(Line::styled(
+            format!("{}:", strings.text(field.label)),
+            bold,
+        ));
         out.push(Line::raw(format!("> {}{cursor}", field.value)));
     }
     if let Some(notice) = view.notice {
         // The word, not only a color: the message must read correctly on a mono terminal.
-        let (prefix, color) = match notice.kind {
-            NoticeKind::Info => ("Notice", Color::Green),
-            NoticeKind::Error => ("Problem", Color::Red),
-        };
         out.push(Line::raw(""));
-        out.push(Line::styled(
-            format!("{prefix}: {}", notice.text),
-            look.accent(bold, color),
-        ));
+        out.push(notice_line(strings, notice.kind, notice.text, look, bold));
     }
     if !view.footer.is_empty() {
         out.push(Line::raw(""));
-        out.push(Line::styled(view.footer, dim));
+        out.push(Line::styled(strings.text(view.footer).to_owned(), dim));
     }
     out
 }

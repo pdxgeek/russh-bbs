@@ -25,6 +25,13 @@ pub(crate) const HELP_KEY_QUIT: &str = "ui.help.key_quit";
 pub(crate) const HELP_MENU: &str = "ui.help.menu";
 /// Help footer.
 pub(crate) const HELP_FOOTER: &str = "ui.help.footer";
+/// Footer hint on a lightbar menu.
+pub(crate) const FOOTER_LIGHTBAR: &str = "ui.footer.lightbar";
+/// Help line explaining the lightbar's cursor keys.
+pub(crate) const HELP_LIGHTBAR: &str = "ui.help.lightbar";
+/// Marker drawn before the row under the lightbar cursor (a word-free cue that survives a
+/// mono terminal).
+pub(crate) const POINTER: &str = "ui.pointer";
 /// Status line text next to the server-readable marker.
 pub(crate) const STATUS_SERVER_READABLE: &str = "ui.status.server_readable";
 /// Status line text when markers cannot be drawn.
@@ -38,7 +45,10 @@ pub(crate) const PAGER_END: &str = "ui.pager.end";
 pub(crate) const PAGER_CLIPPED: &str = "ui.pager.clipped";
 
 /// Every key above; the table must hold these plus the menu tree's keys.
-pub(crate) const FRAMEWORK: [&str; 17] = [
+pub(crate) const FRAMEWORK: [&str; 20] = [
+    FOOTER_LIGHTBAR,
+    HELP_LIGHTBAR,
+    POINTER,
     TITLE,
     FOOTER_MENU,
     NOTICE_INFO,

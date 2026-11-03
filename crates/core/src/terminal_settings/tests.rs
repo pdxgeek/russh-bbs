@@ -75,7 +75,7 @@ fn flatten(table: &toml::Table, prefix: &str, out: &mut BTreeMap<String, String>
                 out.insert(key, text.clone());
             }
             toml::Value::Table(inner) => flatten(inner, &key, out),
-            other => panic!("string table key {key} is not text: {other:?}"),
+            other => unreachable!("string table key {key} is not text: {other:?}"),
         }
     }
 }
@@ -788,7 +788,10 @@ fn layout_and_theme_default_to_classic_and_default() {
     let s = TerminalSettings::default();
     assert_eq!(s.layout(), LayoutId::Classic);
     assert_eq!(s.theme().as_str(), DEFAULT_THEME);
-    assert_eq!(ThemeName::default_theme(), ThemeName::new(DEFAULT_THEME).unwrap());
+    assert_eq!(
+        ThemeName::default_theme(),
+        ThemeName::new(DEFAULT_THEME).unwrap()
+    );
 }
 
 #[test]
@@ -856,7 +859,9 @@ fn the_settings_screen_switches_layout_live_and_saves_it() {
     assert!(text(&f.view(words())).contains("Layout: classic"));
     let effects = press(&mut f, "l");
     assert_eq!(f.settings().layout(), LayoutId::Lightbar);
-    assert!(matches!(effects.last(), Some(MemberEffect::Save(s)) if s.layout() == LayoutId::Lightbar));
+    assert!(
+        matches!(effects.last(), Some(MemberEffect::Save(s)) if s.layout() == LayoutId::Lightbar)
+    );
     assert!(text(&f.view(words())).contains("Layout: lightbar"));
     press(&mut f, "l");
     assert_eq!(f.settings().layout(), LayoutId::Compact);
@@ -878,7 +883,9 @@ fn the_settings_screen_cycles_themes_and_wraps() {
 fn a_stored_theme_that_is_not_loaded_moves_to_the_first_one() {
     let gone = ThemeName::new("removed-by-sysop").unwrap();
     let mut f = flow(
-        TerminalSettings::default().with_tier(Tier::Ascii).with_theme(gone),
+        TerminalSettings::default()
+            .with_tier(Tier::Ascii)
+            .with_theme(gone),
         None,
     );
     press(&mut f, "xs");
@@ -940,5 +947,9 @@ fn cursor_keys_move_the_menu_only_in_a_layout_with_a_cursor() {
     assert_eq!(f.menu_page().unwrap().cursor, 1);
     f.input(MemberInput::Up);
     f.input(MemberInput::Up);
-    assert_eq!(f.menu_page().unwrap().cursor, 0, "the cursor stops at the first item");
+    assert_eq!(
+        f.menu_page().unwrap().cursor,
+        0,
+        "the cursor stops at the first item"
+    );
 }

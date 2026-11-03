@@ -42,7 +42,8 @@ impl SettingsRow {
             .icon_tier
             .map(|text| tier_from_stored(&text).ok_or_else(|| corrupt("icon_tier is not known")))
             .transpose()?;
-        let layout = layout_from_stored(&self.layout).ok_or_else(|| corrupt("layout is not known"))?;
+        let layout =
+            layout_from_stored(&self.layout).ok_or_else(|| corrupt("layout is not known"))?;
         let theme = ThemeName::new(&self.theme).map_err(|_| corrupt("theme is not valid"))?;
         let settings = TerminalSettings::new(
             size(self.width_override, "width is not valid")?,

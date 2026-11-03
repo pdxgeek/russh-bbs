@@ -128,7 +128,11 @@ pub enum Key {
     Backspace,
     /// The Escape key: an `Esc` byte that no sequence followed within [`ESC_TIMEOUT`].
     Escape,
-    /// Anything else: arrows, function keys, Alt chords, mouse reports, non-ASCII text. Consumed
+    /// The up arrow (a lightbar cursor key, M3-A).
+    Up,
+    /// The down arrow.
+    Down,
+    /// Anything else: other arrows, function keys, Alt chords, mouse reports, non-ASCII text. Consumed
     /// and ignored.
     Other,
 }
@@ -345,6 +349,8 @@ fn key_of(sequence: anes::parser::Sequence) -> Key {
         KeyCode::Backspace => Key::Backspace,
         KeyCode::Esc => Key::Escape,
         KeyCode::Tab => Key::Ctrl('i'),
+        KeyCode::Up => Key::Up,
+        KeyCode::Down => Key::Down,
         KeyCode::Char(c) => match c {
             '\x1b' => Key::Escape,
             '\r' | '\n' => Key::Enter,

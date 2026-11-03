@@ -16,7 +16,9 @@
 use std::collections::BTreeMap;
 
 use russh_bbs_core::sanitize::SingleLine;
-use russh_bbs_core::terminal_settings::strings::fill;
+use russh_bbs_core::terminal_settings::strings::{TextSource, fill};
+
+use super::keys;
 
 /// The table that ships with the server.
 pub(crate) const DEFAULT_TOML: &str = include_str!("strings.toml");
@@ -54,7 +56,22 @@ pub enum StringError {
     /// A value is longer than [`MAX_VALUE_CHARS`].
     #[error("string table key `{0}` is longer than {MAX_VALUE_CHARS} characters")]
     TooLong(String),
+    /// A theme tried to replace a string that explains a security marker.
+    #[error("string table key `{0}` belongs to the security status line and cannot be themed")]
+    Reserved(String),
+    /// A theme string makes a privacy claim the board cannot back (see [`HONESTY_WORDS`]).
+    #[error("string table key `{0}` makes a privacy claim; the server can read what members write")]
+    Claim(String),
 }
+
+/// Keys no theme may replace: the captions next to the security markers, and the text shown when
+/// markers cannot be drawn. A theme that could reword them could make a marker say the opposite.
+pub(crate) const RESERVED: [&str; 2] = [keys::STATUS_SERVER_READABLE, keys::STATUS_UNAVAILABLE];
+
+/// Words a themed string may not contain (case-insensitive), because the server can read
+/// everything except PGP-encrypted mail and files members encrypt themselves (AGENTS.md). Best
+/// effort: this stops the obvious claims, it does not prove a string honest.
+pub(crate) const HONESTY_WORDS: [&str; 4] = ["private", "secure", "encrypt", "e2ee"];
 
 /// A validated table of strings.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -82,17 +99,32 @@ impl StringTable {
         if let Some(key) = entries.keys().find(|key| !required.contains(&key.as_str())) {
             return Err(StringError::Unknown(key.clone()));
         }
-        let checker = SingleLine::new(MAX_VALUE_CHARS + 1);
         for (key, value) in &entries {
-            if value.is_empty() {
-                return Err(StringError::Empty(key.clone()));
+            check_value(key, value)?;
+        }
+        Ok(Self { entries })
+    }
+
+    /// This table with `overrides` applied (a theme). Every key must already exist, must not be
+    /// [`RESERVED`], and every value passes the same checks as the default table plus the
+    /// [`HONESTY_WORDS`] and lock-glyph check, which the build's own table is exempt from.
+    pub fn with_overrides(
+        &self,
+        overrides: &BTreeMap<String, String>,
+    ) -> Result<Self, StringError> {
+        let mut entries = self.entries.clone();
+        for (key, value) in overrides {
+            if RESERVED.contains(&key.as_str()) {
+                return Err(StringError::Reserved(key.clone()));
             }
-            if value.chars().count() > MAX_VALUE_CHARS {
-                return Err(StringError::TooLong(key.clone()));
+            if !entries.contains_key(key) {
+                return Err(StringError::Unknown(key.clone()));
             }
-            if checker.sanitize(value).as_str() != value {
-                return Err(StringError::Unsafe(key.clone()));
+            check_value(key, value)?;
+            if makes_claim(value) {
+                return Err(StringError::Claim(key.clone()));
             }
+            entries.insert(key.clone(), value.clone());
         }
         Ok(Self { entries })
     }
@@ -117,6 +149,40 @@ impl StringTable {
     }
 }
 
+/// Whether `value` claims privacy or draws a lock.
+fn makes_claim(value: &str) -> bool {
+    let lower = value.to_lowercase();
+    HONESTY_WORDS.iter().any(|word| lower.contains(word))
+        || value
+            .chars()
+            .any(|c| matches!(c, '\u{1F510}'..='\u{1F513}' | '\u{26BF}'))
+}
+
+/// The checks every value passes: not empty, not too long, nothing the sanitizer would change.
+fn check_value(key: &str, value: &str) -> Result<(), StringError> {
+    if value.is_empty() {
+        return Err(StringError::Empty(key.to_owned()));
+    }
+    if value.chars().count() > MAX_VALUE_CHARS {
+        return Err(StringError::TooLong(key.to_owned()));
+    }
+    if SingleLine::new(MAX_VALUE_CHARS + 1)
+        .sanitize(value)
+        .as_str()
+        != value
+    {
+        return Err(StringError::Unsafe(key.to_owned()));
+    }
+    Ok(())
+}
+
+/// Flatten a parsed TOML table into dotted keys; every leaf must be text.
+pub(crate) fn flatten_table(table: &toml::Table) -> Result<BTreeMap<String, String>, StringError> {
+    let mut out = BTreeMap::new();
+    flatten(table, "", &mut out)?;
+    Ok(out)
+}
+
 fn flatten(
     table: &toml::Table,
     prefix: &str,
@@ -137,4 +203,10 @@ fn flatten(
         }
     }
     Ok(())
+}
+
+impl TextSource for StringTable {
+    fn text<'a>(&'a self, key: &'a str) -> &'a str {
+        Self::text(self, key)
+    }
 }

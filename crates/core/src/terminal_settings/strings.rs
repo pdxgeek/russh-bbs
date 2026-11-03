@@ -124,11 +124,9 @@ pub const GOODBYE: &str = "member.goodbye";
 /// Logoff body.
 pub const SETTINGS_SAVED_NOTE: &str = "member.settings_saved_note";
 
-
-/// `{value}` is the layout's name (one of the `LAYOUT_*` texts).
-pub const SETTING_LAYOUT: &str = "member.setting_layout";
-/// `{value}` is the theme's name.
-pub const SETTING_THEME: &str = "member.setting_theme";
+/// Layout and theme on one line, to keep the settings screen within 80x24. `{layout}` is one
+/// of the `LAYOUT_*` texts and `{theme}` is the theme's name.
+pub const SETTING_LOOK: &str = "member.setting_look";
 /// Settings menu label: switch to the next layout.
 pub const MENU_LAYOUT: &str = "member.menu_layout";
 /// Settings menu label: switch to the next theme.
@@ -141,7 +139,7 @@ pub const LAYOUT_LIGHTBAR: &str = "member.layout_lightbar";
 pub const LAYOUT_COMPACT: &str = "member.layout_compact";
 
 /// Every key above except [`TITLE`]; the string table must hold exactly these in `member.*`.
-pub const TEXT_KEYS: [&str; 57] = [
+pub const TEXT_KEYS: [&str; 56] = [
     LOGIN_HEADING,
     SIGNED_IN_AS,
     LAST_LOGIN,
@@ -192,8 +190,7 @@ pub const TEXT_KEYS: [&str; 57] = [
     LOGOFF_HEADING,
     GOODBYE,
     SETTINGS_SAVED_NOTE,
-    SETTING_LAYOUT,
-    SETTING_THEME,
+    SETTING_LOOK,
     MENU_LAYOUT,
     MENU_THEME,
     LAYOUT_CLASSIC,

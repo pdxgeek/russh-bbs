@@ -1,0 +1,10 @@
+# Shipped theme: high contrast. Bright colors only.
+name = "contrast"
+
+[colors]
+heading = "white"
+key = "lightyellow"
+border = "white"
+info = "lightgreen"
+error = "lightred"
+selected = "lightcyan"

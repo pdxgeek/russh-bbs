@@ -1,0 +1,18 @@
+# Shipped theme: green screen. Replaces colors and a few strings (the menu title and the key
+# hint), to show that a theme can change wording. It cannot change the status line, where
+# security markers are drawn.
+name = "green"
+
+[colors]
+heading = "lightgreen"
+key = "lightgreen"
+border = "green"
+info = "green"
+error = "lightred"
+selected = "white"
+
+[ui.footer]
+menu = "?: HELP   ESC: BACK   CTRL-C: LOG OFF"
+
+[menu.main]
+title = "MAIN MENU"

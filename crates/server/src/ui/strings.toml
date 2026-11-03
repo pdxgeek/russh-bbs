@@ -11,9 +11,11 @@
 
 [ui]
 title = "russh-bbs"
+pointer = ">"
 
 [ui.footer]
 menu = "?: help   Esc: back   Ctrl-C: log off"
+lightbar = "Up/Down: move   Enter: choose   ?: help   Esc: back   Ctrl-C: log off"
 
 [ui.notice]
 info = "Notice"
@@ -29,6 +31,7 @@ key_help = "?        this help"
 key_back = "Esc      back one menu (nothing at the main menu)"
 key_quit = "Ctrl-C   log off from anywhere (Ctrl-D does the same)"
 menu = "To choose an item, press the letter shown in brackets."
+lightbar = "In the lightbar layout, Up and Down move the highlighted row and Enter chooses it."
 footer = "Any key: close help"
 
 [ui.pager]
@@ -224,8 +227,7 @@ tier_ascii = "ASCII"
 logoff_heading = "Logged off"
 goodbye = "Goodbye, {handle}."
 settings_saved_note = "Your terminal settings are saved."
-setting_layout = "Layout: {value}"
-setting_theme = "Theme: {value}"
+setting_look = "Layout: {layout}   Theme: {theme}"
 menu_layout = "Next layout"
 menu_theme = "Next theme"
 layout_classic = "classic"

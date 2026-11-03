@@ -78,7 +78,9 @@ pub struct ThemeName {
 
 /// Why a theme name was refused.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
-#[error("a theme name is 1 to {THEME_NAME_MAX} characters of a-z, 0-9, _ and -, starting with a letter or digit")]
+#[error(
+    "a theme name is 1 to {THEME_NAME_MAX} characters of a-z, 0-9, _ and -, starting with a letter or digit"
+)]
 pub struct ThemeNameError;
 
 impl ThemeName {

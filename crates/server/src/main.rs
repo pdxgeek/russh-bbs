@@ -10,6 +10,7 @@ use russh_bbs_server::config::{Cli, Loaded, ResolvedDatasource};
 use russh_bbs_server::founder;
 use russh_bbs_server::shutdown;
 use russh_bbs_server::ssh::{Backend, HostKey, ServerConfig, SshServer};
+use russh_bbs_server::ui::Ui;
 use russh_bbs_store::{Close, PostgresStore, SqliteStore};
 use tracing::{info, warn};
 use tracing_subscriber::EnvFilter;
@@ -31,6 +32,8 @@ async fn main() -> anyhow::Result<()> {
     info!(file = ?loaded.file, config = ?loaded.config, "configuration loaded");
     let paths = loaded.paths()?;
 
+    // Sysop theme files live in `themes/` beside the host key (M3-A); no config key is needed.
+    let themes_dir = paths.host_key.parent().map(|dir| dir.join("themes"));
     let key_path = paths.host_key.clone();
     let host_key = tokio::task::spawn_blocking(move || HostKey::load_or_create(&key_path))
         .await
@@ -46,7 +49,7 @@ async fn main() -> anyhow::Result<()> {
                 .await
                 .with_context(|| format!("opening database {}", path.display()))?;
             info!(backend = "sqlite", path = %path.display(), "database ready");
-            serve(store, &loaded, &host_key).await?;
+            serve(store, &loaded, &host_key, themes_dir.as_deref()).await?;
         }
         ResolvedDatasource::Postgres(settings) => {
             // The error text never contains the password (see `PostgresSettings`).
@@ -54,7 +57,7 @@ async fn main() -> anyhow::Result<()> {
                 .await
                 .context("opening the postgres datasource (TLS is required)")?;
             info!(backend = "postgres", tls = true, "database ready");
-            serve(store, &loaded, &host_key).await?;
+            serve(store, &loaded, &host_key, themes_dir.as_deref()).await?;
         }
     }
     Ok(())
@@ -66,6 +69,7 @@ async fn serve<S: Backend + SettingsStore + Close + Clone>(
     store: S,
     loaded: &Loaded,
     host_key: &HostKey,
+    themes_dir: Option<&std::path::Path>,
 ) -> anyhow::Result<()> {
     // A registration mode set in the file, environment or flags wins over the stored value
     // (decision D38); when none is set the stored value stands.
@@ -86,12 +90,20 @@ async fn serve<S: Backend + SettingsStore + Close + Clone>(
         listen: loaded.config.ssh.listen,
         limits: loaded.config.limits(),
     };
+    // The shipped screens and themes, plus the sysop's theme files from `themes/` beside the
+    // host key (M3-A). A bad theme file is skipped with a warning and never stops the boot.
+    let ui = match themes_dir {
+        Some(dir) => Ui::standard_with_themes(dir),
+        None => Ui::standard(),
+    }
+    .context("building the screens")?;
     // The store decides who is a member; an unknown key or a store error is Restricted.
-    let server = SshServer::start_with_founder(
+    let server = SshServer::start_with_ui(
         &config,
         host_key,
         Arc::new(store.clone()),
         Arc::new(founder),
+        Arc::new(ui),
     )
     .await?;
 

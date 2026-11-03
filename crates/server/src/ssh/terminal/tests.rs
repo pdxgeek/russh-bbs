@@ -68,8 +68,14 @@ fn other_letters_do_not_quit() {
 
 #[test]
 fn arrow_keys_are_not_read_as_letters() {
-    // ESC [ A is "up"; a naive scan would see 'A', and ESC O q must not read as 'q'.
-    assert_eq!(parse_keys(b"\x1b[A"), vec![Key::Other]);
+    // ESC [ A is "up" and ESC [ B "down" (the lightbar cursor keys); a naive scan would see
+    // 'A', and ESC O q must not read as 'q'. Left and right stay ignored.
+    assert_eq!(parse_keys(b"\x1b[A"), vec![Key::Up]);
+    assert_eq!(parse_keys(b"\x1b[B"), vec![Key::Down]);
+    assert_eq!(parse_keys(b"\x1b[C"), vec![Key::Other]);
+    assert_eq!(parse_keys(b"\x1b[D"), vec![Key::Other]);
+    // A modified arrow (Ctrl-Up) is consumed whole, as one key; anes reports it as Up.
+    assert_eq!(parse_keys(b"\x1b[1;5A"), vec![Key::Up]);
     assert!(!parse_keys(b"\x1bOq").iter().any(|k| k.is_quit()));
     // A modified key is consumed whole; its final `q` is not a quit.
     assert!(!parse_keys(b"\x1b[1;5q").iter().any(|k| k.is_quit()));
@@ -89,7 +95,7 @@ fn a_lone_escape_is_the_escape_key_and_a_truncated_sequence_is_dropped() {
 
 #[test]
 fn keys_after_an_escape_sequence_are_still_seen() {
-    assert_eq!(parse_keys(b"\x1b[Aq"), vec![Key::Other, Key::Char('q')]);
+    assert_eq!(parse_keys(b"\x1b[Aq"), vec![Key::Up, Key::Char('q')]);
 }
 
 #[test]
@@ -176,7 +182,7 @@ fn the_escape_split_from_its_sequence_is_an_arrow_not_escape_and_garbage() {
     assert_eq!(parser.feed(b"\x1b", now), Vec::<Key>::new(), "ESC is held");
     assert!(parser.deadline().is_some());
     // The old stateless parser read this as Escape followed by the letters `[A`.
-    assert_eq!(parser.feed(b"[A", now), vec![Key::Other]);
+    assert_eq!(parser.feed(b"[A", now), vec![Key::Up]);
     assert!(parser.deadline().is_none());
 }
 

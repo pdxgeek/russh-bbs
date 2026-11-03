@@ -10,7 +10,7 @@
 //! whose area does not exist is tagged in words.
 
 use ratatui::Frame;
-use ratatui::style::{Color, Modifier, Style};
+use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 use russh_bbs_core::icons::{SecurityMarker, Tier};
 use russh_bbs_core::menu::{MenuPage, PageItem};
@@ -43,7 +43,7 @@ pub(crate) const MENU_MARKERS: [SecurityMarker; 1] = [SecurityMarker::ServerRead
 pub(crate) fn render(frame: &mut Frame<'_>, screen: &MenuScreen<'_>) {
     let (content, status) = chrome::split_status(frame.area());
     let lines = if screen.page.help {
-        help_lines(screen)
+        help_lines(screen, None)
     } else {
         menu_lines(screen)
     };
@@ -90,20 +90,20 @@ pub(crate) fn render_content(frame: &mut Frame<'_>, screen: ContentScreen<'_>) {
 pub(crate) fn view_lines(strings: &StringTable, view: &View, look: Look) -> Vec<Line<'static>> {
     let (bold, dim, heading, _) = styles(look);
     let mut out = vec![
-        Line::styled(view.heading.to_owned(), heading),
+        Line::styled(strings.text(view.heading).to_owned(), heading),
         Line::raw(""),
     ];
     out.extend(view.body.iter().map(|text| Line::raw(text.clone())));
     if let Some(note) = view.note {
         out.push(Line::raw(""));
-        out.push(Line::styled(note.to_owned(), dim));
+        out.push(Line::styled(strings.text(note).to_owned(), dim));
     }
     if let Some(notice) = view.notice {
         out.push(Line::raw(""));
         out.push(notice_line(strings, notice.kind, notice.text, look, bold));
     }
     out.push(Line::raw(""));
-    out.push(Line::styled(view.footer.to_owned(), dim));
+    out.push(Line::styled(strings.text(view.footer).to_owned(), dim));
     out
 }
 
@@ -114,8 +114,8 @@ pub(crate) fn styles(look: Look) -> (Style, Style, Style, Style) {
     (
         bold,
         dim,
-        look.accent(bold, Color::Cyan),
-        look.accent(bold, Color::Yellow),
+        look.accent(bold, look.palette().heading),
+        look.accent(bold, look.palette().key),
     )
 }
 
@@ -161,7 +161,12 @@ fn menu_lines(screen: &MenuScreen<'_>) -> Vec<Line<'static>> {
     out
 }
 
-fn item_line(strings: &StringTable, item: &PageItem, key: Style, dim: Style) -> Line<'static> {
+pub(crate) fn item_line(
+    strings: &StringTable,
+    item: &PageItem,
+    key: Style,
+    dim: Style,
+) -> Line<'static> {
     let mut spans = vec![
         Span::styled(format!("[{}]", item.hotkey), key),
         Span::raw(format!(" {}", strings.text(item.label))),
@@ -184,16 +189,19 @@ pub(crate) fn notice_line(
     bold: Style,
 ) -> Line<'static> {
     let (prefix, color) = match kind {
-        NoticeKind::Info => (keys::NOTICE_INFO, Color::Green),
-        NoticeKind::Error => (keys::NOTICE_ERROR, Color::Red),
+        NoticeKind::Info => (keys::NOTICE_INFO, look.palette().info),
+        NoticeKind::Error => (keys::NOTICE_ERROR, look.palette().error),
     };
+    // A notice from the member flow is a string-table key; any other text is shown as it is.
     Line::styled(
-        format!("{}: {text}", strings.text(prefix)),
+        format!("{}: {}", strings.text(prefix), strings.text(text)),
         look.accent(bold, color),
     )
 }
 
-fn help_lines(screen: &MenuScreen<'_>) -> Vec<Line<'static>> {
+/// The help screen. `extra` is a string-table key of one more line a layout adds under the
+/// universal keys (the lightbar explains its cursor keys there).
+pub(crate) fn help_lines(screen: &MenuScreen<'_>, extra: Option<&str>) -> Vec<Line<'static>> {
     let (_, dim, heading, key) = styles(screen.look);
     let strings = screen.strings;
     let mut out = vec![
@@ -210,6 +218,9 @@ fn help_lines(screen: &MenuScreen<'_>) -> Vec<Line<'static>> {
     }
     out.push(Line::raw(""));
     out.push(Line::raw(strings.text(keys::HELP_MENU).to_owned()));
+    if let Some(extra) = extra {
+        out.push(Line::raw(strings.text(extra).to_owned()));
+    }
     for item in &screen.page.items {
         out.push(item_line(strings, item, key, dim));
     }
