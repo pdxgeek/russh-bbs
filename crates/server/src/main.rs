@@ -10,7 +10,8 @@ use russh_bbs_core::scheduler::{Scheduler, SchedulerStore};
 use russh_bbs_core::store::{SettingsStore, set_registration_mode};
 use russh_bbs_server::config::{Cli, Loaded, ResolvedDatasource};
 use russh_bbs_server::feeds::{
-    FetchLimits, Guard, GuardedFetcher, RssOut, RssOutConfig, SystemResolver, proxy_in_environment,
+    FetchLimits, Guard, GuardedFetcher, Roots, RssOut, RssOutConfig, SystemResolver, load_ca_file,
+    proxy_in_environment,
 };
 use russh_bbs_server::founder;
 use russh_bbs_server::shutdown;
@@ -170,7 +171,11 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
     // `scheduler.register(job)?` (see the `russh_bbs_core::scheduler` docs).
     let mut scheduler = Scheduler::new(store.clone(), Arc::new(SystemClock));
     if loaded.config.feeds.enabled {
-        register_feed_job(&mut scheduler, &store)?;
+        register_feed_job(
+            &mut scheduler,
+            &store,
+            loaded.config.feeds.ca_file.as_deref(),
+        )?;
     }
     let rss_out = start_rss_out(loaded, &store).await?;
     let (stop_scheduler, scheduler_stopped) = tokio::sync::oneshot::channel::<()>();
@@ -210,7 +215,7 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
 /// A build with the `qa-loopback-feeds` feature (never a release build) also reads
 /// `QA_FEED_ALLOW`, a comma-separated list of exact `ip:port` addresses the guard
 /// should let through, so a local test server can be exercised over real `ssh`.
-fn feed_fetcher() -> GuardedFetcher<SystemResolver> {
+fn feed_fetcher(roots: &Roots) -> GuardedFetcher<SystemResolver> {
     #[cfg(feature = "qa-loopback-feeds")]
     let guard = {
         let allowed = std::env::var("QA_FEED_ALLOW")
@@ -228,12 +233,16 @@ fn feed_fetcher() -> GuardedFetcher<SystemResolver> {
     };
     #[cfg(not(feature = "qa-loopback-feeds"))]
     let guard = Guard::new();
-    GuardedFetcher::with_resolver(SystemResolver, guard, FetchLimits::default())
+    GuardedFetcher::with_roots(SystemResolver, guard, FetchLimits::default(), roots)
 }
 
 /// RSS in (M3-G, D89): one job reads the feeds that are due, through the SSRF-guarded fetcher.
 /// Only registered when `feeds.enabled`; otherwise the server makes no outbound request for feeds.
-fn register_feed_job<S>(scheduler: &mut Scheduler<S>, store: &S) -> anyhow::Result<()>
+fn register_feed_job<S>(
+    scheduler: &mut Scheduler<S>,
+    store: &S,
+    ca_file: Option<&std::path::Path>,
+) -> anyhow::Result<()>
 where
     S: russh_bbs_core::feeds::FeedStore + SchedulerStore + Clone + 'static,
 {
@@ -246,7 +255,16 @@ where
              connect directly and fail if the network only allows a proxy"
         );
     }
-    let fetcher = Arc::new(feed_fetcher());
+    // `feeds.ca_file` replaces the platform store; an unusable file is a boot error, never a
+    // silent fall back to the platform store (D92).
+    let roots = match ca_file {
+        Some(path) => Roots::Only(
+            load_ca_file(path)
+                .with_context(|| format!("reading feeds.ca_file {}", path.display()))?,
+        ),
+        None => Roots::Platform,
+    };
+    let fetcher = Arc::new(feed_fetcher(&roots));
     scheduler
         .register(
             russh_bbs_server::feeds::job(store.clone(), fetcher)

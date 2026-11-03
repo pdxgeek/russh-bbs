@@ -207,6 +207,12 @@ fn feeds(c: &Check<'_>, config: &Config) -> Result<(), ConfigError> {
     let (ssh, telnet) = (&config.ssh, &config.telnet);
     let feeds = &config.feeds;
     c.port("feeds.rss_out_listen", feeds.rss_out_listen)?;
+    if let Some(path) = &feeds.ca_file {
+        c.path("feeds.ca_file", path, false)?;
+        if !path.is_file() {
+            return Err(c.fail("feeds.ca_file", "the file does not exist"));
+        }
+    }
     if feeds.rss_out_enabled {
         if clashes(ssh.listen, feeds.rss_out_listen)
             || (telnet.enabled && clashes(telnet.listen, feeds.rss_out_listen))

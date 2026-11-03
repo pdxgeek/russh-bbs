@@ -151,11 +151,19 @@ docker run -d --name bbs -p 2222:2222 -v bbs-data:/data \
 ```
 
 - **TLS is always on** (D31). `tls_mode` is `require` (encrypts, checks no certificate unless `tls_root_cert` is set), `verify-ca` or `verify-full`. A server that does not offer TLS is an error, never a plaintext fallback.
-- **The image has no CA store** (`scratch`). `require` works as is. For `verify-ca` and `verify-full`, put the CA that signed the server certificate (a private CA, or the cloud provider's bundle such as the RDS one) in a PEM file **on the `/data` volume** and name it with `tls_root_cert`. A self-signed server certificate that is not itself a CA is rejected; give clients the CA. Without `tls_root_cert`, `verify-*` fails at start rather than weakening.
+- **The image carries the Mozilla CA bundle** (see Feeds and CA certificates below). `require` works as is, and `verify-*` works against publicly trusted certificates. For `verify-ca` and `verify-full` against a private CA or a cloud provider's bundle such as the RDS one, put the CA that signed the server certificate (a private CA, or the cloud provider's bundle such as the RDS one) in a PEM file **on the `/data` volume** and name it with `tls_root_cert`. A self-signed server certificate that is not itself a CA is rejected; give clients the CA. Without `tls_root_cert`, `verify-*` fails at start rather than weakening.
 - Put the file on the volume with a throwaway container, e.g. `docker run --rm -v bbs-data:/data -v "$PWD:/in:ro" alpine sh -c 'chown 65532:65532 /data && cp /in/ca.crt /data/ca.crt && chown 65532:65532 /data/ca.crt'`. The `chown` of `/data` itself matters: a fresh volume takes its contents from the first image that mounts it, `alpine` has no `/data`, so Docker would create it `root:root` and the server (UID 65532) could not write its host key. Alternatively mount the volume once with the server image first (`docker run --rm -v bbs-data:/data ghcr.io/pdxgeek/russh-bbs --help`, which copies the image's correctly owned `/data`) and then copy the CA in.
 - The URL carries the password: set it through an environment file or your orchestrator's secret store, not on a shared shell history. The server never logs it, and boot errors scrub it.
 - The host key still lives on the volume (`/data/host_ed25519_key`), so the volume must persist even with Postgres, or members see a changed host key. Back up the database with your Postgres tooling.
 - See [config.md](config.md) for every `datasource.*` key.
+
+## Feeds and CA certificates
+
+The image is `scratch` plus the binary, an empty `/data` and **one extra file: Alpine's Mozilla CA bundle** at `/etc/ssl/certs/ca-certificates.crt` (about 0.3 MB; the image went from 35,201,696 to 35,503,383 bytes). The image sets `SSL_CERT_FILE` to it, so with `feeds.enabled = true` the feed fetcher verifies https feeds out of the box and the boot log does not say `no CA certificates found` (D92, QA M3 M3). The bundle is as old as the image: pull a new image to get new roots.
+
+- **A private CA, or a smaller trusted set:** put a PEM file on the `/data` volume (same steps as the Postgres CA below) and set `feeds.ca_file = "/data/feeds-ca.pem"` or `RUSSH_BBS_FEEDS_CA_FILE`. It **replaces** the bundle for feed fetching only; it does not add to it, so include every CA your feeds need. A missing, empty or malformed file is a boot error.
+- **No CA found** (a binary run outside the image on a host with no store): the log warns `no CA certificates found: https feeds cannot be verified and will not load` and names `feeds.ca_file`. https feeds then fail closed; plain `http` feeds still need their per-feed flag.
+- `SSL_CERT_FILE` is read by the platform loader the Postgres client also uses, so `verify-ca` and `verify-full` against a server with a publicly trusted certificate now work without `tls_root_cert`. `datasource.tls_root_cert` still names the CA to trust when it is set.
 
 ## Owner action: release
 

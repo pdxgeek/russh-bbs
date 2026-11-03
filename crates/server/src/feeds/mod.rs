@@ -8,7 +8,10 @@ mod guard;
 mod job;
 mod rss_out;
 
-pub use fetch::{FetchLimits, GuardedFetcher, USER_AGENT_VALUE, proxy_in_environment};
+pub use fetch::{
+    CaFileError, FetchLimits, GuardedFetcher, Roots, USER_AGENT_VALUE, load_ca_file,
+    proxy_in_environment,
+};
 pub use guard::{Guard, Resolve, SystemResolver, is_public_ip};
 pub use job::{CHECK_EVERY, JOB_NAME, MAX_FEEDS_PER_RUN, job};
 pub use rss_out::{RssOut, RssOutConfig};
