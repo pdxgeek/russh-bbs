@@ -170,6 +170,12 @@ impl<C: Clock> Chat<C> {
         self.sessions.len()
     }
 
+    /// The room the session is in, if any.
+    #[must_use]
+    pub fn room_of(&self, id: SessionId) -> Option<RoomId> {
+        self.sessions.get(&id).and_then(|m| m.room)
+    }
+
     /// Sessions in `room` right now.
     #[must_use]
     pub fn member_count(&self, room: RoomId) -> usize {

@@ -650,10 +650,10 @@ fn type_str(screen: &mut ChatScreen, s: &str) {
 
 fn in_a_room() -> ChatScreen {
     let mut screen = ChatScreen::open();
-    screen.deliver(ChatResponse::Rooms(vec![
-        room(1, "lobby"),
-        room(2, "games"),
-    ]));
+    screen.deliver(ChatResponse::Rooms {
+        rooms: vec![room(1, "lobby"), room(2, "games")],
+        notice: None,
+    });
     screen.input(ChatKey::Down);
     assert_eq!(
         screen.input(ChatKey::Enter),
@@ -677,10 +677,10 @@ fn the_list_moves_joins_and_backs_out() {
         ChatEffect::Stay,
         "an empty list joins nothing"
     );
-    screen.deliver(ChatResponse::Rooms(vec![
-        room(1, "lobby"),
-        room(2, "games"),
-    ]));
+    screen.deliver(ChatResponse::Rooms {
+        rooms: vec![room(1, "lobby"), room(2, "games")],
+        notice: None,
+    });
     screen.input(ChatKey::Down);
     screen.input(ChatKey::Down);
     assert_eq!(
@@ -698,7 +698,10 @@ fn the_list_moves_joins_and_backs_out() {
 #[test]
 fn room_management_keys_exist_only_for_managers() {
     let mut screen = ChatScreen::open();
-    screen.deliver(ChatResponse::Rooms(vec![room(1, "lobby")]));
+    screen.deliver(ChatResponse::Rooms {
+        rooms: vec![room(1, "lobby")],
+        notice: None,
+    });
     type_str(&mut screen, "nx");
     let ChatPage::List(list) = screen.page() else {
         panic!()

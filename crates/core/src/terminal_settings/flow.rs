@@ -62,6 +62,9 @@ pub enum MemberEffect {
     /// Carry out an invite request with the store, then report it with
     /// [`MemberFlow::invite_done`]. Nothing is shown until then (M2-D).
     Invite(InviteRequest),
+    /// Open the chat screen (M3-F). The front end owns the chat screen and its live state; the
+    /// flow stays at the main menu underneath and is shown again when chat is left.
+    OpenChat,
     /// Redraw (the logoff screen is showing) and close the session.
     Disconnect,
 }
@@ -198,6 +201,12 @@ impl MemberFlow {
     #[must_use]
     pub const fn is_logged_off(&self) -> bool {
         matches!(self.page, Page::Logoff)
+    }
+
+    /// The signed-in member's handle, as the screens show it (sanitized).
+    #[must_use]
+    pub fn handle(&self) -> &str {
+        &self.handle
     }
 
     /// Handle one input.
@@ -365,6 +374,7 @@ impl MemberFlow {
                 )));
                 MemberEffect::Stay
             }
+            MenuOutcome::Action(Action::Chat) => MemberEffect::OpenChat,
             MenuOutcome::Action(Action::LogOff) => self.log_off(),
             MenuOutcome::Action(
                 action @ (Action::MemberList | Action::OwnProfile | Action::EditOwnProfile),
@@ -386,6 +396,7 @@ impl MemberFlow {
             Action::OwnProfile => own.map(MembersScreen::own_profile),
             Action::EditOwnProfile => own.map(MembersScreen::edit_own),
             Action::TerminalSettings
+            | Action::Chat
             | Action::LogOff
             | Action::SysopQueue
             | Action::VouchQueue

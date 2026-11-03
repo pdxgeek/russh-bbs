@@ -166,8 +166,16 @@ impl ChatNotice {
 /// The server's answer to a [`ChatRequest`].
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ChatResponse {
-    /// The joinable rooms (also the answer to a leave).
-    Rooms(Vec<Room>),
+    /// The joinable rooms (also the answer to a leave, to a staff action, and to a request
+    /// made after the member lost the room), with a notice to show, if any.
+    Rooms {
+        /// The rooms.
+        rooms: Vec<Room>,
+        /// What to say about the request that led here.
+        notice: Option<ChatNotice>,
+    },
+    /// The request worked and there is nothing to show beyond what the room sends.
+    Done,
     /// The member is in the room.
     Joined {
         /// The room.
@@ -313,6 +321,15 @@ impl ChatScreen {
         self.notice
     }
 
+    /// The room the screen shows, while it is in one.
+    #[must_use]
+    pub const fn room_id(&self) -> Option<RoomId> {
+        match &self.mode {
+            Mode::Room(page) => Some(page.room.id),
+            Mode::List(_) => None,
+        }
+    }
+
     /// Whether the member is in a room.
     #[must_use]
     pub const fn in_room(&self) -> bool {
@@ -331,7 +348,9 @@ impl ChatScreen {
     /// Show the answer to a request.
     pub fn deliver(&mut self, response: ChatResponse) {
         match response {
-            ChatResponse::Rooms(rooms) => {
+            ChatResponse::Done => {}
+            ChatResponse::Rooms { rooms, notice } => {
+                self.notice = notice;
                 let (naming, closing, cursor) = match &self.mode {
                     Mode::List(old) => (None::<String>, None::<RoomId>, old.cursor),
                     Mode::Room(_) => (None, None, 0),

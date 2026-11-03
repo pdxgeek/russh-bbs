@@ -30,7 +30,7 @@ const fn gated(hotkey: char, label: &'static str, target: Target, requires: Perm
     }
 }
 
-static MAIN_ITEMS: [Item; 8] = [
+static MAIN_ITEMS: [Item; 9] = [
     gated(
         'f',
         "menu.main.item.forums",
@@ -49,6 +49,7 @@ static MAIN_ITEMS: [Item; 8] = [
         Target::Placeholder("placeholder.files"),
         Permission::FilesList,
     ),
+    item('c', "menu.main.item.chat", Target::Action(Action::Chat)),
     gated(
         'u',
         "menu.main.item.members",
