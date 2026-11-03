@@ -255,6 +255,9 @@ pub struct FeedsConfig {
     /// The public address of the RSS listener as readers reach it, with no trailing slash;
     /// used in the documents' links. Required when `rss_out_enabled`.
     pub rss_out_base_url: Option<String>,
+    /// A PEM file of the CA certificates https feeds are verified against. When set it replaces
+    /// the platform store for feed fetching only (D91). Unset: the platform store.
+    pub ca_file: Option<PathBuf>,
 }
 
 impl Default for FeedsConfig {
@@ -264,6 +267,7 @@ impl Default for FeedsConfig {
             rss_out_enabled: false,
             rss_out_listen: SocketAddr::from(([127, 0, 0, 1], 8081)),
             rss_out_base_url: None,
+            ca_file: None,
         }
     }
 }

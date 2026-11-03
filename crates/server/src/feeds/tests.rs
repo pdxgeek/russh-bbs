@@ -19,7 +19,10 @@ use russh_bbs_store::SqliteStore;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 
-use super::{FetchLimits, Guard, GuardedFetcher, Resolve, USER_AGENT_VALUE, is_public_ip};
+use super::{
+    CaFileError, FetchLimits, Guard, GuardedFetcher, Resolve, Roots, USER_AGENT_VALUE,
+    is_public_ip, load_ca_file,
+};
 
 // ---- the address table ------------------------------------------------------------------
 
@@ -1030,6 +1033,106 @@ async fn https_is_verified_and_a_certificate_nobody_trusts_is_refused() {
     );
     // Only the trusted fetch got as far as a request.
     assert_eq!(server.hits(), 1);
+}
+
+/// A PEM file holding `cert`, written under a fresh temp directory.
+fn pem_file(
+    dir: &tempfile::TempDir,
+    name: &str,
+    certs: &[&rustls_pki_types::CertificateDer<'static>],
+) -> std::path::PathBuf {
+    use std::fmt::Write as _;
+    let mut text = String::new();
+    for cert in certs {
+        let body = base64_lines(cert.as_ref());
+        write!(
+            text,
+            "-----BEGIN CERTIFICATE-----\n{body}-----END CERTIFICATE-----\n"
+        )
+        .unwrap();
+    }
+    let path = dir.path().join(name);
+    std::fs::write(&path, text).unwrap();
+    path
+}
+
+fn base64_lines(der: &[u8]) -> String {
+    const A: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut out = String::new();
+    let mut col = 0;
+    for chunk in der.chunks(3) {
+        let n = chunk
+            .iter()
+            .enumerate()
+            .fold(0u32, |n, (i, b)| n | (u32::from(*b) << (16 - 8 * i)));
+        for i in 0..4 {
+            if i <= chunk.len() {
+                out.push(A[((n >> (18 - 6 * i)) & 63) as usize] as char);
+            } else {
+                out.push('=');
+            }
+            col += 1;
+            if col == 64 {
+                out.push('\n');
+                col = 0;
+            }
+        }
+    }
+    if col != 0 {
+        out.push('\n');
+    }
+    out
+}
+
+#[tokio::test]
+async fn ca_file_replaces_the_platform_store_and_a_wrong_ca_fails_closed() {
+    let (acceptor, cert) = tls_for("secure.test");
+    let (_, wrong) = tls_for("secure.test");
+    let server =
+        Server::start_with(Some(acceptor), |_| Reply::Ok(OK_FEED.as_bytes().to_vec())).await;
+    let table = Table::with("secure.test", vec![vec![LOOPBACK]]);
+    let guard = Guard::new().allowing([server.addr]);
+    let dir = tempfile::tempdir().unwrap();
+    // The right CA, read from a PEM file: the https fetch succeeds.
+    let good = load_ca_file(&pem_file(&dir, "good.pem", &[&cert])).unwrap();
+    let fetcher =
+        GuardedFetcher::with_roots(table.clone(), guard.clone(), limits(), &Roots::Only(good));
+    assert_eq!(
+        fetcher
+            .get(&https_url("secure.test", &server, "/rss"), false)
+            .await
+            .unwrap(),
+        OK_FEED.as_bytes()
+    );
+    // A CA that did not sign the server's certificate: refused, no request is made.
+    let bad = load_ca_file(&pem_file(&dir, "bad.pem", &[&wrong])).unwrap();
+    let fetcher = GuardedFetcher::with_roots(table, guard, limits(), &Roots::Only(bad));
+    assert_eq!(
+        fetcher
+            .get(&https_url("secure.test", &server, "/rss"), false)
+            .await,
+        Err(FetchError::Failed)
+    );
+    assert_eq!(server.hits(), 1);
+}
+
+#[test]
+fn a_ca_file_that_is_missing_empty_or_not_pem_is_an_error() {
+    let dir = tempfile::tempdir().unwrap();
+    assert!(matches!(
+        load_ca_file(&dir.path().join("none.pem")),
+        Err(CaFileError::Read(_))
+    ));
+    let empty = dir.path().join("empty.pem");
+    std::fs::write(&empty, "").unwrap();
+    assert!(matches!(load_ca_file(&empty), Err(CaFileError::Empty)));
+    let junk = dir.path().join("junk.pem");
+    std::fs::write(
+        &junk,
+        "-----BEGIN CERTIFICATE-----\n!!!not base64!!!\n-----END CERTIFICATE-----\n",
+    )
+    .unwrap();
+    assert!(matches!(load_ca_file(&junk), Err(CaFileError::Pem(_))));
 }
 
 #[tokio::test]

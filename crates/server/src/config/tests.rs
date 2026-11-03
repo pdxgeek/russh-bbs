@@ -416,6 +416,30 @@ fn a_postgres_config_without_the_url_fails_validation_before_the_backend_check()
     assert!(err.to_string().contains("datasource.url"), "{err}");
 }
 
+#[test]
+fn feeds_ca_file_must_name_an_existing_file_and_defaults_to_the_platform_store() {
+    assert_eq!(Config::default().feeds.ca_file, None);
+    let dir = tempfile::tempdir().unwrap();
+    let missing = dir.path().join("none.pem");
+    let err = load(
+        &[("RUSSH_BBS_FEEDS_CA_FILE", missing.to_str().unwrap())],
+        Dirs::default(),
+    )
+    .expect_err("a missing file is refused at boot");
+    assert!(err.to_string().contains("feeds.ca_file"), "{err}");
+    let present = dir.path().join("ca.pem");
+    std::fs::write(&present, "x").unwrap();
+    let loaded = load(
+        &[("RUSSH_BBS_FEEDS_CA_FILE", present.to_str().unwrap())],
+        Dirs::default(),
+    )
+    .expect("an existing file is accepted");
+    assert_eq!(
+        loaded.config.feeds.ca_file.as_deref(),
+        Some(present.as_path())
+    );
+}
+
 // ---- redaction -----------------------------------------------------------------------------
 
 const SECRET_URL: &str = "postgres://bbs:hunter2@db.example:5432/bbs?sslmode=require";

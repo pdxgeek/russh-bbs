@@ -102,6 +102,10 @@ enabled = false
 rss_out_enabled = false
 rss_out_listen = "127.0.0.1:8081"
 # rss_out_base_url = "https://bbs.example/feeds"   # required with rss_out_enabled; no trailing slash
+# CA certificates (PEM) that https feeds are verified against (D91). Unset: the platform store (in the
+# container image, the bundled Mozilla list). Set, it replaces that store for feed fetching only, e.g.
+# for a feed behind a private CA. The file must exist and hold a certificate.
+# ca_file = "/data/feeds-ca.pem"
 
 [waiting_room]
 # Rate limits (D37). Per network: a burst, then one new connection per interval.

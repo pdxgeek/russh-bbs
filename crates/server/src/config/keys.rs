@@ -291,6 +291,13 @@ pub(crate) static KEYS: &[KeyDef] = &[
         "https://bbs.example/feeds",
     ),
     key(
+        "feeds.ca_file",
+        "RUSSH_BBS_FEEDS_CA_FILE",
+        None,
+        Str,
+        "/tmp/feeds-ca.pem",
+    ),
+    key(
         "waiting_room.ip_burst",
         "RUSSH_BBS_IP_BURST",
         Some("--ip-burst"),

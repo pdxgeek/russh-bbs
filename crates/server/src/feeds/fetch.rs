@@ -90,26 +90,87 @@ impl<R> std::fmt::Debug for GuardedFetcher<R> {
     }
 }
 
-/// TLS roots from the platform, with the ring provider. `None` only if the provider refused its
+/// Where the fetcher's trusted CA certificates come from.
+#[derive(Debug, Clone, Default)]
+pub enum Roots {
+    /// The platform store (`SSL_CERT_FILE`, `SSL_CERT_DIR` or the OS default locations).
+    #[default]
+    Platform,
+    /// Only these certificates, from `feeds.ca_file`: they replace the platform store for feed
+    /// fetching and nothing else (the Postgres connection has its own `tls_root_cert`).
+    Only(Vec<rustls_pki_types::CertificateDer<'static>>),
+}
+
+/// Why `feeds.ca_file` could not be used.
+#[derive(Debug, thiserror::Error)]
+pub enum CaFileError {
+    /// The file could not be read.
+    #[error("cannot read the file: {0}")]
+    Read(std::io::Error),
+    /// The file holds something that is not a PEM certificate.
+    #[error("not a valid PEM certificate file: {0}")]
+    Pem(rustls_pki_types::pem::Error),
+    /// The file holds no certificate at all (an empty store would fail every feed).
+    #[error("the file holds no PEM certificate")]
+    Empty,
+}
+
+/// Read a PEM bundle for `feeds.ca_file`. Fails closed: unreadable, malformed or empty is an
+/// error, never a silent fall back to the platform store.
+///
+/// # Errors
+/// See [`CaFileError`].
+pub fn load_ca_file(
+    path: &std::path::Path,
+) -> Result<Vec<rustls_pki_types::CertificateDer<'static>>, CaFileError> {
+    use rustls_pki_types::pem::PemObject;
+    let bytes = std::fs::read(path).map_err(CaFileError::Read)?;
+    let certs = rustls_pki_types::CertificateDer::pem_slice_iter(&bytes)
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(CaFileError::Pem)?;
+    if certs.is_empty() {
+        return Err(CaFileError::Empty);
+    }
+    Ok(certs)
+}
+
+/// TLS roots from `roots`, with the ring provider. `None` only if the provider refused its
 /// own default protocol versions, in which case https feeds fail closed.
 fn tls_connector(
+    roots: &Roots,
     extra_roots: Vec<rustls_pki_types::CertificateDer<'static>>,
 ) -> Option<TlsConnector> {
-    let mut roots = rustls::RootCertStore::empty();
-    let loaded = rustls_native_certs::load_native_certs();
-    roots.add_parsable_certificates(loaded.certs);
-    for cert in extra_roots {
-        let _ = roots.add(cert);
+    let mut store = rustls::RootCertStore::empty();
+    match roots {
+        Roots::Platform => {
+            let loaded = rustls_native_certs::load_native_certs();
+            store.add_parsable_certificates(loaded.certs);
+        }
+        Roots::Only(certs) => {
+            store.add_parsable_certificates(certs.iter().cloned());
+        }
     }
-    if roots.is_empty() {
-        warn!("no CA certificates found: https feeds cannot be verified and will not load");
+    for cert in extra_roots {
+        let _ = store.add(cert);
+    }
+    if store.is_empty() {
+        match roots {
+            Roots::Platform => warn!(
+                "no CA certificates found: https feeds cannot be verified and will not load. \
+                 Set feeds.ca_file to a PEM file of the CAs to trust, or install a CA bundle \
+                 (SSL_CERT_FILE) where the server runs"
+            ),
+            Roots::Only(_) => {
+                warn!("feeds.ca_file holds no usable CA certificate: https feeds will not load");
+            }
+        }
     }
     let config = rustls::ClientConfig::builder_with_provider(Arc::new(
         rustls::crypto::ring::default_provider(),
     ))
     .with_safe_default_protocol_versions()
     .ok()?
-    .with_root_certificates(roots)
+    .with_root_certificates(store)
     .with_no_client_auth();
     Some(TlsConnector::from(Arc::new(config)))
 }
@@ -126,11 +187,17 @@ impl<R: Resolve> GuardedFetcher<R> {
     /// A fetcher with its own resolver and guard (tests).
     #[must_use]
     pub fn with_resolver(resolver: R, guard: Guard, limits: FetchLimits) -> Self {
+        Self::with_roots(resolver, guard, limits, &Roots::Platform)
+    }
+
+    /// A fetcher that trusts `roots` (the platform store, or only the `feeds.ca_file`).
+    #[must_use]
+    pub fn with_roots(resolver: R, guard: Guard, limits: FetchLimits, roots: &Roots) -> Self {
         Self {
             resolver,
             guard,
             limits,
-            tls: tls_connector(Vec::new()),
+            tls: tls_connector(roots, Vec::new()),
         }
     }
 
@@ -138,7 +205,7 @@ impl<R: Resolve> GuardedFetcher<R> {
     #[cfg(test)]
     #[must_use]
     pub fn trusting(mut self, roots: Vec<rustls_pki_types::CertificateDer<'static>>) -> Self {
-        self.tls = tls_connector(roots);
+        self.tls = tls_connector(&Roots::Platform, roots);
         self
     }
 
