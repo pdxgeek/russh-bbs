@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) AS \"n!\", min(created_at) AS oldest\n                   FROM poll WHERE creator_id = $1 AND created_at > $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "n!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "oldest",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "238b20bc52f058d7ef3448a6ecb358e8b5f13068e2c925575a17921cac6649e1"
+}

@@ -271,6 +271,9 @@ impl<D> ClientHandler<D> {
                 return None;
             }
         };
+        // Last callers: the one place a member session starts (the limits let it in). Neither
+        // the waiting room nor a founder-claim session comes through here (M3-J).
+        crate::community::note_sign_in(&*self.directory, start.account).await;
         self.account = Some(start.account);
         let mut flow = MemberFlow::new(
             &start.handle,

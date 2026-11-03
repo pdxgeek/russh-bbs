@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT min(created_at) AS \"oldest: i64\" FROM community_line\n                 WHERE account_id = ? AND kind = ? AND created_at > ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "oldest: i64",
+        "ordinal": 0,
+        "type_info": "Null"
+      }
+    ],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "70afb73fbae63137af4c7ee6801441cc2416dc981fe820bec66604c4f22692ba"
+}

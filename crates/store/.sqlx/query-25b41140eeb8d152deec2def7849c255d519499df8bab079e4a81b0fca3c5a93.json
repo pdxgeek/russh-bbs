@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO poll_vote (poll_id, account_id, position, voted_at)\n             SELECT p.id, $2::bigint, $3::bigint, $4::bigint FROM poll p\n             JOIN poll_option o ON o.poll_id = p.id AND o.position = $3\n             WHERE p.id = $1 AND p.closed_at IS NULL\n             ON CONFLICT (poll_id, account_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "25b41140eeb8d152deec2def7849c255d519499df8bab079e4a81b0fca3c5a93"
+}
