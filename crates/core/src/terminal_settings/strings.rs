@@ -106,6 +106,8 @@ pub const NOT_PERMITTED: &str = "member.not_permitted";
 /// Shown on the menu when a members screen closes because a permission it needed is gone
 /// (M2-F): the change applies on the next action.
 pub const MEMBERS_NOT_PERMITTED: &str = "member.members_not_permitted";
+/// Notice: a password is set only over ssh; telnet is not encrypted (D91).
+pub const PASSWORD_SSH_ONLY: &str = "member.password_ssh_only";
 /// Notice: tier chosen.
 pub const CHOSE_NERD: &str = "member.chose_nerd";
 /// Notice: tier chosen.
@@ -142,7 +144,7 @@ pub const LAYOUT_LIGHTBAR: &str = "member.layout_lightbar";
 pub const LAYOUT_COMPACT: &str = "member.layout_compact";
 
 /// Every key above except [`TITLE`]; the string table must hold exactly these in `member.*`.
-pub const TEXT_KEYS: [&str; 57] = [
+pub const TEXT_KEYS: [&str; 58] = [
     MAIL_NOTE,
     LOGIN_HEADING,
     SIGNED_IN_AS,
@@ -185,6 +187,7 @@ pub const TEXT_KEYS: [&str; 57] = [
     SAVED,
     NOT_PERMITTED,
     MEMBERS_NOT_PERMITTED,
+    PASSWORD_SSH_ONLY,
     CHOSE_NERD,
     CHOSE_UNICODE,
     CHOSE_ASCII,
