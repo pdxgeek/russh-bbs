@@ -280,6 +280,7 @@ macro_rules! shared_suite {
                 terminal_settings::defaults_when_missing,
                 terminal_settings::set_then_get_round_trips,
                 terminal_settings::every_tier_and_unset_round_trip,
+                terminal_settings::layout_and_theme_round_trip_and_default_for_new_rows,
                 terminal_settings::a_later_set_replaces_and_clears_overrides,
                 terminal_settings::accounts_are_isolated,
                 terminal_settings::saving_for_an_unknown_account_fails,

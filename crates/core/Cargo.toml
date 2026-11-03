@@ -19,5 +19,7 @@ icu_properties = { workspace = true }
 
 [dev-dependencies]
 proptest = { workspace = true }
+# Reads the server's string table as a test fixture (terminal_settings tests); no new crate.
+toml = { workspace = true }
 
 tokio = { workspace = true }

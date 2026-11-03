@@ -1,6 +1,8 @@
-//! Every fixed string of the login, logoff, glyph test and settings screens. They are UI
-//! chrome, so they bypass the sanitizer, and they live here (not in rendering code) so a theme
-//! or translation can replace them later (`docs/ui.md`, "Themes and strings").
+//! The string-table keys of the login, logoff, glyph test and settings screens (M3-A moved the
+//! text itself into the server's string table, `ui/strings.toml`, section `[member]`, so a theme
+//! can replace it; the constants here are the keys the flow names). A flow screen carries keys
+//! and the renderer resolves them; text with placeholders is filled by the flow through a
+//! [`TextSource`]. [`TITLE`] stays text: it is the product name every screen shares.
 //!
 //! Templates use `{name}` placeholders filled by [`fill`]. Substituted values are user-derived
 //! (the handle) and must already be sanitized by the caller.
@@ -13,119 +15,198 @@
 pub const TITLE: &str = "russh-bbs";
 
 /// Login screen heading.
-pub const LOGIN_HEADING: &str = "Signed in";
+pub const LOGIN_HEADING: &str = "member.login_heading";
 /// `{handle}` is the sanitized account handle.
-pub const SIGNED_IN_AS: &str = "Signed in as {handle}.";
+pub const SIGNED_IN_AS: &str = "member.signed_in_as";
 /// `{when}` is a UTC time.
-pub const LAST_LOGIN: &str = "Last login: {when}";
+pub const LAST_LOGIN: &str = "member.last_login";
 /// Shown when no earlier login is recorded.
-pub const FIRST_LOGIN: &str = "This is your first login.";
+pub const FIRST_LOGIN: &str = "member.first_login";
 /// `{icons}` is the tier name, `{color}` and `{pause}` are on/off.
-pub const TERMINAL_LINE: &str = "Terminal: {icons} icons, color {color}, pause {pause}";
+pub const TERMINAL_LINE: &str = "member.terminal_line";
 /// The terminal line while no tier has been chosen.
-pub const TERMINAL_LINE_UNSET: &str =
-    "Terminal: icon style not chosen yet (plain ASCII, no color until you do)";
+pub const TERMINAL_LINE_UNSET: &str = "member.terminal_line_unset";
 /// Login footer.
-pub const LOGIN_FOOTER: &str = "Any key: continue   Ctrl-C: log off";
+pub const LOGIN_FOOTER: &str = "member.login_footer";
 
 /// Glyph test heading.
-pub const GLYPH_HEADING: &str = "Icon check";
+pub const GLYPH_HEADING: &str = "member.glyph_heading";
 /// Explains why the question is asked.
-pub const GLYPH_WHY: &str =
-    "The server cannot see your terminal font, so it asks. This shows one icon style.";
+pub const GLYPH_WHY: &str = "member.glyph_why";
 /// `{style}` is the tier's name.
-pub const GLYPH_STYLE: &str = "Style: {style}";
+pub const GLYPH_STYLE: &str = "member.glyph_style";
 /// Names the icons in the sample row, in order.
-pub const GLYPH_LEGEND: &str = "Board, restricted, unread, feed, mail, invite";
+pub const GLYPH_LEGEND: &str = "member.glyph_legend";
 /// The question.
-pub const GLYPH_QUESTION: &str = "Do these look like icons?";
+pub const GLYPH_QUESTION: &str = "member.glyph_question";
 /// Footer on the first run.
-pub const GLYPH_FOOTER_FIRST: &str =
-    "y: yes   n: no   Esc: skip (plain ASCII, no color)   Ctrl-C: log off";
+pub const GLYPH_FOOTER_FIRST: &str = "member.glyph_footer_first";
 /// Footer on a re-run.
-pub const GLYPH_FOOTER_AGAIN: &str = "y: yes   n: no   Esc: cancel   Ctrl-C: log off";
+pub const GLYPH_FOOTER_AGAIN: &str = "member.glyph_footer_again";
 
 /// Settings heading.
-pub const SETTINGS_HEADING: &str = "Terminal settings";
+pub const SETTINGS_HEADING: &str = "member.settings_heading";
 /// `{value}` is a number or "automatic".
-pub const SETTING_WIDTH: &str = "Width: {value}";
+pub const SETTING_WIDTH: &str = "member.setting_width";
 /// `{value}` is a number or "automatic".
-pub const SETTING_HEIGHT: &str = "Height: {value}";
+pub const SETTING_HEIGHT: &str = "member.setting_height";
 /// `{value}` is on/off.
-pub const SETTING_COLOR: &str = "Color: {value}";
+pub const SETTING_COLOR: &str = "member.setting_color";
 /// `{value}` is on/off.
-pub const SETTING_PAUSE: &str =
-    "Pause at screen end: {value} (applies to long text; no screen pages yet)";
+pub const SETTING_PAUSE: &str = "member.setting_pause";
 /// Added to the width line when the stored value is wider than the terminal. `{terminal}` is
 /// the terminal's width. The value is kept; it applies again in a wider window.
-pub const CLAMPED_WIDTH: &str = " (your terminal is {terminal} wide, so {terminal} is used)";
+pub const CLAMPED_WIDTH: &str = "member.clamped_width";
 /// Like [`CLAMPED_WIDTH`] for the height; `{terminal}` is the terminal's height.
-pub const CLAMPED_HEIGHT: &str = " (your terminal is {terminal} tall, so {terminal} is used)";
+pub const CLAMPED_HEIGHT: &str = "member.clamped_height";
 /// `{value}` is the tier name, or [`NOT_CHOSEN`].
-pub const SETTING_ICONS: &str = "Icons: {value}";
+pub const SETTING_ICONS: &str = "member.setting_icons";
 /// Value text for "follow the terminal".
-pub const AUTOMATIC: &str = "automatic";
+pub const AUTOMATIC: &str = "member.automatic";
 /// Value text for no tier chosen.
-pub const NOT_CHOSEN: &str = "not chosen";
+pub const NOT_CHOSEN: &str = "member.not_chosen";
 /// On.
-pub const ON: &str = "on";
+pub const ON: &str = "member.on";
 /// Off.
-pub const OFF: &str = "off";
+pub const OFF: &str = "member.off";
 /// Settings menu labels.
-pub const MENU_WIDTH: &str = "Set width";
+pub const MENU_WIDTH: &str = "member.menu_width";
 /// See [`MENU_WIDTH`].
-pub const MENU_HEIGHT: &str = "Set height";
+pub const MENU_HEIGHT: &str = "member.menu_height";
 /// See [`MENU_WIDTH`].
-pub const MENU_COLOR: &str = "Toggle color";
+pub const MENU_COLOR: &str = "member.menu_color";
 /// See [`MENU_WIDTH`].
-pub const MENU_PAUSE: &str = "Toggle pause";
+pub const MENU_PAUSE: &str = "member.menu_pause";
 /// See [`MENU_WIDTH`].
-pub const MENU_ICONS: &str = "Run the icon check again";
+pub const MENU_ICONS: &str = "member.menu_icons";
 /// See [`MENU_WIDTH`].
-pub const MENU_BACK: &str = "Back";
+pub const MENU_BACK: &str = "member.menu_back";
 /// Settings footer.
-pub const SETTINGS_FOOTER: &str = "Esc: back   Ctrl-C: log off";
+pub const SETTINGS_FOOTER: &str = "member.settings_footer";
 /// Label of the number field.
-pub const FIELD_WIDTH: &str = "Width, 20 to 500 (empty = automatic)";
+pub const FIELD_WIDTH: &str = "member.field_width";
 /// Label of the number field.
-pub const FIELD_HEIGHT: &str = "Height, 6 to 200 (empty = automatic)";
+pub const FIELD_HEIGHT: &str = "member.field_height";
 /// Footer while typing a number.
-pub const EDIT_FOOTER: &str = "Enter: save   Esc: cancel";
+pub const EDIT_FOOTER: &str = "member.edit_footer";
 
 /// Notice: width out of range. Keep in step with `MIN_WIDTH`/`MAX_WIDTH` (a test checks).
-pub const ERR_WIDTH: &str = "Width must be from 20 to 500.";
+pub const ERR_WIDTH: &str = "member.err_width";
 /// Notice: height out of range. Keep in step with `MIN_HEIGHT`/`MAX_HEIGHT` (a test checks).
-pub const ERR_HEIGHT: &str = "Height must be from 6 to 200.";
+pub const ERR_HEIGHT: &str = "member.err_height";
 /// Notice: saved.
-pub const SAVED: &str = "Saved.";
+pub const SAVED: &str = "member.saved";
 
 /// Shown when the account no longer holds `account.edit_settings`: the change applies on the
 /// next action, so the page the person was on closes instead of pretending to save.
-pub const NOT_PERMITTED: &str = "You are not allowed to change these settings.";
+pub const NOT_PERMITTED: &str = "member.not_permitted";
 /// Shown on the menu when a members screen closes because a permission it needed is gone
 /// (M2-F): the change applies on the next action.
-pub const MEMBERS_NOT_PERMITTED: &str = "You are not allowed to do that.";
+pub const MEMBERS_NOT_PERMITTED: &str = "member.members_not_permitted";
 /// Notice: tier chosen.
-pub const CHOSE_NERD: &str = "Icons set to Nerd Font.";
+pub const CHOSE_NERD: &str = "member.chose_nerd";
 /// Notice: tier chosen.
-pub const CHOSE_UNICODE: &str = "Icons set to Unicode.";
+pub const CHOSE_UNICODE: &str = "member.chose_unicode";
 /// Notice: fallback chosen.
-pub const CHOSE_ASCII: &str =
-    "Using plain ASCII icons and no color. Change this any time under Terminal settings.";
+pub const CHOSE_ASCII: &str = "member.chose_ascii";
 
 /// Tier display names.
-pub const TIER_NERD: &str = "Nerd Font";
+pub const TIER_NERD: &str = "member.tier_nerd";
 /// See [`TIER_NERD`].
-pub const TIER_UNICODE: &str = "Unicode";
+pub const TIER_UNICODE: &str = "member.tier_unicode";
 /// See [`TIER_NERD`].
-pub const TIER_ASCII: &str = "ASCII";
+pub const TIER_ASCII: &str = "member.tier_ascii";
 
 /// Logoff heading.
-pub const LOGOFF_HEADING: &str = "Logged off";
+pub const LOGOFF_HEADING: &str = "member.logoff_heading";
 /// `{handle}` is the sanitized account handle.
-pub const GOODBYE: &str = "Goodbye, {handle}.";
+pub const GOODBYE: &str = "member.goodbye";
 /// Logoff body.
-pub const SETTINGS_SAVED_NOTE: &str = "Your terminal settings are saved.";
+pub const SETTINGS_SAVED_NOTE: &str = "member.settings_saved_note";
+
+
+/// `{value}` is the layout's name (one of the `LAYOUT_*` texts).
+pub const SETTING_LAYOUT: &str = "member.setting_layout";
+/// `{value}` is the theme's name.
+pub const SETTING_THEME: &str = "member.setting_theme";
+/// Settings menu label: switch to the next layout.
+pub const MENU_LAYOUT: &str = "member.menu_layout";
+/// Settings menu label: switch to the next theme.
+pub const MENU_THEME: &str = "member.menu_theme";
+/// Name of the classic hotkey layout.
+pub const LAYOUT_CLASSIC: &str = "member.layout_classic";
+/// Name of the lightbar layout.
+pub const LAYOUT_LIGHTBAR: &str = "member.layout_lightbar";
+/// Name of the compact layout.
+pub const LAYOUT_COMPACT: &str = "member.layout_compact";
+
+/// Every key above except [`TITLE`]; the string table must hold exactly these in `member.*`.
+pub const TEXT_KEYS: [&str; 57] = [
+    LOGIN_HEADING,
+    SIGNED_IN_AS,
+    LAST_LOGIN,
+    FIRST_LOGIN,
+    TERMINAL_LINE,
+    TERMINAL_LINE_UNSET,
+    LOGIN_FOOTER,
+    GLYPH_HEADING,
+    GLYPH_WHY,
+    GLYPH_STYLE,
+    GLYPH_LEGEND,
+    GLYPH_QUESTION,
+    GLYPH_FOOTER_FIRST,
+    GLYPH_FOOTER_AGAIN,
+    SETTINGS_HEADING,
+    SETTING_WIDTH,
+    SETTING_HEIGHT,
+    SETTING_COLOR,
+    SETTING_PAUSE,
+    CLAMPED_WIDTH,
+    CLAMPED_HEIGHT,
+    SETTING_ICONS,
+    AUTOMATIC,
+    NOT_CHOSEN,
+    ON,
+    OFF,
+    MENU_WIDTH,
+    MENU_HEIGHT,
+    MENU_COLOR,
+    MENU_PAUSE,
+    MENU_ICONS,
+    MENU_BACK,
+    SETTINGS_FOOTER,
+    FIELD_WIDTH,
+    FIELD_HEIGHT,
+    EDIT_FOOTER,
+    ERR_WIDTH,
+    ERR_HEIGHT,
+    SAVED,
+    NOT_PERMITTED,
+    MEMBERS_NOT_PERMITTED,
+    CHOSE_NERD,
+    CHOSE_UNICODE,
+    CHOSE_ASCII,
+    TIER_NERD,
+    TIER_UNICODE,
+    TIER_ASCII,
+    LOGOFF_HEADING,
+    GOODBYE,
+    SETTINGS_SAVED_NOTE,
+    SETTING_LAYOUT,
+    SETTING_THEME,
+    MENU_LAYOUT,
+    MENU_THEME,
+    LAYOUT_CLASSIC,
+    LAYOUT_LIGHTBAR,
+    LAYOUT_COMPACT,
+];
+
+/// Where the flow reads text from: the server's string table, or a fixture in a test. Values
+/// come from the sysop or the build, never from members.
+pub trait TextSource {
+    /// The text for `key`.
+    fn text<'a>(&'a self, key: &'a str) -> &'a str;
+}
 
 /// Fill `{name}` placeholders in `template` in one pass. A value is never re-scanned, so text
 /// that looks like a placeholder inside a value stays text. An unknown placeholder is kept.

@@ -1,5 +1,6 @@
 //! The settings themselves and the rules that turn them into what is drawn.
 
+use super::layout::{LayoutId, ThemeName};
 use crate::icons::Tier;
 
 /// Narrowest width override accepted, in cells.
@@ -35,6 +36,8 @@ pub struct TerminalSettings {
     color: bool,
     pause: bool,
     tier: Option<Tier>,
+    layout: LayoutId,
+    theme: ThemeName,
 }
 
 impl Default for TerminalSettings {
@@ -46,6 +49,8 @@ impl Default for TerminalSettings {
             color: true,
             pause: true,
             tier: None,
+            layout: LayoutId::Classic,
+            theme: ThemeName::default_theme(),
         }
     }
 }
@@ -71,6 +76,8 @@ impl TerminalSettings {
             color,
             pause,
             tier,
+            layout: LayoutId::Classic,
+            theme: ThemeName::default_theme(),
         })
     }
 
@@ -152,16 +159,43 @@ impl TerminalSettings {
         )
     }
 
+    /// The chosen layout (classic until another is picked).
+    #[must_use]
+    pub const fn layout(&self) -> LayoutId {
+        self.layout
+    }
+
+    /// The chosen theme's name (`default` until another is picked). Whether a theme of that
+    /// name is loaded is the server's question; an unknown name draws the default theme.
+    #[must_use]
+    pub const fn theme(&self) -> ThemeName {
+        self.theme
+    }
+
+    /// Choose a layout. Takes effect on the next draw, without reconnecting.
+    #[must_use]
+    pub const fn with_layout(mut self, layout: LayoutId) -> Self {
+        self.layout = layout;
+        self
+    }
+
+    /// Choose a theme by name.
+    #[must_use]
+    pub const fn with_theme(mut self, theme: ThemeName) -> Self {
+        self.theme = theme;
+        self
+    }
+
     /// Set or clear the width override.
-    pub fn with_width(mut self, width: Option<u16>) -> Result<Self, SettingsError> {
-        self = Self::new(width, self.height, self.color, self.pause, self.tier)?;
-        Ok(self)
+    pub fn with_width(self, width: Option<u16>) -> Result<Self, SettingsError> {
+        let kept = Self::new(width, self.height, self.color, self.pause, self.tier)?;
+        Ok(kept.with_layout(self.layout).with_theme(self.theme))
     }
 
     /// Set or clear the height override.
-    pub fn with_height(mut self, height: Option<u16>) -> Result<Self, SettingsError> {
-        self = Self::new(self.width, height, self.color, self.pause, self.tier)?;
-        Ok(self)
+    pub fn with_height(self, height: Option<u16>) -> Result<Self, SettingsError> {
+        let kept = Self::new(self.width, height, self.color, self.pause, self.tier)?;
+        Ok(kept.with_layout(self.layout).with_theme(self.theme))
     }
 
     /// Turn color on or off.

@@ -125,6 +125,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         10,
         "9c2d7b7dc4e0aaf578cc59e9b6bbd4ef2f816f0d703a4d4e4262f44b51e038e742b77057a8628e4416ffcbde7e443a96",
     ),
+    (
+        11,
+        "323d61dffe504d087e9f5bf776d3dac9702cb2a5d707c885c01e3cf1d431124a136361b836a18e56ba3b03df56e19dcb",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {

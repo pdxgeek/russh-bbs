@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO terminal_settings\n                 (account_id, width_override, height_override, color, pause, icon_tier, layout, theme)\n             VALUES (?, ?, ?, ?, ?, ?, ?, ?)\n             ON CONFLICT (account_id) DO UPDATE SET\n                 width_override  = excluded.width_override,\n                 height_override = excluded.height_override,\n                 color           = excluded.color,\n                 pause           = excluded.pause,\n                 icon_tier       = excluded.icon_tier,\n                 layout          = excluded.layout,\n                 theme           = excluded.theme,\n                 updated_at      = unixepoch()",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 8
+    },
+    "nullable": []
+  },
+  "hash": "ad00db9baec4bea6f78824e60f374ba3e0599ae8b81edd4f5ecd680a4f5ed725"
+}

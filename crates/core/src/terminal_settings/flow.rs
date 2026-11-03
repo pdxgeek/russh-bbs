@@ -10,7 +10,8 @@
 
 use super::glyph::{GlyphAnswer, GlyphProgress, GlyphTest};
 use super::settings::{SettingsError, TerminalSettings};
-use super::strings::{self, fill};
+use super::layout::{LayoutId, ThemeName};
+use super::strings::{self, TextSource, fill};
 use super::{format_utc, tier_name};
 use crate::access::{Permission, PermissionCheck, Slug, Snapshot};
 use crate::icons::Tier;
@@ -39,6 +40,10 @@ pub enum MemberInput {
     Backspace,
     /// Escape.
     Escape,
+    /// The up arrow: the cursor of a layout that has one.
+    Up,
+    /// The down arrow.
+    Down,
     /// Ctrl-C / Ctrl-D: log off from anywhere.
     Quit,
 }
@@ -89,6 +94,9 @@ pub struct MemberFlow {
     /// The real terminal's size, when the front end has told us (it does at start and on every
     /// window change). Only used to say when an override is cut down to fit.
     terminal: Option<(u16, u16)>,
+    /// The themes the server has loaded, in the order "next theme" cycles. Empty until the
+    /// front end sets them; then the theme key does nothing.
+    themes: Vec<ThemeName>,
 }
 
 impl MemberFlow {
@@ -112,7 +120,14 @@ impl MemberFlow {
             notice: None,
             menu: MenuSession::new(main_tree()),
             terminal: None,
+            themes: Vec::new(),
         }
+    }
+
+    /// Tell the flow which themes exist, so the settings screen can switch between them. The
+    /// front end calls this once at the start with the server's loaded set.
+    pub fn set_themes(&mut self, themes: Vec<ThemeName>) {
+        self.themes = themes;
     }
 
     /// Tell the flow how big the real terminal is, so the settings screen can say when a
@@ -266,7 +281,16 @@ impl MemberFlow {
         let key = match input {
             MemberInput::Char(c) => MenuKey::Char(c),
             MemberInput::Escape => MenuKey::Back,
-            MemberInput::Enter | MemberInput::Backspace | MemberInput::Quit => {
+            // The cursor keys only mean something in a layout that draws a cursor; elsewhere
+            // Enter must not act on a selection the member cannot see.
+            MemberInput::Up if self.settings.layout().has_cursor() => MenuKey::Up,
+            MemberInput::Down if self.settings.layout().has_cursor() => MenuKey::Down,
+            MemberInput::Enter if self.settings.layout().has_cursor() => MenuKey::Select,
+            MemberInput::Enter
+            | MemberInput::Backspace
+            | MemberInput::Up
+            | MemberInput::Down
+            | MemberInput::Quit => {
                 return MemberEffect::Stay;
             }
         };
@@ -331,7 +355,7 @@ impl MemberFlow {
             MemberInput::Enter => ScreenKey::Enter,
             MemberInput::Backspace => ScreenKey::Backspace,
             MemberInput::Escape => ScreenKey::Escape,
-            MemberInput::Quit => return MemberEffect::Stay,
+            MemberInput::Up | MemberInput::Down | MemberInput::Quit => return MemberEffect::Stay,
         };
         let Page::Members(screen) = &mut self.page else {
             return MemberEffect::Stay;
@@ -387,7 +411,10 @@ impl MemberFlow {
             MemberInput::Char(c) => QueueKey::Char(c),
             MemberInput::Enter => QueueKey::Enter,
             MemberInput::Escape => QueueKey::Escape,
-            MemberInput::Backspace | MemberInput::Quit => return MemberEffect::Stay,
+            MemberInput::Backspace
+            | MemberInput::Up
+            | MemberInput::Down
+            | MemberInput::Quit => return MemberEffect::Stay,
         };
         let Page::Queue(screen) = &mut self.page else {
             return MemberEffect::Stay;
@@ -494,6 +521,10 @@ impl MemberFlow {
             MemberInput::Char('p' | 'P') => {
                 self.save(self.settings.with_pause(!self.settings.pause()))
             }
+            MemberInput::Char('l' | 'L') => {
+                self.save(self.settings.with_layout(self.settings.layout().next()))
+            }
+            MemberInput::Char('t' | 'T') => self.next_theme(),
             MemberInput::Char('i' | 'I') => {
                 self.page = Page::GlyphTest(GlyphTest::new(self.settings.needs_glyph_test()));
                 MemberEffect::Stay
@@ -503,6 +534,24 @@ impl MemberFlow {
                 MemberEffect::Stay
             }
             _ => MemberEffect::Stay,
+        }
+    }
+
+    /// Switch to the theme after the current one in the server's list (the first, if the current
+    /// one is not in it). Nothing happens when the server has loaded no themes.
+    fn next_theme(&mut self) -> MemberEffect {
+        let current = self.settings.theme();
+        let next = self
+            .themes
+            .iter()
+            .position(|theme| *theme == current)
+            .map_or(self.themes.first(), |at| {
+                self.themes.get((at + 1) % self.themes.len())
+            })
+            .copied();
+        match next {
+            Some(theme) => self.save(self.settings.with_theme(theme)),
+            None => MemberEffect::Stay,
         }
     }
 
@@ -562,20 +611,24 @@ impl MemberFlow {
                     }
                 }
             }
-            MemberInput::Char(_) | MemberInput::Quit => MemberEffect::Stay,
+            MemberInput::Char(_) | MemberInput::Up | MemberInput::Down | MemberInput::Quit => {
+                MemberEffect::Stay
+            }
         }
     }
 
     /// The lines left on the client's normal screen after it leaves the alternate one, so the
     /// logoff text stays in the scrollback. `None` until the person has logged off.
     #[must_use]
-    pub fn farewell(&self) -> Option<Vec<String>> {
-        self.is_logged_off().then(|| self.view().body)
+    pub fn farewell(&self, text: &dyn TextSource) -> Option<Vec<String>> {
+        self.is_logged_off().then(|| self.view(text).body)
     }
 
-    /// The current page as a [`View`]. Every string is chrome or the sanitized handle.
+    /// The current page as a [`View`]. The fixed fields (title aside) hold string-table keys
+    /// that the renderer resolves; lines with placeholders are filled here from `text`. Every
+    /// string is chrome or the sanitized handle.
     #[must_use]
-    pub fn view(&self) -> View {
+    pub fn view(&self, text: &dyn TextSource) -> View {
         let mut view = View {
             title: strings::TITLE,
             heading: "",
@@ -588,41 +641,46 @@ impl MemberFlow {
             footer: "",
         };
         match &self.page {
-            Page::Login => self.login_view(&mut view),
-            Page::GlyphTest(test) => glyph_view(&mut view, *test),
-            Page::Home => self.home_view(&mut view),
+            Page::Login => self.login_view(&mut view, text),
+            Page::GlyphTest(test) => glyph_view(&mut view, *test, text),
+            Page::Home => self.home_view(&mut view, text),
             Page::Members(_) | Page::Queue(_) => {}
-            Page::Settings => self.settings_view(&mut view),
+            Page::Settings => self.settings_view(&mut view, text),
             Page::EditWidth(typed) => edit_view(&mut view, strings::FIELD_WIDTH, typed),
             Page::EditHeight(typed) => edit_view(&mut view, strings::FIELD_HEIGHT, typed),
             Page::Invites(screen) => return screen.view(),
-            Page::Logoff => self.logoff_view(&mut view),
+            Page::Logoff => self.logoff_view(&mut view, text),
         }
         view
     }
 
-    fn login_view(&self, view: &mut View) {
+    fn login_view(&self, view: &mut View, text: &dyn TextSource) {
         view.heading = strings::LOGIN_HEADING;
-        view.body
-            .push(fill(strings::SIGNED_IN_AS, &[("handle", &self.handle)]));
+        view.body.push(fill(
+            text.text(strings::SIGNED_IN_AS),
+            &[("handle", &self.handle)],
+        ));
         view.body.push(match self.last_login {
-            Some(at) => fill(strings::LAST_LOGIN, &[("when", &format_utc(at))]),
-            None => strings::FIRST_LOGIN.to_owned(),
+            Some(at) => fill(
+                text.text(strings::LAST_LOGIN),
+                &[("when", &format_utc(at))],
+            ),
+            None => text.text(strings::FIRST_LOGIN).to_owned(),
         });
         view.body.push(String::new());
-        view.body.push(self.terminal_line());
+        view.body.push(self.terminal_line(text));
         view.footer = strings::LOGIN_FOOTER;
     }
 
-    fn terminal_line(&self) -> String {
+    fn terminal_line(&self, text: &dyn TextSource) -> String {
         match self.settings.chosen_tier() {
-            None => strings::TERMINAL_LINE_UNSET.to_owned(),
+            None => text.text(strings::TERMINAL_LINE_UNSET).to_owned(),
             Some(tier) => fill(
-                strings::TERMINAL_LINE,
+                text.text(strings::TERMINAL_LINE),
                 &[
-                    ("icons", tier_name(tier)),
-                    ("color", on_off(self.settings.use_color())),
-                    ("pause", on_off(self.settings.pause())),
+                    ("icons", text.text(tier_name(tier))),
+                    ("color", text.text(on_off(self.settings.use_color()))),
+                    ("pause", text.text(on_off(self.settings.pause()))),
                 ],
             ),
         }
@@ -630,100 +688,108 @@ impl MemberFlow {
 
     /// The content part of the home page: who is signed in. The menu itself is
     /// [`MemberFlow::menu_page`].
-    fn home_view(&self, view: &mut View) {
-        view.body
-            .push(fill(strings::SIGNED_IN_AS, &[("handle", &self.handle)]));
+    fn home_view(&self, view: &mut View, text: &dyn TextSource) {
+        view.body.push(fill(
+            text.text(strings::SIGNED_IN_AS),
+            &[("handle", &self.handle)],
+        ));
     }
 
-    fn settings_view(&self, view: &mut View) {
+    fn settings_view(&self, view: &mut View, text: &dyn TextSource) {
         let s = &self.settings;
         let number = |value: Option<u16>| {
-            value.map_or_else(|| strings::AUTOMATIC.to_owned(), |n| n.to_string())
+            value.map_or_else(
+                || text.text(strings::AUTOMATIC).to_owned(),
+                |n| n.to_string(),
+            )
         };
         view.heading = strings::SETTINGS_HEADING;
         let (cut_width, cut_height) = self.terminal.map_or((false, false), |(cols, rows)| {
             s.overrides_clamped(cols, rows)
         });
         let (cols, rows) = self.terminal.unwrap_or_default();
-        let mut width = fill(strings::SETTING_WIDTH, &[("value", &number(s.width()))]);
+        let mut width = fill(
+            text.text(strings::SETTING_WIDTH),
+            &[("value", &number(s.width()))],
+        );
         if cut_width {
             width.push_str(&fill(
-                strings::CLAMPED_WIDTH,
+                text.text(strings::CLAMPED_WIDTH),
                 &[("terminal", &cols.to_string())],
             ));
         }
-        let mut height = fill(strings::SETTING_HEIGHT, &[("value", &number(s.height()))]);
+        let mut height = fill(
+            text.text(strings::SETTING_HEIGHT),
+            &[("value", &number(s.height()))],
+        );
         if cut_height {
             height.push_str(&fill(
-                strings::CLAMPED_HEIGHT,
+                text.text(strings::CLAMPED_HEIGHT),
                 &[("terminal", &rows.to_string())],
             ));
         }
+        let value = |key: &str, value: &str| fill(text.text(key), &[("value", value)]);
         view.body = vec![
             width,
             height,
-            fill(strings::SETTING_COLOR, &[("value", on_off(s.color()))]),
-            fill(strings::SETTING_PAUSE, &[("value", on_off(s.pause()))]),
-            fill(
+            value(strings::SETTING_COLOR, text.text(on_off(s.color()))),
+            value(strings::SETTING_PAUSE, text.text(on_off(s.pause()))),
+            value(
                 strings::SETTING_ICONS,
-                &[(
-                    "value",
-                    s.chosen_tier().map_or(strings::NOT_CHOSEN, tier_name),
-                )],
+                text.text(s.chosen_tier().map_or(strings::NOT_CHOSEN, tier_name)),
             ),
+            value(
+                strings::SETTING_LAYOUT,
+                text.text(layout_name(s.layout())),
+            ),
+            value(strings::SETTING_THEME, s.theme().as_str()),
         ];
+        let entry = |key, label| MenuItemView { key, label };
         view.menu = vec![
-            MenuItemView {
-                key: 'w',
-                label: strings::MENU_WIDTH,
-            },
-            MenuItemView {
-                key: 'h',
-                label: strings::MENU_HEIGHT,
-            },
-            MenuItemView {
-                key: 'c',
-                label: strings::MENU_COLOR,
-            },
-            MenuItemView {
-                key: 'p',
-                label: strings::MENU_PAUSE,
-            },
-            MenuItemView {
-                key: 'i',
-                label: strings::MENU_ICONS,
-            },
-            MenuItemView {
-                key: 'b',
-                label: strings::MENU_BACK,
-            },
+            entry('w', strings::MENU_WIDTH),
+            entry('h', strings::MENU_HEIGHT),
+            entry('c', strings::MENU_COLOR),
+            entry('p', strings::MENU_PAUSE),
+            entry('l', strings::MENU_LAYOUT),
+            entry('t', strings::MENU_THEME),
+            entry('i', strings::MENU_ICONS),
+            entry('b', strings::MENU_BACK),
         ];
         view.footer = strings::SETTINGS_FOOTER;
     }
 
-    fn logoff_view(&self, view: &mut View) {
+    fn logoff_view(&self, view: &mut View, text: &dyn TextSource) {
         view.heading = strings::LOGOFF_HEADING;
         view.body = vec![
-            fill(strings::GOODBYE, &[("handle", &self.handle)]),
-            strings::SETTINGS_SAVED_NOTE.to_owned(),
+            fill(text.text(strings::GOODBYE), &[("handle", &self.handle)]),
+            text.text(strings::SETTINGS_SAVED_NOTE).to_owned(),
         ];
     }
 }
 
-fn glyph_view(view: &mut View, test: GlyphTest) {
+/// The string-table key of a layout's name.
+const fn layout_name(layout: LayoutId) -> &'static str {
+    match layout {
+        LayoutId::Classic => strings::LAYOUT_CLASSIC,
+        LayoutId::Lightbar => strings::LAYOUT_LIGHTBAR,
+        LayoutId::Compact => strings::LAYOUT_COMPACT,
+    }
+}
+
+fn glyph_view(view: &mut View, test: GlyphTest, text: &dyn TextSource) {
     view.heading = strings::GLYPH_HEADING;
     view.body = vec![
-        strings::GLYPH_WHY.to_owned(),
+        text.text(strings::GLYPH_WHY).to_owned(),
         String::new(),
         fill(
-            strings::GLYPH_STYLE,
-            &[("style", tier_name(test.step().tier()))],
+            text.text(strings::GLYPH_STYLE),
+            &[("style", text.text(tier_name(test.step().tier())))],
         ),
         // Registry glyphs for this tier; the legend names them for a screen reader.
         test.samples(),
-        strings::GLYPH_LEGEND.to_owned(),
+        text.text(strings::GLYPH_LEGEND).to_owned(),
         String::new(),
-        strings::GLYPH_QUESTION.to_owned(),
+        text.text(strings::GLYPH_QUESTION).to_owned(),
     ];
     view.footer = if test.is_first_run() {
         strings::GLYPH_FOOTER_FIRST

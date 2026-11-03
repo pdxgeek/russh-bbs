@@ -2509,6 +2509,7 @@ dependencies = [
  "subtle",
  "thiserror",
  "tokio",
+ "toml",
  "tracing",
  "unicode-normalization",
 ]
