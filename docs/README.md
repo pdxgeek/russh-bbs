@@ -16,6 +16,7 @@ Status of the project: M0, M1 and M2 are merged. M1's QA gate passed except the 
 |---|---|
 | Whole system | [architecture.md](architecture.md), [threat-model.md](threat-model.md), [access.md](access.md), [audit.md](audit.md) |
 | Profiles and the members list | [profiles.md](profiles.md) |
+| One-liners, graffiti wall, last callers, polls | [community.md](community.md) |
 | The sysop queue (request an invite, approve, deny, vouch) | [queue.md](queue.md) |
 | Registration modes `invite`, `apply`, `open`; the daily cap | [registration.md](registration.md) |
 | Configuration keys, env vars, flags | [config.md](config.md) |

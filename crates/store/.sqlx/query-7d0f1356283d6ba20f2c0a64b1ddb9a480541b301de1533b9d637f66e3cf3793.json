@@ -1,0 +1,36 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT p.closed_at IS NOT NULL AS \"closed!\",\n                      EXISTS (SELECT 1 FROM poll_option o WHERE o.poll_id = p.id AND o.position = $2) AS \"option!\",\n                      EXISTS (SELECT 1 FROM poll_vote v WHERE v.poll_id = p.id AND v.account_id = $3) AS \"voted!\"\n               FROM poll p WHERE p.id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "closed!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 1,
+        "name": "option!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 2,
+        "name": "voted!",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "7d0f1356283d6ba20f2c0a64b1ddb9a480541b301de1533b9d637f66e3cf3793"
+}

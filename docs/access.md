@@ -18,10 +18,12 @@ One named permission per action, a closed enum in `core::access`. Names are `are
 | Files | `files.list`, `files.download`, `files.upload`, `files.tag`, `files.approve`, `files.manage_areas` |
 | Feeds | `feeds.read`, `feeds.manage` |
 | Doors | `doors.run`, `doors.manage` |
-| Boardlets | `oneliners.post`, `graffiti.post`, `polls.vote`, `polls.create`, `events.view`, `events.manage` |
+| Boardlets | `oneliners.post`, `graffiti.post`, `polls.vote`, `polls.create`, `community.view`, `community.moderate`, `events.view`, `events.manage` |
 | Sysop | `sysop.page`, `sysop.chat`, `sessions.view`, `sessions.disconnect`, `audit.view`, `settings.edit`, `roles.edit`, `groups.edit`, `limits.edit`, `themes.manage`, `backups.run` |
 
 A permission is held either globally (from the role) or scoped to one area (one board, file area, room, or door). Scoped grants are how a trusted member moderates one board without becoming a moderator everywhere.
+
+**`community.view` and `community.moderate` (M3-J, D86)** are the two actions the small community features share. `community.view` opens the Community menu and reads the one-liners, the graffiti wall, last callers and the poll list and results (`member` and above; the waiting role never holds it, so nothing here is visible to an unauthenticated key). `community.moderate` removes a one-liner, a wall line or a poll, and closes a poll someone else made (`moderator` and above, as every `*.moderate`); each use is audited. Posting stays `oneliners.post` and `graffiti.post`, voting `polls.vote`, creating a poll `polls.create` (`trusted` and above). Migration `0017` inserts the role rows (`sysop` included); custom roles get none until a sysop edits them.
 
 **`account.set_password` (M3-D, D81)** gates every part of the Password screen under Terminal settings: seeing whether a password is set, setting or changing it, clearing it. It is checked in `core::passwords` against the snapshot loaded for the action, not by the screen. `member` and above hold it. It does not gate password *login*: an existing password still signs in if the permission is later revoked (see D81 for how a sysop stops that).
 

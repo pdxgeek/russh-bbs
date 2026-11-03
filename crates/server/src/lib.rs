@@ -2,6 +2,7 @@
 //! everything is testable. SFTP and the full TUI arrive in later slices.
 
 pub(crate) mod chat;
+pub mod community;
 pub mod config;
 pub mod forums;
 pub mod founder;

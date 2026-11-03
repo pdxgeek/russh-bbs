@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM community_line WHERE kind = ?1\n             AND id NOT IN (SELECT id FROM community_line WHERE kind = ?1 ORDER BY id DESC LIMIT ?2)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "c617bf7d6c76b262a949a017e0f75f54b03c975d2caa806f6be07ba250ac0b20"
+}

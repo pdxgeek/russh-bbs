@@ -11,6 +11,7 @@ pub(crate) mod access_edit;
 pub(crate) mod accounts;
 pub(crate) mod audit;
 pub(crate) mod chat;
+pub(crate) mod community;
 pub(crate) mod credits;
 pub(crate) mod drafts;
 pub(crate) mod forums;
@@ -29,6 +30,7 @@ use std::sync::Arc;
 use russh_bbs_core::access::{AccessStore, Fingerprint, MemberDirectory, Slug};
 use russh_bbs_core::audit::{AuditStore, WallClock};
 use russh_bbs_core::chat::RoomStore;
+use russh_bbs_core::community::CommunityStore;
 use russh_bbs_core::credits::CreditStore;
 use russh_bbs_core::drafts::DraftStore;
 use russh_bbs_core::forums::ForumStore;
@@ -51,6 +53,7 @@ pub(crate) trait TestStore:
     + InviteStore
     + AccessStore
     + AuditStore
+    + CommunityStore
     + CreditStore
     + SchedulerStore
     + SettingsStore
@@ -79,6 +82,7 @@ impl<T> TestStore for T where
         + InviteStore
         + AccessStore
         + AuditStore
+        + CommunityStore
         + CreditStore
         + SchedulerStore
         + SettingsStore
@@ -159,7 +163,7 @@ macro_rules! shared_suite {
             #[allow(unused_imports)]
             use super::*;
             use $crate::suite::{
-                access, access_edit, accounts, audit, chat, credits, drafts, forums, founder, invites, limits, passwords, profiles,
+                access, access_edit, accounts, audit, chat, community, credits, drafts, forums, founder, invites, limits, passwords, profiles,
                 queue, registration, scheduler, terminal_settings,
             };
 
@@ -222,6 +226,27 @@ macro_rules! shared_suite {
                 accounts::only_active_accounts_are_members,
                 accounts::the_directory_fails_closed_when_the_store_is_broken,
                 accounts::data_survives_a_reopen,
+                community::lines_come_back_newest_first_and_roll_off_at_the_list_size,
+                community::the_hourly_limit_refuses_the_next_line_and_resets_with_the_hour,
+                community::concurrent_adds_never_pass_the_hourly_limit,
+                community::adding_a_line_for_an_unknown_account_fails,
+                community::removing_a_line_is_audited_and_a_wrong_id_or_kind_is_not_found,
+                community::last_callers_are_active_members_newest_first_one_row_each,
+                community::a_poll_round_trips_with_its_options_and_setting,
+                community::a_member_votes_once_and_the_second_vote_is_refused,
+                community::concurrent_votes_from_one_member_count_once,
+                community::only_the_creator_or_staff_closes_a_poll_and_a_closed_poll_takes_no_votes,
+                community::removing_a_poll_deletes_its_votes_and_is_audited,
+                community::poll_creation_is_limited_per_member_per_day_and_in_all,
+                community::concurrent_poll_creation_never_passes_the_day_limit,
+                community::results_show_as_the_polls_setting_says,
+                community::the_permissions_decide_who_can_do_what_through_execute,
+                community::stored_text_is_sanitized_again_when_read,
+                community::the_community_tables_refuse_what_core_would_never_write,
+                community::deleting_an_account_deletes_its_community_rows,
+                community::the_roles_hold_the_community_permissions_the_docs_say,
+                community::community_data_survives_a_reopen,
+                community::a_broken_store_errors_instead_of_pretending_the_lists_are_empty,
                 drafts::a_saved_draft_reads_back_and_a_second_save_replaces_it,
                 drafts::drafts_are_per_member_and_per_context,
                 drafts::the_list_is_newest_first_without_text,

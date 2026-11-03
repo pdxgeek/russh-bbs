@@ -200,6 +200,9 @@ impl<D: Backend> Connection<D> {
         .await;
         let (content, meter) = match begun {
             Ok(Ok(meter)) => {
+                // Last callers (M3-J): a telnet member session is recorded like an ssh one,
+                // at the same point (after the limits admit it).
+                crate::community::note_sign_in(&*self.directory, start.account).await;
                 // D27: a password is set only over SSH, and the screen would take it in clear.
                 let flow =
                     MemberFlow::new(&start.handle, access, start.previous_login, start.settings)

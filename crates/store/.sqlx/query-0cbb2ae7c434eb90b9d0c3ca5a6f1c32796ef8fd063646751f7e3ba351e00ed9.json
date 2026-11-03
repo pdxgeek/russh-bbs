@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT p.id AS \"id!\", p.question, p.description, p.creator_id, a.username,\n                      p.results, p.closed_at, p.created_at\n               FROM poll p JOIN accounts a ON a.id = p.creator_id WHERE p.id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "question",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "description",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "creator_id",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "username",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "results",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "closed_at",
+        "ordinal": 6,
+        "type_info": "Integer"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 7,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "0cbb2ae7c434eb90b9d0c3ca5a6f1c32796ef8fd063646751f7e3ba351e00ed9"
+}

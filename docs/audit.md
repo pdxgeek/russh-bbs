@@ -80,6 +80,9 @@ sysop screen over it is M5; the board has no audit screen yet.
 | `remove_post` (M3-E) | `post.removed` | the moderator (`forum.moderate` on the board) | the post's author account (none if the account is gone); the resource is the board | `post <id>` or `post <id> with its thread`: ids only, never the text |
 | `allow_member` (M3-E) | `permission.granted` | the creator (`forum.manage`) | the member; the resource is the board | `forum.list`, `forum.read`, `forum.post` and `forum.reply`: one row each, none when already held |
 | `save_profile` by staff (M2-F) | `profile.edited` | the editor (`members.edit`) | the edited account | `fields <names>`: field names only, never values. The owner's own edits write no row |
+| `remove_line` (M3-J) | `community.entry_removed` | the staff member (`community.moderate`) | the author | `oneliner <id>` or `graffiti <id>`: the kind and the row id, never the text |
+| `close_poll` by staff on another member's poll (M3-J) | `community.poll_closed` | the staff member | the poll's creator | `poll <id>`. The creator closing their own poll writes no row |
+| `remove_poll` (M3-J) | `community.poll_removed` | the staff member | the poll's creator | `poll <id>`; the options and votes go with the poll |
 
 A write that changed nothing (adding a member already in the group, removing one who is not, a
 grant already held or not there, the same permission set again, a refused change) writes no row.
