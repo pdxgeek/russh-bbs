@@ -1331,7 +1331,18 @@ fn room_input(key: Key) -> Option<RoomInput> {
         Key::Backspace => Some(RoomInput::Backspace),
         Key::Escape => Some(RoomInput::Escape),
         Key::Ctrl('c' | 'd') => Some(RoomInput::Quit),
-        Key::Ctrl(_) | Key::Up | Key::Down | Key::Other => None,
+        Key::Ctrl(_)
+        | Key::Up
+        | Key::Down
+        | Key::Left
+        | Key::Right
+        | Key::Home
+        | Key::End
+        | Key::Delete
+        | Key::PageUp
+        | Key::PageDown
+        | Key::PasteBreak
+        | Key::Other => None,
     }
 }
 
@@ -1344,7 +1355,18 @@ fn chat_key(key: Key) -> Option<ChatKey> {
         Key::Escape => Some(ChatKey::Escape),
         Key::Up => Some(ChatKey::Up),
         Key::Down => Some(ChatKey::Down),
-        Key::Ctrl(_) | Key::Other => None,
+        // A pasted line break must not send the line (FIX-M3-1, D88); Left, Right, Home, End
+        // and the rest do nothing in the one-line chat input.
+        Key::Ctrl(_)
+        | Key::Left
+        | Key::Right
+        | Key::Home
+        | Key::End
+        | Key::Delete
+        | Key::PageUp
+        | Key::PageDown
+        | Key::PasteBreak
+        | Key::Other => None,
     }
 }
 
@@ -1356,7 +1378,18 @@ fn claim_input(key: Key) -> Option<ClaimInput> {
         Key::Backspace => Some(ClaimInput::Backspace),
         Key::Escape => Some(ClaimInput::Escape),
         Key::Ctrl('c' | 'd') => Some(ClaimInput::Quit),
-        Key::Ctrl(_) | Key::Up | Key::Down | Key::Other => None,
+        Key::Ctrl(_)
+        | Key::Up
+        | Key::Down
+        | Key::Left
+        | Key::Right
+        | Key::Home
+        | Key::End
+        | Key::Delete
+        | Key::PageUp
+        | Key::PageDown
+        | Key::PasteBreak
+        | Key::Other => None,
     }
 }
 
@@ -1370,7 +1403,16 @@ fn member_input(key: Key) -> Option<MemberInput> {
         Key::Up => Some(MemberInput::Up),
         Key::Down => Some(MemberInput::Down),
         Key::Ctrl('c' | 'd') => Some(MemberInput::Quit),
-        Key::Ctrl(_) | Key::Other => None,
+        Key::Left
+        | Key::Right
+        | Key::Home
+        | Key::End
+        | Key::Delete
+        | Key::PageUp
+        | Key::PageDown
+        | Key::PasteBreak
+        | Key::Ctrl(_)
+        | Key::Other => None,
     }
 }
 
