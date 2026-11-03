@@ -190,7 +190,6 @@ fn an_unreadable_message_stays_in_the_list_and_can_be_deleted_from_it() {
     let none = screen.deliver(Response::Message(Err(Fail {
         text: "This message cannot be opened. You can delete it with d.".into(),
         gone: false,
-        kept_draft: false,
     })));
     assert!(none.is_none());
     assert!(text(&screen).contains("(this message cannot be opened)"));
@@ -231,7 +230,6 @@ fn writing_asks_the_handle_then_the_subject_then_opens_the_editor_and_sends() {
     let Request::Compose { purpose, .. } = expect_request(press(&mut screen, Key::Enter)) else {
         panic!("expected compose")
     };
-    assert_eq!(purpose.context().unwrap().as_str(), "mail:new");
     assert!(matches!(&purpose, Purpose::New { to, subject } if to == "bob" && subject == "Hello"));
     let editor = Editor::open(
         EditorRequest::new(russh_bbs_core::sanitize::SingleLine::new(40).sanitize("To bob: Hello"))
@@ -277,7 +275,6 @@ fn a_wrong_handle_goes_back_to_the_handle_prompt() {
     screen.deliver(Response::Compose(Err(Fail {
         text: "No active member has that handle.".into(),
         gone: false,
-        kept_draft: false,
     })));
     let shown = text(&screen);
     assert!(
@@ -296,16 +293,13 @@ fn a_reply_quotes_and_the_reader_reports_only_after_asking() {
         "line one\nline two",
     ))));
     // c: reply with the quote.
-    let Request::Compose { purpose, quote } = expect_request(press(&mut screen, Key::Char('c')))
-    else {
+    let Request::Compose { quote, .. } = expect_request(press(&mut screen, Key::Char('c'))) else {
         panic!("expected compose")
     };
-    assert_eq!(purpose.context().unwrap().as_str(), "mail:reply:1");
     assert!(quote.unwrap().as_str().contains("> line one"));
     screen.deliver(Response::Compose(Err(Fail {
         text: "You may not do that.".into(),
         gone: false,
-        kept_draft: false,
     })));
     // x asks what will be copied; anything but y cancels; y sends exactly the shown copy.
     press(&mut screen, Key::Char('x'));
@@ -332,13 +326,19 @@ fn a_reply_quotes_and_the_reader_reports_only_after_asking() {
 }
 
 #[test]
-fn a_refused_send_returns_with_the_reason_and_the_draft_note() {
+fn a_refused_send_keeps_the_text_in_memory_only_and_it_comes_back_as_the_starting_text() {
     let mut screen = open(Vec::new());
-    press(&mut screen, Key::Char('c'));
-    type_text(&mut screen, "bob");
-    press(&mut screen, Key::Enter);
-    type_text(&mut screen, "Hi");
-    expect_request(press(&mut screen, Key::Enter));
+    let write = |screen: &mut MailScreen| {
+        press(screen, Key::Char('c'));
+        type_text(screen, "bob");
+        press(screen, Key::Enter);
+        type_text(screen, "Hi");
+        expect_request(press(screen, Key::Enter))
+    };
+    let Request::Compose { quote, .. } = write(&mut screen) else {
+        panic!("expected compose")
+    };
+    assert!(quote.is_none(), "nothing unsent yet");
     let editor = Editor::open(
         EditorRequest::new(russh_bbs_core::sanitize::SingleLine::new(40).sanitize("To bob: Hi")),
         None,
@@ -350,13 +350,21 @@ fn a_refused_send_returns_with_the_reason_and_the_draft_note() {
     screen.deliver(Response::Sent(Err(Fail {
         text: "That mailbox is full. Nothing was sent.".into(),
         gone: false,
-        kept_draft: true,
     })));
     let shown = flat(&screen);
     assert!(
-        shown.contains("That mailbox is full.") && shown.contains("kept as a draft"),
+        shown.contains("That mailbox is full.") && shown.contains("kept until you leave mail"),
         "{shown}"
     );
+    // The same message again starts from the kept text; a different one does not.
+    let Request::Compose { quote, .. } = write(&mut screen) else {
+        panic!("expected compose")
+    };
+    assert_eq!(quote.unwrap().as_str(), "text");
+    screen.deliver(Response::Compose(Err(Fail {
+        text: "x".into(),
+        gone: false,
+    })));
 }
 
 #[test]

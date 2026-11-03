@@ -20,6 +20,7 @@ lightbar = "Up/Down: move   Enter: choose   ?: help   Esc: back   Ctrl-C: log of
 [ui.notice]
 info = "Notice"
 error = "Problem"
+mail_ssh_only = "Mail is available over ssh."
 
 [ui.tag]
 not_built = "not built yet"

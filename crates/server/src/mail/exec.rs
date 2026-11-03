@@ -3,9 +3,7 @@
 use std::time::Duration;
 
 use russh_bbs_core::access::{Permission, Snapshot};
-use russh_bbs_core::drafts::{
-    Body, ContextKey, DraftError, DraftStore, SaveOutcome, discard_draft, save_draft,
-};
+use russh_bbs_core::drafts::{Body, DraftError, DraftStore, SaveOutcome};
 use russh_bbs_core::limits::{Clock, LimitStore, SystemClock};
 use russh_bbs_core::mail::{
     self, InboxPage, MailError, MailKeys, MailStore, MessageId, MessageView, ReportId, Sent,
@@ -31,15 +29,6 @@ pub(crate) enum Purpose {
 }
 
 impl Purpose {
-    /// The draft context key, built from ids only (never from member text).
-    pub(crate) fn context(&self) -> Option<ContextKey> {
-        let key = match self {
-            Self::New { .. } => "mail:new".to_owned(),
-            Self::Reply { id, .. } => format!("mail:reply:{id}"),
-        };
-        ContextKey::parse(&key).ok()
-    }
-
     fn title(&self) -> Sanitized {
         let text = match self {
             Self::New { to, subject } => format!("To {to}: {subject}"),
@@ -81,8 +70,6 @@ pub(crate) struct Fail {
     pub(crate) text: String,
     /// The message is not there: the screen goes back to the inbox.
     pub(crate) gone: bool,
-    /// The text the member wrote was kept as a draft.
-    pub(crate) kept_draft: bool,
 }
 
 impl Fail {
@@ -107,18 +94,13 @@ impl Fail {
                 (strings::FAILED.to_owned(), false)
             }
         };
-        Self {
-            text,
-            gone,
-            kept_draft: false,
-        }
+        Self { text, gone }
     }
 
     fn failed() -> Self {
         Self {
             text: strings::FAILED.to_owned(),
             gone: false,
-            kept_draft: false,
         }
     }
 
@@ -127,7 +109,6 @@ impl Fail {
         Self {
             text: strings::UNAVAILABLE.to_owned(),
             gone: false,
-            kept_draft: false,
         }
     }
 }
@@ -256,10 +237,10 @@ where
         // A wrong handle is caught before anything is typed.
         lift(mail::check_recipient(store, access, to).await)?;
     }
+    // No draft context: a mail draft would sit in the `draft` table readable, which D78 (5)
+    // forbids, so the editor offers no save-draft for mail (D90). The screen keeps an unsent
+    // message in memory until the member leaves mail.
     let mut request = EditorRequest::new(purpose.title()).limits(body_limits());
-    if let Some(context) = purpose.context() {
-        request = request.context(context);
-    }
     if let Some(quote) = quote {
         request = request.initial(quote);
     }
@@ -272,8 +253,7 @@ where
         })
 }
 
-/// Send the message, and only then drop the draft. A refused or failed send keeps the text as a
-/// draft so nothing the member wrote is lost.
+/// Send the message.
 async fn submit<S>(
     store: &S,
     keys: &MailKeys,
@@ -283,7 +263,7 @@ async fn submit<S>(
     body: &Body,
 ) -> Result<Sent, Fail>
 where
-    S: MailStore + LimitStore + DraftStore,
+    S: MailStore + LimitStore,
 {
     let sent = match purpose {
         Purpose::New { to, subject } => {
@@ -293,24 +273,5 @@ where
             mail::reply(store, keys, access, now, *id, subject, body).await
         }
     };
-    let context = purpose.context();
-    match (sent, access.account(), context) {
-        (Ok(sent), Some(account), Some(context)) => {
-            if let Err(error) = discard_draft(store, account, &context).await {
-                warn!(%error, "a sent draft could not be discarded");
-            }
-            Ok(sent)
-        }
-        (Ok(sent), _, _) => Ok(sent),
-        (Err(error), account, context) => {
-            let mut failure = Fail::of(&error);
-            if let (Some(account), Some(context)) = (account, context) {
-                let kept = save_draft(store, account, &context, body.as_str(), body_limits(), now)
-                    .await
-                    .is_ok();
-                failure.kept_draft = kept;
-            }
-            Err(failure)
-        }
-    }
+    lift(sent)
 }

@@ -652,8 +652,13 @@ impl Screen {
                             break;
                         }
                         MemberEffect::Mail => {
-                            mail_moved = MailMove::Open(index);
-                            break;
+                            // Mail is withheld over telnet (D90): nothing is read or sent there.
+                            if self.transport.footer.is_some() {
+                                flow.menu_notice(crate::ui::keys::NOTICE_MAIL_SSH_ONLY);
+                            } else {
+                                mail_moved = MailMove::Open(index);
+                                break;
+                            }
                         }
                         MemberEffect::Disconnect => {
                             effects.disconnect = true;
@@ -899,6 +904,11 @@ impl Screen {
     /// The mail keys the board loaded at start-up, for running mail requests (`None` on a
     /// board built without them: every mail request then says mail is not available).
     pub(super) fn mail_keys(&self) -> Option<Arc<russh_bbs_core::mail::MailKeys>> {
+        // Withheld over telnet (D90): without keys every mail request fails, so nothing is read
+        // or sent there even if a screen were reached some other way.
+        if self.transport.footer.is_some() {
+            return None;
+        }
         self.ui.mail_keys()
     }
 

@@ -833,6 +833,12 @@ impl MemberFlow {
         }
     }
 
+    /// Show a notice (a string-table key) under the main menu until the next key: for an action
+    /// the front end declines to carry out (mail over telnet, D90).
+    pub fn menu_notice(&mut self, key: &'static str) {
+        self.menu.set_notice(key);
+    }
+
     /// The lines left on the client's normal screen after it leaves the alternate one, so the
     /// logoff text stays in the scrollback. `None` until the person has logged off.
     #[must_use]

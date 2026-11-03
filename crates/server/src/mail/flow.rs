@@ -117,6 +117,12 @@ pub(crate) struct MailScreen {
     pub(super) notice: Option<(NoticeKind, String)>,
     pending: Option<Pending>,
     settings: TerminalSettings,
+    /// A message the member wrote that was not sent (a limit, a full mailbox). Kept **in memory
+    /// only** until they leave mail: a mail draft is never stored (D90), because the `draft`
+    /// table is readable. It comes back as the starting text of the same message.
+    unsent: Option<(Purpose, String)>,
+    /// What the editor last submitted, until the answer says whether it was sent.
+    submitted: Option<(Purpose, String)>,
 }
 
 fn info(text: &str) -> (NoticeKind, String) {
@@ -160,6 +166,8 @@ impl MailScreen {
                 notice: None,
                 pending: Some(Pending::Inbox),
                 settings,
+                unsent: None,
+                submitted: None,
             },
             Request::Inbox { page: 0 },
         )
@@ -357,12 +365,12 @@ impl MailScreen {
                 reader.pager.input(PagerKey::Previous, rows);
             }
             Key::Char('r' | 'R') if reader.view.can_reply => {
-                let request = Self::compose(&reader, false);
+                let request = self.compose(&reader, false);
                 self.state = State::Reader(Box::new(reader));
                 return self.request(Pending::Compose, request);
             }
             Key::Char('c' | 'C') if reader.view.can_reply => {
-                let request = Self::compose(&reader, true);
+                let request = self.compose(&reader, true);
                 self.state = State::Reader(Box::new(reader));
                 return self.request(Pending::Compose, request);
             }
@@ -379,14 +387,27 @@ impl MailScreen {
         MailEffect::Stay
     }
 
-    fn compose(reader: &Reader, quoted: bool) -> Request {
-        Request::Compose {
-            purpose: Purpose::Reply {
-                id: reader.view.id,
-                subject: reader.view.reply_subject(),
-            },
-            quote: quoted.then(|| reader.view.quoted()),
+    /// The text an unsent message of this purpose left behind, once.
+    fn take_unsent(&mut self, purpose: &Purpose) -> Option<russh_bbs_core::sanitize::Sanitized> {
+        let (kept, text) = self.unsent.take()?;
+        if &kept == purpose {
+            Some(russh_bbs_core::sanitize::MultiLine::new(8_000).sanitize(&text))
+        } else {
+            self.unsent = Some((kept, text));
+            None
         }
+    }
+
+    fn compose(&mut self, reader: &Reader, quoted: bool) -> Request {
+        let purpose = Purpose::Reply {
+            id: reader.view.id,
+            subject: reader.view.reply_subject(),
+        };
+        // The member's own unsent text wins over a fresh quote.
+        let quote = self
+            .take_unsent(&purpose)
+            .or_else(|| quoted.then(|| reader.view.quoted()));
+        Request::Compose { purpose, quote }
     }
 
     fn input_key(&mut self, key: Key, mut input: Input) -> MailEffect {
@@ -434,13 +455,8 @@ impl MailScreen {
                         subject: subject.into_string(),
                     };
                     self.state = State::Input(Box::new(input));
-                    self.request(
-                        Pending::Compose,
-                        Request::Compose {
-                            purpose,
-                            quote: None,
-                        },
-                    )
+                    let quote = self.take_unsent(&purpose);
+                    self.request(Pending::Compose, Request::Compose { purpose, quote })
                 }
                 Err(error) => self.refuse(input, &error.to_string()),
             },
@@ -466,6 +482,7 @@ impl MailScreen {
             }
             EditorEffect::Done(Outcome::Submitted(body)) => {
                 let purpose = state.purpose.clone();
+                self.submitted = Some((purpose.clone(), body.as_str().to_owned()));
                 self.state = State::Editor(Box::new(state));
                 self.request(Pending::Submit, Request::Submit { purpose, body })
             }
@@ -679,6 +696,7 @@ impl MailScreen {
         let state = *state;
         match result {
             Ok(_) => {
+                self.submitted = None;
                 self.notice = Some(info(strings::OK_SENT));
                 Some(self.restart_inbox(0))
             }
@@ -686,9 +704,10 @@ impl MailScreen {
                 // Back to where the member was, with the reason; the text is a draft.
                 self.state = *state.prev;
                 let mut text = failure.text.clone();
-                if failure.kept_draft {
+                if let Some(unsent) = self.submitted.take() {
+                    self.unsent = Some(unsent);
                     text.push(' ');
-                    text.push_str(strings::KEPT_DRAFT);
+                    text.push_str(strings::KEPT_UNSENT);
                 }
                 self.notice = Some((NoticeKind::Error, text));
                 if failure.gone {

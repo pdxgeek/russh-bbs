@@ -939,7 +939,12 @@ async fn mail_paths_follow_their_permissions_on_the_next_action() {
     let editor = press_full(&mut channel, "Hello\r").await;
     assert!(
         editor.contains("a note"),
-        "the refused text was kept as a draft: {editor}"
+        "the refused text came back: {editor}"
+    );
+    assert_eq!(
+        count(&rig, "draft").await,
+        0,
+        "mail drafts are never stored"
     );
     let screen = press_full(&mut channel, SEND).await;
     assert!(screen.contains("Sent."), "{screen}");

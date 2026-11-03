@@ -466,7 +466,7 @@ async fn mail_per_day_refuses_in_words_and_changes_nothing() {
             assert!(
                 said.contains("You have reached your limit of 1 messages (mail_per_day)")
                     && said.contains("resets at 00:00 UTC")
-                    && said.contains("kept as a draft"),
+                    && said.contains("kept until you leave mail"),
                 "{screen}"
             );
         }
@@ -475,15 +475,8 @@ async fn mail_per_day_refuses_in_words_and_changes_nothing() {
         texts(&rig, "SELECT count(*) || '' FROM mail_message").await,
         ["1"]
     );
-    // The refused text was kept as a draft, not lost.
-    assert_eq!(
-        texts(
-            &rig,
-            "SELECT count(*) || '' FROM draft WHERE context = 'mail:new'"
-        )
-        .await,
-        ["1"]
-    );
+    // The refused text is kept in memory for the session, never stored: no draft row exists.
+    assert_eq!(texts(&rig, "SELECT count(*) || '' FROM draft").await, ["0"]);
     rig.stop().await;
 }
 

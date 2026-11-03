@@ -96,6 +96,12 @@ impl MenuSession {
         self.help
     }
 
+    /// Show a notice (a string-table key) under the menu until the next key. For an action the
+    /// front end declines to carry out (mail over telnet, D90).
+    pub fn set_notice(&mut self, key: &'static str) {
+        self.notice = Some(key);
+    }
+
     /// Handle a key. Any key closes the help overlay; Esc then also stays put.
     pub fn press(&mut self, access: &dyn PermissionCheck, key: MenuKey) -> MenuOutcome {
         self.notice = None;

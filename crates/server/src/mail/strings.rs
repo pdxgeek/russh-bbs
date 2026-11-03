@@ -29,7 +29,8 @@ pub(super) const OK_SENT: &str = "Sent.";
 pub(super) const OK_DELETED: &str = "Deleted.";
 pub(super) const OK_REPORTED: &str = "The staff have a copy of that message.";
 pub(super) const OK_DRAFT: &str = "Draft saved.";
-pub(super) const KEPT_DRAFT: &str = "Your text was kept as a draft; write again to continue it.";
+pub(super) const KEPT_UNSENT: &str =
+    "Your text is kept until you leave mail; write the message again to continue it.";
 pub(super) const FAILED: &str = "That did not work. Try again in a moment.";
 pub(super) const GONE: &str = "That message is not available.";
 pub(super) const DENIED: &str = "You may not do that.";

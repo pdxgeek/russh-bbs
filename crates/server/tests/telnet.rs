@@ -113,7 +113,14 @@ impl Rig {
             },
             Arc::new(store.clone()),
             ssh.registry(),
-            Arc::new(Ui::standard().unwrap()),
+            // The board has mail keys: mail is withheld over telnet by the transport, not by
+            // their absence (D90).
+            Arc::new(Ui::standard().unwrap().with_mail_keys(Arc::new(
+                russh_bbs_core::mail::MailKeys::single(
+                    russh_bbs_core::mail::KeyId::FIRST,
+                    russh_bbs_core::mail::MailKey::generate().unwrap(),
+                ),
+            ))),
         )
         .await
         .unwrap();
@@ -878,4 +885,28 @@ async fn chat_works_over_telnet_with_both_markers_and_untrusted_input() {
         !raw.contains("\u{1b}[31mred"),
         "an escape reached bob: {raw:?}"
     );
+}
+
+#[tokio::test]
+async fn mail_is_withheld_over_telnet_with_one_line_and_nothing_is_read_or_sent() {
+    let rig = Rig::start(true).await;
+    rig.member("alice").await;
+    rig.member("bob").await;
+    let mut tn = at_menu(&rig, "alice").await;
+    let screen = words_of(&tn.keys("m").await);
+    assert!(screen.contains("Mail is available over ssh."), "{screen}");
+    assert!(
+        !screen.contains("Your mailbox"),
+        "no inbox was opened: {screen}"
+    );
+    // Still at the main menu: the next key is a menu key, not a mail key.
+    let again = words_of(&tn.keys("c").await);
+    assert!(
+        !again.contains("Handle of the member to write to"),
+        "{again}"
+    );
+    let stored = russh_bbs_core::mail::MailStore::key_ids_in_use(&rig.store)
+        .await
+        .unwrap();
+    assert!(stored.is_empty(), "nothing was sent");
 }
