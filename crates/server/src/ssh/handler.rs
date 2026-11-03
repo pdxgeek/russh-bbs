@@ -234,12 +234,11 @@ impl<D> ClientHandler<D> {
         if !self.member {
             return None;
         }
-        let start = match self.password_account.clone() {
-            Some(account) => self.password_start(&account).await?,
-            None => {
-                let fingerprint = self.fingerprint.clone()?;
-                self.member_start(&fingerprint).await?
-            }
+        let start = if let Some(account) = self.password_account.clone() {
+            self.password_start(&account).await?
+        } else {
+            let fingerprint = self.fingerprint.clone()?;
+            self.member_start(&fingerprint).await?
         };
         let begun = timeout(
             MEMBER_START_TIMEOUT,

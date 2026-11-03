@@ -1,5 +1,5 @@
 //! Password-hash storage behaviour, against any backend (M3-D, D79).
-#![allow(clippy::unwrap_used)]
+#![allow(clippy::unwrap_used, clippy::assert_is_empty)]
 
 use russh_bbs_core::access::Slug;
 use russh_bbs_core::audit::{Action, AuditQuery, AuditStore, LogEntry, events};

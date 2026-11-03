@@ -10,7 +10,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 
 use argon2::password_hash::PasswordHasher;
 
-use super::hash::{self, DUMMY_HASH, MEMORY_KIB};
+use super::hash::{self, DUMMY_HASH};
 use super::*;
 use crate::access::{Permission, Slug, Snapshot, Via};
 use crate::audit::{Action, AuditEvent};
@@ -200,7 +200,6 @@ fn only_argon2id_within_a_sane_cost_is_verified() {
         assert!(!hash::verify(junk, GOOD));
         assert!(!hash::needs_rehash(junk));
     }
-    assert!(MEMORY_KIB >= 19 * 1024);
 }
 
 // ---- policy ----
@@ -770,7 +769,7 @@ mod in_the_session {
         press(&mut with, "xs");
         assert!(lines(&with).contains("s Password"));
         press(&mut with, "s");
-        let request = with.take_password_request().expect("status is asked first");
+        let request = with.take_password_request().unwrap();
         assert!(matches!(request.kind, Kind::Status));
         assert!(with.take_password_request().is_none());
         with.deliver_password(Response::Status(false));

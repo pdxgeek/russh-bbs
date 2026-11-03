@@ -8,6 +8,8 @@
     clippy::expect_used,
     clippy::panic,
     clippy::too_many_lines,
+    clippy::unused_async_trait_impl,
+    clippy::assert_is_empty,
     missing_docs
 )]
 
