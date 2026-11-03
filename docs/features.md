@@ -59,6 +59,7 @@ Update this table in the same pass as the code.
 | PGP mail via local `gpg` | M6 | Planned | Post-MVP |
 | WASM plugins and menu scripting | M7 | Planned | Post-MVP |
 | Federation, NNTP, finger, directory | M8 | Planned | Opt-in, post-MVP |
+| IRCv3 gateway for chat rooms | M8 | Planned | Opt-in, off by default, post-MVP (D87). IRC clients join public chat rooms over TLS with SASL login; an outbound bridge to an outside network is a separate opt-in. Whispers never cross the gateway |
 | Native client and E2EE (DMs, MLS groups) | M9 | Planned | Post-MVP |
 
 Out of scope: offline readers (QWK), any token or blockchain. Open registration is a non-default sysop setting (D2), not a product mode.
