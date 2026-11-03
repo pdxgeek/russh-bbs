@@ -284,7 +284,7 @@ pub(crate) async fn blank_text_removes_the_draft<H: Harness>() {
         save(s, ann.id, "c:none", "", 20).await.unwrap(),
         SaveOutcome::Removed
     );
-    assert!(list_drafts(s, ann.id).await.unwrap().is_empty());
+    assert_eq!(list_drafts(s, ann.id).await.unwrap().len(), 0);
 }
 
 pub(crate) async fn saving_a_draft_for_an_unknown_account_fails<H: Harness>() {
