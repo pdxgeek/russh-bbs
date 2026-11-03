@@ -27,7 +27,7 @@ The MVP is a closed-beta board that works with plain `ssh` and `sftp`. No instal
 
 ## Honesty requirement
 
-The MVP must display plainly that the server can read private-looking content. Wording such as "visible to the sysop" appears wherever messages or mail are composed or read. See [threat-model.md](threat-model.md).
+The MVP never calls anything private, secure or encrypted, or shows a lock, when the server can read it. Mail is encrypted at rest and no staff screen shows mail or whispers, but the running server can still read them, so the welcome message and the help screen say once what that protects and what it does not; no other screen carries a privacy notice (D78). See [threat-model.md](threat-model.md).
 
 ## Not in the MVP (do not build early)
 

@@ -36,7 +36,7 @@ Update this table in the same pass as the code.
 | One-liners, graffiti wall, last callers | M3 | Planned | |
 | Polls and voting booths | M3 | Planned | |
 | RSS in (feeds as boards) and RSS out | M3 | Planned | SSRF guard required |
-| Internal mail (stage 1) | M3 | Planned | |
+| Internal mail (stage 1) | M3 | Planned | Encrypted at rest with a server-held key, no staff reader (D78); not end-to-end |
 | Telnet transport, disabled by default (low-security mode) | M3 | Planned | D27; `UNENCRYPTED` marker; password login is a second opt-in |
 | Password login over SSH, disabled by default | M3 | Planned | D28; shares the password store with telnet |
 | Credits ledger | M3 | Planned | Non-transferable |
