@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO scheduler_job (name, last_run_at, last_outcome) VALUES (?, ?, ?)\n             ON CONFLICT (name) DO UPDATE\n             SET last_run_at = excluded.last_run_at, last_outcome = excluded.last_outcome",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "e64e0b9efabcf927733cd6cbf5a612dae016a99eb862d0945a59226cecdd5dac"
+}

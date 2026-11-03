@@ -1,0 +1,48 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id AS \"id!\", account_id, at, delta, reason FROM credit_ledger\n               WHERE account_id = $1 AND id < $2 ORDER BY id DESC LIMIT $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "account_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "at",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "delta",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 4,
+        "name": "reason",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "01f3ade5acdf4bb0e70e3b8d5081749e5756bbd4c6d1ef8af163922ee73e3057"
+}

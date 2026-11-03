@@ -39,8 +39,8 @@ Update this table in the same pass as the code.
 | Internal mail (stage 1) | M3 | Planned | Encrypted at rest with a server-held key, no staff reader (D78); not end-to-end |
 | Telnet transport, disabled by default (low-security mode) | M3 | Planned | D27; `UNENCRYPTED` marker; password login is a second opt-in |
 | Password login over SSH, disabled by default | M3 | Planned | D28; shares the password store with telnet |
-| Credits ledger | M3 | Planned | Non-transferable |
-| Event scheduler | M3 | Planned | |
+| Credits ledger | M3 | Implemented (no earning rules, no screen) | M3-C, `m3/scheduler-credits` (D79). `core::credits`: append-only `credit_ledger` (database triggers on SQLite and Postgres), balance derived, one `post` function that refuses overdraft atomically, non-transferable by construction. Shared store suite on both backends. Not built: earning rules and the D62 earn rate, the member-facing balance (see coordination.md) |
+| Event scheduler | M3 | Implemented (no jobs registered yet) | M3-C, `m3/scheduler-credits` (D79). `core::scheduler`: named periodic jobs, persisted last run, never twice at once on a process, panics/errors/timeouts contained, stops with the server; wired in `main.rs` with no jobs. Core tests use a manual clock; store suite on both backends. Registration API is in the module docs |
 | Blob store trait, local and S3-compatible backends | M4 | Planned | D30; `object_store`; one test suite |
 | File areas over SFTP, scanning, quarantine | M4 | Planned | Streams through the blob store |
 | File tagging and batch download | M4 | Planned | |
