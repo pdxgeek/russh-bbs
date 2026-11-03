@@ -145,50 +145,10 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
     // The event scheduler (M3-C, D79). Later slices register their jobs here, before it starts:
     // `scheduler.register(job)?` (see the `russh_bbs_core::scheduler` docs).
     let mut scheduler = Scheduler::new(store.clone(), Arc::new(SystemClock));
-    // RSS in (M3-G, D89): one job reads the feeds that are due, through the SSRF-guarded
-    // fetcher. Off by default; then the server makes no outbound request for feeds.
     if loaded.config.feeds.enabled {
-        let proxies = proxy_in_environment();
-        if !proxies.is_empty() {
-            warn!(
-                variables = ?proxies,
-                "a proxy is set in the environment and feeds ignore it: a proxy resolves names \
-                 itself, so the SSRF guard could not check the address it connects to. Feeds \
-                 connect directly and fail if the network only allows a proxy"
-            );
-        }
-        let fetcher = Arc::new(feed_fetcher());
-        scheduler
-            .register(
-                russh_bbs_server::feeds::job(store.clone(), fetcher)
-                    .context("building the feed job")?,
-            )
-            .context("registering the feed job")?;
+        register_feed_job(&mut scheduler, &store)?;
     }
-    // RSS out (M3-G): a small HTTP listener for boards the sysop marked public. Off by default;
-    // then no port is bound.
-    let rss_out = if loaded.config.feeds.rss_out_enabled {
-        // Validation guarantees the base address when this is on.
-        let base_url = loaded
-            .config
-            .feeds
-            .rss_out_base_url
-            .clone()
-            .unwrap_or_default();
-        Some(
-            RssOut::start(
-                &RssOutConfig {
-                    listen: loaded.config.feeds.rss_out_listen,
-                    base_url,
-                },
-                Arc::new(store.clone()),
-            )
-            .await
-            .context("starting RSS out")?,
-        )
-    } else {
-        None
-    };
+    let rss_out = start_rss_out(loaded, &store).await?;
     let (stop_scheduler, scheduler_stopped) = tokio::sync::oneshot::channel::<()>();
     let scheduler = tokio::spawn(async move {
         scheduler
@@ -224,12 +184,12 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
 /// The production feed fetcher: system DNS, the platform CA roots, the SSRF guard on every hop.
 ///
 /// A build with the `qa-loopback-feeds` feature (never a release build) also reads
-/// `RUSSH_BBS_QA_FEED_ALLOW`, a comma-separated list of exact `ip:port` addresses the guard
+/// `QA_FEED_ALLOW`, a comma-separated list of exact `ip:port` addresses the guard
 /// should let through, so a local test server can be exercised over real `ssh`.
 fn feed_fetcher() -> GuardedFetcher<SystemResolver> {
     #[cfg(feature = "qa-loopback-feeds")]
     let guard = {
-        let allowed = std::env::var("RUSSH_BBS_QA_FEED_ALLOW")
+        let allowed = std::env::var("QA_FEED_ALLOW")
             .unwrap_or_default()
             .split(',')
             .filter_map(|part| part.trim().parse::<std::net::SocketAddr>().ok())
@@ -245,4 +205,51 @@ fn feed_fetcher() -> GuardedFetcher<SystemResolver> {
     #[cfg(not(feature = "qa-loopback-feeds"))]
     let guard = Guard::new();
     GuardedFetcher::with_resolver(SystemResolver, guard, FetchLimits::default())
+}
+
+/// RSS in (M3-G, D89): one job reads the feeds that are due, through the SSRF-guarded fetcher.
+/// Only registered when `feeds.enabled`; otherwise the server makes no outbound request for feeds.
+fn register_feed_job<S>(scheduler: &mut Scheduler<S>, store: &S) -> anyhow::Result<()>
+where
+    S: russh_bbs_core::feeds::FeedStore + SchedulerStore + Clone + 'static,
+{
+    let proxies = proxy_in_environment();
+    if !proxies.is_empty() {
+        warn!(
+            variables = ?proxies,
+            "a proxy is set in the environment and feeds ignore it: a proxy resolves names \
+             itself, so the SSRF guard could not check the address it connects to. Feeds \
+             connect directly and fail if the network only allows a proxy"
+        );
+    }
+    let fetcher = Arc::new(feed_fetcher());
+    scheduler
+        .register(
+            russh_bbs_server::feeds::job(store.clone(), fetcher)
+                .context("building the feed job")?,
+        )
+        .context("registering the feed job")?;
+    Ok(())
+}
+
+/// RSS out (M3-G): a small HTTP listener for boards the sysop marked public. Off by default;
+/// then no port is bound.
+async fn start_rss_out<S>(loaded: &Loaded, store: &S) -> anyhow::Result<Option<RssOut>>
+where
+    S: Backend + Clone,
+{
+    let feeds = &loaded.config.feeds;
+    if !feeds.rss_out_enabled {
+        return Ok(None);
+    }
+    // Validation guarantees the base address when this is on.
+    let config = RssOutConfig {
+        listen: feeds.rss_out_listen,
+        base_url: feeds.rss_out_base_url.clone().unwrap_or_default(),
+    };
+    Ok(Some(
+        RssOut::start(&config, Arc::new(store.clone()))
+            .await
+            .context("starting RSS out")?,
+    ))
 }

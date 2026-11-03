@@ -526,11 +526,10 @@ impl ForumsScreen {
         let max = match input.kind {
             InputKind::Search => INPUT_MAX,
             InputKind::Subject { .. } => 120,
-            InputKind::BoardName => 40,
+            InputKind::BoardName | InputKind::FeedName { .. } => 40,
             InputKind::BoardDescription { .. } => 160,
             InputKind::Allow { .. } => 64,
             InputKind::FeedUrl => crate::forums::feeds_url_max(),
-            InputKind::FeedName { .. } => 40,
             InputKind::BoardRestricted { .. }
             | InputKind::FeedHttp { .. }
             | InputKind::FeedRemove { .. } => 0,
@@ -1035,10 +1034,12 @@ impl ForumsScreen {
     fn got_feed(&mut self, result: Result<super::exec::FeedDone, Fail>) -> Option<Request> {
         match result {
             Ok(done) => {
-                // Out of a prompt: back to where it started.
-                if let State::Input(input) = std::mem::replace(&mut self.state, State::Start) {
-                    self.state = *input.prev;
-                }
+                // Out of a prompt: back to where it started. A toggle made straight from a
+                // list has no prompt to leave, and the list stays as it is.
+                self.state = match std::mem::replace(&mut self.state, State::Start) {
+                    State::Input(input) => *input.prev,
+                    other => other,
+                };
                 self.notice = Some(info(done.text));
                 done.reload.then(|| self.restart_boards())
             }

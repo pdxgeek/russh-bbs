@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO post (thread_id, board_id, author_id, subject, body, created_at)\n                 VALUES ($1, $2, NULL, $3, $4, $5)",
+  "query": "INSERT INTO post (thread_id, board_id, author_id, subject, body, created_at)\n             VALUES ($1, $2, NULL, $3, $4, $5)",
   "describe": {
     "columns": [],
     "parameters": {
@@ -14,5 +14,5 @@
     },
     "nullable": []
   },
-  "hash": "12731dc809fbeb5032b513354e8619f26f73036770123139296507c3398f9e05"
+  "hash": "3f99a823a2c440deb78d8d70b979ed33d6a2226d230e3bc64a96dfffbac77e00"
 }

@@ -38,6 +38,7 @@ fn board(id: i64, name: &str) -> BoardSummary {
         name: name.to_owned(),
         description: "About".to_owned(),
         restricted: false,
+        feed: false,
         threads: 2,
     }
 }
@@ -74,6 +75,7 @@ fn boards(manage: bool) -> Response {
     Response::Boards(Ok(BoardList {
         boards: vec![board(1, "General"), board(2, "Tech")],
         can_manage: manage,
+        can_feeds: false,
     }))
 }
 
@@ -130,6 +132,7 @@ fn into_reader(screen: &mut ForumsScreen, view: ThreadView) {
         more: false,
         can_post: true,
         can_manage: false,
+        can_feeds: false,
     })));
     // Boards -> open General -> a threads page -> open the thread.
     let request = expect_request(press(screen, Key::Enter));
@@ -141,6 +144,7 @@ fn into_reader(screen: &mut ForumsScreen, view: ThreadView) {
         more: false,
         can_post: true,
         can_manage: false,
+        can_feeds: false,
     })));
     let request = expect_request(press(screen, Key::Enter));
     assert!(matches!(request, Request::Post { index: 0, .. }));
@@ -391,6 +395,7 @@ fn a_new_thread_asks_the_subject_then_opens_the_editor_and_posts() {
         more: false,
         can_post: true,
         can_manage: false,
+        can_feeds: false,
     })));
     assert!(text(&screen).contains("No threads yet"));
     press(&mut screen, Key::Char('w'));
@@ -501,6 +506,7 @@ fn hostile_member_text_stays_in_the_content_box_and_never_gets_the_marker_style(
     screen.deliver(Response::Boards(Ok(BoardList {
         boards: vec![board(1, &hostile)],
         can_manage: false,
+        can_feeds: false,
     })));
     expect_request(press(&mut screen, Key::Enter));
     screen.deliver(Response::Threads(Ok(ThreadPage {
@@ -510,6 +516,7 @@ fn hostile_member_text_stays_in_the_content_box_and_never_gets_the_marker_style(
         more: false,
         can_post: true,
         can_manage: false,
+        can_feeds: false,
     })));
     for area in [
         Rect::new(0, 0, 80, 24),

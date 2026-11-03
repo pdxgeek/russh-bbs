@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO feed_item (feed_id, key_hash, content_hash, thread_id, seen_at)\n                   VALUES ($1, $2, $3, NULL, $4) ON CONFLICT DO NOTHING RETURNING id AS \"id!\"",
+  "query": "INSERT INTO thread (board_id, subject, author_id, created_at, last_post_at)\n               VALUES ($1, $2, NULL, $3, $4) RETURNING id AS \"id!\"",
   "describe": {
     "columns": [
       {
@@ -13,7 +13,7 @@
       "Left": [
         "Int8",
         "Text",
-        "Text",
+        "Int8",
         "Int8"
       ]
     },
@@ -21,5 +21,5 @@
       false
     ]
   },
-  "hash": "c3650baafdbb4d1c089095a631bc354637328abf0f4f8b356d6de096ee22560d"
+  "hash": "b2a5b3777df9070e703a3b424050002bf67e79a94f91c295337c0e62660cd0a4"
 }

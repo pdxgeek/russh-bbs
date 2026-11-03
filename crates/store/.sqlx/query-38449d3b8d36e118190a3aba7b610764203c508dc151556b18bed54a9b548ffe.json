@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO feed_item (feed_id, key_hash, content_hash, thread_id, seen_at)\n               VALUES (?, ?, ?, NULL, ?) ON CONFLICT DO NOTHING RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "38449d3b8d36e118190a3aba7b610764203c508dc151556b18bed54a9b548ffe"
+}

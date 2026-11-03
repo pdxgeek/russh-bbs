@@ -242,16 +242,15 @@ where
                 .filter(|(at, _)| now.duration_since(*at) < CACHE_FOR)
                 .map(|(_, s)| s.clone())
         };
-        match fresh {
-            Some(snapshot) => snapshot,
-            None => {
-                let snapshot = out::public_snapshot(&*state.store).await?;
-                let mut cache = state.cache.lock().unwrap_or_else(PoisonError::into_inner);
-                cache.snapshot = Some((now, snapshot.clone()));
-                // Boards that stopped being public are dropped with the old snapshot.
-                cache.documents.clear();
-                snapshot
-            }
+        if let Some(snapshot) = fresh {
+            snapshot
+        } else {
+            let snapshot = out::public_snapshot(&*state.store).await?;
+            let mut cache = state.cache.lock().unwrap_or_else(PoisonError::into_inner);
+            cache.snapshot = Some((now, snapshot.clone()));
+            // Boards that stopped being public are dropped with the old snapshot.
+            cache.documents.clear();
+            snapshot
         }
     };
     // An id that is not public never reaches the database.

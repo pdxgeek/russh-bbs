@@ -209,58 +209,11 @@ impl FeedStore for PostgresStore {
         };
         let mut done = Ingested::default();
         for item in items {
-            let key = item.key_hash.as_str();
-            let content = item.content_hash.as_str();
-            let seen = sqlx::query_scalar!(
-                r#"INSERT INTO feed_item (feed_id, key_hash, content_hash, thread_id, seen_at)
-                   VALUES ($1, $2, $3, NULL, $4) ON CONFLICT DO NOTHING RETURNING id AS "id!""#,
-                id,
-                key,
-                content,
-                at,
-            )
-            .fetch_optional(&mut *tx)
-            .await
-            .map_err(backend)?;
-            let Some(seen) = seen else {
+            if add_item(&mut tx, id, board, at, item).await? {
+                done.added += 1;
+            } else {
                 done.skipped += 1;
-                continue;
-            };
-            let subject = item.subject.as_str();
-            let body = item.body.as_str();
-            let when = item.at.as_raw();
-            let thread = sqlx::query_scalar!(
-                r#"INSERT INTO thread (board_id, subject, author_id, created_at, last_post_at)
-                   VALUES ($1, $2, NULL, $3, $4) RETURNING id AS "id!""#,
-                board,
-                subject,
-                when,
-                when,
-            )
-            .fetch_one(&mut *tx)
-            .await
-            .map_err(backend)?;
-            sqlx::query!(
-                "INSERT INTO post (thread_id, board_id, author_id, subject, body, created_at)
-                 VALUES ($1, $2, NULL, $3, $4, $5)",
-                thread,
-                board,
-                subject,
-                body,
-                when,
-            )
-            .execute(&mut *tx)
-            .await
-            .map_err(backend)?;
-            sqlx::query!(
-                "UPDATE feed_item SET thread_id = $1 WHERE id = $2",
-                thread,
-                seen
-            )
-            .execute(&mut *tx)
-            .await
-            .map_err(backend)?;
-            done.added += 1;
+            }
         }
         // The board keeps its newest threads; the removed threads' items stay "seen".
         sqlx::query!(
@@ -363,11 +316,11 @@ impl FeedStore for PostgresStore {
                 .map_err(backend)?
                 .rows_affected()
         };
-        if changed > 0 {
-            if let Some(resource) = board.resource() {
-                self.audit_in(&mut tx, &events::board_published(actor, resource, public))
-                    .await?;
-            }
+        if changed > 0
+            && let Some(resource) = board.resource()
+        {
+            self.audit_in(&mut tx, &events::board_published(actor, resource, public))
+                .await?;
         }
         tx.commit().await.map_err(backend)?;
         Ok(true)
@@ -384,4 +337,66 @@ impl FeedStore for PostgresStore {
                 .collect(),
         )
     }
+}
+
+/// Store one item as a thread with its opening post, unless its id or content was seen. `true`
+/// when it became a thread.
+async fn add_item(
+    tx: &mut sqlx::PgConnection,
+    id: i64,
+    board: i64,
+    at: i64,
+    item: &NewItem,
+) -> Result<bool, StoreError> {
+    let key = item.key_hash.as_str();
+    let content = item.content_hash.as_str();
+    let seen = sqlx::query_scalar!(
+        r#"INSERT INTO feed_item (feed_id, key_hash, content_hash, thread_id, seen_at)
+               VALUES ($1, $2, $3, NULL, $4) ON CONFLICT DO NOTHING RETURNING id AS "id!""#,
+        id,
+        key,
+        content,
+        at,
+    )
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(backend)?;
+    let Some(seen) = seen else {
+        return Ok(false);
+    };
+    let subject = item.subject.as_str();
+    let body = item.body.as_str();
+    let when = item.at.as_raw();
+    let thread = sqlx::query_scalar!(
+        r#"INSERT INTO thread (board_id, subject, author_id, created_at, last_post_at)
+               VALUES ($1, $2, NULL, $3, $4) RETURNING id AS "id!""#,
+        board,
+        subject,
+        when,
+        when,
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(backend)?;
+    sqlx::query!(
+        "INSERT INTO post (thread_id, board_id, author_id, subject, body, created_at)
+             VALUES ($1, $2, NULL, $3, $4, $5)",
+        thread,
+        board,
+        subject,
+        body,
+        when,
+    )
+    .execute(&mut *tx)
+    .await
+    .map_err(backend)?;
+    sqlx::query!(
+        "UPDATE feed_item SET thread_id = $1 WHERE id = $2",
+        thread,
+        seen
+    )
+    .execute(&mut *tx)
+    .await
+    .map_err(backend)?;
+    Ok(true)
 }

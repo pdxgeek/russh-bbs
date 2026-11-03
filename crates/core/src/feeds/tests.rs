@@ -156,7 +156,8 @@ fn html_edge_cases_never_panic_and_never_keep_markup() {
 fn only_the_link_limit_many_links_are_listed() {
     let html: String = (0..20)
         .map(|i| format!("<a href=\"https://e.example/{i}\">l{i}</a> "))
-        .collect();
+        .collect::<Vec<_>>()
+        .concat();
     let got = to_plain_text(&html, 3);
     assert_eq!(got.links.len(), 3);
     assert!(got.text.contains("l0 [1]") && !got.text.contains("l5 ["));
@@ -183,8 +184,7 @@ fn assert_clean(text: &str) {
     for c in text.chars() {
         assert!(
             !(c.is_control() && c != '\n' && c != '\t'),
-            "control character {:?} in {text:?}",
-            c
+            "control character {c:?} in {text:?}"
         );
         assert!(
             !RESERVED_CHROME.contains(&c),
@@ -369,7 +369,8 @@ fn at_most_the_newest_items_are_kept_and_they_are_oldest_first() {
                 i % 60
             )
         })
-        .collect();
+        .collect::<Vec<_>>()
+        .concat();
     let got = parse(rss(&items).as_bytes(), now()).unwrap();
     assert_eq!(got.items.len(), MAX_ITEMS);
     assert!(got.items.windows(2).all(|w| w[0].at <= w[1].at));

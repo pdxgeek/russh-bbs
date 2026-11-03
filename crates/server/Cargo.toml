@@ -39,7 +39,7 @@ zeroize = { workspace = true }
 
 [features]
 # QA only, never in a release build: lets the feed fetcher reach exact addresses named in
-# RUSSH_BBS_QA_FEED_ALLOW (a local test server). Off by default (D89).
+# QA_FEED_ALLOW (a local test server). Off by default (D89).
 qa-loopback-feeds = []
 
 [dev-dependencies]
@@ -47,3 +47,4 @@ tempfile = { workspace = true }
 # Test-only: the access-path tests take a permission away with raw SQL (the role editing
 # services are a later slice). Already a dependency of the store crate; no new crate.
 sqlx = { workspace = true }
+rcgen = { version = "0.14", default-features = false, features = ["crypto", "ring", "pem"] }

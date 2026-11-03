@@ -5,6 +5,8 @@
 //! all numeric ones, and collects `http` and `https` `href`s so the reader can see where a link
 //! went. The result is untrusted text: the caller still runs it through the shared sanitizer.
 
+use std::fmt::Write as _;
+
 /// Plain text and the links found in it.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct PlainText {
@@ -62,7 +64,7 @@ pub fn to_plain_text(html: &str, max_links: usize) -> PlainText {
         let name: String = inner
             .trim_start_matches('/')
             .chars()
-            .take_while(|c| c.is_ascii_alphanumeric())
+            .take_while(char::is_ascii_alphanumeric)
             .collect::<String>()
             .to_ascii_lowercase();
         match name.as_str() {
@@ -79,7 +81,7 @@ pub fn to_plain_text(html: &str, max_links: usize) -> PlainText {
             }
             "a" if closing => {
                 if let Some(n) = open_link.take() {
-                    out.text.push_str(&format!(" [{n}]"));
+                    let _ = write!(out.text, " [{n}]");
                 }
             }
             "a" => {

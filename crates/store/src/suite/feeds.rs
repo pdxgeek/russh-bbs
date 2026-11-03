@@ -59,7 +59,8 @@ fn items(from: usize, n: usize) -> Vec<NewItem> {
                 i % 60
             )
         })
-        .collect();
+        .collect::<Vec<_>>()
+        .concat();
     let doc = format!(
         "<?xml version=\"1.0\"?><rss version=\"2.0\"><channel><title>t</title>{xml}</channel></rss>"
     );
@@ -581,12 +582,17 @@ pub(crate) async fn a_board_is_public_as_rss_only_when_marked_open_and_readable<
             .unwrap();
     }
     let public = |boards: Vec<BoardId>| boards;
-    // Nothing is public until staff says so, and the anonymous snapshot reads nothing.
-    let anon = out::public_snapshot(s).await.unwrap();
-    assert!(out::readable_boards(s, &anon).await.unwrap().is_empty());
+    // Nothing is public until staff says so, and the public_viewymous snapshot reads nothing.
+    let public_view = out::public_snapshot(s).await.unwrap();
+    assert!(
+        out::readable_boards(s, &public_view)
+            .await
+            .unwrap()
+            .is_empty()
+    );
     for board in [news.board, other.board, secret] {
         assert_eq!(
-            out::render_board(s, &anon, board, "https://bbs.example/feeds", at(50))
+            out::render_board(s, &public_view, board, "https://bbs.example/feeds", at(50))
                 .await
                 .unwrap(),
             None
@@ -622,13 +628,22 @@ pub(crate) async fn a_board_is_public_as_rss_only_when_marked_open_and_readable<
             .iter()
             .any(|f| f.public && f.board == news.board)
     );
-    let anon = out::public_snapshot(s).await.unwrap();
-    assert_eq!(out::readable_boards(s, &anon).await.unwrap(), [news.board]);
+    let public_view = out::public_snapshot(s).await.unwrap();
+    assert_eq!(
+        out::readable_boards(s, &public_view).await.unwrap(),
+        [news.board]
+    );
 
-    let xml = out::render_board(s, &anon, news.board, "https://bbs.example/feeds", at(50))
-        .await
-        .unwrap()
-        .expect("a public board is served");
+    let xml = out::render_board(
+        s,
+        &public_view,
+        news.board,
+        "https://bbs.example/feeds",
+        at(50),
+    )
+    .await
+    .unwrap()
+    .unwrap_or_else(|| panic!("a public board is served"));
     assert!(xml.starts_with("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
     assert!(xml.contains("<rss version=\"2.0\""));
     assert!(xml.contains("<title>News</title>"));
@@ -642,7 +657,7 @@ pub(crate) async fn a_board_is_public_as_rss_only_when_marked_open_and_readable<
     // The other feed board, the restricted board and a missing id are the same "no".
     for board in [other.board, secret, BoardId::from_raw(9_999)] {
         assert_eq!(
-            out::render_board(s, &anon, board, "https://bbs.example/feeds", at(50))
+            out::render_board(s, &public_view, board, "https://bbs.example/feeds", at(50))
                 .await
                 .unwrap(),
             None
@@ -659,11 +674,17 @@ pub(crate) async fn a_board_is_public_as_rss_only_when_marked_open_and_readable<
     feeds::publish_board(s, &sys, at(30), news.board, false)
         .await
         .unwrap();
-    let anon = out::public_snapshot(s).await.unwrap();
+    let public_view = out::public_snapshot(s).await.unwrap();
     assert_eq!(
-        out::render_board(s, &anon, news.board, "https://bbs.example/feeds", at(50))
-            .await
-            .unwrap(),
+        out::render_board(
+            s,
+            &public_view,
+            news.board,
+            "https://bbs.example/feeds",
+            at(50)
+        )
+        .await
+        .unwrap(),
         None
     );
 

@@ -129,6 +129,9 @@ impl ThreadSummary {
 }
 
 /// One page of a board's threads.
+// The flags are independent facts the screen reads (a later page exists; what the session may
+// do here), not states of one machine.
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ThreadPage {
     /// The board.

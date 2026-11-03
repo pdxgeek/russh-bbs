@@ -2,7 +2,7 @@
 //!
 //! **Allow-list, not block-list.** An address may be connected to only if it is a global unicast
 //! address: not loopback, private (RFC 1918, ULA), link-local (169.254.0.0/16, which holds the
-//! cloud metadata address, and fe80::/10), carrier-grade NAT (100.64.0.0/10), multicast,
+//! cloud metadata address, and `fe80::/10`), carrier-grade NAT (100.64.0.0/10), multicast,
 //! unspecified, broadcast, reserved, documentation, benchmarking or any other special-purpose
 //! range. IPv6 forms that embed an IPv4 address (IPv4-mapped `::ffff:a.b.c.d`, the deprecated
 //! IPv4-compatible `::a.b.c.d`, NAT64 `64:ff9b::/96`, 6to4 `2002::/16`) are judged by the
@@ -63,8 +63,7 @@ fn is_public_v6(ip: Ipv6Addr) -> bool {
     if (seg[0] & 0xe000) != 0x2000 {
         return false;
     }
-    let special = (seg[0] == 0x2001 && seg[1] < 0x0200) // 2001::/23 IETF protocol assignments (Teredo, ORCHID, ...)
-        || (seg[0] == 0x2001 && seg[1] == 0x0db8) // documentation
+    let special = (seg[0] == 0x2001 && (seg[1] < 0x0200 || seg[1] == 0x0db8)) // 2001::/23 IETF protocol assignments (Teredo, ORCHID, ...) and 2001:db8::/32 documentation
         || (seg[0] == 0x3fff && seg[1] < 0x1000); // 3fff::/20 documentation
     !special
 }

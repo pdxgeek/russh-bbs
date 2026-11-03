@@ -188,6 +188,14 @@ pub(crate) fn validate(config: &Config, sources: &Sources) -> Result<(), ConfigE
         ));
     }
 
+    feeds(&c, config)?;
+    datasource(&c, config)?;
+    blobs(&c, config)
+}
+
+/// `[feeds]` (M3-G): RSS out needs its own port and a public base address.
+fn feeds(c: &Check<'_>, config: &Config) -> Result<(), ConfigError> {
+    let (ssh, telnet) = (&config.ssh, &config.telnet);
     let feeds = &config.feeds;
     c.port("feeds.rss_out_listen", feeds.rss_out_listen)?;
     if feeds.rss_out_enabled {
@@ -216,9 +224,7 @@ pub(crate) fn validate(config: &Config, sources: &Sources) -> Result<(), ConfigE
             ));
         }
     }
-
-    datasource(&c, config)?;
-    blobs(&c, config)
+    Ok(())
 }
 
 /// Whether two listen addresses would fight for the same port.
