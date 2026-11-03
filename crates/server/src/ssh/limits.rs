@@ -73,6 +73,10 @@ pub struct Limits {
     pub password_account_rate: RatePolicy,
     /// Password attempts per network (an IPv4 address or an IPv6 /64), whatever the handle (D81).
     pub password_network_rate: RatePolicy,
+    /// Whether the board is in low-security mode: the sysop turned the telnet transport on
+    /// (D27, M3-H). Staff screens then carry the `LOW-SECURITY` marker. It changes nothing else
+    /// about an SSH session.
+    pub low_security: bool,
 }
 
 impl Default for Limits {
@@ -97,6 +101,7 @@ impl Default for Limits {
             allow_password_login: false,
             password_account_rate: DEFAULT_PASSWORD_ACCOUNT_RATE,
             password_network_rate: DEFAULT_PASSWORD_NETWORK_RATE,
+            low_security: false,
         }
     }
 }

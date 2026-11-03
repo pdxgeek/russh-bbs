@@ -77,9 +77,11 @@ backend = "local"             # "local" or "s3"
 # region = "us-east-1"
 
 [telnet]
-# Parsed only: telnet is not built yet (D27). Turning it on is low-security mode.
+# Telnet is unencrypted (D27, D85). Turning it on is low-security mode: the server logs a
+# warning, staff screens show LOW-SECURITY, and every telnet screen shows UNENCRYPTED.
+# Off by default; when off no port is bound.
 enabled = false
-allow_login = false           # second opt-in; needs enabled = true
+allow_login = false           # second opt-in: members may sign in with a password over telnet
 listen = "0.0.0.0:2323"
 
 [waiting_room]

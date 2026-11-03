@@ -12,6 +12,7 @@ use russh_bbs_server::config::{Cli, Loaded, ResolvedDatasource};
 use russh_bbs_server::founder;
 use russh_bbs_server::shutdown;
 use russh_bbs_server::ssh::{Backend, HostKey, ServerConfig, SshServer};
+use russh_bbs_server::telnet::{TelnetConfig, TelnetServer};
 use russh_bbs_server::ui::Ui;
 use russh_bbs_store::{Close, PostgresStore, SqliteStore};
 use tracing::{info, warn};
@@ -100,14 +101,36 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
     }
     .context("building the screens")?;
     // The store decides who is a member; an unknown key or a store error is Restricted.
+    let ui = Arc::new(ui);
     let server = SshServer::start_with_ui(
         &config,
         host_key,
         Arc::new(store.clone()),
         Arc::new(founder),
-        Arc::new(ui),
+        Arc::clone(&ui),
     )
     .await?;
+
+    // The optional telnet listener (M3-H, D27): off by default, and then no port is bound. It
+    // shares the SSH server's session registry, so the session limits span both transports.
+    let telnet = if loaded.config.telnet.enabled {
+        let telnet_config = TelnetConfig {
+            listen: loaded.config.telnet.listen,
+            allow_login: loaded.config.telnet.allow_login,
+            limits: loaded.config.limits(),
+        };
+        Some(
+            TelnetServer::start(
+                &telnet_config,
+                Arc::new(store.clone()),
+                server.registry(),
+                ui,
+            )
+            .await?,
+        )
+    } else {
+        None
+    };
 
     // Expired invite requests and denial cooldowns are deleted on a timer as well as whenever
     // the queue is used (M2-E, D72).
@@ -139,6 +162,9 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
     let _ = stop_scheduler.send(());
     if let Err(error) = scheduler.await {
         warn!(%error, "the scheduler task ended abnormally");
+    }
+    if let Some(telnet) = telnet {
+        telnet.shutdown().await;
     }
     // Closes the sessions, then the store (SQLite checkpoints its WAL, Postgres closes the pool).
     shutdown::graceful(server, &store, shutdown::SHUTDOWN_TIMEOUT).await;
