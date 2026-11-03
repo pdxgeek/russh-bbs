@@ -192,6 +192,12 @@ fn pick(key: Key, cursor: usize, len: usize, view: ListView) -> Pick {
     if len == 0 {
         return Pick::None;
     }
+    // Before the first draw nothing is windowed.
+    let view = if view.shown == 0 {
+        ListView { top: 0, shown: len }
+    } else {
+        view
+    };
     let page = view.shown.max(1);
     let cursor = cursor.min(len - 1);
     match key {

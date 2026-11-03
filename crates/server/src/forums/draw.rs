@@ -234,10 +234,16 @@ fn list_lines(
     let mut tail = list.extra;
     tail.push(Line::raw(""));
     tail.push(Line::styled(list.help.to_owned(), styles.dim));
-    let used_head = rows_of(&list.head, space.width);
     let used_notice = rows_of(&notice_lines, space.width);
-    let used_tail = rows_of(&tail, space.width);
     let item_rows = list.item_rows.max(1);
+    // On a very small screen the selected row and the notice outrank the heading's extra
+    // lines (a description, a blank): drop those until one row fits.
+    let mut head = list.head;
+    while head.len() > 1 && rows_of(&head, space.width) + used_notice + item_rows > space.rows {
+        head.remove(1);
+    }
+    let used_head = rows_of(&head, space.width);
+    let used_tail = rows_of(&tail, space.width);
 
     let room = |tail_rows: usize, position: usize| {
         space
@@ -245,17 +251,18 @@ fn list_lines(
             .saturating_sub(used_head + used_notice + tail_rows + position)
             / item_rows
     };
-    let mut show_tail = true;
-    let mut position = 0;
-    let mut fits = room(used_tail, 0);
-    if list.total > fits {
-        position = 1;
-        fits = room(used_tail, 1);
-    }
-    if fits == 0 {
-        show_tail = false;
-        fits = room(0, position);
-    }
+    // Prefer everything; then drop the help and page lines; the position line goes last
+    // because it only helps, while the selected row and the notice must stay.
+    let total = list.total;
+    let (show_tail, position, fits) = [(true, false), (true, true), (false, false), (false, true)]
+        .into_iter()
+        .map(|(tail, pos)| {
+            let fits = room(if tail { used_tail } else { 0 }, usize::from(pos));
+            (tail, pos, fits)
+        })
+        .find(|&(_, pos, fits)| fits >= 1 && (pos || total <= fits))
+        .unwrap_or((false, false, 1));
+    let position = usize::from(position);
     let visible = fits.max(1).min(list.total.max(1));
 
     let previous = screen.view.get();
@@ -269,7 +276,7 @@ fn list_lines(
     let shown = visible.min(list.total.saturating_sub(top));
     screen.view.set(ListView { top, shown });
 
-    let mut out = list.head;
+    let mut out = head;
     match list.empty {
         Some(text) if list.total == 0 => out.push(Line::raw(text.to_owned())),
         _ => {}
@@ -441,10 +448,10 @@ fn result_screen(
         Line::styled(format!("for: {}", clean(query, 200)), styles.dim),
         Line::raw(""),
     ];
-    let empty = if !page.searched {
-        strings::NOT_SEARCHED
-    } else {
+    let empty = if page.searched {
         strings::NO_RESULTS
+    } else {
+        strings::NOT_SEARCHED
     };
     let plan = ListScreen {
         head,
