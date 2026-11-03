@@ -2,7 +2,9 @@
 //! them differently. A store calls these inside the transaction of the change.
 
 use super::event::{Action, Actor, AuditEvent, Target};
-use crate::access::{Child, Granting, GroupChange, GroupId, NewGrant, Scope, Slug, Subject};
+use crate::access::{
+    Child, Granting, GroupChange, GroupId, NewGrant, ResourceRef, Scope, Slug, Subject,
+};
 use crate::invites::InviteId;
 use crate::limits::{Limit, LimitKind};
 use crate::queue::RequestId;
@@ -338,4 +340,19 @@ pub fn application_submitted(request: RequestId) -> AuditEvent {
 pub fn registration_capped(day: i64, cap: u32) -> AuditEvent {
     AuditEvent::new(Actor::System, Action::RegistrationCapped, Target::None)
         .detail(&format!("day {day} cap {cap}"))
+}
+
+/// Staff opened the chat room `room` named `name`. Only the name is written; nothing is ever
+/// said in a room that the log could hold.
+#[must_use]
+pub fn chat_room_created(actor: AccountId, room: ResourceRef, name: &Slug) -> AuditEvent {
+    AuditEvent::new(Actor::Account(actor), Action::ChatRoomCreated, Target::None)
+        .on(room)
+        .detail(&format!("name {}", name.as_str()))
+}
+
+/// Staff closed the chat room `room`.
+#[must_use]
+pub fn chat_room_closed(actor: AccountId, room: ResourceRef) -> AuditEvent {
+    AuditEvent::new(Actor::Account(actor), Action::ChatRoomClosed, Target::None).on(room)
 }
