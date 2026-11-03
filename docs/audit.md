@@ -74,6 +74,8 @@ sysop screen over it is M5; the board has no audit screen yet.
 | `submit_request` of an application (M2-G) | `application.submitted` | `system` | the request (`request`, its id) | none: no handle, no message, no key. Written only when the application is kept, in the insert's transaction. An invite request writes no row (D71) |
 | `open_account` that reaches the cap (M2-G) | `registration.capped` | `system` | none | `day <n> cap <n>` (the UTC day number). Written **once per UTC day**: by the `open` account that takes the day's last place, in its transaction and after that account's `account.created` row (or by the first refusal if the cap was lowered below the count), so strangers cannot grow the log |
 | `set_password` / `clear_password` (M3-D) | `password.set` / `password.cleared` | the member (their own account) | the same account | `key session` or `password session`: which kind of session did it. Never a password, hash or salt. `password.cleared` is written only when there was a password to clear. |
+| `create_room` (M3-F) | `chat.room_created` | the staff member (`chat.manage_rooms`) | none; the **resource** is the room (`room`, its id) | `name <room name>`. Nothing said in a room is ever written (D78) |
+| `close_room` (M3-F) | `chat.room_closed` | the staff member | none; the resource is the room | none. Written only when the room was open |
 | `save_profile` by staff (M2-F) | `profile.edited` | the editor (`members.edit`) | the edited account | `fields <names>`: field names only, never values. The owner's own edits write no row |
 
 A write that changed nothing (adding a member already in the group, removing one who is not, a

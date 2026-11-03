@@ -117,7 +117,7 @@ pub(crate) fn lines(
         let (kind, text) = n.text();
         classic::notice_line(strings_table, kind, text, look, bold)
     });
-    match screen.page() {
+    let drawn = match screen.page() {
         ChatPage::List(list) => list_lines(
             list,
             screen.can_manage(),
@@ -126,7 +126,35 @@ pub(crate) fn lines(
             height,
         ),
         ChatPage::Room(room) => room_lines(room, notice, look, (heading, dim), width, height),
+    };
+    // Every line is cut to the box, so nothing wraps and pushes the input line out of view.
+    drawn
+        .into_iter()
+        .map(|line| fit_line(line, width))
+        .collect()
+}
+
+/// Cut a line to at most `width` columns, keeping each span's style.
+fn fit_line(line: TextLine<'static>, width: usize) -> TextLine<'static> {
+    let mut left = width;
+    let mut spans = Vec::with_capacity(line.spans.len());
+    for span in line.spans {
+        if left == 0 {
+            break;
+        }
+        let mut kept = String::new();
+        for c in span.content.chars() {
+            let w = Span::raw(c.to_string()).width();
+            if w > left {
+                left = 0;
+                break;
+            }
+            kept.push(c);
+            left -= w;
+        }
+        spans.push(Span::styled(kept, span.style));
     }
+    TextLine::from(spans).style(line.style)
 }
 
 fn list_lines(
@@ -221,5 +249,9 @@ fn room_lines(
         chars.get(from..).unwrap_or_default().iter().collect()
     };
     out.push(TextLine::raw(format!("> {shown}_")));
+    // A very short window drops the heading and the oldest rows first; the hint and the input
+    // line stay at the bottom.
+    let excess = out.len().saturating_sub(height.max(1));
+    out.drain(..excess);
     out
 }

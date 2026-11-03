@@ -100,6 +100,10 @@ The key parser delivers no arrow keys, Home, End, Delete, PageUp/PageDown, non-A
 
 The pause setting (a pager) does not apply: the editor scrolls with the cursor. A window change keeps the text and the cursor; a window under 26 columns or 9 rows says so in words and keeps the text.
 
+## Chat screen (M3-F)
+
+The chat screen ([chat.md](chat.md)) is an overlay on the member's session, drawn in the classic content box (`render_content`) so the member's theme, icon tier and the reserved status row apply in every layout. The room page is a heading, the newest transcript rows (wrapped to the box), a hint or notice line and the input line, always exactly the box's height (`chat::box_height` mirrors `settings::boxed`'s margins). Other people's text is cleaned again when drawn, appears only in the content rectangle, never in the marker style and never as a label; a whisper is marked by the words "whispers" / "you whisper to", not only by color. A new line redraws the screen without a key press: see "The push path" in chat.md.
+
 ## Accessibility
 
 A compact, text-only layout with no icons, no art, and screen-reader-friendly output is selectable from any screen and is the fallback whenever the terminal cannot be probed.

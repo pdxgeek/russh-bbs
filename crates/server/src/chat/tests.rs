@@ -625,3 +625,187 @@ async fn nothing_said_reaches_the_database() {
 
 #[allow(dead_code)]
 fn _unused(_: ResourceRef) {}
+
+// ---- drawing ----
+
+mod drawing {
+    use ratatui::Terminal;
+    use ratatui::backend::TestBackend;
+    use ratatui::buffer::Buffer;
+    use russh_bbs_core::access::Slug;
+    use russh_bbs_core::chat::{
+        ChatKey, ChatNotice, ChatResponse, ChatScreen, Entered, Event, Line, Room, RoomId,
+        clean_line,
+    };
+    use russh_bbs_core::icons::Tier;
+    use russh_bbs_core::store::UnixSeconds;
+    use russh_bbs_core::terminal_settings::TerminalSettings;
+
+    use super::handle;
+    use crate::chat::lines;
+    use crate::settings::Look;
+    use crate::ui::Ui;
+    use crate::ui::classic::{ContentScreen, MENU_MARKERS, render_content};
+
+    fn room(n: i64, name: &str) -> Room {
+        Room {
+            id: RoomId::from_raw(n),
+            name: Slug::parse(name).unwrap(),
+            created_at: UnixSeconds::from_raw(0),
+        }
+    }
+
+    fn draw(screen: &ChatScreen, tier: Tier, size: (u16, u16)) -> Buffer {
+        let ui = Ui::standard().unwrap();
+        let look = Look::of(&TerminalSettings::default().with_tier(tier));
+        let mut terminal = Terminal::new(TestBackend::new(size.0, size.1)).unwrap();
+        terminal
+            .draw(|frame| {
+                let width = usize::from(frame.area().width.min(crate::settings::MAX_WIDTH))
+                    .saturating_sub(2);
+                let height = crate::chat::box_height(frame.area().height);
+                render_content(
+                    frame,
+                    ContentScreen {
+                        strings: ui.strings(),
+                        lines: lines(screen, ui.strings(), look, width, height),
+                        look,
+                        tier,
+                        markers: &MENU_MARKERS,
+                    },
+                );
+            })
+            .unwrap();
+        terminal.backend().buffer().clone()
+    }
+
+    fn rows(buffer: &Buffer) -> Vec<String> {
+        (0..buffer.area.height)
+            .map(|y| {
+                (0..buffer.area.width)
+                    .map(|x| buffer[(x, y)].symbol().to_owned())
+                    .collect::<String>()
+            })
+            .collect()
+    }
+
+    fn in_room() -> ChatScreen {
+        let mut screen = ChatScreen::open();
+        screen.deliver(ChatResponse::Rooms {
+            rooms: vec![room(1, "lobby")],
+            notice: None,
+        });
+        screen.input(ChatKey::Enter);
+        screen.deliver(ChatResponse::Joined {
+            room: room(1, "lobby"),
+            entered: Entered {
+                roster: vec![handle("ann")],
+                history: Vec::new(),
+            },
+        });
+        screen
+    }
+
+    fn say_many(screen: &mut ChatScreen, count: usize) {
+        let events = (0..count)
+            .map(|n| {
+                Event::Line(Line {
+                    from: handle("ann"),
+                    text: clean_line(&format!("line number {n}")).unwrap(),
+                })
+            })
+            .collect();
+        screen.receive(events);
+    }
+
+    #[test]
+    fn the_newest_lines_and_the_input_fit_every_size_and_the_status_row_is_untouched() {
+        let mut screen = in_room();
+        say_many(&mut screen, 100);
+        for size in [(80, 24), (40, 12), (120, 50), (20, 6)] {
+            let buffer = draw(&screen, Tier::Ascii, size);
+            let text = rows(&buffer);
+            assert_eq!(text.len(), usize::from(size.1));
+            // The last row is the reserved status row, drawn by the layout: the marker words.
+            let last = text.last().unwrap();
+            assert!(
+                last.contains("server can read") || size.0 < 40,
+                "{size:?}: {last:?}"
+            );
+            let body = text.join("\n");
+            // A 20-column window wraps a line over several rows; the newest line is whole only
+            // where it fits.
+            assert!(
+                size.0 < 30 || body.contains("line number 99"),
+                "{size:?}: newest line missing"
+            );
+            assert!(
+                !body.contains("line number 0 "),
+                "{size:?}: oldest line is off screen"
+            );
+            assert!(body.contains("> _"), "{size:?}: input line missing");
+        }
+    }
+
+    #[test]
+    fn long_lines_wrap_inside_the_box_and_hostile_text_is_plain() {
+        let mut screen = in_room();
+        screen.receive(vec![Event::Line(Line {
+            from: handle("ann"),
+            text: clean_line(&format!("{}\u{1b}[31m\u{202e}END", "word ".repeat(50))).unwrap(),
+        })]);
+        let buffer = draw(&screen, Tier::Ascii, (80, 24));
+        let text = rows(&buffer);
+        let body = text.join("\n");
+        assert!(
+            body.contains("END"),
+            "the end of a long line is reachable by wrapping"
+        );
+        for row in &text {
+            assert!(!row.contains('\u{1b}') && !row.contains('\u{202e}'));
+        }
+        // The box did not grow: every row has the same width and the frame is intact.
+        assert!(text.iter().all(|r| r.chars().count() == 80));
+    }
+
+    #[test]
+    fn whispers_are_marked_in_words_and_the_input_shows_its_tail() {
+        let mut screen = in_room();
+        screen.receive(vec![Event::Whisper {
+            from: handle("bob"),
+            text: clean_line("over here").unwrap(),
+        }]);
+        for c in "x".repeat(200).chars() {
+            screen.input(ChatKey::Char(c));
+        }
+        screen.input(ChatKey::Char('!'));
+        let text = rows(&draw(&screen, Tier::Ascii, (80, 24))).join("\n");
+        assert!(text.contains("bob whispers: over here"));
+        assert!(
+            text.contains("x!_"),
+            "the end of what is typed stays visible"
+        );
+    }
+
+    #[test]
+    fn the_room_list_marks_the_cursor_shows_notices_and_keeps_it_in_view() {
+        let mut screen = ChatScreen::open();
+        let many = (1..=32).map(|n| room(n, &format!("room{n:02}"))).collect();
+        screen.deliver(ChatResponse::Rooms {
+            rooms: many,
+            notice: Some(ChatNotice::NotFound),
+        });
+        for _ in 0..31 {
+            screen.input(ChatKey::Down);
+        }
+        screen.deliver(ChatResponse::Refused(ChatNotice::Failed));
+        let text = rows(&draw(&screen, Tier::Ascii, (80, 24))).join("\n");
+        assert!(
+            text.contains("> room32"),
+            "the selected last room is on screen"
+        );
+        assert!(!text.contains("room01"), "the list scrolled");
+        assert!(text.contains("Problem: That did not work."), "{text}");
+        assert!(text.contains("Esc back"));
+    }
+}

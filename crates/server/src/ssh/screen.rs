@@ -815,8 +815,7 @@ impl Screen {
                 if let Some(screen) = chat {
                     let width =
                         usize::from(frame.area().width.min(settings::MAX_WIDTH)).saturating_sub(2);
-                    // Status row below, box borders above and below.
-                    let height = usize::from(frame.area().height).saturating_sub(3);
+                    let height = crate::chat::box_height(frame.area().height);
                     classic::render_content(
                         frame,
                         ContentScreen {
