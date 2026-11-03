@@ -69,5 +69,5 @@ The QA pass never fixes code. It reports. Low findings go into the coordination 
 ## Post-MVP
 - **M6:** external mail (inbound, then outbound through a relay) and PGP mail via local `gpg`.
 - **M7:** WASM plugin runtime for menu scripting and community doors.
-- **M8:** opt-in federation, NNTP gateway, finger, directory listing.
+- **M8:** opt-in federation, NNTP gateway, IRCv3 gateway for chat rooms (D87), finger, directory listing.
 - **M9:** native client and E2EE (DMs, MLS groups), multi-device, hardening, external crypto review.
