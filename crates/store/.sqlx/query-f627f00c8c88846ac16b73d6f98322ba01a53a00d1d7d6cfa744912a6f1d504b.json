@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE thread SET last_post_at = GREATEST(last_post_at, $1) WHERE id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f627f00c8c88846ac16b73d6f98322ba01a53a00d1d7d6cfa744912a6f1d504b"
+}

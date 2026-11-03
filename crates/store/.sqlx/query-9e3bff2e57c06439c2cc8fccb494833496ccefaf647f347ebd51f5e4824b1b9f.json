@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO thread (board_id, subject, author_id, created_at, last_post_at)\n               SELECT ?, ?, ?, ?, ?\n               WHERE EXISTS (SELECT 1 FROM board WHERE id = ?)\n                 AND (? IS NULL\n                      OR (SELECT count(*) FROM post WHERE author_id = ? AND created_at >= ?) < ?)\n               RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 10
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "9e3bff2e57c06439c2cc8fccb494833496ccefaf647f347ebd51f5e4824b1b9f"
+}

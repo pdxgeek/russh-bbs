@@ -1,6 +1,6 @@
 # russh-bbs documentation index
 
-Status of the project: M0, M1 and M2 are merged. M1's QA gate passed except the v0.1.0 image, which is withdrawn (D76; see [qa/m1.md](qa/m1.md)). M2's QA gate is closed: its fixes were re-checked on `0caab35` (see the Re-check section of [qa/m2.md](qa/m2.md)); the remaining FIX-M2 rows in [coordination.md](coordination.md) are low or parked. The next release is v0.2.0, tagged by the owner (D76). M3 slices are proposed in [coordination.md](coordination.md) and claimable once the owner approves them. [features.md](features.md) holds the status of every feature.
+Status of the project: M0, M1 and M2 are merged. M1's QA gate passed except the v0.1.0 image, which is withdrawn (D76; see [qa/m1.md](qa/m1.md)). M2's QA gate is closed: its fixes were re-checked on `0caab35` (see the Re-check section of [qa/m2.md](qa/m2.md)); the remaining FIX-M2 rows in [coordination.md](coordination.md) are low or parked. The next release is v0.2.0, tagged by the owner (D76). M3 slices are proposed in [coordination.md](coordination.md) and claimable once the owner approves them. M3-E (forums with search, D83) is implemented on `m3/forums`. [features.md](features.md) holds the status of every feature.
 
 ## Read first (everyone)
 

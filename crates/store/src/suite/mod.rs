@@ -12,6 +12,7 @@ pub(crate) mod accounts;
 pub(crate) mod audit;
 pub(crate) mod credits;
 pub(crate) mod drafts;
+pub(crate) mod forums;
 pub(crate) mod founder;
 pub(crate) mod invites;
 pub(crate) mod limits;
@@ -28,6 +29,7 @@ use russh_bbs_core::access::{AccessStore, Fingerprint, MemberDirectory, Slug};
 use russh_bbs_core::audit::{AuditStore, WallClock};
 use russh_bbs_core::credits::CreditStore;
 use russh_bbs_core::drafts::DraftStore;
+use russh_bbs_core::forums::ForumStore;
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::invites::InviteStore;
 use russh_bbs_core::limits::LimitStore;
@@ -53,6 +55,7 @@ pub(crate) trait TestStore:
     + FounderStore
     + LimitStore
     + DraftStore
+    + ForumStore
     + TerminalSettingsStore
     + ProfileStore
     + PasswordStore
@@ -79,6 +82,7 @@ impl<T> TestStore for T where
         + FounderStore
         + LimitStore
         + DraftStore
+        + ForumStore
         + TerminalSettingsStore
         + ProfileStore
         + PasswordStore
@@ -151,7 +155,7 @@ macro_rules! shared_suite {
             #[allow(unused_imports)]
             use super::*;
             use $crate::suite::{
-                access, access_edit, accounts, audit, credits, drafts, founder, invites, limits, passwords, profiles,
+                access, access_edit, accounts, audit, credits, drafts, forums, founder, invites, limits, passwords, profiles,
                 queue, registration, scheduler, terminal_settings,
             };
 
@@ -222,6 +226,16 @@ macro_rules! shared_suite {
                 drafts::the_text_is_sanitized_on_save_and_bounded,
                 drafts::blank_text_removes_the_draft,
                 drafts::saving_a_draft_for_an_unknown_account_fails,
+                forums::boards_are_created_by_staff_only_with_unique_names_and_an_audit_row,
+                forums::a_restricted_board_is_absent_for_everyone_without_a_scoped_grant,
+                forums::threads_replies_and_reading_round_trip,
+                forums::stored_text_is_sanitized,
+                forums::posts_per_hour_is_enforced_from_the_post_rows,
+                forums::concurrent_posts_never_pass_the_hourly_cap,
+                forums::staff_remove_posts_with_an_audit_row_and_removed_text_is_not_found,
+                forums::search_finds_words_and_never_reaches_unreadable_boards,
+                forums::hostile_queries_are_handled_not_errors,
+                forums::forum_data_survives_a_reopen,
                 drafts::deleting_an_account_deletes_its_drafts,
                 drafts::the_database_refuses_what_core_would_never_write,
                 drafts::a_stored_row_the_code_could_not_have_written_is_corrupt_not_shown,

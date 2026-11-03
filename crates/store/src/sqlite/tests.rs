@@ -141,6 +141,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         14,
         "d098408186779f2898926d5fdd73dd5cbf2e5b88f35aaf9fcb54087613ab5aaf633dafbb4130f35c8404a9f337853b86",
     ),
+    (
+        15,
+        "54e726f76f6cfdedbb5dea6469c4ec93ec0523d39393f85cd7689d6f3424ccb2a0802419e396554723086a49a35700f9",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {
@@ -198,6 +202,7 @@ async fn a_fresh_database_gets_every_migration() {
             "account_password",
             "accounts",
             "audit_log",
+            "board",
             "credit_ledger",
             "draft",
             "group_closure",
@@ -208,6 +213,12 @@ async fn a_fresh_database_gets_every_migration() {
             "limit_usage",
             "member_group",
             "member_limit",
+            "post",
+            "post_fts",
+            "post_fts_config",
+            "post_fts_data",
+            "post_fts_docsize",
+            "post_fts_idx",
             "profiles",
             "registration_day",
             "request_denial",
@@ -216,7 +227,8 @@ async fn a_fresh_database_gets_every_migration() {
             "role_permission",
             "scheduler_job",
             "settings",
-            "terminal_settings"
+            "terminal_settings",
+            "thread"
         ]
     );
 }

@@ -85,3 +85,40 @@ pub trait DraftStore: Send + Sync {
         account: AccountId,
     ) -> impl Future<Output = Result<Vec<DraftSummary>, StoreError>> + Send;
 }
+
+/// The empty directory has no accounts, so there is nothing to keep and nothing to read.
+impl DraftStore for crate::access::NoMembers {
+    fn put_draft(
+        &self,
+        _account: AccountId,
+        _context: &ContextKey,
+        _body: &Body,
+        _now: UnixSeconds,
+        _max_drafts: usize,
+    ) -> impl Future<Output = Result<DraftPut, StoreError>> + Send {
+        std::future::ready(Err(StoreError::AccountNotFound))
+    }
+
+    fn get_draft(
+        &self,
+        _account: AccountId,
+        _context: &ContextKey,
+    ) -> impl Future<Output = Result<Option<StoredDraft>, StoreError>> + Send {
+        std::future::ready(Ok(None))
+    }
+
+    fn delete_draft(
+        &self,
+        _account: AccountId,
+        _context: &ContextKey,
+    ) -> impl Future<Output = Result<bool, StoreError>> + Send {
+        std::future::ready(Ok(false))
+    }
+
+    fn list_drafts(
+        &self,
+        _account: AccountId,
+    ) -> impl Future<Output = Result<Vec<DraftSummary>, StoreError>> + Send {
+        std::future::ready(Ok(Vec::new()))
+    }
+}

@@ -1,0 +1,59 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT p.id AS \"id!\", p.thread_id AS \"thread_id!\", p.board_id AS \"board_id!\",\n                      p.author_id, a.username AS \"author?\", p.body, p.created_at AS \"created_at!\"\n               FROM post p LEFT JOIN accounts a ON a.id = p.author_id\n               WHERE p.thread_id = $1 ORDER BY p.id LIMIT 1 OFFSET $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "thread_id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "board_id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "author_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 4,
+        "name": "author?",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "body",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "created_at!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "1aea49876bbc13d85e7370247d7153040bbe79020acc0ec7857b693676f61b15"
+}

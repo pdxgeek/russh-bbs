@@ -1,0 +1,73 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT p.id AS \"id!\", p.thread_id AS \"thread_id!\", p.board_id AS \"board_id!\",\n                      b.name AS board_name, t.subject AS subject, a.username AS \"author?\",\n                      p.body AS body, p.created_at AS \"created_at!\",\n                      (SELECT count(*) FROM post q\n                       WHERE q.thread_id = p.thread_id AND q.id < p.id) AS \"pos!\"\n               FROM post p\n               JOIN thread t ON t.id = p.thread_id\n               JOIN board b ON b.id = p.board_id\n               LEFT JOIN accounts a ON a.id = p.author_id\n               WHERE p.search @@ plainto_tsquery('simple', $1)\n                 AND p.board_id = ANY($2)\n               ORDER BY ts_rank(p.search, plainto_tsquery('simple', $1)) DESC, p.id DESC\n               LIMIT $3 OFFSET $4",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "thread_id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "board_id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "board_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "subject",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "author?",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "body",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "created_at!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 8,
+        "name": "pos!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8Array",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "7c48b9aa8c520422f2aa2b8256b879a7ed3d297436d18f9863dd6638b43658c8"
+}
