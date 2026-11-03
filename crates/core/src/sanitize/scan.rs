@@ -27,6 +27,8 @@ pub const RESERVED_CHROME: &[char] = &[
     '\u{229B}', // E2EE
     '\u{270E}', // signature
     '\u{26A0}', // key changed
+    '\u{2297}', // unencrypted (telnet)
+    '\u{2296}', // low-security mode
 ];
 
 /// Replacement for private-use codepoints and noncharacters. It is neither a control nor in

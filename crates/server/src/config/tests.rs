@@ -238,9 +238,18 @@ fn telnet_login_needs_telnet_enabled() {
 }
 
 #[test]
-fn settings_that_do_nothing_yet_warn_when_turned_on() {
+fn telnet_is_off_by_default_and_on_warns_and_reaches_the_limits() {
+    let off = from_file("").expect("parses");
+    assert!(!off.config.telnet.enabled && !off.config.limits().low_security);
+    assert!(!off.warnings.iter().any(|w| w.contains("telnet")));
     let got = from_file("[telnet]\nenabled = true\n").expect("parses");
-    assert!(got.warnings.iter().any(|w| w.contains("telnet.enabled")));
+    let warning = got
+        .warnings
+        .iter()
+        .find(|w| w.contains("telnet.enabled"))
+        .expect("a warning");
+    assert!(warning.contains("LOW-SECURITY"), "{warning}");
+    assert!(got.config.limits().low_security);
 }
 
 #[test]
