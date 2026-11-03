@@ -82,7 +82,7 @@ editor.render(frame, &EditorView { ui, settings, markers });
 
 ### Keys the editor captures
 
-The key parser delivers no arrow keys, Home, End, Delete, PageUp/PageDown, non-ASCII characters or pasted line breaks yet, so the editor uses Ctrl chords (Tab is Ctrl-I). Ctrl-G lists them on screen.
+The key parser delivers the arrows (CSI and SS3), Home, End, Delete, PageUp and PageDown (FIX-M3-1, D88), and a pasted line break as `Key::PasteBreak`, which becomes a new line only here. Non-ASCII characters are not delivered yet. The Ctrl chords below work on every terminal too (Tab is Ctrl-I). Ctrl-G lists the keys on screen.
 
 | Key | Does |
 |---|---|
@@ -94,6 +94,8 @@ The key parser delivers no arrow keys, Home, End, Delete, PageUp/PageDown, non-A
 | `?` | a question mark (help is Ctrl-G) |
 | Ctrl-B, Ctrl-F, Ctrl-P, Ctrl-N, Ctrl-A, Ctrl-E | left, right, up, down (by screen row), line start, line end |
 | Ctrl-T, Ctrl-V | page up, page down |
+| Arrow keys, Home, End, Delete, PageUp, PageDown | move; line start and end; delete the character under the cursor; scroll a screen |
+| Bracketed paste | printable text is typed and each line break becomes a new line (editor only; D88) |
 | Ctrl-W, Ctrl-K, Ctrl-Y | delete word before; delete to end of line (kept); put it back |
 | Ctrl-Z, Ctrl-R | undo, redo |
 | every other key | ignored |
@@ -153,7 +155,7 @@ A compact, text-only layout with no icons, no art, and screen-reader-friendly ou
 
 - **Implemented:** see [Message editor](#message-editor). A word-wrapped `tui-textarea-2` editor in a full-width box (title, line and character counters on the bottom border, a `Notice:`/`Problem:` line, a key line), the reserved status row beneath through `chrome::render_status`, its own strings in `ui::editor::strings`. Drafts: migration `0012_drafts` on SQLite and Postgres, `DraftStore` on both, the 20-per-member cap checked and written in one transaction.
 - **Security chrome:** the editor draws no marker itself. Tests (all three icon tiers, color on and off, sizes from 1x1 to 200x60, hostile text with lookalikes and marker words) prove the status row is identical to an empty editor's and that no cell above it carries bold + reverse; the cursor is reverse + underline and quote lines are dim.
-- **Not implemented:** arrow keys, Home/End/Delete, PageUp/PageDown, non-ASCII typing and pasted line breaks (the key parser, cross-slice request in [coordination.md](coordination.md)); draft expiry; a menu entry or any feature screen; the editor's strings in the string table (M3-A).
+- **Not implemented:** non-ASCII typing (the key parser, cross-slice request in [coordination.md](coordination.md)); draft expiry; a menu entry or any feature screen; the editor's strings in the string table (M3-A).
 - **Verified:** core unit tests; the shared store suite for drafts on SQLite, Postgres 16 and TLS-required Postgres 16 (cap under concurrency, per-member and per-context isolation, sanitizing in the stored row, `CHECK`s, cascade on account delete, a broken store errors); 32 editor tests (keys, limits including a full 16,000-character message, leave and draft flow against a real SQLite store, drawing, wide characters, resize, scrolling, hostile text); and **real OpenSSH 9.6 under `pyte` (36 checks)** against the test-only example `crates/server/examples/editor_demo.rs` (`cargo run -p russh-bbs-server --example editor_demo`; loopback only, accepts every key, not part of the binary or the image): type and send, reply with a quote, save a draft with Esc and `s`, resume it on reconnect, log off with Ctrl-C and resume, a send that discards the draft, character and line limits with their `Problem:` line, resize from 80x24 to 40x12, 20x5 and 120x40 with the text and cursor kept, 60 lines scrolled with Ctrl-T, an arrow key not mistaken for Esc, the key list, and the marker row's reserved style appearing only on the last row.
 - **Not verified:** other terminals, a screen reader, a Nerd Font session, a feature screen (none exists), the editor on a slow link (the example repaints the whole screen per key; the real screen sends diffs).
 
@@ -164,9 +166,9 @@ A compact, text-only layout with no icons, no art, and screen-reader-friendly ou
   - **Live switch:** the settings screen has `l` (next layout) and `t` (next theme), saved with the other settings under `account.edit_settings` and drawn on the next frame. The choice is two columns of `terminal_settings` (migration `0014`) and is there on the next login.
   - **Themes:** `ui::theme` (palette, string overrides, `ThemeSet`, loader). Shipped: `default`, `amber`, `green` (also rewords the main menu title and the key hint), `contrast`. The sysop's `themes/*.toml` beside the host key is read at boot, at most 32 files of at most 32 KiB, refused with a logged warning when invalid (see D82 for every check), never fatal.
   - **Strings:** the login, glyph test, settings and logoff screens' text is in `ui/strings.toml` under `[member]`; `core::terminal_settings::strings` is keys plus `TextSource`.
-  - **Keys:** `ssh::terminal::Key` has `Up` and `Down` (CSI arrows).
+  - **Keys:** `ssh::terminal::Key` has `Up`, `Down`, `Left`, `Right`, `Home`, `End`, `Delete`, `PageUp`, `PageDown` (CSI and SS3 forms, FIX-M3-1) and `PasteBreak`. The lightbar uses Up and Down only; the other keys do nothing outside the editor.
 - **Security chrome:** unchanged and independent of layout and theme. The status row is split off first and drawn by `chrome::render_status` with the reserved style; the theme palette, string overrides and layout are not inputs to it, and its two captions are reserved string keys. The lightbar cursor uses a pointer, bold and underline, never reverse video.
-- **Not implemented:** two-pane, tabs/ribbon, dashboard and command-line layouts; declarative layout files; art blocks, login and logoff art, packs; a sysop-set default layout or theme and a restricted list; a picker with a preview; hot reload of themes; SS3 (`ESC O A`) arrow keys; RGB or indexed theme colors; a contrast check on theme colors; per-layout widest-width declarations (FIX-M1-4 request).
+- **Not implemented:** two-pane, tabs/ribbon, dashboard and command-line layouts; declarative layout files; art blocks, login and logoff art, packs; a sysop-set default layout or theme and a restricted list; a picker with a preview; hot reload of themes; RGB or indexed theme colors; a contrast check on theme colors; per-layout widest-width declarations (FIX-M1-4 request).
 - **Verified:** unit tests (core: stored layout and theme text, theme names, cycling, the settings keys and their permission gate, cursor rules; server: every layout shows every item of the same menu, submenu and help in every layout, fallback table, every layout x shipped theme x tier x color x four sizes with hostile content keeps the marker in the reserved style in the status row and nowhere else, theme schema and every refusal, directory loader with good, bad, oversized, endless, duplicate and too many files, the settings screen fits 80x24 with its notice), the store suite on SQLite, on a plain Postgres 16 and on a TLS-required Postgres 16, a real russh client (live switch to lightbar, arrow keys and Enter, compact, theme steps, the choice remembered on reconnect, cursor keys inert in classic) and OpenSSH under `pyte` (the same walk at 80x24 and a resize storm to 40x10 and 30x8, the sysop's `plum` theme, bad theme files in the directory and the boot log). **Not verified:** other terminals or a screen reader; a Nerd Font terminal; the look of the shipped colors on a real terminal with a light background.
 
 ## Forum screens (M3-E, D83)

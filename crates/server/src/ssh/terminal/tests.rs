@@ -68,17 +68,51 @@ fn other_letters_do_not_quit() {
 
 #[test]
 fn arrow_keys_are_not_read_as_letters() {
-    // ESC [ A is "up" and ESC [ B "down" (the lightbar cursor keys); a naive scan would see
-    // 'A', and ESC O q must not read as 'q'. Left and right stay ignored.
+    // ESC [ A is "up" and so on; a naive scan would see 'A', and ESC O q must not read as 'q'.
     assert_eq!(parse_keys(b"\x1b[A"), vec![Key::Up]);
     assert_eq!(parse_keys(b"\x1b[B"), vec![Key::Down]);
-    assert_eq!(parse_keys(b"\x1b[C"), vec![Key::Other]);
-    assert_eq!(parse_keys(b"\x1b[D"), vec![Key::Other]);
-    // A modified arrow (Ctrl-Up) is consumed whole, as one key; anes reports it as Up.
+    assert_eq!(parse_keys(b"\x1b[C"), vec![Key::Right]);
+    assert_eq!(parse_keys(b"\x1b[D"), vec![Key::Left]);
+    // A modified arrow (Ctrl-Up) is consumed whole, as one key; anes reports it unmodified.
     assert_eq!(parse_keys(b"\x1b[1;5A"), vec![Key::Up]);
+    assert_eq!(parse_keys(b"\x1b[1;5D"), vec![Key::Left]);
     assert!(!parse_keys(b"\x1bOq").iter().any(|k| k.is_quit()));
     // A modified key is consumed whole; its final `q` is not a quit.
     assert!(!parse_keys(b"\x1b[1;5q").iter().any(|k| k.is_quit()));
+}
+
+#[test]
+fn ss3_cursor_keys_are_the_same_keys() {
+    assert_eq!(parse_keys(b"\x1bOA"), vec![Key::Up]);
+    assert_eq!(parse_keys(b"\x1bOB"), vec![Key::Down]);
+    assert_eq!(parse_keys(b"\x1bOC"), vec![Key::Right]);
+    assert_eq!(parse_keys(b"\x1bOD"), vec![Key::Left]);
+    assert_eq!(parse_keys(b"\x1bOH"), vec![Key::Home]);
+    assert_eq!(parse_keys(b"\x1bOF"), vec![Key::End]);
+    // F1 stays a swallowed key; an unknown SS3 final is swallowed and never typed.
+    assert_eq!(parse_keys(b"\x1bOP"), vec![Key::Other]);
+    assert_eq!(parse_keys(b"\x1bOzq"), vec![Key::Char('q')]);
+    assert_eq!(parse_keys(b"\x1bOAq"), vec![Key::Up, Key::Char('q')]);
+}
+
+#[test]
+fn home_end_delete_and_paging_in_every_common_form() {
+    for (bytes, key) in [
+        (&b"\x1b[H"[..], Key::Home),
+        (b"\x1b[1~", Key::Home),
+        (b"\x1b[7~", Key::Home),
+        (b"\x1b[F", Key::End),
+        (b"\x1b[4~", Key::End),
+        (b"\x1b[8~", Key::End),
+        (b"\x1b[3~", Key::Delete),
+        (b"\x1b[5~", Key::PageUp),
+        (b"\x1b[6~", Key::PageDown),
+    ] {
+        assert_eq!(parse_keys(bytes), vec![key], "{bytes:?}");
+    }
+    // Insert and function keys are still swallowed whole.
+    assert_eq!(parse_keys(b"\x1b[2~"), vec![Key::Other]);
+    assert_eq!(parse_keys(b"\x1b[15~"), vec![Key::Other]);
 }
 
 #[test]
@@ -123,6 +157,9 @@ const STREAMS: &[&[u8]] = &[
     b"\x1b[A",
     b"\x1b[1;5A",
     b"\x1bOP",
+    b"\x1bOA\x1bOD\x1bOH\x1bOFq",
+    b"\x1bOz",
+    b"\x1b[C\x1b[D\x1b[H\x1b[F\x1b[1~\x1b[4~\x1b[7~\x1b[8~\x1b[5~\x1b[6~",
     b"\x1b[3~",
     b"\x1b[Aq\x1b[Br",
     b"a\x1b[Ab\r",
@@ -131,6 +168,7 @@ const STREAMS: &[&[u8]] = &[
     b"\x1b\x1b[A",
     b"\x1b[200~hi\x1b[201~q",
     b"\x1b[200~a\x1b[Ab\rc\x1b[201~z",
+    b"\x1b[200~one\r\ntwo\nthree\r\r\nx\x1b[201~\r",
     b"\x03\x04\x7f",
 ];
 
@@ -203,21 +241,54 @@ fn a_held_escape_becomes_escape_at_its_deadline() {
 
 #[test]
 fn bracketed_paste_is_text_not_commands() {
-    // Newline, Ctrl-C, Tab and the Esc byte inside a paste are dropped; what is left of an
-    // escape sequence is its printable letters, as text.
+    // Ctrl-C, Tab and the Esc byte inside a paste are dropped; what is left of an escape
+    // sequence is its printable letters, as text. A line break is a PasteBreak, never Enter.
     let keys = parse_keys(b"\x1b[200~ab\r\x03\x1b[A\tq\x1b[201~");
     assert_eq!(
         keys,
         vec![
             Key::Char('a'),
             Key::Char('b'),
+            Key::PasteBreak,
             Key::Char('['),
             Key::Char('A'),
             Key::Char('q')
         ],
-        "only printable ASCII survives, and the markers are not keys"
+        "only printable ASCII and line breaks survive, and the markers are not keys"
     );
     assert!(!keys.iter().any(|k| matches!(k, Key::Enter | Key::Ctrl(_))));
+}
+
+#[test]
+fn a_pasted_line_break_is_one_paste_break_whether_cr_lf_or_crlf() {
+    let breaks = |bytes: &[u8]| {
+        parse_keys(bytes)
+            .into_iter()
+            .filter(|k| *k == Key::PasteBreak)
+            .count()
+    };
+    assert_eq!(breaks(b"\x1b[200~a\rb\x1b[201~"), 1);
+    assert_eq!(breaks(b"\x1b[200~a\nb\x1b[201~"), 1);
+    assert_eq!(breaks(b"\x1b[200~a\r\nb\x1b[201~"), 1);
+    assert_eq!(
+        breaks(b"\x1b[200~a\n\nb\x1b[201~"),
+        2,
+        "a blank line is kept"
+    );
+    assert_eq!(breaks(b"\x1b[200~a\r\rb\x1b[201~"), 2);
+    assert_eq!(breaks(b"\x1b[200~a\n\r\nb\x1b[201~"), 2);
+    // Typed Enter and LF outside a paste stay Enter.
+    assert_eq!(
+        parse_keys(b"a\r\n"),
+        vec![Key::Char('a'), Key::Enter, Key::Enter]
+    );
+}
+
+#[test]
+fn a_crlf_cut_between_cr_and_lf_is_still_one_break() {
+    let whole = parse_keys(b"\x1b[200~a\r\nb\x1b[201~");
+    assert_eq!(feed_in_pieces(&[b"\x1b[200~a\r", b"\nb\x1b[201~"]), whole);
+    assert_eq!(whole, vec![Key::Char('a'), Key::PasteBreak, Key::Char('b')]);
 }
 
 #[test]
