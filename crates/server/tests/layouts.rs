@@ -148,8 +148,6 @@ async fn full(channel: &mut Channel<client::Msg>) -> String {
     words(channel).await.0
 }
 
-const QUESTION: &str = "Do these look like icons?";
-
 /// Claim, answer the icon check with "yes" and return the channel at the main menu.
 async fn at_main_menu(rig: &Rig, key: &PrivateKey) -> (Handle<Client>, Channel<client::Msg>) {
     let (session, mut channel, _) = claim(rig, key).await;
