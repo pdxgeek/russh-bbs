@@ -65,11 +65,11 @@ pub(super) const HELP_KEYS: &[(&str, &str)] = &[
     ("Ctrl-Y", "put back what Ctrl-K deleted"),
     ("Ctrl-Z", "undo"),
     ("Ctrl-R", "redo"),
-    (
-        "Arrow keys, Home, End, Delete, PageUp, PageDown",
-        "not read by the terminal parser yet",
-    ),
-    ("Pasted text", "arrives without its line breaks for now"),
+    ("Arrows", "move the cursor"),
+    ("Home, End", "start and end of the line"),
+    ("Delete", "delete the character under the cursor"),
+    ("PageUp, PageDown", "scroll a screen"),
+    ("Pasted text", "keeps its line breaks in this editor"),
 ];
 /// Footer of the key list.
 pub(super) const HELP_FOOTER: &str = "Press any key to go back to your text.";

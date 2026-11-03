@@ -464,11 +464,27 @@ fn nothing_on_the_menu_screen_claims_privacy() {
 // ---- pager (FIX-M1-L8) ----
 
 mod pager {
+    use crate::ssh::terminal::Key;
+    use crate::ui::pager::pager_key;
     use ratatui::layout::Rect;
     use russh_bbs_core::terminal_settings::{Pager, PagerEffect, PagerKey};
 
     use super::*;
     use crate::ui::pager::{render, text_rows, text_width, wrap};
+
+    #[test]
+    fn paging_keys_map_to_the_pager() {
+        assert_eq!(pager_key(Key::PageDown), Some(PagerKey::Next));
+        assert_eq!(pager_key(Key::PageUp), Some(PagerKey::Previous));
+        assert_eq!(pager_key(Key::Down), Some(PagerKey::Next));
+        assert_eq!(pager_key(Key::Up), Some(PagerKey::Previous));
+        assert_eq!(pager_key(Key::Char(' ')), Some(PagerKey::Next));
+        assert_eq!(pager_key(Key::Escape), Some(PagerKey::Stop));
+        // Home and End have no pager key yet; a paste break never turns a page.
+        for key in [Key::Home, Key::End, Key::PasteBreak, Key::Left, Key::Other] {
+            assert_eq!(pager_key(key), None, "{key:?}");
+        }
+    }
 
     fn frame_text(pager: &Pager, size: (u16, u16)) -> String {
         let ui = ui();

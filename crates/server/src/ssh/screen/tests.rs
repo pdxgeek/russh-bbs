@@ -414,3 +414,49 @@ fn an_ordinary_refusal_does_not_degrade_the_open_room() {
     assert_eq!(room.mode(), RegistrationMode::Open);
     assert_eq!(room.view().note, None);
 }
+
+/// FIX-M3-1: a pasted line break is not Enter. Each kind of input point drops it, so a paste
+/// cannot submit a form early or run a second command.
+#[test]
+fn a_multi_line_paste_into_a_waiting_room_form_does_not_submit_it() {
+    let mut screen = open_screen();
+    let paste = crate::ssh::terminal::parse_keys(b"n\x1b[200~vis\nitor\r\nmore\r\x1b[201~");
+    assert!(!paste.contains(&Key::Enter), "{paste:?}");
+    let (effects, _) = keys(&mut screen, &paste);
+    assert!(effects.redeem.is_none(), "the paste submitted the form");
+    // The breaks were flattened away, so one typed Enter submits one handle.
+    let (effects, _) = keys(&mut screen, &[Key::Enter]);
+    assert!(effects.redeem.is_some());
+}
+
+#[test]
+fn editing_keys_and_pasted_breaks_do_nothing_at_the_room_claim_and_member_input_points() {
+    use super::{claim_input, member_input, room_input};
+    for key in [
+        Key::Left,
+        Key::Right,
+        Key::Home,
+        Key::End,
+        Key::Delete,
+        Key::PageUp,
+        Key::PageDown,
+        Key::PasteBreak,
+    ] {
+        assert!(room_input(key).is_none(), "{key:?}");
+        assert!(claim_input(key).is_none(), "{key:?}");
+        assert!(member_input(key).is_none(), "{key:?}");
+    }
+}
+
+#[test]
+fn a_paste_with_line_breaks_cannot_press_enter_or_quit_a_member_screen() {
+    use super::member_input;
+    let paste = crate::ssh::terminal::parse_keys(b"\x1b[200~q\nq\r\nx\x03\x1b[201~");
+    let inputs: Vec<_> = paste.into_iter().filter_map(member_input).collect();
+    assert!(
+        inputs
+            .iter()
+            .all(|input| matches!(input, super::MemberInput::Char(_))),
+        "{inputs:?}"
+    );
+}

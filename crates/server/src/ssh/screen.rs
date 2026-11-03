@@ -916,7 +916,18 @@ fn room_input(key: Key) -> Option<RoomInput> {
         Key::Backspace => Some(RoomInput::Backspace),
         Key::Escape => Some(RoomInput::Escape),
         Key::Ctrl('c' | 'd') => Some(RoomInput::Quit),
-        Key::Ctrl(_) | Key::Up | Key::Down | Key::Other => None,
+        Key::Ctrl(_)
+        | Key::Up
+        | Key::Down
+        | Key::Left
+        | Key::Right
+        | Key::Home
+        | Key::End
+        | Key::Delete
+        | Key::PageUp
+        | Key::PageDown
+        | Key::PasteBreak
+        | Key::Other => None,
     }
 }
 
@@ -928,7 +939,18 @@ fn claim_input(key: Key) -> Option<ClaimInput> {
         Key::Backspace => Some(ClaimInput::Backspace),
         Key::Escape => Some(ClaimInput::Escape),
         Key::Ctrl('c' | 'd') => Some(ClaimInput::Quit),
-        Key::Ctrl(_) | Key::Up | Key::Down | Key::Other => None,
+        Key::Ctrl(_)
+        | Key::Up
+        | Key::Down
+        | Key::Left
+        | Key::Right
+        | Key::Home
+        | Key::End
+        | Key::Delete
+        | Key::PageUp
+        | Key::PageDown
+        | Key::PasteBreak
+        | Key::Other => None,
     }
 }
 
@@ -942,7 +964,16 @@ fn member_input(key: Key) -> Option<MemberInput> {
         Key::Up => Some(MemberInput::Up),
         Key::Down => Some(MemberInput::Down),
         Key::Ctrl('c' | 'd') => Some(MemberInput::Quit),
-        Key::Ctrl(_) | Key::Other => None,
+        Key::Left
+        | Key::Right
+        | Key::Home
+        | Key::End
+        | Key::Delete
+        | Key::PageUp
+        | Key::PageDown
+        | Key::PasteBreak
+        | Key::Ctrl(_)
+        | Key::Other => None,
     }
 }
 

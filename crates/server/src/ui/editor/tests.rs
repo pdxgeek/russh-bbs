@@ -81,6 +81,88 @@ fn terminal_keys_map_to_editor_keys() {
 }
 
 #[test]
+fn the_editing_keys_the_parser_delivers_map_to_the_editor() {
+    let map = EditorKey::from_terminal;
+    assert_eq!(map(Key::Left), Some(EditorKey::Left));
+    assert_eq!(map(Key::Right), Some(EditorKey::Right));
+    assert_eq!(map(Key::Up), Some(EditorKey::Up));
+    assert_eq!(map(Key::Down), Some(EditorKey::Down));
+    assert_eq!(map(Key::Home), Some(EditorKey::Home));
+    assert_eq!(map(Key::End), Some(EditorKey::End));
+    assert_eq!(map(Key::Delete), Some(EditorKey::Delete));
+    assert_eq!(map(Key::PageUp), Some(EditorKey::PageUp));
+    assert_eq!(map(Key::PageDown), Some(EditorKey::PageDown));
+    assert_eq!(map(Key::PasteBreak), Some(EditorKey::Enter));
+}
+
+/// Feed raw terminal bytes through the real parser into the editor.
+fn send_bytes(editor: &mut Editor, bytes: &[u8]) {
+    for key in crate::ssh::terminal::parse_keys(bytes) {
+        assert_eq!(editor.input(key), EditorEffect::Stay);
+    }
+}
+
+#[test]
+fn arrows_home_end_and_delete_edit_from_raw_bytes() {
+    let mut editor = open();
+    send_bytes(&mut editor, b"abcd\r1234");
+    send_bytes(&mut editor, b"\x1b[D\x1b[D"); // left, left
+    send_bytes(&mut editor, b"X");
+    assert_eq!(editor.text(), "abcd\n12X34");
+    send_bytes(&mut editor, b"\x1b[3~"); // delete forward removes the 3
+    assert_eq!(editor.text(), "abcd\n12X4");
+    send_bytes(&mut editor, b"\x1b[H"); // home
+    send_bytes(&mut editor, b"Y");
+    assert_eq!(editor.text(), "abcd\nY12X4");
+    send_bytes(&mut editor, b"\x1b[F"); // end
+    send_bytes(&mut editor, b"Z");
+    assert_eq!(editor.text(), "abcd\nY12X4Z");
+    send_bytes(&mut editor, b"\x1b[A\x1b[H\x1b[C\x1b[C"); // up, home, right, right
+    send_bytes(&mut editor, b"!");
+    assert_eq!(editor.text(), "ab!cd\nY12X4Z");
+}
+
+#[test]
+fn ss3_arrows_and_the_other_home_end_forms_work_in_the_editor() {
+    let mut editor = open();
+    send_bytes(&mut editor, b"abc");
+    send_bytes(&mut editor, b"\x1bOD\x1bOD\x1bOH");
+    send_bytes(&mut editor, b">");
+    send_bytes(&mut editor, b"\x1bOF");
+    send_bytes(&mut editor, b"<");
+    send_bytes(&mut editor, b"\x1b[1~?\x1b[4~!\x1b[7~(\x1b[8~)");
+    assert_eq!(editor.text(), "(?>abc<!)");
+    send_bytes(&mut editor, b"\x1bOC");
+    assert_eq!(editor.text(), "(?>abc<!)", "right at the end stays put");
+}
+
+#[test]
+fn page_keys_scroll_without_changing_the_text() {
+    let mut editor = open();
+    let lines: Vec<String> = (0..60).map(|n| format!("line {n}")).collect();
+    type_text(&mut editor, &lines.join("\n"));
+    let text = editor.text();
+    let (row_end, _) = editor.cursor();
+    send_bytes(&mut editor, b"\x1b[5~\x1b[5~");
+    let (row_up, _) = editor.cursor();
+    assert!(row_up < row_end, "PageUp moved up: {row_up} < {row_end}");
+    send_bytes(&mut editor, b"\x1b[6~");
+    assert!(editor.cursor().0 >= row_up, "PageDown never moves up");
+    assert_eq!(editor.text(), text, "scrolling never edits");
+}
+
+#[test]
+fn a_multi_line_bracketed_paste_keeps_its_line_breaks_in_the_editor() {
+    let mut editor = open();
+    send_bytes(&mut editor, b"\x1b[200~first\r\nsecond\nthird\x1b[201~");
+    assert_eq!(editor.text(), "first\nsecond\nthird");
+    assert!(editor.is_changed());
+    // The paste cannot send, leave or log off.
+    send_bytes(&mut editor, b"\x1b[200~\x18\x03\x1b\x1b[201~");
+    assert_eq!(editor.text(), "first\nsecond\nthird");
+}
+
+#[test]
 fn every_ctrl_chord_in_the_help_text_is_a_real_key() {
     for (chord, _) in strings::HELP_KEYS {
         for part in chord.split(", ").filter_map(|p| p.strip_prefix("Ctrl-")) {

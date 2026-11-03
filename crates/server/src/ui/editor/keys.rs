@@ -1,10 +1,9 @@
 //! The editor's keys: one table from what the terminal parser delivers to what the editor does.
 //!
-//! The editor never sees raw bytes. The SSH layer's [`Key`] has no arrow keys, Home, End, Delete
-//! or non-ASCII text yet (`ssh::terminal::key_of` drops them as [`Key::Other`]), so the editor
-//! is driven with Emacs-style Ctrl chords, which every terminal sends. When the parser learns
-//! the other keys, only [`EditorKey::from_terminal`] changes: the editor already handles
-//! [`EditorKey::Left`], [`EditorKey::Delete`] and the rest.
+//! The editor never sees raw bytes. The SSH layer's [`Key`] delivers the arrows, `Home`, `End`,
+//! `Delete`, `PageUp` and `PageDown` (CSI and SS3 forms), and a line break inside a bracketed paste
+//! as [`Key::PasteBreak`]; this table is the one place a paste break becomes a new line. The
+//! Emacs-style Ctrl chords work on every terminal too. Non-ASCII text is still not delivered.
 //!
 //! **Universal keys (D54) inside the editor.** Esc is "back", but a stray Esc must not throw
 //! away a half-written message, so with unsaved changes it asks first. Ctrl-C and Ctrl-D log
@@ -69,7 +68,9 @@ impl EditorKey {
     pub fn from_terminal(key: Key) -> Option<Self> {
         Some(match key {
             Key::Char(c) => Self::Char(c),
-            Key::Enter => Self::Enter,
+            // A pasted line break is a new line only here; every other screen drops it.
+            Key::Enter | Key::PasteBreak => Self::Enter,
+            Key::Delete => Self::Delete,
             Key::Backspace => Self::Backspace,
             Key::Escape => Self::Leave,
             // Tab arrives as Ctrl-I.
@@ -77,15 +78,15 @@ impl EditorKey {
             Key::Ctrl('c' | 'd') => Self::LogOff,
             Key::Ctrl('x') => Self::Send,
             Key::Ctrl('g') => Self::Help,
-            Key::Ctrl('b') => Self::Left,
-            Key::Ctrl('f') => Self::Right,
+            Key::Left | Key::Ctrl('b') => Self::Left,
+            Key::Right | Key::Ctrl('f') => Self::Right,
             // The arrow keys the parser delivers since M3-A, and Ctrl-P and Ctrl-N.
             Key::Up | Key::Ctrl('p') => Self::Up,
             Key::Down | Key::Ctrl('n') => Self::Down,
-            Key::Ctrl('a') => Self::Home,
-            Key::Ctrl('e') => Self::End,
-            Key::Ctrl('t') => Self::PageUp,
-            Key::Ctrl('v') => Self::PageDown,
+            Key::Home | Key::Ctrl('a') => Self::Home,
+            Key::End | Key::Ctrl('e') => Self::End,
+            Key::PageUp | Key::Ctrl('t') => Self::PageUp,
+            Key::PageDown | Key::Ctrl('v') => Self::PageDown,
             Key::Ctrl('w') => Self::DeleteWord,
             Key::Ctrl('k') => Self::KillLine,
             Key::Ctrl('y') => Self::Yank,

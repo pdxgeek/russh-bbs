@@ -636,6 +636,30 @@ async fn an_escape_sequence_typed_at_the_prompt_is_not_typed_into_the_field() {
 }
 
 #[tokio::test]
+async fn arrow_keys_and_a_multi_line_paste_at_the_prompt_neither_type_nor_submit() {
+    let rig = Rig::start(true).await;
+    rig.member("alice").await;
+    let mut tn = Tn::connect(rig.addr(), 80, 24).await;
+    tn.read_until("login: ").await;
+    // Left arrow (CSI), Home (SS3) and Delete in the middle of the name are consumed, not typed.
+    // Then a bracketed paste with a line break: the break must not submit "al" early.
+    tn.type_text("\u{1b}[D\u{1b}OH\u{1b}[3~\u{1b}[200~al\nic\u{1b}[201~e\r")
+        .await;
+    tn.read_until("password: ").await;
+    // The same at the password prompt: the paste breaks cannot submit a half password.
+    let half = &SECRET[..7];
+    let rest = &SECRET[7..];
+    tn.type_text(&format!("\u{1b}[200~{half}\n\u{1b}[201~{rest}\r"))
+        .await;
+    let first = tn.read_until(&footer_at(24)).await;
+    assert!(
+        words_of(&first).contains("Signed in as alice"),
+        "{}",
+        words_of(&first)
+    );
+}
+
+#[tokio::test]
 async fn ctrl_c_as_the_telnet_interrupt_command_leaves_the_prompt() {
     let rig = Rig::start(true).await;
     let mut tn = Tn::connect(rig.addr(), 80, 24).await;
