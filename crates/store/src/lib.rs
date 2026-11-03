@@ -16,10 +16,16 @@ mod access_rows;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod audit_rows;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
+mod chat_rows;
+#[cfg(any(feature = "sqlite", feature = "postgres"))]
+mod community_rows;
+#[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod credit_rows;
 mod directory;
 mod draft_rows;
 mod error;
+#[cfg(any(feature = "sqlite", feature = "postgres"))]
+mod forum_rows;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod invite_rows;
 mod limit_rows;

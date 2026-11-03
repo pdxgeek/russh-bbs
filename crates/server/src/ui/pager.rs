@@ -11,26 +11,12 @@ use ratatui::layout::Rect;
 use ratatui::style::{Modifier, Style};
 use ratatui::text::Line;
 use russh_bbs_core::icons::{SecurityMarker, Tier};
-use russh_bbs_core::terminal_settings::{Pager, PagerKey, PagerPrompt};
+use russh_bbs_core::terminal_settings::{Pager, PagerPrompt};
 
 use super::chrome;
 use super::keys;
 use super::strings::StringTable;
 use crate::settings::{self, Look};
-use crate::ssh::terminal::Key;
-
-/// What a terminal key means to the pager, or `None` for a key it ignores. `PageDown` and Down
-/// are the next page, `PageUp` and Up the previous one. The pager has no first-page or last-page
-/// key, so `Home` and `End` are ignored (a request for `russh_bbs_core::terminal_settings`).
-#[must_use]
-pub(crate) fn pager_key(key: Key) -> Option<PagerKey> {
-    match key {
-        Key::Char(' ') | Key::Enter | Key::PageDown | Key::Down => Some(PagerKey::Next),
-        Key::Char('b' | 'B') | Key::PageUp | Key::Up => Some(PagerKey::Previous),
-        Key::Char('q' | 'Q') | Key::Escape => Some(PagerKey::Stop),
-        _ => None,
-    }
-}
 
 /// Rows the prompt takes under the text: a blank row and the prompt itself.
 const PROMPT_ROWS: usize = 2;

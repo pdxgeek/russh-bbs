@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO last_caller (account_id, last_at) VALUES ($1, $2)\n             ON CONFLICT (account_id) DO UPDATE SET last_at = excluded.last_at",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "5575f3ed99ebc1eb2522a29172f0394061ffbecf1de9037ad3cf5f3c84df5c87"
+}

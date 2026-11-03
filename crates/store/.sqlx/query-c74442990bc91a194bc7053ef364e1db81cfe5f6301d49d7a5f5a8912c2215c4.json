@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT p.closed_at IS NOT NULL AS \"closed!: bool\",\n                      EXISTS (SELECT 1 FROM poll_option o WHERE o.poll_id = p.id AND o.position = ?2) AS \"option!: bool\",\n                      EXISTS (SELECT 1 FROM poll_vote v WHERE v.poll_id = p.id AND v.account_id = ?3) AS \"voted!: bool\"\n               FROM poll p WHERE p.id = ?1",
+  "describe": {
+    "columns": [
+      {
+        "name": "closed!: bool",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "option!: bool",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "voted!: bool",
+        "ordinal": 2,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "c74442990bc91a194bc7053ef364e1db81cfe5f6301d49d7a5f5a8912c2215c4"
+}

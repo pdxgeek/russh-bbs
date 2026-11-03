@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO poll (creator_id, question, description, results, created_at)\n               SELECT $1::bigint, $2::text, $3::text, $4::text, $5::bigint\n               WHERE (SELECT count(*) FROM poll WHERE creator_id = $1 AND created_at > $6) < $7\n                 AND (SELECT count(*) FROM poll) < $8\n               RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text",
+        "Text",
+        "Text",
+        "Int8",
+        "Int8",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "0b53ef2e13132e09ea6e0ec1acbd8b2069a87b6dfa2d17057ce4d49dc34a4174"
+}

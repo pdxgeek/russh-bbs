@@ -836,3 +836,46 @@ async fn staff_screens_carry_the_low_security_marker_only_while_telnet_is_on() {
     assert!(off.contains("requests"), "{off}");
     assert!(!off.contains("LOW SECURITY"), "{off}");
 }
+
+/// Read until the screen's words contain `needle` (a diff redraw can split a run of text with
+/// cursor moves, so the raw bytes are not searched).
+async fn until_words(tn: &mut Tn, needle: &str) {
+    loop {
+        let words = words_of(&String::from_utf8_lossy(&tn.text));
+        if words.contains(needle) {
+            return;
+        }
+        assert!(tn.fill().await, "closed before {needle:?}; saw {words:?}");
+    }
+}
+
+#[tokio::test]
+async fn chat_works_over_telnet_with_both_markers_and_untrusted_input() {
+    let rig = Rig::start(true).await;
+    rig.member("alice").await;
+    rig.member("bob").await;
+    let mut alice = at_menu(&rig, "alice").await;
+    let mut bob = at_menu(&rig, "bob").await;
+    for tn in [&mut alice, &mut bob] {
+        let list = words_of(&tn.keys("c").await);
+        assert!(
+            list.contains("Chat rooms") && list.contains("lobby"),
+            "{list}"
+        );
+        let room = words_of(&tn.keys("\r").await);
+        assert!(room.contains("#lobby"), "{room}");
+    }
+    // Alice's line, typed over telnet, is pushed to both screens without another key.
+    alice.type_text("hi bob\r").await;
+    until_words(&mut bob, "<alice> hi bob").await;
+    until_words(&mut alice, "<alice> hi bob").await;
+    // Text typed at the prompt is untrusted input like on SSH: a pasted escape sequence never
+    // reaches the other screen.
+    alice.type_text("evil \u{1b}[31mred\u{1b}[0m end\r").await;
+    until_words(&mut bob, "<alice> evil").await;
+    let raw = String::from_utf8_lossy(&bob.text).into_owned();
+    assert!(
+        !raw.contains("\u{1b}[31mred"),
+        "an escape reached bob: {raw:?}"
+    );
+}

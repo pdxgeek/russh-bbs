@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO poll (creator_id, question, description, results, created_at)\n               SELECT ?1, ?2, ?3, ?4, ?5\n               WHERE (SELECT count(*) FROM poll WHERE creator_id = ?1 AND created_at > ?6) < ?7\n                 AND (SELECT count(*) FROM poll) < ?8\n               RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 8
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "1e4f8b56425aac223589d0ea4ee39acd4cb0196b10c541153a2e45871640807e"
+}

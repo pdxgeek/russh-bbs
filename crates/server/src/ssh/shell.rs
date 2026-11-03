@@ -28,6 +28,7 @@ use rand::rngs::SysRng;
 use russh::ChannelId;
 use russh::server::Handle;
 use russh_bbs_core::access::{Access, Fingerprint, Permission, Snapshot};
+use russh_bbs_core::chat::{ChatNotice, ChatRequest, ChatResponse};
 use russh_bbs_core::founder::{ClaimOutcome, claim_founder};
 use russh_bbs_core::invites::{
     CODE_BYTES, InviteError, InviteOutcome, InviteRequest, create_invite, invite_tree, my_invites,
@@ -36,6 +37,7 @@ use russh_bbs_core::invites::{
 use russh_bbs_core::limits::{LimitError, MemberMeter, SystemClock};
 use russh_bbs_core::queue::{InviteAsk, RequestKind, submit_request};
 use russh_bbs_core::registration::{OpenError, open_account, submit_application};
+use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::{Account, AccountId};
 use russh_bbs_core::terminal_settings::{MemberFlow, MemberStart, TerminalSettings};
 use russh_bbs_core::waiting_room::{JoinKind, RedeemRequest};
@@ -49,6 +51,7 @@ use super::password::PasswordLogin;
 use super::registry::SessionRef;
 use super::screen::Screen;
 use super::terminal::{KeyParser, PtySize};
+use crate::chat::{ChatSession, Hub};
 use crate::founder::Founder;
 
 /// How long a member's session start (settings and login time) may take before the shell
@@ -185,6 +188,8 @@ pub(crate) struct ShellParts<D> {
     pub(crate) account: Option<AccountId>,
     /// Password login's hashing pool, for the password screen (M3-D).
     pub(crate) passwords: Arc<PasswordLogin>,
+    /// The chat hub (M3-F).
+    pub(crate) chat: Arc<Hub>,
     /// The signed-in session's place in the resource limits (M2-H): its session slot and the
     /// minutes it has used. `None` for the waiting room, the founder claim and a refused start.
     pub(crate) meter: Option<MemberMeter>,
@@ -199,13 +204,27 @@ pub(crate) struct ShellParts<D> {
 pub(crate) struct Shell<D> {
     parts: ShellParts<D>,
     keys: KeyParser,
+    /// The session's place in chat while the chat screen is up (M3-F). Dropping it leaves the
+    /// room, so every way the shell can end (log off, client gone, write timeout, panic
+    /// unwinding) takes the member out of chat.
+    chat: Option<ChatSession>,
+    /// When the permissions were last loaded, so a room's events can re-check them now and then
+    /// without a key being pressed.
+    loaded_access: Instant,
 }
+
+/// How long a member keeps receiving a room's events after losing `chat.join` on it when they
+/// press no key. A key re-checks at once; this bounds the silent case (D55 loads per action, and
+/// a push has no action).
+const PUSH_RECHECK: Duration = Duration::from_secs(10);
 
 impl<D: Backend> Shell<D> {
     pub(crate) fn new(parts: ShellParts<D>) -> Self {
         Self {
             parts,
             keys: KeyParser::new(),
+            chat: None,
+            loaded_access: Instant::now(),
         }
     }
 
@@ -240,6 +259,7 @@ impl<D: Backend> Shell<D> {
             if batch.closed {
                 return;
             }
+            self.pump_chat().await; // what the room sent, before the keys act (M3-F)
             let now = Instant::now();
             let mut keys = if batch.input.is_empty() {
                 Vec::new()
@@ -265,27 +285,8 @@ impl<D: Backend> Shell<D> {
             if let Some(settings) = &effects.save_settings {
                 self.persist_settings(settings).await;
             }
-            // A members screen needs the store before it can take the next key. Answer it, then
-            // apply the keys that were held back, with the account's permissions loaded again
-            // (every action sees what the account holds now).
-            loop {
-                if let Some(request) = effects.members_request.take() {
-                    self.run_members(request).await;
-                } else if let Some(request) = effects.queue_request.take() {
-                    self.run_queue(request).await;
-                } else if let Some(request) = effects.password_request.take() {
-                    self.run_password(request).await;
-                } else {
-                    break;
-                }
-                let rest = std::mem::take(&mut effects.held_back);
-                if rest.is_empty() {
-                    break;
-                }
-                self.refresh_access().await;
-                let later = self.parts.screen.apply_keys(&rest);
-                effects.absorb(later);
-            }
+            self.apply_chat_effects(&effects);
+            self.answer_requests(&mut effects).await;
             if let Some(request) = effects.invite.take() {
                 self.run_invite(request).await;
             }
@@ -299,22 +300,8 @@ impl<D: Backend> Shell<D> {
             {
                 leaving = true;
             }
-            // The last frame goes out before the terminal is restored, so a final message (the
-            // too-many-attempts notice) is seen. A client that already left gets no frame.
-            if !batch.finish {
-                match self.parts.screen.render() {
-                    Ok(Some(frame)) => {
-                        if !self.send(frame).await {
-                            return;
-                        }
-                    }
-                    Ok(None) => {}
-                    Err(error) => {
-                        warn!(session = ?self.parts.session.id(), %error, "frame could not be drawn");
-                        self.parts.abort.trigger();
-                        return;
-                    }
-                }
+            if !batch.finish && !self.draw_frame().await {
+                return;
             }
             // After the frame: the room's answer to a request does not wait for the store, so how
             // long it takes cannot tell a kept request from a dropped one (D71).
@@ -326,6 +313,51 @@ impl<D: Backend> Shell<D> {
                 return;
             }
             next_cycle = tokio::time::Instant::now() + self.parts.redraw_interval;
+        }
+    }
+
+    /// Draw what changed and send it. The last frame goes out before the terminal is restored,
+    /// so a final message (the too-many-attempts notice) is seen. `false` means the shell must
+    /// stop: the connection is gone or the frame could not be drawn.
+    async fn draw_frame(&mut self) -> bool {
+        match self.parts.screen.render() {
+            Ok(Some(frame)) => self.send(frame).await,
+            Ok(None) => true,
+            Err(error) => {
+                warn!(session = ?self.parts.session.id(), %error, "frame could not be drawn");
+                self.parts.abort.trigger();
+                false
+            }
+        }
+    }
+
+    /// A members, queue, password or forum screen needs the store before it can take the next
+    /// key. Answer it, then apply the keys that were held back, with the account's
+    /// permissions loaded again (every action sees what the account holds now).
+    async fn answer_requests(&mut self, effects: &mut super::screen::KeyEffects) {
+        loop {
+            if let Some(request) = effects.members_request.take() {
+                self.run_members(request).await;
+            } else if let Some(request) = effects.chat_request.take() {
+                self.run_chat(request).await;
+            } else if let Some(request) = effects.queue_request.take() {
+                self.run_queue(request).await;
+            } else if let Some(request) = effects.password_request.take() {
+                self.run_password(request).await;
+            } else if let Some(request) = effects.forum_request.take() {
+                self.run_forums(request).await;
+            } else if let Some(request) = effects.community_request.take() {
+                self.run_community(request).await;
+            } else {
+                break;
+            }
+            let rest = std::mem::take(&mut effects.held_back);
+            if rest.is_empty() {
+                break;
+            }
+            self.refresh_access().await;
+            let later = self.parts.screen.apply_keys(&rest);
+            effects.absorb(later);
         }
     }
 
@@ -387,9 +419,22 @@ impl<D: Backend> Shell<D> {
         }
     }
 
-    /// Wait for the handler to hand over something, or for the parser's deadline.
+    /// Wait for the handler to hand over something, for a room to send something (the push
+    /// path, M3-F), or for the parser's deadline.
     async fn wait_for_work(&self) {
-        let woken = self.parts.inbox.wake.notified();
+        let woken = async {
+            let inbox = self.parts.inbox.wake.notified();
+            let room = async {
+                match &self.chat {
+                    Some(chat) => chat.woken().await,
+                    None => std::future::pending().await,
+                }
+            };
+            tokio::select! {
+                () = inbox => {}
+                () = room => {}
+            }
+        };
         match self.keys.deadline() {
             Some(deadline) => {
                 // Elapsing is the point: the cycle then expires the held `Esc`.
@@ -397,6 +442,76 @@ impl<D: Backend> Shell<D> {
             }
             None => woken.await,
         }
+    }
+
+    /// The chat screen opened or was left by these keys: join or leave the hub.
+    fn apply_chat_effects(&mut self, effects: &super::screen::KeyEffects) {
+        if effects.chat_exit {
+            self.chat = None;
+        }
+        if effects.chat_open {
+            self.connect_chat();
+        }
+    }
+
+    /// Put the member in chat (the chat screen just opened). A full hub leaves the session
+    /// without one; the screen's first request then says chat is full.
+    fn connect_chat(&mut self) {
+        self.chat = None;
+        let (Some(account), Ok(handle)) = (
+            self.parts.account,
+            sanitize_username(self.parts.screen.member_handle().unwrap_or_default()),
+        ) else {
+            return;
+        };
+        match self.parts.chat.connect(account, handle) {
+            Ok(session) => self.chat = Some(session),
+            Err(error) => {
+                info!(session = ?self.parts.session.id(), %error, "chat is full; not joined");
+            }
+        }
+    }
+
+    /// Show what the member's room sent since the last cycle, before the keys act, so a key
+    /// meets the page as it is now (a closed room has already sent the member back to the
+    /// list); and now and then check that they may still be in the room.
+    async fn pump_chat(&mut self) {
+        let Some(events) = self.chat.as_ref().map(ChatSession::drain) else {
+            return;
+        };
+        if events.is_empty() {
+            return;
+        }
+        let follow_up = self.parts.screen.chat_receive(events);
+        if let Some(request) = follow_up {
+            self.run_chat(request).await;
+        }
+        if self.chat.is_some()
+            && self.parts.screen.chat_room().is_some()
+            && self.loaded_access.elapsed() >= PUSH_RECHECK
+        {
+            self.refresh_access().await;
+            // Any in-room request re-checks `chat.join` on the room. `Who` is the lightest.
+            self.run_chat(ChatRequest::Who).await;
+        }
+    }
+
+    /// Run the chat request the chat screen is waiting on and give it the answer. Core checks the
+    /// permissions against the snapshot loaded for this action; nothing is cached, and nothing
+    /// said is logged.
+    async fn run_chat(&mut self, request: ChatRequest) {
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let response = match &self.chat {
+            Some(session) => {
+                session
+                    .execute(&*self.parts.directory, &access, request)
+                    .await
+            }
+            None => ChatResponse::Refused(ChatNotice::ChatFull),
+        };
+        self.parts.screen.chat_deliver(response);
     }
 
     /// Hand a frame to the session's bounded output queue. `false` means the shell must stop:
@@ -546,6 +661,8 @@ impl<D: Backend> Shell<D> {
             .session
             .set_authenticated(fingerprint, Access::Member);
         let start = self.account_start(&account).await;
+        // A member who just joined starts a member session: last callers lists them.
+        crate::community::note_sign_in(&*self.parts.directory, start.account).await;
         self.parts.account = Some(start.account);
         self.parts.screen.redeemed(MemberFlow::new(
             &start.handle,
@@ -653,6 +770,7 @@ impl<D: Backend> Shell<D> {
             None => access,
         };
         self.parts.screen.set_access(access);
+        self.loaded_access = Instant::now();
     }
 
     /// The session start for an account that was just made (the founder claim, an invite
@@ -706,6 +824,44 @@ impl<D: Backend> Shell<D> {
             let response = crate::sysop::queue::run(&*self.parts.directory, &access, request).await;
             self.parts.screen.deliver_queue(response);
             match self.parts.screen.take_queue_request() {
+                Some(next) => request = next,
+                None => break,
+            }
+        }
+    }
+
+    /// Run the community request a community screen is waiting on and give it the answer. Core
+    /// checks the permission against the snapshot loaded for this action (`community::execute`);
+    /// a session without one gets "not permitted", and a slow or failing store gets "failed".
+    /// A screen that needs a follow-up (an emptied poll page asks for the first one) gets it
+    /// here, with the same permissions (a few at most).
+    async fn run_community(&mut self, request: russh_bbs_core::community::Request) {
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let mut request = request;
+        for _ in 0..3 {
+            let response = crate::community::run(&*self.parts.directory, &access, request).await;
+            self.parts.screen.deliver_community(response);
+            match self.parts.screen.take_community_request() {
+                Some(next) => request = next,
+                None => break,
+            }
+        }
+    }
+
+    /// Run the forum request a screen is waiting on and give it the answer (M3-E). Core checks
+    /// every permission against the snapshot loaded for this action; a slow or failing store
+    /// is a plain failure on screen. A removal or a post asks for the list or thread again, so
+    /// the follow-up runs here with the same permissions (a few at most).
+    async fn run_forums(&mut self, request: crate::forums::Request) {
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let mut request = request;
+        for _ in 0..3 {
+            let response = crate::forums::run(&*self.parts.directory, &access, request).await;
+            match self.parts.screen.deliver_forum(response) {
                 Some(next) => request = next,
                 None => break,
             }

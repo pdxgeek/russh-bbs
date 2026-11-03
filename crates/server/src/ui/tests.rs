@@ -33,6 +33,7 @@ fn the_shipped_table_and_tree_are_valid() {
         .copied()
         .chain(main_tree().text_keys())
         .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
+        .chain(russh_bbs_core::community::TEXT_KEYS.iter().copied())
         .chain(russh_bbs_core::queue::keys::TEXT_KEYS.iter().copied())
         .chain(
             russh_bbs_core::terminal_settings::strings::TEXT_KEYS
@@ -51,6 +52,7 @@ fn the_table_holds_exactly_the_keys_the_code_uses() {
         .copied()
         .chain(main_tree().text_keys())
         .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
+        .chain(russh_bbs_core::community::TEXT_KEYS.iter().copied())
         .chain(russh_bbs_core::queue::keys::TEXT_KEYS.iter().copied())
         .chain(
             russh_bbs_core::terminal_settings::strings::TEXT_KEYS
@@ -248,7 +250,7 @@ fn the_main_menu_lists_its_items_with_hotkeys_and_the_footer() {
         "Signed in as alice.",
         "[s] Terminal settings",
         "[l] Log off",
-        "[f] Forums  (not built yet)",
+        "[m] Mail  (not built yet)",
         "?: help   Esc: back   Ctrl-C: log off",
     ] {
         assert!(out.contains(expected), "{expected:?} missing:\n{out}");
@@ -270,13 +272,13 @@ fn the_main_menu_lists_its_items_with_hotkeys_and_the_footer() {
 #[test]
 fn a_placeholder_says_it_is_not_built_in_words() {
     let out = text(&draw(
-        &page_for(Role::Member, &['f']),
+        &page_for(Role::Member, &['m']),
         &[],
         None,
         Tier::Ascii,
         (80, 24),
     ));
-    assert!(out.contains("Notice: Forums are not built yet."), "{out}");
+    assert!(out.contains("Notice: Mail is not built yet."), "{out}");
 }
 
 #[test]
@@ -464,27 +466,11 @@ fn nothing_on_the_menu_screen_claims_privacy() {
 // ---- pager (FIX-M1-L8) ----
 
 mod pager {
-    use crate::ssh::terminal::Key;
-    use crate::ui::pager::pager_key;
     use ratatui::layout::Rect;
     use russh_bbs_core::terminal_settings::{Pager, PagerEffect, PagerKey};
 
     use super::*;
     use crate::ui::pager::{render, text_rows, text_width, wrap};
-
-    #[test]
-    fn paging_keys_map_to_the_pager() {
-        assert_eq!(pager_key(Key::PageDown), Some(PagerKey::Next));
-        assert_eq!(pager_key(Key::PageUp), Some(PagerKey::Previous));
-        assert_eq!(pager_key(Key::Down), Some(PagerKey::Next));
-        assert_eq!(pager_key(Key::Up), Some(PagerKey::Previous));
-        assert_eq!(pager_key(Key::Char(' ')), Some(PagerKey::Next));
-        assert_eq!(pager_key(Key::Escape), Some(PagerKey::Stop));
-        // Home and End have no pager key yet; a paste break never turns a page.
-        for key in [Key::Home, Key::End, Key::PasteBreak, Key::Left, Key::Other] {
-            assert_eq!(pager_key(key), None, "{key:?}");
-        }
-    }
 
     fn frame_text(pager: &Pager, size: (u16, u16)) -> String {
         let ui = ui();

@@ -53,6 +53,8 @@ impl UniversalKey {
 /// `docs/access.md` and its variant to [`Permission`] in the same change.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Action {
+    /// Open the forums: the board list (`forum.list`, M3-E).
+    Forums,
     /// Open the terminal settings screen.
     TerminalSettings,
     /// Make an invite code and show it once (`invites.create`, M2-D).
@@ -71,6 +73,16 @@ pub enum Action {
     SysopQueue,
     /// Open the vouch screen: pending requests a member can speak for (`members.vouch`, M2-E).
     VouchQueue,
+    /// Open the one-liners (`community.view`, M3-J).
+    Oneliners,
+    /// Open the graffiti wall (`community.view`, M3-J).
+    GraffitiWall,
+    /// Open last callers (`community.view`, M3-J).
+    LastCallers,
+    /// Open the polls (`community.view`, M3-J).
+    Polls,
+    /// Open the chat room list (`chat.join`, M3-F).
+    Chat,
     /// End the session.
     LogOff,
 }
@@ -81,6 +93,7 @@ impl Action {
     #[must_use]
     pub const fn permission(self) -> Option<Permission> {
         match self {
+            Self::Forums => Some(Permission::ForumList),
             Self::TerminalSettings => Some(Permission::AccountEditSettings),
             Self::InviteCreate | Self::InviteList => Some(Permission::InvitesCreate),
             Self::InviteTree => Some(Permission::InvitesViewTree),
@@ -88,6 +101,10 @@ impl Action {
             Self::EditOwnProfile => Some(Permission::AccountEditProfile),
             Self::SysopQueue => Some(Permission::MembersApprove),
             Self::VouchQueue => Some(Permission::MembersVouch),
+            Self::Oneliners | Self::GraffitiWall | Self::LastCallers | Self::Polls => {
+                Some(Permission::CommunityView)
+            }
+            Self::Chat => Some(Permission::ChatJoin),
             Self::LogOff => None,
         }
     }

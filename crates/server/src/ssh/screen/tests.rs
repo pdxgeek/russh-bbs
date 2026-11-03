@@ -460,3 +460,31 @@ fn a_paste_with_line_breaks_cannot_press_enter_or_quit_a_member_screen() {
         "{inputs:?}"
     );
 }
+
+/// FIX-M3-1: the chat input line never sends on a pasted line break, and the editing keys it
+/// has no use for do nothing.
+#[test]
+fn a_multi_line_paste_into_the_chat_line_cannot_send_it() {
+    use super::chat_key;
+    use russh_bbs_core::chat::ChatKey;
+    let paste = crate::ssh::terminal::parse_keys(b"\x1b[200~hi\nthere\r\n/quit\x1b[201~");
+    let mapped: Vec<_> = paste.into_iter().filter_map(chat_key).collect();
+    assert!(
+        mapped.iter().all(|key| matches!(key, ChatKey::Char(_))),
+        "{mapped:?}"
+    );
+    for key in [
+        Key::Left,
+        Key::Right,
+        Key::Home,
+        Key::End,
+        Key::Delete,
+        Key::PageUp,
+        Key::PageDown,
+        Key::PasteBreak,
+    ] {
+        assert!(chat_key(key).is_none(), "{key:?}");
+    }
+    // A typed Enter still sends.
+    assert_eq!(chat_key(Key::Enter), Some(ChatKey::Enter));
+}

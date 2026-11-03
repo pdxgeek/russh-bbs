@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO last_caller (account_id, last_at) VALUES (?, ?)\n             ON CONFLICT (account_id) DO UPDATE SET last_at = excluded.last_at",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "1f377448e1f0910d24d4a65af88ce1478021b321415a0549672c8fd6c1289523"
+}

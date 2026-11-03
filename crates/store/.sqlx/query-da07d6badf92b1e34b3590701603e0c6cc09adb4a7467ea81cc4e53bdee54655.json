@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE poll SET closed_at = ?1 WHERE id = ?2 AND closed_at IS NULL\n             AND (creator_id = ?3 OR ?4 <> 0) RETURNING creator_id",
+  "describe": {
+    "columns": [
+      {
+        "name": "creator_id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "da07d6badf92b1e34b3590701603e0c6cc09adb4a7467ea81cc4e53bdee54655"
+}

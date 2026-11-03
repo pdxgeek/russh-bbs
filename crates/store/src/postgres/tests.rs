@@ -226,6 +226,18 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         14,
         "d7431d8dc7edc3cf9a7b0dee7eecac83acecbc3e9ac5a12e47c81793d4aadc983cbfbd4faa830c1d85e0914353cd0101",
     ),
+    (
+        15,
+        "21e6ad1b69d8308df778871a702503e51c9a34b514cf78e2b2de9ace41ee80f21c0c8747e1eedf9b453523742a772b08",
+    ),
+    (
+        16,
+        "4af9d1ae47a3d9d594b956ed1ba64b3b346fb579f6ed8ae2d134cbde9534683c43e3b92ffa4560dfd8778395e7b99c95",
+    ),
+    (
+        17,
+        "5b4ee1c5b6a7e2c4015c834058588b0405bc384e2026b4bd51356c85f10b10652985327c1dab51be85a1d5539b795f3c",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {
@@ -284,6 +296,9 @@ async fn a_fresh_database_gets_every_migration_and_only_these_tables() {
             "account_password",
             "accounts",
             "audit_log",
+            "board",
+            "chat_room",
+            "community_line",
             "credit_ledger",
             "draft",
             "group_closure",
@@ -291,9 +306,14 @@ async fn a_fresh_database_gets_every_migration_and_only_these_tables() {
             "invite",
             "invite_request",
             "invite_request_vouch",
+            "last_caller",
             "limit_usage",
             "member_group",
             "member_limit",
+            "poll",
+            "poll_option",
+            "poll_vote",
+            "post",
             "profiles",
             "registration_day",
             "request_denial",
@@ -302,7 +322,8 @@ async fn a_fresh_database_gets_every_migration_and_only_these_tables() {
             "role_permission",
             "scheduler_job",
             "settings",
-            "terminal_settings"
+            "terminal_settings",
+            "thread"
         ]
     );
 }

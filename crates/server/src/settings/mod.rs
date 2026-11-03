@@ -125,13 +125,6 @@ pub(crate) fn boxed(
 
 /// The columns and rows inside the box [`boxed`] draws in `area`: what a caller has to fit its
 /// text into if it wants to page or wrap it itself.
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "only the pager uses it, and no screen pages yet (D65)"
-    )
-)]
 pub(crate) fn inner_size(area: Rect) -> (usize, usize) {
     let [_, middle, _] = Layout::horizontal([
         Constraint::Fill(1),

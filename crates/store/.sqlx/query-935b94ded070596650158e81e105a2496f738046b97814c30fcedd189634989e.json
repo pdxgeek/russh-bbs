@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO poll_vote (poll_id, account_id, position, voted_at)\n             SELECT p.id, ?2, ?3, ?4 FROM poll p\n             JOIN poll_option o ON o.poll_id = p.id AND o.position = ?3\n             WHERE p.id = ?1 AND p.closed_at IS NULL\n             ON CONFLICT (poll_id, account_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "935b94ded070596650158e81e105a2496f738046b97814c30fcedd189634989e"
+}

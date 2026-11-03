@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT a.username, c.last_at FROM last_caller c JOIN accounts a ON a.id = c.account_id\n             WHERE a.state = 'active' ORDER BY c.last_at DESC, a.id LIMIT ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "username",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "last_at",
+        "ordinal": 1,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "73685de819f341630ab5bc6848259ae168b24b927d22ce6184cfae404911e71a"
+}

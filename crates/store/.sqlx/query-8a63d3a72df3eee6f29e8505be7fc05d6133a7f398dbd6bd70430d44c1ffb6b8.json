@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT count(*) AS \"n!: i64\", min(created_at) AS \"oldest: i64\"\n                   FROM poll WHERE creator_id = ? AND created_at > ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "n!: i64",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "oldest: i64",
+        "ordinal": 1,
+        "type_info": "Null"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "8a63d3a72df3eee6f29e8505be7fc05d6133a7f398dbd6bd70430d44c1ffb6b8"
+}

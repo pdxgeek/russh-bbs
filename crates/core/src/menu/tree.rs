@@ -11,6 +11,7 @@ const MAIN: &str = "main";
 const SYSOP: &str = "sysop";
 const INVITES: &str = "invites";
 const MEMBERS: &str = "members";
+const COMMUNITY: &str = "community";
 
 const fn item(hotkey: char, label: &'static str, target: Target) -> Item {
     Item {
@@ -30,13 +31,8 @@ const fn gated(hotkey: char, label: &'static str, target: Target, requires: Perm
     }
 }
 
-static MAIN_ITEMS: [Item; 8] = [
-    gated(
-        'f',
-        "menu.main.item.forums",
-        Target::Placeholder("placeholder.forums"),
-        Permission::ForumList,
-    ),
+static MAIN_ITEMS: [Item; 10] = [
+    item('f', "menu.main.item.forums", Target::Action(Action::Forums)),
     gated(
         'm',
         "menu.main.item.mail",
@@ -49,11 +45,18 @@ static MAIN_ITEMS: [Item; 8] = [
         Target::Placeholder("placeholder.files"),
         Permission::FilesList,
     ),
+    item('c', "menu.main.item.chat", Target::Action(Action::Chat)),
     gated(
         'u',
         "menu.main.item.members",
         Target::Menu(MEMBERS),
         Permission::MembersView,
+    ),
+    gated(
+        'y',
+        "menu.main.item.community",
+        Target::Menu(COMMUNITY),
+        Permission::CommunityView,
     ),
     gated(
         'i',
@@ -122,7 +125,30 @@ static MEMBERS_ITEMS: [Item; 4] = [
     ),
 ];
 
-static MENUS: [Menu; 4] = [
+static COMMUNITY_ITEMS: [Item; 4] = [
+    item(
+        'o',
+        "menu.community.item.oneliners",
+        Target::Action(Action::Oneliners),
+    ),
+    item(
+        'g',
+        "menu.community.item.graffiti",
+        Target::Action(Action::GraffitiWall),
+    ),
+    item(
+        'l',
+        "menu.community.item.callers",
+        Target::Action(Action::LastCallers),
+    ),
+    item(
+        'p',
+        "menu.community.item.polls",
+        Target::Action(Action::Polls),
+    ),
+];
+
+static MENUS: [Menu; 5] = [
     Menu {
         id: MAIN,
         title: "menu.main.title",
@@ -142,6 +168,11 @@ static MENUS: [Menu; 4] = [
         id: MEMBERS,
         title: "menu.members.title",
         items: &MEMBERS_ITEMS,
+    },
+    Menu {
+        id: COMMUNITY,
+        title: "menu.community.title",
+        items: &COMMUNITY_ITEMS,
     },
 ];
 

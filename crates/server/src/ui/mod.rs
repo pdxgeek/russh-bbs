@@ -18,12 +18,6 @@ pub mod editor;
 pub(crate) mod keys;
 pub(crate) mod layout;
 pub(crate) mod lightbar;
-// No screen has text long enough to page yet; the first long-text screen (the message reader,
-// M3) uses this. The expectation fails the build when that happens, as a reminder to drop it.
-#[cfg_attr(
-    not(test),
-    expect(dead_code, reason = "no long-text screen exists yet (D65)")
-)]
 pub(crate) mod pager;
 pub mod strings;
 pub mod theme;
@@ -83,6 +77,7 @@ impl Ui {
             .copied()
             .chain(tree.text_keys())
             .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
+            .chain(russh_bbs_core::community::TEXT_KEYS.iter().copied())
             .chain(russh_bbs_core::queue::keys::TEXT_KEYS.iter().copied())
             .chain(
                 russh_bbs_core::terminal_settings::strings::TEXT_KEYS

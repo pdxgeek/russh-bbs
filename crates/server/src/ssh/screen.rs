@@ -32,7 +32,13 @@ use ratatui::crossterm::queue;
 use ratatui::crossterm::terminal::{Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen};
 use ratatui::layout::{Position, Rect, Size};
 use ratatui::{Terminal, TerminalOptions, Viewport};
-use russh_bbs_core::access::Snapshot;
+use russh_bbs_core::access::{Permission, PermissionCheck, Snapshot};
+use russh_bbs_core::chat::{
+    ChatEffect, ChatKey, ChatRequest, ChatResponse, ChatScreen, Event as ChatEvent, RoomId,
+};
+use russh_bbs_core::community::{
+    EditorAsk, NewPoll, Request as CommunityRequest, Response as CommunityResponse,
+};
 use russh_bbs_core::founder::{ClaimEffect, ClaimForm, ClaimInput};
 use russh_bbs_core::icons::{SecurityMarker, Tier};
 use russh_bbs_core::invites::{InviteOutcome, InviteRequest};
@@ -44,6 +50,7 @@ use russh_bbs_core::profiles::{
 use russh_bbs_core::queue::{
     InviteAsk, QueueView, Request as QueueRequest, Response as QueueResponse,
 };
+use russh_bbs_core::sanitize::{MultiLine, SingleLine};
 use russh_bbs_core::terminal_settings::strings::TITLE;
 use russh_bbs_core::terminal_settings::{
     LayoutId, MemberEffect, MemberFlow, MemberInput, TerminalSettings,
@@ -51,10 +58,12 @@ use russh_bbs_core::terminal_settings::{
 use russh_bbs_core::waiting_room::{Page, RedeemRequest, RoomEffect, RoomInput, View, WaitingRoom};
 
 use super::terminal::{Key, PtySize, RenderCap};
+use crate::forums::{self, DrawCtx, ForumEffect, ForumsScreen};
 use crate::members;
 use crate::settings::{self, Look};
 use crate::sysop;
 use crate::ui::classic::{self, ContentScreen, MENU_MARKERS, MenuScreen};
+use crate::ui::editor::{Editor, EditorEffect, EditorRequest, EditorView, Outcome};
 use crate::ui::strings::StringTable;
 use crate::ui::{Ui, chrome, layout};
 use crate::waiting_room::render;
@@ -216,6 +225,23 @@ pub(crate) struct KeyEffects {
     /// A password request (status, set, clear) the password screen is waiting on (M3-D). The
     /// session runs it against the store and gives the answer to [`Screen::deliver_password`].
     pub(crate) password_request: Option<PasswordRequest>,
+    /// The member opened the chat screen (M3-F): the session joins the hub before it runs
+    /// `chat_request`.
+    pub(crate) chat_open: bool,
+    /// The member left the chat screen: the session leaves the hub.
+    pub(crate) chat_exit: bool,
+    /// A chat request (list, join, say, whisper, ...) the chat screen is waiting on. The session
+    /// runs it against the hub and the room store and gives the answer to
+    /// [`Screen::chat_deliver`].
+    pub(crate) chat_request: Option<ChatRequest>,
+    /// A community request (a list, a post, a vote) the community screen is waiting on (M3-J).
+    /// The session runs it against the store and gives the answer to
+    /// [`Screen::deliver_community`].
+    pub(crate) community_request: Option<CommunityRequest>,
+    /// A forum request (board list, thread, search, post, ...) the forum screens are waiting
+    /// on (M3-E). The session runs it against the store and gives the answer to
+    /// [`Screen::deliver_forum`].
+    pub(crate) forum_request: Option<forums::Request>,
     /// Keys held back because `members_request` has to be answered first. The session applies
     /// them after delivering the answer, so a fast typist's next key is not lost.
     pub(crate) held_back: Vec<Key>,
@@ -233,6 +259,11 @@ impl KeyEffects {
         self.members_request = later.members_request;
         self.queue_request = later.queue_request;
         self.password_request = later.password_request;
+        self.chat_open |= later.chat_open;
+        self.chat_exit |= later.chat_exit;
+        self.chat_request = later.chat_request;
+        self.forum_request = later.forum_request;
+        self.community_request = later.community_request;
         self.held_back = later.held_back;
     }
 }
@@ -245,18 +276,46 @@ pub(crate) enum Content {
     Claim(ClaimForm),
     /// A member's signed-in session: login, glyph test, settings, home, logoff.
     Member(Box<MemberFlow>),
+    /// The forum screens (M3-E). The member's flow waits inside and comes back when they leave.
+    Forums(Box<ForumsContent>),
     /// A resource limit refused the session (M2-H): the honest message, then the session ends.
     /// The lines are fixed words and numbers from core's `LimitRefusal`, so they need no
     /// sanitizing.
     Limited(Vec<String>),
 }
 
+/// A member in the forums: the screens, and the flow that is given back at the main menu.
+pub(crate) struct ForumsContent {
+    flow: Box<MemberFlow>,
+    screen: ForumsScreen,
+}
+
 impl Content {
+    /// The member's flow, while the content is a member's session (at the menu or in the forums).
+    fn flow(&self) -> Option<&MemberFlow> {
+        match self {
+            Self::Member(flow) => Some(flow),
+            Self::Forums(session) => Some(&session.flow),
+            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
+        }
+    }
+
+    fn flow_mut(&mut self) -> Option<&mut MemberFlow> {
+        match self {
+            Self::Member(flow) => Some(flow),
+            Self::Forums(session) => Some(&mut session.flow),
+            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
+        }
+    }
+
     fn view(&self, ui: &Ui) -> View {
         match self {
             Self::Room(room) => room.view(),
             Self::Claim(form) => form.view(),
             Self::Member(flow) => flow.view(ui.theme(flow.settings().theme()).strings()),
+            Self::Forums(session) => session
+                .flow
+                .view(ui.theme(session.flow.settings().theme()).strings()),
             Self::Limited(lines) => View {
                 title: TITLE,
                 heading: LIMIT_HEADING,
@@ -275,7 +334,7 @@ impl Content {
     fn menu_page(&self) -> Option<MenuPage> {
         match self {
             Self::Member(flow) => flow.menu_page(),
-            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
+            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Limited(_) => None,
         }
     }
 
@@ -284,7 +343,7 @@ impl Content {
     fn is_framed_screen(&self) -> bool {
         match self {
             Self::Member(flow) => flow.is_invite_screen(),
-            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => false,
+            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Limited(_) => false,
         }
     }
 
@@ -292,7 +351,15 @@ impl Content {
     fn members_view(&self) -> Option<ScreenView> {
         match self {
             Self::Member(flow) => flow.members_view(),
-            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
+            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Limited(_) => None,
+        }
+    }
+
+    /// The community screens, while a member is at one (M3-J).
+    fn community_view(&self) -> Option<ScreenView> {
+        match self {
+            Self::Member(flow) => flow.community_view(),
+            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Limited(_) => None,
         }
     }
 
@@ -300,47 +367,41 @@ impl Content {
     fn queue_view(&self) -> Option<QueueView> {
         match self {
             Self::Member(flow) => flow.queue_view(),
-            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
+            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Limited(_) => None,
         }
     }
 
     /// The icon tier markers are drawn in: the member's, which is ASCII until the glyph test
     /// is answered.
     fn tier(&self) -> Tier {
-        match self {
-            Self::Member(flow) => flow.settings().icon_tier(),
-            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => Tier::Ascii,
-        }
+        self.flow()
+            .map_or(Tier::Ascii, |flow| flow.settings().icon_tier())
     }
 
     /// How to draw: a member's settings choose color and borders; everyone else gets the
     /// plain layout (the waiting room and claim prompt predate settings and use no color).
     fn look(&self, ui: &Ui, area: Rect) -> Option<Look> {
-        match self {
-            Self::Member(flow) => {
-                let settings = flow.settings();
-                let theme = ui.theme(settings.theme());
-                let layout = layout::effective(settings.layout(), area);
-                Some(Look::themed(settings, layout, theme.palette()))
-            }
-            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
-        }
+        self.flow().map(|flow| {
+            let settings = flow.settings();
+            let theme = ui.theme(settings.theme());
+            let layout = layout::effective(settings.layout(), area);
+            Look::themed(settings, layout, theme.palette())
+        })
     }
 
     /// The layout in force for a member at `area` (their choice, or a fallback that fits).
     fn layout(&self, area: Rect) -> LayoutId {
-        match self {
-            Self::Member(flow) => layout::effective(flow.settings().layout(), area),
-            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => LayoutId::Classic,
-        }
+        self.flow().map_or(LayoutId::Classic, |flow| {
+            layout::effective(flow.settings().layout(), area)
+        })
     }
 
     /// The strings to draw with: the member's theme, or the default for everyone else.
     fn strings<'a>(&self, ui: &'a Ui) -> &'a StringTable {
-        match self {
-            Self::Member(flow) => ui.theme(flow.settings().theme()).strings(),
-            Self::Room(_) | Self::Claim(_) | Self::Limited(_) => ui.strings(),
-        }
+        self.flow().map_or_else(
+            || ui.strings(),
+            |flow| ui.theme(flow.settings().theme()).strings(),
+        )
     }
 }
 
@@ -367,6 +428,14 @@ pub(crate) struct Screen {
     /// The day's last `open` place went while this visitor's create-account form was open: the
     /// room becomes the `apply` room, with its notice, as soon as they leave the form (FIX-M2-4).
     degrade_on_leave: bool,
+    /// The full-screen editor, while the poll form has one open (M3-J, using M3-B's widget).
+    /// While it is open every key goes to it and it is drawn instead of the content.
+    /// Held in a `Mutex` only to make the session future `Send`: the widget's caches are
+    /// `Cell`s. It is always reached with `get_mut`, so nothing ever waits on the lock.
+    editor: Option<Mutex<Editor>>,
+    /// The chat screen, while the member is in chat (M3-F). It sits over the member's main
+    /// menu: while it is `Some` every key goes to it, and the menu comes back when it is left.
+    chat: Option<ChatScreen>,
     /// What the transport adds to the screens (M3-H).
     transport: Transport,
 }
@@ -440,6 +509,8 @@ impl Screen {
             dirty: false,
             rebuild: false,
             degrade_on_leave: false,
+            editor: None,
+            chat: None,
             transport: Transport {
                 footer,
                 low_security: false,
@@ -455,8 +526,23 @@ impl Screen {
     /// Feed keypresses to the current content. Stops at the first key that ends the session or
     /// submits a token; keys after it are ignored. Nothing is drawn: call [`Screen::render`]
     /// once for the whole batch, so a flood of keys costs one redraw, not one per key.
+    #[allow(
+        clippy::too_many_lines,
+        reason = "one match over every screen the session can show; splitting it hides the flow"
+    )]
     pub(crate) fn apply_keys(&mut self, keys: &[Key]) -> KeyEffects {
+        if self.chat.is_some() {
+            return self.apply_chat_keys(keys);
+        }
         let mut effects = KeyEffects::default();
+        if self.editor.is_some() {
+            self.editor_keys(keys, &mut effects);
+            self.dirty = true;
+            return effects;
+        }
+        let mut open_editor_at = None;
+        // Set when the keys moved the session into or out of the forum screens (M3-E).
+        let mut moved = ForumMove::Stay;
         match &mut self.content {
             Content::Room(room) => {
                 for input in keys.iter().copied().filter_map(room_input) {
@@ -499,6 +585,9 @@ impl Screen {
                 }
             }
             Content::Limited(_) => effects.disconnect = true,
+            Content::Forums(session) => {
+                moved = forum_keys(&mut session.screen, keys, self.viewport, &mut effects);
+            }
             Content::Member(flow) => {
                 for (index, input) in keys
                     .iter()
@@ -511,6 +600,21 @@ impl Screen {
                         MemberEffect::Save(settings) => effects.save_settings = Some(settings),
                         MemberEffect::Invite(request) => {
                             effects.invite = Some(request);
+                            break;
+                        }
+                        MemberEffect::OpenChat => {
+                            let mut chat = ChatScreen::open();
+                            chat.set_manage(
+                                flow.access_snapshot().allows(Permission::ChatManageRooms),
+                            );
+                            self.chat = Some(chat);
+                            effects.chat_open = true;
+                            effects.chat_request = Some(ChatRequest::List);
+                            effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
+                            break;
+                        }
+                        MemberEffect::Forums => {
+                            moved = ForumMove::Open(index);
                             break;
                         }
                         MemberEffect::Disconnect => {
@@ -537,7 +641,27 @@ impl Screen {
                         effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
                         break;
                     }
+                    // And the community screens (M3-J).
+                    if let Some(request) = flow.take_community_request() {
+                        effects.community_request = Some(request);
+                        effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
+                        break;
+                    }
+                    // The poll form asked for the full-screen editor: the keys after it in
+                    // this batch are the editor's.
+                    if let Some(ask) = flow.take_community_editor() {
+                        open_editor_at = Some((index + 1, ask));
+                        break;
+                    }
                 }
+            }
+        }
+        self.forum_transitions(&mut effects, keys, moved);
+        if let Some((from, ask)) = open_editor_at {
+            self.open_editor(&ask);
+            let rest = keys.get(from..).unwrap_or_default();
+            if self.editor.is_some() && !rest.is_empty() {
+                self.editor_keys(rest, &mut effects);
             }
         }
         self.dirty = true;
@@ -548,18 +672,91 @@ impl Screen {
         effects
     }
 
+    /// Keys while the chat screen is up: they all go to it. Leaving it (Esc at the room list)
+    /// drops the overlay and applies the remaining keys to the menu; Ctrl-C/Ctrl-D logs off
+    /// from chat like from every page.
+    fn apply_chat_keys(&mut self, keys: &[Key]) -> KeyEffects {
+        let mut effects = KeyEffects::default();
+        let manage = self
+            .access()
+            .is_some_and(|access| access.allows(Permission::ChatManageRooms));
+        for (index, key) in keys.iter().copied().enumerate() {
+            let rest = keys.get(index + 1..).unwrap_or_default();
+            let Some(chat) = self.chat.as_mut() else {
+                break;
+            };
+            chat.set_manage(manage);
+            let outcome = match key {
+                Key::Ctrl('c' | 'd') => {
+                    // Log off from here: leave chat, let the menu handle the quit.
+                    self.chat = None;
+                    effects.chat_exit = true;
+                    let later = self.apply_keys(keys.get(index..).unwrap_or_default());
+                    effects.absorb(later);
+                    break;
+                }
+                other => match chat_key(other) {
+                    Some(chat_key) => chat.input(chat_key),
+                    None => continue,
+                },
+            };
+            match outcome {
+                ChatEffect::Stay => {}
+                ChatEffect::Exit => {
+                    self.chat = None;
+                    effects.chat_exit = true;
+                    let later = self.apply_keys(rest);
+                    effects.absorb(later);
+                    break;
+                }
+                ChatEffect::Request(request) => {
+                    effects.chat_request = Some(request);
+                    effects.held_back = rest.to_vec();
+                    break;
+                }
+            }
+        }
+        self.dirty = true;
+        effects
+    }
+
+    /// The answer to the chat request taken from [`KeyEffects`]. The screen shows it on the next
+    /// render.
+    pub(super) fn chat_deliver(&mut self, response: ChatResponse) {
+        if let Some(chat) = &mut self.chat {
+            chat.deliver(response);
+        }
+        self.dirty = true;
+    }
+
+    /// Show what the room sent (M3-F push path). Returns a request when the screen needs one.
+    pub(super) fn chat_receive(&mut self, events: Vec<ChatEvent>) -> Option<ChatRequest> {
+        self.dirty = true;
+        self.chat.as_mut().and_then(|chat| chat.receive(events))
+    }
+
+    /// The signed-in member's handle (sanitized), for the chat hub.
+    pub(super) fn member_handle(&self) -> Option<&str> {
+        self.content.flow().map(MemberFlow::handle)
+    }
+
+    /// The room the chat screen shows, if it is in one.
+    pub(super) fn chat_room(&self) -> Option<RoomId> {
+        self.chat.as_ref().and_then(ChatScreen::room_id)
+    }
+
     /// What the signed-in session holds, for the front end's own checks. `None` outside a
     /// member session.
     pub(crate) fn access(&self) -> Option<&Snapshot> {
-        match &self.content {
-            Content::Member(flow) => Some(flow.access_snapshot()),
-            Content::Room(_) | Content::Claim(_) | Content::Limited(_) => None,
-        }
+        self.content.flow().map(MemberFlow::access_snapshot)
     }
 
     /// Replace what a member session holds, for the next action (D33).
     pub(crate) fn set_access(&mut self, access: Snapshot) {
-        if let Content::Member(flow) = &mut self.content {
+        if let Some(chat) = &mut self.chat {
+            chat.set_manage(access.allows(Permission::ChatManageRooms));
+        }
+        if let Some(flow) = self.content.flow_mut() {
             flow.set_access(access);
         }
     }
@@ -571,6 +768,67 @@ impl Screen {
             flow.deliver_members(response);
         }
         self.dirty = true;
+    }
+
+    /// Carry out a move into or out of the forum screens that the keys asked for.
+    fn forum_transitions(&mut self, effects: &mut KeyEffects, keys: &[Key], moved: ForumMove) {
+        match moved {
+            ForumMove::Stay => {}
+            ForumMove::Open(index) => {
+                effects.forum_request = Some(self.open_forums());
+                effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
+            }
+            ForumMove::Leave => self.close_forums(),
+            ForumMove::LogOff(save) => {
+                self.close_forums();
+                if let Content::Member(flow) = &mut self.content {
+                    // Ctrl-C and Ctrl-D end the session from anywhere (D54): the flow shows its
+                    // goodbye. The editor's changed draft is stored first.
+                    let _ = flow.input(MemberInput::Quit);
+                }
+                effects.disconnect = true;
+                effects.forum_request = save.map(forums::Request::SaveDraft);
+            }
+        }
+    }
+
+    /// Move the member into the forum screens; the request loads the board list.
+    fn open_forums(&mut self) -> forums::Request {
+        let placeholder = Content::Limited(Vec::new());
+        match std::mem::replace(&mut self.content, placeholder) {
+            Content::Member(flow) => {
+                let (screen, request) = ForumsScreen::open(*flow.settings());
+                self.content = Content::Forums(Box::new(ForumsContent { flow, screen }));
+                self.rebuild = true;
+                request
+            }
+            other => {
+                self.content = other;
+                forums::Request::Boards
+            }
+        }
+    }
+
+    /// Give the member back to the main menu.
+    fn close_forums(&mut self) {
+        let placeholder = Content::Limited(Vec::new());
+        match std::mem::replace(&mut self.content, placeholder) {
+            Content::Forums(session) => {
+                self.content = Content::Member(session.flow);
+                self.rebuild = true;
+            }
+            other => self.content = other,
+        }
+    }
+
+    /// The answer to the forum request taken from [`KeyEffects`]. Returns a follow-up request
+    /// when the answer calls for one (the list again after a removal).
+    pub(super) fn deliver_forum(&mut self, response: forums::Response) -> Option<forums::Request> {
+        self.dirty = true;
+        match &mut self.content {
+            Content::Forums(session) => session.screen.deliver(response),
+            Content::Room(_) | Content::Claim(_) | Content::Member(_) | Content::Limited(_) => None,
+        }
     }
 
     /// The answer to the queue request taken from [`KeyEffects`]. The screen shows it on the
@@ -591,12 +849,96 @@ impl Screen {
         self.dirty = true;
     }
 
+    /// The answer to the community request taken from [`KeyEffects`]. The screen shows it on the
+    /// next render.
+    pub(crate) fn deliver_community(&mut self, response: CommunityResponse) {
+        if let Content::Member(flow) = &mut self.content {
+            flow.deliver_community(response);
+        }
+        self.dirty = true;
+    }
+
+    /// The community request the screen asked for after an answer (an emptied poll page asks for
+    /// the first one), once.
+    pub(crate) fn take_community_request(&mut self) -> Option<CommunityRequest> {
+        match &mut self.content {
+            Content::Member(flow) => flow.take_community_request(),
+            Content::Room(_) | Content::Claim(_) | Content::Forums(_) | Content::Limited(_) => None,
+        }
+    }
+
+    /// Open the editor for a poll description. If its text does not fit the editor's bounds
+    /// (it cannot: the screen only holds text the editor returned) nothing opens.
+    fn open_editor(&mut self, ask: &EditorAsk) {
+        let title = SingleLine::new(40).sanitize(
+            self.content
+                .strings(&self.ui)
+                .text(russh_bbs_core::community::keys::FORM_EDITOR_TITLE),
+        );
+        let initial =
+            MultiLine::new(NewPoll::description_limits().max_chars()).sanitize(&ask.initial);
+        let request = EditorRequest::new(title)
+            .initial(initial)
+            .limits(NewPoll::description_limits());
+        match Editor::open(request, None) {
+            Ok(editor) => self.editor = Some(Mutex::new(editor)),
+            Err(_) => {
+                if let Content::Member(flow) = &mut self.content {
+                    flow.deliver_community_description(None);
+                }
+            }
+        }
+    }
+
+    /// Feed keys to the open editor. A finished editor hands its text to the poll form. There
+    /// is no draft context, so there is nothing to save: leaving with changes asks only whether
+    /// to keep editing or discard.
+    fn editor_keys(&mut self, keys: &[Key], effects: &mut KeyEffects) {
+        for key in keys.iter().copied() {
+            let Some(editor) = &mut self.editor else {
+                return;
+            };
+            let editor = editor.get_mut().unwrap_or_else(PoisonError::into_inner);
+            let text = match editor.input(key) {
+                EditorEffect::Stay => continue,
+                EditorEffect::Done(Outcome::Submitted(body)) => Some(body.trimmed().to_owned()),
+                EditorEffect::Done(Outcome::Cancelled | Outcome::SavedDraft)
+                | EditorEffect::SaveDraft(_) => None,
+                EditorEffect::LogOff(_) => {
+                    effects.disconnect = true;
+                    return;
+                }
+            };
+            self.editor = None;
+            if let Content::Member(flow) = &mut self.content {
+                flow.deliver_community_description(text);
+            }
+            self.rebuild = true;
+            return;
+        }
+    }
+
+    /// Draw the open editor, if there is one. `true` when it was drawn.
+    fn draw_editor(&mut self) -> io::Result<bool> {
+        let (Some(editor), Content::Member(flow)) = (&mut self.editor, &self.content) else {
+            return Ok(false);
+        };
+        let editor = editor.get_mut().unwrap_or_else(PoisonError::into_inner);
+        let view = EditorView {
+            ui: &self.ui,
+            settings: flow.settings(),
+            markers: &MENU_MARKERS,
+        };
+        self.terminal.draw(|frame| editor.render(frame, &view))?;
+        Ok(true)
+    }
+
     /// The queue request the screen asked for after an answer (a decision asks for the list
     /// again), once.
     pub(crate) fn take_queue_request(&mut self) -> Option<QueueRequest> {
         match &mut self.content {
             Content::Member(flow) => flow.take_queue_request(),
-            Content::Room(_) | Content::Claim(_) | Content::Limited(_) => None,
+            Content::Room(_) | Content::Claim(_) | Content::Forums(_) | Content::Limited(_) => None,
         }
     }
 
@@ -605,7 +947,9 @@ impl Screen {
     pub(crate) fn claim_rejected(&mut self) -> bool {
         let disconnect = match &mut self.content {
             Content::Claim(form) => form.rejected() == ClaimEffect::Disconnect,
-            Content::Room(_) | Content::Member(_) | Content::Limited(_) => false,
+            Content::Room(_) | Content::Member(_) | Content::Forums(_) | Content::Limited(_) => {
+                false
+            }
         };
         self.dirty = true;
         disconnect
@@ -743,7 +1087,7 @@ impl Screen {
         let farewell = match &self.content {
             Content::Member(flow) => flow.farewell(self.content.strings(&self.ui)),
             Content::Limited(lines) => Some(lines.clone()),
-            Content::Room(_) | Content::Claim(_) => None,
+            Content::Room(_) | Content::Claim(_) | Content::Forums(_) => None,
         };
         for line in farewell.into_iter().flatten() {
             bytes.extend_from_slice(line.as_bytes());
@@ -752,86 +1096,121 @@ impl Screen {
         Ok(bytes)
     }
 
+    #[allow(
+        clippy::too_many_lines,
+        reason = "one match over every screen the session can show; splitting it hides the flow"
+    )]
     fn draw(&mut self) -> io::Result<Vec<u8>> {
+        if let Content::Forums(session) = &self.content {
+            let settings = session.flow.settings();
+            let theme = self.ui.theme(settings.theme());
+            let layout = layout::effective(settings.layout(), self.viewport);
+            let ctx = DrawCtx {
+                ui: &self.ui,
+                strings: theme.strings(),
+                settings,
+                look: Look::themed(settings, layout, theme.palette()),
+                tier: settings.icon_tier(),
+            };
+            self.terminal
+                .draw(|frame| forums::render(frame, &session.screen, &ctx))?;
+            return Ok(self.take_output());
+        }
+        // While the editor is open it is drawn instead of the content (the transport's footer
+        // row below still follows it).
+        let drew_editor = self.draw_editor()?;
         let view = self.content.view(&self.ui);
         let look = self.content.look(&self.ui, self.viewport);
         let layout = self.content.layout(self.viewport);
         let menu = self.content.menu_page();
-        let members_view = self.content.members_view();
+        // The community screens (M3-J) produce the members screens' view and are drawn the same.
+        let members_view = self
+            .content
+            .members_view()
+            .or_else(|| self.content.community_view());
         let queue_view = self.content.queue_view();
         let tier = self.content.tier();
         let strings = self.content.strings(&self.ui);
         let framed = self.content.is_framed_screen();
+        let chat = self.chat.as_ref();
         // Staff screens add the low-security marker while the board is in that mode (D27).
         let staff_markers: &[SecurityMarker] = if self.transport.low_security {
             &STAFF_MARKERS_LOW_SECURITY
         } else {
             &MENU_MARKERS
         };
-        self.terminal.draw(|frame| match (look, &menu) {
-            // The sysop queue and the vouch screen (M2-E): the same layout and status row. The
-            // requester's text is drawn in the content box only.
-            (Some(look), None) if queue_view.is_some() => {
-                if let Some(screen) = &queue_view {
-                    let width =
-                        usize::from(frame.area().width.min(settings::MAX_WIDTH)).saturating_sub(2);
-                    classic::render_content(
-                        frame,
-                        ContentScreen {
-                            strings,
-                            lines: sysop::queue::lines(screen, strings, look, width),
-                            look,
-                            tier,
-                            markers: staff_markers,
-                        },
-                    );
+        if !drew_editor {
+            self.terminal.draw(|frame| match (look, &menu) {
+                // The chat screen (M3-F): the same box and status row, with the room's lines.
+                (Some(look), _) if chat.is_some() => {
+                    if let Some(screen) = chat {
+                        crate::chat::render(frame, screen, strings, look, tier);
+                    }
                 }
-            }
-            // A members screen: the same classic layout and status row, with its own lines.
-            (Some(look), None) if members_view.is_some() => {
-                if let Some(screen) = &members_view {
-                    let width =
-                        usize::from(frame.area().width.min(settings::MAX_WIDTH)).saturating_sub(2);
-                    classic::render_content(
-                        frame,
-                        ContentScreen {
-                            strings,
-                            lines: members::lines(screen, strings, look, width),
-                            look,
-                            tier,
-                            markers: &MENU_MARKERS,
-                        },
-                    );
+                // The sysop queue and the vouch screen (M2-E): the same layout and status row. The
+                // requester's text is drawn in the content box only.
+                (Some(look), None) if queue_view.is_some() => {
+                    if let Some(screen) = &queue_view {
+                        let width = usize::from(frame.area().width.min(settings::MAX_WIDTH))
+                            .saturating_sub(2);
+                        classic::render_content(
+                            frame,
+                            ContentScreen {
+                                strings,
+                                lines: sysop::queue::lines(screen, strings, look, width),
+                                look,
+                                tier,
+                                markers: staff_markers,
+                            },
+                        );
+                    }
                 }
-            }
-            // The main menu: the classic hotkey layout, with the reserved status row.
-            (Some(look), Some(page)) => layout::render_menu(
-                frame,
-                layout,
-                &MenuScreen {
-                    strings,
-                    page,
-                    body: &view.body,
-                    notice: view.notice,
-                    look,
-                    tier,
-                    markers: &MENU_MARKERS,
-                },
-            ),
-            // The invite screens (M2-D): the same framed layout, with the reserved status row.
-            (Some(look), None) if framed => classic::render_content(
-                frame,
-                ContentScreen {
-                    strings,
-                    lines: classic::view_lines(strings, &view, look),
-                    look,
-                    tier,
-                    markers: &MENU_MARKERS,
-                },
-            ),
-            (Some(look), None) => settings::render(frame, &view, look, strings),
-            (None, _) => render(frame, &view),
-        })?;
+                // A members screen: the same classic layout and status row, with its own lines.
+                (Some(look), None) if members_view.is_some() => {
+                    if let Some(screen) = &members_view {
+                        let width = usize::from(frame.area().width.min(settings::MAX_WIDTH))
+                            .saturating_sub(2);
+                        classic::render_content(
+                            frame,
+                            ContentScreen {
+                                strings,
+                                lines: members::lines(screen, strings, look, width),
+                                look,
+                                tier,
+                                markers: &MENU_MARKERS,
+                            },
+                        );
+                    }
+                }
+                // The main menu: the classic hotkey layout, with the reserved status row.
+                (Some(look), Some(page)) => layout::render_menu(
+                    frame,
+                    layout,
+                    &MenuScreen {
+                        strings,
+                        page,
+                        body: &view.body,
+                        notice: view.notice,
+                        look,
+                        tier,
+                        markers: &MENU_MARKERS,
+                    },
+                ),
+                // The invite screens (M2-D): the same framed layout, with the reserved status row.
+                (Some(look), None) if framed => classic::render_content(
+                    frame,
+                    ContentScreen {
+                        strings,
+                        lines: classic::view_lines(strings, &view, look),
+                        look,
+                        tier,
+                        markers: &MENU_MARKERS,
+                    },
+                ),
+                (Some(look), None) => settings::render(frame, &view, look, strings),
+                (None, _) => render(frame, &view),
+            })?;
+        }
         let mut bytes = self.take_output();
         if let Some(footer) = self.transport.footer {
             // After the frame, so a repaint or a clear never leaves the row bare.
@@ -871,7 +1250,7 @@ fn window_size(window: PtySize) -> Size {
 /// screen (start, claim, redeem) calls this, so none can forget the theme list.
 fn prepare_member(content: &mut Content, pty: PtySize, ui: &Ui) {
     tell_flow_the_terminal(content, pty);
-    if let Content::Member(flow) = content {
+    if let Some(flow) = content.flow_mut() {
         flow.set_themes(ui.theme_names());
     }
 }
@@ -879,7 +1258,7 @@ fn prepare_member(content: &mut Content, pty: PtySize, ui: &Ui) {
 /// Give a member session the real terminal size, so its settings screen can say when a stored
 /// size override is cut down to fit (D64). Other content has no overrides.
 fn tell_flow_the_terminal(content: &mut Content, pty: PtySize) {
-    if let Content::Member(flow) = content {
+    if let Some(flow) = content.flow_mut() {
         flow.set_terminal(pty.cols(), pty.rows());
     }
 }
@@ -887,10 +1266,10 @@ fn tell_flow_the_terminal(content: &mut Content, pty: PtySize) {
 /// The size to draw at: the client's, with a member's width and height overrides applied.
 fn drawn_size(pty: PtySize, content: &Content) -> PtySize {
     match content {
-        Content::Member(flow) => {
+        Content::Member(_) | Content::Forums(_) => content.flow().map_or(pty, |flow| {
             let (cols, rows) = flow.settings().size(pty.cols(), pty.rows());
             PtySize::from_request(u32::from(cols), u32::from(rows))
-        }
+        }),
         Content::Room(_) | Content::Claim(_) | Content::Limited(_) => pty,
     }
 }
@@ -908,6 +1287,42 @@ fn viewport(drawn: PtySize, cap: RenderCap) -> Rect {
     )
 }
 
+/// What a batch of keys did to the forum screens' place in the session (M3-E).
+enum ForumMove {
+    /// Nothing: the keys stayed where they were.
+    Stay,
+    /// The menu chose Forums at this key.
+    Open(usize),
+    /// The forums asked to go back to the main menu.
+    Leave,
+    /// The member logged off from inside the forums, with the editor's changed draft (if any)
+    /// to store first.
+    LogOff(Option<crate::ui::editor::DraftSave>),
+}
+
+/// Feed `keys` to the forum screens until one needs the store (the rest are held back, like the
+/// other screens) or leaves.
+fn forum_keys(
+    screen: &mut ForumsScreen,
+    keys: &[Key],
+    area: Rect,
+    effects: &mut KeyEffects,
+) -> ForumMove {
+    for (index, key) in keys.iter().copied().enumerate() {
+        match screen.input(key, area) {
+            ForumEffect::Stay => {}
+            ForumEffect::Exit => return ForumMove::Leave,
+            ForumEffect::Request(request) => {
+                effects.forum_request = Some(request);
+                effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
+                break;
+            }
+            ForumEffect::LogOff(save) => return ForumMove::LogOff(save),
+        }
+    }
+    ForumMove::Stay
+}
+
 /// Translate a keypress for the room. Keys the room has no use for are dropped.
 fn room_input(key: Key) -> Option<RoomInput> {
     match key {
@@ -919,6 +1334,30 @@ fn room_input(key: Key) -> Option<RoomInput> {
         Key::Ctrl(_)
         | Key::Up
         | Key::Down
+        | Key::Left
+        | Key::Right
+        | Key::Home
+        | Key::End
+        | Key::Delete
+        | Key::PageUp
+        | Key::PageDown
+        | Key::PasteBreak
+        | Key::Other => None,
+    }
+}
+
+/// Translate a keypress for the chat screen. Keys it has no use for are dropped.
+fn chat_key(key: Key) -> Option<ChatKey> {
+    match key {
+        Key::Char(c) => Some(ChatKey::Char(c)),
+        Key::Enter => Some(ChatKey::Enter),
+        Key::Backspace => Some(ChatKey::Backspace),
+        Key::Escape => Some(ChatKey::Escape),
+        Key::Up => Some(ChatKey::Up),
+        Key::Down => Some(ChatKey::Down),
+        // A pasted line break must not send the line (FIX-M3-1, D88); Left, Right, Home, End
+        // and the rest do nothing in the one-line chat input.
+        Key::Ctrl(_)
         | Key::Left
         | Key::Right
         | Key::Home
