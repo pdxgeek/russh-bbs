@@ -9,5 +9,6 @@ pub mod settings;
 pub mod shutdown;
 pub mod ssh;
 pub mod sysop;
+pub mod telnet;
 pub mod ui;
 pub mod waiting_room;

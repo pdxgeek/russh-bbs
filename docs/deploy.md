@@ -95,6 +95,22 @@ The limit is per address (an IPv6 address counts as its /64), so one noisy addre
 
 The image uses the system allocator of the static musl build. Measured on a release musl binary (D57): about 8 MB idle, and after a local flood of 200 sessions with constant resizes and input about 28 MB ten seconds later, i.e. roughly 20 MB stays with the process until restart. Peak memory is bounded by `ssh.max_connections` and the render cap (`ssh.render_cols` x `ssh.render_rows`, D53), not by the allocator. Swapping in `mimalloc` used more memory and was not adopted.
 
+## Telnet (optional, off by default)
+
+Telnet is **off** in the image: no port is bound and nothing in the container listens on it. Turn it on only if you accept that telnet is not encrypted (D27, D85).
+
+```bash
+docker run -d --name bbs -p 2222:2222 -p 2323:2323 -v bbs-data:/data \
+  -e RUSSH_BBS_TELNET_ENABLED=true -e RUSSH_BBS_TELNET_ALLOW_LOGIN=true \
+  ghcr.io/pdxgeek/russh-bbs
+```
+
+- `telnet.enabled` starts the listener on `telnet.listen` (default `0.0.0.0:2323`, its own port; publish it with `-p`). The log says `TELNET IS ON ... LOW-SECURITY MODE` at start. Staff screens show a `LOW-SECURITY` marker while it is on.
+- `telnet.allow_login` is the second opt-in. Without it a connection is shown "Telnet login is not enabled on this board." and closed. With it, members who set a password over SSH (Terminal settings, Password) can sign in with it; a password typed over telnet crosses the network in the clear, so treat it as already known to anyone on the path and do not reuse it.
+- A telnet session is an ordinary member: roles of rank 40 and up (`cosysop`, `sysop`) are dropped for the session, and there is no waiting room, founder claim, registration or SFTP over telnet. Every screen shows `UNENCRYPTED` on its last row.
+- Telnet shares the SSH server's session counter (the per-member session limit spans both) but has its own connection-rate throttle and its own `ssh.max_connections` count, so a worst-case memory bill (D53) is up to twice what the log line `render_memory_ceiling_mib` reports when both transports are full. Lower `ssh.max_connections` if that matters.
+- Bind it to a private interface (`telnet.listen = "10.0.0.5:2323"`) or firewall it to a trusted network if you can; there is no TLS.
+
 ## Host key fingerprint
 
 The fingerprint is logged at start (`host key ready ... fingerprint=SHA256:...`): `docker logs bbs | grep fingerprint`. Publish it so members can check their first connect. It is stable across `docker restart`, upgrades and `docker rm` as long as the volume survives. Losing the volume changes it, and clients will see the standard changed-host-key warning.

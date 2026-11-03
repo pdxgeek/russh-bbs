@@ -39,7 +39,7 @@ use russh_bbs_core::registration::{OpenError, open_account, submit_application};
 use russh_bbs_core::store::{Account, AccountId};
 use russh_bbs_core::terminal_settings::{MemberFlow, MemberStart, TerminalSettings};
 use russh_bbs_core::waiting_room::{JoinKind, RedeemRequest};
-use tokio::sync::Notify;
+use tokio::sync::{Notify, mpsc};
 use tokio::time::{sleep_until, timeout, timeout_at};
 use tracing::{debug, info, warn};
 
@@ -53,7 +53,7 @@ use crate::founder::Founder;
 
 /// How long a member's session start (settings and login time) may take before the shell
 /// falls back. A slow store must not hang the screen.
-pub(super) const MEMBER_START_TIMEOUT: Duration = Duration::from_secs(2);
+pub(crate) const MEMBER_START_TIMEOUT: Duration = Duration::from_secs(2);
 
 /// How long one password screen request may take: hashing a new password and writing it. Longer
 /// than a store call because argon2id is slow on purpose and waits its turn on the pool.
@@ -84,7 +84,7 @@ struct Batch {
 /// The handler's side of the hand-off to the shell task. Filling it is a lock, a copy and a
 /// wake-up; it never draws, parses or waits.
 #[derive(Debug, Default)]
-pub(super) struct Inbox {
+pub(crate) struct Inbox {
     state: Mutex<InboxState>,
     wake: Notify,
 }
@@ -96,7 +96,7 @@ impl Inbox {
     }
 
     /// Queue input bytes for the next cycle. Bytes beyond the ceiling are dropped.
-    pub(super) fn push_input(&self, bytes: &[u8]) {
+    pub(crate) fn push_input(&self, bytes: &[u8]) {
         {
             let mut state = self.lock();
             let room = MAX_PENDING_INPUT.saturating_sub(state.input.len());
@@ -109,20 +109,20 @@ impl Inbox {
     }
 
     /// Record a window size. Only the latest one is kept.
-    pub(super) fn set_resize(&self, size: PtySize) {
+    pub(crate) fn set_resize(&self, size: PtySize) {
         self.lock().resize = Some(size);
         self.wake.notify_one();
     }
 
     /// Ask the shell to restore the client's terminal and close the channel (the client sent
     /// EOF).
-    pub(super) fn finish(&self) {
+    pub(crate) fn finish(&self) {
         self.lock().finish = true;
         self.wake.notify_one();
     }
 
     /// The channel or connection is gone: stop without sending anything.
-    pub(super) fn close(&self) {
+    pub(crate) fn close(&self) {
         self.lock().closed = true;
         self.wake.notify_one();
     }
@@ -138,36 +138,71 @@ impl Inbox {
     }
 }
 
+/// Where a shell's frames go. The shell does not know which transport carries them (M3-H).
+pub(crate) enum Output {
+    /// An SSH channel: frames are channel data, and ending the shell closes the channel.
+    Ssh {
+        /// The connection's handle.
+        handle: Handle,
+        /// The session channel.
+        channel: ChannelId,
+    },
+    /// A bounded queue drained by the transport's writer task (telnet). The transport encodes
+    /// the bytes for its wire; ending the shell drops the sender, which ends the writer.
+    Frames(mpsc::Sender<Vec<u8>>),
+}
+
+impl Output {
+    /// Queue `bytes`. `Err` means the connection is gone.
+    async fn send(&self, bytes: Vec<u8>) -> Result<(), ()> {
+        match self {
+            Self::Ssh { handle, channel } => handle.data(*channel, bytes).await.map_err(|_| ()),
+            Self::Frames(frames) => frames.send(bytes).await.map_err(|_| ()),
+        }
+    }
+
+    /// Close the output after the last frame. Errors only mean the connection is already gone.
+    async fn close(&self) {
+        if let Self::Ssh { handle, channel } = self {
+            let _ = handle.exit_status_request(*channel, 0).await;
+            let _ = handle.eof(*channel).await;
+            let _ = handle.close(*channel).await;
+        }
+    }
+}
+
 /// What a shell needs from the connection around it.
-pub(super) struct ShellParts<D> {
-    pub(super) handle: Handle,
-    pub(super) channel: ChannelId,
-    pub(super) screen: Screen,
-    pub(super) inbox: Arc<Inbox>,
-    pub(super) directory: Arc<D>,
-    pub(super) founder: Arc<Founder>,
-    pub(super) session: SessionRef,
-    pub(super) abort: Arc<Abort>,
-    pub(super) fingerprint: Option<Fingerprint>,
-    pub(super) peer_ip: Option<IpAddr>,
-    pub(super) account: Option<AccountId>,
+pub(crate) struct ShellParts<D> {
+    pub(crate) output: Output,
+    pub(crate) screen: Screen,
+    pub(crate) inbox: Arc<Inbox>,
+    pub(crate) directory: Arc<D>,
+    pub(crate) founder: Arc<Founder>,
+    pub(crate) session: SessionRef,
+    pub(crate) abort: Arc<Abort>,
+    pub(crate) fingerprint: Option<Fingerprint>,
+    pub(crate) peer_ip: Option<IpAddr>,
+    pub(crate) account: Option<AccountId>,
     /// Password login's hashing pool, for the password screen (M3-D).
-    pub(super) passwords: Arc<PasswordLogin>,
+    pub(crate) passwords: Arc<PasswordLogin>,
     /// The signed-in session's place in the resource limits (M2-H): its session slot and the
     /// minutes it has used. `None` for the waiting room, the founder claim and a refused start.
-    pub(super) meter: Option<MemberMeter>,
-    pub(super) redraw_interval: Duration,
-    pub(super) write_stall: Duration,
+    pub(crate) meter: Option<MemberMeter>,
+    pub(crate) redraw_interval: Duration,
+    pub(crate) write_stall: Duration,
+    /// Applied to every permission snapshot the shell loads, after the store answers (M3-H,
+    /// D27): the telnet transport uses it to drop what a staff role holds. `None` for SSH.
+    pub(crate) access_filter: Option<fn(&Snapshot) -> Snapshot>,
 }
 
 /// One session's shell task.
-pub(super) struct Shell<D> {
+pub(crate) struct Shell<D> {
     parts: ShellParts<D>,
     keys: KeyParser,
 }
 
 impl<D: Backend> Shell<D> {
-    pub(super) fn new(parts: ShellParts<D>) -> Self {
+    pub(crate) fn new(parts: ShellParts<D>) -> Self {
         Self {
             parts,
             keys: KeyParser::new(),
@@ -176,7 +211,7 @@ impl<D: Backend> Shell<D> {
 
     /// Run until the shell ends: the person logs off, the client leaves, or the connection is
     /// dropped.
-    pub(super) async fn run(mut self) {
+    pub(crate) async fn run(mut self) {
         self.run_loop().await;
         self.settle_meter().await;
     }
@@ -380,17 +415,12 @@ impl<D: Backend> Shell<D> {
             return true;
         }
         let len = bytes.len();
-        match timeout(
-            self.parts.write_stall,
-            self.parts.handle.data(self.parts.channel, bytes),
-        )
-        .await
-        {
+        match timeout(self.parts.write_stall, self.parts.output.send(bytes)).await {
             Ok(Ok(())) => {
                 self.parts.session.add_frame(len);
                 true
             }
-            Ok(Err(_)) => {
+            Ok(Err(())) => {
                 debug!(session = ?self.parts.session.id(), "connection closed while sending");
                 false
             }
@@ -417,12 +447,7 @@ impl<D: Backend> Shell<D> {
             }
         }
         self.parts.session.set_shell_open(false);
-        let handle = &self.parts.handle;
-        let channel = self.parts.channel;
-        // Errors only mean the connection is already gone.
-        let _ = handle.exit_status_request(channel, 0).await;
-        let _ = handle.eof(channel).await;
-        let _ = handle.close(channel).await;
+        self.parts.output.close().await;
     }
 
     /// Check a token typed at the claim prompt and update the screen. Every failure (limited,
@@ -633,6 +658,10 @@ impl<D: Backend> Shell<D> {
                 warn!(session = ?self.parts.session.id(), "permission load timed out; holding none");
                 Snapshot::empty()
             }
+        };
+        let access = match self.parts.access_filter {
+            Some(filter) => filter(&access),
+            None => access,
         };
         self.parts.screen.set_access(access);
     }

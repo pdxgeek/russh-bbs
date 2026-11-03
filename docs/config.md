@@ -26,7 +26,7 @@ A strict rule applies to the environment: a `RUSSH_BBS_*` variable that no setti
 - **Bad values** (wrong type, out of range, bad path, inconsistent with another key) name the key and where the value came from: the file, the environment variable or the flag.
 - **Something that is parsed but not built is a boot error, not ignored.** `datasource.iam_auth = true` fails with "IAM token authentication is not built yet" (D31, D44). The server never falls back to SQLite from Postgres, or to another kind of authentication, on its own.
 - **Postgres failures stop the boot.** A bad URL, an unreachable server, a TLS check that fails, a server that does not offer TLS, or a refused login is a boot error that names the cause and never contains the password.
-- **Settings that parse but do nothing yet** log a warning when turned on (telnet, S3 blobs), so the sysop is not misled. Password login is built (M3-D) and logs a different warning at start: that it is on.
+- **Settings that parse but do nothing yet** log a warning when turned on (S3 blobs), so the sysop is not misled. Settings that lower the board's security log a warning at start: password login (M3-D) says it is on, and telnet (M3-H) says the board is in low-security mode.
 - **Secrets are redacted.** `datasource.url` may contain a password. It has no command-line flag (argv is visible in `ps`), it is masked in `Debug`, `Display` and logs (`postgres://user:***@host/db`), and no error message quotes it or the line it was on. If a config file sets it and is readable by group or others the server warns; use `chmod 600`. Object-store credentials are never read from this file: they come from the environment (D30).
 
 ## Environment variable names
@@ -93,13 +93,15 @@ All parsed, not yet used: no blob store exists yet. Object-store credentials com
 
 ### `[telnet]` (D27)
 
-Parsed, not yet used (M3). Turning telnet on is "low-security mode".
+Built in M3-H. Turning telnet on is "low-security mode": an unencrypted listener on its own port, with a loud warning in the log and a `LOW-SECURITY` marker on staff screens. **When `telnet.enabled` is `false` (the default) no port is bound.** Telnet follows the `[ssh]` limits and timeouts (`max_connections` and the rest) and the `[waiting_room]` per-network connection rate, with its own counts; see D85.
+
+What a telnet session is: a password login for members who set a password over SSH (a second opt-in, below), the same screens as SSH, and the fixed `UNENCRYPTED` marker on the last row of every screen. It is never a waiting room, a founder claim, a registration, SFTP or a staff session: roles of rank 40 and up (`cosysop`, `sysop`) are dropped, so a sysop who logs in over telnet is an ordinary member, and the password page is not offered there. Only ASCII passwords can be typed.
 
 | Key | Type | Default | Environment | Flag | Used by |
 |---|---|---|---|---|---|
-| `telnet.enabled` | boolean | `false` | `RUSSH_BBS_TELNET_ENABLED` | none | Parsed, not yet used; warns when on |
-| `telnet.allow_login` | boolean, needs `telnet.enabled` | `false` | `RUSSH_BBS_TELNET_ALLOW_LOGIN` | none | Parsed, not yet used |
-| `telnet.listen` | address, port 1–65535, not the SSH port when enabled | `0.0.0.0:2323` | `RUSSH_BBS_TELNET_LISTEN` | none | Parsed, not yet used |
+| `telnet.enabled` | boolean | `false` | `RUSSH_BBS_TELNET_ENABLED` | none | The telnet listener (M3-H); off binds no port; on warns at start |
+| `telnet.allow_login` | boolean, needs `telnet.enabled` | `false` | `RUSSH_BBS_TELNET_ALLOW_LOGIN` | none | Member password login over telnet; off shows a two-line refusal and closes |
+| `telnet.listen` | address, port 1–65535, not the SSH port when enabled | `0.0.0.0:2323` | `RUSSH_BBS_TELNET_LISTEN` | none | The telnet listener's address |
 
 ### `[waiting_room]` (D37)
 
@@ -146,5 +148,6 @@ Usage counters (`limit_usage`) are per account per UTC day and survive a restart
 
 - **Implemented and tested (M1-H):** all of the above; unit tests cover each layer, precedence, unknown keys, bad values with their source, the IAM refusal, redaction in `Debug`, `Display` and captured logs, default file search, the example file equalling the defaults, and this document naming every key, variable and flag.
 - **Implemented and tested (M1-G):** the `postgres` datasource (D44): config wiring and the `iam_auth` refusal in the config tests, the store itself in the shared suite on Postgres 16 and on a TLS-required Postgres.
-- **Planned:** IAM token authentication, a blob store reading `[blobs]`, telnet (M3).
+- **Implemented and tested (M3-H):** the `[telnet]` section is used. Off binds nothing; on starts the listener, warns, and sets `Limits::low_security`. Config tests cover the defaults, the warning and the limits flag; the transport is covered in `tests/telnet.rs` (see D85 and [features.md](features.md)).
+- **Planned:** IAM token authentication, a blob store reading `[blobs]`.
 - **Verified end to end:** see the M1-H pull request for the `ssh` session against a file and against environment overrides.

@@ -162,7 +162,7 @@ This is the most intricate feature in the MVP, so the M2 access slice starts wit
 - Every check goes through `core::access`. A front end never decides.
 - An area where a role holds no `*.list` or `*.read` is not listed to that role and is not reachable by name.
 - Role and permission changes are audited and apply on the next action.
-- `sysop` and `cosysop` are refused over telnet (D27).
+- `sysop` and `cosysop` are refused over telnet (D27): built in M3-H (D85) by `telnet::without_staff`, which drops every `Held` from a role of rank 40 or more, and which is applied to the session's start snapshot and to each snapshot it loads afterward.
 - Adding an action without adding its permission here and in the enum does not pass review.
 
 ## Implemented / Verified
@@ -468,7 +468,7 @@ Storage traits (`core::access`): `AccessStore` with a few methods only: `snapsho
 - **Resource-owner-managed allow lists** and an `owner` column on resources: the resources do not exist until M3/M4; each resource slice adds its owner and uses `grant_permission`.
 - **Checking that a scoped permission matches the resource's kind** at write time: harmless without it (a mismatched grant never matches); add when the sysop UI exists.
 - **Audit rows** for role, group and grant changes: done in M2-C and M2-B2 ([audit.md](audit.md)). **Retention** and the sysop screen: M5.
-- **Sysop/cosysop refused over telnet** (D27): M3 telnet slice.
+- **Sysop/cosysop refused over telnet** (D27): built in M3-H (D85); tested over a real TCP client (`tests/telnet.rs`) and in unit tests (`telnet::tests`).
 - **Sysop UI** to edit roles, groups and allow lists, and the "visible to the sysop" wording on allow-list screens: M5 and the resource slices.
 - **RFC 9068 claim names** (`roles`, `groups`, `entitlements`) on API tokens: M5.
 - **Cross-process cache or push invalidation**: not needed, nothing is cached.

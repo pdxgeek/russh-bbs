@@ -156,6 +156,13 @@ impl SshServer {
         &self.host_fingerprint
     }
 
+    /// The registry of live sessions. The telnet transport registers its sessions here too, so
+    /// the concurrent-session limit spans both (M3-H).
+    #[must_use]
+    pub fn registry(&self) -> Arc<SessionRegistry> {
+        Arc::clone(&self.registry)
+    }
+
     /// A snapshot of the live sessions.
     #[must_use]
     pub fn sessions(&self) -> Vec<SessionSnapshot> {

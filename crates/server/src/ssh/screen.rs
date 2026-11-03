@@ -37,7 +37,7 @@ use russh_bbs_core::community::{
     EditorAsk, NewPoll, Request as CommunityRequest, Response as CommunityResponse,
 };
 use russh_bbs_core::founder::{ClaimEffect, ClaimForm, ClaimInput};
-use russh_bbs_core::icons::Tier;
+use russh_bbs_core::icons::{SecurityMarker, Tier};
 use russh_bbs_core::invites::{InviteOutcome, InviteRequest};
 use russh_bbs_core::menu::MenuPage;
 use russh_bbs_core::passwords::{Request as PasswordRequest, Response as PasswordResponse};
@@ -61,8 +61,13 @@ use crate::sysop;
 use crate::ui::classic::{self, ContentScreen, MENU_MARKERS, MenuScreen};
 use crate::ui::editor::{Editor, EditorEffect, EditorRequest, EditorView, Outcome};
 use crate::ui::strings::StringTable;
-use crate::ui::{Ui, layout};
+use crate::ui::{Ui, chrome, layout};
 use crate::waiting_room::render;
+
+/// The markers a staff screen shows while the board is in low-security mode (D27): the usual
+/// one, and the mode's own.
+const STAFF_MARKERS_LOW_SECURITY: [SecurityMarker; 2] =
+    [SecurityMarker::ServerReadable, SecurityMarker::LowSecurity];
 
 /// The heading of the screen a refused session sees.
 const LIMIT_HEADING: &str = "Limit reached";
@@ -187,47 +192,47 @@ impl Backend for SessionBackend {
 
 /// What a batch of keypresses asked the session to do besides redraw.
 #[derive(Debug, Default)]
-pub(super) struct KeyEffects {
+pub(crate) struct KeyEffects {
     /// Whether the session should end.
-    pub(super) disconnect: bool,
+    pub(crate) disconnect: bool,
     /// A token the person submitted at the claim prompt. The session checks it (it needs the
     /// store) and reports back through [`Screen::claim_rejected`] or [`Screen::claim_accepted`].
-    pub(super) claim_token: Option<String>,
+    pub(crate) claim_token: Option<String>,
     /// Terminal settings the member changed. The session stores them.
-    pub(super) save_settings: Option<TerminalSettings>,
+    pub(crate) save_settings: Option<TerminalSettings>,
     /// An invite the visitor asked to redeem in the waiting room (M2-D). The session redeems it
     /// (it needs the store) and reports back through [`Screen::redeem_refused`] or
     /// [`Screen::redeemed`].
-    pub(super) redeem: Option<RedeemRequest>,
+    pub(crate) redeem: Option<RedeemRequest>,
     /// A request for an invite the visitor made in the waiting room (M2-E). The session offers
     /// it to the queue (it needs the store and the peer address). It never reports back: the
     /// room has already shown its one fixed answer.
-    pub(super) request_invite: Option<InviteAsk>,
+    pub(crate) request_invite: Option<InviteAsk>,
     /// An invite screen the member asked for (M2-D). The session carries it out and reports
     /// back through [`Screen::invite_done`].
-    pub(super) invite: Option<InviteRequest>,
+    pub(crate) invite: Option<InviteRequest>,
     /// A members request (list page, profile, save) the screen is waiting on. The session runs
     /// it against the store and gives the answer to [`Screen::deliver_members`].
-    pub(super) members_request: Option<MembersRequest>,
+    pub(crate) members_request: Option<MembersRequest>,
     /// A queue request (list, approve, deny, vouch) the sysop or vouch screen is waiting on
     /// (M2-E). The session runs it against the store and gives the answer to
     /// [`Screen::deliver_queue`].
-    pub(super) queue_request: Option<QueueRequest>,
+    pub(crate) queue_request: Option<QueueRequest>,
     /// A password request (status, set, clear) the password screen is waiting on (M3-D). The
     /// session runs it against the store and gives the answer to [`Screen::deliver_password`].
-    pub(super) password_request: Option<PasswordRequest>,
+    pub(crate) password_request: Option<PasswordRequest>,
     /// A community request (a list, a post, a vote) the community screen is waiting on (M3-J).
     /// The session runs it against the store and gives the answer to
     /// [`Screen::deliver_community`].
-    pub(super) community_request: Option<CommunityRequest>,
+    pub(crate) community_request: Option<CommunityRequest>,
     /// Keys held back because `members_request` has to be answered first. The session applies
     /// them after delivering the answer, so a fast typist's next key is not lost.
-    pub(super) held_back: Vec<Key>,
+    pub(crate) held_back: Vec<Key>,
 }
 
 impl KeyEffects {
     /// Fold in what a later batch asked for.
-    pub(super) fn absorb(&mut self, later: Self) {
+    pub(crate) fn absorb(&mut self, later: Self) {
         self.disconnect |= later.disconnect;
         self.claim_token = later.claim_token.or(self.claim_token.take());
         self.save_settings = later.save_settings.or(self.save_settings.take());
@@ -243,7 +248,7 @@ impl KeyEffects {
 }
 
 /// What a session is looking at.
-pub(super) enum Content {
+pub(crate) enum Content {
     /// The waiting room, for a key that is not a member.
     Room(WaitingRoom),
     /// The founder token prompt.
@@ -358,7 +363,7 @@ impl Content {
 }
 
 /// One session's screen.
-pub(super) struct Screen {
+pub(crate) struct Screen {
     terminal: Terminal<SessionBackend>,
     output: OutputBuffer,
     /// The rectangle `terminal` draws into.
@@ -385,17 +390,62 @@ pub(super) struct Screen {
     /// Held in a `Mutex` only to make the session future `Send`: the widget's caches are
     /// `Cell`s. It is always reached with `get_mut`, so nothing ever waits on the lock.
     editor: Option<Mutex<Editor>>,
+    /// What the transport adds to the screens (M3-H).
+    transport: Transport,
+}
+
+/// What the transport around a screen adds to it (M3-H, D27).
+#[derive(Debug, Clone, Copy, Default)]
+struct Transport {
+    /// The row the transport reserves for its own marker, if any (telnet's `UNENCRYPTED`).
+    footer: Option<Footer>,
+    /// The board is in low-security mode (D27): staff screens add the `LOW-SECURITY` marker.
+    low_security: bool,
+}
+
+/// A row below the layouts that the transport owns and nothing else draws into (M3-H, D27). The
+/// layouts are given a window one row shorter, so no screen or content can reach it; it is
+/// painted after every frame with the marker's reserved style.
+#[derive(Debug, Clone, Copy)]
+struct Footer {
+    marker: SecurityMarker,
+    /// The whole window, footer row included.
+    window: PtySize,
+}
+
+impl Footer {
+    /// The window the layouts get: all of it but the footer row.
+    fn usable(window: PtySize) -> PtySize {
+        PtySize::from_request(
+            u32::from(window.cols()),
+            u32::from(window.rows().saturating_sub(1).max(1)),
+        )
+    }
 }
 
 impl Screen {
     /// Create a screen of `size` showing `content`, drawing into at most `cap`. Nothing is drawn
     /// until [`Screen::enter`].
-    pub(super) fn new(
+    pub(crate) fn new(
         size: PtySize,
         cap: RenderCap,
         content: Content,
         ui: Arc<Ui>,
     ) -> io::Result<Self> {
+        Self::with_footer(size, cap, content, ui, None)
+    }
+
+    /// Like [`Screen::new`], reserving the last row of the window for `footer`'s marker when
+    /// one is given. `size` is the whole window; the layouts draw into all but that row.
+    pub(crate) fn with_footer(
+        window: PtySize,
+        cap: RenderCap,
+        content: Content,
+        ui: Arc<Ui>,
+        footer: Option<SecurityMarker>,
+    ) -> io::Result<Self> {
+        let footer = footer.map(|marker| Footer { marker, window });
+        let size = footer.map_or(window, |_| Footer::usable(window));
         let output = OutputBuffer::default();
         let mut content = content;
         prepare_member(&mut content, size, &ui);
@@ -414,13 +464,22 @@ impl Screen {
             rebuild: false,
             degrade_on_leave: false,
             editor: None,
+            transport: Transport {
+                footer,
+                low_security: false,
+            },
         })
+    }
+
+    /// Put the board's low-security mode on or off for this session's staff screens.
+    pub(crate) fn set_low_security(&mut self, on: bool) {
+        self.transport.low_security = on;
     }
 
     /// Feed keypresses to the current content. Stops at the first key that ends the session or
     /// submits a token; keys after it are ignored. Nothing is drawn: call [`Screen::render`]
     /// once for the whole batch, so a flood of keys costs one redraw, not one per key.
-    pub(super) fn apply_keys(&mut self, keys: &[Key]) -> KeyEffects {
+    pub(crate) fn apply_keys(&mut self, keys: &[Key]) -> KeyEffects {
         let mut effects = KeyEffects::default();
         if self.editor.is_some() {
             self.editor_keys(keys, &mut effects);
@@ -521,7 +580,7 @@ impl Screen {
 
     /// What the signed-in session holds, for the front end's own checks. `None` outside a
     /// member session.
-    pub(super) fn access(&self) -> Option<&Snapshot> {
+    pub(crate) fn access(&self) -> Option<&Snapshot> {
         match &self.content {
             Content::Member(flow) => Some(flow.access_snapshot()),
             Content::Room(_) | Content::Claim(_) | Content::Limited(_) => None,
@@ -529,7 +588,7 @@ impl Screen {
     }
 
     /// Replace what a member session holds, for the next action (D33).
-    pub(super) fn set_access(&mut self, access: Snapshot) {
+    pub(crate) fn set_access(&mut self, access: Snapshot) {
         if let Content::Member(flow) = &mut self.content {
             flow.set_access(access);
         }
@@ -537,7 +596,7 @@ impl Screen {
 
     /// The answer to the members request taken from [`KeyEffects`]. The screen shows it on the
     /// next render.
-    pub(super) fn deliver_members(&mut self, response: MembersResponse) {
+    pub(crate) fn deliver_members(&mut self, response: MembersResponse) {
         if let Content::Member(flow) = &mut self.content {
             flow.deliver_members(response);
         }
@@ -546,7 +605,7 @@ impl Screen {
 
     /// The answer to the queue request taken from [`KeyEffects`]. The screen shows it on the
     /// next render.
-    pub(super) fn deliver_queue(&mut self, response: QueueResponse) {
+    pub(crate) fn deliver_queue(&mut self, response: QueueResponse) {
         if let Content::Member(flow) = &mut self.content {
             flow.deliver_queue(response);
         }
@@ -555,7 +614,7 @@ impl Screen {
 
     /// The answer to the password request taken from [`KeyEffects`]. The screen shows it on the
     /// next render.
-    pub(super) fn deliver_password(&mut self, response: PasswordResponse) {
+    pub(crate) fn deliver_password(&mut self, response: PasswordResponse) {
         if let Content::Member(flow) = &mut self.content {
             flow.deliver_password(response);
         }
@@ -633,7 +692,7 @@ impl Screen {
 
     /// The queue request the screen asked for after an answer (a decision asks for the list
     /// again), once.
-    pub(super) fn take_queue_request(&mut self) -> Option<QueueRequest> {
+    pub(crate) fn take_queue_request(&mut self) -> Option<QueueRequest> {
         match &mut self.content {
             Content::Member(flow) => flow.take_queue_request(),
             Content::Room(_) | Content::Claim(_) | Content::Limited(_) => None,
@@ -642,7 +701,7 @@ impl Screen {
 
     /// The submitted token failed. The screen shows the one generic message on the next render;
     /// the bool is whether the session should now end (attempts used up).
-    pub(super) fn claim_rejected(&mut self) -> bool {
+    pub(crate) fn claim_rejected(&mut self) -> bool {
         let disconnect = match &mut self.content {
             Content::Claim(form) => form.rejected() == ClaimEffect::Disconnect,
             Content::Room(_) | Content::Member(_) | Content::Limited(_) => false,
@@ -654,19 +713,19 @@ impl Screen {
     /// A limit ended the session (M2-H): show the message instead of the menu. The caller then
     /// ends the session; the message is also printed on the main screen when it is left, so it
     /// stays in the scrollback.
-    pub(super) fn limit_reached(&mut self, lines: Vec<String>) {
+    pub(crate) fn limit_reached(&mut self, lines: Vec<String>) {
         self.content = Content::Limited(lines);
         self.rebuild = true;
     }
 
     /// Whether the content has nothing more to offer, so the session should end after the
     /// first frame (a start refused by a limit).
-    pub(super) fn is_ended(&self) -> bool {
+    pub(crate) fn is_ended(&self) -> bool {
         matches!(self.content, Content::Limited(_))
     }
 
     /// The claim succeeded: the new sysop's session starts at the login screen.
-    pub(super) fn claim_accepted(&mut self, flow: MemberFlow) {
+    pub(crate) fn claim_accepted(&mut self, flow: MemberFlow) {
         if let Content::Claim(form) = &mut self.content {
             form.accepted();
         }
@@ -676,7 +735,7 @@ impl Screen {
     }
 
     /// The redemption did not work. The room shows its one fixed message on the next render.
-    pub(super) fn redeem_refused(&mut self) {
+    pub(crate) fn redeem_refused(&mut self) {
         if let Content::Room(room) = &mut self.content {
             room.redeem_refused();
         }
@@ -687,7 +746,7 @@ impl Screen {
     /// same refusal sentence as for every other failure (no-leak); once the visitor leaves the
     /// form, the room becomes the `apply` room with its notice, without a reconnect. Only an
     /// `open` room is changed (`WaitingRoom::degrade_open` does nothing in any other mode).
-    pub(super) fn open_cap_reached(&mut self) {
+    pub(crate) fn open_cap_reached(&mut self) {
         self.redeem_refused();
         if matches!(self.content, Content::Room(_)) {
             self.degrade_on_leave = true;
@@ -696,14 +755,14 @@ impl Screen {
 
     /// The redemption worked: the visitor's session continues as the new member, at the login
     /// screen.
-    pub(super) fn redeemed(&mut self, flow: MemberFlow) {
+    pub(crate) fn redeemed(&mut self, flow: MemberFlow) {
         self.content = Content::Member(Box::new(flow));
         prepare_member(&mut self.content, self.pty, &self.ui);
         self.rebuild = true;
     }
 
     /// An invite request finished: show its screen.
-    pub(super) fn invite_done(&mut self, outcome: InviteOutcome) {
+    pub(crate) fn invite_done(&mut self, outcome: InviteOutcome) {
         if let Content::Member(flow) = &mut self.content {
             flow.invite_done(outcome);
         }
@@ -712,7 +771,7 @@ impl Screen {
 
     /// Switch the client to the alternate screen, hide the cursor and draw. Returns the bytes
     /// to send.
-    pub(super) fn enter(&mut self) -> io::Result<Vec<u8>> {
+    pub(crate) fn enter(&mut self) -> io::Result<Vec<u8>> {
         queue!(self.terminal.backend_mut(), EnterAlternateScreen, Hide)?;
         self.draw()
     }
@@ -728,14 +787,21 @@ impl Screen {
     /// through [`SessionBackend`], which answers from the session. A changed drawn rectangle
     /// resizes the buffers in place and an unchanged one only forgets what was drawn; neither
     /// builds a terminal.
-    pub(super) fn set_size(&mut self, size: PtySize) {
+    pub(crate) fn set_size(&mut self, size: PtySize) {
+        let size = match &mut self.transport.footer {
+            Some(footer) => {
+                footer.window = size;
+                Footer::usable(size)
+            }
+            None => size,
+        };
         self.pty = size;
         tell_flow_the_terminal(&mut self.content, size);
         self.rebuild = true;
     }
 
     /// Draw whatever changed since the last frame, once. `None` when nothing did.
-    pub(super) fn render(&mut self) -> io::Result<Option<Vec<u8>>> {
+    pub(crate) fn render(&mut self) -> io::Result<Option<Vec<u8>>> {
         if self.rebuild {
             self.rebuild = false;
             self.dirty = false;
@@ -770,7 +836,7 @@ impl Screen {
 
     /// Restore the client's terminal (cursor, main screen). After a logoff the goodbye is
     /// printed on the main screen, so it stays in the scrollback. Returns the bytes to send.
-    pub(super) fn leave(&mut self) -> io::Result<Vec<u8>> {
+    pub(crate) fn leave(&mut self) -> io::Result<Vec<u8>> {
         queue!(self.terminal.backend_mut(), Show, LeaveAlternateScreen)?;
         let mut bytes = self.take_output();
         let farewell = match &self.content {
@@ -785,110 +851,121 @@ impl Screen {
         Ok(bytes)
     }
 
+    /// Draw the open editor, if there is one. `true` when it was drawn.
+    fn draw_editor(&mut self) -> io::Result<bool> {
+        let (Some(editor), Content::Member(flow)) = (&mut self.editor, &self.content) else {
+            return Ok(false);
+        };
+        let editor = editor.get_mut().unwrap_or_else(PoisonError::into_inner);
+        let view = EditorView {
+            ui: &self.ui,
+            settings: flow.settings(),
+            markers: &MENU_MARKERS,
+        };
+        self.terminal.draw(|frame| editor.render(frame, &view))?;
+        Ok(true)
+    }
+
     fn draw(&mut self) -> io::Result<Vec<u8>> {
+        // While the editor is open it is drawn instead of the content (the transport's footer
+        // row below still follows it).
+        let drew_editor = self.draw_editor()?;
         let view = self.content.view(&self.ui);
         let look = self.content.look(&self.ui, self.viewport);
         let layout = self.content.layout(self.viewport);
         let menu = self.content.menu_page();
-        let members_view = self.content.members_view();
+        // The community screens (M3-J) produce the members screens' view and are drawn the same.
+        let members_view = self
+            .content
+            .members_view()
+            .or_else(|| self.content.community_view());
         let queue_view = self.content.queue_view();
-        let community_view = self.content.community_view();
         let tier = self.content.tier();
         let strings = self.content.strings(&self.ui);
         let framed = self.content.is_framed_screen();
-        if let (Some(editor), Content::Member(flow)) = (&mut self.editor, &self.content) {
-            let editor = editor.get_mut().unwrap_or_else(PoisonError::into_inner);
-            let view = EditorView {
-                ui: &self.ui,
-                settings: flow.settings(),
-                markers: &MENU_MARKERS,
-            };
-            self.terminal.draw(|frame| editor.render(frame, &view))?;
-            return Ok(self.take_output());
+        // Staff screens add the low-security marker while the board is in that mode (D27).
+        let staff_markers: &[SecurityMarker] = if self.transport.low_security {
+            &STAFF_MARKERS_LOW_SECURITY
+        } else {
+            &MENU_MARKERS
+        };
+        if !drew_editor {
+            self.terminal.draw(|frame| match (look, &menu) {
+                // The sysop queue and the vouch screen (M2-E): the same layout and status row. The
+                // requester's text is drawn in the content box only.
+                (Some(look), None) if queue_view.is_some() => {
+                    if let Some(screen) = &queue_view {
+                        let width = usize::from(frame.area().width.min(settings::MAX_WIDTH))
+                            .saturating_sub(2);
+                        classic::render_content(
+                            frame,
+                            ContentScreen {
+                                strings,
+                                lines: sysop::queue::lines(screen, strings, look, width),
+                                look,
+                                tier,
+                                markers: staff_markers,
+                            },
+                        );
+                    }
+                }
+                // A members screen: the same classic layout and status row, with its own lines.
+                (Some(look), None) if members_view.is_some() => {
+                    if let Some(screen) = &members_view {
+                        let width = usize::from(frame.area().width.min(settings::MAX_WIDTH))
+                            .saturating_sub(2);
+                        classic::render_content(
+                            frame,
+                            ContentScreen {
+                                strings,
+                                lines: members::lines(screen, strings, look, width),
+                                look,
+                                tier,
+                                markers: &MENU_MARKERS,
+                            },
+                        );
+                    }
+                }
+                // The main menu: the classic hotkey layout, with the reserved status row.
+                (Some(look), Some(page)) => layout::render_menu(
+                    frame,
+                    layout,
+                    &MenuScreen {
+                        strings,
+                        page,
+                        body: &view.body,
+                        notice: view.notice,
+                        look,
+                        tier,
+                        markers: &MENU_MARKERS,
+                    },
+                ),
+                // The invite screens (M2-D): the same framed layout, with the reserved status row.
+                (Some(look), None) if framed => classic::render_content(
+                    frame,
+                    ContentScreen {
+                        strings,
+                        lines: classic::view_lines(strings, &view, look),
+                        look,
+                        tier,
+                        markers: &MENU_MARKERS,
+                    },
+                ),
+                (Some(look), None) => settings::render(frame, &view, look, strings),
+                (None, _) => render(frame, &view),
+            })?;
         }
-        self.terminal.draw(|frame| match (look, &menu) {
-            // The community screens (M3-J): the same layout and status row, drawn like the
-            // members screens because they produce the same view.
-            (Some(look), None) if community_view.is_some() => {
-                if let Some(screen) = &community_view {
-                    let width =
-                        usize::from(frame.area().width.min(settings::MAX_WIDTH)).saturating_sub(2);
-                    classic::render_content(
-                        frame,
-                        ContentScreen {
-                            strings,
-                            lines: members::lines(screen, strings, look, width),
-                            look,
-                            tier,
-                            markers: &MENU_MARKERS,
-                        },
-                    );
-                }
-            }
-            // The sysop queue and the vouch screen (M2-E): the same layout and status row. The
-            // requester's text is drawn in the content box only.
-            (Some(look), None) if queue_view.is_some() => {
-                if let Some(screen) = &queue_view {
-                    let width =
-                        usize::from(frame.area().width.min(settings::MAX_WIDTH)).saturating_sub(2);
-                    classic::render_content(
-                        frame,
-                        ContentScreen {
-                            strings,
-                            lines: sysop::queue::lines(screen, strings, look, width),
-                            look,
-                            tier,
-                            markers: &MENU_MARKERS,
-                        },
-                    );
-                }
-            }
-            // A members screen: the same classic layout and status row, with its own lines.
-            (Some(look), None) if members_view.is_some() => {
-                if let Some(screen) = &members_view {
-                    let width =
-                        usize::from(frame.area().width.min(settings::MAX_WIDTH)).saturating_sub(2);
-                    classic::render_content(
-                        frame,
-                        ContentScreen {
-                            strings,
-                            lines: members::lines(screen, strings, look, width),
-                            look,
-                            tier,
-                            markers: &MENU_MARKERS,
-                        },
-                    );
-                }
-            }
-            // The main menu: the classic hotkey layout, with the reserved status row.
-            (Some(look), Some(page)) => layout::render_menu(
-                frame,
-                layout,
-                &MenuScreen {
-                    strings,
-                    page,
-                    body: &view.body,
-                    notice: view.notice,
-                    look,
-                    tier,
-                    markers: &MENU_MARKERS,
-                },
-            ),
-            // The invite screens (M2-D): the same framed layout, with the reserved status row.
-            (Some(look), None) if framed => classic::render_content(
-                frame,
-                ContentScreen {
-                    strings,
-                    lines: classic::view_lines(strings, &view, look),
-                    look,
-                    tier,
-                    markers: &MENU_MARKERS,
-                },
-            ),
-            (Some(look), None) => settings::render(frame, &view, look, strings),
-            (None, _) => render(frame, &view),
-        })?;
-        Ok(self.take_output())
+        let mut bytes = self.take_output();
+        if let Some(footer) = self.transport.footer {
+            // After the frame, so a repaint or a clear never leaves the row bare.
+            bytes.extend(chrome::footer(
+                footer.marker,
+                tier,
+                footer.window.cols(),
+                footer.window.rows(),
+            ));
+        }
+        Ok(bytes)
     }
 
     fn take_output(&mut self) -> Vec<u8> {

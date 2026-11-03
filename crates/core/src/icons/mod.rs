@@ -185,15 +185,23 @@ pub enum SecurityMarker {
     Signature,
     /// A member's key changed; warn loudly.
     KeyChanged,
+    /// This session is not encrypted: anyone on the network path can read it (the telnet
+    /// transport, D27). Drawn on every telnet screen.
+    Unencrypted,
+    /// The board is in low-security mode: the sysop turned an unencrypted transport on (D27).
+    /// Drawn on staff screens while it is on.
+    LowSecurity,
 }
 
 impl SecurityMarker {
     /// Every security marker.
-    pub const ALL: [Self; 4] = [
+    pub const ALL: [Self; 6] = [
         Self::ServerReadable,
         Self::E2eeLock,
         Self::Signature,
         Self::KeyChanged,
+        Self::Unencrypted,
+        Self::LowSecurity,
     ];
 
     /// The text label, also the ASCII-tier form.
@@ -230,6 +238,18 @@ impl SecurityMarker {
                 unicode: "\u{27e6}\u{26a0}\u{27e7}",
                 ascii: "KEY-CHANGED",
                 label: "KEY-CHANGED",
+            },
+            Self::Unencrypted => Entry {
+                nerd: "\u{f09c}",                    // fa-unlock
+                unicode: "\u{27e6}\u{2297}\u{27e7}", // circled times: "crossed out"
+                ascii: "UNENCRYPTED",
+                label: "UNENCRYPTED",
+            },
+            Self::LowSecurity => Entry {
+                nerd: "\u{f132}",                    // fa-shield
+                unicode: "\u{27e6}\u{2296}\u{27e7}", // circled minus: "less protection"
+                ascii: "LOW-SECURITY",
+                label: "LOW-SECURITY",
             },
         }
     }

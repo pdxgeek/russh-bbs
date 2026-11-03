@@ -14,6 +14,10 @@
 //! the line says "security markers unavailable" instead of drawing nothing.
 
 use ratatui::Frame;
+use ratatui::crossterm::cursor::MoveTo;
+use ratatui::crossterm::queue;
+use ratatui::crossterm::style::Print;
+use ratatui::crossterm::terminal::{Clear as ClearLine, ClearType};
 use ratatui::layout::Rect;
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
@@ -67,6 +71,8 @@ fn caption(marker: SecurityMarker, strings: &StringTable) -> &str {
         SecurityMarker::E2eeLock | SecurityMarker::Signature | SecurityMarker::KeyChanged => {
             marker.label()
         }
+        // Fixed words for the transport markers, like the footer's (a theme cannot reword them).
+        SecurityMarker::Unencrypted | SecurityMarker::LowSecurity => footer_note(marker),
     }
 }
 
@@ -109,4 +115,40 @@ pub(crate) fn render_status(
         return;
     }
     frame.render_widget(Paragraph::new(line), area);
+}
+
+/// What the footer says beside its marker. Fixed words, never themeable (a theme that could
+/// reword it could make the marker say the opposite).
+fn footer_note(marker: SecurityMarker) -> &'static str {
+    match marker {
+        SecurityMarker::Unencrypted => "anyone on the network can read this session",
+        SecurityMarker::LowSecurity => "telnet is on",
+        SecurityMarker::ServerReadable
+        | SecurityMarker::E2eeLock
+        | SecurityMarker::Signature
+        | SecurityMarker::KeyChanged => "",
+    }
+}
+
+/// The bytes that paint `marker` on the last row of a `cols` x `rows` window, outside every
+/// layout: the transport reserved that row (the layouts were given one row less), so no content
+/// can be drawn into it. The marker is written with [`Rendered::to_terminal`], so it carries the
+/// reserved style, and the note beside it is cut to fit the width. Used for telnet's
+/// `UNENCRYPTED` row (M3-H, D27).
+pub(crate) fn footer(marker: SecurityMarker, tier: Tier, cols: u16, rows: u16) -> Vec<u8> {
+    let rendered = Icon::from(marker).render(tier);
+    let mut out = Vec::new();
+    // Writing into a `Vec` cannot fail; the results are only there because `queue!` is generic.
+    let _ = queue!(
+        out,
+        MoveTo(0, rows.saturating_sub(1)),
+        ClearLine(ClearType::CurrentLine),
+        Print(rendered.to_terminal())
+    );
+    let room = usize::from(cols).saturating_sub(rendered.width() + 1);
+    let note: String = footer_note(marker).chars().take(room).collect();
+    if !note.is_empty() {
+        let _ = queue!(out, Print(format!(" {note}")));
+    }
+    out
 }

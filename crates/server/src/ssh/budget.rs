@@ -63,7 +63,7 @@ impl TokenBucket {
 
 /// One session's request and input budgets, and its strike count.
 #[derive(Debug)]
-pub(super) struct SessionBudget {
+pub(crate) struct SessionBudget {
     requests: TokenBucket,
     input: TokenBucket,
     strikes: u32,
@@ -73,7 +73,7 @@ pub(super) struct SessionBudget {
 }
 
 impl SessionBudget {
-    pub(super) fn new(limits: &Limits, now: Instant) -> Self {
+    pub(crate) fn new(limits: &Limits, now: Instant) -> Self {
         Self {
             requests: TokenBucket::new(limits.requests_per_second, now),
             input: TokenBucket::new(limits.input_bytes_per_second, now),
@@ -86,7 +86,7 @@ impl SessionBudget {
 
     /// Charge one request (a data packet or a window-change). `false` means it is over budget;
     /// the caller drops a data packet and keeps only the latest size of a window change.
-    pub(super) fn request(&mut self, now: Instant) -> bool {
+    pub(crate) fn request(&mut self, now: Instant) -> bool {
         let allowed = self.requests.take_up_to(now, 1) == 1;
         if !allowed {
             self.strike(now, 1);
@@ -95,7 +95,7 @@ impl SessionBudget {
     }
 
     /// Charge `len` bytes of input and return how many of them may be used.
-    pub(super) fn input(&mut self, now: Instant, len: usize) -> usize {
+    pub(crate) fn input(&mut self, now: Instant, len: usize) -> usize {
         let want = u64::try_from(len).unwrap_or(u64::MAX);
         let granted = self.input.take_up_to(now, want);
         let dropped = want - granted;
@@ -110,12 +110,12 @@ impl SessionBudget {
     }
 
     /// Whether the session has pushed past its budgets often enough to be dropped.
-    pub(super) fn exceeded(&self) -> bool {
+    pub(crate) fn exceeded(&self) -> bool {
         self.strikes >= self.strike_limit
     }
 
     /// Input bytes dropped so far.
-    pub(super) fn dropped_bytes(&self) -> u64 {
+    pub(crate) fn dropped_bytes(&self) -> u64 {
         self.dropped_bytes
     }
 
