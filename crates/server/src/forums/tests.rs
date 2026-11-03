@@ -598,6 +598,7 @@ fn the_forum_editor_keeps_pasted_line_breaks_and_takes_the_arrows() {
         more: false,
         can_post: true,
         can_manage: false,
+        can_feeds: false,
     })));
     press(&mut screen, Key::Char('w'));
     for c in "Hello".chars() {

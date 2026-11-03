@@ -337,6 +337,11 @@ async fn the_sysop_adds_a_feed_a_member_reads_it_read_only_and_the_sysop_removes
         "{screen}"
     );
     assert!(!seen.contains("<b>") && !seen.contains("<p>"), "{screen}");
+    // The new paging keys work on a feed item as on any post, and change nothing about writing.
+    let paged = press(&mut ann, "\u{1b}[6~").await;
+    assert!(flat(&paged).contains("A quokka was seen."), "{paged}");
+    let paged = press(&mut ann, "\u{1b}[5~").await;
+    assert!(flat(&paged).contains("A quokka was seen."), "{paged}");
     let after_r = press(&mut ann, "r").await;
     assert!(
         flat(&after_r).contains("A quokka was seen.") && !flat(&after_r).contains("Reply:"),
