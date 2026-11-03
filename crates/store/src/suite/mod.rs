@@ -10,6 +10,7 @@ pub(crate) mod access;
 pub(crate) mod access_edit;
 pub(crate) mod accounts;
 pub(crate) mod audit;
+pub(crate) mod credits;
 pub(crate) mod drafts;
 pub(crate) mod founder;
 pub(crate) mod invites;
@@ -17,12 +18,14 @@ pub(crate) mod limits;
 pub(crate) mod profiles;
 pub(crate) mod queue;
 pub(crate) mod registration;
+pub(crate) mod scheduler;
 pub(crate) mod terminal_settings;
 
 use std::sync::Arc;
 
 use russh_bbs_core::access::{AccessStore, Fingerprint, MemberDirectory, Slug};
 use russh_bbs_core::audit::{AuditStore, WallClock};
+use russh_bbs_core::credits::CreditStore;
 use russh_bbs_core::drafts::DraftStore;
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::invites::InviteStore;
@@ -30,6 +33,7 @@ use russh_bbs_core::limits::LimitStore;
 use russh_bbs_core::profiles::ProfileStore;
 use russh_bbs_core::queue::QueueStore;
 use russh_bbs_core::registration::RegistrationStore;
+use russh_bbs_core::scheduler::SchedulerStore;
 use russh_bbs_core::store::{AccountStateStore, AccountStore, SettingsStore};
 use russh_bbs_core::terminal_settings::{MemberSessions, TerminalSettingsStore};
 
@@ -41,6 +45,8 @@ pub(crate) trait TestStore:
     + InviteStore
     + AccessStore
     + AuditStore
+    + CreditStore
+    + SchedulerStore
     + SettingsStore
     + FounderStore
     + LimitStore
@@ -64,6 +70,8 @@ impl<T> TestStore for T where
         + InviteStore
         + AccessStore
         + AuditStore
+        + CreditStore
+        + SchedulerStore
         + SettingsStore
         + FounderStore
         + LimitStore
@@ -139,8 +147,8 @@ macro_rules! shared_suite {
             #[allow(unused_imports)]
             use super::*;
             use $crate::suite::{
-                access, access_edit, accounts, audit, drafts, founder, invites, limits, profiles,
-                queue, registration, terminal_settings,
+                access, access_edit, accounts, audit, credits, drafts, founder, invites, limits, profiles,
+                queue, registration, scheduler, terminal_settings,
             };
 
             $crate::suite::shared_suite!(@tests $harness, $attr;
@@ -294,6 +302,18 @@ macro_rules! shared_suite {
                 registration::an_application_is_a_queue_row_of_its_kind_with_one_audit_row_and_no_content,
                 registration::an_application_never_lands_without_its_audit_row,
                 registration::registration_data_survives_a_reopen,
+                credits::earn_and_spend_derive_the_balance,
+                credits::an_overdraft_is_refused_and_changes_nothing,
+                credits::concurrent_spends_never_overdraw,
+                credits::accounts_are_separate_and_unknown_accounts_are_refused,
+                credits::history_pages_newest_first_without_skipping,
+                credits::the_database_refuses_to_change_or_remove_a_row,
+                credits::the_ledger_survives_a_reopen,
+                credits::a_broken_store_errors_instead_of_reading_as_zero,
+                scheduler::a_last_run_round_trips_and_a_later_one_replaces_it,
+                scheduler::the_database_refuses_an_unknown_outcome_and_a_stored_one_is_not_misread,
+                scheduler::a_scheduler_over_the_store_remembers_its_runs_across_a_restart,
+                scheduler::a_broken_store_errors_instead_of_reading_as_never_run,
                 terminal_settings::defaults_when_missing,
                 terminal_settings::set_then_get_round_trips,
                 terminal_settings::every_tier_and_unset_round_trip,

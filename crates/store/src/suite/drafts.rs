@@ -1,4 +1,4 @@
-//! Drafts against any backend (M3-B, D79): per member and per context, capped, sanitized on
+//! Drafts against any backend (M3-B, D80): per member and per context, capped, sanitized on
 //! save, gone with the account.
 #![allow(clippy::unwrap_used, clippy::panic)]
 

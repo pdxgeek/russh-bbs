@@ -5,6 +5,7 @@
 
 mod access;
 mod audit;
+mod credits;
 mod drafts;
 mod founder;
 mod invites;
@@ -12,6 +13,7 @@ mod limits;
 mod profiles;
 mod queue;
 mod registration;
+mod scheduler;
 mod state;
 mod terminal_settings;
 

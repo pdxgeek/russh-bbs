@@ -1,4 +1,4 @@
-//! Saved drafts and quoting for the full-screen message editor (M3-B, D79).
+//! Saved drafts and quoting for the full-screen message editor (M3-B, D80).
 //!
 //! The editor widget (`russh-bbs-server::ui::editor`) is reusable by the forum, mail and poll
 //! slices, so what is *not* about drawing lives here, once:

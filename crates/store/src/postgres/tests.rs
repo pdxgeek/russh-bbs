@@ -212,7 +212,11 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
     ),
     (
         11,
-        "f38f5a3aec07f0fb5f7eaf9c039598bee0ab20fffe8bfbe63277a087cf8bb737cc59a946dd1600eff3c8e51a4cb36dbd",
+        "3ea2880883ca6615d935e49fd8456e48618497e2e76b12657a34072de4e72b1587060bdc0a444dad372781f02f68f176",
+    ),
+    (
+        12,
+        "a39aa2c7404ec81315b9e22042454f03fe621cc79f3c129b5015e48ecfe98e56d614885a06132317bfcbd0e723ad85ab",
     ),
 ];
 
@@ -271,6 +275,7 @@ async fn a_fresh_database_gets_every_migration_and_only_these_tables() {
             "account_logins",
             "accounts",
             "audit_log",
+            "credit_ledger",
             "draft",
             "group_closure",
             "group_member",
@@ -286,6 +291,7 @@ async fn a_fresh_database_gets_every_migration_and_only_these_tables() {
             "role",
             "role_limit",
             "role_permission",
+            "scheduler_job",
             "settings",
             "terminal_settings"
         ]
@@ -876,6 +882,44 @@ async fn audit_log_refuses_truncate_and_upsert_by_id() {
         russh_bbs_core::audit::known_events(store.page(&AuditQuery::default()).await.unwrap());
     assert_eq!(rows.len(), 1);
     assert_eq!(rows[0].event, original);
+}
+
+/// Postgres only: `TRUNCATE` does not fire row triggers, and an upsert by id is an UPDATE.
+#[tokio::test]
+#[ignore = "needs a Postgres server: set RUSSH_BBS_TEST_POSTGRES_URL"]
+async fn credit_ledger_refuses_truncate_and_upsert_by_id() {
+    use russh_bbs_core::access::Slug;
+    use russh_bbs_core::credits::{Amount, Movement, balance, post};
+    use russh_bbs_core::sanitize::sanitize_username;
+    use russh_bbs_core::store::{AccountState, AccountStore, NewAccount};
+
+    let h = PgHarness::fresh().await;
+    let store = h.store();
+    let a = store
+        .create_account(NewAccount {
+            username: sanitize_username("ann").unwrap(),
+            role: Slug::MEMBER,
+            state: AccountState::Active,
+        })
+        .await
+        .unwrap();
+    let why = Slug::parse("test-grant").unwrap();
+    let posted = post(store, a.id, Movement::Earn(Amount::new(10).unwrap()), &why)
+        .await
+        .unwrap();
+    for sql in [
+        "TRUNCATE credit_ledger".to_owned(),
+        "TRUNCATE credit_ledger RESTART IDENTITY CASCADE".to_owned(),
+        format!(
+            "INSERT INTO credit_ledger (id, account_id, at, delta, reason) OVERRIDING SYSTEM VALUE \
+             VALUES ({}, 1, 1, 999, 'x') ON CONFLICT (id) DO UPDATE SET delta = excluded.delta",
+            posted.id.as_raw()
+        ),
+    ] {
+        let error = sqlx::query(&sql).execute(store.pool()).await.unwrap_err();
+        assert!(error.to_string().contains("append-only"), "{sql}: {error}");
+    }
+    assert_eq!(balance(store, a.id).await.unwrap(), 10);
 }
 
 // ---- migration 0007 (M2-D) --------------------------------------------------------------

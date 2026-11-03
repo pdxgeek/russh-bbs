@@ -1,5 +1,5 @@
--- M3-B (Postgres counterpart of the SQLite 0011 migration, D24): saved drafts for the
--- full-screen message editor (D79). Forward-only: once merged this file is never edited.
+-- M3-B (Postgres counterpart of the SQLite 0012 migration, D24): saved drafts for the
+-- full-screen message editor (D80). Forward-only: once merged this file is never edited.
 --
 -- One row per member per context. A context is the opaque key the calling feature chooses
 -- (`forum:reply:1234`, `mail:new`); the database never interprets it. The body is text the

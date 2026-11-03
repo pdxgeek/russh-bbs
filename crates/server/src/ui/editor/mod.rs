@@ -1,4 +1,4 @@
-//! The full-screen message editor (M3-B, D48, D79): the widget the forum, mail and poll slices
+//! The full-screen message editor (M3-B, D48, D80): the widget the forum, mail and poll slices
 //! call to compose text.
 //!
 //! # Using it

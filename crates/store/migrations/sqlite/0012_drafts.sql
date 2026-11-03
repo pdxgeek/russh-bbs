@@ -1,4 +1,4 @@
--- M3-B: saved drafts for the full-screen message editor (D79). Forward-only: once merged this
+-- M3-B: saved drafts for the full-screen message editor (D80). Forward-only: once merged this
 -- file is never edited (see src/sqlite/tests.rs).
 --
 -- One row per member per context. A context is the opaque key the calling feature chooses
