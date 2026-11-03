@@ -15,6 +15,8 @@
 mod access_rows;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod audit_rows;
+#[cfg(any(feature = "sqlite", feature = "postgres"))]
+mod credit_rows;
 mod directory;
 mod error;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]

@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT 1 AS \"one!: i64\" FROM accounts WHERE id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "one!: i64",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "807e60af187d56fc6e84cdddcad3b8d765d802b147b7f25977af979406c3c3ac"
+}
