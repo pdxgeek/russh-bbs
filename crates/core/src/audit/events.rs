@@ -387,3 +387,31 @@ pub fn post_removed(
             }
         ))
 }
+
+/// `actor` added a feed whose items appear on the new read-only `board` (M3-G, D89). Whether
+/// plain http was allowed is written; the address is not.
+#[must_use]
+pub fn feed_added(actor: AccountId, board: ResourceRef, allow_http: bool) -> AuditEvent {
+    AuditEvent::new(Actor::Account(actor), Action::FeedAdded, Target::None)
+        .on(board)
+        .detail(if allow_http { "http allowed" } else { "https" })
+}
+
+/// `actor` removed the feed (and so the board, now gone) with id `board` (M3-G). The board is
+/// named in the detail by id because the resource no longer exists.
+#[must_use]
+pub fn feed_removed(actor: AccountId, board: i64) -> AuditEvent {
+    AuditEvent::new(Actor::Account(actor), Action::FeedRemoved, Target::None)
+        .detail(&format!("board {board}"))
+}
+
+/// `actor` made `board` readable as RSS by outside readers, or stopped that (M3-G, D89).
+#[must_use]
+pub fn board_published(actor: AccountId, board: ResourceRef, public: bool) -> AuditEvent {
+    let action = if public {
+        Action::BoardPublished
+    } else {
+        Action::BoardUnpublished
+    };
+    AuditEvent::new(Actor::Account(actor), action, Target::None).on(board)
+}

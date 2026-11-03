@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO post (thread_id, board_id, author_id, subject, body, created_at)\n                 VALUES ($1, $2, NULL, $3, $4, $5)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Text",
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "12731dc809fbeb5032b513354e8619f26f73036770123139296507c3398f9e05"
+}

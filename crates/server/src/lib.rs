@@ -3,6 +3,7 @@
 
 pub(crate) mod chat;
 pub mod config;
+pub mod feeds;
 pub mod forums;
 pub mod founder;
 pub mod members;

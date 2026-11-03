@@ -13,6 +13,7 @@ pub(crate) mod audit;
 pub(crate) mod chat;
 pub(crate) mod credits;
 pub(crate) mod drafts;
+pub(crate) mod feeds;
 pub(crate) mod forums;
 pub(crate) mod founder;
 pub(crate) mod invites;
@@ -31,6 +32,7 @@ use russh_bbs_core::audit::{AuditStore, WallClock};
 use russh_bbs_core::chat::RoomStore;
 use russh_bbs_core::credits::CreditStore;
 use russh_bbs_core::drafts::DraftStore;
+use russh_bbs_core::feeds::FeedStore;
 use russh_bbs_core::forums::ForumStore;
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::invites::InviteStore;
@@ -58,6 +60,7 @@ pub(crate) trait TestStore:
     + LimitStore
     + DraftStore
     + ForumStore
+    + FeedStore
     + TerminalSettingsStore
     + ProfileStore
     + PasswordStore
@@ -86,6 +89,7 @@ impl<T> TestStore for T where
         + LimitStore
         + DraftStore
         + ForumStore
+        + FeedStore
         + TerminalSettingsStore
         + ProfileStore
         + PasswordStore
@@ -159,7 +163,7 @@ macro_rules! shared_suite {
             #[allow(unused_imports)]
             use super::*;
             use $crate::suite::{
-                access, access_edit, accounts, audit, chat, credits, drafts, forums, founder, invites, limits, passwords, profiles,
+                access, access_edit, accounts, audit, chat, credits, drafts, feeds, forums, founder, invites, limits, passwords, profiles,
                 queue, registration, scheduler, terminal_settings,
             };
 
@@ -240,6 +244,14 @@ macro_rules! shared_suite {
                 forums::search_finds_words_and_never_reaches_unreadable_boards,
                 forums::hostile_queries_are_handled_not_errors,
                 forums::forum_data_survives_a_reopen,
+                feeds::staff_add_feeds_as_read_only_boards_with_an_audit_row_and_no_address,
+                feeds::the_number_of_feeds_is_limited_even_when_added_at_once,
+                feeds::posting_and_replying_on_a_feed_board_are_refused_by_core,
+                feeds::items_become_authorless_threads_once_and_the_newest_are_kept,
+                feeds::a_failed_read_is_a_closed_outcome_and_a_good_one_resets_it,
+                feeds::removing_a_feed_removes_its_board_threads_and_search_hits,
+                feeds::a_board_is_public_as_rss_only_when_marked_open_and_readable,
+                feeds::feed_data_survives_a_reopen,
                 drafts::deleting_an_account_deletes_its_drafts,
                 drafts::the_database_refuses_what_core_would_never_write,
                 drafts::a_stored_row_the_code_could_not_have_written_is_corrupt_not_shown,

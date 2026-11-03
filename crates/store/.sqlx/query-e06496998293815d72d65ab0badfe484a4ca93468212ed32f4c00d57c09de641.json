@@ -1,0 +1,82 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT f.id AS \"id!\", f.board_id AS \"board_id!\", b.name AS board_name, f.url,\n                      f.allow_http AS \"allow_http!\", f.interval_secs AS \"interval_secs!\",\n                      f.last_attempt_at, f.last_success_at, f.last_outcome,\n                      f.failures AS \"failures!\",\n                      EXISTS (SELECT 1 FROM board_public p WHERE p.board_id = f.board_id)\n                          AS \"public!\"\n               FROM feed f JOIN board b ON b.id = f.board_id WHERE f.board_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "board_id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "board_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "allow_http!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 5,
+        "name": "interval_secs!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 6,
+        "name": "last_attempt_at",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 7,
+        "name": "last_success_at",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 8,
+        "name": "last_outcome",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 9,
+        "name": "failures!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 10,
+        "name": "public!",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      false,
+      null
+    ]
+  },
+  "hash": "e06496998293815d72d65ab0badfe484a4ca93468212ed32f4c00d57c09de641"
+}

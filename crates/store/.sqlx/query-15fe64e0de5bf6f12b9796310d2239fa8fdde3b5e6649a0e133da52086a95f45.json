@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO board (name, name_key, description, restricted, feed, created_by, created_at)\n               VALUES (?, ?, ?, 0, 1, ?, ?)\n               ON CONFLICT (name_key) DO NOTHING\n               RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "15fe64e0de5bf6f12b9796310d2239fa8fdde3b5e6649a0e133da52086a95f45"
+}

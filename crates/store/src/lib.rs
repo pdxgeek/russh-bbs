@@ -22,6 +22,8 @@ mod directory;
 mod draft_rows;
 mod error;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
+mod feed_rows;
+#[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod forum_rows;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod invite_rows;

@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM thread WHERE board_id = $1 AND id NOT IN\n                 (SELECT id FROM thread WHERE board_id = $2\n                  ORDER BY last_post_at DESC, id DESC LIMIT $3)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "23be6a62fac8cae3db1f323d76119ce33fbec51e1caccf9288533c20d39636d3"
+}

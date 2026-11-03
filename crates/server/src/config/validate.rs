@@ -188,6 +188,35 @@ pub(crate) fn validate(config: &Config, sources: &Sources) -> Result<(), ConfigE
         ));
     }
 
+    let feeds = &config.feeds;
+    c.port("feeds.rss_out_listen", feeds.rss_out_listen)?;
+    if feeds.rss_out_enabled {
+        if clashes(ssh.listen, feeds.rss_out_listen)
+            || (telnet.enabled && clashes(telnet.listen, feeds.rss_out_listen))
+        {
+            return Err(c.fail(
+                "feeds.rss_out_listen",
+                "is the same port as another listener; RSS out needs its own",
+            ));
+        }
+        let base = feeds.rss_out_base_url.as_deref().unwrap_or_default();
+        let ok = url::Url::parse(base).is_ok_and(|u| {
+            matches!(u.scheme(), "http" | "https")
+                && u.host().is_some()
+                && u.username().is_empty()
+                && u.password().is_none()
+                && u.query().is_none()
+                && u.fragment().is_none()
+                && !base.ends_with('/')
+        });
+        if !ok {
+            return Err(c.fail(
+                "feeds.rss_out_base_url",
+                "is required with feeds.rss_out_enabled: an http or https address with no trailing slash, no credentials and no query",
+            ));
+        }
+    }
+
     datasource(&c, config)?;
     blobs(&c, config)
 }

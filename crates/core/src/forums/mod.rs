@@ -32,9 +32,9 @@ mod text;
 pub use ids::{BoardId, PostId, ThreadId};
 pub use search::{Hit, MAX_QUERY_CHARS, MAX_TERM_CHARS, MAX_TERMS, SearchQuery};
 pub use service::{
-    BoardSummary, ForumError, Gone, PAGE_SIZE, PostView, Posted, SearchPage, ThreadPage,
-    ThreadSummary, ThreadView, allow_member, boards, create_board, post_reply, post_thread,
-    remove_post, search, thread_post, threads,
+    BoardSummary, FEED_AUTHOR, ForumError, Gone, PAGE_SIZE, PostView, Posted, SearchPage,
+    ThreadPage, ThreadSummary, ThreadView, allow_member, boards, create_board, post_reply,
+    post_thread, remove_post, search, thread_post, threads,
 };
 pub use store::{
     BoardRow, ForumStore, NewBoard, NewPost, NewThread, PostCap, PostRow, PostWrite, RawHit,

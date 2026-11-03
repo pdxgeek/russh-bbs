@@ -109,6 +109,20 @@ pub enum Action {
     /// is restricted. The name is not written.
     #[strum(serialize = "board.created")]
     BoardCreated,
+    /// Staff added a feed (M3-G, D89). The resource is the feed's new read-only board; the
+    /// detail says whether plain http was allowed. The address is never written (it can carry a
+    /// secret).
+    #[strum(serialize = "feed.added")]
+    FeedAdded,
+    /// Staff removed a feed with its board and every thread on it (M3-G).
+    #[strum(serialize = "feed.removed")]
+    FeedRemoved,
+    /// Staff let outside readers read a board as RSS (M3-G).
+    #[strum(serialize = "board.published")]
+    BoardPublished,
+    /// Staff stopped outside readers reading a board as RSS (M3-G).
+    #[strum(serialize = "board.unpublished")]
+    BoardUnpublished,
     /// Staff removed a post, or a whole thread with its opening post (M3-E). The target is the
     /// author's account, the resource the board; the detail holds ids only, never the text.
     #[strum(serialize = "post.removed")]

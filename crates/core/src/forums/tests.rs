@@ -17,6 +17,7 @@ fn board(id: i64, restricted: bool) -> BoardRow {
         description: String::new(),
         restricted,
         threads: 0,
+        feed: false,
     }
 }
 

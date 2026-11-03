@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT restricted AS \"r!: bool\" FROM board WHERE id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "r!: bool",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "370e3ddd1dbfa2277ffae051c81114f7f2ea5e8b0d79331fdfaf0623646a1f41"
+}

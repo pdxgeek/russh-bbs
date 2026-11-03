@@ -36,6 +36,9 @@ pub enum ForumError {
     /// The session can see the thing but may not do this to it.
     #[error("you may not do that")]
     NotPermitted(Permission),
+    /// The board shows a feed: nobody posts or replies on it (M3-G, D89).
+    #[error("this board is read-only")]
+    ReadOnly,
     /// The session is not a signed-in account.
     #[error("not signed in")]
     NotSignedIn,
@@ -56,6 +59,11 @@ pub enum ForumError {
     Store(#[from] StoreError),
 }
 
+/// What a feed board shows where a member's handle would be (M3-G): its items have no author
+/// account. The colon-free word cannot be a member's handle only because the board is a feed
+/// board; it is shown for those boards alone.
+pub const FEED_AUTHOR: &str = "feed";
+
 fn clean(text: &str, max: usize) -> String {
     SingleLine::new(max).sanitize(text).into_string()
 }
@@ -71,6 +79,8 @@ pub struct BoardSummary {
     pub description: String,
     /// Whether it needs a grant scoped to it (D83).
     pub restricted: bool,
+    /// Whether it shows a feed's items and nobody can post on it (M3-G, D89).
+    pub feed: bool,
     /// Threads on it.
     pub threads: u64,
 }
@@ -82,6 +92,7 @@ impl BoardSummary {
             name: clean(&row.name, 40),
             description: clean(&row.description, 160),
             restricted: row.restricted,
+            feed: row.feed,
             threads: row.threads,
         }
     }
@@ -132,6 +143,9 @@ pub struct ThreadPage {
     pub can_post: bool,
     /// Whether the session manages boards (may allow members to a restricted one).
     pub can_manage: bool,
+    /// Whether the session manages feeds (`feeds.manage`, M3-G): may remove this board's feed
+    /// and make the board public as RSS.
+    pub can_feeds: bool,
 }
 
 /// One post to read.
@@ -275,11 +289,21 @@ pub async fn threads<S: ForumStore>(
     rows.truncate(PAGE_SIZE as usize);
     Ok(ThreadPage {
         board: BoardSummary::of(&row),
-        threads: rows.iter().map(ThreadSummary::of).collect(),
+        threads: rows
+            .iter()
+            .map(|r| {
+                let mut t = ThreadSummary::of(r);
+                if row.feed && t.author.is_none() {
+                    t.author = Some(FEED_AUTHOR.to_owned());
+                }
+                t
+            })
+            .collect(),
         page,
         more,
         can_post: rules::can(snapshot, Permission::ForumPost, &row),
         can_manage: snapshot.resolve(Permission::ForumManage, None).is_granted(),
+        can_feeds: snapshot.resolve(Permission::FeedsManage, None).is_granted(),
     })
 }
 
@@ -301,12 +325,18 @@ pub async fn thread_post<S: ForumStore>(
         .post_at(thread, index)
         .await?
         .ok_or(ForumError::NotFound)?;
+    let mut summary = ThreadSummary::of(&row);
+    let mut view = PostView::of(&post);
+    if board.feed {
+        summary.author.get_or_insert_with(|| FEED_AUTHOR.to_owned());
+        view.author.get_or_insert_with(|| FEED_AUTHOR.to_owned());
+    }
     Ok(ThreadView {
-        thread: ThreadSummary::of(&row),
+        thread: summary,
         board: board.id,
         index,
         total,
-        post: PostView::of(&post),
+        post: view,
         can_reply: rules::can(snapshot, Permission::ForumReply, &board),
         can_moderate: rules::can(snapshot, Permission::ForumModerate, &board),
     })
@@ -347,6 +377,9 @@ pub async fn post_thread<S: ForumStore + LimitStore>(
     body: &Body,
 ) -> Result<Posted, ForumError> {
     let row = readable_board(store, snapshot, board).await?;
+    if row.feed {
+        return Err(ForumError::ReadOnly);
+    }
     let author = require_on(snapshot, Permission::ForumPost, &row)?;
     let subject = prepare_subject(subject)?;
     let body = check_body(body)?;
@@ -378,6 +411,9 @@ pub async fn post_reply<S: ForumStore + LimitStore>(
 ) -> Result<Posted, ForumError> {
     let row = store.thread(thread).await?.ok_or(ForumError::NotFound)?;
     let board = readable_board(store, snapshot, row.board).await?;
+    if board.feed {
+        return Err(ForumError::ReadOnly);
+    }
     let author = require_on(snapshot, Permission::ForumReply, &board)?;
     let body = check_body(body)?;
     let cap = post_cap(store, snapshot, author, now).await?;
@@ -547,8 +583,18 @@ pub async fn search<S: ForumStore>(
     raws.retain(|raw| readable.contains(&raw.board));
     let more = raws.len() > PAGE_SIZE as usize;
     raws.truncate(PAGE_SIZE as usize);
+    let feeds: Vec<BoardId> = all.iter().filter(|b| b.feed).map(|b| b.id).collect();
     Ok(SearchPage {
-        hits: raws.iter().map(|raw| hit(raw, &query)).collect(),
+        hits: raws
+            .iter()
+            .map(|raw| {
+                let mut h = hit(raw, &query);
+                if feeds.contains(&raw.board) {
+                    h.author.get_or_insert_with(|| FEED_AUTHOR.to_owned());
+                }
+                h
+            })
+            .collect(),
         page,
         more,
         searched: true,

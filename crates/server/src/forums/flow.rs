@@ -59,6 +59,10 @@ pub(super) enum InputKind {
     BoardDescription { name: String },
     BoardRestricted { name: String, description: String },
     Allow { board: BoardId },
+    FeedUrl,
+    FeedName { url: String },
+    FeedHttp { url: String, name: String },
+    FeedRemove { board: BoardId },
 }
 
 #[derive(Debug)]
@@ -127,6 +131,7 @@ enum Pending {
     Remove,
     Create,
     Allow,
+    Feed,
 }
 
 /// The forum screens.
@@ -264,6 +269,9 @@ impl ForumsScreen {
                 Key::Char('n' | 'N') if list.can_manage => {
                     return self.start_input(InputKind::BoardName, State::Boards { list, cursor });
                 }
+                Key::Char('f' | 'F') if list.can_feeds => {
+                    return self.start_input(InputKind::FeedUrl, State::Boards { list, cursor });
+                }
                 _ => {}
             },
         }
@@ -320,6 +328,16 @@ impl ForumsScreen {
                         board_name: page.board.name.clone(),
                     };
                     return self.start_input(kind, State::Threads { page, cursor });
+                }
+                Key::Char('x' | 'X') if page.can_feeds && page.board.feed => {
+                    return self.start_input(
+                        InputKind::FeedRemove { board },
+                        State::Threads { page, cursor },
+                    );
+                }
+                Key::Char('p' | 'P') if page.can_feeds && !page.board.restricted => {
+                    self.state = State::Threads { page, cursor };
+                    return self.request(Pending::Feed, Request::TogglePublic(board));
                 }
                 Key::Char('a' | 'A') if page.can_manage && page.board.restricted => {
                     return self
@@ -511,9 +529,18 @@ impl ForumsScreen {
             InputKind::BoardName => 40,
             InputKind::BoardDescription { .. } => 160,
             InputKind::Allow { .. } => 64,
-            InputKind::BoardRestricted { .. } => 0,
+            InputKind::FeedUrl => crate::forums::feeds_url_max(),
+            InputKind::FeedName { .. } => 40,
+            InputKind::BoardRestricted { .. }
+            | InputKind::FeedHttp { .. }
+            | InputKind::FeedRemove { .. } => 0,
         };
-        let restricted_prompt = matches!(input.kind, InputKind::BoardRestricted { .. });
+        let restricted_prompt = matches!(
+            input.kind,
+            InputKind::BoardRestricted { .. }
+                | InputKind::FeedHttp { .. }
+                | InputKind::FeedRemove { .. }
+        );
         match key {
             Key::Escape => {
                 self.state = *input.prev;
@@ -528,17 +555,39 @@ impl ForumsScreen {
                 input.text.pop();
             }
             Key::Char('y' | 'Y' | 'n' | 'N') if restricted_prompt => {
-                let restricted = matches!(key, Key::Char('y' | 'Y'));
-                if let InputKind::BoardRestricted { name, description } = input.kind.clone() {
-                    self.state = State::Input(Box::new(input));
-                    return self.request(
-                        Pending::Create,
-                        Request::CreateBoard {
-                            name,
-                            description,
-                            restricted,
-                        },
-                    );
+                let yes = matches!(key, Key::Char('y' | 'Y'));
+                match input.kind.clone() {
+                    InputKind::BoardRestricted { name, description } => {
+                        self.state = State::Input(Box::new(input));
+                        return self.request(
+                            Pending::Create,
+                            Request::CreateBoard {
+                                name,
+                                description,
+                                restricted: yes,
+                            },
+                        );
+                    }
+                    InputKind::FeedHttp { url, name } => {
+                        self.state = State::Input(Box::new(input));
+                        return self.request(
+                            Pending::Feed,
+                            Request::AddFeed {
+                                url,
+                                name,
+                                allow_http: yes,
+                            },
+                        );
+                    }
+                    InputKind::FeedRemove { board } => {
+                        if yes {
+                            self.state = State::Input(Box::new(input));
+                            return self.request(Pending::Feed, Request::RemoveFeed(board));
+                        }
+                        self.state = *input.prev;
+                        return ForumEffect::Stay;
+                    }
+                    _ => {}
                 }
             }
             Key::Enter if !restricted_prompt => return self.input_enter(input),
@@ -612,7 +661,35 @@ impl ForumsScreen {
                     },
                 )
             }
-            InputKind::BoardRestricted { .. } => {
+            InputKind::FeedUrl => {
+                // Check the address now, so a typo is caught before the second question.
+                match russh_bbs_core::feeds::FeedUrl::parse(&text, true) {
+                    Ok(url) => {
+                        input.kind = InputKind::FeedName {
+                            url: url.as_str().to_owned(),
+                        };
+                        input.text.clear();
+                        self.state = State::Input(Box::new(input));
+                        ForumEffect::Stay
+                    }
+                    Err(_) => self.refuse(input, strings::FEED_URL_BAD.trim_end_matches('.')),
+                }
+            }
+            InputKind::FeedName { url } => match prepare_name(&text) {
+                Ok(name) => {
+                    input.kind = InputKind::FeedHttp {
+                        url,
+                        name: name.into_string(),
+                    };
+                    input.text.clear();
+                    self.state = State::Input(Box::new(input));
+                    ForumEffect::Stay
+                }
+                Err(error) => self.refuse(input, &error.to_string()),
+            },
+            InputKind::BoardRestricted { .. }
+            | InputKind::FeedHttp { .. }
+            | InputKind::FeedRemove { .. } => {
                 self.state = State::Input(Box::new(input));
                 ForumEffect::Stay
             }
@@ -701,6 +778,7 @@ impl ForumsScreen {
                 self.got_allowed(result);
                 None
             }
+            (Pending::Feed, Response::Feed(result)) => self.got_feed(result),
             (_, _) => {
                 // An answer for something else: treat as a failure of what was asked.
                 self.notice = Some(problem(strings::FAILED));
@@ -731,6 +809,7 @@ impl ForumsScreen {
                         list: BoardList {
                             boards: Vec::new(),
                             can_manage: false,
+                            can_feeds: false,
                         },
                         cursor: 0,
                     };
@@ -950,6 +1029,20 @@ impl ForumsScreen {
                 }
                 self.fail(&failure)
             }
+        }
+    }
+
+    fn got_feed(&mut self, result: Result<super::exec::FeedDone, Fail>) -> Option<Request> {
+        match result {
+            Ok(done) => {
+                // Out of a prompt: back to where it started.
+                if let State::Input(input) = std::mem::replace(&mut self.state, State::Start) {
+                    self.state = *input.prev;
+                }
+                self.notice = Some(info(done.text));
+                done.reload.then(|| self.restart_boards())
+            }
+            Err(failure) => self.fail(&failure),
         }
     }
 

@@ -1,0 +1,80 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT f.id AS \"id!\", f.board_id AS \"board_id!\", b.name AS board_name, f.url,\n                      f.allow_http AS \"allow_http!: bool\", f.interval_secs AS \"interval_secs!\",\n                      f.last_attempt_at, f.last_success_at, f.last_outcome,\n                      f.failures AS \"failures!\",\n                      EXISTS (SELECT 1 FROM board_public p WHERE p.board_id = f.board_id)\n                          AS \"public!: bool\"\n               FROM feed f JOIN board b ON b.id = f.board_id WHERE f.board_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "board_id!",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "board_name",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "url",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "allow_http!: bool",
+        "ordinal": 4,
+        "type_info": "Integer"
+      },
+      {
+        "name": "interval_secs!",
+        "ordinal": 5,
+        "type_info": "Integer"
+      },
+      {
+        "name": "last_attempt_at",
+        "ordinal": 6,
+        "type_info": "Integer"
+      },
+      {
+        "name": "last_success_at",
+        "ordinal": 7,
+        "type_info": "Integer"
+      },
+      {
+        "name": "last_outcome",
+        "ordinal": 8,
+        "type_info": "Text"
+      },
+      {
+        "name": "failures!",
+        "ordinal": 9,
+        "type_info": "Integer"
+      },
+      {
+        "name": "public!: bool",
+        "ordinal": 10,
+        "type_info": "Null"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      false,
+      null
+    ]
+  },
+  "hash": "9e045cbd5178d08e3aeba890985ef40976da7a4b942dc8021868f8bafedfde68"
+}

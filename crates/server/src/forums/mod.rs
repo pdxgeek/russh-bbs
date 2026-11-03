@@ -22,6 +22,11 @@ mod strings;
 
 pub(crate) use draw::{DrawCtx, render};
 pub(crate) use exec::{Request, Response, run};
+
+/// Longest address the feed prompt accepts while typing.
+pub(crate) const fn feeds_url_max() -> usize {
+    russh_bbs_core::feeds::MAX_URL_BYTES
+}
 pub(crate) use flow::{ForumEffect, ForumsScreen};
 
 #[cfg(test)]

@@ -13,6 +13,7 @@ pub(crate) fn board(
     name: String,
     description: String,
     restricted: bool,
+    feed: bool,
     threads: i64,
 ) -> Result<BoardRow, StoreError> {
     Ok(BoardRow {
@@ -21,6 +22,7 @@ pub(crate) fn board(
         description,
         restricted,
         threads: count(threads, "a board's thread count")?,
+        feed,
     })
 }
 
