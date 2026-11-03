@@ -204,10 +204,10 @@ pub(crate) fn notice_line(
 pub(crate) fn help_lines(screen: &MenuScreen<'_>, extra: Option<&str>) -> Vec<Line<'static>> {
     let (_, dim, heading, key) = styles(screen.look);
     let strings = screen.strings;
-    // No blank line after the title, after the keys or before the footer: with the D78 mail
-    // explanation (two lines at 80 columns) the sysop's help in the lightbar layout is exactly 21
-    // rows, which is what an 80x24 screen has inside its box. A test draws it in every layout and
-    // checks the footer is there.
+    // No blank lines at all: the D78 mail explanation (two lines at 80 columns) goes right after the
+    // keys, and with the sysop's ten items the lightbar's help is exactly 21 rows, which is what an
+    // 80x24 screen has inside its box. A test draws it in every layout and checks the footer is
+    // there; the next menu item will have to page this screen (D65) or that test fails.
     let mut out = vec![
         Line::styled(strings.text(keys::HELP_TITLE).to_owned(), heading),
         Line::raw(strings.text(keys::HELP_INTRO).to_owned()),
@@ -219,6 +219,7 @@ pub(crate) fn help_lines(screen: &MenuScreen<'_>, extra: Option<&str>) -> Vec<Li
     ] {
         out.push(Line::styled(format!("  {}", strings.text(line)), key));
     }
+    out.push(Line::raw(strings.text(keys::HELP_MAIL).to_owned()));
     out.push(Line::raw(strings.text(keys::HELP_MENU).to_owned()));
     if let Some(extra) = extra {
         out.push(Line::raw(strings.text(extra).to_owned()));
@@ -226,8 +227,6 @@ pub(crate) fn help_lines(screen: &MenuScreen<'_>, extra: Option<&str>) -> Vec<Li
     for item in &screen.page.items {
         out.push(item_line(strings, item, key, dim));
     }
-    out.push(Line::raw(""));
-    out.push(Line::raw(strings.text(keys::HELP_MAIL).to_owned()));
     out.push(Line::styled(
         strings.text(keys::HELP_FOOTER).to_owned(),
         dim,
