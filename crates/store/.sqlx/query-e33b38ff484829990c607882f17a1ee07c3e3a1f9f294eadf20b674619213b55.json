@@ -1,0 +1,65 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT r.id AS \"id!\", ra.username AS \"reporter?\", sa.username AS \"sender?\",\n                      r.message_id AS \"message_id!\", r.reported_at AS \"reported_at!\",\n                      r.copy_subject, r.copy_body, r.closed_at\n               FROM mail_report r\n               LEFT JOIN accounts ra ON ra.id = r.reporter_id\n               LEFT JOIN accounts sa ON sa.id = r.sender_id\n               ORDER BY (r.closed_at IS NOT NULL), r.reported_at DESC, r.id DESC\n               LIMIT $1 OFFSET $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "reporter?",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "sender?",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "message_id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 4,
+        "name": "reported_at!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 5,
+        "name": "copy_subject",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "copy_body",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "closed_at",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "e33b38ff484829990c607882f17a1ee07c3e3a1f9f294eadf20b674619213b55"
+}

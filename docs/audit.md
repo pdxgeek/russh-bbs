@@ -82,6 +82,8 @@ sysop screen over it is M5; the board has no audit screen yet.
 | `add_feed` (M3-G) | `feed.added` | the staff member (`feeds.manage`) | none; the resource is the new feed board | `https` or `http allowed`. **Never the address** (it can carry a token) |
 | `remove_feed` (M3-G) | `feed.removed` | the staff member | none (the board is gone) | `board <id>` |
 | `publish_board` (M3-G) | `board.published` / `board.unpublished` | the staff member | none; the resource is the board | none. Written only when the mark changed |
+| `report` (M3-I) | `mail.reported` | the reporter (the recipient) | the message's sender account (none if unknown or gone) | `report <id> message <id>`: ids only, never a subject, a text or a handle. The copy the reporter sent is stored as the report, not in the log |
+| `close_report` (M3-I) | `mail.report_closed` | the staff member (`mail.moderate`) | none | `report <id>`. Written only when an open report was closed |
 | `save_profile` by staff (M2-F) | `profile.edited` | the editor (`members.edit`) | the edited account | `fields <names>`: field names only, never values. The owner's own edits write no row |
 | `remove_line` (M3-J) | `community.entry_removed` | the staff member (`community.moderate`) | the author | `oneliner <id>` or `graffiti <id>`: the kind and the row id, never the text |
 | `close_poll` by staff on another member's poll (M3-J) | `community.poll_closed` | the staff member | the poll's creator | `poll <id>`. The creator closing their own poll writes no row |
@@ -137,3 +139,5 @@ Invites (M2-D) are in the same shared suite, on both backends: the created invit
 
 Not verified: no screen exists, so there is no `ssh` session that reads the log; the wired writes
 were exercised through the store and the existing server tests, not by a new SSH path.
+
+**Mail writes no audit row** for sending, reading or deleting (D90): the log would hold who writes to whom, and volume. Only a report and the closing of one are audited, by ids only.

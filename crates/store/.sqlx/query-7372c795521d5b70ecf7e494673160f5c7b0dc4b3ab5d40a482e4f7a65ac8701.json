@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO mail_message\n                   (id, recipient_id, sender_id, sent_at, read_at, key_id, subject, body)\n               SELECT ?, ?, ?, ?, NULL, ?, ?, ?\n               WHERE (SELECT count(*) FROM mail_message WHERE recipient_id = ?) < ?\n                 AND NOT EXISTS (SELECT 1 FROM mail_message WHERE id = ?)\n               RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 10
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "7372c795521d5b70ecf7e494673160f5c7b0dc4b3ab5d40a482e4f7a65ac8701"
+}

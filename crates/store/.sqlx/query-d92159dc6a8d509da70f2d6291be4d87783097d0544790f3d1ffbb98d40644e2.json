@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE mail_message SET read_at = $1 WHERE id = $2 AND recipient_id = $3 AND read_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d92159dc6a8d509da70f2d6291be4d87783097d0544790f3d1ffbb98d40644e2"
+}

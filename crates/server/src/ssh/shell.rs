@@ -346,6 +346,8 @@ impl<D: Backend> Shell<D> {
                 self.run_password(request).await;
             } else if let Some(request) = effects.forum_request.take() {
                 self.run_forums(request).await;
+            } else if let Some(request) = effects.mail_request.take() {
+                self.run_mail(request).await;
             } else if let Some(request) = effects.community_request.take() {
                 self.run_community(request).await;
             } else {
@@ -862,6 +864,27 @@ impl<D: Backend> Shell<D> {
         for _ in 0..3 {
             let response = crate::forums::run(&*self.parts.directory, &access, request).await;
             match self.parts.screen.deliver_forum(response) {
+                Some(next) => request = next,
+                None => break,
+            }
+        }
+    }
+
+    /// Run the mail request a screen is waiting on and give it the answer (M3-I). Core checks
+    /// every permission against the snapshot loaded for this action and does the sealing and
+    /// opening with the board's mail key; a slow or failing store is a plain failure on screen.
+    /// A send, a delete or a report asks for the inbox again, so the follow-up runs here with the
+    /// same permissions (a few at most).
+    async fn run_mail(&mut self, request: crate::mail::Request) {
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let keys = self.parts.screen.mail_keys();
+        let mut request = request;
+        for _ in 0..3 {
+            let response =
+                crate::mail::run(&*self.parts.directory, keys.as_deref(), &access, request).await;
+            match self.parts.screen.deliver_mail(response) {
                 Some(next) => request = next,
                 None => break,
             }

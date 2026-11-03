@@ -68,6 +68,13 @@ impl Harness for SqliteHarness {
             .unwrap()
     }
 
+    async fn hex(&self, column: &str) -> Vec<String> {
+        self.texts(&format!(
+            "SELECT lower(hex({column})) FROM mail_message ORDER BY id"
+        ))
+        .await
+    }
+
     async fn break_audit_inserts(&self) {
         self.raw(
             "CREATE TRIGGER audit_insert_broken BEFORE INSERT ON audit_log
@@ -157,6 +164,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         18,
         "c9781cb099a6dc0df8c13bd4db68078944be4cd1efaa05f054d4d9ecbe89e51a62a3b2e6b0d208ed38d57d02ad56247e",
     ),
+    (
+        19,
+        "d8d4cbbcb64c4c2c3d3c21d85a2928c8a79c6b8c71b4c60eea242b226078209ac7acb5034131b73869006827e98c71e9",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {
@@ -229,6 +240,8 @@ async fn a_fresh_database_gets_every_migration() {
             "invite_request_vouch",
             "last_caller",
             "limit_usage",
+            "mail_message",
+            "mail_report",
             "member_group",
             "member_limit",
             "poll",

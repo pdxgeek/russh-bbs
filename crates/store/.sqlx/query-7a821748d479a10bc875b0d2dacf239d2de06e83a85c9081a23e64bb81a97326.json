@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE mail_report SET closed_at = extract(epoch FROM now())::BIGINT\n             WHERE id = $1 AND closed_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7a821748d479a10bc875b0d2dacf239d2de06e83a85c9081a23e64bb81a97326"
+}

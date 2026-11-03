@@ -301,8 +301,8 @@ fn hotkeys_ignore_case_and_menus_nest_and_unwind() {
 fn a_placeholder_says_so_and_the_notice_clears_on_the_next_key() {
     let member = member();
     let mut session = MenuSession::new(main_tree());
-    session.press(&member, MenuKey::Char('m'));
-    assert_eq!(session.page(&member).notice, Some("placeholder.mail"));
+    session.press(&member, MenuKey::Char('a'));
+    assert_eq!(session.page(&member).notice, Some("placeholder.files"));
     session.press(&member, MenuKey::Char('x'));
     assert_eq!(session.page(&member).notice, None);
 }
@@ -397,7 +397,7 @@ fn text_keys_cover_titles_labels_and_placeholder_notes() {
     for expected in [
         "menu.main.title",
         "menu.main.item.settings",
-        "placeholder.mail",
+        "placeholder.files",
         "menu.sysop.title",
     ] {
         assert!(keys.contains(&expected), "{expected}");
@@ -473,10 +473,11 @@ fn the_cursor_starts_on_the_first_item_and_stops_at_both_ends() {
 fn select_picks_the_item_under_the_cursor_like_its_hotkey() {
     let member = member();
     let mut session = MenuSession::new(main_tree());
-    // Down to "Mail" (second): a placeholder, so a notice and nothing else.
+    // Down to "Files" (third): a placeholder, so a notice and nothing else.
+    session.press(&member, MenuKey::Down);
     session.press(&member, MenuKey::Down);
     assert_eq!(session.press(&member, MenuKey::Select), MenuOutcome::Stay);
-    assert_eq!(session.notice_for_tests(), Some("placeholder.mail"));
+    assert_eq!(session.notice_for_tests(), Some("placeholder.files"));
     // Down to the last item (Log off): an action.
     for _ in 0..50 {
         session.press(&member, MenuKey::Down);

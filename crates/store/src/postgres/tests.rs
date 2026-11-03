@@ -130,6 +130,13 @@ impl Harness for PgHarness {
             .unwrap()
     }
 
+    async fn hex(&self, column: &str) -> Vec<String> {
+        self.texts(&format!(
+            "SELECT encode({column}, 'hex') FROM mail_message ORDER BY id"
+        ))
+        .await
+    }
+
     async fn break_audit_inserts(&self) {
         // A constraint no new row can satisfy; NOT VALID skips the (empty) existing rows.
         self.raw(
@@ -242,6 +249,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         18,
         "1039fe718eb3826b1d0e4a7509adbf20e9ae9f8ac51ba561ee0b86cf7de44d2ec40f9b12e1f3e63d21af8a0872ddc01f",
     ),
+    (
+        19,
+        "248826a55d5250344e181f36ded00023212e7d3a76f48164fa06c4215be1895b1fd57c765bd05a67298ba2feba1e2a9f",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {
@@ -315,6 +326,8 @@ async fn a_fresh_database_gets_every_migration_and_only_these_tables() {
             "invite_request_vouch",
             "last_caller",
             "limit_usage",
+            "mail_message",
+            "mail_report",
             "member_group",
             "member_limit",
             "poll",

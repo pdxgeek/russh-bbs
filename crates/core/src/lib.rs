@@ -13,6 +13,7 @@ pub mod founder;
 pub mod icons;
 pub mod invites;
 pub mod limits;
+pub mod mail;
 pub mod menu;
 pub mod passwords;
 pub mod profiles;

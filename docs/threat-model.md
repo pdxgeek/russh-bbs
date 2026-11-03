@@ -136,3 +136,7 @@ Only what the table above marks tested. Each remaining guarantee needs a test; t
 | Two claimants at once | One transaction compare-and-set on `founder_claimed`; raced in the store and over SSH | Implemented, tested |
 | Token as an oracle (claimed vs wrong) | Constant-time comparison that takes the same steps when closed; one failure message; identical prompt in both states | Implemented, tested. Not verified: network-level timing |
 | An unclaimed board advertising itself | The claim prompt is selected by the SSH user name, is always available and identical; the waiting room has no claim wording | Implemented, tested |
+
+## Internal mail at rest (M3-I, D90)
+
+Mail subjects and bodies are sealed (XChaCha20-Poly1305) under a key file kept beside the host key. This protects a stolen disk or a leaked database copy or backup **that does not include the key file**. It does not protect against anyone who has the key file and the database together (a sysop with shell access to the data directory), against changing the server's code, or against reading its memory. Metadata (who, when, size, opened) is not sealed. Reports are readable copies; mail drafts are not stored; mail is not offered over telnet. See [mail.md](mail.md).

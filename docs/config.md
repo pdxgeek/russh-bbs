@@ -91,6 +91,14 @@ All parsed, not yet used: no blob store exists yet. Object-store credentials com
 | `blobs.bucket` | string, required with `s3` | unset | `RUSSH_BBS_BLOBS_BUCKET` | none | Parsed, not yet used |
 | `blobs.region` | string (only with `s3`) | unset | `RUSSH_BBS_BLOBS_REGION` | none | Parsed, not yet used |
 
+### `[mail]` (M3-I, D90)
+
+| Key | Type | Default | Environment | Flag | Used by |
+|---|---|---|---|---|---|
+| `mail.key_file` | path, not the same file as `ssh.host_key` | `mail.key` in the data directory, beside the host key (`$XDG_DATA_HOME/russh-bbs/mail.key`, else `~/.local/share/russh-bbs/mail.key`; in the container `/data/mail.key`) | `RUSSH_BBS_MAIL_KEY_FILE` | none (a path, not a secret, but no flag is needed) | Internal mail (M3-I): the key that seals stored mail |
+
+The mail key is 54 bytes in a small checked format, created with mode 0600 **only on a fresh install** (the database holds no mail). It is never in the database and never logged (the log shows its path and key id only). If the file is missing while the database holds mail, or it is damaged, the wrong size, not a mail key file, or readable by group or others, the server **refuses to start** and says so; it never makes a replacement, because a new key could not open the mail already stored. **Back this file up separately from the database (M5 backups will do it for you): without it every stored message is lost for good, and with it a copy of the database is readable.** See [deploy.md](deploy.md#backups).
+
 ### `[telnet]` (D27)
 
 Built in M3-H. Turning telnet on is "low-security mode": an unencrypted listener on its own port, with a loud warning in the log and a `LOW-SECURITY` marker on staff screens. **When `telnet.enabled` is `false` (the default) no port is bound.** Telnet follows the `[ssh]` limits and timeouts (`max_connections` and the rest) and the `[waiting_room]` per-network connection rate, with its own counts; see D85.

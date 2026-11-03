@@ -14,6 +14,7 @@ mod forums;
 mod founder;
 mod invites;
 mod limits;
+mod mail;
 mod passwords;
 mod profiles;
 mod queue;

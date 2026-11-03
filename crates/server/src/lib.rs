@@ -7,6 +7,7 @@ pub mod config;
 pub mod feeds;
 pub mod forums;
 pub mod founder;
+pub mod mail;
 pub mod members;
 pub mod settings;
 pub mod shutdown;

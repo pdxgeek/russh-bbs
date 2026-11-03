@@ -131,7 +131,11 @@ docker run --rm -v bbs-data:/data -v "$PWD:/backup" alpine tar czf /backup/bbs-d
 docker start bbs
 ```
 
-The archive holds the host key and the member list: store it like a secret. Do not copy the `.db` file of a running server without its `-wal` file.
+The archive holds the host key, **the mail key** and the member list: store it like a secret.
+
+**Back up the mail key separately from the database (M3-I, D90).** Mail in the database is sealed with the key in `mail.key` (see `mail.key_file`, [config.md](config.md#mail-m3-i-d90)). Without that file every stored message is unreadable and the server will not start while mail exists (it never makes a new key); with it, a copy of the database is readable. So keep the key file somewhere other than where the database copies go, and test a restore that includes it. A restored database needs the key file that was current when its mail was written.
+
+The archive above holds all of it: store it like a secret. Do not copy the `.db` file of a running server without its `-wal` file.
 
 ## Postgres
 

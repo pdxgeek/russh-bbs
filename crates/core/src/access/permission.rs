@@ -122,6 +122,12 @@ pub enum Permission {
     /// `mail.send`.
     #[strum(serialize = "mail.send")]
     MailSend,
+    /// `mail.report`.
+    #[strum(serialize = "mail.report")]
+    MailReport,
+    /// `mail.moderate`.
+    #[strum(serialize = "mail.moderate")]
+    MailModerate,
     /// `files.list`.
     #[strum(serialize = "files.list")]
     FilesList,

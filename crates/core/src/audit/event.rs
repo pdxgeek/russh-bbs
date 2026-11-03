@@ -136,6 +136,14 @@ pub enum Action {
     /// author's account, the resource the board; the detail holds ids only, never the text.
     #[strum(serialize = "post.removed")]
     PostRemoved,
+    /// A recipient reported a mail message to staff (M3-I, D90). The actor is the reporter, the
+    /// target the message's sender (when known); the detail holds the report and message ids,
+    /// never a subject or text.
+    #[strum(serialize = "mail.reported")]
+    MailReported,
+    /// Staff closed a mail report (M3-I). The detail holds the report id only.
+    #[strum(serialize = "mail.report_closed")]
+    MailReportClosed,
 }
 
 impl Action {

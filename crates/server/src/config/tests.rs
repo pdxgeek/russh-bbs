@@ -366,6 +366,7 @@ fn selecting_postgres_is_accepted_and_resolves_to_settings_that_hide_the_passwor
         }) => {
             let mut with_key = loaded.clone();
             with_key.config.ssh.host_key = Some("/k".into());
+            with_key.config.mail.key_file = Some("/m".into());
             with_key.paths().expect("paths").datasource
         }
         other => other.expect("paths").datasource,
@@ -637,6 +638,7 @@ fn default_paths_are_resolved_and_a_missing_home_is_an_error() {
     assert!(matches!(none.paths(), Err(ConfigError::NoDataDir { .. })));
     let mut explicit = none;
     explicit.config.ssh.host_key = Some("/k".into());
+    explicit.config.mail.key_file = Some("/m".into());
     explicit.config.datasource.path = Some("/d.db".into());
     let explicit = explicit.paths().expect("explicit").datasource;
     assert!(

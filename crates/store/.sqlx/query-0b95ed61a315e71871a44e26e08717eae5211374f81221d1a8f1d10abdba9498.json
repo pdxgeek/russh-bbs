@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE mail_message SET read_at = ? WHERE id = ? AND recipient_id = ? AND read_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "0b95ed61a315e71871a44e26e08717eae5211374f81221d1a8f1d10abdba9498"
+}

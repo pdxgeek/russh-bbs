@@ -138,6 +138,15 @@ pub(crate) fn validate(config: &Config, sources: &Sources) -> Result<(), ConfigE
     if let Some(path) = &ssh.host_key {
         c.path("ssh.host_key", path, false)?;
     }
+    if let Some(path) = &config.mail.key_file {
+        c.path("mail.key_file", path, false)?;
+        if config.ssh.host_key.as_ref() == Some(path) {
+            return Err(c.fail(
+                "mail.key_file",
+                "is the same file as ssh.host_key; they are separate secrets",
+            ));
+        }
+    }
 
     let wr = &config.waiting_room;
     c.range(

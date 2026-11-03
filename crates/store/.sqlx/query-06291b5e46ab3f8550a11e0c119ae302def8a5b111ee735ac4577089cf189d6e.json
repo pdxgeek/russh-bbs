@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT DISTINCT key_id AS \"key_id!\" FROM mail_message ORDER BY 1",
+  "describe": {
+    "columns": [
+      {
+        "name": "key_id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "06291b5e46ab3f8550a11e0c119ae302def8a5b111ee735ac4577089cf189d6e"
+}

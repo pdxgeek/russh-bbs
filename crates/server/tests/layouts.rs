@@ -207,24 +207,24 @@ async fn the_layout_and_theme_switch_live_and_are_remembered() {
     assert!(moved.contains("> [o] Sysop tools"), "{moved}");
     send(&mut channel, UP).await;
     assert!(full(&mut channel).await.contains("> [s] Terminal settings"));
-    // Six rows up from "Terminal settings": Invites, Community (M3-J), Members, Chat (M3-F),
-    // Files, Mail.
-    for _ in 0..6 {
+    // Five rows up from "Terminal settings": Invites, Community (M3-J), Members, Chat (M3-F),
+    // Files.
+    for _ in 0..5 {
         send(&mut channel, UP).await;
     }
-    assert!(full(&mut channel).await.contains("> [m] Mail"));
+    assert!(full(&mut channel).await.contains("> [a] Files"));
     send(&mut channel, "\r").await;
     let picked = full(&mut channel).await;
     assert!(
-        picked.contains("Notice: Mail is not built yet."),
+        picked.contains("Notice: File areas are not built yet."),
         "{picked}"
     );
     // Hotkeys still work in the lightbar.
-    send(&mut channel, "m").await;
+    send(&mut channel, "a").await;
     assert!(
         full(&mut channel)
             .await
-            .contains("Notice: Mail is not built yet.")
+            .contains("Notice: File areas are not built yet.")
     );
 
     // Compact: no box.
