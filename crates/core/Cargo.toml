@@ -16,10 +16,13 @@ tracing = { workspace = true }
 sha2 = { workspace = true }
 subtle = { workspace = true }
 icu_properties = { workspace = true }
+# The scheduler spawns, times out and isolates job tasks; the workspace already builds tokio.
+tokio = { workspace = true }
 
 [dev-dependencies]
 proptest = { workspace = true }
 # Reads the server's string table as a test fixture (terminal_settings tests); no new crate.
 toml = { workspace = true }
 
-tokio = { workspace = true }
+# `start_paused` lets the timeout test run without waiting.
+tokio = { workspace = true, features = ["test-util"] }

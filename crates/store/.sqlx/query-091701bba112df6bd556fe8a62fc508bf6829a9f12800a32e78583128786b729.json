@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT COALESCE(SUM(delta), 0) AS \"sum!: i64\" FROM credit_ledger WHERE account_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "sum!: i64",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "091701bba112df6bd556fe8a62fc508bf6829a9f12800a32e78583128786b729"
+}

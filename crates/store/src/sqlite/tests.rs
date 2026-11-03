@@ -127,7 +127,11 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
     ),
     (
         11,
-        "323d61dffe504d087e9f5bf776d3dac9702cb2a5d707c885c01e3cf1d431124a136361b836a18e56ba3b03df56e19dcb",
+        "03772cd89de1810db7a6441f13e4c7b8b47cf7444dbd796fc247c4390fd5c1263a41c2813820f5eee94da9042efd06ee",
+    ),
+    (
+        14,
+        "d098408186779f2898926d5fdd73dd5cbf2e5b88f35aaf9fcb54087613ab5aaf633dafbb4130f35c8404a9f337853b86",
     ),
 ];
 
@@ -185,6 +189,7 @@ async fn a_fresh_database_gets_every_migration() {
             "account_logins",
             "accounts",
             "audit_log",
+            "credit_ledger",
             "group_closure",
             "group_member",
             "invite",
@@ -199,6 +204,7 @@ async fn a_fresh_database_gets_every_migration() {
             "role",
             "role_limit",
             "role_permission",
+            "scheduler_job",
             "settings",
             "terminal_settings"
         ]
@@ -543,6 +549,51 @@ async fn audit_log_refuses_replace_and_upsert_by_id() {
         russh_bbs_core::audit::known_events(store.page(&AuditQuery::default()).await.unwrap());
     assert_eq!(rows.len(), 1);
     assert_eq!(rows[0].event, original);
+}
+
+/// SQLite only: an `INSERT OR REPLACE` that reuses an id deletes the old row without firing
+/// the delete trigger, so the ledger has the same third trigger as the audit log (migration 0011).
+#[tokio::test]
+async fn credit_ledger_refuses_replace_and_upsert_by_id() {
+    use russh_bbs_core::access::Slug;
+    use russh_bbs_core::credits::{Amount, Movement, balance, post};
+    use russh_bbs_core::sanitize::sanitize_username;
+    use russh_bbs_core::store::{AccountState, AccountStore, NewAccount};
+
+    let (_dir, store) = temp_store().await;
+    let a = store
+        .create_account(NewAccount {
+            username: sanitize_username("ann").unwrap(),
+            role: Slug::MEMBER,
+            state: AccountState::Active,
+        })
+        .await
+        .unwrap();
+    let why = Slug::parse("test-grant").unwrap();
+    let posted = post(&store, a.id, Movement::Earn(Amount::new(10).unwrap()), &why)
+        .await
+        .unwrap();
+    for sql in [
+        format!(
+            "INSERT OR REPLACE INTO credit_ledger (id, account_id, at, delta, reason) \
+             VALUES ({}, 1, 1, 999, 'x')",
+            posted.id.as_raw()
+        ),
+        format!(
+            "REPLACE INTO credit_ledger (id, account_id, at, delta, reason) \
+             VALUES ({}, 1, 1, 999, 'x')",
+            posted.id.as_raw()
+        ),
+        format!(
+            "INSERT INTO credit_ledger (id, account_id, at, delta, reason) \
+             VALUES ({}, 1, 1, 999, 'x') ON CONFLICT (id) DO UPDATE SET delta = excluded.delta",
+            posted.id.as_raw()
+        ),
+    ] {
+        let error = sqlx::query(&sql).execute(store.pool()).await.unwrap_err();
+        assert!(error.to_string().contains("append-only"), "{sql}: {error}");
+    }
+    assert_eq!(balance(&store, a.id).await.unwrap(), 10);
 }
 
 // ---- migration 0007: the accounts rebuild (M2-D) -----------------------------------------

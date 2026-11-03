@@ -1,4 +1,4 @@
-//! Choosing and drawing a layout (M3-A, D79).
+//! Choosing and drawing a layout (M3-A, D82).
 //!
 //! A layout is a way to arrange the **same** menu page; the page, the string table and the
 //! reserved status row come from outside and are identical for every layout. This module is the

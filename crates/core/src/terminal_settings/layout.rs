@@ -1,4 +1,4 @@
-//! The member's choice of layout and theme (M3-A, D79).
+//! The member's choice of layout and theme (M3-A, D82).
 //!
 //! The layout is one of a closed set the code draws ([`LayoutId`]); a theme is a named pack the
 //! sysop supplied or the build ships, so its name is bounded text ([`ThemeName`]) and whether it

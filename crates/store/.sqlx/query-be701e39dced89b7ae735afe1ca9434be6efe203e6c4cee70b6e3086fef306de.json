@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id AS \"id!\", account_id, at, delta, reason FROM credit_ledger\n               WHERE account_id = ? AND id < ? ORDER BY id DESC LIMIT ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "account_id",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "at",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "delta",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "reason",
+        "ordinal": 4,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "be701e39dced89b7ae735afe1ca9434be6efe203e6c4cee70b6e3086fef306de"
+}

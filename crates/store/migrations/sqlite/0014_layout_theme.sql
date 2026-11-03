@@ -1,4 +1,4 @@
--- M3-A: the member's layout and theme choice (D79).
+-- M3-A: the member's layout and theme choice (D82).
 -- Forward-only: earlier migrations are untouched, and once merged this file is never edited.
 
 -- Existing rows get the defaults (the classic layout, the default theme), which is what the

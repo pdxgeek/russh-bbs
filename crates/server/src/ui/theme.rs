@@ -1,5 +1,5 @@
 //! Theme packs: a palette and string overrides on top of the default string table, chosen per
-//! member and switched live (M3-A, D79).
+//! member and switched live (M3-A, D82).
 //!
 //! **What a theme can change.** Colors for six roles ([`Palette`]) and the wording of any
 //! string in the table except the reserved ones (the status-line captions). **What it cannot.**

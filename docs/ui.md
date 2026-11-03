@@ -1,6 +1,6 @@
 # Terminal UI: menus, layouts, themes, icons
 
-Status: **Partly implemented.** The menu tree, universal keys and string table (M2-A) and the **classic, lightbar and compact layouts with theme packs and live switching** (M3-A, D79) exist; two-pane, tabs, dashboard and command line, declarative layout files and art blocks do not.
+Status: **Partly implemented.** The menu tree, universal keys and string table (M2-A) and the **classic, lightbar and compact layouts with theme packs and live switching** (M3-A, D82) exist; two-pane, tabs, dashboard and command line, declarative layout files and art blocks do not.
 
 ## Four separate layers
 
@@ -17,7 +17,7 @@ The menu tree is defined once. Any layout renders it and any theme styles it. Ad
 
 Ship first: **classic hotkey**, **lightbar**, **compact**. Add **two-pane** (menu plus live preview), **tabs/ribbon**, **dashboard** (widgets), and **command line** after the widget set exists.
 
-- Layouts are **declarative TOML** (planned): regions (header, menu, preview, status, footer) and widgets. No scripting, validated schema, size limits. **Not built:** the three shipped layouts are Rust code (D79); a layout file format waits for a second layout author.
+- Layouts are **declarative TOML** (planned): regions (header, menu, preview, status, footer) and widgets. No scripting, validated schema, size limits. **Not built:** the three shipped layouts are Rust code (D82); a layout file format waits for a second layout author.
 - Widgets are Rust code in the server crate (menu list, lightbar, breadcrumb, clock, new-counts, art block, ticker).
 - Each layout declares a minimum terminal size and a fallback. Too small falls back automatically (built, M3-A: lightbar 44x12 to classic, classic 24x9 to compact).
 - Members choose layout and theme independently (built, M3-A: keys `l` and `t` on the settings screen, applied at once). The sysop sets the default and may restrict the list, and a picker previews against the real menu tree (**not built**: the default is classic and every loaded theme is offered).
@@ -28,7 +28,7 @@ Ship first: **classic hotkey**, **lightbar**, **compact**. Add **two-pane** (men
 
 Colors and **every user-facing string except the security-status captions** are themeable (M3-A). Borders follow the icon tier. Art, login and logoff art, and packs that bundle layout, theme and art are **not built**; keep each pack's license and attribution files with it when they are.
 
-A **theme** is one TOML file: `name`, an optional `[colors]` table (roles `heading`, `key`, `border`, `info`, `error`, `selected`; values from the sixteen named terminal colors) and string overrides in the same nested form as `ui/strings.toml`. A theme inherits every string it does not set. Three ship embedded (`amber`, `green`, `contrast`); the sysop adds files to `themes/` beside the host key. See the loader rules in D79 and the Implemented section below.
+A **theme** is one TOML file: `name`, an optional `[colors]` table (roles `heading`, `key`, `border`, `info`, `error`, `selected`; values from the sixteen named terminal colors) and string overrides in the same nested form as `ui/strings.toml`. A theme inherits every string it does not set. Three ship embedded (`amber`, `green`, `contrast`); the sysop adds files to `themes/` beside the host key. See the loader rules in D82 and the Implemented section below.
 
 ## Icons
 
@@ -91,12 +91,12 @@ A compact, text-only layout with no icons, no art, and screen-reader-friendly ou
 - **Not implemented:** the other layouts, declared widest layout per screen (FIX-M1-4 request), a pager wired to a screen (the pager itself exists, D65), the waiting-room strings in the table (the settings, glyph, login and logoff strings moved in M3-A), `tui-input` and `tui-big-text` (evaluated, not needed yet).
 - **Verified:** unit tests in core and server, a real russh client, and OpenSSH under `pyte` at 80x24 and 200x60 (claim, icon check, main menu, settings, Esc back, help, placeholder notice, sysop submenu, Back item, log off). **Not verified:** other terminal emulators; a Nerd Font or screen-reader session.
 
-**Layouts, themes and live switching** (`russh-bbs-server::ui::{layout, lightbar, compact, theme}`, `core::menu` cursor, `core::terminal_settings::{layout, strings}`), M3-A, D79.
+**Layouts, themes and live switching** (`russh-bbs-server::ui::{layout, lightbar, compact, theme}`, `core::menu` cursor, `core::terminal_settings::{layout, strings}`), M3-A, D82.
 
 - **Implemented:**
   - **Layouts** over the same `core::menu` page: *classic* (the M2-A box, default), *lightbar* (the same box with a `>` pointer row moved by Up and Down and picked with Enter; hotkeys still work; the cursor stays on the last item used, so Esc from a screen returns to it) and *compact* (no box, one line per item, no spacer lines, words only). `ui::layout::render_menu` is one exhaustive `match`; `effective` picks the fallback for a small terminal (lightbar to classic below 44x12, classic to compact below 24x9). Content screens (members, queue, invites, settings) use the same box, borderless under compact.
-  - **Live switch:** the settings screen has `l` (next layout) and `t` (next theme), saved with the other settings under `account.edit_settings` and drawn on the next frame. The choice is two columns of `terminal_settings` (migration `0011`) and is there on the next login.
-  - **Themes:** `ui::theme` (palette, string overrides, `ThemeSet`, loader). Shipped: `default`, `amber`, `green` (also rewords the main menu title and the key hint), `contrast`. The sysop's `themes/*.toml` beside the host key is read at boot, at most 32 files of at most 32 KiB, refused with a logged warning when invalid (see D79 for every check), never fatal.
+  - **Live switch:** the settings screen has `l` (next layout) and `t` (next theme), saved with the other settings under `account.edit_settings` and drawn on the next frame. The choice is two columns of `terminal_settings` (migration `0014`) and is there on the next login.
+  - **Themes:** `ui::theme` (palette, string overrides, `ThemeSet`, loader). Shipped: `default`, `amber`, `green` (also rewords the main menu title and the key hint), `contrast`. The sysop's `themes/*.toml` beside the host key is read at boot, at most 32 files of at most 32 KiB, refused with a logged warning when invalid (see D82 for every check), never fatal.
   - **Strings:** the login, glyph test, settings and logoff screens' text is in `ui/strings.toml` under `[member]`; `core::terminal_settings::strings` is keys plus `TextSource`.
   - **Keys:** `ssh::terminal::Key` has `Up` and `Down` (CSI arrows).
 - **Security chrome:** unchanged and independent of layout and theme. The status row is split off first and drawn by `chrome::render_status` with the reserved style; the theme palette, string overrides and layout are not inputs to it, and its two captions are reserved string keys. The lightbar cursor uses a pointer, bold and underline, never reverse video.
