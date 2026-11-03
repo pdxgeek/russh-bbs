@@ -201,7 +201,7 @@ impl Default for BlobsConfig {
     }
 }
 
-/// `[telnet]`. Parsed only (M3).
+/// `[telnet]` (D27, M3-H): the optional unencrypted transport, off by default.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct TelnetConfig {
@@ -283,6 +283,7 @@ impl Config {
             flood_strikes: self.ssh.flood_strikes,
             write_stall: Duration::from_secs(self.ssh.write_stall_secs),
             allow_password_login: self.ssh.allow_password_login,
+            low_security: self.telnet.enabled,
             ..Limits::default()
         }
     }

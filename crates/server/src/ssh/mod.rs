@@ -7,17 +7,17 @@
 //! `claim` opens the founder token prompt for every key (D41). Rules (who is restricted, which screens exist,
 //! rate limits) live in `russh-bbs-core`; this module is transport and rendering only.
 
-mod abort;
-mod budget;
+pub(crate) mod abort;
+pub(crate) mod budget;
 mod error;
 mod handler;
 pub mod host_key;
 pub mod limits;
-mod password;
+pub(crate) mod password;
 pub mod registry;
-mod screen;
+pub(crate) mod screen;
 mod server;
-mod shell;
+pub(crate) mod shell;
 pub mod terminal;
 
 pub use error::{ServerError, SessionError};

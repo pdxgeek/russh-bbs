@@ -90,7 +90,11 @@ harmless: the drain is empty and nothing is drawn.
   row; other people's text is cleaned again when drawn and is never given the marker style.
 - **Planned (not built):** `chat.moderate` (kick, mute, report), per-room topics and settings,
   a room console (M5), a sysop "page" or split chat (M5), scrolling back through a room's
-  transcript, telnet (M3-H would call the same hub).
+  transcript.
+- **Telnet (M3-H):** chat works over telnet with the same screens, hub and rooms (the hub lives
+  in the `SessionRegistry`, which SSH and telnet share). Telnet is the low-security mode (D27):
+  its sessions carry the `UNENCRYPTED` marker beside the server-readable one, and its input is
+  untrusted like SSH input. `chat.manage_rooms` is a staff permission, which telnet withholds.
 - **Verified:** core unit tests (the hub's rules with a manual clock: fan-out, presence, the
   scrollback and queue caps, flood refusal, whisper isolation, the proof checks, the room
   service against a fake store, the screen); hub tests in the server crate on a multi-thread

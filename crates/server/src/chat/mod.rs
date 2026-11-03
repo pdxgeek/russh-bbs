@@ -37,6 +37,29 @@ use tokio::sync::Notify;
 
 pub(crate) use render::lines;
 
+/// Draw the chat screen into `frame`: the classic content box and the reserved status row.
+pub(crate) fn render(
+    frame: &mut ratatui::Frame<'_>,
+    screen: &russh_bbs_core::chat::ChatScreen,
+    strings: &crate::ui::strings::StringTable,
+    look: crate::settings::Look,
+    tier: russh_bbs_core::icons::Tier,
+) {
+    use crate::ui::classic::{ContentScreen, MENU_MARKERS, render_content};
+    let width = usize::from(frame.area().width.min(crate::settings::MAX_WIDTH)).saturating_sub(2);
+    let height = box_height(frame.area().height);
+    render_content(
+        frame,
+        ContentScreen {
+            strings,
+            lines: lines(screen, strings, look, width, height),
+            look,
+            tier,
+            markers: &MENU_MARKERS,
+        },
+    );
+}
+
 /// Rows of text that fit in the content box of a frame `frame_height` rows tall: one row goes to
 /// the reserved status row, a roomy frame (over 24 rows of content) keeps a row of margin above
 /// and below the box (`settings::boxed`), and the border takes two. The chat page fills exactly
@@ -63,6 +86,31 @@ impl Clock for SharedClock {
 struct Inner {
     chat: Chat<SharedClock>,
     wakers: HashMap<SessionId, Arc<Notify>>,
+}
+
+/// The process's one hub, held by the session registry so every transport (SSH, telnet) shares
+/// the same rooms. Default builds the hub with the server's bounds and the system clock.
+pub(crate) struct SharedHub(Arc<Hub>);
+
+impl SharedHub {
+    pub(crate) fn hub(&self) -> &Arc<Hub> {
+        &self.0
+    }
+}
+
+impl Default for SharedHub {
+    fn default() -> Self {
+        Self(Hub::new(
+            ChatLimits::DEFAULT,
+            Arc::new(russh_bbs_core::waiting_room::SystemClock::new()),
+        ))
+    }
+}
+
+impl std::fmt::Debug for SharedHub {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SharedHub").finish_non_exhaustive()
+    }
 }
 
 /// All live chat state for the process.

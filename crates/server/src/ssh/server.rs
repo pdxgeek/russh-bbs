@@ -31,7 +31,6 @@ use crate::chat::Hub;
 use crate::founder::Founder;
 use crate::ui::Ui;
 use crate::waiting_room::Throttle;
-use russh_bbs_core::chat::ChatLimits;
 
 /// How long a disconnected connection may take to wind down before we stop waiting for it.
 const DISCONNECT_GRACE: Duration = Duration::from_secs(5);
@@ -120,7 +119,7 @@ impl SshServer {
                 &SystemClock::new(),
             )),
             passwords: Arc::new(PasswordLogin::new(&config.limits)),
-            chat: Hub::new(ChatLimits::DEFAULT, Arc::new(SystemClock::new())),
+            chat: Arc::clone(registry.chat()),
         };
         let task = tokio::spawn(accept.run(stopped));
         let limits = &config.limits;
@@ -157,6 +156,13 @@ impl SshServer {
     #[must_use]
     pub fn host_fingerprint(&self) -> &Fingerprint {
         &self.host_fingerprint
+    }
+
+    /// The registry of live sessions. The telnet transport registers its sessions here too, so
+    /// the concurrent-session limit spans both (M3-H).
+    #[must_use]
+    pub fn registry(&self) -> Arc<SessionRegistry> {
+        Arc::clone(&self.registry)
     }
 
     /// A snapshot of the live sessions.

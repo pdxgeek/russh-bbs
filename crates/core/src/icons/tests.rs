@@ -24,8 +24,8 @@ fn every_icon_has_a_non_empty_glyph_in_every_tier() {
 #[test]
 fn the_required_logical_icons_exist() {
     assert_eq!(ContentIcon::ALL.len(), 6);
-    assert_eq!(SecurityMarker::ALL.len(), 4);
-    assert_eq!(Icon::all().count(), 10);
+    assert_eq!(SecurityMarker::ALL.len(), 6);
+    assert_eq!(Icon::all().count(), 12);
 }
 
 #[test]

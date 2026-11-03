@@ -42,7 +42,7 @@ use super::limits::Limits;
 use super::password::PasswordLogin;
 use super::registry::SessionGuard;
 use super::screen::{Content, Screen};
-use super::shell::{Inbox, MEMBER_START_TIMEOUT, Shell, ShellParts};
+use super::shell::{Inbox, MEMBER_START_TIMEOUT, Output, Shell, ShellParts};
 use super::terminal::PtySize;
 use crate::chat::Hub;
 use crate::founder::{CLAIM_USER, Founder};
@@ -630,10 +630,13 @@ impl<D: Backend> Handler for ClientHandler<D> {
         session.channel_success(channel)?;
         // The window may have changed while the content was loading.
         let size = self.pty.unwrap_or(size);
-        let screen = Screen::new(size, self.limits.render_cap, content, Arc::clone(&self.ui))?;
+        let mut screen = Screen::new(size, self.limits.render_cap, content, Arc::clone(&self.ui))?;
+        screen.set_low_security(self.limits.low_security);
         let shell = Shell::new(ShellParts {
-            handle: session.handle(),
-            channel,
+            output: Output::Ssh {
+                handle: session.handle(),
+                channel,
+            },
             screen,
             inbox: Arc::clone(&self.inbox),
             directory: Arc::clone(&self.directory),
@@ -648,6 +651,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
             meter,
             redraw_interval: self.limits.redraw_interval,
             write_stall: self.limits.write_stall,
+            access_filter: None,
         });
         tokio::spawn(shell.run());
         self.shell_started = true;

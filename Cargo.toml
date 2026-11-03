@@ -34,7 +34,7 @@ tempfile = "3"
 # (the `rsa` crate has an unfixed timing advisory, and RSA host/user keys are not needed).
 russh = { version = "0.65", default-features = false, features = ["ring", "flate2"] }
 # Async runtime for the SSH server.
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "time", "sync", "signal", "fs"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "time", "sync", "signal", "fs", "io-util"] }
 # Storage (decisions D6, D24, D34): SQLite and Postgres only. The default features would add the MySQL driver, whose `rsa` dependency has an unfixed advisory (D21).
 # Postgres TLS uses rustls with the ring provider and the platform CA store (no native-tls, no aws-lc, no webpki-roots whose license is not on the allow list).
 sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio", "sqlite", "postgres", "tls-rustls-ring-native-roots", "macros", "migrate"] }
