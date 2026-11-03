@@ -15,10 +15,10 @@ use crate::waiting_room::{DEFAULT_IP_RATE, DEFAULT_KEY_RATE, DEFAULT_MAX_TRACKED
 
 /// Defaults for password attempts per handle: a burst of 5, then one every 30 seconds. A person
 /// who mistypes a few times is never blocked; a guesser gets about 2 tries a minute per handle,
-/// and the 12-character minimum makes that hopeless (D79).
+/// and the 12-character minimum makes that hopeless (D81).
 pub const DEFAULT_PASSWORD_ACCOUNT_RATE: RatePolicy = RatePolicy::new(5, Duration::from_secs(30));
 /// Defaults for password attempts per network: a burst of 10, then one every 6 seconds (10 a
-/// minute), so one address cannot sweep many handles (D79).
+/// minute), so one address cannot sweep many handles (D81).
 pub const DEFAULT_PASSWORD_NETWORK_RATE: RatePolicy = RatePolicy::new(10, Duration::from_secs(6));
 
 /// Timeouts and caps for the SSH front end.
@@ -69,9 +69,9 @@ pub struct Limits {
     /// Whether the SSH `password` method is offered (D28). Off by default: the server then
     /// advertises public key only and never reads a password.
     pub allow_password_login: bool,
-    /// Password attempts per handle, whether or not the handle exists (D79).
+    /// Password attempts per handle, whether or not the handle exists (D81).
     pub password_account_rate: RatePolicy,
-    /// Password attempts per network (an IPv4 address or an IPv6 /64), whatever the handle (D79).
+    /// Password attempts per network (an IPv4 address or an IPv6 /64), whatever the handle (D81).
     pub password_network_rate: RatePolicy,
 }
 

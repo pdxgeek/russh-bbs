@@ -1,4 +1,4 @@
-//! argon2id hashing in the PHC string format (D79).
+//! argon2id hashing in the PHC string format (D81).
 //!
 //! A stored hash is the whole PHC string, `$argon2id$v=19$m=19456,t=2,p=1$<salt>$<hash>`, so its
 //! parameters travel with it: raising [`MEMORY_KIB`] or [`ITERATIONS`] later changes what new
@@ -23,7 +23,7 @@ pub const MAX_ACCEPTED_MEMORY_KIB: u32 = 256 * 1024;
 
 /// A hash made with the current parameters of a password nobody has. A login for a name that
 /// does not exist, has no password or is not active verifies against it, so those logins cost
-/// what a wrong password costs (D79). A test checks it parses and is current.
+/// what a wrong password costs (D81). A test checks it parses and is current.
 pub(crate) const DUMMY_HASH: &str = "$argon2id$v=19$m=19456,t=2,p=1$ZHVtbXktc2FsdC0xMjM0NQ$xwvTi6nRH+Z7e2rjusTWEqh+rgUtQVcjVqf3FoRaEZk";
 
 /// Hashing failed (the system random source). Nothing was stored.

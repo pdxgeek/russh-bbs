@@ -5,6 +5,8 @@ use std::sync::Arc;
 
 use anyhow::Context as _;
 use clap::Parser;
+use russh_bbs_core::limits::SystemClock;
+use russh_bbs_core::scheduler::{Scheduler, SchedulerStore};
 use russh_bbs_core::store::{SettingsStore, set_registration_mode};
 use russh_bbs_server::config::{Cli, Loaded, ResolvedDatasource};
 use russh_bbs_server::founder;
@@ -62,7 +64,7 @@ async fn main() -> anyhow::Result<()> {
 
 /// Run the board on `store` until a shutdown signal. Everything past store selection is
 /// backend-independent (core traits only).
-async fn serve<S: Backend + SettingsStore + Close + Clone>(
+async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
     store: S,
     loaded: &Loaded,
     host_key: &HostKey,
@@ -102,11 +104,30 @@ async fn serve<S: Backend + SettingsStore + Close + Clone>(
         russh_bbs_server::sysop::queue::PURGE_INTERVAL,
     ));
 
+    // The event scheduler (M3-C, D79). Later slices register their jobs here, before it starts:
+    // `scheduler.register(job)?` (see the `russh_bbs_core::scheduler` docs). It has none yet.
+    let scheduler = Scheduler::new(store.clone(), Arc::new(SystemClock));
+    let (stop_scheduler, scheduler_stopped) = tokio::sync::oneshot::channel::<()>();
+    let scheduler = tokio::spawn(async move {
+        scheduler
+            .run(async {
+                // A dropped sender also means stop.
+                let _ = scheduler_stopped.await;
+            })
+            .await;
+    });
+
     shutdown::wait_for_signal()
         .await
         .context("waiting for shutdown signal")?;
     info!("shutting down");
     purge.abort();
+    // Stop the scheduler before the store closes, so no job is left writing to a closed pool.
+    // `run` returns at once (it drops a tick in progress), so this wait is short.
+    let _ = stop_scheduler.send(());
+    if let Err(error) = scheduler.await {
+        warn!(%error, "the scheduler task ended abnormally");
+    }
     // Closes the sessions, then the store (SQLite checkpoints its WAL, Postgres closes the pool).
     shutdown::graceful(server, &store, shutdown::SHUTDOWN_TIMEOUT).await;
     Ok(())

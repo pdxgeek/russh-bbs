@@ -1,4 +1,4 @@
-//! Member passwords and password login (M3-D, D28, D79).
+//! Member passwords and password login (M3-D, D28, D81).
 //!
 //! A password is optional, never required for key users, and used only where the sysop has
 //! opted in: SSH password login (`ssh.allow_password_login`, off by default) and later telnet

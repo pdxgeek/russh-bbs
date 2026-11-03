@@ -1,6 +1,5 @@
--- M3-D: member passwords (D28, D79). Forward-only: once merged this file is never edited (see
--- src/sqlite/tests.rs). Numbered 0012: 0011 is taken by the layouts and themes slice, which
--- develops in parallel; renumber at merge if the order changed.
+-- M3-D: member passwords (D28, D81). Forward-only: once merged this file is never edited (see
+-- src/sqlite/tests.rs). Numbered 0013 after the other M3 slices' migrations.
 --
 -- One row per account that set a password. No row means "no password", so a member who never
 -- sets one cannot be logged into with any password at all. The row holds an argon2id hash in

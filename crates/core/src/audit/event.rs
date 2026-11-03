@@ -92,11 +92,11 @@ pub enum Action {
     /// last place (or by the first refusal, if the cap was lowered below the day's count).
     #[strum(serialize = "registration.capped")]
     RegistrationCapped,
-    /// A member set or changed their own password (M3-D, D79). The target is the account; the
+    /// A member set or changed their own password (M3-D, D81). The target is the account; the
     /// note says only which kind of session did it. No secret and no hash is written.
     #[strum(serialize = "password.set")]
     PasswordSet,
-    /// A member removed their own password (M3-D, D79). Written only when there was one.
+    /// A member removed their own password (M3-D, D81). Written only when there was one.
     #[strum(serialize = "password.cleared")]
     PasswordCleared,
 }

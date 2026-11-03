@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO scheduler_job (name, last_run_at, last_outcome) VALUES ($1, $2, $3)\n             ON CONFLICT (name) DO UPDATE\n             SET last_run_at = excluded.last_run_at, last_outcome = excluded.last_outcome",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "2f6558ee33a8d862cae68f6743bb175c9746556c99ac10d56eef845babdc6905"
+}

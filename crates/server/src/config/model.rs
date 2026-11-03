@@ -69,7 +69,7 @@ pub struct SshConfig {
     pub max_auth_attempts: u32,
     /// Milliseconds a failed authentication is delayed.
     pub auth_rejection_millis: u64,
-    /// Opt-in password login over SSH (D28, D79). Off by default: the server then offers public
+    /// Opt-in password login over SSH (D28, D81). Off by default: the server then offers public
     /// key only.
     pub allow_password_login: bool,
     /// Milliseconds between two redraws of one session at the fastest (D49).

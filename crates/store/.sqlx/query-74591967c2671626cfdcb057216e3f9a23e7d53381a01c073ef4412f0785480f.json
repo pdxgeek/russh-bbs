@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT last_run_at, last_outcome FROM scheduler_job WHERE name = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "last_run_at",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "last_outcome",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "74591967c2671626cfdcb057216e3f9a23e7d53381a01c073ef4412f0785480f"
+}

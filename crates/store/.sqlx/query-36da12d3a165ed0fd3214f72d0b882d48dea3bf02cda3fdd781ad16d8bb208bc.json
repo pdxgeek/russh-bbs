@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT last_run_at, last_outcome FROM scheduler_job WHERE name = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "last_run_at",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "last_outcome",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "36da12d3a165ed0fd3214f72d0b882d48dea3bf02cda3fdd781ad16d8bb208bc"
+}

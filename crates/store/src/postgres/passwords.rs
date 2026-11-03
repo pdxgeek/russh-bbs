@@ -1,4 +1,4 @@
-//! Password hashes over Postgres (M3-D, D79). The table holds argon2id PHC strings only; nothing
+//! Password hashes over Postgres (M3-D, D81). The table holds argon2id PHC strings only; nothing
 //! here ever sees a plain-text password.
 
 use russh_bbs_core::audit::AuditEvent;

@@ -17,8 +17,10 @@ sha2 = { workspace = true }
 subtle = { workspace = true }
 icu_properties = { workspace = true }
 argon2 = { workspace = true }
+# The scheduler spawns, times out and isolates job tasks; the workspace already builds tokio.
+tokio = { workspace = true }
 
 [dev-dependencies]
 proptest = { workspace = true }
-
-tokio = { workspace = true }
+# `start_paused` lets the timeout test run without waiting.
+tokio = { workspace = true, features = ["test-util"] }

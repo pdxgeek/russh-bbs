@@ -1,4 +1,4 @@
-//! Password login and the set/clear actions (D28, D79). Front ends call these; none of the
+//! Password login and the set/clear actions (D28, D81). Front ends call these; none of the
 //! rules live in a front end.
 
 use tracing::warn;
@@ -12,7 +12,7 @@ use crate::audit::events;
 use crate::store::{Account, StoreError};
 
 /// How the session in question signed in. A password session must prove the current password
-/// again before it sets or clears one (D79); a key session already proved possession of its key.
+/// again before it sets or clears one (D81); a key session already proved possession of its key.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LoginMethod {
     /// Public key.

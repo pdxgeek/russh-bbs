@@ -7,7 +7,7 @@
 //! sftp, for now), env, agent forwarding, X11, direct-tcpip, forwarded-tcpip, streamlocal, and
 //! both tcpip-forward and streamlocal-forward. Authentication is public-key, plus `password` only
 //! when the sysop opted in (D28); the method list advertised in `server::russh_config` says so.
-//! Keyboard-interactive is the trait default, which rejects (D79).
+//! Keyboard-interactive is the trait default, which rejects (D81).
 //!
 //! Logs carry fingerprints, request kinds and sizes. They never carry key material, command
 //! lines, environment values or anything the client typed.

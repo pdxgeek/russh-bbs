@@ -1,5 +1,5 @@
 //! Member passwords and opt-in SSH password login over a real russh client against the real
-//! SQLite store (M3-D, D28, D79): off by default and not offered when off; the same plain refusal
+//! SQLite store (M3-D, D28, D81): off by default and not offered when off; the same plain refusal
 //! for an unknown name, a wrong password, an account with no password and an account that is not
 //! active; per-handle and per-network limits; setting and clearing from the settings screen with
 //! the current password required in a password session; nothing readable stored or logged.

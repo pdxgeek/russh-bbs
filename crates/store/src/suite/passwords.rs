@@ -1,4 +1,4 @@
-//! Password-hash storage behaviour, against any backend (M3-D, D79).
+//! Password-hash storage behaviour, against any backend (M3-D, D81).
 #![allow(clippy::unwrap_used, clippy::assert_is_empty)]
 
 use russh_bbs_core::access::Slug;

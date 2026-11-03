@@ -1,4 +1,4 @@
--- M3-D: the Postgres counterpart of the SQLite 0012 migration (member passwords, D28, D79).
+-- M3-D: the Postgres counterpart of the SQLite 0013 migration (member passwords, D28, D81).
 -- Forward-only: earlier migrations are untouched, and once merged this file is never edited.
 --
 -- One row per account that set a password; no row means no password. The row holds an argon2id

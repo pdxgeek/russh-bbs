@@ -1,5 +1,5 @@
 //! SSH password login: the opt-in switch, its two failure limiters and the pool the slow
-//! hashing runs on (M3-D, D28, D79). The rules themselves (what a login must check, the dummy
+//! hashing runs on (M3-D, D28, D81). The rules themselves (what a login must check, the dummy
 //! hash, the upgrade) are `russh_bbs_core::passwords`; this owns only what is per-server.
 
 use std::future::Future;

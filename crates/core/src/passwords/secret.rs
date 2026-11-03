@@ -12,7 +12,7 @@
 use std::fmt;
 
 /// Fewest characters in a new password. Long enough that a guess budget limited to a few
-/// attempts a minute (D79) is hopeless, short enough to type on a phone.
+/// attempts a minute (D81) is hopeless, short enough to type on a phone.
 pub const MIN_CHARS: usize = 12;
 
 /// Most characters in a new password. Bounds the work and the screen buffer.

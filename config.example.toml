@@ -49,7 +49,7 @@ input_bytes_per_second = 8192
 flood_strikes = 1000
 # A peer that does not read for this long, with output waiting, is disconnected.
 write_stall_secs = 10
-# Opt-in password login over SSH (D28, D79). Off by default: the server offers public key only.
+# Opt-in password login over SSH (D28, D81). Off by default: the server offers public key only.
 # When true the SSH `password` method is offered too. A member signs in with a password only if
 # they set one (Terminal settings, Password); the board then logs a warning at start. Members
 # whose key the board knows normally never need it. Not keyboard-interactive.

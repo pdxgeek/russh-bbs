@@ -96,7 +96,7 @@ pub struct MemberFlow {
     /// window change). Only used to say when an override is cut down to fit.
     terminal: Option<(u16, u16)>,
     /// How the session signed in. A password session must give the current password again to
-    /// set or clear one (M3-D, D79).
+    /// set or clear one (M3-D, D81).
     login: LoginMethod,
     /// Whether the settings offer the password screen. Off for a transport that is not
     /// encrypted (telnet, M3-H): a password is set only over SSH (D27).
