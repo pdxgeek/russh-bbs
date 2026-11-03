@@ -39,6 +39,8 @@ pub(super) const TABLE: &[(char, GlyphWidth)] = &[
     ('\u{f023}', GlyphWidth::Two),
     ('\u{f0a3}', GlyphWidth::Two),
     ('\u{f071}', GlyphWidth::Two),
+    ('\u{f09c}', GlyphWidth::Two),
+    ('\u{f132}', GlyphWidth::Two),
     // Plain Unicode tier, East Asian Width Neutral.
     ('\u{2263}', GlyphWidth::One),
     ('\u{25c9}', GlyphWidth::One),
@@ -52,6 +54,8 @@ pub(super) const TABLE: &[(char, GlyphWidth)] = &[
     ('\u{229b}', GlyphWidth::One),
     ('\u{270e}', GlyphWidth::One),
     ('\u{26a0}', GlyphWidth::One),
+    ('\u{2297}', GlyphWidth::One),
+    ('\u{2296}', GlyphWidth::One),
 ];
 
 /// The cell width of `c`, or `None` if the table has no entry (printable ASCII is always 1).

@@ -2543,6 +2543,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "tui-textarea-2",
+ "zeroize",
 ]
 
 [[package]]

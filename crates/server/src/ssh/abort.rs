@@ -8,17 +8,17 @@ use tokio::sync::Notify;
 
 /// Fired once by a session task to have its connection dropped. Cheap to share behind an `Arc`.
 #[derive(Debug, Default)]
-pub(super) struct Abort(Notify);
+pub(crate) struct Abort(Notify);
 
 impl Abort {
     /// Ask for the connection to be dropped. Safe to call before anyone waits: the request is
     /// remembered.
-    pub(super) fn trigger(&self) {
+    pub(crate) fn trigger(&self) {
         self.0.notify_one();
     }
 
     /// Resolves once [`Abort::trigger`] was called.
-    pub(super) async fn triggered(&self) {
+    pub(crate) async fn triggered(&self) {
         self.0.notified().await;
     }
 }

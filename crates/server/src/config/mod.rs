@@ -228,13 +228,14 @@ fn is_loose(path: &Path) -> bool {
     std::fs::metadata(path).is_ok_and(|m| m.permissions().mode() & 0o044 != 0)
 }
 
-/// Settings that are turned on but whose feature is not built, so the sysop is not misled.
+/// Settings that are turned on but do nothing yet, or that lower the board's security, so the
+/// sysop is not misled.
 fn unused_warnings(config: &Config) -> Vec<String> {
     let mut out = Vec::new();
     if config.telnet.enabled {
         out.push(
-            "telnet.enabled is on, but the telnet transport is not built yet; nothing \
-             listens on telnet (D27)"
+            "telnet.enabled is on: the board is in LOW-SECURITY MODE, and telnet sessions are \
+             not encrypted (D27)"
                 .to_owned(),
         );
     }
