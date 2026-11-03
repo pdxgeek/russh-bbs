@@ -6,6 +6,8 @@
 //! What was typed is held in [`Secret`]s and drawn as one `*` per character; the text never
 //! reaches a [`View`]. While a request is outstanding keys are ignored.
 
+use zeroize::Zeroizing;
+
 use super::exec::{Done, Kind, Refusal, Request, Response};
 use super::secret::{MAX_CHARS, PolicyError, Secret, check_new};
 use super::service::LoginMethod;
@@ -66,7 +68,9 @@ struct Entry {
     ahead: Vec<Prompt>,
     current: Option<Secret>,
     new: Option<Secret>,
-    typed: String,
+    /// What is being typed. Wiped when submitted, abandoned or dropped. Reserved at full size so
+    /// typing never reallocates and leaves an unwiped copy behind.
+    typed: Zeroizing<String>,
 }
 
 #[derive(Debug)]
@@ -188,7 +192,9 @@ impl PasswordScreen {
         let Stage::Entry(entry) = &mut self.stage else {
             return;
         };
-        let typed = Secret::new(std::mem::take(&mut entry.typed));
+        let typed = Secret::new(std::mem::take(&mut *entry.typed));
+        // The next prompt starts with a fresh full-size buffer, so it never reallocates either.
+        entry.typed = Zeroizing::new(String::with_capacity(MAX_CHARS * 4));
         let Some(&prompt) = entry.ahead.first() else {
             return;
         };
@@ -350,7 +356,7 @@ impl Entry {
             ahead,
             current: None,
             new: None,
-            typed: String::new(),
+            typed: Zeroizing::new(String::with_capacity(MAX_CHARS * 4)),
         }
     }
 }

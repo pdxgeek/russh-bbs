@@ -2,7 +2,8 @@
     clippy::unwrap_used,
     clippy::panic,
     clippy::too_many_lines,
-    clippy::unused_async_trait_impl
+    clippy::unused_async_trait_impl,
+    clippy::assert_is_empty
 )]
 
 use std::sync::Mutex;
@@ -225,6 +226,24 @@ fn new_passwords_are_length_limited_and_free_of_control_characters() {
     assert_eq!(check_new(&"é".repeat(MIN_CHARS)), Ok(()));
     // A passphrase with spaces at the ends is kept as typed.
     assert_eq!(check_new("  spaces around  "), Ok(()));
+}
+
+/// Compile-time proof that the types holding typed passwords wipe them when dropped (D81).
+#[test]
+fn typed_text_is_wiped_on_drop() {
+    fn wipes<T: zeroize::ZeroizeOnDrop>() {}
+    wipes::<Secret>();
+    wipes::<zeroize::Zeroizing<String>>();
+    // The screen's input buffer and the copies made for hashing jobs are `Zeroizing<String>`;
+    // a plain `String` would not satisfy the bound above and would not compile here.
+    let mut screen = PasswordScreen::open(LoginMethod::Key);
+    let _ = screen.take_request();
+    let _ = screen.deliver(Response::Status(false));
+    screen.press(PasswordKey::Char('s'));
+    type_text(&mut screen, GOOD);
+    // Abandoning the prompt drops the buffer.
+    screen.press(PasswordKey::Escape);
+    assert!(screen.view().fields.is_empty());
 }
 
 #[test]

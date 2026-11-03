@@ -2,6 +2,7 @@
 //! rules live in a front end.
 
 use tracing::warn;
+use zeroize::Zeroizing;
 
 use super::hash::{self, DUMMY_HASH, needs_rehash};
 use super::offload::{Offload, Unavailable};
@@ -82,11 +83,7 @@ pub async fn authenticate<S: PasswordStore, O: Offload>(
         },
         _ => (DUMMY_HASH.to_owned(), false),
     };
-    let attempt = if password.len() > MAX_ATTEMPT_BYTES {
-        String::new()
-    } else {
-        password.to_owned()
-    };
+    let attempt = attempt_copy(password);
     let checked = {
         let (target, attempt) = (target.clone(), attempt.clone());
         offload.run(move || hash::verify(&target, &attempt)).await
@@ -101,6 +98,16 @@ pub async fn authenticate<S: PasswordStore, O: Offload>(
     Ok(Login::Accepted(found.account))
 }
 
+/// A wipe-on-drop copy of a typed login attempt for a hashing job; over-long text becomes empty
+/// (it cannot match, and is never hashed at full length).
+fn attempt_copy(text: &str) -> Zeroizing<String> {
+    Zeroizing::new(if text.len() > MAX_ATTEMPT_BYTES {
+        String::new()
+    } else {
+        text.to_owned()
+    })
+}
+
 /// Store a current-parameters hash in place of an older one. A failure is logged and ignored:
 /// the login already succeeded and the old hash still works.
 async fn upgrade<S: PasswordStore, O: Offload>(
@@ -108,9 +115,9 @@ async fn upgrade<S: PasswordStore, O: Offload>(
     offload: &O,
     account: &Account,
     old: &str,
-    password: &str,
+    password: &Zeroizing<String>,
 ) {
-    let password = password.to_owned();
+    let password = password.clone();
     let made = offload.run(move || hash::hash(&password)).await;
     let Ok(Ok(new)) = made else {
         warn!(account = %account.id, "password hash could not be upgraded");
@@ -170,11 +177,7 @@ async fn prove_current<S: PasswordStore, O: Offload>(
     let current = current.ok_or(PasswordError::NeedsCurrent)?;
     let stored = store.stored_hash(account).await?;
     let (target, real) = stored.map_or((DUMMY_HASH.to_owned(), false), |hash| (hash, true));
-    let attempt = if current.expose().len() > MAX_ATTEMPT_BYTES {
-        String::new()
-    } else {
-        current.expose().to_owned()
-    };
+    let attempt = attempt_copy(current.expose());
     let matched = offload.run(move || hash::verify(&target, &attempt)).await?;
     if matched && real {
         Ok(())
@@ -203,7 +206,7 @@ pub async fn set_password<S: PasswordStore, O: Offload>(
     if method == LoginMethod::Password {
         prove_current(store, offload, account, current).await?;
     }
-    let text = new.expose().to_owned();
+    let text = new.copy();
     let made = offload.run(move || hash::hash(&text)).await??;
     store
         .set_hash(

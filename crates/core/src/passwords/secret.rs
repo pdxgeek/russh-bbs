@@ -11,6 +11,8 @@
 
 use std::fmt;
 
+use zeroize::Zeroizing;
+
 /// Fewest characters in a new password. Long enough that a guess budget limited to a few
 /// attempts a minute (D81) is hopeless, short enough to type on a phone.
 pub const MIN_CHARS: usize = 12;
@@ -22,14 +24,20 @@ pub const MAX_CHARS: usize = 128;
 /// (without being hashed at its full length).
 pub const MAX_ATTEMPT_BYTES: usize = 1024;
 
-/// Text that must not be shown or logged.
-pub struct Secret(String);
+/// Text that must not be shown or logged. Its memory is overwritten when it is dropped (D81).
+pub struct Secret(Zeroizing<String>);
 
 impl Secret {
     /// Wrap typed text.
     #[must_use]
     pub fn new(text: String) -> Self {
-        Self(text)
+        Self(Zeroizing::new(text))
+    }
+
+    /// A plain copy of the text for a hashing job, wiped when the job drops it.
+    #[must_use]
+    pub(crate) fn copy(&self) -> Zeroizing<String> {
+        Zeroizing::new(self.0.as_str().to_owned())
     }
 
     /// The text, for hashing. Callers must not log it.
@@ -44,6 +52,9 @@ impl Secret {
         self.0.chars().count()
     }
 }
+
+/// The only field is a [`Zeroizing`] string, so dropping a `Secret` overwrites the text.
+impl zeroize::ZeroizeOnDrop for Secret {}
 
 impl fmt::Debug for Secret {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
