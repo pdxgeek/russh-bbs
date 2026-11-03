@@ -146,7 +146,7 @@ pub const LAYOUT_LIGHTBAR: &str = "member.layout_lightbar";
 pub const LAYOUT_COMPACT: &str = "member.layout_compact";
 
 /// Every key above except [`TITLE`]; the string table must hold exactly these in `member.*`.
-pub const TEXT_KEYS: [&str; 58] = [
+pub const TEXT_KEYS: [&str; 59] = [
     MAIL_NOTE,
     MAIL_SSH_ONLY,
     LOGIN_HEADING,
