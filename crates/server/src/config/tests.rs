@@ -239,13 +239,24 @@ fn telnet_login_needs_telnet_enabled() {
 
 #[test]
 fn settings_that_do_nothing_yet_warn_when_turned_on() {
-    let got = from_file("[ssh]\nallow_password_login = true\n").expect("parses");
+    let got = from_file("[telnet]\nenabled = true\n").expect("parses");
+    assert!(got.warnings.iter().any(|w| w.contains("telnet.enabled")));
+}
+
+#[test]
+fn password_login_is_off_by_default_and_on_reaches_the_limits_without_a_warning() {
+    let off = from_file("").expect("parses");
+    assert!(!off.config.ssh.allow_password_login);
+    assert!(!off.config.limits().allow_password_login);
+    let on = from_file("[ssh]\nallow_password_login = true\n").expect("parses");
+    assert!(on.config.ssh.allow_password_login);
+    assert!(on.config.limits().allow_password_login);
+    // It is built now (M3-D): the "does nothing yet" warning is gone.
     assert!(
-        got.warnings
+        !on.warnings
             .iter()
             .any(|w| w.contains("allow_password_login"))
     );
-    assert!(got.config.ssh.allow_password_login);
 }
 
 #[test]

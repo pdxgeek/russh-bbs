@@ -148,6 +148,11 @@ impl SessionRef {
         });
     }
 
+    /// Record a password login: an account with no key to name, and the access it was given.
+    pub fn set_authenticated_by_password(&self, access: Access) {
+        self.registry.update(self.id, |s| s.access = Some(access));
+    }
+
     /// Record the terminal size (initial or after a window change).
     pub fn set_size(&self, size: PtySize) {
         self.registry.update(self.id, |s| s.pty_size = Some(size));

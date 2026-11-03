@@ -40,6 +40,29 @@ pub fn profile_edited(actor: Actor, target: AccountId, fields: &[&str]) -> Audit
         .detail(&format!("fields {}", fields.join(" ")))
 }
 
+/// `account` set or changed its own password. `note` says which kind of session did it (a fixed
+/// phrase from the passwords module). No password, hash or salt is ever passed here.
+#[must_use]
+pub fn password_set(account: AccountId, note: &str) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(account),
+        Action::PasswordSet,
+        Target::Account(account),
+    )
+    .detail(note)
+}
+
+/// `account` removed its own password. Worded like [`password_set`].
+#[must_use]
+pub fn password_cleared(account: AccountId, note: &str) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(account),
+        Action::PasswordCleared,
+        Target::Account(account),
+    )
+    .detail(note)
+}
+
 /// A custom group was created.
 #[must_use]
 pub fn group_created(actor: Actor, group: GroupId, name: &Slug) -> AuditEvent {

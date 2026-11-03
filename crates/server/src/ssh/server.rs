@@ -25,6 +25,7 @@ use super::error::ServerError;
 use super::handler::{ClientHandler, HandlerParts};
 use super::host_key::HostKey;
 use super::limits::Limits;
+use super::password::PasswordLogin;
 use super::registry::{SessionRegistry, SessionSnapshot};
 use crate::founder::Founder;
 use crate::ui::Ui;
@@ -116,13 +117,20 @@ impl SshServer {
                 config.limits.max_tracked_sources,
                 &SystemClock::new(),
             )),
+            passwords: Arc::new(PasswordLogin::new(&config.limits)),
         };
         let task = tokio::spawn(accept.run(stopped));
         let limits = &config.limits;
+        if limits.allow_password_login {
+            warn!(
+                "SSH password login is ON (ssh.allow_password_login, D28): members who set a password can sign in with it"
+            );
+        }
         info!(
             %local_addr,
             host_key = %host_key.fingerprint(),
             max_connections = limits.max_connections,
+            password_login = limits.allow_password_login,
             render_cap = %format_args!("{}x{}", limits.render_cap.cols(), limits.render_cap.rows()),
             render_memory_ceiling_mib = render_ceiling_mib(limits),
             "ssh server listening"
@@ -164,11 +172,18 @@ impl SshServer {
     }
 }
 
-/// Build the russh configuration: public-key auth only, our limits, the host key.
+/// Build the russh configuration: public-key auth (and `password` when opted in), our limits,
+/// the host key.
 fn russh_config(host_key: &HostKey, limits: &Limits) -> RusshConfig {
     RusshConfig {
         server_id: SshId::Standard(SERVER_ID.into()),
-        methods: MethodSet::from(&[MethodKind::PublicKey][..]),
+        // Public key only, unless the sysop opted in to passwords (D28): then `password` is
+        // offered too. Nothing else is ever offered (`none` is answered, never accepted).
+        methods: if limits.allow_password_login {
+            MethodSet::from(&[MethodKind::PublicKey, MethodKind::Password][..])
+        } else {
+            MethodSet::from(&[MethodKind::PublicKey][..])
+        },
         auth_rejection_time: limits.auth_rejection_time,
         // OpenSSH probes with "none" first; answering that instantly keeps logins fast while
         // real failed attempts still pay `auth_rejection_time`.
@@ -193,6 +208,7 @@ struct AcceptLoop<D> {
     registry: Arc<SessionRegistry>,
     permits: Arc<Semaphore>,
     throttle: Arc<Throttle>,
+    passwords: Arc<PasswordLogin>,
 }
 
 impl<D: Backend> AcceptLoop<D> {
@@ -248,6 +264,7 @@ impl<D: Backend> AcceptLoop<D> {
             founder: Arc::clone(&self.founder),
             registry: Arc::clone(&self.registry),
             throttle: Arc::clone(&self.throttle),
+            passwords: Arc::clone(&self.passwords),
             limits: self.limits,
             ui: Arc::clone(&self.ui),
             stopped: stopped.clone(),
@@ -265,6 +282,7 @@ struct Connection<D> {
     founder: Arc<Founder>,
     registry: Arc<SessionRegistry>,
     throttle: Arc<Throttle>,
+    passwords: Arc<PasswordLogin>,
     limits: Limits,
     ui: Arc<Ui>,
     stopped: watch::Receiver<bool>,
@@ -292,6 +310,7 @@ impl<D: Backend> Connection<D> {
                 directory: Arc::clone(&self.directory),
                 founder: Arc::clone(&self.founder),
                 throttle: Arc::clone(&self.throttle),
+                passwords: Arc::clone(&self.passwords),
                 limits: self.limits,
                 ui: Arc::clone(&self.ui),
                 abort: Arc::clone(&abort),

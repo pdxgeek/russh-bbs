@@ -52,7 +52,6 @@ pub(crate) struct Look {
 impl Look {
     /// The look for `settings`: unanswered glyph test and a rejected one both give the plain
     /// layout (ASCII, no color), because [`TerminalSettings`] says so.
-    #[cfg(test)]
     pub(crate) fn of(settings: &TerminalSettings) -> Self {
         Self::themed(settings, settings.layout(), Palette::DEFAULT)
     }

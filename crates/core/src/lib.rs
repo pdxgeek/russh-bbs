@@ -4,11 +4,13 @@
 pub mod access;
 pub mod audit;
 pub mod credits;
+pub mod drafts;
 pub mod founder;
 pub mod icons;
 pub mod invites;
 pub mod limits;
 pub mod menu;
+pub mod passwords;
 pub mod profiles;
 pub mod queue;
 pub mod registration;

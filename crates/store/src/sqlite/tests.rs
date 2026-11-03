@@ -130,6 +130,14 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         "03772cd89de1810db7a6441f13e4c7b8b47cf7444dbd796fc247c4390fd5c1263a41c2813820f5eee94da9042efd06ee",
     ),
     (
+        12,
+        "b24288ca59bb18b97335404fc067291e0f7ae6207d35ae7d431b64fd6bd112b8c04113266db08b2626e14bcf0bedac6f",
+    ),
+    (
+        13,
+        "4472b15b07fabcefe71576b3f788c86ad5ddf1207cb42d344e0d779294d650c5469f9fd85e30159cf284e853e1e15118",
+    ),
+    (
         14,
         "d098408186779f2898926d5fdd73dd5cbf2e5b88f35aaf9fcb54087613ab5aaf633dafbb4130f35c8404a9f337853b86",
     ),
@@ -187,9 +195,11 @@ async fn a_fresh_database_gets_every_migration() {
             "access_grant",
             "account_keys",
             "account_logins",
+            "account_password",
             "accounts",
             "audit_log",
             "credit_ledger",
+            "draft",
             "group_closure",
             "group_member",
             "invite",

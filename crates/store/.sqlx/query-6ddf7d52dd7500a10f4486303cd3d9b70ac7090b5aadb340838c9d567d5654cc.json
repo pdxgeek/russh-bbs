@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM draft WHERE account_id = ? AND context = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "6ddf7d52dd7500a10f4486303cd3d9b70ac7090b5aadb340838c9d567d5654cc"
+}

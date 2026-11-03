@@ -14,6 +14,7 @@
 pub(crate) mod chrome;
 pub(crate) mod classic;
 pub(crate) mod compact;
+pub mod editor;
 pub(crate) mod keys;
 pub(crate) mod layout;
 pub(crate) mod lightbar;

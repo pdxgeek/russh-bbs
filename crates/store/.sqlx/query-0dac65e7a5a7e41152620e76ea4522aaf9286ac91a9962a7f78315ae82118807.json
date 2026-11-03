@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO draft (account_id, context, body, updated_at)\n             SELECT ?, ?, ?, ? WHERE (SELECT count(*) FROM draft WHERE account_id = ?) < ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": []
+  },
+  "hash": "0dac65e7a5a7e41152620e76ea4522aaf9286ac91a9962a7f78315ae82118807"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE draft SET body = ?, updated_at = ? WHERE account_id = ? AND context = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "dc904cb7bc89d94a81599073c2c0a0856e2e095f9c49f9298acc9c7fc939549a"
+}

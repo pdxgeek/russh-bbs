@@ -26,7 +26,7 @@ A strict rule applies to the environment: a `RUSSH_BBS_*` variable that no setti
 - **Bad values** (wrong type, out of range, bad path, inconsistent with another key) name the key and where the value came from: the file, the environment variable or the flag.
 - **Something that is parsed but not built is a boot error, not ignored.** `datasource.iam_auth = true` fails with "IAM token authentication is not built yet" (D31, D44). The server never falls back to SQLite from Postgres, or to another kind of authentication, on its own.
 - **Postgres failures stop the boot.** A bad URL, an unreachable server, a TLS check that fails, a server that does not offer TLS, or a refused login is a boot error that names the cause and never contains the password.
-- **Settings that parse but do nothing yet** log a warning when turned on (password login, telnet, S3 blobs), so the sysop is not misled.
+- **Settings that parse but do nothing yet** log a warning when turned on (telnet, S3 blobs), so the sysop is not misled. Password login is built (M3-D) and logs a different warning at start: that it is on.
 - **Secrets are redacted.** `datasource.url` may contain a password. It has no command-line flag (argv is visible in `ps`), it is masked in `Debug`, `Display` and logs (`postgres://user:***@host/db`), and no error message quotes it or the line it was on. If a config file sets it and is readable by group or others the server warns; use `chmod 600`. Object-store credentials are never read from this file: they come from the environment (D30).
 
 ## Environment variable names
@@ -64,7 +64,7 @@ A key's environment variable is listed below. Names that existed before this fil
 | `ssh.input_bytes_per_second` | integer 64–10000000 | `8192` | `RUSSH_BBS_SSH_INPUT_BYTES_PER_SECOND` | none | SSH sessions (FIX-M1-1, D49). Input bytes per second one session may send, with a two-second burst (16 KiB by default, enough for a long paste). Excess bytes are dropped |
 | `ssh.flood_strikes` | integer 1–1000000 | `1000` | `RUSSH_BBS_SSH_FLOOD_STRIKES` | none | SSH sessions (FIX-M1-1, D49). Over-budget events (each excess request; each started KiB of excess input) before the session is disconnected. Forgotten after 10 quiet seconds |
 | `ssh.write_stall_secs` | integer 1–3600 | `10` | `RUSSH_BBS_SSH_WRITE_STALL_SECS` | none | SSH sessions (FIX-M1-1, D49). How long a peer may leave output waiting (its window or socket full) before the connection is dropped instead of queueing without bound |
-| `ssh.allow_password_login` | boolean | `false` | `RUSSH_BBS_SSH_ALLOW_PASSWORD_LOGIN` | none | Parsed, not yet used (D28; warns when on) |
+| `ssh.allow_password_login` | boolean | `false` | `RUSSH_BBS_SSH_ALLOW_PASSWORD_LOGIN` | none | Opt-in password login over SSH (M3-D, D28, D81). Off: the server advertises `publickey` only and never reads a password. On: the SSH `password` method is offered as well (not keyboard-interactive), a warning is logged at start, and a member with a password set (Terminal settings, then Password) can sign in with `ssh -o PubkeyAuthentication=no -o PreferredAuthentications=password user@host`. Attempts are limited per handle (burst 5, then one per 30 s) and per network (burst 10, then one per 6 s), and every failure looks the same. Setting a password is possible whether this is on or off. |
 
 ### `[datasource]`
 
@@ -146,5 +146,5 @@ Usage counters (`limit_usage`) are per account per UTC day and survive a restart
 
 - **Implemented and tested (M1-H):** all of the above; unit tests cover each layer, precedence, unknown keys, bad values with their source, the IAM refusal, redaction in `Debug`, `Display` and captured logs, default file search, the example file equalling the defaults, and this document naming every key, variable and flag.
 - **Implemented and tested (M1-G):** the `postgres` datasource (D44): config wiring and the `iam_auth` refusal in the config tests, the store itself in the shared suite on Postgres 16 and on a TLS-required Postgres.
-- **Planned:** IAM token authentication, a blob store reading `[blobs]`, telnet (M3), SSH password login.
+- **Planned:** IAM token authentication, a blob store reading `[blobs]`, telnet (M3).
 - **Verified end to end:** see the M1-H pull request for the `ssh` session against a file and against environment overrides.

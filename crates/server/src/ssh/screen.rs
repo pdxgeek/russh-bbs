@@ -37,6 +37,7 @@ use russh_bbs_core::founder::{ClaimEffect, ClaimForm, ClaimInput};
 use russh_bbs_core::icons::Tier;
 use russh_bbs_core::invites::{InviteOutcome, InviteRequest};
 use russh_bbs_core::menu::MenuPage;
+use russh_bbs_core::passwords::{Request as PasswordRequest, Response as PasswordResponse};
 use russh_bbs_core::profiles::{
     Request as MembersRequest, Response as MembersResponse, ScreenView,
 };
@@ -207,6 +208,9 @@ pub(super) struct KeyEffects {
     /// (M2-E). The session runs it against the store and gives the answer to
     /// [`Screen::deliver_queue`].
     pub(super) queue_request: Option<QueueRequest>,
+    /// A password request (status, set, clear) the password screen is waiting on (M3-D). The
+    /// session runs it against the store and gives the answer to [`Screen::deliver_password`].
+    pub(super) password_request: Option<PasswordRequest>,
     /// Keys held back because `members_request` has to be answered first. The session applies
     /// them after delivering the answer, so a fast typist's next key is not lost.
     pub(super) held_back: Vec<Key>,
@@ -223,6 +227,7 @@ impl KeyEffects {
         self.request_invite = later.request_invite.or(self.request_invite.take());
         self.members_request = later.members_request;
         self.queue_request = later.queue_request;
+        self.password_request = later.password_request;
         self.held_back = later.held_back;
     }
 }
@@ -467,6 +472,12 @@ impl Screen {
                         effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
                         break;
                     }
+                    // And the password screen (M3-D).
+                    if let Some(request) = flow.take_password_request() {
+                        effects.password_request = Some(request);
+                        effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
+                        break;
+                    }
                 }
             }
         }
@@ -508,6 +519,15 @@ impl Screen {
     pub(super) fn deliver_queue(&mut self, response: QueueResponse) {
         if let Content::Member(flow) = &mut self.content {
             flow.deliver_queue(response);
+        }
+        self.dirty = true;
+    }
+
+    /// The answer to the password request taken from [`KeyEffects`]. The screen shows it on the
+    /// next render.
+    pub(super) fn deliver_password(&mut self, response: PasswordResponse) {
+        if let Content::Member(flow) = &mut self.content {
+            flow.deliver_password(response);
         }
         self.dirty = true;
     }

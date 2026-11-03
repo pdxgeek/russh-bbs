@@ -231,13 +231,6 @@ fn is_loose(path: &Path) -> bool {
 /// Settings that are turned on but whose feature is not built, so the sysop is not misled.
 fn unused_warnings(config: &Config) -> Vec<String> {
     let mut out = Vec::new();
-    if config.ssh.allow_password_login {
-        out.push(
-            "ssh.allow_password_login is on, but password login is not built yet; it has no \
-             effect and SSH accepts keys only (D28)"
-                .to_owned(),
-        );
-    }
     if config.telnet.enabled {
         out.push(
             "telnet.enabled is on, but the telnet transport is not built yet; nothing \

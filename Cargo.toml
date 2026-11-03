@@ -54,6 +54,11 @@ clap = { version = "4", features = ["derive", "env"] }
 toml = { version = "0.9", default-features = false, features = ["parse", "serde", "std"] }
 # Typed config structs (M1-H); derive only, no format of its own.
 serde = { version = "1", features = ["derive"] }
+# Password hashing (D79, M3-D): argon2id from RustCrypto. Already in the tree through `ssh-key`; the default features
+# (`alloc`, `getrandom`, `password-hash`) give the PHC string format and the OS salt source.
+argon2 = "0.6"
+# Wipes typed passwords from memory on drop (D81): `Zeroizing<String>`. Already in the tree through `russh` and `ssh-key`.
+zeroize = "1"
 # Terminal input parser (D50): escape sequences, UTF-8 and the Esc-vs-sequence decision, with the parser
 # state kept across SSH data packets. Only the `parser` feature; its one dependency (`bitflags`) is already in the tree.
 anes = { version = "0.2", default-features = false, features = ["parser"] }
@@ -61,6 +66,9 @@ anes = { version = "0.2", default-features = false, features = ["parser"] }
 strum = { version = "0.28", features = ["derive"] }
 # Terminal rendering over the PTY (decision D7, Q5/D19).
 ratatui = { version = "0.30", default-features = false, features = ["crossterm"] }
+# Multi-line editor widget for the M3 message editor (D48). `no-backend` drops its crossterm
+# input conversion: keys come from our own parser and are built by hand.
+tui-textarea-2 = { version = "=0.13.2", default-features = false, features = ["no-backend"] }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

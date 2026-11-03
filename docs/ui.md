@@ -46,6 +46,60 @@ The server-readable marker, the (future) E2EE lock, signature badges, and the ke
 - Unicode-tier markers are drawn inside the reserved delimiters `⟦ ⟧`. The sanitizer replaces those exact codepoints and the four marker glyphs in all content; Nerd Font glyphs are private-use and replaced likewise. **Lookalikes are not blocked** (`〚☉〛`, `◉`, fullwidth brackets), so on a terminal without styling the Unicode tier also depends on the chrome-only position (D45).
 - **ASCII-tier markers cannot be made unforgeable by text** (content can type `E2EE`). Draw them only in a chrome-only position (status line or fixed gutter). On a no-color terminal that position is the only cue, so a screen that cannot guarantee one must say "security markers unavailable" instead of drawing them. See D39.
 
+## Message editor
+
+The full-screen editor the forum, mail and poll screens call to compose text (M3-B, D48, D80). It is `russh-bbs-server::ui::editor`, built on `tui-textarea-2`; drafts, bounds and quoting are `russh-bbs-core::drafts`. Status: implemented and tested; **no feature screen calls it yet** (the first caller is M3-E).
+
+### Calling it
+
+The editor is a plain state machine. The host session feeds it keys, draws it every frame and does the store work its effects ask for, as the other screens do.
+
+```text
+let request = EditorRequest::new(title)             // title: Sanitized, one line
+    .context(ContextKey::parse("forum:reply:12")?)  // optional; enables drafts
+    .initial(quote(Some(&who), &post, QuoteLimits::default())) // optional, Sanitized
+    .limits(BodyLimits::new(4_000, 100));           // optional; narrower than the board-wide cap only
+let mut editor = Editor::open_with_store(&store, account, request).await?; // resumes a saved draft
+match editor.input(key) {                           // key: ssh::terminal::Key
+    EditorEffect::Stay => {}
+    EditorEffect::Done(Outcome::Submitted(body)) => { /* write it, THEN discard_draft */ }
+    EditorEffect::Done(Outcome::Cancelled) => {}    // nothing sent, nothing stored changed
+    EditorEffect::SaveDraft(save) => {              // the member chose "save draft"
+        let saved = save.persist(&store, account, now).await;
+        editor.draft_saved(saved);                  // Done(Outcome::SavedDraft), or back to editing
+    }
+    EditorEffect::LogOff(save) => { /* persist `save` if Some, then end the session */ }
+}
+editor.render(frame, &EditorView { ui, settings, markers });
+```
+
+- `Editor::open(request, saved_draft)` is the same without the store; it errors (`BodyError`) if the starting text or draft does not fit the limits, rather than cut a member's text.
+- `Submitted(Body)` carries the sanitized, in-bounds text. The draft stays stored until the caller calls `drafts::discard_draft(store, account, editor.context())` after its own write succeeded.
+- A saved draft for the context replaces the starting text (a quote) and the screen says so. Saving blank text removes the draft.
+- Quoting: `drafts::quote(attribution, text, QuoteLimits)` takes and returns `Sanitized`. Each line gets `> `; lines already two deep are dropped; the result ends with a blank line to reply on. A quote mark is ordinary text anyone can type: it says nothing about authorship and is never security chrome. The editor draws quote lines dim, never in the reserved marker style.
+- Limits: at most 16,000 characters and 400 lines whatever a caller asks (`BodyLimits::MAX`); at most 20 drafts per member (`MAX_DRAFTS_PER_MEMBER`). An edit that would pass a limit is undone and a `Problem:` line says so. Text is sanitized by the shared multi-line sanitizer on save and read; over-long text is refused, not cut.
+- The editor says nothing about who can read a message or a draft (D78), shows no lock, and draws no security marker of its own: the host passes the markers for the reserved status row.
+
+### Keys the editor captures
+
+The key parser delivers no arrow keys, Home, End, Delete, PageUp/PageDown, non-ASCII characters or pasted line breaks yet, so the editor uses Ctrl chords (Tab is Ctrl-I). Ctrl-G lists them on screen.
+
+| Key | Does |
+|---|---|
+| Printable ASCII, Enter, Tab, Backspace | type, new line, spaces to the next tab stop of 4, delete before the cursor |
+| Ctrl-X | send |
+| Esc | leave. With no changes: leaves at once (`Cancelled`). With changes: asks `[s] save draft` (only with a context key), `[d] discard changes`, `[c] keep editing`. Any other key keeps editing |
+| Ctrl-C, Ctrl-D | log off (the universal key, D54). The host first stores the draft if the text changed and there is a context key |
+| Ctrl-G | key list; any key returns without typing |
+| `?` | a question mark (help is Ctrl-G) |
+| Ctrl-B, Ctrl-F, Ctrl-P, Ctrl-N, Ctrl-A, Ctrl-E | left, right, up, down (by screen row), line start, line end |
+| Ctrl-T, Ctrl-V | page up, page down |
+| Ctrl-W, Ctrl-K, Ctrl-Y | delete word before; delete to end of line (kept); put it back |
+| Ctrl-Z, Ctrl-R | undo, redo |
+| every other key | ignored |
+
+The pause setting (a pager) does not apply: the editor scrolls with the cursor. A window change keeps the text and the cursor; a window under 26 columns or 9 rows says so in words and keeps the text.
+
 ## Accessibility
 
 A compact, text-only layout with no icons, no art, and screen-reader-friendly output is selectable from any screen and is the fallback whenever the terminal cannot be probed.
@@ -90,6 +144,14 @@ A compact, text-only layout with no icons, no art, and screen-reader-friendly ou
 - **Security chrome:** the last row of the screen is reserved. The layout removes it from the area before laying out content, clears it, and draws markers there with the reserved style (`Rendered::chrome_style()`, bold + reverse); if a marker does not fit the width it says "security markers unavailable"; on a one-row terminal no marker is drawn. The menu screens show the server-readable marker with "The server can read what you do here." The other screens draw no markers. Test: hostile content (2,000-character lines, 200 lines, text and lookalikes of markers) at five sizes in all three tiers leaves the status row identical to an empty screen and puts the reserved style on no other cell.
 - **Not implemented:** the other layouts, declared widest layout per screen (FIX-M1-4 request), a pager wired to a screen (the pager itself exists, D65), the waiting-room strings in the table (the settings, glyph, login and logoff strings moved in M3-A), `tui-input` and `tui-big-text` (evaluated, not needed yet).
 - **Verified:** unit tests in core and server, a real russh client, and OpenSSH under `pyte` at 80x24 and 200x60 (claim, icon check, main menu, settings, Esc back, help, placeholder notice, sysop submenu, Back item, log off). **Not verified:** other terminal emulators; a Nerd Font or screen-reader session.
+
+**Message editor and drafts** (`russh-bbs-server::ui::editor`, `russh-bbs-core::drafts`), M3-B, D80 (and D48).
+
+- **Implemented:** see [Message editor](#message-editor). A word-wrapped `tui-textarea-2` editor in a full-width box (title, line and character counters on the bottom border, a `Notice:`/`Problem:` line, a key line), the reserved status row beneath through `chrome::render_status`, its own strings in `ui::editor::strings`. Drafts: migration `0012_drafts` on SQLite and Postgres, `DraftStore` on both, the 20-per-member cap checked and written in one transaction.
+- **Security chrome:** the editor draws no marker itself. Tests (all three icon tiers, color on and off, sizes from 1x1 to 200x60, hostile text with lookalikes and marker words) prove the status row is identical to an empty editor's and that no cell above it carries bold + reverse; the cursor is reverse + underline and quote lines are dim.
+- **Not implemented:** arrow keys, Home/End/Delete, PageUp/PageDown, non-ASCII typing and pasted line breaks (the key parser, cross-slice request in [coordination.md](coordination.md)); draft expiry; a menu entry or any feature screen; the editor's strings in the string table (M3-A).
+- **Verified:** core unit tests; the shared store suite for drafts on SQLite, Postgres 16 and TLS-required Postgres 16 (cap under concurrency, per-member and per-context isolation, sanitizing in the stored row, `CHECK`s, cascade on account delete, a broken store errors); 32 editor tests (keys, limits including a full 16,000-character message, leave and draft flow against a real SQLite store, drawing, wide characters, resize, scrolling, hostile text); and **real OpenSSH 9.6 under `pyte` (36 checks)** against the test-only example `crates/server/examples/editor_demo.rs` (`cargo run -p russh-bbs-server --example editor_demo`; loopback only, accepts every key, not part of the binary or the image): type and send, reply with a quote, save a draft with Esc and `s`, resume it on reconnect, log off with Ctrl-C and resume, a send that discards the draft, character and line limits with their `Problem:` line, resize from 80x24 to 40x12, 20x5 and 120x40 with the text and cursor kept, 60 lines scrolled with Ctrl-T, an arrow key not mistaken for Esc, the key list, and the marker row's reserved style appearing only on the last row.
+- **Not verified:** other terminals, a screen reader, a Nerd Font session, a feature screen (none exists), the editor on a slow link (the example repaints the whole screen per key; the real screen sends diffs).
 
 **Layouts, themes and live switching** (`russh-bbs-server::ui::{layout, lightbar, compact, theme}`, `core::menu` cursor, `core::terminal_settings::{layout, strings}`), M3-A, D82.
 

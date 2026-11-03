@@ -16,6 +16,8 @@ tracing = { workspace = true }
 sha2 = { workspace = true }
 subtle = { workspace = true }
 icu_properties = { workspace = true }
+argon2 = { workspace = true }
+zeroize = { workspace = true }
 # The scheduler spawns, times out and isolates job tasks; the workspace already builds tokio.
 tokio = { workspace = true }
 

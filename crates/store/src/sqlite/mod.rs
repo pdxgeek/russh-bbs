@@ -6,9 +6,11 @@
 mod access;
 mod audit;
 mod credits;
+mod drafts;
 mod founder;
 mod invites;
 mod limits;
+mod passwords;
 mod profiles;
 mod queue;
 mod registration;
