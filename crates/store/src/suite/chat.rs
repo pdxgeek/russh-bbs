@@ -164,7 +164,7 @@ pub(crate) async fn an_unknown_actor_is_refused_and_nothing_is_written<H: Harnes
         Err(CreateRoomError::Store(StoreError::AccountNotFound))
     ));
     assert_eq!(names(&s.open_rooms().await.unwrap()), ["lobby"]);
-    assert!(audit_rows(&h).await.is_empty());
+    assert_eq!(audit_rows(&h).await.len(), 0);
 }
 
 pub(crate) async fn room_writes_never_land_without_their_audit_row<H: Harness>() {
