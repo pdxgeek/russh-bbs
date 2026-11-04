@@ -475,6 +475,10 @@ impl Bot for Delver {
 
 impl Delver {
     fn decide(&mut self, screen: &[String], visit: u32, keys_this_visit: u32) -> Option<DoorKey> {
+        // Every screen any bot ever sees fits the board's box at 80 columns.
+        for line in screen {
+            assert!(line.chars().count() <= 74, "too wide: {line:?}");
+        }
         if keys_this_visit == 0 {
             self.queue.clear();
             self.plan.clear();
@@ -573,7 +577,7 @@ async fn thirty_days_of_twelve_delvers() {
     let report = sim.run_days(30).await.unwrap();
     println!("\nEMBERDEEP 30-DAY SIM: {report:?}");
     println!(
-        "{:<13} {:<8} {:>3} {:>5} {:>5} {:>6} {:>5} {:>7} {:>5} {:>6} {:>7}",
+        "{:<13} {:<8} {:>3} {:>5} {:>5} {:>6} {:>5} {:>7} {:>5} {:>6} {:>7} {:>6}",
         "calling",
         "style",
         "lvl",
@@ -584,7 +588,8 @@ async fn thirty_days_of_twelve_delvers() {
         "relics",
         "coin",
         "scars",
-        "where"
+        "where",
+        "bytes"
     );
     let mut summaries: Vec<Summary> = Vec::new();
     for (n, (name, style)) in labels.iter().enumerate() {
@@ -593,7 +598,7 @@ async fn thirty_days_of_twelve_delvers() {
         let door = Emberdeep::new().unwrap();
         let s = summarize(&stored.bytes, door.content().unwrap()).unwrap();
         println!(
-            "{name:<13} {style:<8} {:>3} {:>5} {:>5} {:>6} {:>5} {:>7} {:>5} {:>6} {:>7}",
+            "{name:<13} {style:<8} {:>3} {:>5} {:>5} {:>6} {:>5} {:>7} {:>5} {:>6} {:>7} {:>6}",
             s.level,
             s.best_depth,
             s.deaths,
@@ -606,7 +611,8 @@ async fn thirty_days_of_twelve_delvers() {
                 Whereabouts::Town => "town".to_owned(),
                 Whereabouts::Below(d) => format!("L{d}"),
                 Whereabouts::Dead(d) => format!("dead@{d}"),
-            }
+            },
+            stored.bytes.len()
         );
         summaries.push(s);
     }

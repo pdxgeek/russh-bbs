@@ -115,3 +115,28 @@ fn a_save_stays_far_under_the_framework_cap() {
         .collect();
     assert!(g.encode().len() < 64 * 1024 / 8);
 }
+
+#[test]
+fn a_save_that_puts_the_hero_where_there_is_no_room_is_refused() {
+    // Whatever the bytes, a hero is never placed on level 0, below the bottom, or in room 40,
+    // so nothing downstream can index or shift out of range.
+    let mut g = busy_game();
+    for (depth, room) in [(0u8, 0u8), (26, 0), (255, 0), (3, 32), (3, 200)] {
+        g.place = Place::Delve { depth, room };
+        assert!(
+            Game::decode(&g.encode()).is_none(),
+            "depth {depth} room {room}"
+        );
+        g.place = Place::Dead {
+            depth,
+            room,
+            since: 1,
+        };
+        assert!(Game::decode(&g.encode()).is_none());
+    }
+    g.place = Place::Delve {
+        depth: 25,
+        room: 31,
+    };
+    assert!(Game::decode(&g.encode()).is_some());
+}

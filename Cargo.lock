@@ -2931,6 +2931,7 @@ dependencies = [
  "russh",
  "russh-bbs-core",
  "russh-bbs-door",
+ "russh-bbs-door-emberdeep",
  "russh-bbs-door-example",
  "russh-bbs-store",
  "rustls",

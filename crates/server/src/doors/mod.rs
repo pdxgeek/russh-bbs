@@ -32,6 +32,7 @@ use russh_bbs_core::limits::{Clock, SystemClock};
 use russh_bbs_core::scheduler::{Scheduler, SchedulerStore};
 use russh_bbs_door::tick::{self, TickPolicy};
 use russh_bbs_door::{Door, InvalidDoorId};
+use russh_bbs_door_emberdeep::Emberdeep;
 use russh_bbs_door_example::CoinToss;
 
 pub(crate) use draw::{DrawCtx, render};
@@ -77,12 +78,13 @@ impl Doors {
     }
 
     /// The doors that ship with the board: the example coin toss, until a game replaces it as
-    /// the first door. (Saltmarch, Emberdeep and the rest register here when they exist.)
+    /// the first door, and the games (Emberdeep; Saltmarch and the rest register here when they
+    /// exist).
     ///
     /// # Errors
     /// Only if a built-in door has an invalid id, which a test rules out.
     pub fn builtin() -> Result<Self, InvalidDoorId> {
-        Ok(Self::new(vec![CoinToss::shared()?]))
+        Ok(Self::new(vec![CoinToss::shared()?, Emberdeep::shared()?]))
     }
 
     /// No doors: the Doors menu item then opens an empty list.

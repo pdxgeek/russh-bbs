@@ -40,6 +40,13 @@ The framework is the first M4 slice. **It shares plumbing only.** Each game has 
 - **Credits.** Doors keep their own in-game currency. Whether season results pay board credits (M3-C) is a sysop setting, off by default.
 - **Inter-BBS.** Leagues shared between boards wait for federation (M8). Each game keeps a season summary format that could be exchanged later.
 
+### Game status
+
+| Game | Slice | Status |
+|---|---|---|
+| Emberdeep | M4-E1 engine (D99) | **Implemented**: hero, seasonal shared dungeon, combat, torch-turns, death and rescue, nightly tick, saves, minimal text screen. Later slices Planned. See [emberdeep.md](emberdeep.md) |
+| Saltmarch, Nullroute, Long Haul, Hallpass | | Proposed |
+
 ### Framework status (M4-D0, D98)
 
 **Implemented:** everything in the list above except what is named under *Planned*. It lives in `crates/doors/framework` (`russh-bbs-door`), with the persistence and staff tools in `core::doors` and migration `0023`, and the example door (a coin toss with a daily allowance, saved state, a world and a daily tick) in `crates/doors/example`. **Verified:** the shared store suite on SQLite, Postgres 16 and TLS-required Postgres 16; unit and integration tests for the framework and the example; tests over a real russh client and a real telnet client that make the same walk on both transports (`crates/server/tests/doors.rs`); the path test for `doors.run` (`crates/server/tests/access_paths.rs`); and a hand walk with the OpenSSH client and a raw telnet client, reported in the pull request. **Planned, not built:** screens for the staff tools (bar, reset, end a season exist only as audited functions), a key bound to a door's look-around view, a per-door on/off setting, per-door permission grants, and any process boundary for doors by other authors (D98 (7)).

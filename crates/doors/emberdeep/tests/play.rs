@@ -348,7 +348,10 @@ fn every_screen_fits_eighty_by_twenty_four_in_plain_ascii() {
                 line.chars().all(|c| c == ' ' || c.is_ascii_graphic()),
                 "{line:?}"
             );
-            assert!(line.chars().count() <= 100, "{line:?}");
+            assert!(
+                line.chars().count() <= 74,
+                "too wide for the board's box: {line:?}"
+            );
         }
     }
 }

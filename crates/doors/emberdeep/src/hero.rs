@@ -272,8 +272,9 @@ impl Hero {
         gained
     }
 
-    /// Why a node cannot be taken now, if it cannot.
-    pub(crate) fn node_refusal(&self, content: &Content, id: &str) -> Option<&'static str> {
+    /// Why a node is out of reach for a reason other than points, if it is: another calling's,
+    /// already taken, closed by an earlier choice, too high a tier, or an earlier node missing.
+    pub(crate) fn node_locked(&self, content: &Content, id: &str) -> Option<&'static str> {
         let Some(node) = content.node(id) else {
             return Some("There is no such skill.");
         };
@@ -291,9 +292,6 @@ impl Hero {
         if closed {
             return Some("An earlier choice closed that path for good.");
         }
-        if self.skill_points == 0 {
-            return Some("You have no skill points to spend.");
-        }
         if u32::from(self.level) < 2 * node.tier - 1 {
             return Some("You are not experienced enough for that skill.");
         }
@@ -301,6 +299,17 @@ impl Hero {
             return Some("You need an earlier skill first.");
         }
         None
+    }
+
+    /// Why a node cannot be taken now, if it cannot.
+    pub(crate) fn node_refusal(&self, content: &Content, id: &str) -> Option<&'static str> {
+        self.node_locked(content, id).or({
+            if self.skill_points == 0 {
+                Some("You have no skill points to spend.")
+            } else {
+                None
+            }
+        })
     }
 
     /// Take a node.

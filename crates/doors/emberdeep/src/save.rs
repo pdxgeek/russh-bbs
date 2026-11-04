@@ -197,12 +197,12 @@ impl Game {
         let place = match r.u8()? {
             TAG_TOWN => Place::Town,
             TAG_DELVE => Place::Delve {
-                depth: r.u8()?,
-                room: r.u8()?,
+                depth: read_depth(&mut r)?,
+                room: read_room(&mut r)?,
             },
             TAG_DEAD => Place::Dead {
-                depth: r.u8()?,
-                room: r.u8()?,
+                depth: read_depth(&mut r)?,
+                room: read_room(&mut r)?,
                 since: r.i64()?,
             },
             _ => return None,
@@ -219,7 +219,7 @@ impl Game {
         for _ in 0..DEPTH_MAX {
             explored.push(r.u32()?);
         }
-        let prev_room = r.u8()?;
+        let prev_room = read_room(&mut r)?;
         let today = read_today(&mut r)?;
         if !r.done() {
             return None;
@@ -239,6 +239,16 @@ impl Game {
             changes: Vec::new(),
         })
     }
+}
+
+/// A level number, 1 to the bottom: a save can never put a hero where there is no level.
+fn read_depth(r: &mut Reader<'_>) -> Option<u8> {
+    r.u8().filter(|d| (1..=DEPTH_MAX).contains(d))
+}
+
+/// A room index; a level has at most 20 rooms and the explored map is a 32-bit mask.
+fn read_room(r: &mut Reader<'_>) -> Option<u8> {
+    r.u8().filter(|room| *room < 32)
 }
 
 fn read_hero(r: &mut Reader<'_>) -> Option<Hero> {

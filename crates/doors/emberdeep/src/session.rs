@@ -16,7 +16,7 @@ use crate::hero::Hero;
 use crate::rules::{CREATION_POINTS, CREATION_TRAITS, DEPTH_MAX, RECOVERY_DAYS};
 use crate::world::World;
 
-const WRAP: usize = 76;
+const WRAP: usize = 72;
 const LOG_KEEP: usize = 8;
 const TRAIT_KEYS: &str = "abcdefghijklmnopqrstuvwx";
 const NODE_KEYS: &str = "123456789abcdef";
@@ -603,32 +603,34 @@ impl Session {
         out
     }
 
-    fn status_line(&self, game: &Game, d: &crate::hero::Derived) -> String {
+    /// Who the hero is and how they stand, in two lines that fit 72 columns.
+    fn status_lines(&self, game: &Game, d: &crate::hero::Derived) -> Vec<Line> {
         let h = &game.hero;
-        format!(
-            "{} L{} {}  HP {}/{}  Turns {}/{}  Fatigue {}  Coin {}  Salvage {}  Stash {}",
-            h.name,
-            h.level,
-            self.content
-                .calling(&h.calling)
-                .map_or("hero", |c| c.name.as_str()),
-            h.hp.max(0),
-            d.max_hp,
-            h.turns,
-            crate::rules::TURNS_PER_DAY,
-            h.fatigue,
-            h.coin,
-            h.salvage,
-            h.stash
-        )
+        vec![
+            plain(format!(
+                "{} L{} {}  HP {}/{}  Turns {}/{}  Fatigue {}",
+                h.name,
+                h.level,
+                self.content
+                    .calling(&h.calling)
+                    .map_or("hero", |c| c.name.as_str()),
+                h.hp.max(0),
+                d.max_hp,
+                h.turns,
+                crate::rules::TURNS_PER_DAY,
+                h.fatigue,
+            )),
+            plain(format!(
+                "Coin {}  Salvage {}  Stash {}  Relics {}",
+                h.coin, h.salvage, h.stash, h.relics
+            )),
+        ]
     }
 
     fn main_lines(&self, game: &Game) -> Lines {
         let d = game.derived(&self.content);
-        let mut body = vec![
-            styled("EMBERDEEP", DoorStyle::Strong),
-            plain(self.status_line(game, &d)),
-        ];
+        let mut body = vec![styled("EMBERDEEP", DoorStyle::Strong)];
+        body.extend(self.status_lines(game, &d));
         let mut keys = Vec::new();
         if game.fight.is_some() {
             self.fight_lines(game, &d, &mut body, &mut keys);
@@ -931,9 +933,13 @@ impl Session {
         let mut out = vec![
             styled("SKILLS", DoorStyle::Strong),
             plain(format!(
-                "Skill points {}   Attribute points {}   (a taken skill can close others for good)",
+                "Skill points {}   Attribute points {}",
                 h.skill_points, h.attr_points
             )),
+            styled(
+                "A skill you take can close others for good.",
+                DoorStyle::Dim,
+            ),
         ];
         for (i, id) in self.tree(&h.calling).iter().enumerate() {
             let Some(n) = self.content.node(id) else {
@@ -942,19 +948,22 @@ impl Session {
             let key = NODE_KEYS.chars().nth(i).unwrap_or('?');
             let state = if h.nodes.contains(id) {
                 "taken"
-            } else if let Some(why) = h.node_refusal(&self.content, id) {
+            } else if let Some(why) = h.node_locked(&self.content, id) {
                 if why.contains("closed") {
                     "closed"
-                } else if why.contains("earlier") || why.contains("experienced") {
-                    "locked"
                 } else {
-                    "ready"
+                    "locked"
                 }
             } else {
                 "ready"
             };
             out.push(styled(
-                format!("[{key}] T{} {:<22} {state:<6} {}", n.tier, n.name, n.text),
+                format!(
+                    "[{key}] T{} {:<22} {state:<6} {}",
+                    n.tier,
+                    n.name,
+                    effect_summary(&self.content, &n.effects)
+                ),
                 match state {
                     "taken" => DoorStyle::Good,
                     "ready" => DoorStyle::Plain,
@@ -963,7 +972,7 @@ impl Session {
             ));
         }
         out.push(plain(
-            "Attributes: [M]ight [F]inesse [W]its [S]pirit (capital letters)   [Esc] Back",
+            "Attributes: [M]ight [F]inesse [W]its [S]pirit   [Esc] Back",
         ));
         out
     }
@@ -971,10 +980,8 @@ impl Session {
     fn sheet_lines(&self, game: &Game) -> Vec<Line> {
         let h = &game.hero;
         let d = game.derived(&self.content);
-        let mut out = vec![
-            styled("HERO SHEET", DoorStyle::Strong),
-            plain(self.status_line(game, &d)),
-        ];
+        let mut out = vec![styled("HERO SHEET", DoorStyle::Strong)];
+        out.extend(self.status_lines(game, &d));
         let attrs: Vec<String> = Attr::ALL
             .iter()
             .map(|a| format!("{} {}", a.label(), d.attr(*a)))
@@ -1093,6 +1100,41 @@ impl Session {
             "@ you   # visited   ? seen   > way down   ^ way up   S shaft   [Esc] Back",
         ));
         out
+    }
+}
+
+/// What a list of effects does, in a few words (at most 34 characters).
+fn effect_summary(content: &Content, effects: &[crate::content::Effect]) -> String {
+    use crate::content::Effect;
+    let parts: Vec<String> = effects
+        .iter()
+        .map(|e| match e {
+            Effect::Attr { attr, amount } => format!("{amount:+} {}", attr.label().to_lowercase()),
+            Effect::MaxHp { amount } => format!("{amount:+} hp"),
+            Effect::Armor { amount } => format!("{amount:+} armor"),
+            Effect::Damage { amount } => format!("{amount:+} dmg"),
+            Effect::CritPct { amount } => format!("{amount:+}% crit"),
+            Effect::EvadePct { amount } => format!("{amount:+}% evade"),
+            Effect::DeathSave { amount } => format!("{amount:+}% death-save"),
+            Effect::Carry { amount } => format!("{amount:+} carry"),
+            Effect::ClimbEase { amount } => format!("{amount:+} climb"),
+            Effect::StartFocus { amount } => format!("{amount:+} focus"),
+            Effect::LootPct { amount } => format!("{amount:+}% loot"),
+            Effect::TrapSense { amount } => format!("{amount:+} traps"),
+            Effect::FatigueGuard { amount } => format!("{amount:+}% fatigue-guard"),
+            Effect::Tag { tag } => format!("can {tag}"),
+            Effect::Move { id } => format!(
+                "move {}",
+                content.mv(id).map_or(id.as_str(), |m| m.name.as_str())
+            ),
+        })
+        .collect();
+    let text = parts.join(", ");
+    if text.chars().count() > 34 {
+        let cut: String = text.chars().take(32).collect();
+        format!("{cut}..")
+    } else {
+        text
     }
 }
 
