@@ -1,0 +1,27 @@
+# Recipes the forge can follow. learn: a calling knows its own from the start, a skill node
+# teaches one, some are found below, some are read out of relics at the library (needs the
+# reading-room project). A core recipe needs the runecraft capability: a runesmith has it, and
+# so does anyone with a rune-touched trait or a runed weapon.
+recipe = [
+  { id = "warden-plate", name = "Warden's Plate", text = "Scrap plate beaten thick, the way wardens like it.", makes = { kind = "item", base = "scrap-plate", affixes = ["sturdy"] }, salvage = 14, coin = 12, forge = 1, learn = { kind = "calling", id = "warden" } },
+  { id = "cutthroat-knife", name = "Cutthroat's Knife", text = "A thin blade with an edge you can hear.", makes = { kind = "item", base = "quick-knife", affixes = ["keen"] }, salvage = 10, coin = 10, forge = 1, learn = { kind = "calling", id = "cutthroat" } },
+  { id = "priest-flail", name = "Pilgrim's Flail", text = "A flail on a censer chain; it brings luck to the faithful.", makes = { kind = "item", base = "prayer-flail", affixes = ["fortunate"] }, salvage = 12, coin = 10, forge = 1, learn = { kind = "calling", id = "ember-priest" } },
+  { id = "runesmith-mallet", name = "Runesmith's Mallet", text = "A mallet with the maker's marks cut into the head.", makes = { kind = "item", base = "rune-mallet", affixes = ["runed"] }, salvage = 22, coin = 24, forge = 1, learn = { kind = "calling", id = "runesmith" } },
+  { id = "wanderer-bow", name = "Wanderer's Bow", text = "A bow that is light to carry and quick to string.", makes = { kind = "item", base = "shortbow", affixes = ["balanced"] }, salvage = 12, coin = 10, forge = 1, learn = { kind = "calling", id = "wanderer" } },
+  { id = "duelist-rapier", name = "Duelist's Rapier", text = "A rapier whose point is always where you left it.", makes = { kind = "item", base = "slag-rapier", affixes = ["keen"] }, salvage = 26, coin = 30, forge = 2, learn = { kind = "calling", id = "duelist" } },
+
+  { id = "haulers-coat", name = "Hauler's Coat", text = "A forge coat with straps for the long carry.", makes = { kind = "item", base = "forge-coat", affixes = ["strapped"] }, salvage = 24, coin = 24, forge = 2, learn = { kind = "node", id = "wa-pack-mule" } },
+  { id = "trail-leathers", name = "Trail Leathers", text = "Oiled leathers cut for walking where there is no path.", makes = { kind = "item", base = "oiled-leathers", affixes = ["pathfinding"] }, salvage = 18, coin = 20, forge = 1, learn = { kind = "node", id = "wn-trailsense" } },
+  { id = "core-ward", name = "Ward Core", text = "Etch a ward into a coal and hold it there.", makes = { kind = "core", id = "ward-core" }, salvage = 30, coin = 40, forge = 1, learn = { kind = "node", id = "rs-etching" }, need = [{ kind = "tag", tag = "runecraft" }] },
+  { id = "core-anvil", name = "Anvil Core", text = "A coal weighted until it will not float away from the hammer.", makes = { kind = "core", id = "anvil-core" }, salvage = 40, coin = 60, forge = 2, learn = { kind = "node", id = "rs-overcharge" }, need = [{ kind = "tag", tag = "runecraft" }] },
+
+  { id = "found-slag-mail", name = "Slag Mail", text = "A pattern copied from a dead smith's plate.", makes = { kind = "item", base = "slag-mail", affixes = ["sturdy"] }, salvage = 30, coin = 36, forge = 2, learn = { kind = "found" } },
+  { id = "found-forge-axe", name = "Forge Axe", text = "A heavy-headed axe, drawn from a tool rack.", makes = { kind = "item", base = "forge-axe", affixes = ["heavy"] }, salvage = 30, coin = 36, forge = 2, learn = { kind = "found" } },
+  { id = "found-glass-scale", name = "Glass Scale", text = "Layered glass plates that turn blades.", makes = { kind = "item", base = "glass-scale", affixes = ["dread"] }, salvage = 60, coin = 80, forge = 3, learn = { kind = "found" } },
+  { id = "found-hearth-core", name = "Hearth Core", text = "How to bank an ember so it mends instead of burns.", makes = { kind = "core", id = "hearth-core" }, salvage = 24, coin = 30, forge = 1, learn = { kind = "found" }, need = [{ kind = "tag", tag = "runecraft" }] },
+  { id = "found-cinder-core", name = "Cinder Core", text = "A spark that waits to be thrown.", makes = { kind = "core", id = "cinder-core" }, salvage = 24, coin = 30, forge = 1, learn = { kind = "found" }, need = [{ kind = "tag", tag = "runecraft" }] },
+
+  { id = "lib-lodestone", name = "Lodestone Core", text = "The reading-room's copy of the surface-seeking coal.", makes = { kind = "core", id = "lodestone-core" }, salvage = 50, coin = 70, forge = 2, learn = { kind = "library" }, need = [{ kind = "tag", tag = "runecraft" }] },
+  { id = "lib-tinder", name = "Tinder Core", text = "A core that lights lanterns from a distance.", makes = { kind = "core", id = "tinder-core" }, salvage = 34, coin = 44, forge = 2, learn = { kind = "library" }, need = [{ kind = "tag", tag = "runecraft" }] },
+  { id = "lib-kings-blade", name = "King's Blade", text = "A king's sword from a relic's etched blueprint.", makes = { kind = "item", base = "kings-blade", affixes = ["royal"] }, salvage = 90, coin = 140, forge = 3, learn = { kind = "library" } },
+]

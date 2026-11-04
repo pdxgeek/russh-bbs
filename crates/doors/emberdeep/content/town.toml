@@ -1,0 +1,57 @@
+# The tavern board, the people to court, and what is overheard over a drink.
+# depth is a level number (1 to 25); a band is five levels. need limits who the board offers it to.
+
+contract = [
+  # Kill a named beast: any monster of that kind at that depth or deeper counts.
+  { id = "old-scorchtail", name = "Old Scorchtail", text = "A slag rat that has taken the cellar of the Ash Pantry. Drive it out for good.", kind = "beast", depth = 1, monster = "slag-rat", coin = 34, xp = 30, days = 3, done_text = "The board-keeper nails Scorchtail's tail over the door and counts out your coin." },
+  { id = "the-spitting-widow", name = "The Spitting Widow", text = "A cinder imp that has killed two lamp-lighters. The guild pays for its head.", kind = "beast", depth = 2, monster = "cinder-imp", coin = 40, xp = 36, days = 3, done_text = "The lamp-lighters' guild pays, and says nothing, and pays again." },
+  { id = "hollow-sir-aldous", name = "Hollow Sir Aldous", text = "An empty suit of armour still guarding a door nobody remembers. End the watch.", kind = "beast", depth = 2, monster = "rust-warden", coin = 56, xp = 50, days = 4, done_text = "Someone takes the armour for a scrapyard, and someone lays a flower." },
+  { id = "blister-brood", name = "The Blister Brood", text = "A slag crawler heavy with eggs. Kill it before it nests under the stair.", kind = "beast", depth = 6, monster = "slag-crawler", coin = 90, xp = 90, days = 4, done_text = "The nest is ash. The stair is safe again." },
+  { id = "the-chain-gang", name = "The Chain-Gang Foreman", text = "A forge thrall that still shouts orders. Its workers will not stop until it does.", kind = "beast", depth = 7, monster = "forge-thrall", coin = 120, xp = 120, days = 4, done_text = "The hammering below stops. For a moment the whole town listens." },
+  { id = "mirror-of-the-keep", name = "The Mirror of the Keep", text = "A mirror knight that wears the face of whoever it fights last. It has worn too many.", kind = "beast", depth = 12, monster = "mirror-knight", coin = 220, xp = 240, days = 5, recipe = "found-glass-scale", done_text = "The knight's last face is yours, and then it is no one's." },
+  { id = "the-singing-hound", name = "The Singing Hound", text = "An echo hound whose bark carries up the shafts and keeps the night shift awake.", kind = "beast", depth = 11, monster = "echo-hound", coin = 200, xp = 220, days = 5, done_text = "The shafts are quiet. The night shift sleeps, and sends you a cake." },
+
+  # Recover an heirloom: reach a kind of room at that depth (the heirloom is there to be taken).
+  { id = "pell-strongbox", name = "The Pell Strongbox", text = "Wide Pell's savings went down with him on level 2. Bring his strongbox home.", kind = "heirloom", depth = 2, room = "vault", coin = 50, xp = 44, days = 4, done_text = "Pell's widow weeps over the lid, and presses a purse into your hands." },
+  { id = "quiet-ledger", name = "A Quiet Ledger", text = "A creditor's ledger lies in a guild strongroom. No one asked you to fetch it. No one will say you did.", kind = "heirloom", depth = 3, room = "vault", need = [{ kind = "tag", tag = "sneak" }], coin = 85, xp = 70, days = 4, done_text = "The ledger changes hands without a word. The coin is heavier than it should be." },
+  { id = "okwes-hammer", name = "Master Okwe's Hammer", text = "A smith's hammer left in a dead forge on level 4. Its owner's apprentices want it back.", kind = "heirloom", depth = 4, room = "forge", coin = 75, xp = 66, days = 4, done_text = "The apprentices pass the hammer from hand to hand. It is a good hammer." },
+  { id = "maker-plate", name = "A Maker's Plate", text = "The reading-room wants a rune plate copied before it crumbles. Only a rune-reader can lift it clean.", kind = "heirloom", depth = 7, room = "forge", need = [{ kind = "tag", tag = "runecraft" }], coin = 130, xp = 130, days = 5, done_text = "The scholars hold the plate to the light and thank you in three languages." },
+  { id = "the-locket", name = "A Mother's Locket", text = "A locket on a cairn on level 3. The family wants it, and the prayers said over it.", kind = "heirloom", depth = 3, room = "shrine", need = [{ kind = "tag", tag = "bless" }], coin = 70, xp = 62, days = 4, done_text = "The family kneels. The sisters bless the locket twice." },
+  { id = "sunken-bell", name = "The Sunken Bell", text = "A chapel bell fell into the drowned halls on level 6. The town wants its voice back.", kind = "heirloom", depth = 6, room = "flooded", coin = 110, xp = 110, days = 5, done_text = "The bell rings once in the square, and every dog in Cindermere answers." },
+
+  # Bring a lost soul home: reach a kind of room, then carry them up (the climb is a turn dearer).
+  { id = "lost-lamplighter", name = "Tam the Lamplighter", text = "Tam went down to relight the stair lamps on level 2 and has not come up.", kind = "rescue", depth = 2, room = "corridor", escort = true, coin = 60, xp = 54, days = 3, done_text = "Tam is thin and cross and alive, and will not go down there again." },
+  { id = "lost-novice", name = "A Novice of the Hearth", text = "A novice of the temple went to pray at a shrine on level 4 and lost her way.", kind = "rescue", depth = 4, room = "shrine", escort = true, coin = 95, xp = 90, days = 4, core = "ward-core", done_text = "The sisters take the novice by both hands, and look at you as if you were a saint." },
+  { id = "lost-surveyor", name = "The Surveyor's Boy", text = "A surveyor's boy fell down a flooded shaft on level 7. His father is offering all he has.", kind = "rescue", depth = 7, room = "flooded", escort = true, coin = 160, xp = 150, days = 4, done_text = "The surveyor does not speak. He grips your hand until it hurts." },
+]
+
+companion = [
+  { id = "maren", name = "Maren the Lamp-Tender", text = "Keeps the town lamps. Dry-humoured, quick to notice when you are not telling the truth.", attr = "spirit", dc = 11, gift = 6, steps = [
+    { name = "A Familiar Face", text = "Maren saves you the lamp by the door, and tells you which of the stairs creak.", effects = [{ kind = "trap_sense", amount = 1 }] },
+    { name = "The Lamp-Bearer", text = "Maren trims a lamp for your belt. It burns steadier than any you have owned.", effects = [{ kind = "tag", tag = "lantern" }, { kind = "fatigue_guard", amount = 8 }] },
+    { name = "Steady Hand", text = "Maren will not say she worries. She mends your straps every night, anyway.", effects = [{ kind = "death_save", amount = 8 }, { kind = "carry", amount = 6 }] },
+  ] },
+  { id = "odo", name = "Odo the Cellarman", text = "Runs a cellar of salvage nobody asks about. Knows the worth of everything and the price of everyone.", attr = "wits", dc = 12, gift = 8, steps = [
+    { name = "A Regular", text = "Odo keeps your corner of the cellar swept, and slips you the tip-offs he can.", effects = [{ kind = "loot_pct", amount = 6 }] },
+    { name = "Friend of the Cellar", text = "Odo shows you how to read the stamp on a piece of scrap.", effects = [{ kind = "tag", tag = "appraise" }, { kind = "carry", amount = 6 }] },
+    { name = "Partner", text = "Odo lets you in on the real books. It is a good deal for you both.", effects = [{ kind = "loot_pct", amount = 10 }, { kind = "max_hp", amount = 4 }] },
+  ] },
+  { id = "quill", name = "Sister Quill the Scribe", text = "Copies the temple's rolls and reads the ones she is not meant to. Precise, curious, impatient.", attr = "wits", dc = 13, gift = 10, steps = [
+    { name = "A Borrowed Book", text = "Sister Quill lends you a volume of builders' shorthand, margins crowded with her notes.", effects = [{ kind = "tag", tag = "lore" }] },
+    { name = "Marginalia", text = "Her notes in the margin save you more than one wrong turn.", effects = [{ kind = "move", id = "brand" }, { kind = "attr", attr = "wits", amount = 1 }] },
+    { name = "Co-Author", text = "She writes you into her great book. You, in turn, never get lost in the dark.", effects = [{ kind = "tag", tag = "deepmap" }, { kind = "start_focus", amount = 1 }] },
+  ] },
+]
+
+rumour = [
+  { id = "r-merry", text = "The barkeep pours you a second, and a third. The room goes warm and kind.", effect = { kind = "boon", id = "merry" } },
+  { id = "r-hear-the-stair", text = "An old miner whispers which stair creaks before a pack passes. You listen closely.", effect = { kind = "boon", id = "sharp-eared" } },
+  { id = "r-luck", text = "A drunk pilgrim presses a coin in your palm and says it has never lost a toss.", effect = { kind = "boon", id = "lucky-streak" } },
+  { id = "r-purse", text = "Someone left a purse under the bench, and you were quicker than the barkeep.", effect = { kind = "coin", amount = 6 } },
+  { id = "r-tip-three", text = "A surveyor sketches the third level on a napkin and slides it over.", effect = { kind = "tip", depth = 3 } },
+  { id = "r-tip-two", text = "A lamplighter draws you the second level, grumbling about who pays for oil.", effect = { kind = "tip", depth = 2 } },
+  { id = "r-tip-four", text = "A pale scholar swears to the layout of the fourth level, and charges you for the ink.", effect = { kind = "tip", depth = 4 } },
+  { id = "r-tip-six", text = "A wild-eyed hauler describes the sixth level so exactly that you check he is not a ghost.", effect = { kind = "tip", depth = 6 } },
+  { id = "r-coin-flip", text = "A card-sharp loses a hand on purpose and calls it a welcome gift.", effect = { kind = "coin", amount = 9 } },
+  { id = "r-tip-one", text = "A child sells you a map of level 1, the corner chewed by something with teeth.", effect = { kind = "tip", depth = 1 } },
+]

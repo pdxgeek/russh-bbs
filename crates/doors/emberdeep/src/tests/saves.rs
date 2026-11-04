@@ -140,3 +140,93 @@ fn a_save_that_puts_the_hero_where_there_is_no_room_is_refused() {
     };
     assert!(Game::decode(&g.encode()).is_some());
 }
+
+#[test]
+fn the_town_section_round_trips_exactly() {
+    use crate::hero::{Bond, Item, Kit, Taken};
+    let mut g = busy_game();
+    g.hero.wkit = Kit {
+        affixes: vec!["keen".into(), "heavy".into()],
+        core: Some("cinder-core".into()),
+        wear: 37,
+    };
+    g.hero.akit.wear = 100;
+    g.hero.pack.push(Item {
+        base: "hand-axe".into(),
+        kit: Kit {
+            affixes: vec!["owlish".into()],
+            core: None,
+            wear: 5,
+        },
+    });
+    g.hero.found.push(Item {
+        base: "scrap-plate".into(),
+        kit: Kit::default(),
+    });
+    g.hero.cores = vec!["ward-core".into(), "bite-core".into()];
+    g.hero.recipes = vec!["found-forge-axe".into()];
+    g.hero.debt = 33;
+    g.hero.bond = Some(Bond {
+        id: "maren".into(),
+        level: 2,
+        progress: 1,
+        last: 19_999,
+    });
+    g.hero.closed = vec!["odo".into()];
+    g.hero.given = vec![
+        ("new-bellows".into(), 40, 12),
+        ("reading-room".into(), 0, 7),
+    ];
+    g.hero.contract = Some(Taken {
+        id: "old-scorchtail".into(),
+        day: 19_998,
+        done: true,
+    });
+    g.hero.contracts_done = 4;
+    g.today.drinks = 2;
+    g.today.gambles = 1;
+    g.today.trained = 1;
+    g.today.courted = true;
+    g.today.bought = vec![0, 3];
+    g.today.tips = vec![2, 6];
+    g.today.shut_out = true;
+    let bytes = g.encode();
+    let back = Game::decode(&bytes).expect("decodes");
+    assert_eq!(back.hero, g.hero);
+    assert_eq!(back.today, g.today);
+    assert_eq!(back.encode(), bytes);
+    assert!(bytes.len() < 4_000, "{} bytes", bytes.len());
+    // Damage anywhere in the section is refused, never guessed at.
+    for cut in [bytes.len() - 1, bytes.len() - 20, bytes.len() - 60] {
+        assert!(Game::decode(&bytes[..cut]).is_none(), "cut at {cut}");
+    }
+    let mut extra = bytes;
+    extra.push(0);
+    assert!(Game::decode(&extra).is_none());
+}
+
+#[test]
+fn a_save_cannot_hold_more_gear_than_the_game_allows() {
+    use crate::hero::{Item, Kit};
+    let mut g = busy_game();
+    g.hero.pack = vec![
+        Item {
+            base: "hand-axe".into(),
+            kit: Kit::default()
+        };
+        7
+    ];
+    assert!(
+        Game::decode(&g.encode()).is_none(),
+        "seven spares is too many"
+    );
+    g.hero.pack.clear();
+    g.hero.cores = vec!["ward-core".into(); 9];
+    assert!(
+        Game::decode(&g.encode()).is_none(),
+        "nine cores is too many"
+    );
+    g.hero.cores.clear();
+    g.hero.wkit.wear = 101;
+    assert!(Game::decode(&g.encode()).is_none(), "wear is a percentage");
+}
