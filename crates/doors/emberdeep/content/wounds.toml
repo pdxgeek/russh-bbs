@@ -1,0 +1,15 @@
+# Wounds last days. When one runs out it may leave a scar (a permanent trait).
+wound = [
+  { id = "gash", name = "Gash", source = "blade", days = 3, effects = [{ kind = "attr", attr = "might", amount = -1 }, { kind = "max_hp", amount = -4 }], scar_pct = 25, scar = "weeping-gash" },
+  { id = "deep-cut", name = "Deep Cut", source = "blade", days = 4, effects = [{ kind = "max_hp", amount = -6 }, { kind = "damage", amount = -1 }], scar_pct = 20, scar = "grim-visage" },
+  { id = "broken-ribs", name = "Broken Ribs", source = "crush", days = 4, effects = [{ kind = "max_hp", amount = -8 }, { kind = "fatigue_guard", amount = -15 }], scar_pct = 30, scar = "cracked-rib" },
+  { id = "crushed-leg", name = "Crushed Leg", source = "crush", days = 5, effects = [{ kind = "climb_ease", amount = -1 }, { kind = "evade_pct", amount = -6 }], scar_pct = 35, scar = "limp" },
+  { id = "concussion", name = "Concussion", source = "crush", days = 3, effects = [{ kind = "attr", attr = "wits", amount = -2 }], scar_pct = 25, scar = "dented-skull" },
+  { id = "burn", name = "Burn", source = "fire", days = 3, effects = [{ kind = "attr", attr = "finesse", amount = -1 }], scar_pct = 30, scar = "scorched-hide" },
+  { id = "scalded", name = "Scalded", source = "fire", days = 2, effects = [{ kind = "armor", amount = -1 }] },
+  { id = "frostbite", name = "Frostbite", source = "cold", days = 3, effects = [{ kind = "evade_pct", amount = -4 }], scar_pct = 25, scar = "frostbitten" },
+  { id = "spiked-foot", name = "Spiked Foot", days = 3, effects = [{ kind = "evade_pct", amount = -5 }], scar_pct = 20, scar = "limp" },
+  { id = "brink", name = "The Brink", days = 3, effects = [{ kind = "max_hp", amount = -8 }, { kind = "death_save", amount = -5 }], scar_pct = 50, scar = "nightmares" },
+  { id = "dragged-home", name = "Dragged Home", days = 2, effects = [{ kind = "fatigue_guard", amount = -20 }, { kind = "max_hp", amount = -4 }] },
+  { id = "weakened", name = "Weakened", days = 3, effects = [{ kind = "attr", attr = "might", amount = -2 }, { kind = "attr", attr = "spirit", amount = -1 }, { kind = "damage", amount = -1 }] },
+]
