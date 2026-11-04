@@ -1,19 +1,20 @@
 //! Drawing the door list and a running door into the member's box.
 //!
-//! A door never touches the real frame. It draws into a scratch buffer the size of the box's
-//! inner area through a `Canvas` (which sanitizes every string and clips), and this module
-//! copies that buffer into ordinary lines for the same box and status row every other screen
-//! uses. So the box, the title, the security markers and the transport's footer row are never
-//! inside the door's reach.
+//! A door never touches the real frame. It draws any ratatui widget into its own off-screen
+//! `DoorSurface`, the size of the box's inner area, and this module **composites** that surface:
+//! the framework builds a new buffer from it, cleaning every cell (the shared sanitizer, no
+//! reserved marker style, colours degraded to the member's depth, the ASCII tier's stand-ins for
+//! icon characters), and the clean buffer is copied into ordinary lines for the same box and
+//! status row every other screen uses. So the box, the title, the security markers and the
+//! transport's footer row are never inside the door's reach, and nothing the door drew reaches
+//! the screen uncleaned.
 
 use ratatui::Frame;
-use ratatui::buffer::Buffer;
-use ratatui::layout::Rect;
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 use russh_bbs_core::icons::Tier;
 use russh_bbs_core::sanitize::SingleLine;
-use russh_bbs_door::{Canvas, DoorPalette};
+use russh_bbs_door::{Canvas, ColorDepth, Composite, DoorPalette, DoorSurface};
 
 use super::screen::{DoorsScreen, State};
 use super::strings;
@@ -63,7 +64,7 @@ pub(crate) fn render(frame: &mut Frame<'_>, screen: &DoorsScreen, ctx: &DrawCtx<
                 .map_or(strings::HEADING, |door| door.info().title);
             let mut lines = header(title, ctx);
             let door_rows = rows.saturating_sub(HEADER_ROWS);
-            lines.extend(door_lines(width, door_rows, ctx.look, |canvas| {
+            lines.extend(door_lines(width, door_rows, ctx, |canvas| {
                 running.render(canvas, &screen.env);
             }));
             lines
@@ -125,11 +126,23 @@ fn list_lines(screen: &DoorsScreen, ctx: &DrawCtx<'_>) -> Vec<Line<'static>> {
     lines
 }
 
-/// Let `draw` paint a `width` by `rows` scratch canvas and return it as lines.
-fn door_lines(
+/// The colour depth a door's colours are brought down to. The member's setting is on or off
+/// (`TerminalSettings::color`) and the board's own screens use the sixteen named colours, so
+/// "on" is sixteen colours; a per-member depth would be a settings change (D103).
+const fn depth(look: Look) -> ColorDepth {
+    if look.color() {
+        ColorDepth::Ansi16
+    } else {
+        ColorDepth::Mono
+    }
+}
+
+/// Let `draw` paint a `width` by `rows` off-screen surface, composite it (every cell cleaned)
+/// and return it as lines.
+pub(super) fn door_lines(
     width: usize,
     rows: usize,
-    look: Look,
+    ctx: &DrawCtx<'_>,
     draw: impl FnOnce(&mut Canvas<'_>),
 ) -> Vec<Line<'static>> {
     let width = u16::try_from(width).unwrap_or(u16::MAX);
@@ -137,45 +150,9 @@ fn door_lines(
     if width == 0 || rows == 0 {
         return Vec::new();
     }
-    let area = Rect::new(0, 0, width, rows);
-    let mut buf = Buffer::empty(area);
-    let palette = palette(look);
-    draw(&mut Canvas::new(&mut buf, area, &palette));
-    buffer_lines(&buf)
-}
-
-/// A scratch buffer as lines: runs of cells with one style become one span, and trailing blank
-/// cells are dropped so a row never wraps in the box.
-fn buffer_lines(buf: &Buffer) -> Vec<Line<'static>> {
-    let area = buf.area;
-    (0..area.height)
-        .map(|y| {
-            let mut spans: Vec<Span<'static>> = Vec::new();
-            let mut run = String::new();
-            let mut run_style = Style::new();
-            for x in 0..area.width {
-                let cell = &buf[(x, y)];
-                let style = cell.style();
-                if style != run_style && !run.is_empty() {
-                    spans.push(Span::styled(std::mem::take(&mut run), run_style));
-                }
-                run_style = style;
-                run.push_str(cell.symbol());
-            }
-            if !run.is_empty() {
-                spans.push(Span::styled(run, run_style));
-            }
-            // Drop trailing blanks (and the spans they leave empty).
-            while let Some(last) = spans.last_mut() {
-                let trimmed = last.content.trim_end().to_owned();
-                if trimmed.is_empty() {
-                    spans.pop();
-                } else {
-                    last.content = trimmed.into();
-                    break;
-                }
-            }
-            Line::from(spans)
-        })
-        .collect()
+    let mut surface = DoorSurface::new(width, rows, palette(ctx.look));
+    surface.draw(draw);
+    surface
+        .composite(Composite::new(depth(ctx.look), ctx.tier == Tier::Ascii))
+        .to_lines()
 }

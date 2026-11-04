@@ -24,10 +24,10 @@ use russh_bbs_core::store::UnixSeconds;
 
 use crate::canvas::DoorPalette;
 use crate::color::ColorDepth;
-use crate::surface::{Composite, DoorSurface};
 use crate::door::{Door, DoorEnv, Flow, Save, Start};
 use crate::host::Driver;
 use crate::key::DoorKey;
+use crate::surface::{Composite, DoorSurface};
 
 /// Everything needed to rerun a visit.
 #[derive(Debug, Clone, PartialEq, Eq)]

@@ -24,3 +24,8 @@ proptest = { workspace = true }
 tempfile = { workspace = true }
 # `#[tokio::test]` for the store-backed tests.
 tokio = { workspace = true }
+
+[[bench]]
+name = "composite"
+# A plain timing loop (no benchmark crate to add): `cargo bench -p russh-bbs-door`.
+harness = false

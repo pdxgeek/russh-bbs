@@ -17,18 +17,14 @@ pub(crate) fn ascii_glyph(c: char) -> char {
         0x2500..=0x257F => box_drawing(c),
         0x2580..=0x259F => block_element(c),
         0x2800..=0x28FF => braille(c),
-        0x2190 => '<',
-        0x2191 => '^',
-        0x2192 => '>',
-        0x2193 => 'v',
+        0x2190 | 0x25C0 | 0x25C4 => '<',
+        0x2191 | 0x25B2 | 0x25B3 => '^',
+        0x2192 | 0x25B6 | 0x25BA => '>',
+        0x2193 | 0x25BC | 0x25BD => 'v',
         0x2022 | 0x25CF | 0x25C6 | 0x25C8 | 0x2605 | 0x2606 => '*',
         0x25E6 | 0x25CB | 0x25A1 | 0x25AB | 0x25C7 => 'o',
         0x2219 => '.',
         0x25A0 | 0x25AA => '#',
-        0x25B2 | 0x25B3 => '^',
-        0x25BC | 0x25BD => 'v',
-        0x25C0 | 0x25C4 => '<',
-        0x25B6 | 0x25BA => '>',
         0xFFFD => '?',
         _ => c,
     }
@@ -52,20 +48,18 @@ fn box_drawing(c: char) -> char {
 
 fn block_element(c: char) -> char {
     match u32::from(c) {
-        // Lower eighths, from a sliver to the full block (a sparkline or bar chart).
-        0x2581 | 0x2582 => '.',
-        0x2583 => ':',
-        0x2584 => '-',
-        0x2585 => '=',
+        // Lower eighths, from a sliver to the full block (a sparkline or bar chart), and the
+        // light shade.
+        0x2581 | 0x2582 | 0x2591 => '.',
+        0x2583 | 0x2592 => ':',
+        0x2585 | 0x258D => '=',
         0x2586 => '+',
         0x2587 => '*',
-        // Full block, left blocks of four eighths or more, the right half, quadrants.
+        // Full block, left blocks of four eighths or more, the right half, quadrants, the dark
+        // shade.
         0x2588..=0x258C | 0x2590 | 0x2593 | 0x2596..=0x259F => '#',
-        0x258D => '=',
         0x258E | 0x258F | 0x2595 => '|',
-        0x2591 => '.',
-        0x2592 => ':',
-        // Upper half and upper eighth.
+        // The upper half, the lower half (a half-block chart) and the upper eighth.
         _ => '-',
     }
 }

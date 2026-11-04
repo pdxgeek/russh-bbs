@@ -45,7 +45,10 @@ fn assert_clean_cell(cell: &Cell, depth: ColorDepth) {
         assert!(!c.is_control(), "control in {symbol:?}");
         assert!(!private_use(c), "private use in {symbol:?}");
         assert!(!invisible(c), "invisible in {symbol:?}");
-        assert!(!RESERVED_CHROME.contains(&c), "marker codepoint in {symbol:?}");
+        assert!(
+            !RESERVED_CHROME.contains(&c),
+            "marker codepoint in {symbol:?}"
+        );
     }
     assert!(!symbol.is_empty(), "an empty symbol");
     assert!(matches!(Span::raw(symbol).width(), 1 | 2), "{symbol:?}");
@@ -188,7 +191,10 @@ fn the_reserved_marker_style_is_removed_but_bold_and_reverse_alone_are_kept() {
             (0, Modifier::BOLD | Modifier::REVERSED),
             (1, Modifier::BOLD),
             (2, Modifier::REVERSED),
-            (3, Modifier::BOLD | Modifier::REVERSED | Modifier::UNDERLINED),
+            (
+                3,
+                Modifier::BOLD | Modifier::REVERSED | Modifier::UNDERLINED,
+            ),
             (4, Modifier::ITALIC | Modifier::DIM),
         ] {
             frame.render_widget(
@@ -288,7 +294,11 @@ fn colors_are_degraded_to_the_members_depth() {
     s.draw(|canvas| {
         let mut frame = canvas.frame();
         frame.render_widget(
-            Paragraph::new("ab").style(Style::new().fg(Color::Rgb(255, 0, 0)).bg(Color::Indexed(21))),
+            Paragraph::new("ab").style(
+                Style::new()
+                    .fg(Color::Rgb(255, 0, 0))
+                    .bg(Color::Indexed(21)),
+            ),
             Rect::new(0, 0, 2, 1),
         );
         frame.render_widget(
@@ -304,11 +314,17 @@ fn colors_are_degraded_to_the_members_depth() {
     };
     assert_eq!(
         at(ColorDepth::TrueColor),
-        ((Color::Rgb(255, 0, 0), Color::Indexed(21)), (Color::Cyan, Color::Reset))
+        (
+            (Color::Rgb(255, 0, 0), Color::Indexed(21)),
+            (Color::Cyan, Color::Reset)
+        )
     );
     assert_eq!(
         at(ColorDepth::Ansi256),
-        ((Color::Indexed(196), Color::Indexed(21)), (Color::Cyan, Color::Reset))
+        (
+            (Color::Indexed(196), Color::Indexed(21)),
+            (Color::Cyan, Color::Reset)
+        )
     );
     assert_eq!(
         at(ColorDepth::Ansi16),
@@ -476,7 +492,13 @@ fn arb_color() -> impl Strategy<Value = Color> {
 type RawCell = (String, Color, Color, u16, bool);
 
 fn arb_cell() -> impl Strategy<Value = RawCell> {
-    (arb_symbol(), arb_color(), arb_color(), any::<u16>(), any::<bool>())
+    (
+        arb_symbol(),
+        arb_color(),
+        arb_color(),
+        any::<u16>(),
+        any::<bool>(),
+    )
 }
 
 proptest! {

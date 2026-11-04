@@ -238,7 +238,9 @@ impl Cleaner {
     }
 
     fn clean(&self, raw: &str) -> Cleaned {
-        let sanitized = SingleLine::new(MAX_SYMBOL_CHARS).sanitize(raw).into_string();
+        let sanitized = SingleLine::new(MAX_SYMBOL_CHARS)
+            .sanitize(raw)
+            .into_string();
         let text: String = if self.ascii_icons {
             // The stand-ins are ASCII, so a joiner that followed a replaced character no longer
             // follows a non-ASCII one: sanitize again so the result is stable.
