@@ -142,6 +142,18 @@ pub fn recovery_code_redeemed(account: AccountId, fingerprint: &Fingerprint) -> 
     .detail("recovery code, password replaced")
 }
 
+/// A live session of `account` (the registry's number `session`) was ended because of `reason`,
+/// one of the short tags the front end passes (FIX-M3-14, D99). Ids and a tag only.
+#[must_use]
+pub fn session_revoked(account: AccountId, session: u64, reason: &str) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(account),
+        Action::SessionRevoked,
+        Target::Account(account),
+    )
+    .detail(&format!("session {session}, {reason}"))
+}
+
 /// A custom group was created.
 #[must_use]
 pub fn group_created(actor: Actor, group: GroupId, name: &Slug) -> AuditEvent {

@@ -24,11 +24,12 @@ pub mod terminal;
 pub use error::{ServerError, SessionError};
 pub use host_key::{HostKey, HostKeyError};
 pub use limits::Limits;
-pub use registry::{SessionId, SessionRef, SessionRegistry, SessionSnapshot};
+pub use registry::{Revocation, SessionId, SessionRef, SessionRegistry, SessionSnapshot};
 pub use server::{ServerConfig, SshServer};
 pub use terminal::RenderCap;
 
 use russh_bbs_core::access::{AccessStore, MemberDirectory};
+use russh_bbs_core::audit::AuditStore;
 use russh_bbs_core::chat::RoomStore;
 use russh_bbs_core::community::CommunityStore;
 use russh_bbs_core::drafts::DraftStore;
@@ -70,6 +71,7 @@ pub trait Backend:
     + ForumStore
     + FeedStore
     + MailStore
+    + AuditStore
     + 'static
 {
 }
@@ -93,6 +95,7 @@ impl<T> Backend for T where
         + ForumStore
         + FeedStore
         + MailStore
+        + AuditStore
         + 'static
 {
 }
