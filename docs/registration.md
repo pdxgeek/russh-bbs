@@ -50,6 +50,10 @@ When the day's places are used:
 
 The notice is the one thing a stranger can read about the cap (D2 asks for it). The waiting room never shows how many places remain, how many accounts were made, or how full the queue is.
 
+## Passwords on every join, and the user name (FIX-M3-12, D94 (6) to (10), D96)
+
+Every join form (redeem, request, apply, create an account) asks for a password and its repeat, over ssh as over telnet, and the founder claim asks for one too. A visitor with an SSH key is bound to the key and the password; one with no key (`ssh new@host` with no key offered, or telnet) to the password alone. The SSH user name picks the path: `new` is the waiting room (any key or none), `claim` the founder claim, any other name a sign-in. A visitor with a key also sees "I already have an account" (`e`): a handle and password that bind this key to that account. `docs/decisions.md` D96 has the rules and what each refusal says.
+
 ## Over telnet: password accounts (FIX-M3-10, D94, D95)
 
 A telnet client has no key, so the same waiting room has one difference: a visitor types `new` at the `login:` prompt, and every form that makes or asks for an account (redeem an invite, request an invite, apply, create an account) also asks for **a password and the same password again** (12 to 128 printable ASCII characters, D81). Nothing else about the room changes: the modes, the menu, the words, the permissions, the limits and the no-leak rule are the ssh room's, built by the same function.

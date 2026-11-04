@@ -147,7 +147,7 @@ async fn login(addr: SocketAddr, key: &PrivateKey) -> Handle<Client> {
     let mut session = common::connect(addr).await;
     let result = session
         .authenticate_publickey(
-            &common::user_for(&key, "anyone"),
+            &common::user_for(key, "anyone"),
             PrivateKeyWithHashAlg::new(Arc::new(key.clone()), None),
         )
         .await

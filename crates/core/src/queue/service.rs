@@ -101,7 +101,12 @@ where
     S: QueueStore,
     C: Clock,
 {
-    submit(store, gate, access, ask, fingerprint, None, true, peer).await
+    let origin = Origin {
+        fingerprint,
+        password_hash: None,
+        key_bound: true,
+    };
+    submit(store, gate, access, ask, origin, peer).await
 }
 
 /// [`submit_request`] with a password (D94). `password_hash` is the argon2id hash of the
@@ -123,17 +128,20 @@ where
     C: Clock,
 {
     let identity = fingerprint.map_or_else(|| password_identity(&ask.handle), Fingerprint::clone);
-    submit(
-        store,
-        gate,
-        access,
-        ask,
-        &identity,
-        Some(password_hash),
-        fingerprint.is_some(),
-        peer,
-    )
-    .await
+    let origin = Origin {
+        fingerprint: &identity,
+        password_hash: Some(password_hash),
+        key_bound: fingerprint.is_some(),
+    };
+    submit(store, gate, access, ask, origin, peer).await
+}
+
+/// Who a request is from: the identity the queue keys it by, what approval binds, and whether
+/// that identity is a real SSH key.
+struct Origin<'a> {
+    fingerprint: &'a Fingerprint,
+    password_hash: Option<String>,
+    key_bound: bool,
 }
 
 async fn submit<S, C>(
@@ -141,9 +149,7 @@ async fn submit<S, C>(
     gate: &RequestGate<C>,
     access: &Snapshot,
     ask: InviteAsk,
-    fingerprint: &Fingerprint,
-    password_hash: Option<String>,
-    key_bound: bool,
+    origin: Origin<'_>,
     peer: Option<IpAddr>,
 ) -> Submission
 where
@@ -161,6 +167,11 @@ where
         );
         return Submission::Dropped(DropReason::NotPermitted);
     }
+    let Origin {
+        fingerprint,
+        password_hash,
+        key_bound,
+    } = origin;
     if let Err(limited) = gate.admit(fingerprint, peer) {
         info!(?limited, "invite request dropped: rate limited");
         return Submission::Dropped(DropReason::RateLimited(limited));

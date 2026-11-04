@@ -178,14 +178,14 @@ impl ClaimForm {
                     return ClaimEffect::Disconnect;
                 }
                 let [chosen, again] = self.secrets.clone().unwrap_or_default();
-                let local = if chosen != again {
-                    Some(strings::PASSWORDS_DIFFER)
-                } else {
+                let local = if chosen == again {
                     check_new(&chosen).err().map(|policy| match policy {
                         PolicyError::TooShort => crate::passwords::strings::ERR_SHORT,
                         PolicyError::TooLong => crate::passwords::strings::ERR_LONG,
                         PolicyError::ControlCharacter => crate::passwords::strings::ERR_CONTROL,
                     })
+                } else {
+                    Some(strings::PASSWORDS_DIFFER)
                 };
                 if let Some(text) = local {
                     // A typing mistake, said as one: nothing was sent, the token stays.

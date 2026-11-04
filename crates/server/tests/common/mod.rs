@@ -27,6 +27,7 @@ static HANDLES: std::sync::Mutex<Vec<(String, String)>> = std::sync::Mutex::new(
 /// Remember that the key with this fingerprint belongs to the account `handle`, so a test that
 /// signs in "as anyone" with it uses the handle as the SSH user name (D94 (10): a key signs in
 /// only under the handle it is bound to).
+#[allow(clippy::needless_pass_by_value)]
 pub fn remember(fingerprint: impl ToString, handle: &str) {
     HANDLES
         .lock()

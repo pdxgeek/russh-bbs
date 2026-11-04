@@ -112,7 +112,7 @@ async fn try_login(addr: SocketAddr, key: &PrivateKey) -> Option<(Handle<Client>
     let result = timeout(
         common::WAIT,
         session.authenticate_publickey(
-            &common::user_for(&key, "anyone"),
+            &common::user_for(key, "anyone"),
             PrivateKeyWithHashAlg::new(Arc::new(key.clone()), None),
         ),
     )

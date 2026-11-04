@@ -444,3 +444,74 @@ pub(crate) async fn a_visitor_with_a_key_gets_the_key_and_the_password_on_every_
         Some(phc.as_str())
     );
 }
+
+pub(crate) async fn the_founder_can_be_claimed_with_a_password_with_or_without_a_key<H: Harness>() {
+    use russh_bbs_core::founder::FounderStore;
+    let phc = a_hash("a founder's long password");
+    // Password only.
+    let h = H::fresh().await;
+    let store = h.store();
+    let account = store
+        .claim_founder_password(name("founder"), &phc, None)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(account.state, AccountState::Active);
+    assert_password_account(&h, &account, &phc).await;
+    // The claim is spent: a second one changes nothing.
+    let again = store
+        .claim_founder_password(name("other"), &phc, Some(&fingerprint(1)))
+        .await
+        .unwrap();
+    assert!(again.is_none());
+    assert_eq!(count(&h, "account_password").await, "1");
+    // With a key: both.
+    let h = H::fresh().await;
+    let store = h.store();
+    let account = store
+        .claim_founder_password(name("founder"), &phc, Some(&fingerprint(2)))
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(store.has_key(account.id).await.unwrap());
+    assert_eq!(
+        store.stored_hash(account.id).await.unwrap().as_deref(),
+        Some(phc.as_str())
+    );
+}
+
+pub(crate) async fn a_key_is_linked_once_audited_and_a_taken_key_changes_nothing<H: Harness>() {
+    use russh_bbs_core::audit::events;
+    let h = H::fresh().await;
+    let store = h.store();
+    let alice = member(store, "alice").await;
+    let bob = member(store, "bob").await;
+    let key = fingerprint(5);
+    store
+        .link_key(alice.id, &key, &events::key_linked(alice.id, &key))
+        .await
+        .unwrap();
+    assert!(store.has_key(alice.id).await.unwrap());
+    // The key belongs to alice now: bob cannot take it, and no audit row is left for the try.
+    let taken = store
+        .link_key(bob.id, &key, &events::key_linked(bob.id, &key))
+        .await;
+    assert!(matches!(
+        taken,
+        Err(russh_bbs_core::store::StoreError::FingerprintTaken)
+    ));
+    assert!(!store.has_key(bob.id).await.unwrap());
+    let log = h
+        .texts("SELECT action FROM audit_log WHERE action = 'key.linked'")
+        .await;
+    assert_eq!(log.len(), 1);
+    let missing = store
+        .link_key(
+            russh_bbs_core::store::AccountId::from_raw(9_999),
+            &fingerprint(6),
+            &events::key_linked(alice.id, &fingerprint(6)),
+        )
+        .await;
+    assert!(missing.is_err());
+    assert_eq!(count(&h, "account_keys").await, "1");
+}

@@ -776,12 +776,9 @@ impl<D: Backend> Shell<D> {
             &password,
             &fingerprint,
         );
-        let account = match timeout(MEMBER_START_TIMEOUT, work).await {
-            Ok(Ok(Login::Accepted(account))) => account,
-            _ => {
-                self.parts.screen.redeem_refused();
-                return;
-            }
+        let Ok(Ok(Login::Accepted(account))) = timeout(MEMBER_START_TIMEOUT, work).await else {
+            self.parts.screen.redeem_refused();
+            return;
         };
         self.parts
             .session
