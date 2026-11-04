@@ -14,7 +14,9 @@
 //! fails if its `Cargo.toml` names any dependency but the framework (and the allowed pure
 //! helpers) or its source mentions an API that reaches outside: the filesystem, the network,
 //! processes, the environment, threads and tasks, wall-clock time, operating-system
-//! randomness, printing, `unsafe`, or FFI. That is a tripwire for first-party doors reviewed in
+//! randomness, printing, a terminal or backend of its own, `unsafe`, or FFI. The framework
+//! re-exports ratatui's drawing modules (`widgets`, `layout`, `style`, `symbols`, `text`,
+//! `buffer`) so a door draws with them and needs no `ratatui` dependency of its own. That is a tripwire for first-party doors reviewed in
 //! the tree, **not isolation against hostile code**. Running doors written by people the sysop
 //! does not trust needs a process boundary (a separate process with its own filesystem and
 //! network restrictions, speaking the `Door` trait over a pipe). That is a recorded decision
@@ -35,6 +37,12 @@ pub const FORBIDDEN: &[(&str, &str)] = &[
     ("std::env", "the process environment"),
     ("std::thread", "threads"),
     ("std::os", "operating-system APIs"),
+    (
+        "crossterm",
+        "a terminal of its own (draw into the canvas instead)",
+    ),
+    ("ratatui::backend", "a terminal backend"),
+    ("Terminal::new", "a terminal of its own"),
     ("std::io::stdin", "standard input"),
     ("std::io::stdout", "standard output"),
     ("std::io::stderr", "standard error"),
@@ -233,7 +241,8 @@ mod tests {
             use std::fs;\nuse std::net::TcpStream;\nfn a() { std::process::Command::new(\"x\"); }\n\
             fn b() { let _ = std::env::var(\"HOME\"); }\nfn c() { let _ = std::time::SystemTime::now(); }\n\
             fn d() { println!(\"x\"); }\nfn e() { unsafe {} }\nfn f() { rand::random::<u8>(); }\n\
-            fn g() { std::thread::spawn(|| ()); }\n";
+            fn g() { std::thread::spawn(|| ()); }\n\
+            use russh_bbs_door::crossterm;\nfn h() { let _ = Terminal::new(b); }\n";
         let dir = crate_with(
             "[package]\nname='x'\n[lints]\nworkspace = true\n[dependencies]\nrussh-bbs-door = { workspace = true }\ntokio = { workspace = true }\nreqwest = '1'\n",
             source,
@@ -256,6 +265,8 @@ mod tests {
             "`unsafe`",
             "`rand::`",
             "`std::thread`",
+            "`crossterm`",
+            "`Terminal::new`",
         ] {
             assert!(text.contains(needle), "{needle} not found in:\n{text}");
         }

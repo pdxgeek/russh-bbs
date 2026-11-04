@@ -833,10 +833,15 @@ impl<D: Backend> Shell<D> {
             &password,
             &fingerprint,
         );
-        let Ok(Ok(Login::Accepted(account))) = timeout(MEMBER_START_TIMEOUT, work).await else {
+        let checked = timeout(MEMBER_START_TIMEOUT, work).await;
+        if matches!(checked, Ok(Ok(Login::Denied))) {
+            self.parts.passwords.failed(self.parts.peer_ip, &handle);
+        }
+        let Ok(Ok(Login::Accepted(account))) = checked else {
             self.parts.screen.redeem_refused();
             return;
         };
+        self.parts.passwords.succeeded(&handle);
         self.parts
             .session
             .set_authenticated(fingerprint, Access::Member);
@@ -913,9 +918,11 @@ impl<D: Backend> Shell<D> {
             }
         };
         let Ok(Some(account)) = timeout(PASSWORD_REQUEST_TIMEOUT, work).await else {
+            self.parts.passwords.failed(self.parts.peer_ip, &attempt);
             self.parts.screen.redeem_refused();
             return;
         };
+        self.parts.passwords.succeeded(&attempt);
         self.parts
             .session
             .set_authenticated(fingerprint, Access::Member);
@@ -1201,6 +1208,32 @@ impl<D: Backend> Shell<D> {
         let Some(access) = self.parts.screen.access().cloned() else {
             return;
         };
+        // A password session proves its current password again to set or clear one (D81). That
+        // is a password guess like any other, so it goes through the same gate (D105), keyed by
+        // the account rather than a handle: this session already knows whose it is.
+        let guess = match (&request.method, &request.kind) {
+            (
+                russh_bbs_core::passwords::LoginMethod::Password,
+                russh_bbs_core::passwords::Kind::Set { .. }
+                | russh_bbs_core::passwords::Kind::Clear { .. },
+            ) => self
+                .parts
+                .account
+                .map(|account| format!("account-{account}")),
+            _ => None,
+        };
+        if let Some(key) = &guess
+            && let russh_bbs_core::waiting_room::Verdict::Limited { retry_after } =
+                self.parts.passwords.admit(self.parts.peer_ip, key)
+        {
+            info!(session = ?self.parts.session.id(), ?retry_after, "password re-entry rate limited");
+            self.parts
+                .screen
+                .deliver_password(russh_bbs_core::passwords::Response::Refused(
+                    russh_bbs_core::passwords::Refusal::WrongCurrent,
+                ));
+            return;
+        }
         let response = timeout(
             PASSWORD_REQUEST_TIMEOUT,
             russh_bbs_core::passwords::execute(
@@ -1215,6 +1248,15 @@ impl<D: Backend> Shell<D> {
             warn!(session = ?self.parts.session.id(), "password request timed out");
             russh_bbs_core::passwords::Response::Refused(russh_bbs_core::passwords::Refusal::Failed)
         });
+        if let Some(key) = &guess {
+            match response {
+                russh_bbs_core::passwords::Response::Refused(
+                    russh_bbs_core::passwords::Refusal::WrongCurrent,
+                ) => self.parts.passwords.failed(self.parts.peer_ip, key),
+                russh_bbs_core::passwords::Response::Done(_) => self.parts.passwords.succeeded(key),
+                _ => {}
+            }
+        }
         if matches!(
             response,
             russh_bbs_core::passwords::Response::Done(

@@ -522,7 +522,8 @@ fn the_flood_sends_the_fearful_home_and_hurts_with_water_injuries() {
         .collect();
     assert!(!injuries.is_empty());
     assert!(
-        injuries.iter().all(|e| matches!(e, Event::Injured { injury, .. } if injury == "a near drowning" || injury == "a broken leg")),
+        injuries.iter().all(|e| matches!(e, Event::Injured { injury, .. }
+            if fx.cat.injuries.iter().any(|i| i.cause == crate::content::Cause::Water && &i.name == injury))),
         "flood accidents are water injuries"
     );
 }

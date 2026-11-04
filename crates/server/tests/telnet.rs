@@ -30,6 +30,7 @@ use russh_bbs_core::access::{Fingerprint, Slug};
 use russh_bbs_core::audit::Actor;
 use russh_bbs_core::icons::Tier;
 use russh_bbs_core::limits::{Limit, LimitKind, LimitStore};
+use russh_bbs_core::passwords::Backoff;
 use russh_bbs_core::passwords::PasswordStore;
 use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::{AccountId, AccountState, AccountStore, NewAccount};
@@ -77,8 +78,8 @@ fn lenient(limits: Limits) -> Limits {
     Limits {
         ip_rate: loose,
         key_rate: loose,
-        password_account_rate: loose,
-        password_network_rate: loose,
+        password_handle_backoff: Backoff::UNLIMITED,
+        password_network_backoff: Backoff::UNLIMITED,
         max_auth_attempts: 3,
         ..limits
     }
