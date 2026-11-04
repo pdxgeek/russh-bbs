@@ -45,7 +45,7 @@ fn the_shipped_content_loads_and_has_the_amount_this_slice_promises() {
     let c = Content::embedded().unwrap();
     assert_eq!(c.problems(), Vec::<String>::new());
     assert_eq!(c.periods.len(), 9);
-    assert_eq!(c.subjects.len(), 5);
+    assert_eq!(c.subjects.len(), 6);
     assert_eq!(c.cliques.len(), 6);
     assert!(c.places.len() >= 25, "{}", c.places.len());
     assert!(c.npcs.len() >= 18, "{}", c.npcs.len());
@@ -55,15 +55,24 @@ fn the_shipped_content_loads_and_has_the_amount_this_slice_promises() {
         4,
         "one big scheme per world effect"
     );
-    assert_eq!(c.effects.len(), 4);
+    assert_eq!(
+        c.effects.len(),
+        5,
+        "four big schemes and one storyline ending"
+    );
     assert!(c.twists.len() >= 6 && c.getaways.len() >= 6);
     assert!(c.endings.len() >= 5);
-    // Every big scheme names an effect, and every effect is used by one.
+    // Every big scheme names an effect, and every effect is used by a big scheme or a story ending.
     for e in &c.effects {
+        let by_story = c.arcs.iter().flat_map(|a| a.ending.iter()).any(|end| {
+            end.effects
+                .contains(&russh_bbs_door_hallpass::effect::Eff::World(e.id.clone()))
+        });
         assert!(
-            c.methods
-                .iter()
-                .any(|m| m.effect.as_deref() == Some(e.id.as_str())),
+            by_story
+                || c.methods
+                    .iter()
+                    .any(|m| m.effect.as_deref() == Some(e.id.as_str())),
             "{} unused",
             e.id
         );
@@ -236,4 +245,298 @@ fn a_prefect_or_student_who_is_not_prankable_cannot_be_targeted() {
         );
     });
     assert!(problems(bad).contains("must be a prankable staff member or prefect"));
+}
+
+// ---------------------------------------------------------------- school life (M4-H2)
+
+#[test]
+fn the_shipped_school_life_content_has_the_amount_this_slice_promises() {
+    let c = Content::embedded().unwrap();
+    assert!(c.subjects.len() >= 6, "{}", c.subjects.len());
+    assert!(c.clubs.len() >= 4, "{}", c.clubs.len());
+    assert!(c.talks.len() >= 20, "{}", c.talks.len());
+    assert!(c.arcs.len() >= 2, "{}", c.arcs.len());
+    // Every subject has its own kind of puzzle.
+    let kinds: std::collections::BTreeSet<&str> =
+        c.lessons.iter().map(|l| l.kind.as_str()).collect();
+    assert_eq!(kinds.len(), c.subjects.len());
+    // Every storyline can end at least two ways, and at least one changes the shared school.
+    for a in &c.arcs {
+        assert!(a.ending.len() >= 2, "{}", a.id);
+    }
+    assert!(c.arcs.iter().any(|a| a.ending.iter().any(|e| {
+        e.effects
+            .iter()
+            .any(|x| matches!(x, russh_bbs_door_hallpass::effect::Eff::World(_)))
+    })));
+    // A club has a rank ladder, and rank is asked for by something else in the content.
+    for club in &c.clubs {
+        let asked = format!("rank:{}", club.id);
+        let text = [
+            EMBEDDED.places,
+            EMBEDDED.items,
+            EMBEDDED.schemes,
+            EMBEDDED.talks,
+            EMBEDDED.cast,
+        ]
+        .join("\n");
+        assert!(text.contains(&asked), "{} opens nothing", club.id);
+    }
+}
+
+fn edited(file: &str, from: &str, to: &str) -> String {
+    problems(broken(|s, _| match file {
+        "lessons" => s.lessons = replace(EMBEDDED.lessons, from, to),
+        "clubs" => s.clubs = replace(EMBEDDED.clubs, from, to),
+        "talks" => s.talks = replace(EMBEDDED.talks, from, to),
+        "arcs" => s.arcs = replace(EMBEDDED.arcs, from, to),
+        "rules" => s.rules = replace(EMBEDDED.rules, from, to),
+        "cast" => s.cast = replace(EMBEDDED.cast, from, to),
+        _ => unreachable!(),
+    }))
+}
+
+#[test]
+fn breaking_the_lessons_is_caught_with_the_named_problem() {
+    assert!(edited("lessons", "kind = \"relay\"", "kind = \"riddle\"").contains("unknown kind"));
+    assert!(edited("lessons", "subject = \"games\"", "subject = \"maths\"").contains("used twice"));
+    assert!(
+        edited(
+            "lessons",
+            "subject = \"art\"\nkind = \"pattern\"\nskill = \"sneak\"",
+            "subject = \"art\"\nkind = \"pattern\"\nskill = \"charm\""
+        )
+        .contains("unknown skill")
+    );
+    assert!(
+        edited("lessons", "subject = \"games\"", "subject = \"cricket\"")
+            .contains("unknown subject")
+    );
+    assert!(
+        edited(
+            "rules",
+            "lesson_gains = [-3, -1, 1, 2]",
+            "lesson_gains = [1, 2]"
+        )
+        .contains("lesson rules")
+    );
+    assert!(edited("rules", "betray_bond = -30", "betray_bond = 4").contains("bond rules"));
+}
+
+#[test]
+fn breaking_the_clubs_is_caught_with_the_named_problem() {
+    assert!(
+        edited("clubs", "advisor = \"gale\"", "advisor = \"hollis\"")
+            .contains("advisor must be a member of staff")
+    );
+    assert!(
+        edited(
+            "clubs",
+            "members = [\"hollis\", \"crouch\"]",
+            "members = [\"nobody\"]"
+        )
+        .contains("unknown member")
+    );
+    assert!(
+        edited(
+            "clubs",
+            "rivals = [\"rowing\"]\nskill = \"tinker\"",
+            "rivals = []\nskill = \"tinker\""
+        )
+        .contains("must rival each other")
+    );
+    assert!(
+        edited(
+            "clubs",
+            "ranks = [[\"Cox\", 0], [\"Bow\", 4]",
+            "ranks = [[\"Cox\", 3], [\"Bow\", 4]"
+        )
+        .contains("ranks must be")
+    );
+    assert!(
+        edited(
+            "clubs",
+            "kind = \"after\"\ndays = [0, 2, 4]",
+            "kind = \"lunch\"\ndays = [0, 2, 4]"
+        )
+        .contains("shut")
+    );
+    assert!(
+        edited(
+            "clubs",
+            "join = [\"grade:maths>=60\"]",
+            "join = [\"grade:cricket>=60\"]"
+        )
+        .contains("unknown subject")
+    );
+    assert!(
+        edited("clubs", "place = \"boathouse\"", "place = \"the_moon\"").contains("unknown place")
+    );
+}
+
+#[test]
+fn breaking_the_conversations_is_caught_with_the_named_problem() {
+    // A condition naming a thing that is not there.
+    assert!(
+        edited(
+            "talks",
+            "when = [\"grade:maths<=68\"]",
+            "when = [\"grade:cricket<=68\"]"
+        )
+        .contains("unknown subject")
+    );
+    assert!(
+        edited(
+            "talks",
+            "needs = [\"rank:chess>=1\"]",
+            "needs = [\"rank:bridge>=1\"]"
+        )
+        .contains("unknown club")
+    );
+    assert!(
+        edited(
+            "talks",
+            "needs = [\"trait:known_troublemaker\"]",
+            "needs = [\"trait:hero\"]"
+        )
+        .contains("unknown trait")
+    );
+    assert!(
+        edited(
+            "talks",
+            "needs = [\"bond:alder>=4\"]",
+            "needs = [\"bond:nobody>=4\"]"
+        )
+        .contains("unknown character")
+    );
+    // An effect naming a thing that is not there.
+    assert!(
+        edited(
+            "talks",
+            "effects = [\"grade:maths:+6\"",
+            "effects = [\"grade:cricket:+6\""
+        )
+        .contains("unknown subject")
+    );
+    assert!(
+        edited("talks", "\"merit:robotics:+3\"", "\"merit:bridge:+3\"").contains("unknown club")
+    );
+    assert!(
+        edited("talks", "\"know:candle_sign\"", "\"know:candle_signs\"")
+            .contains("which nothing grants")
+            || edited(
+                "cast",
+                "needs = [\"standing:the_bench>=10\", \"legend>=20\"]",
+                "needs = [\"know:never_given\"]"
+            )
+            .contains("which nothing grants")
+    );
+    // A first node that is not there, a choice that leads nowhere, a node nobody can reach.
+    assert!(
+        edited(
+            "talks",
+            "first = \"open\"\n[[talk.node]]\nid = \"open\"\ntext = \"Mr. Pell",
+            "first = \"start\"\n[[talk.node]]\nid = \"open\"\ntext = \"Mr. Pell"
+        )
+        .contains("no first node")
+    );
+    assert!(
+        edited(
+            "talks",
+            "say = \"'Do,' says Mr. Pell, and goes back to his marking.\"",
+            "say = \"'Do,' says Mr. Pell, and goes back to his marking.\"\nnext = \"nowhere\""
+        )
+        .contains("unknown node")
+    );
+    assert!(edited(
+        "talks",
+        "[[talk]]\nid = \"orrin_gerald\"",
+        "[[talk.node]]\nid = \"orphan\"\ntext = \"Nobody gets here.\"\n[[talk.node.choice]]\nlabel = \"Go\"\nsay = \"Gone.\"\n\n[[talk]]\nid = \"orrin_gerald\""
+    )
+    .contains("can never be reached"));
+    // A node with no way out that asks nothing: the pupil could be stuck.
+    assert!(
+        edited(
+            "talks",
+            "[[talk.node.choice]]\nlabel = \"Plead a sprained ankle\"",
+            "[[talk.node.choice]]\nlabel = \"Plead a sprained ankle\"\nneeds = [\"cool>=99\"]"
+        )
+        .contains("needs a way out")
+    );
+    // A talk that repeats with no cooldown would be a loop to farm.
+    assert!(
+        edited(
+            "talks",
+            "once = false\ncooldown = 4\nfirst = \"open\"",
+            "once = false\ncooldown = 0\nfirst = \"open\""
+        )
+        .contains("needs a cooldown")
+    );
+    // Text the sanitizer would change.
+    assert!(
+        edited(
+            "talks",
+            "Mr. Pell looks over his glasses",
+            "Mr. Pell looks \\u001b[31mover his glasses"
+        )
+        .contains("strips")
+    );
+    // A character who is not there.
+    assert!(edited("talks", "npc = \"pell\"", "npc = \"nobody\"").contains("unknown character"));
+}
+
+#[test]
+fn breaking_the_storylines_is_caught_with_the_named_problem() {
+    // A step the story never gets to, a step with nothing to do, an ending nobody can reach.
+    assert!(
+        edited(
+            "arcs",
+            "[[arc.step]]\nid = \"expose\"",
+            "[[arc.step]]\nid = \"orphan\"\ntext = \"Never.\"\n[[arc.step]]\nid = \"expose\""
+        )
+        .contains("can never be entered")
+    );
+    assert!(edited("arcs", "[[arc.ending]]\nid = \"shrugged\"", "[[arc.ending]]\nid = \"vanished\"\nname = \"Gone\"\ntext = \"Gone.\"\n[[arc.ending]]\nid = \"shrugged\"").contains("can never be reached"));
+    assert!(edited("arcs", "first = \"found\"", "first = \"lost\"").contains("unknown step"));
+    // A story with one ending is a story with no choice.
+    let one = broken(|s, _| {
+        s.arcs = Box::leak(
+            "[[arc]]\nid = \"x\"\nname = \"X\"\nblurb = \"x.\"\nstart = [\"day>=1\"]\nfirst = \"a\"\n[[arc.step]]\nid = \"a\"\ntext = \"a.\"\n[[arc.ending]]\nid = \"only\"\nname = \"Only\"\ntext = \"Only.\"\n"
+                .to_owned()
+                .into_boxed_str(),
+        );
+    });
+    assert!(problems(one).contains("at least two endings"));
+    // A world effect an ending asks for that does not exist.
+    assert!(
+        edited(
+            "arcs",
+            "\"world:prefects_stood_down\"",
+            "\"world:the_moon_falls\""
+        )
+        .contains("unknown world effect")
+    );
+    // A story that starts on nothing.
+    assert!(
+        edited("arcs", "start = [\"day>=4\"]", "start = []").contains("needs a start condition")
+    );
+}
+
+#[test]
+fn the_tone_check_refuses_a_script_that_costs_the_strays() {
+    let bad_standing = edited(
+        "talks",
+        "effects = [\"bond:tilly:+4\", \"stand:strays:+3\", \"know:hiding_places\"]",
+        "effects = [\"bond:tilly:+4\", \"stand:strays:-3\", \"know:hiding_places\"]",
+    );
+    assert!(bad_standing.contains("allies"), "{bad_standing}");
+    let bad_betrayal = edited(
+        "talks",
+        "\"betray:last_ally\", \"stat:heat:-15\"",
+        "\"betray:tilly\", \"stat:heat:-15\"",
+    );
+    assert!(
+        bad_betrayal.contains("Strays are never betrayed"),
+        "{bad_betrayal}"
+    );
 }

@@ -221,7 +221,9 @@ impl Game {
         };
         let mut out = Vec::new();
         for npc in self.npcs_at(&self.player.place, self.player.day, slot) {
-            if map_get(&self.player.ally_used, &npc.id).is_some() {
+            if map_get(&self.player.ally_used, &npc.id).is_some()
+                || self.regard(&npc.id) == crate::talk::Regard::Betrayed
+            {
                 continue;
             }
             for a in &npc.ally {
@@ -287,6 +289,21 @@ impl Game {
             }
             parts.push((format!("{witnesses} watching"), -4 * witnesses));
             parts.push(("patrols".into(), -6 * self.patrol_level(&place)));
+            let rivals = self.rivals_at(&place, day, slot);
+            if rivals > 0 {
+                parts.push((format!("{rivals} rival eyes"), -5 * rivals));
+            }
+        }
+        let friends = i32::try_from(
+            scheme
+                .allies
+                .iter()
+                .filter(|(n, _)| self.regard(n) == crate::talk::Regard::Friend)
+                .count(),
+        )
+        .unwrap_or(0);
+        if friends > 0 {
+            parts.push(("friends helping".into(), 3 * friends));
         }
         if let Some(npc) = self.target_npc(scheme) {
             parts.push(("they have learned".into(), -5 * self.player.wary_of(&npc)));
@@ -340,6 +357,7 @@ impl Game {
             + twists
             + getaway
             + campaign
+            + ((55 - self.average_grade()) / 5).clamp(-8, 8)
             - i32::from(self.player.cool) / 8)
             .clamp(3, 90)
     }
@@ -376,7 +394,14 @@ impl Game {
             | Action::Loiter
             | Action::Rest
             | Action::Buy(_)
-            | Action::Sleep => Err(Refused::new("That is not a scheme action.")),
+            | Action::Sleep
+            | Action::Answer(_)
+            | Action::Abandon
+            | Action::Talk(_)
+            | Action::Choose(_)
+            | Action::Join(_)
+            | Action::Quit(_)
+            | Action::Meet => Err(Refused::new("That is not a scheme action.")),
         }
     }
 
@@ -578,10 +603,11 @@ impl Game {
         for g in grants {
             self.player.learn(&g);
         }
-        let mut events = vec![Event::Say(format!(
+        let mut events = self.change_bond(npc_id, 1);
+        events.push(Event::Say(format!(
             "{} agrees to be your {role}.",
             npc.name
-        ))];
+        )));
         events.extend(self.end_slot(Spent::Other, rng));
         Ok(events)
     }
@@ -833,6 +859,7 @@ impl Game {
         } else {
             events.extend(self.pulled_off(scheme, run, method, target, &place, repeats, rng));
         }
+        events.extend(self.allies_remember(&scheme.allies, busted.is_some()));
         if self.player.status == Status::Active {
             events.extend(self.end_slot(Spent::Other, rng));
             if content.getaway(&scheme.getaway).is_some_and(|g| g.lies_low)

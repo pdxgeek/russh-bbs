@@ -1,0 +1,24 @@
+  ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+  │Saltmarch                                                                 │
+  │                                                                          │
+  │ ⌂ founder  day 1 of season 1        turns ██████▎░░░ 19/30  ◈ 40 tallies │
+  │ ≈ TIDE █████████┃█░░  88 ↑ high in 0h42 (91)  spring tides  ▲▲ FLOOD ▲▲  │
+  │ x SKIRMISH, round 1   odds ++ easy   solid ground   morale ████▊░░░      │
+  │ order Wrack-gull 2 › Wrack-gull 3 › Wrack-gull 4 › Yarrow › ▶Hale ›      │
+  │╭ back ───╮╭ middle ──╮╭ front ─────╮╭ front ─────╮╭ middle ──╮╭ back ───╮│
+  ││·        ││·         ││ Yarrow     ││ Wrack-gull~││·         ││·        ││
+  ││         ││          ││████▏░ 14/20││░░░░░░░░ 0/5││          ││         ││
+  ││         ││          ││[n]wader    ││swarms      ││          ││         ││
+  ││         ││          ││▶Hale       ││ Wrack-gull~││          ││         ││
+  ││         ││          ││████▌░ 18/24││████████ 5/5││          ││         ││
+  ││         ││          ││[o]raker    ││[a]swarms   ││          ││         ││
+  │╰─────────╯╰──────────╯╰────────────╯╰────────────╯╰──────────╯╰─────────╯│
+  │╭ Hale Mudfoot to act ───────────────────────────────────────────────────╮│
+  ││Strike  [a]Wrack-gull 2 [b]Wrack-gull 3 [c]Wrack-gull 4                 ││
+  ││Throw   [k]Wrack-gull 2 [l]Wrack-gull 3 [m]Wrack-gull 4                 ││
+  ││Shove   [h]Wrack-gull 2 [i]Wrack-gull 3 [j]Wrack-gull 4                 ││
+  ││Mend    [n]Yarrow [o]Hale                                               ││
+  │╰────────────────────────────────────────────────────────────────────────╯│
+  │ Wrack-gull falls.                                                        │
+  │ » Hale Mudfoot strikes Wrack-gull                    arrows walk  Enter  │
+  └──────────────────────────────────────────────────────────────────────────┘
