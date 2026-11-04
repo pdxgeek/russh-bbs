@@ -1,0 +1,520 @@
+=== home 92x25
+|#- # # # #   #   #-# #-# # # -#- #--                                                   ann
+|# -# #-# #-- #-- #-- #-# #-#  #  ##-                                   day 20001  season 1
+|a freelancer's rig, a city of private networks
+|cycles ########################## 40/40       heat   .......................... 0
+|marks  90  safe 0                             rep    0  runs 0 jobs 0 burns 0
+|+ MENU ----------------------++ RIG -----------------------++ STANDING --------------------+
+||[c] Contracts  6 open       ||CPU            o o o        ||Marrow    ....|.... +0        |
+||[f] Fixers                  ||Memory         o o o        ||Sister Qu~....|.... +0        |
+||[d] Deck 4/4                ||Cooling        o o o        ||Dovetail  ....|.... +0        |
+||[s] Market                  ||Deck interface o o o        ||                              |
+||[b] Black market            ||Shield         o o o        ||DECK                          |
+||[r] Rig                     ||                            ||ping-sweep p2                 |
+||[h] Hideout                 ||Probe  L0 ........ 0/4      ||dictionary p2                 |
+||[p] Profile                 ||Break  L0 ........ 0/4      ||badge-clone p2                |
+||[t] Heat 0                  ||Hide   L0 ........ 0/4      ||siphon p1                     |
+||[l] Lie low                 ||Fight  L0 ........ 0/4      ||                              |
+||[q] Leave                   ||Utility L0 ........ 0/4     ||                              |
+||                            ||                            ||                              |
+||                            ||                            ||                              |
+||                            ||                            ||                              |
+||                            ||                            ||                              |
+|+----------------------------++----------------------------++------------------------------+
+|
+|
+|[q]leave  [l]lie low  [letters]open a screen
+=== home-rich 92x25
+|#- # # # #   #   #-# #-# # # -#- #--                                                   ann
+|# -# #-# #-- #-- #-- #-# #-#  #  ##-                                   day 20001  season 1
+|a freelancer's rig, a city of private networks
+|cycles ######################.... 40/48       heat   ##############............ 52
+|marks  640  safe 120                          rep    32  runs 31 jobs 24 burns 3
+|+ MENU ----------------------++ RIG -----------------------++ STANDING --------------------+
+||[c] Contracts  6 open       ||CPU            # # o        ||Marrow    ....|###. +3        |
+||[f] Fixers                  ||Memory         # o o        ||Sister Qu~...#|.... -1        |
+||[d] Deck 4/5                ||Cooling        # o o FRIED  ||Dovetail  ####|.... -4        |
+||[s] Market                  ||Deck interface o o o        ||                              |
+||[b] Black market            ||Shield         # o o        ||DECK                          |
+||[r] Rig                     ||                            ||ping-sweep p2                 |
+||[h] Hideout                 ||Probe  L2 #....... 14/30    ||dictionary p2                 |
+||[p] Profile                 ||Break  L3 #....... 33/60    ||badge-clone p2                |
+||[t] Heat 52                 ||Hide   L1 #....... 5/12     ||siphon p1                     |
+||[l] Lie low                 ||Fight  L4 |....... 61/100   ||                              |
+||[q] Leave                   ||Utility L0 ####.... 2/4     ||                              |
+||                            ||                            ||                              |
+||                            ||                            ||                              |
+||                            ||                            ||                              |
+||                            ||                            ||                              |
+|+----------------------------++----------------------------++------------------------------+
+|
+|
+|[q]leave  [l]lie low  [letters]open a screen
+=== contracts 92x25
+|+ JOBS ------------------------------------------------------------------------------------+
+||#  job     target                                           T  pays  fixer         status |
+||1  Wipe    Halcyon Freight                                  T1    56 Marrow        no tool|
+||2  Ransom  Orrery Health                                    T1    55 Marrow        no tool|
+||3  Steal   Mirrorglass Ltd                                  T1    45 Sister Quill  ready  |
+||4  Wipe    Pennywhistle Savings                             T1    44 Sister Quill  no tool|
+||5  Wipe    Kestrel Dynamics                                 T1    42 Dovetail      no tool|
+||6  Steal   Halcyon Freight                                  T1    36 Marrow        ready  |
+||7  Steal   Mirrorglass Ltd                                  T3   253 Marrow        closed |
+||8  Wipe    Mirrorglass Ltd                                  T2    99 Marrow        closed |
+|+------------------------------------------------------------------------------------------+
+|+ BRIEF -----------------------------------------------------------------------------------+
+||Lose a payment record  (Marrow)                                                           |
+||Target: Halcyon Freight (tier 1)                                                          |
+||Aggressive tracers: every second hop is being counted. Leans on                           |
+||password locks.                                                                           |
+||Objective: Wipe at the VT node; the deck needs a Shred script.                            |
+||Pays 56.  Heat on success about +4.                                                       |
+||Street word: nothing has been broken there lately.                                        |
+||Deck: ping-sweep, dictionary, badge-clone, siphon                                         |
+||Proxies bought: 0 (each 15 marks, soaks 8 trace). Jacking in costs 5                      |
+||cycles.                                                                                   |
+|+------------------------------------------------------------------------------------------+
+|
+|[Up/Down]choose  [Enter]brief  [1-9]open  [Esc]back
+=== contracts-cursor 92x25
+|+ JOBS ------------------------------------------------------------------------------------+
+||#  job     target                                           T  pays  fixer         status |
+||1  Wipe    Mirrorglass Ltd                                  T2    99 Marrow        no tool|
+||2  Wipe    Halcyon Freight                                  T1    56 Marrow        no tool|
+||3  Ransom  Orrery Health                                    T1    55 Marrow        no tool|
+||4  Steal   Mirrorglass Ltd                                  T1    45 Sister Quill  ready  |
+||5  Wipe    Pennywhistle Savings                             T1    44 Sister Quill  no tool|
+||6  Steal   Halcyon Freight                                  T1    36 Marrow        ready  |
+||7  Steal   Mirrorglass Ltd                                  T3   253 Marrow        closed |
+||8  Wipe    Kestrel Dynamics                                 T1    42 Dovetail      closed |
+|+------------------------------------------------------------------------------------------+
+|+ BRIEF -----------------------------------------------------------------------------------+
+||Hold a server room hostage  (Marrow)                                                      |
+||Target: Orrery Health (tier 1)                                                            |
+||Even-handed, patient, and fond of black walls on the deep floors.                         |
+||Leans on badge locks.                                                                     |
+||Objective: Ransom at the SR node; the deck needs a Plant script.                          |
+||Pays 55.  Heat on success about +5.                                                       |
+||Street word: nothing has been broken there lately.                                        |
+||Deck: ping-sweep, dictionary, badge-clone, siphon                                         |
+||Proxies bought: 0 (each 22 marks, soaks 8 trace). Jacking in costs 5                      |
+||cycles.                                                                                   |
+|+------------------------------------------------------------------------------------------+
+|
+|[Up/Down]choose  [Enter]brief  [1-9]open  [Esc]back
+=== brief 92x25
+|+ THE JOB ----------------------------------------++ YOUR DECK AGAINST THEM ---------------+
+||Lose a payment record  (Marrow)                  ||  ping-sweep        p2 fresh           |
+||Target: Halcyon Freight (tier 1)                 ||  dictionary        p2 fresh           |
+||Aggressive tracers: every second hop is being    ||  badge-clone       p2 fresh           |
+||counted. Leans on                                ||  siphon            p1 fresh           |
+||password locks.                                  ||* can do the objective                 |
+||Objective: Wipe at the VT node; the deck needs a ||                                       |
+||Shred script.                                    ||                                       |
+||Pays 56.  Heat on success about +4.              ||                                       |
+||Street word: nothing has been broken there       ||                                       |
+||lately.                                          ||                                       |
+||Proxies bought: 0 (each 15 marks, soaks 8 trace).||                                       |
+||Jacking in costs 5                               ||                                       |
+||cycles.                                          ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 |+---------------------------------------+
+||                                                 |+ STREET WORD --------------------------+
+||                                                 ||alert  o o                             |
+||                                                 ||0 open hole(s)                         |
+||                                                 ||                                       |
+|+-------------------------------------------------++---------------------------------------+
+|
+|[j]jack in  [p]buy a proxy  [Esc]back
+=== fixers 92x25
+|+ FIXERS ----------------------------------------------------++ ABOUT ---------------------+
+||  Marrow      .......|#####.. +3                            ||Dovetail                    |
+||  Sister Qui~ .....##|....... -1                            ||Talks fast, pays in parts,  |
+||> Dovetail    .######|....... -4 CLOSED                     ||never uses the same number  |
+||                                                            ||twice.                      |
+||                                                            ||                            |
+||                                                            ||Clients: Mirrorglass Ltd    |
+||                                                            ||Jobs on the board: 1        |
+||                                                            ||Will not deal with you.     |
+||                                                            ||                            |
+||                                                            ||                            |
+||                                                            ||                            |
+||                                                            ||                            |
+||                                                            ||                            |
+||                                                            ||                            |
+||                                                            ||                            |
+||                                                            ||                            |
+||                                                            ||                            |
+||                                                            ||                            |
+||                                                            ||                            |
+||                                                            ||                            |
+||                                                            ||                            |
+||                                                            ||                            |
+|+------------------------------------------------------------++----------------------------+
+|[Up/Down]choose  [Esc]back
+=== heat 92x25
+|+ HEAT ------------------------------------------------------------------------------------+
+||heat #########################################..................................... 52/100|
+||                            ^               ^      ^       ^           ^                  |
+||                                                                                          |
+||#  30  proxies cost half as much again                                                    |
+||#  50  your hideout can be raided (the safe never is)                                     |
+||o  60  tier 3 fixers stay away                                                            |
+||o  70  your bots earn half                                                                |
+||o  85  tier 2 fixers stay away                                                            |
+||                                                                                          |
+||Heat falls 4 a night. Lying low costs 8 cycles and takes off 12.                          |
+||A burned run, a loud job and a dropped line all add heat.                                 |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+|+------------------------------------------------------------------------------------------+
+|
+|[l]lie low  [Esc]back
+=== profile 92x25
+|+ ann ----------------------------------++ SKILLS -----------------------------------------+
+||day 20001  season 1                    ||                                                 |
+||                                       ||                                                 |
+||reputation    32                       ||                                                 |
+||marks         640                      ||                                                 |
+||in the safe   120                      ||                  +++++                          |
+||earned (all)  4200                     ||                  #####                          |
+||runs          31                       ||                  #####                          |
+||jobs done     24                       ||                  #####                          |
+||burned        3 (9%)                   ||      -----       #####                          |
+||bots          2                        ||      #####       #####                          |
+||                                       ||      #####       #####                          |
+||                                       ||      #####       #####                          |
+||                                       ||::::: #####       #####                          |
+||                                       ||##### #####       #####                          |
+||                                       ||##### #####       #####                          |
+||                                       ||##### #####       #####                          |
+||                                       ||##### ##### ..... #####                          |
+||                                       ||##### ##### ##### #####                          |
+||                                       ||##### ##### ##### #####                          |
+||                                       ||##### ##### ##### #####                          |
+||                                       ||#L2## #L3## #L1## #L4##                          |
+||                                       ||Probe Break Hide  Fight Utili                    |
+|+---------------------------------------++-------------------------------------------------+
+|[Esc]back
+=== deck 92x25
+|memory  #############......... 7/12           noise   #####................. 13
+|slots   ##################.... 4/5            corporations K H M P O   . fresh  w wary  X pa
+|+ SCRIPTS  page 1 ---------------------------------------++ DETAIL ------------------------+
+||      script     family  effect  pow mem noi K H M P O  ||badge-clone                     |
+||[a] * ping-sweep Probe   scan    p2  m1  n2  . . . . .  ||Break / Spoof                   |
+||[b] * dictionary Break   crack   p2  m2  n4  . . . . .  ||                                |
+||[c] * badge-clon Break   spoof   p2  m2  n3  . . . . .  ||power   ###|.......... 2        |
+||[d]   stack-smas Break   overflo p2  m2  n6  . . . . .  ||memory  ####.......... 2        |
+||[e] * siphon     Utility copy    p1  m2  n4  . . . . .  ||noise   ####|......... 3        |
+||[f]   deep-sweep Probe   scan    p4  m3  n4  X . . . .  ||                                |
+||[g]   cartograph Probe   map     p2  m3  n3  . w . . .  ||Passes for a cleaner on the     |
+||[h]   x-ray      Probe   map     p4  m4  n6  . . X . .  ||night shift.                    |
+||[i]   brute-forg Break   crack   p4  m4  n8  w . . . .  ||                                |
+||[j]   skeleton-k Break   crack   p6  m5  n10 . X . . .  ||                                |
+||[k]   cert-forge Break   spoof   p4  m4  n6  . . w . .  ||                                |
+||[l]   ghost-cred Break   spoof   p6  m5  n8  . . . . .  ||                                |
+||                                                        ||                                |
+||                                                        ||                                |
+||                                                        ||                                |
+||                                                        ||                                |
+||                                                        ||                                |
+||                                                        ||                                |
+|+--------------------------------------------------------++--------------------------------+
+|Passes for a cleaner on the night shift.
+|[a-l]load/unload  [Enter]toggle  [A-L]scrap coded  [n/p]page  [Esc]back
+=== market 92x25
+|+ MARKET  marks 640  page 1 -------------------------++ THE TIDE --------------------------+
+||    script     family  effect  pow mem price gate   ||market  ###############=........ 112|
+||[a] veil       Hide    mask    p1  m2     78        ||moves nightly, 80% to 130%          |
+||[b] decoy-swar Hide    decoy   p2  m3    123        ||        #       .              .    |
+||[c] re-route   Hide    reroute p2  m2     89        ||   = - .#     * # * * *... . * #  ..|
+||[d] long-way-r Hide    reroute p4  m4    291        ||:=:#-#=##...::#*#-#-#=####=#####.###|
+||[e] jammer     Fight   jam     p2  m2    100        |+------------------------------------+
+||[f] hardjam    Fight   jam     p4  m4    280        |+ DETAIL ----------------------------+
+||[g] fork-bomb  Fight   fork    p2  m3    134        ||re-route                            |
+||[h] purge-lanc Fight   purge   p3  m4    246        ||power   ###|.......... 2            |
+||[i] purge-hamm Fight   purge   p6  m5    537        ||memory  ####.......... 2            |
+||[j] implant    Utility plant   p1  m2     67        ||noise   .............. 0            |
+||[k] shredder   Utility shred   p1  m2     67        ||                                    |
+||[l] blind-eye  Utility cutfeed p1  m1     56        ||Bounces the trace through a few more|
+||                                                    ||relays.                             |
+||                                                    ||costs 89 of your 640                |
+||                                                    ||                                    |
+||                                                    ||                                    |
+||                                                    ||                                    |
+||                                                    ||                                    |
+||                                                    ||                                    |
+||                                                    ||                                    |
+|+----------------------------------------------------++------------------------------------+
+|
+|[a-l]buy  [Enter]buy selected  [n/p]page  [Esc]back
+=== black-market 92x25
+|+ THE FENCE --------------------------------------++ PROXIES ------------------------------+
+||  Back-alley fence  #####....  50%               ||chain  o o o                           |
+||> Pawnshop contact  ######...  65%               ||22 marks each, soaks 8 trace           |
+||  Data broker       #######|.  80%  next 340     ||heat makes them dearer                 |
+||                                                 ||                                       |
+||                                                 |+---------------------------------------+
+||                                                 |+ THE SAFE -----------------------------+
+||                                                 ||safe  ####................... 120      |
+||                                                 ||640 marks on hand; raids never touch th|
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+|+-------------------------------------------------++---------------------------------------+
+|
+|[f]better fence  [p]proxy  [s]stash  [t]take  [Esc]back
+|
+=== rig 92x25
+|+ RIG  marks 640 --------------------------------------------------------------------------+
+||[1] CPU            # # o  Quad-core refurb  next 520                                      |
+||      +4 cycles a level                                                                   |
+||[2] Memory         # o o  16 GB sticks      next 240                                      |
+||      +4 memory and a slot a level                                                        |
+||[3] Cooling        # o o  Case fans         next 180  FRIED, repair 24                    |
+||      fewer fried parts when burned                                                       |
+||[4] Deck interface o o o  stock             next 85                                       |
+||      +5% script success a level                                                          |
+||[5] Shield         # o o  Packet filter     next 200                                      |
+||      6% less trace a level                                                               |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+||                                                                                          |
+|+------------------------------------------------------------------------------------------+
+|
+|[1-5]upgrade  [x]repair a fried part  [Esc]back
+=== hideout 92x25
+|+ HIDEOUT  marks 640 (safe 120) -----------------------------------------------------------+
+||bots       # # o o o 7 marks each a night                   + FRAGMENT CASE -------------+|
+||workbench  built; 12 fragment(s) in the case                |crack-core     x1           ||
+||fence      Pawnshop contact at 65 percent                   |spoof-core     x1           ||
+||                                                            |overflow-core  x1           ||
+||Heat 50 and up brings raids; the safe is never touched.     |jam-core       x1           ||
+||                                                            |sentry-lens    x1           ||
+||                                                            |tracer-lens    x1           ||
+||                                                            |wall-lens      x1           ||
+||                                                            |warden-lens    x1           ||
+||                                                            |overclock      x1           ||
+||                                                            |quiet          x1           ||
+||                                                            |lean           x1           ||
+||                                                            |volatile       x1           ||
+||                                                            |                            ||
+||                                                            |                            ||
+||                                                            |                            ||
+||                                                            |                            ||
+||                                                            |                            ||
+||                                                            |                            ||
+||                                                            +----------------------------+|
+|+------------------------------------------------------------------------------------------+
+|
+|[b]bot  [w]workbench  [c]code  [f]fence  [s]safe +  [t]take  [Esc]back
+|
+=== code-effect 92x25
+|+ EFFECT --------+   + TARGET ---------+   + MODIFIER ------+    + SCRIPT -----------------+
+||-               | + |-                | + |-               |=>  |-                        |
+|+----------------+   +-----------------+   +----------------+    +-------------------------+
+|+ PICK AN EFFECT ---------------------------------++ PREVIEW ------------------------------+
+||1) crack-core    x1 p+3 m+2 n+4                  ||pick an effect fragment to begin       |
+||   A password-breaker's heart.                   ||                                       |
+||2) spoof-core    x1 p+3 m+2 n+3                  ||                                       |
+||   A forged badge, unfinished.                   ||                                       |
+||3) overflow-core x1 p+3 m+2 n+5                  ||                                       |
+||   A buffer waiting to burst.                    ||                                       |
+||4) jam-core      x1 p+3 m+2 n+3                  ||                                       |
+||   A signal scrambler.                           ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+|+-------------------------------------------------++---------------------------------------+
+|
+|
+|[1-9]pick  [Esc]back
+=== code-target 92x25
+|+ EFFECT --------+   + TARGET ---------+   + MODIFIER ------+    + SCRIPT -----------------+
+||crack-core      | + |-                | + |-               |=>  |crack-any-plain          |
+|+----------------+   +-----------------+   +----------------+    +-------------------------+
+|+ PICK A TARGET TYPE (0 for none) ----------------++ PREVIEW ------------------------------+
+||1) sentry-lens   x1 p+0 m+1 n+1                  ||power   #####=.......... 3             |
+||   Tunes a script to sentries.                   ||memory  #####=.......... 2/6           |
+||2) tracer-lens   x1 p+0 m+1 n+1                  ||noise   ######=......... 4/10          |
+||   Tunes a script to tracers.                    ||cycles 2  charges unlimited            |
+||3) wall-lens     x1 p+0 m+2 n+1                  ||                                       |
+||   Tunes a script to black walls.                ||                                       |
+||4) warden-lens   x1 p+0 m+2 n+2                  ||                                       |
+||   Tunes a script to wardens.                    ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+|+-------------------------------------------------++---------------------------------------+
+|
+|
+|[1-9]pick  [0]none  [Esc]back
+=== code-modifier 92x25
+|+ EFFECT --------+   + TARGET ---------+   + MODIFIER ------+    + SCRIPT -----------------+
+||crack-core      | + |sentry-lens      | + |-               |=>  |crack-sentry-plain       |
+|+----------------+   +-----------------+   +----------------+    +-------------------------+
+|+ PICK A MODIFIER (0 for none) -------------------++ PREVIEW ------------------------------+
+||1) overclock     x1 p+2 m+1 n+3                  ||power   #####=.......... 3             |
+||   Faster, hotter, louder.                       ||memory  ########........ 3/6           |
+||2) quiet         x1 p+0 m+1 n-3                  ||noise   ########........ 5/10          |
+||   Costs memory to buy silence.                  ||cycles 2  charges unlimited            |
+||3) lean          x1 p-1 m-1 n+0                  ||                                       |
+||   Smaller and weaker.                           ||                                       |
+||4) volatile      x1 p+3 m+0 n+2                  ||                                       |
+||   One use per run, and it counts.               ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+|+-------------------------------------------------++---------------------------------------+
+|
+|
+|[1-9]pick  [0]none  [Esc]back
+=== code-confirm 92x25
+|+ EFFECT --------+   + TARGET ---------+   + MODIFIER ------+    + SCRIPT -----------------+
+||crack-core      | + |sentry-lens      | + |-               |=>  |crack-sentry-plain       |
+|+----------------+   +-----------------+   +----------------+    +-------------------------+
+|+ FRAGMENTS IN THE CASE --------------------------++ PREVIEW ------------------------------+
+||1) crack-core    x1 p+3 m+2 n+4                  ||power   #####=.......... 3             |
+||   A password-breaker's heart.                   ||memory  ########........ 3/6           |
+||2) spoof-core    x1 p+3 m+2 n+3                  ||noise   ########........ 5/10          |
+||   A forged badge, unfinished.                   ||cycles 2  charges unlimited            |
+||3) overflow-core x1 p+3 m+2 n+5                  ||                                       |
+||   A buffer waiting to burst.                    ||Ready: crack-sentry-plain, tuned to    |
+||4) jam-core      x1 p+3 m+2 n+3                  ||sentries                               |
+||   A signal scrambler.                           ||A corporation learns a recipe, so vary |
+||                                                 ||it.                                    |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+||                                                 ||                                       |
+|+-------------------------------------------------++---------------------------------------+
+|
+|
+|[Enter]code it  [Esc]back
+=== debrief 92x25
+|+ DEBRIEF ---------------------------------------------------------------------------------+
+||                                     E X T R A C T E D                                    |
+|+------------------------------------------------------------------------------------------+
+|+ THE RUN -----------------------------++ WHAT HAPPENED -----------------------------------+
+||peak trace ###................. 15    ||> Into RT-5.                                      |
+||job pays    45                        ||> ping-sweep: sweeping the neighbours.            |
+||data copied 66                        ||> Into VT-6.                                      |
+||fights      0 (0 put down)            ||+ siphon: 66 marks of data copied out.            |
+||locks broken0                         ||+ Objective done. Get out.                        |
+||fragments   0                         ||+ You jack out clean.                             |
+||cycles left 27                        ||                                                  |
+||                                      ||. Job done: 45 paid, 33 for the data. Heat +4.    |
+||                                      ||                                                  |
+||                                      ||                                                  |
+||                                      ||                                                  |
+||                                      ||                                                  |
+||                                      ||                                                  |
+||                                      ||                                                  |
+||                                      ||                                                  |
+||                                      ||                                                  |
+||                                      ||                                                  |
+||                                      ||                                                  |
+||                                      ||                                                  |
+|+--------------------------------------++--------------------------------------------------+
+|[Enter]continue
+=== fight 92x25
+| NULLROUTE // Kestrel Dynamics T1 // Copy @ VT                                        CY 29
+|###>.................................... TRACE  10 ....................................<###
+|quiet
+|+ COUNTERMEASURE ----------------------------++ YOUR DECK ---------------------------------+
+||Sniffer (tracer)                            ||    script        cost damage        state  |
+|| -->>>>>                                    ||[a] ping-sweep    cy1  .......... 0         |
+|| .:###:.                                    ||[b] dictionary    cy1  #######... 2         |
+|| -->>>>>                                    ||[c] badge-clone   cy1  ########## 3         |
+|| ..:####                                    ||[d] siphon        cy2  .......... 0         |
+||INTEGRITY ########################## 8/8    ||                                            |
+||armor 0   weak to badge locks               ||[w] brace: next strike at 3/4, costs a cycle|
+||IT WILL   TRACE   starts a tracer           ||[x] break off: costs trace, damage stays    |
+||THEN      ? ? ?  (watch a full cycle of 4 or||                                            |
+||SEEN      nothing yet                       ||                                            |
+||MOVE      # o o o o o o o 1/8               ||                                            |
+||                                            ||                                            |
+|+--------------------------------------------++--------------------------------------------+
+|+ FIGHT LOG -------------------------------------------------------------------------------+
+||T+03 > ping-sweep: sweeping the neighbours.                                               |
+||T+04 > Into AC-8.                                                                         |
+||T+05 > ping-sweep: sweeping the neighbours.                                               |
+||T+06 > Into RT-6.                                                                         |
+||T+06 ~ tracer Sniffer has you. Its first beat: TRACE.                                     |
+|+------------------------------------------------------------------------------------------+
+|[a-f]play a script  [w]brace  [x]break off                                  8 integrity left
+=== run 92x25
+| NULLROUTE // Mirrorglass Ltd T1 // Copy @ VT                                         CY 29
+|####>................................... TRACE  11 ...................................<####
+|quiet
+|+ NODE MAP ------------------------------------------++ HERE ------------------------------+
+||                                                    ||VT-6 Data vault d3                  |
+||                oFW -\                          @VT ||1 RT-4  open                        |
+||             ---      -\        oRT1--==---==---    ||2 RT-5  open                        |
+||          --/           -\  ----       -----\/      ||                                    |
+||oGW -\----------#FW --\----\              -/ ---oAC ||                                    |
+||      ---\             ------\          -/  ----    ||                                    |
+||          ---\               ---oRT2-----\-/        ||                                    |
+||              --oFW ------------          ------oSR ||                                    |
+||                                                    ||                                    |
+||d0              d1              d2              d3  ||                                    |
+|+----------------------------------------------------++------------------------------------+
+|+ RUN LOG -------------------------------------------++ DECK ------------------------------+
+||T+00 > Jacked in to Mirrorglass Ltd.                ||    script          pow left state  |
+||T+01 > ping-sweep: sweeping the neighbours.         ||[a] ping-sweep      p2  inf  fresh  |
+||T+02 > Into FW-1.                                   ||[b] dictionary      p2  inf  fresh  |
+||T+03 > ping-sweep: sweeping the neighbours.         ||[c] badge-clone     p2  inf  fresh  |
+||T+04 > Into RT-5.                                   ||[d] siphon          p1  inf  fresh  |
+||T+05 > ping-sweep: sweeping the neighbours.         ||                                    |
+||T+06 > Into VT-6.                                   ||                                    |
+|+----------------------------------------------------++------------------------------------+
+|[1-9]move  [a-f]script  [o]jack out

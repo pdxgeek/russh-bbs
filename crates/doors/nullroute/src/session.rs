@@ -12,9 +12,11 @@ use crate::code::{self, Build, CODE_CYCLES, MEMORY_BUDGET, NOISE_BUDGET};
 use crate::content::{Content, FragKind};
 use crate::learn::{self, Stage};
 use crate::player::{JACK_IN_CYCLES, PARTS, Player};
-use crate::run::{Act, Refused, Run, Status, TRACE_MAX};
+use crate::run::{Act, Refused, Run, RunResult, Status, TRACE_MAX};
 use crate::save;
 use crate::world::{Contract, World};
+
+mod ui;
 
 type Line = (String, DoorStyle);
 
@@ -31,7 +33,54 @@ enum View {
     Hideout,
     Code(Draft),
     Run(Box<Active>),
-    Debrief(Vec<String>),
+    Debrief(Box<Report>),
+    Fixers,
+    Heat,
+    Profile,
+    Black,
+}
+
+/// How a run ended: the log's tail and the debrief notes for the look-around view, and the result
+/// for the debrief screen.
+struct Report {
+    notes: Vec<String>,
+    result: RunResult,
+    contract: Contract,
+}
+
+/// The run log with the time (cycles spent) each line was written, kept by the screen so the log
+/// can scroll with stamps. The engine's log is the source of the text; this only remembers when
+/// each line first appeared.
+struct Feed {
+    start: u32,
+    rows: Vec<(u32, String)>,
+}
+
+impl Feed {
+    fn new(run: &Run) -> Self {
+        let mut feed = Self {
+            start: run.cycles,
+            rows: Vec::new(),
+        };
+        feed.sync(run);
+        feed
+    }
+
+    /// Bring the feed up to the engine's log: keep the stamps of lines still in it, stamp new ones
+    /// with the cycles spent so far.
+    fn sync(&mut self, run: &Run) {
+        let now = self.start.saturating_sub(run.cycles);
+        let have = self.rows.len();
+        let n = run.log.len();
+        let kept = (0..=have.min(n))
+            .rev()
+            .find(|k| (0..*k).all(|i| self.rows[have - k + i].1 == run.log[i]))
+            .unwrap_or(0);
+        self.rows.drain(..have - kept);
+        for line in &run.log[kept..] {
+            self.rows.push((now, line.clone()));
+        }
+    }
 }
 
 /// Where the module editor is.
@@ -55,6 +104,8 @@ struct Active {
     contract: Contract,
     /// The slot of a script waiting for its target.
     aim: Option<usize>,
+    /// The log with its time stamps.
+    feed: Feed,
 }
 
 pub(crate) struct Session {
@@ -66,10 +117,34 @@ pub(crate) struct Session {
     view: View,
     msgs: Vec<Line>,
     saved: Vec<u8>,
+    /// The cursor on a list screen (the row within the page).
+    sel: usize,
 }
 
 fn run_has_fight(run: &Run) -> bool {
     run.encounter().is_some()
+}
+
+/// What heat does, from the engine's thresholds (`player::HEAT_*`), for the heat screen.
+const HEAT_LADDER: &[(u32, &str)] = &[
+    (crate::player::HEAT_PROXY, "proxies cost half as much again"),
+    (
+        crate::player::HEAT_RAID,
+        "your hideout can be raided (the safe never is)",
+    ),
+    (crate::player::HEAT_TIER3, "tier 3 fixers stay away"),
+    (crate::player::HEAT_BOTS, "your bots earn half"),
+    (crate::player::HEAT_TIER2, "tier 2 fixers stay away"),
+];
+
+/// What a kind of machine is called in the plural ("tuned to sentries").
+const fn plural(kind: crate::content::CmKind) -> &'static str {
+    match kind {
+        crate::content::CmKind::Sentry => "sentries",
+        crate::content::CmKind::Tracer => "tracers",
+        crate::content::CmKind::Wall => "black walls",
+        crate::content::CmKind::Warden => "wardens",
+    }
 }
 
 /// The widest line the door draws (the canvas is 72 columns at 80x24).
@@ -149,6 +224,7 @@ impl Session {
             view: View::Home,
             msgs,
             saved,
+            sel: 0,
         }
     }
 
@@ -198,7 +274,7 @@ impl Session {
 
     /// The lines of the current view, fitted to `rows` (the body is cut, never the key hints).
     fn lines(&self, rows: usize) -> Vec<Line> {
-        use DoorStyle::{Accent, Dim, Plain, Strong};
+        use DoorStyle::{Accent, Bad, Dim, Plain, Strong};
         let p = &self.p;
         let c = &*self.content;
         let mut body: Vec<Line> = Vec::new();
@@ -280,7 +356,11 @@ impl Session {
                 body.push((String::new(), Plain));
                 self.push_msgs(&mut body);
                 hint.push((
-                    "[c]ontracts [d]eck [s]hop [r]ig [h]ideout [l]ie low [q]uit".into(),
+                    "[c]ontracts [f]ixers [d]eck [s]hop [b]lack market [r]ig".into(),
+                    Strong,
+                ));
+                hint.push((
+                    "[h]ideout [p]rofile [t]heat [l]ie low [q]uit".into(),
                     Strong,
                 ));
             }
@@ -485,9 +565,148 @@ impl Session {
                     Strong,
                 ));
             }
-            View::Debrief(notes) => {
+            View::Fixers => {
+                body.push(("STANDINGS".into(), Accent));
+                for f in &c.corps.fixer {
+                    let standing = p.standing.get(usize::from(f.num)).copied().unwrap_or(0);
+                    let clients: Vec<&str> = c
+                        .corps
+                        .corp
+                        .iter()
+                        .filter(|k| k.patron == f.num)
+                        .map(|k| k.name.as_str())
+                        .collect();
+                    body.push((
+                        format!(
+                            "{:<14} {standing:+}  {}  clients: {}",
+                            f.name,
+                            if standing <= -3 {
+                                "will not deal"
+                            } else {
+                                "deals"
+                            },
+                            if clients.is_empty() {
+                                "none".to_owned()
+                            } else {
+                                clients.join(", ")
+                            }
+                        ),
+                        if standing <= -3 { Dim } else { Plain },
+                    ));
+                }
+                push_wrapped(
+                    &mut body,
+                    "A job raises the hirer's standing and lowers the target's patron. At -3 a fixer will not deal with you; tier 3 wants standing 2.",
+                    Dim,
+                );
+                hint.push(("[Up]/[Down] choose   [Esc] back".into(), Strong));
+            }
+            View::Heat => {
+                body.push((
+                    format!("HEAT  {}/{}", p.heat, crate::player::HEAT_MAX),
+                    Accent,
+                ));
+                for (at, what) in HEAT_LADDER {
+                    body.push((
+                        format!(
+                            "{at:>3}: {what}{}",
+                            if p.heat >= *at { "  (now)" } else { "" }
+                        ),
+                        if p.heat >= *at { Bad } else { Dim },
+                    ));
+                }
+                push_wrapped(
+                    &mut body,
+                    &format!(
+                        "Heat falls {} a night; lying low costs {} cycles for {} heat.",
+                        c.rig.hideout.heat_decay,
+                        c.rig.hideout.lay_low_cycles,
+                        c.rig.hideout.lay_low_heat
+                    ),
+                    Dim,
+                );
+                self.push_msgs(&mut body);
+                hint.push(("[l] lie low   [Esc] back".into(), Strong));
+            }
+            View::Profile => {
+                body.push((
+                    format!("CHARACTER  {}  day {}  season {}", p.name, p.day, p.season),
+                    Accent,
+                ));
+                body.push((
+                    format!(
+                        "Reputation {}   Marks {} (safe {})   Earned {}",
+                        p.rep, p.marks, p.stash, p.earned
+                    ),
+                    Plain,
+                ));
+                body.push((
+                    format!("Runs {}   Jobs {}   Burned {}", p.runs, p.jobs, p.burns),
+                    Plain,
+                ));
+                for f in crate::content::Family::ALL {
+                    let xp = p.xp.get(f.index()).copied().unwrap_or(0);
+                    body.push((
+                        format!("{:<8} skill {}  uses {xp}", f.word(), p.skill(f)),
+                        Plain,
+                    ));
+                }
+                hint.push(("[Esc] back".into(), Strong));
+            }
+            View::Black => {
+                let h = &c.rig.hideout;
+                body.push((
+                    format!("BLACK MARKET  marks {} (safe {})", p.marks, p.stash),
+                    Accent,
+                ));
+                for (i, f) in c.rig.fence.iter().enumerate() {
+                    body.push((
+                        format!(
+                            "Fence {}: {} at {} percent{}{}",
+                            i,
+                            f.name,
+                            f.rate,
+                            if usize::from(p.fence) == i {
+                                "  (yours)"
+                            } else {
+                                ""
+                            },
+                            if usize::from(p.fence) + 1 == i {
+                                format!("  next costs {}", f.cost)
+                            } else {
+                                String::new()
+                            }
+                        ),
+                        if usize::from(p.fence) == i {
+                            Strong
+                        } else {
+                            Plain
+                        },
+                    ));
+                }
+                body.push((
+                    format!(
+                        "Proxies: {}/{} bought, {} marks each, each soaks {} trace.",
+                        p.proxies,
+                        h.proxy_max,
+                        p.proxy_price(c),
+                        h.proxy_buffer
+                    ),
+                    Plain,
+                ));
+                self.push_msgs(&mut body);
+                hint.push((
+                    format!(
+                        "[f] better fence   [p] proxy   [s] safe +{0}   [t] take {0}",
+                        h.stash_step
+                    ),
+                    Strong,
+                ));
+                hint.push(("[Esc] back".into(), Strong));
+            }
+            View::Debrief(report) => {
                 body.push(("DEBRIEF".into(), Accent));
-                for n in notes {
+                for n in &report.notes {
                     push_wrapped(&mut body, n, Plain);
                 }
                 hint.push(("[Enter] continue".into(), Strong));
@@ -547,7 +766,7 @@ impl Session {
                 Ok(s) => {
                     let tuned = s
                         .target
-                        .map_or_else(String::new, |t| format!(", tuned to {}s", t.word()));
+                        .map_or_else(String::new, |t| format!(", tuned to {}", plural(t)));
                     push_wrapped(
                         &mut out,
                         &format!(
@@ -997,6 +1216,14 @@ impl Session {
         )
     }
 
+    /// The plain text drawing, for a window too small for the panels.
+    fn draw_text(&self, canvas: &mut Canvas<'_>) {
+        for (y, (text, style)) in self.lines(usize::from(canvas.height())).iter().enumerate() {
+            let Ok(y) = u16::try_from(y) else { break };
+            canvas.text(1, y, text, *style);
+        }
+    }
+
     fn open_brief(&mut self, index: usize) {
         if let Some(c) = self.offers.get(index).copied() {
             self.msgs.clear();
@@ -1022,7 +1249,11 @@ impl Session {
             world.apply_run(corp, tier, &applied);
             Some(save::encode_world(&world))
         });
-        self.view = View::Debrief(notes);
+        self.view = View::Debrief(Box::new(Report {
+            notes,
+            result,
+            contract,
+        }));
     }
 
     fn run_key(&mut self, key: DoorKey, ctx: &mut Ctx<'_>) {
@@ -1046,6 +1277,7 @@ impl Session {
                 let line = refused.text().to_owned();
                 active.run.log.push(line);
             }
+            active.feed.sync(&active.run);
             if active.run.status != Status::Active {
                 let View::Run(finished) = std::mem::replace(&mut self.view, View::Home) else {
                     return;
@@ -1100,11 +1332,32 @@ impl Session {
                 // The player can still jack out; nothing else to do.
             }
         }
+        active.feed.sync(&active.run);
         if active.run.status != Status::Active {
             let View::Run(finished) = std::mem::replace(&mut self.view, View::Home) else {
                 return;
             };
             self.finish_run(ctx, &finished);
+        }
+    }
+
+    /// Which screen and page the menu is on, so the cursor can start at the top of a new one.
+    fn place(&self) -> (u8, usize) {
+        match &self.view {
+            View::Home => (0, 0),
+            View::Contracts => (1, 0),
+            View::Brief(_) => (2, 0),
+            View::Deck(page) => (3, *page),
+            View::Shop(page) => (4, *page),
+            View::Rig => (5, 0),
+            View::Hideout => (6, 0),
+            View::Code(_) => (7, 0),
+            View::Run(_) => (8, 0),
+            View::Debrief(_) => (9, 0),
+            View::Fixers => (10, 0),
+            View::Heat => (11, 0),
+            View::Profile => (12, 0),
+            View::Black => (13, 0),
         }
     }
 
@@ -1132,6 +1385,22 @@ impl Session {
                     self.msgs.clear();
                     self.view = View::Hideout;
                 }
+                'f' => {
+                    self.msgs.clear();
+                    self.view = View::Fixers;
+                }
+                'b' => {
+                    self.msgs.clear();
+                    self.view = View::Black;
+                }
+                'p' => {
+                    self.msgs.clear();
+                    self.view = View::Profile;
+                }
+                't' => {
+                    self.msgs.clear();
+                    self.view = View::Heat;
+                }
                 'l' => {
                     let r = self.p.lay_low(&c);
                     self.say(r);
@@ -1140,6 +1409,40 @@ impl Session {
                 _ => {}
             },
             (View::Home, DoorKey::Escape) => return Flow::Exit,
+            (View::Contracts | View::Fixers | View::Deck(_) | View::Shop(_), DoorKey::Up) => {
+                self.sel = self.sel.saturating_sub(1);
+            }
+            (View::Contracts, DoorKey::Down) => {
+                self.sel = (self.sel + 1).min(self.offers.len().saturating_sub(1));
+            }
+            (View::Contracts, DoorKey::Enter) => self.open_brief(self.sel),
+            (View::Fixers, DoorKey::Down) => {
+                self.sel = (self.sel + 1).min(c.corps.fixer.len().saturating_sub(1));
+            }
+            (View::Deck(_) | View::Shop(_), DoorKey::Down) => {
+                self.sel = (self.sel + 1).min(PAGE - 1);
+            }
+            // Enter does what the letter beside the cursor row does.
+            (View::Deck(_) | View::Shop(_), DoorKey::Enter) => {
+                let letter = char::from(b'a' + u8::try_from(self.sel.min(PAGE - 1)).unwrap_or(0));
+                return self.menu_key(DoorKey::Char(letter), ctx);
+            }
+            (View::Heat, DoorKey::Char('l' | 'L')) => {
+                let r = self.p.lay_low(&c);
+                self.say(r);
+            }
+            (View::Black, DoorKey::Char(ch)) => {
+                let r = match ch.to_ascii_lowercase() {
+                    'f' => Some(self.p.upgrade_fence(&c)),
+                    'p' => Some(self.p.buy_proxy(&c)),
+                    's' => Some(self.p.move_stash(&c, true)),
+                    't' => Some(self.p.move_stash(&c, false)),
+                    _ => None,
+                };
+                if let Some(r) = r {
+                    self.say(r);
+                }
+            }
             (View::Contracts, DoorKey::Char(ch)) => {
                 if let Some(n) = digit(ch) {
                     self.open_brief(n - 1);
@@ -1155,10 +1458,12 @@ impl Session {
                     'j' => match self.p.begin_run(&c, self.season, &self.world, &contract) {
                         Ok(run) => {
                             self.msgs.clear();
+                            let feed = Feed::new(&run);
                             self.view = View::Run(Box::new(Active {
                                 run,
                                 contract,
                                 aim: None,
+                                feed,
                             }));
                         }
                         Err(why) => self.say(Err(why)),
@@ -1331,7 +1636,17 @@ impl Session {
                 self.msgs.clear();
                 self.view = if back { View::Contracts } else { View::Home };
             }
-            (View::Deck(_) | View::Shop(_) | View::Rig | View::Hideout, DoorKey::Escape)
+            (
+                View::Deck(_)
+                | View::Shop(_)
+                | View::Rig
+                | View::Hideout
+                | View::Fixers
+                | View::Heat
+                | View::Profile
+                | View::Black,
+                DoorKey::Escape,
+            )
             | (View::Debrief(_), DoorKey::Enter | DoorKey::Escape | DoorKey::Char(' ')) => {
                 self.msgs.clear();
                 self.view = View::Home;
@@ -1351,12 +1666,16 @@ impl DoorSession for Session {
                 self.msgs.push((note, DoorStyle::Accent));
             }
         }
+        let before = self.place();
         let flow = if matches!(self.view, View::Run(_)) {
             self.run_key(key, ctx);
             Flow::Stay
         } else {
             self.menu_key(key, ctx)
         };
+        if self.place() != before {
+            self.sel = 0;
+        }
         let bytes = save::encode(&self.p);
         if bytes != self.saved {
             self.saved.clone_from(&bytes);
@@ -1365,12 +1684,9 @@ impl DoorSession for Session {
         flow
     }
 
-    fn render(&self, canvas: &mut Canvas<'_>, _env: &DoorEnv) {
+    fn render(&self, canvas: &mut Canvas<'_>, env: &DoorEnv) {
         canvas.clear();
-        for (y, (text, style)) in self.lines(usize::from(canvas.height())).iter().enumerate() {
-            let Ok(y) = u16::try_from(y) else { break };
-            canvas.text(1, y, text, *style);
-        }
+        ui::draw(self, canvas, env);
     }
 
     fn look_around(&self, _env: &DoorEnv) -> Vec<String> {

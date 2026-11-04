@@ -134,7 +134,7 @@ fn every_screen_fits_the_door_area_with_its_key_hints_in_view() {
             // The key hints are the last line of the run screen and must be on screen.
             assert!(
                 text.iter()
-                    .any(|r| r.contains("[o] jack out") || r.contains("Aim ")),
+                    .any(|r| r.contains("[o]jack out") || r.contains("Aim ")),
                 "{text:#?}"
             );
         }
