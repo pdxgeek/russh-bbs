@@ -120,12 +120,12 @@ pub(crate) const DUMPS: &[(&str, &str)] = &[
         "role_permission",
         // Rows that later migrations add are left out (0009 gave `waiting` and `sysop`
         // `invite.request`, 0010 `membership.open`, 0017 `community.view` and `community.moderate`,
-        // 0019 `mail.report` and `mail.moderate`, 0022 `keys.manage`, `keys.redeem` and `keys.recover`): the fixture compares what existed before 0007 with
+        // 0019 `mail.report` and `mail.moderate`, 0022 `keys.manage`, `keys.redeem` and `keys.recover`, 0023 the three `doors.*` staff tools): the fixture compares what existed before 0007 with
         // what is there after it. Add the name of a permission here when a migration adds its rows.
         "SELECT role || '|' || permission FROM role_permission \
          WHERE permission NOT IN ('invite.request', 'membership.open', 'community.view', \
          'community.moderate', 'mail.report', 'mail.moderate', 'keys.manage', 'keys.redeem', \
-         'keys.recover') ORDER BY 1",
+         'keys.recover', 'doors.bar_player', 'doors.reset_player', 'doors.end_season') ORDER BY 1",
     ),
     (
         "settings",

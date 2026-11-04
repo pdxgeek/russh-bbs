@@ -137,6 +137,10 @@ impl Harness for PgHarness {
         .await
     }
 
+    fn blob_sql(&self, len: usize) -> String {
+        format!("decode(repeat('00', {len}), 'hex')")
+    }
+
     async fn break_audit_inserts(&self) {
         // A constraint no new row can satisfy; NOT VALID skips the (empty) existing rows.
         self.raw(
@@ -265,6 +269,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         22,
         "76ad1f5c2f39012a87d952da059cd7d17741733e63978ce9e41888667255bd2f017709605427ac96b59e16f572b7cfe8",
     ),
+    (
+        23,
+        "24cedd9de457941b5c38055c4ccc4c2827ab59c442aa7ee7543fab7248e8c4b897a1f4d56bb6cdc09a9b3b54eb0bcfa2",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {
@@ -328,6 +336,9 @@ async fn a_fresh_database_gets_every_migration_and_only_these_tables() {
             "chat_room",
             "community_line",
             "credit_ledger",
+            "door_bar",
+            "door_save",
+            "door_state",
             "draft",
             "feed",
             "feed_item",

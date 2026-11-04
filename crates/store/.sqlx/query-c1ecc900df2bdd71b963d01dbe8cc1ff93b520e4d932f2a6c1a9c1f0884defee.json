@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT season FROM door_state WHERE door = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "season",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "c1ecc900df2bdd71b963d01dbe8cc1ff93b520e4d932f2a6c1a9c1f0884defee"
+}

@@ -6,6 +6,7 @@ pub mod audit;
 pub mod chat;
 pub mod community;
 pub mod credits;
+pub mod doors;
 pub mod drafts;
 pub mod feeds;
 pub mod forums;

@@ -127,6 +127,19 @@ pub enum Action {
     /// actor and the target are the account.
     #[strum(serialize = "recovery_code.redeemed")]
     RecoveryCodeRedeemed,
+    /// Staff deleted a player's save in a door (M4-D0, D98). The target is the player; the note
+    /// names the door. The save's contents are never written.
+    #[strum(serialize = "door.player_reset")]
+    DoorPlayerReset,
+    /// Staff ended a door's season (M4-D0). No target; the note names the door and nothing else.
+    #[strum(serialize = "door.season_ended")]
+    DoorSeasonEnded,
+    /// Staff barred a player from a door (M4-D0). The target is the player; the note names the door.
+    #[strum(serialize = "door.player_barred")]
+    DoorPlayerBarred,
+    /// Staff lifted a player's bar from a door (M4-D0). The target is the player.
+    #[strum(serialize = "door.player_unbarred")]
+    DoorPlayerUnbarred,
     /// Staff removed a one-liner or a graffiti wall line (M3-J, D86). The target is the author.
     #[strum(serialize = "community.entry_removed")]
     CommunityEntryRemoved,

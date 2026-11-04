@@ -71,6 +71,10 @@ use tokio::time::timeout;
 /// `keys.redeem` the waiting room refuses a valid code with the one sentence and the code is not
 /// used up; without `keys.recover` the staff screen is not offered. Each is back on the next action.
 ///
+/// `doors.run` (M4-D0) has its path test at the end of this file: without it the Doors menu item
+/// is not offered, an open door closes on the next key and writes nothing more, and it is back
+/// on the next action once restored.
+///
 /// The community permissions (M3-J) have their path tests at the end of this file: posting a
 /// one-liner or a wall line, voting, making a poll, reading, and moderating each refuse and write
 /// nothing once the permission is taken away, on the very next key.
@@ -113,6 +117,7 @@ const WIRED: &[Permission] = &[
     Permission::PollsCreate,
     Permission::CommunityView,
     Permission::CommunityModerate,
+    Permission::DoorsRun,
 ];
 
 /// Permissions with no front-end action yet. A slice that builds one moves it to `WIRED` in the
@@ -134,8 +139,12 @@ const NOT_YET_WIRED: &[Permission] = &[
     Permission::FilesManageAreas,
     Permission::FeedsRead,
     Permission::FeedsManage,
-    Permission::DoorsRun,
+    // The per-door staff tools (M4-D0, D98) have core functions, tested against the real role data
+    // in the shared store suite (`crates/store/src/suite/doors.rs`), and no screen yet.
     Permission::DoorsManage,
+    Permission::DoorsResetPlayer,
+    Permission::DoorsEndSeason,
+    Permission::DoorsBarPlayer,
     Permission::EventsView,
     Permission::EventsManage,
     Permission::SysopPage,
@@ -207,7 +216,8 @@ impl Rig {
         );
         let ui = russh_bbs_server::ui::Ui::standard()
             .unwrap()
-            .with_mail_keys(Arc::new(keys));
+            .with_mail_keys(Arc::new(keys))
+            .with_doors(russh_bbs_server::doors::Doors::builtin().unwrap());
         let server = SshServer::start_with_ui(
             &config,
             &host_key,
@@ -1389,5 +1399,56 @@ async fn issuing_a_recovery_code_needs_keys_recover_and_a_removal_makes_none() {
     rig.restore(&taken, Permission::KeysRecover).await;
     send(&mut channel, "x").await;
     assert!(full(&mut channel).await.contains("[r] Recovery code"));
+    rig.server.shutdown().await;
+}
+
+#[tokio::test]
+async fn doors_run_gates_the_menu_item_and_an_open_door_stops_saving_when_it_is_taken_away() {
+    let rig = Rig::start().await;
+    let key = new_client_key();
+    let (_session, mut channel) = founder_at_menu(&rig, &key).await;
+
+    send(&mut channel, "d").await;
+    let list = full(&mut channel).await;
+    assert!(list.contains("Coin Toss"), "{list}");
+    send(&mut channel, "\r").await;
+    assert!(full(&mut channel).await.contains("Tosses left today"));
+    send(&mut channel, "h").await;
+    assert_eq!(count(&rig, "door_save").await, 1);
+    let revision = || async {
+        sqlx::query_scalar::<_, i64>("SELECT revision FROM door_save")
+            .fetch_one(&rig.db)
+            .await
+            .unwrap()
+    };
+    assert_eq!(revision().await, 1);
+
+    // Taken away while the door is open: the next toss is refused, nothing more is written, and
+    // the door closes with the plain sentence.
+    let taken = rig.revoke(Permission::DoorsRun).await;
+    send(&mut channel, "h").await;
+    let screen = full(&mut channel).await;
+    assert!(
+        screen.contains("You do not have access to doors."),
+        "{screen}"
+    );
+    assert_eq!(revision().await, 1, "the refused toss was not saved");
+    // Back at the list, then the menu: the item is gone and its hotkey does nothing.
+    send(&mut channel, "\u{1b}").await;
+    tokio::time::sleep(Duration::from_millis(150)).await;
+    let menu = full(&mut channel).await;
+    assert!(
+        menu.contains("Main menu") && !menu.contains("[d] Doors"),
+        "{menu}"
+    );
+    send(&mut channel, "d").await;
+    assert!(!full(&mut channel).await.contains("Pick a door"));
+
+    // Put back: it works on the next action.
+    rig.restore(&taken, Permission::DoorsRun).await;
+    send(&mut channel, "x").await;
+    assert!(full(&mut channel).await.contains("[d] Doors"));
+    send(&mut channel, "d").await;
+    assert!(full(&mut channel).await.contains("Pick a door"));
     rig.server.shutdown().await;
 }

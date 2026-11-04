@@ -167,6 +167,15 @@ pub enum Permission {
     /// `doors.manage`.
     #[strum(serialize = "doors.manage")]
     DoorsManage,
+    /// `doors.reset_player` (M4-D0): delete one player's save in a door.
+    #[strum(serialize = "doors.reset_player")]
+    DoorsResetPlayer,
+    /// `doors.end_season` (M4-D0): end a door's season.
+    #[strum(serialize = "doors.end_season")]
+    DoorsEndSeason,
+    /// `doors.bar_player` (M4-D0): bar a player from a door, or lift the bar.
+    #[strum(serialize = "doors.bar_player")]
+    DoorsBarPlayer,
     /// `oneliners.post`.
     #[strum(serialize = "oneliners.post")]
     OnelinersPost,

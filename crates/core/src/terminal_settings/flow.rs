@@ -78,6 +78,9 @@ pub enum MemberEffect {
     /// The member chose Mail: the front end hands the session to the mail screens (M3-I) and
     /// gives the flow back when they end, like [`MemberEffect::Forums`].
     Mail,
+    /// The member chose Doors: the front end hands the session to the door framework (M4-D0)
+    /// and gives the flow back when they leave, like [`MemberEffect::Forums`].
+    Doors,
     /// Redraw (the logoff screen is showing) and close the session.
     Disconnect,
 }
@@ -417,6 +420,7 @@ impl MemberFlow {
             MenuOutcome::Stay => MemberEffect::Stay,
             MenuOutcome::Action(Action::Forums) => MemberEffect::Forums,
             MenuOutcome::Action(Action::Mail) => MemberEffect::Mail,
+            MenuOutcome::Action(Action::Doors) => MemberEffect::Doors,
             MenuOutcome::Action(Action::TerminalSettings) => {
                 self.page = Page::Settings;
                 MemberEffect::Stay
@@ -486,6 +490,7 @@ impl MemberFlow {
             Action::EditOwnProfile => own.map(MembersScreen::edit_own),
             Action::Forums
             | Action::Mail
+            | Action::Doors
             | Action::TerminalSettings
             | Action::Chat
             | Action::LogOff

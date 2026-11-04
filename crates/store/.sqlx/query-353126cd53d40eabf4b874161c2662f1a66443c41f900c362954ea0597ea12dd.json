@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT world_revision, world_version, world, last_tick_day\n               FROM door_state WHERE door = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "world_revision",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "world_version",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "world",
+        "ordinal": 2,
+        "type_info": "Blob"
+      },
+      {
+        "name": "last_tick_day",
+        "ordinal": 3,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "353126cd53d40eabf4b874161c2662f1a66443c41f900c362954ea0597ea12dd"
+}

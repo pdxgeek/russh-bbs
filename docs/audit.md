@@ -81,6 +81,9 @@ sysop screen over it is M5; the board has no audit screen yet.
 | `redeem_link_code` (FIX-M3-11) | `device_code.redeemed` | the account the code was for | the key's public fingerprint | `device link code`. Written with the key, in one transaction |
 | `issue_recovery_code` (FIX-M3-11) | `recovery_code.issued` | the staff member (`keys.recover`) | the member's account | none. Never the code or its hash |
 | `redeem_recovery_code` (FIX-M3-11) | `recovery_code.redeemed` | the account the code was for | the key's public fingerprint | `recovery code, password replaced`. Never the password or its hash |
+| `reset_player` (M4-D0, D98) | `door.player_reset` | the staff member (`doors.reset_player`, rank strictly above the player's) | the player's account | `door <id>`. Written only when the player had a save, in the transaction that deletes it. Never the save's contents |
+| `end_season` (M4-D0) | `door.season_ended` | the staff member (`doors.end_season`) | none | `door <id>`. Nothing is deleted |
+| `bar_player` / `unbar_player` (M4-D0) | `door.player_barred` / `door.player_unbarred` | the staff member (`doors.bar_player`, rank strictly above the player's) | the player's account | `door <id>`. Written only when the bar changed |
 | `create_room` (M3-F) | `chat.room_created` | the staff member (`chat.manage_rooms`) | none; the **resource** is the room (`room`, its id) | `name <room name>`. Nothing said in a room is ever written (D78) |
 | `close_room` (M3-F) | `chat.room_closed` | the staff member | none; the resource is the room | none. Written only when the room was open |
 | `create_board` (M3-E) | `board.created` | the creator (`forum.manage`) | none; the resource is the board | `open` or `restricted`: never the name or description |

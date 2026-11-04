@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM door_bar WHERE door = ? AND account_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "bc6be6a4f68ad1aa0922462e67b2334b64ea016ad710ebcdcde1dbf881064a97"
+}

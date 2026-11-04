@@ -96,7 +96,7 @@ A code binds a key to an account, so it is a credential for the minutes or hours
 Never log keys, invite codes, message bodies, or mail. Zero key material in memory when finished. No credentials in the repo, fixtures, or the database in plaintext.
 
 ### Doors
-First-party Rust doors only until the WASM sandbox exists. No door gets filesystem or network access. Game results are computed server-side; never trust client-reported state.
+First-party Rust doors only until a process boundary or the WASM sandbox exists (D98 (7)). No door gets filesystem or network access: a door is an in-process library that is handed only the framework's API (keys, a sanitizing canvas, a clock, a seeded RNG, a request to save), and every door crate runs `sandbox::audit_crate` on its own manifest and source. That audit is a tripwire for reviewed first-party code, **not isolation against hostile code**. Game results are computed server-side; never trust client-reported state. A door's output is sanitized and clipped by its canvas and cannot be the reserved security-marker style; a door's saves are capped, versioned and written with a revision check; a player barred by staff cannot open the door, and `doors.run` is checked on every write.
 
 ### Credits
 Non-transferable and non-redeemable. Ledger changes are append-only and auditable.
