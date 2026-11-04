@@ -252,7 +252,8 @@ impl<D> ClientHandler<D> {
             flow = flow.signed_in_with_password();
         }
         // Key changes since the last sign-in (FIX-M3-11), told once.
-        let notices = russh_bbs_core::keys::notices_for_sign_in(&*self.directory, start.account).await;
+        let notices =
+            russh_bbs_core::keys::notices_for_sign_in(&*self.directory, start.account).await;
         flow = flow.with_key_notices(russh_bbs_core::keys::notice_lines(&notices));
         Some((Content::Member(Box::new(flow)), Some(meter)))
     }

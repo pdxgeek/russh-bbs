@@ -2,7 +2,8 @@
     clippy::unwrap_used,
     clippy::panic,
     clippy::too_many_lines,
-    clippy::unused_async_trait_impl
+    clippy::unused_async_trait_impl,
+    clippy::assert_is_empty
 )]
 
 use std::collections::HashMap;
@@ -15,7 +16,8 @@ use crate::passwords::{Inline, Secret};
 use crate::sanitize::sanitize_username;
 use crate::store::{Account, AccountId, AccountState, StoreError, UnixSeconds};
 
-const KEY_A: &str = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+const KEY_A: &str =
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
 fn id(n: i64) -> AccountId {
     AccountId::from_raw(n)
@@ -258,7 +260,9 @@ async fn removal_reports_the_last_way_in_and_a_missing_key() {
         remove_key(&store, &member(1), &fingerprint('b')).await,
         Err(KeyError::NoSuchKey)
     ));
-    remove_key(&store, &member(1), &fingerprint('a')).await.unwrap();
+    remove_key(&store, &member(1), &fingerprint('a'))
+        .await
+        .unwrap();
     let locked = Fake {
         last_way_in: true,
         ..Fake::default()
@@ -275,8 +279,7 @@ async fn a_link_code_is_stored_hashed_with_its_ttl_and_limit() {
     let store = Fake::default();
     let random = random_bytes(CodeKind::Link).unwrap();
     let issued = make_link_code(&store, &member(7), &random).await.unwrap();
-    let recorded = store.issued.lock().unwrap();
-    let new = recorded.first().unwrap();
+    let new = store.issued.lock().unwrap().first().unwrap().clone();
     assert_eq!(new.kind, CodeKind::Link);
     assert_eq!(new.target, id(7));
     assert_eq!(new.issuer, id(7));
@@ -287,7 +290,6 @@ async fn a_link_code_is_stored_hashed_with_its_ttl_and_limit() {
     let audit = format!("{:?}", store.audits.lock().unwrap());
     assert!(!audit.contains(issued.code.reveal()));
     assert!(!audit.contains(&issued.code.hash().to_hex()));
-    drop(recorded);
 
     let limited = Fake {
         rate_limited: true,
@@ -335,9 +337,17 @@ async fn staff_help_only_members_strictly_below_their_rank() {
     }
     let recorded = store.issued.lock().unwrap();
     assert_eq!(recorded.len(), 2);
-    assert!(recorded.iter().all(|c| c.issuer == id(1) && c.ttl_secs == 86_400));
+    assert!(
+        recorded
+            .iter()
+            .all(|c| c.issuer == id(1) && c.ttl_secs == 86_400)
+    );
     let audits = store.audits.lock().unwrap();
-    assert!(audits.iter().all(|a| a.action == Action::RecoveryCodeIssued));
+    assert!(
+        audits
+            .iter()
+            .all(|a| a.action == Action::RecoveryCodeIssued)
+    );
 }
 
 #[tokio::test]
@@ -377,7 +387,9 @@ async fn every_redemption_failure_is_the_same_refusal() {
     // Without the permission the store is never asked.
     let nobody = holds(1, 0, &[]);
     assert_eq!(
-        redeem_link_code(&refusing, &nobody, "x", &fp).await.unwrap_err(),
+        redeem_link_code(&refusing, &nobody, "x", &fp)
+            .await
+            .unwrap_err(),
         Refused
     );
     // A weak password is the same refusal, and also never reaches the store.

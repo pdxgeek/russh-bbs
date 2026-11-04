@@ -992,7 +992,11 @@ fn a_recovery_code_needs_a_matching_good_password_before_anything_is_sent() {
     room.input(RoomInput::Enter);
     type_text(&mut room, "short");
     assert_eq!(room.input(RoomInput::Enter), RoomEffect::Stay, "too short");
-    assert!(room.view().notice.is_some_and(|n| n.kind == NoticeKind::Error));
+    assert!(
+        room.view()
+            .notice
+            .is_some_and(|n| n.kind == NoticeKind::Error)
+    );
     // The secrets were wiped; the code was kept for another try.
     let view = room.view();
     assert!(view.fields.iter().skip(1).all(|f| f.value.is_empty()));
@@ -1007,7 +1011,10 @@ fn a_recovery_code_needs_a_matching_good_password_before_anything_is_sent() {
         panic!("a good form is submitted");
     };
     assert_eq!(request.code, "CODE");
-    assert_eq!(request.password.unwrap().expose(), "a long enough passphrase");
+    assert_eq!(
+        request.password.unwrap().expose(),
+        "a long enough passphrase"
+    );
 }
 
 #[test]

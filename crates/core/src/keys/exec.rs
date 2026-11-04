@@ -90,11 +90,7 @@ pub enum Change {
 
 /// Carry out `request` with the session's current `access`. The permission is checked in core,
 /// whatever the screen offered.
-pub async fn execute<S: KeyStore>(
-    store: &S,
-    access: &Snapshot,
-    request: Request,
-) -> Response {
+pub async fn execute<S: KeyStore>(store: &S, access: &Snapshot, request: Request) -> Response {
     let outcome = run(store, access, request).await;
     match outcome {
         Ok(response) => response,
@@ -127,12 +123,8 @@ async fn run<S: KeyStore>(
             })
         }
         Request::LinkCode => {
-            let issued = make_link_code(
-                store,
-                access,
-                &random_bytes(super::code::CodeKind::Link)?,
-            )
-            .await?;
+            let issued =
+                make_link_code(store, access, &random_bytes(super::code::CodeKind::Link)?).await?;
             Ok(Response::Code(ShownCode {
                 code: issued.code,
                 expires_at: issued.expires_at,

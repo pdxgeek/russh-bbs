@@ -36,8 +36,8 @@ use russh_bbs_core::invites::{
     CODE_BYTES, InviteError, InviteOutcome, InviteRequest, create_invite, invite_tree, my_invites,
     redeem_invite, redeem_invite_with_password,
 };
-use russh_bbs_core::limits::{LimitError, MemberMeter, SystemClock};
 use russh_bbs_core::keys::{redeem_link_code, redeem_recovery_code};
+use russh_bbs_core::limits::{LimitError, MemberMeter, SystemClock};
 use russh_bbs_core::passwords::hash_new;
 use russh_bbs_core::passwords::{Login, link_key_by_password};
 use russh_bbs_core::queue::{
@@ -843,18 +843,16 @@ impl<D: Backend> Shell<D> {
         let work = async {
             let access = directory.access_for(None).await.ok()?;
             match &request.password {
-                Some(password) => {
-                    redeem_recovery_code(
-                        directory,
-                        self.parts.passwords.pool(),
-                        &access,
-                        &request.code,
-                        &fingerprint,
-                        password,
-                    )
-                    .await
-                    .ok()
-                }
+                Some(password) => redeem_recovery_code(
+                    directory,
+                    self.parts.passwords.pool(),
+                    &access,
+                    &request.code,
+                    &fingerprint,
+                    password,
+                )
+                .await
+                .ok(),
                 None => redeem_link_code(directory, &access, &request.code, &fingerprint)
                     .await
                     .ok(),

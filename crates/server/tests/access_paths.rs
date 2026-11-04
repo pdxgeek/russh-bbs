@@ -1269,13 +1269,20 @@ async fn my_keys_needs_keys_manage_and_a_removal_closes_the_open_screen() {
     let taken = rig.revoke(Permission::KeysManage).await;
     let first = send(&mut channel, "l").await;
     let screen = format!("{first} {}", full(&mut channel).await);
-    assert!(screen.contains("You are not allowed to do that."), "{screen}");
+    assert!(
+        screen.contains("You are not allowed to do that."),
+        "{screen}"
+    );
     assert_eq!(count(&rig, "login_code").await, 1, "no code was made");
     send(&mut channel, "u").await;
     let menu = full(&mut channel).await;
     assert!(!menu.contains("[k] My keys"), "{menu}");
     send(&mut channel, "k").await;
-    assert!(!full(&mut channel).await.contains("Keys sign you in without a password"));
+    assert!(
+        !full(&mut channel)
+            .await
+            .contains("Keys sign you in without a password")
+    );
 
     // Put back: it works on the next action.
     rig.restore(&taken, Permission::KeysManage).await;
@@ -1300,7 +1307,12 @@ async fn redeeming_a_code_needs_keys_redeem_and_a_refusal_uses_nothing_up() {
     let code = shown
         .split("Code: ")
         .nth(1)
-        .map(|rest| rest.split_whitespace().take(2).collect::<Vec<_>>().join("-"))
+        .map(|rest| {
+            rest.split_whitespace()
+                .take(2)
+                .collect::<Vec<_>>()
+                .join("-")
+        })
         .unwrap();
 
     let machine = |rig: &Rig| {
@@ -1314,17 +1326,22 @@ async fn redeeming_a_code_needs_keys_redeem_and_a_refusal_uses_nothing_up() {
         }
     };
     // `waiting` holds `keys.redeem`; take it away and a valid code is refused like a bad one.
-    sqlx::query("DELETE FROM role_permission WHERE role = 'waiting' AND permission = 'keys.redeem'")
-        .execute(&rig.db)
-        .await
-        .unwrap();
+    sqlx::query(
+        "DELETE FROM role_permission WHERE role = 'waiting' AND permission = 'keys.redeem'",
+    )
+    .execute(&rig.db)
+    .await
+    .unwrap();
     let (_s, mut visitor, _key) = machine(&rig).await;
     send(&mut visitor, "d").await;
     send(&mut visitor, &format!("{code}\r")).await;
     let refused = full(&mut visitor).await;
     assert!(refused.contains("That code did not work."), "{refused}");
     assert_eq!(count(&rig, "account_keys").await, 1);
-    assert_eq!(count(&rig, "login_code WHERE redeemed_at IS NOT NULL").await, 0);
+    assert_eq!(
+        count(&rig, "login_code WHERE redeemed_at IS NOT NULL").await,
+        0
+    );
 
     // Put back: the same code works on the next attempt, so the refusal used nothing up.
     sqlx::query("INSERT INTO role_permission (role, permission) VALUES ('waiting', 'keys.redeem')")
@@ -1360,7 +1377,10 @@ async fn issuing_a_recovery_code_needs_keys_recover_and_a_removal_makes_none() {
     let taken = rig.revoke(Permission::KeysRecover).await;
     let first = send(&mut channel, "a").await;
     let screen = format!("{first} {}", full(&mut channel).await);
-    assert!(screen.contains("You are not allowed to do that."), "{screen}");
+    assert!(
+        screen.contains("You are not allowed to do that."),
+        "{screen}"
+    );
     assert_eq!(count(&rig, "login_code").await, 1, "no code was made");
     send(&mut channel, "o").await;
     assert!(!full(&mut channel).await.contains("[r] Recovery code"));

@@ -571,7 +571,10 @@ async fn telnet_can_make_a_link_code_but_has_no_key_to_bind_one() {
     assert!(keys.contains("No key is saved"), "{keys}");
     let shown = tn.keys("l").await;
     assert!(shown.contains("Code:"), "{shown}");
-    assert!(shown.contains("used from an ssh connection only"), "{shown}");
+    assert!(
+        shown.contains("used from an ssh connection only"),
+        "{shown}"
+    );
     // The one-time code and the marker are both on the page.
     assert!(shown.contains("UNENCRYPTED"), "{shown}");
 

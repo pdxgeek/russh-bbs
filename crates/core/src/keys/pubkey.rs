@@ -71,13 +71,13 @@ const STANDARD: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwx
 /// Strict base64 (padded, standard alphabet). `None` for anything else.
 fn decode_base64(text: &str) -> Option<Vec<u8>> {
     let bytes = text.as_bytes();
-    if bytes.is_empty() || bytes.len() % 4 != 0 {
+    if bytes.is_empty() || !bytes.len().is_multiple_of(4) {
         return None;
     }
     let mut out = Vec::with_capacity(bytes.len() / 4 * 3);
-    let chunks = bytes.len() / 4;
-    for (index, chunk) in bytes.chunks_exact(4).enumerate() {
-        let last = index + 1 == chunks;
+    let (quads, _) = bytes.as_chunks::<4>();
+    for (index, chunk) in quads.iter().enumerate() {
+        let last = index + 1 == quads.len();
         let mut value: u32 = 0;
         let mut pad = 0;
         for &byte in chunk {
@@ -108,10 +108,11 @@ fn encode_base64_unpadded(bytes: &[u8]) -> String {
     let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);
     for chunk in bytes.chunks(3) {
         let mut buffer = [0_u8; 3];
-        buffer
-            .get_mut(..chunk.len())
-            .map(|dst| dst.copy_from_slice(chunk));
-        let value = (u32::from(buffer[0]) << 16) | (u32::from(buffer[1]) << 8) | u32::from(buffer[2]);
+        if let Some(dst) = buffer.get_mut(..chunk.len()) {
+            dst.copy_from_slice(chunk);
+        }
+        let value =
+            (u32::from(buffer[0]) << 16) | (u32::from(buffer[1]) << 8) | u32::from(buffer[2]);
         let symbols = chunk.len() + 1;
         for position in 0..symbols {
             let shift = 18 - 6 * u32::try_from(position).unwrap_or(0);
@@ -129,7 +130,8 @@ mod tests {
 
     /// The all-zero Ed25519 key: `ssh-keygen -l -f` prints the fingerprint below for this line
     /// (computed with OpenSSH 9.6 `ssh-keygen -lf` when the test was written).
-    const ZERO_KEY: &str = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    const ZERO_KEY: &str =
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     const ZERO_KEY_FINGERPRINT: &str = "SHA256:kmYcvdi2GkPeWxB6XLjrZB8JHsy2Hm8luHMFp9GMvqk";
 
     #[test]
@@ -157,12 +159,17 @@ mod tests {
             "options ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
         ];
         for text in bad {
-            assert_eq!(parse_ed25519(text), Err(PubKeyError::NotEd25519), "{text:?}");
+            assert_eq!(
+                parse_ed25519(text),
+                Err(PubKeyError::NotEd25519),
+                "{text:?}"
+            );
         }
         // Two lines are two keys: refused rather than guessed at.
         assert!(parse_ed25519(&format!("{ZERO_KEY}\n{ZERO_KEY}")).is_err());
         // Trailing bytes after the key.
-        let trailing = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
+        let trailing =
+            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
         assert!(parse_ed25519(trailing).is_err());
         assert!(parse_ed25519(&"a".repeat(10_000)).is_err());
     }
@@ -170,7 +177,9 @@ mod tests {
     #[test]
     fn base64_round_trips_and_is_strict() {
         for len in 0..40_u8 {
-            let data: Vec<u8> = (0..len).map(|i| i.wrapping_mul(37).wrapping_add(11)).collect();
+            let data: Vec<u8> = (0..len)
+                .map(|i| i.wrapping_mul(37).wrapping_add(11))
+                .collect();
             let unpadded = encode_base64_unpadded(&data);
             let padded = format!("{unpadded}{}", "=".repeat((4 - unpadded.len() % 4) % 4));
             if data.is_empty() {

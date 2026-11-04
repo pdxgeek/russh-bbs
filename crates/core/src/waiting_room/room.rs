@@ -260,7 +260,8 @@ pub struct CodeRequest {
 impl PartialEq for CodeRequest {
     fn eq(&self, other: &Self) -> bool {
         self.code == other.code
-            && self.password.as_ref().map(Secret::expose) == other.password.as_ref().map(Secret::expose)
+            && self.password.as_ref().map(Secret::expose)
+                == other.password.as_ref().map(Secret::expose)
     }
 }
 

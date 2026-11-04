@@ -125,7 +125,11 @@ pub async fn add_key<S: KeyStore>(
     let account = account_of(access, Permission::KeysManage)?;
     let fingerprint = parse_ed25519(pasted)?;
     match store
-        .add_key(account, &fingerprint, &events::key_added(account, &fingerprint))
+        .add_key(
+            account,
+            &fingerprint,
+            &events::key_added(account, &fingerprint),
+        )
         .await
     {
         Ok(()) => {
@@ -149,7 +153,11 @@ pub async fn remove_key<S: KeyStore>(
 ) -> Result<(), KeyError> {
     let account = account_of(access, Permission::KeysManage)?;
     match store
-        .remove_key(account, fingerprint, &events::key_removed(account, fingerprint))
+        .remove_key(
+            account,
+            fingerprint,
+            &events::key_removed(account, fingerprint),
+        )
         .await?
     {
         RemoveOutcome::Removed => {
@@ -183,7 +191,11 @@ pub async fn make_link_code<S: KeyStore>(
         ttl_secs: CodeKind::Link.ttl_secs(),
         per_hour: Some(LINK_CODES_PER_HOUR),
     };
-    let expires_at = recorded(store.issue_code(&new, &events::device_code_issued(account)).await)?;
+    let expires_at = recorded(
+        store
+            .issue_code(&new, &events::device_code_issued(account))
+            .await,
+    )?;
     info!(%account, "device link code made");
     Ok(IssuedCode { code, expires_at })
 }
@@ -255,7 +267,10 @@ pub async fn redeem_link_code<S: KeyStore>(
         return Err(Refused);
     }
     let hash = LoginCodeHash::of(CodeKind::Link, typed);
-    settle(store.redeem_link_code(&hash, fingerprint).await, fingerprint)
+    settle(
+        store.redeem_link_code(&hash, fingerprint).await,
+        fingerprint,
+    )
 }
 
 /// Redeem a staff recovery code: bind `fingerprint` and set `new_password` (D81 rules) in one

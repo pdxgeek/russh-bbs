@@ -4,7 +4,13 @@
 //! code up, the hourly limit holds, a newer code voids the last, a recovery code binds a key and
 //! replaces the password in one step, nothing readable is stored, and every change leaves its
 //! audit row and its notice in the same transaction.
-#![allow(clippy::unwrap_used, clippy::panic)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::panic,
+    clippy::assert_is_empty,
+    clippy::many_single_char_names,
+    clippy::similar_names
+)]
 
 use std::sync::Arc;
 
@@ -18,7 +24,9 @@ use russh_bbs_core::keys::{
 };
 use russh_bbs_core::passwords::{PasswordStore, hash::hash};
 use russh_bbs_core::sanitize::sanitize_username;
-use russh_bbs_core::store::{Account, AccountId, AccountState, AccountStore, NewAccount, StoreError};
+use russh_bbs_core::store::{
+    Account, AccountId, AccountState, AccountStore, NewAccount, StoreError,
+};
 
 use super::{Harness, fingerprint};
 
@@ -140,7 +148,11 @@ pub(crate) async fn keys_are_listed_added_and_removed_with_audit_rows_and_notice
 
     clock.set(T0 + 20);
     let outcome = store
-        .remove_key(alice.id, &fingerprint(1), &events::key_removed(alice.id, &fingerprint(1)))
+        .remove_key(
+            alice.id,
+            &fingerprint(1),
+            &events::key_removed(alice.id, &fingerprint(1)),
+        )
         .await
         .unwrap();
     assert_eq!(outcome, RemoveOutcome::Removed);
@@ -218,8 +230,12 @@ pub(crate) async fn two_removals_racing_for_the_last_two_keys_cannot_both_succee
     let h = H::fresh().await;
     let store = h.store().clone();
     for round in 0..8_u32 {
-        let acct = with_keys(&store, &format!("racer{round}"), &[100 + round * 2, 101 + round * 2])
-            .await;
+        let acct = with_keys(
+            &store,
+            &format!("racer{round}"),
+            &[100 + round * 2, 101 + round * 2],
+        )
+        .await;
         let (a, b) = (fingerprint(100 + round * 2), fingerprint(101 + round * 2));
         let run = |fp: russh_bbs_core::access::Fingerprint| {
             let store = store.clone();
@@ -276,7 +292,9 @@ pub(crate) async fn a_link_code_binds_a_key_once_and_expires_to_the_second<H: Ha
     let store = h.store();
     let alice = with_keys(store, "alice", &[1]).await;
     let c = code(CodeKind::Link, 4);
-    let expires = issue(store, CodeKind::Link, &alice, &alice, &c).await.unwrap();
+    let expires = issue(store, CodeKind::Link, &alice, &alice, &c)
+        .await
+        .unwrap();
     assert_eq!(expires.as_raw(), T0 + 600);
 
     // A wrong code is refused and nothing changes.
@@ -293,7 +311,10 @@ pub(crate) async fn a_link_code_binds_a_key_once_and_expires_to_the_second<H: Ha
         .await
         .unwrap_err();
     assert_eq!(refused(&taken), Some(RedeemRefusal::Key));
-    assert_eq!(count(&h, "login_code WHERE redeemed_at IS NOT NULL").await, "0");
+    assert_eq!(
+        count(&h, "login_code WHERE redeemed_at IS NOT NULL").await,
+        "0"
+    );
 
     // One second before expiry it works; the key is bound to the code's account.
     clock.set(T0 + 599);
@@ -312,7 +333,9 @@ pub(crate) async fn a_link_code_binds_a_key_once_and_expires_to_the_second<H: Ha
 
     // An unused code is dead at its expiry second.
     let late = code(CodeKind::Link, 6);
-    issue(store, CodeKind::Link, &alice, &alice, &late).await.unwrap();
+    issue(store, CodeKind::Link, &alice, &alice, &late)
+        .await
+        .unwrap();
     clock.set(T0 + 599 + 600);
     let expired = store
         .redeem_link_code(&late.hash(), &fingerprint(22))
@@ -338,7 +361,9 @@ pub(crate) async fn a_code_is_used_once_when_two_redeem_it_at_the_same_time<H: H
     let store = h.store().clone();
     let alice = with_keys(&store, "alice", &[1]).await;
     let c = code(CodeKind::Link, 8);
-    issue(&store, CodeKind::Link, &alice, &alice, &c).await.unwrap();
+    issue(&store, CodeKind::Link, &alice, &alice, &c)
+        .await
+        .unwrap();
     let hash = c.hash();
     let tasks: Vec<_> = (0..4_u32)
         .map(|n| {
@@ -367,9 +392,15 @@ pub(crate) async fn the_hourly_limit_holds_and_a_newer_code_voids_the_last<H: Ha
         ..new_code(CodeKind::Link, who, who, &code(CodeKind::Link, seed))
     };
     let audit = |who: &Account| events::device_code_issued(who.id);
-    store.issue_code(&limited(1, &alice), &audit(&alice)).await.unwrap();
+    store
+        .issue_code(&limited(1, &alice), &audit(&alice))
+        .await
+        .unwrap();
     clock.set(T0 + 100);
-    store.issue_code(&limited(2, &alice), &audit(&alice)).await.unwrap();
+    store
+        .issue_code(&limited(2, &alice), &audit(&alice))
+        .await
+        .unwrap();
     clock.set(T0 + 200);
     let third = store
         .issue_code(&limited(3, &alice), &audit(&alice))
@@ -384,9 +415,15 @@ pub(crate) async fn the_hourly_limit_holds_and_a_newer_code_voids_the_last<H: Ha
     assert_eq!(count(&h, "login_code").await, "2");
     assert_eq!(count_of(&rows(store).await, Action::DeviceCodeIssued), 2);
     // The limit is per account.
-    store.issue_code(&limited(4, &bob), &audit(&bob)).await.unwrap();
+    store
+        .issue_code(&limited(4, &bob), &audit(&bob))
+        .await
+        .unwrap();
     clock.set(T0 + 3_601);
-    store.issue_code(&limited(5, &alice), &audit(&alice)).await.unwrap();
+    store
+        .issue_code(&limited(5, &alice), &audit(&alice))
+        .await
+        .unwrap();
 
     // The second code replaced the first: the first no longer redeems, the live one does.
     let first = store
@@ -406,9 +443,12 @@ pub(crate) async fn the_hourly_limit_holds_and_a_newer_code_voids_the_last<H: Ha
 
     // Not active: no code.
     let gone = account(store, "gone", Slug::MEMBER).await;
-    h.raw(&format!("UPDATE accounts SET state = 'suspended' WHERE id = {}", gone.id))
-        .await
-        .unwrap();
+    h.raw(&format!(
+        "UPDATE accounts SET state = 'suspended' WHERE id = {}",
+        gone.id
+    ))
+    .await
+    .unwrap();
     let none = store
         .issue_code(&limited(6, &gone), &audit(&gone))
         .await
@@ -416,7 +456,9 @@ pub(crate) async fn the_hourly_limit_holds_and_a_newer_code_voids_the_last<H: Ha
     assert!(matches!(none, IssueError::NoAccount));
 }
 
-pub(crate) async fn a_recovery_code_binds_a_key_and_replaces_the_password_in_one_step<H: Harness>() {
+pub(crate) async fn a_recovery_code_binds_a_key_and_replaces_the_password_in_one_step<
+    H: Harness,
+>() {
     let mut h = H::fresh().await;
     let clock = clock_at(&mut h, T0);
     let store = h.store();
@@ -425,7 +467,9 @@ pub(crate) async fn a_recovery_code_binds_a_key_and_replaces_the_password_in_one
     with_password(store, &alice).await;
     let before = store.stored_hash(alice.id).await.unwrap().unwrap();
     let c = code(CodeKind::Recovery, 9);
-    let expires = issue(store, CodeKind::Recovery, &alice, &staff, &c).await.unwrap();
+    let expires = issue(store, CodeKind::Recovery, &alice, &staff, &c)
+        .await
+        .unwrap();
     assert_eq!(expires.as_raw(), T0 + 86_400);
 
     // The kinds do not cross: a recovery code is not a link code and the reverse.
@@ -435,9 +479,15 @@ pub(crate) async fn a_recovery_code_binds_a_key_and_replaces_the_password_in_one
         .unwrap_err();
     assert_eq!(refused(&as_link), Some(RedeemRefusal::Code));
     let link = code(CodeKind::Link, 9);
-    issue(store, CodeKind::Link, &alice, &alice, &link).await.unwrap();
+    issue(store, CodeKind::Link, &alice, &alice, &link)
+        .await
+        .unwrap();
     let as_recovery = store
-        .redeem_recovery_code(&link.hash(), &fingerprint(51), &hash("another long passphrase").unwrap())
+        .redeem_recovery_code(
+            &link.hash(),
+            &fingerprint(51),
+            &hash("another long passphrase").unwrap(),
+        )
         .await
         .unwrap_err();
     assert_eq!(refused(&as_recovery), Some(RedeemRefusal::Code));
@@ -457,7 +507,10 @@ pub(crate) async fn a_recovery_code_binds_a_key_and_replaces_the_password_in_one
         .await
         .unwrap();
     assert_eq!(done.id, alice.id);
-    assert_eq!(store.stored_hash(alice.id).await.unwrap().unwrap(), new_hash);
+    assert_eq!(
+        store.stored_hash(alice.id).await.unwrap().unwrap(),
+        new_hash
+    );
     assert_eq!(store.list_keys(alice.id).await.unwrap().len(), 2);
     let again = store
         .redeem_recovery_code(&c.hash(), &fingerprint(53), &new_hash)
@@ -472,7 +525,10 @@ pub(crate) async fn a_recovery_code_binds_a_key_and_replaces_the_password_in_one
         .iter()
         .find(|r| r.event.action == Action::RecoveryCodeIssued)
         .unwrap();
-    assert_eq!(issued.event.actor, russh_bbs_core::audit::Actor::Account(staff.id));
+    assert_eq!(
+        issued.event.actor,
+        russh_bbs_core::audit::Actor::Account(staff.id)
+    );
     let notices = store.take_notices(alice.id).await.unwrap();
     assert_eq!(notices.len(), 1);
     assert_eq!(notices[0].kind, NoticeKind::Recovered);
@@ -485,7 +541,9 @@ pub(crate) async fn a_recovery_for_an_expired_or_inactive_account_is_refused<H: 
     let staff = account(store, "boss", Slug::SYSOP).await;
     let alice = with_keys(store, "alice", &[1]).await;
     let c = code(CodeKind::Recovery, 3);
-    issue(store, CodeKind::Recovery, &alice, &staff, &c).await.unwrap();
+    issue(store, CodeKind::Recovery, &alice, &staff, &c)
+        .await
+        .unwrap();
     let new_hash = hash("another long passphrase").unwrap();
     // The day is up at the second.
     clock.set(T0 + 86_400);
@@ -497,10 +555,15 @@ pub(crate) async fn a_recovery_for_an_expired_or_inactive_account_is_refused<H: 
     // Suspended after issue: the code is dead until the account is active again.
     clock.set(T0 + 10);
     let d = code(CodeKind::Recovery, 4);
-    issue(store, CodeKind::Recovery, &alice, &staff, &d).await.unwrap();
-    h.raw(&format!("UPDATE accounts SET state = 'suspended' WHERE id = {}", alice.id))
+    issue(store, CodeKind::Recovery, &alice, &staff, &d)
         .await
         .unwrap();
+    h.raw(&format!(
+        "UPDATE accounts SET state = 'suspended' WHERE id = {}",
+        alice.id
+    ))
+    .await
+    .unwrap();
     let suspended = store
         .redeem_recovery_code(&d.hash(), &fingerprint(61), &new_hash)
         .await
@@ -521,15 +584,23 @@ pub(crate) async fn rank_follows_the_roles<H: Harness>() {
         let id = a.id;
         async move { store.account_rank(id).await.unwrap() }
     };
-    let (s, d, m, p) = (rank(&sysop).await, rank(&deputy).await, rank(&mod_).await, rank(&plain).await);
+    let (s, d, m, p) = (
+        rank(&sysop).await,
+        rank(&deputy).await,
+        rank(&mod_).await,
+        rank(&plain).await,
+    );
     assert!(s > d && d > m && m > p && p > 0, "{s} {d} {m} {p}");
     assert_eq!(
         store.active_account("plain").await.unwrap().map(|a| a.id),
         Some(plain.id)
     );
-    h.raw(&format!("UPDATE accounts SET state = 'suspended' WHERE id = {}", plain.id))
-        .await
-        .unwrap();
+    h.raw(&format!(
+        "UPDATE accounts SET state = 'suspended' WHERE id = {}",
+        plain.id
+    ))
+    .await
+    .unwrap();
     assert!(store.active_account("plain").await.unwrap().is_none());
     assert!(store.active_account("nobody").await.unwrap().is_none());
 }
@@ -552,7 +623,10 @@ pub(crate) async fn key_use_is_remembered_and_a_linked_key_is_told<H: Harness>()
             .last_used_at
     };
     assert_eq!(used(1), None);
-    assert_eq!(used(2).map(|t| t.as_raw()), Some(T0 + 77));
+    assert_eq!(
+        used(2).map(russh_bbs_core::store::UnixSeconds::as_raw),
+        Some(T0 + 77)
+    );
 
     // The password-linked key (FIX-M3-12) is told at the next sign-in too.
     let key = fingerprint(3);
@@ -573,7 +647,9 @@ pub(crate) async fn a_key_change_never_lands_without_its_audit_row<H: Harness>()
         let store = h.store();
         let alice = with_keys(store, "alice", &[1, 2]).await;
         let c = code(CodeKind::Link, 2);
-        issue(store, CodeKind::Link, &alice, &alice, &c).await.unwrap();
+        issue(store, CodeKind::Link, &alice, &alice, &c)
+            .await
+            .unwrap();
         alice.id
     };
     h.break_audit_inserts().await;
@@ -587,7 +663,11 @@ pub(crate) async fn a_key_change_never_lands_without_its_audit_row<H: Harness>()
     );
     assert!(
         store
-            .remove_key(alice_id, &fingerprint(2), &events::key_removed(alice_id, &fingerprint(2)))
+            .remove_key(
+                alice_id,
+                &fingerprint(2),
+                &events::key_removed(alice_id, &fingerprint(2))
+            )
             .await
             .is_err()
     );
@@ -600,7 +680,10 @@ pub(crate) async fn a_key_change_never_lands_without_its_audit_row<H: Harness>()
     assert_eq!(store.list_keys(alice_id).await.unwrap().len(), 2);
     assert_eq!(count(&h, "key_notice").await, "0");
     // The failed redemption did not use the code up.
-    assert_eq!(count(&h, "login_code WHERE redeemed_at IS NOT NULL").await, "0");
+    assert_eq!(
+        count(&h, "login_code WHERE redeemed_at IS NOT NULL").await,
+        "0"
+    );
 }
 
 pub(crate) async fn only_the_hash_of_a_code_is_stored_and_nothing_secret_is_audited<H: Harness>() {
@@ -610,18 +693,26 @@ pub(crate) async fn only_the_hash_of_a_code_is_stored_and_nothing_secret_is_audi
     let alice = with_keys(store, "alice", &[1]).await;
     let link = code(CodeKind::Link, 11);
     let recovery = code(CodeKind::Recovery, 12);
-    issue(store, CodeKind::Link, &alice, &alice, &link).await.unwrap();
-    issue(store, CodeKind::Recovery, &alice, &staff, &recovery).await.unwrap();
+    issue(store, CodeKind::Link, &alice, &alice, &link)
+        .await
+        .unwrap();
+    issue(store, CodeKind::Recovery, &alice, &staff, &recovery)
+        .await
+        .unwrap();
     store
         .redeem_link_code(&link.hash(), &fingerprint(70))
         .await
         .unwrap();
-    let stored = h.texts("SELECT code_hash FROM login_code ORDER BY id").await;
+    let stored = h
+        .texts("SELECT code_hash FROM login_code ORDER BY id")
+        .await;
     assert_eq!(stored, [link.hash().to_hex(), recovery.hash().to_hex()]);
     let everything = [
         h.texts("SELECT detail FROM audit_log").await,
-        h.texts("SELECT COALESCE(target_ref, '') FROM audit_log").await,
-        h.texts("SELECT COALESCE(fingerprint, '') || kind FROM key_notice").await,
+        h.texts("SELECT COALESCE(target_ref, '') FROM audit_log")
+            .await,
+        h.texts("SELECT COALESCE(fingerprint, '') || kind FROM key_notice")
+            .await,
     ]
     .concat()
     .join("\n");
@@ -638,18 +729,19 @@ pub(crate) async fn the_roles_hold_the_key_permissions_the_docs_say<H: Harness>(
     use std::collections::BTreeSet;
     let h = H::fresh().await;
     let store = h.store();
-    let holds = |role: Slug| {
-        let store = store;
-        async move {
-            let info = russh_bbs_core::access::AccessStore::role(store, &role)
-                .await
-                .unwrap()
-                .unwrap();
-            [Permission::KeysManage, Permission::KeysRedeem, Permission::KeysRecover]
-                .into_iter()
-                .filter(|p| info.permissions.contains(p))
-                .collect::<BTreeSet<_>>()
-        }
+    let holds = |role: Slug| async move {
+        let info = russh_bbs_core::access::AccessStore::role(store, &role)
+            .await
+            .unwrap()
+            .unwrap();
+        [
+            Permission::KeysManage,
+            Permission::KeysRedeem,
+            Permission::KeysRecover,
+        ]
+        .into_iter()
+        .filter(|p| info.permissions.contains(p))
+        .collect::<BTreeSet<_>>()
     };
     let manage: BTreeSet<_> = [Permission::KeysManage].into();
     assert_eq!(holds(Slug::WAITING).await, [Permission::KeysRedeem].into());
@@ -672,7 +764,9 @@ pub(crate) async fn deleting_an_account_deletes_its_codes_and_notices<H: Harness
     let store = h.store();
     let alice = with_keys(store, "alice", &[1]).await;
     let c = code(CodeKind::Link, 13);
-    issue(store, CodeKind::Link, &alice, &alice, &c).await.unwrap();
+    issue(store, CodeKind::Link, &alice, &alice, &c)
+        .await
+        .unwrap();
     let key = fingerprint(2);
     store
         .add_key(alice.id, &key, &events::key_added(alice.id, &key))
@@ -689,7 +783,9 @@ pub(crate) async fn keys_and_codes_survive_a_reopen<H: Harness>() {
     let mut h = H::fresh().await;
     let alice = with_keys(h.store(), "alice", &[1]).await;
     let c = code(CodeKind::Link, 14);
-    issue(h.store(), CodeKind::Link, &alice, &alice, &c).await.unwrap();
+    issue(h.store(), CodeKind::Link, &alice, &alice, &c)
+        .await
+        .unwrap();
     let key = fingerprint(2);
     h.store()
         .add_key(alice.id, &key, &events::key_added(alice.id, &key))

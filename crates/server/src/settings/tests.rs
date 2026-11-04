@@ -234,7 +234,12 @@ fn the_keys_and_recovery_screens_fit_80x24_in_every_layout_and_tier() {
                 expires_at: UnixSeconds::from_raw(1_800_000_600),
             }));
             let out = text(&draw(&f, 80, 24));
-            for expected in ["Link a new machine", "Code: 33333-33333", "Expires", "Enter: done"] {
+            for expected in [
+                "Link a new machine",
+                "Code: 33333-33333",
+                "Expires",
+                "Enter: done",
+            ] {
                 assert!(
                     out.contains(expected),
                     "{layout:?} {tier:?}: {expected:?} is off screen:\n{out}"

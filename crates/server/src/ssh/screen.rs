@@ -42,8 +42,8 @@ use russh_bbs_core::community::{
 use russh_bbs_core::founder::{ClaimEffect, ClaimForm, ClaimInput};
 use russh_bbs_core::icons::{SecurityMarker, Tier};
 use russh_bbs_core::invites::{InviteOutcome, InviteRequest};
-use russh_bbs_core::menu::MenuPage;
 use russh_bbs_core::keys::{Request as KeysRequest, Response as KeysResponse};
+use russh_bbs_core::menu::MenuPage;
 use russh_bbs_core::passwords::{Request as PasswordRequest, Response as PasswordResponse};
 use russh_bbs_core::profiles::{
     Request as MembersRequest, Response as MembersResponse, ScreenView,

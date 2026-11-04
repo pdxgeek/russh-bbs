@@ -20,11 +20,13 @@ pub const MENU_BACK: &str = "Back";
 /// Prompt for a pasted key.
 pub const PROMPT_KEY: &str = "Public key";
 /// Hint under the paste prompt.
-pub const HINT_ADD: &str = "Paste the one line from your .pub file (ssh-ed25519 ...). Only Ed25519 keys are accepted.";
+pub const HINT_ADD: &str =
+    "Paste the one line from your .pub file (ssh-ed25519 ...). Only Ed25519 keys are accepted.";
 /// Hint when picking a key to remove.
 pub const HINT_REMOVE: &str = "Press the number of the key to remove.";
 /// Said when more keys exist than can be picked.
-pub const MORE_KEYS: &str = "More keys are saved than can be picked here. Remove one to reach the rest.";
+pub const MORE_KEYS: &str =
+    "More keys are saved than can be picked here. Remove one to reach the rest.";
 /// Footer: list.
 pub const FOOTER_LIST: &str = "Esc: back";
 /// Footer: paste entry.
@@ -42,13 +44,15 @@ pub const DONE_ADDED: &str = "Key added. You will be reminded of this at your ne
 /// Removed.
 pub const DONE_REMOVED: &str = "Key removed. You will be reminded of this at your next sign-in.";
 /// Not a key.
-pub const ERR_NOT_A_KEY: &str = "That is not an Ed25519 public key. Paste the single line from your .pub file.";
+pub const ERR_NOT_A_KEY: &str =
+    "That is not an Ed25519 public key. Paste the single line from your .pub file.";
 /// One message for a key that cannot be added, whoever has it.
 pub const ERR_CANNOT_ADD: &str = "That key cannot be added.";
 /// No such key.
 pub const ERR_NO_SUCH_KEY: &str = "That key is not on your account.";
 /// Last way in.
-pub const ERR_LAST_WAY_IN: &str = "That is your only way in. Set a password or add another key first.";
+pub const ERR_LAST_WAY_IN: &str =
+    "That is your only way in. Set a password or add another key first.";
 /// Rate limit.
 pub const ERR_RATE_LIMITED: &str = "You have made enough codes for now. Try again later.";
 /// Not permitted.
@@ -67,7 +71,8 @@ pub const CODE_STEPS_LINK: [&str; 3] = [
 /// Label before the code.
 pub const CODE_LABEL: &str = "Code:";
 /// Telnet cannot bind a key.
-pub const CODE_NOTE_TELNET: &str = "A code made here can be used from an ssh connection only; telnet has no key to bind.";
+pub const CODE_NOTE_TELNET: &str =
+    "A code made here can be used from an ssh connection only; telnet has no key to bind.";
 
 /// Heading of the staff page.
 pub const RECOVERY_HEADING: &str = "Recovery code";
@@ -82,7 +87,8 @@ pub const RECOVERY_RULES: [&str; 3] = [
 /// Prompt for the member's handle.
 pub const PROMPT_HANDLE: &str = "Member's handle";
 /// Staff cannot help this member.
-pub const ERR_NOT_YOURS: &str = "No code was made. Check the handle; you can help only active members below your rank.";
+pub const ERR_NOT_YOURS: &str =
+    "No code was made. Check the handle; you can help only active members below your rank.";
 /// Staff footer: entry.
 pub const FOOTER_RECOVERY: &str = "Enter: make a code   Esc: back";
 /// After a recovery code.
@@ -124,6 +130,8 @@ pub const NOTICE_KEY_LINKED: &str = "A key was added with your password on {when
 /// A key was linked with a code.
 pub const NOTICE_DEVICE_LINKED: &str = "A key was added with a device-link code on {when} ({key}).";
 /// A recovery code was used.
-pub const NOTICE_RECOVERED: &str = "A recovery code was used on {when}: a key was added and your password was replaced ({key}).";
+pub const NOTICE_RECOVERED: &str =
+    "A recovery code was used on {when}: a key was added and your password was replaced ({key}).";
 /// What to do if it was not you.
-pub const NOTICE_IF_NOT_YOU: &str = "If this was not you, remove the key under My keys, change your password, and tell the sysop.";
+pub const NOTICE_IF_NOT_YOU: &str =
+    "If this was not you, remove the key under My keys, change your password, and tell the sysop.";

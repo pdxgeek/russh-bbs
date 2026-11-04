@@ -142,7 +142,10 @@ async fn key_signs_in(addr: SocketAddr, handle: &str, key: &PrivateKey) -> bool 
 /// Whether the password is accepted under the handle.
 async fn password_signs_in(addr: SocketAddr, handle: &str, password: &str) -> bool {
     let mut session = common::connect(addr).await;
-    let result = session.authenticate_password(handle, password).await.unwrap();
+    let result = session
+        .authenticate_password(handle, password)
+        .await
+        .unwrap();
     matches!(result, AuthResult::Success)
 }
 
@@ -197,7 +200,6 @@ fn strip_ansi(raw: &str) -> String {
         .join("\n")
 }
 
-
 /// A screen as one line of words, so a message that wrapped across rows can be matched.
 fn flat(screen: &str) -> String {
     screen
@@ -206,7 +208,6 @@ fn flat(screen: &str) -> String {
         .collect::<Vec<_>>()
         .join(" ")
 }
-
 
 /// Read until the channel has been quiet for a moment, returning the text seen.
 /// Read until the channel has been quiet for a moment, returning the text seen.
@@ -223,8 +224,6 @@ async fn drain(channel: &mut Channel<Msg>) -> String {
 }
 
 /// The screen as a person sees it after sending `input`: drain what the server drew, force a
-
-/// The screen as a person sees it after sending `input`.
 /// full redraw, and replay it onto a blank 80x24 screen.
 async fn press(channel: &mut Channel<Msg>, input: &str) -> String {
     channel.data_bytes(input.as_bytes().to_vec()).await.unwrap();
@@ -233,13 +232,11 @@ async fn press(channel: &mut Channel<Msg>, input: &str) -> String {
     strip_ansi(&drain(channel).await)
 }
 
-
 /// Type `text` and press Enter.
 /// Type `text` and press Enter.
 async fn line(channel: &mut Channel<Msg>, text: &str) -> String {
     press(channel, &format!("{text}\r")).await
 }
-
 
 fn fingerprint_of(key: &PrivateKey) -> Fingerprint {
     Fingerprint::parse(&key.public_key().fingerprint(HashAlg::Sha256).to_string()).unwrap()
@@ -319,7 +316,11 @@ async fn member_with(
 }
 
 /// Sign in with a key under its handle and return the login screen, then the main menu.
-async fn at_menu(rig: &Rig, handle: &str, key: &PrivateKey) -> (Handle<Client>, Channel<Msg>, String) {
+async fn at_menu(
+    rig: &Rig,
+    handle: &str,
+    key: &PrivateKey,
+) -> (Handle<Client>, Channel<Msg>, String) {
     let session = login(rig.addr(), handle, key).await;
     let mut channel = common::open_shell(&session, 80, 24).await;
     drain(&mut channel).await;
@@ -335,7 +336,10 @@ async fn at_menu(rig: &Rig, handle: &str, key: &PrivateKey) -> (Handle<Client>, 
 async fn my_keys(channel: &mut Channel<Msg>) -> String {
     press(channel, "u").await;
     let screen = press(channel, "k").await;
-    assert!(flat(&screen).contains("Keys sign you in without a password"), "{screen}");
+    assert!(
+        flat(&screen).contains("Keys sign you in without a password"),
+        "{screen}"
+    );
     screen
 }
 
@@ -376,10 +380,18 @@ async fn a_second_machine_is_linked_with_a_code_and_the_old_key_is_removed() {
 
     // My keys lists the key the founder claimed with, by fingerprint.
     let listed = my_keys(&mut first).await;
-    assert!(flat(&listed).contains(&fingerprint_of(&key1).to_string()), "{listed}");
+    assert!(
+        flat(&listed).contains(&fingerprint_of(&key1).to_string()),
+        "{listed}"
+    );
     assert!(flat(&listed).contains("last used never"), "{listed}");
     // The fingerprint is on a line of its own, whole.
-    assert!(listed.lines().any(|l| l.contains(&format!("1. {}", fingerprint_of(&key1)))), "{listed}");
+    assert!(
+        listed
+            .lines()
+            .any(|l| l.contains(&format!("1. {}", fingerprint_of(&key1)))),
+        "{listed}"
+    );
 
     // A device-link code: shown once, 10 minutes, stored only as a hash.
     let shown = press(&mut first, "l").await;
@@ -394,7 +406,10 @@ async fn a_second_machine_is_linked_with_a_code_and_the_old_key_is_removed() {
             .all(|stored| stored.len() == 64 && !code.contains(stored.as_str()))
     );
     let back = press(&mut first, "x").await;
-    assert!(!flat(&back).contains(&code), "the code stayed on screen: {back}");
+    assert!(
+        !flat(&back).contains(&code),
+        "the code stayed on screen: {back}"
+    );
 
     // The new machine enters it in the waiting room and is signed in as the founder.
     let (_s2, mut second, key2, home) = new_machine(&rig).await;
@@ -403,10 +418,16 @@ async fn a_second_machine_is_linked_with_a_code_and_the_old_key_is_removed() {
     let form = press(&mut second, "d").await;
     assert!(flat(&form).contains("Link code"), "{form}");
     let joined = line(&mut second, &code).await;
-    assert!(flat(&joined).contains(&format!("Signed in as {handle}")), "{joined}");
+    assert!(
+        flat(&joined).contains(&format!("Signed in as {handle}")),
+        "{joined}"
+    );
     assert_eq!(count(&rig, "account_keys").await, 2);
     assert!(key_signs_in(rig.addr(), handle, &key2).await);
-    assert_eq!(actions(&rig, "device_code.%").await, ["device_code.issued", "device_code.redeemed"]);
+    assert_eq!(
+        actions(&rig, "device_code.%").await,
+        ["device_code.issued", "device_code.redeemed"]
+    );
 
     // The code works once: a third machine is refused with the one sentence.
     let (_s3, mut third, key3, _) = new_machine(&rig).await;
@@ -421,10 +442,16 @@ async fn a_second_machine_is_linked_with_a_code_and_the_old_key_is_removed() {
     let number = number_of(&listed, &key1);
     press(&mut second, "r").await;
     let confirm = press(&mut second, &number.to_string()).await;
-    assert!(flat(&confirm).contains(&fingerprint_of(&key1).to_string()), "{confirm}");
+    assert!(
+        flat(&confirm).contains(&fingerprint_of(&key1).to_string()),
+        "{confirm}"
+    );
     let done = press(&mut second, "y").await;
     assert!(flat(&done).contains("Key removed"), "{done}");
-    assert!(!key_signs_in(rig.addr(), handle, &key1).await, "the old key still signs in");
+    assert!(
+        !key_signs_in(rig.addr(), handle, &key1).await,
+        "the old key still signs in"
+    );
     assert!(key_signs_in(rig.addr(), handle, &key2).await);
     assert_eq!(count(&rig, "account_keys").await, 1);
     assert_eq!(actions(&rig, "key.%").await, ["key.removed"]);
@@ -432,8 +459,14 @@ async fn a_second_machine_is_linked_with_a_code_and_the_old_key_is_removed() {
     // The next sign-in tells the member about both changes, once.
     let (_s4, _c4, signed_in) = at_menu(&rig, handle, &key2).await;
     let told = flat(&signed_in);
-    assert!(told.contains("Changes to your keys since you were last here"), "{signed_in}");
-    assert!(told.contains("A key was added with a device-link code on"), "{signed_in}");
+    assert!(
+        told.contains("Changes to your keys since you were last here"),
+        "{signed_in}"
+    );
+    assert!(
+        told.contains("A key was added with a device-link code on"),
+        "{signed_in}"
+    );
     assert!(told.contains("A key was removed on"), "{signed_in}");
     assert!(told.contains("If this was not you"), "{signed_in}");
     let (_s5, _c5, again) = at_menu(&rig, handle, &key2).await;
@@ -451,7 +484,10 @@ async fn the_last_way_in_cannot_be_removed_and_a_pasted_key_is_validated() {
     press(&mut channel, "r").await;
     press(&mut channel, &number.to_string()).await;
     let refused = press(&mut channel, "y").await;
-    assert!(flat(&refused).contains("That is your only way in"), "{refused}");
+    assert!(
+        flat(&refused).contains("That is your only way in"),
+        "{refused}"
+    );
     assert_eq!(count(&rig, "account_keys").await, 1);
     assert!(key_signs_in(rig.addr(), "solo", &key).await);
 
@@ -465,7 +501,10 @@ async fn the_last_way_in_cannot_be_removed_and_a_pasted_key_is_validated() {
     drop(other);
     press(&mut channel, "a").await;
     let taken = line(&mut channel, &other_key.public_key().to_openssh().unwrap()).await;
-    assert!(flat(&taken).contains("That key cannot be added."), "{taken}");
+    assert!(
+        flat(&taken).contains("That key cannot be added."),
+        "{taken}"
+    );
     press(&mut channel, "a").await;
     let own = line(&mut channel, &key.public_key().to_openssh().unwrap()).await;
     assert!(flat(&own).contains("That key cannot be added."), "{own}");
@@ -474,7 +513,10 @@ async fn the_last_way_in_cannot_be_removed_and_a_pasted_key_is_validated() {
     press(&mut channel, "a").await;
     let added = line(&mut channel, &fresh.public_key().to_openssh().unwrap()).await;
     assert!(flat(&added).contains("Key added"), "{added}");
-    assert!(flat(&added).contains(&fingerprint_of(&fresh).to_string()), "{added}");
+    assert!(
+        flat(&added).contains(&fingerprint_of(&fresh).to_string()),
+        "{added}"
+    );
     assert_eq!(actions(&rig, "key.%").await, ["key.added"]);
     assert!(key_signs_in(rig.addr(), "solo", &fresh).await);
     rig.stop().await;
@@ -492,7 +534,10 @@ async fn device_link_codes_are_limited_to_five_an_hour() {
         press(&mut channel, "x").await;
     }
     let sixth = press(&mut channel, "l").await;
-    assert!(flat(&sixth).contains("You have made enough codes for now"), "{sixth}");
+    assert!(
+        flat(&sixth).contains("You have made enough codes for now"),
+        "{sixth}"
+    );
     assert_eq!(count(&rig, "login_code").await, 5);
     // An hour later there is room again.
     rig.clock.set(DAY + 100 + 3_601);
@@ -510,11 +555,17 @@ async fn a_staff_recovery_code_binds_a_new_key_and_replaces_the_password() {
     // The staff screen under Sysop tools tells staff to confirm identity first.
     press(&mut staff, "o").await;
     let screen = press(&mut staff, "r").await;
-    assert!(flat(&screen).contains("Confirm who is asking outside this board"), "{screen}");
+    assert!(
+        flat(&screen).contains("Confirm who is asking outside this board"),
+        "{screen}"
+    );
     let shown = line(&mut staff, "alice").await;
     assert!(flat(&shown).contains("expires"), "{shown}");
     let code = code_in(&shown);
-    assert_eq!(actions(&rig, "recovery_code.%").await, ["recovery_code.issued"]);
+    assert_eq!(
+        actions(&rig, "recovery_code.%").await,
+        ["recovery_code.issued"]
+    );
 
     // alice lost her key and password. A new machine uses the code and sets a new password.
     let (_s2, mut machine, new_key, home) = new_machine(&rig).await;
@@ -526,7 +577,10 @@ async fn a_staff_recovery_code_binds_a_new_key_and_replaces_the_password() {
     assert!(flat(&joined).contains("Signed in as alice"), "{joined}");
     assert!(key_signs_in(rig.addr(), "alice", &new_key).await);
     assert!(password_signs_in(rig.addr(), "alice", NEW_PASSWORD).await);
-    assert!(!password_signs_in(rig.addr(), "alice", PASSWORD).await, "the old password still works");
+    assert!(
+        !password_signs_in(rig.addr(), "alice", PASSWORD).await,
+        "the old password still works"
+    );
     assert_eq!(
         actions(&rig, "recovery_code.%").await,
         ["recovery_code.issued", "recovery_code.redeemed"]
@@ -551,7 +605,10 @@ async fn a_staff_recovery_code_binds_a_new_key_and_replaces_the_password() {
 
     // The member is told at the next sign-in; her old key still signs in until she removes it.
     let (_s4, _c4, signed_in) = at_menu(&rig, "alice", &old_key).await;
-    assert!(flat(&signed_in).contains("A recovery code was used on"), "{signed_in}");
+    assert!(
+        flat(&signed_in).contains("A recovery code was used on"),
+        "{signed_in}"
+    );
     let _ = alice;
     rig.stop().await;
 }
@@ -569,10 +626,13 @@ async fn a_cosysop_cannot_issue_a_code_for_a_sysop_or_an_equal_but_can_for_a_mem
     press(&mut deputy, "r").await;
     for refused in [founder, "peer", "deputy", "nobody"] {
         let screen = line(&mut deputy, refused).await;
-        assert!(flat(&screen).contains("No code was made"), "{refused}: {screen}");
+        assert!(
+            flat(&screen).contains("No code was made"),
+            "{refused}: {screen}"
+        );
     }
     assert_eq!(count(&rig, "login_code").await, 0);
-    assert!(actions(&rig, "recovery_code.%").await.is_empty());
+    assert_eq!(actions(&rig, "recovery_code.%").await, Vec::<String>::new());
     let shown = line(&mut deputy, "alice").await;
     assert!(flat(&shown).contains("Code:"), "{shown}");
     assert_eq!(count(&rig, "login_code").await, 1);
@@ -599,7 +659,13 @@ async fn every_wrong_used_or_expired_code_reads_the_same_and_reveals_nothing() {
     rig.clock.set(DAY + 100 + 601);
 
     let mut answers = Vec::new();
-    for typed in [live.as_str(), stale.as_str(), "ZZZZZ-ZZZZZ", "not a code", "0"] {
+    for typed in [
+        live.as_str(),
+        stale.as_str(),
+        "ZZZZZ-ZZZZZ",
+        "not a code",
+        "0",
+    ] {
         let (_s, mut machine, key, _) = new_machine(&rig).await;
         press(&mut machine, "d").await;
         let answer = line(&mut machine, typed).await;
@@ -607,10 +673,16 @@ async fn every_wrong_used_or_expired_code_reads_the_same_and_reveals_nothing() {
         answers.push(flat(&answer));
         assert!(!key_signs_in(rig.addr(), "maker", &key).await);
     }
-    assert!(answers.windows(2).all(|pair| pair[0] == pair[1]), "{answers:?}");
+    assert!(
+        answers.windows(2).all(|pair| pair[0] == pair[1]),
+        "{answers:?}"
+    );
     // Nothing was bound and no code was used up by the failed tries.
     assert_eq!(count(&rig, "account_keys").await, 1);
-    assert_eq!(count(&rig, "login_code WHERE redeemed_at IS NOT NULL").await, 0);
+    assert_eq!(
+        count(&rig, "login_code WHERE redeemed_at IS NOT NULL").await,
+        0
+    );
     // A recovery form says the same for a link code (kinds do not cross) and for a bad one.
     let (_s, mut machine, _, _) = new_machine(&rig).await;
     press(&mut machine, "y").await;

@@ -255,11 +255,7 @@ impl KeyStore for SqliteStore {
     }
 
     async fn account_rank(&self, account: AccountId) -> Result<u8, StoreError> {
-        Ok(self
-            .snapshot(Some(account))
-            .await?
-            .top_rank()
-            .unwrap_or(0))
+        Ok(self.snapshot(Some(account)).await?.top_rank().unwrap_or(0))
     }
 
     async fn issue_code(
@@ -347,9 +343,15 @@ impl KeyStore for SqliteStore {
         let Some(account) = self.claim_code(&mut tx, hash, CodeKind::Link).await? else {
             return Err(RedeemError::Refused(RedeemRefusal::Code));
         };
-        self.bind_redeemed_key(&mut tx, account, fingerprint).await?;
-        self.notice_in(&mut tx, account, NoticeKind::DeviceLinked, Some(fingerprint))
+        self.bind_redeemed_key(&mut tx, account, fingerprint)
             .await?;
+        self.notice_in(
+            &mut tx,
+            account,
+            NoticeKind::DeviceLinked,
+            Some(fingerprint),
+        )
+        .await?;
         let row = Self::account_row(&mut tx, account).await?;
         self.audit_in(&mut tx, &events::device_code_redeemed(row.id, fingerprint))
             .await?;
@@ -367,7 +369,8 @@ impl KeyStore for SqliteStore {
         let Some(account) = self.claim_code(&mut tx, hash, CodeKind::Recovery).await? else {
             return Err(RedeemError::Refused(RedeemRefusal::Code));
         };
-        self.bind_redeemed_key(&mut tx, account, fingerprint).await?;
+        self.bind_redeemed_key(&mut tx, account, fingerprint)
+            .await?;
         sqlx::query!(
             "INSERT INTO account_password (account_id, hash) VALUES (?, ?)
              ON CONFLICT (account_id) DO UPDATE SET
