@@ -1,0 +1,18 @@
+# Starting weapons and armour. Drops and crafting arrive with the town slice (M4-E2).
+weapon = [
+  { id = "iron-halberd", name = "Iron Halberd", reach = "melee", attr = "might", damage = [6, 10] },
+  { id = "stiletto", name = "Stiletto", reach = "melee", attr = "finesse", damage = [4, 8] },
+  { id = "censer-mace", name = "Censer Mace", reach = "melee", attr = "spirit", damage = [5, 9] },
+  { id = "rune-hammer", name = "Rune Hammer", reach = "melee", attr = "wits", damage = [5, 9] },
+  { id = "pathfinder-sling", name = "Pathfinder Sling", reach = "ranged", attr = "finesse", damage = [4, 7] },
+  { id = "dueling-blade", name = "Dueling Blade", reach = "melee", attr = "finesse", damage = [5, 9] },
+]
+
+armour = [
+  { id = "ringmail", name = "Ringmail", armor = 2 },
+  { id = "forge-leathers", name = "Forge Leathers", armor = 1 },
+  { id = "pilgrim-robe", name = "Pilgrim Robe", armor = 1 },
+  { id = "smith-apron", name = "Smith's Apron", armor = 2 },
+  { id = "trail-coat", name = "Trail Coat", armor = 1 },
+  { id = "fencing-jacket", name = "Fencing Jacket", armor = 1 },
+]
