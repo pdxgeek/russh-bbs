@@ -24,7 +24,7 @@ fn look(tier: Tier, depth: ColorDepth) -> Look {
     let settings = TerminalSettings::default()
         .with_tier(tier)
         .with_color(depth.has_color());
-    Look::themed(&settings, LayoutId::Classic, Palette::DEFAULT).at_depth(depth)
+    Look::themed(&settings, LayoutId::Classic, Palette::default()).at_depth(depth)
 }
 
 fn popup<'a>(kind: PopupKind, lines: Vec<PopupLine>, keys: &'a [Hint<'a>]) -> Popup<'a> {

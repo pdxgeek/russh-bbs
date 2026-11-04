@@ -1,0 +1,43 @@
+
+                            ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+                            │Hallpass                                                                  │
+                            │                                                                          │
+                            │ ♜ GREYWATER ACADEMY  · founder                     term 1 · Wed day 1/42 │
+                            │  Hist  ▐Maths▌  Lunch    Art      Sci    Games   After    Eve     Night  │
+                            │━━━━━━━━▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄│
+                            │╭ Maths room ────────────────────────╮╭ You ─────────────────────────────╮│
+                            ││Main wing                           ││heat   ░░░░░░░░░░░░░░░░░░░░░░░░░ 0││
+                            ││Chalk dust and the smell of old     ││file   ░░░░░░░░░░░░░░░░░░░░░░ 0/12││
+                            ││erasers.                            ││nerve  ●●●●●● 6/6                 ││
+                            ││Here: Pell                          ││legend 0   ◈ cash 12              ││
+                            ││Now: Maths class                    ││                                  ││
+                            ││Next: Lunch                         ││                                  ││
+                            ││Classroom cor~: Wick, Hollis        ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            │╰────────────────────────────────────╯╰──────────────────────────────────╯│
+                            │ g Go   a Attend   l Loiter   t Talk   r Rest   p Schemes   c Clubs       │
+                            │ f File   j Journal   n Paper   q Leave                                   │
+                            │ You go to Maths room.                                                    │
+                            │ » Go somewhere                                      up/down  Enter  Esc  │
+                            └──────────────────────────────────────────────────────────────────────────┘
+

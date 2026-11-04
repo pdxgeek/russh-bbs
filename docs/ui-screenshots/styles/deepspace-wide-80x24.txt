@@ -1,0 +1,24 @@
+ ◆ Night Owl BBS ◆ │ Main menu                                        UTC 15:47
+╭────── M A I N   M E N U ───────╮╭ T H I S   B O A R D ╮╭───── C L O C K ─────╮
+│ Signed in as founder.          ││ Night Owl BBS       ││ UTC 15:47           │
+│ Showing Dashboard: this        ││ After hours, all    ││                     │
+│ terminal is too small for      ││ hours.              ││                     │
+│   [f] Forums                   ││ Portland, OR        ││                     │
+│   [m] Mail                     │╰─────────────────────╯╰─────────────────────╯
+│   [a] Files  (not built yet)   │╭I S   O N L I N E ───╮╭ T   C A L L E R S ──╮
+│   [c] Chat                     ││ Nothing to show     ││ Nothing to show     │
+│   [d] Doors                    ││ yet.                ││ yet.                │
+│   [u] Members                  ││                     ││                     │
+│   [y] Community                ││                     ││                     │
+│   [i] Invites                  ││                     ││                     │
+│ > [s] Terminal settings        ││                     ││                     │
+│   [o] Sysop tools              │╰─────────────────────╯╰─────────────────────╯
+│   [l] Log off                  │╭─ N E W   P O S T S ─╮╭N R E A D   M A I L ─╮
+│                                ││ Nothing to show     ││ Nothing to show     │
+│                                ││ yet.                ││ yet.                │
+│                                ││                     ││                     │
+│                                ││                     ││                     │
+│                                ││                     ││                     │
+│                                ││                     ││                     │
+╰────────────────────────────────╯╰─────────────────────╯╰─────────────────────╯
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off

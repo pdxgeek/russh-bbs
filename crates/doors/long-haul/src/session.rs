@@ -6,6 +6,7 @@
 //! the UI slice (L3); the screen reads the same lines for the look-around view.
 
 mod screens;
+mod ui;
 
 use std::sync::Arc;
 
@@ -26,6 +27,8 @@ use crate::world::World;
 pub(crate) const FEED_FRESH_SECS: i64 = 900;
 /// Log lines kept.
 const LOG_LINES: usize = 4;
+/// Log lines kept for the fight log and the footer.
+const LOG_KEEP: usize = 24;
 
 /// How a session starts.
 pub(crate) enum Start {
@@ -43,7 +46,9 @@ enum Mode {
     Bridge,
     Docks(usize),
     Market(usize),
-    Nav(usize),
+    Chart,
+    Route,
+    Standing,
     Yard(usize),
     Loan,
     News,
@@ -62,6 +67,9 @@ pub(crate) struct Session {
     opened_at: Option<i64>,
     /// The manoeuvre the next combat round will use.
     maneuver: Maneuver,
+    chart: ui::chart::ChartState,
+    plan: Option<ui::route::Plan>,
+    reactor: ui::combat::Reactor,
 }
 
 fn cr(n: i64) -> String {
@@ -157,7 +165,13 @@ impl Session {
             log: Vec::new(),
             opened_at: None,
             maneuver: Maneuver::Hold,
+            chart: ui::chart::ChartState::new(0),
+            plan: None,
+            reactor: ui::combat::Reactor::new(),
         };
+        if let Some(p) = &session.player {
+            session.chart = ui::chart::ChartState::new(p.at);
+        }
         // Settling is deterministic from the save and the day, so doing it at open is safe even
         // if the captain leaves without another key; the first key saves it.
         session.note_events(&events);
@@ -166,7 +180,7 @@ impl Session {
 
     fn push(&mut self, text: String, style: DoorStyle) {
         self.log.push((text, style));
-        if self.log.len() > LOG_LINES {
+        if self.log.len() > LOG_KEEP {
             self.log.remove(0);
         }
     }
@@ -342,7 +356,15 @@ impl Session {
                 self.act(ctx, &Action::Undock);
             }
             'm' if player.docked.is_some() => self.mode = Mode::Market(0),
-            'j' => self.mode = Mode::Nav(0),
+            'j' | 'v' => {
+                self.chart.cursor = self.plan.map_or(player.at, |p| p.target);
+                self.mode = if self.plan.is_some() && c.eq_ignore_ascii_case(&'j') {
+                    Mode::Route
+                } else {
+                    Mode::Chart
+                };
+            }
+            'a' => self.mode = Mode::Standing,
             'y' if player.docked.is_some() => self.mode = Mode::Yard(0),
             'l' if player.docked.is_some() => self.mode = Mode::Loan,
             'n' => self.mode = Mode::News,
@@ -436,37 +458,6 @@ impl Session {
             _ => return,
         };
         self.act(ctx, &action);
-    }
-
-    fn nav_options(&self) -> Vec<u16> {
-        let Some(player) = &self.player else {
-            return Vec::new();
-        };
-        let mut near: Vec<(u16, u16)> = self.frontier.neighbours(player.at).to_vec();
-        near.sort_by_key(|&(id, d)| (d, id));
-        near.into_iter().map(|(id, _)| id).collect()
-    }
-
-    fn nav_key(&mut self, key: DoorKey, ctx: &mut Ctx<'_>) {
-        let options = self.nav_options();
-        let Mode::Nav(cursor) = &mut self.mode else {
-            return;
-        };
-        if Self::list_cursor(key, cursor, options.len()) {
-            return;
-        }
-        match key {
-            DoorKey::Escape | DoorKey::Char('q') => self.mode = Mode::Bridge,
-            DoorKey::Enter | DoorKey::Char('j') => {
-                let to = options.get(*cursor).copied();
-                if let Some(to) = to
-                    && self.act(ctx, &Action::Jump(to))
-                {
-                    self.mode = Mode::Bridge;
-                }
-            }
-            _ => {}
-        }
     }
 
     /// The yard's menu: modules that fit, hulls, and the ship's own modules to sell.
@@ -791,76 +782,6 @@ impl Session {
         out
     }
 
-    fn nav_lines(&self, player: &Player, cursor: usize) -> Vec<(String, DoorStyle)> {
-        let stats = player.stats(&self.content);
-        let mut out = vec![(
-            "   Lane to                  Spans  Fuel  Days  Notes".to_owned(),
-            DoorStyle::Dim,
-        )];
-        for (i, id) in self.nav_options().into_iter().enumerate() {
-            let Some(sys) = self.frontier.system(id) else {
-                continue;
-            };
-            let dist = self.frontier.lane(player.at, id).unwrap_or(0);
-            let fuel = Ship::fuel_for(&stats, dist);
-            let days = Ship::days_for(&stats, dist);
-            let charted = self.world.is_charted(&self.frontier, id);
-            let name = if charted {
-                sys.name.clone()
-            } else {
-                "? uncharted signal".to_owned()
-            };
-            let mut notes = Vec::new();
-            if charted {
-                if sys.hazard != crate::frontier::Hazard::None {
-                    notes.push(sys.hazard.name().to_owned());
-                }
-                let letters: String = sys
-                    .stations
-                    .iter()
-                    .filter_map(|&s| self.frontier.station(s))
-                    .map(|st| {
-                        self.content.economies[usize::from(st.economy)]
-                            .letter
-                            .as_str()
-                    })
-                    .collect::<Vec<_>>()
-                    .join("");
-                if !letters.is_empty() {
-                    notes.push(format!("stations {letters}"));
-                }
-            } else {
-                notes.push("unknown: survey data".to_owned());
-            }
-            let short = player.ship.fuel < fuel;
-            let text = format!(
-                "{} {:<24}{:>5}{:>6}{:>6}  {}{}",
-                if i == cursor { '>' } else { ' ' },
-                clip(&name, 24),
-                dist,
-                fuel,
-                days,
-                notes.join(", "),
-                if short { "  NOT ENOUGH FUEL" } else { "" }
-            );
-            out.push((
-                text,
-                if i == cursor {
-                    DoorStyle::Selected
-                } else if short {
-                    DoorStyle::Dim
-                } else {
-                    DoorStyle::Plain
-                },
-            ));
-        }
-        out.push((
-            "[Up/Down] choose  [Enter] jump  [Esc] back".to_owned(),
-            DoorStyle::Strong,
-        ));
-        out
-    }
-
     fn yard_lines(&self, height: usize, cursor: usize) -> Vec<(String, DoorStyle)> {
         let items = self.yard_items();
         let room = height.saturating_sub(10).max(3);
@@ -1018,13 +939,18 @@ impl Session {
     fn lines(&self, height: usize) -> Vec<(String, DoorStyle)> {
         let mut out = Vec::new();
         let Some(player) = &self.player else {
-            return self.intro_lines();
+            return fit_width(self.intro_lines());
         };
         out.extend(self.header(player));
         if player.scene.is_some() {
             out.extend(self.scene_lines(player));
+            out.extend(self.scene_extra_lines());
             out.push((String::new(), DoorStyle::Plain));
-            for (text, style) in &self.log {
+            for (text, style) in self
+                .log
+                .iter()
+                .skip(self.log.len().saturating_sub(LOG_LINES))
+            {
                 out.push((text.clone(), *style));
             }
             return fit_width(out);
@@ -1069,7 +995,9 @@ impl Session {
                 ));
             }
             Mode::Market(cursor) => out.extend(self.market_lines(height, *cursor)),
-            Mode::Nav(cursor) => out.extend(self.nav_lines(player, *cursor)),
+            Mode::Chart => out.extend(self.chart_lines()),
+            Mode::Route => out.extend(self.route_lines()),
+            Mode::Standing => out.extend(self.standing_lines()),
             Mode::Yard(cursor) => out.extend(self.yard_lines(height, *cursor)),
             Mode::Loan => out.extend(Self::loan_lines(player)),
             Mode::News => out.extend(self.news_lines(player)),
@@ -1077,7 +1005,11 @@ impl Session {
             Mode::Jobs(cursor) => out.extend(self.jobs_lines(player, *cursor)),
         }
         out.push((String::new(), DoorStyle::Plain));
-        for (text, style) in &self.log {
+        for (text, style) in self
+            .log
+            .iter()
+            .skip(self.log.len().saturating_sub(LOG_LINES))
+        {
             out.push((text.clone(), *style));
         }
         fit_width(out)
@@ -1118,8 +1050,18 @@ impl DoorSession for Session {
                 self.market_key(key, ctx);
                 Flow::Stay
             }
-            Mode::Nav(_) => {
-                self.nav_key(key, ctx);
+            Mode::Chart => {
+                self.chart_key(key, ctx);
+                Flow::Stay
+            }
+            Mode::Route => {
+                self.route_key(key, ctx);
+                Flow::Stay
+            }
+            Mode::Standing => {
+                if matches!(key, DoorKey::Escape | DoorKey::Char('q')) {
+                    self.mode = Mode::Bridge;
+                }
                 Flow::Stay
             }
             Mode::Yard(_) => {
@@ -1147,8 +1089,11 @@ impl DoorSession for Session {
         }
     }
 
-    fn render(&self, canvas: &mut Canvas<'_>, _env: &DoorEnv) {
+    fn render(&self, canvas: &mut Canvas<'_>, env: &DoorEnv) {
         canvas.clear();
+        if ui::draw(self, canvas, env) {
+            return;
+        }
         let height = usize::from(canvas.height());
         let lines = self.lines(height);
         // Keep the newest log lines visible when the screen is short.

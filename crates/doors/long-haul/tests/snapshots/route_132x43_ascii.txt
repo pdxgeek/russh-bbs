@@ -1,0 +1,36 @@
+* LONG HAUL  Tester0  18,450 cr  debt 20,000  days ********** 10
++ ROUTE  to signal --------------------------++ TRACK -------------------+
+|Leg                   Span  Fuel  Days  Evt ||                ::::      |
+|Garnet Dr~>Pellam W~    65    18     4  50% ||                     ::   |
+|Pellam Wa~>Pellam H~    60    17     3  50% ||                       :: |
+|Pellam Ho~>Corran R~    43    12     3  50% ||     o     ?             :|
+|Corran Run>Ismay Ti~    52    15     3  56% ||...M. ..F.      o. .?. .? |
+|Ismay Tide>Bellis C~    69    19     4  56% || P.     ... .   .      . .|
+|Bellis Cr~>Umber Re~    54    15     3  56% ||           .I...o.    o   |
+|Umber Rea~>Bellis V~    51    14     3  50% ||       ?     R    A...    |
+|Bellis Ve~>Wren Run     45    13     3  50% ||      .       .           |
+|Wren Run>signal ! ?     54    15     3  64% ||      o  =F==o=.o==       |
+|                                            || ?. .  .I          o      |
+|                                            ||  .    =           =..I   |
+|                                            ||   M..@      ?= A  R..    |
+|                                            ||  M            ?.=o       |
+|                                            ||..     o. .?       .M.    |
+|                                            ||        .I. .?    M   ?   |
+|                                            ||   o... .    .   .        |
+|                                            ||   .   I     o..R..P      |
+|                                            ||   o   .      .o    .o    |
+|                                            ||    . .?       .    .     |
+|                                            ||              P....R      |
+|                                            ||                         :|
+|                                            ||                       :: |
+|                                            ||                     ::   |
+|                                            |+--------------------------+
+|                                            |+ LIKELY EVENTS -----------+
+|                                            ||goal  Fastest  Thriftiest |
++--------------------------------------------+|distress   1.0 expected   |
++ COST --------------------------------------+|pirate     0.7 expected   |
+|FUEL   #################| 138/120 (tank 120)||drive      0.7 expected   |
+|DAYS   #################| 29 (10 left today)||signal     0.5 expected   |
+|RISK   ############### 99% to meet something||                          |
++--------------------------------------------++--------------------------+
+[Enter] fly next leg  [g] change goal  [Esc] back to chart

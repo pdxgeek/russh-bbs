@@ -1,0 +1,780 @@
+=== home 124x38
+|█▄ █ █ █ █   █   █▀█ █▀█ █ █ ▀█▀ █▀▀                                                                                   ann
+|█ ▀█ █▄█ █▄▄ █▄▄ █▀▄ █▄█ █▄█  █  ██▄                                                                   day 20001  season 1
+|a freelancer's rig, a city of private networks
+|cycles ██████████████████████████████ 40/40                   heat   ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0
+|marks  90  safe 0                                             rep    0  runs 0 jobs 0 burns 0
+|╭ MENU ──────────────────────╮╭ RIG ─────────────────────────────────────────────────╮╭ STANDING ──────────────────────────╮
+|│[c] Contracts  6 open       ││CPU            □ □ □                                  ││Marrow    ░░░░|░░░░ +0              │
+|│[f] Fixers                  ││Memory         □ □ □                                  ││Sister Qu~░░░░|░░░░ +0              │
+|│[d] Deck 4/4                ││Cooling        □ □ □                                  ││Dovetail  ░░░░|░░░░ +0              │
+|│[s] Market                  ││Deck interface □ □ □                                  ││                                    │
+|│[b] Black market            ││Shield         □ □ □                                  ││DECK                                │
+|│[r] Rig                     ││                                                      ││ping-sweep p2                       │
+|│[h] Hideout                 ││Probe  L0 ░░░░░░░░░░░░░░░░ 0/4                        ││dictionary p2                       │
+|│[p] Profile                 ││Break  L0 ░░░░░░░░░░░░░░░░ 0/4                        ││badge-clone p2                      │
+|│[t] Heat 0                  ││Hide   L0 ░░░░░░░░░░░░░░░░ 0/4                        ││siphon p1                           │
+|│[l] Lie low                 ││Fight  L0 ░░░░░░░░░░░░░░░░ 0/4                        ││                                    │
+|│[q] Leave                   ││Utility L0 ░░░░░░░░░░░░░░░░ 0/4                       ││                                    │
+|│                            ││                                                      ││                                    │
+|│                            ││                                                      ││                                    │
+|╰────────────────────────────╯╰──────────────────────────────────────────────────────╯╰────────────────────────────────────╯
+|╭ JOB BOARD ───────────────────────────────────────────────────────────╮╭ STREET WORD ─────────────────────────────────────╮
+|│#  job     target                       T  pays  fixer         status ││Kestrel Dynamics     □ □  0 hole(s)               │
+|│1  Wipe    Halcyon Freight              T1    56 Marrow        no tool││Halcyon Freight      □ □  0 hole(s)               │
+|│2  Ransom  Orrery Health                T1    55 Marrow        no tool││Mirrorglass Ltd      □ □  0 hole(s)               │
+|│3  Steal   Mirrorglass Ltd              T1    45 Sister Quill  ready  ││Pennywhistle Savin~  □ □  0 hole(s)               │
+|│4  Wipe    Pennywhistle Savings         T1    44 Sister Quill  no tool││Orrery Health        □ □  0 hole(s)               │
+|│5  Wipe    Kestrel Dynamics             T1    42 Dovetail      no tool││0 breaches this season, market at 112%            │
+|│6  Steal   Halcyon Freight              T1    36 Marrow        ready  ││                                                  │
+|│7  Steal   Mirrorglass Ltd              T3   253 Marrow        closed ││                                                  │
+|│8  Wipe    Mirrorglass Ltd              T2    99 Marrow        closed ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|╰──────────────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
+|
+|
+|[q]leave  [l]lie low  [letters]open a screen
+=== home-rich 124x38
+|█▄ █ █ █ █   █   █▀█ █▀█ █ █ ▀█▀ █▀▀                                                                                   ann
+|█ ▀█ █▄█ █▄▄ █▄▄ █▀▄ █▄█ █▄█  █  ██▄                                                                   day 20001  season 1
+|a freelancer's rig, a city of private networks
+|cycles █████████████████████████░░░░░ 40/48                   heat   ███████████████▋░░░░░░░░░░░░░░ 52
+|marks  640  safe 120                                          rep    32  runs 31 jobs 24 burns 3
+|╭ MENU ──────────────────────╮╭ RIG ─────────────────────────────────────────────────╮╭ STANDING ──────────────────────────╮
+|│[c] Contracts  6 open       ││CPU            ■ ■ □                                  ││Marrow    ░░░░|███░ +3              │
+|│[f] Fixers                  ││Memory         ■ □ □                                  ││Sister Qu~░░░█|░░░░ -1              │
+|│[d] Deck 4/5                ││Cooling        ■ □ □ FRIED                            ││Dovetail  ████|░░░░ -4              │
+|│[s] Market                  ││Deck interface □ □ □                                  ││                                    │
+|│[b] Black market            ││Shield         ■ □ □                                  ││DECK                                │
+|│[r] Rig                     ││                                                      ││ping-sweep p2                       │
+|│[h] Hideout                 ││Probe  L2 █▊░░░░░░░░░░░░░░ 14/30                      ││dictionary p2                       │
+|│[p] Profile                 ││Break  L3 █▋░░░░░░░░░░░░░░ 33/60                      ││badge-clone p2                      │
+|│[t] Heat 52                 ││Hide   L1 ██░░░░░░░░░░░░░░ 5/12                       ││siphon p1                           │
+|│[l] Lie low                 ││Fight  L4 ▍░░░░░░░░░░░░░░░ 61/100                     ││                                    │
+|│[q] Leave                   ││Utility L0 ████████░░░░░░░░ 2/4                       ││                                    │
+|│                            ││                                                      ││                                    │
+|│                            ││                                                      ││                                    │
+|╰────────────────────────────╯╰──────────────────────────────────────────────────────╯╰────────────────────────────────────╯
+|╭ JOB BOARD ───────────────────────────────────────────────────────────╮╭ STREET WORD ─────────────────────────────────────╮
+|│#  job     target                       T  pays  fixer         status ││Kestrel Dynamics     □ □  0 hole(s)               │
+|│1  Wipe    Mirrorglass Ltd              T2    99 Marrow        no tool││Halcyon Freight      □ □  0 hole(s)               │
+|│2  Wipe    Halcyon Freight              T1    56 Marrow        no tool││Mirrorglass Ltd      □ □  0 hole(s)               │
+|│3  Ransom  Orrery Health                T1    55 Marrow        no tool││Pennywhistle Savin~  □ □  0 hole(s)               │
+|│4  Steal   Mirrorglass Ltd              T1    45 Sister Quill  ready  ││Orrery Health        □ □  0 hole(s)               │
+|│5  Wipe    Pennywhistle Savings         T1    44 Sister Quill  no tool││0 breaches this season, market at 112%            │
+|│6  Steal   Halcyon Freight              T1    36 Marrow        ready  ││                                                  │
+|│7  Steal   Mirrorglass Ltd              T3   253 Marrow        closed ││                                                  │
+|│8  Wipe    Kestrel Dynamics             T1    42 Dovetail      closed ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|╰──────────────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
+|
+|
+|[q]leave  [l]lie low  [letters]open a screen
+=== contracts 124x38
+|╭ JOBS ────────────────────────────────────────────────────────────────╮╭ BRIEF ───────────────────────────────────────────╮
+|│#  job     target                       T  pays  fixer         status ││Lose a payment record  (Marrow)                   │
+|│1  Wipe    Halcyon Freight              T1    56 Marrow        no tool││Target: Halcyon Freight (tier 1)                  │
+|│2  Ransom  Orrery Health                T1    55 Marrow        no tool││Aggressive tracers: every second hop is being     │
+|│3  Steal   Mirrorglass Ltd              T1    45 Sister Quill  ready  ││counted. Leans on                                 │
+|│4  Wipe    Pennywhistle Savings         T1    44 Sister Quill  no tool││password locks.                                   │
+|│5  Wipe    Kestrel Dynamics             T1    42 Dovetail      no tool││Objective: Wipe at the VT node; the deck needs a  │
+|│6  Steal   Halcyon Freight              T1    36 Marrow        ready  ││Shred script.                                     │
+|│7  Steal   Mirrorglass Ltd              T3   253 Marrow        closed ││Pays 56.  Heat on success about +4.               │
+|│8  Wipe    Mirrorglass Ltd              T2    99 Marrow        closed ││Street word: nothing has been broken there lately.│
+|│                                                                      ││Deck: ping-sweep, dictionary, badge-clone, siphon │
+|│                                                                      ││Proxies bought: 0 (each 15 marks, soaks 8 trace). │
+|│                                                                      ││Jacking in costs 5                                │
+|│                                                                      ││cycles.                                           │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|╰──────────────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
+|
+|[Up/Down]choose  [Enter]brief  [1-9]open  [Esc]back
+=== contracts-cursor 124x38
+|╭ JOBS ────────────────────────────────────────────────────────────────╮╭ BRIEF ───────────────────────────────────────────╮
+|│#  job     target                       T  pays  fixer         status ││Hold a server room hostage  (Marrow)              │
+|│1  Wipe    Mirrorglass Ltd              T2    99 Marrow        no tool││Target: Orrery Health (tier 1)                    │
+|│2  Wipe    Halcyon Freight              T1    56 Marrow        no tool││Even-handed, patient, and fond of black walls on  │
+|│3  Ransom  Orrery Health                T1    55 Marrow        no tool││the deep floors.                                  │
+|│4  Steal   Mirrorglass Ltd              T1    45 Sister Quill  ready  ││Leans on badge locks.                             │
+|│5  Wipe    Pennywhistle Savings         T1    44 Sister Quill  no tool││Objective: Ransom at the SR node; the deck needs a│
+|│6  Steal   Halcyon Freight              T1    36 Marrow        ready  ││Plant script.                                     │
+|│7  Steal   Mirrorglass Ltd              T3   253 Marrow        closed ││Pays 55.  Heat on success about +5.               │
+|│8  Wipe    Kestrel Dynamics             T1    42 Dovetail      closed ││Street word: nothing has been broken there lately.│
+|│                                                                      ││Deck: ping-sweep, dictionary, badge-clone, siphon │
+|│                                                                      ││Proxies bought: 0 (each 22 marks, soaks 8 trace). │
+|│                                                                      ││Jacking in costs 5                                │
+|│                                                                      ││cycles.                                           │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|│                                                                      ││                                                  │
+|╰──────────────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
+|
+|[Up/Down]choose  [Enter]brief  [1-9]open  [Esc]back
+=== brief 124x38
+|╭ THE JOB ─────────────────────────────────────────────────────────╮╭ YOUR DECK AGAINST THEM ──────────────────────────────╮
+|│Lose a payment record  (Marrow)                                   ││  ping-sweep        p2 fresh                          │
+|│Target: Halcyon Freight (tier 1)                                  ││  dictionary        p2 fresh                          │
+|│Aggressive tracers: every second hop is being counted. Leans on   ││  badge-clone       p2 fresh                          │
+|│password locks.                                                   ││  siphon            p1 fresh                          │
+|│Objective: Wipe at the VT node; the deck needs a Shred script.    ││* can do the objective                                │
+|│Pays 56.  Heat on success about +4.                               ││                                                      │
+|│Street word: nothing has been broken there lately.                ││                                                      │
+|│Proxies bought: 0 (each 15 marks, soaks 8 trace). Jacking in costs││                                                      │
+|│5                                                                 ││                                                      │
+|│cycles.                                                           ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  │╰──────────────────────────────────────────────────────╯
+|│                                                                  │╭ STREET WORD ─────────────────────────────────────────╮
+|│                                                                  ││alert  □ □                                            │
+|│                                                                  ││0 open hole(s)                                        │
+|│                                                                  ││                                                      │
+|╰──────────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────╯
+|
+|[j]jack in  [p]buy a proxy  [Esc]back
+=== fixers 124x38
+|╭ FIXERS ────────────────────────────────────────────────────────────────────╮╭ ABOUT ─────────────────────────────────────╮
+|│  Marrow      ░░░░░░░|█████░░ +3                                            ││Dovetail                                    │
+|│  Sister Qui~ ░░░░░██|░░░░░░░ -1                                            ││Talks fast, pays in parts, never uses the   │
+|│> Dovetail    ░██████|░░░░░░░ -4 CLOSED                                     ││same number twice.                          │
+|│                                                                            ││                                            │
+|│                                                                            ││Clients: Mirrorglass Ltd                    │
+|│                                                                            ││Jobs on the board: 1                        │
+|│                                                                            ││Will not deal with you.                     │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|│                                                                            ││                                            │
+|╰────────────────────────────────────────────────────────────────────────────╯╰────────────────────────────────────────────╯
+|[Up/Down]choose  [Esc]back
+=== heat 124x38
+|╭ HEAT ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+|│heat █████████████████████████████████████████████████████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 52/100│
+|│                                      ^                     ^          ^          ^               ^                       │
+|│                                                                                                                          │
+|│■  30  proxies cost half as much again                                                                                    │
+|│■  50  your hideout can be raided (the safe never is)                                                                     │
+|│□  60  tier 3 fixers stay away                                                                                            │
+|│□  70  your bots earn half                                                                                                │
+|│□  85  tier 2 fixers stay away                                                                                            │
+|│                                                                                                                          │
+|│Heat falls 4 a night. Lying low costs 8 cycles and takes off 12.                                                          │
+|│A burned run, a loud job and a dropped line all add heat.                                                                 │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+|
+|[l]lie low  [Esc]back
+=== profile 124x38
+|╭ ann ─────────────────────────────────────────────────╮╭ SKILLS ──────────────────────────────────────────────────────────╮
+|│day 20001  season 1                                   ││                                                                  │
+|│                                                      ││                                                                  │
+|│reputation    32                                      ││                                                                  │
+|│marks         640                                     ││                                                                  │
+|│in the safe   120                                     ││                                                                  │
+|│earned (all)  4200                                    ││                                                                  │
+|│runs          31                                      ││                  ▁▁▁▁▁                                           │
+|│jobs done     24                                      ││                  █████                                           │
+|│burned        3 (9%)                                  ││                  █████                                           │
+|│bots          2                                       ││                  █████                                           │
+|│                                                      ││                  █████                                           │
+|│                                                      ││                  █████                                           │
+|│                                                      ││                  █████                                           │
+|│                                                      ││      ▃▃▃▃▃       █████                                           │
+|│                                                      ││      █████       █████                                           │
+|│                                                      ││      █████       █████                                           │
+|│                                                      ││      █████       █████                                           │
+|│                                                      ││      █████       █████                                           │
+|│                                                      ││      █████       █████                                           │
+|│                                                      ││      █████       █████                                           │
+|│                                                      ││▄▄▄▄▄ █████       █████                                           │
+|│                                                      ││█████ █████       █████                                           │
+|│                                                      ││█████ █████       █████                                           │
+|│                                                      ││█████ █████       █████                                           │
+|│                                                      ││█████ █████       █████                                           │
+|│                                                      ││█████ █████       █████                                           │
+|│                                                      ││█████ █████       █████                                           │
+|│                                                      ││█████ █████ ▆▆▆▆▆ █████                                           │
+|│                                                      ││█████ █████ █████ █████                                           │
+|│                                                      ││█████ █████ █████ █████                                           │
+|│                                                      ││█████ █████ █████ █████                                           │
+|│                                                      ││█████ █████ █████ █████                                           │
+|│                                                      ││█████ █████ █████ █████                                           │
+|│                                                      ││█L2██ █L3██ █L1██ █L4██                                           │
+|│                                                      ││Probe Break Hide  Fight Utili                                     │
+|╰──────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+|[Esc]back
+=== deck 124x38
+|memory  ██████████████░░░░░░░░░░ 7/12                         noise   █████▎░░░░░░░░░░░░░░░░░░ 13
+|slots   ███████████████████▎░░░░ 4/5                          corporations K H M P O   . fresh  w wary  X patched
+|╭ SCRIPTS  page 1 ───────────────────────────────────────────────────────────────────────╮╭ DETAIL ────────────────────────╮
+|│      script                                    family  effect   pow mem noi K H M P O  ││badge-clone                     │
+|│[a] * ping-sweep                                Probe   scan     p2  m1  n2  . . . . .  ││Break / Spoof                   │
+|│[b] * dictionary                                Break   crack    p2  m2  n4  . . . . .  ││                                │
+|│[c] * badge-clone                               Break   spoof    p2  m2  n3  . . . . .  ││power   ███▏░░░░░░░░░░ 2        │
+|│[d]   stack-smash                               Break   overflow p2  m2  n6  . . . . .  ││memory  ███▌░░░░░░░░░░ 2        │
+|│[e] * siphon                                    Utility copy     p1  m2  n4  . . . . .  ││noise   ████▎░░░░░░░░░ 3        │
+|│[f]   deep-sweep                                Probe   scan     p4  m3  n4  X . . . .  ││                                │
+|│[g]   cartographer                              Probe   map      p2  m3  n3  . w . . .  ││Passes for a cleaner on the     │
+|│[h]   x-ray                                     Probe   map      p4  m4  n6  . . X . .  ││night shift.                    │
+|│[i]   brute-forge                               Break   crack    p4  m4  n8  w . . . .  ││                                │
+|│[j]   skeleton-key                              Break   crack    p6  m5  n10 . X . . .  ││                                │
+|│[k]   cert-forger                               Break   spoof    p4  m4  n6  . . w . .  ││                                │
+|│[l]   ghost-credential                          Break   spoof    p6  m5  n8  . . . . .  ││                                │
+|│                                                                                        ││                                │
+|│                                                                                        ││                                │
+|│                                                                                        ││                                │
+|│                                                                                        ││                                │
+|│                                                                                        ││                                │
+|│                                                                                        ││                                │
+|│                                                                                        ││                                │
+|│                                                                                        ││                                │
+|│                                                                                        ││                                │
+|│                                                                                        ││                                │
+|│                                                                                        ││                                │
+|│                                                                                        ││                                │
+|│                                                                                        ││                                │
+|│                                                                                        ││                                │
+|│                                                                                        ││                                │
+|│                                                                                        ││                                │
+|│                                                                                        ││                                │
+|│                                                                                        ││                                │
+|│                                                                                        ││                                │
+|╰────────────────────────────────────────────────────────────────────────────────────────╯╰────────────────────────────────╯
+|Passes for a cleaner on the night shift.
+|[a-l]load/unload  [Enter]toggle  [A-L]scrap coded  [n/p]page  [Esc]back
+=== market 124x38
+|╭ MARKET  marks 640  page 1 ───────────────────────────────────────────────────────╮╭ THE TIDE ────────────────────────────╮
+|│    script                                  family  effect   pow mem price gate   ││market  ████████████████▋░░░░░░░░░ 112│
+|│[a] veil                                    Hide    mask     p1  m2     78        ││moves nightly, 80% to 130%            │
+|│[b] decoy-swarm                             Hide    decoy    p2  m3    123        ││        █       ▂              ▂      │
+|│[c] re-route                                Hide    reroute  p2  m2     89        ││   ▅ ▄ ▂█     ▇ █ ▇ ▇ ▇▂▂▂ ▂ ▇ █  ▁▁▂█│
+|│[d] long-way-round                          Hide    reroute  p4  m4    291        ││▃▅▃█▄█▅██▂▂▂▃▃█▇█▄█▄█▅████▅█████▁█████│
+|│[e] jammer                                  Fight   jam      p2  m2    100        │╰──────────────────────────────────────╯
+|│[f] hardjam                                 Fight   jam      p4  m4    280        │╭ DETAIL ──────────────────────────────╮
+|│[g] fork-bomb                               Fight   fork     p2  m3    134        ││re-route                              │
+|│[h] purge-lance                             Fight   purge    p3  m4    246        ││power   ███▏░░░░░░░░░░ 2              │
+|│[i] purge-hammer                            Fight   purge    p6  m5    537        ││memory  ███▌░░░░░░░░░░ 2              │
+|│[j] implant                                 Utility plant    p1  m2     67        ││noise   ░░░░░░░░░░░░░░ 0              │
+|│[k] shredder                                Utility shred    p1  m2     67        ││                                      │
+|│[l] blind-eye                               Utility cutfeed  p1  m1     56        ││Bounces the trace through a few more  │
+|│                                                                                  ││relays.                               │
+|│                                                                                  ││costs 89 of your 640                  │
+|│                                                                                  ││                                      │
+|│                                                                                  ││                                      │
+|│                                                                                  ││                                      │
+|│                                                                                  ││                                      │
+|│                                                                                  ││                                      │
+|│                                                                                  ││                                      │
+|│                                                                                  ││                                      │
+|│                                                                                  ││                                      │
+|│                                                                                  ││                                      │
+|│                                                                                  ││                                      │
+|│                                                                                  ││                                      │
+|│                                                                                  ││                                      │
+|│                                                                                  ││                                      │
+|│                                                                                  ││                                      │
+|│                                                                                  ││                                      │
+|│                                                                                  ││                                      │
+|│                                                                                  ││                                      │
+|│                                                                                  ││                                      │
+|│                                                                                  ││                                      │
+|╰──────────────────────────────────────────────────────────────────────────────────╯╰──────────────────────────────────────╯
+|
+|[a-l]buy  [Enter]buy selected  [n/p]page  [Esc]back
+=== black-market 124x38
+|╭ THE FENCE ───────────────────────────────────────────────────────╮╭ PROXIES ─────────────────────────────────────────────╮
+|│  Back-alley fence  ██████████░░░░░░░░░░  50%                     ││chain  □ □ □                                          │
+|│> Pawnshop contact  █████████████░░░░░░░  65%                     ││22 marks each, soaks 8 trace                          │
+|│  Data broker       ████████████████░░░░  80%  next 340           ││heat makes them dearer                                │
+|│                                                                  ││                                                      │
+|│                                                                  │╰──────────────────────────────────────────────────────╯
+|│                                                                  │╭ THE SAFE ────────────────────────────────────────────╮
+|│                                                                  ││safe  ██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 120      │
+|│                                                                  ││640 marks on hand; raids never touch the safe         │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|╰──────────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────╯
+|
+|[f]better fence  [p]proxy  [s]stash  [t]take  [Esc]back
+|
+=== rig 124x38
+|╭ RIG  marks 640 ──────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+|│[1] CPU            ■ ■ □  Quad-core refurb  next 520                                                                      │
+|│      +4 cycles a level                                                                                                   │
+|│[2] Memory         ■ □ □  16 GB sticks      next 240                                                                      │
+|│      +4 memory and a slot a level                                                                                        │
+|│[3] Cooling        ■ □ □  Case fans         next 180  FRIED, repair 24                                                    │
+|│      fewer fried parts when burned                                                                                       │
+|│[4] Deck interface □ □ □  stock             next 85                                                                       │
+|│      +5% script success a level                                                                                          │
+|│[5] Shield         ■ □ □  Packet filter     next 200                                                                      │
+|│      6% less trace a level                                                                                               │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|│                                                                                                                          │
+|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+|
+|[1-5]upgrade  [x]repair a fried part  [Esc]back
+=== hideout 124x38
+|╭ HIDEOUT  marks 640 (safe 120) ───────────────────────────────────────────────────────────────────────────────────────────╮
+|│bots       ■ ■ □ □ □ 7 marks each a night                                                   ╭ FRAGMENT CASE ─────────────╮│
+|│workbench  built; 12 fragment(s) in the case                                                │crack-core     x1           ││
+|│fence      Pawnshop contact at 65 percent                                                   │spoof-core     x1           ││
+|│                                                                                            │overflow-core  x1           ││
+|│Heat 50 and up brings raids; the safe is never touched.                                     │jam-core       x1           ││
+|│                                                                                            │sentry-lens    x1           ││
+|│                                                                                            │tracer-lens    x1           ││
+|│                                                                                            │wall-lens      x1           ││
+|│                                                                                            │warden-lens    x1           ││
+|│                                                                                            │overclock      x1           ││
+|│                                                                                            │quiet          x1           ││
+|│                                                                                            │lean           x1           ││
+|│                                                                                            │volatile       x1           ││
+|│                                                                                            │                            ││
+|│                                                                                            │                            ││
+|│                                                                                            │                            ││
+|│                                                                                            │                            ││
+|│                                                                                            │                            ││
+|│                                                                                            │                            ││
+|│                                                                                            │                            ││
+|│                                                                                            │                            ││
+|│                                                                                            │                            ││
+|│                                                                                            │                            ││
+|│                                                                                            │                            ││
+|│                                                                                            │                            ││
+|│                                                                                            │                            ││
+|│                                                                                            │                            ││
+|│                                                                                            │                            ││
+|│                                                                                            │                            ││
+|│                                                                                            │                            ││
+|│                                                                                            │                            ││
+|│                                                                                            │                            ││
+|│                                                                                            ╰────────────────────────────╯│
+|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+|
+|[b]bot  [w]workbench  [c]code  [f]fence  [s]safe +  [t]take  [Esc]back
+|
+=== code-effect 124x38
+|╭ EFFECT ───────────────╮   ╭ TARGET ───────────────╮   ╭ MODIFIER ────────────╮    ╭ SCRIPT ──────────────────────────────╮
+|│-                      │ + │-                      │ + │-                     │=>  │-                                     │
+|╰───────────────────────╯   ╰───────────────────────╯   ╰──────────────────────╯    ╰──────────────────────────────────────╯
+|╭ PICK AN EFFECT ──────────────────────────────────────────────────╮╭ PREVIEW ─────────────────────────────────────────────╮
+|│1) crack-core    x1 p+3 m+2 n+4                                   ││pick an effect fragment to begin                      │
+|│   A password-breaker's heart.                                    ││                                                      │
+|│2) spoof-core    x1 p+3 m+2 n+3                                   ││                                                      │
+|│   A forged badge, unfinished.                                    ││                                                      │
+|│3) overflow-core x1 p+3 m+2 n+5                                   ││                                                      │
+|│   A buffer waiting to burst.                                     ││                                                      │
+|│4) jam-core      x1 p+3 m+2 n+3                                   ││                                                      │
+|│   A signal scrambler.                                            ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|╰──────────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────╯
+|
+|
+|[1-9]pick  [Esc]back
+=== code-target 124x38
+|╭ EFFECT ───────────────╮   ╭ TARGET ───────────────╮   ╭ MODIFIER ────────────╮    ╭ SCRIPT ──────────────────────────────╮
+|│crack-core             │ + │-                      │ + │-                     │=>  │crack-any-plain                       │
+|╰───────────────────────╯   ╰───────────────────────╯   ╰──────────────────────╯    ╰──────────────────────────────────────╯
+|╭ PICK A TARGET TYPE (0 for none) ─────────────────────────────────╮╭ PREVIEW ─────────────────────────────────────────────╮
+|│1) sentry-lens   x1 p+0 m+1 n+1                                   ││power   █████▍░░░░░░░░░░ 3                            │
+|│   Tunes a script to sentries.                                    ││memory  █████▍░░░░░░░░░░ 2/6                          │
+|│2) tracer-lens   x1 p+0 m+1 n+1                                   ││noise   ██████▍░░░░░░░░░ 4/10                         │
+|│   Tunes a script to tracers.                                     ││cycles 2  charges unlimited                           │
+|│3) wall-lens     x1 p+0 m+2 n+1                                   ││                                                      │
+|│   Tunes a script to black walls.                                 ││                                                      │
+|│4) warden-lens   x1 p+0 m+2 n+2                                   ││                                                      │
+|│   Tunes a script to wardens.                                     ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|╰──────────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────╯
+|
+|
+|[1-9]pick  [0]none  [Esc]back
+=== code-modifier 124x38
+|╭ EFFECT ───────────────╮   ╭ TARGET ───────────────╮   ╭ MODIFIER ────────────╮    ╭ SCRIPT ──────────────────────────────╮
+|│crack-core             │ + │sentry-lens            │ + │-                     │=>  │crack-sentry-plain                    │
+|╰───────────────────────╯   ╰───────────────────────╯   ╰──────────────────────╯    ╰──────────────────────────────────────╯
+|╭ PICK A MODIFIER (0 for none) ────────────────────────────────────╮╭ PREVIEW ─────────────────────────────────────────────╮
+|│1) overclock     x1 p+2 m+1 n+3                                   ││power   █████▍░░░░░░░░░░ 3                            │
+|│   Faster, hotter, louder.                                        ││memory  ████████░░░░░░░░ 3/6                          │
+|│2) quiet         x1 p+0 m+1 n-3                                   ││noise   ████████░░░░░░░░ 5/10                         │
+|│   Costs memory to buy silence.                                   ││cycles 2  charges unlimited                           │
+|│3) lean          x1 p-1 m-1 n+0                                   ││                                                      │
+|│   Smaller and weaker.                                            ││                                                      │
+|│4) volatile      x1 p+3 m+0 n+2                                   ││                                                      │
+|│   One use per run, and it counts.                                ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|╰──────────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────╯
+|
+|
+|[1-9]pick  [0]none  [Esc]back
+=== code-confirm 124x38
+|╭ EFFECT ───────────────╮   ╭ TARGET ───────────────╮   ╭ MODIFIER ────────────╮    ╭ SCRIPT ──────────────────────────────╮
+|│crack-core             │ + │sentry-lens            │ + │-                     │=>  │crack-sentry-plain                    │
+|╰───────────────────────╯   ╰───────────────────────╯   ╰──────────────────────╯    ╰──────────────────────────────────────╯
+|╭ FRAGMENTS IN THE CASE ───────────────────────────────────────────╮╭ PREVIEW ─────────────────────────────────────────────╮
+|│1) crack-core    x1 p+3 m+2 n+4                                   ││power   █████▍░░░░░░░░░░ 3                            │
+|│   A password-breaker's heart.                                    ││memory  ████████░░░░░░░░ 3/6                          │
+|│2) spoof-core    x1 p+3 m+2 n+3                                   ││noise   ████████░░░░░░░░ 5/10                         │
+|│   A forged badge, unfinished.                                    ││cycles 2  charges unlimited                           │
+|│3) overflow-core x1 p+3 m+2 n+5                                   ││                                                      │
+|│   A buffer waiting to burst.                                     ││Ready: crack-sentry-plain, tuned to sentries          │
+|│4) jam-core      x1 p+3 m+2 n+3                                   ││A corporation learns a recipe, so vary it.            │
+|│   A signal scrambler.                                            ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|│                                                                  ││                                                      │
+|╰──────────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────────╯
+|
+|
+|[Enter]code it  [Esc]back
+=== debrief 124x38
+|╭ DEBRIEF ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+|│                                                     E X T R A C T E D                                                    │
+|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+|╭ THE RUN ─────────────────────────────╮╭ WHAT HAPPENED ───────────────────────────────────────────────────────────────────╮
+|│peak trace ███░░░░░░░░░░░░░░░░░ 15    ││> Into RT-5.                                                                      │
+|│job pays     45                       ││> ping-sweep: sweeping the neighbours.                                            │
+|│data copied  66                       ││> Into VT-6.                                                                      │
+|│fights       0 (0 put down)           ││+ siphon: 66 marks of data copied out.                                            │
+|│locks broken 0                        ││+ Objective done. Get out.                                                        │
+|│fragments    0                        ││+ You jack out clean.                                                             │
+|│cycles left  27                       ││                                                                                  │
+|│                                      ││. Job done: 45 paid, 33 for the data. Heat +4.                                    │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|│                                      ││                                                                                  │
+|╰──────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────────────────────╯
+|[Enter]continue
+=== fight 124x38
+| NULLROUTE // Kestrel Dynamics T1 // Copy @ VT                                                                        CY 29
+|█████▶░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ TRACE  10 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░◀█████
+|quiet
+|╭ COUNTERMEASURE ───────────────────────────────────────╮╭ YOUR DECK ──────────────────────────────────────────────────────╮
+|│Sniffer (tracer)                                       ││    script                             cost damage        state  │
+|│ ──▶▶▶▶▶                                               ││[a] ping-sweep                         cy1  ░░░░░░░░░░ 0         │
+|│ ░▒▓█▓▒░                                               ││[b] dictionary                         cy1  ██████▋░░░ 2         │
+|│ ──▶▶▶▶▶                                               ││[c] badge-clone                        cy1  ██████████ 3         │
+|│INTEGRITY █████████████████████████████████████ 8/8    ││[d] siphon                             cy2  ░░░░░░░░░░ 0         │
+|│armor 0   weak to badge locks                          ││                                                                 │
+|│                                                       ││[w] brace: next strike at 3/4, costs a cycle                     │
+|│                                                       ││[x] break off: costs trace, damage stays                         │
+|│IT WILL    TRACE                                       ││                                                                 │
+|│          starts a tracer                              ││                                                                 │
+|│THEN      ? ? ?                                        ││                                                                 │
+|│SEEN      nothing yet                                  ││                                                                 │
+|│MOVE      ■ □ □ □ □ □ □ □ 1/8                          ││                                                                 │
+|│Watch a full cycle of 4 or scan it to learn the        ││                                                                 │
+|│pattern.                                               ││                                                                 │
+|│                                                       ││                                                                 │
+|│                                                       ││                                                                 │
+|│                                                       ││                                                                 │
+|│                                                       ││                                                                 │
+|│                                                       ││                                                                 │
+|│                                                       ││                                                                 │
+|│                                                       ││                                                                 │
+|╰───────────────────────────────────────────────────────╯╰─────────────────────────────────────────────────────────────────╯
+|╭ FIGHT LOG ───────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+|│T+00 > Jacked in to Kestrel Dynamics.                                                                                     │
+|│T+01 > ping-sweep: sweeping the neighbours.                                                                               │
+|│T+02 > Into RT-4.                                                                                                         │
+|│T+03 > ping-sweep: sweeping the neighbours.                                                                               │
+|│T+04 > Into AC-8.                                                                                                         │
+|│T+05 > ping-sweep: sweeping the neighbours.                                                                               │
+|│T+06 > Into RT-6.                                                                                                         │
+|│T+06 ~ tracer Sniffer has you. Its first beat: TRACE.                                                                     │
+|╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+|[a-f]play a script  [w]brace  [x]break off                                                                  8 integrity left
+=== run 124x38
+| NULLROUTE // Mirrorglass Ltd T1 // Copy @ VT                                                                         CY 29
+|██████▶░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ TRACE  11 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░◀██████
+|quiet
+|╭ NODE MAP ──────────────────────────────────────────────────────────────╮╭ HERE ──────────────────────────────────────────╮
+|│⠂           ⠂           ⠂           ⠂           ⠂           ⠂           ││VT-6 Data vault d3                              │
+|│                                                                        ││1 RT-4  open                                    │
+|│                                                                        ││2 RT-5  open                                    │
+|│                    ⡠○FW-1  ⢢                            ⢀⣀⣀⣀⣀⡠⠤⡤◉VT-6  ││                                                │
+|│      ⠂          ⢀⠔⠊         ⠱⡀          ⢀⡠1○RT-4 ⠲⢖⠊⠉⠉⠉⠉⠁     ⡔⠁ ⠂     ││                                                │
+|│               ⣀⠔⠁            ⠘⡄      ⢀⡠⠒⠁          ⠑⠢⡀      ⢀⠎         ││                                                │
+|│             ⡠⠊                ⠈⢆  ⢀⡠⠒⠁               ⠈⠑⠤⡀  ⡠⠃          ││                                                │
+|│          ⢀⠔⠉                   ⢀⠧⡊⠁                     ⠈⠒⣔⡁           ││                                                │
+|│⠂       ⡠⠔⠁ ⠂           ⠂    ⢀⠤⠊⠁ ⠑⡄⠂           ⠂        ⢀⠎ ⠈⠢⢄         ││                                                │
+|│○GW-0  ⠺⡒⠒⠒⠒⠒⠒⠤⠤⠤⠤⠤⠤⠤◆FW-2  ⠪⢅     ⠘⢄                   ⡰⠁     ⢑⡢○AC-7  ││                                                │
+|│        ⠈⠢⣀                   ⠑⠢⡀   ⠈⢢                ⢀⠜    ⢀⡠⠒⠁        ││                                                │
+|│           ⠑⢄                   ⠈⠑⠤⡀  ⠱⡀             ⢠⠊  ⢀⡠⠒⠁           ││                                                │
+|│      ⠂      ⠑⢄   ⠂           ⠂    ⠈⠒⢄⡀⠘⡄ ⠂         ⡰⠁⢀⠤⠊⠁        ⠂     ││                                                │
+|│               ⠑⢄                     ⠈⠢⢌⢆        ⢀⢜⠤⠊⠁                 ││                                                │
+|│                 ⠉⠢⡀               ⢀⣀⣀⣀⣀⡠⠵⠧2○RT-5 ⠚⠣⠤⠤⢄⣀⣀⡀              │╰────────────────────────────────────────────────╯
+|│                   ⠈⠢○FW-3  ⠒⠒⠊⠉⠉⠉⠉⠁                     ⠈⠉⠉⠑⠒⠒⠢⠤○SR-8  │╭ INTEL ─────────────────────────────────────────╮
+|│⠂           ⠂           ⠂           ⠂           ⠂           ⠂           ││Hides everything behind decoys. Not every vault │
+|│                                                                        ││is a vault.                                     │
+|│                                                                        ││known 9 scanned 8 of 9                          │
+|│d0                   d1                    d2                    d3     ││                                                │
+|╰────────────────────────────────────────────────────────────────────────╯╰────────────────────────────────────────────────╯
+|╭ RUN LOG ───────────────────────────────────────────────────────────────╮╭ DECK ──────────────────────────────────────────╮
+|│T+00 > Jacked in to Mirrorglass Ltd.                                    ││    script                      pow left state  │
+|│T+01 > ping-sweep: sweeping the neighbours.                             ││[a] ping-sweep                  p2  inf  fresh  │
+|│T+02 > Into FW-1.                                                       ││[b] dictionary                  p2  inf  fresh  │
+|│T+03 > ping-sweep: sweeping the neighbours.                             ││[c] badge-clone                 p2  inf  fresh  │
+|│T+04 > Into RT-5.                                                       ││[d] siphon                      p1  inf  fresh  │
+|│T+05 > ping-sweep: sweeping the neighbours.                             ││                                                │
+|│T+06 > Into VT-6.                                                       ││                                                │
+|│                                                                        ││                                                │
+|│                                                                        ││                                                │
+|│                                                                        ││                                                │
+|╰────────────────────────────────────────────────────────────────────────╯╰────────────────────────────────────────────────╯
+|[1-9]move  [a-f]script  [o]jack out

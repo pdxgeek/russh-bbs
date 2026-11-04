@@ -1,0 +1,24 @@
+ Night Owl BBS │ Main menu                                            UTC 15:47
+┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━┓┏ THIS BOARD ━━━━━━━━━┓┏ CLOCK ━━━━━━━━━━━━━━┓
+┃ Signed in as founder.          ┃┃ Night Owl BBS       ┃┃ UTC 15:47           ┃
+┃ Showing Dashboard: this        ┃┃ After hours, all    ┃┃                     ┃
+┃ terminal is too small for      ┃┃ hours.              ┃┃                     ┃
+┃   [f] Forums                   ┃┃ Portland, OR        ┃┃                     ┃
+┃   [m] Mail                     ┃┗━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛
+┃   [a] Files  (not built yet)   ┃┏ WHO IS ONLINE ━━━━━━┓┏ LAST CALLERS ━━━━━━━┓
+┃   [c] Chat                     ┃┃ Nothing to show     ┃┃ Nothing to show     ┃
+┃   [d] Doors                    ┃┃ yet.                ┃┃ yet.                ┃
+┃   [u] Members                  ┃┃                     ┃┃                     ┃
+┃   [y] Community                ┃┃                     ┃┃                     ┃
+┃   [i] Invites                  ┃┃                     ┃┃                     ┃
+┃ > [s] Terminal settings        ┃┃                     ┃┃                     ┃
+┃   [o] Sysop tools              ┃┗━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛
+┃   [l] Log off                  ┃┏ NEW POSTS ━━━━━━━━━━┓┏ UNREAD MAIL ━━━━━━━━┓
+┃                                ┃┃ Nothing to show     ┃┃ Nothing to show     ┃
+┃                                ┃┃ yet.                ┃┃ yet.                ┃
+┃                                ┃┃                     ┃┃                     ┃
+┃                                ┃┃                     ┃┃                     ┃
+┃                                ┃┃                     ┃┃                     ┃
+┃                                ┃┃                     ┃┃                     ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off

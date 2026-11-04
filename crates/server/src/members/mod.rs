@@ -214,10 +214,7 @@ pub(crate) fn render_list(frame: &mut ratatui::Frame<'_>, view: &ScreenView, ctx
             _ => None,
         })
         .collect();
-    let outer = crate::ui::table::framed(
-        ctx.look,
-        Some(ctx.strings.text(keys::LIST_TITLE).to_owned()),
-    );
+    let outer = crate::ui::table::framed(ctx.look, Some(ctx.strings.text(keys::LIST_TITLE)));
     let inner = outer.inner(body).inner(Margin {
         horizontal: 1,
         vertical: 0,

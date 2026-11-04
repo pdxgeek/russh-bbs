@@ -1,0 +1,24 @@
+  +------------------------------- russh-bbs --------------------------------+
+  |Hallpass                                                                  |
+  |                                                                          |
+  | # GREYWATER ACADEMY  - founder                     term 1 - Wed day 1/42 |
+  | [Hist]  Maths   Lunch    Art      Sci    Games   After    Eve     Night  |
+  |========..................................................................|
+  |+ Greywater Academy -----------------------------------------------------+|
+  ||                                     |         /                        ||
+  ||            @ Dorm      o Art room!-o Classes!--o History!              ||
+  ||             |         \           /           \                        ||
+  ||X Stacks    - Common rm o The Quad! - Tuck shop o Maths                 ||
+  ||           \           / |         /                                    ||
+  ||X Head's    o Library   - Hall      o Gym!      X Loft                  ||
+  ||           \ |         / |         \           /                        ||
+  ||X Deputy----o Admin     X Greenroom - Chapel----o Grounds!--o Car park  ||
+  ||           / |                     /           / |                      ||
+  |+ @you oreach .open -shut Xlocked !staff --------------------------------+|
+  |+------------------------------------------------------------------------+|
+  ||o The Quad  1 corridor away                                             ||
+  ||doors Classroom corridor, Common room, Fenwick dormitory, The grounds, G||
+  ||here  Bramley, Marchetti                                                ||
+  |+------------------------------------------------------------------------+|
+  | > The Quad                                 arrows choose  Enter go  Esc  |
+  +--------------------------------------------------------------------------+

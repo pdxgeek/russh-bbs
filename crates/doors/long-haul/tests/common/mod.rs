@@ -10,6 +10,8 @@
     missing_docs
 )]
 
+pub mod ui;
+
 use russh_bbs_door::DoorRng;
 use russh_bbs_door_long_haul::combat::{Maneuver, Orders};
 use russh_bbs_door_long_haul::content::Content;

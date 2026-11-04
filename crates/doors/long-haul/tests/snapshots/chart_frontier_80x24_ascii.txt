@@ -1,0 +1,19 @@
+* LONG HAUL  Tester0  18,450 cr  debt 20,000  days ********** 10
++ STAR CHART  frontier  by faction --------------------------------------+
+|                     M   ? ::   M     o  ?  o.  ?:                      |
+|                    o.M o .oo.o? .A.PM .FI..o ?...F                     |
+|                    ?. o ?  ?  ..R     ?  R  A.o  ?:                    |
+|                     F.A:?  oA.o.     o .Foo.     ?.:                   |
+|                     ..IM.Io. A     ?. I     o.I    o                   |
+|                     o  :.M  M o.?  M.@   ??Ao.    R:                   |
+|                        I    MI.?o?.   oI?   MM? ?. :                   |
+|                    P.o.oo       ?   o.I  ?.R      F:                   |
+|                     F   o.M  o.o ?  o .   o Po   .M                    |
+|                     I.F.o::oMo  M    .?  P..R   I.F                    |
++------------------------------------------------------------------------+
++ SYSTEM ----------------------------------------------------------------+
+|Garnet Drop  binary pair - radiation belt                               |
+|I Narrow Forge Industrial station - size 2 - yard                       |
++------------------------------------------------------------------------+
+[arrows] move  [Enter] plan route  [+/-] zoom  [o] overlay  [.] to ship
+[Esc] back

@@ -1,0 +1,43 @@
+
+                            ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+                            │Hallpass                                                                  │
+                            │                                                                          │
+                            │ ♜ GREYWATER ACADEMY  · founder                     term 1 · Wed day 1/42 │
+                            │ ▐Hist▌  Maths   Lunch    Art      Sci    Games   After    Eve     Night  │
+                            │▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄│
+                            │╭ History room ──────────────────────╮╭ You ─────────────────────────────╮│
+                            ││Main wing                           ││heat   ░░░░░░░░░░░░░░░░░░░░░░░░░ 0││
+                            ││Maps of countries that have changed ││file   ░░░░░░░░░░░░░░░░░░░░░░ 0/12││
+                            ││their names since.                  ││nerve  ●●●●●● 6/6                 ││
+                            ││Here: Alder                         ││legend 0   ◈ cash 12              ││
+                            ││Now: History class                  ││                                  ││
+                            ││Next: Maths in the Maths room       ││                                  ││
+                            ││Classroom cor~: Wick, Hollis        ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            ││                                    ││                                  ││
+                            │╰────────────────────────────────────╯╰──────────────────────────────────╯│
+                            │ g Go   a Attend   l Loiter   r Rest   p Schemes   c Clubs   f File       │
+                            │ j Journal   n Paper   q Leave                                            │
+                            │ You go to History room.                                                  │
+                            │ » Go somewhere                                      up/down  Enter  Esc  │
+                            └──────────────────────────────────────────────────────────────────────────┘
+

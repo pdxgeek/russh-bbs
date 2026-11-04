@@ -1,0 +1,24 @@
+  ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+  │Hallpass                                                                  │
+  │                                                                          │
+  │ ♜ GREYWATER ACADEMY  · founder                     term 1 · Wed day 1/42 │
+  │  Hist   Maths  ▐Lunch▌   Art      Sci    Games   After    Eve     Night  │
+  │━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄│
+  │ b Back                                                                   │
+  │╭ Pupil file ────────────────────────╮╭ Marks 2/3 ───────────────────◂ ▸─╮│
+  ││OFFICE OF THE HEADMISTRESS          ││Maths  █████████████▋░░░░░░░░░░ 57││
+  ││founder  CONFIDENTIAL               ││Scienc~█████████████▏░░░░░░░░░░ 55││
+  ││────────────────────────────────────││Langua~█████████████▏░░░░░░░░░░ 55││
+  ││No entries. The headmistress has not││History█████████████▍░░░░░░░░░░ 56││
+  ││heard of you.                       ││Art    █████████████▏░░░░░░░░░░ 55││
+  ││(Yet. A clean sheet is a thing to be││Games  █████████████▏░░░░░░░░░░ 55││
+  ││proud of, and to waste.)            ││                                  ││
+  ││                                    ││Sneak ○○○○○  Bluff ●○○○○  Tinker ●││
+  ││                                    ││                                  ││
+  ││                                    ││                                  ││
+  ││────────────────────────────────────││                                  ││
+  ││thick  ░░░░░░░░░░░░░░░░░░░░░░░░ 0/12││                                  ││
+  ││A week of good conduct strikes a poi││                                  ││
+  │╰────────────────────────────────────╯╰──────────────────────────────────╯│
+  │ » Back                                              up/down  Enter  Esc  │
+  └──────────────────────────────────────────────────────────────────────────┘

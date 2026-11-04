@@ -273,6 +273,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         23,
         "24cedd9de457941b5c38055c4ccc4c2827ab59c442aa7ee7543fab7248e8c4b897a1f4d56bb6cdc09a9b3b54eb0bcfa2",
     ),
+    (
+        24,
+        "b882984db402233a152c4dcde1bde0c4668c4e2cb50fa7de32cc239e88f4e0b1214a1d398f0a07057a312c1545cd91c4",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {
@@ -517,6 +521,39 @@ async fn corrupt_stored_values_are_reported_not_trusted() {
     let result = store.account_by_fingerprint(&key).await;
     assert!(matches!(result, Err(StoreError::Corrupt(_))), "{result:?}");
     assert!(!store.is_member(&key).await, "corrupt row must fail closed");
+}
+
+#[tokio::test]
+#[ignore = "needs a Postgres server: set RUSSH_BBS_TEST_POSTGRES_URL"]
+async fn the_database_refuses_an_unknown_layout_depth_or_borders() {
+    use russh_bbs_core::access::Slug;
+    use russh_bbs_core::sanitize::sanitize_username;
+    use russh_bbs_core::store::{AccountState, NewAccount};
+    let h = PgHarness::fresh().await;
+    let store = h.store();
+    let alice = store
+        .create_account(NewAccount {
+            username: sanitize_username("alice").unwrap(),
+            role: Slug::MEMBER,
+            state: AccountState::Active,
+        })
+        .await
+        .unwrap();
+    for (column, value) in [
+        ("layout", "grid"),
+        ("depth_cap", "24"),
+        ("borders", "heavy"),
+        ("theme", "Bad Name"),
+    ] {
+        let result = sqlx::query(&format!(
+            "INSERT INTO terminal_settings (account_id, color, pause, {column}) VALUES ($1, true, true, $2)"
+        ))
+        .bind(alice.id.as_raw())
+        .bind(value)
+        .execute(store.pool())
+        .await;
+        assert!(result.is_err(), "{column}={value}");
+    }
 }
 
 #[tokio::test]

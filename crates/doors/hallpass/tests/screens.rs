@@ -66,7 +66,9 @@ fn walk(player: &Player, keys: &str) -> Vec<String> {
         assert_eq!(a.look_around(&ssh), b.look_around(&telnet));
         a.take_effects();
         b.take_effects();
-        seen.push(screen.join("\n"));
+        // The words of the screen are read from the look-around: the picture is drawn with
+        // widgets and tested in tests/ui.rs.
+        seen.push(a.look_around(&ssh).join("\n"));
     }
     seen
 }

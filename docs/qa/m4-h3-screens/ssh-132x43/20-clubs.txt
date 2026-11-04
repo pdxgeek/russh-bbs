@@ -1,0 +1,43 @@
+
+                            ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+                            │Hallpass                                                                  │
+                            │                                                                          │
+                            │ ♜ GREYWATER ACADEMY  · founder                     term 1 · Wed day 1/42 │
+                            │  Hist   Maths  ▐Lunch▌   Art      Sci    Games   After    Eve     Night  │
+                            │━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄│
+                            │╭ Clubs (up to 2) ───────────────────────────────────────────────────────╮│
+                            ││▸  Chess Circle    closed                                 M T W T F S S ││
+                            ││   Players         closed                                 M T W T F S S ││
+                            ││   Rowing Club     closed                                 M T W T F S S ││
+                            ││   School Paper    closed                                 M T W T F S S ││
+                            ││   Robotics Club   closed                                 M T W T F S S ││
+                            ││   Candle Society  closed                                 M T W T F S S ││
+                            ││  b Back                                                                ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            │╰────────────────────────────────────────────────────────────────────────╯│
+                            │╭ The club ──────────────────────────────────────────────────────────────╮│
+                            ││Quiet, ruthless, and housed among the library's green lamps.            ││
+                            ││meets Library, advisor Mr. Wystan Alder                                 ││
+                            ││Sign up at Library. They want maths at least 60.                        ││
+                            │╰────────────────────────────────────────────────────────────────────────╯│
+                            │ » The Chess Circle                                  up/down  Enter  Esc  │
+                            └──────────────────────────────────────────────────────────────────────────┘
+

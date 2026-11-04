@@ -483,7 +483,8 @@ impl Run {
     }
 
     /// Whether the link from `a` to `b` is known: visible, or found by a scan or a map.
-    fn link_known(&self, a: NodeId, b: NodeId) -> bool {
+    #[must_use]
+    pub fn link_known(&self, a: NodeId, b: NodeId) -> bool {
         self.setup.net.links.iter().any(|l| {
             ((l.a == a && l.b == b) || (l.a == b && l.b == a))
                 && (l.stealth == 0

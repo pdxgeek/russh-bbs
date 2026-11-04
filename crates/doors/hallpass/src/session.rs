@@ -14,6 +14,8 @@ use crate::save::encode_player;
 use crate::state::Status;
 use crate::world::WorldDelta;
 
+mod ui;
+
 /// Narrow enough for the door area inside the board's frame on an 80-column terminal.
 const WIDTH: usize = 70;
 
@@ -34,6 +36,8 @@ pub(crate) enum Mode {
     Schedule(u16),
     Stats,
     News,
+    Hall,
+    Yearbook,
     Talk,
     Clubs,
     Journal,
@@ -60,6 +64,12 @@ pub(crate) struct Session {
     page: usize,
     messages: Vec<String>,
     dirty: bool,
+    /// The lightbar: which menu item Enter presses.
+    cursor: usize,
+    /// The place the map cursor is on (empty until the map is opened).
+    map_cursor: String,
+    /// A sub-page on screens with more than fits: the phase whose odds are shown, the file tab.
+    tab: usize,
 }
 
 fn wrap(text: &str, width: usize) -> Vec<String> {
@@ -99,6 +109,9 @@ impl Session {
             page: 0,
             messages,
             dirty,
+            cursor: 0,
+            map_cursor: String::new(),
+            tab: 0,
         }
     }
 
@@ -139,6 +152,93 @@ impl Session {
         for delta in self.game.take_world_changes() {
             let content = Arc::clone(&self.game.content);
             ctx.edit_world(move |bytes| WorldDelta::apply_to_bytes(&delta, bytes, today, &content));
+        }
+    }
+
+    /// An arrow key: the lightbar, the map cursor, or the page of odds or the file.
+    fn arrow(&mut self, key: DoorKey, items: usize, on_map: bool) {
+        if on_map {
+            let dir = match key {
+                DoorKey::Up => ui::Dir::Up,
+                DoorKey::Down => ui::Dir::Down,
+                DoorKey::Left => ui::Dir::Left,
+                _ => ui::Dir::Right,
+            };
+            let from = if self.map_cursor.is_empty() {
+                self.game.player.place.clone()
+            } else {
+                self.map_cursor.clone()
+            };
+            if let Some(next) = ui::step_cursor(&from, dir) {
+                self.map_cursor = next;
+            }
+            return;
+        }
+        if matches!(self.mode, Mode::Clubs) {
+            let n = self.content().clubs.len().max(1);
+            match key {
+                DoorKey::Up | DoorKey::Left => self.tab = (self.tab + n - 1) % n,
+                _ => self.tab = (self.tab + 1) % n,
+            }
+            return;
+        }
+        let pages = matches!(self.mode, Mode::Scheme(_) | Mode::Stats);
+        match key {
+            DoorKey::Left if pages => self.tab = (self.tab + 2) % 3,
+            DoorKey::Right if pages => self.tab = (self.tab + 1) % 3,
+            DoorKey::Up | DoorKey::Left => {
+                self.cursor = if items == 0 {
+                    0
+                } else {
+                    (self.cursor + items - 1) % items
+                };
+            }
+            DoorKey::Down | DoorKey::Right => {
+                self.cursor = if items == 0 {
+                    0
+                } else {
+                    (self.cursor + 1) % items
+                };
+            }
+            _ => {}
+        }
+    }
+
+    /// Enter on a club card: the item that joins or leaves it, or the reason it is shut.
+    fn club_enter(&mut self, items: &[Item]) -> Option<char> {
+        let club = self.content().clubs.get(self.tab)?.clone();
+        let found = items.iter().find(
+            |i| matches!(&i.cmd, Cmd::Do(Action::Join(c) | Action::Quit(c)) if *c == club.id),
+        );
+        if let Some(item) = found {
+            return Some(item.key);
+        }
+        let why = self
+            .game
+            .join_block(&club)
+            .unwrap_or_else(|| format!("You cannot join {} now.", club.name));
+        self.messages = wrap(&why, WIDTH);
+        None
+    }
+
+    /// Enter on the map: walk to the place under the cursor if the engine lets you.
+    fn map_go(&mut self, ctx: &mut Ctx<'_>) {
+        let target = if self.map_cursor.is_empty() {
+            self.game.player.place.clone()
+        } else {
+            self.map_cursor.clone()
+        };
+        let name = self
+            .content()
+            .place(&target)
+            .map_or_else(|| target.clone(), |p| p.name.clone());
+        if target == self.game.player.place {
+            self.messages = vec![format!("You are in the {name} already.")];
+        } else if self.game.reachable().contains(&target) {
+            self.act(&Action::Go(target), ctx);
+            self.cursor = 0;
+        } else {
+            self.messages = vec![format!("The {name} is out of reach this period.")];
         }
     }
 
@@ -252,6 +352,8 @@ impl Session {
             Mode::Schedule(id) => self.schedule_view(*id),
             Mode::Stats => self.stats_view(),
             Mode::News => self.news_view(),
+            Mode::Hall => self.hall_view(),
+            Mode::Yearbook => self.yearbook_view(),
             Mode::Talk => self.talk_view(),
             Mode::Clubs => self.clubs_view(),
             Mode::Journal => self.journal_view(),
@@ -1148,7 +1250,58 @@ impl Session {
         }
         (
             body.iter().flat_map(|l| wrap(l, WIDTH)).collect(),
-            vec![Self::back("Back")],
+            vec![
+                Self::back("Back"),
+                Item {
+                    key: 'h',
+                    label: "Hall of legend".into(),
+                    cmd: Cmd::To(Mode::Hall),
+                },
+                Item {
+                    key: 'y',
+                    label: "Yearbook".into(),
+                    cmd: Cmd::To(Mode::Yearbook),
+                },
+            ],
+        )
+    }
+
+    fn hall_view(&self) -> (Vec<String>, Vec<Item>) {
+        let mut body = vec!["The hall of legend:".to_owned()];
+        body.extend(
+            self.hall_lines()
+                .into_iter()
+                .filter(|l| !l.starts_with("Yearbook")),
+        );
+        (
+            body.iter().flat_map(|l| wrap(l, WIDTH)).collect(),
+            vec![Item {
+                key: 'b',
+                label: "Back to the paper".into(),
+                cmd: Cmd::To(Mode::News),
+            }],
+        )
+    }
+
+    fn yearbook_view(&self) -> (Vec<String>, Vec<Item>) {
+        let g = &self.game;
+        let mut body = vec!["The yearbook:".to_owned()];
+        if g.world.yearbook.is_empty() {
+            body.push("  (no term has ended yet)".to_owned());
+        }
+        for y in g.world.yearbook.iter().rev().take(6) {
+            body.push(format!(
+                "  Term {}: {} ({} legend, {} changes to the school)",
+                y.term, y.name, y.legend, y.changes
+            ));
+        }
+        (
+            body.iter().flat_map(|l| wrap(l, WIDTH)).collect(),
+            vec![Item {
+                key: 'b',
+                label: "Back to the paper".into(),
+                cmd: Cmd::To(Mode::News),
+            }],
         )
     }
 
@@ -1425,26 +1578,60 @@ impl DoorSession for Session {
             let _ = self.game.take_world_changes();
         }
         let (_, items) = self.view();
+        let on_map = matches!(self.mode, Mode::Go)
+            && self.game.playing()
+            && self.game.player.status != Status::New
+            && self.game.player.run.is_none()
+            && self.game.player.life.lesson.is_none()
+            && self.game.player.life.scene.is_none();
+        let mut flow = Flow::Stay;
         let pressed = match key {
             DoorKey::Char(c) => Some(c.to_ascii_lowercase()),
             DoorKey::Escape => Some('b'),
-            _ => None,
+            DoorKey::Enter if on_map => {
+                self.map_go(ctx);
+                None
+            }
+            DoorKey::Enter if matches!(self.mode, Mode::Clubs) && self.game.playing() => {
+                self.club_enter(&items)
+            }
+            DoorKey::Enter => items
+                .get(self.cursor.min(items.len().saturating_sub(1)))
+                .map(|i| i.key),
+            DoorKey::Up | DoorKey::Down | DoorKey::Left | DoorKey::Right => {
+                self.arrow(key, items.len(), on_map);
+                None
+            }
+            DoorKey::Backspace => None,
         };
-        let mut flow = Flow::Stay;
         if let Some(c) = pressed {
             let top_level = matches!(self.mode, Mode::Main)
                 || !self.game.playing()
                 || self.game.player.status == Status::New;
             if let Some(item) = items.iter().find(|i| i.key == c) {
                 match item.cmd.clone() {
-                    Cmd::Do(action) => self.act(&action, ctx),
+                    Cmd::Do(action) => {
+                        self.act(&action, ctx);
+                        self.cursor = 0;
+                    }
                     Cmd::To(mode) => {
+                        if mode == Mode::Go {
+                            self.map_cursor = self.game.player.place.clone();
+                        }
                         self.mode = mode;
                         self.page = 0;
+                        self.cursor = 0;
+                        self.tab = 0;
                         self.messages.clear();
                     }
-                    Cmd::NextPage => self.page += 1,
-                    Cmd::PrevPage => self.page = self.page.saturating_sub(1),
+                    Cmd::NextPage => {
+                        self.page += 1;
+                        self.cursor = 0;
+                    }
+                    Cmd::PrevPage => {
+                        self.page = self.page.saturating_sub(1);
+                        self.cursor = 0;
+                    }
                     Cmd::Leave => flow = Flow::Exit,
                 }
             } else if matches!(key, DoorKey::Escape) && top_level {
@@ -1458,23 +1645,18 @@ impl DoorSession for Session {
         flow
     }
 
-    fn render(&self, canvas: &mut Canvas<'_>, _env: &DoorEnv) {
+    fn render(&self, canvas: &mut Canvas<'_>, env: &DoorEnv) {
         canvas.clear();
-        let height = usize::from(canvas.height());
-        for (y, (line, style)) in self
-            .lines(height, true)
-            .into_iter()
-            .take(height)
-            .enumerate()
-        {
-            canvas.text(0, u16::try_from(y).unwrap_or(u16::MAX), &line, style);
-        }
+        ui::draw(self, canvas, env);
     }
 
-    fn look_around(&self, _env: &DoorEnv) -> Vec<String> {
-        self.lines(usize::MAX / 2, false)
+    fn look_around(&self, env: &DoorEnv) -> Vec<String> {
+        let mut out: Vec<String> = self
+            .lines(usize::MAX / 2, false)
             .into_iter()
             .map(|(line, _)| line)
-            .collect()
+            .collect();
+        out.extend(ui::describe(self, env));
+        out
     }
 }

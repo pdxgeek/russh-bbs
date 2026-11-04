@@ -29,8 +29,8 @@ pub use cli::Cli;
 pub use error::{ConfigError, Source};
 pub use layers::{Assembled, CliValue, FileInput, Sources, assemble};
 pub use model::{
-    BlobBackend, BlobsConfig, Config, DatasourceConfig, DatasourceKind, MailConfig, SshConfig,
-    TelnetConfig, TlsMode, WaitingRoomConfig,
+    BlobBackend, BlobsConfig, BoardConfig, Config, DatasourceConfig, DatasourceKind, MailConfig,
+    SshConfig, TelnetConfig, TlsMode, WaitingRoomConfig,
 };
 pub use paths::{CONTAINER_CONFIG, Dirs};
 pub use secret::SecretUrl;

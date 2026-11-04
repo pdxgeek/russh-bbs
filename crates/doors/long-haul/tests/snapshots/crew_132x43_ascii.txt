@@ -1,0 +1,36 @@
+* LONG HAUL  Tester0  18,450 cr  debt 20,000  days ********** 10
++ CREW 4/2 berths - 240 cr/wk -------++ DETAIL --------------------------+
+| Pilot Test    Pilot     50 sworn   ||Engineer Test - Engineer - steady |
+|>Engineer Test Engineer  50         ||Keeps the drive alive. Slower wea~|
+| Gunner Test   Gunner    50 hurt    ||Skill    ***....... 3             |
+| Medic Test    Medic      9 RESTLESS||Pay      ------------|###---------|
+|For hire at this dock:              ||Food     ----------##|------------|
+| Ember Kerrow  Quarter~ sk5 115 cr/~||Danger   -----#######|------------|
+| Jess Harrow   Quarter~ sk5 115 cr/~||Treated  ------------|####--------|
+| Mara Pryor    Gunner   sk2 89 cr/wk||Loyalty  #############------------|
+|                                    ||Goal: Wants to see 30 before the  |
+|                                    ||lights go out. (0/30)             |
+|                                    ||60 cr/wk                          |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
++------------------------------------++----------------------------------+
+[Enter] hire  [x] pay off  [p] stock galley  [Esc] back

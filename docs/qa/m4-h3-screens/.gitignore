@@ -1,0 +1,2 @@
+# The walk writes these; make_pngs.sh turns them into the pictures that are kept.
+*.cells

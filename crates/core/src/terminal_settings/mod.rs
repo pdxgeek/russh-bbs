@@ -31,8 +31,9 @@ mod time;
 pub use flow::{MemberEffect, MemberFlow, MemberInput};
 pub use glyph::{GlyphAnswer, GlyphProgress, GlyphStep, GlyphTest};
 pub use layout::{
-    DEFAULT_THEME, LayoutId, THEME_NAME_MAX, ThemeName, ThemeNameError, layout_from_stored,
-    layout_to_stored,
+    BorderChoice, DEFAULT_THEME, DepthCap, LayoutId, THEME_NAME_MAX, ThemeName, ThemeNameError,
+    borders_from_stored, borders_to_stored, depth_cap_from_stored, depth_cap_to_stored,
+    layout_from_stored, layout_to_stored,
 };
 pub use pager::{Pager, PagerEffect, PagerKey, PagerPrompt, PagerView};
 pub use sessions::{MemberSessions, MemberStart, SaveError, TerminalSettingsStore};

@@ -1,0 +1,43 @@
+ Night Owl BBS │ Main menu                                                                                                UTC 15:49
+┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━┓┏ NIGHT OWL BBS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓┏ THIS BOARD ━━━━━━━━━━━━━━━━━━━━━━┓
+┃   [f] Forums                   ┃┃                                                            ┃┃ Night Owl BBS                    ┃
+┃   [m] Mail                     ┃┃  Signed in as founder.                                     ┃┃ After hours, all hours.          ┃
+┃   [a] Files  (not built yet)   ┃┃                                                            ┃┃ Portland, OR · since 2026        ┃
+┃   [c] Chat                     ┃┃  > [s] Terminal settings                                   ┃┃                                  ┃
+┃   [d] Doors                    ┃┃                                                            ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┃   [u] Members                  ┃┃                                                            ┃┏ CLOCK ━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃   [y] Community                ┃┃                                                            ┃┃ UTC 15:49                        ┃
+┃   [i] Invites                  ┃┃                                                            ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┃ > [s] Terminal settings        ┃┃                                                            ┃┏ WHO IS ONLINE ━━━━━━━━━━━━━━━━━━━┓
+┃   [o] Sysop tools              ┃┃                                                            ┃┃ Nothing to show yet.             ┃
+┃   [l] Log off                  ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┃                                ┃┃                                                            ┃┏ NEW POSTS ━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                ┃┃                                                            ┃┃ Nothing to show yet.             ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┃                                ┃┃                                                            ┃┏ ACTIVITY ━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                ┃┃                                                            ┃┃ Nothing to show yet.             ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
