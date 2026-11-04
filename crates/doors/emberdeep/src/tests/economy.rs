@@ -282,3 +282,14 @@ fn resting_costs_two_turns_and_eases_fatigue() {
     assert_eq!(g.hero.turns, turns - 2);
     assert!(g.hero.fatigue < 50 && g.hero.hp > 5);
 }
+
+#[test]
+fn salvage_is_banked_in_town_so_the_next_climb_is_light() {
+    let mut g = game_of("warden", ["quick", "stout"], 11);
+    delve(&mut g, 3);
+    g.hero.salvage = 80;
+    run(&mut g, Action::Climb);
+    assert_eq!((g.hero.salvage, g.hero.stash), (0, 80));
+    run(&mut g, Action::Descend(1));
+    assert_eq!(g.hero.salvage, 0, "the stash stays in town");
+}

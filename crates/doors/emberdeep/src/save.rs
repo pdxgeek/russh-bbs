@@ -107,6 +107,7 @@ impl Game {
         w.u32(h.turns);
         w.u32(h.coin);
         w.u32(h.salvage);
+        w.u32(h.stash);
         w.u16(h.relics);
         write_list(&mut w, &h.nodes);
         write_list(&mut w, &h.traits);
@@ -256,6 +257,7 @@ fn read_hero(r: &mut Reader<'_>) -> Option<Hero> {
     let turns = r.u32()?;
     let coin = r.u32()?;
     let salvage = r.u32()?;
+    let stash = r.u32()?;
     let relics = r.u16()?;
     let nodes = read_list(r)?;
     let traits = read_list(r)?;
@@ -278,6 +280,7 @@ fn read_hero(r: &mut Reader<'_>) -> Option<Hero> {
         turns,
         coin,
         salvage,
+        stash,
         relics,
         nodes,
         traits,
@@ -361,8 +364,10 @@ pub struct Summary {
     pub whereabouts: Whereabouts,
     /// Coin held.
     pub coin: u32,
-    /// Salvage held.
+    /// Salvage carried.
     pub salvage: u32,
+    /// Salvage banked in town.
+    pub stash: u32,
     /// Torch-turns left today.
     pub turns: u32,
     /// Times the hero has died.
@@ -400,6 +405,7 @@ pub fn summarize(bytes: &[u8], content: &Content) -> Option<Summary> {
         },
         coin: h.coin,
         salvage: h.salvage,
+        stash: h.stash,
         turns: h.turns,
         deaths: h.deaths,
         best_depth: h.best_depth,

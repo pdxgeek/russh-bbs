@@ -329,3 +329,17 @@ fn a_hero_at_a_guardian_door_can_only_fight_it() {
     run(&mut g, Action::Stairs);
     assert!(matches!(g.place, Place::Delve { depth: d, .. } if d == depth + 1));
 }
+
+#[test]
+fn a_cleared_lair_cannot_be_farmed_for_experience() {
+    let c = content();
+    let mut g = game_of("warden", ["quick", "stout"], 10);
+    let (depth, room) = at(&mut g, "slag-den");
+    assert!(labels(&g).iter().any(|l| l.contains("Fight")));
+    g.today.cleared.push((depth, room));
+    assert!(labels(&g).is_empty(), "{:?}", labels(&g));
+    let _ = c;
+    // The next morning the dungeon has shifted and the den is occupied again.
+    let _ = g.new_day(&content(), super::support::TODAY + 1);
+    assert!(g.today.cleared.is_empty());
+}

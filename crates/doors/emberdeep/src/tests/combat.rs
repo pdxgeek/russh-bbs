@@ -501,3 +501,11 @@ fn a_fight_cannot_be_walked_away_from() {
     assert!(err.0.contains("fight"));
     let _ = hero_of("warden", ["quick", "stout"]);
 }
+
+#[test]
+fn a_lone_archer_has_no_front_row_to_hide_behind() {
+    let c = content();
+    let mut g = fight_game("warden", &["cinder-imp"], 3);
+    assert_eq!(g.fight.as_ref().unwrap().enemies[0].row, Row::Front);
+    assert!(g.apply(&c, Action::Fight(FightAct::Attack(0))).is_ok());
+}

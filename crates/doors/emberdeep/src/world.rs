@@ -305,3 +305,44 @@ pub(crate) fn kind_from(code: u8) -> Option<ShortcutKind> {
         _ => None,
     }
 }
+
+/// The shared world in a few numbers, for tests, the balance harness and the staff.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WorldSummary {
+    /// The dungeon's epoch (bumped when the Cold Furnace falls).
+    pub epoch: u16,
+    /// The last day the tick applied.
+    pub day: i64,
+    /// Shortcuts open: level and kind name.
+    pub shortcuts: Vec<(u8, String)>,
+    /// Guardians slain: band.
+    pub slain: Vec<u8>,
+    /// The hall, deepest first.
+    pub deepest: Vec<(String, u8)>,
+    /// Heroes waiting to be found.
+    pub fallen: usize,
+    /// Heroes carried home.
+    pub rescued: usize,
+    /// The tavern board.
+    pub news: Vec<String>,
+}
+
+/// Read a world blob into a [`WorldSummary`].
+#[must_use]
+pub fn summarize_world(bytes: &[u8]) -> Option<WorldSummary> {
+    let w = World::decode(bytes)?;
+    Some(WorldSummary {
+        epoch: w.epoch,
+        day: w.day,
+        shortcuts: w
+            .shortcuts
+            .iter()
+            .map(|(d, k)| (*d, k.label().to_owned()))
+            .collect(),
+        slain: w.slain.iter().map(|(b, _)| *b).collect(),
+        deepest: w.deepest.clone(),
+        fallen: w.fallen.iter().filter(|f| f.rescued_by.is_none()).count(),
+        rescued: w.fallen.iter().filter(|f| f.rescued_by.is_some()).count(),
+        news: w.news.clone(),
+    })
+}

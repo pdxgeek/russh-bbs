@@ -474,6 +474,11 @@ impl Game {
             if o.once && self.today.spent.contains(&(depth, room, idx)) {
                 continue;
             }
+            // A cleared room has nothing left to fight, sneak past or stare down.
+            let about_the_pack = o.ok.iter().any(|g| matches!(g, Gain::Fight | Gain::Clear));
+            if about_the_pack && self.today.is_cleared(depth, room) {
+                continue;
+            }
             if !o.need.iter().all(|n| self.hero.meets(&d, n)) {
                 continue;
             }
@@ -870,6 +875,8 @@ impl Game {
     fn arrive_in_town(&mut self, depth: u8, ev: &mut Vec<Event>) {
         self.place = Place::Town;
         self.fight = None;
+        self.hero.stash = self.hero.stash.saturating_add(self.hero.salvage);
+        self.hero.salvage = 0;
         let name = self.hero.name.clone();
         if depth > 0 {
             self.emit(Change::Depth(name, self.hero.best_depth));
@@ -877,7 +884,7 @@ impl Game {
         say(
             ev,
             Tone::Good,
-            "You are home in Cindermere, with whatever you carried.",
+            "You are home in Cindermere. The salvage goes into the town store.",
         );
     }
 

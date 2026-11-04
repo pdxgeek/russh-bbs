@@ -12,7 +12,7 @@ use crate::combat::{FightAct, Stance};
 use crate::content::{Attr, Content, Row};
 use crate::dungeon::{self, Dir, Level};
 use crate::game::{Action, Event, Game, Place, Tone};
-use crate::hero::{Hero, derive};
+use crate::hero::Hero;
 use crate::rules::{CREATION_POINTS, CREATION_TRAITS, DEPTH_MAX, RECOVERY_DAYS};
 use crate::world::World;
 
@@ -22,6 +22,23 @@ const TRAIT_KEYS: &str = "abcdefghijklmnopqrstuvwx";
 const NODE_KEYS: &str = "123456789abcdef";
 
 type Line = (String, DoorStyle);
+
+/// A screen as three parts: what is here, what just happened, what can be done.
+#[derive(Default)]
+struct Lines {
+    head: Vec<Line>,
+    log: Vec<Line>,
+    keys: Vec<Line>,
+}
+
+impl Lines {
+    fn head(head: Vec<Line>) -> Self {
+        Self {
+            head,
+            ..Self::default()
+        }
+    }
+}
 
 fn plain(text: impl Into<String>) -> Line {
     (text.into(), DoorStyle::Plain)
@@ -470,45 +487,48 @@ impl Session {
         }
     }
 
-    /// The enemy the hero is aiming at: their choice if it still stands, else the first alive
-    /// one they can reach with a basic attack.
+    /// The enemy the hero is aiming at: their choice if it still stands and can be reached with a
+    /// basic attack, else the first one that can, else the first alive.
     fn current_target(&self, game: &Game, alive: &[usize]) -> usize {
-        if alive.contains(&self.target) {
-            return self.target;
-        }
         let Some(fight) = game.fight.as_ref() else {
             return 0;
         };
         let ranged = game
             .weapon(&self.content)
             .is_some_and(|w| w.reach == crate::content::Reach::Ranged);
+        let reachable =
+            |i: usize| ranged || (fight.row == Row::Front && fight.enemies[i].row == Row::Front);
+        if alive.contains(&self.target) && reachable(self.target) {
+            return self.target;
+        }
         alive
             .iter()
             .copied()
-            .find(|i| ranged || (fight.row == Row::Front && fight.enemies[*i].row == Row::Front))
+            .find(|i| reachable(*i))
             .or_else(|| alive.first().copied())
             .unwrap_or(0)
     }
 
     // ---- the text view ----
 
-    fn lines(&self) -> (Vec<Line>, Vec<Line>) {
+    fn lines(&self) -> Lines {
         match &self.mode {
-            Mode::Stuck(text) => (
-                wrap(text, WRAP)
+            Mode::Stuck(text) => Lines {
+                head: wrap(text, WRAP)
                     .into_iter()
                     .map(|l| styled(l, DoorStyle::Bad))
                     .collect(),
-                vec![plain("[Esc] Leave")],
-            ),
-            Mode::Create(c) => (self.create_lines(c), Vec::new()),
+                log: Vec::new(),
+                keys: vec![plain("[Esc] Leave")],
+            },
+            Mode::Create(c) => Lines::head(self.create_lines(c)),
             Mode::Play(screen) => match (&self.game, screen) {
                 (Some(game), Screen::Main) => self.main_lines(game),
-                (Some(game), Screen::Skills) => (self.skills_lines(game), Vec::new()),
-                (Some(game), Screen::Sheet) => (self.sheet_lines(game), Vec::new()),
-                (Some(game), Screen::Hall) => (Self::hall_lines(game), Vec::new()),
-                (Some(game), Screen::Map) => (self.map_lines(game), Vec::new()),
-                (None, _) => (vec![plain("No hero.")], Vec::new()),
+                (Some(game), Screen::Skills) => Lines::head(self.skills_lines(game)),
+                (Some(game), Screen::Sheet) => Lines::head(self.sheet_lines(game)),
+                (Some(game), Screen::Hall) => Lines::head(Self::hall_lines(game)),
+                (Some(game), Screen::Map) => Lines::head(self.map_lines(game)),
+                (None, _) => Lines::head(vec![plain("No hero.")]),
             },
         }
     }
@@ -586,7 +606,7 @@ impl Session {
     fn status_line(&self, game: &Game, d: &crate::hero::Derived) -> String {
         let h = &game.hero;
         format!(
-            "{} L{} {}  HP {}/{}  Turns {}/{}  Fatigue {}  Coin {}  Salvage {}",
+            "{} L{} {}  HP {}/{}  Turns {}/{}  Fatigue {}  Coin {}  Salvage {}  Stash {}",
             h.name,
             h.level,
             self.content
@@ -598,11 +618,12 @@ impl Session {
             crate::rules::TURNS_PER_DAY,
             h.fatigue,
             h.coin,
-            h.salvage
+            h.salvage,
+            h.stash
         )
     }
 
-    fn main_lines(&self, game: &Game) -> (Vec<Line>, Vec<Line>) {
+    fn main_lines(&self, game: &Game) -> Lines {
         let d = game.derived(&self.content);
         let mut body = vec![
             styled("EMBERDEEP", DoorStyle::Strong),
@@ -631,20 +652,17 @@ impl Session {
                 }
             }
         }
-        let mut tail: Vec<Line> = self
-            .log
-            .iter()
-            .map(|(tone, text)| styled(text.clone(), tone_style(*tone)))
-            .collect();
-        let mut log_lines = Vec::new();
-        for (style, text) in tail.drain(..).map(|(t, s)| (s, t)) {
-            for l in wrap(&text, WRAP) {
-                log_lines.push(styled(l, style));
+        let mut log = Vec::new();
+        for (tone, text) in &self.log {
+            for l in wrap(text, WRAP) {
+                log.push(styled(l, tone_style(*tone)));
             }
         }
-        body.push(plain(""));
-        body.extend(keys);
-        (body, log_lines)
+        Lines {
+            head: body,
+            log,
+            keys,
+        }
     }
 
     fn town_lines(&self, game: &Game, body: &mut Vec<Line>, keys: &mut Vec<Line>) {
@@ -829,7 +847,7 @@ impl Session {
             )));
         }
         keys.push(plain(format!(
-            "[u] Climb back to town ({} turns of {})",
+            "[u] Climb back to town (costs {} turn(s), you have {})",
             game.ascent_cost(&self.content),
             game.hero.turns
         )));
@@ -963,8 +981,12 @@ impl Session {
             .collect();
         out.push(plain(attrs.join("  ")));
         out.push(plain(format!(
-            "Armor {}  Damage +{}  Crit {}%  Evade {}%  Death-save +{}%  Carry {}  Climb ease {}  Loot +{}%  Trap sense +{}",
-            d.armor, d.damage, d.crit, d.evade, d.death_save, d.carry, d.climb_ease, d.loot, d.trap_sense
+            "Armor {}  Damage +{}  Crit {}%  Evade {}%  Death-save +{}%",
+            d.armor, d.damage, d.crit, d.evade, d.death_save
+        )));
+        out.push(plain(format!(
+            "Carry {}  Climb ease {}  Loot +{}%  Trap sense +{}  Fatigue guard {}%",
+            d.carry, d.climb_ease, d.loot, d.trap_sense, d.fatigue_guard
         )));
         out.push(plain(format!(
             "Weapon {}  Armour {}",
@@ -1186,23 +1208,28 @@ impl DoorSession for Session {
 
     fn render(&self, canvas: &mut Canvas<'_>, _env: &DoorEnv) {
         canvas.clear();
-        let (body, log) = self.lines();
+        let lines = self.lines();
         let height = usize::from(canvas.height());
-        let room_for_log = height.saturating_sub(body.len());
-        let skip = log.len().saturating_sub(room_for_log);
-        let shown: Vec<&Line> = body.iter().chain(log.iter().skip(skip)).collect();
-        for (y, (text, style)) in shown.into_iter().take(height).enumerate() {
+        let room_for_log = height.saturating_sub(lines.head.len() + lines.keys.len());
+        let skip = lines.log.len().saturating_sub(room_for_log);
+        let shown = lines
+            .head
+            .iter()
+            .chain(lines.log.iter().skip(skip))
+            .chain(lines.keys.iter());
+        for (y, (text, style)) in shown.take(height).enumerate() {
             canvas.text(0, u16::try_from(y).unwrap_or(u16::MAX), text, *style);
         }
     }
 
     fn look_around(&self, _env: &DoorEnv) -> Vec<String> {
-        let (body, log) = self.lines();
-        body.into_iter().chain(log).map(|(text, _)| text).collect()
+        let lines = self.lines();
+        lines
+            .head
+            .into_iter()
+            .chain(lines.log)
+            .chain(lines.keys)
+            .map(|(text, _)| text)
+            .collect()
     }
-}
-
-#[allow(dead_code)]
-fn unused(_: &Hero) {
-    let _ = derive;
 }

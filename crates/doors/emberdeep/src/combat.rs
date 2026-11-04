@@ -164,8 +164,15 @@ impl Game {
                 interrupted: false,
             })
             .collect();
+        let mut enemies = enemies;
         if enemies.is_empty() {
             return;
+        }
+        // A back row with no front row in front of it is simply the front.
+        if enemies.iter().all(|e| e.row == Row::Back) {
+            for e in &mut enemies {
+                e.row = Row::Front;
+            }
         }
         let names: Vec<&str> = enemies
             .iter()

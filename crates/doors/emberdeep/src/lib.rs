@@ -40,6 +40,7 @@ use crate::content::Content;
 use crate::world::{WORLD_FORMAT, World};
 
 pub use crate::save::{SAVE_VERSION, Summary, Whereabouts, summarize};
+pub use crate::world::{WorldSummary, summarize_world};
 
 /// The door's id: the key of its saves and world on every board.
 pub const DOOR_ID: &str = "emberdeep";

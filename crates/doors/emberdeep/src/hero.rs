@@ -26,6 +26,8 @@ pub(crate) struct Hero {
     pub(crate) turns: u32,
     pub(crate) coin: u32,
     pub(crate) salvage: u32,
+    /// Salvage banked in the town store (the town slice crafts from it).
+    pub(crate) stash: u32,
     pub(crate) relics: u16,
     pub(crate) nodes: Vec<String>,
     pub(crate) traits: Vec<String>,
@@ -173,7 +175,7 @@ pub(crate) fn derive(hero: &Hero, content: &Content) -> Derived {
     for a in &mut d.attrs {
         *a = (*a).max(1);
     }
-    d.max_hp += base_hp + d.attr(Attr::Might) * 2 + i32::from(hero.level) * 4;
+    d.max_hp += base_hp + d.attr(Attr::Might) + i32::from(hero.level) * 3;
     d.max_hp = d.max_hp.max(10);
     d.armor = d.armor.max(0);
     d.fatigue_guard = d.fatigue_guard.clamp(-50, 60);
@@ -229,6 +231,7 @@ impl Hero {
             turns: crate::rules::TURNS_PER_DAY,
             coin: 20,
             salvage: 0,
+            stash: 0,
             relics: 0,
             nodes: Vec::new(),
             traits: traits.to_vec(),
