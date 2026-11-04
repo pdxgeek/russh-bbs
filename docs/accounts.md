@@ -49,6 +49,17 @@ Removing a key or changing the password does not just stop the next sign-in; it 
 
 An ended session sees one fixed screen, **Signed out**: "Your sign-in was revoked. Please sign in again.", and is closed like a log off, the same over ssh and telnet. It happens within a moment and needs no key press. Each ended session writes a `session.revoked` audit row (the session's number and a reason, nothing else). This works inside one server process; two processes on one database need the shared session lease of FIX-M2-5 (see `access.md`).
 
+## Wrong passwords and the wait (FIX-M3-18, D105)
+
+A key never waits: a key bound to the account signs in whatever has happened to its password. Only wrong passwords are counted, and the same gate sits in front of every place a password is checked: `ssh <handle>@host`, telnet sign-in, "I already have an account", the device-link and recovery code forms, and the current-password check when a password session changes or clears its password.
+
+| | Free wrong passwords | Then the wait after each | Ceiling | Cleared by |
+|---|---|---|---|---|
+| Per handle | 4 | 1, 2, 4, 8, 16 s | 30 s | one correct password, or 10 quiet minutes |
+| Per network (IPv4 address or IPv6 /64, all handles together) | 3 | 5, 10, 20, 40, 80, 160 s | 300 s | 10 quiet minutes (a correct password does not clear it) |
+
+A try made during a wait is refused without checking anything and does not lengthen the wait. A person who mistypes a few times waits seconds; one address that keeps guessing reaches its own, longer wait before the handle's wait grows, so it cannot keep someone else out. The refusal is the same plain one for a member's name, an unknown name and a wait. A member whose account has only a password and who is being guessed at from many networks at once can still be made to wait up to 30 s between tries; binding a key avoids that.
+
 ## What the member is told
 
 Every key added (pasted, linked with the password in the waiting room, linked with a code), every key removed and every code redeemed leaves a notice in the same transaction. The member's **next sign-in** (ssh or telnet) lists them on the login screen:
