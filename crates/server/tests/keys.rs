@@ -726,7 +726,10 @@ async fn a_newer_link_code_voids_the_older_unused_one() {
     press(&mut maker, "x").await;
     assert_ne!(older, newer);
     assert_eq!(count(&rig, "login_code").await, 2);
-    assert_eq!(count(&rig, "login_code WHERE voided_at IS NOT NULL").await, 1);
+    assert_eq!(
+        count(&rig, "login_code WHERE voided_at IS NOT NULL").await,
+        1
+    );
 
     let (_s, mut machine, key_a, _) = new_machine(&rig).await;
     press(&mut machine, "d").await;

@@ -1571,7 +1571,7 @@ async fn a_password_change_in_one_telnet_session_ends_the_other_and_keeps_itself
     assert!(last.contains(REVOKED_LINE), "{last}");
     // The acting session stays: it answers a key.
     let page = actor.keys("b").await;
-    assert!(!page.is_empty());
+    assert!(page.contains("Terminal settings"), "{page}");
     assert_eq!(
         rig.rows("SELECT detail FROM audit_log WHERE action = 'session.revoked'")
             .await

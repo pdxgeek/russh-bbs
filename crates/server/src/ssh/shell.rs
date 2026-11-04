@@ -576,11 +576,22 @@ impl<D: Backend> Shell<D> {
     }
 
     /// End the shell: restore the client's terminal, then close the channel.
+    /// Record the account this session became (FIX-M3-14), and whether it also used the
+    /// password, so a later revocation can find it.
+    fn sign_in_as(&self, account: AccountId, by_password: bool) {
+        self.parts.session.set_account(account);
+        if by_password {
+            self.parts.session.mark_password();
+        }
+    }
+
     /// The credential this session signed in with was revoked (FIX-M3-14, D99): show the one
     /// fixed line and close like a log off, the same over ssh and telnet.
     async fn end_revoked(&mut self) {
         info!(session = ?self.parts.session.id(), "session ended: its sign-in was revoked");
-        self.parts.screen.limit_reached(vec![REVOKED_LINE.to_owned()]);
+        self.parts
+            .screen
+            .limit_reached(vec![REVOKED_LINE.to_owned()]);
         self.draw_frame().await;
         self.finish().await;
     }
@@ -679,8 +690,7 @@ impl<D: Backend> Shell<D> {
                 }
                 let start = self.account_start(&account).await;
                 self.parts.account = Some(start.account);
-                self.parts.session.set_account(start.account);
-                self.parts.session.mark_password();
+                self.sign_in_as(start.account, true);
                 let flow = self.member_flow(start);
                 self.parts.screen.claim_accepted(flow);
                 false
@@ -795,8 +805,7 @@ impl<D: Backend> Shell<D> {
         // A member who just joined starts a member session: last callers lists them.
         crate::community::note_sign_in(&*self.parts.directory, start.account).await;
         self.parts.account = Some(start.account);
-        self.parts.session.set_account(start.account);
-        self.parts.session.mark_password();
+        self.sign_in_as(start.account, true);
         let flow = self.member_flow(start);
         self.parts.screen.redeemed(flow);
     }
@@ -834,8 +843,7 @@ impl<D: Backend> Shell<D> {
         let start = self.account_start(&account).await;
         crate::community::note_sign_in(&*self.parts.directory, start.account).await;
         self.parts.account = Some(start.account);
-        self.parts.session.set_account(start.account);
-        self.parts.session.mark_password();
+        self.sign_in_as(start.account, true);
         let flow = self.member_flow(start);
         self.parts.screen.redeemed(flow);
     }
@@ -909,12 +917,11 @@ impl<D: Backend> Shell<D> {
         let start = self.account_start(&account).await;
         crate::community::note_sign_in(&*self.parts.directory, start.account).await;
         self.parts.account = Some(start.account);
-        self.parts.session.set_account(start.account);
-        if request.password.is_some() {
-            self.parts.session.mark_password();
-            if let Some(fingerprint) = self.parts.fingerprint.clone() {
-                self.revoke_others(&Revocation::Recovery(fingerprint)).await;
-            }
+        self.sign_in_as(start.account, request.password.is_some());
+        if request.password.is_some()
+            && let Some(fingerprint) = self.parts.fingerprint.clone()
+        {
+            self.revoke_others(&Revocation::Recovery(fingerprint)).await;
         }
         let flow = self.member_flow(start);
         self.parts.screen.redeemed(flow);

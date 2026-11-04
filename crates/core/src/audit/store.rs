@@ -244,11 +244,17 @@ pub trait AuditStore: Send + Sync {
 /// test double for the front end, like its other store impls (`NoMembers` has no accounts to
 /// act, so no event can be real).
 impl AuditStore for crate::access::NoMembers {
-    async fn append(&self, _event: &AuditEvent) -> Result<AuditId, StoreError> {
-        Err(StoreError::AccountNotFound)
+    fn append(
+        &self,
+        _event: &AuditEvent,
+    ) -> impl Future<Output = Result<AuditId, StoreError>> + Send {
+        std::future::ready(Err(StoreError::AccountNotFound))
     }
 
-    async fn page(&self, _query: &AuditQuery) -> Result<Vec<LogEntry>, StoreError> {
-        Ok(Vec::new())
+    fn page(
+        &self,
+        _query: &AuditQuery,
+    ) -> impl Future<Output = Result<Vec<LogEntry>, StoreError>> + Send {
+        std::future::ready(Ok(Vec::new()))
     }
 }

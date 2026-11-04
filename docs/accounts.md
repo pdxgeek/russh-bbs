@@ -33,7 +33,21 @@ For a member who has lost their key and their password.
 
 **Rank rule (D69):** the member must be active and strictly below the staff member's rank. A cosysop cannot help a sysop or another cosysop, and nobody can issue a code for themselves. There is no code for a sysop: a second sysop, or the setup token on a fresh board, is the way.
 
-Recovery does **not** remove the member's older keys: the server cannot know which one was lost and which stolen. The member is told at the next sign-in and removes any key they do not recognise under My keys.
+Recovery does **not** remove the member's older keys: the server cannot know which one was lost and which stolen. The member is told at the next sign-in and removes any key they do not recognise under My keys. It does end the live sessions that could be the lost credential (see "Ending live sessions" below), but an older key can sign in again until it is removed.
+
+A newer code voids the older one: making a link code voids the account's earlier unused link codes, and issuing a recovery code voids the member's earlier unused recovery codes. A voided code gives the same "That code did not work." as any wrong one (FIX-M3-13, D99).
+
+## Ending live sessions (FIX-M3-14, D99)
+
+Removing a key or changing the password does not just stop the next sign-in; it ends the sessions that used the credential, so a thief's open session does not outlive the advice in the notice.
+
+| Event | Ends (the account's other live sessions) | Stays |
+|---|---|---|
+| A key is removed | every session that signed in with that key | sessions on other keys, password sessions, the session that removed it |
+| The password is set, changed or cleared | every session that used the password (a password login, a join that set one, a key linked by password) | key sessions, the session that made the change |
+| A recovery code is redeemed | password sessions and every session on a key other than the one just bound | the session that redeemed the code |
+
+An ended session sees one fixed screen, **Signed out**: "Your sign-in was revoked. Please sign in again.", and is closed like a log off, the same over ssh and telnet. It happens within a moment and needs no key press. Each ended session writes a `session.revoked` audit row (the session's number and a reason, nothing else). This works inside one server process; two processes on one database need the shared session lease of FIX-M2-5 (see `access.md`).
 
 ## What the member is told
 
@@ -65,6 +79,7 @@ A wrong, used, replaced, expired or other-kind code, a key that already has an a
 - `core::keys`: the code type and its hash, the strict Ed25519 public-key parser, the service (list, add, remove, make a link code, issue a recovery code, redeem both), the My keys and staff screens as pure state machines, the notice wording.
 - Store, SQLite and Postgres, migration `0022`: the three permissions, the two tables, the one `DELETE` that keeps the last way in, the single-statement code claim, the hourly limit under a lock.
 - Waiting room: **Link this device** (`d`) and **Recovery code** (`y`) for a visitor with a key; the Members menu entry; the Sysop tools entry; the login notices.
+- Ending live sessions on revocation and voiding of older codes (FIX-M3-13, FIX-M3-14, D99): `SessionRef::revoke_others` in the session registry, called by the shared shell, and `session.revoked` audit rows.
 - Audit: `key.added`, `key.removed`, `device_code.issued`, `device_code.redeemed`, `recovery_code.issued`, `recovery_code.redeemed` (and `key.linked` now leaves a notice too).
 
 ## Not built
@@ -77,6 +92,8 @@ A wrong, used, replaced, expired or other-kind code, a key that already has an a
 - A reminder that a key was last used long ago.
 
 ## Verified
+
+- FIX-M3-13 and FIX-M3-14 (D99): the QA repros as tests. Codes A then B for both kinds: A is refused, B works (shared store check on SQLite and Postgres, and end to end over a real russh client). S1 signed in with key C, S2 removes C: S1 is closed with the fixed line and S2, a password session and a session on another key stay. The same for a password change (from a key session and from a password session), for a recovery code, and over telnet (a telnet session ended by another telnet session and by an ssh key session). Registry unit tests cover the rule table. A real OpenSSH walk with two sessions is recorded in the PR.
 
 - Core unit tests (`keys::tests`, `keys::pubkey`, `keys::code`, waiting room): the rank rule (a cosysop for a sysop, an equal, themselves, an unknown, a suspended member), the permission in front of every action, the generic refusals, the code kinds not crossing, the screens, the fingerprint of the all-zero Ed25519 key matching `ssh-keygen -l`.
 - The shared store suite (`suite/keys.rs`, 17 checks) on **SQLite, Postgres 16 and TLS-required Postgres 16**: the last way in is never removed, including two removals racing; a code works once, also with four redeemers at once; it expires to the second with an injected clock; the hourly limit and the voiding of the last code; the recovery code replacing the password in one step; the kinds not crossing; a failed audit write rolling the whole change back; only the hash stored and nothing secret in the audit log; the roles holding the permissions the docs say.

@@ -825,7 +825,11 @@ pub(crate) async fn a_newer_code_voids_every_older_unused_code_of_its_kind<H: Ha
 
     for (round, kind) in [CodeKind::Link, CodeKind::Recovery].into_iter().enumerate() {
         let base = 60 + u32::try_from(round).unwrap() * 10;
-        let issuer = if kind == CodeKind::Link { &alice } else { &staff };
+        let issuer = if kind == CodeKind::Link {
+            &alice
+        } else {
+            &staff
+        };
         let a = code(kind, 10);
         let b = code(kind, 11);
         let c = code(kind, 12);
@@ -889,9 +893,15 @@ pub(crate) async fn a_newer_code_voids_every_older_unused_code_of_its_kind<H: Ha
     issue(store, CodeKind::Recovery, &carol, &staff, &recovery)
         .await
         .unwrap();
-    issue(store, CodeKind::Link, &carol, &carol, &code(CodeKind::Link, 21))
-        .await
-        .unwrap();
+    issue(
+        store,
+        CodeKind::Link,
+        &carol,
+        &carol,
+        &code(CodeKind::Link, 21),
+    )
+    .await
+    .unwrap();
     store
         .redeem_recovery_code(
             &recovery.hash(),

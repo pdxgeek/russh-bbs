@@ -50,35 +50,36 @@ fn revoking_a_key_ends_only_the_sessions_that_used_it_and_never_the_actor() {
     let registry = Arc::new(SessionRegistry::default());
     let account = AccountId::from_raw(1);
     let other = AccountId::from_raw(2);
-    let (a, b, c, d, e) = (
-        registry.register(None),
-        registry.register(None),
-        registry.register(None),
-        registry.register(None),
-        registry.register(None),
-    );
+    let actor = registry.register(None);
+    let same_key = registry.register(None);
+    let other_key = registry.register(None);
+    let other_account = registry.register(None);
+    let by_password = registry.register(None);
     for (guard, who, fp) in [
-        (&a, account, key(1)),
-        (&b, account, key(1)),
-        (&c, account, key(2)),
-        (&d, other, key(1)),
+        (&actor, account, key(1)),
+        (&same_key, account, key(1)),
+        (&other_key, account, key(2)),
+        (&other_account, other, key(1)),
     ] {
         guard.set_authenticated(fp, Access::Member);
         guard.set_account(who);
     }
-    e.set_authenticated_by_password(Access::Member);
-    e.set_account(account);
+    by_password.set_authenticated_by_password(Access::Member);
+    by_password.set_account(account);
 
     // `a` removes key 1: `b` goes; `a` (the actor), `c` (another key), `d` (another account)
     // and the password session `e` stay.
-    let ended = a.revoke_others(account, &Revocation::Key(key(1)));
-    assert_eq!(ended, vec![b.id()]);
-    assert!(b.revoke_signal().is_revoked());
-    for stays in [&a, &c, &d, &e] {
+    let ended = actor.revoke_others(account, &Revocation::Key(key(1)));
+    assert_eq!(ended, vec![same_key.id()]);
+    assert!(same_key.revoke_signal().is_revoked());
+    for stays in [&actor, &other_key, &other_account, &by_password] {
         assert!(!stays.revoke_signal().is_revoked());
     }
     // Once ended, a session is not reported twice.
-    assert!(a.revoke_others(account, &Revocation::Key(key(1))).is_empty());
+    assert_eq!(
+        actor.revoke_others(account, &Revocation::Key(key(1))),
+        vec![]
+    );
 }
 
 #[test]
