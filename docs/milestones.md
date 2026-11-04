@@ -51,6 +51,14 @@ The QA pass never fixes code. It reports. Low findings go into the coordination 
 - Member passwords (argon2id, set over SSH), password login over SSH as an opt-in (D28), and the telnet transport, off by default (D27): separate listener, same screens, fixed `UNENCRYPTED` marker, low-security mode marker for the sysop.
 - **Done when:** three users post and chat over plain `ssh`, a malicious feed (escape codes, SSRF attempt) is neutralized by tests, and the layout can be switched live.
 
+## M3.5: Look and feel (owner, 2026-11-04)
+- A modern ratatui UI with a BBS soul: header and status bars, tables, scrollbars, popups, a dashboard home, three-pane chat, and motion that can be turned off ([ui-refresh.md](ui-refresh.md)).
+- Theme packs v2: palette roles from 16 colours up to truecolor with fallback, borders, layout presets (dashboard, wide), and three new distinct themes.
+- Board art: CP437 `.ans` art and `.art.toml`, parsed safely into styled cells, in fixed slots, with a large-letter fallback.
+- Board identity (`[board]` config), sysop menus and pages (`menus.toml`), a theme gallery, theme pack import and export, and a sysop theme preview.
+- The door canvas gains the same widgets.
+- **Done when:** a sysop can make the board look like their own (name, art, theme, menus and pages) without touching code; every screen still works at 80x24 and in the ASCII tier; security markers cannot be hidden or imitated by any theme, art or menu file; the QA gate passes.
+
 ## M4: Files and doors
 - `BlobStore` trait with object-store semantics and the local backend (D30); S3-compatible backend tested against MinIO in CI, same test suite.
 - File areas over SFTP (virtual filesystem by ID), quarantine and scanning hook, tagging and batch download, metadata and search. Everything streams through `BlobStore`; no module touches a blob path.

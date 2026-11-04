@@ -72,9 +72,9 @@ A slice with an unmet dependency is not claimable.
 
 **Parallelism.** Slices run in parallel only when their Owns paths do not overlap and their dependencies are merged. Slices that add migrations to the same backend are serialized (B → C → D → E/F/H). Migration numbers are taken at merge time: merge `main` first, then number the migration.
 
-### UI refresh and customization (owner approved, 2026-11-04)
+### M3.5: Look and feel (owner approved, 2026-11-04)
 
-Plan: [ui-refresh.md](ui-refresh.md). These run before the door game UI slices (S3, E3, N3, L3, H3), which wait for UI-5. UI-1 to UI-4 share `crates/server/src/ui`, so they run one at a time.
+A milestone of its own, between M3 and M4: cool looks and customization for the board. Plan: [ui-refresh.md](ui-refresh.md). The door game UI slices (S3, E3, N3, L3, H3) wait for UI-5; M4 engine and content slices continue in parallel. UI-1 to UI-4 and UI-6 share `crates/server/src/ui`, so they run one at a time.
 
 | Slice | Owns | Depends on | Status | Branch / PR |
 |---|---|---|---|---|
@@ -83,6 +83,9 @@ Plan: [ui-refresh.md](ui-refresh.md). These run before the door game UI slices (
 | UI-3 Board art | an `.ans` (CP437) parser that never passes sequences through, the `.art.toml` format, art slots, the large-letter fallback, the sysop theme preview screen | UI-2 | Open | Fuzz and property tests for the parser; no reserved style or marker glyphs from art; size caps; original art per new theme. |
 | UI-4 Screens on the new widgets | dashboard home, reader, three-pane chat, mail and community screens, motion | UI-3 | Open | Motion respects the D49 redraw cap and is off in accessibility mode. |
 | UI-5 Door canvas widgets | `crates/doors/framework` (`Canvas` gains the widgets) | UI-1 | Open | Plumbing only; the game UI slices use it. |
+| UI-6 Sysop menus and pages | a menu file (`menus.toml` in the data directory: order, labels, hotkeys, which areas show, nested submenus), sysop pages (bulletins and info screens: art plus text, linked from menus), the loader with a schema and caps, the sysop preview | UI-4 | Open | The menu tree stays core-defined (D54): a menu file only rearranges, renames and hides built-in items and adds page items; it cannot add actions or bypass `core::access`. |
+| UI-7 Theme gallery, import and export | a theme gallery screen for members (preview, then pick), sysop import and export of theme packs (one file with art), and versioned theme files | UI-3 | Open | Imported packs go through the same validation as theme files; nothing executes. |
+| M3.5-QA Milestone QA gate | `docs/qa/m3-5.md` and the fix rows it adds | UI-1 to UI-7 | Open | The QA gate from milestones.md, with emphasis on: every screen at 80x24 and in the ASCII tier; hostile themes, art and menu files; markers that cannot be hidden; redraw cost with motion on. |
 
 ### M4: Doors (owner approved, 2026-11-04)
 

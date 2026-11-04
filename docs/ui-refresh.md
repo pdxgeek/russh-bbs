@@ -1,6 +1,6 @@
 # UI refresh and board customization (plan)
 
-Status: **Approved by the owner, 2026-11-04** ("ratatui can make that UI look way better... there needs to be ways to customize the BBS so it looks cool"). Slices UI-1 to UI-5 are in [coordination.md](coordination.md). Nothing here is built yet.
+Status: **Approved by the owner, 2026-11-04** as its own milestone, **M3.5: Look and feel** ([milestones.md](milestones.md)). The owner asked for it because "ratatui can make that UI look way better" and "there needs to be ways to customize the BBS so it looks cool". Slices UI-1 to UI-7 and the M3.5 QA gate are in [coordination.md](coordination.md). Nothing here is built yet.
 
 ## Goals
 
@@ -83,6 +83,17 @@ A `[board]` config section sets:
 
 Members pick from the board's themes and layouts (as now), plus three new settings: motion on or off, colour depth (auto, 16, 256 or truecolor), and borders (theme default or ASCII).
 
+### Sysop menus and pages
+
+- **`menus.toml`** in the data directory can reorder the built-in menu items, rename them, change their hotkeys, hide them, and group them into nested submenus. The menu tree and its actions stay defined in core (D54): a menu file can only rearrange what exists, and `core::access` still decides what each member can reach.
+- **Pages:** sysop-written bulletins and info screens (house rules, history, links, a "who's who"), made of art plus text, and linked from any menu.
+- Menu files are validated with a schema and size caps. A bad one is refused with a logged reason, and the default menu is used.
+
+### Theme gallery, import and export
+
+- **Gallery:** members open a theme gallery from settings. It previews each theme on a sample screen, and they pick one live.
+- **Import and export:** sysops can export a theme pack (palette, borders, layout, strings and art in one file) and import one, for example from another board. Imported packs pass the same validation as theme files, and nothing in a pack executes.
+
 ### A sysop preview screen
 
 Under Sysop tools, a **theme preview** renders each installed theme against sample screens (menu, list, reader, chat, popup), at the current size and tier. Load errors appear there with their reasons, so a sysop can check art and colours without logging in as a member.
@@ -104,5 +115,8 @@ Under Sysop tools, a **theme preview** renders each installed theme against samp
 3. **UI-3: board art.** The `.ans` parser, the `.art.toml` format, art slots, the large-letter fallback, and the sysop theme preview. Ships one original art set per new theme.
 4. **UI-4: screens.** The dashboard home, the reader, three-pane chat, mail and the community screens moved onto the new widgets, plus motion.
 5. **UI-5: door canvas.** The framework `Canvas` gains the widgets, so the game UI slices can use them.
+6. **UI-6: sysop menus and pages.** A `menus.toml` reorders, renames, hides and nests the built-in menu items, and adds sysop pages (bulletins and info screens with art). It cannot add actions or bypass access checks.
+7. **UI-7: theme gallery, import and export.** Members preview and pick a theme from a gallery; sysops import and export theme packs (one file, art included).
+8. **M3.5 QA gate.**
 
 The game UI slices (S3, E3, N3, L3 and H3) wait for UI-5. The engine and content slices do not.
