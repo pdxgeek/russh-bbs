@@ -2879,6 +2879,7 @@ dependencies = [
 name = "russh-bbs-door"
 version = "0.0.0"
 dependencies = [
+ "proptest",
  "ratatui",
  "russh-bbs-core",
  "serde",

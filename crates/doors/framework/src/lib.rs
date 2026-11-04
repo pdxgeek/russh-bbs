@@ -25,7 +25,9 @@
 
 #![forbid(unsafe_code)]
 
+mod ascii;
 mod canvas;
+mod color;
 pub mod content;
 mod ctx;
 mod door;
@@ -35,9 +37,12 @@ pub mod replay;
 mod rng;
 pub mod sandbox;
 pub mod sim;
+mod surface;
 pub mod tick;
 
-pub use canvas::{Canvas, DoorPalette, DoorStyle};
+pub use canvas::{Canvas, DoorFrame, DoorPalette, DoorStyle};
+pub use color::ColorDepth;
+pub use surface::{CleanBuffer, Composite, DoorSurface, Drew};
 pub use ctx::{
     Ctx, Effects, PLAYER_TEXT_MAX_CHARS, PLAYER_TEXT_PER_WINDOW, PLAYER_TEXT_WINDOW_SECS,
     TextRefused, WorldEdit,
@@ -47,6 +52,11 @@ pub use door::{
 };
 pub use key::DoorKey;
 pub use rng::DoorRng;
+
+// The ratatui a door draws with, so a door crate needs no dependency but this one (the sandbox
+// audit allows no other). Only the drawing modules are re-exported: there is no backend,
+// terminal or crossterm here for a door to reach.
+pub use ratatui::{buffer, layout, style, symbols, text, widgets};
 
 // The types a door names in its signatures, so a door crate needs no dependency but this one.
 pub use russh_bbs_core::doors::{DoorId, InvalidDoorId};
