@@ -96,6 +96,10 @@ fn session_limits(c: &Check<'_>, ssh: &SshConfig) -> Result<(), ConfigError> {
 }
 
 /// Validate a merged configuration.
+#[allow(
+    clippy::too_many_lines,
+    reason = "one flat list of range checks, one per setting"
+)]
 pub(crate) fn validate(config: &Config, sources: &Sources) -> Result<(), ConfigError> {
     let c = Check { sources };
     let ssh = &config.ssh;

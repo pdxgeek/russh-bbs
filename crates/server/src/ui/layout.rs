@@ -25,9 +25,10 @@ const fn requirement(layout: LayoutId) -> Option<((u16, u16), LayoutId)> {
         LayoutId::Classic => Some(((24, 9), LayoutId::Compact)),
         LayoutId::Lightbar => Some(((44, 12), LayoutId::Classic)),
         LayoutId::Compact => None,
-        LayoutId::Dashboard | LayoutId::Wide | LayoutId::Focus | LayoutId::Split => {
-            Some(((0, 0), LayoutId::Classic))
-        }
+        LayoutId::Dashboard => Some(((72, 20), LayoutId::Lightbar)),
+        LayoutId::Wide => Some(((110, 22), LayoutId::Dashboard)),
+        LayoutId::Focus => Some(((40, 10), LayoutId::Lightbar)),
+        LayoutId::Split => Some(((72, 16), LayoutId::Lightbar)),
     }
 }
 
@@ -48,11 +49,7 @@ pub(crate) fn effective(chosen: LayoutId, area: Rect) -> LayoutId {
 /// Draw a menu screen in `layout`. Call with the layout from [`effective`].
 pub(crate) fn render_menu(frame: &mut Frame<'_>, layout: LayoutId, screen: &MenuScreen<'_>) {
     match layout {
-        LayoutId::Classic
-        | LayoutId::Dashboard
-        | LayoutId::Wide
-        | LayoutId::Focus
-        | LayoutId::Split => classic::render(frame, screen),
+        LayoutId::Classic => classic::render(frame, screen),
         LayoutId::Lightbar => lightbar::render(frame, screen),
         LayoutId::Compact => compact::render(frame, screen),
         LayoutId::Dashboard | LayoutId::Wide | LayoutId::Focus | LayoutId::Split => {

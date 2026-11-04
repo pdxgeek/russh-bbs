@@ -668,10 +668,6 @@ impl Screen {
     /// Feed keypresses to the current content. Stops at the first key that ends the session or
     /// submits a token; keys after it are ignored. Nothing is drawn: call [`Screen::render`]
     /// once for the whole batch, so a flood of keys costs one redraw, not one per key.
-    #[allow(
-        clippy::too_many_lines,
-        reason = "one match over every screen the session can show; splitting it hides the flow"
-    )]
     pub(crate) fn apply_keys(&mut self, keys: &[Key]) -> KeyEffects {
         if self.focus_menu_showing() {
             // Tab opens the widget pop-over of the focus layout and closes it again; Esc and any
@@ -716,6 +712,10 @@ impl Screen {
             && self.content.layout(&self.ui, self.viewport) == LayoutId::Focus
     }
 
+    #[allow(
+        clippy::too_many_lines,
+        reason = "one match over every screen the session can show; splitting it hides the flow"
+    )]
     fn apply_keys_inner(&mut self, keys: &[Key]) -> KeyEffects {
         if self.chat.is_some() {
             return self.apply_chat_keys(keys);
@@ -1657,6 +1657,7 @@ fn prepare_member(content: &mut Content, pty: PtySize, ui: &Ui) {
     if let Some(flow) = content.flow_mut() {
         flow.set_themes(ui.allowed_styles());
         flow.set_layouts(ui.allowed_layouts());
+        flow.set_board_defaults(ui.board_default_layout(), ui.board_default_style());
     }
 }
 

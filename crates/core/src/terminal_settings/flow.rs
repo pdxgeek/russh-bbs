@@ -1225,10 +1225,9 @@ impl MemberFlow {
         ];
         let entry = |key, label| MenuItemView { key, label };
         view.menu = vec![
+            // Two keys to a row (the row's text names the second), so the screen fits 80x24.
             entry('w', strings::MENU_WIDTH),
-            entry('h', strings::MENU_HEIGHT),
             entry('c', strings::MENU_COLOR),
-            entry('p', strings::MENU_PAUSE),
             entry('l', strings::MENU_LAYOUT),
             entry('m', strings::MENU_DISPLAY),
             entry('i', strings::MENU_ICONS),

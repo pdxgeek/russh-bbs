@@ -33,9 +33,8 @@ pub(crate) fn paint(frame: &mut Frame<'_>, area: Rect, look: Look) {
     let surface = palette.surface;
     let buffer = frame.buffer_mut();
     match look.skin().backdrop {
-        Backdrop::None => {}
         // Scanlines are a pass over the finished screen ([`finish`]), not a background.
-        Backdrop::Scanlines => {}
+        Backdrop::None | Backdrop::Scanlines => {}
         Backdrop::Stars => {
             let Some(dim) = blend(surface, palette.text, 110) else {
                 return;

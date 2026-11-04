@@ -1,0 +1,43 @@
+ » Night Owl BBS « │ Main menu                                                                                            UTC 15:48
+╭« Main menu »───────────────────╮╭« Night Owl BBS »───────────────────────────────────────────╮╭« This board »────────────────────╮
+│   [f] Forums                   ││                                                            ││ Night Owl BBS                    │
+│   [m] Mail                     ││  Signed in as founder.                                     ││ After hours, all hours.          │
+│   [a] Files  (not built yet)   ││                                                            ││ Portland, OR · since 2026        │
+│   [c] Chat                     ││  > [s] Terminal settings                                   ││                                  │
+│   [d] Doors                    ││                                                            │╰──────────────────────────────────╯
+│   [u] Members                  ││                                                            │╭« Clock »─────────────────────────╮
+│   [y] Community                ││                                                            ││ UTC 15:48                        │
+│   [i] Invites                  ││                                                            │╰──────────────────────────────────╯
+│ > [s] Terminal settings        ││                                                            │╭« Who is online »─────────────────╮
+│   [o] Sysop tools              ││                                                            ││ Nothing to show yet.             │
+│   [l] Log off                  ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            │╰──────────────────────────────────╯
+│                                ││                                                            │╭« New posts »─────────────────────╮
+│                                ││                                                            ││ Nothing to show yet.             │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            │╰──────────────────────────────────╯
+│                                ││                                                            │╭« Activity »──────────────────────╮
+│                                ││                                                            ││ Nothing to show yet.             │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+╰────────────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────╯
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off

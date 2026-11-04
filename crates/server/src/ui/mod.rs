@@ -268,6 +268,21 @@ impl Ui {
         }
     }
 
+    /// The layout a member who never chose follows.
+    #[must_use]
+    pub fn board_default_layout(&self) -> LayoutId {
+        self.board.layout().unwrap_or_default()
+    }
+
+    /// The style a member who never chose follows (the board's, if it is loaded).
+    #[must_use]
+    pub fn board_default_style(&self) -> ThemeName {
+        self.board
+            .style()
+            .filter(|name| self.themes.contains(*name))
+            .unwrap_or_default()
+    }
+
     /// The theme `settings` draws with.
     #[must_use]
     pub fn theme_for(&self, settings: &TerminalSettings) -> &Theme {

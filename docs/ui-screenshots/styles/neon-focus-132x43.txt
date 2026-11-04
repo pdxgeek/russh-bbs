@@ -1,0 +1,43 @@
+ » Night Owl BBS « │ Main menu                                                                                            UTC 15:48
+                                     Main menu
+   .     .     .     .     .     .   ────────────────────────────────────────                      .     .     .     .     .     .
+                                     Signed in as founder.
+
+   .     .     .     .     .     .     [f] Forums                                                  .     .     .     .     .     .
+
+                                       [m] Mail
+   .     .     .     .     .     .                                                                 .     .     .     .     .     .
+                                       [a] Files  (not built yet)
+
+   .     .     .     .     .     .     [c] Chat                                                    .     .     .     .     .     .
+
+                                       [d] Doors
+   .     .     .     .     .     .                                                                 .     .     .     .     .     .
+                                       [u] Members
+
+   .     .     .     .     .     .     [y] Community                                               .     .     .     .     .     .
+
+                                       [i] Invites
+   .     .     .     .     .     .                                                                 .     .     .     .     .     .
+                                     > [s] Terminal settings
+
+   .     .     .     .     .     .     [o] Sysop tools                                             .     .     .     .     .     .
+
+                                       [l] Log off
+   .     .     .     .     .     .                                                                 .     .     .     .     .     .
+
+
+   .     .     .     .     .     .                                                                 .     .     .     .     .     .
+
+
+   .     .     .     .     .     .                                                                 .     .     .     .     .     .
+
+
+   .     .     .     .     .     .                                                                 .     .     .     .     .     .
+
+
+   .     .     .     .     .     .                                                                 .     .     .     .     .     .
+
+
+   .     .     .     .     .     .                                                                 .     .     .     .     .     .
+ Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
