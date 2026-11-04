@@ -1,6 +1,6 @@
 # Emberdeep: a fantasy delving door (design)
 
-Status: **Engine implemented (M4-E1, D101); town and crafting implemented (M4-E2, D105)**; the full UI, social play and the content pass are still **Proposed**. The design below is the target; [Implementation notes (M4-E1)](#implementation-notes-m4-e1) and [Implementation notes (M4-E2)](#implementation-notes-m4-e2) say what exists, how it behaves and what was not built. Shared platform rules are in [README.md](README.md). This is the "small daily-turn RPG" that M4 plans as a first game, and the smallest engine of the set.
+Status: **Engine implemented (M4-E1, D101); town and crafting implemented (M4-E2, D110)**; the full UI, social play and the content pass are still **Proposed**. The design below is the target; [Implementation notes (M4-E1)](#implementation-notes-m4-e1) and [Implementation notes (M4-E2)](#implementation-notes-m4-e2) say what exists, how it behaves and what was not built. Shared platform rules are in [README.md](README.md). This is the "small daily-turn RPG" that M4 plans as a first game, and the smallest engine of the set.
 
 ## Pitch
 
@@ -171,7 +171,7 @@ The core tension: **how deep do you go today?** Each level down is richer and mo
 
 ## Implementation notes (M4-E2)
 
-**Status.** Cindermere, gear and crafting are built in the same crate (D105). **Implemented:** the market, the forge (repair, craft, slot cores), the temple, the guild hall, the tavern (drink, dice, a debt, one companion thread, the contract board), the library and the town works (shared projects), gear with affixes, ember-cores and wear, gear drops, recipes, and save and world format 2 with a migration from E1's format 1. **Verified:** by unit tests of every rule, branch tests of the RPG rule, the no-double-credit invariants, content reachability tests, schema tests (including broken tables), a pinned real E1 save and world that must keep migrating, replay tests through the framework, the framework's sandbox audit, a 30-day headless run with project progress and gear curves (numbers are in the pull request), and a walk with the OpenSSH client (what was and was not exercised is in the pull request). **Planned, not built:** the full UI (E3), parties, rescues beyond E1's, duels, the content budget and balance (E4).
+**Status.** Cindermere, gear and crafting are built in the same crate (D110). **Implemented:** the market, the forge (repair, craft, slot cores), the temple, the guild hall, the tavern (drink, dice, a debt, one companion thread, the contract board), the library and the town works (shared projects), gear with affixes, ember-cores and wear, gear drops, recipes, and save and world format 2 with a migration from E1's format 1. **Verified:** by unit tests of every rule, branch tests of the RPG rule, the no-double-credit invariants, content reachability tests, schema tests (including broken tables), a pinned real E1 save and world that must keep migrating, replay tests through the framework, the framework's sandbox audit, a 30-day headless run with project progress and gear curves (numbers are in the pull request), and a walk with the OpenSSH client (what was and was not exercised is in the pull request). **Planned, not built:** the full UI (E3), parties, rescues beyond E1's, duels, the content budget and balance (E4).
 
 ### What is built, and where
 

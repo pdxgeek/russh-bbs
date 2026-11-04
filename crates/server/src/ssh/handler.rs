@@ -387,8 +387,10 @@ impl<D: Backend> Handler for ClientHandler<D> {
             authenticate(&*self.directory, self.passwords.pool(), user, password),
         )
         .await;
+        let peer_ip = self.peer.map(|peer| peer.ip());
         match checked {
             Ok(Ok(Login::Accepted(account))) => {
+                self.passwords.succeeded(user);
                 info!(
                     session = ?self.guard.id(),
                     peer = ?self.peer,
@@ -402,6 +404,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
                 Ok(Auth::Accept)
             }
             Ok(Ok(Login::Denied)) => {
+                self.passwords.failed(peer_ip, user);
                 info!(session = ?self.guard.id(), peer = ?self.peer, "password rejected");
                 Ok(retry_methods(self.passwords.enabled()))
             }

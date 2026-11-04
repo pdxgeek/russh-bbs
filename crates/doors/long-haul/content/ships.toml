@@ -1,0 +1,186 @@
+# Hull classes and modules. Speeds are spans per drive-day; `burn` is fuel per hundred spans.
+# Slot kinds: drive, cargo, tank, scanner, weapon, shield, cabin, refinery, lab.
+
+[[hull]]
+id = "courier"
+name = "Wren-class courier"
+blurb = "Quick and small. Light on cargo, kind to the fuel bill."
+price = 9000
+hull_points = 60
+cargo = 14
+fuel = 70
+speed_pm = 1200
+slots = { drive = 1, cargo = 1, tank = 1, scanner = 1, weapon = 1, shield = 1, cabin = 1, refinery = 0, lab = 0 }
+
+[[hull]]
+id = "freighter"
+name = "Mule-class freighter"
+blurb = "The tramp captain's workhorse: a deep hold and slow, steady burns."
+price = 24000
+hull_points = 100
+cargo = 30
+fuel = 90
+speed_pm = 1000
+slots = { drive = 1, cargo = 4, tank = 2, scanner = 1, weapon = 1, shield = 1, cabin = 2, refinery = 1, lab = 0 }
+
+[[hull]]
+id = "prospector"
+name = "Pick-class prospector"
+blurb = "Two scanner bays and a lab. Made for charting and skimming."
+price = 21000
+hull_points = 80
+cargo = 18
+fuel = 100
+speed_pm = 1000
+slots = { drive = 1, cargo = 2, tank = 2, scanner = 2, weapon = 1, shield = 1, cabin = 1, refinery = 1, lab = 1 }
+
+[[hull]]
+id = "gunship"
+name = "Talon-class gunship"
+blurb = "Armoured and armed, with a hold that is mostly an excuse."
+price = 30000
+hull_points = 140
+cargo = 10
+fuel = 80
+speed_pm = 1100
+slots = { drive = 1, cargo = 1, tank = 1, scanner = 1, weapon = 3, shield = 2, cabin = 1, refinery = 0, lab = 0 }
+
+[[module]]
+id = "ion1"
+name = "Ion Drive Mk1"
+slot = "drive"
+grade = 1
+price = 3500
+speed = 20
+burn = 30
+
+[[module]]
+id = "ion2"
+name = "Ion Drive Mk2"
+slot = "drive"
+grade = 2
+price = 9000
+speed = 28
+burn = 34
+
+[[module]]
+id = "ion3"
+name = "Ion Drive Mk3"
+slot = "drive"
+grade = 3
+price = 19000
+speed = 36
+burn = 40
+
+[[module]]
+id = "long1"
+name = "Longhaul Cruiser Drive"
+slot = "drive"
+grade = 2
+price = 8000
+speed = 16
+burn = 18
+
+[[module]]
+id = "pod1"
+name = "Cargo Pod"
+slot = "cargo"
+grade = 1
+price = 1800
+cargo = 10
+
+[[module]]
+id = "pod2"
+name = "Bulk Pod"
+slot = "cargo"
+grade = 2
+price = 4200
+cargo = 18
+
+[[module]]
+id = "tank1"
+name = "Fuel Tank"
+slot = "tank"
+grade = 1
+price = 1200
+fuel = 30
+
+[[module]]
+id = "tank2"
+name = "Deep Tank"
+slot = "tank"
+grade = 2
+price = 3000
+fuel = 60
+
+[[module]]
+id = "scan1"
+name = "Survey Scanner"
+slot = "scanner"
+grade = 1
+price = 2500
+scan = 1
+
+[[module]]
+id = "scan2"
+name = "Deep-field Scanner"
+slot = "scanner"
+grade = 2
+price = 7000
+scan = 2
+
+[[module]]
+id = "scan3"
+name = "Cartographer's Array"
+slot = "scanner"
+grade = 3
+price = 16000
+scan = 3
+
+[[module]]
+id = "lance1"
+name = "Pulse Lance"
+slot = "weapon"
+grade = 1
+price = 3000
+power = 4
+
+[[module]]
+id = "shield1"
+name = "Deflector Plate"
+slot = "shield"
+grade = 1
+price = 3200
+shield = 25
+
+[[module]]
+id = "shield2"
+name = "Field Deflector"
+slot = "shield"
+grade = 2
+price = 8200
+shield = 45
+
+[[module]]
+id = "cabin1"
+name = "Crew Cabin"
+slot = "cabin"
+grade = 1
+price = 1500
+berths = 2
+
+[[module]]
+id = "refine1"
+name = "Skimmer Refinery"
+slot = "refinery"
+grade = 1
+price = 4500
+refine_pm = 500
+
+[[module]]
+id = "lab1"
+name = "Survey Lab"
+slot = "lab"
+grade = 1
+price = 5500
+lab_pm = 250

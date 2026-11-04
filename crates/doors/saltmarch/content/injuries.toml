@@ -41,6 +41,24 @@ scar = "haunted"
 scar_pct = 30
 
 [[injury]]
+id = "chill"
+name = "a deep chill"
+cause = "water"
+days = 3
+work_pct = 25
+severity = 1
+
+[[injury]]
+id = "wrenched-shoulder"
+name = "a wrenched shoulder"
+cause = "water"
+days = 4
+work_pct = 30
+severity = 1
+scar = "shaky-hands"
+scar_pct = 10
+
+[[injury]]
 id = "broken-leg"
 name = "a broken leg"
 cause = "water"
@@ -73,3 +91,54 @@ cause = "cold"
 days = 5
 work_pct = 30
 severity = 1
+
+# Rolled on expeditions: in a skirmish, to the ones who fall.
+[[injury]]
+id = "cracked-ribs"
+name = "cracked ribs"
+cause = "fight"
+days = 5
+work_pct = 35
+severity = 1
+scar = "toughened"
+scar_pct = 15
+
+[[injury]]
+id = "broken-arm"
+name = "a broken arm"
+cause = "fight"
+days = 9
+work_pct = 55
+severity = 2
+scar = "shaky-hands"
+scar_pct = 30
+
+[[injury]]
+id = "head-wound"
+name = "a split brow and a ringing head"
+cause = "fight"
+days = 8
+work_pct = 45
+severity = 2
+scar = "one-eyed"
+scar_pct = 25
+
+[[injury]]
+id = "mauled"
+name = "a mauling"
+cause = "fight"
+days = 11
+work_pct = 65
+severity = 3
+scar = "toughened"
+scar_pct = 35
+
+[[injury]]
+id = "hamstrung"
+name = "a hamstrung leg"
+cause = "fight"
+days = 13
+work_pct = 80
+severity = 3
+scar = "limp"
+scar_pct = 45

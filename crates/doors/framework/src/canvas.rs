@@ -1,17 +1,27 @@
-//! What a door draws on: a rectangle of the board's own screen buffer, reached only through
-//! methods that sanitize.
+//! What a door draws on: its own off-screen buffer, the size of the area the board gave it.
 //!
-//! A door never gets the ratatui `Buffer` itself. [`Canvas::text`] runs every string through the
-//! shared sanitizer (control characters, ANSI escapes, invisible format characters, the Nerd
-//! Font private-use range and the reserved security-marker codepoints are neutralized) and clips
-//! it to the canvas, so door output cannot move the cursor, change colors by escape, draw outside
-//! its area or forge a security cue. Styles are the closed set [`DoorStyle`], mapped to colors by
-//! the board's theme through a [`DoorPalette`]; none of them is the reserved marker style, and a
-//! door cannot name a color of its own.
+//! A door never sees the screen. Two ways to draw, both into the door's own buffer:
+//!
+//! * [`Canvas::text`] and friends (the original path): every string goes through the shared
+//!   sanitizer and is clipped to the canvas.
+//! * [`Canvas::frame`], a [`DoorFrame`] that mirrors ratatui's `Frame`: any `Widget` or
+//!   `StatefulWidget` (blocks, paragraphs, lists, tables, tabs, gauges, sparklines, bar charts,
+//!   charts, the braille and half-block `Canvas`, scrollbars, popups, with the door's own
+//!   layouts) is rendered in place. Widgets write what they like.
+//!
+//! What a widget writes is not trusted. The board composites the door's buffer onto the screen
+//! with [`DoorSurface::composite`](crate::DoorSurface::composite), which cleans **every cell**
+//! (sanitizer, no reserved marker style, colours degraded to the member's depth, clipped to the
+//! door's area); see `surface.rs` for the rules. So drawing is as free as ratatui, and what
+//! reaches the screen is safe whichever path drew it.
+//!
+//! Styles are the theme's roles ([`DoorStyle`], mapped to colours by the board's theme through a
+//! [`DoorPalette`]) and, in a frame, any `Style` the door builds itself, truecolor included.
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::{Modifier, Style};
+use ratatui::widgets::{StatefulWidget, Widget};
 use russh_bbs_core::sanitize::SingleLine;
 
 /// The longest string one `text` call draws, in characters, whatever its width.
@@ -97,7 +107,7 @@ impl DoorPalette {
         ])
     }
 
-    fn style(&self, style: DoorStyle) -> Style {
+    pub(crate) fn style(&self, style: DoorStyle) -> Style {
         match style {
             DoorStyle::Plain => self.plain,
             DoorStyle::Dim => self.dim,
@@ -125,9 +135,10 @@ pub struct Canvas<'a> {
 }
 
 impl<'a> Canvas<'a> {
-    /// A canvas over `area` of `buf`. The server (and the test helpers) make these; a door is
-    /// handed one. `area` is cut down to the part inside the buffer.
-    pub fn new(buf: &'a mut Buffer, area: Rect, palette: &'a DoorPalette) -> Self {
+    /// A canvas over `area` of `buf`. [`DoorSurface`](crate::DoorSurface) makes these (the
+    /// server and the test helpers go through it); a door is handed one. `area` is cut down to
+    /// the part inside the buffer.
+    pub(crate) fn new(buf: &'a mut Buffer, area: Rect, palette: &'a DoorPalette) -> Self {
         let area = area.intersection(buf.area);
         Self { buf, area, palette }
     }
@@ -142,6 +153,22 @@ impl<'a> Canvas<'a> {
     #[must_use]
     pub const fn height(&self) -> u16 {
         self.area.height
+    }
+
+    /// The style the theme gives `style`, for building a widget (`Block::style(...)`,
+    /// `Gauge::gauge_style(...)`).
+    #[must_use]
+    pub fn style(&self, style: DoorStyle) -> Style {
+        self.palette.style(style)
+    }
+
+    /// A [`DoorFrame`] over this canvas, to render ratatui widgets into it.
+    pub fn frame(&mut self) -> DoorFrame<'_> {
+        DoorFrame {
+            buf: &mut *self.buf,
+            area: self.area,
+            palette: self.palette,
+        }
     }
 
     /// Blank the whole canvas.
@@ -196,6 +223,63 @@ impl<'a> Canvas<'a> {
                 restyle(cell, style);
                 cell.set_symbol(&symbol);
             }
+        }
+    }
+}
+
+/// Renders ratatui widgets into a door's canvas. It mirrors ratatui's `Frame`: coordinates are
+/// relative to the door's area (`area()` starts at 0, 0), and a widget's area is cut down to the
+/// part inside the door's area, so a widget given too large a rectangle draws what fits.
+///
+/// The widget writes into the door's own buffer; what it writes is cleaned when the board
+/// composites the buffer (see the module documentation), so a custom `Widget` that puts escape
+/// sequences, private-use glyphs or the reserved marker style in a cell shows none of them.
+pub struct DoorFrame<'a> {
+    buf: &'a mut Buffer,
+    area: Rect,
+    palette: &'a DoorPalette,
+}
+
+impl DoorFrame<'_> {
+    /// The whole drawing area: `0, 0` and the door's width and height. Lay out from this.
+    #[must_use]
+    pub const fn area(&self) -> Rect {
+        Rect::new(0, 0, self.area.width, self.area.height)
+    }
+
+    /// The style the theme gives `style`.
+    #[must_use]
+    pub fn style(&self, style: DoorStyle) -> Style {
+        self.palette.style(style)
+    }
+
+    /// `rect` (relative to the door's area) as a rectangle of the buffer, cut down to the door's
+    /// area; `None` when nothing of it is inside.
+    fn place(&self, rect: Rect) -> Option<Rect> {
+        let x = self.area.x.checked_add(rect.x)?;
+        let y = self.area.y.checked_add(rect.y)?;
+        let moved = Rect::new(x, y, rect.width, rect.height);
+        let inside = moved.intersection(self.area);
+        (inside.width > 0 && inside.height > 0).then_some(inside)
+    }
+
+    /// Render `widget` in `rect`.
+    pub fn render_widget<W: Widget>(&mut self, widget: W, rect: Rect) {
+        if let Some(rect) = self.place(rect) {
+            widget.render(rect, self.buf);
+        }
+    }
+
+    /// Render `widget` in `rect` with its `state` (a list's selection, a table's scroll
+    /// position, a scrollbar's offset).
+    pub fn render_stateful_widget<W: StatefulWidget>(
+        &mut self,
+        widget: W,
+        rect: Rect,
+        state: &mut W::State,
+    ) {
+        if let Some(rect) = self.place(rect) {
+            widget.render(rect, self.buf, state);
         }
     }
 }

@@ -116,8 +116,12 @@ impl<D: Backend> Connection<D> {
         )
         .await;
         match checked {
-            Ok(Ok(Login::Accepted(account))) => Some(account),
+            Ok(Ok(Login::Accepted(account))) => {
+                self.passwords.succeeded(user);
+                Some(account)
+            }
             Ok(Ok(Login::Denied)) => {
+                self.passwords.failed(Some(peer.ip()), user);
                 info!(session = ?link.session.id(), %peer, "telnet password rejected");
                 None
             }

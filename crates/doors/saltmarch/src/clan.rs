@@ -8,6 +8,7 @@ use crate::crew::{BOND_AT, Bond, Crew};
 use crate::event::Event;
 use crate::hold::{Hold, MAX_CREW};
 use crate::map::{Map, SIZE};
+use crate::trip::{MARKS_CAP, Trip};
 use crate::types::{RESOURCES, Resource, Stock, Trade};
 
 /// Longest clan name kept.
@@ -56,6 +57,65 @@ pub struct Stats {
     pub bonds: u32,
     /// Crew lost (starved, left, retired).
     pub lost: u32,
+    /// Expeditions set out on.
+    pub departures: u32,
+    /// Expeditions ended (any way).
+    pub trips: u32,
+    /// Expeditions that came home with the cargo.
+    pub returned: u32,
+    /// Expeditions cut off by the day running out.
+    pub cut_off: u32,
+    /// Expeditions swept by the flood.
+    pub swept: u32,
+    /// Skirmishes fought.
+    pub fights: u32,
+    /// Skirmishes won.
+    pub fights_won: u32,
+    /// Skirmishes lost (the party was routed).
+    pub routed: u32,
+    /// Parties that never came back.
+    pub lost_parties: u32,
+    /// Crew killed on expeditions.
+    pub lost_on_trips: u32,
+    /// Tallies' worth of cargo brought home (at the Tidecourt's opening prices).
+    pub loot_value: u32,
+}
+
+/// How many expedition counters the save holds after the original six.
+const EXPEDITION_COUNTERS: usize = 11;
+
+impl Stats {
+    fn expedition_counters(&self) -> [u32; EXPEDITION_COUNTERS] {
+        [
+            self.departures,
+            self.trips,
+            self.returned,
+            self.cut_off,
+            self.swept,
+            self.fights,
+            self.fights_won,
+            self.routed,
+            self.lost_parties,
+            self.lost_on_trips,
+            self.loot_value,
+        ]
+    }
+
+    fn set_expedition_counters(&mut self, n: [u32; EXPEDITION_COUNTERS]) {
+        [
+            self.departures,
+            self.trips,
+            self.returned,
+            self.cut_off,
+            self.swept,
+            self.fights,
+            self.fights_won,
+            self.routed,
+            self.lost_parties,
+            self.lost_on_trips,
+            self.loot_value,
+        ] = n;
+    }
 }
 
 /// One clan.
@@ -103,6 +163,10 @@ pub struct Clan {
     pub seasons_played: u16,
     /// Counters.
     pub stats: Stats,
+    /// What the clan did, remembered: choices made and places done. Scenes read them.
+    pub marks: Vec<String>,
+    /// The expedition in progress, if the party is out.
+    pub trip: Option<Trip>,
 }
 
 impl Clan {
@@ -144,6 +208,8 @@ impl Clan {
             hall: Vec::new(),
             seasons_played: 1,
             stats: Stats::default(),
+            marks: Vec::new(),
+            trip: None,
         };
         for (r, n) in [
             (Resource::Timber, 12),
@@ -387,6 +453,28 @@ impl Clan {
         }
     }
 
+    /// Whether the clan remembers `mark`.
+    #[must_use]
+    pub fn has_mark(&self, mark: &str) -> bool {
+        self.marks.iter().any(|m| m == mark)
+    }
+
+    /// Remember something. The oldest memory goes when there are too many.
+    pub fn add_mark(&mut self, mark: &str) {
+        if self.has_mark(mark) {
+            return;
+        }
+        self.marks.push(mark.to_owned());
+        if self.marks.len() > MARKS_CAP {
+            self.marks.remove(0);
+        }
+    }
+
+    /// Forget something.
+    pub fn remove_mark(&mut self, mark: &str) {
+        self.marks.retain(|m| m != mark);
+    }
+
     /// A score for the balance runs and the hall (the league's renown is a later slice).
     #[must_use]
     pub fn score(&self, cat: &Catalog) -> u32 {
@@ -454,7 +542,32 @@ impl Clan {
         for n in [s.shifts, s.crafted, s.injuries, s.earned, s.bonds, s.lost] {
             w.u32(n);
         }
+        // Version 2: the expedition counters, the clan's marks and the trip in progress.
+        for n in s.expedition_counters() {
+            w.u32(n);
+        }
+        w.count(self.marks.len());
+        for m in &self.marks {
+            w.str(m);
+        }
+        match &self.trip {
+            Some(t) => {
+                w.bool(true);
+                t.write(&mut w);
+            }
+            None => w.bool(false),
+        }
         w.finish()
+    }
+
+    /// Bring a version 1 save to version 2: the new fields start empty.
+    #[must_use]
+    pub fn upgrade_v1(bytes: &[u8]) -> Vec<u8> {
+        let mut out = bytes.to_vec();
+        out.extend(std::iter::repeat_n(0u8, EXPEDITION_COUNTERS * 4));
+        out.push(0); // no marks
+        out.push(0); // no trip
+        out
     }
 
     /// Decode a save, or `None` if the bytes are not one this version wrote.
@@ -503,13 +616,25 @@ impl Clan {
             })
             .collect::<Option<Vec<_>>>()?;
         let seasons_played = r.u16()?;
-        let stats = Stats {
+        let mut stats = Stats {
             shifts: r.u32()?,
             crafted: r.u32()?,
             injuries: r.u32()?,
             earned: r.u32()?,
             bonds: r.u32()?,
             lost: r.u32()?,
+            ..Stats::default()
+        };
+        let mut extra = [0u32; EXPEDITION_COUNTERS];
+        for n in &mut extra {
+            *n = r.u32()?;
+        }
+        stats.set_expedition_counters(extra);
+        let marks = (0..r.u8()?).map(|_| r.str()).collect::<Option<Vec<_>>>()?;
+        let trip = if r.bool()? {
+            Some(Trip::read(&mut r)?)
+        } else {
+            None
         };
         (r.done() && crew.len() <= MAX_CREW && morale <= 100).then_some(Self {
             name,
@@ -533,6 +658,8 @@ impl Clan {
             hall,
             seasons_played,
             stats,
+            marks,
+            trip,
         })
     }
 }
