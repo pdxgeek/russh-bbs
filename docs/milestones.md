@@ -53,12 +53,12 @@ The QA pass never fixes code. It reports. Low findings go into the coordination 
 
 ## M3.5: Look and feel (owner, 2026-11-04)
 - A modern ratatui UI with a BBS soul: header and status bars, tables, scrollbars, popups, a dashboard home, three-pane chat, and motion that can be turned off ([ui-refresh.md](ui-refresh.md)).
-- Theme packs v2: palette roles from 16 colours up to truecolor with fallback, borders, layout presets (dashboard, wide), and three new distinct themes.
+- Several selectable styles (at least six complete theme packs), several selectable layouts (at least seven, including dashboard, wide, focus and split), and widgets that members and the sysop switch on, off and rearrange: palette roles from 16 colours up to truecolor with fallback, and borders.
 - Board art: CP437 `.ans` art and `.art.toml`, parsed safely into styled cells, in fixed slots, with a large-letter fallback.
 - Board identity (`[board]` config), sysop menus and pages (`menus.toml`), a theme gallery, theme pack import and export, and a sysop theme preview.
 - The door canvas gains the same widgets.
 - Next-gen extras ("flex what Rust and ratatui can do"): an effect engine, braille and half-block graphics, an original animated login intro, logos and avatars drawn as cells, mouse support, a `Ctrl-K` command palette, toasts, split-screen chat, a live ticker, and responsive layouts up to ultrawide. No terminal graphics protocol is sent.
-- **Done when:** a sysop can make the board look like their own (name, art, theme, menus and pages) without touching code; every screen still works at 80x24 and in the ASCII tier; security markers cannot be hidden or imitated by any theme, art or menu file; the QA gate passes.
+- **Done when:** members can pick any of several styles, layouts and widget sets live; a sysop can make the board look like their own (name, art, theme, menus and pages) without touching code; every screen still works at 80x24 and in the ASCII tier; security markers cannot be hidden or imitated by any theme, art or menu file; the QA gate passes.
 
 ## M4: Files and doors
 - `BlobStore` trait with object-store semantics and the local backend (D30); S3-compatible backend tested against MinIO in CI, same test suite.
