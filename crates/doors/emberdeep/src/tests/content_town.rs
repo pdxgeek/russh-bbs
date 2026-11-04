@@ -71,7 +71,11 @@ fn every_core_can_be_got_somehow() {
     let c = content();
     for core in &c.affixes.core {
         let sold = core.price > 0;
-        let dropped = c.bestiary.monster.iter().any(|m| m.core.as_deref() == Some(&core.id));
+        let dropped = c
+            .bestiary
+            .monster
+            .iter()
+            .any(|m| m.core.as_deref() == Some(&core.id));
         let made = c
             .recipes
             .recipe
@@ -157,7 +161,11 @@ fn every_contract_is_offered_to_some_build_at_its_depth() {
         assert!(offered, "no calling is ever offered {}", p.id);
     }
     // All three kinds, and a spread of depths.
-    for kind in [ContractKind::Beast, ContractKind::Heirloom, ContractKind::Rescue] {
+    for kind in [
+        ContractKind::Beast,
+        ContractKind::Heirloom,
+        ContractKind::Rescue,
+    ] {
         assert!(c.town.contract.iter().any(|p| p.kind == kind));
     }
     assert!(c.town.contract.iter().any(|p| p.depth >= 10));

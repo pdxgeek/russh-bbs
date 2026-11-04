@@ -591,6 +591,30 @@ pub struct Summary {
     pub relics: u16,
     /// Whether a fight is in progress.
     pub in_fight: bool,
+    /// The worn weapon's name (affixes first).
+    pub weapon: String,
+    /// The worn armour's name (affixes first).
+    pub armour: String,
+    /// What an average blow does (weapon, attribute and effects, less wear).
+    pub damage_avg: i32,
+    /// Armour value after wear.
+    pub armor: i32,
+    /// Wear on the weapon and the armour, percent.
+    pub wear: (u8, u8),
+    /// Ember-cores held, loose and slotted.
+    pub cores: usize,
+    /// Spare gear at home.
+    pub pack: usize,
+    /// Coin owed to the dice-crew.
+    pub debt: u32,
+    /// The rung of the bond with a companion (0 if none).
+    pub bond: u8,
+    /// Contracts turned in.
+    pub contracts_done: u16,
+    /// Coin and salvage given to the town's projects.
+    pub given: (u32, u32),
+    /// Recipes learned below or at the library.
+    pub recipes: usize,
 }
 
 /// Read a save into a [`Summary`].
@@ -621,5 +645,26 @@ pub fn summarize(bytes: &[u8], content: &Content) -> Option<Summary> {
         scars: h.scars.len(),
         relics: h.relics,
         in_fight: game.fight.is_some(),
+        weapon: crate::town::item_name(content, &h.weapon, &h.wkit),
+        armour: crate::town::item_name(content, &h.armour, &h.akit),
+        damage_avg: content.weapon(&h.weapon).map_or(0, |w| {
+            i32::try_from(u32::midpoint(w.damage[0], w.damage[1])).unwrap_or(0)
+                + ((d.attr(w.attr) - 8) / 2).max(0)
+                + d.damage
+        }),
+        armor: d.armor,
+        wear: (h.wkit.wear, h.akit.wear),
+        cores: h.cores.len()
+            + usize::from(h.wkit.core.is_some())
+            + usize::from(h.akit.core.is_some()),
+        pack: h.pack.len(),
+        debt: h.debt,
+        bond: h.bond.as_ref().map_or(0, |b| b.level),
+        contracts_done: h.contracts_done,
+        given: h
+            .given
+            .iter()
+            .fold((0, 0), |(c, s), (_, gc, gs)| (c + gc, s + gs)),
+        recipes: h.recipes.len(),
     })
 }

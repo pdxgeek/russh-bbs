@@ -381,8 +381,16 @@ fn name_ok(table: &str, id: &str, name: &str, problems: &mut Vec<String>) {
 impl Table for Affixes {
     fn validate(&self) -> Vec<String> {
         let mut problems = Vec::new();
-        check_ids("affix", self.affix.iter().map(|a| a.id.as_str()), &mut problems);
-        check_ids("core", self.core.iter().map(|a| a.id.as_str()), &mut problems);
+        check_ids(
+            "affix",
+            self.affix.iter().map(|a| a.id.as_str()),
+            &mut problems,
+        );
+        check_ids(
+            "core",
+            self.core.iter().map(|a| a.id.as_str()),
+            &mut problems,
+        );
         for a in &self.affix {
             check_effects("affix", &a.id, &a.effects, &mut problems);
             name_ok("affix", &a.id, &a.name, &mut problems);
@@ -408,7 +416,11 @@ impl Table for Affixes {
 impl Table for Recipes {
     fn validate(&self) -> Vec<String> {
         let mut problems = Vec::new();
-        check_ids("recipe", self.recipe.iter().map(|r| r.id.as_str()), &mut problems);
+        check_ids(
+            "recipe",
+            self.recipe.iter().map(|r| r.id.as_str()),
+            &mut problems,
+        );
         for r in &self.recipe {
             name_ok("recipe", &r.id, &r.name, &mut problems);
             check_text("recipe", &r.id, &r.text, &mut problems);
@@ -426,7 +438,11 @@ impl Table for Recipes {
 impl Table for Projects {
     fn validate(&self) -> Vec<String> {
         let mut problems = Vec::new();
-        check_ids("project", self.project.iter().map(|p| p.id.as_str()), &mut problems);
+        check_ids(
+            "project",
+            self.project.iter().map(|p| p.id.as_str()),
+            &mut problems,
+        );
         for p in &self.project {
             name_ok("project", &p.id, &p.name, &mut problems);
             check_text("project", &p.id, &p.text, &mut problems);
@@ -434,13 +450,16 @@ impl Table for Projects {
             if p.coin == 0 && p.salvage == 0 {
                 problems.push(format!("[project] `{}`: must cost something", p.id));
             }
-            if p.requires.iter().any(|r| *r == p.id) {
+            if p.requires.contains(&p.id) {
                 problems.push(format!("[project] `{}`: requires itself", p.id));
             }
             if let ProjectEffect::Lift { depth } = p.effect
                 && !(2..=25).contains(&depth)
             {
-                problems.push(format!("[project] `{}`: a lift goes to level 2 to 25", p.id));
+                problems.push(format!(
+                    "[project] `{}`: a lift goes to level 2 to 25",
+                    p.id
+                ));
             }
         }
         problems
@@ -450,9 +469,21 @@ impl Table for Projects {
 impl Table for TownTables {
     fn validate(&self) -> Vec<String> {
         let mut problems = Vec::new();
-        check_ids("contract", self.contract.iter().map(|c| c.id.as_str()), &mut problems);
-        check_ids("companion", self.companion.iter().map(|c| c.id.as_str()), &mut problems);
-        check_ids("rumour", self.rumour.iter().map(|c| c.id.as_str()), &mut problems);
+        check_ids(
+            "contract",
+            self.contract.iter().map(|c| c.id.as_str()),
+            &mut problems,
+        );
+        check_ids(
+            "companion",
+            self.companion.iter().map(|c| c.id.as_str()),
+            &mut problems,
+        );
+        check_ids(
+            "rumour",
+            self.rumour.iter().map(|c| c.id.as_str()),
+            &mut problems,
+        );
         for c in &self.contract {
             name_ok("contract", &c.id, &c.name, &mut problems);
             check_text("contract", &c.id, &c.text, &mut problems);
@@ -466,7 +497,10 @@ impl Table for TownTables {
             match c.kind {
                 ContractKind::Beast => {
                     if c.monster.is_none() || c.room.is_some() {
-                        problems.push(format!("[contract] `{}`: a beast names a monster only", c.id));
+                        problems.push(format!(
+                            "[contract] `{}`: a beast names a monster only",
+                            c.id
+                        ));
                     }
                 }
                 ContractKind::Heirloom | ContractKind::Rescue => {

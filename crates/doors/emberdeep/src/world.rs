@@ -251,8 +251,7 @@ impl World {
     /// Whether the town can take gifts toward `project` now (not finished, requirements met).
     pub(crate) fn is_open(&self, content: &Content, project: &str) -> bool {
         content.project(project).is_some_and(|def| {
-            !self.is_done(content, project)
-                && def.requires.iter().all(|r| self.is_done(content, r))
+            !self.is_done(content, project) && def.requires.iter().all(|r| self.is_done(content, r))
         })
     }
 

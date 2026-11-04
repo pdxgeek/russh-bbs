@@ -36,7 +36,10 @@ fn wear_blunts_a_weapon_and_thins_armour_until_repaired() {
     g.hero.akit.wear = 100;
     let worn = g.derived(&c);
     assert_eq!(worn.damage, fresh.damage - 4);
-    assert_eq!(worn.armor, fresh.armor - 4 + i32::from(fresh.armor < 4) * (4 - fresh.armor));
+    assert_eq!(
+        worn.armor,
+        fresh.armor - 4 + i32::from(fresh.armor < 4) * (4 - fresh.armor)
+    );
     town(&mut g, TownAct::Repair(Worn::Weapon));
     town(&mut g, TownAct::Repair(Worn::Armour));
     assert_eq!(g.derived(&c), fresh);
@@ -76,7 +79,10 @@ fn an_affix_changes_the_derived_sheet_and_its_tag_changes_the_rooms() {
     let before = labels(&plain);
     plain.hero.wkit.affixes.push("lockwrights".into());
     let after = labels(&plain);
-    assert!(after.len() != before.len() || after != before, "{before:?} vs {after:?}");
+    assert!(
+        after.len() != before.len() || after != before,
+        "{before:?} vs {after:?}"
+    );
     assert!(plain.derived(&c).has_tag("lockpick"));
 }
 
@@ -103,8 +109,15 @@ fn a_core_changes_what_a_hero_can_do_in_a_fight_not_just_the_numbers() {
     if let Some(f) = h.fight.as_mut() {
         f.focus = 5;
     }
-    let ev = run(&mut h, Action::Fight(FightAct::Use("cinder-bolt".into(), 0)));
-    assert!(said(&ev).to_lowercase().contains("cinder bolt"), "{}", said(&ev));
+    let ev = run(
+        &mut h,
+        Action::Fight(FightAct::Use("cinder-bolt".into(), 0)),
+    );
+    assert!(
+        said(&ev).to_lowercase().contains("cinder bolt"),
+        "{}",
+        said(&ev)
+    );
 }
 
 #[test]
@@ -136,7 +149,11 @@ fn only_a_runesmith_lifts_a_core_out_whole_anyone_else_cracks_the_old_one() {
     smith.hero.cores.push("bite-core".into());
     town(&mut smith, TownAct::Slot(0, Worn::Weapon));
     assert_eq!(smith.hero.wkit.core.as_deref(), Some("bite-core"));
-    assert_eq!(smith.hero.cores, vec!["cinder-core".to_owned()], "the old core came out whole");
+    assert_eq!(
+        smith.hero.cores,
+        vec!["cinder-core".to_owned()],
+        "the old core came out whole"
+    );
     town(&mut smith, TownAct::Unslot(Worn::Weapon));
     assert!(smith.hero.wkit.core.is_none());
     assert_eq!(smith.hero.cores.len(), 2);
@@ -174,7 +191,9 @@ fn a_calling_decides_which_recipes_a_hero_has_and_a_node_unlocks_another() {
     assert!(w.hero.knows(coat));
     // And a calling's recipe refuses another calling's smith.
     let mut w2 = rich_game("warden", ["quick", "stout"], 10);
-    assert!(town_refused(&mut w2, TownAct::Craft("runesmith-mallet".into())).contains("do not know"));
+    assert!(
+        town_refused(&mut w2, TownAct::Craft("runesmith-mallet".into())).contains("do not know")
+    );
 }
 
 #[test]
@@ -221,7 +240,9 @@ fn crafting_is_refused_without_stock_forge_or_the_craft_for_it() {
     // A core recipe needs runecraft: a warden who learned one cannot work it.
     let mut w = rich_game("warden", ["quick", "stout"], 13);
     w.hero.learn("found-cinder-core");
-    assert!(town_refused(&mut w, TownAct::Craft("found-cinder-core".into())).contains("lack the craft"));
+    assert!(
+        town_refused(&mut w, TownAct::Craft("found-cinder-core".into())).contains("lack the craft")
+    );
     // ...until a runed weapon gives them the knack.
     w.hero.wkit.affixes.push("runed".into());
     town(&mut w, TownAct::Craft("found-cinder-core".into()));
@@ -245,7 +266,10 @@ fn a_runesmiths_masterwork_adds_an_affix_and_nobody_else_gets_one() {
             other += 1;
         }
     }
-    assert!(master > 5, "a smith with a book-learned head masters {master} of 80");
+    assert!(
+        master > 5,
+        "a smith with a book-learned head masters {master} of 80"
+    );
     assert_eq!(other, 0);
 }
 
@@ -286,7 +310,11 @@ fn found_gear_comes_home_with_the_hero_and_is_lost_with_them() {
     g.place = Place::Delve { depth: 1, room: 0 };
     run(&mut g, Action::Climb);
     assert!(g.hero.found.is_empty());
-    assert_eq!(g.hero.pack.len(), 1, "found gear is banked at home on arrival");
+    assert_eq!(
+        g.hero.pack.len(),
+        1,
+        "found gear is banked at home on arrival"
+    );
     // The same find, carried to the temple floor, is gone; the spare at home is not.
     let mut h = fight_ready("warden", 22);
     h.hero.pack.push(Item {

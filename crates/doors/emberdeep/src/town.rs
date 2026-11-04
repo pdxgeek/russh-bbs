@@ -10,7 +10,9 @@
 use russh_bbs_door::DoorRng;
 
 use crate::content::{Attr, Content};
-use crate::content_town::{Affix, Contract, ContractKind, Learn, Makes, ProjectEffect, RumourEffect, Slot};
+use crate::content_town::{
+    Affix, Contract, ContractKind, Learn, Makes, ProjectEffect, RumourEffect, Slot,
+};
 use crate::game::{Event, Game, Refused, Tone, say};
 use crate::hero::{Item, Kit, Taken, modifier};
 use crate::rules::{
@@ -183,7 +185,8 @@ impl Game {
         let fx = self.world.town(content);
         let deepest = u32::from(self.world.deepest.first().map_or(0, |d| d.1));
         let cap = (1 + deepest / 3 + u32::from(fx.market >= 2)).min(4);
-        let mut rng = DoorRng::from_label(&format!("market-{}-{}", self.season, self.epoch), self.day);
+        let mut rng =
+            DoorRng::from_label(&format!("market-{}-{}", self.season, self.epoch), self.day);
         let bases: Vec<(&str, Slot)> = content
             .gear
             .weapon
@@ -295,7 +298,8 @@ impl Game {
         if ok.is_empty() {
             return ok;
         }
-        let mut rng = DoorRng::from_label(&format!("board-{}-{}", self.season, self.epoch), self.day);
+        let mut rng =
+            DoorRng::from_label(&format!("board-{}-{}", self.season, self.epoch), self.day);
         let start = rng.below(u32::try_from(ok.len()).unwrap_or(1)) as usize;
         (0..ok.len().min(3))
             .map(|i| ok[(start + i) % ok.len()])
@@ -341,7 +345,10 @@ impl Game {
 
     /// What a recipe costs this hero: salvage and coin. A runesmith's edge saves a quarter of
     /// the salvage.
-    pub(crate) fn craft_cost(r: &crate::content_town::Recipe, d: &crate::hero::Derived) -> (u32, u32) {
+    pub(crate) fn craft_cost(
+        r: &crate::content_town::Recipe,
+        d: &crate::hero::Derived,
+    ) -> (u32, u32) {
         let salvage = if d.has_tag("smithcraft") {
             (r.salvage * 3).div_ceil(4)
         } else {
@@ -397,7 +404,12 @@ impl Game {
 
     // ---- market ----
 
-    fn buy_stock(&mut self, content: &Content, n: usize, ev: &mut Vec<Event>) -> Result<(), Refused> {
+    fn buy_stock(
+        &mut self,
+        content: &Content,
+        n: usize,
+        ev: &mut Vec<Event>,
+    ) -> Result<(), Refused> {
         let stock = self.stock(content);
         let Some(item) = stock.get(n) else {
             return Err(Refused::new("There is nothing on that stall."));
@@ -409,7 +421,9 @@ impl Game {
         match &item.wares {
             Wares::Gear(g) if self.hero.pack.len() >= PACK_MAX => {
                 let _ = g;
-                return Err(Refused::new("Your spare gear is full. Sell something first."));
+                return Err(Refused::new(
+                    "Your spare gear is full. Sell something first.",
+                ));
             }
             Wares::Core(_) if self.hero.cores.len() >= CORES_MAX => {
                 return Err(Refused::new("You have no room for another core."));
@@ -433,7 +447,11 @@ impl Game {
             }
             Wares::Core(id) => {
                 let name = content.core(id).map_or("a core", |c| c.name.as_str());
-                say(ev, Tone::Good, format!("You buy a {name} for {} coin.", item.price));
+                say(
+                    ev,
+                    Tone::Good,
+                    format!("You buy a {name} for {} coin.", item.price),
+                );
                 self.hero.cores.push(id.clone());
             }
         }
@@ -453,13 +471,19 @@ impl Game {
         let name = item_name(content, &item.base, &item.kit);
         self.hero.pack.remove(n);
         self.hero.coin = self.hero.coin.saturating_add(price);
-        say(ev, Tone::Good, format!("You sell the {name} for {price} coin."));
+        say(
+            ev,
+            Tone::Good,
+            format!("You sell the {name} for {price} coin."),
+        );
         Ok(())
     }
 
     fn sell_salvage(&mut self, ev: &mut Vec<Event>) -> Result<(), Refused> {
         if self.hero.stash < 10 {
-            return Err(Refused::new("Salvage sells by the ten, and you have fewer."));
+            return Err(Refused::new(
+                "Salvage sells by the ten, and you have fewer.",
+            ));
         }
         self.hero.stash -= 10;
         self.hero.coin = self.hero.coin.saturating_add(8);
@@ -497,7 +521,10 @@ impl Game {
         say(
             ev,
             Tone::Good,
-            format!("You take up the {}.", item_name(content, &item.base, &item.kit)),
+            format!(
+                "You take up the {}.",
+                item_name(content, &item.base, &item.kit)
+            ),
         );
         Ok(())
     }
@@ -530,7 +557,12 @@ impl Game {
         )
     }
 
-    fn repair(&mut self, content: &Content, worn: Worn, ev: &mut Vec<Event>) -> Result<(), Refused> {
+    fn repair(
+        &mut self,
+        content: &Content,
+        worn: Worn,
+        ev: &mut Vec<Event>,
+    ) -> Result<(), Refused> {
         let cost = self.repair_price(content, worn);
         if cost == 0 {
             return Err(Refused::new("It needs no repair."));
@@ -576,13 +608,12 @@ impl Game {
                         .affix
                         .iter()
                         .filter(|a| {
-                            a.band <= band + 1
-                                && a.slot.fits(slot)
-                                && !kit.affixes.contains(&a.id)
+                            a.band <= band + 1 && a.slot.fits(slot) && !kit.affixes.contains(&a.id)
                         })
                         .collect();
                     if !extra.is_empty() {
-                        let a = extra[self.rng.below(u32::try_from(extra.len()).unwrap_or(1)) as usize];
+                        let a =
+                            extra[self.rng.below(u32::try_from(extra.len()).unwrap_or(1)) as usize];
                         kit.affixes.push(a.id.clone());
                         master = true;
                     }
@@ -596,7 +627,9 @@ impl Game {
                     ev,
                     Tone::Good,
                     if master {
-                        format!("Masterwork! The {name} comes off the anvil better than the pattern.")
+                        format!(
+                            "Masterwork! The {name} comes off the anvil better than the pattern."
+                        )
                     } else {
                         format!("You forge a {name}.")
                     },
@@ -605,7 +638,11 @@ impl Game {
             Makes::Core { id } => {
                 let name = content.core(id).map_or("a core", |c| c.name.as_str());
                 self.hero.cores.push(id.clone());
-                say(ev, Tone::Good, format!("You work a {name} from salvage and fire."));
+                say(
+                    ev,
+                    Tone::Good,
+                    format!("You work a {name} from salvage and fire."),
+                );
             }
         }
         Ok(())
@@ -673,7 +710,12 @@ impl Game {
         Ok(())
     }
 
-    fn unslot_core(&mut self, content: &Content, worn: Worn, ev: &mut Vec<Event>) -> Result<(), Refused> {
+    fn unslot_core(
+        &mut self,
+        content: &Content,
+        worn: Worn,
+        ev: &mut Vec<Event>,
+    ) -> Result<(), Refused> {
         let d = self.derived(content);
         if !d.has_tag("smithcraft") {
             return Err(Refused::new(
@@ -741,7 +783,9 @@ impl Game {
             return Err(Refused::new(&format!("You need {price} coin.")));
         }
         if self.hero.turns < turns {
-            return Err(Refused::new("You do not have the turns to wait to be tended."));
+            return Err(Refused::new(
+                "You do not have the turns to wait to be tended.",
+            ));
         }
         self.hero.coin -= price;
         self.hero.turns -= turns;
@@ -769,7 +813,12 @@ impl Game {
         u32::try_from((i64::from(*days) * 10 * discount / 100).max(1)).ok()
     }
 
-    fn cure_at_temple(&mut self, content: &Content, n: usize, ev: &mut Vec<Event>) -> Result<(), Refused> {
+    fn cure_at_temple(
+        &mut self,
+        content: &Content,
+        n: usize,
+        ev: &mut Vec<Event>,
+    ) -> Result<(), Refused> {
         let Some(price) = self.cure_price(content, n) else {
             return Err(Refused::new("There is nothing there to cure."));
         };
@@ -784,7 +833,10 @@ impl Game {
         say(
             ev,
             Tone::Good,
-            format!("The sisters lift your {} away. It leaves no scar. {price} coin.", name.to_lowercase()),
+            format!(
+                "The sisters lift your {} away. It leaves no scar. {price} coin.",
+                name.to_lowercase()
+            ),
         );
         Ok(())
     }
@@ -800,7 +852,9 @@ impl Game {
         let fx = self.town_fx(content);
         let allowed = 1 + fx.guild;
         if u32::from(self.today.trained) >= allowed {
-            return Err(Refused::new("The guild has drilled you enough for one day."));
+            return Err(Refused::new(
+                "The guild has drilled you enough for one day.",
+            ));
         }
         if self.hero.level >= TRAIN_LEVEL_MAX {
             return Err(Refused::new(
@@ -859,7 +913,11 @@ impl Game {
         }
         if self.today.drinks == 3 {
             self.hero.inflict(content, "hangover");
-            say(ev, Tone::Bad, "That third one was a mistake. Your head pounds.");
+            say(
+                ev,
+                Tone::Bad,
+                "That third one was a mistake. Your head pounds.",
+            );
         }
         Ok(())
     }
@@ -872,7 +930,9 @@ impl Game {
         ev: &mut Vec<Event>,
     ) -> Result<(), Refused> {
         if self.today.shut_out {
-            return Err(Refused::new("The dice-crew has thrown you out for the night."));
+            return Err(Refused::new(
+                "The dice-crew has thrown you out for the night.",
+            ));
         }
         if self.hero.debt > 0 {
             return Err(Refused::new(
@@ -924,7 +984,9 @@ impl Game {
                 ev,
                 Tone::Bad,
                 if borrowed > 0 {
-                    format!("The dice fall wrong. You lose {paid} coin and owe the crew {borrowed}.")
+                    format!(
+                        "The dice fall wrong. You lose {paid} coin and owe the crew {borrowed}."
+                    )
                 } else {
                     format!("The dice fall wrong. You lose {paid} coin.")
                 },
@@ -949,7 +1011,10 @@ impl Game {
             if self.hero.debt == 0 {
                 format!("You pay the crew {pay} coin. The debt book is closed.")
             } else {
-                format!("You pay the crew {pay} coin. You still owe {}.", self.hero.debt)
+                format!(
+                    "You pay the crew {pay} coin. You still owe {}.",
+                    self.hero.debt
+                )
             },
         );
         Ok(())
@@ -964,7 +1029,9 @@ impl Game {
         }
         if let Some(b) = &self.hero.bond {
             if b.id != id {
-                return Err(Refused::new("You are already keeping company with someone else."));
+                return Err(Refused::new(
+                    "You are already keeping company with someone else.",
+                ));
             }
             if b.level >= 3 {
                 return Err(Refused::new("There is nothing more to win."));
@@ -1000,13 +1067,20 @@ impl Game {
                     );
                 }
             } else {
-                say(ev, Tone::Good, format!("{} smiles, and stays a while.", c.name));
+                say(
+                    ev,
+                    Tone::Good,
+                    format!("{} smiles, and stays a while.", c.name),
+                );
             }
         } else {
             say(
                 ev,
                 Tone::Dim,
-                format!("{} is polite, and busy. The gift is accepted all the same.", c.name),
+                format!(
+                    "{} is polite, and busy. The gift is accepted all the same.",
+                    c.name
+                ),
             );
         }
         Ok(())
@@ -1014,9 +1088,16 @@ impl Game {
 
     // ---- the board ----
 
-    fn take_contract(&mut self, content: &Content, n: usize, ev: &mut Vec<Event>) -> Result<(), Refused> {
+    fn take_contract(
+        &mut self,
+        content: &Content,
+        n: usize,
+        ev: &mut Vec<Event>,
+    ) -> Result<(), Refused> {
         if self.hero.contract.is_some() {
-            return Err(Refused::new("You already carry a contract. Finish it or drop it."));
+            return Err(Refused::new(
+                "You already carry a contract. Finish it or drop it.",
+            ));
         }
         let board = self.board(content);
         let Some(c) = board.get(n) else {
@@ -1030,7 +1111,10 @@ impl Game {
         say(
             ev,
             Tone::Good,
-            format!("You take the posting: {}. {} day(s) to do it.", c.name, c.days),
+            format!(
+                "You take the posting: {}. {} day(s) to do it.",
+                c.name, c.days
+            ),
         );
         Ok(())
     }
@@ -1067,7 +1151,10 @@ impl Game {
         }
         self.gain_xp(c.xp, ev);
         let by = self.hero.name.clone();
-        self.emit(Change::News(format!("{by} finished the posting: {}.", c.name)));
+        self.emit(Change::News(format!(
+            "{by} finished the posting: {}.",
+            c.name
+        )));
         Ok(())
     }
 
@@ -1075,13 +1162,21 @@ impl Game {
         let Some(taken) = self.hero.contract.take() else {
             return Err(Refused::new("You have no contract."));
         };
-        let name = content.contract(&taken.id).map_or("the posting", |c| c.name.as_str());
+        let name = content
+            .contract(&taken.id)
+            .map_or("the posting", |c| c.name.as_str());
         say(ev, Tone::Dim, format!("You take your name off {name}."));
         Ok(())
     }
 
     /// The hero killed these monsters at `depth`: a beast contract may be done.
-    pub(crate) fn contract_beast(&mut self, content: &Content, ids: &[String], depth: u8, ev: &mut Vec<Event>) {
+    pub(crate) fn contract_beast(
+        &mut self,
+        content: &Content,
+        ids: &[String],
+        depth: u8,
+        ev: &mut Vec<Event>,
+    ) {
         let Some(taken) = self.hero.contract.as_ref().filter(|t| !t.done) else {
             return;
         };
@@ -1097,7 +1192,13 @@ impl Game {
     }
 
     /// The hero walked into a room of this kind at `depth`: an heirloom or a rescue may be done.
-    pub(crate) fn contract_room(&mut self, content: &Content, kind: crate::content::RoomKind, depth: u8, ev: &mut Vec<Event>) {
+    pub(crate) fn contract_room(
+        &mut self,
+        content: &Content,
+        kind: crate::content::RoomKind,
+        depth: u8,
+        ev: &mut Vec<Event>,
+    ) {
         let Some(taken) = self.hero.contract.as_ref().filter(|t| !t.done) else {
             return;
         };
@@ -1152,10 +1253,16 @@ impl Game {
             ));
         }
         let (have_c, have_s) = self.world.progress(project);
-        let c = coin.min(self.hero.coin).min(def.coin.saturating_sub(have_c));
-        let s = salvage.min(self.hero.stash).min(def.salvage.saturating_sub(have_s));
+        let c = coin
+            .min(self.hero.coin)
+            .min(def.coin.saturating_sub(have_c));
+        let s = salvage
+            .min(self.hero.stash)
+            .min(def.salvage.saturating_sub(have_s));
         if c + s == 0 {
-            return Err(Refused::new("You have nothing to give, or it needs no more of that."));
+            return Err(Refused::new(
+                "You have nothing to give, or it needs no more of that.",
+            ));
         }
         if self.world.pledges.len() >= crate::world::PLEDGES_MAX
             && !self
@@ -1168,16 +1275,13 @@ impl Game {
         }
         self.hero.coin -= c;
         self.hero.stash -= s;
-        let total = match self.hero.given.iter_mut().find(|(p, _, _)| p == project) {
-            Some(slot) => {
-                slot.1 = slot.1.saturating_add(c);
-                slot.2 = slot.2.saturating_add(s);
-                (slot.1, slot.2)
-            }
-            None => {
-                self.hero.given.push((project.to_owned(), c, s));
-                (c, s)
-            }
+        let total = if let Some(slot) = self.hero.given.iter_mut().find(|(p, _, _)| p == project) {
+            slot.1 = slot.1.saturating_add(c);
+            slot.2 = slot.2.saturating_add(s);
+            (slot.1, slot.2)
+        } else {
+            self.hero.given.push((project.to_owned(), c, s));
+            (c, s)
         };
         let was_done = self.world.is_done(content, project);
         self.emit(Change::Pledge(Pledge {
@@ -1193,7 +1297,10 @@ impl Game {
         );
         if !was_done && self.world.is_done(content, project) {
             let by = self.hero.name.clone();
-            self.emit(Change::News(format!("{by} finished a town project: {}.", def.name)));
+            self.emit(Change::News(format!(
+                "{by} finished a town project: {}.",
+                def.name
+            )));
             say(ev, Tone::Good, def.done_text.clone());
         }
         Ok(())
@@ -1241,7 +1348,10 @@ impl Game {
             say(
                 ev,
                 Tone::Good,
-                format!("The scholars read the relic and copy out a pattern for you: {}.", r.name),
+                format!(
+                    "The scholars read the relic and copy out a pattern for you: {}.",
+                    r.name
+                ),
             );
         } else if roll < 80 && self.hero.cores.len() < CORES_MAX {
             let cores: Vec<&crate::content_town::Core> = content
@@ -1263,7 +1373,9 @@ impl Game {
             say(
                 ev,
                 Tone::Good,
-                format!("The relic is a maker's strongbox key. The scholars buy it from you: +{coin} coin."),
+                format!(
+                    "The relic is a maker's strongbox key. The scholars buy it from you: +{coin} coin."
+                ),
             );
             self.gain_xp(25, ev);
         }
@@ -1307,11 +1419,17 @@ impl Game {
         if let Some(b) = self.hero.bond.clone()
             && today - b.last > 5
         {
-            let name = content.companion(&b.id).map_or("Someone", |c| c.name.as_str());
+            let name = content
+                .companion(&b.id)
+                .map_or("Someone", |c| c.name.as_str());
             if b.level == 0 {
                 self.hero.bond = None;
                 self.hero.closed.push(b.id);
-                say(ev, Tone::Dim, format!("{name} has stopped waiting for you, and moved on."));
+                say(
+                    ev,
+                    Tone::Dim,
+                    format!("{name} has stopped waiting for you, and moved on."),
+                );
             } else if let Some(bond) = self.hero.bond.as_mut() {
                 bond.level -= 1;
                 bond.progress = 0;
@@ -1388,7 +1506,11 @@ impl Game {
     pub(crate) fn pick_up(&mut self, content: &Content, item: Item, ev: &mut Vec<Event>) {
         let name = item_name(content, &item.base, &item.kit);
         if self.hero.found.len() >= FOUND_MAX {
-            say(ev, Tone::Dim, format!("You find a {name}, but you cannot carry it."));
+            say(
+                ev,
+                Tone::Dim,
+                format!("You find a {name}, but you cannot carry it."),
+            );
         } else {
             say(ev, Tone::Good, format!("You find a {name}."));
             self.hero.found.push(item);

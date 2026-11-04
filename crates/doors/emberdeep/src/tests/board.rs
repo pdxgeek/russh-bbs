@@ -43,7 +43,10 @@ fn two_builds_read_two_boards() {
     let smith = eligible_over_days("runesmith", ["quick", "stout"]);
     let priest = eligible_over_days("ember-priest", ["quick", "stout"]);
     let warden = eligible_over_days("warden", ["quick", "stout"]);
-    assert!(cutthroat.contains("quiet-ledger"), "only a sneak is offered the quiet work");
+    assert!(
+        cutthroat.contains("quiet-ledger"),
+        "only a sneak is offered the quiet work"
+    );
     assert!(!warden.contains("quiet-ledger") && !smith.contains("quiet-ledger"));
     assert!(smith.contains("maker-plate") && !warden.contains("maker-plate"));
     assert!(priest.contains("the-locket") && !cutthroat.contains("the-locket"));
@@ -99,7 +102,12 @@ fn a_beast_contract_is_done_by_killing_the_beast_deep_enough_and_paid_in_town() 
     assert!(g.hero.contract.is_none());
     assert_eq!(g.hero.contracts_done, done + 1);
     assert!(g.hero.coin >= coin + 30 && g.hero.xp > xp);
-    assert!(g.world.news.iter().any(|n| n.contains("finished the posting")));
+    assert!(
+        g.world
+            .news
+            .iter()
+            .any(|n| n.contains("finished the posting"))
+    );
 }
 
 #[test]
@@ -115,7 +123,10 @@ fn a_beast_too_shallow_does_not_count() {
     place(&mut g, "sooty-gallery");
     let mut ev = Vec::new();
     g.contract_beast(&c, &["slag-crawler".to_owned()], 3, &mut ev);
-    assert!(!g.hero.contract.as_ref().unwrap().done, "level 3 is too shallow");
+    assert!(
+        !g.hero.contract.as_ref().unwrap().done,
+        "level 3 is too shallow"
+    );
     g.contract_beast(&c, &["slag-crawler".to_owned()], 6, &mut ev);
     assert!(g.hero.contract.as_ref().unwrap().done);
 }
@@ -131,14 +142,24 @@ fn an_heirloom_is_done_by_reaching_its_kind_of_room_and_a_rescue_slows_the_climb
     });
     let mut ev = Vec::new();
     g.contract_room(&c, RoomKind::Shrine, 4, &mut ev);
-    assert!(!g.hero.contract.as_ref().unwrap().done, "a shrine is not a corridor");
+    assert!(
+        !g.hero.contract.as_ref().unwrap().done,
+        "a shrine is not a corridor"
+    );
     g.place = Place::Delve { depth: 3, room: 0 };
     let before = g.ascent_cost(&c);
     g.contract_room(&c, RoomKind::Corridor, 1, &mut ev);
-    assert!(!g.hero.contract.as_ref().unwrap().done, "level 1 is too shallow");
+    assert!(
+        !g.hero.contract.as_ref().unwrap().done,
+        "level 1 is too shallow"
+    );
     g.contract_room(&c, RoomKind::Corridor, 3, &mut ev);
     assert!(g.hero.contract.as_ref().unwrap().done);
-    assert_eq!(g.ascent_cost(&c), before + 1, "the soul you carry slows you by a turn");
+    assert_eq!(
+        g.ascent_cost(&c),
+        before + 1,
+        "the soul you carry slows you by a turn"
+    );
     // An heirloom does not.
     let mut h = rich_game("warden", ["quick", "stout"], 6);
     h.place = Place::Delve { depth: 3, room: 0 };
@@ -177,7 +198,12 @@ fn a_contract_can_teach_a_recipe_and_give_a_core() {
     // The shipped table pays coin and xp; the engine also pays recipes and cores when a
     // posting says so, proved with a table that does.
     let mut c = (*content()).clone();
-    let posting = c.town.contract.iter_mut().find(|p| p.id == "pell-strongbox").unwrap();
+    let posting = c
+        .town
+        .contract
+        .iter_mut()
+        .find(|p| p.id == "pell-strongbox")
+        .unwrap();
     posting.recipe = Some("found-forge-axe".into());
     posting.core = Some("cinder-core".into());
     let mut g = rich_game("warden", ["quick", "stout"], 8);
@@ -186,7 +212,8 @@ fn a_contract_can_teach_a_recipe_and_give_a_core() {
         day: g.day,
         done: true,
     });
-    g.apply(&c, Action::Town(TownAct::TurnIn)).expect("turns in");
+    g.apply(&c, Action::Town(TownAct::TurnIn))
+        .expect("turns in");
     assert!(g.hero.recipes.contains(&"found-forge-axe".to_owned()));
     assert_eq!(g.hero.cores, vec!["cinder-core".to_owned()]);
     let _ = run;

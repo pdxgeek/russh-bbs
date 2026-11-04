@@ -24,7 +24,9 @@ use russh_bbs_core::store::AccountId;
 use russh_bbs_door::host::Running;
 use russh_bbs_door::sim::{Bot, Simulation};
 use russh_bbs_door::{DoorEnv, DoorKey};
-use russh_bbs_door_emberdeep::{Emberdeep, Summary, Whereabouts, summarize, summarize_world};
+use russh_bbs_door_emberdeep::{
+    Emberdeep, Summary, Whereabouts, summarize, summarize_town, summarize_world,
+};
 
 const DAY: i64 = 20_000;
 const NODE_KEYS: &str = "123456789abcdef";
@@ -90,6 +92,20 @@ struct Delver {
     /// The map showed nowhere left to go this visit.
     no_route: bool,
     raised: bool,
+    /// Town places still to visit this morning, as the keys that open them.
+    chores: VecDeque<char>,
+    place_steps: u32,
+    crafted: u32,
+    drank: bool,
+    drilled: bool,
+    asked: bool,
+    cored: bool,
+    cores_bought: u32,
+    /// The dearest weapon and armour this bot has bought: it only buys better.
+    price_floor: (i32, i32),
+    weapon_attr: &'static str,
+    ranged: bool,
+    court: bool,
 }
 
 impl Delver {
@@ -109,6 +125,23 @@ impl Delver {
             created_points: 0,
             no_route: false,
             raised: false,
+            chores: VecDeque::new(),
+            place_steps: 0,
+            crafted: 0,
+            drank: false,
+            drilled: false,
+            asked: false,
+            cored: false,
+            cores_bought: 0,
+            price_floor: (0, 0),
+            weapon_attr: match calling {
+                '1' => "might",
+                '3' => "spirit",
+                '4' => "wits",
+                _ => "finesse",
+            },
+            ranged: calling == '5',
+            court: matches!(calling, '1' | '3' | '4'),
         }
     }
 
@@ -148,6 +181,10 @@ impl Delver {
         if wants_points && !self.skills_done {
             self.skill_cursor = 0;
             return Some(DoorKey::Char('s'));
+        }
+        if let Some(chore) = self.chores.pop_front() {
+            self.place_steps = 0;
+            return Some(DoorKey::Char(chore));
         }
         if self.descended {
             return None;
@@ -467,6 +504,236 @@ impl Delver {
     }
 }
 
+/// `n. text  123c` rows of a market screen.
+fn stall_rows(screen: &[String]) -> Vec<(usize, String, i32, bool)> {
+    screen
+        .iter()
+        .filter_map(|l| {
+            let t = l.trim_start();
+            let (n, rest) = t.split_once(". ")?;
+            let n: usize = n.parse().ok()?;
+            let sold = rest.ends_with(" SOLD");
+            let rest = rest.trim_end_matches(" SOLD");
+            let (text, price) = rest.rsplit_once("  ")?;
+            let price: i32 = price.strip_suffix('c')?.parse().ok()?;
+            Some((n, text.to_owned(), price, sold))
+        })
+        .collect()
+}
+
+/// The average blow of `6-10 might melee`, or the armour of `armor 3`.
+fn stat(text: &str) -> Option<(i32, &'static str)> {
+    if let Some(at) = text.find("armor ") {
+        let v: i32 = text[at + 6..].split_whitespace().next()?.parse().ok()?;
+        return Some((v, "armor"));
+    }
+    for word in text.split_whitespace() {
+        if let Some((a, b)) = word.split_once('-')
+            && let (Ok(a), Ok(b)) = (a.parse::<i32>(), b.parse::<i32>())
+        {
+            let attr = ["might", "finesse", "wits", "spirit"]
+                .into_iter()
+                .find(|w| text.contains(w))?;
+            return Some((i32::midpoint(a, b), attr));
+        }
+    }
+    None
+}
+
+impl Delver {
+    /// One key in a town place: do the next sensible thing, or leave.
+    fn place_step(&mut self, first: &str, screen: &[String], level: i32) -> Option<DoorKey> {
+        self.place_steps += 1;
+        if self.place_steps > 40 {
+            return Some(DoorKey::Escape);
+        }
+        let coin = field(screen, "Coin ").map_or(0, |v| v.0);
+        let stash = field(screen, "Stash ").map_or(0, |v| v.0);
+        let menu = entries(screen);
+        let press = |prefix: &str| {
+            menu.iter()
+                .find(|(_, l)| l.starts_with(prefix))
+                .map(|(k, _)| DoorKey::Char(*k))
+        };
+        let price_in = |label: &str| -> i32 {
+            label
+                .rsplit_once('(')
+                .and_then(|(_, t)| t.trim_end_matches(')').trim_end_matches('c').parse().ok())
+                .unwrap_or(0)
+        };
+        if first.starts_with("THE FORGE") {
+            for (k, label) in &menu {
+                if label.starts_with("Repair") && price_in(label) <= coin {
+                    return Some(DoorKey::Char(*k));
+                }
+            }
+            for (k, label) in &menu {
+                let Some(rest) = label.strip_prefix("Slot ") else {
+                    continue;
+                };
+                let (slot, line_start) = if rest.ends_with("in weapon (8c)") {
+                    ("weapon", "Weapon ")
+                } else {
+                    ("armour", "Armour ")
+                };
+                let free = screen
+                    .iter()
+                    .any(|l| l.starts_with(line_start) && l.contains("no core"));
+                if free && coin >= 8 && rest.contains(slot) {
+                    return Some(DoorKey::Char(*k));
+                }
+            }
+            if self.crafted < 2 && coin >= 90 {
+                for (k, label) in &menu {
+                    let Some(name) = label.strip_prefix("Make ") else {
+                        continue;
+                    };
+                    let ready = screen.iter().any(|l| {
+                        l.trim_start().starts_with(&format!("{name}:")) && !l.contains("(not yet)")
+                    });
+                    if ready {
+                        self.crafted += 1;
+                        return Some(DoorKey::Char(*k));
+                    }
+                }
+            }
+            return Some(DoorKey::Escape);
+        }
+        if first.starts_with("THE MARKET") {
+            for (n, text, price, sold) in stall_rows(screen) {
+                if sold || price + 30 > coin {
+                    continue;
+                }
+                let key = menu
+                    .iter()
+                    .find(|(_, l)| *l == format!("Buy {n}"))
+                    .map(|(k, _)| DoorKey::Char(*k));
+                let Some(key) = key else { continue };
+                if text.contains("Core") {
+                    if self.cores_bought < 1 && coin >= price + 120 {
+                        self.cores_bought += 1;
+                        return Some(key);
+                    }
+                    continue;
+                }
+                let req: i32 = text
+                    .rsplit_once(" L")
+                    .and_then(|(_, r)| r.split_whitespace().next()?.parse().ok())
+                    .unwrap_or(1);
+                if req > level {
+                    continue;
+                }
+                let is_armour = text.contains("armor ");
+                let ok_weapon = text.contains(self.weapon_attr)
+                    && text.contains("ranged") == self.ranged
+                    && !is_armour;
+                if (is_armour && price > self.price_floor.1)
+                    || (ok_weapon && price > self.price_floor.0)
+                {
+                    if is_armour {
+                        self.price_floor.1 = price;
+                    } else {
+                        self.price_floor.0 = price;
+                    }
+                    return Some(key);
+                }
+            }
+            return Some(DoorKey::Escape);
+        }
+        if first == "GEAR" {
+            let current = |prefix: &str| {
+                screen
+                    .iter()
+                    .find(|l| l.starts_with(prefix))
+                    .and_then(|l| stat(l))
+            };
+            let (w, a) = (current("Weapon:"), current("Armour:"));
+            let ranged_now = screen
+                .iter()
+                .any(|l| l.starts_with("Weapon:") && l.contains("ranged"));
+            for (k, label) in &menu {
+                let Some(n) = label.strip_prefix("Wield ") else {
+                    continue;
+                };
+                let row = screen
+                    .iter()
+                    .find(|l| l.trim_start().starts_with(&format!("{n}. ")));
+                let Some(row) = row else { continue };
+                let Some((v, kind)) = stat(row) else { continue };
+                let req: i32 = row
+                    .rsplit_once("  L")
+                    .and_then(|(_, r)| r.split_whitespace().next()?.parse().ok())
+                    .unwrap_or(1);
+                if req > level {
+                    continue;
+                }
+                let better = if kind == "armor" {
+                    a.is_some_and(|(cv, _)| v > cv)
+                } else {
+                    w.is_some_and(|(cv, attr)| v > cv && attr == kind)
+                        && row.contains("ranged") == ranged_now
+                };
+                if better {
+                    return Some(DoorKey::Char(*k));
+                }
+            }
+            if let Some(key) = press("Sell 1") {
+                return Some(key);
+            }
+            return Some(DoorKey::Escape);
+        }
+        if first.starts_with("THE TOWN WORKS") {
+            if coin >= 60 {
+                if let Some(key) = press("Give 25c") {
+                    return Some(key);
+                }
+            }
+            if stash > 20 {
+                if let Some(key) = press("Give 25s") {
+                    return Some(key);
+                }
+            }
+            return Some(DoorKey::Escape);
+        }
+        if first.starts_with("THE GUILD") {
+            if !self.drilled && coin >= 100 && level < 8 {
+                self.drilled = true;
+                if let Some(key) = press("Drill") {
+                    return Some(key);
+                }
+            }
+            return Some(DoorKey::Escape);
+        }
+        if first.starts_with("THE TAVERN") {
+            if !self.asked {
+                self.asked = true;
+                if has(screen, "done: turn it in") {
+                    if let Some(key) = press("Turn in") {
+                        return Some(key);
+                    }
+                }
+                if let Some(key) = press("Take 1") {
+                    return Some(key);
+                }
+            }
+            if self.court && coin >= 90 && !self.cored {
+                self.cored = true;
+                if let Some(key) = press("Call on") {
+                    return Some(key);
+                }
+            }
+            if !self.drank && coin >= 60 {
+                self.drank = true;
+                if let Some(key) = press("Drink") {
+                    return Some(key);
+                }
+            }
+            return Some(DoorKey::Escape);
+        }
+        Some(DoorKey::Escape)
+    }
+}
+
 impl Bot for Delver {
     fn next_key(&mut self, screen: &[String], visit: u32, keys_this_visit: u32) -> Option<DoorKey> {
         self.decide(screen, visit, keys_this_visit)
@@ -487,6 +754,13 @@ impl Delver {
             self.skills_done = false;
             self.no_route = false;
             self.raised = false;
+            self.chores = "fmigwb".chars().collect();
+            self.crafted = 0;
+            self.drank = false;
+            self.drilled = false;
+            self.asked = false;
+            self.cored = false;
+            self.cores_bought = 0;
         }
         let _ = visit;
         if let Some(key) = self.queue.pop_front() {
@@ -513,6 +787,15 @@ impl Delver {
         }
         if first == "HERO SHEET" || first == "THE HALL" {
             return Some(DoorKey::Escape);
+        }
+        if first.starts_with("THE FORGE")
+            || first.starts_with("THE MARKET")
+            || first == "GEAR"
+            || first.starts_with("THE TOWN WORKS")
+            || first.starts_with("THE GUILD")
+            || first.starts_with("THE TAVERN")
+        {
+            return self.place_step(first, screen, level);
         }
         if has(screen, "You are dead") {
             return None;
@@ -574,10 +857,55 @@ async fn thirty_days_of_twelve_delvers() {
     for (_, bot) in bots {
         sim.add_player(Box::new(bot));
     }
-    let report = sim.run_days(30).await.unwrap();
+    // Thirty days, sampled every five: the curves the pull request reports.
+    let content = Emberdeep::new().unwrap();
+    sim.tick_now().await.unwrap();
+    let mut curve: Vec<String> = Vec::new();
+    let mut done_by_day: Vec<(u32, usize)> = Vec::new();
+    let mut gear_curve: Vec<(f64, f64)> = Vec::new();
+    for day in 1..=30u32 {
+        sim.play_day().await.unwrap();
+        sim.advance_day().await.unwrap();
+        if day % 5 == 0 || day == 1 {
+            let mut sums = (0i32, 0i32, 0i32, 0u32, 0u32);
+            let mut n = 0;
+            for i in 0..labels.len() {
+                let account = AccountId::from_raw(i64::try_from(i).unwrap() + 1);
+                if let Some(stored) = sim.store().load_save(&id, account).await.unwrap() {
+                    let s = summarize(&stored.bytes, content.content().unwrap()).unwrap();
+                    sums.0 += s.damage_avg;
+                    sums.1 += s.armor;
+                    sums.2 += i32::from(s.level);
+                    sums.3 += s.given.0;
+                    sums.4 += s.given.1;
+                    n += 1;
+                }
+            }
+            let w = sim.store().load_world(&id).await.unwrap().unwrap();
+            let town = summarize_town(&w.bytes, content.content().unwrap()).unwrap();
+            done_by_day.push((day, town.done.len()));
+            gear_curve.push((
+                f64::from(sums.0) / f64::from(n),
+                f64::from(sums.1) / f64::from(n),
+            ));
+            curve.push(format!(
+                "day {day:>2}: avg blow {:>5.1}  avg armor {:>4.1}  avg level {:>4.1}  given {:>5}c {:>4}s  projects done {}/11",
+                f64::from(sums.0) / f64::from(n),
+                f64::from(sums.1) / f64::from(n),
+                f64::from(sums.2) / f64::from(n),
+                sums.3,
+                sums.4,
+                town.done.len()
+            ));
+        }
+    }
+    let report = sim.report();
     println!("\nEMBERDEEP 30-DAY SIM: {report:?}");
+    for line in &curve {
+        println!("{line}");
+    }
     println!(
-        "{:<13} {:<8} {:>3} {:>5} {:>5} {:>6} {:>5} {:>7} {:>5} {:>6} {:>7} {:>6}",
+        "{:<13} {:<8} {:>3} {:>5} {:>5} {:>6} {:>5} {:>7} {:>5} {:>6} {:>7} {:>6}  gear",
         "calling",
         "style",
         "lvl",
@@ -612,7 +940,25 @@ async fn thirty_days_of_twelve_delvers() {
                 Whereabouts::Below(d) => format!("L{d}"),
                 Whereabouts::Dead(d) => format!("dead@{d}"),
             },
-            stored.bytes.len()
+            stored.bytes.len(),
+        );
+        println!(
+            "{:>66}{} / {}  blow {} armor {} wear {}%/{}% cores {} spares {} gave {}c {}s deals {} debt {} bond {} recipes {}",
+            "",
+            s.weapon,
+            s.armour,
+            s.damage_avg,
+            s.armor,
+            s.wear.0,
+            s.wear.1,
+            s.cores,
+            s.pack,
+            s.given.0,
+            s.given.1,
+            s.contracts_done,
+            s.debt,
+            s.bond,
+            s.recipes
         );
         summaries.push(s);
     }
@@ -628,6 +974,43 @@ async fn thirty_days_of_twelve_delvers() {
         summaries.iter().map(|s| s.best_depth).max().unwrap()
     );
     assert_eq!(report.cut_off, 0, "no visit ran away");
+    // The town: projects progress across all players and finish, and gear gets better.
+    let town = summarize_town(
+        &sim.store().load_world(&id).await.unwrap().unwrap().bytes,
+        content.content().unwrap(),
+    )
+    .unwrap();
+    assert!(
+        town.done.len() >= 3,
+        "a dozen heroes finish several town projects in thirty days: {:?}",
+        town.done
+    );
+    assert!(
+        done_by_day.windows(2).all(|w| w[0].1 <= w[1].1),
+        "a finished project never un-finishes: {done_by_day:?}"
+    );
+    let (first, last) = (gear_curve[0], gear_curve[gear_curve.len() - 1]);
+    assert!(
+        last.0 > first.0 && last.1 > first.1,
+        "gear improves: {gear_curve:?}"
+    );
+    assert!(
+        summaries.iter().all(|s| s.debt == 0),
+        "the bots never gamble, so no one owes the crew"
+    );
+    assert!(
+        summaries.iter().any(|s| s.given.0 > 0),
+        "heroes gave coin to the works"
+    );
+    let gave: u32 = summaries.iter().map(|s| s.given.0).sum();
+    let pledged: u32 = world.pledged.iter().map(|(_, c, _)| *c).sum();
+    assert_eq!(
+        gave, pledged,
+        "what heroes say they gave is exactly what the world holds: no coin counted twice or lost"
+    );
+    let gave_s: u32 = summaries.iter().map(|s| s.given.1).sum();
+    let pledged_s: u32 = world.pledged.iter().map(|(_, _, s)| *s).sum();
+    assert_eq!(gave_s, pledged_s, "and the same for salvage");
     assert!(
         summaries.iter().all(|s| s.level >= 2),
         "everyone gained a level in thirty days"
@@ -668,7 +1051,14 @@ async fn thirty_days_of_twelve_delvers() {
     }
     let town = running.look_around(&env);
     let express: Vec<&String> = town.iter().filter(|l| l.contains("Take the")).collect();
-    assert_eq!(express.len(), world.shortcuts.len(), "{town:?}");
+    let ways = summarize_town(
+        &sim.store().load_world(&id).await.unwrap().unwrap().bytes,
+        content.content().unwrap(),
+    )
+    .unwrap()
+    .ways_down;
+    assert_eq!(express.len(), ways.len().min(9), "{town:?}");
+    assert!(ways.len() >= world.shortcuts.len());
     println!("newcomer sees: {express:?}");
     let _ = running.key(DoorKey::Char('1'));
     let below = running.look_around(&env);

@@ -173,7 +173,10 @@ fn the_town_section_round_trips_exactly() {
         last: 19_999,
     });
     g.hero.closed = vec!["odo".into()];
-    g.hero.given = vec![("new-bellows".into(), 40, 12), ("reading-room".into(), 0, 7)];
+    g.hero.given = vec![
+        ("new-bellows".into(), 40, 12),
+        ("reading-room".into(), 0, 7),
+    ];
     g.hero.contract = Some(Taken {
         id: "old-scorchtail".into(),
         day: 19_998,
@@ -213,10 +216,16 @@ fn a_save_cannot_hold_more_gear_than_the_game_allows() {
         };
         7
     ];
-    assert!(Game::decode(&g.encode()).is_none(), "seven spares is too many");
+    assert!(
+        Game::decode(&g.encode()).is_none(),
+        "seven spares is too many"
+    );
     g.hero.pack.clear();
     g.hero.cores = vec!["ward-core".into(); 9];
-    assert!(Game::decode(&g.encode()).is_none(), "nine cores is too many");
+    assert!(
+        Game::decode(&g.encode()).is_none(),
+        "nine cores is too many"
+    );
     g.hero.cores.clear();
     g.hero.wkit.wear = 101;
     assert!(Game::decode(&g.encode()).is_none(), "wear is a percentage");

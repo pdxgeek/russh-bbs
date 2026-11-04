@@ -680,7 +680,11 @@ impl Game {
             if let Some(mask) = self.explored.get_mut(usize::from(depth) - 1) {
                 *mask = level.all_mask();
             }
-            say(ev, Tone::Good, "The rumour was good: the whole level is on your map.");
+            say(
+                ev,
+                Tone::Good,
+                "The rumour was good: the whole level is on your map.",
+            );
         }
     }
 
@@ -1126,24 +1130,36 @@ impl Game {
                 self.hero.relics = self.hero.relics.saturating_add(1);
                 say(ev, Tone::Good, "+1 relic of the old forges");
             }
-            Gain::Recipe { id } => {
-                let name = content.recipe(id).map_or("a recipe", |r| r.name.as_str());
-                if content.recipe(id).is_some_and(|r| self.hero.knows(r)) {
-                    say(ev, Tone::Dim, format!("You already know the pattern for {name}."));
-                } else {
-                    self.hero.learn(id);
-                    say(ev, Tone::Good, format!("You learn a recipe: {name}."));
-                }
-            }
-            Gain::Core { id } => {
-                let name = content.core(id).map_or("a core", |c| c.name.as_str());
-                if self.hero.cores.len() < crate::rules::CORES_MAX {
-                    self.hero.cores.push(id.clone());
-                    say(ev, Tone::Good, format!("+1 {name}"));
-                } else {
-                    say(ev, Tone::Dim, format!("You find a {name}, but have no room for it."));
-                }
-            }
+            Gain::Recipe { id } => self.find_recipe(content, id, ev),
+            Gain::Core { id } => self.find_core(content, id, ev),
+        }
+    }
+
+    fn find_recipe(&mut self, content: &Content, id: &str, ev: &mut Vec<Event>) {
+        let name = content.recipe(id).map_or("a recipe", |r| r.name.as_str());
+        if content.recipe(id).is_some_and(|r| self.hero.knows(r)) {
+            say(
+                ev,
+                Tone::Dim,
+                format!("You already know the pattern for {name}."),
+            );
+        } else {
+            self.hero.learn(id);
+            say(ev, Tone::Good, format!("You learn a recipe: {name}."));
+        }
+    }
+
+    fn find_core(&mut self, content: &Content, id: &str, ev: &mut Vec<Event>) {
+        let name = content.core(id).map_or("a core", |c| c.name.as_str());
+        if self.hero.cores.len() < crate::rules::CORES_MAX {
+            self.hero.cores.push(id.to_owned());
+            say(ev, Tone::Good, format!("+1 {name}"));
+        } else {
+            say(
+                ev,
+                Tone::Dim,
+                format!("You find a {name}, but have no room for it."),
+            );
         }
     }
 

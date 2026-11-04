@@ -3,12 +3,12 @@
 #![allow(clippy::unwrap_used, clippy::panic)]
 
 use russh_bbs_door::content;
-use russh_bbs_door_emberdeep::content_town::{
-    AFFIXES_TOML, Affixes, PROJECTS_TOML, Projects, RECIPES_TOML, Recipes, TOWN_TOML, TownTables,
-};
 use russh_bbs_door_emberdeep::content::{
     BESTIARY_TOML, Bestiary, CALLINGS_TOML, Callings, Content, GEAR_TOML, Gear, MOVES_TOML, Moves,
     NODES_TOML, Nodes, ROOMS_TOML, Rooms, TRAITS_TOML, Traits, WOUNDS_TOML, Wounds,
+};
+use russh_bbs_door_emberdeep::content_town::{
+    AFFIXES_TOML, Affixes, PROJECTS_TOML, Projects, RECIPES_TOML, Recipes, TOWN_TOML, TownTables,
 };
 
 #[test]
@@ -29,7 +29,10 @@ fn every_table_passes_its_schema() {
     assert_eq!(content::check::<Gear>("gear", GEAR_TOML), Ok(()));
     assert_eq!(content::check::<Affixes>("affixes", AFFIXES_TOML), Ok(()));
     assert_eq!(content::check::<Recipes>("recipes", RECIPES_TOML), Ok(()));
-    assert_eq!(content::check::<Projects>("projects", PROJECTS_TOML), Ok(()));
+    assert_eq!(
+        content::check::<Projects>("projects", PROJECTS_TOML),
+        Ok(())
+    );
     assert_eq!(content::check::<TownTables>("town", TOWN_TOML), Ok(()));
 }
 
@@ -40,7 +43,9 @@ fn a_broken_town_table_is_refused_with_every_problem_named() {
 project = [
   { id = "Bad Id", name = "x", text = "t", coin = 0, salvage = 0, requires = ["Bad Id"], effect = { kind = "lift", depth = 40 }, done_text = "d" },
 ]"#;
-    let err = content::check::<Projects>("projects", bad).unwrap_err().to_string();
+    let err = content::check::<Projects>("projects", bad)
+        .unwrap_err()
+        .to_string();
     assert!(err.contains("must be a-z"), "{err}");
     assert!(err.contains("must cost something"), "{err}");
     assert!(err.contains("requires itself"), "{err}");
@@ -56,7 +61,9 @@ rumour = []
 companion = [
   { id = "x", name = "X", text = "t", attr = "wits", dc = 12, gift = 1, steps = [] },
 ]"#;
-    let err = content::check::<TownTables>("town", bad).unwrap_err().to_string();
+    let err = content::check::<TownTables>("town", bad)
+        .unwrap_err()
+        .to_string();
     assert!(err.contains("a beast names a monster only"), "{err}");
     assert!(err.contains("it names a room kind only"), "{err}");
     assert!(err.contains("only a rescue escorts"), "{err}");

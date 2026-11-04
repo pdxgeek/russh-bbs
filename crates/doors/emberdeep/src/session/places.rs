@@ -102,7 +102,11 @@ impl Session {
                 w.damage[0],
                 w.damage[1],
                 w.attr.label().to_lowercase(),
-                if w.reach == Reach::Ranged { "ranged" } else { "melee" }
+                if w.reach == Reach::Ranged {
+                    "ranged"
+                } else {
+                    "melee"
+                }
             )
         } else if let Some(a) = self.content.armour(base) {
             format!("armor {}", a.armor)
@@ -145,12 +149,20 @@ impl Session {
                     format!(
                         "Your contract: {} ({}, {left} day(s) left)",
                         def.name,
-                        if t.done { "done: turn it in" } else { "not done" }
+                        if t.done {
+                            "done: turn it in"
+                        } else {
+                            "not done"
+                        }
                     ),
                     DoorStyle::Accent,
                 ));
                 if !t.done {
-                    head.extend(wrap(&def.text, WRAP).into_iter().map(|l| styled(l, DoorStyle::Dim)));
+                    head.extend(
+                        wrap(&def.text, WRAP)
+                            .into_iter()
+                            .map(|l| styled(l, DoorStyle::Dim)),
+                    );
                 }
             }
             menu.town("Turn in", TownAct::TurnIn);
@@ -159,7 +171,10 @@ impl Session {
             head.push(plain("The board, today:"));
             let board = game.board(c);
             if board.is_empty() {
-                head.push(styled("  Nothing the board-keeper trusts you with.", DoorStyle::Dim));
+                head.push(styled(
+                    "  Nothing the board-keeper trusts you with.",
+                    DoorStyle::Dim,
+                ));
             }
             for (i, p) in board.iter().enumerate() {
                 head.push(plain(clip(
@@ -193,13 +208,32 @@ impl Session {
                     .map_or("a friend", |s| s.name.as_str())
             };
             head.push(styled(
-                format!("Company: {} ({rung}, {}/2 toward the next)", comp.name, b.progress),
+                format!(
+                    "Company: {} ({rung}, {}/2 toward the next)",
+                    comp.name, b.progress
+                ),
                 DoorStyle::Good,
             ));
         }
+        self.tavern_menu(game, &d, &mut menu);
+        let mut lines = head;
+        lines.extend(key_lines(&menu.0));
+        (lines, menu.0)
+    }
+
+    /// The tavern's standing entries: drink, dice, the crew's book and the people to call on.
+    fn tavern_menu(&self, game: &Game, d: &crate::hero::Derived, menu: &mut Menu) {
+        let c = &self.content;
+        let h = &game.hero;
         menu.town("Drink (4c)", TownAct::Drink);
         for stake in [5, 20, 50] {
-            menu.town(format!("Dice for {stake}c"), TownAct::Gamble { stake, cheat: false });
+            menu.town(
+                format!("Dice for {stake}c"),
+                TownAct::Gamble {
+                    stake,
+                    cheat: false,
+                },
+            );
         }
         if d.has_tag("sneak") {
             for stake in [5, 20] {
@@ -221,9 +255,6 @@ impl Session {
                 );
             }
         }
-        let mut lines = head;
-        lines.extend(key_lines(&menu.0));
-        (lines, menu.0)
     }
 
     fn market_view(&self, game: &Game) -> (Vec<Line>, Vec<Entry>) {
@@ -236,7 +267,10 @@ impl Session {
             DoorStyle::Dim,
         ));
         for (i, s) in game.stock(c).iter().enumerate() {
-            let sold = game.today.bought.contains(&u8::try_from(i).unwrap_or(u8::MAX));
+            let sold = game
+                .today
+                .bought
+                .contains(&u8::try_from(i).unwrap_or(u8::MAX));
             let text = match &s.wares {
                 Wares::Gear(g) => format!(
                     "{}  {}  L{}",
@@ -249,7 +283,13 @@ impl Session {
                 }),
             };
             head.push(plain(clip(
-                &format!("  {}. {}  {}c{}", i + 1, text, s.price, if sold { " SOLD" } else { "" }),
+                &format!(
+                    "  {}. {}  {}c{}",
+                    i + 1,
+                    text,
+                    s.price,
+                    if sold { " SOLD" } else { "" }
+                ),
                 WRAP,
             )));
             if !sold {
@@ -278,7 +318,11 @@ impl Session {
             head.push(plain(clip(
                 &format!(
                     "{}: {}  {}  ({})",
-                    if worn == Worn::Weapon { "Weapon" } else { "Armour" },
+                    if worn == Worn::Weapon {
+                        "Weapon"
+                    } else {
+                        "Armour"
+                    },
                     item_name(c, base, kit),
                     self.base_stats(base),
                     self.kit_note(kit)
@@ -293,12 +337,22 @@ impl Session {
                 .filter_map(|id| c.core(id))
                 .map(|k| k.name.as_str())
                 .collect();
-            head.push(plain(clip(&format!("Loose cores: {}", names.join(", ")), WRAP)));
+            head.push(plain(clip(
+                &format!("Loose cores: {}", names.join(", ")),
+                WRAP,
+            )));
         }
         if !h.found.is_empty() {
-            let names: Vec<String> = h.found.iter().map(|i| item_name(c, &i.base, &i.kit)).collect();
+            let names: Vec<String> = h
+                .found
+                .iter()
+                .map(|i| item_name(c, &i.base, &i.kit))
+                .collect();
             head.push(styled(
-                clip(&format!("Carrying (lost if you die): {}", names.join(", ")), WRAP),
+                clip(
+                    &format!("Carrying (lost if you die): {}", names.join(", ")),
+                    WRAP,
+                ),
                 DoorStyle::Dim,
             ));
         }
@@ -333,7 +387,8 @@ impl Session {
         let h = &game.hero;
         let d = game.derived(c);
         let fx = game.town_fx(c);
-        let mut head = self.head_with_status(game, &format!("THE FORGE (level {})", fx.forge.max(1)));
+        let mut head =
+            self.head_with_status(game, &format!("THE FORGE (level {})", fx.forge.max(1)));
         let mut menu = Menu::default();
         for (worn, base, kit) in [
             (Worn::Weapon, &h.weapon, &h.wkit),
@@ -348,7 +403,11 @@ impl Session {
             head.push(plain(clip(
                 &format!(
                     "{} {}: {}  repair {}c",
-                    if worn == Worn::Weapon { "Weapon" } else { "Armour" },
+                    if worn == Worn::Weapon {
+                        "Weapon"
+                    } else {
+                        "Armour"
+                    },
                     item_name(c, base, kit),
                     self.kit_note(kit),
                     cost
@@ -401,7 +460,10 @@ impl Session {
         if d.has_tag("smithcraft") {
             for (worn, kit) in [(Worn::Weapon, &h.wkit), (Worn::Armour, &h.akit)] {
                 if kit.core.is_some() {
-                    menu.town(format!("Lift out {} core (4c)", worn.word()), TownAct::Unslot(worn));
+                    menu.town(
+                        format!("Lift out {} core (4c)", worn.word()),
+                        TownAct::Unslot(worn),
+                    );
                 }
             }
         }
@@ -478,7 +540,10 @@ impl Session {
                 .map(|l| styled(l, DoorStyle::Good)),
             );
         }
-        menu.town(format!("Drill ({}c, 1 turn)", game.train_price()), TownAct::Train);
+        menu.town(
+            format!("Drill ({}c, 1 turn)", game.train_price()),
+            TownAct::Train,
+        );
         let mut lines = head;
         lines.extend(key_lines(&menu.0));
         (lines, menu.0)
@@ -503,7 +568,10 @@ impl Session {
                 .map(|r| r.name.as_str())
                 .collect();
             if !known.is_empty() {
-                head.push(plain(clip(&format!("Patterns read: {}", known.join(", ")), WRAP)));
+                head.push(plain(clip(
+                    &format!("Patterns read: {}", known.join(", ")),
+                    WRAP,
+                )));
             }
             menu.town("Read a relic (20c)", TownAct::Identify);
         } else {
@@ -534,7 +602,10 @@ impl Session {
             .iter()
             .filter(|p| game.world.is_done(c, &p.id))
             .count();
-        let mut head = self.head_with_status(game, &format!("THE TOWN WORKS ({done} of {total} finished)"));
+        let mut head = self.head_with_status(
+            game,
+            &format!("THE TOWN WORKS ({done} of {total} finished)"),
+        );
         let mut menu = Menu::default();
         let mut later: Vec<&str> = Vec::new();
         let mut shown = 0;
@@ -584,7 +655,10 @@ impl Session {
             head.push(styled("Nothing is being built right now.", DoorStyle::Dim));
         }
         if !later.is_empty() {
-            head.push(styled(clip(&format!("Later: {}", later.join(", ")), WRAP), DoorStyle::Dim));
+            head.push(styled(
+                clip(&format!("Later: {}", later.join(", ")), WRAP),
+                DoorStyle::Dim,
+            ));
         }
         let (gc, gs) = h
             .given

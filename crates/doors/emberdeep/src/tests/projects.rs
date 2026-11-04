@@ -114,7 +114,10 @@ fn a_finished_project_takes_no_more_and_costs_the_donor_nothing() {
             salvage: 50,
         },
     );
-    assert!(err.contains("finished") || err.contains("cannot take"), "{err}");
+    assert!(
+        err.contains("finished") || err.contains("cannot take"),
+        "{err}"
+    );
     assert_eq!((g.hero.coin, g.hero.stash), (coin, stash));
     assert!(g.hero.given.is_empty());
     assert!(g.take_changes().is_empty());
@@ -136,7 +139,8 @@ fn a_project_cannot_be_given_to_until_what_it_needs_is_finished() {
     // Even if the world has been paid in full for it, a project whose requirement is open is
     // not finished.
     let def = c.project("lift-six").unwrap();
-    g.world.apply(&gift("Early", "lift-six", def.coin, def.salvage));
+    g.world
+        .apply(&gift("Early", "lift-six", def.coin, def.salvage));
     assert!(!g.world.is_done(&c, "lift-six"));
     finish(&mut g.world, "new-bellows");
     assert!(g.world.is_done(&c, "lift-six"));
@@ -164,7 +168,11 @@ fn two_heroes_racing_to_finish_a_project_cannot_both_be_charged_for_the_same_gap
         merged.apply(ch);
     }
     let (coin, _) = merged.progress("temple-roof");
-    assert_eq!(coin, def.coin + 20, "the overshoot is bounded by one stale gift");
+    assert_eq!(
+        coin,
+        def.coin + 20,
+        "the overshoot is bounded by one stale gift"
+    );
     assert!(merged.is_done(&c, "temple-roof"));
 }
 
@@ -201,9 +209,15 @@ fn a_finished_lift_gives_every_hero_a_way_down_and_survives_the_collapse() {
     for ch in ada.world.pledges.clone() {
         bo.world.apply(&Change::Pledge(ch));
     }
-    assert_eq!(bo.ways_down(&c), vec![(6, crate::content::ShortcutKind::Lift)]);
+    assert_eq!(
+        bo.ways_down(&c),
+        vec![(6, crate::content::ShortcutKind::Lift)]
+    );
     bo.hero.turns = 25;
-    let ev = bo.apply(&c, Action::Descend(6)).expect("the lift runs").len();
+    let ev = bo
+        .apply(&c, Action::Descend(6))
+        .expect("the lift runs")
+        .len();
     assert!(ev > 0);
     assert!(matches!(bo.place, Place::Delve { depth: 6, .. }));
     assert_eq!(bo.hero.turns, 24, "a lift costs one turn");
@@ -214,7 +228,10 @@ fn a_finished_lift_gives_every_hero_a_way_down_and_survives_the_collapse() {
     bo.world.tick(TODAY + 1);
     assert_eq!(bo.world.epoch, 1);
     assert!(bo.world.shortcuts.is_empty());
-    assert_eq!(bo.world.ways_down(&c), vec![(6, crate::content::ShortcutKind::Lift)]);
+    assert_eq!(
+        bo.world.ways_down(&c),
+        vec![(6, crate::content::ShortcutKind::Lift)]
+    );
     err.clear();
 }
 
@@ -222,9 +239,16 @@ fn a_finished_lift_gives_every_hero_a_way_down_and_survives_the_collapse() {
 fn a_lift_beats_a_rope_a_hero_opened_at_the_same_level() {
     let c = content();
     let mut w = World::new(1);
-    w.apply(&Change::Shortcut(6, crate::content::ShortcutKind::Rope, "Ada".into()));
+    w.apply(&Change::Shortcut(
+        6,
+        crate::content::ShortcutKind::Rope,
+        "Ada".into(),
+    ));
     finish(&mut w, "lift-six");
-    assert_eq!(w.ways_down(&c), vec![(6, crate::content::ShortcutKind::Lift)]);
+    assert_eq!(
+        w.ways_down(&c),
+        vec![(6, crate::content::ShortcutKind::Lift)]
+    );
 }
 
 #[test]
@@ -262,7 +286,10 @@ fn the_library_reads_relics_only_once_the_town_has_built_a_reading_room() {
         finish(&mut h.world, "reading-room");
         h.hero.relics = 1;
         town(&mut h, TownAct::Identify);
-        learned |= h.hero.recipes.iter().any(|r| c.recipe(r).is_some_and(|x| matches!(x.learn, crate::content_town::Learn::Library)));
+        learned |= h.hero.recipes.iter().any(|r| {
+            c.recipe(r)
+                .is_some_and(|x| matches!(x.learn, crate::content_town::Learn::Library))
+        });
     }
     assert!(learned);
 }

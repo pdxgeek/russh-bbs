@@ -21,7 +21,10 @@ use crate::world::World;
 #[test]
 fn an_e1_save_is_not_a_version_two_save_until_it_is_migrated() {
     let bytes = unhex(V1_HERO);
-    assert!(Game::decode(&bytes).is_none(), "version 1 lacks the town section");
+    assert!(
+        Game::decode(&bytes).is_none(),
+        "version 1 lacks the town section"
+    );
     let up = crate::save::upgrade_v1(&bytes).expect("a real E1 save migrates");
     let g = Game::decode(&up).expect("and then reads");
     // Everything E1 wrote is still there...
@@ -29,7 +32,10 @@ fn an_e1_save_is_not_a_version_two_save_until_it_is_migrated() {
     assert_eq!(g.hero.calling, "runesmith");
     assert_eq!((g.hero.coin, g.hero.stash, g.hero.relics), (137, 42, 2));
     assert_eq!((g.hero.level, g.hero.xp), (3, 130));
-    assert_eq!(g.hero.traits, vec!["rune-touched".to_owned(), "stout".to_owned()]);
+    assert_eq!(
+        g.hero.traits,
+        vec!["rune-touched".to_owned(), "stout".to_owned()]
+    );
     assert_eq!(g.hero.scars, vec!["limp".to_owned()]);
     assert!(g.hero.wounds.iter().any(|(w, _)| w == "gash"));
     assert_eq!(g.hero.weapon, "rune-hammer");
@@ -83,8 +89,14 @@ fn the_door_migrates_version_one_and_nothing_else() {
         door.migrate(BlobKind::Save, 1, &[1, 2, 3]),
         Err(MigrateError::Corrupt(1))
     );
-    assert_eq!(door.migrate(BlobKind::Save, 2, &[]), Err(MigrateError::Unsupported(2)));
-    assert_eq!(door.migrate(BlobKind::World, 0, &[]), Err(MigrateError::Unsupported(0)));
+    assert_eq!(
+        door.migrate(BlobKind::Save, 2, &[]),
+        Err(MigrateError::Unsupported(2))
+    );
+    assert_eq!(
+        door.migrate(BlobKind::World, 0, &[]),
+        Err(MigrateError::Unsupported(0))
+    );
     assert_eq!(door.info().save_version, 2);
     assert_eq!(door.info().world_version, 2);
 }

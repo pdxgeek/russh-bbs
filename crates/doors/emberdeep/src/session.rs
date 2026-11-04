@@ -720,10 +720,11 @@ impl Session {
                     )
                 })
                 .collect();
-            body.push(styled(
-                format!("Wounds: {}", list.join(", ")),
-                DoorStyle::Bad,
-            ));
+            body.extend(
+                wrap(&format!("Wounds: {}", list.join(", ")), WRAP)
+                    .into_iter()
+                    .map(|l| styled(l, DoorStyle::Bad)),
+            );
         }
         if !h.scars.is_empty() {
             let list: Vec<&str> = h
@@ -732,10 +733,11 @@ impl Session {
                 .filter_map(|s| self.content.scar(s))
                 .map(|s| s.name.as_str())
                 .collect();
-            body.push(styled(
-                format!("Scars: {}", list.join(", ")),
-                DoorStyle::Dim,
-            ));
+            body.extend(
+                wrap(&format!("Scars: {}", list.join(", ")), WRAP)
+                    .into_iter()
+                    .map(|l| styled(l, DoorStyle::Dim)),
+            );
         }
         body.push(plain("Tavern board:"));
         let news: Vec<&String> = game.world.news.iter().rev().take(3).collect();

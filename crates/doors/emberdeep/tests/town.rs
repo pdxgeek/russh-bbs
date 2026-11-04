@@ -94,7 +94,10 @@ async fn an_e1_hero_and_world_open_through_the_host_and_are_saved_as_version_two
         .unwrap();
     let screen = running.look_around(&env).join("\n");
     assert!(screen.contains("Tester L3 Runesmith"), "{screen}");
-    assert!(screen.contains("Coin 137  Salvage 0  Stash 42  Relics 2"), "{screen}");
+    assert!(
+        screen.contains("Coin 137  Salvage 0  Stash 42  Relics 2"),
+        "{screen}"
+    );
     // The E1 world's lift on level 3 is still on offer.
     assert!(screen.contains("lift down to level 3"), "{screen}");
     // The calling's recipe is there at once: forge it, which saves.
@@ -108,7 +111,8 @@ async fn an_e1_hero_and_world_open_through_the_host_and_are_saved_as_version_two
 }
 
 /// A walk through every place with the migrated hero.
-const WALK: &str = "m 1 esc i 1 esc f 1 esc b 4 4 esc w 1 2 esc t 1 esc g 1 esc l 1 esc s esc h esc d u";
+const WALK: &str =
+    "m 1 esc i 1 esc f 1 esc b 4 4 esc w 1 2 esc t 1 esc g 1 esc l 1 esc s esc h esc d u";
 
 #[test]
 fn a_recorded_walk_through_every_place_replays_to_exactly_the_same_save() {
@@ -142,7 +146,10 @@ fn a_recorded_walk_through_every_place_replays_to_exactly_the_same_save() {
     }
     let log = recorder.into_log();
     let replayed = replay::run_checked(&door, &log, &env).unwrap();
-    assert_eq!(replayed.save, last, "the walk reproduces the saved state exactly");
+    assert_eq!(
+        replayed.save, last,
+        "the walk reproduces the saved state exactly"
+    );
     assert!(replayed.world_edits >= 1, "the gift reached the world");
     // And it did what it said: spent coin and salvage, made something, gave to the works.
     let s = summarize(replayed.save.as_deref().unwrap(), door.content().unwrap()).unwrap();
@@ -174,14 +181,25 @@ fn every_place_fits_the_board_box_in_plain_ascii_with_a_full_purse() {
         driver.key(DoorKey::from_token(token).unwrap());
         for row in replay::draw_to_text(&driver, &env, 80, 24) {
             assert!(row.chars().count() <= 80, "too wide: {row:?}");
-            assert!(row.chars().all(|c| c == ' ' || c.is_ascii_graphic()), "{row:?}");
+            assert!(
+                row.chars().all(|c| c == ' ' || c.is_ascii_graphic()),
+                "{row:?}"
+            );
         }
         let lines = driver.look_around(&env);
         for line in &lines {
-            assert!(line.chars().all(|c| c == ' ' || c.is_ascii_graphic()), "{line:?}");
+            assert!(
+                line.chars().all(|c| c == ' ' || c.is_ascii_graphic()),
+                "{line:?}"
+            );
             assert!(line.chars().count() <= 74, "too wide for the box: {line:?}");
         }
-        assert!(lines.len() <= 24, "{token}: {} lines do not fit a screen:\n{}", lines.len(), lines.join("\n"));
+        assert!(
+            lines.len() <= 24,
+            "{token}: {} lines do not fit a screen:\n{}",
+            lines.len(),
+            lines.join("\n")
+        );
     }
 }
 
@@ -222,13 +240,28 @@ async fn a_finished_project_is_seen_by_the_next_player_and_never_counted_twice()
         summarize_world(&w.bytes).unwrap().pledged,
         vec![("new-bellows".to_owned(), 120, 40)]
     );
-    let hero = summarize(&store.load_save(&id, ann).await.unwrap().unwrap().bytes, content.content().unwrap()).unwrap();
-    assert_eq!((hero.coin, hero.stash), (17, 2), "exactly what was given left the purse");
+    let hero = summarize(
+        &store.load_save(&id, ann).await.unwrap().unwrap().bytes,
+        content.content().unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        (hero.coin, hero.stash),
+        (17, 2),
+        "exactly what was given left the purse"
+    );
     // Ann leaves and returns twice; each open tells the world again what she gave. Nothing doubles.
     for seed in [2, 3] {
-        let mut again = Running::open(&store, Arc::clone(&door), ann, &env_a, Arc::clone(&clk), seed)
-            .await
-            .unwrap();
+        let mut again = Running::open(
+            &store,
+            Arc::clone(&door),
+            ann,
+            &env_a,
+            Arc::clone(&clk),
+            seed,
+        )
+        .await
+        .unwrap();
         press(&mut again, &store, "w esc").await;
     }
     let w2 = store.load_world(&id).await.unwrap().unwrap();
@@ -246,5 +279,8 @@ async fn a_finished_project_is_seen_by_the_next_player_and_never_counted_twice()
     press(&mut b, &store, "esc w").await;
     let screen = b.look_around(&env_b).join("\n");
     assert!(screen.contains("1 of 11 finished"), "{screen}");
-    assert!(!screen.contains("New Bellows"), "a finished project is not asked for again: {screen}");
+    assert!(
+        !screen.contains("New Bellows"),
+        "a finished project is not asked for again: {screen}"
+    );
 }

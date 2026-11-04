@@ -36,10 +36,18 @@ fn the_shelves_follow_the_shared_town() {
             .max()
             .unwrap_or(0)
     };
-    assert_eq!(top(&g), 1, "only the Upper Works' goods while nobody has gone deep");
+    assert_eq!(
+        top(&g),
+        1,
+        "only the Upper Works' goods while nobody has gone deep"
+    );
     // A hero reaches level 9: the whole town's shelves get better.
     g.world.deepest.push(("Someone".into(), 9));
-    assert!(g.stock(&c).iter().any(|s| matches!(&s.wares, Wares::Gear(i) if crate::town::base_band(&c, &i.base) >= 3)));
+    assert!(
+        g.stock(&c).iter().any(
+            |s| matches!(&s.wares, Wares::Gear(i) if crate::town::base_band(&c, &i.base) >= 3)
+        )
+    );
     // And a bigger market adds stalls and cores.
     finish(&mut g.world, "market-stalls");
     let big = g.stock(&c);
@@ -93,7 +101,15 @@ fn selling_pays_by_value_and_wear_and_the_haggler_gets_more() {
         kit: Kit::default(),
     });
     assert!(greedy.sell_price(&c, &item.clone()) >= worn);
-    assert!(greedy.sell_price(&c, &Item { base: "forge-axe".into(), kit: Kit::default() }) > fresh);
+    assert!(
+        greedy.sell_price(
+            &c,
+            &Item {
+                base: "forge-axe".into(),
+                kit: Kit::default()
+            }
+        ) > fresh
+    );
     let before = g.hero.coin;
     town(&mut g, TownAct::Sell(0));
     assert_eq!(g.hero.coin, before + fresh);
@@ -125,7 +141,10 @@ fn wielding_needs_the_level_and_swaps_with_what_is_worn() {
     g.hero.level = 7;
     town(&mut g, TownAct::Equip(0));
     assert_eq!(g.hero.weapon, "glass-cleaver");
-    assert_eq!(g.hero.pack[0].base, "iron-halberd", "the old weapon is kept");
+    assert_eq!(
+        g.hero.pack[0].base, "iron-halberd",
+        "the old weapon is kept"
+    );
 }
 
 // ---- forge ----
@@ -204,8 +223,18 @@ fn a_cure_lifts_a_wound_and_leaves_no_scar_where_waiting_might() {
     let mut g = rich_game("warden", ["quick", "stout"], 7);
     g.hero.inflict(&c, "crushed-leg");
     g.hero.inflict(&c, "merry");
-    let n = g.hero.wounds.iter().position(|(w, _)| w == "crushed-leg").unwrap();
-    let m = g.hero.wounds.iter().position(|(w, _)| w == "merry").unwrap();
+    let n = g
+        .hero
+        .wounds
+        .iter()
+        .position(|(w, _)| w == "crushed-leg")
+        .unwrap();
+    let m = g
+        .hero
+        .wounds
+        .iter()
+        .position(|(w, _)| w == "merry")
+        .unwrap();
     assert!(g.cure_price(&c, n).unwrap() >= 10);
     assert!(g.cure_price(&c, m).is_none(), "a boon is not an illness");
     assert!(town_refused(&mut g, TownAct::Cure(m)).contains("nothing"));
@@ -220,7 +249,12 @@ fn the_rite_that_follows_a_death_is_a_cure_for_the_weakened_wound() {
     let mut g = rich_game("warden", ["quick", "stout"], 7);
     g.hero.inflict(&c, "weakened");
     let before = g.derived(&c).attr(crate::content::Attr::Might);
-    let n = g.hero.wounds.iter().position(|(w, _)| w == "weakened").unwrap();
+    let n = g
+        .hero
+        .wounds
+        .iter()
+        .position(|(w, _)| w == "weakened")
+        .unwrap();
     town(&mut g, TownAct::Cure(n));
     assert!(g.derived(&c).attr(crate::content::Attr::Might) > before);
 }
@@ -264,7 +298,10 @@ fn a_drink_buys_a_rumour_and_the_third_buys_a_headache() {
     assert!(g.hero.wounds.iter().all(|(w, _)| w != "hangover"));
     town(&mut g, TownAct::Drink);
     assert!(g.hero.wounds.iter().any(|(w, _)| w == "hangover"));
-    assert!(g.hero.coin <= coin - 12 + 40, "three drinks cost 12 (rumours may pay a little)");
+    assert!(
+        g.hero.coin <= coin - 12 + 40,
+        "three drinks cost 12 (rumours may pay a little)"
+    );
     assert!(town_refused(&mut g, TownAct::Drink).contains("cut you off"));
     let _ = c;
 }
@@ -278,7 +315,10 @@ fn a_rumour_tip_opens_the_whole_map_of_that_level_once() {
     // Walk to level 2 via a project lift? Use the engine's own entry: stairs from level 1.
     g.place = Place::Delve { depth: 1, room: 0 };
     let level1 = crate::dungeon::generate(&c, g.season, g.epoch, 1);
-    g.place = Place::Delve { depth: 1, room: level1.exit };
+    g.place = Place::Delve {
+        depth: 1,
+        room: level1.exit,
+    };
     g.today.cleared.push((1, level1.exit));
     let ev = run_stairs(&mut g);
     assert!(ev.contains("whole level is on your map"), "{ev}");
@@ -300,12 +340,32 @@ fn dice_move_coin_and_borrowing_makes_a_debt_that_grows() {
     let c = content();
     let mut g = rich_game("warden", ["quick", "stout"], 11);
     g.hero.coin = 3;
-    town(&mut g, TownAct::Gamble { stake: 5, cheat: false });
+    town(
+        &mut g,
+        TownAct::Gamble {
+            stake: 5,
+            cheat: false,
+        },
+    );
     // Either the 3 coin were refunded with the 5 staked won, or the loss left a debt of 2.
-    assert!(g.hero.coin >= 7 || g.hero.debt == 2, "coin {} debt {}", g.hero.coin, g.hero.debt);
+    assert!(
+        g.hero.coin >= 7 || g.hero.debt == 2,
+        "coin {} debt {}",
+        g.hero.coin,
+        g.hero.debt
+    );
     g.hero.debt = 20;
     g.hero.coin = 100;
-    assert!(town_refused(&mut g, TownAct::Gamble { stake: 5, cheat: false }).contains("owes"));
+    assert!(
+        town_refused(
+            &mut g,
+            TownAct::Gamble {
+                stake: 5,
+                cheat: false
+            }
+        )
+        .contains("owes")
+    );
     // The debt grows overnight, then the collectors come.
     let _ = g.new_day(&c, TODAY + 1);
     assert_eq!(g.hero.debt, 22);
@@ -313,7 +373,11 @@ fn dice_move_coin_and_borrowing_makes_a_debt_that_grows() {
     g.hero.coin = 10;
     let _ = g.new_day(&c, TODAY + 2);
     assert_eq!(g.hero.coin, 0);
-    assert!(g.hero.wounds.iter().any(|(w, _)| w == "roughed-up"), "{:?}", g.hero.wounds);
+    assert!(
+        g.hero.wounds.iter().any(|(w, _)| w == "roughed-up"),
+        "{:?}",
+        g.hero.wounds
+    );
     g.hero.coin = 100;
     g.hero.debt = 30;
     town(&mut g, TownAct::Repay);
@@ -324,7 +388,14 @@ fn dice_move_coin_and_borrowing_makes_a_debt_that_grows() {
 fn only_those_with_nimble_hands_can_load_the_dice_and_caught_cheats_pay_for_it() {
     let mut warden = rich_game("warden", ["quick", "stout"], 12);
     assert!(
-        town_refused(&mut warden, TownAct::Gamble { stake: 5, cheat: true }).contains("hands")
+        town_refused(
+            &mut warden,
+            TownAct::Gamble {
+                stake: 5,
+                cheat: true
+            }
+        )
+        .contains("hands")
     );
     // A cutthroat can; over many nights some get caught, shut out and owe a fine.
     let mut caught = 0;
@@ -332,12 +403,27 @@ fn only_those_with_nimble_hands_can_load_the_dice_and_caught_cheats_pay_for_it()
     for seed in 0..60 {
         let mut g = rich_game("cutthroat", ["quick", "stout"], seed);
         g.hero.coin = 100;
-        town(&mut g, TownAct::Gamble { stake: 20, cheat: true });
+        town(
+            &mut g,
+            TownAct::Gamble {
+                stake: 20,
+                cheat: true,
+            },
+        );
         if g.today.shut_out {
             caught += 1;
             assert_eq!(g.hero.debt, 40);
             assert!(g.hero.wounds.iter().any(|(w, _)| w == "roughed-up"));
-            assert!(town_refused(&mut g, TownAct::Gamble { stake: 5, cheat: false }).contains("thrown you out"));
+            assert!(
+                town_refused(
+                    &mut g,
+                    TownAct::Gamble {
+                        stake: 5,
+                        cheat: false
+                    }
+                )
+                .contains("thrown you out")
+            );
         } else if g.hero.coin > 100 {
             won += 1;
         }
@@ -363,7 +449,10 @@ fn courting_builds_a_bond_that_changes_the_hero_and_only_one_at_a_time() {
     }
     let bond = g.hero.bond.clone().expect("a bond");
     assert!(bond.level >= 1);
-    assert!(g.derived(&c).trap_sense > sense, "the companion gives the hero something");
+    assert!(
+        g.derived(&c).trap_sense > sense,
+        "the companion gives the hero something"
+    );
     // Another day, another call: but not another companion, and not twice in a day.
     assert!(town_refused(&mut g, TownAct::Court("maren".into())).contains("Once a day"));
     day += 1;
