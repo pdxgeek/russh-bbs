@@ -20,11 +20,11 @@
 ||                            ||                                                      ||                                    |
 |+----------------------------++------------------------------------------------------++------------------------------------+
 |+ JOB BOARD -----------------------------------------------------------++ STREET WORD -------------------------------------+
-||#  job     target                       T  pays  fixer         status ||Kestrel Dynamics    o o  0 hole(s)                |
-||1  Wipe    Halcyon Freight              T1    56 Marrow        no tool||Halcyon Freight     o o  0 hole(s)                |
-||2  Ransom  Orrery Health                T1    55 Marrow        no tool||Mirrorglass Ltd     o o  0 hole(s)                |
-||3  Steal   Mirrorglass Ltd              T1    45 Sister Quill  ready  ||Pennywhistle Savingso o  0 hole(s)                |
-||4  Wipe    Pennywhistle Savings         T1    44 Sister Quill  no tool||Orrery Health       o o  0 hole(s)                |
+||#  job     target                       T  pays  fixer         status ||Kestrel Dynamics     o o  0 hole(s)               |
+||1  Wipe    Halcyon Freight              T1    56 Marrow        no tool||Halcyon Freight      o o  0 hole(s)               |
+||2  Ransom  Orrery Health                T1    55 Marrow        no tool||Mirrorglass Ltd      o o  0 hole(s)               |
+||3  Steal   Mirrorglass Ltd              T1    45 Sister Quill  ready  ||Pennywhistle Savin~  o o  0 hole(s)               |
+||4  Wipe    Pennywhistle Savings         T1    44 Sister Quill  no tool||Orrery Health        o o  0 hole(s)               |
 ||5  Wipe    Kestrel Dynamics             T1    42 Dovetail      no tool||0 breaches this season, market at 112%            |
 ||6  Steal   Halcyon Freight              T1    36 Marrow        ready  ||                                                  |
 ||7  Steal   Mirrorglass Ltd              T3   253 Marrow        closed ||                                                  |
@@ -59,11 +59,11 @@
 ||                            ||                                                      ||                                    |
 |+----------------------------++------------------------------------------------------++------------------------------------+
 |+ JOB BOARD -----------------------------------------------------------++ STREET WORD -------------------------------------+
-||#  job     target                       T  pays  fixer         status ||Kestrel Dynamics    o o  0 hole(s)                |
-||1  Wipe    Mirrorglass Ltd              T2    99 Marrow        no tool||Halcyon Freight     o o  0 hole(s)                |
-||2  Wipe    Halcyon Freight              T1    56 Marrow        no tool||Mirrorglass Ltd     o o  0 hole(s)                |
-||3  Ransom  Orrery Health                T1    55 Marrow        no tool||Pennywhistle Savingso o  0 hole(s)                |
-||4  Steal   Mirrorglass Ltd              T1    45 Sister Quill  ready  ||Orrery Health       o o  0 hole(s)                |
+||#  job     target                       T  pays  fixer         status ||Kestrel Dynamics     o o  0 hole(s)               |
+||1  Wipe    Mirrorglass Ltd              T2    99 Marrow        no tool||Halcyon Freight      o o  0 hole(s)               |
+||2  Wipe    Halcyon Freight              T1    56 Marrow        no tool||Mirrorglass Ltd      o o  0 hole(s)               |
+||3  Ransom  Orrery Health                T1    55 Marrow        no tool||Pennywhistle Savin~  o o  0 hole(s)               |
+||4  Steal   Mirrorglass Ltd              T1    45 Sister Quill  ready  ||Orrery Health        o o  0 hole(s)               |
 ||5  Wipe    Pennywhistle Savings         T1    44 Sister Quill  no tool||0 breaches this season, market at 112%            |
 ||6  Steal   Halcyon Freight              T1    36 Marrow        ready  ||                                                  |
 ||7  Steal   Mirrorglass Ltd              T3   253 Marrow        closed ||                                                  |

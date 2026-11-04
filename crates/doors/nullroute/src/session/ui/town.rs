@@ -320,7 +320,7 @@ fn street(pen: &mut Pen<'_, '_>, s: &Session, rect: Rect) {
         let holes: usize = nets.iter().map(|n| n.holes.len()).sum();
         let door = nets.iter().any(|n| n.backdoor);
         let mut spans = vec![Span::styled(
-            format!("{:<20}", clip(&corp.name, 20)),
+            format!("{:<21}", clip(&corp.name, 19)),
             pen.ink.plain,
         )];
         spans.extend(pips_pub(usize::from(alert), usize::from(ALERT_MAX), RED));

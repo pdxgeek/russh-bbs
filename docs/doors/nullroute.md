@@ -1,6 +1,6 @@
 # Nullroute: a hacking door (design)
 
-Status: **Engine implemented (M4-N1, merged); countermeasures, encounters, coding and script degradation implemented (M4-N2, in review)**; the rest is **Proposed**. Shared platform rules are in [README.md](README.md). Implementation notes are at the end.
+Status: **Engine implemented (M4-N1, merged); countermeasures, encounters, coding and script degradation implemented (M4-N2, merged); the UI implemented (M4-N3, in review)**; the rest is **Proposed**. Shared platform rules are in [README.md](README.md). Implementation notes are at the end.
 
 ## Pitch
 
@@ -212,3 +212,58 @@ Unit, property and replay tests, the framework's sandbox audit, the pinned repla
 
 - **N3.** `Run::encounter()` gives the whole fight state (`Encounter`: integrity, armor, intent, `forecast`, `seen`, `sealed`, `stun`, `charged`); `Run::preview(slot)` is what a script would do now; `Run::warden()` the hunt; `Run::stage(slot)` how the corporation knows a script. `session.rs` has `fight_lines` and `code_lines` as the text versions; replace them and keep `look_around`.
 - **N4.** A crew run needs a shared `Run`, so a warden and a fight would have to be per-crew; the sim bot is the base for the branch-coverage report; fixer arcs could hand out specific fragments. Content still to write is the rest of the design budget (7 corporations, 21 node types, about 70 contract templates, 25 rig parts, about 12 hideout upgrades).
+
+
+## Implementation notes (M4-N3: the UI)
+
+Decision: [D-TBD](../decisions.md). Same crate; no save or world change. Screenshots: [nullroute-ui/](nullroute-ui/README.md). The screens are `crates/doors/nullroute/src/session/ui/`; `session.rs` still holds the state, the keys and the look-around text, and the engine is untouched apart from two read-only seams (`Run::link_known` is public, and the heat thresholds are `player::HEAT_*` constants).
+
+### The screens
+
+| Screen | Key from home | What it draws |
+|---|---|---|
+| **Run** | (jack in) | The node map (braille edges in the Unicode tiers, `-` `/` `\` in ASCII; nodes by state: you, open, locked, ICE, black wall, honeypot, objective; the edges next to you glow and a packet of dots runs along them), the trace closing in from both ends of the top bar, the node you stand on and its numbered exits, the deck (a chip row at 72x19, a table above that), the scrolling timestamped log coloured by kind, flags (alarm, tracer, camera, warden, soak) and, in `Large`, an intel panel |
+| **Encounter** | (a machine in the way) | The machine (art, integrity bar, armor, weak lock family, blind, charged, sealed), the telegraph (what it will do, the next three once the pattern is known or `? ? ?`, the beats you have seen, the move counter as pips), your scripts with their cost and what each would do now as a bar, with state (tuned, wary, PATCHED, SEALED, spent), and the fight log |
+| **Debrief** | (after a run) | `EXTRACTED`, `JACKED OUT` or `BURNED`, the run's numbers (peak trace as a gauge, loot, fights, locks, fragments) and what happened |
+| **Home** | | Cycles and heat gauges, the menu with live counts, the rig as level pips, the five skills as progress bars toward the next level; from `Medium` the fixers' standing bars; in `Large` the job board and the street word per corporation |
+| **Jobs** (`c`) | `c` | A table with a cursor (the status column says `ready`, `no tool` or `closed`) and the selected job's brief beside it (under it at 72x19) |
+| **Briefing** | Enter or 1-9 | The job, your deck against the target corporation (what each script can do, and whether the corporation has found it: fresh, wary, patched), the street word as pips |
+| **Fixers and standings** (`f`) | `f` | A centred bar for each fixer (red left of the line, green right), who it deals with, its clients, the jobs on the board |
+| **Deck** (`d`) | `d` | Memory, slots and noise as gauges, every script owned with its stats and a **degradation matrix** (one letter per corporation: `.` fresh, `w` wary, `X` patched), a detail pane |
+| **Market** (`s`) | `s` | The scripts for sale with a cursor, the night's tide as a gauge, and a sparkline of the prices on offer |
+| **Black market** (`b`) | `b` | The fence's ladder as bars, the proxies (and the heat surcharge), the safe |
+| **Rig** (`r`), **Hideout** (`h`) | | Parts as level pips with the next cost and any fried part; bots, workbench, fence and the case of fragments |
+| **Module editor** | `h`, `c` | The pipeline `effect + target + modifier => script` with the active slot lit, the fragments for the step, and a preview with the memory and noise budgets as gauges that go red when over |
+| **Heat** (`t`) | `t` | The gauge with a tick for each threshold and the ladder of what heat does, lit as it is passed; lying low |
+| **Character** (`p`) | `p` | Reputation, money, runs, jobs and burns, and the skills as a bar chart |
+
+Keyboard only (Up and Down and Enter on the list screens, in addition to every letter and digit of the earlier text screens; Esc backs out). No mouse (UI-9).
+
+### Responsive, in every tier
+
+`Small` is the door area of an 80x24 window (72 by 19), `Medium` is from 88 by 23, `Large` from 120 by 34, and a window under 56 by 14 gets the plain text screen. In the ASCII tier the framework turns boxes, blocks and braille into ASCII, and the map and the node glyphs draw themselves in ASCII; no screen relies on colour alone (a state is also a glyph or a word). The board caps its box at 80 columns today, so over ssh a member gets `Small` with more rows; `Medium` and `Large` are verified at the area sizes of 100x30 and 132x43 windows by the tests and by the same composite path the board uses.
+
+### Look around
+
+The look-around view is the text of every screen (the `lines()` of `session.rs`, unchanged for the earlier views, with the same header and key hints), and the new screens (fixers `STANDINGS`, `HEAT`, `CHARACTER`, `BLACK MARKET`) have theirs. A test checks that every screen has one, that each says its keys, that a map screen names where you are, the ways out and their states, and that no line holds a control character.
+
+### What was verified
+
+| What | How |
+|---|---|
+| Every screen at 72x19, 92x25 and 124x38 in the ASCII, Unicode and Nerd Font tiers | `tests/ui.rs`: snapshot files in `tests/snapshots/` (regenerate with `UPDATE_SNAPSHOTS=1`); the Nerd Font tier must equal the Unicode one; the ASCII snapshot must be ASCII; every row fits |
+| Every screen has a look-around | `every_screen_has_a_look_around` |
+| Colours: accents in truecolor, no Rgb at 16 colours, none in mono, still a picture in mono | `colours_are_the_palettes_and_the_accents_and_degrade_to_nothing` |
+| A hostile handle reaches no cell | `a_hostile_handle_reaches_no_cell` |
+| A whole run through the keys: plan the deck, pick a job with the cursor, the briefing, jack in, work the map, meet a countermeasure, extract; and a reckless run that burns | `a_whole_run_from_the_board_to_the_debrief`, `a_reckless_run_ends_burned_and_the_debrief_says_so` |
+| The earlier tests (engine, fights, coding, replay, simulation) | unchanged and passing; the two that read the drawn screen were updated for the new hint text |
+| The sandbox audit | `tests/sandbox.rs` (no new dependency) |
+| Real ssh | OpenSSH 9.6 against the built server on a fresh board, driven in tmux at 80x24: claim, icons, Doors, Nullroute; every screen above except the module editor; a run from a briefing through a fight to `EXTRACTED`; the screenshots are the captures |
+
+**Not verified:** the module editor over ssh (it needs a workbench and fragments a fresh character does not have), a burn over ssh, the `Medium` and `Large` layouts over ssh (the board's 80-column cap), telnet by hand, Postgres, a real terminal in the ASCII tier, a terminal font without braille (the map would show boxes: the ASCII tier is the fallback).
+
+### Seams left
+
+- **N4.** A shared run for a crew would need the map to draw several positions; `MapView` takes one `Run`. A price history in the world would give the market a real sparkline.
+- **UI-8 and UI-9.** The packet that runs along the edges moves with the log; effects (UI-8) could animate it with time. Mouse (UI-9) could pick a node on the map; the node positions are computed in `MapView::render` and would need to be returned.
+- **Wider board layouts.** When the board lets a door use more than 72 columns, `Medium` and `Large` start being seen.

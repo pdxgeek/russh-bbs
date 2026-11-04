@@ -211,9 +211,10 @@ impl Widget for MapView<'_> {
         if !self.ascii {
             // A faint grid under everything, so unknown ground reads as unmapped, not as empty.
             let grid = Style::new().fg(super::GRID);
-            for y in (area.y..area.y + area.height).step_by(2) {
-                for x in (area.x..area.x + area.width).step_by(6) {
-                    if let Some(cell) = buf.cell_mut((x + (y - area.y) % 4 / 2 * 3, y)) {
+            for y in (area.y..area.y + area.height.saturating_sub(1)).step_by(4) {
+                let shift = if (y - area.y) % 8 == 0 { 0 } else { 6 };
+                for x in (area.x + shift..area.x + area.width).step_by(12) {
+                    if let Some(cell) = buf.cell_mut((x, y)) {
                         cell.set_char('\u{2802}');
                         cell.set_style(grid);
                     }
