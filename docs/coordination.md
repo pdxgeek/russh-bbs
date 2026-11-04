@@ -118,7 +118,7 @@ Approved by the owner on 2026-11-04 by adding them here. The other M4 work is in
 | M4-E4 Emberdeep social, content and balance | `crates/doors/emberdeep` | M4-E3 | Open | Parties, rescues, duels, shared projects, content pass, balance. |
 | M4-N1 Nullroute engine | `crates/doors/nullroute` | M4-D0 | In review ([PR #91](https://github.com/pdxgeek/russh-bbs/pull/91), branch `m4/nullroute-engine`, D102) | Network generation, trace, deck, runs; replay tests. |
 | M4-N2 Nullroute countermeasures and coding | `crates/doors/nullroute` | M4-N1 | In review ([PR #102](https://github.com/pdxgeek/russh-bbs/pull/102), branch `m4/nullroute-countermeasures`, D111) | Encounters, script degradation, module editor. 20 countermeasures, 3 wardens, 60 scripts, 30 fragments; saves v2. |
-| M4-N3 Nullroute UI | `crates/doors/nullroute` | M4-N2, UI-5 | Open | Node map, run log, deck panel, look-around. |
+| M4-N3 Nullroute UI | `crates/doors/nullroute` | M4-N2, UI-5 | Claimed (branch `m4/nullroute-ui`) | Node map, run log, deck panel, look-around. |
 | M4-N4 Nullroute social, content and balance | `crates/doors/nullroute` | M4-N3 | Open | Crews, honeypots, bounties, heat, fixer arcs, balance. |
 | M4-L1 Long Haul engine | `crates/doors/long-haul` | M4-D0 | In review ([PR #93](https://github.com/pdxgeek/russh-bbs/pull/93), branch `m4/long-haul-engine`) | Frontier generation, economy, ship, jumps; replay tests. Built: see [doors/long-haul.md](doors/long-haul.md), D103. |
 | M4-L2 Long Haul crew, events and combat | `crates/doors/long-haul` | M4-L1 | Open | Crew, transit events, contracts, ship combat, boarding. |
