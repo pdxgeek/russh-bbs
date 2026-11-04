@@ -1,0 +1,70 @@
+# What a party brings in from two turns of working a tile, per standard hand (a hand at the
+# trade's full power). `find` is a rare thing turned up while working: its chance is `find_pct`
+# plus two for each level of the trade in the best hand. `hazard` is each hand's chance of an
+# accident (the water and steady or clumsy hands change it).
+
+[[gather]]
+tile = "reedbed"
+trade = "raker"
+yields = { reed = 6 }
+hazard = 4
+
+[[gather]]
+tile = "peat-bog"
+trade = "raker"
+yields = { peat = 7 }
+hazard = 6
+
+[[gather]]
+tile = "salt-pan"
+trade = "raker"
+yields = { salt = 6 }
+hazard = 3
+
+[[gather]]
+tile = "mudflat"
+trade = "wader"
+yields = { fish = 5 }
+hazard = 3
+
+[[gather]]
+tile = "channel"
+trade = "wader"
+yields = { fish = 6 }
+hazard = 8
+
+[[gather]]
+tile = "mere"
+trade = "wader"
+yields = { fish = 5, reed = 2 }
+hazard = 8
+
+[[gather]]
+tile = "island"
+trade = "wader"
+yields = { timber = 3, reed = 2 }
+hazard = 4
+
+[[gather]]
+tile = "drowned-town"
+trade = "salvager"
+yields = { iron = 3, timber = 3, silt-glass = 2 }
+find = "relic"
+find_pct = 3
+hazard = 10
+
+[[gather]]
+tile = "wreck"
+trade = "salvager"
+yields = { timber = 4, iron = 2, rope = 2 }
+find = "relic"
+find_pct = 2
+hazard = 8
+
+[[gather]]
+tile = "deep"
+trade = "salvager"
+yields = { silt-glass = 3, iron = 3 }
+find = "relic"
+find_pct = 10
+hazard = 14

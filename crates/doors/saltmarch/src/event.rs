@@ -5,6 +5,8 @@
 
 use std::fmt;
 
+use crate::combat::Verdict;
+use crate::trip::Ending;
 use crate::types::{Resource, Trade};
 
 /// Something that happened in the hold or at the market.
@@ -103,9 +105,40 @@ pub enum Event {
     Night { day: i64 },
     /// The clan was founded.
     Founded { name: String },
+    /// A party set out.
+    Departed { crew: u8 },
+    /// The party reached a place.
+    Arrived { place: String },
+    /// A scene began.
+    Scene { title: String, text: String },
+    /// A line of story: what a choice came to.
+    Told(String),
+    /// Goods went into the pack.
+    Found { what: Resource, qty: u32 },
+    /// Tallies went into the pack.
+    FoundTallies { qty: u32 },
+    /// Goods were left behind: the pack was full.
+    LeftBehind { what: Resource, qty: u32 },
+    /// Goods were lost or dropped.
+    Dropped { what: Resource, qty: u32 },
+    /// Someone died.
+    Died { name: String },
+    /// A line of a skirmish.
+    Fight(String),
+    /// A skirmish ended.
+    Skirmish { verdict: Verdict },
+    /// The party made camp.
+    Camped { turns: u8, level: i32 },
+    /// A trip ended.
+    TripEnded {
+        ending: Ending,
+        value: u32,
+        turns: u16,
+    },
 }
 
 impl fmt::Display for Event {
+    #[allow(clippy::too_many_lines)]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Recruited { name, trade, price } => {
@@ -179,6 +212,53 @@ impl fmt::Display for Event {
             Self::Aged { name, age } => write!(f, "{name} is {age} now."),
             Self::Night { day } => write!(f, "Night of day {day} passes."),
             Self::Founded { name } => write!(f, "The {name} clan stakes its hold."),
+            Self::Departed { crew } => write!(
+                f,
+                "{crew} set{} out from the hold.",
+                if *crew == 1 { "s" } else { "" }
+            ),
+            Self::Arrived { place } => write!(f, "You reach {place}."),
+            Self::Scene { title, text } => write!(f, "{title}. {text}"),
+            Self::Told(text) | Self::Fight(text) => f.write_str(text),
+            Self::Found { what, qty } => write!(f, "+{qty} {}.", what.name()),
+            Self::FoundTallies { qty } => write!(f, "+{qty} tallies."),
+            Self::LeftBehind { what, qty } => {
+                write!(f, "No room: {qty} {} left behind.", what.name())
+            }
+            Self::Dropped { what, qty } => write!(f, "-{qty} {}.", what.name()),
+            Self::Died { name } => write!(f, "{name} is dead."),
+            Self::Skirmish { verdict } => f.write_str(match verdict {
+                Verdict::Won => "The skirmish is won.",
+                Verdict::Lost => "The party is beaten.",
+                Verdict::Fled => "The party breaks away.",
+                Verdict::Washed => "The rising water ends the fight.",
+                Verdict::Stalemate => "Neither side can finish it, and both draw off.",
+            }),
+            Self::Camped { turns, level } => {
+                write!(f, "You camp {turns} turns. The water stands at {level}.")
+            }
+            Self::TripEnded {
+                ending,
+                value,
+                turns,
+            } => match ending {
+                Ending::Home => write!(
+                    f,
+                    "Home after {turns} turns with {value} tallies' worth of cargo."
+                ),
+                Ending::Stranded | Ending::Overnight => write!(
+                    f,
+                    "Cut off after {turns} turns. The party limps home with what it can carry ({value} tallies' worth)."
+                ),
+                Ending::Swept => write!(
+                    f,
+                    "The flood sweeps the party off the ground. They wash up at the hold with {value} tallies' worth."
+                ),
+                Ending::Routed => {
+                    f.write_str("Beaten and robbed, the survivors crawl home with nothing.")
+                }
+                Ending::Lost => f.write_str("Nobody comes back."),
+            },
         }
     }
 }
