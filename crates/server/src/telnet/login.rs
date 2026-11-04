@@ -29,14 +29,28 @@ const MAX_HANDLE: usize = 64;
 const MAX_PASSWORD: usize = russh_bbs_core::passwords::MAX_CHARS;
 
 /// What the prompt shows first. Fixed chrome, not content.
-const BANNER: [&str; 6] = [
+const BANNER: [&str; 8] = [
     "russh-bbs, over telnet",
     "",
     "THIS CONNECTION IS NOT ENCRYPTED. Anyone on the network between you",
     "and this board can read what you type, your password included.",
     "Use ssh if you can.",
     "",
+    "New here? Type new as your login name to join.",
+    "",
 ];
+
+/// The login name that opens the waiting room instead of asking for a password (D94). Reserved
+/// as a handle, so no member's login is taken by it.
+const JOIN_NAME: &str = "new";
+
+/// Where the login prompt led.
+pub(super) enum Entry {
+    /// A password matched an active member.
+    Member(Account),
+    /// The visitor asked to join: the waiting room.
+    Join,
+}
 
 /// The one answer to every failed login.
 const REFUSED: &str = "Login incorrect.\r\n\r\n";
@@ -51,7 +65,7 @@ enum Line {
 impl<D: Backend> Connection<D> {
     /// Ask for a name and a password until one matches an active member, the attempts run out
     /// or the client leaves. The caller bounds the whole thing with the authentication deadline.
-    pub(super) async fn login(&self, link: &mut Link, peer: SocketAddr) -> Option<Account> {
+    pub(super) async fn login(&self, link: &mut Link, peer: SocketAddr) -> Option<Entry> {
         link.screen_text(&BANNER).await;
         let mut attempts = 0_u32;
         loop {
@@ -59,6 +73,10 @@ impl<D: Backend> Connection<D> {
             let Line::Text(user) = link.read_line(true, MAX_HANDLE).await else {
                 return None;
             };
+            if user.trim().eq_ignore_ascii_case(JOIN_NAME) {
+                link.send_text("\r\n").await;
+                return Some(Entry::Join);
+            }
             link.send_text("\r\npassword: ").await;
             let Line::Text(password) = link.read_line(false, MAX_PASSWORD).await else {
                 return None;
@@ -67,7 +85,7 @@ impl<D: Backend> Connection<D> {
             attempts += 1;
             if let Some(account) = self.check(link, peer, &user, &password).await {
                 info!(session = ?link.session.id(), %peer, account = %account.id, "telnet password authenticated");
-                return Some(account);
+                return Some(Entry::Member(account));
             }
             // The pause makes guessing slow; the same time for every failure.
             sleep(self.limits.auth_rejection_time).await;

@@ -19,16 +19,13 @@ use std::time::Instant;
 
 use russh::server::{Auth, Handler, Msg, PublicKeyOffer, Session, VerifiedPublicKey};
 use russh::{Channel, ChannelId, ChannelOpenFailure, MethodKind, MethodSet, Pty};
-use russh_bbs_core::access::Permission;
 use russh_bbs_core::access::{Access, Fingerprint, decide_access};
 use russh_bbs_core::founder::{ClaimForm, MAX_ATTEMPTS_PER_SESSION};
 use russh_bbs_core::limits::{LimitError, MemberMeter, SystemClock, begin_member_session};
 use russh_bbs_core::passwords::{Login, authenticate};
-use russh_bbs_core::registration::open_cap_reached;
-use russh_bbs_core::store::RegistrationMode;
 use russh_bbs_core::store::{Account, AccountId};
 use russh_bbs_core::terminal_settings::{MemberFlow, MemberStart};
-use russh_bbs_core::waiting_room::{RoomConfig, Verdict, WaitingRoom};
+use russh_bbs_core::waiting_room::{Verdict, WaitingRoom};
 use tokio::sync::oneshot;
 use tokio::time::timeout;
 use tracing::{debug, info, warn};
@@ -41,6 +38,7 @@ use super::host_key::fingerprint_of;
 use super::limits::Limits;
 use super::password::PasswordLogin;
 use super::registry::SessionGuard;
+use super::room::{build_room, room_allowed};
 use super::screen::{Content, Screen};
 use super::shell::{Inbox, MEMBER_START_TIMEOUT, Output, Shell, ShellParts};
 use super::terminal::PtySize;
@@ -52,10 +50,6 @@ use crate::waiting_room::Throttle;
 /// Session channels one connection may hold open at once. OpenSSH multiplexing and refused
 /// probes need more than one; a stranger does not need many.
 const MAX_SESSION_CHANNELS: usize = 4;
-
-/// How long a new shell waits for the waiting-room settings before using the built-in
-/// defaults. A slow store must not hold a stranger's screen hostage.
-const ROOM_CONFIG_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(2);
 
 /// How long one password check may take, queueing for a hashing turn included. Inside the
 /// 30 s authentication deadline; a busy or failing store refuses the login instead of holding it.
@@ -172,61 +166,25 @@ impl<D> ClientHandler<D> {
         info!(session = ?self.guard.id(), peer = ?self.peer, kind, "request refused");
     }
 
-    /// Build this session's waiting room from the board's settings. Any failure falls back to
-    /// the strictest built-in configuration (`invite` mode, default text), never a looser one.
+    /// Build this session's waiting room from the board's settings (see [`build_room`]).
     async fn waiting_room(&self) -> WaitingRoom
     where
         D: Backend,
     {
-        let config = match timeout(ROOM_CONFIG_TIMEOUT, self.directory.load_room_config()).await {
-            Ok(Ok(config)) => config,
-            Ok(Err(error)) => {
-                warn!(session = ?self.guard.id(), %error, "waiting-room settings unreadable; using defaults");
-                RoomConfig::default()
-            }
-            Err(_) => {
-                warn!(session = ?self.guard.id(), "waiting-room settings timed out; using defaults");
-                RoomConfig::default()
-            }
-        };
-        let mut room = WaitingRoom::new(&config, self.limits.max_form_submissions);
-        if config.mode == RegistrationMode::Open {
-            // A full day turns `open` into `apply` for every connection until 00:00 UTC (M2-G,
-            // D2). If the count cannot be read, take the stricter path without claiming the
-            // cap is reached.
-            match timeout(ROOM_CONFIG_TIMEOUT, open_cap_reached(&*self.directory)).await {
-                Ok(Ok(false)) => {}
-                Ok(Ok(true)) => room.degrade_open(true),
-                Ok(Err(error)) => {
-                    warn!(session = ?self.guard.id(), %error, "daily cap unreadable; offering apply");
-                    room.degrade_open(false);
-                }
-                Err(_) => {
-                    warn!(session = ?self.guard.id(), "daily cap check timed out; offering apply");
-                    room.degrade_open(false);
-                }
-            }
-        }
-        room
+        build_room(
+            &*self.directory,
+            self.limits.max_form_submissions,
+            &self.guard.id(),
+        )
+        .await
     }
 
-    /// Whether the waiting room may be shown: the unauthenticated snapshot must hold
-    /// `waiting.view` (D33). Any failure answers no.
+    /// Whether the waiting room may be shown (see [`room_allowed`]).
     async fn waiting_room_allowed(&self) -> bool
     where
         D: Backend,
     {
-        match timeout(MEMBER_START_TIMEOUT, self.directory.access_for(None)).await {
-            Ok(Ok(access)) => access.require(Permission::WaitingView, None).is_ok(),
-            Ok(Err(error)) => {
-                warn!(session = ?self.guard.id(), %error, "waiting-room access unreadable; refusing");
-                false
-            }
-            Err(_) => {
-                warn!(session = ?self.guard.id(), "waiting-room access timed out; refusing");
-                false
-            }
-        }
+        room_allowed(&*self.directory, &self.guard.id()).await
     }
 
     /// The signed-in session for a member key, or `None` for everyone else. Core's limits

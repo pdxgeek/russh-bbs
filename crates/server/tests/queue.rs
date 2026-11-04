@@ -434,7 +434,11 @@ async fn a_request_stores_only_the_documented_fields_and_no_address() {
             "created_at",
             "expires_at",
             // M2-G: which form it came from (`invite` or `application`); no new personal data.
-            "kind"
+            "kind",
+            // D94/D95 (0020): the argon2id hash of the password a request made without an SSH
+            // key (telnet) chose, so approval can make the account. Never the password, and
+            // never an address; NULL for a key request.
+            "password_hash"
         ]
     );
     assert_eq!(
