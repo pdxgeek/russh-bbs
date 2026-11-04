@@ -937,7 +937,6 @@ impl WaitingRoom {
             }
             Page::Rules => {
                 view.body.clone_from(&self.rules);
-                view.note = Some(strings::PRIVACY_NOTE);
             }
             page => {
                 if self.degraded && page == Page::Apply {

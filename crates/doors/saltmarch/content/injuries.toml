@@ -1,0 +1,75 @@
+# Injuries last days, slow the work and can scar into a trait when they heal. `cause` says
+# where the engine rolls them: "hurt" at work, "water" at high water, "sickness" and "cold"
+# from a hold that is short of food or fuel.
+
+[[injury]]
+id = "sprain"
+name = "a sprained ankle"
+cause = "hurt"
+days = 3
+work_pct = 20
+severity = 1
+
+[[injury]]
+id = "gash"
+name = "a deep gash"
+cause = "hurt"
+days = 5
+work_pct = 30
+severity = 1
+scar = "weathered"
+scar_pct = 15
+
+[[injury]]
+id = "crushed-hand"
+name = "a crushed hand"
+cause = "hurt"
+days = 9
+work_pct = 60
+severity = 2
+scar = "shaky-hands"
+scar_pct = 35
+
+[[injury]]
+id = "near-drowned"
+name = "a near drowning"
+cause = "water"
+days = 7
+work_pct = 50
+severity = 2
+scar = "haunted"
+scar_pct = 30
+
+[[injury]]
+id = "broken-leg"
+name = "a broken leg"
+cause = "water"
+days = 14
+work_pct = 90
+severity = 3
+scar = "limp"
+scar_pct = 50
+
+[[injury]]
+id = "fever"
+name = "marsh fever"
+cause = "sickness"
+days = 6
+work_pct = 50
+severity = 2
+
+[[injury]]
+id = "bog-rot"
+name = "bog-rot in the feet"
+cause = "sickness"
+days = 8
+work_pct = 40
+severity = 2
+
+[[injury]]
+id = "frostbite"
+name = "frostbitten fingers"
+cause = "cold"
+days = 5
+work_pct = 30
+severity = 1

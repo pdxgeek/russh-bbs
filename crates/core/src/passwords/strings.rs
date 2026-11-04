@@ -11,7 +11,9 @@ pub const STATUS_SET: &str = "A password is set for this account.";
 /// Status: none set.
 pub const STATUS_NOT_SET: &str = "No password is set. You sign in with your SSH key only.";
 /// What a password does, and does not.
-pub const NOTE_USE: &str = "A password signs you in over SSH only if the sysop has turned password login on. The server checks it and keeps only a salted hash, never the password.";
+pub const NOTE_USE: &str = "A password signs you in over SSH. The server checks it and keeps only a salted hash, never the password.";
+/// What a password does when the sysop has turned password login off (D96: on by default).
+pub const NOTE_USE_OFF: &str = "The sysop has turned password login off, so a password does not sign you in over SSH. The server checks it and keeps only a salted hash, never the password.";
 /// Menu: set.
 pub const MENU_SET: &str = "Set or change password";
 /// Menu: clear.

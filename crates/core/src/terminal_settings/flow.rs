@@ -138,6 +138,8 @@ pub struct MemberFlow {
     key_notices: Vec<String>,
     /// Whether the session is over telnet, which has no key to bind (the code page says so).
     telnet: bool,
+    /// The sysop turned SSH password login off; the Password screen says so.
+    password_login_off: bool,
 }
 
 impl MemberFlow {
@@ -166,6 +168,7 @@ impl MemberFlow {
             mail_note: true,
             key_notices: Vec::new(),
             telnet: false,
+            password_login_off: false,
         }
     }
 
@@ -188,6 +191,13 @@ impl MemberFlow {
     #[must_use]
     pub fn with_key_notices(mut self, lines: Vec<String>) -> Self {
         self.key_notices = lines;
+        self
+    }
+
+    /// Tell the Password screen the sysop has turned password login off.
+    #[must_use]
+    pub const fn with_password_login_off(mut self) -> Self {
+        self.password_login_off = true;
         self
     }
 
@@ -746,7 +756,10 @@ impl MemberFlow {
                 MemberEffect::Stay
             }
             MemberInput::Char('s' | 'S') if self.access.allows(Permission::AccountSetPassword) => {
-                self.page = Page::Password(Box::new(PasswordScreen::open(self.login)));
+                self.page = Page::Password(Box::new(PasswordScreen::open(
+                    self.login,
+                    self.password_login_off,
+                )));
                 MemberEffect::Stay
             }
             MemberInput::Char('b' | 'B') | MemberInput::Escape => {

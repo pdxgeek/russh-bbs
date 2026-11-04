@@ -1,0 +1,741 @@
+//! Content as data: the tables in `content/*.toml`, embedded, parsed and validated at load.
+//! A schema test runs the same check on every table, so a bad edit fails in CI and not on a
+//! live board. [`Catalog`] is the typed, cross-checked whole that the engine reads.
+
+use russh_bbs_door::content::{self, ContentError, Table, plain_text};
+use serde::Deserialize;
+
+use crate::map::{Band, PoiKind, TileKind};
+use crate::types::{Bundle, Resource, Track, Trade};
+
+/// Buildings table text.
+pub const BUILDINGS_TOML: &str = include_str!("../content/buildings.toml");
+/// Recipes table text.
+pub const RECIPES_TOML: &str = include_str!("../content/recipes.toml");
+/// Traits table text.
+pub const TRAITS_TOML: &str = include_str!("../content/traits.toml");
+/// Injuries table text.
+pub const INJURIES_TOML: &str = include_str!("../content/injuries.toml");
+/// Points-of-interest table text.
+pub const POIS_TOML: &str = include_str!("../content/pois.toml");
+/// Names table text.
+pub const NAMES_TOML: &str = include_str!("../content/names.toml");
+/// Epitaphs table text.
+pub const EPITAPHS_TOML: &str = include_str!("../content/epitaphs.toml");
+
+const fn one() -> u8 {
+    1
+}
+
+/// One building.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingDef {
+    /// Stable id (saves name buildings by it).
+    pub id: String,
+    /// Display name.
+    pub name: String,
+    /// Which track it belongs to.
+    pub track: Track,
+    /// 1 to 3.
+    pub tier: u8,
+    /// One line of text.
+    pub blurb: String,
+    /// Paid when the work starts.
+    #[serde(default)]
+    pub cost: Bundle,
+    /// Turns of labour.
+    pub build_turns: u8,
+    /// Buildings that must already stand.
+    #[serde(default)]
+    pub requires: Vec<String>,
+    /// How many the hold may have.
+    #[serde(default = "one")]
+    pub max: u8,
+    /// Extra crew housed.
+    #[serde(default)]
+    pub crew_cap: u8,
+    /// Extra days of healing a night.
+    #[serde(default)]
+    pub heal_steps: u8,
+    /// Morale each night.
+    #[serde(default)]
+    pub morale: i8,
+    /// Peat burned each night.
+    #[serde(default)]
+    pub upkeep_peat: u8,
+    /// Extra recruits at the gate each day.
+    #[serde(default)]
+    pub recruit: u8,
+    /// Extra radius when surveying.
+    #[serde(default)]
+    pub survey: u8,
+    /// Defence against raiders.
+    #[serde(default)]
+    pub defence: u8,
+    /// Extra defence while the sluice has flooded the approach.
+    #[serde(default)]
+    pub flood_defence: u8,
+    /// Nightly yield at one worker's full power.
+    #[serde(default)]
+    pub produce: Bundle,
+    /// Eaten to make it.
+    #[serde(default)]
+    pub consume: Bundle,
+    /// The trade that works it best.
+    #[serde(default)]
+    pub trade: Option<Trade>,
+    /// Workers it takes.
+    #[serde(default)]
+    pub slots: u8,
+    /// Hand work only at or below this water level.
+    #[serde(default)]
+    pub max_level: Option<u8>,
+}
+
+impl BuildingDef {
+    /// Whether this building is a sluice (the hold's flood gate).
+    #[must_use]
+    pub const fn is_sluice(&self) -> bool {
+        self.flood_defence > 0
+    }
+}
+
+/// The buildings table.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Buildings {
+    /// Every building.
+    #[serde(rename = "building")]
+    pub entries: Vec<BuildingDef>,
+}
+
+/// How a recipe is learned.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Learn {
+    /// Known from the start.
+    Start,
+    /// Known when its workshop is built.
+    Workshop,
+    /// A plan found in a ruin.
+    Ruin,
+    /// Knowledge bought from another clan.
+    Trade,
+}
+
+/// One recipe.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RecipeDef {
+    /// Stable id.
+    pub id: String,
+    /// Display name.
+    pub name: String,
+    /// The building that makes it.
+    pub workshop: String,
+    /// What it eats.
+    pub inputs: Bundle,
+    /// What it makes.
+    pub output: Resource,
+    /// How many.
+    pub qty: u8,
+    /// Turns it takes.
+    pub turns: u8,
+    /// The skill that improves the result.
+    pub skill: Trade,
+    /// How the clan learns it.
+    pub learn: Learn,
+}
+
+/// The recipes table.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Recipes {
+    /// Every recipe.
+    #[serde(rename = "recipe")]
+    pub entries: Vec<RecipeDef>,
+}
+
+/// One trait. Percentages are relative.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TraitDef {
+    /// Stable id.
+    pub id: String,
+    /// Display name.
+    pub name: String,
+    /// One line of text.
+    pub blurb: String,
+    /// Earned from an injury, never hired with.
+    #[serde(default)]
+    pub scar: bool,
+    /// Change to what the crew member produces.
+    #[serde(default)]
+    pub yield_pct: i32,
+    /// Change to the chance of an accident.
+    #[serde(default)]
+    pub accident_pct: i32,
+    /// Chance of an extra day of healing each night.
+    #[serde(default)]
+    pub heal_pct: i32,
+    /// Change to the clan's morale each night.
+    #[serde(default)]
+    pub morale: i32,
+    /// Share of a shift's yield pocketed.
+    #[serde(default)]
+    pub pocket_pct: u32,
+    /// Change to the yield when the water is up.
+    #[serde(default)]
+    pub wet_pct: i32,
+    /// Chance a shift's yield doubles.
+    #[serde(default)]
+    pub luck_pct: u32,
+    /// Change to skill gained by training and use.
+    #[serde(default)]
+    pub learn_pct: i32,
+    /// Tallies spent on them each night.
+    #[serde(default)]
+    pub upkeep_tallies: u32,
+    /// Will not work at the water's edge when it is high.
+    #[serde(default)]
+    pub refuses_high: bool,
+    /// Change to the asking price.
+    #[serde(default)]
+    pub hire_pct: i32,
+}
+
+/// The traits table.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Traits {
+    /// Every trait.
+    #[serde(rename = "trait")]
+    pub entries: Vec<TraitDef>,
+}
+
+/// Where the engine rolls an injury.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Cause {
+    /// An accident at work.
+    Hurt,
+    /// High water.
+    Water,
+    /// A hold short of food.
+    Sickness,
+    /// A hold short of fuel.
+    Cold,
+}
+
+/// One injury.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct InjuryDef {
+    /// Stable id.
+    pub id: String,
+    /// Text for "got {name}".
+    pub name: String,
+    /// Where it is rolled.
+    pub cause: Cause,
+    /// Days to heal.
+    pub days: u8,
+    /// Work lost while it lasts.
+    pub work_pct: u32,
+    /// 1 to 3.
+    pub severity: u8,
+    /// The trait it can scar into.
+    #[serde(default)]
+    pub scar: Option<String>,
+    /// Chance it does.
+    #[serde(default)]
+    pub scar_pct: u32,
+}
+
+/// The injuries table.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Injuries {
+    /// Every injury.
+    #[serde(rename = "injury")]
+    pub entries: Vec<InjuryDef>,
+}
+
+/// One point-of-interest template.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PoiTemplate {
+    /// Stable id.
+    pub id: String,
+    /// Display name.
+    pub name: String,
+    /// One line of text.
+    pub blurb: String,
+    /// What sort of place.
+    pub kind: PoiKind,
+    /// Tile kinds it may stand on.
+    pub tiles: Vec<TileKind>,
+    /// How far from the Tidecourt.
+    pub band: Band,
+    /// How many to try to place.
+    pub count: u8,
+    /// Turn its tile into this kind.
+    #[serde(default)]
+    pub paints: Option<TileKind>,
+    /// Rooms inside, for ruins.
+    #[serde(default)]
+    pub rooms: u8,
+}
+
+/// The points-of-interest table.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Pois {
+    /// Every template.
+    #[serde(rename = "poi")]
+    pub entries: Vec<PoiTemplate>,
+}
+
+/// The names table.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Names {
+    /// First names.
+    pub first: Vec<String>,
+    /// Bynames.
+    pub by: Vec<String>,
+}
+
+/// Why a crew member left the hall's roll.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum EpitaphCause {
+    /// Old age, a quiet end.
+    Retired,
+    /// Hunger.
+    Starved,
+    /// The marsh took them (expeditions, later slices).
+    Lost,
+}
+
+/// One epitaph line.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EpitaphDef {
+    /// For which end.
+    pub cause: EpitaphCause,
+    /// The text, with `{name}` and `{trade}`.
+    pub text: String,
+}
+
+/// The epitaphs table.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Epitaphs {
+    /// Every line.
+    #[serde(rename = "epitaph")]
+    pub entries: Vec<EpitaphDef>,
+}
+
+fn id_ok(id: &str) -> bool {
+    !id.is_empty() && id.bytes().all(|b| b.is_ascii_lowercase() || b == b'-')
+}
+
+fn text_ok(text: &str, max: usize) -> bool {
+    !text.trim().is_empty() && text.chars().count() <= max && plain_text(text)
+}
+
+fn check_ids<'a>(table: &str, ids: impl Iterator<Item = &'a str>, problems: &mut Vec<String>) {
+    let mut seen: Vec<&str> = Vec::new();
+    for id in ids {
+        if !id_ok(id) {
+            problems.push(format!("[{table}] id `{id}` must be a-z and -"));
+        }
+        if seen.contains(&id) {
+            problems.push(format!("[{table}] id `{id}` is used twice"));
+        }
+        seen.push(id);
+    }
+}
+
+impl Table for Buildings {
+    fn validate(&self) -> Vec<String> {
+        let mut p = Vec::new();
+        check_ids(
+            "building",
+            self.entries.iter().map(|b| b.id.as_str()),
+            &mut p,
+        );
+        for b in &self.entries {
+            let id = &b.id;
+            if !text_ok(&b.name, 30) || !text_ok(&b.blurb, 100) {
+                p.push(format!(
+                    "[building] `{id}`: name (30) and blurb (100) must be plain text"
+                ));
+            }
+            if !(1..=3).contains(&b.tier) {
+                p.push(format!("[building] `{id}`: tier must be 1 to 3"));
+            }
+            if b.build_turns == 0 || b.build_turns > 12 {
+                p.push(format!("[building] `{id}`: build_turns must be 1 to 12"));
+            }
+            if b.max == 0 {
+                p.push(format!("[building] `{id}`: max must be at least 1"));
+            }
+            if b.cost.is_empty() {
+                p.push(format!("[building] `{id}`: it must cost something"));
+            }
+            for r in &b.requires {
+                if !self.entries.iter().any(|x| &x.id == r) {
+                    p.push(format!("[building] `{id}`: requires unknown `{r}`"));
+                }
+                if r == id {
+                    p.push(format!("[building] `{id}`: requires itself"));
+                }
+            }
+            if !b.produce.is_empty() && (b.trade.is_none() || b.slots == 0) {
+                p.push(format!(
+                    "[building] `{id}`: a producer needs a trade and slots"
+                ));
+            }
+            if !b.consume.is_empty() && b.produce.is_empty() {
+                p.push(format!("[building] `{id}`: consume without produce"));
+            }
+            if b.slots > 0 && b.trade.is_none() {
+                p.push(format!("[building] `{id}`: slots without a trade"));
+            }
+            if b.max_level.is_some_and(|l| !(20..=110).contains(&l)) {
+                p.push(format!("[building] `{id}`: max_level must be 20 to 110"));
+            }
+        }
+        // A requirement chain must end: walk up to the table's length from each building.
+        for b in &self.entries {
+            let mut frontier: Vec<&str> = b.requires.iter().map(String::as_str).collect();
+            for _ in 0..self.entries.len() {
+                frontier = frontier
+                    .iter()
+                    .flat_map(|id| {
+                        self.entries
+                            .iter()
+                            .find(|x| x.id == *id)
+                            .map(|x| x.requires.iter().map(String::as_str).collect::<Vec<_>>())
+                            .unwrap_or_default()
+                    })
+                    .collect();
+            }
+            if !frontier.is_empty() {
+                p.push(format!("[building] `{}`: requirements form a cycle", b.id));
+            }
+        }
+        p
+    }
+}
+
+impl Table for Recipes {
+    fn validate(&self) -> Vec<String> {
+        let mut p = Vec::new();
+        check_ids("recipe", self.entries.iter().map(|r| r.id.as_str()), &mut p);
+        for r in &self.entries {
+            if !text_ok(&r.name, 30) {
+                p.push(format!(
+                    "[recipe] `{}`: name must be plain text up to 30",
+                    r.id
+                ));
+            }
+            if r.qty == 0 || r.turns == 0 || r.turns > 8 {
+                p.push(format!(
+                    "[recipe] `{}`: qty must be 1+ and turns 1 to 8",
+                    r.id
+                ));
+            }
+            if r.inputs.items.is_empty() {
+                p.push(format!("[recipe] `{}`: it needs inputs", r.id));
+            }
+            if r.inputs.of(r.output) > 0 {
+                p.push(format!("[recipe] `{}`: it eats what it makes", r.id));
+            }
+        }
+        p
+    }
+}
+
+impl Table for Traits {
+    fn validate(&self) -> Vec<String> {
+        let mut p = Vec::new();
+        check_ids("trait", self.entries.iter().map(|t| t.id.as_str()), &mut p);
+        for t in &self.entries {
+            if !text_ok(&t.name, 24) || !text_ok(&t.blurb, 100) {
+                p.push(format!(
+                    "[trait] `{}`: name (24) and blurb (100) must be plain text",
+                    t.id
+                ));
+            }
+            if t.pocket_pct > 50 || t.luck_pct > 50 {
+                p.push(format!(
+                    "[trait] `{}`: pocket_pct and luck_pct are at most 50",
+                    t.id
+                ));
+            }
+            if t.accident_pct < -90 || t.heal_pct > 100 || t.heal_pct < 0 {
+                p.push(format!(
+                    "[trait] `{}`: accident_pct >= -90 and heal_pct 0 to 100",
+                    t.id
+                ));
+            }
+        }
+        if self.entries.iter().filter(|t| !t.scar).count() < 6 {
+            p.push("[trait] at least six hireable traits are needed".to_owned());
+        }
+        p
+    }
+}
+
+impl Table for Injuries {
+    fn validate(&self) -> Vec<String> {
+        let mut p = Vec::new();
+        check_ids("injury", self.entries.iter().map(|i| i.id.as_str()), &mut p);
+        for i in &self.entries {
+            if !text_ok(&i.name, 40) {
+                p.push(format!(
+                    "[injury] `{}`: name must be plain text up to 40",
+                    i.id
+                ));
+            }
+            if i.days == 0 || i.work_pct > 100 || !(1..=3).contains(&i.severity) || i.scar_pct > 100
+            {
+                p.push(format!(
+                    "[injury] `{}`: days 1+, work_pct <= 100, severity 1-3, scar_pct <= 100",
+                    i.id
+                ));
+            }
+            if (i.scar.is_some()) != (i.scar_pct > 0) {
+                p.push(format!(
+                    "[injury] `{}`: scar and scar_pct go together",
+                    i.id
+                ));
+            }
+        }
+        for cause in [Cause::Hurt, Cause::Water, Cause::Sickness, Cause::Cold] {
+            if !self.entries.iter().any(|i| i.cause == cause) {
+                p.push(format!("[injury] no injury has cause {cause:?}"));
+            }
+        }
+        p
+    }
+}
+
+impl Table for Pois {
+    fn validate(&self) -> Vec<String> {
+        let mut p = Vec::new();
+        check_ids("poi", self.entries.iter().map(|t| t.id.as_str()), &mut p);
+        for t in &self.entries {
+            if !text_ok(&t.name, 30) || !text_ok(&t.blurb, 100) {
+                p.push(format!(
+                    "[poi] `{}`: name (30) and blurb (100) must be plain text",
+                    t.id
+                ));
+            }
+            if t.tiles.is_empty() || t.count == 0 {
+                p.push(format!("[poi] `{}`: tiles and count are required", t.id));
+            }
+            if (t.band == Band::Deep) != t.tiles.iter().all(|k| *k == TileKind::Deep) {
+                p.push(format!(
+                    "[poi] `{}`: the deep band and the deep tile go together",
+                    t.id
+                ));
+            }
+            if (t.kind == PoiKind::Ruin) != (t.rooms > 0) {
+                p.push(format!(
+                    "[poi] `{}`: only ruins have rooms, and ruins must",
+                    t.id
+                ));
+            }
+            if t.paints
+                .is_some_and(|k| !matches!(k, TileKind::DrownedTown | TileKind::Wreck))
+            {
+                p.push(format!(
+                    "[poi] `{}`: paints must be drowned-town or wreck",
+                    t.id
+                ));
+            }
+        }
+        p
+    }
+}
+
+impl Table for Names {
+    fn validate(&self) -> Vec<String> {
+        let mut p = Vec::new();
+        for (name, list) in [("first", &self.first), ("by", &self.by)] {
+            if list.len() < 10 {
+                p.push(format!("[names] `{name}` needs at least 10 entries"));
+            }
+            for n in list {
+                if !text_ok(n, 12) || n.contains(' ') {
+                    p.push(format!(
+                        "[names] `{n}`: one plain word of up to 12 characters"
+                    ));
+                }
+            }
+        }
+        p
+    }
+}
+
+impl Table for Epitaphs {
+    fn validate(&self) -> Vec<String> {
+        let mut p = Vec::new();
+        for c in [
+            EpitaphCause::Retired,
+            EpitaphCause::Starved,
+            EpitaphCause::Lost,
+        ] {
+            if !self.entries.iter().any(|e| e.cause == c) {
+                p.push(format!("[epitaph] none for {c:?}"));
+            }
+        }
+        for e in &self.entries {
+            if !text_ok(&e.text, 100) || !e.text.contains("{name}") {
+                p.push(format!(
+                    "[epitaph] `{}`: plain text up to 100 with {{name}}",
+                    e.text
+                ));
+            }
+        }
+        p
+    }
+}
+
+/// Every table, parsed, validated and cross-checked.
+#[derive(Debug, Clone)]
+pub struct Catalog {
+    /// Buildings.
+    pub buildings: Vec<BuildingDef>,
+    /// Recipes.
+    pub recipes: Vec<RecipeDef>,
+    /// Traits.
+    pub traits: Vec<TraitDef>,
+    /// Injuries.
+    pub injuries: Vec<InjuryDef>,
+    /// Point-of-interest templates.
+    pub pois: Vec<PoiTemplate>,
+    /// Crew names.
+    pub names: Names,
+    /// Epitaph lines.
+    pub epitaphs: Vec<EpitaphDef>,
+}
+
+impl Catalog {
+    /// Load the embedded tables.
+    ///
+    /// # Errors
+    /// The first table that does not parse or validate, or a cross-table problem (a recipe whose
+    /// workshop is not a building, a scar that is not a trait).
+    pub fn embedded() -> Result<Self, ContentError> {
+        Self::from_texts(
+            BUILDINGS_TOML,
+            RECIPES_TOML,
+            TRAITS_TOML,
+            INJURIES_TOML,
+            POIS_TOML,
+            NAMES_TOML,
+            EPITAPHS_TOML,
+        )
+    }
+
+    /// Load tables from text (tests use this to prove a bad edit is caught).
+    ///
+    /// # Errors
+    /// See [`Catalog::embedded`].
+    pub fn from_texts(
+        buildings: &str,
+        recipes: &str,
+        traits: &str,
+        injuries: &str,
+        pois: &str,
+        names: &str,
+        epitaphs: &str,
+    ) -> Result<Self, ContentError> {
+        let catalog = Self {
+            buildings: content::load::<Buildings>("buildings", buildings)?.entries,
+            recipes: content::load::<Recipes>("recipes", recipes)?.entries,
+            traits: content::load::<Traits>("traits", traits)?.entries,
+            injuries: content::load::<Injuries>("injuries", injuries)?.entries,
+            pois: content::load::<Pois>("pois", pois)?.entries,
+            names: content::load::<Names>("names", names)?,
+            epitaphs: content::load::<Epitaphs>("epitaphs", epitaphs)?.entries,
+        };
+        let problems = catalog.cross_check();
+        if problems.is_empty() {
+            Ok(catalog)
+        } else {
+            Err(ContentError::Invalid {
+                name: "catalog",
+                problems,
+            })
+        }
+    }
+
+    fn cross_check(&self) -> Vec<String> {
+        let mut p = Vec::new();
+        for r in &self.recipes {
+            if self.building(&r.workshop).is_none() {
+                p.push(format!(
+                    "recipe `{}`: workshop `{}` is not a building",
+                    r.id, r.workshop
+                ));
+            }
+        }
+        for i in &self.injuries {
+            if let Some(scar) = &i.scar {
+                match self.trait_def(scar) {
+                    Some(t) if t.scar => {}
+                    _ => p.push(format!(
+                        "injury `{}`: scar `{scar}` is not a scar trait",
+                        i.id
+                    )),
+                }
+            }
+        }
+        if self.buildings.iter().filter(|b| b.crew_cap > 0).count() == 0 {
+            p.push("no building houses crew".to_owned());
+        }
+        for track in Track::ALL {
+            if !self
+                .buildings
+                .iter()
+                .any(|b| b.track == track && b.tier == 1)
+            {
+                p.push(format!("track {} has no tier-1 building", track.name()));
+            }
+        }
+        if !self.buildings.iter().any(BuildingDef::is_sluice) {
+            p.push("no building is a sluice".to_owned());
+        }
+        p
+    }
+
+    /// A building by id.
+    #[must_use]
+    pub fn building(&self, id: &str) -> Option<&BuildingDef> {
+        self.buildings.iter().find(|b| b.id == id)
+    }
+
+    /// A recipe by id.
+    #[must_use]
+    pub fn recipe(&self, id: &str) -> Option<&RecipeDef> {
+        self.recipes.iter().find(|r| r.id == id)
+    }
+
+    /// A trait by id.
+    #[must_use]
+    pub fn trait_def(&self, id: &str) -> Option<&TraitDef> {
+        self.traits.iter().find(|t| t.id == id)
+    }
+
+    /// An injury by id.
+    #[must_use]
+    pub fn injury(&self, id: &str) -> Option<&InjuryDef> {
+        self.injuries.iter().find(|i| i.id == id)
+    }
+}

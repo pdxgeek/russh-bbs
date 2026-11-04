@@ -237,8 +237,8 @@ async fn an_unknown_key_walks_every_invite_mode_screen() {
         "{rules}"
     );
     assert!(
-        rules.contains("server can read everything"),
-        "privacy note: {rules}"
+        !rules.contains("server can read everything"),
+        "D93: no privacy notice on screen: {rules}"
     );
     press(&mut channel, b"\x1b").await; // Escape: back home
 
