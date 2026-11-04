@@ -108,16 +108,69 @@ async fn login(addr: SocketAddr, user: &str, key: &PrivateKey) -> Handle<Client>
     session
 }
 
-/// Read until quiet and return the printable text of everything received, joined as words.
-async fn words(channel: &mut russh::Channel<client::Msg>) -> String {
-    let mut raw = String::new();
-    while let Ok(msg) = timeout(Duration::from_millis(1500), channel.wait()).await {
+/// How long the channel must stay quiet, once the expected text has arrived, before the screen
+/// is taken as complete. Only trailing repaints are waited out; the expected text is awaited by
+/// content with a deadline (`common::WAIT`), never by this pause.
+const SETTLE: Duration = Duration::from_millis(200);
+
+/// Read channel data into `raw` until `done(&raw)` holds, bounded by `common::WAIT`. Returns
+/// false when the deadline passed or the channel closed first.
+async fn read_while(
+    channel: &mut russh::Channel<client::Msg>,
+    raw: &mut String,
+    done: impl Fn(&str) -> bool,
+) -> bool {
+    let reached = timeout(common::WAIT, async {
+        while !done(raw) {
+            match channel.wait().await {
+                Some(ChannelMsg::Data { data }) => raw.push_str(&String::from_utf8_lossy(&data)),
+                Some(_) => {}
+                None => return false,
+            }
+        }
+        true
+    })
+    .await;
+    reached.unwrap_or(false)
+}
+
+/// Keep reading until the channel has been quiet for `SETTLE` (or closes).
+async fn read_quiet(channel: &mut russh::Channel<client::Msg>, raw: &mut String) {
+    while let Ok(msg) = timeout(SETTLE, channel.wait()).await {
         match msg {
             Some(ChannelMsg::Data { data }) => raw.push_str(&String::from_utf8_lossy(&data)),
             Some(_) => {}
             None => break,
         }
     }
+}
+
+/// The first screen: wait for any output, then for the server to finish painting it.
+async fn words(channel: &mut russh::Channel<client::Msg>) -> String {
+    let mut raw = String::new();
+    read_while(channel, &mut raw, |raw| !raw.is_empty()).await;
+    read_quiet(channel, &mut raw).await;
+    printable(&raw)
+}
+
+/// Wait (with a deadline) until the screen shows one of `needles`, then let trailing repaints
+/// finish. If none ever shows, the text seen so far is returned and the caller's assertion fails
+/// with it.
+async fn words_until(channel: &mut russh::Channel<client::Msg>, needles: &[&str]) -> String {
+    let mut raw = String::new();
+    let seen = read_while(channel, &mut raw, |raw| {
+        let text = printable(raw);
+        needles.iter().any(|n| text.contains(n))
+    })
+    .await;
+    if seen {
+        read_quiet(channel, &mut raw).await;
+    }
+    printable(&raw)
+}
+
+/// The printable text of `raw`, joined as words.
+fn printable(raw: &str) -> String {
     // Drop CSI sequences, then collapse box-drawing and whitespace.
     let mut out = String::new();
     let mut chars = raw.chars().peekable();
@@ -158,7 +211,8 @@ async fn submit(channel: &mut russh::Channel<client::Msg>, token: &str) -> Strin
             .await
             .unwrap();
     }
-    words(channel).await
+    // Either outcome ends the wait; the callers assert which one it was.
+    words_until(channel, &["Signed in as founder.", REJECTED]).await
 }
 
 async fn access_of(rig: &Rig, key: &PrivateKey) -> Access {

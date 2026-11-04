@@ -1397,11 +1397,20 @@ async fn the_request_limits_apply_to_the_telnet_forms_and_the_answer_never_chang
         }
     }
     assert!(answers.iter().all(|a| a == &answers[0]), "{answers:?}");
-    // Wait for the last submission to settle, then count what was kept.
-    tokio::time::sleep(Duration::from_millis(500)).await;
-    let kept = rig
-        .rows("SELECT CAST(count(*) AS TEXT) FROM invite_request")
-        .await;
+    // Poll (bounded) until the kept rows reach the limit, then require exactly ten.
+    let kept = timeout(WAIT, async {
+        loop {
+            let kept = rig
+                .rows("SELECT CAST(count(*) AS TEXT) FROM invite_request")
+                .await;
+            if kept != ["0"] && kept.iter().all(|n| n.parse::<u32>().is_ok_and(|n| n >= 10)) {
+                return kept;
+            }
+            tokio::time::sleep(Duration::from_millis(20)).await;
+        }
+    })
+    .await
+    .expect("the kept requests never reached the limit");
     assert_eq!(kept, ["10"], "the network limit kept ten of twelve");
 }
 
@@ -1448,7 +1457,7 @@ async fn ssh_keys(
 /// which is all telnet adds; everything else must match ssh.
 fn without_the_marker(words: &str) -> String {
     let frame = words.rfind("russh bbs").map_or(words, |at| &words[at..]);
-    frame
+    let words = frame
         .replace(
             "UNENCRYPTED anyone on the network can read this session",
             "",
@@ -1456,7 +1465,30 @@ fn without_the_marker(words: &str) -> String {
         .replace("UNENCRYPTED", "")
         .split_whitespace()
         .collect::<Vec<_>>()
-        .join(" ")
+        .join(" ");
+    without_the_login_time(&words)
+}
+
+/// `words` with the wall-clock time after "Last login:" (`YYYY-MM-DD HH:MM UTC`) replaced by a
+/// placeholder. The two servers in the transport comparison start at different moments, so their
+/// minute can differ; the line itself must still be there and the rest must match.
+fn without_the_login_time(words: &str) -> String {
+    const LABEL: &str = "Last login:";
+    let Some(at) = words.find(LABEL) else {
+        return words.to_owned();
+    };
+    let after = &words[at + LABEL.len()..];
+    let mut rest = after.split_whitespace();
+    let (date, time, zone) = (rest.next(), rest.next(), rest.next());
+    assert!(
+        matches!((date, time, zone), (Some(d), Some(t), Some("UTC"))
+            if d.len() == 10 && t.len() == 5),
+        "unexpected login time after {LABEL:?}: {after}"
+    );
+    let tail: Vec<&str> = rest.collect();
+    format!("{}{LABEL} <time> {}", &words[..at], tail.join(" "))
+        .trim_end()
+        .to_owned()
 }
 
 #[tokio::test]
