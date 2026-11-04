@@ -46,7 +46,7 @@ Update this table in the same pass as the code.
 | File areas over SFTP, scanning, quarantine | M4 | Planned | Streams through the blob store |
 | File tagging and batch download | M4 | Planned | |
 | Global new-scan (posts, files, feeds) | M4 | Planned | |
-| Door framework and first games | M4 | Planned | Rust-native |
+| Door framework and first games | M4 | Planned | Rust-native. Flagship design proposed: [doors/saltmarch.md](doors/saltmarch.md) |
 | Sysop admin TUI | M5 | Planned | |
 | Page the sysop and sysop chat | M5 | Planned | |
 | Moderation workflow, audit log UI | M5 | Planned | Writes exist since M2 |
