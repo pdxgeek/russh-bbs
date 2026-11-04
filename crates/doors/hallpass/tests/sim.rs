@@ -1,10 +1,19 @@
 //! A headless simulation of whole 6-week terms: heat, file and legend curves, endings, and which
 //! branches of the content actually get used. Run with `--nocapture` to see the tables.
 #![allow(
+    clippy::cast_precision_loss,
+    clippy::needless_pass_by_value,
+    clippy::doc_markdown,
+    clippy::similar_names,
+    clippy::expect_used,
+    clippy::assert_is_empty,
+    clippy::type_complexity,
+    clippy::collapsible_if,
+    clippy::cast_possible_wrap,
     clippy::unwrap_used,
     clippy::too_many_lines,
     clippy::print_stderr,
-    clippy::cast_precision_loss
+    clippy::panic
 )]
 mod common;
 

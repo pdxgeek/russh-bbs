@@ -132,9 +132,7 @@ impl Session {
         let today = self.game.player.day;
         for delta in self.game.take_world_changes() {
             let content = Arc::clone(&self.game.content);
-            ctx.edit_world(move |bytes| {
-                Some(WorldDelta::apply_to_bytes(&delta, bytes, today, &content))
-            });
+            ctx.edit_world(move |bytes| WorldDelta::apply_to_bytes(&delta, bytes, today, &content));
         }
     }
 

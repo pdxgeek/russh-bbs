@@ -4,7 +4,9 @@
     unreachable_pub,
     missing_docs,
     clippy::unwrap_used,
-    clippy::too_many_lines
+    clippy::too_many_lines,
+    clippy::collapsible_if,
+    clippy::struct_excessive_bools
 )]
 
 use russh_bbs_door::DoorRng;
@@ -268,8 +270,7 @@ fn setup_step(
             let at = game.npc_place(npc, day, slot).to_owned();
             if go_then(game, &at, rng, events) {
                 // We are with them: ask on the next pass of the loop.
-                return game.recruitable(scheme).iter().any(|(_, r, _)| r == role)
-                    && matches!(game.apply(&Action::Rest, rng), Ok(_) if false);
+                return game.recruitable(scheme).iter().any(|(_, r, _)| r == role);
             }
         }
         return false;

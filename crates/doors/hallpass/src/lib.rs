@@ -149,7 +149,11 @@ impl Door for Hallpass {
 
     fn daily_tick(&self, tick: &mut TickCtx<'_>) -> Result<(), TickError> {
         let day = tick.day().as_raw();
-        let mut world = state::World::from_bytes(tick.world(), day);
+        let mut world = match tick.world() {
+            Some(stored) => wire::decode(stored)
+                .ok_or_else(|| TickError::Door("the stored world is damaged".to_owned()))?,
+            None => state::World::new(day),
+        };
         world::tick_day(&mut world, &self.content, day, tick.rng());
         tick.set_world(world.to_bytes());
         Ok(())

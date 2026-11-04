@@ -1,6 +1,6 @@
 # Hallpass: a school-life door (design)
 
-Status: **Proposed**. Shared platform rules are in [README.md](README.md).
+Status: **Proposed** design; slice 1 (the engine, M4-H1) is **implemented** on branch `m4/hallpass-engine` and described under [Implementation notes](#implementation-notes-m4-h1) at the end. Shared platform rules are in [README.md](README.md).
 
 ## Pitch
 
@@ -123,6 +123,60 @@ The core tension: **the bigger the prank, the bigger the heat.** Every period go
 
 ## Open questions
 
-- **Periods:** seven periods a day?
+- **Periods:** seven periods a day? *Engine answer (M4-H1, D100): seven day periods plus evening and lights-out, nine slots, all set in `content/timetable.toml`.*
 - **Setting:** keep the boarding-school setting, or a day school in a town?
 - **Player-versus-player:** should it be on by default, given the opt-out?
+
+
+## Implementation notes (M4-H1)
+
+Slice 1 of 6 is built in `crates/doors/hallpass` (`russh-bbs-door-hallpass`), registered in `server::doors::Doors::builtin()`. Decision D100 records the choices below that were real alternatives.
+
+### What is implemented (and tested)
+
+| Area | What exists | Where |
+|---|---|---|
+| Timetable | Nine slots a day (seven periods, evening, lights-out), a timetable per weekday, five subjects with room and teacher, Saturday and Sunday differ. All data. | `content/timetable.toml`, `Game::activity/kind` |
+| School map | 31 places in five wings, undirected exits, hours by slot kind, descriptions that change by period, shops, locks that open for any one of a list of conditions (an item, a learned routine, standing, or a world change), walking limited to `moves_per_slot` corridors a period. | `content/places.toml`, `Game::routes/place_open` |
+| Characters | Six cliques and 19 characters (10 staff, 2 prefects, 7 students): schedules by slot kind, subject and weekday (first match wins), a world effect can move one for everyone, and each can offer allies roles (`lookout`, `distraction`, `cover`, `gadget`, `keys`) on conditions. | `content/cast.toml`, `Game::npc_place/npcs_at` |
+| You | Grades by subject, standing with each clique, nerve (spent to push a phase), cool, cash, notoriety, heat, legend; four skills that grow by use; four starting traits and three earned ones, each of which grants capabilities other tables ask for. | `state::Player`, `content/traits.toml` |
+| Schemes | Target (17: staff, prefects, three rival cliques, four school objects), method (9 small, 4 big), up to two twists (6), a getaway (6), setup (items, scouting 0 to 3, allies, a time chosen from where the target's schedule allows), then a three-phase run: sneak, act, escape. | `content/schemes.toml`, `scheme.rs` |
+| Consequences | Heat (decays daily, worse odds, easier to trace); the file (levels at 3, 5, 8 and 10 points give detention, lost privileges, a letter home, a summons to the headmistress; a full file is a final warning and one more line, or the end of term, is expulsion; a week of good conduct strikes a point); detention that must be served; staff who learn (wariness raises difficulty and the scouting a scheme needs, and fades); the same trick twice lands softer; campaigns of chained pranks multiply legend; a bust ends the campaign. | `game.rs`, `scheme.rs` |
+| Big schemes and the shared world | Four world effects: the deputy head moved to the Old Wing (rest of term; opens the staffroom, moves his patrol), the tuck shop shut for a week, a fire-drill muddle (patrols down for two days), a hijacked paper (legend and heat up for five days). Applied by a pure, idempotent world edit; the paper names the culprit; a hall of legend; a yearbook of past terms. | `world.rs`, `content/world.toml` |
+| Term and day | Term of 42 days; the daily tick (idempotent, catches up, rolls the term over); a character's own days apply when they next play (decay of heat, wariness, file; allowance); five endings chosen by what you did. | `world::tick_day`, `Game::sync_day/finish_term` |
+| Saves | Hand-written binary codec (the sandbox allows no serde binary format), versioned (`SAVE_VERSION = 1`, `WORLD_VERSION = 1`), every read bounds-checked, a blob newer than the code is refused by the framework. No older version exists yet, so `migrate` returns `Unsupported`. | `wire.rs`, `save.rs` |
+| Screen | A minimal text screen: enrol, a main view, go, study, shop, a scheme planner (target, method, twists, getaway, helpers, time), the run with the odds and their reasons, file and stats, news and the hall of legend. Every choice is a `[key] label` line; the same lines are the look-around text. | `session.rs` |
+
+### How the RPG rule is met
+
+Every element changes an outcome, and the tests prove it (`tests/rpg.rs`): traits and skills decide which methods, twists and getaways exist (a talker can forge, a tinkerer can time a bomb, a runner can sprint; a teacher's pet is refused by the back row but not by the Strays); the odds of a phase are the sum of named parts (skill, scouting, helpers, witnesses from the schedules, patrols, wariness, heat, notoriety, cool, nerve) and the screen shows them; the same scheme ends differently for different builds over the same dice; choices close doors (a troublemaker's name, an old trick); consequences persist across days and the save; no content is dead (every method, twist, getaway and trait is reachable by some build, checked).
+
+### Content is data
+
+Eight TOML tables under `crates/doors/hallpass/content/`, parsed with `deny_unknown_fields`, with a condition language that is parsed at load. `tests/content.rs` loads them, breaks each on purpose (unknown field, bad condition, unresolved reference, duplicate id, unplain text, a lock without a key, a missing effect, a role nobody offers, a Stray as a target) and expects the named problem. **Tone rules are checks, not hopes:** no target is a Stray, a target is always a staff member or prefect who is marked prankable, or a rival clique, or a school object, and a target is always an id from the table, never typed; no free-text targeting of a player exists in the engine.
+
+### Seams for the next slices
+
+- **H2 classes, clubs, characters.** `Game::attend` is the single place a lesson is taken: a minigame replaces its flat grade gain there. Clubs add a `club` field to `Player` and a slot-kind activity; conversations hook `loiter` (it already picks a clique member who is present and moves standing) and `Recruit` (the ally asks and the answer is where a scene belongs). Friendship tracks are `standing` plus `ally_used`; storylines are `knowledge` flags that conditions can already test (`know:...`).
+- **H3 UI.** `session.rs` is the only file that knows about screens. It builds `(body, items)` and draws them; layouts, the map and the timetable strip can replace the drawing without touching the rules. `Game::describe_place`, `routes`, `npcs_at` and `candidate_times` give a map and a scouting view what they need.
+- **H4 social, mystery, balance.** The east wing, the tunnels and the organ loft exist as locked places with no key yet; `know:` flags and `item:` keys are the unlock vocabulary. Structured player schemes and template rumours add `Action` variants and `WorldDelta` variants; the PvP opt-out is a `Player` flag the legal-action list checks. `tests/common/bot.rs` and `tests/sim.rs` are the start of the balance harness (the bots play through the public actions only).
+
+### Not done, deliberately
+
+Class minigames, clubs, conversations and storylines, the school events, the mystery, the election, structured player-against-player schemes, template rumours and awards (H2 to H4). The content budget is a first small cast and 13 methods, not the design's 60 templates, 40 students and 12 staff. Hallpass reads the shared world once when a visit opens: a change another player makes while you are in the door shows at your next visit (the framework has no world-read for a session; noted in `docs/coordination.md`).
+
+### Verified
+
+See the pull request for the commands and their results. In short: unit and integration tests for the engine, schemes, the RPG branches, the shared world through the framework's real world edit and daily tick, replay logs with three pinned branches of one scheme, the 80x24 screen on both transports, the framework's source audit, and a 6-week headless simulation; plus a walk with the OpenSSH client (enrol, the planner, scouting twice, buying, a timed scheme in the staffroom, a day rollover with the server clock moved five days, the missed detention that followed). **Not exercised by hand:** a big scheme over ssh (the legend gate means a long game; the world change is tested through the framework instead), telnet by hand (the same screen is compared on both transports in a test), Postgres.
+
+### Balance (first numbers, from the simulation)
+
+Forty terms of each of four bots on one shared school (`cargo test -p russh-bbs-door-hallpass --test sim -- --nocapture`). The bots play only through the public actions; "reckless" skips class, pushes nerve and starts schemes at any heat, "cautious" only at low heat and scouts to the maximum.
+
+| Bot | Legend | File at term end | Pulled off | Caught | Traced | Expelled |
+|---|---|---|---|---|---|---|
+| cautious | about 27 | about 2 | about 4.7 | about 4.1 | about 0.2 | 0% |
+| balanced | about 36 | about 7 | about 5.2 | about 4.3 | about 0.4 | about 15% |
+| reckless | about 60 | about 11.5 | about 5.4 | about 5.0 | about 2.6 | about 75% |
+
+The shape is what the design asks for: boldness pays in legend and costs in the file, and careful play keeps a clean sheet. Real balance is H4's job; these numbers are a baseline, not a target.

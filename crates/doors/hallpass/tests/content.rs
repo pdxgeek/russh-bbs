@@ -1,5 +1,19 @@
 //! Content is data: the schema tests, the tone rules, and breaking each table on purpose.
-#![allow(clippy::unwrap_used, clippy::too_many_lines)]
+#![allow(
+    clippy::cast_precision_loss,
+    clippy::needless_pass_by_value,
+    clippy::doc_markdown,
+    clippy::similar_names,
+    clippy::expect_used,
+    clippy::assert_is_empty,
+    clippy::type_complexity,
+    clippy::collapsible_if,
+    clippy::cast_possible_wrap,
+    clippy::unwrap_used,
+    clippy::too_many_lines,
+    clippy::print_stderr,
+    clippy::panic
+)]
 
 use russh_bbs_door::content::{ContentError, plain_text};
 use russh_bbs_door_hallpass::content::{Content, EMBEDDED, Sources};

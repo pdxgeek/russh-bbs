@@ -1,6 +1,20 @@
 //! The shared world: a big scheme pulled off by one player changes the school for every player on
 //! the board, through the framework's real world edit and daily tick.
-#![allow(clippy::unwrap_used, clippy::too_many_lines)]
+#![allow(
+    clippy::cast_precision_loss,
+    clippy::needless_pass_by_value,
+    clippy::doc_markdown,
+    clippy::similar_names,
+    clippy::expect_used,
+    clippy::assert_is_empty,
+    clippy::type_complexity,
+    clippy::collapsible_if,
+    clippy::cast_possible_wrap,
+    clippy::unwrap_used,
+    clippy::too_many_lines,
+    clippy::print_stderr,
+    clippy::panic
+)]
 mod common;
 
 use std::sync::Arc;
@@ -15,7 +29,7 @@ use russh_bbs_door::tick::{TickPolicy, run_due};
 use russh_bbs_door::{Door, DoorEnv, DoorKey};
 use russh_bbs_door_hallpass::game::{Action, Game};
 use russh_bbs_door_hallpass::save::{decode_world, encode_player};
-use russh_bbs_door_hallpass::state::{Player, World, map_set};
+use russh_bbs_door_hallpass::state::{Player, map_set};
 use russh_bbs_door_hallpass::{Hallpass, SAVE_VERSION};
 
 /// A strong character with a big scheme set up and timed, standing at the place at the moment.

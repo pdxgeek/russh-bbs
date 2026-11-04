@@ -1,5 +1,19 @@
 //! Schemes: the plan, the setup, the run, heat, the file, legend, and staff who learn.
-#![allow(clippy::unwrap_used, clippy::too_many_lines)]
+#![allow(
+    clippy::cast_precision_loss,
+    clippy::needless_pass_by_value,
+    clippy::doc_markdown,
+    clippy::similar_names,
+    clippy::expect_used,
+    clippy::assert_is_empty,
+    clippy::type_complexity,
+    clippy::collapsible_if,
+    clippy::cast_possible_wrap,
+    clippy::unwrap_used,
+    clippy::too_many_lines,
+    clippy::print_stderr,
+    clippy::panic
+)]
 mod common;
 
 use common::{Sandbox, Setup, arrange, busted, legend_of, pulled, run_scheme};
@@ -95,7 +109,7 @@ fn times_come_from_the_target_schedule() {
     });
     let scheme = sb.game.player.schemes[0].clone();
     let times = sb.game.candidate_times(&scheme);
-    assert!(!times.is_empty());
+    assert_ne!(times, Vec::new());
     let pell = sb.game.content.npc("pell").unwrap().clone();
     for (day, slot) in &times {
         assert_ne!(
@@ -141,7 +155,7 @@ fn times_come_from_the_target_schedule() {
 
 #[test]
 fn staff_who_are_pranked_learn_and_the_same_trick_lands_softer() {
-    let seed = seed_where(|e| pulled(e), |s| salt_scenario("smooth_talker", s));
+    let seed = seed_where(pulled, |s| salt_scenario("smooth_talker", s));
     let (mut sb, id) = salt_scenario("smooth_talker", seed);
     let first = run_scheme(&mut sb, id, 0);
     assert!(pulled(&first));
@@ -201,7 +215,7 @@ fn wariness_makes_a_target_harder_and_demands_more_scouting_and_then_fades() {
 
 #[test]
 fn heat_builds_with_mischief_fades_with_time_and_makes_everything_worse() {
-    let seed = seed_where(|e| pulled(e), |s| salt_scenario("smooth_talker", s));
+    let seed = seed_where(pulled, |s| salt_scenario("smooth_talker", s));
     let (mut sb, id) = salt_scenario("smooth_talker", seed);
     let s_before = {
         let mut other = Sandbox::new("smooth_talker", 1);
@@ -240,7 +254,7 @@ fn heat_builds_with_mischief_fades_with_time_and_makes_everything_worse() {
 
 #[test]
 fn getting_caught_costs_the_file_a_detention_and_the_campaign() {
-    let seed = seed_where(|e| busted(e), |s| salt_scenario("smooth_talker", s));
+    let seed = seed_where(busted, |s| salt_scenario("smooth_talker", s));
     let (mut sb, id) = salt_scenario("smooth_talker", seed);
     sb.game.player.campaign = Some(russh_bbs_door_hallpass::state::Campaign {
         theme: "pell".into(),
@@ -270,7 +284,7 @@ fn getting_caught_costs_the_file_a_detention_and_the_campaign() {
 
 #[test]
 fn chained_pranks_are_worth_more_than_one_offs() {
-    let seed = seed_where(|e| pulled(e), |s| salt_scenario("smooth_talker", s));
+    let seed = seed_where(pulled, |s| salt_scenario("smooth_talker", s));
     let (mut one_off, id) = salt_scenario("smooth_talker", seed);
     let single = legend_of(&run_scheme(&mut one_off, id, 0));
     // The same trick, but as the second link of a campaign against the same target.
@@ -345,7 +359,7 @@ fn a_cover_story_turns_a_bust_into_a_slip_once() {
         (sb, id)
     };
     // A seed where the plain run is caught in some phase...
-    let seed = seed_where(|e| busted(e), |s| salt_scenario("smooth_talker", s));
+    let seed = seed_where(busted, |s| salt_scenario("smooth_talker", s));
     let (mut plain, id) = salt_scenario("smooth_talker", seed);
     let plain_events = run_scheme(&mut plain, id, 0);
     assert!(busted(&plain_events));

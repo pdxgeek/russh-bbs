@@ -1,6 +1,20 @@
 //! The RPG rule: every element changes outcomes. The same scheme, played by different builds
 //! (traits, skills, allies), offers different options and ends differently.
-#![allow(clippy::unwrap_used, clippy::too_many_lines)]
+#![allow(
+    clippy::cast_precision_loss,
+    clippy::needless_pass_by_value,
+    clippy::doc_markdown,
+    clippy::similar_names,
+    clippy::expect_used,
+    clippy::assert_is_empty,
+    clippy::type_complexity,
+    clippy::collapsible_if,
+    clippy::cast_possible_wrap,
+    clippy::unwrap_used,
+    clippy::too_many_lines,
+    clippy::print_stderr,
+    clippy::panic
+)]
 mod common;
 
 use common::{Sandbox, Setup, arrange, busted, monday, pulled, run_scheme};
@@ -61,7 +75,7 @@ fn different_builds_see_different_choices_on_the_same_board() {
 
 #[test]
 fn who_will_help_you_depends_on_who_you_are() {
-    let mut recruit = |trait_id: &str, bench: i32, npc_place: &str| {
+    let recruit = |trait_id: &str, bench: i32, npc_place: &str| {
         let mut sb = Sandbox::new(trait_id, 1);
         sb.game.player.add_standing("the_bench", bench);
         sb.game.player.add_standing("strays", 10);
@@ -243,7 +257,6 @@ fn skills_improve_by_use_and_the_odds_follow() {
             ..Setup::default()
         },
     );
-    let s = sb.game.player.scheme(id).unwrap().clone();
     assert_eq!(sb.game.skill_level("sneak"), 0);
     // Doing is how skills grow: each phase gained a point of experience in its skill.
     let events = run_scheme(&mut sb, id, 0);

@@ -75,11 +75,22 @@ impl WorldDelta {
     }
 
     /// Apply to stored bytes (or a new world started on `today`) and return the new bytes.
+    ///
+    /// Stored bytes that are not a world are left alone (`None`): an edit must never replace a
+    /// damaged world with a fresh one.
     #[must_use]
-    pub fn apply_to_bytes(&self, bytes: Option<&[u8]>, today: i64, content: &Content) -> Vec<u8> {
-        let mut world = World::from_bytes(bytes, today);
+    pub fn apply_to_bytes(
+        &self,
+        bytes: Option<&[u8]>,
+        today: i64,
+        content: &Content,
+    ) -> Option<Vec<u8>> {
+        let mut world = match bytes {
+            Some(stored) => crate::wire::decode(stored)?,
+            None => World::new(today),
+        };
         self.apply(&mut world, content);
-        world.to_bytes()
+        Some(world.to_bytes())
     }
 }
 
@@ -121,6 +132,20 @@ pub fn tick_day(world: &mut World, content: &Content, day: i64, _rng: &mut DoorR
 mod tests {
     #![allow(clippy::unwrap_used)]
     use super::*;
+
+    #[test]
+    fn an_edit_never_replaces_a_damaged_world() {
+        let content = Content::embedded().unwrap();
+        let delta = WorldDelta::Patrol {
+            place: "quad".into(),
+            amount: 1,
+        };
+        assert_eq!(delta.apply_to_bytes(Some(&[9, 9, 9]), 5, &content), None);
+        let made = delta.apply_to_bytes(None, 5, &content).unwrap();
+        assert_eq!(World::from_bytes(Some(&made), 0).patrol_heat("quad"), 1);
+        let again = delta.apply_to_bytes(Some(&made), 5, &content).unwrap();
+        assert_eq!(World::from_bytes(Some(&again), 0).patrol_heat("quad"), 2);
+    }
 
     #[test]
     fn an_effect_is_applied_once_and_expires_and_a_term_rolls_over() {
