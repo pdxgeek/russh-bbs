@@ -38,9 +38,17 @@ pub mod sim;
 pub mod tick;
 
 pub use canvas::{Canvas, DoorPalette, DoorStyle};
-pub use ctx::{Ctx, Effects, TextRefused, WorldEdit};
+pub use ctx::{
+    Ctx, Effects, PLAYER_TEXT_MAX_CHARS, PLAYER_TEXT_PER_WINDOW, PLAYER_TEXT_WINDOW_SECS,
+    TextRefused, WorldEdit,
+};
 pub use door::{
     BlobKind, Door, DoorEnv, DoorInfo, DoorSession, Flow, MigrateError, Save, Start, TransportKind,
 };
 pub use key::DoorKey;
 pub use rng::DoorRng;
+
+// The types a door names in its signatures, so a door crate needs no dependency but this one.
+pub use russh_bbs_core::doors::{DoorId, InvalidDoorId};
+pub use russh_bbs_core::icons::Tier;
+pub use russh_bbs_core::limits::Day;

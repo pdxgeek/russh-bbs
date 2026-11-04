@@ -5,8 +5,7 @@
 //! rectangle: the title bar, the status row, the security markers, the transport's footer, and
 //! the logoff keys.
 
-use ratatui::layout::Rect;
-use russh_bbs_core::doors::DoorId;
+use russh_bbs_core::doors::{DoorId, InvalidDoorId};
 use russh_bbs_core::icons::Tier;
 use russh_bbs_core::limits::Day;
 use russh_bbs_core::terminal_settings::{LayoutId, TerminalSettings};
@@ -94,6 +93,25 @@ pub struct DoorInfo {
     pub world_version: u32,
 }
 
+impl DoorInfo {
+    /// Fixed facts for a door whose id is `id` (see [`DoorId::parse`]).
+    pub fn new(
+        id: &str,
+        title: &'static str,
+        blurb: &'static str,
+        save_version: u32,
+        world_version: u32,
+    ) -> Result<Self, InvalidDoorId> {
+        Ok(Self {
+            id: DoorId::parse(id)?,
+            title,
+            blurb,
+            save_version,
+            world_version,
+        })
+    }
+}
+
 /// The player's save as the board gives it to [`Door::open`].
 #[derive(Debug, Clone, Copy)]
 pub enum Save<'a> {
@@ -176,17 +194,5 @@ pub trait Door: Send + Sync + 'static {
     fn daily_tick(&self, tick: &mut TickCtx<'_>) -> Result<(), TickError> {
         let _ = tick;
         Ok(())
-    }
-}
-
-/// The area of a window a door gets, for hosts that need to compute it: the whole window minus
-/// one title row. (The server's real layout also removes the status row and the transport
-/// footer; this is the part that does not depend on the transport.)
-#[must_use]
-pub fn door_area(window: Rect) -> Rect {
-    Rect {
-        y: window.y.saturating_add(1),
-        height: window.height.saturating_sub(1),
-        ..window
     }
 }
