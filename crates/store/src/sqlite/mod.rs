@@ -9,6 +9,7 @@ mod binding;
 mod chat;
 mod community;
 mod credits;
+mod doors;
 mod drafts;
 mod feeds;
 mod forums;

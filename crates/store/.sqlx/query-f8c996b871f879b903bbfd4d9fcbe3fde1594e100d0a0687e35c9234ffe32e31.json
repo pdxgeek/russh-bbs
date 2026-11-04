@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT world_revision, world_version, world, last_tick_day\n               FROM door_state WHERE door = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "world_revision",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "world_version",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "world",
+        "type_info": "Bytea"
+      },
+      {
+        "ordinal": 3,
+        "name": "last_tick_day",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "f8c996b871f879b903bbfd4d9fcbe3fde1594e100d0a0687e35c9234ffe32e31"
+}

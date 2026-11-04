@@ -9,6 +9,7 @@ use russh_bbs_core::limits::SystemClock;
 use russh_bbs_core::scheduler::{Scheduler, SchedulerStore};
 use russh_bbs_core::store::{SettingsStore, set_registration_mode};
 use russh_bbs_server::config::{Cli, Loaded, ResolvedDatasource};
+use russh_bbs_server::doors::{self, Doors};
 use russh_bbs_server::feeds::{
     FetchLimits, Guard, GuardedFetcher, Roots, RssOut, RssOutConfig, SystemResolver, load_ca_file,
     proxy_in_environment,
@@ -127,9 +128,12 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
         None => Ui::standard(),
     }
     .context("building the screens")?
-    .with_mail_keys(Arc::new(mail_keys));
+    .with_mail_keys(Arc::new(mail_keys))
+    // The doors built into this board (M4-D0): the example coin toss until a game replaces it.
+    .with_doors(Doors::builtin().context("building the doors")?);
     // The store decides who is a member; an unknown key or a store error is Restricted.
     let ui = Arc::new(ui);
+    let board_doors = ui.doors().clone();
     let server = SshServer::start_with_ui(
         &config,
         host_key,
@@ -170,6 +174,11 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
     // The event scheduler (M3-C, D79). Later slices register their jobs here, before it starts:
     // `scheduler.register(job)?` (see the `russh_bbs_core::scheduler` docs).
     let mut scheduler = Scheduler::new(store.clone(), Arc::new(SystemClock));
+    // One daily-tick job per door that has days (M4-D0): idempotent per day, catching up after
+    // downtime with a cap.
+    let door_ticks = doors::register_ticks(&mut scheduler, &store, &board_doors)
+        .context("scheduling the doors' daily ticks")?;
+    info!(jobs = door_ticks, "door ticks scheduled");
     if loaded.config.feeds.enabled {
         register_feed_job(
             &mut scheduler,

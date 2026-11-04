@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO door_bar (door, account_id, barred_by, at) VALUES ($1, $2, $3, $4)\n               ON CONFLICT (door, account_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "86a074b04b58764d7e3b01c01253b55af7687bca3d4202e733e75a3bdce41fd7"
+}

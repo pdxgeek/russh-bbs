@@ -75,6 +75,10 @@ impl Harness for SqliteHarness {
         .await
     }
 
+    fn blob_sql(&self, len: usize) -> String {
+        format!("zeroblob({len})")
+    }
+
     async fn break_audit_inserts(&self) {
         self.raw(
             "CREATE TRIGGER audit_insert_broken BEFORE INSERT ON audit_log
@@ -180,6 +184,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         22,
         "b19e4413f20e3e4c41f7d4e1071697638d0b79b33d5fa16f8884639ccca5d06d46fe5c93efa47a5953673e91563f582a",
     ),
+    (
+        23,
+        "2fac0fcd70cfa71c55db73b38d29d4cb2dc855f785c10bd11bf7e988807e666d5c9e7fbd64544901323dac6d98637a78",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {
@@ -242,6 +250,9 @@ async fn a_fresh_database_gets_every_migration() {
             "chat_room",
             "community_line",
             "credit_ledger",
+            "door_bar",
+            "door_save",
+            "door_state",
             "draft",
             "feed",
             "feed_item",

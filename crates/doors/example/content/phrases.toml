@@ -1,0 +1,26 @@
+# Flavor lines for the coin toss. Writers can add entries without touching the engine; the
+# schema test (`tests/content.rs`) checks every table before it ships.
+
+[[win]]
+id = "hum"
+text = "The coin hums as it lands your way."
+
+[[win]]
+id = "ring"
+text = "It rings on the table and stays put. Yours."
+
+[[win]]
+id = "wink"
+text = "The coin winks at you. Lucky."
+
+[[lose]]
+id = "roll"
+text = "It rolls off the edge of the table. Not yours."
+
+[[lose]]
+id = "clink"
+text = "A small, final clink. The house keeps it."
+
+[[lose]]
+id = "slide"
+text = "It slides into a crack. Gone."

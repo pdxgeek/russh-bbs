@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO door_state (door, season, updated_at) VALUES ($1, 2, $2)\n               ON CONFLICT (door) DO UPDATE SET season = door_state.season + 1, updated_at = $2\n               RETURNING season AS \"season!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "season!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "d266bf2468bbc66a70223d0a8b29dbb4a9da83b1b4ce52df53c81ef3ee6f1697"
+}

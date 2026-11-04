@@ -13,6 +13,7 @@ pub(crate) mod audit;
 pub(crate) mod chat;
 pub(crate) mod community;
 pub(crate) mod credits;
+pub(crate) mod doors;
 pub(crate) mod drafts;
 pub(crate) mod feeds;
 pub(crate) mod forums;
@@ -36,6 +37,7 @@ use russh_bbs_core::audit::{AuditStore, WallClock};
 use russh_bbs_core::chat::RoomStore;
 use russh_bbs_core::community::CommunityStore;
 use russh_bbs_core::credits::CreditStore;
+use russh_bbs_core::doors::DoorStore;
 use russh_bbs_core::drafts::DraftStore;
 use russh_bbs_core::feeds::FeedStore;
 use russh_bbs_core::forums::ForumStore;
@@ -63,6 +65,7 @@ pub(crate) trait TestStore:
     + AuditStore
     + CommunityStore
     + CreditStore
+    + DoorStore
     + SchedulerStore
     + SettingsStore
     + FounderStore
@@ -95,6 +98,7 @@ impl<T> TestStore for T where
         + AuditStore
         + CommunityStore
         + CreditStore
+        + DoorStore
         + SchedulerStore
         + SettingsStore
         + FounderStore
@@ -149,6 +153,9 @@ pub(crate) trait Harness: Sized {
     /// The raw bytes of one column of `mail_message`, as lower-case hex, one string per row.
     async fn hex(&self, column: &str) -> Vec<String>;
 
+    /// A SQL expression for a blob of `len` zero bytes, for proving a size cap in the database.
+    fn blob_sql(&self, len: usize) -> String;
+
     /// Make every insert into `audit_log` fail, so a test can prove the change that wanted to
     /// write the row did not land either.
     async fn break_audit_inserts(&self);
@@ -179,7 +186,7 @@ macro_rules! shared_suite {
             #[allow(unused_imports)]
             use super::*;
             use $crate::suite::{
-                access, access_edit, accounts, audit, chat, community, credits, drafts, feeds, forums, founder, invites, keys, limits,
+                access, access_edit, accounts, audit, chat, community, credits, doors, drafts, feeds, forums, founder, invites, keys, limits,
                 mail, password_accounts, passwords, profiles,
                 queue, registration, scheduler, terminal_settings,
             };
@@ -446,6 +453,19 @@ macro_rules! shared_suite {
                 credits::the_database_refuses_to_change_or_remove_a_row,
                 credits::the_ledger_survives_a_reopen,
                 credits::a_broken_store_errors_instead_of_reading_as_zero,
+                doors::a_save_round_trips_and_each_write_bumps_the_revision,
+                doors::a_stale_or_repeated_first_write_is_a_conflict_and_changes_nothing,
+                doors::concurrent_writers_of_one_revision_exactly_one_wins,
+                doors::the_caps_are_enforced_in_code_and_by_the_database,
+                doors::an_unknown_account_cannot_have_a_save,
+                doors::the_world_has_its_own_revision_and_remembers_the_tick_day,
+                doors::a_season_row_made_first_does_not_hide_the_world_and_the_other_way_round,
+                doors::staff_tools_change_things_and_write_one_audit_row_each,
+                doors::staff_rank_and_permission_rules_hold_against_the_real_roles,
+                doors::a_staff_change_never_lands_without_its_audit_row,
+                doors::deleting_an_account_deletes_its_door_data,
+                doors::the_roles_hold_the_door_staff_permissions_the_docs_say,
+                doors::a_broken_store_errors_instead_of_reading_as_empty,
                 scheduler::a_last_run_round_trips_and_a_later_one_replaces_it,
                 scheduler::the_database_refuses_an_unknown_outcome_and_a_stored_one_is_not_misread,
                 scheduler::a_scheduler_over_the_store_remembers_its_runs_across_a_restart,

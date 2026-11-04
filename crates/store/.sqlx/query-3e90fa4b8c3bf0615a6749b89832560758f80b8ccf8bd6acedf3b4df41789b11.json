@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO door_state\n                   (door, season, world_revision, world_version, world, last_tick_day, updated_at)\n               VALUES ($1, 1, $2, $3, $4, $5, $6)\n               ON CONFLICT (door) DO UPDATE SET\n                   world_revision = excluded.world_revision,\n                   world_version = excluded.world_version, world = excluded.world,\n                   last_tick_day = COALESCE(excluded.last_tick_day, door_state.last_tick_day),\n                   updated_at = excluded.updated_at\n               WHERE door_state.world_revision = excluded.world_revision - 1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8",
+        "Int8",
+        "Bytea",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "3e90fa4b8c3bf0615a6749b89832560758f80b8ccf8bd6acedf3b4df41789b11"
+}

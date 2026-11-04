@@ -7,6 +7,8 @@ Status: **Partly implemented.** The forum screens (M3-E, below) are the first lo
 | Layer | Controls | Example |
 |---|---|---|
 | Menu tree | What exists and where it leads | Main, Forums, Files, Mail, Doors |
+
+**Doors (M4-D0, D98).** The main menu's `d` (shown with `doors.run`) opens the door list; Enter or the door's number opens it; Esc goes back. A door is drawn inside the same box and reserved status row as every other screen, so on telnet the `UNENCRYPTED` footer row is outside what the door is given. The door list's own sentences are fixed English for now (not in the theme string table); the menu label is. Ctrl-C and Ctrl-D log off from inside a door.
 | Layout | How a menu is arranged | Hotkey list, lightbar, two-pane, tabs, dashboard, command line, compact |
 | Theme | How it looks | Colors, borders, art |
 | Icon set | Which glyphs are drawn | Nerd Font, plain Unicode, ASCII |

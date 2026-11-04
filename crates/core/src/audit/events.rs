@@ -569,3 +569,31 @@ pub fn mail_report_closed(actor: AccountId, report: i64) -> AuditEvent {
     )
     .detail(&format!("report {report}"))
 }
+
+/// Staff deleted `player`'s save in `door` (M4-D0, D98). The door id is a fixed slug, never
+/// player text; the save's contents are not written.
+#[must_use]
+pub fn door_player_reset(actor: Actor, player: AccountId, door: &str) -> AuditEvent {
+    AuditEvent::new(actor, Action::DoorPlayerReset, Target::Account(player))
+        .detail(&format!("door {door}"))
+}
+
+/// Staff ended the season of `door` (M4-D0).
+#[must_use]
+pub fn door_season_ended(actor: Actor, door: &str) -> AuditEvent {
+    AuditEvent::new(actor, Action::DoorSeasonEnded, Target::None).detail(&format!("door {door}"))
+}
+
+/// Staff barred `player` from `door` (M4-D0).
+#[must_use]
+pub fn door_player_barred(actor: Actor, player: AccountId, door: &str) -> AuditEvent {
+    AuditEvent::new(actor, Action::DoorPlayerBarred, Target::Account(player))
+        .detail(&format!("door {door}"))
+}
+
+/// Staff lifted the bar on `player` for `door` (M4-D0).
+#[must_use]
+pub fn door_player_unbarred(actor: Actor, player: AccountId, door: &str) -> AuditEvent {
+    AuditEvent::new(actor, Action::DoorPlayerUnbarred, Target::Account(player))
+        .detail(&format!("door {door}"))
+}

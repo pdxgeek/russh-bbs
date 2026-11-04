@@ -4,6 +4,7 @@
 pub(crate) mod chat;
 pub mod community;
 pub mod config;
+pub mod doors;
 pub mod feeds;
 pub mod forums;
 pub mod founder;
