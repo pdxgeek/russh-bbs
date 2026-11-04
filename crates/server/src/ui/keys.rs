@@ -3,8 +3,12 @@
 
 /// Product name, the box title.
 pub(crate) const TITLE: &str = "ui.title";
-/// Footer hint on a menu.
-pub(crate) const FOOTER_MENU: &str = "ui.footer.menu";
+/// Status-bar hint labels (UI-1): the key names are fixed, the words are themeable.
+pub(crate) const HINT_HELP: &str = "ui.hint.help";
+pub(crate) const HINT_BACK: &str = "ui.hint.back";
+pub(crate) const HINT_LOGOFF: &str = "ui.hint.logoff";
+pub(crate) const HINT_MOVE: &str = "ui.hint.move";
+pub(crate) const HINT_CHOOSE: &str = "ui.hint.choose";
 /// Prefix of an informational notice.
 pub(crate) const NOTICE_INFO: &str = "ui.notice.info";
 /// Prefix of an error notice.
@@ -28,8 +32,6 @@ pub(crate) const NOTICE_MAIL_SSH_ONLY: &str = "ui.notice.mail_ssh_only";
 /// The one D78 (7) explanation about mail, on the help screen.
 /// Help footer.
 pub(crate) const HELP_FOOTER: &str = "ui.help.footer";
-/// Footer hint on a lightbar menu.
-pub(crate) const FOOTER_LIGHTBAR: &str = "ui.footer.lightbar";
 /// Help line explaining the lightbar's cursor keys.
 pub(crate) const HELP_LIGHTBAR: &str = "ui.help.lightbar";
 /// Marker drawn before the row under the lightbar cursor (a word-free cue that survives a
@@ -46,13 +48,16 @@ pub(crate) const PAGER_END: &str = "ui.pager.end";
 pub(crate) const PAGER_CLIPPED: &str = "ui.pager.clipped";
 
 /// Every key above; the table must hold these plus the menu tree's keys.
-pub(crate) const FRAMEWORK: [&str; 20] = [
+pub(crate) const FRAMEWORK: [&str; 23] = [
     NOTICE_MAIL_SSH_ONLY,
-    FOOTER_LIGHTBAR,
+    HINT_HELP,
+    HINT_BACK,
+    HINT_LOGOFF,
+    HINT_MOVE,
+    HINT_CHOOSE,
     HELP_LIGHTBAR,
     POINTER,
     TITLE,
-    FOOTER_MENU,
     NOTICE_INFO,
     NOTICE_ERROR,
     TAG_NOT_BUILT,

@@ -1,0 +1,127 @@
+# Passenger kinds and the words clients use when they post a job. Passenger kinds are named by
+# id in the transit events (a pilgrim hears things a fugitive does not). Every faction-and-kind
+# pair a faction can post needs at least one line.
+
+[[passenger]]
+id = "pilgrim"
+name = "Quiet Church pilgrims"
+faction = "church"
+count = [2, 4]
+blurb = "Grey robes, little baggage, and a firm belief that the gates will open."
+
+[[passenger]]
+id = "scholar"
+name = "Guild scholar"
+faction = "guild"
+count = [1, 2]
+blurb = "Carries more instruments than clothes, and corrects the charts aloud."
+
+[[passenger]]
+id = "fugitive"
+name = "Fugitive"
+faction = "free"
+count = [1, 2]
+blurb = "Pays in advance, sits facing the door, and does not give a name."
+
+[[passenger]]
+id = "deserter"
+name = "Navy deserter"
+faction = "free"
+count = [1, 1]
+blurb = "Still in the boots. Flinches at the sound of a docking clamp."
+
+[[passenger]]
+id = "miner_family"
+name = "Miners' families"
+faction = "miners"
+count = [2, 4]
+blurb = "Moving claim to claim with everything they own in three crates."
+
+[[passenger]]
+id = "officer"
+name = "League officer"
+faction = "league"
+count = [1, 2]
+blurb = "Polite, observant, and writing in a small book you cannot read."
+
+[[passenger]]
+id = "refugee"
+name = "Refugees"
+faction = "league"
+count = [2, 5]
+blurb = "From a station that lost its air plant. They do not want to talk about it."
+
+[[line]]
+kind = "delivery"
+faction = "league"
+text = "League supply office: sealed stores to {to}. Signed for on arrival."
+
+[[line]]
+kind = "delivery"
+faction = "league"
+text = "A purser at the League desk needs this at {to} before the audit."
+
+[[line]]
+kind = "escort"
+faction = "league"
+text = "A League-chartered hauler needs a gun beside it as far as {to}."
+
+[[line]]
+kind = "bounty"
+faction = "league"
+text = "The navy pays for pirate wrecks. Bring one down near here, then report back."
+
+[[line]]
+kind = "passenger"
+faction = "league"
+text = "A League posting needs passage to {to}. Keep them comfortable."
+
+[[line]]
+kind = "delivery"
+faction = "miners"
+text = "Union steward: spares for the claims at {to}. The shift is waiting on them."
+
+[[line]]
+kind = "escort"
+faction = "miners"
+text = "An ore tug is heading for {to} and the Union will not insure it alone."
+
+[[line]]
+kind = "passenger"
+faction = "miners"
+text = "Families off a played-out claim need a berth to {to}. Fares are fair."
+
+[[line]]
+kind = "delivery"
+faction = "free"
+text = "No questions, no manifest. Quiet freight for {to}; the haven pays on delivery."
+
+[[line]]
+kind = "passenger"
+faction = "free"
+text = "Someone needs to be somewhere else, and soon. {to}, and keep it to yourself."
+
+[[line]]
+kind = "bounty"
+faction = "free"
+text = "A cutter has been leaning on the havens. Wreck one near here and we remember it."
+
+[[line]]
+kind = "survey"
+faction = "guild"
+text = "The Guild wants a fresh look at a rich system a few jumps out. Bring the data home."
+
+[[line]]
+kind = "delivery"
+faction = "guild"
+text = "Sample cases for the Guild's people at {to}. Keep them cold and unshaken."
+
+[[line]]
+kind = "passenger"
+faction = "church"
+text = "Pilgrims bound for {to}, where the old gate watchers keep a chapel."
+
+[[line]]
+kind = "delivery"
+faction = "church"
+text = "Prayer stock and seed for the chapel at {to}. The Church remembers its carriers."

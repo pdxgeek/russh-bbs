@@ -11,7 +11,7 @@ use russh_bbs_core::icons::Tier;
 use russh_bbs_core::profiles::{Line, ScreenView, keys};
 use russh_bbs_core::terminal_settings::TerminalSettings;
 
-use super::lines;
+use super::{ListCtx, is_list, lines, render_list};
 use crate::settings::Look;
 use crate::ui::Ui;
 use crate::ui::classic::{ContentScreen, MENU_MARKERS, render_content};
@@ -23,6 +23,20 @@ fn draw(view: &ScreenView, tier: Tier, size: (u16, u16)) -> Buffer {
     terminal
         .draw(|frame| {
             let width = usize::from(frame.area().width.min(crate::settings::MAX_WIDTH)) - 2;
+            if is_list(view) {
+                render_list(
+                    frame,
+                    view,
+                    &ListCtx {
+                        strings: ui.strings(),
+                        look,
+                        tier,
+                        markers: &MENU_MARKERS,
+                        clock: Some("UTC 12:00"),
+                    },
+                );
+                return;
+            }
             render_content(
                 frame,
                 ContentScreen {
@@ -31,6 +45,7 @@ fn draw(view: &ScreenView, tier: Tier, size: (u16, u16)) -> Buffer {
                     look,
                     tier,
                     markers: &MENU_MARKERS,
+                    clock: Some("UTC 12:00"),
                 },
             );
         })
@@ -178,7 +193,7 @@ fn the_fullest_screens_fit_80x24_with_their_footer_in_every_tier() {
 fn a_list_row_stays_on_one_line_even_with_wide_characters() {
     let out = text(&draw(&full_list(&"漢".repeat(40)), Tier::Unicode, (80, 24)));
     for n in 1..=9 {
-        let count = out.matches(&format!("[{n}] handle_{n}_")).count();
+        let count = out.matches(&format!("{n}. handle_{n}_")).count();
         assert_eq!(count, 1, "row {n}\n{out}");
     }
 }

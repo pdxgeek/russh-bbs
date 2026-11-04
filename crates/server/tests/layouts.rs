@@ -205,7 +205,7 @@ async fn the_layout_and_theme_switch_live_and_are_remembered() {
     assert!(lightbar.contains("Main menu"), "{lightbar}");
     // The cursor stays on the item last used, so Esc from settings lands on it.
     assert!(lightbar.contains("> [s] Terminal settings"), "{lightbar}");
-    assert!(lightbar.contains("Up/Down: move"), "{lightbar}");
+    assert!(lightbar.contains("Up/Down move"), "{lightbar}");
 
     // Down moves the highlight, Up moves it back, Enter picks the highlighted row.
     send(&mut channel, DOWN).await;
@@ -264,7 +264,7 @@ async fn the_layout_and_theme_switch_live_and_are_remembered() {
         !green.contains("The server can read what you do here."),
         "{green}"
     );
-    assert!(green.contains("?: HELP"), "{green}");
+    assert!(green.contains("? HELP"), "{green}");
     assert!(
         raw_full(&mut channel).await.contains('\u{250c}'),
         "classic box again"

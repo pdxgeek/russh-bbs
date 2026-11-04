@@ -78,18 +78,20 @@ fn caption(marker: SecurityMarker) -> &'static str {
     }
 }
 
-/// Draw `markers` in the status row `area`, clearing it first. With no markers the row stays
-/// blank. If a marker does not fit the row's width, the row says markers are unavailable.
-pub(crate) fn render_status(
-    frame: &mut Frame<'_>,
-    area: Rect,
+/// The marker cell of a status row: the markers (with their captions when every caption fits
+/// in `width`) as one line in the reserved style, and the columns it uses. `None` when there are
+/// no markers. If a marker itself does not fit `width` the cell says markers are unavailable
+/// instead of drawing a clipped one. Both the bare status row ([`render_status`]) and the
+/// frame's status bar ([`super::frame`]) draw their markers from here, so there is one place
+/// that styles them.
+pub(crate) fn status_cell(
     markers: &[SecurityMarker],
     tier: Tier,
     strings: &StringTable,
-) {
-    frame.render_widget(Clear, area);
+    width: u16,
+) -> Option<(Line<'static>, u16)> {
     if markers.is_empty() {
-        return;
+        return None;
     }
     // With several markers a long caption would push a later marker off the row, so when the
     // captions do not all fit the row shows the markers alone (a marker is never clipped).
@@ -98,7 +100,7 @@ pub(crate) fn render_status(
         .map(|m| Icon::from(*m).render(tier).width() + 1 + caption(*m).chars().count())
         .sum::<usize>()
         + 2 * (markers.len() - 1);
-    let captions = markers.len() == 1 || full <= usize::from(area.width);
+    let captions = markers.len() == 1 || full <= usize::from(width);
     let mut spans: Vec<Span<'static>> = Vec::new();
     for marker in markers {
         let rendered = Icon::from(*marker).render(tier);
@@ -121,12 +123,30 @@ pub(crate) fn render_status(
         .map(|marker| Icon::from(*marker).render(tier).width())
         .sum::<usize>()
         + 3 * (markers.len() - 1);
-    if markers_width > usize::from(area.width) {
-        let plain = Line::raw(strings.text(keys::STATUS_UNAVAILABLE).to_owned());
-        frame.render_widget(Paragraph::new(plain), area);
-        return;
+    if markers_width > usize::from(width) {
+        let text = strings.text(keys::STATUS_UNAVAILABLE).to_owned();
+        let used = u16::try_from(text.chars().count())
+            .unwrap_or(u16::MAX)
+            .min(width);
+        return Some((Line::raw(text), used));
     }
-    frame.render_widget(Paragraph::new(line), area);
+    let used = u16::try_from(line.width()).unwrap_or(u16::MAX).min(width);
+    Some((line, used))
+}
+
+/// Draw `markers` in the status row `area`, clearing it first. With no markers the row stays
+/// blank. If a marker does not fit the row's width, the row says markers are unavailable.
+pub(crate) fn render_status(
+    frame: &mut Frame<'_>,
+    area: Rect,
+    markers: &[SecurityMarker],
+    tier: Tier,
+    strings: &StringTable,
+) {
+    frame.render_widget(Clear, area);
+    if let Some((line, _)) = status_cell(markers, tier, strings, area.width) {
+        frame.render_widget(Paragraph::new(line), area);
+    }
 }
 
 /// What the footer says beside its marker. Fixed words, never themeable (a theme that could

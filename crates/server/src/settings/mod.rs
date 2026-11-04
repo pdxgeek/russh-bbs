@@ -21,6 +21,7 @@ use russh_bbs_core::terminal_settings::{LayoutId, TerminalSettings};
 use russh_bbs_core::waiting_room::View;
 
 use crate::ui::classic::notice_line;
+use crate::ui::depth::{ColorDepth, Surfaces, Tint};
 use crate::ui::strings::StringTable;
 use crate::ui::theme::Palette;
 
@@ -47,6 +48,9 @@ pub(crate) struct Look {
     /// The compact layout draws no box (M3-A).
     borderless: bool,
     palette: Palette,
+    /// What the client can show (UI-1): the frame's surfaces degrade to it.
+    depth: ColorDepth,
+    surfaces: Surfaces,
 }
 
 impl Look {
@@ -64,17 +68,63 @@ impl Look {
             ascii_borders: settings.icon_tier() == Tier::Ascii,
             borderless: layout == LayoutId::Compact,
             palette,
+            // Until the client's terminal is known the sixteen colours are the safe depth;
+            // colour off is always mono.
+            depth: ColorDepth::effective(ColorDepth::Ansi16, settings.use_color(), None),
+            surfaces: Surfaces::of(palette.border),
+        }
+    }
+
+    /// This look drawn at the depth the client advertised (`detected`, from `TERM`,
+    /// `COLORTERM` or the telnet terminal type), lowered by the member's settings. Colour off
+    /// stays mono whatever the client can do.
+    #[must_use]
+    pub(crate) fn at_depth(mut self, detected: ColorDepth) -> Self {
+        self.depth = ColorDepth::effective(detected, self.color, None);
+        self.color = self.depth.has_color();
+        self
+    }
+
+    /// The depth in force.
+    pub(crate) const fn depth(self) -> ColorDepth {
+        self.depth
+    }
+
+    /// Whether borders are drawn with plain ASCII (the ASCII tier).
+    pub(crate) const fn ascii(self) -> bool {
+        self.ascii_borders
+    }
+
+    /// Whether the layout draws no box (compact).
+    pub(crate) const fn is_borderless(self) -> bool {
+        self.borderless
+    }
+
+    /// The frame's surface colours for this theme.
+    pub(crate) const fn surfaces(self) -> Surfaces {
+        self.surfaces
+    }
+
+    /// A foreground style for `tint` at this depth: nothing on a mono terminal.
+    pub(crate) fn fg(self, tint: Tint) -> Style {
+        match tint.resolve(self.depth) {
+            Some(Color::Reset) | None => Style::new(),
+            Some(color) => Style::new().fg(color),
+        }
+    }
+
+    /// A background style for `tint` at this depth: nothing on a mono terminal, and nothing
+    /// where the tint has no sixteen-colour equivalent.
+    pub(crate) fn bg(self, tint: Tint) -> Style {
+        match tint.resolve(self.depth) {
+            Some(Color::Reset) | None => Style::new(),
+            Some(color) => Style::new().bg(color),
         }
     }
 
     /// The theme's colors.
     pub(crate) const fn palette(self) -> Palette {
         self.palette
-    }
-
-    /// Whether the member sees colour.
-    pub(crate) const fn color(self) -> bool {
-        self.color
     }
 
     pub(crate) fn accent(self, style: Style, color: Color) -> Style {
@@ -84,6 +134,7 @@ impl Look {
 
 /// Draw `view` centered in the frame. The view's fixed fields are string-table keys (the member
 /// screens) or text (anything else); `strings` resolves the keys and leaves other text alone.
+#[cfg(test)]
 pub(crate) fn render(frame: &mut Frame<'_>, view: &View, look: Look, strings: &StringTable) {
     boxed(
         frame,
@@ -92,6 +143,17 @@ pub(crate) fn render(frame: &mut Frame<'_>, view: &View, look: Look, strings: &S
         lines(view, look, strings),
         look,
     );
+}
+
+/// Like [`render`], centred in `area` (the body a frame leaves for the screen).
+pub(crate) fn render_in(
+    frame: &mut Frame<'_>,
+    area: Rect,
+    view: &View,
+    look: Look,
+    strings: &StringTable,
+) {
+    boxed_flush(frame, area, view.title, lines(view, look, strings), look);
 }
 
 /// Draw `lines` in the bordered box, centered in `area`. Shared with the menu framework's
@@ -103,6 +165,29 @@ pub(crate) fn boxed(
     title: &str,
     lines: Vec<Line<'static>>,
     look: Look,
+) {
+    boxed_with(frame, area, title, lines, look, true);
+}
+
+/// Like [`boxed`] for a body the frame already insets (between its header and status bars): the
+/// box fills the body's height, with no extra margin.
+pub(crate) fn boxed_flush(
+    frame: &mut Frame<'_>,
+    area: Rect,
+    title: &str,
+    lines: Vec<Line<'static>>,
+    look: Look,
+) {
+    boxed_with(frame, area, title, lines, look, false);
+}
+
+fn boxed_with(
+    frame: &mut Frame<'_>,
+    area: Rect,
+    title: &str,
+    lines: Vec<Line<'static>>,
+    look: Look,
+    margin: bool,
 ) {
     let [_, middle, _] = Layout::horizontal([
         Constraint::Fill(1),
@@ -125,7 +210,7 @@ pub(crate) fn boxed(
     let paragraph = Paragraph::new(lines)
         .wrap(Wrap { trim: false })
         .block(block);
-    frame.render_widget(paragraph, fit(middle));
+    frame.render_widget(paragraph, if margin { fit(middle) } else { middle });
 }
 
 /// The columns and rows inside the box [`boxed`] draws in `area`: what a caller has to fit its

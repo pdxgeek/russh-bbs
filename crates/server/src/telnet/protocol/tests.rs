@@ -3,8 +3,8 @@
 #![allow(clippy::expect_used, clippy::assert_is_empty)]
 
 use super::{
-    DO, DONT, Decoded, Decoder, EC, EL, IAC, IP, OPT_ECHO, OPT_NAWS, OPT_SGA, SB, SE, WILL, WONT,
-    encode,
+    DO, DONT, Decoded, Decoder, EC, EL, IAC, IP, OPENING, OPT_ECHO, OPT_NAWS, OPT_SGA, OPT_TTYPE,
+    SB, SE, WILL, WONT, encode,
 };
 
 fn decode(bytes: &[u8]) -> Decoded {
@@ -143,7 +143,7 @@ fn nothing_hostile_can_make_the_decoder_grow_or_answer_much() {
     // At most one DONT and one WONT per option, three bytes each.
     assert!(out.reply.len() <= 2 * 256 * 3, "{} bytes", out.reply.len());
     assert!(out.data.len() <= wire.len());
-    assert!(decoder.sb.len() <= 16);
+    assert!(decoder.sb.len() <= 48);
 }
 
 #[test]
@@ -159,4 +159,63 @@ fn encoding_doubles_iac_and_pads_a_bare_cr() {
     assert_eq!(encode(b"a\rb"), b"a\r\0b");
     assert_eq!(encode(b"a\r"), b"a\r\0");
     assert_eq!(encode(b"\x1b[2J"), b"\x1b[2J");
+}
+
+// ---- UI-1: the terminal type (RFC 1091), asked for only to choose a colour depth ----
+
+#[test]
+fn the_opening_asks_for_the_terminal_type_and_nothing_more_than_before() {
+    assert!(OPENING.ends_with(&[IAC, DO, OPT_TTYPE]));
+    assert_eq!(OPENING.len(), 15);
+}
+
+#[test]
+fn a_client_that_will_send_its_terminal_type_is_asked_once() {
+    let mut decoder = Decoder::new();
+    let mut out = Decoded::default();
+    decoder.feed(&[IAC, WILL, OPT_TTYPE], &mut out);
+    assert_eq!(out.reply, [IAC, SB, OPT_TTYPE, 1, IAC, SE]);
+    // Saying it again does not make us ask again (no loops).
+    let mut again = Decoded::default();
+    decoder.feed(&[IAC, WILL, OPT_TTYPE], &mut again);
+    assert!(again.reply.is_empty());
+}
+
+#[test]
+fn the_terminal_type_is_read_from_is_and_a_terminal_name_only() {
+    let reply = |name: &[u8]| {
+        let mut bytes = vec![IAC, SB, OPT_TTYPE, 0];
+        bytes.extend_from_slice(name);
+        bytes.extend_from_slice(&[IAC, SE]);
+        decode(&bytes).terminal
+    };
+    assert_eq!(reply(b"xterm-256color").as_deref(), Some("xterm-256color"));
+    assert_eq!(reply(b"XTERM-KITTY").as_deref(), Some("XTERM-KITTY"));
+    // Not a terminal name: spaces, escapes, controls, empty, over 40 characters.
+    assert_eq!(reply(b"x term"), None);
+    assert_eq!(reply(b"\x1b[31m"), None);
+    assert_eq!(reply(b""), None);
+    assert_eq!(reply(&[b'a'; 41]), None);
+    assert_eq!(reply(&[b'a'; 40]).as_deref(), Some(&*"a".repeat(40)));
+    assert_eq!(
+        reply(&[b'a'; 400]),
+        None,
+        "a long subnegotiation is skipped"
+    );
+    // `SEND` from a client is not an answer, and a reply for another option is not this one.
+    assert_eq!(decode(&[IAC, SB, OPT_TTYPE, 1, IAC, SE]).terminal, None);
+    assert_eq!(
+        decode(&[IAC, SB, OPT_NAWS, 0, b'x', b'y', b'z', IAC, SE]).terminal,
+        None
+    );
+}
+
+#[test]
+fn only_the_first_terminal_type_in_a_read_counts() {
+    let mut bytes = vec![IAC, SB, OPT_TTYPE, 0];
+    bytes.extend_from_slice(b"first");
+    bytes.extend_from_slice(&[IAC, SE, IAC, SB, OPT_TTYPE, 0]);
+    bytes.extend_from_slice(b"second");
+    bytes.extend_from_slice(&[IAC, SE]);
+    assert_eq!(decode(&bytes).terminal.as_deref(), Some("first"));
 }
