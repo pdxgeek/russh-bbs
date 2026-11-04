@@ -57,6 +57,7 @@ The QA pass never fixes code. It reports. Low findings go into the coordination 
 - Board art: CP437 `.ans` art and `.art.toml`, parsed safely into styled cells, in fixed slots, with a large-letter fallback.
 - Board identity (`[board]` config), sysop menus and pages (`menus.toml`), a theme gallery, theme pack import and export, and a sysop theme preview.
 - The door canvas gains the same widgets.
+- Next-gen extras ("flex what Rust and ratatui can do"): an effect engine, braille and half-block graphics, an original animated login intro, logos and avatars drawn as cells, mouse support, a `Ctrl-K` command palette, toasts, split-screen chat, a live ticker, and responsive layouts up to ultrawide. No terminal graphics protocol is sent.
 - **Done when:** a sysop can make the board look like their own (name, art, theme, menus and pages) without touching code; every screen still works at 80x24 and in the ASCII tier; security markers cannot be hidden or imitated by any theme, art or menu file; the QA gate passes.
 
 ## M4: Files and doors

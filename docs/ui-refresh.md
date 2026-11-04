@@ -17,6 +17,28 @@ Status: **Approved by the owner, 2026-11-04** as its own milestone, **M3.5: Look
    - all non-chrome text is sanitized;
    - accessibility mode stays a plain, readable path (M5).
 
+## North star: a next-gen BBS (owner, 2026-11-04)
+
+"Let's really flex what Rust and ratatui can do. Think of it this way: we're a next-gen BBS." The board should make people say "that's a terminal?". Concretely:
+
+- **Graphics in the terminal, safely.** Braille and half-block canvases for real graphics:
+  - an animated login intro (original demoscene-style effects: plasma, starfield, fire, scrolling greetings);
+  - charts and sparklines on the dashboard;
+  - maps in the doors;
+  - sysop logos and member avatars converted to half-block cells.
+
+  Everything is drawn as ordinary styled cells, so no terminal graphics protocol (sixel, kitty, iTerm) is ever sent. That keeps the sanitizer's guarantees and works over plain ssh and telnet. Graphics protocols stay out unless the owner decides otherwise later.
+- **Effects:** truecolor gradients, shaded panels, fades and wipes between screens, glow on the selected item, and a typewriter reveal. An effect engine runs at a capped frame rate (well under the D49 redraw cap; tuned per session, and off when the member turns motion off or the terminal is slow). An existing ratatui effects crate may be used if it passes D47 and `cargo deny`.
+- **Interaction like a desktop app:**
+  - **mouse support** (click menus and list rows, scroll with the wheel, drag pane dividers), parsed by our own bounded input parser;
+  - a **command palette** (`Ctrl-K`): fuzzy-find any area, board, thread, member, room or door and jump there;
+  - **toasts** for new mail, whispers and mentions, which never cover the marker cell;
+  - **split-screen multitasking**: keep chat open in a side pane while you read the forums.
+- **Live everywhere:** a who's-online list, the chat sidebar, a news ticker in the header, unread counters and door events update in real time, without a key press.
+- **Responsive:** layouts reflow from 80x24 to ultrawide. A 200-column terminal gets a three-column dashboard; 80x24 gets a tight classic view. Same code, no separate skins.
+- **Fast:** diffed rendering, so only changed cells are sent. Effects are budgeted per session, so hundreds of members can be online with animation on, and a benchmark in CI-local checks frame cost and bytes sent per frame.
+- **Still a BBS:** hotkeys, ANSI art, the sysop's voice. Everything stays usable from a keyboard alone, and accessibility mode stays plain.
+
 ## What changes on screen
 
 - **Frame:** a top **header bar** (the board name or logo, the area you are in, and a clock) and a bottom **status bar** (hotkeys for this screen, unread counts, who's online). The current status row becomes part of the status bar, and security markers keep their reserved cell at its left.
@@ -117,6 +139,18 @@ Under Sysop tools, a **theme preview** renders each installed theme against samp
 5. **UI-5: door canvas.** The framework `Canvas` gains the widgets, so the game UI slices can use them.
 6. **UI-6: sysop menus and pages.** A `menus.toml` reorders, renames, hides and nests the built-in menu items, and adds sysop pages (bulletins and info screens with art). It cannot add actions or bypass access checks.
 7. **UI-7: theme gallery, import and export.** Members preview and pick a theme from a gallery; sysops import and export theme packs (one file, art included).
-8. **M3.5 QA gate.**
+8. **UI-8: effects and graphics.**
+   - the effect engine (fades, wipes, glow, gradients, typewriter) with a frame budget;
+   - braille and half-block canvases;
+   - the animated login intro (original effects);
+   - image-to-cells conversion for sysop logos and member avatars (sysop-uploaded files only, size-capped, decoded by a maintained pure-Rust decoder);
+   - dashboard charts.
+9. **UI-9: interaction.**
+   - mouse support (bounded parser; click, scroll and pane drag);
+   - the command palette with fuzzy search over everything the member may reach (filtered through `core::access`, so it never leaks);
+   - toasts;
+   - split-screen multitasking (chat beside any screen);
+   - the live header ticker.
+10. **M3.5 QA gate.**
 
 The game UI slices (S3, E3, N3, L3 and H3) wait for UI-5. The engine and content slices do not.

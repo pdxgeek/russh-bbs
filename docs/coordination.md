@@ -74,7 +74,7 @@ A slice with an unmet dependency is not claimable.
 
 ### M3.5: Look and feel (owner approved, 2026-11-04)
 
-A milestone of its own, between M3 and M4: cool looks and customization for the board. Plan: [ui-refresh.md](ui-refresh.md). The door game UI slices (S3, E3, N3, L3, H3) wait for UI-5; M4 engine and content slices continue in parallel. UI-1 to UI-4 and UI-6 share `crates/server/src/ui`, so they run one at a time.
+A milestone of its own, between M3 and M4: cool looks and customization for the board. Plan: [ui-refresh.md](ui-refresh.md). The door game UI slices (S3, E3, N3, L3, H3) wait for UI-5; M4 engine and content slices continue in parallel. UI-1 to UI-4, UI-6, UI-8 and UI-9 share `crates/server/src/ui`, so they run one at a time (UI-5 and UI-7 can overlap them).
 
 | Slice | Owns | Depends on | Status | Branch / PR |
 |---|---|---|---|---|
@@ -85,7 +85,9 @@ A milestone of its own, between M3 and M4: cool looks and customization for the 
 | UI-5 Door canvas widgets | `crates/doors/framework` (`Canvas` gains the widgets) | UI-1 | Open | Plumbing only; the game UI slices use it. |
 | UI-6 Sysop menus and pages | a menu file (`menus.toml` in the data directory: order, labels, hotkeys, which areas show, nested submenus), sysop pages (bulletins and info screens: art plus text, linked from menus), the loader with a schema and caps, the sysop preview | UI-4 | Open | The menu tree stays core-defined (D54): a menu file only rearranges, renames and hides built-in items and adds page items; it cannot add actions or bypass `core::access`. |
 | UI-7 Theme gallery, import and export | a theme gallery screen for members (preview, then pick), sysop import and export of theme packs (one file with art), and versioned theme files | UI-3 | Open | Imported packs go through the same validation as theme files; nothing executes. |
-| M3.5-QA Milestone QA gate | `docs/qa/m3-5.md` and the fix rows it adds | UI-1 to UI-7 | Open | The QA gate from milestones.md, with emphasis on: every screen at 80x24 and in the ASCII tier; hostile themes, art and menu files; markers that cannot be hidden; redraw cost with motion on. |
+| UI-8 Effects and graphics | the effect engine and frame budget, braille and half-block canvases, the original animated login intro, image-to-cells for sysop logos and member avatars, dashboard charts (`crates/server/src/ui`) | UI-4 | Open | No terminal graphics protocols (sixel, kitty, iTerm) are ever sent: everything is styled cells. Motion off disables it, and it is off in accessibility mode. Image decoding uses a maintained pure-Rust crate (justified, `cargo deny`), with size and pixel caps. A per-session frame budget, with a benchmark of frame cost and bytes per frame. |
+| UI-9 Interaction | a bounded mouse-event parser (ssh and telnet), click, scroll and pane drag, the `Ctrl-K` command palette (fuzzy search filtered by `core::access`), toasts, split-screen multitasking with chat beside any screen, the live header ticker | UI-4 | Open | The palette never lists what the member cannot reach (no-leak tests). Toasts and panes never cover the marker cell. Everything stays usable from the keyboard alone. |
+| M3.5-QA Milestone QA gate | `docs/qa/m3-5.md` and the fix rows it adds | UI-1 to UI-9 | Open | The QA gate from milestones.md, with emphasis on: every screen at 80x24 and in the ASCII tier; hostile themes, art and menu files; markers that cannot be hidden; redraw cost with motion on. |
 
 ### M4: Doors (owner approved, 2026-11-04)
 
