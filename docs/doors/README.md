@@ -1,6 +1,6 @@
 # Doors
 
-Status: **Proposed** designs for M4 and later. Only the framework and the example door are built (below). The M4 slices still need the owner's approval.
+Status: **Proposed** designs for M4 and later. Built so far: the framework and the example door, Emberdeep's engine (E1) and Saltmarch's engine, expeditions, combat and screens (S1 to S3); see the game status table below. Each slice was approved by the owner on 2026-11-04 (coordination.md).
 
 Every game here is original. Each uses mechanics its genre shares, with its own world, systems, characters and text, and none is modelled on one existing game.
 
@@ -46,7 +46,9 @@ The framework is the first M4 slice. **It shares plumbing only.** Each game has 
 |---|---|---|
 | Emberdeep | M4-E1 engine (D101) | **Implemented**: hero, seasonal shared dungeon, combat, torch-turns, death and rescue, nightly tick, saves, minimal text screen. Later slices Planned. See [emberdeep.md](emberdeep.md) |
 | Emberdeep | M4-E2 town and crafting (D110) | **Implemented**: Cindermere (market, forge, temple, guild hall, tavern and contract board, library, shared town works), gear with affixes, ember-cores and wear, recipes, save and world format 2. Later slices Planned. See [emberdeep.md](emberdeep.md) |
-| Saltmarch, Nullroute, Long Haul, Hallpass | | Proposed |
+| Nullroute | M4-N1 engine (D102), M4-N2 countermeasures and coding (D111) | **Implemented**: procedural networks, the trace, decks and runs; 20 countermeasures and 3 wardens in turn-based encounters; coding from found fragments; script degradation; saves, nightly tick, minimal text screen. UI, crews and arcs Planned. See [nullroute.md](nullroute.md) |
+| Saltmarch | M4-S1 engine (D100), M4-S2 expeditions and combat (D108), M4-S3 screens (D113) | **Implemented** (in review): the engine, expeditions, events and skirmishes, and all the screens on full ratatui with a look-around for each. Raids, pacts, letters, the league's renown, quests and the content budget are Planned (S4, S5). See [saltmarch.md](saltmarch.md) |
+| Long Haul, Hallpass | | Proposed (see the coordination table for engines in review) |
 
 ### Framework status (M4-D0, D98)
 

@@ -1,0 +1,43 @@
+
+                            ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+                            │Saltmarch                                                                 │
+                            │                                                                          │
+                            │ ⌂ founder  day 1 of season 1        turns ██████▋░░░ 20/30  ◈ 40 tallies │
+                            │ ≈ TIDE ██████████░░░░┃░░░░░  52 ↑ high in 2h59 (91)  spring tides  calm  │
+                            │ x SKIRMISH, round 1   odds + you should win   solid ground   water takes │
+                            │ order Slinger 2 › ▶Hale › Kell › Slinger 1 › Cutter ›                    │
+                            │╭ back ───╮╭ middle ──╮╭ front ─────╮╭ front ─────╮╭ middle ──╮╭ back ───╮│
+                            ││·        ││·         ││▶Hale       ││ Cutter     ││ Slinger 1││·        ││
+                            ││         ││          ││████▊░ 17/21││██████ 14/14││██████ 9/9││         ││
+                            ││         ││          ││[l]wader    ││[a]hits the~││[j]hurls ~││         ││
+                            ││         ││          ││ Kell       ││            ││ Slinger 2││         ││
+                            ││         ││          ││██████ 23/23││            ││██████ 9/9││         ││
+                            ││         ││          ││raker       ││            ││[k]hurls ~││         ││
+                            ││         ││          ││            ││            ││          ││         ││
+                            ││         ││          ││            ││            ││          ││         ││
+                            ││         ││          ││            ││            ││          ││         ││
+                            ││         ││          ││            ││            ││          ││         ││
+                            ││         ││          ││            ││            ││          ││         ││
+                            ││         ││          ││            ││            ││          ││         ││
+                            ││         ││          ││            ││            ││          ││         ││
+                            ││         ││          ││            ││            ││          ││         ││
+                            ││         ││          ││            ││            ││          ││         ││
+                            ││         ││          ││            ││            ││          ││         ││
+                            ││         ││          ││            ││            ││          ││         ││
+                            ││         ││          ││            ││            ││          ││         ││
+                            ││         ││          ││            ││            ││          ││         ││
+                            ││         ││          ││            ││            ││          ││         ││
+                            ││         ││          ││            ││            ││          ││         ││
+                            ││         ││          ││            ││            ││          ││         ││
+                            ││         ││          ││            ││            ││          ││         ││
+                            │╰─────────╯╰──────────╯╰────────────╯╰────────────╯╰──────────╯╰─────────╯│
+                            │╭ Hale Marshborn to act ─────────────────────────────────────────────────╮│
+                            ││Strike  [a]Cutter                                                       ││
+                            ││Special [b]Cutter [c]Slinger 1 [d]Slinger 2                             ││
+                            ││Throw   [i]Cutter [j]Slinger 1 [k]Slinger 2                             ││
+                            ││Shove   [h]Cutter                                                       ││
+                            │╰────────────────────────────────────────────────────────────────────────╯│
+                            │ Slinger slings at Hale Marshborn for 4.                                  │
+                            │ » Hale Marshborn strikes Cutter                      arrows walk  Enter  │
+                            └──────────────────────────────────────────────────────────────────────────┘
+

@@ -383,6 +383,25 @@ methods = ["rowing_balls", "fake_fire_drill", "move_the_deputy"]
 legend_pct = 15
 text = "While they watched the decoy, the real thing went off behind them."
 
+[[twist]]
+id = "disguise"
+name = "In stage makeup"
+blurb = "Drama taught you how to be someone else for ten minutes."
+requires = ["item:greasepaint"]
+difficulty = -8
+legend_pct = 10
+heat = 1
+suspicion = -15
+[[twist]]
+id = "servo_rig"
+name = "Rigged with a servo"
+blurb = "A little motor does the work while you are somewhere else."
+requires = ["item:servo", "rank:robotics>=2"]
+difficulty = -10
+legend_pct = 20
+heat = 2
+suspicion = -5
+
 # ---- getaways ----
 
 [[getaway]]
@@ -416,6 +435,14 @@ requires = ["tag:fast_exit"]
 escape = 20
 suspicion = 5
 heat = 2
+[[getaway]]
+id = "boat_store"
+name = "Into the boat store"
+blurb = "The Rowing Eight keep a key under a bucket. Members only."
+requires = ["rank:rowing>=2"]
+escape = 14
+suspicion = -10
+heat = 1
 [[getaway]]
 id = "lie_low"
 name = "Lie low"

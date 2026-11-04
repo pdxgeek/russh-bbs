@@ -11,6 +11,7 @@ use russh_bbs_door::content::{self, ContentError, Table, plain_text};
 use serde::Deserialize;
 
 use crate::cond::Cond;
+use crate::effect::Eff;
 
 // ---------------------------------------------------------------- rules and consequences
 
@@ -86,6 +87,28 @@ pub struct Rules {
     pub honour_roll: i32,
     /// Legend percent kept when a pulled-off scheme is traced back.
     pub pinned_legend_pct: i32,
+    /// Puzzles in a lesson.
+    pub lesson_rounds: usize,
+    /// Grade change by the number of puzzles answered right (one more entry than rounds).
+    pub lesson_gains: Vec<i32>,
+    /// Skill experience by the number of puzzles answered right.
+    pub lesson_xp: Vec<i32>,
+    /// Days per point a subject's grade slips when it is not kept up (never under 30).
+    pub grade_decay_days: i64,
+    /// Grade under which a subject is a poor mark on Friday's report.
+    pub poor_grade: i32,
+    /// Clubs a character can belong to at once.
+    pub max_clubs: usize,
+    /// Friendship at which a character counts as a friend.
+    pub friend_bond: i32,
+    /// Friendship at or under which a character counts as a rival.
+    pub rival_bond: i32,
+    /// Friendship at or under which a character will no longer help (a betrayal).
+    pub betray_bond: i32,
+    /// Friendship a betrayal leaves.
+    pub betray_to: i32,
+    /// Ranking a grade into a puzzle level: grades under the first are level 0, under the second 1, else 2.
+    pub level_grades: Vec<i32>,
 }
 
 /// What reaching a file level does.
@@ -632,6 +655,235 @@ struct WorldFile {
     ending: Vec<Ending>,
 }
 
+// ---------------------------------------------------------------- lessons (H2)
+
+/// Which subject uses which minigame, and which skill a good lesson trains.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LessonSpec {
+    /// The subject.
+    pub subject: String,
+    /// `sequence`, `balance`, `vocab`, `timeline`, `pattern` or `relay`.
+    pub kind: String,
+    /// The skill a lesson trains.
+    pub skill: String,
+    /// What the lesson asks of the pupil, one line.
+    pub intro: String,
+}
+
+/// A word of the school's made-up language.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Word {
+    /// The word.
+    pub term: String,
+    /// What it means.
+    pub meaning: String,
+}
+
+/// An event of the school's history.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct HistoryEvent {
+    /// What happened.
+    pub name: String,
+    /// The year.
+    pub year: i32,
+}
+
+/// Glyphs a pattern is drawn with.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Motif {
+    /// The glyphs, one character each.
+    pub glyphs: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct LessonsFile {
+    lesson: Vec<LessonSpec>,
+    word: Vec<Word>,
+    event: Vec<HistoryEvent>,
+    motif: Vec<Motif>,
+}
+
+// ---------------------------------------------------------------- clubs (H2)
+
+/// A club.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClubSpec {
+    /// Its id.
+    pub id: String,
+    /// Its name.
+    pub name: String,
+    /// One line.
+    pub blurb: String,
+    /// Where it meets.
+    pub place: String,
+    /// Where to sign up, if not where it meets.
+    #[serde(default)]
+    pub join_place: Option<String>,
+    /// The slot kind it meets in.
+    pub kind: String,
+    /// The weekdays it meets (every day if empty).
+    #[serde(default)]
+    pub days: Vec<u8>,
+    /// The member of staff who runs it.
+    pub advisor: String,
+    /// Characters who come to meetings.
+    pub members: Vec<String>,
+    /// What it takes to be let in.
+    #[serde(default)]
+    pub join: Vec<Cond>,
+    /// Clubs that will not have you if you belong to this one, and the reverse.
+    #[serde(default)]
+    pub rivals: Vec<String>,
+    /// The skill meetings train.
+    pub skill: String,
+    /// Ranks: name and the merit that earns it, from rank 1 at 0.
+    pub ranks: Vec<(String, i32)>,
+    /// The term-end event, as the paper tells it.
+    pub event: String,
+    /// Legend per rank above the first, earned at term end.
+    pub event_legend: i32,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ClubsFile {
+    club: Vec<ClubSpec>,
+}
+
+// ---------------------------------------------------------------- conversations and storylines (H2)
+
+fn yes() -> bool {
+    true
+}
+
+/// One thing the player can say or do in a conversation.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Choice {
+    /// What the player sees.
+    pub label: String,
+    /// What it takes for the option to be open. A choice that is shut shows what it wants.
+    #[serde(default)]
+    pub needs: Vec<Cond>,
+    /// What choosing it does.
+    #[serde(default)]
+    pub effects: Vec<Eff>,
+    /// What is said back.
+    pub say: String,
+    /// The node it leads to; empty ends the conversation.
+    #[serde(default)]
+    pub next: String,
+}
+
+/// A beat of a conversation.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Node {
+    /// Its id.
+    pub id: String,
+    /// What is said to the player.
+    pub text: String,
+    /// What they can answer.
+    pub choice: Vec<Choice>,
+}
+
+/// A conversation with a character.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Talk {
+    /// Its id.
+    pub id: String,
+    /// Who it is with.
+    pub npc: String,
+    /// A line for the menu.
+    pub title: String,
+    /// What must hold for them to start it.
+    #[serde(default)]
+    pub when: Vec<Cond>,
+    /// Whether it can be had once only.
+    #[serde(default = "yes")]
+    pub once: bool,
+    /// Days before a repeatable one can be had again.
+    #[serde(default)]
+    pub cooldown: i64,
+    /// The storyline this belongs to.
+    #[serde(default)]
+    pub arc: Option<String>,
+    /// The step of that storyline it is open at.
+    #[serde(default)]
+    pub step: Option<String>,
+    /// Days after the step began before it opens.
+    #[serde(default)]
+    pub wait: i64,
+    /// The first node.
+    pub first: String,
+    /// The nodes.
+    pub node: Vec<Node>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct TalksFile {
+    talk: Vec<Talk>,
+}
+
+/// A step of a storyline, as the journal tells it.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ArcStep {
+    /// Its id.
+    pub id: String,
+    /// What the journal says while the story is here.
+    pub text: String,
+}
+
+/// A way a storyline can end.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ArcEnding {
+    /// Its id.
+    pub id: String,
+    /// Its name.
+    pub name: String,
+    /// The words.
+    pub text: String,
+    /// What it does when it comes about.
+    #[serde(default)]
+    pub effects: Vec<Eff>,
+}
+
+/// A multi-day storyline.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ArcSpec {
+    /// Its id.
+    pub id: String,
+    /// Its name.
+    pub name: String,
+    /// One line.
+    pub blurb: String,
+    /// What starts it (all must hold).
+    pub start: Vec<Cond>,
+    /// The step it starts at.
+    pub first: String,
+    /// The steps.
+    pub step: Vec<ArcStep>,
+    /// The endings.
+    pub ending: Vec<ArcEnding>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ArcsFile {
+    arc: Vec<ArcSpec>,
+}
+
 // ---------------------------------------------------------------- the lot
 
 macro_rules! file_table {
@@ -933,6 +1185,205 @@ file_table!(WorldFile, |f: &WorldFile| {
     out
 });
 
+file_table!(LessonsFile, |f: &LessonsFile| {
+    let mut out = Vec::new();
+    dupes(
+        "lesson",
+        f.lesson.iter().map(|l| l.subject.as_str()),
+        &mut out,
+    );
+    for l in &f.lesson {
+        if ![
+            "sequence", "balance", "vocab", "timeline", "pattern", "relay",
+        ]
+        .contains(&l.kind.as_str())
+        {
+            out.push(format!(
+                "lesson `{}` has unknown kind `{}`",
+                l.subject, l.kind
+            ));
+        }
+        plain("lesson", &l.intro, &mut out);
+    }
+    if f.word.len() < 8 {
+        out.push("vocabulary needs at least eight words so a puzzle has wrong answers".into());
+    }
+    if f.event.len() < 8 {
+        out.push("the timeline needs at least eight events".into());
+    }
+    dupes("word", f.word.iter().map(|w| w.term.as_str()), &mut out);
+    dupes("event", f.event.iter().map(|w| w.name.as_str()), &mut out);
+    for w in &f.word {
+        plain("word", &w.term, &mut out);
+        plain("word", &w.meaning, &mut out);
+    }
+    for e in &f.event {
+        plain("event", &e.name, &mut out);
+    }
+    if f.motif.is_empty() {
+        out.push("patterns need at least one motif".into());
+    }
+    for m in &f.motif {
+        if m.glyphs.len() < 4
+            || m.glyphs
+                .iter()
+                .any(|g| g.chars().count() != 1 || !plain_text(g) || g.trim().is_empty())
+        {
+            out.push("a motif needs four or more distinct one-character glyphs".into());
+        }
+    }
+    out
+});
+
+file_table!(ClubsFile, |f: &ClubsFile| {
+    let mut out = Vec::new();
+    dupes("club", f.club.iter().map(|c| c.id.as_str()), &mut out);
+    for c in &f.club {
+        plain(&c.id, &c.name, &mut out);
+        plain(&c.id, &c.blurb, &mut out);
+        plain(&c.id, &c.event, &mut out);
+        if c.ranks.len() < 3
+            || c.ranks.first().map(|r| r.1) != Some(0)
+            || c.ranks.windows(2).any(|w| w[0].1 >= w[1].1)
+        {
+            out.push(format!(
+                "club `{}`: ranks must be three or more and start at merit 0 and rise",
+                c.id
+            ));
+        }
+        for (name, _) in &c.ranks {
+            plain(&c.id, name, &mut out);
+        }
+        if !["free", "after", "evening", "night", "lunch"].contains(&c.kind.as_str()) {
+            out.push(format!(
+                "club `{}` meets in unknown slot kind `{}`",
+                c.id, c.kind
+            ));
+        }
+        if c.days.iter().any(|d| *d > 6) {
+            out.push(format!("club `{}` meets on a weekday over 6", c.id));
+        }
+        if c.event_legend < 0 || c.members.is_empty() {
+            out.push(format!(
+                "club `{}` needs members and a non-negative event bonus",
+                c.id
+            ));
+        }
+    }
+    out
+});
+
+file_table!(TalksFile, |f: &TalksFile| {
+    let mut out = Vec::new();
+    dupes("talk", f.talk.iter().map(|t| t.id.as_str()), &mut out);
+    for t in &f.talk {
+        plain(&t.id, &t.title, &mut out);
+        if t.node.is_empty() || !t.node.iter().any(|n| n.id == t.first) {
+            out.push(format!("talk `{}` has no first node `{}`", t.id, t.first));
+        }
+        if !t.once && t.cooldown < 1 {
+            out.push(format!(
+                "talk `{}` repeats, so it needs a cooldown of a day or more",
+                t.id
+            ));
+        }
+        if t.arc.is_some() != t.step.is_some() {
+            out.push(format!("talk `{}`: `arc` and `step` go together", t.id));
+        }
+        dupes(
+            &format!("node of talk `{}`", t.id),
+            t.node.iter().map(|n| n.id.as_str()),
+            &mut out,
+        );
+        for n in &t.node {
+            plain(&t.id, &n.text, &mut out);
+            if !n.choice.iter().any(|c| c.needs.is_empty()) {
+                out.push(format!(
+                    "talk `{}` node `{}` needs a way out that asks for nothing",
+                    t.id, n.id
+                ));
+            }
+            for c in &n.choice {
+                plain(&t.id, &c.label, &mut out);
+                plain(&t.id, &c.say, &mut out);
+                if !c.next.is_empty() && !t.node.iter().any(|x| x.id == c.next) {
+                    out.push(format!(
+                        "talk `{}` node `{}` leads to unknown node `{}`",
+                        t.id, n.id, c.next
+                    ));
+                }
+            }
+        }
+        // Every node must be reachable from the first, or it is dead text.
+        let mut seen: HashSet<&str> = HashSet::new();
+        let mut stack = vec![t.first.as_str()];
+        while let Some(id) = stack.pop() {
+            if !seen.insert(id) {
+                continue;
+            }
+            if let Some(n) = t.node.iter().find(|n| n.id == id) {
+                stack.extend(
+                    n.choice
+                        .iter()
+                        .filter(|c| !c.next.is_empty())
+                        .map(|c| c.next.as_str()),
+                );
+            }
+        }
+        for n in &t.node {
+            if !seen.contains(n.id.as_str()) {
+                out.push(format!(
+                    "talk `{}` node `{}` can never be reached",
+                    t.id, n.id
+                ));
+            }
+        }
+    }
+    out
+});
+
+file_table!(ArcsFile, |f: &ArcsFile| {
+    let mut out = Vec::new();
+    dupes("arc", f.arc.iter().map(|a| a.id.as_str()), &mut out);
+    for a in &f.arc {
+        plain(&a.id, &a.name, &mut out);
+        plain(&a.id, &a.blurb, &mut out);
+        dupes(
+            &format!("step of arc `{}`", a.id),
+            a.step.iter().map(|s| s.id.as_str()),
+            &mut out,
+        );
+        dupes(
+            &format!("ending of arc `{}`", a.id),
+            a.ending.iter().map(|s| s.id.as_str()),
+            &mut out,
+        );
+        if !a.step.iter().any(|s| s.id == a.first) {
+            out.push(format!(
+                "arc `{}` starts at unknown step `{}`",
+                a.id, a.first
+            ));
+        }
+        if a.ending.len() < 2 {
+            out.push(format!(
+                "arc `{}` needs at least two endings so the choices matter",
+                a.id
+            ));
+        }
+        if a.start.is_empty() {
+            out.push(format!("arc `{}` needs a start condition", a.id));
+        }
+        for s in &a.step {
+            plain(&a.id, &s.text, &mut out);
+        }
+        for e in &a.ending {
+            plain(&a.id, &e.name, &mut out);
+            plain(&a.id, &e.text, &mut out);
+        }
+    }
+    out
+});
+
 /// Everything the engine reads, loaded and cross-checked.
 #[derive(Debug, Clone)]
 pub struct Content {
@@ -980,6 +1431,20 @@ pub struct Content {
     pub effects: Vec<Effect>,
     /// Endings.
     pub endings: Vec<Ending>,
+    /// Which minigame each subject uses.
+    pub lessons: Vec<LessonSpec>,
+    /// The school's vocabulary.
+    pub words: Vec<Word>,
+    /// The school's history.
+    pub events: Vec<HistoryEvent>,
+    /// Pattern glyphs.
+    pub motifs: Vec<Motif>,
+    /// Clubs.
+    pub clubs: Vec<ClubSpec>,
+    /// Conversations.
+    pub talks: Vec<Talk>,
+    /// Storylines.
+    pub arcs: Vec<ArcSpec>,
     place_index: HashMap<String, usize>,
     npc_index: HashMap<String, usize>,
 }
@@ -1002,6 +1467,14 @@ pub struct Sources<'a> {
     pub schemes: &'a str,
     /// `world.toml`
     pub world: &'a str,
+    /// `lessons.toml`
+    pub lessons: &'a str,
+    /// `clubs.toml`
+    pub clubs: &'a str,
+    /// `talks.toml`
+    pub talks: &'a str,
+    /// `arcs.toml`
+    pub arcs: &'a str,
 }
 
 /// The tables shipped in this crate.
@@ -1014,6 +1487,10 @@ pub const EMBEDDED: Sources<'static> = Sources {
     items: include_str!("../content/items.toml"),
     schemes: include_str!("../content/schemes.toml"),
     world: include_str!("../content/world.toml"),
+    lessons: include_str!("../content/lessons.toml"),
+    clubs: include_str!("../content/clubs.toml"),
+    talks: include_str!("../content/talks.toml"),
+    arcs: include_str!("../content/arcs.toml"),
 };
 
 impl Content {
@@ -1032,6 +1509,10 @@ impl Content {
         let items: ItemsFile = content::load("items", src.items)?;
         let schemes: SchemesFile = content::load("schemes", src.schemes)?;
         let world: WorldFile = content::load("world", src.world)?;
+        let lessons: LessonsFile = content::load("lessons", src.lessons)?;
+        let clubs: ClubsFile = content::load("clubs", src.clubs)?;
+        let talks: TalksFile = content::load("talks", src.talks)?;
+        let arcs: ArcsFile = content::load("arcs", src.arcs)?;
         let place_index = places
             .place
             .iter()
@@ -1067,6 +1548,13 @@ impl Content {
             grants: schemes.grant,
             effects: world.effect,
             endings: world.ending,
+            lessons: lessons.lesson,
+            words: lessons.word,
+            events: lessons.event,
+            motifs: lessons.motif,
+            clubs: clubs.club,
+            talks: talks.talk,
+            arcs: arcs.arc,
             place_index,
             npc_index,
         };
@@ -1260,6 +1748,7 @@ impl Content {
                 out.push(format!("shop place `{}` is never open", p.id));
             }
         }
+        out.extend(self.life_problems());
         out
     }
 

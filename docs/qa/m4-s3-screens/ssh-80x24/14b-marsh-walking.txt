@@ -1,0 +1,24 @@
+  ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+  │Saltmarch                                                                 │
+  │                                                                          │
+  │ ⌂ founder  day 1 of season 1        turns ████████░░ 24/30  ◈ 40 tallies │
+  │ ≈ TIDE ████░░░░░░░░░░┃░░░░░  20 ↑ high in 4h42 (91)  spring tides  calm  │
+  │╭ A cold that bites ─────────────────────────────────────────────────────╮│
+  ││                                                                        ││
+  ││▁▁▁▁▒▁▁▁▁▁▁▁▁▒▁▁▒▁▁▁◐▁▒▁▁▁▁▁▁▁▒▒▁▒▁▁▒▁▁▒▒▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▒▒▁▁▁▁▒▁▁▁▁▁││
+  ││ .. ... .....      .    . .     . ..      .        .  .  . ..   .       ││
+  ││ .                  .         .  ▒▒▒"▒▒▒.. ... .   .   ...  .     .  .. ││
+  ││     .. . . .       .          ▒▒"▒"▒▒▒"▒▒     .. .    . .   .   .  .   ││
+  ││   .  .         ..     .     "▒▒▒▒▒▒▒▒▒▒▒▒▒"  .      .   .  .   . .. .  ││
+  ││· island dawn, water 20 (low)                                           ││
+  ││The night turns raw and clear, and the wet on your clothes starts to    ││
+  ││stiffen. You can see your breath, and your fingers are not entirely     ││
+  ││yours.                                                                  ││
+  │╰────────────────────────────────────────────────────────────────────────╯│
+  │╭ What do you do? ───────────────────────────────────────────────────────╮│
+  ││ a Burn a lantern's peat for warmth                                     ││
+  ││ b Keep moving  ▲ 25% to go badly                                       ││
+  ││ c Huddle close until dawn                                              ││
+  │╰────────────────────────────────────────────────────────────────────────╯│
+  │ » Burn a lantern's peat for warmth                   arrows walk  Enter  │
+  └──────────────────────────────────────────────────────────────────────────┘

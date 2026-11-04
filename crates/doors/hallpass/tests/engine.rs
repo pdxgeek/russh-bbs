@@ -39,8 +39,9 @@ fn the_timetable_is_data_and_follows_the_weekday() {
     assert_eq!(g.activity(monday(), 0), "class:maths");
     assert_eq!(g.kind(monday(), 2), "lunch");
     assert_eq!(g.kind(monday(), 8), "night");
-    // Saturday has afternoons free; Sunday starts with chapel.
-    assert_eq!(g.activity(monday() + 5, 3), "free");
+    // Saturday has games, then free afternoons; Sunday starts with chapel.
+    assert_eq!(g.activity(monday() + 5, 3), "class:games");
+    assert_eq!(g.activity(monday() + 5, 4), "free");
     assert_eq!(g.activity(monday() + 6, 0), "chapel");
     // Every weekday names a room and a teacher for each lesson.
     for day in monday()..monday() + 7 {
@@ -258,7 +259,7 @@ fn attending_teaches_and_a_teachers_pet_learns_faster() {
         let mut sb = Sandbox::new(trait_id, 3);
         sb.goto("room_maths");
         let before = map_get(&sb.game.player.grades, "maths").copied().unwrap();
-        sb.ok(Action::Attend);
+        sb.attend(2);
         map_get(&sb.game.player.grades, "maths").copied().unwrap() - before
     };
     assert!(learn("teachers_pet") > learn("fast_runner"));

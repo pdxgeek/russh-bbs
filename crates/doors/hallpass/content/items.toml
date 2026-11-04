@@ -57,3 +57,17 @@ name = "A master key"
 price = 40
 shop = "caretaker"
 needs = ["legend>=60", "standing:the_bench>=15"]
+
+# Club items (M4-H2): sold to members of a rank only.
+[[item]]
+id = "greasepaint"
+name = "A stick of stage greasepaint"
+price = 7
+shop = "greenroom"
+needs = ["rank:drama>=2"]
+[[item]]
+id = "servo"
+name = "A tiny geared servo"
+price = 9
+shop = "workshop"
+needs = ["rank:robotics>=2"]

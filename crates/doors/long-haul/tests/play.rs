@@ -267,6 +267,11 @@ impl Bot for Hauler {
         if text.contains("Who were you") {
             return Some(DoorKey::Enter);
         }
+        // An open scene (event, fight, boarding) takes numbered choices; keep picking until it ends.
+        if text.contains("[1] ") {
+            let n = 1 + self.step % 3;
+            return Some(DoorKey::Char(char::from_digit(n, 10).unwrap_or('1')));
+        }
         if text.contains("Stock") {
             return Some(match self.step % 3 {
                 0 => DoorKey::Char('z'),
