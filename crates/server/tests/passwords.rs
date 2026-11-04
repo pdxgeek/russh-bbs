@@ -260,7 +260,7 @@ async fn to_password_page(channel: &mut Channel<client::Msg>) -> String {
 // ---------------------------------------------------------------- the method and who gets in
 
 #[tokio::test]
-async fn password_login_is_on_by_default_and_off_the_method_is_not_offered() {
+async fn password_login_is_on_by_default_and_off_a_right_password_signs_nobody_in() {
     // D94 (10): on by default; a sysop may turn it off for a key-only board.
     assert!(Limits::default().allow_password_login);
     let rig = Rig::start(Limits {
@@ -279,7 +279,7 @@ async fn password_login_is_on_by_default_and_off_the_method_is_not_offered() {
     };
     assert_eq!(
         remaining_methods.iter().copied().collect::<Vec<_>>(),
-        vec![MethodKind::None, MethodKind::PublicKey]
+        vec![MethodKind::PublicKey, MethodKind::Password]
     );
     // The right password does nothing when the option is off.
     let result = session

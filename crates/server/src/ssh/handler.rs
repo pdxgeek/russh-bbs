@@ -345,14 +345,21 @@ impl<D: Backend> Handler for ClientHandler<D> {
     async fn auth_password(&mut self, user: &str, password: &str) -> Result<Auth, Self::Error> {
         // The method is not advertised when off, so a client has no reason to try it; one that
         // does anyway is refused without a single hash.
-        if !self.passwords.enabled() {
-            return Ok(Auth::reject());
-        }
-        // `new` and `claim` are not accounts: a password offered under them is refused like any
-        // other wrong password, with the limits counted the same (no oracle either way).
+        // `new` and `claim` are not accounts, and there is nothing to check: a client with no
+        // key to offer reaches the waiting room (or the founder claim) by answering the
+        // password prompt with anything, even nothing (D96). OpenSSH tries `none` first and
+        // would never offer a key if that succeeded, so `none` is refused and this is how a
+        // key-less visitor gets in. Nothing typed is read, hashed or logged.
         if route(user) != Route::SignIn {
-            self.passwords.admit(self.peer.map(|peer| peer.ip()), user);
-            return Ok(retry_methods(self.passwords.enabled()));
+            self.claim_requested = route(user) == Route::Claim;
+            self.member = false;
+            self.fingerprint = None;
+            self.guard.set_visitor();
+            return Ok(Auth::Accept);
+        }
+        // Signing in by password can be turned off; the visitor path above is not a sign-in.
+        if !self.passwords.enabled() {
+            return Ok(retry_methods(false));
         }
         // Limits first, for every handle alike (known or not), so a limited reply is the same
         // plain refusal and says nothing about members. Nothing typed is logged.
@@ -468,19 +475,10 @@ impl<D: Backend> Handler for ClientHandler<D> {
         }
     }
 
-    async fn auth_none(&mut self, user: &str) -> Result<Auth, Self::Error> {
-        // A client with no key reaches the waiting room only under the visitor names; anyone
-        // else is asked for a key or a password (D94 (7), (10)).
-        match route(user) {
-            Route::Join | Route::Claim => {
-                self.claim_requested = route(user) == Route::Claim;
-                self.member = false;
-                self.fingerprint = None;
-                self.guard.set_visitor();
-                Ok(Auth::Accept)
-            }
-            Route::SignIn => Ok(retry_methods(self.passwords.enabled())),
-        }
+    async fn auth_none(&mut self, _user: &str) -> Result<Auth, Self::Error> {
+        // Never accepted: a client that succeeds here is never asked for its key (OpenSSH sends
+        // `none` first), so a visitor could not present the key to bind or link (D96).
+        Ok(retry_methods(self.passwords.enabled()))
     }
 
     async fn auth_succeeded(&mut self, _session: &mut Session) -> Result<(), Self::Error> {
@@ -844,19 +842,13 @@ impl<D: Backend> Handler for ClientHandler<D> {
 /// the methods the client is told remain, so the client gives up after one try (QA M3 L9). This
 /// keeps both methods on offer; russh's `max_auth_attempts` still ends the connection, and the
 /// per-account and per-IP limits (D81) are checked before every try.
-fn retry_methods(password: bool) -> Auth {
+fn retry_methods(_password: bool) -> Auth {
+    // `password` is always on offer: it is also how a key-less visitor reaches the waiting
+    // room under `new` and `claim`; a sign-in by password is refused when the sysop turned it off.
     Auth::Reject {
-        proceed_with_methods: Some(if password {
-            MethodSet::from(
-                &[
-                    MethodKind::None,
-                    MethodKind::PublicKey,
-                    MethodKind::Password,
-                ][..],
-            )
-        } else {
-            MethodSet::from(&[MethodKind::None, MethodKind::PublicKey][..])
-        }),
+        proceed_with_methods: Some(MethodSet::from(
+            &[MethodKind::PublicKey, MethodKind::Password][..],
+        )),
         partial_success: false,
     }
 }

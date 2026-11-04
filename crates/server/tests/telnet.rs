@@ -1447,7 +1447,7 @@ async fn the_same_join_then_sign_in_script_gives_the_same_screens_over_ssh_and_t
     ssh_rig.mode(RegistrationMode::Open).await;
     let mut session = common::connect(ssh_rig.ssh.local_addr()).await;
     assert!(matches!(
-        session.authenticate_none("new").await.unwrap(),
+        session.authenticate_password("new", "").await.unwrap(),
         AuthResult::Success
     ));
     let mut channel = common::open_shell(&session, 80, 24).await;

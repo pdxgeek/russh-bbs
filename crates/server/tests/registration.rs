@@ -927,10 +927,11 @@ async fn a_mode_change_is_picked_up_by_the_next_connection_without_a_restart() {
 
 const PASSWORD: &str = "a long join password";
 
-/// Connect with no key under `name` (SSH `none` auth), open the shell and return the first screen.
+/// Connect with no key under `name` (a password prompt answered with nothing, which is how a
+/// key-less client reaches the waiting room), open the shell and return the first screen.
 async fn visitor_without_a_key(rig: &Rig, name: &str) -> (Handle<Client>, Channel<Msg>, String) {
     let mut session = common::connect(rig.addr()).await;
-    let result = session.authenticate_none(name).await.unwrap();
+    let result = session.authenticate_password(name, "").await.unwrap();
     assert!(matches!(result, AuthResult::Success), "{name}: {result:?}");
     let mut channel = common::open_shell(&session, 80, 24).await;
     drain(&mut channel).await;
@@ -1129,14 +1130,13 @@ async fn the_ssh_user_name_routes_and_no_refusal_tells_a_handle_that_exists_from
         refusal_of(&rig, "nobody-at-all", Some(&stranger), None).await,
     ];
     assert!(refusals.iter().all(|r| r == &refusals[0]), "{refusals:?}");
-    // The same for passwords: a wrong one for a member, any one for a handle nobody has, one for
-    // a member who set none, and one tried under the visitor names.
+    // The same for passwords: a wrong one for a member, any one for a handle nobody has, and one
+    // for a member who set none. (Under `new` and `claim` a password is not checked at all: it
+    // is how a client with no key reaches the room.)
     let wrong = [
         refusal_of(&rig, "alice", None, Some("not the password")).await,
         refusal_of(&rig, "nobody-at-all", None, Some("not the password")).await,
         refusal_of(&rig, "bob", None, Some("not the password")).await,
-        refusal_of(&rig, "new", None, Some(PASSWORD)).await,
-        refusal_of(&rig, "claim", None, Some(PASSWORD)).await,
     ];
     assert!(wrong.iter().all(|r| r == &wrong[0]), "{wrong:?}");
     // A member's key under `new` is just a visitor: the waiting room, not their session.

@@ -79,7 +79,7 @@ ssh -p 2222 claim@localhost     # paste the token to become sysop (D41)
 
 - The token is held in memory only. **Restarting before the claim prints a new token and voids the old one**; read it again from `docker logs`.
 - The token goes to the console only; the server does not write it through its logger. A container runtime still keeps everything on stdout, so `docker logs` retains the token after the claim (it is void by then, so the only cost is confusion). After the claim nothing more is printed. Anyone who can read `docker logs` before the claim can claim the board, so do not use a log driver that ships stdout to a third party before you claim it, and claim promptly.
-- `ssh -p 2222 new@localhost` reaches the waiting room (with a key or none); `ssh -p 2222 <handle>@localhost` signs in as that member. The claim also asks you to choose a password (D96).
+- `ssh -p 2222 new@localhost` reaches the waiting room (with a key, or with none by pressing Enter at the password prompt); `ssh -p 2222 <handle>@localhost` signs in as that member. The claim also asks you to choose a password (D96).
 
 ### If the claim connection is dropped (connection flood)
 
