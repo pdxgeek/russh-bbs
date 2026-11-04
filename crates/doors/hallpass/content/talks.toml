@@ -798,3 +798,48 @@ effects = ["arc_end:east_light:quiet"]
 label = "Take the page back and go"
 say = "He lets you take it, and says nothing, which is its own sort of answer."
 effects = ["arc_end:east_light:secret"]
+
+# ---------------------------------------------------------------- after the stories (they read the school and your deeds)
+
+[[talk]]
+id = "wick_aftermath"
+npc = "wick"
+title = "Cordelia Wick, after the stand-down"
+when = ["world:prefects_stood_down"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Cordelia Wick looks tired and strangely lighter. The Lamplighters have been stood down for the term, and the corridors are full of people who are not sure how to behave."
+[[talk.node.choice]]
+label = "Tell her it took nerve to bring the ledger in"
+needs = ["ended:ledger@purged"]
+say = "She looks at you for a moment. 'You knew who to bring it to. I will not forget that.'"
+effects = ["bond:wick:+4", "stat:cool:+2"]
+[[talk.node.choice]]
+label = "Offer to help the Lamplighters find their feet"
+say = "'That is kind,' says Wick. 'Somebody ought to.'"
+effects = ["stand:lamplighters:+2", "bond:wick:+2"]
+[[talk.node.choice]]
+label = "Keep out of it"
+say = "She nods and goes back to nothing in particular."
+
+[[talk]]
+id = "wren_scoop"
+npc = "wren"
+title = "Wren and the issue that sold out"
+when = ["ended:ledger@headline"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Wren Okonjo is counting coins into an envelope. 'Every copy gone by lunch. The ledger issue. Half of that is yours.'"
+[[talk.node.choice]]
+label = "Take your share"
+say = "It is not a fortune, but it is the first money you have earned by being right."
+effects = ["stat:cash:+8", "bond:wren:+2"]
+[[talk.node.choice]]
+label = "Ask her to put it toward the next issue"
+say = "She puts the envelope in the press drawer with a look you will treasure."
+effects = ["bond:wren:+5", "stand:ink_society:+3", "merit:paper:+2"]
+[[talk.node.choice]]
+label = "Say it was her paper, not yours"
+say = "'False modesty,' says Wren, 'but welcome.'"

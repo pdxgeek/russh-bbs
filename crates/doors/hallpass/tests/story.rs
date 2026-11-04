@@ -519,6 +519,45 @@ async fn the_ledger_story_changes_the_school_for_everyone_through_the_real_world
         "and Bramley is moved"
     );
     assert_ne!(plain.npc_place(bramley, today, 5), "common_room");
+    // Conversations read the school and the pupil's own deeds: Bea, who never met the ledger, finds
+    // Wick changed by the stand-down but cannot take credit for it; Ann can.
+    let wick = c.npc("wick").unwrap().clone();
+    let aftermath = c.talk("wick_aftermath").unwrap().clone();
+    let tomorrow = today + 1;
+    let mut rng = russh_bbs_door::DoorRng::from_seed(3);
+    let mut ann_now = saved.clone();
+    ann_now.day = tomorrow;
+    let (mut ann_game, _) = Game::open(&c, "ann", Some(ann_now), Some(&after.to_bytes()), tomorrow);
+    let (mut bea, _) = Game::open(&c, "bea", None, Some(&after.to_bytes()), tomorrow);
+    bea.apply(
+        &russh_bbs_door_hallpass::game::Action::Enrol("fast_runner".into()),
+        &mut rng,
+    )
+    .unwrap();
+    let mut views = Vec::new();
+    for g in [&mut ann_game, &mut bea] {
+        g.player.slot = 0;
+        g.player.place = g.npc_place(&wick, g.player.day, 0).to_owned();
+        assert!(
+            g.talk_open(&aftermath),
+            "{}: the school changed for them too",
+            g.player.name
+        );
+        g.apply(
+            &russh_bbs_door_hallpass::game::Action::Talk("wick_aftermath".into()),
+            &mut rng,
+        )
+        .unwrap();
+        views.push(g.scene_view().unwrap());
+    }
+    assert!(
+        views[0].choices[0].open,
+        "Ann's own deed opens the first choice"
+    );
+    assert!(
+        !views[1].choices[0].open && views[1].choices[1].open,
+        "Bea sees the same scene without the credit"
+    );
     // The framework's retry of the same edit does not stack it, and the tick keeps it all term.
     let delta = russh_bbs_door_hallpass::world::WorldDelta::Effect {
         id: "prefects_stood_down".into(),
