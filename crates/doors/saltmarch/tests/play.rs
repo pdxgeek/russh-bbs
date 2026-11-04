@@ -129,7 +129,10 @@ fn a_fresh_visit_asks_for_a_name_the_board_accepts_and_founds_a_clan() {
     }
     live.key(DoorKey::Enter);
     let clan = live.clan();
-    assert_eq!((clan.name.as_str(), clan.crew.len(), clan.tallies), ("Saltlip", 3, 40));
+    assert_eq!(
+        (clan.name.as_str(), clan.crew.len(), clan.tallies),
+        ("Saltlip", 3, 40)
+    );
     assert!(live.said("Turns 30/30") && live.said("Tide: water"));
     // Escape at the name prompt leaves without founding anything.
     let mut quitter = Live::open(&door, 2, None);
@@ -168,10 +171,21 @@ fn a_recorded_session_replays_to_exactly_the_saved_state_on_every_branch() {
     live.choose("go:market");
     assert!(live.choose("buy:food"));
     let spent = live.clan();
-    assert!(spent.turns_used >= 5 && spent.tallies < 40, "{} turns, {} tallies", spent.turns_used, spent.tallies);
+    assert!(
+        spent.turns_used >= 5 && spent.tallies < 40,
+        "{} turns, {} tallies",
+        spent.turns_used,
+        spent.tallies
+    );
     let replayed = replay::run(&door, &live.recorder.into_log(), &live.env);
-    assert_eq!(replayed.save, live.last_save, "the log reproduces the save byte for byte");
-    assert!(replayed.world_edits >= 2, "founding publishes the world and a purchase adds to it");
+    assert_eq!(
+        replayed.save, live.last_save,
+        "the log reproduces the save byte for byte"
+    );
+    assert!(
+        replayed.world_edits >= 2,
+        "founding publishes the world and a purchase adds to it"
+    );
     // The log is text, can be pinned, parses back and runs the same.
     let mut again = Live::open(&door, 77, None);
     again.key(DoorKey::Enter);
@@ -179,7 +193,10 @@ fn a_recorded_session_replays_to_exactly_the_saved_state_on_every_branch() {
     let text = log.to_string();
     assert!(text.starts_with("door=saltmarch seed=77 "));
     let parsed: ReplayLog = text.parse().unwrap();
-    assert_eq!(replay::run_checked(&door, &parsed, &env()).unwrap().save, again.last_save);
+    assert_eq!(
+        replay::run_checked(&door, &parsed, &env()).unwrap().save,
+        again.last_save
+    );
     let mut wrong = parsed;
     wrong.door = "coin-toss".into();
     assert!(replay::run_checked(&door, &wrong, &env()).is_err());
@@ -244,7 +261,12 @@ async fn it_saves_through_the_store_and_the_nights_run_when_the_player_returns()
     assert_eq!(before.last_day, DAY);
     // The same day, a new visit: no report, same state.
     let same = open(2).await.unwrap();
-    assert!(!same.look_around(&env).join("\n").contains("While you were away"));
+    assert!(
+        !same
+            .look_around(&env)
+            .join("\n")
+            .contains("While you were away")
+    );
     // Three days later the nights have run: the crew ate, the report says so.
     clock.set(Day::from_raw(DAY + 3).start());
     let mut later = open(3).await.unwrap();
@@ -259,7 +281,12 @@ async fn it_saves_through_the_store_and_the_nights_run_when_the_player_returns()
     // Going back in time changes nothing.
     clock.set(Day::from_raw(DAY - 5).start());
     let past = open(4).await.unwrap();
-    assert!(!past.look_around(&env).join("\n").contains("While you were away"));
+    assert!(
+        !past
+            .look_around(&env)
+            .join("\n")
+            .contains("While you were away")
+    );
 }
 
 #[tokio::test]
@@ -268,14 +295,26 @@ async fn the_daily_tick_never_invents_a_world_then_moves_prices_once_per_day() {
     let door: Arc<dyn Door> = Arc::new(door());
     let clock = clock(DAY);
     let id = door.info().id.clone();
-    run_due(&store, door.as_ref(), clock.as_ref(), TickPolicy::default()).await.unwrap();
-    let stored = store.load_world(&id).await.unwrap().unwrap();
-    assert!(stored.bytes.is_empty(), "no player has made the season's world yet");
-    // The first player makes it, and sells some iron to the Tidecourt.
-    let dyn_clock: Arc<dyn Clock> = clock.clone();
-    let mut run = Running::open(&store, door.clone(), AccountId::from_raw(1), &env(), dyn_clock, 5)
+    run_due(&store, door.as_ref(), clock.as_ref(), TickPolicy::default())
         .await
         .unwrap();
+    let stored = store.load_world(&id).await.unwrap().unwrap();
+    assert!(
+        stored.bytes.is_empty(),
+        "no player has made the season's world yet"
+    );
+    // The first player makes it, and sells some iron to the Tidecourt.
+    let dyn_clock: Arc<dyn Clock> = clock.clone();
+    let mut run = Running::open(
+        &store,
+        door.clone(),
+        AccountId::from_raw(1),
+        &env(),
+        dyn_clock,
+        5,
+    )
+    .await
+    .unwrap();
     for key in [DoorKey::Enter, DoorKey::Char('c')] {
         run.key(key);
         run.flush(&store).await.unwrap();
@@ -284,7 +323,11 @@ async fn the_daily_tick_never_invents_a_world_then_moves_prices_once_per_day() {
     assert_eq!((world.season, world.clans.len()), (1, 1));
     assert_eq!(world.clans[0].name, "ann");
     // Sell all the timber: the net sold shows in the world at once.
-    assert!(run.look_around(&env()).iter().any(|l| l.contains("sell:timber")));
+    assert!(
+        run.look_around(&env())
+            .iter()
+            .any(|l| l.contains("sell:timber"))
+    );
     let line = run
         .look_around(&env())
         .into_iter()
@@ -297,17 +340,31 @@ async fn the_daily_tick_never_invents_a_world_then_moves_prices_once_per_day() {
     // Tomorrow's tick turns that into a lower price and clears the tally.
     let base = world.prices[Resource::Timber.index()];
     clock.set(Day::from_raw(DAY + 1).start());
-    run_due(&store, door.as_ref(), clock.as_ref(), TickPolicy::default()).await.unwrap();
+    run_due(&store, door.as_ref(), clock.as_ref(), TickPolicy::default())
+        .await
+        .unwrap();
     let next = World::decode(&store.load_world(&id).await.unwrap().unwrap().bytes).unwrap();
-    assert!(next.prices[Resource::Timber.index()] < base + base / 50, "selling pushed it down");
+    assert!(
+        next.prices[Resource::Timber.index()] < base + base / 50,
+        "selling pushed it down"
+    );
     assert_eq!(next.net_sold, [0; 13]);
     assert_eq!((next.last_tick, next.seed), (DAY + 1, world.seed));
     // Idempotent per day.
-    let report = run_due(&store, door.as_ref(), clock.as_ref(), TickPolicy::default()).await.unwrap();
+    let report = run_due(&store, door.as_ref(), clock.as_ref(), TickPolicy::default())
+        .await
+        .unwrap();
     assert_eq!(report.applied.len(), 0);
     // Downtime: a week away is caught up, capped by the policy.
     clock.set(Day::from_raw(DAY + 20).start());
-    let report = run_due(&store, door.as_ref(), clock.as_ref(), TickPolicy { max_catch_up: 5 }).await.unwrap();
+    let report = run_due(
+        &store,
+        door.as_ref(),
+        clock.as_ref(),
+        TickPolicy { max_catch_up: 5 },
+    )
+    .await
+    .unwrap();
     assert_eq!((report.applied.len(), report.skipped), (5, 14));
 }
 
@@ -319,11 +376,22 @@ async fn a_save_it_cannot_read_is_never_overwritten() {
     let id = door.info().id.clone();
     let junk = b"not a clan".to_vec();
     store
-        .write_save(&id, ann, &SaveWrite { expected: Revision::NONE, season: 1, version: SAVE_VERSION, bytes: &junk })
+        .write_save(
+            &id,
+            ann,
+            &SaveWrite {
+                expected: Revision::NONE,
+                season: 1,
+                version: SAVE_VERSION,
+                bytes: &junk,
+            },
+        )
         .await
         .unwrap();
     let clock: Arc<dyn Clock> = clock(DAY);
-    let mut run = Running::open(&store, door.clone(), ann, &env(), clock, 1).await.unwrap();
+    let mut run = Running::open(&store, door.clone(), ann, &env(), clock, 1)
+        .await
+        .unwrap();
     let screen = run.look_around(&env()).join("\n");
     assert!(screen.contains("cannot read"), "{screen}");
     for key in [DoorKey::Enter, DoorKey::Char('a'), DoorKey::Char('x')] {
@@ -332,7 +400,10 @@ async fn a_save_it_cannot_read_is_never_overwritten() {
     }
     assert_eq!(run.key(DoorKey::Escape), Flow::Exit);
     let stored = store.load_save(&id, ann).await.unwrap().unwrap();
-    assert_eq!((stored.bytes, stored.revision), (junk, Revision::from_raw(1)));
+    assert_eq!(
+        (stored.bytes, stored.revision),
+        (junk, Revision::from_raw(1))
+    );
 }
 
 #[tokio::test]
@@ -341,12 +412,25 @@ async fn a_save_from_a_newer_version_is_refused_not_loaded() {
     let door: Arc<dyn Door> = Arc::new(door());
     let ann = AccountId::from_raw(1);
     store
-        .write_save(&door.info().id, ann, &SaveWrite { expected: Revision::NONE, season: 1, version: SAVE_VERSION + 1, bytes: &[1, 2, 3] })
+        .write_save(
+            &door.info().id,
+            ann,
+            &SaveWrite {
+                expected: Revision::NONE,
+                season: 1,
+                version: SAVE_VERSION + 1,
+                bytes: &[1, 2, 3],
+            },
+        )
         .await
         .unwrap();
     let clock: Arc<dyn Clock> = clock(DAY);
     let result = Running::open(&store, door, ann, &env(), clock, 1).await;
-    assert!(matches!(result, Err(OpenError::TooNew { .. })), "{:?}", result.err());
+    assert!(
+        matches!(result, Err(OpenError::TooNew { .. })),
+        "{:?}",
+        result.err()
+    );
 }
 
 #[test]
@@ -355,14 +439,20 @@ fn a_new_season_keeps_the_hall_and_gives_a_fresh_start() {
     let mut live = Live::open(&door, 9, None);
     live.key(DoorKey::Enter);
     let mut old = live.clan();
-    old.hall.push(russh_bbs_door_saltmarch::clan::HallEntry { season: 1, text: "Old Tam. Remembered.".into() });
+    old.hall.push(russh_bbs_door_saltmarch::clan::HallEntry {
+        season: 1,
+        text: "Old Tam. Remembered.".into(),
+    });
     old.tallies = 999;
     let bytes = old.encode();
     let env = env();
     let driver = Driver::open(
         &door,
         Start {
-            save: Save::Loaded { bytes: &bytes, season: 1 },
+            save: Save::Loaded {
+                bytes: &bytes,
+                season: 1,
+            },
             world: None,
             env: &env,
             today: Day::from_raw(DAY + 60),
@@ -372,12 +462,18 @@ fn a_new_season_keeps_the_hall_and_gives_a_fresh_start() {
         clock(DAY + 60),
     );
     let screen = driver.look_around(&env).join("\n");
-    assert!(screen.contains("season 2") && screen.contains("Tallies 40"), "{screen}");
+    assert!(
+        screen.contains("season 2") && screen.contains("Tallies 40"),
+        "{screen}"
+    );
     // The next key saves the new season's clan: the hall and the count of seasons carried over.
     let mut driver = driver;
     driver.key(DoorKey::Char(' '));
     let saved = Clan::decode(driver.take_effects().save().unwrap()).unwrap();
-    assert_eq!((saved.season, saved.seasons_played, saved.tallies), (2, 2, 40));
+    assert_eq!(
+        (saved.season, saved.seasons_played, saved.tallies),
+        (2, 2, 40)
+    );
     assert_eq!(saved.hall, old.hall);
 }
 
@@ -393,7 +489,11 @@ async fn two_sessions_racing_to_make_the_world_end_up_on_one_map() {
         let env = DoorEnv::for_tests(handle);
         let door = door.clone();
         let store = &store;
-        async move { Running::open(store, door, who, &env, clock, seed).await.unwrap() }
+        async move {
+            Running::open(store, door, who, &env, clock, seed)
+                .await
+                .unwrap()
+        }
     };
     // Both open before either has written a world, each proposing its own seed.
     let mut a = open(ann, 1, "ann").await;
@@ -403,14 +503,21 @@ async fn two_sessions_racing_to_make_the_world_end_up_on_one_map() {
     b.key(DoorKey::Enter);
     b.flush(&store).await.unwrap();
     let world = World::decode(&store.load_world(&id).await.unwrap().unwrap().bytes).unwrap();
-    assert_eq!(world.clans.len(), 2, "both holds are registered in the one world");
+    assert_eq!(
+        world.clans.len(),
+        2,
+        "both holds are registered in the one world"
+    );
     let load = |who| {
         let store = &store;
         let id = id.clone();
         async move { Clan::decode(&store.load_save(&id, who).await.unwrap().unwrap().bytes).unwrap() }
     };
     let seeds = [load(ann).await.seed, load(bob).await.seed];
-    assert_ne!(seeds[0], seeds[1], "the loser still holds the seed it proposed");
+    assert_ne!(
+        seeds[0], seeds[1],
+        "the loser still holds the seed it proposed"
+    );
     // The loser joins the world's map the next time it opens.
     let mut b2 = open(bob, 3, "bob").await;
     b2.key(DoorKey::Char(' '));
@@ -425,5 +532,8 @@ fn the_door_is_registered_under_its_id_and_has_a_tick() {
     let door = door();
     assert_eq!(door.info().id.as_str(), DOOR_ID);
     assert!(door.has_daily_tick());
-    assert_eq!((door.info().save_version, door.info().world_version), (1, 1));
+    assert_eq!(
+        (door.info().save_version, door.info().world_version),
+        (1, 1)
+    );
 }

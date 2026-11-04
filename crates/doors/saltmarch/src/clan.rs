@@ -149,7 +149,7 @@ impl Clan {
             (Resource::Timber, 12),
             (Resource::Reed, 10),
             (Resource::Peat, 8),
-            (Resource::Food, 14),
+            (Resource::Food, 20),
             (Resource::Tools, 1),
         ] {
             clan.stock.add(r, n);
@@ -158,6 +158,15 @@ impl Clan {
             let mut member = Crew::generate(cat, rng, 0, trade);
             member.id = clan.take_id();
             clan.crew.push(member);
+        }
+        // The hold starts with a fish weir and a peat stack, worked by the wader and the raker,
+        // so a clan that never comes back still eats for a while and keeps its fires.
+        for (plot, (id, member)) in [("fish-weir", 0usize), ("peat-stack", 1)]
+            .into_iter()
+            .enumerate()
+        {
+            clan.hold.plots[plot] = Some(id.to_owned());
+            clan.crew[member].post = Some(u8::try_from(plot).unwrap_or(0));
         }
         if let Some(&(x, y)) = map.sites.get(usize::from(site)) {
             clan.chart_around(usize::from(x), usize::from(y), 3);

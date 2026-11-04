@@ -85,6 +85,8 @@ pub enum Event {
         qty: u32,
         tallies: u32,
     },
+    /// Turns passed waiting for the water.
+    Waited { turns: u8, level: i32 },
     /// The sluice was set (or cleared).
     SluiceSet { level: Option<u8> },
     /// The larder fell short.
@@ -160,6 +162,9 @@ impl fmt::Display for Event {
             }
             Self::Bought { what, qty, tallies } => {
                 write!(f, "Bought {qty} {} for {tallies} tallies.", what.name())
+            }
+            Self::Waited { turns, level } => {
+                write!(f, "You wait {turns} turns. The water stands at {level}.")
             }
             Self::SluiceSet { level: Some(l) } => {
                 write!(f, "The sluice will flood the approach at water {l}.")

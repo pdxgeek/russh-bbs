@@ -29,7 +29,13 @@ fn the_manifest_depends_on_the_framework_and_pure_data_crates_only() {
 fn the_audit_would_catch_what_a_game_must_never_do() {
     // The audit's own tests live in the framework; this pins that the patterns a tide or a
     // map generator might be tempted by are on its list.
-    for needle in ["SystemTime", "thread_rng", "std::fs", "std::net", "Instant::now"] {
+    for needle in [
+        "SystemTime",
+        "thread_rng",
+        "std::fs",
+        "std::net",
+        "Instant::now",
+    ] {
         assert!(
             sandbox::FORBIDDEN.iter().any(|(p, _)| p.contains(needle)),
             "{needle}"

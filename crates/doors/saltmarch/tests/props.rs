@@ -8,9 +8,7 @@ use russh_bbs_door_saltmarch::content::Catalog;
 use russh_bbs_door_saltmarch::map::{
     DEEP_ROWS, MAX_SITES, MIN_SITES, Map, SITE_SPACING, SIZE, TIDECOURT, TileKind,
 };
-use russh_bbs_door_saltmarch::tide::{
-    Access, MID, NEAP_AMP, SPRING_AMP, STORM_SURGE, Tide,
-};
+use russh_bbs_door_saltmarch::tide::{Access, MID, NEAP_AMP, SPRING_AMP, STORM_SURGE, Tide};
 
 fn catalog() -> Catalog {
     Catalog::embedded().unwrap()

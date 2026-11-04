@@ -137,6 +137,11 @@ pub enum Action {
         /// How many.
         qty: u32,
     },
+    /// Let the tide-turns pass (one to ten) so the water moves on.
+    Wait {
+        /// How many turns.
+        turns: u8,
+    },
     /// Set the level at which the sluice floods the approach.
     Sluice {
         /// The level, or `None` to leave it open.
@@ -384,6 +389,17 @@ pub fn apply(
         Action::Survey => survey(env, clan, &mut events)?,
         Action::Sell { what, qty } => sell(env, clan, what, qty, &mut events)?,
         Action::Buy { what, qty } => buy(env, clan, what, qty, &mut events)?,
+        Action::Wait { turns } => {
+            if turns == 0 || turns > 10 {
+                return Err(ActionError::BadAmount);
+            }
+            ensure_turns(env, clan, turns)?;
+            spend(clan, turns);
+            events.push(Event::Waited {
+                turns,
+                level: env.level(clan),
+            });
+        }
         Action::Sluice { level } => {
             if !clan.hold.built(env.cat).any(|(_, b)| b.is_sluice()) {
                 return Err(ActionError::NoSluice);

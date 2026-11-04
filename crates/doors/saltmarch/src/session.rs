@@ -93,12 +93,23 @@ pub(crate) struct Session {
 
 /// What happened while the player was away, one line each, led by how many nights passed.
 fn morning_report(events: &[Event]) -> Vec<String> {
-    let nights = events.iter().filter(|e| matches!(e, Event::Night { .. })).count();
+    let nights = events
+        .iter()
+        .filter(|e| matches!(e, Event::Night { .. }))
+        .count();
     if nights == 0 {
         return Vec::new();
     }
-    let mut lines = vec![format!("{nights} night{} passed.", if nights == 1 { "" } else { "s" })];
-    lines.extend(events.iter().filter(|e| !matches!(e, Event::Night { .. })).map(ToString::to_string));
+    let mut lines = vec![format!(
+        "{nights} night{} passed.",
+        if nights == 1 { "" } else { "s" }
+    )];
+    lines.extend(
+        events
+            .iter()
+            .filter(|e| !matches!(e, Event::Night { .. }))
+            .map(ToString::to_string),
+    );
     lines
 }
 
@@ -352,6 +363,35 @@ impl Session {
                         ));
                     }
                 }
+                for (plot, def) in clan.hold.built(cat) {
+                    let plot = u8::try_from(plot).unwrap_or(0);
+                    let Some(trade) = def.trade else { continue };
+                    if def.produce.is_empty() {
+                        continue;
+                    }
+                    let mut fit: Vec<_> = clan.crew.iter().filter(|c| c.fit(cat)).collect();
+                    fit.sort_by_key(|c| (std::cmp::Reverse(c.power(cat, trade)), c.id));
+                    if let [a, b, ..] = fit[..] {
+                        out.push(entry(
+                            format!("pair:{}@{plot}:{}+{}", def.id, a.id, b.id),
+                            format!(
+                                "Shift at the {} with {} and {} (2 turns)",
+                                def.name, a.name, b.name
+                            ),
+                            Act::Do(Action::Shift {
+                                plot,
+                                crew: vec![a.id, b.id],
+                            }),
+                        ));
+                    }
+                }
+                if clan.turns_left(&self.settings) >= 3 {
+                    out.push(entry(
+                        "wait:3",
+                        "Wait three turns for the water to move (3 turns)",
+                        Act::Do(Action::Wait { turns: 3 }),
+                    ));
+                }
                 for r in &clan.recipes {
                     if let Some(def) = cat.recipe(r)
                         && clan.hold.has(&def.workshop)
@@ -527,6 +567,7 @@ impl Session {
         out
     }
 
+    #[allow(clippy::too_many_lines)]
     fn lines(&self) -> Vec<(String, DoorStyle)> {
         let mut out = Vec::new();
         match &self.mode {

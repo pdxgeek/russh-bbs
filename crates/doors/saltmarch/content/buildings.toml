@@ -106,6 +106,34 @@ slots = 1
 max_level = 35
 
 [[building]]
+id = "reed-garden"
+name = "Reed garden"
+track = "work"
+tier = 1
+blurb = "Cut-and-regrow beds beside the hold. Slow, but the reed never runs out."
+cost = { timber = 4, tallies = 5 }
+build_turns = 2
+max = 2
+produce = { reed = 3 }
+trade = "wader"
+slots = 1
+max_level = 60
+
+[[building]]
+id = "drift-rack"
+name = "Drift rack"
+track = "work"
+tier = 1
+blurb = "A rack on the seaward bank where the tide leaves its timber."
+cost = { reed = 6, tallies = 5 }
+build_turns = 2
+max = 2
+produce = { timber = 2 }
+trade = "salvager"
+slots = 1
+max_level = 80
+
+[[building]]
 id = "smokehouse"
 name = "Smokehouse"
 track = "work"
