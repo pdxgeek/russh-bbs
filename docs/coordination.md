@@ -126,7 +126,7 @@ Approved by the owner on 2026-11-04 by adding them here. The other M4 work is in
 | M4-L4 Long Haul social, content and balance | `crates/doors/long-haul` | M4-L3 | Open | Convoys, opt-in piracy, player outposts, arcs, economy simulation. |
 | M4-H1 Hallpass engine | `crates/doors/hallpass` | M4-D0 | In review ([PR #94](https://github.com/pdxgeek/russh-bbs/pull/94), branch `m4/hallpass-engine`) | Timetable, places, character schedules, stats, schemes, heat and the file, day tick; replay tests. |
 | M4-H2 Hallpass classes, clubs and characters | `crates/doors/hallpass` | M4-H1 | In review ([PR #105](https://github.com/pdxgeek/russh-bbs/pull/105), branch `m4/hallpass-school-life`, D114) | Class minigames, clubs, conversations, friendships, storylines. |
-| M4-H3 Hallpass UI | `crates/doors/hallpass` | M4-H2, UI-5 | Open | Timetable, map, scenes, minigames, look-around. |
+| M4-H3 Hallpass UI | `crates/doors/hallpass` | M4-H2, UI-5 | Claimed (branch `m4/hallpass-ui`) | Timetable, map, scenes, minigames, look-around. |
 | M4-H4 Hallpass social, mystery and balance | `crates/doors/hallpass` | M4-H3 | Open | Structured player schemes, template rumours, opt-out, election, awards, the mystery, balance. |
 
 ### M3: Public core
