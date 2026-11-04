@@ -113,7 +113,7 @@ Approved by the owner on 2026-11-04 by adding them here. The other M4 work is in
 | M4-S4 Saltmarch social | `crates/doors/saltmarch` | M4-S3 | Open | Raids, pacts, market, letters, league, hall. |
 | M4-S5 Saltmarch content and balance | `crates/doors/saltmarch` | M4-S4 | Open | Launch content budget, auto-play balance harness. |
 | M4-E1 Emberdeep engine | `crates/doors/emberdeep` | M4-D0 | In review ([PR #88](https://github.com/pdxgeek/russh-bbs/pull/88), branch `m4/emberdeep-engine`) | Dungeon generation, hero, combat, torch-turns; replay tests. Built: see [doors/emberdeep.md](doors/emberdeep.md) and D101. |
-| M4-E2 Emberdeep town and crafting | `crates/doors/emberdeep` | M4-E1 | Open | Town, projects, gear, crafting. |
+| M4-E2 Emberdeep town and crafting | `crates/doors/emberdeep` | M4-E1 | Claimed (branch `m4/emberdeep-town`) | Town, projects, gear, crafting. |
 | M4-E3 Emberdeep UI | `crates/doors/emberdeep` | M4-E2, UI-5 | Open | Dungeon view, combat panel, town, look-around. |
 | M4-E4 Emberdeep social, content and balance | `crates/doors/emberdeep` | M4-E3 | Open | Parties, rescues, duels, shared projects, content pass, balance. |
 | M4-N1 Nullroute engine | `crates/doors/nullroute` | M4-D0 | Open | Network generation, trace, deck, runs; replay tests. |
