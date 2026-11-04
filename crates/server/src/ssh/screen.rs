@@ -620,7 +620,7 @@ impl Screen {
     /// Tell the screen what the client's terminal advertised: `term` is `TERM` from the ssh
     /// `pty-req` (or the telnet terminal type) and `colorterm` is `COLORTERM` when the client
     /// sent it. The screens then draw at the depth they imply, lowered by the member's colour
-    /// setting (UI-1, D102). Call before the first frame.
+    /// setting (UI-1, D109). Call before the first frame.
     pub(crate) fn set_client_terminal(&mut self, term: Option<&str>, colorterm: Option<&str>) {
         self.transport.depth = Some(ColorDepth::detect(term, colorterm));
         self.dirty = true;

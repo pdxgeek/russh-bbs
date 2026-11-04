@@ -1,4 +1,4 @@
-//! A table with a header row, a highlighted row, zebra stripes and a scrollbar (UI-1, D102).
+//! A table with a header row, a highlighted row, zebra stripes and a scrollbar (UI-1, D109).
 //!
 //! ```text
 //! +- Forums -----------------------------------------------------+

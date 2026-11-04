@@ -1,4 +1,4 @@
-//! Colour depth: what the client can show, and how a colour degrades to fit it (UI-1, D102).
+//! Colour depth: what the client can show, and how a colour degrades to fit it (UI-1, D109).
 //!
 //! **Where the depth comes from.** The client tells us: over ssh, `TERM` arrives in the `pty-req`
 //! and `COLORTERM` in an `env` request when the client sends it; over telnet, the terminal type

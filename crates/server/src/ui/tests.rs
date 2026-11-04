@@ -397,7 +397,7 @@ fn the_status_row_shows_the_markers_in_the_reserved_style_in_every_tier() {
     }
 }
 
-/// D93 (amended by D102): a member screen over ssh draws no `SERVER-READABLE` marker. The last
+/// D93 (amended by D109): a member screen over ssh draws no `SERVER-READABLE` marker. The last
 /// row is now the status bar with the keys, and its marker cell stays empty.
 #[test]
 fn a_member_screen_has_no_status_row_and_no_server_readable() {

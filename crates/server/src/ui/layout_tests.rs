@@ -530,7 +530,7 @@ fn every_layout_and_theme_draws_the_markers_in_the_reserved_style_in_the_status_
                             assert_eq!(hostile[(x, last)], clean[(x, last)], "{name}: cell {x}");
                         }
                         // A theme's colors never reach the marker cell (the bar's own colours
-                        // start after it, D102).
+                        // start after it, D109).
                         let cell = marker_cell_width(tier, size.0);
                         for x in 0..cell {
                             assert_eq!(

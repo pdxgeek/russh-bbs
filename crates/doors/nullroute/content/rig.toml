@@ -1,0 +1,59 @@
+# Rig parts and the hideout (M4-N1). Each part has three upgrade levels (the cost to reach each).
+# cpu: +4 cycles a day per level. memory: +4 deck memory and +1 slot per level (base 8 and 4).
+# cooling: a burned run fries a part with chance 80 - 20 * level percent. iface: +5 percent success
+# per level, and level 2 makes a 2-cycle script cost 1. shield: trace gains are 6 percent lower
+# per level.
+
+[[part]]
+num = 0
+name = "CPU"
+levels = [{ name = "Dual-core salvage", cost = 80 }, { name = "Quad-core refurb", cost = 220 }, { name = "Octa-core board", cost = 520 }]
+
+[[part]]
+num = 1
+name = "Memory"
+levels = [{ name = "16 GB sticks", cost = 90 }, { name = "64 GB sticks", cost = 240 }, { name = "ECC bank", cost = 540 }]
+
+[[part]]
+num = 2
+name = "Cooling"
+levels = [{ name = "Case fans", cost = 60 }, { name = "Liquid loop", cost = 180 }, { name = "Phase-change block", cost = 450 }]
+
+[[part]]
+num = 3
+name = "Deck interface"
+levels = [{ name = "Fibre jack", cost = 85 }, { name = "Optical bridge", cost = 230 }, { name = "Neural lace", cost = 530 }]
+
+[[part]]
+num = 4
+name = "Shield"
+levels = [{ name = "Packet filter", cost = 70 }, { name = "Hardware firewall", cost = 200 }, { name = "Black-box shroud", cost = 480 }]
+
+[hideout]
+bot_cost = 90
+bot_income = 7
+bot_max = 5
+workbench_cost = 160
+proxy_cost = 15
+proxy_buffer = 8
+proxy_max = 3
+stash_step = 50
+repair_percent = 40
+lay_low_cycles = 8
+lay_low_heat = 12
+heat_decay = 4
+
+[[fence]]
+name = "Back-alley fence"
+rate = 50
+cost = 0
+
+[[fence]]
+name = "Pawnshop contact"
+rate = 65
+cost = 120
+
+[[fence]]
+name = "Data broker"
+rate = 80
+cost = 340

@@ -34,6 +34,7 @@ use russh_bbs_door::Door;
 use russh_bbs_door::tick::{self, TickPolicy};
 use russh_bbs_door_emberdeep::Emberdeep;
 use russh_bbs_door_example::CoinToss;
+use russh_bbs_door_nullroute::Nullroute;
 use russh_bbs_door_saltmarch::Saltmarch;
 
 pub(crate) use draw::{DrawCtx, render};
@@ -88,6 +89,7 @@ impl Doors {
             CoinToss::shared()?,
             Saltmarch::shared()?,
             Emberdeep::shared()?,
+            Nullroute::shared()?,
         ]))
     }
 
