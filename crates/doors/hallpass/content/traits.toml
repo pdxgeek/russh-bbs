@@ -1,0 +1,84 @@
+# Skills grow by use. Traits shape which options exist, not only the numbers.
+# `tags` are capabilities other tables ask for with `tag:<name>`. `skills` are flat level bonuses.
+# `earn` (earned traits only) is a list of conditions that must all hold.
+
+[[skill]]
+id = "sneak"
+name = "Sneak"
+blurb = "Getting in, and staying unseen."
+[[skill]]
+id = "bluff"
+name = "Bluff"
+blurb = "Talking, forging, looking innocent."
+[[skill]]
+id = "tinker"
+name = "Tinker"
+blurb = "Gadgets, wiring, mechanisms."
+[[skill]]
+id = "fleet"
+name = "Fleet"
+blurb = "Getting away."
+
+[[trait]]
+id = "smooth_talker"
+name = "Smooth talker"
+blurb = "Words are your best tool. Forgeries and fibs come easily."
+start = true
+tags = ["charm", "forge"]
+standing = [["ink_society", 4]]
+skills = [["bluff", 1]]
+cool = 8
+[[trait]]
+id = "teachers_pet"
+name = "Teacher's pet"
+blurb = "Staff trust you, grades come easier, and your file clears faster. The rough crowd will not touch you."
+start = true
+tags = ["trusted"]
+standing = [["lamplighters", 6], ["the_bench", -5]]
+suspicion = -10
+grade_bonus = 2
+clean_days = true
+[[trait]]
+id = "fast_runner"
+name = "Fast runner"
+blurb = "You are out of the door before the bell stops."
+start = true
+tags = ["fast_exit"]
+standing = [["rowing_eight", 5]]
+skills = [["fleet", 1]]
+nerve = 1
+[[trait]]
+id = "tinkerer"
+name = "Tinkerer"
+blurb = "Your hands know their way around a mechanism."
+start = true
+tags = ["gadgets"]
+standing = [["workshop", 5]]
+skills = [["tinker", 1]]
+
+[[trait]]
+id = "known_troublemaker"
+name = "Known troublemaker"
+blurb = "The staff know your name before you reach the door. The rough crowd likes you for it."
+start = false
+earn = ["notoriety>=45"]
+tags = ["troublemaker", "rough"]
+suspicion = 8
+notoriety_floor = 20
+[[trait]]
+id = "ghost"
+name = "Ghost"
+blurb = "Five schemes and not one caught. They are starting to suspect nobody did it."
+start = false
+earn = ["pulled>=5", "caught<=0"]
+tags = ["ghost"]
+skills = [["sneak", 1]]
+suspicion = -8
+[[trait]]
+id = "legend_in_the_making"
+name = "Legend in the making"
+blurb = "Other years tell your stories."
+start = false
+earn = ["legend>=60"]
+tags = ["famous"]
+cool = 10

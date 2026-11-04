@@ -36,6 +36,22 @@ pub(crate) const QUICK_ROUND_CAP: u32 = 40;
 /// Salvage a hero carries before the climb back costs extra, per 10 over.
 pub(crate) const BASE_CARRY: i32 = 20;
 
+/// Spare gear a hero can keep at home.
+pub(crate) const PACK_MAX: usize = 6;
+/// Pieces of gear a hero can carry out of a delve.
+pub(crate) const FOUND_MAX: usize = 4;
+/// Loose ember-cores a hero can keep.
+pub(crate) const CORES_MAX: usize = 8;
+/// The guild hall teaches nothing above this hero level.
+pub(crate) const TRAIN_LEVEL_MAX: u8 = 8;
+/// What the dice-crew will let a debt grow to before the collectors call.
+pub(crate) const DEBT_LIMIT: u32 = 50;
+
+/// The hero level a piece of gear of `band` needs to be wielded.
+pub(crate) fn gear_level(band: u32) -> u32 {
+    1 + 3 * band.saturating_sub(1)
+}
+
 /// Experience needed in total to reach `level`.
 pub(crate) fn xp_for_level(level: u8) -> u32 {
     let l = u32::from(level);
