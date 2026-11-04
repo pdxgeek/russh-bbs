@@ -17,6 +17,17 @@
 //! **Sizes.** Every screen is laid out for 80x24 first and gets more at 100x30 and 132x43
 //! ([`Size`]). A window smaller than [`MIN_COLS`] by [`MIN_ROWS`] gets the plain text screen.
 
+// The screens are long straight runs of drawing code over cell coordinates (`x`, `y`, `w`,
+// `h`), panels and styles; splitting them for length would scatter one picture over many
+// functions, and the short names are the ones ratatui itself uses.
+#![allow(
+    clippy::many_single_char_names,
+    clippy::similar_names,
+    clippy::too_many_lines,
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss
+)]
+
 use russh_bbs_door::buffer::Buffer;
 use russh_bbs_door::layout::{Constraint, Layout, Rect};
 use russh_bbs_door::style::{Color, Modifier, Style};
@@ -115,18 +126,33 @@ const fn rgb(r: u8, g: u8, b: u8) -> Color {
 /// The Saltmarch accents: sea greens, salt whites and peat browns, and the water's blues.
 pub(super) mod hue {
     use super::{Color, rgb};
-    pub(crate) const SEA: Color = rgb(72, 168, 164);
-    pub(crate) const SEA_DEEP: Color = rgb(28, 84, 104);
-    pub(crate) const SALT: Color = rgb(228, 234, 226);
-    pub(crate) const PEAT: Color = rgb(150, 104, 66);
-    pub(crate) const REED: Color = rgb(184, 176, 96);
-    pub(crate) const MOSS: Color = rgb(104, 156, 98);
-    pub(crate) const RUST: Color = rgb(206, 92, 68);
-    pub(crate) const GOLD: Color = rgb(224, 184, 88);
-    pub(crate) const SLATE: Color = rgb(96, 112, 122);
-    pub(crate) const MUD: Color = rgb(104, 96, 80);
-    pub(crate) const FOG: Color = rgb(20, 28, 34);
-    pub(crate) const WET: Color = rgb(40, 104, 120);
+    // Each accent is a saturated colour chosen so that the nearest of the sixteen terminal
+    // colours (what the board composites to today, D104) is the one named in the comment, and
+    // so that a truecolor terminal shows a pleasing version of the same thing.
+    /// Sea green: cyan.
+    pub(crate) const SEA: Color = rgb(40, 190, 190);
+    /// Deep water: blue.
+    pub(crate) const SEA_DEEP: Color = rgb(30, 60, 160);
+    /// Salt white: light grey.
+    pub(crate) const SALT: Color = rgb(235, 238, 232);
+    /// Peat brown: yellow (brown on most terminals).
+    pub(crate) const PEAT: Color = rgb(200, 130, 50);
+    /// Reed: yellow.
+    pub(crate) const REED: Color = rgb(210, 215, 60);
+    /// Moss: green.
+    pub(crate) const MOSS: Color = rgb(60, 190, 70);
+    /// Rust and warning: red.
+    pub(crate) const RUST: Color = rgb(215, 70, 50);
+    /// Gold: bright yellow.
+    pub(crate) const GOLD: Color = rgb(250, 230, 40);
+    /// Slate and quiet things: dark grey.
+    pub(crate) const SLATE: Color = rgb(110, 125, 135);
+    /// Mud: dark grey.
+    pub(crate) const MUD: Color = rgb(120, 115, 100);
+    /// Fog: black.
+    pub(crate) const FOG: Color = rgb(24, 32, 40);
+    /// Knee-deep water: cyan.
+    pub(crate) const WET: Color = rgb(0, 170, 200);
 }
 
 /// The styles the screens use.
@@ -319,7 +345,7 @@ impl Ui<'_> {
         f: &mut DoorFrame<'_>,
         area: Rect,
         title: &str,
-        items: Vec<(usize, &Entry)>,
+        items: &[(usize, &Entry)],
     ) {
         let block = self.panel(title);
         let inner = block.inner(area);
@@ -594,12 +620,10 @@ fn footer(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect, notes: usize) {
         ));
     }
     let hint = match ui.s.mode {
-        Mode::Report => "any key",
+        Mode::Report | Mode::Menu(MenuId::Tides) => "any key",
         Mode::Menu(MenuId::Trip) => "arrows walk  Enter",
         Mode::Menu(MenuId::Crew) => "up/down crew  </> order",
         Mode::Menu(MenuId::Map) => "arrows pan  Esc",
-        Mode::Menu(MenuId::Main) => "up/down  Enter  Esc",
-        Mode::Menu(MenuId::Tides) => "any key",
         _ => "up/down  Enter  Esc",
     };
     let hint_w = hint.chars().count() + 2;

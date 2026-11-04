@@ -1,6 +1,6 @@
 # Doors
 
-Status: **Proposed** designs for M4 and later. Only the framework and the example door are built (below). The M4 slices still need the owner's approval.
+Status: **Proposed** designs for M4 and later. Built so far: the framework and the example door, Emberdeep's engine (E1) and Saltmarch's engine, expeditions, combat and screens (S1 to S3); see the game status table below. Each slice was approved by the owner on 2026-11-04 (coordination.md).
 
 Every game here is original. Each uses mechanics its genre shares, with its own world, systems, characters and text, and none is modelled on one existing game.
 

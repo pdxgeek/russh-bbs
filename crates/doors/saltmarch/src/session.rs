@@ -112,6 +112,9 @@ pub(crate) struct Session {
     plan: Plan,
     /// The lightbar: an index into the menu's entries.
     cursor: usize,
+    /// What the marsh screen was last showing (free, a scene, a fight), so the lightbar starts
+    /// at the top of a new kind of screen.
+    marsh_phase: u8,
     /// The crew member on the roster's highlight.
     crew_sel: usize,
     /// How far the marsh chart is panned from the hold, in tiles.
@@ -215,6 +218,7 @@ impl Session {
             dirty,
             plan: Plan::default(),
             cursor: 0,
+            marsh_phase: 0,
             crew_sel: 0,
             pan: (0, 0),
             ledger,
@@ -897,6 +901,7 @@ impl DoorSession for Session {
                 }
             }
         }
+        self.tidy_cursor();
         Flow::Stay
     }
 
@@ -913,6 +918,30 @@ impl DoorSession for Session {
 }
 
 impl Session {
+    /// Keep the lightbar on an order that exists, and at the top when the marsh screen changes
+    /// from walking to a scene or a skirmish (or back).
+    fn tidy_cursor(&mut self) {
+        let phase = self
+            .clan
+            .as_ref()
+            .and_then(|c| c.trip.as_ref())
+            .map_or(0, |t| match t.phase {
+                crate::trip::Phase::Free => 1,
+                crate::trip::Phase::Scene(_) => 2,
+                crate::trip::Phase::Fight(_) => 3,
+            });
+        if phase != self.marsh_phase {
+            self.marsh_phase = phase;
+            self.cursor = 0;
+        }
+        if self.cursor >= self.entries().len() {
+            self.cursor = 0;
+        }
+        // A crew member who left (retired, deserted, lost) leaves the highlight on the last.
+        let crew = self.clan.as_ref().map_or(0, |c| c.crew.len());
+        self.crew_sel = self.crew_sel.min(crew.saturating_sub(1));
+    }
+
     /// An arrow key: it moves what the screen has to move (the lightbar, the roster, the chart)
     /// or, on the marsh, takes a step.
     fn arrow(&mut self, menu: MenuId, key: DoorKey, entries: &[Entry]) -> Option<usize> {
@@ -956,9 +985,8 @@ impl Session {
                     };
                     let tag = format!("step:{letter}");
                     return entries.iter().position(|e| e.tag == tag);
-                } else {
-                    self.move_cursor(entries, if dy != 0 { dy } else { dx });
                 }
+                self.move_cursor(entries, if dy != 0 { dy } else { dx });
             }
         }
         None

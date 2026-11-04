@@ -10,7 +10,7 @@ use russh_bbs_door::widgets::{Paragraph, Wrap};
 use super::super::trip_ui::Preset;
 use super::{Size, Ui, fit, tides};
 use crate::tide::Access;
-use crate::trip::{self, MAX_PARTY, Trip};
+use crate::trip::{MAX_PARTY, Trip};
 use crate::types::Resource;
 
 /// What the plan would cost, worked out from the engine.

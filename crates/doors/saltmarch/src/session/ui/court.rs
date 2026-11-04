@@ -3,7 +3,6 @@
 
 use russh_bbs_door::DoorFrame;
 use russh_bbs_door::layout::{Constraint, Layout, Rect};
-use russh_bbs_door::style::Style;
 use russh_bbs_door::symbols::Marker;
 use russh_bbs_door::text::{Line, Span};
 use russh_bbs_door::widgets::canvas::{Canvas, Points};
@@ -128,7 +127,7 @@ pub(super) fn draw(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     let [menu, news] =
         Layout::horizontal([Constraint::Percentage(50), Constraint::Min(24)]).areas(rest);
     let items: Vec<_> = ui.entries.iter().enumerate().collect();
-    ui.orders(f, menu, "Where to", items);
+    ui.orders(f, menu, "Where to", &items);
     let mut lines = vec![Line::from(Span::styled(
         "The Tidecourt stands on stilts where no tide has ever reached it.",
         p.dim,

@@ -1,0 +1,24 @@
+  ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+  │Saltmarch                                                                 │
+  │                                                                          │
+  │ ⌂ founder  day 1 of season 1        turns ██████████ 30/30  ◈ 40 tallies │
+  │ ≈ TIDE ███████████░░░░┃░░░░░░  52 ↓ low in 3h18 (9)  spring tides  calm  │
+  │╭ Crew 3/3 ──────────────────────────╮╭ Hale Mudfoot, the raker ─────────╮│
+  ││ name               trade      age  ││Age     ████████▎░░ 45 (retires at││
+  ││ Yarrow Brinecook   wader      27   ││grit ███▏ 8  wit █▏░░ 3  reac ██▍░││
+  ││▸Hale Mudfoot       raker      45   ││◆ Lucky Things turn up~           ││
+  ││ Edda Fogwalker     smith      39   ││◆ Fearful Will not go ~           ││
+  ││                                    ││✓ no injuries                     ││
+  ││                                    ││♡ no bonds yet: hardship shared ma││
+  ││                                    ││Skills                            ││
+  ││                                    ││raker      █▉░░░░░░░░░░░░░░░░░  1 ││
+  ││                                    ││                                  ││
+  ││                                    ││                                  ││
+  ││                                    │╰──────────────────────────────────╯│
+  ││                                    │╭ Orders for Hale Mudfoot ─────────╮│
+  ││                                    ││ a Take on Garrick Mudfoot, hea~  ││
+  ││                                    ││ b Take on Cormac Gullcall, fig~  ││
+  ││                                    ││ d Train Hale Mudfoot in raker ~  ││
+  │╰────────────────────────────────────╯╰──────────────────────────────────╯│
+  │ » Take on Garrick Mudfoot, healer (age 27), 22~ up/down crew  </> order  │
+  └──────────────────────────────────────────────────────────────────────────┘

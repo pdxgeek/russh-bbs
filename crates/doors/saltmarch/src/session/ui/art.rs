@@ -48,9 +48,8 @@ pub(super) fn landscape(
     // Sky colours by the time of day: deep blue at night, rose at dusk and dawn, pale by day.
     let sky = match day {
         Daypart::Night => hue::FOG,
-        Daypart::Dawn => hue::SEA_DEEP,
+        Daypart::Dawn | Daypart::Dusk => hue::SEA_DEEP,
         Daypart::Day => hue::SLATE,
-        Daypart::Dusk => hue::SEA_DEEP,
     };
     let sun_col = (mix(seed, 1, 1) as usize) % (w.max(4) - 2) + 1;
     let mut rows = Vec::with_capacity(h);
@@ -67,16 +66,17 @@ pub(super) fn landscape(
                         Daypart::Day => (look.g("●", "O"), pal.gold()),
                         _ => (look.g("◐", "O"), pal.gold()),
                     }
-                } else if night && m % 23 == 0 {
+                } else if night && m.is_multiple_of(23) {
                     (
-                        if m % 7 == 0 {
+                        if m.is_multiple_of(7) {
                             look.g("*", "*")
                         } else {
                             look.g("·", ".")
                         },
                         pal.salt(),
                     )
-                } else if !night && y >= 1 && y <= 2 && m % 9 == 0 && (x + y) % 3 != 0 {
+                } else if !night && (1..=2).contains(&y) && m.is_multiple_of(9) && (x + y) % 3 != 0
+                {
                     (look.g("▒", "~"), pal.fg(hue::SALT))
                 } else if near == 1 {
                     (look.g("▁", "_"), pal.fg(sky))
@@ -136,7 +136,7 @@ fn ground_cell(
     let from_bottom = h - 1 - y;
     // Water covers the bottom rows, with a ripple.
     if from_bottom < wet_rows {
-        let ripple = (x + y + (m as usize % 3)) % 4 == 0;
+        let ripple = (x + y + (m as usize % 3)).is_multiple_of(4);
         return (
             if ripple {
                 look.g("~", "~")
@@ -156,24 +156,31 @@ fn ground_cell(
                     2 => t("\\", "\\"),
                     _ => t("╿", "|"),
                 };
-                (glyph, if m % 2 == 0 { pal.reed() } else { pal.moss() })
+                (
+                    glyph,
+                    if m.is_multiple_of(2) {
+                        pal.reed()
+                    } else {
+                        pal.moss()
+                    },
+                )
             } else {
                 (t("'", "'"), pal.peat())
             }
         }
         Ground::Tile(TileKind::PeatBog) => {
-            if m % 11 == 0 {
+            if m.is_multiple_of(11) {
                 (t("°", "o"), pal.fg(hue::SEA))
-            } else if m % 3 == 0 {
+            } else if m.is_multiple_of(3) {
                 (t(",", ","), pal.peat())
             } else {
                 (" ", Style::new())
             }
         }
         Ground::Tile(TileKind::SaltPan) => {
-            if m % 4 == 0 {
+            if m.is_multiple_of(4) {
                 (t("·", "."), pal.salt())
-            } else if m % 3 == 0 {
+            } else if m.is_multiple_of(3) {
                 (t(":", ":"), pal.salt())
             } else {
                 (" ", Style::new())
@@ -191,12 +198,12 @@ fn ground_cell(
             if hill && depth >= 1 {
                 if Ground::Hold == ground && depth == 1 && x % 7 == 3 {
                     (t("▲", "A"), pal.peat())
-                } else if m % 6 == 0 {
+                } else if m.is_multiple_of(6) {
                     (t("\"", "\""), pal.moss())
                 } else {
                     (t("▒", "^"), pal.fg(hue::MOSS))
                 }
-            } else if m % 4 == 0 {
+            } else if m.is_multiple_of(4) {
                 (t(".", "."), pal.fg(hue::MUD))
             } else {
                 (" ", Style::new())
@@ -208,14 +215,14 @@ fn ground_cell(
             if depth == walk {
                 (t("═", "="), pal.peat())
             } else if tower {
-                if (x % 11 == 1 || x % 11 == 2) && depth % 2 == 1 && m % 3 != 0 {
+                if (x % 11 == 1 || x % 11 == 2) && depth % 2 == 1 && !m.is_multiple_of(3) {
                     (t("▪", "."), pal.gold())
                 } else {
                     (t("█", "#"), pal.fg(hue::SLATE))
                 }
             } else if depth > walk && x % 4 == 0 {
                 (t("╿", "|"), pal.peat())
-            } else if depth > walk && m % 5 == 0 {
+            } else if depth > walk && m.is_multiple_of(5) {
                 (t("~", "~"), pal.fg(hue::WET))
             } else {
                 (" ", Style::new())
@@ -224,12 +231,12 @@ fn ground_cell(
         Ground::Tile(TileKind::DrownedTown) => {
             let tower = (x % 9 < 3) && depth < 1 + (x / 9 % 3) * 2 + 2;
             if tower && depth > 0 {
-                if m % 6 == 0 {
+                if m.is_multiple_of(6) {
                     (t("▫", "o"), pal.fg(hue::FOG))
                 } else {
                     (t("█", "#"), pal.fg(hue::SLATE))
                 }
-            } else if m % 7 == 0 {
+            } else if m.is_multiple_of(7) {
                 (t(".", "."), pal.fg(hue::MUD))
             } else {
                 (" ", Style::new())
@@ -248,7 +255,7 @@ fn ground_cell(
         Ground::Tile(TileKind::Deep) => {
             if x % 11 == 5 && depth > 0 {
                 (t("▓", "#"), pal.fg(hue::SEA_DEEP))
-            } else if m % 9 == 0 {
+            } else if m.is_multiple_of(9) {
                 (t("·", "."), pal.sea())
             } else {
                 (" ", Style::new())
@@ -262,9 +269,9 @@ fn ground_cell(
             }
         }
         Ground::Tile(TileKind::Mudflat) => {
-            if m % 8 == 0 {
+            if m.is_multiple_of(8) {
                 (t("~", "~"), pal.fg(hue::WET))
-            } else if m % 3 == 0 {
+            } else if m.is_multiple_of(3) {
                 (t(".", "."), pal.fg(hue::MUD))
             } else {
                 (" ", Style::new())

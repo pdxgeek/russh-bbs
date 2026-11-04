@@ -347,7 +347,7 @@ mod tests {
         assert_eq!((up.season, up.seed, up.last_tick), (2, 77, 20_003));
         assert_eq!(up.clans[0].name, "Brindle");
         assert_eq!(up.clans[0].score, 0);
-        assert!(up.history.is_empty());
+        assert_eq!(up.history, [] as [[u16; 13]; 0]);
         assert_eq!(World::upgrade_v1(&v1[..9]), None);
     }
 

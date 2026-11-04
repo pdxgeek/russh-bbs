@@ -571,7 +571,7 @@ fn a_version_one_world_migrates_through_the_door_and_a_newer_one_is_not_understo
     let world = World::decode(&v2).unwrap();
     assert_eq!(world.clans.len(), 2);
     assert!(world.clans.iter().all(|c| c.score == 0));
-    assert!(world.history.is_empty());
+    assert_eq!(world.history, [] as [[u16; 13]; 0]);
     assert_eq!(world.last_tick, DAY + 2);
     assert_eq!(
         door.migrate(BlobKind::World, 1, &v1[..12]),

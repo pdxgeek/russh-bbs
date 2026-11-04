@@ -25,10 +25,20 @@ DEFAULT_BG = (12, 16, 20)
 CELL_W, CELL_H, SIZE = 11, 22, 18
 
 
+# The sixteen named colours as xterm shows them (the harness dumps names at 16-colour depth).
+NAMED = {
+    "Black": (0, 0, 0), "Red": (205, 0, 0), "Green": (0, 205, 0), "Yellow": (205, 205, 0),
+    "Blue": (0, 0, 238), "Magenta": (205, 0, 205), "Cyan": (0, 205, 205), "Gray": (229, 229, 229),
+    "DarkGray": (127, 127, 127), "LightRed": (255, 0, 0), "LightGreen": (0, 255, 0),
+    "LightYellow": (255, 255, 0), "LightBlue": (92, 92, 255), "LightMagenta": (255, 0, 255),
+    "LightCyan": (0, 255, 255), "White": (255, 255, 255),
+}
+
+
 def hexcolor(text, default):
     if text.startswith("#") and len(text) == 7:
         return tuple(int(text[i : i + 2], 16) for i in (1, 3, 5))
-    return default
+    return NAMED.get(text, default)
 
 
 def main():
@@ -71,7 +81,8 @@ def main():
                 draw.text((px, py + 1), sym, font=pick(bolds if "b" in flags else fonts, sym[0]), fill=f)
             if "u" in flags:
                 draw.line([px, py + CELL_H - 3, px + CELL_W - 1, py + CELL_H - 3], fill=f)
-    img.save(out)
+    # A few colours are all a terminal screen uses: a palette keeps the pictures small.
+    img.quantize(colors=48, method=Image.Quantize.MEDIANCUT).save(out, optimize=True)
 
 
 main()

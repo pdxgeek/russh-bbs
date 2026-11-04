@@ -103,7 +103,8 @@ pub(super) fn draw(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
                         |(i, _)| Span::styled(format!("[{}]", Ui::key_of(i)), pick(p.accent)),
                     )
             };
-            let row = Row::new(vec![
+
+            Row::new(vec![
                 Line::from(Span::styled(
                     r.name(),
                     if on_cursor { p.selected } else { p.plain },
@@ -124,8 +125,7 @@ pub(super) fn draw(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
                 )),
                 Line::from(key("sell:")),
                 Line::from(key("buy:")),
-            ]);
-            row
+            ])
         })
         .collect();
     f.render_widget(

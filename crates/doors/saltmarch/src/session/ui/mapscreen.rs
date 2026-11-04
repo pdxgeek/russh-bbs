@@ -19,25 +19,28 @@ use crate::trip::{self, Trip};
 
 type Rgb = (u8, u8, u8);
 
-/// The ground's colour: soft, earthy, a little lighter on higher ground.
+/// The ground's colour. Saturated on purpose: each kind is the colour whose nearest of the
+/// sixteen terminal colours is a different one (mud dark grey, reed yellow, peat red, salt
+/// grey, channel cyan, island green, ruins magenta), so the map reads in a 16-colour terminal
+/// as well as in a truecolor one.
 const fn ground_rgb(kind: TileKind) -> Rgb {
     match kind {
-        TileKind::Mudflat => (112, 100, 82),
-        TileKind::Reedbed => (126, 132, 66),
-        TileKind::PeatBog => (86, 64, 50),
-        TileKind::SaltPan => (206, 212, 200),
-        TileKind::Channel => (52, 118, 134),
-        TileKind::Island => (92, 136, 88),
-        TileKind::DrownedTown => (112, 118, 126),
-        TileKind::Causeway => (176, 134, 86),
-        TileKind::Wreck => (140, 90, 64),
-        TileKind::Mere => (34, 78, 110),
-        TileKind::Deep => (74, 48, 96),
+        TileKind::Mudflat => (130, 120, 100),
+        TileKind::Reedbed => (200, 200, 60),
+        TileKind::PeatBog => (170, 60, 40),
+        TileKind::SaltPan => (232, 234, 226),
+        TileKind::Channel => (30, 170, 200),
+        TileKind::Island => (60, 185, 70),
+        TileKind::DrownedTown => (240, 100, 240),
+        TileKind::Causeway => (220, 200, 60),
+        TileKind::Wreck => (205, 95, 35),
+        TileKind::Mere => (30, 60, 200),
+        TileKind::Deep => (170, 40, 190),
     }
 }
 
-const WET_RGB: Rgb = (44, 118, 138);
-const DROWNED_RGB: Rgb = (18, 52, 100);
+const WET_RGB: Rgb = (0, 170, 200);
+const DROWNED_RGB: Rgb = (25, 45, 205);
 const FOG_RGB: Rgb = (24, 32, 40);
 
 /// Fog over unknown ground: flecked, so it reads as mist and not as nothing.
@@ -186,8 +189,8 @@ fn tile_rgb(ui: &Ui<'_>, x: i32, y: i32) -> Option<(Rgb, TileKind, Access)> {
     );
     let shaded = match access {
         Access::Dry => lit,
-        Access::Wet => lerp(lit, WET_RGB, 55),
-        Access::Drowned => lerp(lit, DROWNED_RGB, 88),
+        Access::Wet => lerp(lit, WET_RGB, 80),
+        Access::Drowned => lerp(lit, DROWNED_RGB, 92),
     };
     Some((shaded, tile.kind, access))
 }
@@ -260,14 +263,8 @@ fn cells(ui: &Ui<'_>, view: &View, w: u16, h: u16) -> (Cells, bool) {
                     continue;
                 }
                 match info {
-                    None => row.push((
-                        if (tx.wrapping_mul(31) ^ ty.wrapping_mul(17)).rem_euclid(7) == 0 {
-                            ui.look.g("·", ".")
-                        } else {
-                            " "
-                        },
-                        p.slate().add_modifier(Modifier::DIM),
-                    )),
+                    // Unknown ground is blank: a glyph here would be read as a mudflat.
+                    None => row.push((" ", Style::new())),
                     Some((rgb, kind, access)) => {
                         if ui.look.color {
                             row.push((
@@ -444,7 +441,7 @@ fn side_trip(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect, t: &Trip) {
     f.render_widget(Paragraph::new(lines).wrap(Wrap { trim: true }), inner);
 
     let items: Vec<_> = ui.entries.iter().enumerate().collect();
-    ui.orders(f, c, "Orders", items);
+    ui.orders(f, c, "Orders", &items);
 }
 
 fn side_chart(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {

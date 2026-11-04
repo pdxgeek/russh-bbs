@@ -375,6 +375,6 @@ pub(super) fn draw(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect, home: bool) {
         f,
         orders,
         if home { "Orders" } else { "Build and work" },
-        items,
+        &items,
     );
 }

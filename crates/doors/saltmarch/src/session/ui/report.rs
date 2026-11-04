@@ -186,6 +186,46 @@ pub(super) fn draw(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
         Span::styled(format!("{} ", ui.look.g("▤", "@")), p.slate()),
         Span::styled("Letters: none waiting at the post.", p.dim),
     ]));
+    // With room, the crew as they stand this morning.
+    if roomy {
+        lines.push(Line::raw(""));
+        lines.push(Line::styled("The crew this morning", p.accent));
+        for c in &ui.clan.crew {
+            let hurt = c.injuries.len();
+            lines.push(Line::from(vec![
+                Span::styled(
+                    format!(
+                        "{} ",
+                        if hurt > 0 {
+                            ui.look.g("+", "+")
+                        } else {
+                            ui.look.g("●", "o")
+                        }
+                    ),
+                    if hurt > 0 { p.rust() } else { p.moss() },
+                ),
+                Span::styled(format!("{:<18}", fit(&c.name, 18)), p.plain),
+                Span::styled(format!("{:<11}", c.trade.name()), p.peat()),
+                Span::styled(format!("age {:<3}", c.age), p.dim),
+                Span::styled(
+                    if hurt > 0 {
+                        format!("{hurt} hurt")
+                    } else {
+                        "well".to_owned()
+                    },
+                    if hurt > 0 { p.rust() } else { p.moss() },
+                ),
+                Span::styled(
+                    if ui.clan.partners(c.id).is_empty() {
+                        ""
+                    } else {
+                        ui.look.g("  ♥", "  &")
+                    },
+                    p.gold(),
+                ),
+            ]));
+        }
+    }
     f.render_widget(Paragraph::new(lines).wrap(Wrap { trim: false }), inner);
 
     // What today holds: the tide's calendar and the hold's larder.

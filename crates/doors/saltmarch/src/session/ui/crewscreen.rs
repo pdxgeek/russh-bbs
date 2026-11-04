@@ -314,7 +314,7 @@ pub(super) fn draw(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
             f,
             bottom,
             &format!("Orders for {}", fit(&c.name, 16)),
-            items,
+            &items,
         );
     } else {
         f.render_widget(

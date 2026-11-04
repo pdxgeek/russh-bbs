@@ -2,15 +2,22 @@
 //! icon tier, through the same compositing the board does; the look-around of every screen; and
 //! one whole day played through the keys (report, expedition, a scene, a skirmish, home).
 
-#![allow(clippy::unwrap_used, clippy::panic, clippy::too_many_lines)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::panic,
+    clippy::too_many_lines,
+    clippy::print_stdout,
+    clippy::needless_pass_by_value,
+    clippy::format_push_string,
+    clippy::vec_init_then_push
+)]
 
 use std::sync::Arc;
 
 use russh_bbs_core::limits::{Day, ManualClock};
 use russh_bbs_door::host::Driver;
 use russh_bbs_door::{
-    ColorDepth, Composite, Door, DoorEnv, DoorKey, DoorPalette, DoorRng, DoorSurface, Save, Start,
-    Tier,
+    ColorDepth, Composite, DoorEnv, DoorKey, DoorPalette, DoorRng, DoorSurface, Save, Start, Tier,
 };
 use russh_bbs_door_saltmarch::Saltmarch;
 use russh_bbs_door_saltmarch::clan::{Clan, HallEntry, Settings};
@@ -85,12 +92,6 @@ impl Visit {
         }
     }
 
-    fn keys(&mut self, text: &str) {
-        for c in text.chars() {
-            self.key(DoorKey::Char(c));
-        }
-    }
-
     fn look(&self) -> Vec<String> {
         self.driver.look_around(&self.env)
     }
@@ -119,14 +120,15 @@ impl Visit {
         use russh_bbs_door::style::{Color, Modifier};
         let mut surface = DoorSurface::new(cols, rows, palette);
         surface.draw(|canvas| self.driver.render(canvas, &self.env));
-        let clean = surface.composite(Composite::new(
-            if self.env.settings.color() {
-                ColorDepth::TrueColor
-            } else {
-                ColorDepth::Mono
-            },
-            self.env.tier == Tier::Ascii,
-        ));
+        // `SALTMARCH_DEPTH=16` shows what the board sends today: the sixteen named colours.
+        let depth = if !self.env.settings.color() {
+            ColorDepth::Mono
+        } else if std::env::var("SALTMARCH_DEPTH").as_deref() == Ok("16") {
+            ColorDepth::Ansi16
+        } else {
+            ColorDepth::TrueColor
+        };
+        let clean = surface.composite(Composite::new(depth, self.env.tier == Tier::Ascii));
         let hex = |c: Color| match c {
             Color::Rgb(r, g, b) => format!("#{r:02x}{g:02x}{b:02x}"),
             Color::Reset => String::new(),
@@ -529,7 +531,7 @@ fn every_screen_fits_and_is_legible_at_every_size_in_every_tier_with_and_without
                         lines.iter().all(|l| l.chars().count() <= usize::from(cols)),
                         "{ctx}"
                     );
-                    assert!(text.chars().any(|c| c.is_alphabetic()), "{ctx}");
+                    assert!(text.chars().any(char::is_alphabetic), "{ctx}");
                     assert!(!text.contains('\u{FFFD}'), "a neutralized glyph\n{ctx}");
                     if tier == Tier::Ascii {
                         assert!(text.is_ascii(), "the ASCII tier is ASCII only\n{ctx}");
@@ -741,7 +743,7 @@ fn the_tide_changes_the_map_with_colour_as_a_colour_band_and_without_it_as_glyph
     let rich = env_for(Tier::Unicode, true);
     let (lines, dump) = map_at(&rich, DAY);
     assert!(lines.concat().contains('▀'), "half blocks");
-    assert!(dump.contains("#"), "colours are in the cells");
+    assert!(dump.contains('#'), "colours are in the cells");
     assert!(
         lines.concat().contains("knee-deep"),
         "the legend says it in words"
