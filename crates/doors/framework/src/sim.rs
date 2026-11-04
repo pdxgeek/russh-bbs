@@ -256,7 +256,6 @@ pub struct Simulation {
     door: Arc<dyn Door>,
     store: MemoryDoorStore,
     clock: Arc<ManualClock>,
-    env: DoorEnv,
     seed: u64,
     policy: TickPolicy,
     players: Vec<(AccountId, Box<dyn Bot>, u32)>,
@@ -274,7 +273,6 @@ impl Simulation {
             door,
             store,
             clock: Arc::new(ManualClock::new(start.start())),
-            env: DoorEnv::for_tests("sim"),
             seed,
             policy: TickPolicy::default(),
             players: Vec::new(),
@@ -324,11 +322,15 @@ impl Simulation {
             let visit = self.players[index].2;
             let seed =
                 self.seed ^ (u64::from(visit) << 32) ^ u64::try_from(account.as_raw()).unwrap_or(0);
+            // Each simulated player has a handle of their own (`sim1`, `sim2`, ...), so a game that
+            // keys anything by handle (a hall, a list of the fallen, a donors' roll) sees the
+            // players as different people.
+            let env = DoorEnv::for_tests(&format!("sim{}", account.as_raw()));
             let mut running = Running::open(
                 &self.store,
                 Arc::clone(&self.door),
                 account,
-                &self.env,
+                &env,
                 Arc::clone(&clock),
                 seed,
             )
@@ -340,7 +342,7 @@ impl Simulation {
                     self.report.cut_off += 1;
                     break;
                 }
-                let screen = running.look_around(&self.env);
+                let screen = running.look_around(&env);
                 let Some(key) = self.players[index].1.next_key(&screen, visit, sent) else {
                     break;
                 };
