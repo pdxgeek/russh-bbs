@@ -223,9 +223,31 @@ async fn a_finished_project_is_seen_by_the_next_player_and_never_counted_twice()
         )
         .await
         .unwrap();
+    // Someone called Early has already given 80 coin and 30 salvage to the new bellows (which
+    // cost 200 and 70): the world, in format 2, is the E1 world plus that one pledge.
+    let mut world = unhex(V1_WORLD);
+    world.extend_from_slice(&1u16.to_le_bytes());
+    for text in ["Early", "new-bellows"] {
+        world.push(u8::try_from(text.len()).unwrap());
+        world.extend_from_slice(text.as_bytes());
+    }
+    world.extend_from_slice(&80u32.to_le_bytes());
+    world.extend_from_slice(&30u32.to_le_bytes());
+    store
+        .write_world(
+            &id,
+            &WorldWrite {
+                expected: Revision::NONE,
+                version: 2,
+                bytes: &world,
+                tick: None,
+            },
+        )
+        .await
+        .unwrap();
     let clk: Arc<dyn Clock> = clock(DAY);
     let (env_a, env_b) = (DoorEnv::for_tests("Tester"), DoorEnv::for_tests("bea"));
-    // Ann (137 coin, 42 salvage) pays for the new bellows: 120 coin and 40 salvage.
+    // Ann (137 coin, 42 salvage) pays the rest of the new bellows: 120 coin and 40 salvage.
     let mut a = Running::open(&store, Arc::clone(&door), ann, &env_a, Arc::clone(&clk), 1)
         .await
         .unwrap();
@@ -238,7 +260,7 @@ async fn a_finished_project_is_seen_by_the_next_player_and_never_counted_twice()
     assert_eq!(town(&w.bytes).levels[0], 2, "the forge is level 2");
     assert_eq!(
         summarize_world(&w.bytes).unwrap().pledged,
-        vec![("new-bellows".to_owned(), 120, 40)]
+        vec![("new-bellows".to_owned(), 200, 70)]
     );
     let hero = summarize(
         &store.load_save(&id, ann).await.unwrap().unwrap().bytes,
@@ -267,7 +289,7 @@ async fn a_finished_project_is_seen_by_the_next_player_and_never_counted_twice()
     let w2 = store.load_world(&id).await.unwrap().unwrap();
     assert_eq!(
         summarize_world(&w2.bytes).unwrap().pledged,
-        vec![("new-bellows".to_owned(), 120, 40)]
+        vec![("new-bellows".to_owned(), 200, 70)]
     );
     // Bea, a stranger, makes a hero and walks into the forge: the town is different for her too.
     let mut b = Running::open(&store, Arc::clone(&door), bea, &env_b, Arc::clone(&clk), 4)

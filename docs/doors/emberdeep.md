@@ -1,6 +1,6 @@
 # Emberdeep: a fantasy delving door (design)
 
-Status: **Engine implemented (M4-E1, D101)**; town, crafting, the full UI, social play and the content pass are still **Proposed**. The design below is the target; [Implementation notes (M4-E1)](#implementation-notes-m4-e1) says what exists, how it behaves and what was not built. Shared platform rules are in [README.md](README.md). This is the "small daily-turn RPG" that M4 plans as a first game, and the smallest engine of the set.
+Status: **Engine implemented (M4-E1, D101); town and crafting implemented (M4-E2, D105)**; the full UI, social play and the content pass are still **Proposed**. The design below is the target; [Implementation notes (M4-E1)](#implementation-notes-m4-e1) and [Implementation notes (M4-E2)](#implementation-notes-m4-e2) say what exists, how it behaves and what was not built. Shared platform rules are in [README.md](README.md). This is the "small daily-turn RPG" that M4 plans as a first game, and the smallest engine of the set.
 
 ## Pitch
 
@@ -163,8 +163,64 @@ The core tension: **how deep do you go today?** Each level down is richer and mo
 
 ### Differences from the design above
 
-- **No gear drops or crafting yet**; a hero fights with the calling's starting kit.
+- **No gear drops or crafting yet** (E1 only; M4-E2 built them, see below); a hero fought with the calling's starting kit.
 - **A lair is not a coin-flip ambush:** entering a pack's room shows the pack and the ways past it, which is how builds change a room.
 - **The torch is the turn count**: there is no separate torch item yet.
 - **Seasons end by staff action** (`end_season`), not at 6 weeks automatically, and the Cold Furnace's fall collapses the dungeon at the next tick rather than ending the season.
-- **Duels, parties and the tavern board contracts** are not built.
+- **Duels and parties** are not built (the tavern board is built in M4-E2).
+
+## Implementation notes (M4-E2)
+
+**Status.** Cindermere, gear and crafting are built in the same crate (D105). **Implemented:** the market, the forge (repair, craft, slot cores), the temple, the guild hall, the tavern (drink, dice, a debt, one companion thread, the contract board), the library and the town works (shared projects), gear with affixes, ember-cores and wear, gear drops, recipes, and save and world format 2 with a migration from E1's format 1. **Verified:** by unit tests of every rule, branch tests of the RPG rule, the no-double-credit invariants, content reachability tests, schema tests (including broken tables), a pinned real E1 save and world that must keep migrating, replay tests through the framework, the framework's sandbox audit, a 30-day headless run with project progress and gear curves (numbers are in the pull request), and a walk with the OpenSSH client (what was and was not exercised is in the pull request). **Planned, not built:** the full UI (E3), parties, rescues beyond E1's, duels, the content budget and balance (E4).
+
+### What is built, and where
+
+| Part | Module | Notes |
+|---|---|---|
+| Town rules (market, forge, temple, guild, tavern, board, works, library, nightly debts and bonds) | `town.rs` | pure rules on `Game`; the screen only maps keys to `TownAct` |
+| Town content (affixes, ember-cores, recipes, projects, contracts, companions, rumours) | `content_town.rs`, `content/{affixes,recipes,projects,town}.toml` | schema-checked and cross-checked; `gear.toml` and `wounds.toml` grew (bases with a band and a price, boons) |
+| Gear on the hero (kits, pack, found, cores, recipes, debt, bond, contract, gifts) | `hero.rs`, `save.rs` | save format 2 (version 1 plus a trailing section) |
+| Shared projects (pledges, finished-ness, ways down) | `world.rs` | world format 2; completion is derived, never stored |
+| The town's text screens | `session/places.rs` | each place is a head and a menu; the menu draws the keys and answers them |
+
+### Rules as built
+
+**Gear.** Weapons and armour have a band (1 to 5) and a market price; a band-n piece needs hero level `3n - 2`. A `Kit` rides on each worn piece: up to three affixes (lists of the engine's effects), one ember-core, and wear 0 to 100. Wear takes 1 off weapon damage or armour per 25. A won fight wears each piece 2 (a guardian's fight 4). Spare gear (6) is kept at home and survives a death; gear found below (4) is carried like salvage, banked on arrival, and lost with the hero. A hero who wakes in the temple loses the worn gear and any core in it, except the weapon once the town has built the reliquary.
+
+**Ember-cores.** A core is a list of effects: it can grant a combat move (`Cinder Core`: a ranged bolt; `Anvil Core`: a sundering strike; `Hearth Core`: a mending breath; `King's Core`: a finisher) or a capability that opens room options (`Tinder Core`: the lantern in a lair; `Lodestone Core`: the deep map and a shorter climb). A guardian drops its band's core. A test fights with and without the same core and shows the move refused, then offered. Slotting costs 8 coin; slotting over a core cracks the old one unless the hero is a runesmith.
+
+**Recipes.** Known by calling (every calling has one), by skill node (`wa-pack-mule` teaches the hauler's coat, `rs-etching` the ward core), found below (a forge's chalked pattern, a strongroom's book, some contracts) or read out of a relic at the library. A recipe needs the forge level it names, the salvage in the town store, coin and, for a core, the `runecraft` capability. The runesmith's edge is the `smithcraft` tag that only that calling starts with: a quarter less salvage, a chance of a masterwork extra affix that rises with wits, cores lifted out whole, half-price repairs.
+
+**The market** has the same four stalls for every hero on a day (a pure function of season, epoch and day), plus two stalls and a core for each market level. What is on the shelves follows the shared world: the deepest hero in the hall raises the top band on sale by one band for every three levels, up to band 4. Buying and selling are one-way tickets: a core inside gear must come out before it can be sold, a stall sells once a day.
+
+**The temple.** Being tended: `2 * missing hp + fatigue/10` coin and 2 turns (none with the roof). A cure of one wound: 10 coin a day left, no scar (this is how the weakened wound after a death is lifted at once). The temple choir and an ember-priest each take a quarter off.
+
+**The guild hall** drills a hero up to level 8: `8 * level` coin and a turn for a quarter of the way to the next level and a one-day boon, once a day (twice with the annex).
+
+**The tavern.** A drink (4 coin, three a day) buys a rumour: a one-day boon, a little coin, or the whole map of one level on the next descent; the third brings a hangover. Dice for 5, 20 or 50: win on d20 plus the wits modifier of 11 or more, paying nine tenths; a stake the hero cannot cover goes on the crew's tab. A debt grows a tenth a night and, past 50, the collectors take the coin and a wound. A hero with the `sneak` capability can play loaded dice (a bonus, caught on a 1 to 3: a fine of twice the stake, the door and a wound). A hero courts one companion at a time: each call costs a gift and rolls an attribute; two good days climb a rung and each of the three rungs gives the hero something (a trap sense, a lantern, a death save, the deep map). A bond cools after five days unvisited; a stranger left alone moves on and does not come back this season.
+
+**The board** posts three contracts a day, drawn from the ones the hero's build and depth fit (so a sneak is offered the quiet work, a runesmith the maker's plate, a priest the locket). A beast contract is done by killing that kind of monster at that depth or deeper, an heirloom or a rescue by walking into that kind of room there; the pay comes on turning in at the board; a rescue adds a turn to the climb for the soul on your back. A posting lapses after its days.
+
+**The works.** Eleven projects share the town's coin and salvage; a gift is clamped to what the project still needs. A finished project changes the options of every hero: a better forge, a roofed temple, bigger markets, a second drill, a reading room, the reliquary, and lifts from the town to level 6 and level 11. The lifts join the way-down list for everyone and survive the collapse of the dungeon.
+
+**No double credit.** The world keeps, per hero and project, the largest running total that hero has pledged; applying a pledge twice, in any order, or again when a session opens changes nothing. The hero's own total (`given`) and the world's agree after any run (the headless run asserts it). A full ledger (3000 pledges) refuses a new donor before any coin moves.
+
+**Saves.** Format 2 is format 1 with a section appended: kits, pack, found, cores, recipes, debt, bond, closed companions, gifts, the contract, and the day's town state. A mid-game save is about 0.6 KiB (the cap is 64 KiB). `Door::migrate` 1 to 2 appends an empty section and re-reads the result; a damaged version 1 save is refused. The world's pledges are appended the same way. A real E1 hero and world are pinned as bytes in the tests.
+
+### Content shipped now, against the launch budget
+
+| | Shipped (E1) | Shipped (E2) | Launch budget |
+|---|---|---|---|
+| Item bases | 6 weapons, 6 armours | 29 weapons, 17 armours | 120 |
+| Affixes, ember-cores | none | 25, 10 | 50, 20 |
+| Recipes | none | 18 | |
+| Town projects | none | 11 | 12 |
+| Tavern contracts | none | 16 | 40 |
+| Companions, rumours | none | 3, 10 | |
+| Room options that teach a recipe | none | 4 | |
+
+### Seams for the later slices
+
+- **UI (E3).** `session/places.rs` draws every place: `spot_view` returns a head and a menu (`Entry { key, label, action }`), so a richer layout replaces drawing and keeps the actions. Menu keys are numbered `1` to `9` then `a` to `z` in order, and some numbers shift when an item leaves the list (repair gone after a repair); a layout may want stable keys. The bots in `tests/sim.rs` read `[k] label`.
+- **Social, content and balance (E4).** The works already take gifts from every hero and the hall of donors is `World::pledges`; parties, duels, a donors' roll screen and the content budget build on them. Prices, costs and rates are in `rules.rs`, `town.rs` and the tables; the 30-day run (12 bots) is the harness. The descent-tuning handoff from E1 still stands.
+

@@ -885,10 +885,15 @@ impl Game {
         if self.today.drinks >= 3 {
             return Err(Refused::new("The barkeep has cut you off."));
         }
+        if content.town.rumour.is_empty() {
+            return Err(Refused::new("No one in the tavern has anything to say."));
+        }
         self.spend_coin(4)?;
         self.today.drinks += 1;
         let n = u32::try_from(content.town.rumour.len()).unwrap_or(1);
-        let r = &content.town.rumour[self.rng.below(n) as usize];
+        let Some(r) = content.town.rumour.get(self.rng.below(n) as usize) else {
+            return Ok(());
+        };
         say(ev, Tone::Plain, r.text.clone());
         match &r.effect {
             RumourEffect::Boon { id } => {
@@ -1353,7 +1358,10 @@ impl Game {
                     r.name
                 ),
             );
-        } else if roll < 80 && self.hero.cores.len() < CORES_MAX {
+        } else if roll < 80
+            && self.hero.cores.len() < CORES_MAX
+            && content.affixes.core.iter().any(|c| c.band <= 3)
+        {
             let cores: Vec<&crate::content_town::Core> = content
                 .affixes
                 .core

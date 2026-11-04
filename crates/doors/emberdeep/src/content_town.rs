@@ -438,6 +438,9 @@ impl Table for Recipes {
 impl Table for Projects {
     fn validate(&self) -> Vec<String> {
         let mut problems = Vec::new();
+        if self.project.is_empty() {
+            problems.push("[project] the town needs at least one project".to_owned());
+        }
         check_ids(
             "project",
             self.project.iter().map(|p| p.id.as_str()),
@@ -469,6 +472,9 @@ impl Table for Projects {
 impl Table for TownTables {
     fn validate(&self) -> Vec<String> {
         let mut problems = Vec::new();
+        if self.contract.is_empty() || self.companion.is_empty() || self.rumour.is_empty() {
+            problems.push("[town] needs a contract, a companion and a rumour at least".to_owned());
+        }
         check_ids(
             "contract",
             self.contract.iter().map(|c| c.id.as_str()),

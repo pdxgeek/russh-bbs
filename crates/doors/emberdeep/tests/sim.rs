@@ -684,12 +684,12 @@ impl Delver {
         }
         if first.starts_with("THE TOWN WORKS") {
             if coin >= 60 {
-                if let Some(key) = press("Give 25c") {
+                if let Some(key) = press("Give up to 25c") {
                     return Some(key);
                 }
             }
             if stash > 20 {
-                if let Some(key) = press("Give 25s") {
+                if let Some(key) = press("Give up to 25s") {
                     return Some(key);
                 }
             }

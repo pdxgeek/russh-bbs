@@ -633,9 +633,8 @@ impl Session {
                 "  coin {pc}/{}  salvage {ps}/{}",
                 p.coin, p.salvage
             )));
-            let short = clip(&p.name, 24);
             menu.town(
-                format!("Give 25c: {short}"),
+                format!("Give up to 25c: {}", p.id),
                 TownAct::Donate {
                     project: p.id.clone(),
                     coin: 25,
@@ -643,7 +642,7 @@ impl Session {
                 },
             );
             menu.town(
-                format!("Give 25s: {short}"),
+                format!("Give up to 25s: {}", p.id),
                 TownAct::Donate {
                     project: p.id.clone(),
                     coin: 0,
