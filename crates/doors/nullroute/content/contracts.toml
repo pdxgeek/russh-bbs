@@ -1,0 +1,123 @@
+# Contract templates (M4-N1). `target` is the node code of the objective; `effect` is the script
+# effect that must be used on it. Rewards are in marks. `heat` is what the job adds to your heat.
+
+[[contract]]
+num = 0
+title = "Lift the quarterly numbers"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 1
+reward_min = 55
+reward_max = 95
+heat = 3
+
+[[contract]]
+num = 1
+title = "Lose a payment record"
+verb = "Wipe"
+target = "VT"
+effect = "shred"
+tier = 1
+reward_min = 60
+reward_max = 100
+heat = 4
+
+[[contract]]
+num = 2
+title = "Leave a door ajar"
+verb = "Plant"
+target = "AC"
+effect = "plant"
+tier = 1
+reward_min = 65
+reward_max = 105
+heat = 4
+
+[[contract]]
+num = 3
+title = "Hold a server room hostage"
+verb = "Ransom"
+target = "SR"
+effect = "plant"
+tier = 1
+reward_min = 70
+reward_max = 110
+heat = 5
+
+[[contract]]
+num = 4
+title = "Pull the client list"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 2
+reward_min = 150
+reward_max = 230
+heat = 7
+
+[[contract]]
+num = 5
+title = "Quietly rewrite a ledger"
+verb = "Wipe"
+target = "VT"
+effect = "shred"
+tier = 2
+reward_min = 160
+reward_max = 240
+heat = 8
+
+[[contract]]
+num = 6
+title = "Wire the admin console"
+verb = "Plant"
+target = "AC"
+effect = "plant"
+tier = 2
+reward_min = 170
+reward_max = 250
+heat = 8
+
+[[contract]]
+num = 7
+title = "Ransom the cold-storage racks"
+verb = "Ransom"
+target = "SR"
+effect = "plant"
+tier = 2
+reward_min = 180
+reward_max = 260
+heat = 9
+
+[[contract]]
+num = 8
+title = "Exfiltrate the prototype specs"
+verb = "Steal"
+target = "VT"
+effect = "copy"
+tier = 3
+reward_min = 340
+reward_max = 480
+heat = 14
+
+[[contract]]
+num = 9
+title = "Own the whole building"
+verb = "Plant"
+target = "AC"
+effect = "plant"
+tier = 3
+reward_min = 360
+reward_max = 500
+heat = 15
+
+[[contract]]
+num = 10
+title = "Erase a board meeting"
+verb = "Wipe"
+target = "VT"
+effect = "shred"
+tier = 3
+reward_min = 350
+reward_max = 490
+heat = 14
