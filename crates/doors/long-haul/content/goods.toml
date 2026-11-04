@@ -1,0 +1,244 @@
+# The thirty trade goods. `base` is the price in credits of one ton at a balanced market;
+# `depth` is how many tons a size-1 station keeps in stock at balance (dear goods have thin
+# markets); `volatility` is the nightly random wobble in per-mille of the market's depth.
+# Contraband sells only through black markets and is seized in an inspection.
+
+[[good]]
+id = "water"
+name = "Ice Water"
+base = 30
+class = "legal"
+volatility = 30
+depth = 400
+
+[[good]]
+id = "ore"
+name = "Raw Ore"
+base = 55
+class = "legal"
+volatility = 30
+depth = 400
+
+[[good]]
+id = "volatiles"
+name = "Gas Volatiles"
+base = 70
+class = "legal"
+volatility = 40
+depth = 360
+
+[[good]]
+id = "grain"
+name = "Grain Sacks"
+base = 45
+class = "legal"
+volatility = 30
+depth = 400
+
+[[good]]
+id = "vat_protein"
+name = "Vat Protein"
+base = 65
+class = "legal"
+volatility = 30
+depth = 380
+
+[[good]]
+id = "salt_spice"
+name = "Salt Spice"
+base = 110
+class = "legal"
+volatility = 40
+depth = 240
+
+[[good]]
+id = "textiles"
+name = "Loomcloth"
+base = 85
+class = "legal"
+volatility = 30
+depth = 300
+
+[[good]]
+id = "alloy"
+name = "Alloy Plate"
+base = 140
+class = "legal"
+volatility = 30
+depth = 220
+
+[[good]]
+id = "parts"
+name = "Machine Parts"
+base = 180
+class = "legal"
+volatility = 30
+depth = 180
+
+[[good]]
+id = "coils"
+name = "Drive Coils"
+base = 260
+class = "legal"
+volatility = 40
+depth = 140
+
+[[good]]
+id = "circuits"
+name = "Circuit Stock"
+base = 220
+class = "legal"
+volatility = 40
+depth = 160
+
+[[good]]
+id = "sensor_glass"
+name = "Sensor Glass"
+base = 240
+class = "legal"
+volatility = 40
+depth = 150
+
+[[good]]
+id = "medicine"
+name = "Medicine"
+base = 320
+class = "legal"
+volatility = 50
+depth = 110
+
+[[good]]
+id = "antitoxin"
+name = "Antitoxin"
+base = 280
+class = "legal"
+volatility = 50
+depth = 120
+
+[[good]]
+id = "biogel"
+name = "Biogel"
+base = 150
+class = "legal"
+volatility = 40
+depth = 200
+
+[[good]]
+id = "seed_stock"
+name = "Seed Stock"
+base = 95
+class = "legal"
+volatility = 30
+depth = 280
+
+[[good]]
+id = "lab_samples"
+name = "Lab Samples"
+base = 300
+class = "legal"
+volatility = 50
+depth = 100
+
+[[good]]
+id = "data_cores"
+name = "Data Cores"
+base = 420
+class = "legal"
+volatility = 60
+depth = 80
+
+[[good]]
+id = "ceramics"
+name = "Kiln Ceramics"
+base = 100
+class = "legal"
+volatility = 30
+depth = 260
+
+[[good]]
+id = "polymers"
+name = "Polymer Resin"
+base = 90
+class = "legal"
+volatility = 30
+depth = 300
+
+[[good]]
+id = "rare_earths"
+name = "Rare Earths"
+base = 380
+class = "legal"
+volatility = 50
+depth = 90
+
+[[good]]
+id = "tools"
+name = "Hand Tools"
+base = 75
+class = "legal"
+volatility = 30
+depth = 320
+
+[[good]]
+id = "reactor_rods"
+name = "Reactor Rods"
+base = 520
+class = "legal"
+volatility = 60
+depth = 60
+
+[[good]]
+id = "glass_wine"
+name = "Glass Wine"
+base = 360
+class = "legal"
+volatility = 50
+depth = 90
+
+[[good]]
+id = "curios"
+name = "Frontier Curios"
+base = 450
+class = "legal"
+volatility = 60
+depth = 70
+
+[[good]]
+id = "ghostwire"
+name = "Ghostwire"
+base = 900
+class = "contraband"
+volatility = 80
+depth = 24
+
+[[good]]
+id = "dreamsilt"
+name = "Dreamsilt"
+base = 700
+class = "contraband"
+volatility = 80
+depth = 30
+
+[[good]]
+id = "stripped_cores"
+name = "Stripped Cores"
+base = 1100
+class = "contraband"
+volatility = 90
+depth = 16
+
+[[good]]
+id = "gate_relics"
+name = "Gate Relics"
+base = 1400
+class = "contraband"
+volatility = 90
+depth = 12
+
+[[good]]
+id = "slug_guns"
+name = "Unmarked Slug Guns"
+base = 800
+class = "contraband"
+volatility = 80
+depth = 24

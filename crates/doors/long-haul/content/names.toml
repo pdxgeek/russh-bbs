@@ -1,0 +1,25 @@
+# Name parts for generated systems and stations. System names are prefix plus suffix, with a
+# numeral added only if a name repeats.
+
+system_prefix = [
+  "Alder", "Brack", "Cinder", "Dunmere", "Esker", "Fenwick", "Garnet", "Hollow",
+  "Ismay", "Juniper", "Kestrel", "Lantern", "Marrow", "Nettle", "Osier", "Pellam",
+  "Quarry", "Rook", "Sable", "Tarn", "Umber", "Vesper", "Wren", "Yarrow",
+  "Ashby", "Bellis", "Corran", "Drift", "Ember", "Farrow", "Gorse", "Heron",
+]
+system_suffix = [
+  "Reach", "Deep", "Hold", "Light", "Gate", "Ford", "Run", "Spur",
+  "Verge", "Rest", "Wake", "Drop", "Cairn", "Shoal", "Tide", "Mark",
+  "Anchor", "Fall", "Rise", "Cross", "Haven", "Mere", "Lode", "Stair",
+]
+station_adjective = [
+  "Anvil", "Brazen", "Copper", "Dim", "Eager", "Gilded", "Hushed", "Iron",
+  "Lone", "Merry", "Narrow", "Old", "Patient", "Quiet", "Rusted", "Salt",
+  "Tin", "Upper", "Vagrant", "Weary",
+]
+mining_noun = ["Bore", "Pit", "Dig", "Seam", "Shaft", "Cut"]
+farming_noun = ["Furrow", "Orchard", "Vats", "Terrace", "Granary", "Meadow"]
+industrial_noun = ["Foundry", "Works", "Forge", "Yard", "Mill", "Kiln"]
+research_noun = ["Lab", "Observatory", "Archive", "Study", "Array", "Annex"]
+haven_noun = ["Den", "Hideout", "Roost", "Mooring", "Rookery", "Berth"]
+military_noun = ["Post", "Bastion", "Picket", "Redoubt", "Watch", "Barracks"]
