@@ -31,6 +31,7 @@ pub use terminal::RenderCap;
 use russh_bbs_core::access::{AccessStore, MemberDirectory};
 use russh_bbs_core::chat::RoomStore;
 use russh_bbs_core::community::CommunityStore;
+use russh_bbs_core::doors::DoorStore;
 use russh_bbs_core::drafts::DraftStore;
 use russh_bbs_core::feeds::FeedStore;
 use russh_bbs_core::forums::ForumStore;
@@ -70,6 +71,7 @@ pub trait Backend:
     + ForumStore
     + FeedStore
     + MailStore
+    + DoorStore
     + 'static
 {
 }
@@ -93,6 +95,7 @@ impl<T> Backend for T where
         + ForumStore
         + FeedStore
         + MailStore
+        + DoorStore
         + 'static
 {
 }

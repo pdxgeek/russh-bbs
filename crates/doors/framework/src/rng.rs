@@ -2,7 +2,7 @@
 //!
 //! A door never touches the operating system's randomness: it is given a [`DoorRng`] whose seed
 //! the board chose, so a recorded run replays exactly (`replay`). The generator is
-//! xoshiro256++ seeded through SplitMix64, written out here rather than taken from a crate so
+//! `xoshiro256++` seeded through `SplitMix64`, written out here rather than taken from a crate so
 //! its output can never change under a door's saved games or recorded logs: the first outputs
 //! for a seed are pinned by a test.
 //!
@@ -123,6 +123,7 @@ impl DoorRng {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_used, clippy::panic)]
     use super::*;
 
     #[test]

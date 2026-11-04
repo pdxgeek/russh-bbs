@@ -40,11 +40,19 @@ impl Session {
         let roll = ctx.rng().below(1_000);
         self.message = Some(match outcome {
             Outcome::Won(_) => (
-                format!("You called {}. +1 coin. {}", name_of(call), self.phrases.pick(true, roll)),
+                format!(
+                    "You called {}. +1 coin. {}",
+                    name_of(call),
+                    self.phrases.pick(true, roll)
+                ),
                 DoorStyle::Good,
             ),
             Outcome::Lost(_) => (
-                format!("You called {}. -1 coin. {}", name_of(call), self.phrases.pick(false, roll)),
+                format!(
+                    "You called {}. -1 coin. {}",
+                    name_of(call),
+                    self.phrases.pick(false, roll)
+                ),
                 DoorStyle::Bad,
             ),
             Outcome::NoTossesLeft => (
@@ -77,20 +85,18 @@ impl Session {
             DoorKey::Enter => {
                 // The board's username rules, reserved names included. The raw text is never
                 // stored: only the checked name.
-                match ctx.player_name(buffer) {
-                    Ok(name) => {
-                        self.state.name = name.as_str().to_owned();
-                        ctx.request_save(save::encode(&self.state));
-                        self.message = Some((format!("Now known as {}.", self.state.name), DoorStyle::Good));
-                        self.mode = Mode::Main;
-                    }
-                    Err(_) => {
-                        self.message = Some((
-                            "That name is not allowed here.".to_owned(),
-                            DoorStyle::Bad,
-                        ));
-                        self.mode = Mode::Main;
-                    }
+                let checked = ctx.player_name(buffer);
+                self.mode = Mode::Main;
+                if let Ok(name) = checked {
+                    name.as_str().clone_into(&mut self.state.name);
+                    ctx.request_save(save::encode(&self.state));
+                    self.message = Some((
+                        format!("Now known as {}.", self.state.name),
+                        DoorStyle::Good,
+                    ));
+                } else {
+                    self.message =
+                        Some(("That name is not allowed here.".to_owned(), DoorStyle::Bad));
                 }
             }
             _ => {}
@@ -100,10 +106,7 @@ impl Session {
     fn lines(&self) -> Vec<(String, DoorStyle)> {
         let s = &self.state;
         let mut out = vec![
-            (
-                format!("{} - day {}", s.name, s.day),
-                DoorStyle::Accent,
-            ),
+            (format!("{} - day {}", s.name, s.day), DoorStyle::Accent),
             (
                 format!(
                     "Coins: {}   Tosses left today: {}   Streak: {} (best {})",
@@ -120,7 +123,10 @@ impl Session {
             )),
             Mode::Name(buffer) => {
                 out.push((format!("New name: {buffer}_"), DoorStyle::Strong));
-                out.push(("Enter to keep it, Esc to cancel.".to_owned(), DoorStyle::Dim));
+                out.push((
+                    "Enter to keep it, Esc to cancel.".to_owned(),
+                    DoorStyle::Dim,
+                ));
             }
         }
         out.push((String::new(), DoorStyle::Plain));
@@ -136,7 +142,10 @@ impl Session {
             DoorStyle::Dim,
         ));
         out.push((
-            format!("Days the board has been keeping count: {}.", self.world.days),
+            format!(
+                "Days the board has been keeping count: {}.",
+                self.world.days
+            ),
             DoorStyle::Dim,
         ));
         out

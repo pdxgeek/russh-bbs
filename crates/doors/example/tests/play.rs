@@ -73,7 +73,10 @@ fn the_replay_text_form_pins_a_whole_branch_of_play() {
     let state = save::decode(run.save.as_deref().unwrap()).unwrap();
     assert_eq!((state.left, state.day), (0, 20_000));
     // Pinned from this seed: the outcome never changes while the RNG and the rules stand still.
-    assert_eq!((state.coins, state.streak, state.best), (PINNED_COINS, PINNED_STREAK, PINNED_BEST));
+    assert_eq!(
+        (state.coins, state.streak, state.best),
+        (PINNED_COINS, PINNED_STREAK, PINNED_BEST)
+    );
 }
 
 const PINNED_COINS: u32 = 4;
@@ -129,21 +132,38 @@ async fn it_saves_and_loads_through_the_store_and_the_allowance_follows_the_day(
     run.key(DoorKey::Char('h'));
     assert!(!run.has_pending());
     assert_eq!(run.key(DoorKey::Char('q')), Flow::Exit);
-    let stored = store.load_save(&door.info().id, ann).await.unwrap().unwrap();
+    let stored = store
+        .load_save(&door.info().id, ann)
+        .await
+        .unwrap()
+        .unwrap();
     assert_eq!(stored.revision, Revision::from_raw(5));
     assert_eq!(save::decode(&stored.bytes).unwrap().left, 0);
 
     // The same day, a new visit: still no tosses.
     let again = open(2).await.unwrap();
-    assert!(again.look_around(&env).join("\n").contains("Tosses left today: 0"));
+    assert!(
+        again
+            .look_around(&env)
+            .join("\n")
+            .contains("Tosses left today: 0")
+    );
     // Next day: five more, and the relief floor applies.
     clock.set(Day::from_raw(DAY + 1).start());
     let next = open(3).await.unwrap();
-    assert!(next.look_around(&env).join("\n").contains("Tosses left today: 5"));
+    assert!(
+        next.look_around(&env)
+            .join("\n")
+            .contains("Tosses left today: 5")
+    );
     // Going back in time does not refill it.
     clock.set(Day::from_raw(DAY - 3).start());
     let past = open(4).await.unwrap();
-    assert!(past.look_around(&env).join("\n").contains("Tosses left today: 0"));
+    assert!(
+        past.look_around(&env)
+            .join("\n")
+            .contains("Tosses left today: 0")
+    );
 }
 
 #[tokio::test]
@@ -173,7 +193,10 @@ async fn a_version_one_save_is_migrated_when_opened() {
         .await
         .unwrap();
     let screen = run.look_around(&env()).join("\n");
-    assert!(screen.contains("Coins: 9") && screen.contains("Tosses left today: 4"), "{screen}");
+    assert!(
+        screen.contains("Coins: 9") && screen.contains("Tosses left today: 4"),
+        "{screen}"
+    );
 }
 
 #[tokio::test]
@@ -186,9 +209,16 @@ async fn the_daily_tick_rolls_the_shared_world_and_sessions_feed_it() {
         .unwrap();
     let id = door.info().id.clone();
     let dyn_clock: Arc<dyn Clock> = clock.clone();
-    let mut run = Running::open(&store, door.clone(), AccountId::from_raw(1), &env(), dyn_clock, 5)
-        .await
-        .unwrap();
+    let mut run = Running::open(
+        &store,
+        door.clone(),
+        AccountId::from_raw(1),
+        &env(),
+        dyn_clock,
+        5,
+    )
+    .await
+    .unwrap();
     for key in keys("hhh") {
         run.key(key);
         run.flush(&store).await.unwrap();
@@ -205,7 +235,7 @@ async fn the_daily_tick_rolls_the_shared_world_and_sessions_feed_it() {
     let report = run_due(&store, door.as_ref(), clock.as_ref(), TickPolicy::default())
         .await
         .unwrap();
-    assert!(report.applied.is_empty());
+    assert_eq!(report.applied.len(), 0);
 }
 
 /// Tosses heads until the day's allowance or the purse is spent, then leaves.
@@ -213,10 +243,10 @@ struct Greedy;
 
 impl Bot for Greedy {
     fn next_key(&mut self, screen: &[String], _visit: u32, sent: u32) -> Option<DoorKey> {
-        let spent = screen
+        let done = screen
             .iter()
             .any(|line| line.contains("Tosses left today: 0") || line.contains("Coins: 0 "));
-        match (spent, sent) {
+        match (done, sent) {
             (true, _) => Some(DoorKey::Char('q')),
             (false, n) if n < 20 => Some(DoorKey::Char('h')),
             _ => None,
@@ -232,7 +262,10 @@ async fn the_headless_harness_plays_a_season_and_the_numbers_make_sense() {
     }
     let report = sim.run_days(100).await.unwrap();
     assert_eq!(report.visits, 400);
-    assert_eq!(report.exits, 400, "every visit ended by leaving, none cut off");
+    assert_eq!(
+        report.exits, 400,
+        "every visit ended by leaving, none cut off"
+    );
     assert_eq!(report.cut_off, 0);
     let id = CoinToss::new().unwrap().info().id.clone();
     let mut total_best = 0u32;
@@ -245,7 +278,11 @@ async fn the_headless_harness_plays_a_season_and_the_numbers_make_sense() {
             .unwrap();
         let state = save::decode(&stored.bytes).unwrap();
         assert!(state.coins >= RELIEF_FLOOR.min(START_COINS) || state.coins > 0 || state.left == 0);
-        assert!(state.best >= 3, "100 days of tosses show a streak: {}", state.best);
+        assert!(
+            state.best >= 3,
+            "100 days of tosses show a streak: {}",
+            state.best
+        );
         total_best += u32::from(state.best);
     }
     assert!(total_best > 0);

@@ -2919,6 +2919,8 @@ dependencies = [
  "rcgen",
  "russh",
  "russh-bbs-core",
+ "russh-bbs-door",
+ "russh-bbs-door-example",
  "russh-bbs-store",
  "rustls",
  "rustls-native-certs",

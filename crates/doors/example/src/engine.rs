@@ -106,6 +106,7 @@ impl State {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_used)]
     use super::*;
 
     #[test]
@@ -132,7 +133,10 @@ mod tests {
         state.new_day(9);
         assert_eq!((state.left, state.coins), (0, 0), "earlier day: nothing");
         state.new_day(11);
-        assert_eq!((state.left, state.coins, state.day), (DAILY_TOSSES, RELIEF_FLOOR, 11));
+        assert_eq!(
+            (state.left, state.coins, state.day),
+            (DAILY_TOSSES, RELIEF_FLOOR, 11)
+        );
         state.left = 0;
         state.new_day(11);
         assert_eq!(state.left, 0, "the same new day is not a second refill");
@@ -176,6 +180,9 @@ mod tests {
 
     #[test]
     fn the_nickname_is_cut_to_the_limit() {
-        assert_eq!(State::new(1, &"x".repeat(100)).name.chars().count(), NAME_MAX);
+        assert_eq!(
+            State::new(1, &"x".repeat(100)).name.chars().count(),
+            NAME_MAX
+        );
     }
 }

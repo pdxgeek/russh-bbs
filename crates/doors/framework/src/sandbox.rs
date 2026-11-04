@@ -49,13 +49,19 @@ pub const FORBIDDEN: &[(&str, &str)] = &[
     ("unsafe", "unsafe code"),
     ("thread_rng", "operating-system randomness (use `Ctx::rng`)"),
     ("getrandom", "operating-system randomness (use `Ctx::rng`)"),
-    ("rand::", "randomness other than the seeded one (use `Ctx::rng`)"),
+    (
+        "rand::",
+        "randomness other than the seeded one (use `Ctx::rng`)",
+    ),
     ("println!", "printing"),
     ("eprintln!", "printing"),
     ("print!", "printing"),
     ("eprint!", "printing"),
     ("dbg!", "printing"),
-    ("include_bytes!(", "reading a file path other than an embedded table"),
+    (
+        "include_bytes!(",
+        "reading a file path other than an embedded table",
+    ),
 ];
 
 /// One thing the audit found.
@@ -110,9 +116,7 @@ fn manifest_dependencies(manifest: &str) -> Vec<String> {
             }
             continue;
         }
-        if in_deps
-            && let Some((name, _)) = line.split_once('=')
-        {
+        if in_deps && let Some((name, _)) = line.split_once('=') {
             let name = name.trim();
             if !name.is_empty() && !name.starts_with('#') {
                 names.push(name.to_owned());
@@ -201,6 +205,7 @@ pub fn audit_crate(crate_dir: &str) -> Result<(), Vec<Finding>> {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_used, clippy::panic)]
     use super::*;
 
     fn crate_with(manifest: &str, lib: &str) -> tempfile::TempDir {
@@ -211,8 +216,7 @@ mod tests {
         dir
     }
 
-    const GOOD_MANIFEST: &str =
-        "[package]\nname='x'\n[lints]\nworkspace = true\n[dependencies]\nrussh-bbs-door = { workspace = true }\n";
+    const GOOD_MANIFEST: &str = "[package]\nname='x'\n[lints]\nworkspace = true\n[dependencies]\nrussh-bbs-door = { workspace = true }\n";
 
     #[test]
     fn a_clean_door_passes() {
@@ -235,7 +239,11 @@ mod tests {
             source,
         );
         let findings = audit_crate(dir.path().to_str().unwrap()).unwrap_err();
-        let text: String = findings.iter().map(|f| format!("{}\n", f.what)).collect();
+        let text = findings
+            .iter()
+            .map(|f| f.what.as_str())
+            .collect::<Vec<_>>()
+            .join("\n");
         for needle in [
             "dependency `tokio`",
             "dependency `reqwest`",
@@ -260,13 +268,18 @@ mod tests {
             "fn f() {}\n",
         );
         let findings = audit_crate(dir.path().to_str().unwrap()).unwrap_err();
-        assert!(findings.iter().any(|f| f.what.contains("forbid(unsafe_code)")));
+        assert!(
+            findings
+                .iter()
+                .any(|f| f.what.contains("forbid(unsafe_code)"))
+        );
         assert!(findings.iter().any(|f| f.what.contains("workspace lints")));
     }
 
     #[test]
     fn the_framework_itself_is_not_held_to_the_door_rules_but_forbids_unsafe() {
-        let lib = fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/lib.rs")).unwrap();
+        let lib =
+            fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/lib.rs")).unwrap();
         assert!(lib.contains("#![forbid(unsafe_code)]"));
     }
 }

@@ -132,7 +132,10 @@ impl Ctx<'_> {
     }
 
     /// Ask the board to change the shared world with `edit` (see [`WorldEdit`]).
-    pub fn edit_world(&mut self, edit: impl FnMut(Option<&[u8]>) -> Option<Vec<u8>> + Send + 'static) {
+    pub fn edit_world(
+        &mut self,
+        edit: impl FnMut(Option<&[u8]>) -> Option<Vec<u8>> + Send + 'static,
+    ) {
         self.effects.world.push(Box::new(edit));
     }
 
@@ -160,6 +163,7 @@ impl Ctx<'_> {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_used, clippy::panic)]
     use super::*;
 
     fn with_ctx<R>(now: i64, text: &mut TextBudget, f: impl FnOnce(&mut Ctx<'_>) -> R) -> R {
@@ -180,7 +184,10 @@ mod tests {
         let mut budget = TextBudget::default();
         with_ctx(0, &mut budget, |ctx| {
             assert!(ctx.player_name("Brindle").is_ok());
-            assert_eq!(ctx.player_name("sysop").err(), Some(UsernameError::Reserved));
+            assert_eq!(
+                ctx.player_name("sysop").err(),
+                Some(UsernameError::Reserved)
+            );
             assert!(ctx.player_name("two words").is_err());
             assert!(ctx.player_name("\u{1b}[31m").is_err());
         });

@@ -21,6 +21,7 @@ publish = false
 russh-bbs-core = { path = "crates/core" }
 russh-bbs-store = { path = "crates/store" }
 russh-bbs-door = { path = "crates/doors/framework" }
+russh-bbs-door-example = { path = "crates/doors/example" }
 
 # External crates.
 unicode-normalization = "0.1"

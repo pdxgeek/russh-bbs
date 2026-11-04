@@ -34,17 +34,28 @@ impl Table for Phrases {
                 problems.push(format!("[[{name}]] needs at least one entry"));
             }
             for (n, phrase) in list.iter().enumerate() {
-                if phrase.id.is_empty() || !phrase.id.bytes().all(|b| b.is_ascii_lowercase() || b == b'-') {
+                if phrase.id.is_empty()
+                    || !phrase
+                        .id
+                        .bytes()
+                        .all(|b| b.is_ascii_lowercase() || b == b'-')
+                {
                     problems.push(format!("[[{name}]] #{n}: id must be a-z and -"));
                 }
                 if list[..n].iter().any(|p| p.id == phrase.id) {
                     problems.push(format!("[[{name}]] id `{}` is used twice", phrase.id));
                 }
                 if phrase.text.trim().is_empty() || phrase.text.chars().count() > 70 {
-                    problems.push(format!("[[{name}]] `{}`: text must be 1 to 70 characters", phrase.id));
+                    problems.push(format!(
+                        "[[{name}]] `{}`: text must be 1 to 70 characters",
+                        phrase.id
+                    ));
                 }
                 if !plain_text(&phrase.text) {
-                    problems.push(format!("[[{name}]] `{}`: text has characters the board strips", phrase.id));
+                    problems.push(format!(
+                        "[[{name}]] `{}`: text has characters the board strips",
+                        phrase.id
+                    ));
                 }
             }
         }

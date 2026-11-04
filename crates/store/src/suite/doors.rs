@@ -1,7 +1,7 @@
 //! The door tables against any backend (M4-D0, D98): one save per player per door with
 //! compare-and-swap writes, the shared world and its tick day, seasons, bars, the size caps,
 //! the staff tools' audit rows and the role rows migration 0023 inserts.
-#![allow(clippy::unwrap_used, clippy::panic)]
+#![allow(clippy::unwrap_used, clippy::panic, clippy::many_single_char_names)]
 
 use std::collections::BTreeSet;
 
@@ -91,14 +91,8 @@ pub(crate) async fn a_save_round_trips_and_each_write_bumps_the_revision<H: Harn
     s.write_save(&other_door(), ann.id, &save(0, b""))
         .await
         .unwrap();
-    assert!(
-        s.load_save(&other_door(), ann.id)
-            .await
-            .unwrap()
-            .unwrap()
-            .bytes
-            .is_empty()
-    );
+    let empty = s.load_save(&other_door(), ann.id).await.unwrap().unwrap();
+    assert_eq!(empty.bytes.len(), 0);
 
     h.reopen().await;
     let got = h.store().load_save(&door(), ann.id).await.unwrap().unwrap();

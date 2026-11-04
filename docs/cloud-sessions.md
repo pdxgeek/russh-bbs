@@ -28,6 +28,7 @@ One session = one slice from [coordination.md](coordination.md). A slice should 
 | `crates/core` | Rules, traits, sanitizer, icons | Everything depends on it; change traits carefully |
 | `crates/store` | SQLite implementation | Implements core traits only |
 | `crates/server` | SSH, SFTP, TUI, binary | Thin; calls core |
+| `crates/doors/framework`, `crates/doors/example` | The door framework and the example door (M4-D0, D98); each game is another `crates/doors/<name>` | Games depend on the framework only; see [doors/README.md](doors/README.md) |
 | `crates/proto`, `crates/api` | Reserved | Empty until their milestones |
 | `docs/` | Documentation | Each slice updates only its own docs and the shared registers |
 

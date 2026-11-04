@@ -10,6 +10,8 @@
 //!    whole session of every key it understands leaves the store with exactly one save, the
 //!    shared world, and nothing else.
 
+#![allow(clippy::unwrap_used)]
+
 use std::sync::Arc;
 
 use russh_bbs_core::doors::DoorStore;
@@ -28,7 +30,8 @@ fn the_source_and_manifest_pass_the_framework_audit() {
 
 #[test]
 fn the_manifest_depends_on_the_framework_and_pure_data_crates_only() {
-    let manifest = std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.toml")).unwrap();
+    let manifest =
+        std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.toml")).unwrap();
     let deps: Vec<&str> = manifest
         .split("[dependencies]")
         .nth(1)
@@ -47,26 +50,46 @@ async fn a_whole_session_changes_only_the_save_and_the_world() {
     let clock: Arc<ManualClock> = Arc::new(ManualClock::new(Day::from_raw(20_000).start()));
     let env = DoorEnv::for_tests("ann");
     let ann = AccountId::from_raw(1);
-    let mut run = Running::open(&store, door.clone(), ann, &env, clock.clone() as Arc<dyn Clock>, 9)
-        .await
-        .unwrap();
+    let mut run = Running::open(
+        &store,
+        door.clone(),
+        ann,
+        &env,
+        clock.clone() as Arc<dyn Clock>,
+        9,
+    )
+    .await
+    .unwrap();
     // Every key the door understands, and several it does not (escape sequences, controls).
-    for key in "htHTnx\u{1b}\u{7}\r%../..//etc/passwd".chars().map(DoorKey::Char).chain([
-        DoorKey::Up,
-        DoorKey::Down,
-        DoorKey::Left,
-        DoorKey::Right,
-        DoorKey::Enter,
-        DoorKey::Backspace,
-    ]) {
+    for key in "htHTnx\u{1b}\u{7}\r%../..//etc/passwd"
+        .chars()
+        .map(DoorKey::Char)
+        .chain([
+            DoorKey::Up,
+            DoorKey::Down,
+            DoorKey::Left,
+            DoorKey::Right,
+            DoorKey::Enter,
+            DoorKey::Backspace,
+        ])
+    {
         run.key(key);
         run.flush(&store).await.unwrap();
     }
     let id = door.info().id.clone();
     assert!(store.load_save(&id, ann).await.unwrap().is_some());
     assert!(store.load_world(&id).await.unwrap().is_some());
-    assert!(store.load_save(&id, AccountId::from_raw(2)).await.unwrap().is_none());
+    assert!(
+        store
+            .load_save(&id, AccountId::from_raw(2))
+            .await
+            .unwrap()
+            .is_none()
+    );
     // Typing a path as a name is just text: it is refused by the name rules and stored nowhere.
     let screen = run.look_around(&env).join("\n");
-    assert!(!screen.contains("passwd") || screen.contains("not allowed"), "{screen}");
+    assert!(
+        !screen.contains("passwd") || screen.contains("not allowed"),
+        "{screen}"
+    );
 }

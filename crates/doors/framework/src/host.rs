@@ -6,7 +6,7 @@
 //! of the save API: open (check the bar, load and migrate the save and the world), and `flush`
 //! (write the queued save and world edits with a compare-and-swap).
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex, PoisonError};
 
 use russh_bbs_core::doors::{
     DoorStore, DoorStoreError, MAX_SAVE_BYTES, Revision, SaveWrite, StoredSave, StoredWorld,
@@ -27,34 +27,31 @@ const WORLD_RETRIES: usize = 4;
 
 /// The synchronous half of a running door.
 pub struct Driver {
-    session: Box<dyn DoorSession>,
+    // Behind mutexes only so a `Driver` is `Sync` (the board's session future holds it across
+    // an await) without asking every door author to avoid `Cell`; they are never contended.
+    session: Mutex<Box<dyn DoorSession>>,
     rng: DoorRng,
     clock: Arc<dyn Clock>,
     season: u32,
     text: TextBudget,
-    effects: Effects,
+    effects: Mutex<Effects>,
 }
 
 impl Driver {
     /// Open a session from `start`'s data, seeding its RNG with `seed`. `clock` is the injected
     /// clock.
-    pub fn open(
-        door: &dyn Door,
-        start: Start<'_>,
-        seed: u64,
-        clock: Arc<dyn Clock>,
-    ) -> Self {
+    pub fn open(door: &dyn Door, start: Start<'_>, seed: u64, clock: Arc<dyn Clock>) -> Self {
         // One RNG for the whole visit: `open` draws from it first, then every key does.
         let mut rng = DoorRng::from_seed(seed);
         let season = start.season;
         let session = door.open(start, &mut rng);
         Self {
-            session,
+            session: Mutex::new(session),
             rng,
             clock,
             season,
             text: TextBudget::default(),
-            effects: Effects::default(),
+            effects: Mutex::new(Effects::default()),
         }
     }
 
@@ -64,32 +61,52 @@ impl Driver {
             now: self.clock.now(),
             season: self.season,
             rng: &mut self.rng,
-            effects: &mut self.effects,
+            effects: self
+                .effects
+                .get_mut()
+                .unwrap_or_else(PoisonError::into_inner),
             text: &mut self.text,
         };
-        self.session.key(key, &mut ctx)
+        self.session
+            .get_mut()
+            .unwrap_or_else(PoisonError::into_inner)
+            .key(key, &mut ctx)
     }
 
     /// Draw the door.
     pub fn render(&self, canvas: &mut Canvas<'_>, env: &DoorEnv) {
-        self.session.render(canvas, env);
+        self.session
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .render(canvas, env);
     }
 
     /// The door's text view.
     #[must_use]
     pub fn look_around(&self, env: &DoorEnv) -> Vec<String> {
-        self.session.look_around(env)
+        self.session
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .look_around(env)
     }
 
     /// What the keys so far asked to write; clears it.
     pub fn take_effects(&mut self) -> Effects {
-        std::mem::take(&mut self.effects)
+        std::mem::take(
+            self.effects
+                .get_mut()
+                .unwrap_or_else(PoisonError::into_inner),
+        )
     }
 
     /// Whether anything is waiting to be written.
     #[must_use]
     pub fn has_pending(&self) -> bool {
-        !self.effects.is_empty()
+        !self
+            .effects
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .is_empty()
     }
 }
 
@@ -316,12 +333,13 @@ impl Running {
     ) -> Result<(), FlushError> {
         let info = self.door.info();
         for _ in 0..WORLD_RETRIES {
-            let current = load_world(store, self.door.as_ref())
-                .await
-                .map_err(|error| match error {
-                    OpenError::Store(error) => FlushError::Store(error),
-                    other => FlushError::Store(StoreError::Corrupt(other.to_string())),
-                })?;
+            let current =
+                load_world(store, self.door.as_ref())
+                    .await
+                    .map_err(|error| match error {
+                        OpenError::Store(error) => FlushError::Store(error),
+                        other => FlushError::Store(StoreError::Corrupt(other.to_string())),
+                    })?;
             let (bytes, revision) = match &current {
                 Some((bytes, revision, _)) => (Some(bytes.as_slice()), *revision),
                 None => (None, Revision::NONE),

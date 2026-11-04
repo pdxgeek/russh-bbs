@@ -10,7 +10,7 @@
 //! [`Simulation::store`] to report its curves. The framework counts only what is game-neutral
 //! ([`SimReport`]); the game owns every other number.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex, PoisonError};
 
 use russh_bbs_core::audit::AuditEvent;
@@ -38,7 +38,7 @@ struct Inner {
     saves: HashMap<(String, i64), StoredSave>,
     worlds: HashMap<String, StoredWorld>,
     seasons: HashMap<String, u32>,
-    bars: HashMap<(String, i64), ()>,
+    bars: HashSet<(String, i64)>,
     now: i64,
 }
 
@@ -59,6 +59,10 @@ impl MemoryDoorStore {
     }
 }
 
+#[allow(
+    clippy::unused_async_trait_impl,
+    reason = "an in-memory store has nothing to await; the trait is async for the real ones"
+)]
 impl DoorStore for MemoryDoorStore {
     async fn load_save(
         &self,
@@ -146,7 +150,7 @@ impl DoorStore for MemoryDoorStore {
         Ok(self
             .lock()
             .bars
-            .contains_key(&(door.as_str().to_owned(), account.as_raw())))
+            .contains(&(door.as_str().to_owned(), account.as_raw())))
     }
 
     async fn account_rank(&self, _account: AccountId) -> Result<Option<u8>, StoreError> {
@@ -183,8 +187,7 @@ impl DoorStore for MemoryDoorStore {
         Ok(self
             .lock()
             .bars
-            .insert((door.as_str().to_owned(), account.as_raw()), ())
-            .is_none())
+            .insert((door.as_str().to_owned(), account.as_raw())))
     }
 
     async fn unbar_player(
@@ -196,15 +199,13 @@ impl DoorStore for MemoryDoorStore {
         Ok(self
             .lock()
             .bars
-            .remove(&(door.as_str().to_owned(), account.as_raw()))
-            .is_some())
+            .remove(&(door.as_str().to_owned(), account.as_raw())))
     }
 }
 
 /// A simulated player: it reads the door's text view and answers with a key.
 pub trait Bot {
-    /// The next key given what the door shows (`screen` is [`DoorSession::look_around`]
-    /// (crate::DoorSession::look_around)), or `None` to end today's visit. `visit` is the
+    /// The next key given what the door shows (`screen` is the door's `look_around` lines), or `None` to end today's visit. `visit` is the
     /// 1-based count of this bot's visits so far; `keys_this_visit` how many keys it has sent in
     /// this visit.
     fn next_key(&mut self, screen: &[String], visit: u32, keys_this_visit: u32) -> Option<DoorKey>;
@@ -321,7 +322,8 @@ impl Simulation {
             let account = self.players[index].0;
             self.players[index].2 += 1;
             let visit = self.players[index].2;
-            let seed = self.seed ^ (u64::from(visit) << 32) ^ u64::try_from(account.as_raw()).unwrap_or(0);
+            let seed =
+                self.seed ^ (u64::from(visit) << 32) ^ u64::try_from(account.as_raw()).unwrap_or(0);
             let mut running = Running::open(
                 &self.store,
                 Arc::clone(&self.door),
@@ -376,7 +378,13 @@ impl Simulation {
         let next = Day::from_raw(today.as_raw() + i64::from(days));
         self.clock.set(next.start());
         self.store.set_now(next.start());
-        let report = run_due(&self.store, self.door.as_ref(), self.clock.as_ref(), self.policy).await?;
+        let report = run_due(
+            &self.store,
+            self.door.as_ref(),
+            self.clock.as_ref(),
+            self.policy,
+        )
+        .await?;
         self.report.days += days;
         self.report.ticks += u32::try_from(report.applied.len()).unwrap_or(u32::MAX);
         Ok(report)
@@ -388,7 +396,13 @@ impl Simulation {
     /// # Errors
     /// A failed tick.
     pub async fn tick_now(&mut self) -> Result<TickReport, SimError> {
-        let report = run_due(&self.store, self.door.as_ref(), self.clock.as_ref(), self.policy).await?;
+        let report = run_due(
+            &self.store,
+            self.door.as_ref(),
+            self.clock.as_ref(),
+            self.policy,
+        )
+        .await?;
         self.report.ticks += u32::try_from(report.applied.len()).unwrap_or(u32::MAX);
         Ok(report)
     }

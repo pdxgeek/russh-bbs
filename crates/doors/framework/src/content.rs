@@ -86,6 +86,7 @@ pub fn plain_text(text: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_used, clippy::panic)]
     use serde::Deserialize;
 
     use super::*;
@@ -111,7 +112,10 @@ mod tests {
                     problems.push(format!("phrase {n} is empty"));
                 }
                 if !plain_text(&phrase.text) {
-                    problems.push(format!("phrase `{}` has characters the board strips", phrase.id));
+                    problems.push(format!(
+                        "phrase `{}` has characters the board strips",
+                        phrase.id
+                    ));
                 }
                 if self.phrase[..n].iter().any(|p| p.id == phrase.id) {
                     problems.push(format!("phrase id `{}` is used twice", phrase.id));

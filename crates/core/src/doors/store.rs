@@ -234,3 +234,94 @@ pub trait DoorStore: Send + Sync {
         audit: &AuditEvent,
     ) -> impl Future<Output = Result<bool, StoreError>> + Send;
 }
+
+/// The empty directory has no accounts and no door data: reads find nothing, writes are
+/// refused as an unknown account.
+impl DoorStore for crate::access::NoMembers {
+    fn load_save(
+        &self,
+        _door: &DoorId,
+        _account: AccountId,
+    ) -> impl Future<Output = Result<Option<StoredSave>, StoreError>> + Send {
+        std::future::ready(Ok(None))
+    }
+
+    fn write_save(
+        &self,
+        _door: &DoorId,
+        _account: AccountId,
+        _write: &SaveWrite<'_>,
+    ) -> impl Future<Output = Result<Revision, DoorStoreError>> + Send {
+        std::future::ready(Err(StoreError::AccountNotFound.into()))
+    }
+
+    fn load_world(
+        &self,
+        _door: &DoorId,
+    ) -> impl Future<Output = Result<Option<StoredWorld>, StoreError>> + Send {
+        std::future::ready(Ok(None))
+    }
+
+    fn write_world(
+        &self,
+        _door: &DoorId,
+        _write: &WorldWrite<'_>,
+    ) -> impl Future<Output = Result<Revision, DoorStoreError>> + Send {
+        std::future::ready(Err(StoreError::AccountNotFound.into()))
+    }
+
+    fn season(&self, _door: &DoorId) -> impl Future<Output = Result<u32, StoreError>> + Send {
+        std::future::ready(Ok(1))
+    }
+
+    fn is_barred(
+        &self,
+        _door: &DoorId,
+        _account: AccountId,
+    ) -> impl Future<Output = Result<bool, StoreError>> + Send {
+        std::future::ready(Ok(false))
+    }
+
+    fn account_rank(
+        &self,
+        _account: AccountId,
+    ) -> impl Future<Output = Result<Option<u8>, StoreError>> + Send {
+        std::future::ready(Ok(None))
+    }
+
+    fn reset_player(
+        &self,
+        _door: &DoorId,
+        _account: AccountId,
+        _audit: &AuditEvent,
+    ) -> impl Future<Output = Result<bool, StoreError>> + Send {
+        std::future::ready(Ok(false))
+    }
+
+    fn end_season(
+        &self,
+        _door: &DoorId,
+        _audit: &AuditEvent,
+    ) -> impl Future<Output = Result<u32, StoreError>> + Send {
+        std::future::ready(Err(StoreError::AccountNotFound))
+    }
+
+    fn bar_player(
+        &self,
+        _door: &DoorId,
+        _account: AccountId,
+        _by: AccountId,
+        _audit: &AuditEvent,
+    ) -> impl Future<Output = Result<bool, StoreError>> + Send {
+        std::future::ready(Err(StoreError::AccountNotFound))
+    }
+
+    fn unbar_player(
+        &self,
+        _door: &DoorId,
+        _account: AccountId,
+        _audit: &AuditEvent,
+    ) -> impl Future<Output = Result<bool, StoreError>> + Send {
+        std::future::ready(Ok(false))
+    }
+}

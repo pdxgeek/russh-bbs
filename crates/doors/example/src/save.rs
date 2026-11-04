@@ -81,6 +81,7 @@ pub fn migrate_v1(bytes: &[u8]) -> Option<Vec<u8>> {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_used)]
     use super::*;
 
     fn sample() -> State {
@@ -104,7 +105,10 @@ mod tests {
         let bytes = encode(&sample());
         assert_eq!(
             bytes,
-            [12, 0, 0, 0, 3, 0x9b, 0x4e, 0, 0, 0, 0, 0, 0, 2, 0, 5, 0, 7, b'B', b'r', b'i', b'n', b'd', b'l', b'e']
+            [
+                12, 0, 0, 0, 3, 0x9b, 0x4e, 0, 0, 0, 0, 0, 0, 2, 0, 5, 0, 7, b'B', b'r', b'i',
+                b'n', b'd', b'l', b'e'
+            ]
         );
     }
 

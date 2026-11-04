@@ -54,6 +54,7 @@ impl World {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_used)]
     use super::*;
 
     #[test]
@@ -65,7 +66,14 @@ mod tests {
         };
         assert_eq!(World::decode(&world.encode()), Some(world));
         world.end_day();
-        assert_eq!(world, World { days: 3, today: 0, yesterday: 7 });
+        assert_eq!(
+            world,
+            World {
+                days: 3,
+                today: 0,
+                yesterday: 7
+            }
+        );
         world.count_toss();
         assert_eq!(world.today, 1);
         assert_eq!(World::decode(&[0; 19]), None);

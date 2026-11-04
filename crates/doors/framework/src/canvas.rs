@@ -38,38 +38,63 @@ pub enum DoorStyle {
 
 /// The board's mapping from [`DoorStyle`] to a ratatui style, built from the member's theme.
 /// The server builds it; a door only ever uses [`DoorStyle`].
+///
+/// **No style can be the reserved security-marker style** (bold plus reverse video, D39): the
+/// constructor removes bold from any style that is also reversed, and a cell takes exactly one
+/// style (it is replaced, never merged with another), so a door cannot combine two of its styles
+/// into the reserved one.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct DoorPalette {
-    /// [`DoorStyle::Plain`].
-    pub plain: Style,
-    /// [`DoorStyle::Dim`].
-    pub dim: Style,
-    /// [`DoorStyle::Strong`].
-    pub strong: Style,
-    /// [`DoorStyle::Accent`].
-    pub accent: Style,
-    /// [`DoorStyle::Good`].
-    pub good: Style,
-    /// [`DoorStyle::Bad`].
-    pub bad: Style,
-    /// [`DoorStyle::Selected`].
-    pub selected: Style,
+    plain: Style,
+    dim: Style,
+    strong: Style,
+    accent: Style,
+    good: Style,
+    bad: Style,
+    selected: Style,
+}
+
+/// `style` with the reserved combination broken: reverse video wins, bold goes.
+fn unreserved(style: Style) -> Style {
+    if style
+        .add_modifier
+        .contains(Modifier::BOLD | Modifier::REVERSED)
+    {
+        style.remove_modifier(Modifier::BOLD)
+    } else {
+        style
+    }
 }
 
 impl DoorPalette {
+    /// A palette from the seven styles, in the order of [`DoorStyle`].
+    #[must_use]
+    pub fn new(styles: [Style; 7]) -> Self {
+        let [plain, dim, strong, accent, good, bad, selected] = styles.map(unreserved);
+        Self {
+            plain,
+            dim,
+            strong,
+            accent,
+            good,
+            bad,
+            selected,
+        }
+    }
+
     /// No colors at all: weight and reverse video only. For a member with color off, and for
     /// tests.
     #[must_use]
     pub fn mono() -> Self {
-        Self {
-            plain: Style::new(),
-            dim: Style::new().add_modifier(Modifier::DIM),
-            strong: Style::new().add_modifier(Modifier::BOLD),
-            accent: Style::new().add_modifier(Modifier::BOLD),
-            good: Style::new(),
-            bad: Style::new().add_modifier(Modifier::BOLD),
-            selected: Style::new().add_modifier(Modifier::REVERSED),
-        }
+        Self::new([
+            Style::new(),
+            Style::new().add_modifier(Modifier::DIM),
+            Style::new().add_modifier(Modifier::BOLD),
+            Style::new().add_modifier(Modifier::BOLD),
+            Style::new(),
+            Style::new().add_modifier(Modifier::BOLD),
+            Style::new().add_modifier(Modifier::REVERSED),
+        ])
     }
 
     fn style(&self, style: DoorStyle) -> Style {
@@ -83,6 +108,12 @@ impl DoorPalette {
             DoorStyle::Selected => self.selected,
         }
     }
+}
+
+/// Give `cell` exactly `style`: colors and modifiers replaced, not merged.
+fn restyle(cell: &mut ratatui::buffer::Cell, style: Style) {
+    cell.reset();
+    cell.set_style(style);
 }
 
 /// A door's drawing surface. Coordinates are relative to the canvas, which is the area the board
@@ -117,10 +148,7 @@ impl<'a> Canvas<'a> {
     pub fn clear(&mut self) {
         for y in 0..self.area.height {
             for x in 0..self.area.width {
-                if let Some(cell) = self
-                    .buf
-                    .cell_mut((self.area.x + x, self.area.y + y))
-                {
+                if let Some(cell) = self.buf.cell_mut((self.area.x + x, self.area.y + y)) {
                     cell.reset();
                 }
             }
@@ -148,11 +176,9 @@ impl<'a> Canvas<'a> {
     /// Draw `text` centered on row `y`.
     pub fn center(&mut self, y: u16, text: &str, style: DoorStyle) {
         let clean = SingleLine::new(MAX_TEXT_CHARS).sanitize(text);
-        let width = u16::try_from(
-            ratatui::text::Line::raw(clean.as_str()).width(),
-        )
-        .unwrap_or(u16::MAX)
-        .min(self.area.width);
+        let width = u16::try_from(ratatui::text::Line::raw(clean.as_str()).width())
+            .unwrap_or(u16::MAX)
+            .min(self.area.width);
         let x = (self.area.width - width) / 2;
         self.text(x, y, clean.as_str(), style);
     }
@@ -165,7 +191,10 @@ impl<'a> Canvas<'a> {
         let style = self.palette.style(style);
         for x in 0..self.area.width {
             if let Some(cell) = self.buf.cell_mut((self.area.x + x, self.area.y + y)) {
-                cell.set_style(style);
+                // Keep the character, replace the style.
+                let symbol = cell.symbol().to_owned();
+                restyle(cell, style);
+                cell.set_symbol(&symbol);
             }
         }
     }
@@ -173,6 +202,7 @@ impl<'a> Canvas<'a> {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_used, clippy::panic)]
     use super::*;
 
     fn draw(f: impl FnOnce(&mut Canvas<'_>)) -> Buffer {
@@ -234,7 +264,42 @@ mod tests {
         });
         assert!(buf[(2, 1)].modifier.contains(Modifier::BOLD));
         assert!(buf[(2, 2)].modifier.contains(Modifier::REVERSED));
-        assert!(!buf[(1, 1)].modifier.contains(Modifier::BOLD), "outside the canvas");
+        assert!(
+            !buf[(1, 1)].modifier.contains(Modifier::BOLD),
+            "outside the canvas"
+        );
+    }
+
+    #[test]
+    fn no_style_and_no_combination_of_styles_is_the_reserved_marker_style() {
+        let reserved = Modifier::BOLD | Modifier::REVERSED;
+        // A theme that tried to make a style the reserved one gets it broken.
+        let palette = DoorPalette::new([Style::new().add_modifier(reserved); 7]);
+        for style in [
+            DoorStyle::Plain,
+            DoorStyle::Dim,
+            DoorStyle::Strong,
+            DoorStyle::Accent,
+            DoorStyle::Good,
+            DoorStyle::Bad,
+            DoorStyle::Selected,
+        ] {
+            assert!(
+                !palette.style(style).add_modifier.contains(reserved),
+                "{style:?}"
+            );
+        }
+        // Drawing bold text and then highlighting its row replaces the style, it does not add
+        // reverse video to bold.
+        let buf = draw(|c| {
+            c.text(0, 0, "ab", DoorStyle::Strong);
+            c.style_row(0, DoorStyle::Selected);
+        });
+        let cell = &buf[(2, 1)];
+        assert_eq!(cell.symbol(), "a");
+        assert!(
+            cell.modifier.contains(Modifier::REVERSED) && !cell.modifier.contains(Modifier::BOLD)
+        );
     }
 
     #[test]

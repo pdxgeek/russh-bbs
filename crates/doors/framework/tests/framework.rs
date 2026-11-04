@@ -11,8 +11,8 @@ use russh_bbs_door::host::{FlushError, OpenError, Running};
 use russh_bbs_door::sim::{Bot, MemoryDoorStore, Simulation};
 use russh_bbs_door::tick::{TickCtx, TickError, TickPolicy, run_due};
 use russh_bbs_door::{
-    BlobKind, Canvas, Ctx, Door, DoorEnv, DoorInfo, DoorKey, DoorRng, DoorSession, DoorStyle,
-    Flow, MigrateError, Save, Start,
+    BlobKind, Canvas, Ctx, Door, DoorEnv, DoorInfo, DoorKey, DoorRng, DoorSession, DoorStyle, Flow,
+    MigrateError, Save, Start,
 };
 
 /// A door whose save is `[version 2 layout] count: u32 le, big: u8` and whose world is a day
@@ -102,9 +102,9 @@ impl DoorSession for Session {
                 ctx.request_save(self.count.to_le_bytes().to_vec());
             }
             DoorKey::Char('B') => ctx.request_save(vec![0; MAX_SAVE_BYTES + 1]),
-            DoorKey::Char('w') => ctx.edit_world(|world| {
-                Some((world.map_or(0, le) + 100).to_le_bytes().to_vec())
-            }),
+            DoorKey::Char('w') => {
+                ctx.edit_world(|world| Some((world.map_or(0, le) + 100).to_le_bytes().to_vec()));
+            }
             DoorKey::Char('q') => return Flow::Exit,
             _ => {}
         }
@@ -161,8 +161,15 @@ async fn a_visit_saves_through_the_store_and_the_next_visit_loads_it() {
         run.flush(&store).await.unwrap();
     }
     assert_eq!(run.key(DoorKey::Char('q')), Flow::Exit);
-    let stored = store.load_save(&door.info().id, id(1)).await.unwrap().unwrap();
-    assert_eq!((le(&stored.bytes), stored.version, stored.revision), (3, 2, Revision::from_raw(3)));
+    let stored = store
+        .load_save(&door.info().id, id(1))
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(
+        (le(&stored.bytes), stored.version, stored.revision),
+        (3, 2, Revision::from_raw(3))
+    );
 
     let again = open(&store, &door, 1, &clock).await.unwrap();
     assert_eq!(again.look_around(&env())[0], "count 3 world 0 season 1");
@@ -195,7 +202,11 @@ async fn an_old_save_is_migrated_forward_and_a_newer_one_is_never_touched() {
     run.key(DoorKey::Char('+'));
     run.flush(&store).await.unwrap();
     let stored = store.load_save(&door_id, id(1)).await.unwrap().unwrap();
-    assert_eq!((stored.version, le(&stored.bytes)), (2, 8), "written at the current version");
+    assert_eq!(
+        (stored.version, le(&stored.bytes)),
+        (2, 8),
+        "written at the current version"
+    );
 
     // A save from the future: refused, and the stored bytes are left exactly as they were.
     store
@@ -259,8 +270,17 @@ async fn a_barred_player_cannot_open_and_their_save_is_kept() {
         .bar_player(&door.info().id, id(1), id(9), &audit)
         .await
         .unwrap();
-    assert!(matches!(open(&store, &door, 1, &clock).await, Err(OpenError::Barred)));
-    assert!(store.load_save(&door.info().id, id(1)).await.unwrap().is_some());
+    assert!(matches!(
+        open(&store, &door, 1, &clock).await,
+        Err(OpenError::Barred)
+    ));
+    assert!(
+        store
+            .load_save(&door.info().id, id(1))
+            .await
+            .unwrap()
+            .is_some()
+    );
 }
 
 #[tokio::test]
@@ -274,8 +294,15 @@ async fn two_sessions_of_one_player_cannot_overwrite_each_other() {
     first.flush(&store).await.unwrap();
     second.key(DoorKey::Char('+'));
     second.key(DoorKey::Char('+'));
-    assert!(matches!(second.flush(&store).await, Err(FlushError::Conflict)));
-    let stored = store.load_save(&door.info().id, id(1)).await.unwrap().unwrap();
+    assert!(matches!(
+        second.flush(&store).await,
+        Err(FlushError::Conflict)
+    ));
+    let stored = store
+        .load_save(&door.info().id, id(1))
+        .await
+        .unwrap()
+        .unwrap();
     assert_eq!(le(&stored.bytes), 1, "the first session's save stands");
 }
 
@@ -287,7 +314,13 @@ async fn a_save_over_the_cap_is_refused_and_nothing_is_written() {
     let mut run = open(&store, &door, 1, &clock).await.unwrap();
     run.key(DoorKey::Char('B'));
     assert!(matches!(run.flush(&store).await, Err(FlushError::TooLarge)));
-    assert!(store.load_save(&door.info().id, id(1)).await.unwrap().is_none());
+    assert!(
+        store
+            .load_save(&door.info().id, id(1))
+            .await
+            .unwrap()
+            .is_none()
+    );
 }
 
 #[tokio::test]
@@ -302,7 +335,11 @@ async fn a_world_edit_is_retried_against_the_latest_world() {
     a.flush(&store).await.unwrap();
     b.flush(&store).await.unwrap();
     let world = store.load_world(&door.info().id).await.unwrap().unwrap();
-    assert_eq!(le(&world.bytes), 200, "both edits landed, neither overwrote the other");
+    assert_eq!(
+        le(&world.bytes),
+        200,
+        "both edits landed, neither overwrote the other"
+    );
 }
 
 #[tokio::test]
@@ -319,8 +356,15 @@ async fn the_first_tick_applies_today_only_and_a_second_run_does_nothing() {
         .unwrap();
     assert!(again.applied.is_empty() && !again.lost_race);
     let world = store.load_world(&door.info().id).await.unwrap().unwrap();
-    assert_eq!((le(&world.bytes), world.last_tick), (1, Some(Day::from_raw(20_000))));
-    assert_eq!(world.revision, Revision::from_raw(1), "the second run wrote nothing");
+    assert_eq!(
+        (le(&world.bytes), world.last_tick),
+        (1, Some(Day::from_raw(20_000)))
+    );
+    assert_eq!(
+        world.revision,
+        Revision::from_raw(1),
+        "the second run wrote nothing"
+    );
 }
 
 #[tokio::test]
@@ -343,9 +387,14 @@ async fn downtime_is_caught_up_oldest_first_with_a_cap_and_the_skip_is_reported(
     assert_eq!(report.skipped, 0);
     // A month of downtime with a cap of 5: only the last five days run, the rest are reported.
     clock.set(Day::from_raw(20_033).start());
-    let report = run_due(&store, door.as_ref(), clock.as_ref(), TickPolicy { max_catch_up: 5 })
-        .await
-        .unwrap();
+    let report = run_due(
+        &store,
+        door.as_ref(),
+        clock.as_ref(),
+        TickPolicy { max_catch_up: 5 },
+    )
+    .await
+    .unwrap();
     assert_eq!(report.applied.len(), 5);
     assert_eq!(report.applied.last(), Some(&Day::from_raw(20_033)));
     assert_eq!(report.skipped, 25);
@@ -366,7 +415,10 @@ async fn a_failing_tick_writes_nothing_and_the_next_run_retries_the_same_days() 
     let failed = run_due(&store, &counter, clock.as_ref(), TickPolicy::default()).await;
     assert!(matches!(failed, Err(TickError::Door(_))));
     let world = store.load_world(&counter.info.id).await.unwrap().unwrap();
-    assert_eq!((le(&world.bytes), world.last_tick), (1, Some(Day::from_raw(20_000))));
+    assert_eq!(
+        (le(&world.bytes), world.last_tick),
+        (1, Some(Day::from_raw(20_000)))
+    );
     counter.fail_tick_on = None;
     let retried = run_due(&store, &counter, clock.as_ref(), TickPolicy::default())
         .await
@@ -386,7 +438,7 @@ async fn a_clock_that_goes_backwards_never_applies_a_day_twice() {
     let report = run_due(&store, door.as_ref(), clock.as_ref(), TickPolicy::default())
         .await
         .unwrap();
-    assert!(report.applied.is_empty());
+    assert_eq!(report.applied.len(), 0);
     clock.set(Day::from_raw(20_006).start());
     let report = run_due(&store, door.as_ref(), clock.as_ref(), TickPolicy::default())
         .await
@@ -405,9 +457,14 @@ async fn two_racing_ticks_apply_a_day_exactly_once() {
         let door = Arc::clone(&door);
         let clock = Arc::clone(&clock);
         tasks.push(tokio::spawn(async move {
-            run_due(store.as_ref(), door.as_ref(), clock.as_ref(), TickPolicy::default())
-                .await
-                .unwrap()
+            run_due(
+                store.as_ref(),
+                door.as_ref(),
+                clock.as_ref(),
+                TickPolicy::default(),
+            )
+            .await
+            .unwrap()
         }));
     }
     let mut applied = 0;
@@ -446,6 +503,7 @@ async fn the_scheduler_job_has_the_door_s_name_and_runs_the_tick() {
 /// A scheduler store that remembers nothing (every job is always due).
 struct NoRuns;
 
+#[allow(clippy::unused_async_trait_impl)]
 impl russh_bbs_core::scheduler::SchedulerStore for NoRuns {
     async fn last_run(
         &self,
@@ -494,7 +552,12 @@ async fn the_headless_harness_runs_n_days_through_the_real_save_and_tick_path() 
     assert_eq!(report.saves, 60 * 2);
     assert_eq!(report.ticks, 31, "today at the start, then one a day");
     let door_id = DoorId::parse("counter").unwrap();
-    let ann = sim.store().load_save(&door_id, id(1)).await.unwrap().unwrap();
+    let ann = sim
+        .store()
+        .load_save(&door_id, id(1))
+        .await
+        .unwrap()
+        .unwrap();
     assert_eq!(le(&ann.bytes), 60);
     let world = sim.store().load_world(&door_id).await.unwrap().unwrap();
     assert_eq!(le(&world.bytes), 31);
@@ -507,7 +570,10 @@ async fn a_bot_that_never_stops_is_cut_off() {
     sim.play_day().await.unwrap();
     let report = sim.report();
     assert_eq!(report.cut_off, 1);
-    assert_eq!(report.keys, u64::from(russh_bbs_door::sim::MAX_KEYS_PER_VISIT));
+    assert_eq!(
+        report.keys,
+        u64::from(russh_bbs_door::sim::MAX_KEYS_PER_VISIT)
+    );
 }
 
 #[tokio::test]

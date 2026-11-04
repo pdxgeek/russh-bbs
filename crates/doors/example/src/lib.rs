@@ -83,12 +83,14 @@ impl Door for CoinToss {
     fn open(&self, start: Start<'_>, _rng: &mut DoorRng) -> Box<dyn DoorSession> {
         let state = match start.save {
             SaveInput::Fresh => engine::State::new(start.today.as_raw(), &start.env.handle),
-            SaveInput::Loaded { bytes, .. } => save::decode(bytes)
-                .map(|mut state| {
+            SaveInput::Loaded { bytes, .. } => match save::decode(bytes) {
+                Some(mut state) => {
                     state.new_day(start.today.as_raw());
                     state
-                })
-                .unwrap_or_else(|| engine::State::new(start.today.as_raw(), &start.env.handle)),
+                }
+                // Bytes this version cannot read: start fresh rather than guess at them.
+                None => engine::State::new(start.today.as_raw(), &start.env.handle),
+            },
         };
         let world = start.world.and_then(World::decode).unwrap_or_default();
         Box::new(session::Session::new(state, world, self.phrases.clone()))
