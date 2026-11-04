@@ -128,7 +128,7 @@ fn list_lines(screen: &DoorsScreen, ctx: &DrawCtx<'_>) -> Vec<Line<'static>> {
 
 /// The colour depth a door's colours are brought down to. The member's setting is on or off
 /// (`TerminalSettings::color`) and the board's own screens use the sixteen named colours, so
-/// "on" is sixteen colours; a per-member depth would be a settings change (D103).
+/// "on" is sixteen colours; a per-member depth would be a settings change (D104).
 const fn depth(look: Look) -> ColorDepth {
     if look.color() {
         ColorDepth::Ansi16

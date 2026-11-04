@@ -1,5 +1,5 @@
 #![allow(clippy::unwrap_used)]
-//! What reaches the member's screen from a door that draws what it likes (UI-5, D103).
+//! What reaches the member's screen from a door that draws what it likes (UI-5, D104).
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;

@@ -1,4 +1,4 @@
-//! What compositing a door's screen costs (UI-5, D103). A plain timing loop, run with
+//! What compositing a door's screen costs (UI-5, D104). A plain timing loop, run with
 //! `cargo bench -p russh-bbs-door`; it prints the mean time per frame for an 80x24 and a 200x60
 //! door area and for three kinds of screen:
 //!

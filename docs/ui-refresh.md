@@ -126,7 +126,7 @@ A **widget** is a small live panel the layouts place in their widget areas (the 
   - a blinking cursor in inputs.
 
   Members can turn motion off, and it is always off in accessibility mode.
-- **Doors get all of ratatui** (owner, 2026-11-04). A door renders any ratatui widget into its own off-screen buffer, and the framework cleans every cell as it composites it onto the screen: the sanitizer runs on each symbol, the reserved marker style is removed, and everything is clipped to the door's area. Doors can use colours and every widget, but they can never forge a marker or draw outside their box. The game UI slices (S3, E3, N3, L3, H3) build on it. **Built (UI-5, D103):** off-screen buffer, per-cell cleaning, colour depth and ASCII-tier stand-ins; mouse (UI-9) and effects (UI-8) are not yet in the door API.
+- **Doors get all of ratatui** (owner, 2026-11-04). A door renders any ratatui widget into its own off-screen buffer, and the framework cleans every cell as it composites it onto the screen: the sanitizer runs on each symbol, the reserved marker style is removed, and everything is clipped to the door's area. Doors can use colours and every widget, but they can never forge a marker or draw outside their box. The game UI slices (S3, E3, N3, L3, H3) build on it. **Built (UI-5, D104):** off-screen buffer, per-cell cleaning, colour depth and ASCII-tier stand-ins; mouse (UI-9) and effects (UI-8) are not yet in the door API.
 
 ## Customization (sysop and member)
 
