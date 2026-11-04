@@ -1,4 +1,6 @@
 # Corporations (M4-N1). `num` is the stable id stored in saves and the world: never reuse or renumber.
+# M4-N2: `cm_bias` lists countermeasure tags the corporation favours (their weight triples when the network picks a
+# patrol); `warden` is the number of the warden that hunts runs on its tier-3 networks (countermeasures.toml).
 # Percent fields are 0..=100 unless stated. `favoured` is the lock family the corporation leans on
 # (crack, spoof or overflow); the contract briefing shows it as street intel.
 
@@ -33,6 +35,8 @@ watch = 0
 patch_pct = 30
 blackwall_pct = 25
 favoured = "overflow"
+cm_bias = ["armored", "wall"]
+warden = 21
 
 [[corp]]
 num = 1
@@ -50,6 +54,8 @@ watch = 0
 patch_pct = 25
 blackwall_pct = 10
 favoured = "crack"
+cm_bias = ["trace", "swift"]
+warden = 22
 
 [[corp]]
 num = 2
@@ -67,6 +73,8 @@ watch = 0
 patch_pct = 35
 blackwall_pct = 10
 favoured = "spoof"
+cm_bias = ["deceptive", "mend"]
+warden = 23
 
 [[corp]]
 num = 3
@@ -84,6 +92,8 @@ watch = 2
 patch_pct = 15
 blackwall_pct = 0
 favoured = "crack"
+cm_bias = ["watcher", "slow"]
+warden = 21
 
 [[corp]]
 num = 4
@@ -101,3 +111,5 @@ watch = 1
 patch_pct = 30
 blackwall_pct = 40
 favoured = "spoof"
+cm_bias = ["wall", "mend"]
+warden = 23

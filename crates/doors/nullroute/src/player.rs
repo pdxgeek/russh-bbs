@@ -5,7 +5,9 @@
 
 use russh_bbs_door::DoorRng;
 
-use crate::content::{Content, Family};
+use crate::cm;
+use crate::code::{self, Build, CODE_CYCLES, CODED_BASE, CODED_MAX, FRAGMENTS_MAX};
+use crate::content::{Content, Family, ScriptDef};
 use crate::net::Network;
 use crate::run::{Run, RunResult, RunSetup, Status};
 use crate::world::{Contract, World};
@@ -98,6 +100,10 @@ pub struct Player {
     pub burns: u32,
     /// Marks earned in total.
     pub earned: u64,
+    /// Fragments carried, for the workbench.
+    pub fragments: Vec<u8>,
+    /// Coded scripts: slot `n` is script number `CODED_BASE + n`.
+    pub coded: [Option<Build>; CODED_MAX],
 }
 
 /// The skill level for `xp` uses.
@@ -143,6 +149,8 @@ impl Player {
             jobs: 0,
             burns: 0,
             earned: 0,
+            fragments: Vec::new(),
+            coded: [None; CODED_MAX],
         };
         // A sensible first deck: one scan, the first two breaks and a copier, within memory.
         for num in [1u8, 5, 8, 23] {
@@ -188,6 +196,17 @@ impl Player {
         BASE_CYCLES + 4 * u32::from(self.level(part::CPU))
     }
 
+    /// A script by number, stock or coded.
+    #[must_use]
+    pub fn script(&self, content: &Content, num: u8) -> Option<ScriptDef> {
+        if num >= CODED_BASE {
+            let build = (*self.coded.get(usize::from(num - CODED_BASE))?)?;
+            code::assemble(content, build, num).ok()
+        } else {
+            content.script(num).cloned()
+        }
+    }
+
     /// Deck memory.
     #[must_use]
     pub fn memory(&self) -> u32 {
@@ -205,7 +224,7 @@ impl Player {
     pub fn deck_memory(&self, content: &Content) -> u32 {
         self.deck
             .iter()
-            .filter_map(|n| content.script(*n))
+            .filter_map(|n| self.script(content, *n))
             .map(|s| s.memory)
             .sum()
     }
@@ -227,7 +246,7 @@ impl Player {
     /// # Errors
     /// Why not.
     pub fn load(&mut self, content: &Content, num: u8) -> Result<String, String> {
-        let script = content.script(num).ok_or("No such script.")?;
+        let script = self.script(content, num).ok_or("No such script.")?;
         if !self.owned.contains(&num) {
             return Err("You do not own that script.".into());
         }
@@ -274,7 +293,8 @@ impl Player {
         self.deck.remove(at);
         Ok(format!(
             "{} unloaded.",
-            content.script(num).map_or("script", |s| s.name.as_str())
+            self.script(content, num)
+                .map_or_else(|| "script".to_owned(), |s| s.name)
         ))
     }
 
@@ -409,7 +429,71 @@ impl Player {
         }
         self.marks -= cost;
         self.workbench = true;
-        Ok("The workbench is up. Coding scripts comes in a later update.".into())
+        Ok("The workbench is up. Fragments you find on runs can be coded into scripts.".into())
+    }
+
+    /// How many of fragment `num` the character carries.
+    #[must_use]
+    pub fn fragment_count(&self, num: u8) -> usize {
+        self.fragments.iter().filter(|n| **n == num).count()
+    }
+
+    /// Code a new script at the workbench: burns the three fragments and [`CODE_CYCLES`] cycles.
+    ///
+    /// # Errors
+    /// Why not; nothing is spent then.
+    pub fn code(&mut self, content: &Content, build: Build) -> Result<String, String> {
+        if !self.workbench {
+            return Err("You need a workbench to code.".into());
+        }
+        if self.cycles < CODE_CYCLES {
+            return Err(format!("{CODE_CYCLES} cycles needed to code."));
+        }
+        let slot = self
+            .coded
+            .iter()
+            .position(Option::is_none)
+            .ok_or("No room for another coded script. Scrap one.")?;
+        if self.coded.contains(&Some(build)) {
+            return Err("You already have that build.".into());
+        }
+        let num = CODED_BASE + u8::try_from(slot).unwrap_or(0);
+        let script = code::assemble(content, build, num)?;
+        let mut left = self.fragments.clone();
+        for frag in [build.effect, build.target, build.modifier] {
+            if frag == 0 {
+                continue;
+            }
+            let at = left
+                .iter()
+                .position(|n| *n == frag)
+                .ok_or("You do not have those fragments.")?;
+            left.remove(at);
+        }
+        self.fragments = left;
+        self.cycles -= CODE_CYCLES;
+        self.coded[slot] = Some(build);
+        self.owned.push(num);
+        Ok(format!(
+            "Coded {} (power {}, memory {}, noise {}).",
+            script.name, script.power, script.memory, script.noise
+        ))
+    }
+
+    /// Delete a coded script (its fragments are gone for good).
+    ///
+    /// # Errors
+    /// If it is not a coded script of yours.
+    pub fn scrap(&mut self, num: u8) -> Result<String, String> {
+        let slot = num
+            .checked_sub(CODED_BASE)
+            .map(usize::from)
+            .filter(|s| self.coded.get(*s).is_some_and(Option::is_some))
+            .ok_or("That is not a coded script.")?;
+        self.coded[slot] = None;
+        self.owned.retain(|n| *n != num);
+        self.deck.retain(|n| *n != num);
+        Ok("Scrapped.".into())
     }
 
     /// Find a better fence.
@@ -562,7 +646,7 @@ impl Player {
         if !self
             .deck
             .iter()
-            .filter_map(|n| content.script(*n))
+            .filter_map(|n| self.script(content, *n))
             .any(|s| s.effect == tmpl.effect)
         {
             return Err(format!(
@@ -587,6 +671,14 @@ impl Player {
             skill: self.skills(),
             cycles: self.cycles - JACK_IN_CYCLES,
             buffer: u32::from(self.proxies) * content.rig.hideout.proxy_buffer,
+            extra: self
+                .deck
+                .iter()
+                .filter(|n| **n >= CODED_BASE)
+                .filter_map(|n| self.script(content, *n))
+                .collect(),
+            learned: world.learned_by(contract.corp),
+            warden: self.warden_for(content, corp, contract),
         };
         let run = Run::new(content, setup).ok_or("The network will not load.")?;
         self.cycles -= JACK_IN_CYCLES;
@@ -594,6 +686,29 @@ impl Player {
         self.pending = Some(contract.id);
         self.runs += 1;
         Ok(run)
+    }
+
+    /// The warden that will hunt this run, if any: rare at tier 2, common at tier 3. A pure function
+    /// of the character and the contract, so jacking in again cannot reroll it.
+    fn warden_for(
+        &self,
+        content: &Content,
+        corp: &crate::content::CorpDef,
+        contract: &Contract,
+    ) -> Option<u8> {
+        let chance = match contract.tier {
+            3 => 55,
+            2 => 15,
+            _ => return None,
+        };
+        let mut rng = DoorRng::from_label(
+            &format!("nullroute-warden-{}", self.seed),
+            i64::from(contract.id),
+        );
+        if !rng.chance(chance, 100) {
+            return None;
+        }
+        cm::warden_of(content, corp).map(|c| c.num)
     }
 
     /// Settle a finished run: pay, heat, fry, skills, standing. `result` must not be `Active`.
@@ -665,6 +780,18 @@ impl Player {
                 }
                 self.marks = self.marks.saturating_add(pay);
                 self.earned = self.earned.saturating_add(u64::from(pay));
+                // Fragments come out with you; a burned run loses them with the loot.
+                let room = FRAGMENTS_MAX.saturating_sub(self.fragments.len());
+                let got: Vec<u8> = result.fragments.iter().copied().take(room).collect();
+                if !got.is_empty() {
+                    notes.push(format!("{} fragment(s) brought out.", got.len()));
+                    self.fragments.extend(got);
+                }
+                if result.warden_down {
+                    let bonus = 4 * u32::from(contract.tier);
+                    self.rep += bonus;
+                    notes.push(format!("You put a warden down. Reputation +{bonus}."));
+                }
             }
         }
         notes

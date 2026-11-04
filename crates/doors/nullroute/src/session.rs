@@ -7,7 +7,9 @@ use std::sync::Arc;
 
 use russh_bbs_door::{Canvas, Ctx, DoorEnv, DoorKey, DoorSession, DoorStyle, Flow};
 
-use crate::content::Content;
+use crate::code::{self, Build, CODE_CYCLES, MEMORY_BUDGET, NOISE_BUDGET};
+use crate::content::{Content, FragKind};
+use crate::learn::{self, Stage};
 use crate::player::{JACK_IN_CYCLES, PARTS, Player};
 use crate::run::{Act, Refused, Run, Status, TRACE_MAX};
 use crate::save;
@@ -26,8 +28,25 @@ enum View {
     Shop(usize),
     Rig,
     Hideout,
+    Code(Draft),
     Run(Box<Active>),
     Debrief(Vec<String>),
+}
+
+/// Where the module editor is.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum CodeStep {
+    Effect,
+    Target,
+    Modifier,
+    Confirm,
+}
+
+/// A build being put together at the workbench.
+#[derive(Clone, Copy, PartialEq, Eq)]
+struct Draft {
+    step: CodeStep,
+    build: Build,
 }
 
 struct Active {
@@ -46,6 +65,10 @@ pub(crate) struct Session {
     view: View,
     msgs: Vec<Line>,
     saved: Vec<u8>,
+}
+
+fn run_has_fight(run: &Run) -> bool {
+    run.encounter().is_some()
 }
 
 /// The widest line the door draws (the canvas is 72 columns at 80x24).
@@ -181,6 +204,15 @@ impl Session {
         let mut hint: Vec<Line> = Vec::new();
         match &self.view {
             View::Run(active) => return self.run_lines(active, rows),
+            View::Code(draft) => {
+                let body = self.code_lines(draft);
+                let hint = match draft.step {
+                    CodeStep::Confirm => "[Enter] code it   [Esc] back",
+                    CodeStep::Effect => "[1-9] pick   [Esc] back",
+                    _ => "[1-9] pick   [0] none   [Esc] back",
+                };
+                return fit(body, vec![(hint.into(), Strong)], rows);
+            }
             View::Home => {
                 body.push((format!("NULLROUTE  {}  day {}", p.name, p.day), Accent));
                 body.push((
@@ -279,7 +311,7 @@ impl Session {
                 ));
                 let start = page * PAGE;
                 for (i, num) in p.owned.iter().enumerate().skip(start).take(PAGE) {
-                    if let Some(s) = c.script(*num) {
+                    if let Some(s) = p.script(c, *num) {
                         let mark = if p.deck.contains(num) { '*' } else { ' ' };
                         let skill = if s.min_skill > 0 {
                             format!(" sk{}", s.min_skill)
@@ -288,14 +320,20 @@ impl Session {
                         };
                         body.push((
                             format!(
-                                "[{}]{mark}{:<16} {:<7} {:<8} p{} m{} n{}{skill}",
+                                "[{}]{mark}{:<16} {:<7} {:<8} p{} m{} n{}{skill}{}",
                                 char::from(b'a' + u8::try_from(i - start).unwrap_or(0)),
-                                s.name,
+                                if s.name.chars().count() > 16 {
+                                    s.name.chars().take(16).collect::<String>()
+                                } else {
+                                    s.name.clone()
+                                },
                                 s.family.word(),
                                 format!("{:?}", s.effect).to_lowercase(),
                                 s.power,
                                 s.memory,
                                 s.noise,
+                                s.target
+                                    .map_or_else(String::new, |t| format!(" vs {}", t.word())),
                             ),
                             if p.deck.contains(num) { Strong } else { Plain },
                         ));
@@ -305,9 +343,11 @@ impl Session {
                     "* loaded.  p power, m memory, n noise, sk skill needed".into(),
                     Dim,
                 ));
+                push_wrapped(&mut body, &self.stock_row(), Dim);
                 self.push_msgs(&mut body);
                 hint.push((
-                    "[a-l] load/unload   [n]/[p] page   [Esc] back".into(),
+                    "[a-l] load/unload   [A-L] scrap a coded script   [n]/[p] page   [Esc] back"
+                        .into(),
                     Strong,
                 ));
             }
@@ -409,9 +449,9 @@ impl Session {
                     format!(
                         "Workbench: {}",
                         if p.workbench {
-                            "built (coding comes later)"
+                            format!("built; {} fragment(s) in the case", p.fragments.len())
                         } else {
-                            "not built"
+                            "not built".to_owned()
                         }
                     ),
                     Plain,
@@ -434,7 +474,7 @@ impl Session {
                 self.push_msgs(&mut body);
                 hint.push((
                     format!(
-                        "[b] bot {}  [w] workbench {}  [f] better fence",
+                        "[b] bot {}  [w] workbench {}  [c] code  [f] fence",
                         h.bot_cost, h.workbench_cost
                     ),
                     Strong,
@@ -455,6 +495,110 @@ impl Session {
         fit(body, hint, rows)
     }
 
+    /// Fragments of one kind in the case, with how many of each, in table order.
+    fn fragment_rows(&self, kind: FragKind) -> Vec<(u8, usize)> {
+        self.content
+            .fragments
+            .fragment
+            .iter()
+            .filter(|f| f.kind == kind)
+            .map(|f| (f.num, self.p.fragment_count(f.num)))
+            .filter(|(_, n)| *n > 0)
+            .collect()
+    }
+
+    fn code_lines(&self, d: &Draft) -> Vec<Line> {
+        use DoorStyle::{Accent, Bad, Dim, Good, Plain};
+        let c = &*self.content;
+        let mut out = vec![(
+            format!(
+                "WORKBENCH  budget: memory {MEMORY_BUDGET}, noise {NOISE_BUDGET}.  Coding burns the fragments and {CODE_CYCLES} cycles."
+            ),
+            Accent,
+        )];
+        let kind = match d.step {
+            CodeStep::Effect | CodeStep::Confirm => FragKind::Effect,
+            CodeStep::Target => FragKind::Target,
+            CodeStep::Modifier => FragKind::Modifier,
+        };
+        if d.build.effect != 0 {
+            let name = code::name(c, d.build);
+            match code::stats(c, d.build) {
+                Ok(s) => out.push((
+                    format!(
+                        "{name}: power {}, memory {}/{MEMORY_BUDGET}, noise {}/{NOISE_BUDGET}, cycles {}",
+                        s.power, s.memory, s.noise, s.cycles
+                    ),
+                    if s.memory > MEMORY_BUDGET || s.noise > NOISE_BUDGET {
+                        Bad
+                    } else {
+                        Good
+                    },
+                )),
+                Err(why) => out.push((why, Bad)),
+            }
+        }
+        match d.step {
+            CodeStep::Confirm => match code::assemble(c, d.build, crate::code::CODED_BASE) {
+                Ok(s) => {
+                    let tuned = s
+                        .target
+                        .map_or_else(String::new, |t| format!(", tuned to {}s", t.word()));
+                    out.push((
+                        format!(
+                            "Ready: {}{tuned}. A corporation learns a recipe, so vary it.",
+                            s.name
+                        ),
+                        Plain,
+                    ));
+                }
+                Err(why) => out.push((why, Bad)),
+            },
+            _ => {
+                let title = match d.step {
+                    CodeStep::Effect => "Pick an EFFECT",
+                    CodeStep::Target => "Pick a TARGET type (0 for none)",
+                    _ => "Pick a MODIFIER (0 for none)",
+                };
+                out.push((title.into(), Plain));
+                let rows = self.fragment_rows(kind);
+                if rows.is_empty() {
+                    out.push(("  none in the case: find fragments on runs.".into(), Dim));
+                }
+                for (i, (num, n)) in rows.iter().enumerate().take(9) {
+                    if let Some(f) = c.fragment(*num) {
+                        out.push((
+                            format!(
+                                "  {}) {:<14} x{n}  p{:+} m{:+} n{:+}  {}",
+                                i + 1,
+                                f.name,
+                                f.power,
+                                f.memory,
+                                f.noise,
+                                f.blurb
+                            ),
+                            Plain,
+                        ));
+                    }
+                }
+            }
+        }
+        out.extend(self.msgs.iter().cloned());
+        out
+    }
+
+    /// A line of the corporations' memory of the scripts, for the deck screen.
+    fn stock_row(&self) -> String {
+        let n = self.world.learned.len();
+        if n == 0 {
+            "No corporation has learned any of your scripts yet.".to_owned()
+        } else {
+            format!(
+                "Corporations are learning {n} script(s): the brief for a job shows what they know."
+            )
+        }
+    }
+
     fn push_msgs(&self, body: &mut Vec<Line>) {
         for (text, style) in &self.msgs {
             push_wrapped(body, text, *style);
@@ -462,18 +606,39 @@ impl Session {
     }
 
     fn deck_names(&self) -> String {
-        let names: Vec<&str> = self
+        let names: Vec<String> = self
             .p
             .deck
             .iter()
-            .filter_map(|n| self.content.script(*n))
-            .map(|s| s.name.as_str())
+            .filter_map(|n| self.p.script(&self.content, *n))
+            .map(|s| s.name)
             .collect();
         if names.is_empty() {
             "(empty)".into()
         } else {
             names.join(", ")
         }
+    }
+
+    /// The scripts of the loaded deck that the corporation is wary of or has patched.
+    fn known_scripts(&self, corp: u8) -> Vec<String> {
+        let learned = self.world.learned_by(corp);
+        self.p
+            .deck
+            .iter()
+            .filter_map(|n| self.p.script(&self.content, *n))
+            .filter_map(|s| {
+                let uses = learned
+                    .iter()
+                    .find(|(sig, _)| *sig == s.sig)
+                    .map_or(0, |(_, n)| *n);
+                match learn::stage(&s, uses) {
+                    Stage::Fresh => None,
+                    Stage::Wary => Some(format!("{} (wary)", s.name)),
+                    Stage::Patched => Some(format!("{} (PATCHED: will not work)", s.name)),
+                }
+            })
+            .collect()
     }
 
     fn for_sale(&self) -> Vec<&crate::content::ScriptDef> {
@@ -542,6 +707,10 @@ impl Session {
         };
         push_wrapped(&mut out, &word, Dim);
         push_wrapped(&mut out, &format!("Deck: {}", self.deck_names()), Plain);
+        let known = self.known_scripts(contract.corp);
+        if !known.is_empty() {
+            push_wrapped(&mut out, &format!("They know: {}", known.join(", ")), Bad);
+        }
         push_wrapped(
             &mut out,
             &format!(
@@ -558,6 +727,9 @@ impl Session {
 
     fn run_lines(&self, active: &Active, rows: usize) -> Vec<Line> {
         use DoorStyle::{Accent, Bad, Dim, Good, Plain, Strong};
+        if run_has_fight(&active.run) {
+            return self.fight_lines(active, rows);
+        }
         let c = &*self.content;
         let run = &active.run;
         let net = run.net();
@@ -596,6 +768,9 @@ impl Session {
         if run.alarm() {
             flags.push_str("[ALARM] ");
         }
+        if let Some(w) = run.warden().filter(|w| w.awake && !w.down) {
+            flags.push_str(&format!("[WARDEN HUNTING: {} moves] ", w.arrives_in));
+        }
         if !flags.is_empty() {
             body.push((flags.trim_end().to_owned(), Bad));
         }
@@ -628,17 +803,22 @@ impl Session {
             .iter()
             .enumerate()
             .map(|(i, slot)| {
-                let s = c.script(slot.script);
+                let s = run.script(c, slot.script);
                 let left = if slot.left == u32::MAX {
                     String::new()
                 } else {
                     format!(" x{}", slot.left)
                 };
+                let known = match run.stage(c, i) {
+                    Stage::Fresh => "",
+                    Stage::Wary => " wary",
+                    Stage::Patched => " PATCHED",
+                };
                 format!(
-                    "[{}] {} p{}{left}",
+                    "[{}] {} p{}{left}{known}",
                     char::from(b'a' + u8::try_from(i).unwrap_or(0)),
-                    s.map_or("?", |s| s.name.as_str()),
-                    s.map_or(0, |s| s.power)
+                    s.as_ref().map_or("?", |s| s.name.as_str()),
+                    s.as_ref().map_or(0, |s| s.power)
                 )
             })
             .collect();
@@ -656,8 +836,8 @@ impl Session {
                 "Aim {}: 1-9 picks the node, Esc cancels",
                 run.deck
                     .get(slot)
-                    .and_then(|s| c.script(s.script))
-                    .map_or("?", |s| s.name.as_str())
+                    .and_then(|s| run.script(c, s.script))
+                    .map_or_else(|| "?".to_owned(), |s| s.name)
             ),
             None => "[1-9] move   [a-f] script   [o] jack out".to_owned(),
         };
@@ -669,6 +849,149 @@ impl Session {
             body.extend(wrapped.into_iter().take(1));
         }
         fit(body, vec![(hint, Strong)], rows)
+    }
+
+    /// The screen of an exchange with a countermeasure: its integrity, what it is about to do, what
+    /// is known of its pattern, and what each script in the deck would do to it right now.
+    fn fight_lines(&self, active: &Active, rows: usize) -> Vec<Line> {
+        use DoorStyle::{Accent, Bad, Dim, Good, Plain, Strong};
+        let c = &*self.content;
+        let run = &active.run;
+        let Some(e) = run.encounter() else {
+            return Vec::new();
+        };
+        let net = run.net();
+        let mut body: Vec<Line> = Vec::new();
+        body.push((
+            format!(
+                "{} T{}  TRACE {}  cycles {}  soak {}",
+                self.corp_name(net.corp),
+                net.tier,
+                bar(run.trace),
+                run.cycles,
+                run.buffer()
+            ),
+            if run.trace >= 70 { Bad } else { Plain },
+        ));
+        let mut flags = String::new();
+        if run.tracer() {
+            flags.push_str("[TRACER] ");
+        }
+        if run.alarm() {
+            flags.push_str("[ALARM] ");
+        }
+        if run.feed_live() {
+            flags.push_str("[CAMERA LIVE] ");
+        }
+        if !flags.is_empty() {
+            body.push((flags.trim_end().to_owned(), Bad));
+        }
+        let filled = usize::try_from(e.integrity * 20 / e.max.max(1)).unwrap_or(0);
+        body.push((
+            format!(
+                "{} {}  [{}{}] {}/{}  armor {}  weak to {} locks",
+                e.kind.word().to_uppercase(),
+                e.name,
+                "#".repeat(filled),
+                "-".repeat(20usize.saturating_sub(filled)),
+                e.integrity,
+                e.max,
+                e.armor_now(),
+                e.weak.word()
+            ),
+            Strong,
+        ));
+        let intent = e.intent();
+        body.push((
+            format!(
+                "It will {} ({})    move {}/{}",
+                intent.word(),
+                intent.gloss(),
+                e.round + 1,
+                crate::cm::ROUNDS_MAX
+            ),
+            Accent,
+        ));
+        let forecast = e.forecast(3);
+        if forecast.is_empty() {
+            let seen: Vec<&str> = e.seen.iter().map(|i| i.word()).collect();
+            push_wrapped(
+                &mut body,
+                &format!(
+                    "Pattern unknown. Seen: {}. Watch a full cycle of {} or scan it.",
+                    if seen.is_empty() {
+                        "nothing yet".to_owned()
+                    } else {
+                        seen.join(" ")
+                    },
+                    e.pattern.len()
+                ),
+                Dim,
+            );
+        } else {
+            let next: Vec<&str> = forecast.iter().map(|i| i.word()).collect();
+            body.push((format!("Then: {}", next.join(", ")), Dim));
+        }
+        let mut notes = Vec::new();
+        if e.stun > 0 {
+            notes.push("it is blind");
+        }
+        if e.charged {
+            notes.push("the next strike is DOUBLE");
+        }
+        if let Some(f) = e.sealed {
+            notes.push(if f == crate::content::Family::Break {
+                "Break is sealed"
+            } else {
+                "a family is sealed"
+            });
+        }
+        if !notes.is_empty() {
+            body.push((notes.join("; "), Bad));
+        }
+        for (i, slot) in run.deck.iter().enumerate() {
+            let s = run.script(c, slot.script);
+            let stage = run.stage(c, i);
+            let dmg = run.preview(c, i).unwrap_or(0);
+            let left = if slot.left == u32::MAX {
+                String::new()
+            } else {
+                format!(" x{}", slot.left)
+            };
+            let sealed = s.as_ref().is_some_and(|s| e.sealed == Some(s.family));
+            let tag = if stage == Stage::Patched {
+                "  PATCHED"
+            } else if sealed {
+                "  SEALED"
+            } else if stage == Stage::Wary {
+                "  wary"
+            } else {
+                ""
+            };
+            body.push((
+                format!(
+                    "[{}] {:<18} -> {} dmg{left}{tag}",
+                    char::from(b'a' + u8::try_from(i).unwrap_or(0)),
+                    s.as_ref().map_or("?", |s| s.name.as_str()),
+                    dmg
+                ),
+                if tag.is_empty() { Good } else { Dim },
+            ));
+        }
+        let room = rows.saturating_sub(body.len() + 1).min(run.log.len());
+        for line in run.log.iter().skip(run.log.len() - room) {
+            let mut wrapped = Vec::new();
+            push_wrapped(&mut wrapped, &format!("> {line}"), Dim);
+            body.extend(wrapped.into_iter().take(1));
+        }
+        fit(
+            body,
+            vec![(
+                "[a-f] play a script   [w] brace (1 cycle)   [x] break off".into(),
+                Strong,
+            )],
+            rows,
+        )
     }
 
     fn open_brief(&mut self, index: usize) {
@@ -687,11 +1010,12 @@ impl Session {
             self.p
                 .finish_run(&self.content, &contract, &result, ctx.rng()),
         );
-        let (corp, tier) = (contract.corp, contract.tier);
+        let (corp, tier, season) = (contract.corp, contract.tier, self.season);
         self.world.apply_run(corp, tier, &result);
         let applied = result.clone();
         ctx.edit_world(move |old| {
             let mut world = old.and_then(save::decode_world).unwrap_or_default();
+            world.sync_season(season);
             world.apply_run(corp, tier, &applied);
             Some(save::encode_world(&world))
         });
@@ -703,6 +1027,30 @@ impl Session {
             return;
         };
         let content = Arc::clone(&self.content);
+        if active.run.encounter().is_some() {
+            active.aim = None;
+            let act = match key {
+                DoorKey::Char(ch) if matches!(ch, 'w' | 'W') => Some(Act::Brace),
+                DoorKey::Char(ch) if matches!(ch, 'x' | 'X') => Some(Act::BreakOff),
+                DoorKey::Char(ch) => letter(ch)
+                    .filter(|s| *s < active.run.deck.len())
+                    .map(|slot| Act::Use { slot, target: None }),
+                _ => None,
+            };
+            if let Some(act) = act
+                && let Err(refused) = active.run.act(&content, act, ctx.rng())
+            {
+                let line = refused.text().to_owned();
+                active.run.log.push(line);
+            }
+            if active.run.status != Status::Active {
+                let View::Run(finished) = std::mem::replace(&mut self.view, View::Home) else {
+                    return;
+                };
+                self.finish_run(ctx, &finished);
+            }
+            return;
+        }
         let act = match (key, active.aim) {
             (DoorKey::Escape, Some(_)) => {
                 active.aim = None;
@@ -817,6 +1165,15 @@ impl Session {
             }
             (View::Deck(page), DoorKey::Char(ch)) => {
                 let page = *page;
+                if ch.is_ascii_uppercase()
+                    && let Some(num) = letter(ch)
+                        .filter(|i| *i < PAGE)
+                        .and_then(|i| self.p.owned.get(page * PAGE + i).copied())
+                {
+                    let r = self.p.scrap(num);
+                    self.say(r);
+                    return Flow::Stay;
+                }
                 match ch.to_ascii_lowercase() {
                     'n' if (page + 1) * PAGE < self.p.owned.len() => {
                         self.view = View::Deck(page + 1);
@@ -865,6 +1222,93 @@ impl Session {
                     };
                     self.say(r);
                 }
+            }
+            (View::Hideout, DoorKey::Char('c' | 'C')) => {
+                if self.p.workbench {
+                    self.msgs.clear();
+                    self.view = View::Code(Draft {
+                        step: CodeStep::Effect,
+                        build: Build {
+                            effect: 0,
+                            target: 0,
+                            modifier: 0,
+                        },
+                    });
+                } else {
+                    self.say(Err("Build the workbench first.".into()));
+                }
+            }
+            (View::Code(draft), DoorKey::Char(ch)) => {
+                let mut d = *draft;
+                let kind = match d.step {
+                    CodeStep::Effect => Some(FragKind::Effect),
+                    CodeStep::Target => Some(FragKind::Target),
+                    CodeStep::Modifier => Some(FragKind::Modifier),
+                    CodeStep::Confirm => None,
+                };
+                if let Some(kind) = kind {
+                    let rows = self.fragment_rows(kind);
+                    let picked = if ch == '0' && d.step != CodeStep::Effect {
+                        Some(0)
+                    } else {
+                        digit(ch).and_then(|n| rows.get(n - 1).map(|(num, _)| *num))
+                    };
+                    if let Some(num) = picked {
+                        self.msgs.clear();
+                        match d.step {
+                            CodeStep::Effect => {
+                                d.build.effect = num;
+                                d.step = CodeStep::Target;
+                            }
+                            CodeStep::Target => {
+                                d.build.target = num;
+                                d.step = CodeStep::Modifier;
+                            }
+                            _ => {
+                                d.build.modifier = num;
+                                d.step = CodeStep::Confirm;
+                            }
+                        }
+                        self.view = View::Code(d);
+                    }
+                }
+            }
+            (View::Code(draft), DoorKey::Enter) if draft.step == CodeStep::Confirm => {
+                let build = draft.build;
+                let r = self.p.code(&c, build);
+                let ok = r.is_ok();
+                self.say(r);
+                self.view = if ok {
+                    View::Hideout
+                } else {
+                    View::Code(Draft {
+                        step: CodeStep::Confirm,
+                        build,
+                    })
+                };
+            }
+            (View::Code(draft), DoorKey::Escape) => {
+                let mut d = *draft;
+                self.msgs.clear();
+                match d.step {
+                    CodeStep::Effect => {
+                        self.view = View::Hideout;
+                        return Flow::Stay;
+                    }
+                    CodeStep::Target => {
+                        d.build.effect = 0;
+                        d.step = CodeStep::Effect;
+                    }
+                    CodeStep::Modifier => {
+                        d.build.target = 0;
+                        d.step = CodeStep::Target;
+                    }
+                    CodeStep::Confirm => {
+                        d.build.modifier = 0;
+                        d.step = CodeStep::Modifier;
+                    }
+                }
+                self.view = View::Code(d);
             }
             (View::Hideout, DoorKey::Char(ch)) => {
                 let r = match ch.to_ascii_lowercase() {

@@ -45,6 +45,10 @@ fn result(status: Status, objective: bool, loot: u32, peak: u32) -> RunResult {
         broken: vec![],
         planted: false,
         xp: [1, 2, 0, 0, 1],
+        used: Vec::new(),
+        fragments: Vec::new(),
+        defeated: 0,
+        warden_down: false,
     }
 }
 

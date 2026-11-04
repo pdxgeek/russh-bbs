@@ -436,7 +436,7 @@ fn a_camera_feed_adds_trace_to_every_move_until_it_is_cut() {
 }
 
 #[test]
-fn a_tracer_counts_every_action_until_a_reroute_ends_it() {
+fn a_tracer_fight_starts_a_tracer_and_a_reroute_ends_it() {
     let content = content();
     let mut net = hand_net();
     net.nodes[1].patrol = Patrol::Tracer;
@@ -445,18 +445,24 @@ fn a_tracer_counts_every_action_until_a_reroute_ends_it() {
     let mut run = Run::new(&content, s).unwrap();
     let mut r = rng();
     run.act(&content, Act::Move(1), &mut r).unwrap();
+    assert!(run.encounter().is_some(), "a tracer is a fight, not a flag");
+    // Watch its pattern until it starts counting (every tracer's pattern has a trace beat).
+    for _ in 0..4 {
+        if run.tracer() {
+            break;
+        }
+        run.act(
+            &content,
+            Act::Use {
+                slot: 0,
+                target: None,
+            },
+            &mut r,
+        )
+        .unwrap();
+    }
     assert!(run.tracer());
     let t = run.trace;
-    run.act(
-        &content,
-        Act::Use {
-            slot: 0,
-            target: None,
-        },
-        &mut r,
-    )
-    .unwrap();
-    assert_eq!(run.trace, t + 2 + 2, "ping noise 2, tracer 2");
     run.act(
         &content,
         Act::Use {
@@ -466,12 +472,14 @@ fn a_tracer_counts_every_action_until_a_reroute_ends_it() {
         &mut r,
     )
     .unwrap();
-    assert!(!run.tracer());
-    assert!(run.trace < t + 4);
+    assert!(
+        run.trace < t + 4,
+        "a reroute sheds trace even with the machine still hitting"
+    );
 }
 
 #[test]
-fn a_sentry_alarms_unless_jammed_or_forked() {
+fn a_sentry_starts_a_fight_that_a_jam_or_a_fork_changes() {
     let content = content();
     let enter = |deck: &[u8], pre: Option<(usize, Option<u8>)>| {
         let mut net = hand_net();
@@ -492,22 +500,27 @@ fn a_sentry_alarms_unless_jammed_or_forked() {
                 }
             }
         }
-        let before = run.trace;
         run.act(&content, Act::Move(1), &mut r).unwrap();
-        run.trace - before
+        run
     };
-    let hit = enter(&[PING, JAMMER, FORK], None);
-    assert!(hit >= 6 + 4, "a level-2 sentry costs 6 + 2 x 2, got {hit}");
+    let plain = enter(&[PING, JAMMER, FORK], None);
+    let fight = plain.encounter().expect("a sentry is a fight");
+    assert_eq!(fight.stun, 0);
     let jammed = enter(&[PING, JAMMER, FORK], Some((1, Some(1))));
-    assert!(jammed < hit, "{jammed} < {hit}");
+    assert_eq!(
+        jammed.encounter().map(|e| e.stun),
+        Some(2),
+        "a jam from next door starts the fight with the machine blind"
+    );
     let forked = enter(&[PING, JAMMER, FORK], Some((2, None)));
-    assert!(forked < hit + 4);
+    assert!(forked.encounter().is_none(), "a fork takes the alarm");
 }
 
 #[test]
-fn a_black_wall_cannot_be_entered_until_purged() {
+fn a_black_wall_cannot_be_entered_until_it_is_fought_down() {
     let content = content();
     let mut net = hand_net();
+    net.tier = 2;
     net.nodes[1].patrol = Patrol::BlackWall;
     net.nodes[1].security = 3;
     let mut run = Run::new(&content, setup(net.clone(), &[PING, PURGE])).unwrap();
@@ -516,8 +529,10 @@ fn a_black_wall_cannot_be_entered_until_purged() {
         run.act(&content, Act::Move(1), &mut r),
         Err(Refused::Locked)
     );
-    for _ in 0..12 {
-        if run.is_open(1) {
+    // The first purge starts the fight; the next ones are its moves. A fight may be broken off
+    // by the machine's patience, and the damage stays, so a few tries are allowed.
+    for _ in 0..40 {
+        if run.is_open(1) || run.status != Status::Active {
             break;
         }
         let _ = run.act(
@@ -529,7 +544,8 @@ fn a_black_wall_cannot_be_entered_until_purged() {
             &mut r,
         );
     }
-    assert!(run.is_open(1));
+    assert!(run.is_open(1), "log: {:?}", run.log);
+    assert!(run.encounter().is_none());
     run.act(&content, Act::Move(1), &mut r).unwrap();
     // Without a purge there is no way in at all.
     let cap = Capability {

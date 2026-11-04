@@ -16,7 +16,10 @@
 
 use russh_bbs_door::DoorRng;
 
-use crate::content::{Content, CorpDef, Effect, Family, Lock, ScriptDef};
+use crate::cm::{self, Encounter};
+use crate::code::CODED_BASE;
+use crate::content::{CmKind, Content, CorpDef, Effect, Family, Intent, Lock, ScriptDef};
+use crate::learn::{self, Stage};
 use crate::net::{Network, NodeId, Patrol};
 
 /// The trace at which you are burned.
@@ -27,6 +30,18 @@ pub const LOG_MAX: usize = 60;
 
 /// The most cycles a script action can cost (a guard for the tests).
 pub const MAX_SCRIPT_CYCLES: u32 = 3;
+
+/// Trace at which a warden, if the network keeps one, wakes.
+pub const WARDEN_WAKES_AT: u32 = 55;
+
+/// Moves between a warden waking and its arrival.
+pub const WARDEN_ARRIVES_IN: u32 = 3;
+
+/// Moves before a warden you broke off from comes back.
+pub const WARDEN_RETURNS_IN: u32 = 2;
+
+/// The most fragments one run can bring out.
+pub const FRAGMENTS_PER_RUN: usize = 6;
 
 /// What a run was set up with.
 #[derive(Debug, Clone)]
@@ -55,6 +70,12 @@ pub struct RunSetup {
     pub cycles: u32,
     /// Trace absorbed up front by proxies.
     pub buffer: u32,
+    /// The definitions of coded scripts in the deck (numbers from `CODED_BASE` up).
+    pub extra: Vec<ScriptDef>,
+    /// Runs against this corporation that used each script identity (from the world).
+    pub learned: Vec<(u16, u32)>,
+    /// The warden (a countermeasure number) this run will wake, if any.
+    pub warden: Option<u8>,
 }
 
 /// One script in the loaded deck.
@@ -91,6 +112,10 @@ pub enum Act {
     },
     /// Leave.
     JackOut,
+    /// In an encounter: spend a cycle to take the next strike at three quarters.
+    Brace,
+    /// In an encounter: give up the fight and step back (it costs trace; the damage you did stays).
+    BreakOff,
 }
 
 /// Why an action was refused. A refusal costs nothing: no cycles, no trace.
@@ -112,6 +137,12 @@ pub enum Refused {
     NoCycles,
     /// Nothing to do there.
     NothingToDo,
+    /// You are in an exchange: play a script, brace or break off.
+    Engaged,
+    /// The family was sealed by the countermeasure this move.
+    Sealed,
+    /// The corporation has learned the script: it does nothing here.
+    Patched,
 }
 
 impl Refused {
@@ -127,6 +158,9 @@ impl Refused {
             Self::NeedsTarget => "Aim it at a node next door.",
             Self::NoCycles => "Not enough cycles. Jack out.",
             Self::NothingToDo => "Nothing to do there.",
+            Self::Engaged => "Mid-exchange: play a script, brace [w], or break off [x].",
+            Self::Sealed => "That family is sealed this move. Play another.",
+            Self::Patched => "They have patched that script here. Use another.",
         }
     }
 }
@@ -152,6 +186,15 @@ pub struct RunResult {
     pub planted: bool,
     /// Skill use per family, in `Family::ALL` order.
     pub xp: [u32; 5],
+    /// The identities of the scripts that worked this run (the world counts them for the
+    /// corporation's learning).
+    pub used: Vec<u16>,
+    /// Fragments found, to be added to the character.
+    pub fragments: Vec<u8>,
+    /// Countermeasures put down.
+    pub defeated: u32,
+    /// A warden was put down.
+    pub warden_down: bool,
 }
 
 /// What the player knows of one node.
@@ -183,6 +226,23 @@ pub struct NodeView {
     pub wall_breached: bool,
     /// A scan showed it is a honeypot.
     pub honeypot: bool,
+    /// The countermeasure's name, if scanned and still standing.
+    pub cm: Option<String>,
+}
+
+/// The warden hunting a run.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Warden {
+    /// The warden's number.
+    pub cm: u8,
+    /// Whether it has woken.
+    pub awake: bool,
+    /// Moves until it arrives.
+    pub arrives_in: u32,
+    /// Whether it was put down.
+    pub down: bool,
+    /// The fight so far, if you broke off.
+    pub paused: Option<Encounter>,
 }
 
 /// A run in progress.
@@ -229,6 +289,13 @@ pub struct Run {
     heat_cut: u32,
     broken: Vec<NodeId>,
     xp: [u32; 5],
+    enc: Option<Encounter>,
+    paused: Vec<Encounter>,
+    beaten: u32,
+    warden: Option<Warden>,
+    used: Vec<u16>,
+    frags: Vec<u8>,
+    defeated: u32,
 }
 
 const fn bit(id: NodeId) -> u32 {
@@ -243,7 +310,7 @@ impl Run {
         let deck = setup
             .deck
             .iter()
-            .filter_map(|n| content.script(*n))
+            .filter_map(|n| resolve(content, &setup.extra, *n))
             .map(|s| Slot {
                 script: s.num,
                 left: if s.charges == 0 { u32::MAX } else { s.charges },
@@ -279,6 +346,19 @@ impl Run {
             heat_cut: 0,
             broken: Vec::new(),
             xp: [0; 5],
+            enc: None,
+            paused: Vec::new(),
+            beaten: 0,
+            warden: setup.warden.map(|cm| Warden {
+                cm,
+                awake: false,
+                arrives_in: 0,
+                down: false,
+                paused: None,
+            }),
+            used: Vec::new(),
+            frags: Vec::new(),
+            defeated: 0,
             setup,
         };
         run.say(format!("Jacked in to {}.", corp.name));
@@ -329,6 +409,56 @@ impl Run {
     #[must_use]
     pub const fn buffer(&self) -> u32 {
         self.buffer
+    }
+
+    /// The fight in progress, if any.
+    #[must_use]
+    pub const fn encounter(&self) -> Option<&Encounter> {
+        self.enc.as_ref()
+    }
+
+    /// The warden hunting this run, if the network keeps one.
+    #[must_use]
+    pub const fn warden(&self) -> Option<&Warden> {
+        self.warden.as_ref()
+    }
+
+    /// A script in the deck by number (stock or coded).
+    #[must_use]
+    pub fn script(&self, content: &Content, num: u8) -> Option<ScriptDef> {
+        resolve(content, &self.setup.extra, num)
+    }
+
+    /// How well the corporation knows the script in `slot`.
+    #[must_use]
+    pub fn stage(&self, content: &Content, slot: usize) -> Stage {
+        self.deck
+            .get(slot)
+            .and_then(|s| self.script(content, s.script))
+            .map_or(Stage::Fresh, |s| self.stage_of(&s))
+    }
+
+    fn stage_of(&self, script: &ScriptDef) -> Stage {
+        let uses = self
+            .setup
+            .learned
+            .iter()
+            .find(|(sig, _)| *sig == script.sig)
+            .map_or(0, |(_, n)| *n);
+        learn::stage(script, uses)
+    }
+
+    /// The countermeasure on a node, if it has one and it is still standing.
+    #[must_use]
+    pub fn cm_at<'a>(&self, content: &'a Content, id: NodeId) -> Option<&'a crate::content::CmDef> {
+        if self.beaten & bit(id) != 0 {
+            return None;
+        }
+        let node = self.setup.net.nodes.get(usize::from(id))?;
+        let kind = cm::kind_of(node.patrol)?;
+        let corp = content.corp(self.setup.net.corp)?;
+        let label = format!("nullroute-cm-{}-{}", node.name, node.security);
+        cm::pick(content, corp, self.setup.net.tier, kind, &label)
     }
 
     fn say(&mut self, line: String) {
@@ -394,7 +524,11 @@ impl Run {
     /// What the deck can do, as a [`crate::net::Capability`].
     #[must_use]
     pub fn capability(&self, content: &Content) -> crate::net::Capability {
-        capability_of(content, self.deck.iter().map(|s| s.script))
+        capability_of_defs(
+            self.deck
+                .iter()
+                .filter_map(|s| self.script(content, s.script)),
+        )
     }
 
     /// Add trace. `noisy` actions are halved by a mask.
@@ -418,6 +552,7 @@ impl Run {
         value -= soaked;
         self.trace = (self.trace + value).min(TRACE_MAX);
         self.peak = self.peak.max(self.trace);
+        self.wake_warden();
         if self.trace >= TRACE_MAX {
             self.status = Status::Burned;
             self.say("TRACE COMPLETE. They have your address. You are burned.".to_owned());
@@ -464,6 +599,17 @@ impl Run {
         if self.status != Status::Active {
             return Err(Refused::Over);
         }
+        if self.enc.is_some() {
+            return match act {
+                Act::Use { slot, .. } => self.play(content, slot, rng),
+                Act::Brace => self.brace(),
+                Act::BreakOff => {
+                    self.break_off();
+                    Ok(())
+                }
+                Act::Move(_) | Act::JackOut => Err(Refused::Engaged),
+            };
+        }
         match act {
             Act::JackOut => {
                 self.status = Status::Out;
@@ -472,6 +618,7 @@ impl Run {
             }
             Act::Move(to) => self.step(content, to),
             Act::Use { slot, target } => self.use_script(content, slot, target, rng),
+            Act::Brace | Act::BreakOff => Err(Refused::NothingToDo),
         }
     }
 
@@ -501,6 +648,7 @@ impl Run {
                 self.security(to),
             )
         };
+        let from = self.at;
         self.at = to;
         self.visited |= bit(to);
         self.discover(to);
@@ -511,17 +659,16 @@ impl Run {
             self.feed = true;
             self.say("A camera has your face. The feed is live.".to_owned());
         }
-        if matches!(patrol, Patrol::Sentry | Patrol::Tracer) && self.jammed & bit(to) == 0 {
-            if self.fork > 0 {
+        let _ = level;
+        if matches!(patrol, Patrol::Sentry | Patrol::Tracer) && self.beaten & bit(to) == 0 {
+            if self.fork > 0 && self.jammed & bit(to) == 0 {
                 self.fork -= 1;
                 self.say("A fork takes the alarm instead of you.".to_owned());
-            } else if patrol == Patrol::Sentry {
-                self.say("A sentry sees you.".to_owned());
-                self.add_trace(6 + 2 * u32::from(level), false);
             } else {
-                self.say("A tracer locks on. Every hop is counted now.".to_owned());
-                self.tracer = true;
-                self.add_trace(3, false);
+                // A patrol you jammed from next door starts the fight blind.
+                let stun = if self.jammed & bit(to) == 0 { 0 } else { 2 };
+                self.jammed &= !bit(to);
+                self.begin_encounter(content, to, from, stun);
             }
         }
         if honeypot && !self.alarm {
@@ -529,6 +676,7 @@ impl Run {
             self.say("ALARM: it was a honeypot. The whole floor knows.".to_owned());
             self.add_trace(25, false);
         }
+        self.warden_step(content, from);
         self.ambient(true);
         Ok(())
     }
@@ -541,10 +689,7 @@ impl Run {
         rng: &mut DoorRng,
     ) -> Result<(), Refused> {
         let slot_state = *self.deck.get(slot).ok_or(Refused::NoSlot)?;
-        let script = content
-            .script(slot_state.script)
-            .ok_or(Refused::NoSlot)?
-            .clone();
+        let script = self.staged(content, slot_state.script)?;
         if slot_state.left == 0 {
             return Err(Refused::NoCharges);
         }
@@ -560,6 +705,17 @@ impl Run {
         let cost = self.script_cycles(&script);
         // Refusals that cost nothing are decided before the cycles are taken.
         self.check_useful(content, &script, aimed)?;
+        if script.effect == Effect::Purge
+            && let Some(wall) = aimed
+        {
+            // A black wall is fought, not rolled: the purge is the first move of the exchange.
+            self.begin_wall_encounter(content, wall);
+            let played = self.play_script(content, slot, &script, rng);
+            if played.is_err() {
+                self.enc = None;
+            }
+            return played;
+        }
         if self.cycles < cost {
             return Err(Refused::NoCycles);
         }
@@ -569,7 +725,11 @@ impl Run {
         {
             slot_mut.left -= 1;
         }
+        let before: u32 = self.xp.iter().sum();
         self.apply(content, &script, aimed, rng);
+        if self.xp.iter().sum::<u32>() > before {
+            self.note_used(&script);
+        }
         self.ambient(false);
         Ok(())
     }
@@ -597,6 +757,7 @@ impl Run {
                 let patrol = self.setup.net.nodes.get(usize::from(id)).map(|n| n.patrol);
                 if !matches!(patrol, Some(Patrol::Sentry | Patrol::Tracer))
                     || self.jammed & bit(id) != 0
+                    || self.beaten & bit(id) != 0
                 {
                     return Err(Refused::NothingToDo);
                 }
@@ -674,11 +835,8 @@ impl Run {
                     self.jam(script, id, rng);
                 }
             }
-            Effect::Purge => {
-                if let Some(id) = target {
-                    self.purge(script, id, rng);
-                }
-            }
+            // A purge is the first move of a fight with the wall: see `begin_wall_encounter`.
+            Effect::Purge => {}
             Effect::Mask => {
                 self.mask = (self.mask + power + 1).min(8);
                 self.say(format!("{}: you go quiet.", script.name));
@@ -703,7 +861,7 @@ impl Run {
                 self.say(format!("{}: two of you now.", script.name));
                 self.grow(script.family);
             }
-            Effect::Copy => self.copy(content, script),
+            Effect::Copy => self.copy(content, script, rng),
             Effect::Plant => self.plant(content, script),
             Effect::Shred => self.shred(content, script),
             Effect::Cutfeed => {
@@ -813,33 +971,6 @@ impl Run {
         }
     }
 
-    fn purge(&mut self, script: &ScriptDef, id: NodeId, rng: &mut DoorRng) {
-        let level = self.security(id);
-        let name = self
-            .setup
-            .net
-            .nodes
-            .get(usize::from(id))
-            .map(|n| n.name.clone())
-            .unwrap_or_default();
-        if self.roll(script, level, rng) {
-            self.opened |= bit(id);
-            self.broken.push(id);
-            self.say(format!(
-                "{}: a hole in the black wall at {name}.",
-                script.name
-            ));
-            self.add_trace(script.noise, true);
-            self.grow(script.family);
-        } else {
-            self.say(format!(
-                "{}: the black wall at {name} closes ranks.",
-                script.name
-            ));
-            self.add_trace(script.noise * 2, true);
-        }
-    }
-
     fn here(&self) -> Option<(&crate::net::Node, bool)> {
         self.setup
             .net
@@ -859,7 +990,7 @@ impl Run {
         }
     }
 
-    fn copy(&mut self, content: &Content, script: &ScriptDef) {
+    fn copy(&mut self, content: &Content, script: &ScriptDef, rng: &mut DoorRng) {
         let Some((node, honey)) = self.here() else {
             return;
         };
@@ -884,6 +1015,10 @@ impl Run {
         if self.setup.effect == Effect::Copy && code == self.setup.target && !self.objective {
             self.objective = true;
             self.say("Objective done. Get out.".to_owned());
+        }
+        // Vaults hold more than data: sometimes a bit of someone's code.
+        if rng.chance(15, 100) {
+            self.find_fragment(content, rng);
         }
         self.grow(script.family);
     }
@@ -938,6 +1073,10 @@ impl Run {
             broken: self.broken.clone(),
             planted: self.planted,
             xp: self.xp,
+            used: self.used.clone(),
+            fragments: self.frags.clone(),
+            defeated: self.defeated,
+            warden_down: self.warden.as_ref().is_some_and(|w| w.down),
         }
     }
 
@@ -968,9 +1107,14 @@ impl Run {
             },
             patrol,
             patrol_level: self.security(id),
-            patrol_off: self.jammed & bit(id) != 0,
+            patrol_off: self.jammed & bit(id) != 0 || self.beaten & bit(id) != 0,
             wall_breached: node.patrol == Patrol::BlackWall && open && scanned,
             honeypot: self.decoys & bit(id) != 0,
+            cm: if scanned {
+                self.cm_at(content, id).map(|c| c.name.clone())
+            } else {
+                None
+            },
         })
     }
 
@@ -994,13 +1138,22 @@ impl Run {
         } else if let Some((lock, level)) = v.lock {
             parts.push(format!("{} lock {level}", lock.word()));
         }
-        let off = if v.patrol_off { " (jammed)" } else { "" };
+        let off = if self.beaten & bit(id) != 0 {
+            " (down)"
+        } else if v.patrol_off {
+            " (jammed)"
+        } else {
+            ""
+        };
+        let who =
+            v.cm.as_deref()
+                .map_or_else(String::new, |n| format!(" {n}"));
         match v.patrol {
             Patrol::None => {}
-            Patrol::Sentry => parts.push(format!("sentry {}{off}", v.patrol_level)),
-            Patrol::Tracer => parts.push(format!("tracer {}{off}", v.patrol_level)),
+            Patrol::Sentry => parts.push(format!("sentry{who} {}{off}", v.patrol_level)),
+            Patrol::Tracer => parts.push(format!("tracer{who} {}{off}", v.patrol_level)),
             Patrol::BlackWall if v.wall_breached => parts.push("black wall (breached)".to_owned()),
-            Patrol::BlackWall => parts.push(format!("black wall {}", v.patrol_level)),
+            Patrol::BlackWall => parts.push(format!("black wall{who} {}", v.patrol_level)),
         }
         if v.honeypot {
             parts.push("HONEYPOT".to_owned());
@@ -1021,8 +1174,14 @@ pub fn capability_of(
     content: &Content,
     scripts: impl Iterator<Item = u8>,
 ) -> crate::net::Capability {
+    capability_of_defs(scripts.filter_map(|n| content.script(n).cloned()))
+}
+
+/// The best script of each kind in a list of script definitions (stock or coded).
+#[must_use]
+pub fn capability_of_defs(scripts: impl Iterator<Item = ScriptDef>) -> crate::net::Capability {
     let mut cap = crate::net::Capability::default();
-    for script in scripts.filter_map(|n| content.script(n)) {
+    for script in scripts {
         let power = u8::try_from(script.power).unwrap_or(9);
         if let Some(lock) = script.effect.lock() {
             if let Some(slot) = cap.breaks.get_mut(lock.index()) {
@@ -1041,4 +1200,396 @@ pub fn capability_of(
 #[must_use]
 pub fn corp_intel(corp: &CorpDef) -> String {
     format!("{} Leans on {} locks.", corp.style, corp.favoured.word())
+}
+
+/// A script by number: stock from the tables, coded from the run's own definitions.
+fn resolve(content: &Content, extra: &[ScriptDef], num: u8) -> Option<ScriptDef> {
+    if num >= CODED_BASE {
+        extra.iter().find(|s| s.num == num).cloned()
+    } else {
+        content.script(num).cloned()
+    }
+}
+
+// Encounters (M4-N2): the exchange with a countermeasure, and the warden that hunts a run.
+impl Run {
+    fn note_used(&mut self, script: &ScriptDef) {
+        if !self.used.contains(&script.sig) {
+            self.used.push(script.sig);
+        }
+    }
+
+    fn find_fragment(&mut self, content: &Content, rng: &mut DoorRng) {
+        if self.frags.len() >= FRAGMENTS_PER_RUN {
+            return;
+        }
+        if let Some(num) = cm::drop_fragment(content, self.setup.net.tier, rng) {
+            self.frags.push(num);
+            let name = content
+                .fragment(num)
+                .map_or("a fragment", |f| f.name.as_str())
+                .to_owned();
+            self.say(format!("Found a fragment: {name}."));
+        }
+    }
+
+    /// The script in a deck slot as it works against this corporation: weaker and louder when they
+    /// are wary of it, refused when they have patched it.
+    fn staged(&self, content: &Content, num: u8) -> Result<ScriptDef, Refused> {
+        let mut script = self.script(content, num).ok_or(Refused::NoSlot)?;
+        match self.stage_of(&script) {
+            Stage::Patched => return Err(Refused::Patched),
+            Stage::Wary => {
+                script.power = script.power.saturating_sub(1).max(1);
+                script.noise = script.noise * 3 / 2;
+            }
+            Stage::Fresh => {}
+        }
+        Ok(script)
+    }
+
+    fn wake_warden(&mut self) {
+        let wake = self.trace >= WARDEN_WAKES_AT || self.alarm;
+        let woke = match self.warden.as_mut() {
+            Some(w) if wake && !w.awake && !w.down => {
+                w.awake = true;
+                w.arrives_in = WARDEN_ARRIVES_IN;
+                true
+            }
+            _ => false,
+        };
+        if woke {
+            self.say(format!(
+                "A warden wakes in the core and starts for you. {WARDEN_ARRIVES_IN} moves."
+            ));
+        }
+    }
+
+    fn warden_step(&mut self, content: &Content, from: NodeId) {
+        if self.enc.is_some() {
+            return;
+        }
+        let at = self.at;
+        let level = self.security(at);
+        let Some(w) = self.warden.as_mut() else {
+            return;
+        };
+        if !w.awake || w.down {
+            return;
+        }
+        w.arrives_in = w.arrives_in.saturating_sub(1);
+        if w.arrives_in > 0 {
+            return;
+        }
+        let num = w.cm;
+        let paused = w.paused.take();
+        let Some(def) = content.cm(num) else {
+            return;
+        };
+        let mut e = if let Some(mut e) = paused {
+            e.node = at;
+            e.resume(from);
+            e
+        } else {
+            Encounter::new(def, at, from, level, usize::from(at))
+        };
+        e.stun = 0;
+        let line = format!(
+            "{} finds you. A warden: only a script tuned to wardens will scratch it.",
+            e.name
+        );
+        self.enc = Some(e);
+        self.say(line);
+    }
+
+    fn begin_encounter(&mut self, content: &Content, node: NodeId, from: NodeId, stun: u32) {
+        if let Some(at) = self.paused.iter().position(|e| e.node == node) {
+            let mut e = self.paused.remove(at);
+            e.resume(from);
+            e.stun = stun;
+            let line = format!("{} is waiting where you left it.", e.name);
+            self.enc = Some(e);
+            self.say(line);
+            return;
+        }
+        let Some(def) = self.cm_at(content, node) else {
+            return;
+        };
+        let level = self.security(node);
+        let mut e = Encounter::new(def, node, from, level, usize::from(node));
+        e.stun = stun;
+        let line = format!(
+            "{} {} has you. It is about to {}.",
+            def.kind.word(),
+            def.name,
+            e.intent().gloss()
+        );
+        self.enc = Some(e);
+        self.say(line);
+    }
+
+    fn begin_wall_encounter(&mut self, content: &Content, wall: NodeId) {
+        let from = self.at;
+        self.begin_encounter(content, wall, from, 0);
+    }
+
+    fn play(&mut self, content: &Content, slot: usize, rng: &mut DoorRng) -> Result<(), Refused> {
+        let num = self.deck.get(slot).ok_or(Refused::NoSlot)?.script;
+        let script = self.staged(content, num)?;
+        self.play_script(content, slot, &script, rng)
+    }
+
+    /// One move of an encounter: `script` is the deck slot's script as it works here.
+    fn play_script(
+        &mut self,
+        content: &Content,
+        slot: usize,
+        script: &ScriptDef,
+        rng: &mut DoorRng,
+    ) -> Result<(), Refused> {
+        let slot_state = *self.deck.get(slot).ok_or(Refused::NoSlot)?;
+        if slot_state.left == 0 {
+            return Err(Refused::NoCharges);
+        }
+        let Some(enc) = self.enc.as_ref() else {
+            return Err(Refused::NothingToDo);
+        };
+        if enc.sealed == Some(script.family) {
+            return Err(Refused::Sealed);
+        }
+        if !matches!(
+            script.effect,
+            Effect::Crack
+                | Effect::Spoof
+                | Effect::Overflow
+                | Effect::Jam
+                | Effect::Purge
+                | Effect::Fork
+                | Effect::Mask
+                | Effect::Decoy
+                | Effect::Reroute
+                | Effect::Scan
+                | Effect::Map
+        ) {
+            return Err(Refused::NothingToDo);
+        }
+        let cost = self.script_cycles(script);
+        if self.cycles < cost {
+            return Err(Refused::NoCycles);
+        }
+        self.cycles -= cost;
+        if let Some(s) = self.deck.get_mut(slot)
+            && s.left != u32::MAX
+        {
+            s.left -= 1;
+        }
+        let skill = self
+            .setup
+            .skill
+            .get(script.family.index())
+            .copied()
+            .unwrap_or(0);
+        let before: u32 = self.xp.iter().sum();
+        let mut dealt = 0;
+        match script.effect {
+            Effect::Crack | Effect::Spoof | Effect::Overflow | Effect::Purge | Effect::Jam => {
+                let (name, hit) = {
+                    let enc = self.enc.as_ref().expect("checked above");
+                    (enc.name.clone(), enc.damage(script, skill))
+                };
+                dealt = hit;
+                self.add_trace(script.noise, true);
+                if script.effect == Effect::Jam {
+                    if let Some(e) = self.enc.as_mut() {
+                        e.stun += 1;
+                    }
+                    self.grow(script.family);
+                    self.say(format!(
+                        "{}: {name} loses its next beat (-{hit}).",
+                        script.name
+                    ));
+                } else if hit > 0 {
+                    self.grow(script.family);
+                    self.say(format!("{}: -{hit} on {name}.", script.name));
+                } else if self.enc.as_ref().is_some_and(|e| e.kind == CmKind::Warden) {
+                    self.say(format!(
+                        "{}: bounces off {name}. Only a script tuned to wardens works.",
+                        script.name
+                    ));
+                } else {
+                    self.say(format!("{}: {name}'s armor soaks it.", script.name));
+                }
+            }
+            _ => {
+                if matches!(script.effect, Effect::Scan | Effect::Map)
+                    && let Some(e) = self.enc.as_mut()
+                {
+                    e.scanned = true;
+                }
+                self.apply(content, script, None, rng);
+            }
+        }
+        if self.xp.iter().sum::<u32>() > before {
+            self.note_used(script);
+        }
+        if self.status != Status::Active {
+            return Ok(());
+        }
+        let down = self.enc.as_mut().is_some_and(|e| e.hit(dealt));
+        if down {
+            self.defeat(content, rng);
+            self.ambient(false);
+            return Ok(());
+        }
+        self.round(dealt, Some(script.family), false);
+        self.ambient(false);
+        self.check_spent();
+        Ok(())
+    }
+
+    fn brace(&mut self) -> Result<(), Refused> {
+        if self.cycles == 0 {
+            return Err(Refused::NoCycles);
+        }
+        self.cycles -= 1;
+        self.say("You brace and wait for the beat.".to_owned());
+        self.round(0, None, true);
+        self.ambient(false);
+        self.check_spent();
+        Ok(())
+    }
+
+    /// The countermeasure's beat, after your move.
+    fn round(&mut self, dealt: u32, family: Option<Family>, braced: bool) {
+        let Some(beat) = self.enc.as_mut().map(|e| e.resolve(dealt, family)) else {
+            return;
+        };
+        let name = self
+            .enc
+            .as_ref()
+            .map_or_else(String::new, |e| e.name.clone());
+        if beat.stunned {
+            self.say(format!("{name} is blind this beat."));
+            return;
+        }
+        let mut value = beat.trace;
+        let mut note = String::new();
+        if beat.strike && self.fork > 0 {
+            self.fork -= 1;
+            value = 0;
+            note.push_str(" A fork takes the hit.");
+        }
+        if braced && value > 0 {
+            value = value * 3 / 4;
+        }
+        let before = self.trace;
+        if value > 0 {
+            self.add_trace(value, true);
+        }
+        let delta = self.trace - before;
+        if beat.tracer && !self.tracer {
+            self.tracer = true;
+            note.push_str(" Every hop is counted now.");
+        }
+        let cost = if delta > 0 {
+            format!("trace +{delta}")
+        } else {
+            "no trace".to_owned()
+        };
+        self.say(format!("{name}: {}, {cost}.{note}", beat.intent.word()));
+    }
+
+    fn check_spent(&mut self) {
+        if self.status != Status::Active {
+            return;
+        }
+        if self.enc.as_ref().is_some_and(Encounter::spent) {
+            let name = self
+                .enc
+                .as_ref()
+                .map_or_else(String::new, |e| e.name.clone());
+            self.say(format!("{name} has had enough of you. You are thrown out."));
+            self.break_off();
+        }
+    }
+
+    /// Leave the exchange. The damage you did and what you learned stay with the machine.
+    fn break_off(&mut self) {
+        let Some(e) = self.enc.take() else {
+            return;
+        };
+        let penalty = e.strike / 2 + 2;
+        if e.kind != CmKind::Wall && e.node != e.from {
+            self.at = e.from;
+        }
+        self.say(format!("You break off from {}.", e.name));
+        if e.kind == CmKind::Warden {
+            if let Some(w) = self.warden.as_mut() {
+                w.paused = Some(e);
+                w.arrives_in = WARDEN_RETURNS_IN;
+            }
+        } else {
+            self.paused.retain(|p| p.node != e.node);
+            self.paused.push(e);
+        }
+        self.add_trace(penalty, false);
+    }
+
+    fn defeat(&mut self, content: &Content, rng: &mut DoorRng) {
+        let Some(e) = self.enc.take() else {
+            return;
+        };
+        self.defeated += 1;
+        self.say(format!("{} goes down after {} moves.", e.name, e.round + 1));
+        let mut drops = 0;
+        match e.kind {
+            CmKind::Wall => {
+                self.opened |= bit(e.node);
+                self.broken.push(e.node);
+                self.say("A hole in the wall.".to_owned());
+            }
+            CmKind::Warden => {
+                if let Some(w) = self.warden.as_mut() {
+                    w.down = true;
+                    w.paused = None;
+                }
+                self.say("The warden is down. The network is quiet.".to_owned());
+                drops = 2;
+            }
+            CmKind::Sentry | CmKind::Tracer => {
+                self.beaten |= bit(e.node);
+                if e.kind == CmKind::Tracer {
+                    self.tracer = false;
+                    self.say("The tracer is cut loose.".to_owned());
+                }
+            }
+        }
+        if drops == 0 && content.cm(e.cm).is_some_and(|d| rng.chance(d.drop, 100)) {
+            drops = 1;
+        }
+        for _ in 0..drops {
+            self.find_fragment(content, rng);
+        }
+    }
+
+    /// What the script in `slot` would do to the machine this move, if there is a fight.
+    #[must_use]
+    pub fn preview(&self, content: &Content, slot: usize) -> Option<u32> {
+        let enc = self.enc.as_ref()?;
+        let num = self.deck.get(slot)?.script;
+        let script = self.staged(content, num).ok()?;
+        let skill = self
+            .setup
+            .skill
+            .get(script.family.index())
+            .copied()
+            .unwrap_or(0);
+        Some(enc.damage(&script, skill))
+    }
+
+    /// The intent the countermeasure shows this move, if there is a fight.
+    #[must_use]
+    pub fn intent(&self) -> Option<Intent> {
+        self.enc.as_ref().map(Encounter::intent)
+    }
 }
