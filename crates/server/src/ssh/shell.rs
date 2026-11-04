@@ -1209,7 +1209,7 @@ impl<D: Backend> Shell<D> {
             return;
         };
         // A password session proves its current password again to set or clear one (D81). That
-        // is a password guess like any other, so it goes through the same gate (D101), keyed by
+        // is a password guess like any other, so it goes through the same gate (D105), keyed by
         // the account rather than a handle: this session already knows whose it is.
         let guess = match (&request.method, &request.kind) {
             (

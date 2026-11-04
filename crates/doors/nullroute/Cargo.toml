@@ -1,0 +1,20 @@
+[package]
+name = "russh-bbs-door-nullroute"
+description = "russh-bbs door: Nullroute, a hacking game (engine slice N1)"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+russh-bbs-door = { workspace = true }
+serde = { workspace = true }
+toml = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+russh-bbs-core = { workspace = true }
+# Property tests for network generation (dev only; the sandbox audit reads [dependencies] only).
+proptest = { workspace = true }

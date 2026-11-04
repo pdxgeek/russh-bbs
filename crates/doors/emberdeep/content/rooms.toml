@@ -1,0 +1,869 @@
+# Room templates. A level is built from them: one entry, one way down, one shaft, some lairs and
+# the rest from the other kinds. What a hero is offered depends on their build (need = [...]).
+
+# ---------------- Entry and exit ----------------
+[[room]]
+id = "landing-upper"
+kind = "entry"
+bands = [1, 2]
+name = "The Landing"
+text = "Worn steps end in a soot-black landing. The air is warm and smells of old iron."
+[[room.option]]
+id = "carvings"
+label = "Read the stair-carvings"
+need = [{ kind = "tag", tag = "lore" }]
+cost = 1
+ok = [{ kind = "xp", amount = 8 }, { kind = "reveal" }]
+ok_text = "The carvings are a map of this level, in the builders' shorthand."
+
+[[room]]
+id = "landing-deep"
+kind = "entry"
+bands = [3, 4, 5]
+name = "The Deep Landing"
+text = "The stairs open onto a ledge of dark glass. Somewhere below, something is breathing slowly."
+[[room.option]]
+id = "carvings"
+label = "Read the stair-carvings"
+need = [{ kind = "tag", tag = "lore" }]
+cost = 1
+ok = [{ kind = "xp", amount = 14 }, { kind = "reveal" }]
+ok_text = "The carvings are a map of this level, in the builders' shorthand."
+[[room.option]]
+id = "deepmap"
+label = "Unroll your deep map"
+need = [{ kind = "tag", tag = "deepmap" }]
+cost = 0
+ok = [{ kind = "reveal" }]
+ok_text = "Your notes from the lower shafts fill in the level."
+
+[[room]]
+id = "stairwell-upper"
+kind = "exit"
+bands = [1, 2, 3]
+name = "The Stairwell"
+text = "A broad stair winds down into the dark. Soot, bootprints, a dropped glove."
+[[room.option]]
+id = "glove"
+label = "Search the dropped glove"
+cost = 1
+check = { attr = "wits", dc = 10 }
+ok = [{ kind = "coin", amount = 9 }]
+ok_text = "A few coins sewn into the cuff."
+fail = [{ kind = "fatigue", amount = 3 }]
+fail_text = "Only lint, and a long look into the dark."
+
+[[room]]
+id = "stairwell-deep"
+kind = "exit"
+bands = [4, 5]
+name = "The Cold Stairwell"
+text = "The stair here is cut from a single block, ringing faintly underfoot."
+[[room.option]]
+id = "ringing"
+label = "Listen to the stone"
+need = [{ kind = "tag", tag = "foresee" }]
+cost = 0
+ok = [{ kind = "xp", amount = 20 }]
+ok_text = "The ringing tells you what is waiting below."
+
+# ---------------- Guardians ----------------
+[[room]]
+id = "gate-bellows"
+kind = "guardian"
+bands = [1]
+name = "The Bellows Gate"
+text = "A vast bellows-engine blocks the stairs, wheezing. Its arms are already moving."
+[[room.option]]
+id = "fight"
+label = "Face the Bellows Golem"
+cost = 0
+once = false
+ok = [{ kind = "fight" }]
+ok_text = "The golem turns."
+
+[[room]]
+id = "gate-slag"
+kind = "guardian"
+bands = [2]
+name = "The Slag Gate"
+text = "A lake of cooling metal fills the hall. Something in it stirs."
+[[room.option]]
+id = "fight"
+label = "Face the Slagmother"
+cost = 0
+once = false
+ok = [{ kind = "fight" }]
+ok_text = "The lake rises."
+
+[[room]]
+id = "gate-prism"
+kind = "guardian"
+bands = [3]
+name = "The Prism Gate"
+text = "A hall of mirrors. In every one, a figure of glass is turning to look at you."
+[[room.option]]
+id = "fight"
+label = "Face the Prism Warden"
+cost = 0
+once = false
+ok = [{ kind = "fight" }]
+ok_text = "The reflections step out."
+
+[[room]]
+id = "gate-throne"
+kind = "guardian"
+bands = [4]
+name = "The Throne Gate"
+text = "Coals line a long carpet to a throne. The thing on it is crowned, and awake."
+[[room.option]]
+id = "fight"
+label = "Face the Ember King"
+cost = 0
+once = false
+ok = [{ kind = "fight" }]
+ok_text = "The king stands."
+
+[[room]]
+id = "gate-furnace"
+kind = "guardian"
+bands = [5]
+name = "The Cold Furnace"
+text = "The great furnace at the Emberdeep's heart, gone cold. Frost climbs the walls. It knows you are here."
+[[room.option]]
+id = "fight"
+label = "Face the Cold Furnace"
+cost = 0
+once = false
+ok = [{ kind = "fight" }]
+ok_text = "The frost closes in."
+
+# ---------------- Corridors ----------------
+[[room]]
+id = "sooty-gallery"
+kind = "corridor"
+bands = [1, 2, 3]
+name = "Sooty Gallery"
+text = "A long gallery, every surface furred with soot. Footprints, not all of them human."
+trap_pct = 25
+[[room.option]]
+id = "sweep"
+label = "Follow the footprints"
+need = [{ kind = "tag", tag = "forage" }]
+cost = 1
+ok = [{ kind = "salvage", amount = 3 }, { kind = "xp", amount = 5 }]
+ok_text = "They lead to a nest of scavenged scrap."
+
+[[room]]
+id = "rubble-passage"
+kind = "corridor"
+bands = [1, 2, 3, 4, 5]
+name = "Rubble Passage"
+text = "The roof came down here long ago. A gap remains, and loose stone."
+trap_pct = 20
+[[room.option]]
+id = "heave"
+label = "Heave the rubble aside"
+need = [{ kind = "tag", tag = "brawn" }]
+cost = 2
+check = { attr = "might", dc = 11 }
+ok = [{ kind = "salvage", amount = 5 }, { kind = "xp", amount = 6 }]
+ok_text = "Behind the stones, a collapsed tool-crate."
+fail = [{ kind = "hurt", amount = 3 }]
+fail_text = "A slab slips and catches your knuckles."
+[[room.option]]
+id = "squeeze"
+label = "Squeeze through the gap"
+need = [{ kind = "tag", tag = "nimble" }]
+cost = 1
+check = { attr = "finesse", dc = 11 }
+ok = [{ kind = "coin", amount = 12 }]
+ok_text = "On the far side, a skeleton's purse."
+fail = [{ kind = "fatigue", amount = 4 }]
+fail_text = "You wriggle until you are tired and have found nothing."
+[[room.option]]
+id = "pick-through"
+label = "Pick through the loose stone"
+need = [{ kind = "no_tag", tag = "brawn" }, { kind = "no_tag", tag = "nimble" }]
+cost = 1
+check = { attr = "wits", dc = 12 }
+ok = [{ kind = "salvage", amount = 2 }]
+ok_text = "A few salvageable bits."
+fail = [{ kind = "fatigue", amount = 3 }]
+fail_text = "Dust and nothing else."
+
+[[room]]
+id = "collapsed-stair"
+kind = "corridor"
+bands = [2, 3, 4, 5]
+name = "Collapsed Stair"
+text = "A stair that once led somewhere better. Half the steps are a ramp of debris."
+move_cost = 2
+trap_pct = 15
+[[room.option]]
+id = "climb-up"
+label = "Climb the debris to the broken landing"
+need = [{ kind = "tag", tag = "climb" }]
+cost = 1
+check = { attr = "finesse", dc = 11 }
+ok = [{ kind = "coin", amount = 18 }, { kind = "xp", amount = 8 }]
+ok_text = "A cache left by someone who also liked heights."
+fail = [{ kind = "hurt", amount = 4 }]
+fail_text = "A handhold gives and you slide down the ramp."
+
+[[room]]
+id = "cold-corridor"
+kind = "corridor"
+bands = [4, 5]
+name = "Cold Corridor"
+text = "Frost has crept into this passage. Your torch gutters, and your breath hangs."
+trap_pct = 30
+[[room.option]]
+id = "warm-hands"
+label = "Warm your hands at the censer-coals"
+need = [{ kind = "tag", tag = "warding" }]
+cost = 1
+ok = [{ kind = "fatigue", amount = -10 }, { kind = "heal", amount = 6 }]
+ok_text = "The cold slides off you like water."
+
+# ---------------- Vaults ----------------
+[[room]]
+id = "coffer-room"
+kind = "vault"
+bands = [1, 2, 3]
+name = "Coffer Room"
+text = "Iron coffers line the walls. Most are rusted open and empty; one near the back is whole and locked."
+[[room.option]]
+id = "pick"
+label = "Pick the lock"
+need = [{ kind = "tag", tag = "lockpick" }]
+cost = 1
+ok = [{ kind = "coin", amount = 24 }, { kind = "salvage", amount = 3 }]
+ok_text = "It clicks open without a fuss. Coin and a lump of good iron."
+[[room.option]]
+id = "force"
+label = "Force the lid"
+need = [{ kind = "no_tag", tag = "lockpick" }, { kind = "attr", attr = "might", min = 12 }]
+cost = 1
+check = { attr = "might", dc = 12 }
+ok = [{ kind = "coin", amount = 20 }, { kind = "salvage", amount = 2 }]
+ok_text = "The hinge shrieks and breaks. Inside: coin and salvage."
+fail = [{ kind = "hurt", amount = 4 }]
+fail_text = "The lid slams back on your fingers."
+[[room.option]]
+id = "smash"
+label = "Smash the hasp with whatever you have"
+need = [{ kind = "no_tag", tag = "lockpick" }, { kind = "no_tag", tag = "brawn" }]
+cost = 2
+check = { attr = "might", dc = 15 }
+ok = [{ kind = "coin", amount = 10 }]
+ok_text = "The hasp gives. Half the coins have rolled into the cracks."
+fail = [{ kind = "hurt", amount = 5 }, { kind = "fatigue", amount = 4 }]
+fail_text = "You hurt yourself far more than the lock."
+[[room.option]]
+id = "maker-mark"
+label = "Read the maker's mark on the coffer"
+need = [{ kind = "tag", tag = "runecraft" }]
+cost = 1
+ok = [{ kind = "relic" }, { kind = "xp", amount = 10 }]
+ok_text = "The mark opens a hidden drawer, and a relic of the old forges is inside."
+
+[[room]]
+id = "guild-strongroom"
+kind = "vault"
+bands = [3, 4, 5]
+name = "Guild Strongroom"
+text = "A guildhouse strongroom, its door standing ajar. Its owners never came back for the contents."
+[[room.option]]
+id = "safe"
+label = "Open the wall safe"
+need = [{ kind = "tag", tag = "safecrack" }]
+cost = 1
+ok = [{ kind = "coin", amount = 90 }, { kind = "relic" }]
+ok_text = "Tumblers fall like old friends. Coin, and a relic wrapped in oilcloth."
+[[room.option]]
+id = "ledgers"
+label = "Appraise the ledgers"
+need = [{ kind = "tag", tag = "appraise" }]
+cost = 1
+ok = [{ kind = "coin", amount = 60 }]
+ok_text = "A debt-note that someone will still honour, for a cut."
+[[room.option]]
+id = "grab"
+label = "Grab what you can carry"
+cost = 1
+check = { attr = "wits", dc = 13 }
+ok = [{ kind = "coin", amount = 30 }, { kind = "salvage", amount = 6 }]
+ok_text = "You load up and leave before you have second thoughts."
+fail = [{ kind = "hurt", amount = 6 }]
+fail_text = "A tripwire on the shelf, and a rain of ledger-weights."
+
+[[room]]
+id = "ash-pantry"
+kind = "vault"
+bands = [1, 2]
+name = "Ash Pantry"
+text = "Shelves of long-dead provisions under a layer of ash. Something in a jar is still moving."
+[[room.option]]
+id = "forage-jars"
+label = "Find what is still good"
+need = [{ kind = "tag", tag = "forage" }]
+cost = 1
+ok = [{ kind = "heal", amount = 10 }, { kind = "fatigue", amount = -10 }]
+ok_text = "Dried mushrooms and a jar of pickled something. It is, astonishingly, fine."
+[[room.option]]
+id = "rummage"
+label = "Rummage through the shelves"
+need = [{ kind = "no_tag", tag = "forage" }]
+cost = 1
+check = { attr = "wits", dc = 11 }
+ok = [{ kind = "coin", amount = 8 }]
+ok_text = "Coins tucked in a flour tin."
+fail = [{ kind = "fatigue", amount = 3 }]
+fail_text = "Ash up your nose and nothing to show for it."
+
+[[room]]
+id = "tomb-niche"
+kind = "vault"
+bands = [2, 3, 4]
+name = "Tomb Niche"
+text = "A shelf-tomb in the wall. A smith lies in it, one hand closed on something."
+[[room.option]]
+id = "prayer"
+label = "Say the rites over the smith"
+need = [{ kind = "tag", tag = "bless" }]
+cost = 1
+ok = [{ kind = "relic" }, { kind = "heal", amount = 8 }]
+ok_text = "The hand opens. A relic, and a light feeling."
+[[room.option]]
+id = "pry"
+label = "Pry the hand open"
+need = [{ kind = "no_tag", tag = "bless" }]
+cost = 1
+check = { attr = "might", dc = 13 }
+ok = [{ kind = "salvage", amount = 6 }]
+ok_text = "Salvage-grade metal, at least."
+fail = [{ kind = "wound", id = "gash" }]
+fail_text = "A hidden blade in the shelf bites your wrist."
+
+# ---------------- Forges ----------------
+[[room]]
+id = "cold-forge"
+kind = "forge"
+bands = [1, 2, 3]
+name = "Cold Forge"
+text = "An anvil, a quenching trough, a dead hearth. The tools are still hanging where the smith left them."
+[[room.option]]
+id = "rekindle"
+label = "Rekindle the hearth with a rune"
+need = [{ kind = "tag", tag = "runecraft" }]
+cost = 2
+ok = [{ kind = "salvage", amount = 8 }, { kind = "xp", amount = 12 }]
+ok_text = "The hearth wakes and you work scrap into usable stock before it sleeps again."
+[[room.option]]
+id = "scavenge"
+label = "Scavenge the tool racks"
+cost = 1
+ok = [{ kind = "salvage", amount = 3 }]
+ok_text = "A good file and a crate of nails."
+[[room.option]]
+id = "anvil-prayer"
+label = "Pray over the anvil"
+need = [{ kind = "tag", tag = "bless" }]
+cost = 1
+ok = [{ kind = "heal", amount = 8 }, { kind = "fatigue", amount = -8 }]
+ok_text = "The iron remembers warmth."
+
+[[room]]
+id = "hot-forge"
+kind = "forge"
+bands = [2, 3, 4]
+name = "Hot Forge"
+text = "A forge that never went cold. The air shimmers and the bellows breathe by themselves."
+move_cost = 1
+trap_pct = 20
+[[room.option]]
+id = "draw-bellows"
+label = "Work the bellows and gather the slag"
+cost = 2
+check = { attr = "might", dc = 12 }
+ok = [{ kind = "salvage", amount = 7 }, { kind = "coin", amount = 10 }]
+ok_text = "Good, hot slag, still full of ore."
+fail = [{ kind = "wound", id = "burn" }]
+fail_text = "A gout of flame catches your arm."
+[[room.option]]
+id = "ward-off"
+label = "Walk the coals untouched"
+need = [{ kind = "tag", tag = "warding" }]
+cost = 1
+ok = [{ kind = "salvage", amount = 6 }, { kind = "xp", amount = 10 }]
+ok_text = "The heat parts around you; you take the best of it."
+
+[[room]]
+id = "ember-anvil"
+kind = "forge"
+bands = [4, 5]
+name = "The Ember Anvil"
+text = "An anvil of dark stone, seamed with faint red. The old smiths made their best here."
+[[room.option]]
+id = "temper"
+label = "Temper a relic on the anvil"
+need = [{ kind = "tag", tag = "runecraft" }, { kind = "tag", tag = "tinker" }]
+cost = 2
+ok = [{ kind = "relic" }, { kind = "xp", amount = 30 }]
+ok_text = "The relic takes the heat and keeps it."
+[[room.option]]
+id = "chip"
+label = "Chip at the dark stone"
+cost = 2
+check = { attr = "might", dc = 14 }
+ok = [{ kind = "salvage", amount = 12 }]
+ok_text = "Chunks of anvil-stone, worth a great deal to the right forge."
+fail = [{ kind = "hurt", amount = 6 }]
+fail_text = "A splinter of stone opens your palm."
+
+# ---------------- Flooded halls ----------------
+[[room]]
+id = "drowned-hall"
+kind = "flooded"
+bands = [1, 2, 3]
+name = "Drowned Hall"
+text = "Black water to the knee, deeper in the middle. Things are glinting down there."
+move_cost = 2
+[[room.option]]
+id = "dive"
+label = "Dive for the glinting things"
+need = [{ kind = "attr", attr = "finesse", min = 11 }]
+cost = 2
+check = { attr = "finesse", dc = 12 }
+ok = [{ kind = "coin", amount = 28 }, { kind = "salvage", amount = 2 }]
+ok_text = "Coins, a signet, and a very surprised eel."
+fail = [{ kind = "fatigue", amount = 8 }]
+fail_text = "You come up gasping, with nothing."
+[[room.option]]
+id = "wade"
+label = "Wade the shallows for scraps"
+cost = 1
+ok = [{ kind = "salvage", amount = 2 }]
+ok_text = "A few bits near the edge."
+
+[[room]]
+id = "sunken-gallery"
+kind = "flooded"
+bands = [3, 4, 5]
+name = "Sunken Gallery"
+text = "A gallery of statues up to their waists in cold water. Their faces have been chipped away."
+move_cost = 2
+[[room.option]]
+id = "read-plinths"
+label = "Read the plinth inscriptions"
+need = [{ kind = "tag", tag = "lore" }]
+cost = 1
+ok = [{ kind = "xp", amount = 24 }, { kind = "reveal" }]
+ok_text = "A dedication, and a floor-plan carved into the base."
+[[room.option]]
+id = "swim"
+label = "Swim the flooded channel for the cache"
+need = [{ kind = "tag", tag = "climb" }]
+cost = 2
+check = { attr = "finesse", dc = 13 }
+ok = [{ kind = "coin", amount = 50 }]
+ok_text = "A waterlogged chest, and the coin in it dried well enough."
+fail = [{ kind = "fatigue", amount = 10 }, { kind = "hurt", amount = 4 }]
+fail_text = "The current drags you into a statue."
+
+[[room]]
+id = "weeping-cistern"
+kind = "flooded"
+bands = [1, 2, 3, 4, 5]
+name = "Weeping Cistern"
+text = "Water falls from the ceiling in threads. The cistern's walls are slick but studded with old iron rungs."
+move_cost = 2
+[[room.option]]
+id = "drink"
+label = "Drink and wash"
+cost = 1
+ok = [{ kind = "fatigue", amount = -10 }]
+ok_text = "Cold, clean, and a relief."
+[[room.option]]
+id = "rungs"
+label = "Climb the rungs to a high ledge"
+need = [{ kind = "tag", tag = "climb" }]
+cost = 1
+check = { attr = "finesse", dc = 11 }
+ok = [{ kind = "coin", amount = 22 }, { kind = "xp", amount = 8 }]
+ok_text = "A ledge with a dead scout's pack."
+fail = [{ kind = "hurt", amount = 3 }]
+fail_text = "A rung gives way."
+
+# ---------------- Shrines ----------------
+[[room]]
+id = "ember-shrine"
+kind = "shrine"
+bands = [1, 2, 3, 4, 5]
+name = "Ember Shrine"
+text = "A small hearth-shrine with a single coal still glowing in a stone bowl. It is the warmest place for a long way."
+[[room.option]]
+id = "pray"
+label = "Pray at the coal"
+need = [{ kind = "tag", tag = "bless" }]
+cost = 1
+ok = [{ kind = "heal", amount = 14 }, { kind = "fatigue", amount = -15 }]
+ok_text = "The coal brightens and answers."
+[[room.option]]
+id = "rest"
+label = "Rest by the coal"
+cost = 2
+ok = [{ kind = "heal", amount = 8 }, { kind = "fatigue", amount = -12 }]
+ok_text = "You sit, and for a little while no one is trying to kill you."
+[[room.option]]
+id = "hymn"
+label = "Study the hymn on the bowl"
+need = [{ kind = "tag", tag = "lore" }]
+cost = 1
+ok = [{ kind = "xp", amount = 14 }]
+ok_text = "A short, odd hymn. You learn something from the shape of it."
+
+[[room]]
+id = "cairn-of-the-lost"
+kind = "shrine"
+bands = [2, 3, 4, 5]
+name = "Cairn of the Lost"
+text = "A cairn of boots and helmets, built by those who found their friends too late."
+[[room.option]]
+id = "add-stone"
+label = "Add a stone and say their names"
+need = [{ kind = "tag", tag = "bless" }]
+cost = 1
+ok = [{ kind = "heal", amount = 10 }, { kind = "xp", amount = 10 }]
+ok_text = "You feel looked after."
+[[room.option]]
+id = "search-cairn"
+label = "Search the cairn for something useful"
+need = [{ kind = "no_tag", tag = "bless" }]
+cost = 1
+check = { attr = "wits", dc = 12 }
+ok = [{ kind = "salvage", amount = 4 }, { kind = "coin", amount = 10 }]
+ok_text = "A dead man's purse, and a good knife."
+fail = [{ kind = "fatigue", amount = 5 }]
+fail_text = "A hollow feeling and nothing else."
+
+[[room]]
+id = "hearth-chapel"
+kind = "shrine"
+bands = [1, 2, 3]
+name = "Hearth Chapel"
+text = "A chapel of ember-priests, its pews burned to ribs. The altar-stone is still warm."
+[[room.option]]
+id = "tend-altar"
+label = "Tend the altar-fire"
+need = [{ kind = "tag", tag = "tend" }]
+cost = 1
+ok = [{ kind = "heal", amount = 18 }, { kind = "fatigue", amount = -15 }, { kind = "xp", amount = 8 }]
+ok_text = "The altar-fire rises, and everything aches a little less."
+[[room.option]]
+id = "sit"
+label = "Sit on a pew-rib"
+cost = 1
+ok = [{ kind = "fatigue", amount = -6 }]
+ok_text = "Not comfortable, but a rest."
+
+# ---------------- Lairs ----------------
+[[room]]
+id = "slag-den"
+kind = "lair"
+bands = [1, 2]
+name = "Slag Den"
+text = "A hollow warm with slag. Gnawed bones and glinting scrap; something is rustling in the heap."
+[[room.option]]
+id = "fight"
+label = "Fight the pack"
+cost = 0
+once = false
+ok = [{ kind = "fight" }]
+ok_text = "Steel out."
+[[room.option]]
+id = "sneak"
+label = "Creep past while they feed"
+need = [{ kind = "tag", tag = "sneak" }]
+cost = 1
+check = { attr = "finesse", dc = 13 }
+ok = [{ kind = "clear" }, { kind = "xp", amount = 8 }]
+ok_text = "Soft boots, held breath. They never lift their heads."
+fail = [{ kind = "fight" }]
+fail_text = "A loose stone skitters away. They turn together."
+[[room.option]]
+id = "stare"
+label = "Stare them down"
+need = [{ kind = "tag", tag = "intimidate" }]
+cost = 1
+check = { attr = "spirit", dc = 12 }
+ok = [{ kind = "clear" }, { kind = "xp", amount = 8 }]
+ok_text = "They back off into the heap, and watch."
+fail = [{ kind = "fight" }]
+fail_text = "They do not care about your face."
+[[room.option]]
+id = "bait"
+label = "Lure them away with scraps"
+need = [{ kind = "tag", tag = "forage" }]
+cost = 1
+ok = [{ kind = "clear" }, { kind = "xp", amount = 6 }]
+ok_text = "You know what vermin like. They follow the trail of it down a side passage."
+
+[[room]]
+id = "glass-nest"
+kind = "lair"
+bands = [3]
+name = "Glass Nest"
+text = "Splinters of mirror-glass piled into a nest. Every shard shows a different, hungry eye."
+[[room.option]]
+id = "fight"
+label = "Fight the pack"
+cost = 0
+once = false
+ok = [{ kind = "fight" }]
+ok_text = "Steel out."
+[[room.option]]
+id = "sneak"
+label = "Slip through the blind angles"
+need = [{ kind = "tag", tag = "sneak" }]
+cost = 1
+check = { attr = "finesse", dc = 14 }
+ok = [{ kind = "clear" }, { kind = "xp", amount = 14 }]
+ok_text = "You walk the seams between the reflections."
+fail = [{ kind = "fight" }]
+fail_text = "Your own reflection gives you away."
+[[room.option]]
+id = "bless-doorway"
+label = "Light a warding flame in the doorway"
+need = [{ kind = "tag", tag = "warding" }]
+cost = 1
+check = { attr = "spirit", dc = 13 }
+ok = [{ kind = "clear" }, { kind = "xp", amount = 14 }]
+ok_text = "The glass-things will not cross the flame."
+fail = [{ kind = "fight" }]
+fail_text = "The flame gutters and they come."
+
+[[room]]
+id = "ember-barracks"
+kind = "lair"
+bands = [4, 5]
+name = "Ember Barracks"
+text = "Rows of bunks, scorched through. Armour stands in the rows, and some of it is shifting."
+[[room.option]]
+id = "fight"
+label = "Fight the pack"
+cost = 0
+once = false
+ok = [{ kind = "fight" }]
+ok_text = "Steel out."
+[[room.option]]
+id = "stare"
+label = "Order them to stand down"
+need = [{ kind = "tag", tag = "intimidate" }]
+cost = 1
+check = { attr = "spirit", dc = 15 }
+ok = [{ kind = "clear" }, { kind = "xp", amount = 24 }]
+ok_text = "They remember how to take orders."
+fail = [{ kind = "fight" }]
+fail_text = "They remember how to give them."
+[[room.option]]
+id = "foresee"
+label = "Find the gap in their watch"
+need = [{ kind = "tag", tag = "foresee" }]
+cost = 1
+ok = [{ kind = "clear" }, { kind = "xp", amount = 24 }]
+ok_text = "You saw where they would look. You walked where they did not."
+
+[[room]]
+id = "bone-pit"
+kind = "lair"
+bands = [1, 2, 3, 4, 5]
+name = "Bone Pit"
+text = "A wide pit ringed with bones, the stairs to the lower hall visible beyond. Shapes lift from the heaps as you enter."
+[[room.option]]
+id = "fight"
+label = "Fight the pack"
+cost = 0
+once = false
+ok = [{ kind = "fight" }]
+ok_text = "Steel out."
+[[room.option]]
+id = "sneak"
+label = "Creep around the rim"
+need = [{ kind = "tag", tag = "sneak" }]
+cost = 1
+check = { attr = "finesse", dc = 14 }
+ok = [{ kind = "clear" }, { kind = "xp", amount = 10 }]
+ok_text = "Soft steps, and the bones stay quiet."
+fail = [{ kind = "fight" }]
+fail_text = "A bone cracks. They hear it."
+[[room.option]]
+id = "snare"
+label = "Set a snare line and let them find it"
+need = [{ kind = "tag", tag = "ensnare" }]
+cost = 1
+ok = [{ kind = "clear" }, { kind = "xp", amount = 14 }]
+ok_text = "They tangle themselves while you walk by."
+
+[[room]]
+id = "sunless-hollow"
+kind = "lair"
+bands = [3, 4, 5]
+name = "Sunless Hollow"
+text = "A cave of absolute dark that eats the torchlight. Breathing, close by."
+[[room.option]]
+id = "fight"
+label = "Fight the pack"
+cost = 0
+once = false
+ok = [{ kind = "fight" }]
+ok_text = "Steel out."
+[[room.option]]
+id = "lantern"
+label = "Open your lantern to full"
+need = [{ kind = "tag", tag = "lantern" }]
+cost = 1
+ok = [{ kind = "clear" }, { kind = "xp", amount = 20 }]
+ok_text = "The light scours the hollow. What lived there flees from it."
+[[room.option]]
+id = "sneak"
+label = "Feel your way along the wall"
+need = [{ kind = "tag", tag = "sneak" }]
+cost = 1
+check = { attr = "finesse", dc = 15 }
+ok = [{ kind = "clear" }, { kind = "xp", amount = 18 }]
+ok_text = "Touch, not sight, gets you through."
+fail = [{ kind = "fight" }]
+fail_text = "Your hand lands on something warm."
+
+# ---------------- Shafts: where a hero can open a shortcut for everyone ----------------
+[[room]]
+id = "broken-lift"
+kind = "shaft"
+bands = [1, 2, 3, 4, 5]
+name = "The Broken Lift"
+text = "An iron cage hangs in a shaft above the stair, its winch jammed and its chain slack. A working lift would save everyone a long climb."
+[[room.option]]
+id = "rune-winch"
+label = "Re-seat the winch with rune-work"
+need = [{ kind = "tag", tag = "runecraft" }]
+cost = 2
+ok = [{ kind = "shortcut", shortcut = "lift" }, { kind = "xp", amount = 20 }]
+ok_text = "The runes bite, the winch turns, and the cage lifts with a groan. The lift runs."
+[[room.option]]
+id = "tinker-winch"
+label = "Rig the winch with a tinker's touch"
+need = [{ kind = "tag", tag = "tinker" }, { kind = "no_tag", tag = "runecraft" }]
+cost = 3
+check = { attr = "wits", dc = 12 }
+ok = [{ kind = "shortcut", shortcut = "lift" }, { kind = "xp", amount = 16 }]
+ok_text = "Cogs, wire and swearing. The lift runs, mostly."
+fail = [{ kind = "hurt", amount = 3 }]
+fail_text = "The winch kicks and the handle takes a chunk out of your hand."
+[[room.option]]
+id = "haul-chain"
+label = "Haul the chain up by hand and make a rope line"
+need = [{ kind = "tag", tag = "brawn" }]
+cost = 3
+check = { attr = "might", dc = 13 }
+ok = [{ kind = "shortcut", shortcut = "rope" }, { kind = "xp", amount = 14 }]
+ok_text = "Hand over hand, you pull the chain free and anchor it. It is not a lift, but it will hold a person."
+fail = [{ kind = "hurt", amount = 5 }, { kind = "fatigue", amount = 6 }]
+fail_text = "The chain runs back through your hands and takes the skin."
+[[room.option]]
+id = "study"
+label = "Study the broken lift"
+need = [{ kind = "no_tag", tag = "runecraft" }, { kind = "no_tag", tag = "tinker" }, { kind = "no_tag", tag = "brawn" }]
+cost = 1
+ok = [{ kind = "xp", amount = 5 }]
+ok_text = "You cannot fix it. You can see exactly why you cannot."
+
+[[room]]
+id = "chasm-span"
+kind = "shaft"
+bands = [2, 3, 4, 5]
+name = "The Chasm Span"
+text = "The floor ends in a chasm. The old bridge is a few rotted planks and the stubs of its chains; the far side is a long way down and a short way across."
+[[room.option]]
+id = "leap-and-anchor"
+label = "Leap the gap and anchor a line"
+need = [{ kind = "tag", tag = "nimble" }]
+cost = 2
+check = { attr = "finesse", dc = 13 }
+ok = [{ kind = "shortcut", shortcut = "bridge" }, { kind = "xp", amount = 18 }]
+ok_text = "You land light, drive the anchor and haul the planks level. The bridge stands."
+fail = [{ kind = "hurt", amount = 6 }]
+fail_text = "You catch the far lip with your chest."
+[[room.option]]
+id = "rig-bridge"
+label = "Climb across and rig a bridge"
+need = [{ kind = "tag", tag = "bridgewright" }]
+cost = 2
+ok = [{ kind = "shortcut", shortcut = "bridge" }, { kind = "xp", amount = 24 }]
+ok_text = "Planks, ropes and nerve: a proper bridge."
+[[room.option]]
+id = "rune-span"
+label = "Cast a rune-span across the gap"
+need = [{ kind = "tag", tag = "runecraft" }]
+cost = 3
+ok = [{ kind = "shortcut", shortcut = "bridge" }, { kind = "xp", amount = 18 }]
+ok_text = "A span of faint red light, solid underfoot. The bridge stands."
+[[room.option]]
+id = "light-span"
+label = "Pray for a span of light"
+need = [{ kind = "tag", tag = "bless" }]
+cost = 2
+check = { attr = "spirit", dc = 14 }
+ok = [{ kind = "shortcut", shortcut = "bridge" }, { kind = "xp", amount = 18 }]
+ok_text = "Light hardens across the gap. The bridge stands."
+fail = [{ kind = "hurt", amount = 4 }]
+fail_text = "The light flickers and drops you."
+[[room.option]]
+id = "look-down"
+label = "Look down the chasm"
+need = [{ kind = "no_tag", tag = "nimble" }, { kind = "no_tag", tag = "bridgewright" }, { kind = "no_tag", tag = "runecraft" }, { kind = "no_tag", tag = "bless" }]
+cost = 1
+ok = [{ kind = "xp", amount = 5 }]
+ok_text = "A very long way. You have a better idea of what the dungeon is, and no way across."
+
+[[room]]
+id = "rope-shaft"
+kind = "shaft"
+bands = [1, 2, 3, 4, 5]
+name = "The Rope Shaft"
+text = "A vertical shaft with rusted pitons in the wall and the frayed end of a rope line. A fixed line here would let people come and go quickly."
+[[room.option]]
+id = "fix-line"
+label = "Fix the pitons and rig a rope line"
+need = [{ kind = "tag", tag = "ropework" }]
+cost = 1
+ok = [{ kind = "shortcut", shortcut = "rope" }, { kind = "xp", amount = 18 }]
+ok_text = "Knots you could tie in your sleep. The line runs the full height."
+[[room.option]]
+id = "free-climb"
+label = "Free-climb up and anchor a line"
+need = [{ kind = "tag", tag = "climb" }, { kind = "no_tag", tag = "ropework" }]
+cost = 2
+check = { attr = "finesse", dc = 12 }
+ok = [{ kind = "shortcut", shortcut = "rope" }, { kind = "xp", amount = 14 }]
+ok_text = "You haul yourself up the wall and leave a line behind you."
+fail = [{ kind = "hurt", amount = 5 }, { kind = "fatigue", amount = 5 }]
+fail_text = "A piton pulls free and you slide a long way."
+[[room.option]]
+id = "anchor-weight"
+label = "Anchor the line with your own weight"
+need = [{ kind = "tag", tag = "brawn" }, { kind = "no_tag", tag = "ropework" }, { kind = "no_tag", tag = "climb" }]
+cost = 3
+check = { attr = "might", dc = 13 }
+ok = [{ kind = "shortcut", shortcut = "rope" }, { kind = "xp", amount = 12 }]
+ok_text = "You wedge a rock, lash the rope, and haul it taut. It holds."
+fail = [{ kind = "hurt", amount = 4 }]
+fail_text = "The rock shifts and the rope burns your palms."
+[[room.option]]
+id = "peer"
+label = "Peer up the shaft"
+need = [{ kind = "no_tag", tag = "ropework" }, { kind = "no_tag", tag = "climb" }, { kind = "no_tag", tag = "brawn" }]
+cost = 1
+ok = [{ kind = "xp", amount = 5 }]
+ok_text = "The shaft goes up a long way. You are not the person to climb it."

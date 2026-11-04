@@ -52,7 +52,7 @@ impl Offload for HashPool {
 #[derive(Debug)]
 pub(crate) struct PasswordLogin {
     enabled: bool,
-    /// The backoff for wrong passwords, per handle and per network (D101). A handle that does
+    /// The backoff for wrong passwords, per handle and per network (D105). A handle that does
     /// not exist is limited exactly like a member's, so a limited reply says nothing about who
     /// exists. Keys never come through here.
     gate: AttemptGate<SystemClock>,

@@ -49,7 +49,7 @@ Removing a key or changing the password does not just stop the next sign-in; it 
 
 An ended session sees one fixed screen, **Signed out**: "Your sign-in was revoked. Please sign in again.", and is closed like a log off, the same over ssh and telnet. It happens within a moment and needs no key press. Each ended session writes a `session.revoked` audit row (the session's number and a reason, nothing else). This works inside one server process; two processes on one database need the shared session lease of FIX-M2-5 (see `access.md`).
 
-## Wrong passwords and the wait (FIX-M3-18, D101)
+## Wrong passwords and the wait (FIX-M3-18, D105)
 
 A key never waits: a key bound to the account signs in whatever has happened to its password. Only wrong passwords are counted, and the same gate sits in front of every place a password is checked: `ssh <handle>@host`, telnet sign-in, "I already have an account", the device-link and recovery code forms, and the current-password check when a password session changes or clears its password.
 
