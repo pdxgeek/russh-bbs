@@ -267,12 +267,13 @@ fn the_banner_is_drawn_neutralized() {
 }
 
 #[test]
-fn the_rules_page_keeps_the_honest_privacy_note() {
+fn the_rules_page_shows_the_rules_and_no_privacy_notice() {
     let mut room = WaitingRoom::new(&RoomConfig::default(), 5);
     room.input(RoomInput::Char('r'));
     let screen = draw(&room, 100, 24);
-    // The note wraps; check a stable fragment.
-    assert!(screen.contains("server can read everything"), "{screen}");
+    // D93: privacy lives in the docs, not on a screen.
+    assert!(!screen.contains("server can read everything"), "{screen}");
+    assert!(screen.contains("Be decent to the people here"), "{screen}");
     assert!(
         !screen.contains('\u{1f512}'),
         "no lock glyph on a server-readable screen"

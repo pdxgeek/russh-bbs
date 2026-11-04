@@ -93,13 +93,16 @@ pub struct PasswordScreen {
     set: bool,
     request: Option<Request>,
     notice: Option<Notice>,
+    /// The sysop has turned password login off: say so instead of the usual note.
+    login_off: bool,
 }
 
 impl PasswordScreen {
     /// Open the screen. It asks for the status first.
     #[must_use]
-    pub fn open(method: LoginMethod) -> Self {
+    pub fn open(method: LoginMethod, login_off: bool) -> Self {
         Self {
+            login_off,
             method,
             stage: Stage::Loading,
             set: false,
@@ -306,7 +309,12 @@ impl PasswordScreen {
                     }
                     .to_owned(),
                     String::new(),
-                    strings::NOTE_USE.to_owned(),
+                    if self.login_off {
+                        strings::NOTE_USE_OFF
+                    } else {
+                        strings::NOTE_USE
+                    }
+                    .to_owned(),
                 ];
                 view.menu.push(MenuItemView {
                     key: 's',
