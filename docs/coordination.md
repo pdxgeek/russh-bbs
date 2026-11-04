@@ -90,9 +90,19 @@ A milestone of its own, between M3 and M4: cool looks and customization for the 
 | UI-9 Interaction | a bounded mouse-event parser (ssh and telnet), click, scroll and pane drag, the `Ctrl-K` command palette (fuzzy search filtered by `core::access`), toasts, split-screen multitasking with chat beside any screen, the live header ticker | UI-4 | Open | The palette never lists what the member cannot reach (no-leak tests). Toasts and panes never cover the marker cell. Everything stays usable from the keyboard alone. |
 | M3.5-QA Milestone QA gate | `docs/qa/m3-5.md` and the fix rows it adds | UI-1 to UI-10 | Open | The QA gate from milestones.md, with emphasis on: every screen at 80x24 and in the ASCII tier; hostile themes, art and menu files; markers that cannot be hidden; redraw cost with motion on. |
 
+### M4: Files (owner approved, 2026-11-04)
+
+The non-door half of M4 (docs/milestones.md). Every slice follows the M3 preamble rules: access checks, the sanitizer, audit for staff actions, both database backends, and docs.
+
+| Slice | Owns | Depends on | Status | Branch / PR |
+|---|---|---|---|---|
+| M4-F1 BlobStore: trait, local backend, S3-compatible backend | `crates/core/src/blobs` (the `BlobStore` trait with object-store semantics: put by stream, get by stream, head, delete, list by prefix; content hashes; size caps), `crates/store/src/blobs` (local filesystem backend under the data directory, and an S3-compatible backend), the `blobs` config section (reserved by M1-H) with docs/config.md, a shared blob test suite run against local and against MinIO in a `russh-bbs-` Docker container on a non-default port | none | Open | D30. Nothing outside the backend touches a path. Streams with bounded memory, atomic writes (temp then rename; S3 multipart above a threshold), checksums verified on read. New dependencies justified with `cargo deny`. |
+| M4-F2 File areas over SFTP | `crates/core/src/files` (areas as access resources, file records, quarantine, the scanning hook, approve or reject, tags, metadata, search, batch download lists), the file store and migrations on both backends, `crates/server/src/sftp` (an SFTP subsystem over russh, a virtual filesystem by id, no real paths), the upload limits from M2-H (upload bytes per day and per file) | M4-F1 | Open | The scanning hook is an interface with a default no-op plus a ClamAV-over-socket adapter behind config. Upload, scan, approve and download work over real `sftp` on the local and the MinIO backend with the same tests (the M4 "Done when"). |
+| M4-F3 Global new-scan | a "since your last call" scan across posts, files and feed items (`crates/core/src/newscan`), a screen, and the new-posts widget hook for UI-10 | M4-F2 | Open | Respects `core::access` (no leaks), per-member last-read marks on both backends. |
+
 ### M4: Doors (owner approved, 2026-11-04)
 
-Approved by the owner on 2026-11-04 by adding them here. The other M4 work (`BlobStore`, file areas over SFTP, global new-scan) still needs its own slices. Designs: [doors/](doors/README.md). Every game slice follows the door framework rules and the RPG rule in that index. Each game has its own systems and engine, and only the plumbing is shared. A game's slices run in order; different games may run in parallel once the framework is merged, because their crates do not overlap.
+Approved by the owner on 2026-11-04 by adding them here. The other M4 work is in "M4: Files" above. Designs: [doors/](doors/README.md). Every game slice follows the door framework rules and the RPG rule in that index. Each game has its own systems and engine, and only the plumbing is shared. A game's slices run in order; different games may run in parallel once the framework is merged, because their crates do not overlap.
 
 | Slice | Owns | Depends on | Status | Branch / PR |
 |---|---|---|---|---|
@@ -121,7 +131,7 @@ Approved by the owner on 2026-11-04 by adding them here. The other M4 work (`Blo
 
 ### M3: Public core
 
-Proposed by the orchestrator on 2026-11-03; **not claimable until the owner approves this table** (merging the PR that adds it is the approval). M5 and later milestones are not claimable until the owner adds their slices here; M4's non-door work also still needs its slices.
+Proposed by the orchestrator on 2026-11-03; **not claimable until the owner approves this table** (merging the PR that adds it is the approval). M5 and later milestones are not claimable until the owner adds their slices here.
 
 Every slice: adds its permission rows to [access.md](access.md) and the `Permission` enum in the same PR as the action (M2-B cross-slice note), calls `core::access` from every action path, sanitizes all content with the shared sanitizer, writes audit rows for staff actions, adds migrations for **both** backends with the shared store suite run on SQLite, Postgres 16 and TLS-required Postgres 16, uses [third-party.md](third-party.md) defaults (D47), and builds its screens on the M2-A framework (string table, universal keys, markers only through `Rendered::to_terminal()`/`chrome_style()` in a chrome-only position). Nothing the server can read is called private, secure or encrypted, or shown with a lock; compose and read screens do not carry a per-screen "visible to the sysop" line (D78).
 
