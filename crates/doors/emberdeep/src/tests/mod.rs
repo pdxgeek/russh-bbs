@@ -17,6 +17,7 @@
 mod board;
 mod branches;
 mod combat;
+mod content_town;
 mod death;
 mod dungeon;
 mod economy;

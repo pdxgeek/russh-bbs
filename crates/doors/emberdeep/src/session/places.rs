@@ -466,13 +466,17 @@ impl Session {
             .map(plain),
         );
         if game.hero.skill_points > 0 || game.hero.attr_points > 0 {
-            head.push(styled(
-                format!(
-                    "You have {} skill point(s) and {} attribute point(s) to spend ([Esc] then [s]).",
-                    game.hero.skill_points, game.hero.attr_points
-                ),
-                DoorStyle::Good,
-            ));
+            head.extend(
+                wrap(
+                    &format!(
+                        "You have {} skill point(s) and {} attribute point(s) to spend; go back and open Skills.",
+                        game.hero.skill_points, game.hero.attr_points
+                    ),
+                    WRAP,
+                )
+                .into_iter()
+                .map(|l| styled(l, DoorStyle::Good)),
+            );
         }
         menu.town(format!("Drill ({}c, 1 turn)", game.train_price()), TownAct::Train);
         let mut lines = head;

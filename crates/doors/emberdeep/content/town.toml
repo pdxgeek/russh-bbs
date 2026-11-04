@@ -8,7 +8,7 @@ contract = [
   { id = "hollow-sir-aldous", name = "Hollow Sir Aldous", text = "An empty suit of armour still guarding a door nobody remembers. End the watch.", kind = "beast", depth = 2, monster = "rust-warden", coin = 56, xp = 50, days = 4, done_text = "Someone takes the armour for a scrapyard, and someone lays a flower." },
   { id = "blister-brood", name = "The Blister Brood", text = "A slag crawler heavy with eggs. Kill it before it nests under the stair.", kind = "beast", depth = 6, monster = "slag-crawler", coin = 90, xp = 90, days = 4, done_text = "The nest is ash. The stair is safe again." },
   { id = "the-chain-gang", name = "The Chain-Gang Foreman", text = "A forge thrall that still shouts orders. Its workers will not stop until it does.", kind = "beast", depth = 7, monster = "forge-thrall", coin = 120, xp = 120, days = 4, done_text = "The hammering below stops. For a moment the whole town listens." },
-  { id = "mirror-of-the-keep", name = "The Mirror of the Keep", text = "A mirror knight that wears the face of whoever it fights last. It has worn too many.", kind = "beast", depth = 12, monster = "mirror-knight", coin = 220, xp = 240, days = 5, done_text = "The knight's last face is yours, and then it is no one's." },
+  { id = "mirror-of-the-keep", name = "The Mirror of the Keep", text = "A mirror knight that wears the face of whoever it fights last. It has worn too many.", kind = "beast", depth = 12, monster = "mirror-knight", coin = 220, xp = 240, days = 5, recipe = "found-glass-scale", done_text = "The knight's last face is yours, and then it is no one's." },
   { id = "the-singing-hound", name = "The Singing Hound", text = "An echo hound whose bark carries up the shafts and keeps the night shift awake.", kind = "beast", depth = 11, monster = "echo-hound", coin = 200, xp = 220, days = 5, done_text = "The shafts are quiet. The night shift sleeps, and sends you a cake." },
 
   # Recover an heirloom: reach a kind of room at that depth (the heirloom is there to be taken).
@@ -21,7 +21,7 @@ contract = [
 
   # Bring a lost soul home: reach a kind of room, then carry them up (the climb is a turn dearer).
   { id = "lost-lamplighter", name = "Tam the Lamplighter", text = "Tam went down to relight the stair lamps on level 2 and has not come up.", kind = "rescue", depth = 2, room = "corridor", escort = true, coin = 60, xp = 54, days = 3, done_text = "Tam is thin and cross and alive, and will not go down there again." },
-  { id = "lost-novice", name = "A Novice of the Hearth", text = "A novice of the temple went to pray at a shrine on level 4 and lost her way.", kind = "rescue", depth = 4, room = "shrine", escort = true, coin = 95, xp = 90, days = 4, done_text = "The sisters take the novice by both hands, and look at you as if you were a saint." },
+  { id = "lost-novice", name = "A Novice of the Hearth", text = "A novice of the temple went to pray at a shrine on level 4 and lost her way.", kind = "rescue", depth = 4, room = "shrine", escort = true, coin = 95, xp = 90, days = 4, core = "ward-core", done_text = "The sisters take the novice by both hands, and look at you as if you were a saint." },
   { id = "lost-surveyor", name = "The Surveyor's Boy", text = "A surveyor's boy fell down a flooded shaft on level 7. His father is offering all he has.", kind = "rescue", depth = 7, room = "flooded", escort = true, coin = 160, xp = 150, days = 4, done_text = "The surveyor does not speak. He grips your hand until it hurts." },
 ]
 
