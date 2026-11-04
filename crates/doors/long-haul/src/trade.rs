@@ -307,12 +307,15 @@ impl Player {
             }
         }
         if matches!(target, RepairTarget::All | RepairTarget::Hull) {
-            let max = content
-                .hulls
-                .get(usize::from(self.ship.hull))
-                .map_or(0, |h| h.hull_points);
+            let hull = content.hulls.get(usize::from(self.ship.hull));
+            let max = hull.map_or(0, |h| h.hull_points);
             let missing = u32::from(max.saturating_sub(self.ship.hull_hp));
-            cost += i64::from(missing) * 12;
+            // Sixty percent of the hull's price per structural point, so a repair always costs
+            // more than the trade-in value it restores (resale is fifty percent).
+            if let Some(h) = hull {
+                cost += i64::from(missing) * i64::from(h.price) * 60
+                    / (i64::from(h.hull_points.max(1)) * 100);
+            }
             work += missing * 12;
         }
         let cost = cost * discount / 100;
@@ -407,8 +410,17 @@ impl Player {
             return Err(Refusal::LastDrive);
         }
         let price = Ship::module_resale(&inst, content);
+        let mut without = self.ship.clone();
+        without.modules.remove(index);
+        let stats = without.stats(
+            content,
+            self.level(Skill::Pilot),
+            self.level(Skill::Engineer),
+        );
+        if self.ship.cargo_tons() > u32::from(stats.cargo_cap) {
+            return Err(Refusal::HoldWouldOverflow);
+        }
         self.ship.modules.remove(index);
-        let stats = self.stats(content);
         self.ship.fuel = self.ship.fuel.min(stats.fuel_cap);
         self.credit(Cause::Module, price);
         Ok(vec![Event::ModuleSold {
