@@ -70,6 +70,8 @@ pub(crate) struct Setup {
     pub(crate) clan: Option<Clan>,
     pub(crate) today: i64,
     pub(crate) unreadable: bool,
+    /// The clan was carried into a new season by `open`, and nothing is saved yet.
+    pub(crate) rolled: bool,
     pub(crate) default_name: String,
 }
 
@@ -89,6 +91,17 @@ pub(crate) struct Session {
     dirty: bool,
 }
 
+/// What happened while the player was away, one line each, led by how many nights passed.
+fn morning_report(events: &[Event]) -> Vec<String> {
+    let nights = events.iter().filter(|e| matches!(e, Event::Night { .. })).count();
+    if nights == 0 {
+        return Vec::new();
+    }
+    let mut lines = vec![format!("{nights} night{} passed.", if nights == 1 { "" } else { "s" })];
+    lines.extend(events.iter().filter(|e| !matches!(e, Event::Night { .. })).map(ToString::to_string));
+    lines
+}
+
 impl Session {
     pub(crate) fn new(setup: Setup) -> Self {
         let Setup {
@@ -99,12 +112,14 @@ impl Session {
             mut clan,
             today,
             unreadable,
+            rolled,
             default_name,
         } = setup;
         let map = Map::generate(world.seed, &cat.pois);
         let tide = Tide::new(world.seed);
         let mut report = Vec::new();
-        let mut dirty = false;
+        // Nothing is written until the first key; a provisional world or a new season is.
+        let mut dirty = rolled || (!world_stored && clan.is_some());
         if let Some(c) = clan.as_mut() {
             if c.seed != world.seed {
                 // Another session of this board made the season's world first: join its map.
@@ -126,11 +141,7 @@ impl Session {
             };
             let events = engine::catch_up(&env, c, today);
             dirty |= !events.is_empty();
-            report = events
-                .iter()
-                .filter(|e| !matches!(e, Event::Night { .. }))
-                .map(ToString::to_string)
-                .collect();
+            report = morning_report(&events);
         }
         let mode = if unreadable {
             Mode::Unreadable
@@ -222,11 +233,7 @@ impl Session {
             self.today = today;
             if let Some(mut clan) = self.clan.take() {
                 let events = engine::catch_up(&self.env(), &mut clan, today);
-                self.report = events
-                    .iter()
-                    .filter(|e| !matches!(e, Event::Night { .. }))
-                    .map(ToString::to_string)
-                    .collect();
+                self.report = morning_report(&events);
                 self.dirty = true;
                 self.clan = Some(clan);
             }

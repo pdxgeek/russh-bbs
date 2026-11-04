@@ -160,10 +160,12 @@ impl Door for Saltmarch {
             }
         };
         // A clan from an earlier season starts the new one with only its hall.
+        let mut rolled = false;
         let clan = clan.map(|c| {
             if c.season == start.season {
                 return c;
             }
+            rolled = true;
             let map = crate::map::Map::generate(world.seed, &self.cat.pois);
             let site = Clan::site_for(&c.name, map.sites.len());
             c.next_season(&self.cat, &map, start.season, site, today, rng)
@@ -176,6 +178,7 @@ impl Door for Saltmarch {
             clan,
             today,
             unreadable,
+            rolled,
             default_name: start.env.handle.clone(),
         }))
     }
