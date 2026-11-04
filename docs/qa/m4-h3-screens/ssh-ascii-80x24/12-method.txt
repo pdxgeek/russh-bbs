@@ -1,0 +1,24 @@
+  +------------------------------- russh-bbs --------------------------------+
+  |Hallpass                                                                  |
+  |                                                                          |
+  | # GREYWATER ACADEMY  - founder                     term 1 - Wed day 1/42 |
+  |  Hist   Maths  [Lunch]   Art      Sci    Games   After    Eve     Night  |
+  |----------------========..................................................|
+  |+ What will you do? -------------------++ The trick ---------------------+|
+  || 1 Swap the sugar for salt            ||Swap the sugar for salt         ||
+  || 2 Forge a timetable change           ||Every cup of tea in the         ||
+  || 3 Fill their car with rowing balls   ||staffroom, a surprise.          ||
+  || 4 Plant a stink bomb                 ||hard   ###########----------- 20||
+  || 5 Rig the dining-hall tannoy         ||legend ###=------------------- 6||
+  || 6 Slip a headline into the paper     ||heat   ####=------------------ 6||
+  || b Back                               ||needs A tin of cooking salt     ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  |+--------------------------------------++--------------------------------+|
+  | > Swap the sugar for salt                           up/down  Enter  Esc  |
+  +--------------------------------------------------------------------------+

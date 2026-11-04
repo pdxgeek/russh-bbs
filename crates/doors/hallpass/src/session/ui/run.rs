@@ -29,12 +29,10 @@ fn track(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect, now: usize, flubs: u8) 
     ])
     .split(area);
     for (i, phase) in PHASES.iter().enumerate() {
-        let (border, state) = if i < now {
-            (pal.moss(), "clear")
-        } else if i == now {
-            (pal.lamp(), "NOW")
-        } else {
-            (pal.slate(), "ahead")
+        let (border, state) = match i.cmp(&now) {
+            std::cmp::Ordering::Less => (pal.moss(), "clear"),
+            std::cmp::Ordering::Equal => (pal.lamp(), "NOW"),
+            std::cmp::Ordering::Greater => (pal.slate(), "ahead"),
         };
         let block = Block::bordered()
             .border_type(if ui.look.ascii {

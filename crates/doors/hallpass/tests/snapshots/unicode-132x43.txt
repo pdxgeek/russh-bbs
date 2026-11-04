@@ -533,31 +533,31 @@
 ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒██████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
  b Back
 ╭ Pupil file ───────────────────────────────────────╮╭ Record ─────────────────────────────╮╭ Marks and skills ────────────────────╮
-│OFFICE OF THE HEADMISTRESS                         ││■  3 Mr. Marsh writes you up. Two de~││Maths  ██████████████████████▉░░░░░ 82│
-│ann  CONFIDENTIAL                                  ││■  5 Privileges lost for five days: ~││Scienc~█████████████████░░░░░░░░░░░ 61│
-│───────────────────────────────────────────────────││□  8 A letter goes home. Your allowa~││Langua~█████████████▏░░░░░░░░░░░░░░ 47│
-│ 1. day 5  caught red-handed                      ▪││□ 10 You are to report to the headmi~││History█████████████████████████▏░░ 90│
-│ 2. day 7  caught red-handed                     ▪▪││■ 12 expulsion at term end           ││Art    ██████████▋░░░░░░░░░░░░░░░░░ 38│
-│ 3. day 9  a poor mark on Friday's report         ▪││                                     ││Games  ███████████████████▌░░░░░░░░ 70│
-│ 4. day 11 out of bounds after lights-out        ▪▪││pulled off 3  caught 2  traced 1  big││                                      │
-│                                                   ││cool 48  notoriety 4  heat 9         ││Sneak ○○○○○  Bluff ●○○○○  Tinker ○○○○○│
+│OFFICE OF THE HEADMISTRESS                         ││■  3 Mr. Marsh writes you up. Two    ││Maths  ██████████████████████▉░░░░░ 82│
+│ann  CONFIDENTIAL                                  ││     detentions.                     ││Scienc~█████████████████░░░░░░░░░░░ 61│
+│───────────────────────────────────────────────────││■  5 Privileges lost for five days:  ││Langua~█████████████▏░░░░░░░░░░░░░░ 47│
+│ 1. day 5  caught red-handed                      ▪││     no tuck shop, no allowance.     ││History█████████████████████████▏░░ 90│
+│ 2. day 7  caught red-handed                     ▪▪││□  8 A letter goes home. Your        ││Art    ██████████▋░░░░░░░░░░░░░░░░░ 38│
+│ 3. day 9  a poor mark on Friday's report         ▪││     allowance is halved and your    ││Games  ███████████████████▌░░░░░░░░ 70│
+│ 4. day 11 out of bounds after lights-out        ▪▪││□ 10 You are to report to the        ││                                      │
+│                                                   ││     headmistress first thing        ││Sneak ○○○○○  Bluff ●○○○○  Tinker ○○○○○│
+│                                                   ││■ 12 expulsion at term end           ││                                      │
+│                                                   ││                                     ││                                      │
+│                                                   ││pulled off 3  caught 2  traced 1  big││                                      │
+│                                                   ││cool 48  notoriety 4  heat 9         ││                                      │
 │                                                   ││known as Smooth talker               ││                                      │
-│                                                   ││                                     ││                                      │
-│                                                   ││                                     ││                                      │
-│                                                   ││                                     ││                                      │
-│                                                   ││                                     ││                                      │
 │                                                   ││                                     ││                                      │
 │                                                   ││                                     ││                                      │
 │                                                   ││                                     ││                                      │
 │                                                   ││                                     ││                                      │
 │                                                   ││                                     │╰──────────────────────────────────────╯
 │                                                   ││                                     │╭ Standing ────────────────────────────╮
-│                                                   ││                                     ││Rowing~────────╵┼╵◆──────── +30 friend│
-│                                                   ││                                     ││Ink So~────────╵┼╵───────◆ +100 friend│
-│                                                   ││                                     ││Bench  ──────◆──╵┼╵───────── -40 rival│
-│                                                   ││                                     ││Lampli~─────────╵◆╵────────── +0 known│
-│                                                   ││                                     ││Worksh~─────────╵◆╵────────── +0 known│
-│                                                   ││                                     ││Strays ─────────╵◆╵────────── +0 known│
+│                                                   ││                                     ││Rowing Eight ──────────◆─────────── +3│
+│                                                   ││                                     ││Ink Society  ──────────┼◆───────── +10│
+│                                                   ││                                     ││Bench        ──────────◆─────────── -4│
+│                                                   ││                                     ││Lamplighters ──────────◆─────────── +0│
+│                                                   ││                                     ││Workshop     ──────────◆─────────── +0│
+│                                                   ││                                     ││Strays       ──────────◆─────────── +0│
 │                                                   ││                                     ││                                      │
 │                                                   ││                                     ││watching you  nobody yet              │
 │                                                   ││                                     ││                                      │
@@ -577,31 +577,31 @@
 ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒██████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
  b Back
 ╭ Pupil file ───────────────────────────────────────╮╭ Record ─────────────────────────────╮╭ Marks and skills ────────────────────╮
-│OFFICE OF THE HEADMISTRESS                         ││■  3 Mr. Marsh writes you up. Two de~││Maths  ██████████████████████▉░░░░░ 82│
-│ann  CONFIDENTIAL                                  ││■  5 Privileges lost for five days: ~││Scienc~█████████████████░░░░░░░░░░░ 61│
-│───────────────────────────────────────────────────││□  8 A letter goes home. Your allowa~││Langua~█████████████▏░░░░░░░░░░░░░░ 47│
-│ 1. day 5  caught red-handed                      ▪││□ 10 You are to report to the headmi~││History█████████████████████████▏░░ 90│
-│ 2. day 7  caught red-handed                     ▪▪││■ 12 expulsion at term end           ││Art    ██████████▋░░░░░░░░░░░░░░░░░ 38│
-│ 3. day 9  a poor mark on Friday's report         ▪││                                     ││Games  ███████████████████▌░░░░░░░░ 70│
-│ 4. day 11 out of bounds after lights-out        ▪▪││pulled off 3  caught 2  traced 1  big││                                      │
-│                                                   ││cool 48  notoriety 4  heat 9         ││Sneak ○○○○○  Bluff ●○○○○  Tinker ○○○○○│
+│OFFICE OF THE HEADMISTRESS                         ││■  3 Mr. Marsh writes you up. Two    ││Maths  ██████████████████████▉░░░░░ 82│
+│ann  CONFIDENTIAL                                  ││     detentions.                     ││Scienc~█████████████████░░░░░░░░░░░ 61│
+│───────────────────────────────────────────────────││■  5 Privileges lost for five days:  ││Langua~█████████████▏░░░░░░░░░░░░░░ 47│
+│ 1. day 5  caught red-handed                      ▪││     no tuck shop, no allowance.     ││History█████████████████████████▏░░ 90│
+│ 2. day 7  caught red-handed                     ▪▪││□  8 A letter goes home. Your        ││Art    ██████████▋░░░░░░░░░░░░░░░░░ 38│
+│ 3. day 9  a poor mark on Friday's report         ▪││     allowance is halved and your    ││Games  ███████████████████▌░░░░░░░░ 70│
+│ 4. day 11 out of bounds after lights-out        ▪▪││□ 10 You are to report to the        ││                                      │
+│                                                   ││     headmistress first thing        ││Sneak ○○○○○  Bluff ●○○○○  Tinker ○○○○○│
+│                                                   ││■ 12 expulsion at term end           ││                                      │
+│                                                   ││                                     ││                                      │
+│                                                   ││pulled off 3  caught 2  traced 1  big││                                      │
+│                                                   ││cool 48  notoriety 4  heat 9         ││                                      │
 │                                                   ││known as Smooth talker               ││                                      │
-│                                                   ││                                     ││                                      │
-│                                                   ││                                     ││                                      │
-│                                                   ││                                     ││                                      │
-│                                                   ││                                     ││                                      │
 │                                                   ││                                     ││                                      │
 │                                                   ││                                     ││                                      │
 │                                                   ││                                     ││                                      │
 │                                                   ││                                     ││                                      │
 │                                                   ││                                     │╰──────────────────────────────────────╯
 │                                                   ││                                     │╭ Standing ────────────────────────────╮
-│                                                   ││                                     ││Rowing~────────╵┼╵◆──────── +30 friend│
-│                                                   ││                                     ││Ink So~────────╵┼╵───────◆ +100 friend│
-│                                                   ││                                     ││Bench  ──────◆──╵┼╵───────── -40 rival│
-│                                                   ││                                     ││Lampli~─────────╵◆╵────────── +0 known│
-│                                                   ││                                     ││Worksh~─────────╵◆╵────────── +0 known│
-│                                                   ││                                     ││Strays ─────────╵◆╵────────── +0 known│
+│                                                   ││                                     ││Rowing Eight ──────────◆─────────── +3│
+│                                                   ││                                     ││Ink Society  ──────────┼◆───────── +10│
+│                                                   ││                                     ││Bench        ──────────◆─────────── -4│
+│                                                   ││                                     ││Lamplighters ──────────◆─────────── +0│
+│                                                   ││                                     ││Workshop     ──────────◆─────────── +0│
+│                                                   ││                                     ││Strays       ──────────◆─────────── +0│
 │                                                   ││                                     ││                                      │
 │                                                   ││                                     ││watching you  nobody yet              │
 │                                                   ││                                     ││                                      │
@@ -753,9 +753,9 @@
 ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒██████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
  b Back
                      ╭ Hall of legend ────────────────────────────────────────────────────────────────────────╮
-                     │① Wick          █████████████████████████████████████████████████████████████████ 74    │
-                     │② Marguerite    █████████████████████████████████████████████████████▌░░░░░░░░░░░ 61    │
-                     │③ Pip           █████████████████████████████████▍░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 38    │
+                     │ 1 Wick          █████████████████████████████████████████████████████████████████ 74   │
+                     │ 2 Marguerite    █████████████████████████████████████████████████████▌░░░░░░░░░░░ 61   │
+                     │ 3 Pip           █████████████████████████████████▍░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 38   │
                      │ 4 Rafe          ███████████████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 22   │
                      │                                                                                        │
                      │                                                                                        │
@@ -1109,8 +1109,8 @@
 │     ▀▀▀▀▀      ││                                                                                                                │
 │     ▀▀▀▀▀      ││bond   ───────────────────────────────────────◆──╵────┼────╵────────────────────────────────────────── -18 rival│
 │   ▄▄▀▀▀▀▀▄▄    ││                                                                                                                │
-│   ▀▀▀▀▀▀▀▀▀    ││                                                                                                                │
-│Marsh           ││                                                                                                                │
+│   ▀▀▀▀▀▀▀▀▀    ││Patrols the quad with a clipboard and a theory about you.                                                       │
+│Marsh           ││wary of you ●●○                                                                                                 │
 │Deputy head     ││                                                                                                                │
 │RIVAL           ││                                                                                                                │
 │                ││                                                                                                                │
@@ -1233,9 +1233,9 @@
 ===== over 132x43 unicode
  ♜ GREYWATER ACADEMY  · ann                                                                                  term 1 · Wed day 13/42
 ╭ End of term ──────────────────────────────────────────────────────────╮╭ Hall of legend ─────────────────────────────────────────╮
-│The term is over.                                                      ││① Wick          ██████████████████████████████████ 74    │
-│                                                                       ││② Marguerite    ████████████████████████████░░░░░░ 61    │
-│SCRAPED THROUGH                                                        ││③ Pip           █████████████████▍░░░░░░░░░░░░░░░░ 38    │
+│The term is over.                                                      ││ 1 Wick          ██████████████████████████████████ 74   │
+│                                                                       ││ 2 Marguerite    ████████████████████████████░░░░░░ 61   │
+│SCRAPED THROUGH                                                        ││ 3 Pip           █████████████████▍░░░░░░░░░░░░░░░░ 38   │
 │A middling term. The school barely noticed you.                        ││ 4 Rafe          ██████████░░░░░░░░░░░░░░░░░░░░░░░░ 22   │
 │                                                                       ││                                                         │
 │legend 26   file 6   average grade 64                                  ││                                                         │

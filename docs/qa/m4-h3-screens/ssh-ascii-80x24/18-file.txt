@@ -1,0 +1,24 @@
+  +------------------------------- russh-bbs --------------------------------+
+  |Hallpass                                                                  |
+  |                                                                          |
+  | # GREYWATER ACADEMY  - founder                     term 1 - Wed day 1/42 |
+  |  Hist   Maths  [Lunch]   Art      Sci    Games   After    Eve     Night  |
+  |----------------========..................................................|
+  | b Back                                                                   |
+  |+ Pupil file ------------------------++ Record 1/3 ------------------< >-+|
+  ||OFFICE OF THE HEADMISTRESS          ||.  3 Mr. Marsh writes you up. Two ||
+  ||founder  CONFIDENTIAL               ||     detentions.                  ||
+  ||------------------------------------||.  5 Privileges lost for five     ||
+  ||No entries. The headmistress has not||     days: no tuck shop, no       ||
+  ||heard of you.                       ||.  8 A letter goes home. Your     ||
+  ||(Yet. A clean sheet is a thing to be||     allowance is halved and your ||
+  ||proud of, and to waste.)            ||. 10 You are to report to the     ||
+  ||                                    ||     headmistress first thing     ||
+  ||                                    ||# 12 expulsion at term end        ||
+  ||                                    ||                                  ||
+  ||------------------------------------||pulled off 0  caught 0  traced 0  ||
+  ||thick  ------------------------ 0/12||cool 48  notoriety 0  heat 0      ||
+  ||A week of good conduct strikes a poi||known as Smooth talker            ||
+  |+------------------------------------++----------------------------------+|
+  | > Back                                              up/down  Enter  Esc  |
+  +--------------------------------------------------------------------------+

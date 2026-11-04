@@ -1,0 +1,24 @@
+  +------------------------------- russh-bbs --------------------------------+
+  |Hallpass                                                                  |
+  |                                                                          |
+  |                             G R E Y W A T E R                            |
+  |                             =================                            |
+  |                               A C A D E M Y                              |
+  |                                                                          |
+  |    A boarding school on a fog-bound lake, too many locked doors, and a   |
+  |                  headmistress with a file on everybody.                  |
+  |                                                                          |
+  |+ Who do you want to be known as? ---------------------------------------+|
+  || > 1  Smooth talker                                                     ||
+  ||      Words are your best tool. Forgeries and fibs come easily.         ||
+  ||   2  Teacher's pet                                                     ||
+  ||      Staff trust you, grades come easier, and your file clears faster~ ||
+  ||   3  Fast runner                                                       ||
+  ||      You are out of the door before the bell stops.                    ||
+  ||   4  Tinkerer                                                          ||
+  ||      Your hands know their way around a mechanism.                     ||
+  ||   q  Leave                                                             ||
+  ||                                                                        ||
+  |+------------------------------------------------------------------------+|
+  |             The school keeps a file on everybody. Mind yours.            |
+  +--------------------------------------------------------------------------+

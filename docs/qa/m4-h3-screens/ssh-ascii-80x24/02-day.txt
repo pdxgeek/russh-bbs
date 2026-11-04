@@ -1,0 +1,24 @@
+  +------------------------------- russh-bbs --------------------------------+
+  |Hallpass                                                                  |
+  |                                                                          |
+  | # GREYWATER ACADEMY  - founder                     term 1 - Wed day 1/42 |
+  | [Hist]  Maths   Lunch    Art      Sci    Games   After    Eve     Night  |
+  |========..................................................................|
+  |+ Fenwick dormitory -----------------++ You -----------------------------+|
+  ||Main wing                           ||heat   ------------------------- 0||
+  ||Eight iron beds, eight trunks, one  ||file   ---------------------- 0/12||
+  ||radiator that clanks.               ||nerve  ****** 6/6                 ||
+  ||Nobody else is here.                ||legend 0   $ cash 12              ||
+  ||Now: History class                  ||                                  ||
+  ||Next: Maths in the Maths room       ||                                  ||
+  ||The Quad: Bramley, Marchetti        ||                                  ||
+  ||                                    ||                                  ||
+  ||                                    ||                                  ||
+  ||                                    ||                                  ||
+  ||                                    ||                                  ||
+  |+------------------------------------++----------------------------------+|
+  | g Go   l Loiter   r Rest   p Schemes   c Clubs   f File   j Journal      |
+  | n Paper   q Leave                                                        |
+  | You step off the coach at Greywater Academy as a smooth talker.          |
+  | > Go somewhere                                      up/down  Enter  Esc  |
+  +--------------------------------------------------------------------------+

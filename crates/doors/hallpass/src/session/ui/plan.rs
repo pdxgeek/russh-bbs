@@ -227,9 +227,7 @@ fn detail_lines(ui: &Ui<'_>, width: u16) -> Vec<Line<'static>> {
 
 /// A bond from -100 to 100 as a line with the friend and rival thresholds marked.
 pub(super) fn bond_line(ui: &Ui<'_>, bond: i32, width: u16) -> Line<'static> {
-    let pal = &ui.pal;
     let rules = &ui.g.content.rules;
-    let label_w = 7usize;
     let word = if bond >= rules.friend_bond {
         "friend"
     } else if bond <= rules.rival_bond {
@@ -242,30 +240,50 @@ pub(super) fn bond_line(ui: &Ui<'_>, bond: i32, width: u16) -> Line<'static> {
     } else {
         format!(" {bond:+}")
     };
+    meter_line(ui, "bond", 7, bond, tail, width, true)
+}
+
+/// A value from -100 to 100 on a track with its middle marked and the marker where the value
+/// is. With `marks`, the friend and rival thresholds are marked too and the marker takes their
+/// colours.
+pub(super) fn meter_line(
+    ui: &Ui<'_>,
+    label: &str,
+    label_w: usize,
+    value: i32,
+    tail: String,
+    width: u16,
+    marks: bool,
+) -> Line<'static> {
+    let pal = &ui.pal;
+    let rules = &ui.g.content.rules;
     let room = usize::from(width)
         .saturating_sub(label_w + tail.chars().count() + 1)
         .max(9);
-    // The track is split in two halves; the marker sits where the bond is.
+    // The track is split in two halves; the marker sits where the value is.
     let half = i32::try_from(room / 2).unwrap_or(1);
     let at = |b: i32| usize::try_from(half + (b.clamp(-100, 100) * half) / 100).unwrap_or(0);
-    let (pos, friend_at, rival_at) = (at(bond), at(rules.friend_bond), at(rules.rival_bond));
+    let (pos, friend_at, rival_at) = (at(value), at(rules.friend_bond), at(rules.rival_bond));
     let mid = usize::try_from(half).unwrap_or(0);
-    let mut spans = vec![Span::styled(format!("{:<label_w$}", "bond"), pal.slate())];
+    let mut spans = vec![Span::styled(
+        format!("{:<label_w$}", fit(label, label_w)),
+        pal.slate(),
+    )];
     for i in 0..=room {
         let (sym, style) = if i == pos {
             (
                 ui.look.g("◆", "O"),
-                if bond >= rules.friend_bond {
+                if marks && value >= rules.friend_bond {
                     pal.moss()
-                } else if bond <= rules.rival_bond {
+                } else if marks && value <= rules.rival_bond {
                     pal.red()
                 } else {
                     pal.lamp()
                 },
             )
-        } else if i == friend_at && i != mid {
+        } else if marks && i == friend_at && i != mid {
             (ui.look.g("╵", "'"), pal.moss())
-        } else if i == rival_at && i != mid {
+        } else if marks && i == rival_at && i != mid {
             (ui.look.g("╵", "'"), pal.red())
         } else if i == mid {
             (ui.look.g("┼", "+"), pal.slate())

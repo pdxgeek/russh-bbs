@@ -171,12 +171,6 @@ fn hall_panel(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect, title: &str, limit
         lines.push(Line::styled("Nobody has made the hall yet.", pal.slate()));
     }
     for (i, e) in g.world.hall.iter().take(limit).enumerate() {
-        let medal = match i {
-            0 => ui.look.g("①", "1"),
-            1 => ui.look.g("②", "2"),
-            2 => ui.look.g("③", "3"),
-            _ => " ",
-        };
         let name_w = 14usize;
         let bar_w = inner
             .width
@@ -184,15 +178,8 @@ fn hall_panel(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect, title: &str, limit
             .max(3);
         let mut spans = vec![
             Span::styled(
-                format!(
-                    "{medal}{} ",
-                    if i > 2 {
-                        format!("{}", i + 1)
-                    } else {
-                        String::new()
-                    }
-                ),
-                pal.lamp(),
+                format!("{:>2} ", i + 1),
+                if i < 3 { pal.lamp() } else { pal.slate() },
             ),
             Span::styled(
                 format!("{:<name_w$}", fit(&e.name, name_w)),

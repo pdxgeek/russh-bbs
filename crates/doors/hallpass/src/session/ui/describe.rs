@@ -528,7 +528,19 @@ pub(in crate::session) fn describe(s: &Session, _env: &DoorEnv) -> Vec<String> {
         | Screen::Schedule
         | Screen::Talk => {
             out.extend(body.iter().take(2).cloned());
+            let (_, items) = s.view();
+            let labels: Vec<String> = items.iter().map(|i| i.label.clone()).collect();
+            out.push(format!(
+                "A list of {} choices, the highlighted one explained beside it: {}.",
+                labels.len(),
+                labels.join("; ")
+            ));
         }
+    }
+    if out.iter().map(String::len).sum::<usize>() < 140 {
+        let (_, items) = s.view();
+        let labels: Vec<String> = items.iter().map(|i| i.label.clone()).collect();
+        out.push(format!("You can: {}.", labels.join("; ")));
     }
     out
 }

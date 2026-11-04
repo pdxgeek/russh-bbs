@@ -1,0 +1,24 @@
+  ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+  │Hallpass                                                                  │
+  │                                                                          │
+  │ ♜ GREYWATER ACADEMY  · founder                     term 1 · Wed day 1/42 │
+  │  Hist   Maths  ▐Lunch▌   Art      Sci    Games   After    Eve     Night  │
+  │━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄│
+  │╭ Aimed at ────────────────────────────╮╭ The target ────────────────────╮│
+  ││ 1 Dame Vane (staff)                  ││Dame Vane                       ││
+  ││ 2 Mr. Marsh (staff)                  ││a staff                         ││
+  ││ 3 Mr. Pell (staff)                   ││Keeps every file in a cabinet   ││
+  ││ 4 Ms. Orrin (staff)                  ││she alone has the key to.       ││
+  ││ 5 Madame Thorne (staff)              ││wary of you ○○○                 ││
+  ││ 6 Mr. Alder (staff)                  ││                                ││
+  ││ 7 Reverend Soames (staff)            ││                                ││
+  ││ 8 Mrs. Tarn (staff)                  ││                                ││
+  ││ 9 Cordelia Wick (prefect)            ││                                ││
+  ││ . More                               ││                                ││
+  ││ b Back                               ││                                ││
+  ││                                      ││                                ││
+  ││                                      ││                                ││
+  ││                                      ││                                ││
+  │╰──────────────────────────────────────╯╰────────────────────────────────╯│
+  │ » Dame Vane (staff)                                 up/down  Enter  Esc  │
+  └──────────────────────────────────────────────────────────────────────────┘

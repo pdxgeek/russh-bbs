@@ -1,0 +1,24 @@
+  +------------------------------- russh-bbs --------------------------------+
+  |Hallpass                                                                  |
+  |                                                                          |
+  | # GREYWATER ACADEMY  - founder                     term 1 - Wed day 1/42 |
+  |  Hist   Maths  [Lunch]   Art      Sci    Games   After    Eve     Night  |
+  |----------------========..................................................|
+  |+ Your schemes ------------------------++ The scheme --------------------+|
+  || 1 Start a new scheme                 ||Pick who or what it is aimed at,||
+  || b Back                               ||then how. A target is always    ||
+  ||                                      ||chosen from a list.             ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  |+--------------------------------------++--------------------------------+|
+  | > Start a new scheme                                up/down  Enter  Esc  |
+  +--------------------------------------------------------------------------+

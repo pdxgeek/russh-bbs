@@ -1,6 +1,6 @@
 # Hallpass: a school-life door (design)
 
-Status: **Proposed** design; slice 1 (the engine, M4-H1, merged) and slice 2 (classes, clubs and characters, M4-H2, in review on branch `m4/hallpass-school-life`) are **implemented** and described under [Implementation notes (M4-H1)](#implementation-notes-m4-h1) and [Implementation notes (M4-H2)](#implementation-notes-m4-h2) at the end. Shared platform rules are in [README.md](README.md).
+Status: **Proposed** design; slice 1 (the engine, M4-H1, merged) and slice 2 (classes, clubs and characters, M4-H2, merged) and slice 3 (the UI, M4-H3, in review on branch `m4/hallpass-ui`) are **implemented** and described under [Implementation notes (M4-H1)](#implementation-notes-m4-h1), [Implementation notes (M4-H2)](#implementation-notes-m4-h2) and [Implementation notes (M4-H3)](#implementation-notes-m4-h3) at the end. Shared platform rules are in [README.md](README.md).
 
 ## Pitch
 
@@ -97,6 +97,8 @@ The core tension: **the bigger the prank, the bigger the heat.** Every period go
 - **Finale:** a term finale that all players on the board share. The east wing opens.
 
 ## UI
+
+Built in M4-H3: see [Implementation notes (M4-H3)](#implementation-notes-m4-h3). The list below is the original design.
 
 - **Timetable strip:** the day's periods across the top, and where you are now.
 - **School map:** a floor plan per wing, showing which characters are where this period. ASCII tier uses letters and lines.
@@ -235,3 +237,41 @@ Forty terms of each of five bots on one shared school (`cargo test -p russh-bbs-
 | reckless | 75 | 104 | 57 | 0.6 | 4.6 | 57% |
 
 Club ranks reached by the 200 players of 40 terms (players at ranks 1 / 2 / 3 / 4): chess 26 / 46 / 20 / 45, robotics 3 / 17 / 41 / 49, rowing 8 / 16 / 7 / 4, drama 2 / 14 / 6 / (none at 4). Nobody joined the School Paper or the Candle Society: their gates (standing 6 with the Ink Society, and the knock that Sol teaches) need more social play than the bots do, and a test shows each is open to some build. Storyline endings at term end (players): the ledger was left open 113 times, owed 31, shrugged 24, returned 16, purged 16 (the shared-world ending), headline 0 (it needs a School Paper card, which no bot had); the East Wing light was left open 120 times, shared 31, ignored 15, quiet 14, secret 11, informer 9. Treat these as a baseline: the chess ladder is the easiest to climb because Tobias Bramley plays at the board every four days, and the scholar sits on the grade ceiling. Real balance is H4's job.
+
+## Implementation notes (M4-H3)
+
+Slice 3 gives the engine its screens. Decision D-TBD (number assigned at merge) records the choices that were real alternatives. The code is `crates/doors/hallpass/src/session/ui/` (one module per family of screens); `session.rs` keeps the menu, the keys and the text screen, and the new modules only read the engine. The walk over `ssh` and the pictures are in [qa/m4-h3-walk.md](../qa/m4-h3-walk.md).
+
+### What is implemented (and tested)
+
+| Screen | What it shows | Where |
+|---|---|---|
+| The timetable strip (every screen) | The day's nine periods across the top, the one now lit with brackets, the ones gone dimmed, a rule under each, and (from 80x24) a sky from dawn gold to night ink with the bell's position. | `ui/day.rs` `strip` |
+| Day | Where you are (wing, description, patrol mark), who is here with a mark for friend or rival, what the period is and the next one, who is in the corridors next door, heat, file, nerve pips, legend and cash, a stamp for detention owed or a summons, the schemes in hand with `READY` or `setup`, and the orders as hotkey chips. Roomy and Grand add the whole day (`Today`) and a `Nearby` panel. | `ui/day.rs` |
+| School map | The 34 places as a plan of corridors with a state for each (you, reachable with its corridor count, open, shut at this hour, locked, locked but yours), the staff mark where you can see staff, a cursor moved with the arrows, a detail for the place under it (hours, doors, who is there, patrol level) and, from 100 columns, who is where as far as you know. Enter walks (`Action::Go`). | `ui/map.rs` |
+| Scheme planner | The lists (schemes, target with how wary they are, method with its difficulty, legend and heat as bars, twists, getaway, helpers with their bond, the time with who will be about) each with a panel that says what the highlighted choice means; and the dossier: target, method, where (and whether the way in is open), twists, getaway, items (have or need), allies, time, scouting; the odds of sneak, act and escape as bars, the chance of being traced, the reasons behind the phase chosen with Left and Right, and a `READY` or `NOT READY` verdict that says what is missing. | `ui/plan.rs` |
+| Scheme run | Three stages along the top (clear, now, ahead, each with its odds), the nerve gauge and the slips, each way to spend nerve with the odds it buys, and a log of what happened. | `ui/run.rs` |
+| The file | The headmistress's file as a document: a typed line per entry with its weight, how thick the folder is, the stamps for detention and a summons, the consequences the file has reached (`3, 5, 8, 10` and expulsion at 12), and (as tabs, or side by side from 100 columns) the record, marks and skills, and standing with each clique and who is watching you. | `ui/file.rs` |
+| Lessons | A blackboard in ink with the subject's own emblem (sequences, flasks, Latin tiles, a timeline, a border pattern, a relay track), the puzzle in chalk, puzzles taken as pips, and the answers with the ones a practised pupil has ruled out struck. | `ui/lesson.rs` |
+| Conversations | A speaker's portrait (a face made from the character's id, half blocks in colour and an ASCII bust otherwise), what they say, the bond meter with the friend and rival marks, and the answers, shut ones saying what they need. | `ui/people.rs` |
+| Clubs, friendships, journal | Club cards with rank pips, rank name, the week with meeting days lit and today marked, merit towards the next rank, why a club is shut; friends and rivals on bond meters; storylines as step pips with where each stands. | `ui/people.rs` |
+| Paper, hall of legend, yearbook | The paper with its headlines and what is in force with the days left; the ranked hall with bars; the yearbook of past terms and your own. The enrolment card with the school's name in block letters and the end-of-term report. | `ui/paper.rs` |
+| Look-around | `look_around` is the engine's `[key] label` text, then `Looking around:` and sentences for every screen: the map names where you are, what you can walk to and in how many corridors, what is locked or shut, the patrols you know of, who is about and what the place under the cursor is; the planner gives each phase's odds and reasons; lessons and conversations read the puzzle or the speech and every answer, shut ones with what they need. | `ui/describe.rs` |
+
+**Keys.** Letters and digits as before; Up, Down and Enter move the lightbar and press its item; on the map the arrows move the cursor and Enter walks; on the planner and the file Left and Right change the phase shown or the tab; on the clubs screen Up and Down choose a club and Enter joins or leaves it (or says why it is shut); Esc is back, and leaves the door only from the day screen. Mouse comes with UI-9.
+
+**Sizes and tiers.** Tiny (the 74x20 a door gets inside an 80x24 board), Compact (80x24), Roomy (100x30) and Grand (132x43); below 60x16 the plain text screen. The plan of the school gets wider and taller cells as the window grows. The ASCII tier is ASCII only; the Nerd Font tier is the Unicode picture (the board neutralizes private-use glyphs in a door, D104).
+
+**Colour.** Ink blue, chalk white, detention red, lamplight, moss, brass and slate over the theme's roles, each chosen to survive the board's sixteen colours; with colour off every cue is a word or a glyph (the stamps, `READY`, `NOT READY`, the glyph and word for locked and shut). No cell is bold plus reverse.
+
+### How the RPG rule is met
+
+The screens add no rule, so the RPG rule is unchanged from H1 and H2; what the screens do is show it. The planner puts the engine's named parts of each odd on screen (skill, scouting, helpers, witnesses, patrols, wariness, heat), so a build that changes the odds changes the numbers a player sees; a closed club says what it wants; a shut conversation choice says what it needs; the map shows a place as locked until you hold one of the ways in, and what opens it only once you have scouted it.
+
+### Verified
+
+Tests in `tests/ui.rs` and `session/ui/map.rs`: every screen (29 states: the enrolment card, the day, the map with the cursor moved, study, a shop, the scheme lists and planner on both phases, twists, getaway, the time, a lesson in three subjects, a talk list and a conversation with a shut choice, a run at two stages, the file on two tabs, clubs, the journal, the paper, the hall, the yearbook and the end of term) rendered at 80x24, 100x30 and 132x43 in the ASCII, Unicode and Nerd Font tiers with colour on and off, and again at 74x20; snapshots of every screen at every size in the ASCII and Unicode tiers (`HALLPASS_BLESS=1` rewrites them); the Nerd Font tier equals the Unicode tier and has no private-use glyph; the ASCII tier is ASCII; nothing is coloured with colour off; at sixteen colours no rgb value survives and the accents are all there; no bold plus reverse; the plain text screen under 60x16; a look-around for every screen that differs from every other and is the same in every tier; the map's look-around names the walkable places, the locked and the shut; the planner's and the file's numbers in words; the lightbar, the map cursor and Enter; every place has one cell on the plan, no two share one, no more than the two named long doors, and the cursor reaches every place; one whole day through the keys (the enrolment card, a lesson answered with Enter, the file, a scheme planned to the planner, clubs); the framework's source audit (`tests/sandbox.rs`) with no new dependency. The older text-screen tests (`tests/play.rs`, `tests/screens.rs`) now read the words of a screen from the look-around, which still holds every line they asserted on. The walk over a real `ssh` client, with a picture of each stop, is [qa/m4-h3-walk.md](../qa/m4-h3-walk.md).
+
+### Not done, deliberately
+
+A scheme run reached by hand over `ssh` (it needs a scheme that is ready, the items and a moment the target allows; the run, the conversation and the end-of-term screens are drawn and tested through the harness and pictured as designs), mouse (UI-9), animation and effects (UI-8), the Nerd Font glyphs (the board neutralizes them, D104), per-member colour depth (the board composites doors at sixteen colours today), the school events, the social layer and the mystery (H4).

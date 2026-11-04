@@ -1,0 +1,24 @@
+  +------------------------------- russh-bbs --------------------------------+
+  |Hallpass                                                                  |
+  |                                                                          |
+  | # GREYWATER ACADEMY  - founder                     term 1 - Wed day 1/42 |
+  |  Hist   Maths  [Lunch]   Art      Sci    Games   After    Eve     Night  |
+  |----------------========..................................................|
+  |+ Getaway -----------------------------++ The getaway -------------------+|
+  || 1 * Slip away - Walk, do not run.    ||Slip away                       ||
+  || 2 A friend to cover for you - You ~  ||Walk, do not run.               ||
+  || 3 Lie low - Spend the next period ~  ||escape +0  traced +0            ||
+  || 4 Look the picture of innocence - ~  ||                                ||
+  || b Back                               ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  ||                                      ||                                ||
+  |+--------------------------------------++--------------------------------+|
+  | > * Slip away - Walk, do not run.                   up/down  Enter  Esc  |
+  +--------------------------------------------------------------------------+

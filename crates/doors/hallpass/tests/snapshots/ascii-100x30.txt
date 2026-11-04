@@ -377,24 +377,24 @@
 ---------------------------------###########........................................................
  b Back
 + Pupil file --------------------------++ Record --------------------++ Marks and skills ----------+
-|OFFICE OF THE HEADMISTRESS            ||#  3 Mr. Marsh writes you u~||Maths  ##############=--- 82|
-|ann  CONFIDENTIAL                     ||#  5 Privileges lost for fi~||Scienc~##########=------- 61|
-|--------------------------------------||.  8 A letter goes home. Yo~||Langua~########=--------- 47|
-| 1. day 5  caught red-handed         *||. 10 You are to report to t~||History################=- 90|
-| 2. day 7  caught red-handed        **||# 12 expulsion at term end  ||Art    ######=----------- 38|
-| 3. day 9  a poor mark on Friday's ~ *||                            ||Games  ############=----- 70|
-| 4. day 11 out of bounds after lig~ **||pulled off 3  caught 2  trac||                            |
-|                                      ||cool 48  notoriety 4  heat 9||Sneak ooooo  Bluff *oooo  Ti|
-|                                      ||known as Smooth talker      ||                            |
+|OFFICE OF THE HEADMISTRESS            ||#  3 Mr. Marsh writes you   ||Maths  ##############=--- 82|
+|ann  CONFIDENTIAL                     ||     up. Two detentions.    ||Scienc~##########=------- 61|
+|--------------------------------------||#  5 Privileges lost for    ||Langua~########=--------- 47|
+| 1. day 5  caught red-handed         *||     five days: no tuck     ||History################=- 90|
+| 2. day 7  caught red-handed        **||.  8 A letter goes home.    ||Art    ######=----------- 38|
+| 3. day 9  a poor mark on Friday's ~ *||     Your allowance is      ||Games  ############=----- 70|
+| 4. day 11 out of bounds after lig~ **||. 10 You are to report to   ||                            |
+|                                      ||     the headmistress first ||Sneak ooooo  Bluff *oooo  Ti|
+|                                      ||# 12 expulsion at term end  ||                            |
 |                                      ||                            ||                            |
-|                                      ||                            |+----------------------------+
-|                                      ||                            |+ Standing ------------------+
-|                                      ||                            ||Rowing~--------+-O------ +30|
-|                                      ||                            ||Ink So~-------+------O- +100|
-|                                      ||                            ||Bench  -----O--+-------- -40|
-|                                      ||                            ||Lampli~--------O--------- +0|
-|                                      ||                            ||Worksh~--------O--------- +0|
-|                                      ||                            ||Strays --------O--------- +0|
+|                                      ||pulled off 3  caught 2  trac|+----------------------------+
+|                                      ||cool 48  notoriety 4  heat 9|+ Standing ------------------+
+|                                      ||known as Smooth talker      ||Rowing Eight -----O------ +3|
+|                                      ||                            ||Ink Society  -----O----- +10|
+|                                      ||                            ||Bench        -----O------ -4|
+|                                      ||                            ||Lamplighters -----O------ +0|
+|                                      ||                            ||Workshop     -----O------ +0|
+|                                      ||                            ||Strays       -----O------ +0|
 |                                      ||                            ||                            |
 |--------------------------------------||                            ||watching you  nobody yet    |
 |thick  #############------------- 6/12||                            ||                            |
@@ -408,24 +408,24 @@
 ---------------------------------###########........................................................
  b Back
 + Pupil file --------------------------++ Record --------------------++ Marks and skills ----------+
-|OFFICE OF THE HEADMISTRESS            ||#  3 Mr. Marsh writes you u~||Maths  ##############=--- 82|
-|ann  CONFIDENTIAL                     ||#  5 Privileges lost for fi~||Scienc~##########=------- 61|
-|--------------------------------------||.  8 A letter goes home. Yo~||Langua~########=--------- 47|
-| 1. day 5  caught red-handed         *||. 10 You are to report to t~||History################=- 90|
-| 2. day 7  caught red-handed        **||# 12 expulsion at term end  ||Art    ######=----------- 38|
-| 3. day 9  a poor mark on Friday's ~ *||                            ||Games  ############=----- 70|
-| 4. day 11 out of bounds after lig~ **||pulled off 3  caught 2  trac||                            |
-|                                      ||cool 48  notoriety 4  heat 9||Sneak ooooo  Bluff *oooo  Ti|
-|                                      ||known as Smooth talker      ||                            |
+|OFFICE OF THE HEADMISTRESS            ||#  3 Mr. Marsh writes you   ||Maths  ##############=--- 82|
+|ann  CONFIDENTIAL                     ||     up. Two detentions.    ||Scienc~##########=------- 61|
+|--------------------------------------||#  5 Privileges lost for    ||Langua~########=--------- 47|
+| 1. day 5  caught red-handed         *||     five days: no tuck     ||History################=- 90|
+| 2. day 7  caught red-handed        **||.  8 A letter goes home.    ||Art    ######=----------- 38|
+| 3. day 9  a poor mark on Friday's ~ *||     Your allowance is      ||Games  ############=----- 70|
+| 4. day 11 out of bounds after lig~ **||. 10 You are to report to   ||                            |
+|                                      ||     the headmistress first ||Sneak ooooo  Bluff *oooo  Ti|
+|                                      ||# 12 expulsion at term end  ||                            |
 |                                      ||                            ||                            |
-|                                      ||                            |+----------------------------+
-|                                      ||                            |+ Standing ------------------+
-|                                      ||                            ||Rowing~--------+-O------ +30|
-|                                      ||                            ||Ink So~-------+------O- +100|
-|                                      ||                            ||Bench  -----O--+-------- -40|
-|                                      ||                            ||Lampli~--------O--------- +0|
-|                                      ||                            ||Worksh~--------O--------- +0|
-|                                      ||                            ||Strays --------O--------- +0|
+|                                      ||pulled off 3  caught 2  trac|+----------------------------+
+|                                      ||cool 48  notoriety 4  heat 9|+ Standing ------------------+
+|                                      ||known as Smooth talker      ||Rowing Eight -----O------ +3|
+|                                      ||                            ||Ink Society  -----O----- +10|
+|                                      ||                            ||Bench        -----O------ -4|
+|                                      ||                            ||Lamplighters -----O------ +0|
+|                                      ||                            ||Workshop     -----O------ +0|
+|                                      ||                            ||Strays       -----O------ +0|
 |                                      ||                            ||                            |
 |--------------------------------------||                            ||watching you  nobody yet    |
 |thick  #############------------- 6/12||                            ||                            |
@@ -532,9 +532,9 @@
 ---------------------------------###########........................................................
  b Back
      + Hall of legend ------------------------------------------------------------------------+
-     |1 Wick          ################################################################# 74    |
-     |2 Marguerite    #####################################################=----------- 61    |
-     |3 Pip           #################################=------------------------------- 38    |
+     | 1 Wick          ################################################################# 74   |
+     | 2 Marguerite    #####################################################=----------- 61   |
+     | 3 Pip           #################################=------------------------------- 38   |
      | 4 Rafe          ###################=--------------------------------------------- 22   |
      |                                                                                        |
      |                                                                                        |
@@ -785,8 +785,8 @@
 |    |  --  |    ||                                                                                |
 |     \____/     ||bond   --------------------------O-'--+--'---------------------------- -18 rival|
 |    /|    |\    ||                                                                                |
-|Marsh           ||                                                                                |
-|Deputy head     ||                                                                                |
+|Marsh           ||Patrols the quad with a clipboard and a theory about you.                       |
+|Deputy head     ||wary of you **o                                                                 |
 |RIVAL           ||                                                                                |
 |                ||                                                                                |
 |                ||                                                                                |
@@ -869,9 +869,9 @@
 ===== over 100x30 ascii
  # GREYWATER ACADEMY  - ann                                                  term 1 - Wed day 13/42
 + End of term ----------------------------------------++ Hall of legend ---------------------------+
-|The term is over.                                    ||1 Wick          #################### 74    |
-|                                                     ||2 Marguerite    ################=--- 61    |
-|SCRAPED THROUGH                                      ||3 Pip           ##########=--------- 38    |
+|The term is over.                                    || 1 Wick          #################### 74   |
+|                                                     || 2 Marguerite    ################=--- 61   |
+|SCRAPED THROUGH                                      || 3 Pip           ##########=--------- 38   |
 |A middling term. The school barely noticed you.      || 4 Rafe          #####=-------------- 22   |
 |                                                     ||                                           |
 |legend 26   file 6   average grade 64                ||                                           |

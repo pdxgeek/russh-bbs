@@ -34,24 +34,25 @@ fn hash(id: &str) -> u32 {
     h
 }
 
+const SKIN: [(u8, u8, u8); 5] = [
+    (250, 200, 160),
+    (230, 170, 120),
+    (190, 130, 90),
+    (140, 90, 60),
+    (250, 220, 190),
+];
+const HAIR: [(u8, u8, u8); 6] = [
+    (40, 30, 30),
+    (120, 70, 30),
+    (210, 170, 70),
+    (170, 60, 40),
+    (200, 200, 200),
+    (50, 60, 90),
+];
+
 impl Portrait {
     fn of(id: &str, cloth: Color) -> Self {
         let h = hash(id);
-        const SKIN: [(u8, u8, u8); 5] = [
-            (250, 200, 160),
-            (230, 170, 120),
-            (190, 130, 90),
-            (140, 90, 60),
-            (250, 220, 190),
-        ];
-        const HAIR: [(u8, u8, u8); 6] = [
-            (40, 30, 30),
-            (120, 70, 30),
-            (210, 170, 70),
-            (170, 60, 40),
-            (200, 200, 200),
-            (50, 60, 90),
-        ];
         let s = SKIN[(h % 5) as usize];
         let hr = HAIR[((h >> 3) % 6) as usize];
         Self {
@@ -235,6 +236,32 @@ pub(super) fn scene(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     if let Some(n) = npc {
         lines.push(Line::default());
         lines.push(bond_line(ui, g.bond(&n.id), inner.width));
+        // What you know of them, when there is room.
+        if inner.height >= 9 {
+            lines.push(Line::default());
+            for l in wrap(&n.blurb, w) {
+                lines.push(Line::styled(l, pal.slate()));
+            }
+            if let Some(clique) = n
+                .clique
+                .as_deref()
+                .and_then(|c| g.content.cliques.iter().find(|x| x.id == c))
+            {
+                lines.push(Line::from(vec![
+                    Span::styled(format!("{} ", clique.name), pal.ink()),
+                    Span::styled(
+                        format!("(your standing {})", g.player.standing_with(&clique.id)),
+                        pal.slate(),
+                    ),
+                ]));
+            }
+            let wary = g.player.wary_of(&n.id);
+            if wary > 0 {
+                let mut spans = vec![Span::styled("wary of you ", pal.slate())];
+                spans.extend(ui.pips(usize::try_from(wary).unwrap_or(0), 3, pal.red()));
+                lines.push(Line::from(spans));
+            }
+        }
     }
     f.render_widget(Paragraph::new(lines).wrap(Wrap { trim: false }), inner);
     // ---- the answers.

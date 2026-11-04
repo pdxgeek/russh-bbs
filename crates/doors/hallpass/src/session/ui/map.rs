@@ -393,6 +393,73 @@ fn detail(ui: &Ui<'_>, id: &str, routes: &[(String, u8)], width: u16) -> Vec<Lin
     lines
 }
 
+/// The place under the cursor in three or four lines: what it is, the way in, who is there.
+fn brief(ui: &Ui<'_>, id: &str, routes: &[(String, u8)]) -> Vec<Line<'static>> {
+    let g = ui.g;
+    let pal = &ui.pal;
+    let Some(spec) = g.content.place(id) else {
+        return Vec::new();
+    };
+    let st = state_of(ui, id, routes);
+    let word = match st {
+        State::You => "you are here".to_owned(),
+        State::Reachable(1) => "1 corridor away".to_owned(),
+        State::Reachable(n) => format!("{n} corridors away"),
+        State::Open => "open, out of reach this period".to_owned(),
+        State::ShutNow => "shut at this hour".to_owned(),
+        State::Locked => "LOCKED".to_owned(),
+        State::Keyed => "locked, but you can get in".to_owned(),
+    };
+    let mut lines = vec![Line::from(vec![
+        Span::styled(format!("{} ", glyph(ui, st)), style_of(ui, st)),
+        Span::styled(spec.name.clone(), pal.chalk()),
+        Span::styled(
+            format!("  {word}"),
+            if st == State::Locked {
+                pal.red()
+            } else {
+                pal.chalk_soft()
+            },
+        ),
+    ])];
+    let mut doors: Vec<String> = spec.exits.clone();
+    doors.extend(
+        g.content
+            .places
+            .iter()
+            .filter(|p| p.exits.iter().any(|e| e == id))
+            .map(|p| p.id.clone()),
+    );
+    doors.sort();
+    doors.dedup();
+    let names: Vec<String> = doors
+        .iter()
+        .filter_map(|d| g.content.place(d).map(|p| p.name.clone()))
+        .collect();
+    lines.push(Line::from(vec![
+        Span::styled("doors ", pal.slate()),
+        Span::styled(names.join(", "), pal.chalk_soft()),
+    ]));
+    let known = known_places(ui, routes);
+    let mut who = vec![Span::styled("here  ", pal.slate())];
+    if known.contains(id) {
+        let people = people_line(ui, id, true);
+        if people.is_empty() {
+            who.push(Span::styled("nobody you can see", pal.slate()));
+        } else {
+            who.extend(people);
+        }
+    } else {
+        who.push(Span::styled("out of sight", pal.slate()));
+    }
+    lines.push(Line::from(who));
+    lines.push(Line::from(vec![
+        Span::styled("hours ", pal.slate()),
+        Span::styled(spec.hours.join(" "), pal.chalk_soft()),
+    ]));
+    lines
+}
+
 /// The place under the cursor: the cursor, or where you stand if it has not been moved.
 pub(super) fn selected(ui: &Ui<'_>) -> String {
     selected_place(ui.s)
@@ -520,9 +587,90 @@ pub(super) fn draw(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
         f.render_widget(Paragraph::new(lines).wrap(Wrap { trim: false }), inner);
     } else {
         let inner = ui.framed(f, side, "");
-        let mut lines = detail(ui, &cursor, &routes, inner.width);
-        lines.truncate(usize::from(inner.height));
+        let lines = brief(ui, &cursor, &routes);
         f.render_widget(Paragraph::new(lines), inner);
     }
     let _ = fit;
+}
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+mod tests {
+    use super::*;
+    use crate::content::Content;
+
+    fn content() -> Content {
+        Content::embedded().expect("the embedded content loads")
+    }
+
+    #[test]
+    fn every_place_has_one_cell_on_the_plan_and_no_two_share_one() {
+        let c = content();
+        for p in &c.places {
+            assert!(grid_of(&p.id).is_some(), "{} is not on the plan", p.id);
+        }
+        for (id, ..) in &GRID {
+            assert!(
+                c.place(id).is_some(),
+                "{id} is on the plan but not in the school"
+            );
+        }
+        let mut cells: Vec<(u8, u8)> = GRID.iter().map(|(_, c, r, _)| (*c, *r)).collect();
+        cells.sort_unstable();
+        let n = cells.len();
+        cells.dedup();
+        assert_eq!(n, cells.len(), "two places share a cell");
+        assert!(
+            cells
+                .iter()
+                .all(|(c, r)| usize::from(*c) < COLS && usize::from(*r) < CELLS_HIGH)
+        );
+    }
+
+    #[test]
+    fn almost_every_door_joins_cells_that_touch_so_the_corridors_are_drawn() {
+        // Two long ways are named in the text under the plan; no more may be added silently.
+        let c = content();
+        let mut far = std::collections::BTreeSet::new();
+        for p in &c.places {
+            for e in &p.exits {
+                let (Some((c1, r1, _)), Some((c2, r2, _))) = (grid_of(&p.id), grid_of(e)) else {
+                    continue;
+                };
+                if c1.abs_diff(c2).max(r1.abs_diff(r2)) > 1 {
+                    let (a, b) = if p.id < *e {
+                        (p.id.clone(), e.clone())
+                    } else {
+                        (e.clone(), p.id.clone())
+                    };
+                    far.insert((a, b));
+                }
+            }
+        }
+        assert!(far.len() <= 2, "{far:?}");
+    }
+
+    #[test]
+    fn the_cursor_reaches_every_place_from_every_other() {
+        // BFS over the arrow keys from the quad: nothing on the plan can be out of reach.
+        let mut seen = std::collections::HashSet::from(["quad".to_owned()]);
+        let mut queue = vec!["quad".to_owned()];
+        while let Some(here) = queue.pop() {
+            for dir in [Dir::Up, Dir::Down, Dir::Left, Dir::Right] {
+                if let Some(next) = step_cursor(&here, dir)
+                    && seen.insert(next.clone())
+                {
+                    queue.push(next);
+                }
+            }
+        }
+        assert_eq!(
+            seen.len(),
+            GRID.len(),
+            "unreachable: {:?}",
+            GRID.iter()
+                .filter(|(id, ..)| !seen.contains(*id))
+                .collect::<Vec<_>>()
+        );
+    }
 }

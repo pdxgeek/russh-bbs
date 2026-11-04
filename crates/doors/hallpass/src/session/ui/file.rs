@@ -8,7 +8,7 @@ use russh_bbs_door::style::Style;
 use russh_bbs_door::text::{Line, Span};
 use russh_bbs_door::widgets::Paragraph;
 
-use super::plan::bond_line;
+use super::plan::meter_line;
 use super::{Size, Ui, fit, hue, wrap};
 use crate::state::map_get;
 
@@ -34,14 +34,15 @@ fn document(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     lines.push(Line::styled(rule.clone(), pal.slate()));
     let room = usize::from(inner.height).saturating_sub(lines.len() + 3);
     if p.file.is_empty() {
-        lines.push(Line::styled(
-            "No entries. The headmistress has not heard of you.",
-            pal.moss(),
-        ));
-        lines.push(Line::styled(
+        for l in wrap("No entries. The headmistress has not heard of you.", w) {
+            lines.push(Line::styled(l, pal.moss()));
+        }
+        for l in wrap(
             "(Yet. A clean sheet is a thing to be proud of, and to waste.)",
-            pal.slate(),
-        ));
+            w,
+        ) {
+            lines.push(Line::styled(l, pal.slate()));
+        }
     }
     // The newest entries that fit.
     let skip = p.file.len().saturating_sub(room);
@@ -118,23 +119,31 @@ fn consequences(ui: &Ui<'_>, width: u16) -> Vec<Line<'static>> {
         } else {
             (pal.slate(), ui.look.g("□", "."))
         };
-        let room = w.saturating_sub(head.chars().count() + 2);
-        lines.push(Line::from(vec![
-            Span::styled(format!("{mark}"), style),
-            Span::styled(format!(" {head}"), style),
-            Span::styled(
-                fit(&t.text, room),
-                if reached {
-                    pal.chalk_soft()
-                } else {
-                    pal.slate()
-                },
-            ),
-        ]));
+        let room = w.saturating_sub(head.chars().count() + 2).max(8);
+        let text_style = if reached {
+            pal.chalk_soft()
+        } else {
+            pal.slate()
+        };
+        // Two lines of the text where there is room, the second under the first.
+        for (n, l) in wrap(&t.text, room).into_iter().take(2).enumerate() {
+            if n == 0 {
+                lines.push(Line::from(vec![
+                    Span::styled(mark.to_owned(), style),
+                    Span::styled(format!(" {head}"), style),
+                    Span::styled(l, text_style),
+                ]));
+            } else {
+                lines.push(Line::from(vec![
+                    Span::raw(" ".repeat(head.chars().count() + 2)),
+                    Span::styled(l, text_style),
+                ]));
+            }
+        }
     }
     lines.push(Line::from(vec![
         Span::styled(
-            format!("{}", ui.look.g("■", "#")),
+            ui.look.g("■", "#").to_owned(),
             if pts >= g.content.rules.file_full {
                 pal.red()
             } else {
@@ -233,12 +242,7 @@ fn standing(ui: &Ui<'_>, width: u16) -> Vec<Line<'static>> {
     for c in &g.content.cliques {
         let v = g.player.standing_with(&c.id);
         let name = c.name.trim_start_matches("The ");
-        let mut l = bond_line(ui, v * 10, width);
-        // Replace the caption with the clique's name.
-        if let Some(first) = l.spans.first_mut() {
-            *first = Span::styled(format!("{:<7}", fit(name, 7)), pal.slate());
-        }
-        lines.push(l);
+        lines.push(meter_line(ui, name, 13, v, format!(" {v:+}"), width, false));
     }
     let wary: Vec<String> = g
         .player
@@ -315,5 +319,4 @@ pub(super) fn draw(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
         );
     }
     let _: Style = pal.plain;
-    let _ = wrap;
 }

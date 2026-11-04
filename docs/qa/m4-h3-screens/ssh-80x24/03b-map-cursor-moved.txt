@@ -1,0 +1,24 @@
+  ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+  │Hallpass                                                                  │
+  │                                                                          │
+  │ ♜ GREYWATER ACADEMY  · founder                     term 1 · Wed day 1/42 │
+  │ ▐Hist▌  Maths   Lunch    Art      Sci    Games   After    Eve     Night  │
+  │▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄│
+  │╭ Greywater Academy ─────────────────────────────────────────────────────╮│
+  ││                                     │         ╱                        ││
+  ││            ◉ Dorm      ● Art room†─● Classes†──● History†              ││
+  ││             │         ╲           ╱           ╲                        ││
+  ││⊘ Stacks    ∙ Common rm ● The Quad† ∙ Tuck shop ● Maths                 ││
+  ││           ╲           ╱ │         ╱                                    ││
+  ││⊘ Head's    ● Library   ∙ Hall      ● Gym†      ⊘ Loft                  ││
+  ││           ╲ │         ╱ │         ╲           ╱                        ││
+  ││⊘ Deputy────● Admin     ⊘ Greenroom ∙ Chapel────● Grounds†──● Car park  ││
+  ││           ╱ │                     ╱           ╱ │                      ││
+  │╰ ◉you ●reach ○open ∙shut ⊘locked †staff ────────────────────────────────╯│
+  │╭────────────────────────────────────────────────────────────────────────╮│
+  ││● The Quad  1 corridor away                                             ││
+  ││doors Classroom corridor, Common room, Fenwick dormitory, The grounds, G││
+  ││here  Bramley, Marchetti                                                ││
+  │╰────────────────────────────────────────────────────────────────────────╯│
+  │ » The Quad                                 arrows choose  Enter go  Esc  │
+  └──────────────────────────────────────────────────────────────────────────┘

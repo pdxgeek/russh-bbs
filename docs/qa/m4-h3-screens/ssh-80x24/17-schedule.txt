@@ -1,0 +1,24 @@
+  ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+  │Hallpass                                                                  │
+  │                                                                          │
+  │ ♜ GREYWATER ACADEMY  · founder                     term 1 · Wed day 1/42 │
+  │  Hist   Maths  ▐Lunch▌   Art      Sci    Games   After    Eve     Night  │
+  │━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄│
+  │╭ When? ───────────────────────────────╮╭ The time ──────────────────────╮│
+  ││ 1 Wed (day 1), Lunch: lunch          ││Lunch - lunch                   ││
+  ││ 2 Wed (day 1), After school: after   ││the place is shut then          ││
+  ││ 3 Thu (day 2), Lunch: lunch          ││scout it to learn who will be   ││
+  ││ 4 Thu (day 2), Free period: free     ││about                           ││
+  ││ 5 Thu (day 2), After school: after   ││                                ││
+  ││ 6 Fri (day 3), Lunch: lunch          ││                                ││
+  ││ 7 Fri (day 3), Free period: free     ││                                ││
+  ││ 8 Fri (day 3), After school: after   ││                                ││
+  ││ 9 Sat (day 4), Lunch: lunch          ││                                ││
+  ││ . More                               ││                                ││
+  ││ b Back                               ││                                ││
+  ││                                      ││                                ││
+  ││                                      ││                                ││
+  ││                                      ││                                ││
+  │╰──────────────────────────────────────╯╰────────────────────────────────╯│
+  │ » Wed (day 1), Lunch: lunch                         up/down  Enter  Esc  │
+  └──────────────────────────────────────────────────────────────────────────┘
