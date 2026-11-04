@@ -27,7 +27,7 @@ private = { ignore = true }
 # license) is a dependency of `rustls-platform-verifier` for `wasm32` targets only, which this
 # project never builds; `cargo deny` still sees it because it checks every target. It comes in
 # through `reqwest`, which `object_store` uses for the S3 blob backend (M4-F1, D106). Nothing
-# in the shipped binary links it. Owner: confirm or reject this exception (D106).
+# in the shipped binary links it. Approved by the owner on 2026-11-04 (D106).
 exceptions = [{ allow = ["CDLA-Permissive-2.0"], crate = "webpki-root-certs" }]
 
 # The allow list is deliberately ahead of what the dependency tree uses today.

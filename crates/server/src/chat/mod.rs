@@ -45,10 +45,10 @@ pub(crate) fn render(
     look: crate::settings::Look,
     tier: russh_bbs_core::icons::Tier,
 ) {
-    use crate::ui::classic::{ContentScreen, MENU_MARKERS, render_content};
+    use crate::ui::classic::{ContentScreen, MENU_MARKERS, render_content_bare};
     let width = usize::from(frame.area().width.min(crate::settings::MAX_WIDTH)).saturating_sub(2);
     let height = box_height(frame.area().height);
-    render_content(
+    render_content_bare(
         frame,
         ContentScreen {
             strings,
@@ -56,6 +56,7 @@ pub(crate) fn render(
             look,
             tier,
             markers: &MENU_MARKERS,
+            clock: None,
         },
     );
 }

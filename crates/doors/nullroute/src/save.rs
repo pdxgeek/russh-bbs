@@ -8,8 +8,10 @@
 //! To raise a version, add a `migrate_vN` here, raise `SAVE_VERSION` or `WORLD_VERSION` in
 //! `lib.rs` and add the arm to `Door::migrate`.
 
+use crate::code::{Build, CODED_MAX, FRAGMENTS_MAX};
+use crate::learn::ROWS_MAX;
 use crate::player::{DONE_MAX, FIXERS_MAX, PARTS, Player};
-use crate::world::{BOARD_MAX, Contract, HOLES_MAX, NetState, World};
+use crate::world::{BOARD_MAX, Contract, HOLES_MAX, Learned, NetState, World};
 
 struct Reader<'a>(&'a [u8]);
 
@@ -137,7 +139,41 @@ pub fn encode(p: &Player) -> Vec<u8> {
     w.u32(p.jobs);
     w.u32(p.burns);
     w.u64(p.earned);
+    // Version 2: fragments and the coded-script slots (an empty slot is three zero bytes).
+    w.list(&p.fragments);
+    for slot in p.coded {
+        let b = slot.unwrap_or(Build {
+            effect: 0,
+            target: 0,
+            modifier: 0,
+        });
+        w.u8(b.effect);
+        w.u8(b.target);
+        w.u8(b.modifier);
+    }
     w.0
+}
+
+/// Bring a version 1 save to version 2: no fragments, no coded scripts. `None` if the bytes are
+/// not a version 1 save.
+///
+#[must_use]
+pub fn migrate_save_v1(bytes: &[u8]) -> Option<Vec<u8>> {
+    let mut out = bytes.to_vec();
+    out.push(0);
+    out.extend_from_slice(&[0; CODED_MAX * 3]);
+    decode(&out).map(|_| out)
+}
+
+/// Bring a version 1 world to version 2: no season yet, nothing learned. `None` if the bytes are
+/// not a version 1 world.
+///
+#[must_use]
+pub fn migrate_world_v1(bytes: &[u8]) -> Option<Vec<u8>> {
+    let mut out = bytes.to_vec();
+    out.extend_from_slice(&0u32.to_le_bytes());
+    out.push(0);
+    decode_world(&out).map(|_| out)
 }
 
 /// Decode a character, or `None` for bytes that are not one.
@@ -192,6 +228,18 @@ pub fn decode(bytes: &[u8]) -> Option<Player> {
     let jobs = r.u32()?;
     let burns = r.u32()?;
     let earned = r.u64()?;
+    let fragments = r.list(FRAGMENTS_MAX)?;
+    let mut coded = [None; CODED_MAX];
+    for slot in &mut coded {
+        let (effect, target, modifier) = (r.u8()?, r.u8()?, r.u8()?);
+        if effect != 0 {
+            *slot = Some(Build {
+                effect,
+                target,
+                modifier,
+            });
+        }
+    }
     r.done()?;
     Some(Player {
         seed,
@@ -219,6 +267,8 @@ pub fn decode(bytes: &[u8]) -> Option<Player> {
         jobs,
         burns,
         earned,
+        fragments,
+        coded,
     })
 }
 
@@ -247,6 +297,14 @@ pub fn encode_world(world: &World) -> Vec<u8> {
         w.u8(c.tier);
         w.u32(c.reward);
         w.i64(c.expires);
+    }
+    // Version 2: the season, and what the corporations have learned.
+    w.u32(world.season);
+    w.u8(u8::try_from(world.learned.len().min(ROWS_MAX)).unwrap_or(0));
+    for l in world.learned.iter().take(ROWS_MAX) {
+        w.u8(l.corp);
+        w.u16(l.sig);
+        w.u8(l.uses);
     }
     w.0
 }
@@ -292,6 +350,19 @@ pub fn decode_world(bytes: &[u8]) -> Option<World> {
             expires: r.i64()?,
         });
     }
+    let season = r.u32()?;
+    let n = usize::from(r.u8()?);
+    if n > ROWS_MAX {
+        return None;
+    }
+    let mut learned = Vec::with_capacity(n);
+    for _ in 0..n {
+        learned.push(Learned {
+            corp: r.u8()?,
+            sig: r.u16()?,
+            uses: r.u8()?,
+        });
+    }
     r.done()?;
     Some(World {
         day,
@@ -299,5 +370,7 @@ pub fn decode_world(bytes: &[u8]) -> Option<World> {
         nets,
         board,
         breaches,
+        season,
+        learned,
     })
 }

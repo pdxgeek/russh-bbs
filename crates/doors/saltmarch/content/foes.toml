@@ -1,0 +1,215 @@
+# Creatures and bandits, and the groups they fight in. Attack, armour and speed are in the
+# skirmish's own small numbers (a crew member has about 4 attack, 18 hit points, 1 armour).
+# `mass` is how hard a foe is to shove between rows. `aquatic` foes are better in the water,
+# `tidal` ones stronger when it is high. Behaviours: bruiser (hits the front rank), lurker
+# (the weakest, whatever the rank), hurler (throws from the back), skittish (runs when hurt)
+# and swarm (weak alone).
+
+[[foe]]
+id = "mire-eel"
+name = "Mire-eel"
+blurb = "As long as a boathook and twice as quick. It lives in the mud and does not mind the tide."
+hp = 12
+atk = 4
+def = 0
+spd = 7
+mass = 3
+row = "middle"
+behaviour = "lurker"
+aquatic = true
+drops = { fish = 4 }
+
+[[foe]]
+id = "reed-cat"
+name = "Reed-cat"
+blurb = "A lean grey cat with a ringed tail. It drops from the reeds and does not stay to argue."
+hp = 10
+atk = 4
+def = 0
+spd = 8
+mass = 2
+row = "front"
+behaviour = "skittish"
+drops = { reed = 2, tallies = 3 }
+
+[[foe]]
+id = "bog-hound"
+name = "Bog-hound"
+blurb = "A feral dog gone the colour of peat. They hunt in twos."
+hp = 13
+atk = 4
+def = 1
+spd = 6
+mass = 4
+row = "front"
+behaviour = "bruiser"
+drops = { peat = 3 }
+
+[[foe]]
+id = "salt-crab"
+name = "Salt-crab"
+blurb = "Big as a bucket, with a shell that rings like a bell. It sidles, and then it does not."
+hp = 11
+atk = 3
+def = 3
+spd = 3
+mass = 5
+row = "front"
+behaviour = "bruiser"
+aquatic = true
+drops = { food = 2, salt = 2 }
+
+[[foe]]
+id = "wrack-gull"
+name = "Wrack-gull"
+blurb = "A gull the size of a child. It takes what you hold, then your eyes."
+hp = 5
+atk = 2
+def = 0
+spd = 9
+mass = 1
+row = "front"
+behaviour = "swarm"
+drops = { fish = 1 }
+
+[[foe]]
+id = "tide-hag"
+name = "Tide-hag"
+blurb = "A drowned woman, or the shape one leaves. She comes up with the flood and goes down with it."
+hp = 18
+atk = 6
+def = 1
+spd = 4
+mass = 6
+row = "middle"
+behaviour = "lurker"
+aquatic = true
+tidal = true
+drops = { silt-glass = 2, tallies = 6 }
+
+[[foe]]
+id = "cutter"
+name = "Cutter"
+blurb = "A bandit who came up out of the fen with a billhook and a grudge against anyone with salt."
+hp = 14
+atk = 5
+def = 1
+spd = 5
+mass = 5
+row = "front"
+behaviour = "bruiser"
+drops = { tallies = 6, arms = 1 }
+
+[[foe]]
+id = "slinger"
+name = "Slinger"
+blurb = "A bandit with a sling and a pocket of lead shot. They never come closer than they must."
+hp = 9
+atk = 4
+def = 0
+spd = 6
+mass = 3
+row = "back"
+behaviour = "hurler"
+drops = { tallies = 5, rope = 1 }
+
+[[foe]]
+id = "reaver"
+name = "Reaver"
+blurb = "A rival clan's fighter, in a salvaged jerkin. They know the tide table as well as you do."
+hp = 17
+atk = 5
+def = 2
+spd = 5
+mass = 6
+row = "front"
+behaviour = "bruiser"
+drops = { tallies = 10, tools = 1 }
+
+[[foe]]
+id = "mud-wight"
+name = "Mud-wight"
+blurb = "Something that was a drover and has not stopped walking. It carries the bog on it."
+hp = 20
+atk = 5
+def = 2
+spd = 2
+mass = 8
+row = "front"
+behaviour = "bruiser"
+aquatic = true
+drops = { peat = 4, iron = 1 }
+
+[[foe]]
+id = "spire-warden"
+name = "Spire warden"
+blurb = "A figure of silt-glass and old iron that stands guard in the Deep. It has been waiting a long time."
+hp = 40
+atk = 8
+def = 4
+spd = 4
+mass = 10
+row = "front"
+behaviour = "bruiser"
+tidal = true
+drops = { silt-glass = 4, iron = 3, relic = 1 }
+
+[[group]]
+id = "eel-pair"
+intro = "The mud ahead moves, and then there are two long shapes in it."
+foes = ["mire-eel", "mire-eel"]
+
+[[group]]
+id = "reed-cat-ambush"
+intro = "Something grey drops out of the reeds behind the last of you."
+foes = ["reed-cat", "reed-cat"]
+
+[[group]]
+id = "hound-pack"
+intro = "The hounds come out of the fog low and silent, and spread."
+foes = ["bog-hound", "bog-hound", "bog-hound"]
+
+[[group]]
+id = "crab-bed"
+intro = "The shells you took for stones begin to sidle."
+foes = ["salt-crab", "salt-crab"]
+
+[[group]]
+id = "gull-storm"
+intro = "The gulls rise all at once, and they are not afraid of you."
+foes = ["wrack-gull", "wrack-gull", "wrack-gull", "wrack-gull"]
+
+[[group]]
+id = "tide-hag-lair"
+intro = "She rises from the black water with the flood behind her."
+foes = ["tide-hag", "mire-eel"]
+
+[[group]]
+id = "cutters-road"
+intro = "Two men step out of the reeds with billhooks, and a third stays back with a sling."
+foes = ["cutter", "cutter", "slinger"]
+
+[[group]]
+id = "slinger-nest"
+intro = "Lead shot whistles past before you hear the sling."
+foes = ["cutter", "slinger", "slinger"]
+
+[[group]]
+id = "rival-crew"
+intro = "A crew in rival colours stands across the causeway. Nobody speaks first."
+foes = ["reaver", "reaver", "slinger"]
+
+[[group]]
+id = "wight-walk"
+intro = "The shape in the bog stops being a stump."
+foes = ["mud-wight"]
+
+[[group]]
+id = "wight-and-hounds"
+intro = "The hounds circle the thing that walks, and neither will let you pass."
+foes = ["mud-wight", "bog-hound"]
+
+[[group]]
+id = "warden"
+intro = "The spire's door opens, and what was holding it open steps out."
+foes = ["spire-warden"]

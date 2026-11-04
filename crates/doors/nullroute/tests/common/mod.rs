@@ -96,6 +96,9 @@ pub fn setup(net: Network, deck: &[u8]) -> RunSetup {
         skill: [0; 5],
         cycles: 40,
         buffer: 0,
+        extra: Vec::new(),
+        learned: Vec::new(),
+        warden: None,
     }
 }
 
@@ -123,6 +126,7 @@ pub struct ScreenBot {
     ran: bool,
     last: Option<String>,
     started: bool,
+    fight: u32,
 }
 
 fn digit_key(n: usize) -> DoorKey {
@@ -191,7 +195,12 @@ impl ScreenBot {
                 self.started = true;
                 Some(DoorKey::Char('j'))
             }
+        } else if screen.first().is_some_and(|l| l.contains("TRACE"))
+            && screen.iter().any(|l| l.contains("break off"))
+        {
+            self.fight_key(screen)
         } else if screen.get(1).is_some_and(|l| l.starts_with("TRACE")) {
+            self.fight = 0;
             self.run_key(screen)
         } else {
             Some(DoorKey::Escape)
@@ -200,6 +209,37 @@ impl ScreenBot {
             self.last = Some(k.token());
         }
         key
+    }
+
+    /// An exchange with a countermeasure: brace on a guard, play the script that does the most, and
+    /// break off when nothing does anything or the fight drags.
+    fn fight_key(&mut self, screen: &[String]) -> Option<DoorKey> {
+        self.fight += 1;
+        if self.fight > 7 {
+            self.fight = 0;
+            return Some(DoorKey::Char('x'));
+        }
+        if screen.iter().any(|l| l.starts_with("It will GUARD")) {
+            return Some(DoorKey::Char('w'));
+        }
+        let best = screen
+            .iter()
+            .filter(|l| {
+                l.starts_with('[')
+                    && l.contains(" dmg")
+                    && !l.contains("PATCHED")
+                    && !l.contains("SEALED")
+            })
+            .filter_map(|l| {
+                let slot = l.chars().nth(1)?;
+                let n: u32 = l.split("-> ").nth(1)?.split(' ').next()?.parse().ok()?;
+                Some((n, slot))
+            })
+            .max();
+        match best {
+            Some((n, slot)) if n > 0 => Some(DoorKey::Char(slot)),
+            _ => Some(DoorKey::Char('x')),
+        }
     }
 
     fn run_key(&mut self, screen: &[String]) -> Option<DoorKey> {

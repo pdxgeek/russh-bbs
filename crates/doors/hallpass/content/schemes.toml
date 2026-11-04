@@ -1,0 +1,541 @@
+# Schemes are built from combinable parts: a TARGET, a METHOD, up to two TWISTS and a GETAWAY.
+# Mischief against authority and rivals only: no target is a Stray, and nobody types a target.
+# Template text may use {target} and {player}.
+#
+# Method fields:
+#   place        where the deed happens (a target's own `place` overrides it)
+#   kinds        which kinds of target it can be pointed at (staff, prefect, clique, school)
+#   only         optional: restrict to these target ids
+#   present      "absent" (target must be elsewhere), "present" (target must be there) or "any"
+#   needs        item ids used up by the deed
+#   roles        ally roles that must be recruited before it is ready
+#   requires     conditions for the option to exist for this player at all
+#   scout        scouting level needed before it is ready (0 to 3)
+#   difficulty / legend / heat / severity   the numbers
+#   big          true: a big scheme that changes the school for everyone (needs `effect`)
+#   skills       [sneak phase, act phase, escape phase]
+
+[[target]]
+id = "vane"
+name = "Dame Vane"
+kind = "staff"
+npc = "vane"
+[[target]]
+id = "marsh"
+name = "Mr. Marsh"
+kind = "staff"
+npc = "marsh"
+[[target]]
+id = "pell"
+name = "Mr. Pell"
+kind = "staff"
+npc = "pell"
+[[target]]
+id = "orrin"
+name = "Ms. Orrin"
+kind = "staff"
+npc = "orrin"
+[[target]]
+id = "thorne"
+name = "Madame Thorne"
+kind = "staff"
+npc = "thorne"
+[[target]]
+id = "alder"
+name = "Mr. Alder"
+kind = "staff"
+npc = "alder"
+[[target]]
+id = "soames"
+name = "Reverend Soames"
+kind = "staff"
+npc = "soames"
+[[target]]
+id = "tarn"
+name = "Mrs. Tarn"
+kind = "staff"
+npc = "tarn"
+[[target]]
+id = "wick"
+name = "Cordelia Wick"
+kind = "prefect"
+npc = "wick"
+[[target]]
+id = "bramley"
+name = "Tobias Bramley"
+kind = "prefect"
+npc = "bramley"
+[[target]]
+id = "rowing_eight"
+name = "the Rowing Eight"
+kind = "clique"
+clique = "rowing_eight"
+[[target]]
+id = "lamplighters"
+name = "the Lamplighters"
+kind = "clique"
+clique = "lamplighters"
+[[target]]
+id = "ink_society"
+name = "the Ink Society"
+kind = "clique"
+clique = "ink_society"
+[[target]]
+id = "the_bell"
+name = "the school bell"
+kind = "school"
+[[target]]
+id = "the_organ"
+name = "the chapel organ"
+kind = "school"
+place = "organ_loft"
+[[target]]
+id = "the_paper"
+name = "the school paper"
+kind = "school"
+place = "paper_office"
+[[target]]
+id = "the_alarm"
+name = "the fire alarm"
+kind = "school"
+
+# ---- small methods ----
+
+[[method]]
+id = "salt_swap"
+name = "Swap the sugar for salt"
+blurb = "Every cup of tea in the staffroom, a surprise."
+place = "staffroom"
+kinds = ["staff"]
+present = "absent"
+needs = ["salt"]
+difficulty = 20
+legend = 6
+heat = 6
+severity = 1
+skills = ["sneak", "bluff", "fleet"]
+story = "{target} took one sip of tea and the whole staffroom heard about it."
+[[method]]
+id = "forged_note"
+name = "Forge a timetable change"
+blurb = "A note in a teacher's hand sends a whole class to the wrong room."
+place = "classroom_corridor"
+kinds = ["staff", "prefect", "clique", "school"]
+present = "any"
+needs = ["forgery_kit"]
+requires = ["tag:forge"]
+difficulty = 25
+legend = 8
+heat = 7
+severity = 1
+skills = ["sneak", "bluff", "bluff"]
+story = "{target} was in the right room at the wrong time, and the notice said so in perfect handwriting."
+[[method]]
+id = "rowing_balls"
+name = "Fill their car with rowing balls"
+blurb = "Open the door and they all come out at once."
+place = "car_park"
+kinds = ["staff"]
+present = "absent"
+needs = ["balls"]
+difficulty = 22
+legend = 9
+heat = 8
+severity = 1
+skills = ["sneak", "sneak", "fleet"]
+story = "{target} opened the car door and was buried to the knees in practice balls."
+[[method]]
+id = "stink_bomb"
+name = "Plant a stink bomb"
+blurb = "Behind the radiator, timed to the second."
+place = "classroom_corridor"
+kinds = ["staff", "prefect", "clique"]
+present = "absent"
+needs = ["stink_bomb"]
+difficulty = 28
+legend = 10
+heat = 10
+severity = 2
+skills = ["sneak", "tinker", "fleet"]
+story = "A terrible smell found {target} and followed them down the corridor all afternoon."
+[[method]]
+id = "rig_announcement"
+name = "Rig the dining-hall tannoy"
+blurb = "The lunchtime announcement says what you want it to say."
+place = "main_hall"
+kinds = ["staff", "prefect", "clique", "school"]
+present = "any"
+needs = ["wire"]
+difficulty = 32
+legend = 12
+heat = 11
+severity = 2
+skills = ["sneak", "tinker", "fleet"]
+story = "The tannoy told the entire Great Hall exactly what it thought of {target}."
+[[method]]
+id = "early_bell"
+name = "Ring the bell early"
+blurb = "Twenty minutes off every lesson. Nobody will say thank you out loud."
+place = "old_wing"
+kinds = ["school"]
+only = ["the_bell"]
+present = "any"
+needs = ["decoy"]
+difficulty = 30
+legend = 11
+heat = 9
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "The bell rang twenty minutes early and no one could find who had pulled the rope."
+[[method]]
+id = "wrong_hymn"
+name = "Swap the hymn numbers"
+blurb = "The congregation sings one thing; the organ plays another."
+place = "chapel"
+kinds = ["school", "staff"]
+only = ["the_organ", "soames"]
+present = "absent"
+needs = ["forgery_kit"]
+difficulty = 26
+legend = 9
+heat = 7
+severity = 1
+skills = ["sneak", "bluff", "fleet"]
+story = "The hymn board said 42, the organ played 24, and {target} kept going out of sheer stubbornness."
+[[method]]
+id = "paper_headline"
+name = "Slip a headline into the paper"
+blurb = "One line, in the right typeface, on the front page."
+place = "paper_office"
+kinds = ["school", "staff", "prefect", "clique"]
+only = ["the_paper", "marsh", "vane", "wick", "lamplighters", "rowing_eight"]
+present = "any"
+needs = ["forgery_kit"]
+difficulty = 30
+legend = 12
+heat = 8
+severity = 1
+skills = ["sneak", "bluff", "fleet"]
+story = "The Friday paper ran a headline about {target} that the editor swears she never wrote."
+[[method]]
+id = "squeaky_chairs"
+name = "Swap the chairs for squeaky ones"
+blurb = "Every time anyone shifts, the whole room knows."
+place = "room_history"
+kinds = ["staff"]
+only = ["alder", "pell", "orrin", "thorne"]
+present = "absent"
+needs = ["decoy"]
+difficulty = 18
+legend = 6
+heat = 5
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "{target}'s lesson was accompanied by thirty separate squeaks, none of them anyone's fault."
+
+# ---- big methods: these change the school for everyone ----
+
+[[method]]
+id = "move_the_deputy"
+name = "Get the deputy head moved to the Old Wing"
+blurb = "A stack of forged memos and one very official-sounding reorganisation."
+place = "admin_corridor"
+kinds = ["staff"]
+only = ["marsh"]
+present = "absent"
+needs = ["memo_set", "forgery_kit"]
+roles = ["cover"]
+requires = ["legend>=20", "tag:forge"]
+scout = 2
+difficulty = 45
+legend = 40
+heat = 22
+severity = 3
+big = true
+effect = "deputy_moved"
+skills = ["sneak", "bluff", "fleet"]
+story = "A memo with the headmistress's signature sent {target} to the Old Wing, and the corridors have felt freer ever since."
+[[method]]
+id = "close_tuck_shop"
+name = "Get the tuck shop shut"
+blurb = "A fake inspection tag on the hatch and a very concerned note."
+place = "tuck_shop"
+kinds = ["staff"]
+only = ["tarn"]
+present = "absent"
+needs = ["alarm_tag", "memo_set"]
+requires = ["legend>=15"]
+scout = 1
+difficulty = 42
+legend = 30
+heat = 20
+severity = 3
+big = true
+effect = "tuck_shop_closed"
+skills = ["sneak", "bluff", "fleet"]
+story = "{target} found an inspection tag on the hatch, the tuck shop shut for a week, and no one will own up."
+[[method]]
+id = "fake_fire_drill"
+name = "Hold a fake fire drill"
+blurb = "Pull the alarm and watch the whole school evacuate."
+place = "classroom_corridor"
+kinds = ["school"]
+only = ["the_alarm"]
+present = "any"
+needs = ["alarm_tag", "decoy"]
+roles = ["lookout"]
+requires = ["legend>=25"]
+scout = 2
+difficulty = 48
+legend = 38
+heat = 24
+severity = 3
+big = true
+effect = "drill_chaos"
+skills = ["sneak", "tinker", "fleet"]
+story = "The alarm rang, the school poured onto the lawn, and for two days nobody was quite sure who was supposed to be where."
+[[method]]
+id = "hijack_the_paper"
+name = "Hijack the school paper's front page"
+blurb = "A whole issue, rewritten overnight."
+place = "paper_office"
+kinds = ["school"]
+only = ["the_paper"]
+present = "any"
+needs = ["forgery_kit", "wire"]
+roles = ["cover"]
+requires = ["legend>=30"]
+scout = 2
+difficulty = 44
+legend = 35
+heat = 20
+severity = 3
+big = true
+effect = "paper_hijack"
+skills = ["sneak", "bluff", "fleet"]
+story = "The paper came out with a front page nobody authorised, and everybody read it twice."
+
+# ---- twists ----
+
+[[twist]]
+id = "decoy"
+name = "With a decoy"
+blurb = "Something to draw their eyes the other way."
+roles = ["distraction"]
+difficulty = -12
+legend_pct = 0
+heat = 2
+[[twist]]
+id = "timed"
+name = "Timed for the bell"
+blurb = "It all goes off at the exact right moment."
+difficulty = 10
+legend_pct = 30
+heat = 2
+requires = ["skill:tinker>=1"]
+[[twist]]
+id = "calling_card"
+name = "Leave a calling card"
+blurb = "A small drawing of an owl. Everybody will know."
+difficulty = 0
+legend_pct = 40
+heat = 3
+suspicion = 15
+[[twist]]
+id = "gadget"
+name = "With a gadget"
+blurb = "A little mechanical help."
+roles = ["gadget"]
+difficulty = -15
+legend_pct = 10
+heat = 0
+[[twist]]
+id = "no_trace"
+name = "Leave no trace"
+blurb = "Wipe everything. Take the tin."
+difficulty = 8
+legend_pct = -10
+heat = -3
+suspicion = -15
+requires = ["skill:sneak>=1"]
+[[twist]]
+id = "double"
+name = "Twice in one go"
+blurb = "Do it and then do it again."
+difficulty = 15
+legend_pct = 45
+heat = 6
+requires = ["legend>=10"]
+
+[[synergy]]
+twist = "calling_card"
+methods = ["forged_note", "paper_headline", "rig_announcement"]
+legend_pct = 20
+text = "The owl on a forgery: they will talk about the handwriting for weeks."
+[[synergy]]
+twist = "timed"
+methods = ["stink_bomb", "early_bell", "salt_swap"]
+legend_pct = 15
+text = "Perfect timing is half the joke."
+[[synergy]]
+twist = "decoy"
+methods = ["rowing_balls", "fake_fire_drill", "move_the_deputy"]
+legend_pct = 15
+text = "While they watched the decoy, the real thing went off behind them."
+
+[[twist]]
+id = "disguise"
+name = "In stage makeup"
+blurb = "Drama taught you how to be someone else for ten minutes."
+requires = ["item:greasepaint"]
+difficulty = -8
+legend_pct = 10
+heat = 1
+suspicion = -15
+[[twist]]
+id = "servo_rig"
+name = "Rigged with a servo"
+blurb = "A little motor does the work while you are somewhere else."
+requires = ["item:servo", "rank:robotics>=2"]
+difficulty = -10
+legend_pct = 20
+heat = 2
+suspicion = -5
+
+# ---- getaways ----
+
+[[getaway]]
+id = "slip_away"
+name = "Slip away"
+blurb = "Walk, do not run."
+escape = 0
+suspicion = 0
+heat = 0
+[[getaway]]
+id = "alibi"
+name = "A friend to cover for you"
+blurb = "You were somewhere else, and they will say so."
+roles = ["cover"]
+escape = 4
+suspicion = -30
+heat = 0
+[[getaway]]
+id = "back_stairs"
+name = "The back stairs"
+blurb = "Learn the route first, then use it."
+requires = ["know:back_stairs"]
+escape = 15
+suspicion = -5
+heat = 0
+[[getaway]]
+id = "sprint"
+name = "Sprint for it"
+blurb = "A fast runner needs no route."
+requires = ["tag:fast_exit"]
+escape = 20
+suspicion = 5
+heat = 2
+[[getaway]]
+id = "boat_store"
+name = "Into the boat store"
+blurb = "The Rowing Eight keep a key under a bucket. Members only."
+requires = ["rank:rowing>=2"]
+escape = 14
+suspicion = -10
+heat = 1
+[[getaway]]
+id = "lie_low"
+name = "Lie low"
+blurb = "Spend the next period out of sight. Heat drops; you lose the period."
+escape = 5
+suspicion = -10
+heat = -4
+lies_low = true
+[[getaway]]
+id = "blend_in"
+name = "Look the picture of innocence"
+blurb = "Straight to the next lesson with a clean collar."
+requires = ["not:tag:troublemaker"]
+escape = 6
+suspicion = -15
+heat = 0
+
+# ---- phase lines and mishaps ----
+
+[[line]]
+phase = "sneak"
+ok = true
+text = "You reach {place} unseen."
+[[line]]
+phase = "sneak"
+ok = true
+text = "A good moment: the corridor empties and you slip in."
+[[line]]
+phase = "act"
+ok = true
+text = "You do the deed with hardly a sound."
+[[line]]
+phase = "act"
+ok = true
+text = "Done, and neater than you planned."
+[[line]]
+phase = "escape"
+ok = true
+text = "You are three corridors away before anyone looks up."
+[[line]]
+phase = "escape"
+ok = true
+text = "Out, round the corner and into a crowd. Nobody blinks."
+
+[[mishap]]
+phase = "sneak"
+text = "A floorboard shrieks. You freeze, count to thirty, and nobody comes."
+heat = 2
+[[mishap]]
+phase = "sneak"
+text = "You sneeze into your sleeve. It sounds like a gunshot to you; apparently not to anyone else."
+heat = 1
+[[mishap]]
+phase = "sneak"
+text = "You walk into a mop bucket and spend a minute convincing a door you meant to."
+heat = 2
+[[mishap]]
+phase = "act"
+text = "The tin lid rattles across the floor. You catch it just before it lands."
+heat = 3
+[[mishap]]
+phase = "act"
+text = "You drop the lot and have to do half of it twice."
+heat = 3
+[[mishap]]
+phase = "act"
+text = "Your sleeve catches on a hook and tears with a noise like a bad opinion."
+heat = 3
+[[mishap]]
+phase = "escape"
+text = "You run into the caretaker's mop and say sorry out loud."
+heat = 3
+[[mishap]]
+phase = "escape"
+text = "You take the wrong turning and have to double back past a window."
+heat = 2
+[[mishap]]
+phase = "escape"
+text = "Your shoes squeak the whole length of the corridor. Somebody notices the squeak but not you."
+heat = 2
+
+# ---- what scouting teaches ----
+# Scouting a scheme from its place or any place next to it raises its scouting level (0 to 3).
+# Reaching `level` at `place` ("*" = anywhere) teaches `know`, which some locks and getaways ask for.
+[[grant]]
+place = "staffroom"
+level = 2
+know = "staff_rota"
+[[grant]]
+place = "organ_loft"
+level = 2
+know = "organ_key_spot"
+[[grant]]
+place = "*"
+level = 2
+know = "back_stairs"

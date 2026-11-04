@@ -30,7 +30,10 @@
 #![allow(clippy::too_many_lines, clippy::struct_excessive_bools)]
 
 pub mod autoplay;
+pub mod cm;
+pub mod code;
 pub mod content;
+pub mod learn;
 pub mod net;
 pub mod player;
 pub mod run;
@@ -53,10 +56,10 @@ use crate::player::Player;
 pub const DOOR_ID: &str = "nullroute";
 
 /// The current save format version.
-pub const SAVE_VERSION: u32 = 1;
+pub const SAVE_VERSION: u32 = 2;
 
 /// The current world format version.
-pub const WORLD_VERSION: u32 = 1;
+pub const WORLD_VERSION: u32 = 2;
 
 /// The Nullroute door.
 pub struct Nullroute {
@@ -124,7 +127,8 @@ impl Door for Nullroute {
         if player.season != start.season {
             player.new_season(&self.content, start.season, today);
         }
-        let world = start.world.and_then(save::decode_world).unwrap_or_default();
+        let mut world = start.world.and_then(save::decode_world).unwrap_or_default();
+        world.sync_season(start.season);
         Box::new(session::Session::new(
             Arc::clone(&self.content),
             player,
@@ -135,9 +139,15 @@ impl Door for Nullroute {
         ))
     }
 
-    fn migrate(&self, _kind: BlobKind, from: u32, _bytes: &[u8]) -> Result<Vec<u8>, MigrateError> {
-        // Version 1 is the first: there is nothing older to bring forward.
-        Err(MigrateError::Unsupported(from))
+    fn migrate(&self, kind: BlobKind, from: u32, bytes: &[u8]) -> Result<Vec<u8>, MigrateError> {
+        // Version 2 (M4-N2) appends to version 1: fragments and coded scripts to a save, the season
+        // and what the corporations have learned to the world. Version 1 is the oldest there is.
+        let moved = match (kind, from) {
+            (BlobKind::Save, 1) => save::migrate_save_v1(bytes),
+            (BlobKind::World, 1) => save::migrate_world_v1(bytes),
+            _ => return Err(MigrateError::Unsupported(from)),
+        };
+        moved.ok_or(MigrateError::Corrupt(from))
     }
 
     fn has_daily_tick(&self) -> bool {

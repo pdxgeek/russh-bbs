@@ -1,0 +1,171 @@
+# Enemy ships. Speed is 1 to 6. `reach` is the band its guns like. `style` sets how it moves.
+# `feint_pm` is the chance per-mille its telegraphed intent lies, before the captain's scanner
+# and pilot take it down. `kill_standing` is what wrecking it costs with its own faction (the
+# faction's rival is pleased a third as much). A `wreck` names a layout that can be boarded.
+
+[[enemy]]
+id = "skiff"
+name = "Pirate skiff"
+faction = "free"
+blurb = "A stripped hull and two bored gunners."
+hull = 22
+shield = 0
+speed = 4
+accuracy = 55
+damage = 6
+reach = "close"
+style = "rusher"
+feint_pm = 100
+boarders = 2
+flee_pct = 30
+loot = [80, 260]
+kill_standing = -4
+wreck = "pirate_wreck"
+
+[[enemy]]
+id = "raider"
+name = "Free Captain raider"
+faction = "free"
+blurb = "A working raider, patched in three colours."
+hull = 45
+shield = 10
+speed = 3
+accuracy = 60
+damage = 9
+reach = "mid"
+style = "skirmisher"
+feint_pm = 150
+boarders = 3
+flee_pct = 25
+loot = [200, 520]
+kill_standing = -5
+wreck = "pirate_wreck"
+
+[[enemy]]
+id = "corsair"
+name = "Corsair"
+faction = "free"
+blurb = "Armoured, hungry and built to board."
+hull = 80
+shield = 30
+speed = 3
+accuracy = 65
+damage = 12
+reach = "mid"
+style = "boarder"
+feint_pm = 250
+boarders = 4
+flee_pct = 20
+loot = [400, 900]
+kill_standing = -6
+wreck = "corsair_wreck"
+
+[[enemy]]
+id = "railer"
+name = "Long-rail picket"
+faction = "free"
+blurb = "Sits at the edge of the dark and shoots across it."
+hull = 40
+shield = 20
+speed = 2
+accuracy = 70
+damage = 11
+reach = "far"
+style = "sniper"
+feint_pm = 100
+boarders = 0
+flee_pct = 35
+loot = [250, 600]
+kill_standing = -5
+
+[[enemy]]
+id = "jumper"
+name = "Claim jumper"
+faction = "free"
+blurb = "A mining tug with a gun bolted to it and no claim to its name."
+hull = 35
+shield = 5
+speed = 3
+accuracy = 55
+damage = 8
+reach = "close"
+style = "rusher"
+feint_pm = 200
+boarders = 2
+flee_pct = 30
+loot = [150, 400]
+kill_standing = -3
+wreck = "pirate_wreck"
+
+[[enemy]]
+id = "cutter"
+name = "Customs cutter"
+faction = "league"
+blurb = "League grey, lamps on, and a boarding crew in the airlock."
+hull = 50
+shield = 20
+speed = 4
+accuracy = 55
+damage = 8
+reach = "mid"
+style = "skirmisher"
+feint_pm = 0
+boarders = 2
+flee_pct = 15
+loot = [100, 300]
+kill_standing = -25
+
+[[enemy]]
+id = "gunboat"
+name = "Navy gunboat"
+faction = "league"
+blurb = "A heavy hull with a heavier opinion of smugglers."
+hull = 110
+shield = 50
+speed = 3
+accuracy = 70
+damage = 14
+reach = "mid"
+style = "skirmisher"
+feint_pm = 50
+boarders = 0
+flee_pct = 10
+loot = [300, 700]
+kill_standing = -30
+
+[[enemy]]
+id = "enforcer"
+name = "Union enforcer"
+faction = "miners"
+blurb = "A blockade tug with a steward on the comms and a ram on the prow."
+hull = 70
+shield = 20
+speed = 2
+accuracy = 60
+damage = 10
+reach = "close"
+style = "rusher"
+feint_pm = 0
+boarders = 0
+flee_pct = 10
+loot = [200, 450]
+kill_standing = -12
+
+[[enemy]]
+id = "sentinel"
+name = "Gate sentinel drone"
+faction = "church"
+blurb = "An old gate guard, still obeying a command nobody remembers giving."
+hull = 60
+shield = 40
+speed = 2
+accuracy = 60
+damage = 10
+reach = "close"
+style = "guard"
+feint_pm = 0
+boarders = 0
+flee_pct = 0
+loot = [300, 800]
+kill_standing = -8
+wreck = "sentinel_husk"

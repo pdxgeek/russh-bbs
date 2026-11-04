@@ -1,0 +1,129 @@
+# Boarding layouts: derelicts found in transit and the wrecks of boardable enemies. Room 0 is
+# the airlock (open, empty). `lock` is the engineering level needed to cut a door open from the
+# adjoining room (the captain's Engineering plus the best engineer's help). A `cache` is a
+# data store only a scientist, or a captain with Surveying 3, can read.
+
+[[derelict]]
+id = "pirate_wreck"
+name = "Pirate wreck"
+blurb = "A dead raider, venting slowly."
+foe_name = "Survivors"
+foe_hp = 8
+foe_dmg = 3
+rooms = [
+  { name = "Airlock", text = "The outer door hangs open and the lights flicker.", exits = [1] },
+  { name = "Gun deck", text = "Two gunners are still at their stations, armed and angry.", foes = 2, credits = [20, 60], exits = [0, 2, 3] },
+  { name = "Bunk row", text = "Hammocks and a locker somebody forgot to lock.", credits = [40, 120], parts = 6, exits = [1] },
+  { name = "Strongroom", text = "A welded door; behind it the crew's shares.", lock = 3, credits = [180, 420], exits = [1] },
+]
+
+[[derelict]]
+id = "corsair_wreck"
+name = "Corsair hulk"
+blurb = "A big boarding ship, split along a seam."
+foe_name = "Boarders"
+foe_hp = 10
+foe_dmg = 4
+rooms = [
+  { name = "Airlock", text = "A grapple scar runs along the lock ring.", exits = [1] },
+  { name = "Boarding bay", text = "Racks of cutting gear and three people who are not leaving.", foes = 3, credits = [60, 140], exits = [0, 2, 3] },
+  { name = "Captain's cabin", text = "A sealed cabin; the lock is a good one.", lock = 5, credits = [300, 700], cache = 380, exits = [1] },
+  { name = "Hold", text = "Crates strapped down and somehow still strapped.", good = "parts", tons = 6, parts = 10, exits = [1] },
+]
+
+[[derelict]]
+id = "ore_barge"
+name = "Dead ore barge"
+blurb = "A Union barge, crew gone, running lights still on."
+foe_name = "Scavengers"
+foe_hp = 7
+foe_dmg = 3
+rooms = [
+  { name = "Airlock", text = "Frost on the inner door and a smell of old coolant.", exits = [1] },
+  { name = "Galley", text = "Plates on the table. Nobody has touched them in years.", credits = [30, 90], exits = [0, 2] },
+  { name = "Ore hold", text = "Cold ore, and two scavengers sorting it.", foes = 2, good = "ore", tons = 8, exits = [1, 3] },
+  { name = "Bridge", text = "The log is still running, and the safe is still shut.", lock = 2, credits = [120, 300], parts = 8, exits = [2] },
+]
+
+[[derelict]]
+id = "plague_ship"
+name = "Quarantine ship"
+blurb = "A hospital freighter whose flag says nobody should be here."
+foe_name = "Frightened stowaways"
+foe_hp = 6
+foe_dmg = 2
+rooms = [
+  { name = "Airlock", text = "Yellow tape across the inner door. Somebody cut it.", exits = [1] },
+  { name = "Ward", text = "Cots in rows, and a handful of survivors who will not be moved.", foes = 3, exits = [0, 2, 3] },
+  { name = "Dispensary", text = "Shelves of medical stock, sealed against the fever.", lock = 2, good = "medicine", tons = 8, credits = [60, 160], exits = [1] },
+  { name = "Records room", text = "The ship's research is still on the terminals.", cache = 300, credits = [20, 80], exits = [1] },
+]
+
+[[derelict]]
+id = "survey_cutter"
+name = "Guild survey cutter"
+blurb = "A small Guild ship, drifting with its dish aimed at nothing."
+foe_name = "Guard bots"
+foe_hp = 9
+foe_dmg = 3
+rooms = [
+  { name = "Airlock", text = "A Guild seal on the door, broken from inside.", exits = [1] },
+  { name = "Instrument bay", text = "Racks of delicate gear, and a guard bot still on its rounds.", foes = 1, credits = [30, 80], parts = 5, exits = [0, 2] },
+  { name = "Data vault", text = "A cold vault. The lock is a Guild lock.", lock = 4, cache = 520, exits = [1, 3] },
+  { name = "Cabin", text = "A surveyor's cabin, tidy to the last pin.", credits = [60, 160], good = "sensor_glass", tons = 5, exits = [2] },
+]
+
+[[derelict]]
+id = "gate_ark"
+name = "Gate-seekers' ark"
+blurb = "A Church pilgrim ship, hull scored with prayers and burn marks."
+foe_name = "Zealots"
+foe_hp = 9
+foe_dmg = 3
+rooms = [
+  { name = "Airlock", text = "A hand-painted gate on the inner door.", exits = [1] },
+  { name = "Nave", text = "Rows of benches, and the last faithful on watch.", foes = 2, credits = [40, 110], exits = [0, 2, 3] },
+  { name = "Reliquary", text = "A locked cabinet of old gate hardware, quiet and cold.", lock = 4, good = "gate_relics", tons = 3, credits = [100, 260], cache = 450, exits = [1] },
+  { name = "Cells", text = "Narrow bunks and a few coins under the pillows.", credits = [50, 120], exits = [1] },
+]
+
+[[derelict]]
+id = "navy_hulk"
+name = "Navy picket hulk"
+blurb = "A League picket gone dark, defence bots still wary."
+foe_name = "Defence bots"
+foe_hp = 10
+foe_dmg = 4
+rooms = [
+  { name = "Airlock", text = "The identifier panel is dead; the door gives to a shoulder.", exits = [1] },
+  { name = "Armoury", text = "Locked racks and two bots that remember their orders.", foes = 2, parts = 8, exits = [0, 2, 3] },
+  { name = "Paymaster's office", text = "A heavy safe in a quiet room.", lock = 6, credits = [350, 800], exits = [1] },
+  { name = "Engine room", text = "A drive core and half a ton of good plate.", lock = 2, parts = 14, good = "alloy", tons = 6, exits = [1] },
+]
+
+[[derelict]]
+id = "sentinel_husk"
+name = "Sentinel husk"
+blurb = "The shell of a gate guard, its core still warm."
+foe_name = "Maintenance drones"
+foe_hp = 8
+foe_dmg = 3
+rooms = [
+  { name = "Breach", text = "A hole where the armour split.", exits = [1] },
+  { name = "Core chamber", text = "Maintenance drones rush the breach to defend the core.", foes = 2, credits = [100, 260], exits = [0, 2] },
+  { name = "Memory spine", text = "An old gate-guard memory, humming faintly.", lock = 5, cache = 600, parts = 12, exits = [1] },
+]
+
+[[derelict]]
+id = "claim_station"
+name = "Abandoned claim station"
+blurb = "A mining outpost whose last shift went home without locking up."
+foe_name = "Claim squatters"
+foe_hp = 7
+foe_dmg = 3
+rooms = [
+  { name = "Airlock", text = "A stack of unopened mail by the door.", exits = [1] },
+  { name = "Mess", text = "A pot gone to crust and a row of empty bottles.", credits = [30, 70], exits = [0, 2, 3] },
+  { name = "Assay office", text = "Samples in drawers, and a squatter guarding them.", foes = 1, good = "rare_earths", tons = 4, cache = 280, exits = [1] },
+  { name = "Pay safe", text = "The shift's last pay, never collected.", lock = 3, credits = [200, 520], exits = [1] },
+]

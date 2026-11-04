@@ -1,0 +1,84 @@
+# What big schemes do to the school for everyone on the board. While an effect is active,
+# `world:<id>` is true in conditions; it closes places, moves staff, and shifts patrols, legend and heat.
+# `days = 0` lasts until the end of the term.
+
+[[effect]]
+id = "deputy_moved"
+name = "The deputy head has been moved to the Old Wing"
+days = 0
+headline = "{player} has had Mr. Marsh reassigned to the Old Wing; the admin corridor is quiet."
+closes = []
+moves = [["marsh", "old_wing"]]
+patrol_mod = 0
+legend_pct = 0
+heat_pct = 0
+
+[[effect]]
+id = "tuck_shop_closed"
+name = "The tuck shop is closed for a week"
+days = 7
+headline = "Tuck shop shut for a week after a mysterious inspection tag. {player} knows nothing, they say."
+closes = ["tuck_shop"]
+moves = []
+patrol_mod = 0
+legend_pct = 0
+heat_pct = 0
+
+[[effect]]
+id = "drill_chaos"
+name = "The fire drill left the patrols in a muddle"
+days = 2
+headline = "Fire drill chaos: patrols are scattered for two days. {player} was seen nowhere near the alarm."
+closes = []
+moves = []
+patrol_mod = -2
+legend_pct = 0
+heat_pct = 0
+
+[[effect]]
+id = "paper_hijack"
+name = "The paper has everyone's attention"
+days = 5
+headline = "The Friday paper has a front page nobody approved. {player} is rumoured to be involved."
+closes = []
+moves = []
+patrol_mod = 0
+legend_pct = 25
+heat_pct = 25
+
+[[effect]]
+id = "prefects_stood_down"
+name = "The prefects have been stood down"
+days = 0
+headline = "The Lamplighters' ledger is out and the prefects are stood down for the term. {player} brought the paper the proof."
+closes = []
+moves = [["bramley", "common_room"]]
+patrol_mod = -1
+legend_pct = 0
+heat_pct = 0
+
+[[ending]]
+id = "expelled"
+name = "Expelled"
+text = "The file was full and the headmistress's patience was not. You leave on the morning coach."
+requires = ["expelled"]
+[[ending]]
+id = "phantom"
+name = "The Phantom of Greywater"
+text = "Legend by the yard, a clean file, and nobody can prove a thing."
+requires = ["legend>=80", "file<=3"]
+[[ending]]
+id = "infamous"
+name = "Infamous"
+text = "Everyone knows what you did. The headmistress knows too. You stay, on a very short leash."
+requires = ["legend>=50", "file>=4"]
+[[ending]]
+id = "model_pupil"
+name = "Model pupil, mostly"
+text = "Honour roll, spotless file, and just one story the staff never worked out."
+requires = ["grades>=75", "file<=3", "legend>=10"]
+[[ending]]
+id = "scraped_through"
+name = "Scraped through"
+text = "A middling term. The school barely noticed you."
+requires = ["legend>=0"]

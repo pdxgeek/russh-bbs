@@ -1,0 +1,83 @@
+# Slots in a school day, in order. A day lists one activity per slot:
+#   class:<subject>, chapel, lunch, free, after, evening, night
+[[period]]
+id = "first"
+name = "First period"
+[[period]]
+id = "second"
+name = "Second period"
+[[period]]
+id = "lunch"
+name = "Lunch"
+[[period]]
+id = "third"
+name = "Third period"
+[[period]]
+id = "fourth"
+name = "Fourth period"
+[[period]]
+id = "free"
+name = "Free period"
+[[period]]
+id = "after"
+name = "After school"
+[[period]]
+id = "evening"
+name = "Evening"
+[[period]]
+id = "night"
+name = "Lights-out"
+
+# weekday 0 = Monday.
+[[day]]
+weekday = 0
+slots = ["class:maths", "class:languages", "lunch", "class:sciences", "class:history", "free", "after", "evening", "night"]
+[[day]]
+weekday = 1
+slots = ["class:sciences", "class:art", "lunch", "class:maths", "class:languages", "free", "after", "evening", "night"]
+[[day]]
+weekday = 2
+slots = ["class:history", "class:maths", "lunch", "class:art", "class:sciences", "class:games", "after", "evening", "night"]
+[[day]]
+weekday = 3
+slots = ["class:languages", "class:history", "lunch", "class:sciences", "class:art", "free", "after", "evening", "night"]
+[[day]]
+weekday = 4
+slots = ["class:art", "class:sciences", "lunch", "class:languages", "class:maths", "free", "after", "evening", "night"]
+[[day]]
+weekday = 5
+slots = ["class:history", "class:languages", "lunch", "class:games", "free", "free", "after", "evening", "night"]
+[[day]]
+weekday = 6
+slots = ["chapel", "free", "lunch", "free", "free", "free", "after", "evening", "night"]
+
+[[subject]]
+id = "maths"
+name = "Maths"
+room = "room_maths"
+teacher = "pell"
+[[subject]]
+id = "sciences"
+name = "Sciences"
+room = "room_sciences"
+teacher = "orrin"
+[[subject]]
+id = "languages"
+name = "Languages"
+room = "room_languages"
+teacher = "thorne"
+[[subject]]
+id = "history"
+name = "History"
+room = "room_history"
+teacher = "alder"
+[[subject]]
+id = "art"
+name = "Art"
+room = "art_room"
+teacher = "ruddock"
+[[subject]]
+id = "games"
+name = "Games"
+room = "gym"
+teacher = "gale"

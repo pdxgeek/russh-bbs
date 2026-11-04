@@ -13,6 +13,7 @@ use crate::event::Event;
 use crate::hold::Construction;
 use crate::map::Map;
 use crate::tide::{HOLD_FLOOD_LEVEL, MID, Tide};
+use crate::trip::{self, Kit, TripAction};
 use crate::types::{Bundle, RESOURCES, Resource, Skill, Track, Trade};
 use crate::world::{Prices, World};
 
@@ -147,6 +148,17 @@ pub enum Action {
         /// The level, or `None` to leave it open.
         level: Option<u8>,
     },
+    /// Send a party out on an expedition.
+    Depart {
+        /// Crew ids (one to five).
+        party: Vec<u16>,
+        /// The supplies taken from the stores.
+        kit: Kit,
+        /// Where they mean to go.
+        target: Option<(u8, u8)>,
+    },
+    /// Do something on the expedition.
+    Go(TripAction),
 }
 
 /// Why an action was refused. A refused action changes nothing and costs no turns.
@@ -218,6 +230,30 @@ pub enum ActionError {
     NotForSale,
     /// There is no sluice.
     NoSluice,
+    /// The party is out: the hold waits.
+    Away,
+    /// There is no expedition.
+    NoTrip,
+    /// A party is already out.
+    OnTrip,
+    /// The kit is not allowed.
+    BadKit(String),
+    /// The kit is too heavy for the party.
+    Overweight,
+    /// The way is shut.
+    Blocked(String),
+    /// No route fits in the turns left.
+    TooFar,
+    /// Nothing here to work.
+    NothingToGather,
+    /// Not in a ruin.
+    NoRuin,
+    /// Not now.
+    NotNow(String),
+    /// A plain refusal with its reason.
+    Cannot(String),
+    /// No such choice.
+    BadChoice(u8),
 }
 
 impl fmt::Display for ActionError {
@@ -258,13 +294,23 @@ impl fmt::Display for ActionError {
             Self::BadAmount => f.write_str("How many?"),
             Self::NotForSale => f.write_str("The Tidecourt does not sell relics."),
             Self::NoSluice => f.write_str("There is no sluice to set."),
+            Self::Away => f.write_str("The party is out on the marsh. Bring it home first."),
+            Self::NoTrip => f.write_str("No party is out."),
+            Self::OnTrip => f.write_str("A party is already out."),
+            Self::BadKit(why) => write!(f, "That kit will not do: {why}."),
+            Self::Overweight => f.write_str("That is more than the party can carry."),
+            Self::Blocked(why) | Self::NotNow(why) | Self::Cannot(why) => f.write_str(why),
+            Self::TooFar => f.write_str("There is no safe way there in the turns you have left."),
+            Self::NothingToGather => f.write_str("There is nothing to work on this ground."),
+            Self::NoRuin => f.write_str("You are not in a ruin."),
+            Self::BadChoice(_) => f.write_str("There is no such choice."),
         }
     }
 }
 
 /// `n * pct / 100`, rounded down, plus one more with the chance of the remainder, so averages
 /// are exact over many rolls.
-fn scale(n: u32, pct: i32, rng: &mut DoorRng) -> u32 {
+pub(crate) fn scale(n: u32, pct: i32, rng: &mut DoorRng) -> u32 {
     let total = u64::from(n) * u64::try_from(pct.max(0)).unwrap_or(0);
     let whole = u32::try_from(total / 100).unwrap_or(u32::MAX);
     let rest = u32::try_from(total % 100).unwrap_or(0);
@@ -285,7 +331,7 @@ fn spend(clan: &mut Clan, turns: u8) {
 }
 
 /// Hurt `crew`: roll an injury of `cause` they do not have already. Returns whether they were hurt.
-fn injure(
+pub(crate) fn injure(
     cat: &Catalog,
     clan: &mut Clan,
     crew: u16,
@@ -322,7 +368,7 @@ fn injure(
 }
 
 /// An injury is over: remove it, and roll for a scar.
-fn finish_injury(
+pub(crate) fn finish_injury(
     cat: &Catalog,
     clan: &mut Clan,
     crew: u16,
@@ -366,6 +412,9 @@ pub fn apply(
     rng: &mut DoorRng,
 ) -> Result<Vec<Event>, ActionError> {
     let mut events = Vec::new();
+    if clan.trip.is_some() && !matches!(action, Action::Go(_)) {
+        return Err(ActionError::Away);
+    }
     match action {
         Action::Recruit { candidate } => recruit(env, clan, candidate, &mut events)?,
         Action::Retire { crew } => {
@@ -400,6 +449,10 @@ pub fn apply(
                 level: env.level(clan),
             });
         }
+        Action::Depart { party, kit, target } => {
+            trip::depart(env, clan, &party, kit, target, rng, &mut events)?;
+        }
+        Action::Go(act) => return trip::apply(env, clan, act),
         Action::Sluice { level } => {
             if !clan.hold.built(env.cat).any(|(_, b)| b.is_sluice()) {
                 return Err(ActionError::NoSluice);
@@ -970,6 +1023,14 @@ pub fn catch_up(env: &Env<'_>, clan: &mut Clan, today: i64) -> Vec<Event> {
     let mut events = Vec::new();
     if clan.last_day >= today {
         return events;
+    }
+    if clan.trip.is_some() {
+        // A party left out past midnight spends the night on the marsh.
+        let mut rng = DoorRng::from_label(
+            &format!("saltmarch-benighted-{}-{}", clan.name, clan.seed),
+            clan.last_day,
+        );
+        trip::overnight(env, clan, &mut rng, &mut events);
     }
     let first = (clan.last_day + 1).max(today - MAX_CATCH_UP + 1);
     for day in first..=today {

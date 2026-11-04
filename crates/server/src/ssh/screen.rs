@@ -67,7 +67,9 @@ use crate::members;
 use crate::settings::{self, Look};
 use crate::sysop;
 use crate::ui::classic::{self, ContentScreen, MENU_MARKERS, MenuScreen};
+use crate::ui::depth::ColorDepth;
 use crate::ui::editor::{Editor, EditorEffect, EditorRequest, EditorView, Outcome};
+use crate::ui::frame::{FrameSpec, clock_text};
 use crate::ui::strings::StringTable;
 use crate::ui::{Ui, chrome, layout};
 use crate::waiting_room::render;
@@ -468,12 +470,12 @@ impl Content {
 
     /// How to draw: a member's settings choose color and borders; everyone else gets the
     /// plain layout (the waiting room and claim prompt predate settings and use no color).
-    fn look(&self, ui: &Ui, area: Rect) -> Option<Look> {
+    fn look(&self, ui: &Ui, area: Rect, depth: ColorDepth) -> Option<Look> {
         self.flow().map(|flow| {
             let settings = flow.settings();
             let theme = ui.theme(settings.theme());
             let layout = layout::effective(settings.layout(), area);
-            Look::themed(settings, layout, theme.palette())
+            Look::themed(settings, layout, theme.palette()).at_depth(depth)
         })
     }
 
@@ -535,6 +537,9 @@ struct Transport {
     footer: Option<Footer>,
     /// The board is in low-security mode (D27): staff screens add the `LOW-SECURITY` marker.
     low_security: bool,
+    /// What the client's terminal can show, from its `TERM`, `COLORTERM` or telnet terminal
+    /// type (UI-1). Sixteen colours until the client says otherwise.
+    depth: Option<ColorDepth>,
 }
 
 /// A row below the layouts that the transport owns and nothing else draws into (M3-H, D27). The
@@ -602,6 +607,7 @@ impl Screen {
             transport: Transport {
                 footer,
                 low_security: false,
+                depth: None,
             },
         })
     }
@@ -609,6 +615,41 @@ impl Screen {
     /// Put the board's low-security mode on or off for this session's staff screens.
     pub(crate) fn set_low_security(&mut self, on: bool) {
         self.transport.low_security = on;
+    }
+
+    /// Tell the screen what the client's terminal advertised: `term` is `TERM` from the ssh
+    /// `pty-req` (or the telnet terminal type) and `colorterm` is `COLORTERM` when the client
+    /// sent it. The screens then draw at the depth they imply, lowered by the member's colour
+    /// setting (UI-1, D109). Call before the first frame.
+    pub(crate) fn set_client_terminal(&mut self, term: Option<&str>, colorterm: Option<&str>) {
+        self.transport.depth = Some(ColorDepth::detect(term, colorterm));
+        self.dirty = true;
+    }
+
+    /// The depth the client advertised, sixteen colours when it said nothing.
+    fn depth(&self) -> ColorDepth {
+        self.transport.depth.unwrap_or(ColorDepth::Ansi16)
+    }
+
+    /// Whether this session holds a staff-rank role (the ranks telnet withholds, D27).
+    fn is_staff(&self) -> bool {
+        use russh_bbs_core::access::Source;
+        self.access().is_some_and(|access| {
+            access.held().iter().any(|held| {
+                matches!(&held.source, Source::Role { rank, .. } if *rank >= crate::telnet::STAFF_RANK)
+            })
+        })
+    }
+
+    /// The markers the status bar shows on this session's screens (FIX-M3-6): while the board
+    /// is in low-security mode, `LOW-SECURITY` on every screen of a staff session and on the
+    /// queue and vouch screens; none otherwise (D93).
+    fn status_markers(&self) -> &'static [SecurityMarker] {
+        if self.transport.low_security && (self.is_staff() || self.content.queue_view().is_some()) {
+            &STAFF_MARKERS_LOW_SECURITY
+        } else {
+            &MENU_MARKERS
+        }
     }
 
     /// Feed keypresses to the current content. Stops at the first key that ends the session or
@@ -1337,6 +1378,11 @@ impl Screen {
         if let Some(frame) = self.draw_doors()? {
             return Ok(frame);
         }
+        let clock = clock_text(
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map_or(0, |elapsed| elapsed.as_secs()),
+        );
         if let Content::Forums(session) = &self.content {
             let settings = session.flow.settings();
             let theme = self.ui.theme(settings.theme());
@@ -1345,8 +1391,10 @@ impl Screen {
                 ui: &self.ui,
                 strings: theme.strings(),
                 settings,
-                look: Look::themed(settings, layout, theme.palette()),
+                look: Look::themed(settings, layout, theme.palette()).at_depth(self.depth()),
                 tier: settings.icon_tier(),
+                markers: self.status_markers(),
+                clock: Some(clock.as_str()),
             };
             let tier = ctx.tier;
             self.terminal
@@ -1361,7 +1409,7 @@ impl Screen {
                 ui: &self.ui,
                 strings: theme.strings(),
                 settings,
-                look: Look::themed(settings, layout, theme.palette()),
+                look: Look::themed(settings, layout, theme.palette()).at_depth(self.depth()),
                 tier: settings.icon_tier(),
             };
             let tier = ctx.tier;
@@ -1373,7 +1421,7 @@ impl Screen {
         // row below still follows it).
         let drew_editor = self.draw_editor()?;
         let view = self.content.view(&self.ui);
-        let look = self.content.look(&self.ui, self.viewport);
+        let look = self.content.look(&self.ui, self.viewport, self.depth());
         let layout = self.content.layout(self.viewport);
         let menu = self.content.menu_page();
         // The community screens (M3-J) produce the members screens' view and are drawn the same.
@@ -1386,12 +1434,10 @@ impl Screen {
         let strings = self.content.strings(&self.ui);
         let framed = self.content.is_framed_screen();
         let chat = self.chat.as_ref();
-        // Staff screens add the low-security marker while the board is in that mode (D27).
-        let staff_markers: &[SecurityMarker] = if self.transport.low_security {
-            &STAFF_MARKERS_LOW_SECURITY
-        } else {
-            &MENU_MARKERS
-        };
+        // Staff sessions add the low-security marker to every screen while the board is in that
+        // mode (D27, FIX-M3-6); the status bar's marker cell draws it.
+        let staff_markers = self.status_markers();
+        let clock = Some(clock.as_str());
         if !drew_editor {
             self.terminal.draw(|frame| match (look, &menu) {
                 // The chat screen (M3-F): the same box and status row, with the room's lines.
@@ -1414,11 +1460,27 @@ impl Screen {
                                 look,
                                 tier,
                                 markers: staff_markers,
+                                clock,
                             },
                         );
                     }
                 }
                 // A members screen: the same classic layout and status row, with its own lines.
+                (Some(look), None) if members_view.as_ref().is_some_and(members::is_list) => {
+                    if let Some(screen) = &members_view {
+                        members::render_list(
+                            frame,
+                            screen,
+                            &members::ListCtx {
+                                strings,
+                                look,
+                                tier,
+                                markers: staff_markers,
+                                clock,
+                            },
+                        );
+                    }
+                }
                 (Some(look), None) if members_view.is_some() => {
                     if let Some(screen) = &members_view {
                         let width = usize::from(frame.area().width.min(settings::MAX_WIDTH))
@@ -1430,7 +1492,8 @@ impl Screen {
                                 lines: members::lines(screen, strings, look, width),
                                 look,
                                 tier,
-                                markers: &MENU_MARKERS,
+                                markers: staff_markers,
+                                clock,
                             },
                         );
                     }
@@ -1446,7 +1509,8 @@ impl Screen {
                         notice: view.notice,
                         look,
                         tier,
-                        markers: &MENU_MARKERS,
+                        markers: staff_markers,
+                        clock,
                         mail_over_ssh_only: false,
                     },
                 ),
@@ -1458,10 +1522,22 @@ impl Screen {
                         lines: classic::view_lines(strings, &view, look),
                         look,
                         tier,
-                        markers: &MENU_MARKERS,
+                        markers: staff_markers,
+                        clock,
                     },
                 ),
-                (Some(look), None) => settings::render(frame, &view, look, strings),
+                // Login, glyph test, settings and the password and key screens: the status bar
+                // (hints and the marker cell) under the box; no header, so the settings screen
+                // keeps its 22 rows at 80x24.
+                (Some(look), None) => {
+                    let hints = classic::content_hints(strings);
+                    let body = FrameSpec::new(strings, look, tier)
+                        .markers(staff_markers)
+                        .hints(&hints)
+                        .header(false)
+                        .draw(frame);
+                    settings::render_in(frame, body, &view, look, strings);
+                }
                 (None, _) => render(frame, &view),
             })?;
         }

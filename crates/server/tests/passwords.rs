@@ -25,7 +25,7 @@ use russh::keys::{HashAlg, PrivateKey, PrivateKeyWithHashAlg};
 use russh::{Channel, ChannelMsg, MethodKind};
 use russh_bbs_core::access::{Fingerprint, Permission, Slug};
 use russh_bbs_core::icons::Tier;
-use russh_bbs_core::passwords::PasswordStore;
+use russh_bbs_core::passwords::{Backoff, PasswordStore};
 use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::{AccountId, AccountState, AccountStore, NewAccount};
 use russh_bbs_core::terminal_settings::{TerminalSettings, TerminalSettingsStore};
@@ -52,8 +52,8 @@ fn lenient(password_login: bool) -> Limits {
         ip_rate: loose,
         key_rate: loose,
         allow_password_login: password_login,
-        password_account_rate: loose,
-        password_network_rate: loose,
+        password_handle_backoff: Backoff::UNLIMITED,
+        password_network_backoff: Backoff::UNLIMITED,
         ..fast_limits()
     }
 }
@@ -465,52 +465,117 @@ async fn an_unknown_name_costs_about_what_a_wrong_password_costs() {
 
 // ---------------------------------------------------------------- limits
 
+/// A backoff scaled down so a test can wait it out: 2 free failures, then 400 ms, 800 ms and a
+/// 1 s ceiling.
+const QUICK: Backoff = Backoff {
+    free: 2,
+    first_ms: 400,
+    ceiling_ms: 1_000,
+    forget_secs: 600,
+};
+
+/// A wait nobody outlasts in a test.
+const HOUR: Backoff = Backoff {
+    free: 0,
+    first_ms: 3_600_000,
+    ceiling_ms: 3_600_000,
+    forget_secs: 3_600,
+};
+
 #[tokio::test]
-async fn attempts_per_handle_are_limited_whether_or_not_the_handle_exists() {
-    let limits = Limits {
-        password_account_rate: RatePolicy::new(3, Duration::from_secs(3600)),
+async fn the_handle_backs_off_gently_and_the_right_password_signs_in_after_the_wait() {
+    // This is QA login-model P6: wrong guesses used to keep the right password out for good.
+    let rig = Rig::start(Limits {
+        password_handle_backoff: QUICK,
         ..lenient(true)
-    };
-    let rig = Rig::start(limits).await;
-    let (alice, _) = rig.member("alice").await;
-    rig.give_password(alice, SECRET).await;
+    })
+    .await;
+    let (carol, _) = rig.member("carol").await;
+    rig.give_password(carol, SECRET).await;
     for _ in 0..3 {
-        let (_s, result) = try_password(rig.addr(), "alice", "wrong password here").await;
+        let (_s, result) = try_password(rig.addr(), "carol", "wrong password here").await;
         assert!(failed(&result));
     }
-    // The fourth attempt has the right password and is refused anyway: the handle is limited.
-    let (_s, result) = try_password(rig.addr(), "alice", SECRET).await;
-    assert!(failed(&result), "limited handle must not sign in");
-    // A different handle is not affected, and an unknown handle is limited the same way.
-    let (bob, _) = rig.member("bob").await;
-    rig.give_password(bob, SECRET).await;
-    succeeds(rig.addr(), "bob", SECRET).await;
-    for _ in 0..3 {
-        let (_s, result) = try_password(rig.addr(), "ghost", "wrong password here").await;
+    // The third failure earned a 400 ms wait: the right password is refused inside it...
+    let (_s, result) = try_password(rig.addr(), "carol", SECRET).await;
+    assert!(failed(&result), "inside the wait");
+    // ...and signs in just after it, from the same address.
+    tokio::time::sleep(Duration::from_millis(500)).await;
+    succeeds(rig.addr(), "carol", SECRET).await;
+    // The success cleared the count: two more wrong guesses are free again.
+    for _ in 0..2 {
+        let (_s, result) = try_password(rig.addr(), "carol", "wrong password here").await;
         assert!(failed(&result));
     }
-    // Key login is untouched by any of it.
-    let (_carol, key) = rig.member("carol").await;
+    succeeds(rig.addr(), "carol", SECRET).await;
+}
+
+#[tokio::test]
+async fn a_key_signs_in_while_the_handles_password_limiter_is_at_its_ceiling() {
+    let rig = Rig::start(Limits {
+        password_handle_backoff: HOUR,
+        ..lenient(true)
+    })
+    .await;
+    let (carol, key) = rig.member("carol").await;
+    rig.give_password(carol, SECRET).await;
+    for _ in 0..3 {
+        let (_s, result) = try_password(rig.addr(), "carol", "wrong password here").await;
+        assert!(failed(&result));
+    }
+    // The handle is shut to passwords, the right one included...
+    let (_s, result) = try_password(rig.addr(), "carol", SECRET).await;
+    assert!(
+        failed(&result),
+        "the handle's password limiter is at its ceiling"
+    );
+    // ...and the bound key walks straight in.
     by_key(rig.addr(), &key).await;
 }
 
 #[tokio::test]
-async fn attempts_per_network_are_limited_across_handles() {
-    let limits = Limits {
-        password_network_rate: RatePolicy::new(3, Duration::from_secs(3600)),
+async fn known_and_unknown_handles_get_the_same_answer_at_every_attempt() {
+    let rig = Rig::start(Limits {
+        password_handle_backoff: HOUR,
         ..lenient(true)
-    };
-    let rig = Rig::start(limits).await;
+    })
+    .await;
+    let (carol, _) = rig.member("carol").await;
+    rig.give_password(carol, SECRET).await;
+    // Wrong guesses, then the right one at the known name (refused: limited) and at a name that
+    // does not exist: every answer, limited or not, is the same plain refusal.
+    for _ in 0..3 {
+        let (_a, known) = try_password(rig.addr(), "carol", "wrong password here").await;
+        let (_b, unknown) = try_password(rig.addr(), "ghost", "wrong password here").await;
+        assert_eq!(format!("{known:?}"), format!("{unknown:?}"));
+    }
+    let (_a, known) = try_password(rig.addr(), "carol", SECRET).await;
+    let (_b, unknown) = try_password(rig.addr(), "ghost", SECRET).await;
+    assert!(failed(&known) && failed(&unknown));
+    assert_eq!(format!("{known:?}"), format!("{unknown:?}"));
+}
+
+#[tokio::test]
+async fn one_network_is_stopped_by_the_network_limit_across_handles() {
+    let rig = Rig::start(Limits {
+        password_network_backoff: Backoff { free: 3, ..HOUR },
+        ..lenient(true)
+    })
+    .await;
     for name in ["u1", "u2", "u3"] {
         let (id, _) = rig.member(name).await;
         rig.give_password(id, SECRET).await;
     }
-    succeeds(rig.addr(), "u1", SECRET).await;
-    succeeds(rig.addr(), "u2", SECRET).await;
-    succeeds(rig.addr(), "u3", SECRET).await;
-    // Everything from this address is now refused, right password or not.
-    let (_s, result) = try_password(rig.addr(), "u1", SECRET).await;
+    for name in ["u1", "u2", "u3"] {
+        let (_s, result) = try_password(rig.addr(), name, "wrong password here").await;
+        assert!(failed(&result));
+    }
+    // The fourth failure from this address starts its wait: nothing more is tried from it,
+    // right password or not, for any handle.
+    let (_s, result) = try_password(rig.addr(), "u1", "wrong password here").await;
     assert!(failed(&result));
+    let (_s, result) = try_password(rig.addr(), "u2", SECRET).await;
+    assert!(failed(&result), "this network is waiting");
 }
 
 // ---------------------------------------------------------------- the screen

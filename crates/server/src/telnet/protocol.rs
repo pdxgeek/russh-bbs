@@ -38,20 +38,27 @@ pub(super) const OPT_ECHO: u8 = 1;
 pub(super) const OPT_SGA: u8 = 3;
 /// Negotiate about window size (RFC 1073).
 pub(super) const OPT_NAWS: u8 = 31;
+/// Terminal type (RFC 1091): asked for only to choose how many colours to draw (UI-1).
+pub(super) const OPT_TTYPE: u8 = 24;
+/// Subnegotiation codes of the terminal-type option.
+const TTYPE_IS: u8 = 0;
+const TTYPE_SEND: u8 = 1;
 
 /// Most bytes of one subnegotiation that are kept. NAWS needs 4; the rest of a longer one is
 /// skipped, not stored.
-const MAX_SUBNEGOTIATION: usize = 16;
+const MAX_SUBNEGOTIATION: usize = 48;
 
 const CR: u8 = b'\r';
 const LF: u8 = b'\n';
 const NUL: u8 = 0;
 
 /// What we send first: we echo (so the client does not), both sides suppress go-ahead (full
-/// duplex, character mode), and we ask for the window size. Nothing else is ever offered or
-/// requested (terminal type is not asked for: the glyph tier is the member's own setting).
-pub(super) const OPENING: [u8; 12] = [
-    IAC, WILL, OPT_ECHO, IAC, WILL, OPT_SGA, IAC, DO, OPT_SGA, IAC, DO, OPT_NAWS,
+/// duplex, character mode), and we ask for the window size and the terminal type. Nothing else
+/// is ever offered or requested. The terminal type picks the colour depth only (UI-1); the glyph
+/// tier is the member's own setting.
+pub(super) const OPENING: [u8; 15] = [
+    IAC, WILL, OPT_ECHO, IAC, WILL, OPT_SGA, IAC, DO, OPT_SGA, IAC, DO, OPT_NAWS, IAC, DO,
+    OPT_TTYPE,
 ];
 
 /// Where the decoder is in the byte stream.
@@ -80,8 +87,12 @@ pub(super) struct Decoded {
     pub(super) data: Vec<u8>,
     /// The latest window size reported (columns, rows), unclamped and unvalidated.
     pub(super) window: Option<(u16, u16)>,
-    /// Bytes to send back: refusals of options we do not use.
+    /// Bytes to send back: refusals of options we do not use, and the request for the terminal
+    /// type once the client agrees to send it.
     pub(super) reply: Vec<u8>,
+    /// The terminal type the client reported (RFC 1091 `IS`): at most 40 characters of a
+    /// terminal name's alphabet, or nothing. Only ever used to choose a colour depth.
+    pub(super) terminal: Option<String>,
 }
 
 /// The decoder for one connection. Fixed memory whatever the client sends.
@@ -95,6 +106,8 @@ pub(super) struct Decoder {
     refused_will: [bool; 256],
     /// Options already refused with `WONT` (the client said `DO`).
     refused_do: [bool; 256],
+    /// The terminal type was asked for (once per connection).
+    asked_terminal: bool,
 }
 
 impl Decoder {
@@ -105,6 +118,7 @@ impl Decoder {
             sb_over: false,
             refused_will: [false; 256],
             refused_do: [false; 256],
+            asked_terminal: false,
         }
     }
 
@@ -210,6 +224,14 @@ impl Decoder {
     fn option(&mut self, verb: u8, option: u8, out: &mut Decoded) {
         let slot = usize::from(option);
         match verb {
+            // The client will send its terminal type: ask for it, once.
+            WILL if option == OPT_TTYPE => {
+                if !self.asked_terminal {
+                    self.asked_terminal = true;
+                    out.reply
+                        .extend_from_slice(&[IAC, SB, OPT_TTYPE, TTYPE_SEND, IAC, SE]);
+                }
+            }
             WILL if !matches!(option, OPT_SGA | OPT_NAWS) => {
                 refuse(&mut self.refused_will[slot], DONT, option, out);
             }
@@ -232,6 +254,20 @@ impl Decoder {
                 u16::from_be_bytes([*w_hi, *w_lo]),
                 u16::from_be_bytes([*h_hi, *h_lo]),
             ));
+        }
+        // Terminal type: `IS` and the name. Anything else, or a name outside a terminal name's
+        // alphabet or over 40 characters, is ignored; the first answer wins.
+        if option == OPT_TTYPE
+            && !self.sb_over
+            && out.terminal.is_none()
+            && let Some((&TTYPE_IS, name)) = self.sb.split_first()
+            && !name.is_empty()
+            && name.len() <= 40
+            && name
+                .iter()
+                .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_' | b'.' | b'+'))
+        {
+            out.terminal = Some(name.iter().map(|b| char::from(*b)).collect());
         }
         self.sb.clear();
     }

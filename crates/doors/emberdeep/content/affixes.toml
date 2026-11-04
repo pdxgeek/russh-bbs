@@ -1,0 +1,49 @@
+# Affixes ride on weapons and armour; ember-cores are slotted into one piece of gear. Both are
+# lists of the same effects a trait uses, so a tag opens room options and a move opens combat
+# options: an ember-core changes what a hero can do, not only how hard they hit.
+
+affix = [
+  # Weapons.
+  { id = "keen", name = "Keen", slot = "weapon", band = 1, effects = [{ kind = "crit_pct", amount = 6 }] },
+  { id = "heavy", name = "Heavy", slot = "weapon", band = 1, effects = [{ kind = "damage", amount = 1 }] },
+  { id = "balanced", name = "Balanced", slot = "weapon", band = 1, effects = [{ kind = "attr", attr = "finesse", amount = 1 }] },
+  { id = "jagged", name = "Jagged", slot = "weapon", band = 2, effects = [{ kind = "damage", amount = 2 }] },
+  { id = "runed", name = "Runed", slot = "weapon", band = 2, effects = [{ kind = "tag", tag = "runecraft" }] },
+  { id = "lockwrights", name = "Lockwright's", slot = "weapon", band = 2, effects = [{ kind = "tag", tag = "lockpick" }] },
+  { id = "lamplit", name = "Lamplit", slot = "weapon", band = 2, effects = [{ kind = "start_focus", amount = 1 }] },
+  { id = "greedy", name = "Greedy", slot = "weapon", band = 2, effects = [{ kind = "loot_pct", amount = 10 }] },
+  { id = "searing", name = "Searing", slot = "weapon", band = 3, effects = [{ kind = "damage", amount = 3 }, { kind = "crit_pct", amount = 4 }] },
+  { id = "sure", name = "Sure", slot = "weapon", band = 3, effects = [{ kind = "crit_pct", amount = 10 }] },
+  { id = "royal", name = "Royal", slot = "weapon", band = 4, effects = [{ kind = "damage", amount = 4 }, { kind = "crit_pct", amount = 5 }] },
+  # Armour.
+  { id = "padded", name = "Padded", slot = "armour", band = 1, effects = [{ kind = "max_hp", amount = 4 }] },
+  { id = "sturdy", name = "Sturdy", slot = "armour", band = 1, effects = [{ kind = "armor", amount = 1 }] },
+  { id = "supple", name = "Supple", slot = "armour", band = 1, effects = [{ kind = "evade_pct", amount = 4 }] },
+  { id = "warded", name = "Warded", slot = "armour", band = 2, effects = [{ kind = "death_save", amount = 6 }] },
+  { id = "nightglass", name = "Nightglass", slot = "armour", band = 2, effects = [{ kind = "trap_sense", amount = 2 }] },
+  { id = "airy", name = "Airy", slot = "armour", band = 2, effects = [{ kind = "fatigue_guard", amount = 12 }] },
+  { id = "strapped", name = "Strapped", slot = "armour", band = 2, effects = [{ kind = "carry", amount = 8 }] },
+  { id = "pathfinding", name = "Pathfinding", slot = "armour", band = 3, effects = [{ kind = "tag", tag = "pathfind" }] },
+  { id = "climbing", name = "Climbing", slot = "armour", band = 3, effects = [{ kind = "climb_ease", amount = 1 }] },
+  { id = "dread", name = "Dread", slot = "armour", band = 3, effects = [{ kind = "armor", amount = 2 }, { kind = "max_hp", amount = 4 }] },
+  { id = "stalwart", name = "Stalwart", slot = "armour", band = 3, effects = [{ kind = "max_hp", amount = 10 }] },
+  { id = "bastion", name = "Bastion", slot = "armour", band = 4, effects = [{ kind = "armor", amount = 3 }] },
+  # Either.
+  { id = "owlish", name = "Owlish", slot = "any", band = 1, effects = [{ kind = "attr", attr = "wits", amount = 1 }] },
+  { id = "fortunate", name = "Fortunate", slot = "any", band = 1, effects = [{ kind = "loot_pct", amount = 6 }] },
+]
+
+core = [
+  # Weapon cores: each one gives the hero a move the calling's tree may never teach.
+  { id = "cinder-core", name = "Cinder Core", text = "A coal that never cools; it flings sparks at a thought.", slot = "weapon", band = 1, price = 60, effects = [{ kind = "move", id = "cinder-bolt" }] },
+  { id = "bite-core", name = "Bite Core", text = "A shard that hums when blood is near; blows open veins.", slot = "weapon", band = 1, price = 60, effects = [{ kind = "move", id = "open-vein" }] },
+  { id = "anvil-core", name = "Anvil Core", text = "Heavy as a held breath. Your blows crack armour.", slot = "weapon", band = 2, price = 110, effects = [{ kind = "move", id = "rune-strike" }] },
+  { id = "gale-core", name = "Gale Core", text = "A bottled draught; you can strike from the back row.", slot = "weapon", band = 2, price = 110, effects = [{ kind = "move", id = "scatter-shot" }] },
+  { id = "kings-core", name = "King's Core", text = "A crown-fire coal. One blow, all of it.", slot = "weapon", band = 4, price = 0, effects = [{ kind = "move", id = "flourish" }, { kind = "crit_pct", amount = 4 }] },
+  # Armour cores.
+  { id = "hearth-core", name = "Hearth Core", text = "A warm ember sewn under the lining. It mends you in a fight.", slot = "armour", band = 1, price = 60, effects = [{ kind = "move", id = "second-wind" }] },
+  { id = "ward-core", name = "Ward Core", text = "A rune-lit coal that drinks the next blows.", slot = "armour", band = 2, price = 110, effects = [{ kind = "move", id = "runic-ward" }] },
+  { id = "tinder-core", name = "Tinder Core", text = "It lights your way; lantern-lit rooms give up their secrets.", slot = "armour", band = 2, price = 100, effects = [{ kind = "tag", tag = "lantern" }, { kind = "trap_sense", amount = 1 }] },
+  { id = "lodestone-core", name = "Lodestone Core", text = "It always points to the surface. The climb is shorter.", slot = "armour", band = 3, price = 150, effects = [{ kind = "climb_ease", amount = 1 }, { kind = "tag", tag = "deepmap" }] },
+  { id = "glass-core", name = "Glass Core", text = "A shard of the Halls. A hit that should kill you, sometimes does not.", slot = "armour", band = 3, price = 0, effects = [{ kind = "death_save", amount = 12 }, { kind = "move", id = "hold-the-line" }] },
+]

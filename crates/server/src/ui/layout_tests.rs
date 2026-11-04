@@ -123,6 +123,7 @@ fn draw_on(
                     look,
                     tier,
                     markers,
+                    clock: Some("UTC 12:00"),
                     mail_over_ssh_only,
                 },
             );
@@ -148,6 +149,14 @@ fn is_chrome_cell(buffer: &Buffer, x: u16, y: u16) -> bool {
     buffer[(x, y)]
         .modifier
         .contains(Modifier::BOLD | Modifier::REVERSED)
+}
+
+/// Columns of the status bar's marker cell for [`DRAWN`] in a window `cols` wide.
+fn marker_cell_width(tier: Tier, cols: u16) -> u16 {
+    let ui = Ui::standard().unwrap();
+    super::chrome::status_cell(&DRAWN, tier, ui.strings(), cols)
+        .unwrap()
+        .1
 }
 
 fn themes(ui: &Ui) -> Vec<&Theme> {
@@ -520,12 +529,14 @@ fn every_layout_and_theme_draws_the_markers_in_the_reserved_style_in_the_status_
                         for x in 0..size.0 {
                             assert_eq!(hostile[(x, last)], clean[(x, last)], "{name}: cell {x}");
                         }
-                        // A theme's colors never reach the status row.
-                        for x in 0..size.0 {
+                        // A theme's colors never reach the marker cell (the bar's own colours
+                        // start after it, D109).
+                        let cell = marker_cell_width(tier, size.0);
+                        for x in 0..cell {
                             assert_eq!(
-                                hostile[(x, last)].fg,
-                                Color::Reset,
-                                "{name}: color in status row at {x}"
+                                (hostile[(x, last)].fg, hostile[(x, last)].bg),
+                                (Color::Reset, Color::Reset),
+                                "{name}: color in the marker cell at {x}"
                             );
                         }
                     }
@@ -576,7 +587,9 @@ fn the_status_row_is_the_same_whatever_the_theme_or_layout() {
         for theme in themes(&ui) {
             for chosen in LayoutId::ALL {
                 let other = draw_marked(chosen, theme, &page, &[], tier, true, (100, 30));
-                for x in 0..100 {
+                // The marker cell is the same whatever the theme or layout; the hints beside
+                // it differ by layout (the lightbar adds its cursor keys).
+                for x in 0..marker_cell_width(tier, 100) {
                     assert_eq!(
                         other[(x, 29)],
                         baseline[(x, 29)],
@@ -623,10 +636,7 @@ fn a_theme_replaces_strings_and_colors_but_inherits_the_rest() {
         false,
         (80, 24),
     ));
-    assert!(
-        out.contains("MAIN MENU") && out.contains("?: HELP"),
-        "{out}"
-    );
+    assert!(out.contains("MAIN MENU") && out.contains("? HELP"), "{out}");
     let default = text(&draw(
         LayoutId::Classic,
         ui.theme(ThemeName::default_theme()),

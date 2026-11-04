@@ -174,7 +174,7 @@ async fn the_founder_walks_main_menu_settings_back_and_log_off() {
         "[l] Log off",
         "[o] Sysop tools",
         "[a] Files (not built yet)",
-        "?: help Esc: back Ctrl C: log off",
+        "? help Esc back Ctrl C log off",
     ] {
         assert!(menu.contains(expected), "{expected:?} missing: {menu}");
     }

@@ -1,0 +1,73 @@
+# Things you can buy. `shop` names a place's shop; `needs` lists conditions to be offered it.
+[[item]]
+id = "salt"
+name = "A tin of cooking salt"
+price = 2
+shop = "tuck"
+[[item]]
+id = "balls"
+name = "A sack of rowing-club practice balls"
+price = 5
+shop = "boats"
+[[item]]
+id = "stink_bomb"
+name = "A stink bomb"
+price = 8
+shop = "workshop"
+[[item]]
+id = "wire"
+name = "A coil of speaker wire"
+price = 6
+shop = "workshop"
+[[item]]
+id = "decoy"
+name = "A wind-up decoy"
+price = 4
+shop = "workshop"
+[[item]]
+id = "alarm_tag"
+name = "A fake inspection tag"
+price = 10
+shop = "workshop"
+[[item]]
+id = "forgery_kit"
+name = "Pens, inks and a ruler"
+price = 7
+shop = "art"
+[[item]]
+id = "memo_set"
+name = "A sheet of official-looking letterhead"
+price = 9
+shop = "art"
+[[item]]
+id = "lockpicks"
+name = "A set of lockpicks"
+price = 15
+shop = "workshop"
+needs = ["legend>=25"]
+[[item]]
+id = "tunnel_map"
+name = "The old caretaker's tunnel map"
+price = 25
+shop = "caretaker"
+needs = ["legend>=40", "standing:the_bench>=10"]
+[[item]]
+id = "master_key"
+name = "A master key"
+price = 40
+shop = "caretaker"
+needs = ["legend>=60", "standing:the_bench>=15"]
+
+# Club items (M4-H2): sold to members of a rank only.
+[[item]]
+id = "greasepaint"
+name = "A stick of stage greasepaint"
+price = 7
+shop = "greenroom"
+needs = ["rank:drama>=2"]
+[[item]]
+id = "servo"
+name = "A tiny geared servo"
+price = 9
+shop = "workshop"
+needs = ["rank:robotics>=2"]
