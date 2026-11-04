@@ -209,6 +209,26 @@ cargo test -p russh-bbs-store blobs -- --ignored
 docker rm -f russh-bbs-minio-blobs      # when you are done
 ```
 
+To also run the `ca_file` test (https with a private CA), start a second container named `russh-bbs-minio-tls` with a throwaway CA and certificate, and set three more variables:
+
+```bash
+mkdir certs && cd certs
+openssl req -x509 -newkey rsa:2048 -nodes -keyout ca.key -out ca.pem -days 2 -subj "/CN=test-ca" -addext "basicConstraints=critical,CA:TRUE"
+openssl req -newkey rsa:2048 -nodes -keyout private.key -out srv.csr -subj "/CN=localhost"
+printf "subjectAltName=IP:127.0.0.1,DNS:localhost\nbasicConstraints=CA:FALSE\n" > ext.cnf
+openssl x509 -req -in srv.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out public.crt -days 2 -extfile ext.cnf
+openssl req -x509 -newkey rsa:2048 -nodes -keyout wrong.key -out wrong-ca.pem -days 2 -subj "/CN=wrong-ca" -addext "basicConstraints=critical,CA:TRUE"
+chmod 644 private.key
+docker run -d --name russh-bbs-minio-tls -p 127.0.0.1:19443:9000 -v "$PWD:/certs:ro" \
+  -e MINIO_ROOT_USER=bbsminio -e MINIO_ROOT_PASSWORD=bbsminio-secret-test \
+  bitnamilegacy/minio:latest minio server /bitnami/minio/data --certs-dir /certs
+docker exec russh-bbs-minio-tls mkdir -p /bitnami/minio/data/russh-bbs-blobs
+export RUSSH_BBS_TEST_S3_TLS_ENDPOINT=https://127.0.0.1:19443 \
+       RUSSH_BBS_TEST_S3_CA_FILE=$PWD/ca.pem RUSSH_BBS_TEST_S3_WRONG_CA_FILE=$PWD/wrong-ca.pem
+```
+
+Keep the generated keys out of the repository; they are test material only.
+
 The tests write under a fresh namespace each and leave their objects in the bucket; use a throwaway bucket. The keys above are test values for a throwaway container, not credentials to reuse.
 
 ## Running with an S3 bucket
