@@ -100,7 +100,8 @@ fn check_captain(h: &Harness, p: &Player) {
         p.ship.hull_hp
     );
     assert!(
-        p.days_left >= -10 && p.days_left <= 10,
+        // A long jump may overdraw the day; settling clamps what is carried to nine days.
+        (-60..=10).contains(&p.days_left),
         "days {}",
         p.days_left
     );

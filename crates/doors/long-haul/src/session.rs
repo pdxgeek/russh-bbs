@@ -69,6 +69,52 @@ fn cr(n: i64) -> String {
     if n < 0 { format!("-{out}") } else { out }
 }
 
+/// Columns a line may use inside the board's box at 80 columns.
+const WRAP: usize = 68;
+
+/// Break `text` at spaces into lines of at most `width` characters; a continuation is indented.
+fn wrap(text: &str, width: usize) -> Vec<String> {
+    let mut lines: Vec<String> = Vec::new();
+    let mut line = String::new();
+    for word in text.split(' ').filter(|w| !w.is_empty()) {
+        let limit = if lines.is_empty() { width } else { width - 2 };
+        if !line.is_empty() && line.chars().count() + 1 + word.chars().count() > limit {
+            lines.push(std::mem::take(&mut line));
+        }
+        if line.is_empty() && !lines.is_empty() {
+            line.push_str("  ");
+        }
+        if !line.trim().is_empty() {
+            line.push(' ');
+        }
+        line.push_str(word);
+    }
+    if !line.is_empty() {
+        lines.push(line);
+    }
+    lines
+}
+
+/// Lay `items` out in lines of at most `width` characters, two spaces apart, never splitting
+/// an item (a key hint stays whole).
+fn wrap_items(items: &[String], width: usize) -> Vec<String> {
+    let mut lines: Vec<String> = Vec::new();
+    let mut line = String::new();
+    for item in items {
+        if !line.is_empty() && line.chars().count() + 2 + item.chars().count() > width {
+            lines.push(std::mem::take(&mut line));
+        }
+        if !line.is_empty() {
+            line.push_str("  ");
+        }
+        line.push_str(item);
+    }
+    if !line.is_empty() {
+        lines.push(line);
+    }
+    lines
+}
+
 fn clip(text: &str, width: usize) -> String {
     text.chars().take(width).collect()
 }
@@ -545,7 +591,9 @@ impl Session {
         ]
     }
 
-    fn bridge_lines(&self, player: &Player) -> Vec<(String, DoorStyle)> {
+    /// The bridge: the menu, the hold and what the station deals in, then whatever else fits in
+    /// `budget` rows (most useful first).
+    fn bridge_lines(&self, player: &Player, budget: usize) -> Vec<(String, DoorStyle)> {
         let mut out = vec![(String::new(), DoorStyle::Plain)];
         let docked = player.docked.is_some();
         let system = self.frontier.system(player.at);
@@ -574,7 +622,9 @@ impl Session {
         }
         keys.push("[t] tow".to_owned());
         keys.push("[q] leave".to_owned());
-        out.push((keys.join("  "), DoorStyle::Strong));
+        for line in wrap_items(&keys, WRAP) {
+            out.push((line, DoorStyle::Strong));
+        }
         out.push((String::new(), DoorStyle::Plain));
         let cargo: Vec<String> = player
             .ship
@@ -588,35 +638,57 @@ impl Session {
                 )
             })
             .collect();
-        out.push((
-            if cargo.is_empty() {
-                "Hold: empty.".to_owned()
-            } else {
-                format!("Hold: {}", cargo.join(", "))
-            },
-            DoorStyle::Plain,
-        ));
+        let hold = if cargo.is_empty() {
+            "Hold: empty.".to_owned()
+        } else {
+            format!("Hold: {}", cargo.join(", "))
+        };
+        for line in wrap(&hold, WRAP) {
+            out.push((line, DoorStyle::Plain));
+        }
+        let mut optional: Vec<(String, DoorStyle)> = Vec::new();
+        if let Some(st) = player.docked.and_then(|s| self.frontier.station(s)) {
+            let eco = &self.content.economies[usize::from(st.economy)];
+            let names = |ids: &[String]| -> String {
+                ids.iter()
+                    .filter_map(|id| self.content.good_ix(id))
+                    .map(|i| self.content.goods[i].name.as_str())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            };
+            let guide = format!(
+                "{}s make {}. They want {}.",
+                eco.name,
+                names(&eco.produces),
+                names(&eco.needs)
+            );
+            for line in wrap(&guide, WRAP) {
+                optional.push((line, DoorStyle::Dim));
+            }
+        }
         if !player.survey.is_empty() {
             let total: i64 = player.survey.iter().map(|s| i64::from(s.value)).sum();
-            out.push((
+            optional.push((
                 format!(
-                    "Survey data aboard: {} records, about {} cr at a Guild office.",
+                    "Survey data: {} records, about {} cr at a Guild office.",
                     player.survey.len(),
                     cr(total)
                 ),
                 DoorStyle::Dim,
             ));
         }
-        let skills: Vec<String> = crate::skills::Skill::ALL
-            .iter()
-            .map(|&s| format!("{} {}", s.name(), player.level(s)))
-            .collect();
-        out.push((skills.join("  "), DoorStyle::Dim));
         let standing: Vec<String> = [Faction::League, Faction::Miners, Faction::Free]
             .iter()
             .map(|f| format!("{} {:+}", f.name(), player.standing[f.index()]))
             .collect();
-        out.push((format!("Standing: {}", standing.join(", ")), DoorStyle::Dim));
+        optional.push((format!("Standing: {}", standing.join(", ")), DoorStyle::Dim));
+        let skills: Vec<String> = crate::skills::Skill::ALL
+            .iter()
+            .map(|&s| format!("{} {}", s.name(), player.level(s)))
+            .collect();
+        optional.push((skills.join("  "), DoorStyle::Dim));
+        let room = budget.saturating_sub(out.len());
+        out.extend(optional.into_iter().take(room));
         out
     }
 
@@ -667,10 +739,20 @@ impl Session {
                 },
             ));
         }
-        out.push((
-            "[b/B] buy 1/10  [a] fill hold  [s/S] sell 1/10  [z] sell all  [Esc] back   * contraband".to_owned(),
-            DoorStyle::Strong,
-        ));
+        let keys = [
+            "[b/B] buy 1/10",
+            "[a] fill hold",
+            "[s/S] sell 1/10",
+            "[z] sell all",
+            "[Esc] back",
+            "(* contraband)",
+        ]
+        .map(str::to_owned);
+        out.extend(
+            wrap_items(&keys, WRAP)
+                .into_iter()
+                .map(|l| (l, DoorStyle::Strong)),
+        );
         out
     }
 
@@ -713,7 +795,7 @@ impl Session {
                     notes.push(format!("stations {letters}"));
                 }
             } else {
-                notes.push("first charter earns survey data".to_owned());
+                notes.push("unknown: survey data".to_owned());
             }
             let short = player.ship.fuel < fuel;
             let text = format!(
@@ -796,69 +878,118 @@ impl Session {
     }
 
     fn loan_lines(player: &Player) -> Vec<(String, DoorStyle)> {
-        vec![
-            (format!("The lender holds {} cr. Interest runs {} per mille a day.", cr(player.debt.principal), crate::engine::INTEREST_PM), DoorStyle::Plain),
-            (format!("Next payment {} cr, in {} days. The lender will carry up to {} cr.", cr(player.weekly_payment()), (player.debt.next_due - player.last_day).max(0), cr(player.credit_limit())), DoorStyle::Plain),
-            (format!("Three missed payments in a row and the ship is repossessed. Times so far: {}.", player.repossessions), DoorStyle::Dim),
+        let mut out = vec![
+            (
+                format!(
+                    "The lender holds {} cr. Interest runs {} per mille a day.",
+                    cr(player.debt.principal),
+                    crate::engine::INTEREST_PM
+                ),
+                DoorStyle::Plain,
+            ),
+            (
+                format!(
+                    "Next payment {} cr in {} days. The lender's limit is {} cr.",
+                    cr(player.weekly_payment()),
+                    (player.debt.next_due - player.last_day).max(0),
+                    cr(player.credit_limit())
+                ),
+                DoorStyle::Plain,
+            ),
+            (
+                format!(
+                    "Three missed payments in a row: repossession. So far: {}.",
+                    player.repossessions
+                ),
+                DoorStyle::Dim,
+            ),
             (String::new(), DoorStyle::Plain),
-            ("[b] borrow 1,000  [B] borrow 5,000  [p] pay 500  [P] pay 5,000  [a] pay all  [Esc] back".to_owned(), DoorStyle::Strong),
+        ];
+        let keys = [
+            "[b] borrow 1,000",
+            "[B] borrow 5,000",
+            "[p] pay 500",
+            "[P] pay 5,000",
+            "[a] pay all",
+            "[Esc] back",
         ]
+        .map(str::to_owned);
+        out.extend(
+            wrap_items(&keys, WRAP)
+                .into_iter()
+                .map(|l| (l, DoorStyle::Strong)),
+        );
+        out
+    }
+
+    /// The screens before there is a captain: the choice of background, or the unreadable-save
+    /// notice.
+    fn intro_lines(&self) -> Vec<(String, DoorStyle)> {
+        match &self.mode {
+            Mode::Unreadable => vec![
+                ("LONG HAUL".to_owned(), DoorStyle::Accent),
+                (
+                    "Your saved captain was written by a version this board cannot read."
+                        .to_owned(),
+                    DoorStyle::Bad,
+                ),
+                (
+                    "Nothing has been changed. Ask the sysop; press any key to leave.".to_owned(),
+                    DoorStyle::Plain,
+                ),
+            ],
+            Mode::Pick(cursor) => {
+                let mut lines = vec![
+                    (
+                        "LONG HAUL: the gates failed long ago, and you owe for your ship."
+                            .to_owned(),
+                        DoorStyle::Accent,
+                    ),
+                    (
+                        "Who were you before the loan?  (Up/Down, Enter to sign, Esc to leave)"
+                            .to_owned(),
+                        DoorStyle::Plain,
+                    ),
+                    (String::new(), DoorStyle::Plain),
+                ];
+                for (i, b) in self.content.backgrounds.iter().enumerate() {
+                    let style = if i == *cursor {
+                        DoorStyle::Selected
+                    } else {
+                        DoorStyle::Plain
+                    };
+                    lines.push((
+                        format!(
+                            "{} {:<20} owes {} cr, starts with {} cr",
+                            if i == *cursor { '>' } else { ' ' },
+                            b.name,
+                            cr(i64::from(b.loan)),
+                            cr(i64::from(b.cash))
+                        ),
+                        style,
+                    ));
+                }
+                if let Some(b) = self.content.backgrounds.get(*cursor) {
+                    lines.push((String::new(), DoorStyle::Plain));
+                    lines.push((b.blurb.clone(), DoorStyle::Dim));
+                    lines.push((format!("Perk: {}", b.perk_text), DoorStyle::Good));
+                }
+                lines
+            }
+            _ => vec![("No captain.".to_owned(), DoorStyle::Plain)],
+        }
     }
 
     fn lines(&self, height: usize) -> Vec<(String, DoorStyle)> {
         let mut out = Vec::new();
         let Some(player) = &self.player else {
-            return match &self.mode {
-                Mode::Unreadable => vec![
-                    ("LONG HAUL".to_owned(), DoorStyle::Accent),
-                    (
-                        "Your saved captain was written by a version this board cannot read."
-                            .to_owned(),
-                        DoorStyle::Bad,
-                    ),
-                    (
-                        "Nothing has been changed. Ask the sysop; press any key to leave."
-                            .to_owned(),
-                        DoorStyle::Plain,
-                    ),
-                ],
-                Mode::Pick(cursor) => {
-                    let mut lines = vec![
-                        ("LONG HAUL: the jump gates failed a generation ago. You owe the lender for a ship.".to_owned(), DoorStyle::Accent),
-                        ("Who were you before the loan?  (Up/Down, Enter to sign, Esc to leave)".to_owned(), DoorStyle::Plain),
-                        (String::new(), DoorStyle::Plain),
-                    ];
-                    for (i, b) in self.content.backgrounds.iter().enumerate() {
-                        let style = if i == *cursor {
-                            DoorStyle::Selected
-                        } else {
-                            DoorStyle::Plain
-                        };
-                        lines.push((
-                            format!(
-                                "{} {:<20} owes {} cr, starts with {} cr",
-                                if i == *cursor { '>' } else { ' ' },
-                                b.name,
-                                cr(i64::from(b.loan)),
-                                cr(i64::from(b.cash))
-                            ),
-                            style,
-                        ));
-                    }
-                    if let Some(b) = self.content.backgrounds.get(*cursor) {
-                        lines.push((String::new(), DoorStyle::Plain));
-                        lines.push((b.blurb.clone(), DoorStyle::Dim));
-                        lines.push((format!("Perk: {}", b.perk_text), DoorStyle::Good));
-                    }
-                    lines
-                }
-                _ => vec![("No captain.".to_owned(), DoorStyle::Plain)],
-            };
+            return self.intro_lines();
         };
         out.extend(self.header(player));
         match &self.mode {
             Mode::Bridge | Mode::Pick(_) | Mode::Unreadable => {
-                out.extend(self.bridge_lines(player));
+                let budget = height.saturating_sub(out.len() + self.log.len().min(LOG_LINES) + 1);
+                out.extend(self.bridge_lines(player, budget));
             }
             Mode::Docks(cursor) => {
                 out.push((String::new(), DoorStyle::Plain));

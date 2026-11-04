@@ -2933,6 +2933,7 @@ dependencies = [
  "russh-bbs-core",
  "russh-bbs-door",
  "russh-bbs-door-example",
+ "russh-bbs-door-long-haul",
  "russh-bbs-store",
  "rustls",
  "rustls-native-certs",

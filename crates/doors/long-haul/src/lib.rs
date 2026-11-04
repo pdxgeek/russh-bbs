@@ -84,7 +84,7 @@ impl LongHaul {
             info: DoorInfo::new(
                 DOOR_ID,
                 "Long Haul",
-                "Run a tramp freighter across a failing frontier: fuel, time and debt.",
+                "A tramp freighter, a loan and a failing frontier.",
                 SAVE_VERSION,
                 WORLD_VERSION,
             )

@@ -32,6 +32,7 @@ fn door() -> LongHaul {
 
 fn keys(text: &str) -> Vec<DoorKey> {
     text.split(' ')
+        .filter(|t| !t.is_empty())
         .map(|t| DoorKey::from_token(t).unwrap())
         .collect()
 }
@@ -302,4 +303,28 @@ async fn a_headless_run_of_bots_keeps_every_save_and_the_world_inside_their_caps
         report.largest_save
     );
     let _: &MemoryDoorStore = sim.store();
+}
+
+#[test]
+fn every_screen_fits_the_eighty_column_box_and_shows_its_essentials() {
+    // The board's box leaves 72 columns inside; the door draws from column 1.
+    let door = door();
+    let env = DoorEnv::for_tests("ann");
+    for keys_text in [
+        "", "enter", "enter j", "enter y", "enter l", "enter n", "enter m", "enter d",
+    ] {
+        let run = replay::run(&door, &log(9, None, keys_text.trim()), &env);
+        for line in &run.screen {
+            assert!(
+                line.chars().count() <= 71,
+                "after `{keys_text}` a line is {} wide: {line}",
+                line.chars().count()
+            );
+        }
+    }
+    // The bridge says what the station wants, so a captain knows where to carry what.
+    let run = replay::run(&door, &log(9, None, "enter"), &env);
+    let text = run.screen.join("\n");
+    assert!(text.contains("They want"), "{text}");
+    assert!(text.contains("[m] market"), "{text}");
 }
