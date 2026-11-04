@@ -338,7 +338,20 @@ impl World {
         if why != Refusal::Terms {
             return Some(why.text());
         }
-        // The truce is closed by the proposer's history or by a fresh grudge between the two.
+        let broken = [proposer, target].iter().any(|c| {
+            self.clans
+                .get(usize::from(*c))
+                .is_some_and(|e| e.record.betrayals > 0)
+        });
+        // A pact on record says why trade and defence are closed before anything else does.
+        if broken && matches!(term, TRADE | DEFENCE) {
+            return Some(if term == TRADE {
+                "a pact was broken: merchants will not deal"
+            } else {
+                "a pact was broken: nobody stands guard for an oathbreaker"
+            });
+        }
+        // Otherwise the truce is closed by the proposer's history or by a fresh grudge.
         if let Some(me) = self.clans.get(usize::from(proposer))
             && (me.record.pact_ban_until > day || me.record.betrayals >= 2)
         {
@@ -355,15 +368,8 @@ impl World {
         }) {
             return Some("the two of you raided each other within the week");
         }
-        let broken = [proposer, target].iter().any(|c| {
-            self.clans
-                .get(usize::from(*c))
-                .is_some_and(|e| e.record.betrayals > 0)
-        });
         Some(match term {
-            TRADE if broken => "a pact was broken: merchants will not deal",
             TRADE => "needs three buildings finished",
-            DEFENCE if broken => "a pact was broken: nobody stands guard for an oathbreaker",
             DEFENCE => "needs a defence building",
             CAUSEWAY => "needs a causeway laid",
             _ => "your history closes it for now",
