@@ -1,0 +1,103 @@
+# Corporations (M4-N1). `num` is the stable id stored in saves and the world: never reuse or renumber.
+# Percent fields are 0..=100 unless stated. `favoured` is the lock family the corporation leans on
+# (crack, spoof or overflow); the contract briefing shows it as street intel.
+
+[[fixer]]
+num = 0
+name = "Marrow"
+blurb = "Old school. Pays on time, remembers who burned him."
+
+[[fixer]]
+num = 1
+name = "Sister Quill"
+blurb = "Runs a chapel and a rumour mill. Dislikes loose ends."
+
+[[fixer]]
+num = 2
+name = "Dovetail"
+blurb = "Talks fast, pays in parts, never uses the same number twice."
+
+[[corp]]
+num = 0
+name = "Kestrel Dynamics"
+style = "Stacks firewalls three deep and trusts them."
+patron = 0
+trace_pct = 100
+lock_pct = 70
+sec_bonus = 1
+patrol_pct = 20
+tracer_share = 25
+honey_pct = 10
+hidden_pct = 15
+watch = 0
+patch_pct = 30
+blackwall_pct = 25
+favoured = "overflow"
+
+[[corp]]
+num = 1
+name = "Halcyon Freight"
+style = "Aggressive tracers: every second hop is being counted."
+patron = 1
+trace_pct = 135
+lock_pct = 45
+sec_bonus = 0
+patrol_pct = 35
+tracer_share = 70
+honey_pct = 10
+hidden_pct = 15
+watch = 0
+patch_pct = 25
+blackwall_pct = 10
+favoured = "crack"
+
+[[corp]]
+num = 2
+name = "Mirrorglass Ltd"
+style = "Hides everything behind decoys. Not every vault is a vault."
+patron = 2
+trace_pct = 100
+lock_pct = 50
+sec_bonus = 0
+patrol_pct = 15
+tracer_share = 30
+honey_pct = 75
+hidden_pct = 45
+watch = 0
+patch_pct = 35
+blackwall_pct = 10
+favoured = "spoof"
+
+[[corp]]
+num = 3
+name = "Pennywhistle Savings"
+style = "Badly configured, but a human is watching every packet."
+patron = 0
+trace_pct = 100
+lock_pct = 20
+sec_bonus = -1
+patrol_pct = 10
+tracer_share = 20
+honey_pct = 5
+hidden_pct = 10
+watch = 2
+patch_pct = 15
+blackwall_pct = 0
+favoured = "crack"
+
+[[corp]]
+num = 4
+name = "Orrery Health"
+style = "Even-handed, patient, and fond of black walls on the deep floors."
+patron = 1
+trace_pct = 110
+lock_pct = 55
+sec_bonus = 0
+patrol_pct = 25
+tracer_share = 40
+honey_pct = 20
+hidden_pct = 25
+watch = 1
+patch_pct = 30
+blackwall_pct = 40
+favoured = "spoof"
