@@ -9,6 +9,7 @@ members = [
     "crates/doors/example",
     "crates/doors/emberdeep",
     "crates/doors/saltmarch",
+    "crates/doors/nullroute",
     "crates/api",
 ]
 
@@ -26,6 +27,7 @@ russh-bbs-door = { path = "crates/doors/framework" }
 russh-bbs-door-example = { path = "crates/doors/example" }
 russh-bbs-door-emberdeep = { path = "crates/doors/emberdeep" }
 russh-bbs-door-saltmarch = { path = "crates/doors/saltmarch" }
+russh-bbs-door-nullroute = { path = "crates/doors/nullroute" }
 
 # External crates.
 unicode-normalization = "0.1"

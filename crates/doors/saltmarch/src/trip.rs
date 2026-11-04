@@ -291,7 +291,7 @@ pub struct Trip {
     /// Fights fought.
     pub fights: u8,
     /// The trip's own dice. They live in the save, so a dropped connection cannot re-roll a
-    /// choice: the same save and the same key always give the same result (D102).
+    /// choice: the same save and the same key always give the same result (D108).
     pub rng: [u64; 4],
 }
 

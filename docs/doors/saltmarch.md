@@ -179,7 +179,7 @@ Crate `crates/doors/saltmarch` (`russh-bbs-door-saltmarch`, door id `saltmarch`,
 
 ## Implementation notes (M4-S2)
 
-Same crate (`russh-bbs-door-saltmarch`), save version 2 (version 1 saves migrate), world version 1. Decision: D102. The door is registered on the board with a plain text screen; the real screens are S3.
+Same crate (`russh-bbs-door-saltmarch`), save version 2 (version 1 saves migrate), world version 1. Decision: D108. The door is registered on the board with a plain text screen; the real screens are S3.
 
 **Implemented and tested:**
 
