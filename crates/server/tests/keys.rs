@@ -711,3 +711,35 @@ async fn a_password_only_visitor_is_not_offered_the_key_entries() {
     assert!(!flat(&nothing).contains("Code"), "{nothing}");
     rig.stop().await;
 }
+
+#[tokio::test]
+async fn a_newer_link_code_voids_the_older_unused_one() {
+    // QA P1 (FIX-M3-13): codes A then B for one member, nothing expires; A must be refused and
+    // B must still work.
+    let rig = Rig::start().await;
+    let (_id, key) = member_with(&rig, "maker", Slug::MEMBER, Some(PASSWORD)).await;
+    let (_s, mut maker, _) = at_menu(&rig, "maker", &key).await;
+    my_keys(&mut maker).await;
+    let older = code_in(&press(&mut maker, "l").await);
+    press(&mut maker, "x").await;
+    let newer = code_in(&press(&mut maker, "l").await);
+    press(&mut maker, "x").await;
+    assert_ne!(older, newer);
+    let dump: Vec<(i64,String,i64,i64,i64,Option<i64>)> = sqlx::query_as("SELECT id,kind,account_id,created_at,expires_at,voided_at FROM login_code").fetch_all(&rig.db).await.unwrap();
+    eprintln!("DUMP {dump:?}");
+    assert_eq!(count(&rig, "login_code").await, 2);
+    assert_eq!(count(&rig, "login_code WHERE voided_at IS NOT NULL").await, 1);
+
+    let (_s, mut machine, key_a, _) = new_machine(&rig).await;
+    press(&mut machine, "d").await;
+    let answer = line(&mut machine, &older).await;
+    assert!(flat(&answer).contains(REFUSED), "{answer}");
+    assert!(!key_signs_in(rig.addr(), "maker", &key_a).await);
+
+    let (_s, mut machine, key_b, _) = new_machine(&rig).await;
+    press(&mut machine, "d").await;
+    let joined = line(&mut machine, &newer).await;
+    assert!(flat(&joined).contains("Signed in as maker"), "{joined}");
+    assert!(key_signs_in(rig.addr(), "maker", &key_b).await);
+    rig.stop().await;
+}

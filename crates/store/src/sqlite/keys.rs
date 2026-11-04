@@ -274,10 +274,12 @@ impl KeyStore for SqliteStore {
         let mut tx = self.pool().begin().await.map_err(backend)?;
         // The first statement is a write (voiding older live codes of this kind), so the write
         // lock is taken before the count: two makers cannot both pass the limit. If the limit
-        // refuses, the transaction is dropped and the voiding is rolled back.
+        // refuses, the transaction is dropped and the voiding is rolled back. The placeholders
+        // are all numbered: mixing `?` with `?1` made sqlx bind them so that nothing matched
+        // (FIX-M3-13).
         sqlx::query!(
-            r#"UPDATE login_code SET voided_at = ?
-               WHERE account_id = ? AND kind = ? AND redeemed_at IS NULL AND voided_at IS NULL
+            r#"UPDATE login_code SET voided_at = ?1
+               WHERE account_id = ?2 AND kind = ?3 AND redeemed_at IS NULL AND voided_at IS NULL
                  AND expires_at > ?1"#,
             now,
             target,

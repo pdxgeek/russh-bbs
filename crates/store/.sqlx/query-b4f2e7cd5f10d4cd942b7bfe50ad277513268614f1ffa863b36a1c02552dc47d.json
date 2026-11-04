@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE login_code SET voided_at = ?1\n               WHERE account_id = ?2 AND kind = ?3 AND redeemed_at IS NULL AND voided_at IS NULL\n                 AND expires_at > ?1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "b4f2e7cd5f10d4cd942b7bfe50ad277513268614f1ffa863b36a1c02552dc47d"
+}
