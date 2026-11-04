@@ -102,7 +102,7 @@ Inside a network, a fight with a countermeasure is a short turn-based exchange. 
 
 ## Implementation notes (M4-N1: the engine)
 
-Decision: [D100](../decisions.md). Crate: `crates/doors/nullroute` (`russh-bbs-door-nullroute`), registered in `Doors::builtin()`.
+Decision: [D102](../decisions.md). Crate: `crates/doors/nullroute` (`russh-bbs-door-nullroute`), registered in `Doors::builtin()`.
 
 ### What is implemented and verified
 

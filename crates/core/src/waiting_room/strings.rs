@@ -53,11 +53,6 @@ pub const FOOTER_PAGE: &str = "Esc: back";
 /// See [`FOOTER_HOME`].
 pub const FOOTER_FORM: &str = "Enter: next or send   Esc: back   Ctrl-C: disconnect";
 
-/// Honest privacy line on the rules page. Fixed chrome: sysops cannot edit it away, because
-/// the product must not imply privacy it does not have (D3).
-pub const PRIVACY_NOTE: &str = "Privacy: in this version the server can read everything except \
-PGP-encrypted mail and files you encrypt yourself.";
-
 /// Banner used when the sysop has not set one.
 pub const DEFAULT_BANNER: &str = "A quiet place.";
 /// Rules used when the sysop has not set any.
