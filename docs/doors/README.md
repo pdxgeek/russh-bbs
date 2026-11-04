@@ -46,6 +46,7 @@ The framework is the first M4 slice. **It shares plumbing only.** Each game has 
 |---|---|---|
 | Emberdeep | M4-E1 engine (D101) | **Implemented**: hero, seasonal shared dungeon, combat, torch-turns, death and rescue, nightly tick, saves, minimal text screen. Later slices Planned. See [emberdeep.md](emberdeep.md) |
 | Emberdeep | M4-E2 town and crafting (D110) | **Implemented**: Cindermere (market, forge, temple, guild hall, tavern and contract board, library, shared town works), gear with affixes, ember-cores and wear, recipes, save and world format 2. Later slices Planned. See [emberdeep.md](emberdeep.md) |
+| Emberdeep | M4-E3 UI (D-TBD) | **Implemented**: every screen in ratatui (dungeon map with fog and torch light, combat panel, hero sheet and skill tree, town and its eight places with cost previews, event scenes, the hall, hero creation), responsive from 80x24, look-around for every screen, render and snapshot tests in every tier. Later slices Planned. See [emberdeep.md](emberdeep.md) |
 | Saltmarch, Nullroute, Long Haul, Hallpass | | Proposed |
 
 ### Framework status (M4-D0, D98)
