@@ -56,15 +56,18 @@ impl SqliteStore {
 
     /// Bind a key in the open transaction; `Err(Key)` if it belongs to an account.
     async fn bind_redeemed_key(
+        &self,
         conn: &mut SqliteConnection,
         account: i64,
         fingerprint: &Fingerprint,
     ) -> Result<(), RedeemError> {
         let fingerprint = fingerprint.as_str();
+        let now = self.clock().now().as_raw();
         sqlx::query!(
-            "INSERT INTO account_keys (fingerprint, account_id) VALUES (?, ?)",
+            "INSERT INTO account_keys (fingerprint, account_id, created_at) VALUES (?, ?, ?)",
             fingerprint,
             account,
+            now,
         )
         .execute(conn)
         .await
@@ -140,11 +143,13 @@ impl KeyStore for SqliteStore {
     ) -> Result<(), StoreError> {
         let id = account.as_raw();
         let text = fingerprint.as_str();
+        let now = self.clock().now().as_raw();
         let mut tx = self.pool().begin().await.map_err(backend)?;
         sqlx::query!(
-            "INSERT INTO account_keys (fingerprint, account_id) VALUES (?, ?)",
+            "INSERT INTO account_keys (fingerprint, account_id, created_at) VALUES (?, ?, ?)",
             text,
             id,
+            now,
         )
         .execute(&mut *tx)
         .await
@@ -342,7 +347,7 @@ impl KeyStore for SqliteStore {
         let Some(account) = self.claim_code(&mut tx, hash, CodeKind::Link).await? else {
             return Err(RedeemError::Refused(RedeemRefusal::Code));
         };
-        Self::bind_redeemed_key(&mut tx, account, fingerprint).await?;
+        self.bind_redeemed_key(&mut tx, account, fingerprint).await?;
         self.notice_in(&mut tx, account, NoticeKind::DeviceLinked, Some(fingerprint))
             .await?;
         let row = Self::account_row(&mut tx, account).await?;
@@ -362,7 +367,7 @@ impl KeyStore for SqliteStore {
         let Some(account) = self.claim_code(&mut tx, hash, CodeKind::Recovery).await? else {
             return Err(RedeemError::Refused(RedeemRefusal::Code));
         };
-        Self::bind_redeemed_key(&mut tx, account, fingerprint).await?;
+        self.bind_redeemed_key(&mut tx, account, fingerprint).await?;
         sqlx::query!(
             "INSERT INTO account_password (account_id, hash) VALUES (?, ?)
              ON CONFLICT (account_id) DO UPDATE SET

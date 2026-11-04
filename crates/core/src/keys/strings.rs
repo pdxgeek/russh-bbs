@@ -1,7 +1,7 @@
 //! Fixed text of the keys screens and the waiting-room entries (chrome). Nothing here calls
 //! anything "private": the server checks a key by its fingerprint and says what it keeps.
 
-/// Settings menu entry.
+/// Members menu entry (the label is in the string table; this is for tests and docs).
 pub const MENU_KEYS: &str = "My keys";
 /// Sysop menu label (the key that opens the staff screen is in the menu tree).
 pub const HEADING: &str = "My keys";
@@ -98,8 +98,14 @@ pub const MENU_RECOVER: &str = "Recovery code";
 pub const LINK_DEVICE_HEADING: &str = "Link this device";
 /// Recovery page heading.
 pub const RECOVER_HEADING: &str = "Recovery code";
-/// Field: the code.
-pub const LABEL_CODE: &str = "Code";
+/// Field: a device-link code.
+pub const LABEL_LINK_CODE: &str = "Link code";
+/// Field: a staff recovery code.
+pub const LABEL_RECOVERY_CODE: &str = "Recovery code";
+/// Field: the password to set with a recovery code.
+pub const LABEL_NEW_PASSWORD: &str = "New password";
+/// Field: the repeat.
+pub const LABEL_NEW_PASSWORD_AGAIN: &str = "New password again";
 /// One refusal for every cause.
 pub const CODE_REFUSED: &str = "That code did not work. Check it, or ask for a new one.";
 /// Recovery explanation.

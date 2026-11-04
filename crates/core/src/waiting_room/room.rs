@@ -411,6 +411,22 @@ const CODE: FieldSpec = FieldSpec {
     kind: FieldKind::Code,
 };
 
+const LINK_CODE: FieldSpec = FieldSpec {
+    label: crate::keys::strings::LABEL_LINK_CODE,
+    kind: FieldKind::Code,
+};
+const RECOVERY_CODE: FieldSpec = FieldSpec {
+    label: crate::keys::strings::LABEL_RECOVERY_CODE,
+    kind: FieldKind::Code,
+};
+const NEW_PASSWORD: FieldSpec = FieldSpec {
+    label: crate::keys::strings::LABEL_NEW_PASSWORD,
+    kind: FieldKind::Secret,
+};
+const NEW_PASSWORD_AGAIN: FieldSpec = FieldSpec {
+    label: crate::keys::strings::LABEL_NEW_PASSWORD_AGAIN,
+    kind: FieldKind::Secret,
+};
 const LINK_HANDLE: FieldSpec = FieldSpec {
     label: strings::LABEL_LINK_HANDLE,
     kind: FieldKind::Line,
@@ -440,8 +456,8 @@ fn fields_of(page: Page, passwords: bool) -> &'static [FieldSpec] {
         (Page::CreateAccount, false) => &[HANDLE],
         (Page::CreateAccount, true) => &[HANDLE, PASSWORD, PASSWORD_AGAIN],
         (Page::LinkKey, _) => &[LINK_HANDLE, LINK_PASSWORD],
-        (Page::LinkDevice, _) => &[CODE],
-        (Page::Recover, _) => &[CODE, PASSWORD, PASSWORD_AGAIN],
+        (Page::LinkDevice, _) => &[LINK_CODE],
+        (Page::Recover, _) => &[RECOVERY_CODE, NEW_PASSWORD, NEW_PASSWORD_AGAIN],
     }
 }
 

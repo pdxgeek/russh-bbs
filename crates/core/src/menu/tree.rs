@@ -104,7 +104,7 @@ static INVITES_ITEMS: [Item; 3] = [
     ),
 ];
 
-static MEMBERS_ITEMS: [Item; 4] = [
+static MEMBERS_ITEMS: [Item; 5] = [
     item(
         'l',
         "menu.members.item.list",
@@ -124,6 +124,11 @@ static MEMBERS_ITEMS: [Item; 4] = [
         'v',
         "menu.members.item.vouch",
         Target::Action(Action::VouchQueue),
+    ),
+    item(
+        'k',
+        "menu.members.item.keys",
+        Target::Action(Action::MyKeys),
     ),
 ];
 

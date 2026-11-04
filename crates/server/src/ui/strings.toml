@@ -89,6 +89,7 @@ title = "Members"
 list = "Member list"
 profile = "My profile"
 edit = "Edit my profile"
+keys = "My keys"
 vouch = "Vouch for a request"
 
 [members.list]

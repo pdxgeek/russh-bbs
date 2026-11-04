@@ -21,7 +21,7 @@ use crate::icons::Tier;
 use crate::invites::{InviteOutcome, InviteRequest, InviteScreen};
 use crate::keys::{
     KeysKey, KeysScreen, RecoveryScreen, Request as KeysRequest, Response as KeysResponse,
-    Step as KeysStep, strings as keys_strings,
+    Step as KeysStep,
 };
 use crate::menu::{Action, MenuKey, MenuOutcome, MenuPage, MenuSession, main_tree};
 use crate::passwords::{
@@ -433,6 +433,10 @@ impl MemberFlow {
                 )));
                 MemberEffect::Stay
             }
+            MenuOutcome::Action(Action::MyKeys) => {
+                self.page = Page::Keys(Box::new(KeysScreen::open(self.telnet)));
+                MemberEffect::Stay
+            }
             MenuOutcome::Action(Action::RecoveryCode) => {
                 self.page = Page::Recovery(Box::new(RecoveryScreen::open()));
                 MemberEffect::Stay
@@ -487,6 +491,7 @@ impl MemberFlow {
             | Action::LogOff
             | Action::SysopQueue
             | Action::RecoveryCode
+            | Action::MyKeys
             | Action::VouchQueue
             | Action::InviteCreate
             | Action::InviteList
@@ -739,10 +744,6 @@ impl MemberFlow {
                 self.page = Page::Password(Box::new(PasswordScreen::open(self.login)));
                 MemberEffect::Stay
             }
-            MemberInput::Char('k' | 'K') if self.access.allows(Permission::KeysManage) => {
-                self.page = Page::Keys(Box::new(KeysScreen::open(self.telnet)));
-                MemberEffect::Stay
-            }
             MemberInput::Char('b' | 'B') | MemberInput::Escape => {
                 self.page = Page::Home;
                 MemberEffect::Stay
@@ -817,12 +818,9 @@ impl MemberFlow {
     }
 
     fn after_keys(&mut self, step: KeysStep) {
-        let from_staff = matches!(self.page, Page::Recovery(_));
         match step {
             KeysStep::Stay => {}
-            KeysStep::Leave => {
-                self.page = if from_staff { Page::Home } else { Page::Settings };
-            }
+            KeysStep::Leave => self.page = Page::Home,
             KeysStep::Denied => {
                 self.page = Page::Home;
                 self.notice = Some(Notice {
@@ -1095,12 +1093,6 @@ impl MemberFlow {
             view.menu.push(MenuItemView {
                 key: 's',
                 label: password_strings::MENU_PASSWORD,
-            });
-        }
-        if self.access.allows(Permission::KeysManage) {
-            view.menu.push(MenuItemView {
-                key: 'k',
-                label: keys_strings::MENU_KEYS,
             });
         }
         view.menu.push(MenuItemView {
