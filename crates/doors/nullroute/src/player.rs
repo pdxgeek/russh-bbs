@@ -24,6 +24,17 @@ pub const JACK_IN_CYCLES: u32 = 5;
 pub const MAX_CATCH_UP_DAYS: i64 = 7;
 /// Heat is capped here.
 pub const HEAT_MAX: u32 = 100;
+
+/// Heat at which proxies cost half as much again.
+pub const HEAT_PROXY: u32 = 30;
+/// Heat at which the hideout may be raided (the safe never is).
+pub const HEAT_RAID: u32 = 50;
+/// Heat at which tier-3 fixers stay away.
+pub const HEAT_TIER3: u32 = 60;
+/// Heat at which bots earn half.
+pub const HEAT_BOTS: u32 = 70;
+/// Heat at which tier-2 fixers stay away.
+pub const HEAT_TIER2: u32 = 85;
 /// Contract ids remembered as done.
 pub const DONE_MAX: usize = 48;
 /// The most fixers a save tracks.
@@ -546,7 +557,11 @@ impl Player {
     #[must_use]
     pub fn proxy_price(&self, content: &Content) -> u32 {
         let base = content.rig.hideout.proxy_cost;
-        if self.heat >= 30 { base * 3 / 2 } else { base }
+        if self.heat >= HEAT_PROXY {
+            base * 3 / 2
+        } else {
+            base
+        }
     }
 
     /// Buy a proxy for the next run.
@@ -610,7 +625,9 @@ impl Player {
                 fixer.name
             ));
         }
-        if (contract.tier == 3 && self.heat >= 60) || (contract.tier == 2 && self.heat >= 85) {
+        if (contract.tier == 3 && self.heat >= HEAT_TIER3)
+            || (contract.tier == 2 && self.heat >= HEAT_TIER2)
+        {
             return Some("Too hot: the fixer is staying away from you.".into());
         }
         if self.done.contains(&contract.id) {
@@ -833,14 +850,14 @@ impl Player {
             let mut rng = DoorRng::from_label(&format!("nullroute-night-{}", self.seed), night);
             if self.bots > 0 {
                 let mut income = u32::from(self.bots) * h.bot_income;
-                if self.heat >= 70 {
+                if self.heat >= HEAT_BOTS {
                     income /= 2;
                 }
                 self.marks = self.marks.saturating_add(income);
                 self.earned = self.earned.saturating_add(u64::from(income));
                 notes.push(format!("Your bots earned {income}."));
             }
-            if self.heat >= 50 && rng.chance(self.heat - 40, 100) {
+            if self.heat >= HEAT_RAID && rng.chance(self.heat - 40, 100) {
                 let lost = self.marks / 2;
                 self.marks -= lost;
                 let bot = if self.bots > 0 {

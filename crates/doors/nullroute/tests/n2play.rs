@@ -360,13 +360,10 @@ fn the_fight_screen_fits_the_door_area_with_its_hints_in_view() {
                     text.iter()
                         .rev()
                         .find(|r| !r.is_empty())
-                        .is_some_and(|r| r.contains("[x] break off")),
+                        .is_some_and(|r| r.contains("[x]break off")),
                     "{text:#?}"
                 );
-                assert!(
-                    text.iter()
-                        .any(|r| r.contains("integrity") || r.contains('#'))
-                );
+                assert!(text.iter().any(|r| r.contains("INTEGRITY")));
                 shown = true;
                 break;
             }
