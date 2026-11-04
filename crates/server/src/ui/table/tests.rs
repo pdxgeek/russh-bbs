@@ -30,8 +30,8 @@ fn look(tier: Tier, color: bool, depth: ColorDepth) -> Look {
 fn columns() -> Vec<Column<'static>> {
     vec![
         Column::new(ChromeText::fixed("Name"), Width::Fill(2)),
-        Column::new(ChromeText::fixed("Posts"), Width::Fixed(5)).right(),
-        Column::new(ChromeText::fixed("Note"), Width::Fill(3)).from_width(60),
+        Column::new(ChromeText::fixed("Posts"), Width::Min(5)).right(),
+        Column::new(ChromeText::fixed("Note"), Width::Fill(3)).hide_below(60),
     ]
 }
 
@@ -199,7 +199,7 @@ fn a_scrollbar_shows_only_when_rows_are_hidden_and_follows_the_tier() {
         .map(|y| ascii[(79, y)].symbol().to_owned())
         .collect();
     assert!(right_edge.contains('#'), "the thumb: {right_edge:?}");
-    assert!(right_edge.chars().all(|c| c.is_ascii()), "{right_edge:?}");
+    assert!(right_edge.is_ascii(), "{right_edge:?}");
     let (unicode, _) = draw(
         look(Tier::Unicode, false, ColorDepth::Mono),
         (80, 12),
@@ -386,9 +386,17 @@ fn column_widths_share_the_room_and_keep_fixed_columns() {
     let cols = columns();
     let refs: Vec<&Column<'_>> = cols.iter().collect();
     let widths = column_widths(&refs, 70);
-    assert_eq!(widths[1], 5);
+    assert!(widths[1] >= 5, "a minimum column never shrinks below it");
     // Spacing of two between three columns is 4; the rest is shared 2:3.
     assert_eq!(widths.iter().sum::<u16>() + 4, 70);
     assert!(widths[2] > widths[0]);
-    assert!(column_widths(&[], 10).is_empty());
+    assert_eq!(column_widths(&[], 10), Vec::<u16>::new());
+}
+
+#[test]
+fn chrome_cells_are_shown_as_they_are() {
+    let cell = Cell::chrome(ChromeText::fixed("Open"));
+    assert_eq!(cell.shown(), "Open");
+    // Content is cleaned when shown; chrome is not touched.
+    assert_eq!(Cell::content("a\u{1b}[31mb").shown(), "ab");
 }

@@ -313,7 +313,7 @@ pub(crate) fn render_content(frame: &mut Frame<'_>, screen: ContentScreen<'_>) {
         .clock(screen.clock)
         .hints(&hints)
         .draw(frame);
-    settings::boxed(
+    settings::boxed_flush(
         frame,
         body,
         screen.strings.text(keys::TITLE),

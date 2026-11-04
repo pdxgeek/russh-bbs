@@ -199,11 +199,7 @@ fn the_kind_is_a_word_in_the_title_in_every_tier() {
     // The ASCII tier's box is plain ASCII.
     let p = popup(PopupKind::Info, vec![PopupLine::plain("hi")], &keys);
     let ascii = draw((80, 24), Tier::Ascii, ColorDepth::Mono, Some(&p));
-    assert!(
-        row(&ascii, 11).chars().all(|c| c.is_ascii()),
-        "{}",
-        row(&ascii, 11)
-    );
+    assert!(row(&ascii, 11).is_ascii(), "{}", row(&ascii, 11));
 }
 
 #[test]
@@ -223,4 +219,10 @@ fn popup_content_is_sanitized_and_cannot_pose_as_a_marker() {
             assert!(!all.contains(banned), "{tier:?} {banned:?}");
         }
     }
+}
+
+#[test]
+fn a_popup_line_can_be_chrome() {
+    let line = PopupLine::chrome(ChromeText::fixed("Remove this post?"));
+    assert_eq!(line, PopupLine::plain("Remove this post?"));
 }

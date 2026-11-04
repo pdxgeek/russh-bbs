@@ -38,6 +38,13 @@ const MAX_WIDTH: u16 = 64;
 /// What a popup is for.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum PopupKind {
+    #[cfg_attr(
+        not(test),
+        expect(
+            dead_code,
+            reason = "part of the popup API; the info case is used by the screens UI-4 moves onto popups"
+        )
+    )]
     Info,
     Error,
     Confirm,
@@ -48,6 +55,10 @@ pub(crate) enum PopupKind {
 pub(crate) struct PopupLine(String);
 
 impl PopupLine {
+    #[cfg_attr(
+        not(test),
+        expect(dead_code, reason = "part of the popup API for chrome-only popups")
+    )]
     pub(crate) fn chrome(text: ChromeText<'_>) -> Self {
         Self(text.as_str().to_owned())
     }

@@ -134,8 +134,15 @@ impl Look {
 
 /// Draw `view` centered in the frame. The view's fixed fields are string-table keys (the member
 /// screens) or text (anything else); `strings` resolves the keys and leaves other text alone.
+#[cfg(test)]
 pub(crate) fn render(frame: &mut Frame<'_>, view: &View, look: Look, strings: &StringTable) {
-    render_in(frame, frame.area(), view, look, strings);
+    boxed(
+        frame,
+        frame.area(),
+        view.title,
+        lines(view, look, strings),
+        look,
+    );
 }
 
 /// Like [`render`], centred in `area` (the body a frame leaves for the screen).
@@ -146,7 +153,7 @@ pub(crate) fn render_in(
     look: Look,
     strings: &StringTable,
 ) {
-    boxed(frame, area, view.title, lines(view, look, strings), look);
+    boxed_flush(frame, area, view.title, lines(view, look, strings), look);
 }
 
 /// Draw `lines` in the bordered box, centered in `area`. Shared with the menu framework's
@@ -158,6 +165,29 @@ pub(crate) fn boxed(
     title: &str,
     lines: Vec<Line<'static>>,
     look: Look,
+) {
+    boxed_with(frame, area, title, lines, look, true);
+}
+
+/// Like [`boxed`] for a body the frame already insets (between its header and status bars): the
+/// box fills the body's height, with no extra margin.
+pub(crate) fn boxed_flush(
+    frame: &mut Frame<'_>,
+    area: Rect,
+    title: &str,
+    lines: Vec<Line<'static>>,
+    look: Look,
+) {
+    boxed_with(frame, area, title, lines, look, false);
+}
+
+fn boxed_with(
+    frame: &mut Frame<'_>,
+    area: Rect,
+    title: &str,
+    lines: Vec<Line<'static>>,
+    look: Look,
+    margin: bool,
 ) {
     let [_, middle, _] = Layout::horizontal([
         Constraint::Fill(1),
@@ -180,7 +210,7 @@ pub(crate) fn boxed(
     let paragraph = Paragraph::new(lines)
         .wrap(Wrap { trim: false })
         .block(block);
-    frame.render_widget(paragraph, fit(middle));
+    frame.render_widget(paragraph, if margin { fit(middle) } else { middle });
 }
 
 /// The columns and rows inside the box [`boxed`] draws in `area`: what a caller has to fit its

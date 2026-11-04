@@ -154,7 +154,7 @@ fn state_hints(state: &State) -> Vec<Hint<'static>> {
             }
             hints.push(hint("n/b", "page"));
             hints.push(hint("s", "search"));
-            if page.can_feeds && !page.board.restricted || page.board.feed && page.can_feeds {
+            if page.can_feeds && (!page.board.restricted || page.board.feed) {
                 hints.push(hint("p", "public RSS"));
             }
             if page.board.feed && page.can_feeds {
@@ -230,8 +230,10 @@ fn render_reader(
     }
 }
 
+/// An info notice as a line in a prompt screen. A problem is not drawn here: it is a modal
+/// popup over the screen (see [`render`]).
 fn notice(screen: &ForumsScreen, ctx: &DrawCtx<'_>, out: &mut Vec<Line<'static>>) {
-    if let Some((kind, text)) = &screen.notice {
+    if let Some((kind @ NoticeKind::Info, text)) = &screen.notice {
         let (bold, _, _, _) = classic::styles(ctx.look);
         out.push(classic::notice_line(
             ctx.strings,
@@ -284,7 +286,7 @@ fn board_table(
     let columns = vec![
         Column::new(ChromeText::fixed("Board"), Width::Fill(2)),
         Column::new(ChromeText::fixed("Threads"), Width::Fixed(7)).right(),
-        Column::new(ChromeText::fixed("About"), Width::Fill(3)).from_width(60),
+        Column::new(ChromeText::fixed("About"), Width::Fill(3)).hide_below(60),
     ];
     let rows: Vec<TableRow> = list
         .boards
@@ -334,9 +336,9 @@ fn thread_table(
 ) {
     let columns = vec![
         Column::new(ChromeText::fixed("Subject"), Width::Fill(3)),
-        Column::new(ChromeText::fixed("From"), Width::Fixed(14)).from_width(60),
+        Column::new(ChromeText::fixed("From"), Width::Fixed(14)).hide_below(60),
         Column::new(ChromeText::fixed("Posts"), Width::Fixed(5)).right(),
-        Column::new(ChromeText::fixed("Last post"), Width::Fixed(20)).from_width(78),
+        Column::new(ChromeText::fixed("Last post"), Width::Fixed(20)).hide_below(78),
     ];
     let rows: Vec<TableRow> = page
         .threads
@@ -395,7 +397,7 @@ fn result_table(
     cursor: usize,
 ) {
     let columns = vec![
-        Column::new(ChromeText::fixed("Board"), Width::Fixed(16)).from_width(60),
+        Column::new(ChromeText::fixed("Board"), Width::Fixed(16)).hide_below(60),
         Column::new(ChromeText::fixed("Subject"), Width::Fill(1)),
     ];
     let rows: Vec<TableRow> = page
@@ -470,13 +472,12 @@ fn draw_info(
 fn lines(screen: &ForumsScreen, ctx: &DrawCtx<'_>) -> Vec<Line<'static>> {
     let (_, dim, heading, _) = classic::styles(ctx.look);
     let mut out = Vec::new();
-    match &screen.state {
-        State::Input(input) => input_lines(screen, input, heading, dim, ctx, &mut out),
-        _ => {
-            out.push(Line::styled(strings::TITLE_BOARDS.to_owned(), heading));
-            out.push(Line::raw(""));
-            notice(screen, ctx, &mut out);
-        }
+    if let State::Input(input) = &screen.state {
+        input_lines(screen, input, heading, dim, ctx, &mut out);
+    } else {
+        out.push(Line::styled(strings::TITLE_BOARDS.to_owned(), heading));
+        out.push(Line::raw(""));
+        notice(screen, ctx, &mut out);
     }
     out
 }

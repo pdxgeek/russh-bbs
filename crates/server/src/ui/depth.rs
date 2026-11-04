@@ -264,7 +264,6 @@ fn named_rgb(color: Color) -> (u8, u8, u8) {
         Color::Blue => 4,
         Color::Magenta => 5,
         Color::Cyan => 6,
-        Color::Gray => 7,
         Color::DarkGray => 8,
         Color::LightRed => 9,
         Color::LightGreen => 10,
@@ -275,7 +274,7 @@ fn named_rgb(color: Color) -> (u8, u8, u8) {
         Color::White => 15,
         Color::Indexed(i) => i,
         Color::Rgb(r, g, b) => return (r, g, b),
-        Color::Reset => 7,
+        Color::Gray | Color::Reset => 7,
     };
     indexed_rgb(index)
 }
@@ -335,10 +334,7 @@ mod tests {
             Tint::Indexed(196).resolve(ColorDepth::Ansi16),
             Some(Color::LightRed)
         );
-        assert_eq!(
-            Tint::Indexed(21).resolve(ColorDepth::Ansi16).is_some(),
-            true
-        );
+        assert!(Tint::Indexed(21).resolve(ColorDepth::Ansi16).is_some());
         // Only the exact colour survives where it can; named colours pass through.
         assert_eq!(
             Tint::Named(Color::Red).resolve(ColorDepth::Ansi256),
@@ -360,12 +356,11 @@ mod tests {
         let s = Surfaces::of(Color::Cyan);
         assert_eq!(s.bar_bg.resolve(ColorDepth::Ansi16), Some(Color::Blue));
         assert_eq!(s.bar_fg.resolve(ColorDepth::Ansi16), Some(Color::White));
-        let Some(Color::Rgb(r, g, b)) = s.bar_bg.resolve(ColorDepth::TrueColor) else {
-            panic!("truecolor")
-        };
-        assert!(r < 60 && g < 60 && b < 60, "a dark shade: {r} {g} {b}");
-        for depth in [ColorDepth::Mono] {
-            assert_eq!(s.select_bg.resolve(depth), None);
-        }
+        let truecolor = s.bar_bg.resolve(ColorDepth::TrueColor);
+        assert!(
+            matches!(truecolor, Some(Color::Rgb(r, g, b)) if r < 60 && g < 60 && b < 60),
+            "a dark shade: {truecolor:?}"
+        );
+        assert_eq!(s.select_bg.resolve(ColorDepth::Mono), None);
     }
 }

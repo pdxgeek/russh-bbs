@@ -168,7 +168,7 @@ impl<'a> FrameSpec<'a> {
         };
         let header =
             (self.header && area.height >= HEADER_MIN_ROWS && area.width >= HEADER_MIN_COLS)
-                .then(|| Rect { height: 1, ..area });
+                .then_some(Rect { height: 1, ..area });
         let top = u16::from(header.is_some());
         let body = Rect {
             y: area.y + top,

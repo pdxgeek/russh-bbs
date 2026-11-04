@@ -59,6 +59,10 @@ pub(crate) enum Width {
     /// Exactly this many columns.
     Fixed(u16),
     /// At least this many, taking no more than its content (never shrinks below the minimum).
+    #[cfg_attr(
+        not(test),
+        expect(dead_code, reason = "part of the table API for later screens")
+    )]
     Min(u16),
     /// A share of what is left, by weight.
     Fill(u16),
@@ -93,7 +97,7 @@ impl<'a> Column<'a> {
 
     /// Drop this column when the table's inner width is below `width`.
     #[must_use]
-    pub(crate) const fn from_width(mut self, width: u16) -> Self {
+    pub(crate) const fn hide_below(mut self, width: u16) -> Self {
         self.shown_from = width;
         self
     }
@@ -130,6 +134,10 @@ impl Cell {
     }
 
     /// Fixed chrome words.
+    #[cfg_attr(
+        not(test),
+        expect(dead_code, reason = "part of the table API for later screens")
+    )]
     pub(crate) fn chrome(text: ChromeText<'_>) -> Self {
         Self {
             text: text_of(text),
@@ -291,23 +299,54 @@ pub(crate) fn clip(text: &str, width: usize, ascii: bool) -> String {
     out
 }
 
-/// Draw the table in `area` and return the window it drew.
-pub(crate) fn render(
-    frame: &mut Frame<'_>,
-    area: Rect,
-    look: Look,
-    spec: &TableSpec<'_>,
-) -> TableView {
-    let block = if spec.bordered {
-        framed(look, spec.title.text())
-    } else {
-        Block::default()
-    };
-    let inner = block.inner(area);
-    frame.render_widget(block, area);
-    if inner.width == 0 || inner.height == 0 {
-        return TableView::default();
+/// Where everything goes, worked out before anything is drawn.
+struct Plan {
+    row_height: u16,
+    header_rows: u16,
+    footer_rows: u16,
+    data_area: Rect,
+    top: usize,
+    shown: usize,
+    selected: Option<usize>,
+    /// Indexes of the columns that fit, and their widths.
+    shown_at: Vec<usize>,
+    widths: Vec<u16>,
+    number_width: u16,
+}
+
+/// The styles a table paints with at the look's depth.
+struct Paint {
+    head: Style,
+    select: Style,
+    stripe: Style,
+    key: Style,
+    dim: Style,
+}
+
+impl Paint {
+    fn of(look: Look) -> Self {
+        let surfaces = look.surfaces();
+        Self {
+            head: Style::new()
+                .add_modifier(Modifier::BOLD | Modifier::UNDERLINED)
+                .patch(look.bg(surfaces.head_bg))
+                .patch(look.fg(surfaces.bar_fg)),
+            select: Style::new()
+                .add_modifier(Modifier::BOLD | Modifier::UNDERLINED)
+                .patch(look.bg(surfaces.select_bg))
+                .patch(look.fg(surfaces.select_fg)),
+            stripe: look.bg(surfaces.stripe_bg),
+            key: look.accent(
+                Style::new().add_modifier(Modifier::BOLD),
+                look.palette().key,
+            ),
+            dim: Style::new().add_modifier(Modifier::DIM),
+        }
     }
+}
+
+/// Work out the window and the columns for `spec` in `inner`.
+fn plan(spec: &TableSpec<'_>, inner: Rect) -> Plan {
     let total = spec.rows.len();
     let two_line = spec.rows.iter().any(|row| row.detail.is_some());
     let row_height = if two_line { 2 } else { 1 };
@@ -327,161 +366,82 @@ pub(crate) fn render(
         }
     }
     let shown = visible.min(total.saturating_sub(top));
-
-    // The scrollbar sits on the right border, so the table keeps its columns.
-    let overflow = total > shown;
-    let body_width = inner.width;
     // Columns that give way on a narrow table are dropped with their cells.
     let shown_at: Vec<usize> = spec
         .columns
         .iter()
         .enumerate()
-        .filter(|(_, column)| column.shown_from <= body_width)
+        .filter(|(_, column)| column.shown_from <= inner.width)
         .map(|(at, _)| at)
         .collect();
     let columns: Vec<&Column<'_>> = shown_at.iter().map(|at| &spec.columns[*at]).collect();
     let number_width = u16::from(spec.numbered) * 3;
     // One column of air before the right border (and the scrollbar).
-    let widths = column_widths(&columns, body_width.saturating_sub(3 + number_width));
+    let widths = column_widths(&columns, inner.width.saturating_sub(3 + number_width));
+    Plan {
+        row_height,
+        header_rows,
+        footer_rows,
+        data_area: Rect {
+            y: inner.y + header_rows,
+            height: data_height,
+            ..inner
+        },
+        top,
+        shown,
+        selected,
+        shown_at,
+        widths,
+        number_width,
+    }
+}
 
-    let ascii = look.ascii();
-    let surfaces = look.surfaces();
-    let head_style = Style::new()
-        .add_modifier(Modifier::BOLD | Modifier::UNDERLINED)
-        .patch(look.bg(surfaces.head_bg))
-        .patch(look.fg(surfaces.bar_fg));
-    let select_style = Style::new()
-        .add_modifier(Modifier::BOLD | Modifier::UNDERLINED)
-        .patch(look.bg(surfaces.select_bg))
-        .patch(look.fg(surfaces.select_fg));
-    let stripe_style = look.bg(surfaces.stripe_bg);
-    let key_style = look.accent(
-        Style::new().add_modifier(Modifier::BOLD),
-        look.palette().key,
-    );
-    let dim = Style::new().add_modifier(Modifier::DIM);
-
-    let cells_of = |row: &TableRow| -> Vec<Line<'static>> {
-        let picked = shown_at.iter().filter_map(|at| row.cells.get(*at));
-        picked
-            .zip(columns.iter().zip(&widths))
-            .map(|(cell, (column, width))| {
-                let text = clip(&cell.shown(), usize::from(*width), ascii);
-                let style = match cell.style {
-                    CellStyle::Plain => Style::new(),
-                    CellStyle::Dim => dim,
-                    CellStyle::Key => key_style,
-                    CellStyle::Bold => Style::new().add_modifier(Modifier::BOLD),
-                };
-                let line = Line::from(Span::styled(text, style));
-                if column.align_right {
-                    line.alignment(Alignment::Right)
-                } else {
-                    line
-                }
-            })
-            .collect()
+/// Draw the table in `area` and return the window it drew.
+pub(crate) fn render(
+    frame: &mut Frame<'_>,
+    area: Rect,
+    look: Look,
+    spec: &TableSpec<'_>,
+) -> TableView {
+    let block = if spec.bordered {
+        framed(look, spec.title.text())
+    } else {
+        Block::default()
     };
-
-    let data_area = Rect {
-        y: inner.y + header_rows,
-        height: data_height,
-        ..inner
-    };
-    if header_rows == 1 {
+    let inner = block.inner(area);
+    frame.render_widget(block, area);
+    if inner.width == 0 || inner.height == 0 {
+        return TableView::default();
+    }
+    let plan = plan(spec, inner);
+    let paint = Paint::of(look);
+    let columns: Vec<&Column<'_>> = plan.shown_at.iter().map(|at| &spec.columns[*at]).collect();
+    if plan.header_rows == 1 {
         draw_header(
             frame,
             inner,
             &columns,
-            &widths,
+            &plan.widths,
             spec.numbered,
-            head_style,
-            ascii,
+            paint.head,
+            look.ascii(),
         );
     }
-    if total == 0 {
-        let message =
-            Paragraph::new(Line::styled(spec.empty.to_owned(), dim)).alignment(Alignment::Center);
-        frame.render_widget(message, data_area);
+    if spec.rows.is_empty() {
+        let message = Paragraph::new(Line::styled(spec.empty.to_owned(), paint.dim))
+            .alignment(Alignment::Center);
+        // Centred in the space the rows would have had.
+        let data = plan.data_area;
+        let middle = Rect {
+            y: data.y + data.height.saturating_sub(1) / 2,
+            height: data.height.min(1),
+            ..data
+        };
+        frame.render_widget(message, middle);
         return TableView::default();
     }
-    // Rows are drawn one by one into their own rectangles: the pointer, the stripe and an
-    // optional detail line then never depend on how a table widget measures its cells.
-    let pointer = "> ";
-    for (offset, at) in (top..top + shown).enumerate() {
-        let Ok(offset) = u16::try_from(offset) else {
-            break;
-        };
-        let y = data_area.y + offset * row_height;
-        if y >= data_area.y + data_area.height {
-            break;
-        }
-        let row_area = Rect {
-            y,
-            height: row_height.min(data_area.y + data_area.height - y),
-            ..data_area
-        };
-        let row = &spec.rows[at];
-        let chosen = selected == Some(at);
-        let first = Rect {
-            height: 1,
-            ..row_area
-        };
-        let base = if chosen {
-            select_style
-        } else if at % 2 == 1 {
-            stripe_style
-        } else {
-            Style::new()
-        };
-        frame.render_widget(Block::default().style(base), row_area);
-        // The pointer column: a word-free cue that survives a mono terminal.
-        let lead = Rect {
-            width: (2 + number_width).min(first.width),
-            ..first
-        };
-        let lead_text = if chosen { pointer } else { "  " };
-        let number = at - top + 1;
-        let number_text = if spec.numbered && number <= 9 {
-            format!("{number}.")
-        } else {
-            String::new()
-        };
-        frame.render_widget(
-            Paragraph::new(Line::from(vec![
-                Span::styled(lead_text.to_owned(), base.patch(key_style)),
-                Span::styled(number_text, base.patch(key_style)),
-            ])),
-            lead,
-        );
-        let table_area = Rect {
-            x: first.x + lead.width,
-            width: first.width.saturating_sub(lead.width),
-            ..first
-        };
-        draw_cells(frame, table_area, &widths, cells_of(row));
-        if let (Some(detail), true) = (&row.detail, row_area.height >= 2) {
-            let second = Rect {
-                y: row_area.y + 1,
-                height: 1,
-                ..row_area
-            };
-            let indent = usize::from(2 + number_width);
-            let text = clip(
-                &detail.shown(),
-                usize::from(second.width).saturating_sub(indent),
-                ascii,
-            );
-            frame.render_widget(
-                Paragraph::new(Line::from(vec![
-                    Span::styled(" ".repeat(indent), base),
-                    Span::styled(text, base.patch(dim)),
-                ])),
-                second,
-            );
-        }
-    }
-    if footer_rows == 1
+    draw_rows(frame, spec, &plan, &columns, &paint, look);
+    if plan.footer_rows == 1
         && let Some(footer) = &spec.footer
     {
         let footer_area = Rect {
@@ -491,34 +451,173 @@ pub(crate) fn render(
         };
         frame.render_widget(
             Paragraph::new(Line::styled(
-                clip(footer, usize::from(inner.width), ascii),
-                dim,
+                clip(footer, usize::from(inner.width), look.ascii()),
+                paint.dim,
             )),
             footer_area,
         );
     }
-    if overflow {
-        let mut bar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
-            .begin_symbol(None)
-            .end_symbol(None)
-            .style(look.accent(Style::new(), look.palette().border));
-        if ascii {
-            bar = bar.track_symbol(Some("|")).thumb_symbol("#");
-        } else {
-            bar = bar.track_symbol(Some("\u{2502}")).thumb_symbol("\u{2588}");
-        }
-        let mut state = ScrollbarState::new(total.saturating_sub(shown)).position(top);
-        let track = if spec.bordered {
-            area.inner(Margin {
-                vertical: 1,
-                horizontal: 0,
-            })
-        } else {
-            area
-        };
-        frame.render_stateful_widget(bar, track, &mut state);
+    if spec.rows.len() > plan.shown {
+        draw_scrollbar(frame, area, spec, &plan, look);
     }
-    TableView { top, shown }
+    TableView {
+        top: plan.top,
+        shown: plan.shown,
+    }
+}
+
+/// The cells of one row as lines, one per shown column.
+fn cells_of(
+    row: &TableRow,
+    plan: &Plan,
+    columns: &[&Column<'_>],
+    paint: &Paint,
+    ascii: bool,
+) -> Vec<Line<'static>> {
+    plan.shown_at
+        .iter()
+        .filter_map(|at| row.cells.get(*at))
+        .zip(columns.iter().zip(&plan.widths))
+        .map(|(cell, (column, width))| {
+            let text = clip(&cell.shown(), usize::from(*width), ascii);
+            let style = match cell.style {
+                CellStyle::Plain => Style::new(),
+                CellStyle::Dim => paint.dim,
+                CellStyle::Key => paint.key,
+                CellStyle::Bold => Style::new().add_modifier(Modifier::BOLD),
+            };
+            let line = Line::from(Span::styled(text, style));
+            if column.align_right {
+                line.alignment(Alignment::Right)
+            } else {
+                line
+            }
+        })
+        .collect()
+}
+
+/// Draw the visible rows. Each is drawn into its own rectangle, so the pointer, the stripe and
+/// an optional detail line never depend on how a table widget measures its cells.
+fn draw_rows(
+    frame: &mut Frame<'_>,
+    spec: &TableSpec<'_>,
+    plan: &Plan,
+    columns: &[&Column<'_>],
+    paint: &Paint,
+    look: Look,
+) {
+    let ascii = look.ascii();
+    let data = plan.data_area;
+    for (offset, at) in (plan.top..plan.top + plan.shown).enumerate() {
+        let Ok(offset) = u16::try_from(offset) else {
+            break;
+        };
+        let y = data.y + offset * plan.row_height;
+        if y >= data.y + data.height {
+            break;
+        }
+        let row_area = Rect {
+            y,
+            height: plan.row_height.min(data.y + data.height - y),
+            ..data
+        };
+        let row = &spec.rows[at];
+        let chosen = plan.selected == Some(at);
+        let first = Rect {
+            height: 1,
+            ..row_area
+        };
+        let base = if chosen {
+            paint.select
+        } else if at % 2 == 1 {
+            paint.stripe
+        } else {
+            Style::new()
+        };
+        frame.render_widget(Block::default().style(base), row_area);
+        // The pointer column: a word-free cue that survives a mono terminal.
+        let lead = Rect {
+            width: (2 + plan.number_width).min(first.width),
+            ..first
+        };
+        let number = at - plan.top + 1;
+        let number_text = if spec.numbered && number <= 9 {
+            format!("{number}.")
+        } else {
+            String::new()
+        };
+        frame.render_widget(
+            Paragraph::new(Line::from(vec![
+                Span::styled(
+                    if chosen { "> " } else { "  " }.to_owned(),
+                    base.patch(paint.key),
+                ),
+                Span::styled(number_text, base.patch(paint.key)),
+            ])),
+            lead,
+        );
+        let table_area = Rect {
+            x: first.x + lead.width,
+            width: first.width.saturating_sub(lead.width),
+            ..first
+        };
+        draw_cells(
+            frame,
+            table_area,
+            &plan.widths,
+            cells_of(row, plan, columns, paint, ascii),
+        );
+        if let (Some(detail), true) = (&row.detail, row_area.height >= 2) {
+            let second = Rect {
+                y: row_area.y + 1,
+                height: 1,
+                ..row_area
+            };
+            let indent = usize::from(2 + plan.number_width);
+            let text = clip(
+                &detail.shown(),
+                usize::from(second.width).saturating_sub(indent),
+                ascii,
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" ".repeat(indent), base),
+                    Span::styled(text, base.patch(paint.dim)),
+                ])),
+                second,
+            );
+        }
+    }
+}
+
+/// The scrollbar on the right border (or the right edge of a borderless table).
+fn draw_scrollbar(
+    frame: &mut Frame<'_>,
+    area: Rect,
+    spec: &TableSpec<'_>,
+    plan: &Plan,
+    look: Look,
+) {
+    let mut bar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
+        .begin_symbol(None)
+        .end_symbol(None)
+        .style(look.accent(Style::new(), look.palette().border));
+    bar = if look.ascii() {
+        bar.track_symbol(Some("|")).thumb_symbol("#")
+    } else {
+        bar.track_symbol(Some("\u{2502}")).thumb_symbol("\u{2588}")
+    };
+    let mut state =
+        ScrollbarState::new(spec.rows.len().saturating_sub(plan.shown)).position(plan.top);
+    let track = if spec.bordered {
+        area.inner(Margin {
+            vertical: 1,
+            horizontal: 0,
+        })
+    } else {
+        area
+    };
+    frame.render_stateful_widget(bar, track, &mut state);
 }
 
 fn draw_header(
