@@ -225,7 +225,11 @@ fn every_screen_draws_at_80_by_24_without_trouble() {
         live.choose(menu);
         let rows = draw(&live);
         assert_eq!(rows.len(), 24);
-        assert!(rows.iter().any(|l| l.contains("Turns")), "{menu}");
+        assert!(rows.iter().any(|l| l.contains("turns")), "{menu}");
+        assert!(
+            rows.iter().any(|l| l.contains("TIDE")),
+            "the tide strip is on every screen: {menu}"
+        );
         let text = live.screen().join("\n");
         assert!(!text.contains('\u{1b}') && text.contains("Turns"), "{menu}");
         live.key(DoorKey::Escape);
@@ -534,6 +538,47 @@ fn the_door_is_registered_under_its_id_and_has_a_tick() {
     assert!(door.has_daily_tick());
     assert_eq!(
         (door.info().save_version, door.info().world_version),
-        (2, 1)
+        (2, 2)
+    );
+}
+
+#[test]
+fn a_version_one_world_migrates_through_the_door_and_a_newer_one_is_not_understood() {
+    use russh_bbs_door::{BlobKind, MigrateError};
+    use russh_bbs_door_saltmarch::codec::Writer;
+    use russh_bbs_door_saltmarch::types::{RESOURCES, Resource};
+    use russh_bbs_door_saltmarch::world::World;
+    // What version 1 wrote: no score per clan and no price history.
+    let mut w = Writer::new();
+    w.u32(1);
+    w.u64(9);
+    w.i64(DAY);
+    w.i64(DAY + 2);
+    for r in Resource::ALL {
+        w.u16(r.base_price() * 100);
+    }
+    for _ in 0..RESOURCES {
+        w.u32(0);
+    }
+    w.count(2);
+    for (name, site) in [("Brindle", 3u8), ("Cove", 7)] {
+        w.str(name);
+        w.u8(site);
+    }
+    let v1 = w.finish();
+    let door = door();
+    let v2 = door.migrate(BlobKind::World, 1, &v1).unwrap();
+    let world = World::decode(&v2).unwrap();
+    assert_eq!(world.clans.len(), 2);
+    assert!(world.clans.iter().all(|c| c.score == 0));
+    assert!(world.history.is_empty());
+    assert_eq!(world.last_tick, DAY + 2);
+    assert_eq!(
+        door.migrate(BlobKind::World, 1, &v1[..12]),
+        Err(MigrateError::Corrupt(1))
+    );
+    assert_eq!(
+        door.migrate(BlobKind::World, 2, &v2),
+        Err(MigrateError::Unsupported(2))
     );
 }

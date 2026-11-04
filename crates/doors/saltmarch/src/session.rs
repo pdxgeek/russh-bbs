@@ -18,6 +18,7 @@ use crate::types::{Resource, Track, Trade};
 use crate::world::World;
 
 mod trip_ui;
+mod ui;
 
 use trip_ui::{Edit, Plan};
 
@@ -35,6 +36,16 @@ enum MenuId {
     Tides,
     Plan,
     Trip,
+    /// The marsh chart, seen from the hold.
+    Map,
+    /// The Tidecourt: the town square.
+    Court,
+    /// The post.
+    Letters,
+    /// The league table.
+    League,
+    /// The Hall of Tides.
+    Hall,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -99,6 +110,16 @@ pub(crate) struct Session {
     report: Vec<String>,
     dirty: bool,
     plan: Plan,
+    /// The lightbar: an index into the menu's entries.
+    cursor: usize,
+    /// The crew member on the roster's highlight.
+    crew_sel: usize,
+    /// How far the marsh chart is panned from the hold, in tiles.
+    pan: (i16, i16),
+    /// What the nights brought, for the morning report's dashboard.
+    ledger: Vec<Event>,
+    /// The score last written to the league table.
+    scored: u32,
     /// The last search of the marsh, kept while the party stands still.
     reach: Mutex<Option<(ReachKey, Arc<Reach>)>>,
 }
@@ -141,6 +162,7 @@ impl Session {
         let map = Map::generate(world.seed, &cat.pois);
         let tide = Tide::new(world.seed);
         let mut report = Vec::new();
+        let mut ledger = Vec::new();
         // Nothing is written until the first key; a provisional world or a new season is.
         let mut dirty = rolled || (!world_stored && clan.is_some());
         if let Some(c) = clan.as_mut() {
@@ -165,6 +187,7 @@ impl Session {
             let events = engine::catch_up(&env, c, today);
             dirty |= !events.is_empty();
             report = morning_report(&events);
+            ledger = events;
         }
         let mode = if unreadable {
             Mode::Unreadable
@@ -191,6 +214,11 @@ impl Session {
             report,
             dirty,
             plan: Plan::default(),
+            cursor: 0,
+            crew_sel: 0,
+            pan: (0, 0),
+            ledger,
+            scored: 0,
             reach: Mutex::new(None),
         }
     }
@@ -226,9 +254,18 @@ impl Session {
         });
     }
 
-    fn save(&self, ctx: &mut Ctx<'_>) {
-        if let Some(c) = &self.clan {
-            ctx.request_save(c.encode());
+    fn save(&mut self, ctx: &mut Ctx<'_>) {
+        let Some(c) = &self.clan else { return };
+        ctx.request_save(c.encode());
+        // The league table reads the score the clan had when it was last saved.
+        let score = c.score(&self.cat);
+        if score != self.scored {
+            self.scored = score;
+            let (season, name) = (self.world.season, c.name.clone());
+            ctx.edit_world(move |old| {
+                let mut w = old.and_then(World::decode).filter(|w| w.season == season)?;
+                w.set_score(&name, score).then(|| w.encode())
+            });
         }
     }
 
@@ -261,6 +298,7 @@ impl Session {
             if let Some(mut clan) = self.clan.take() {
                 let events = engine::catch_up(&self.env(), &mut clan, today);
                 self.report = morning_report(&events);
+                self.ledger = events;
                 self.dirty = true;
                 self.clan = Some(clan);
                 if matches!(self.mode, Mode::Menu(MenuId::Trip | MenuId::Plan)) {
@@ -310,6 +348,16 @@ impl Session {
                     "go:tides",
                     "Today's tide table",
                     Act::Go(MenuId::Tides),
+                ));
+                out.push(entry(
+                    "go:map",
+                    "The marsh chart: charted ground and the tide",
+                    Act::Go(MenuId::Map),
+                ));
+                out.push(entry(
+                    "go:court",
+                    "The Tidecourt: league, hall and the post",
+                    Act::Go(MenuId::Court),
                 ));
                 out.push(entry(
                     "survey",
@@ -548,7 +596,30 @@ impl Session {
                     ));
                 }
             }
-            MenuId::Tides => {}
+            MenuId::Tides | MenuId::Map | MenuId::Letters | MenuId::League | MenuId::Hall => {}
+            MenuId::Court => {
+                out.push(entry(
+                    "go:market",
+                    "The market: prices, sales and purchases",
+                    Act::Go(MenuId::Market),
+                ));
+                out.push(entry(
+                    "go:league",
+                    "The league table",
+                    Act::Go(MenuId::League),
+                ));
+                out.push(entry("go:hall", "The Hall of Tides", Act::Go(MenuId::Hall)));
+                out.push(entry(
+                    "go:letters",
+                    "The post: letters and notices",
+                    Act::Go(MenuId::Letters),
+                ));
+                out.push(entry(
+                    "go:tides",
+                    "The quay: the tide table",
+                    Act::Go(MenuId::Tides),
+                ));
+            }
             MenuId::Plan => out = self.plan_entries(clan),
             MenuId::Trip => out = self.trip_entries(clan),
         }
@@ -779,7 +850,11 @@ impl DoorSession for Session {
                     if menu == MenuId::Main || menu == MenuId::Trip {
                         return Flow::Exit;
                     }
-                    self.mode = Mode::Menu(MenuId::Main);
+                    self.mode = Mode::Menu(match menu {
+                        MenuId::Letters | MenuId::League | MenuId::Hall => MenuId::Court,
+                        _ => MenuId::Main,
+                    });
+                    self.cursor = 0;
                     self.notes.clear();
                     return Flow::Stay;
                 }
@@ -787,24 +862,33 @@ impl DoorSession for Session {
                     self.mode = Mode::Menu(MenuId::Main);
                     return Flow::Stay;
                 }
-                let DoorKey::Char(c) = key else {
-                    return Flow::Stay;
+                let entries = self.entries();
+                let index = match key {
+                    DoorKey::Char(c) => {
+                        let Some(i) = u32::from(c.to_ascii_lowercase()).checked_sub(u32::from('a'))
+                        else {
+                            return Flow::Stay;
+                        };
+                        usize::try_from(i).unwrap_or(usize::MAX)
+                    }
+                    DoorKey::Enter => self.cursor,
+                    _ => match self.arrow(menu, key, &entries) {
+                        Some(walk) => walk,
+                        None => return Flow::Stay,
+                    },
                 };
-                let Some(index) = u32::from(c.to_ascii_lowercase()).checked_sub(u32::from('a'))
-                else {
-                    return Flow::Stay;
-                };
-                let mut entries = self.entries();
-                let index = usize::try_from(index).unwrap_or(usize::MAX);
+                let mut entries = entries;
                 if index >= entries.len() {
                     return Flow::Stay;
                 }
+                self.cursor = index;
                 match entries.swap_remove(index).act {
                     Act::Go(next) => {
                         if next == MenuId::Plan {
                             self.plan = Plan::default();
                         }
                         self.mode = Mode::Menu(next);
+                        self.cursor = 0;
                         self.notes.clear();
                     }
                     Act::Edit(e) => self.edit(e),
@@ -816,20 +900,82 @@ impl DoorSession for Session {
         Flow::Stay
     }
 
-    fn render(&self, canvas: &mut Canvas<'_>, _env: &DoorEnv) {
+    fn render(&self, canvas: &mut Canvas<'_>, env: &DoorEnv) {
         canvas.clear();
-        for (y, (text, style)) in self.lines().iter().enumerate() {
-            let Ok(y) = u16::try_from(y) else { break };
-            canvas.text(1, y, text, *style);
-        }
+        ui::draw(self, canvas, env);
     }
 
     fn look_around(&self, _env: &DoorEnv) -> Vec<String> {
-        self.lines().into_iter().map(|(text, _)| text).collect()
+        let mut out: Vec<String> = self.lines().into_iter().map(|(text, _)| text).collect();
+        out.extend(ui::describe(self));
+        out
     }
 }
 
 impl Session {
+    /// An arrow key: it moves what the screen has to move (the lightbar, the roster, the chart)
+    /// or, on the marsh, takes a step.
+    fn arrow(&mut self, menu: MenuId, key: DoorKey, entries: &[Entry]) -> Option<usize> {
+        let (dx, dy) = match key {
+            DoorKey::Up => (0, -1),
+            DoorKey::Down => (0, 1),
+            DoorKey::Left => (-1, 0),
+            DoorKey::Right => (1, 0),
+            _ => return None,
+        };
+        match menu {
+            MenuId::Map => {
+                let step = |v: i16, d: i16| (v + d * 4).clamp(-40, 40);
+                self.pan = (step(self.pan.0, dx), step(self.pan.1, dy));
+            }
+            MenuId::Crew => {
+                let n = self.clan.as_ref().map_or(0, |c| c.crew.len());
+                if dy != 0 && n > 0 {
+                    let to = i32::try_from(self.crew_sel).unwrap_or(0) + i32::from(dy);
+                    self.crew_sel =
+                        usize::try_from(to.rem_euclid(i32::try_from(n).unwrap_or(1))).unwrap_or(0);
+                    self.cursor = 0;
+                } else if dx != 0 {
+                    self.move_cursor(entries, dx);
+                }
+            }
+            _ => {
+                let on_marsh = menu == MenuId::Trip
+                    && self.clan.as_ref().is_some_and(|c| {
+                        c.trip
+                            .as_ref()
+                            .is_some_and(|t| matches!(t.phase, crate::trip::Phase::Free))
+                    });
+                if on_marsh {
+                    // Arrows walk: one tile, if the marsh lets the party.
+                    let letter = match (dx, dy) {
+                        (0, -1) => 'n',
+                        (1, 0) => 'e',
+                        (0, 1) => 's',
+                        _ => 'w',
+                    };
+                    let tag = format!("step:{letter}");
+                    return entries.iter().position(|e| e.tag == tag);
+                } else {
+                    self.move_cursor(entries, if dy != 0 { dy } else { dx });
+                }
+            }
+        }
+        None
+    }
+
+    /// Move the lightbar along the entries the screen shows.
+    fn move_cursor(&mut self, entries: &[Entry], by: i16) {
+        let shown = ui::shown(self, entries);
+        if shown.is_empty() {
+            return;
+        }
+        let at = shown.iter().position(|&i| i == self.cursor).unwrap_or(0);
+        let len = i32::try_from(shown.len()).unwrap_or(1);
+        let to = (i32::try_from(at).unwrap_or(0) + i32::from(by)).rem_euclid(len);
+        self.cursor = shown[usize::try_from(to).unwrap_or(0)];
+    }
+
     fn act(&mut self, action: Action, ctx: &mut Ctx<'_>) {
         let Some(mut clan) = self.clan.take() else {
             return;
