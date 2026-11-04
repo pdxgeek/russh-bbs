@@ -64,10 +64,10 @@ pub struct Limits {
     /// in and the server never reads a password over ssh.
     pub allow_password_login: bool,
     /// The wait after wrong passwords for one handle, whether or not it exists; a correct
-    /// password clears it, and keys are never held by it (D100).
+    /// password clears it, and keys are never held by it (D101).
     pub password_handle_backoff: Backoff,
     /// The wait after wrong passwords from one network (an IPv4 address or an IPv6 /64),
-    /// whatever the handle; firmer than the handle's (D100).
+    /// whatever the handle; firmer than the handle's (D101).
     pub password_network_backoff: Backoff,
     /// Whether the board is in low-security mode: the sysop turned the telnet transport on
     /// (D27, M3-H). Staff screens then carry the `LOW-SECURITY` marker. It changes nothing else

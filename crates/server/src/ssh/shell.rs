@@ -869,6 +869,11 @@ impl<D: Backend> Shell<D> {
         } else {
             flow
         };
+        let flow = if self.parts.passwords.enabled() {
+            flow
+        } else {
+            flow.with_password_login_off()
+        };
         if self.parts.fingerprint.is_none() {
             flow.signed_in_with_password()
         } else {
@@ -1204,7 +1209,7 @@ impl<D: Backend> Shell<D> {
             return;
         };
         // A password session proves its current password again to set or clear one (D81). That
-        // is a password guess like any other, so it goes through the same gate (D100), keyed by
+        // is a password guess like any other, so it goes through the same gate (D101), keyed by
         // the account rather than a handle: this session already knows whose it is.
         let guess = match (&request.method, &request.kind) {
             (

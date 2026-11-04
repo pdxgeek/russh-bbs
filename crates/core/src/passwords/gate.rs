@@ -1,4 +1,4 @@
-//! How many wrong passwords a handle and a network may try (D100): a gentle per-handle backoff
+//! How many wrong passwords a handle and a network may try (D101): a gentle per-handle backoff
 //! and a firmer per-network one. Only wrong passwords count, and a correct one clears the
 //! handle. Keys never come through here, so a key bound to an account always signs in.
 //!
@@ -66,7 +66,7 @@ impl Backoff {
     }
 }
 
-/// Defaults per handle (D100): 4 free failures, then 1, 2, 4, 8, 16 and 30 s (the ceiling), and
+/// Defaults per handle (D101): 4 free failures, then 1, 2, 4, 8, 16 and 30 s (the ceiling), and
 /// forgotten after 10 quiet minutes. A person who mistypes is held for seconds at worst, and the
 /// 12-character minimum makes about two guesses a minute hopeless.
 pub const DEFAULT_HANDLE_BACKOFF: Backoff = Backoff {
@@ -76,7 +76,7 @@ pub const DEFAULT_HANDLE_BACKOFF: Backoff = Backoff {
     forget_secs: 600,
 };
 
-/// Defaults per network, firmer than the handle's (D100): 3 free failures across all handles,
+/// Defaults per network, firmer than the handle's (D101): 3 free failures across all handles,
 /// then 5, 10, 20 s and on up to 5 minutes, and forgotten after 10 quiet minutes. One address
 /// cannot sweep handles or keep one shut: it reaches its own wait before the handle's wait grows.
 pub const DEFAULT_NETWORK_BACKOFF: Backoff = Backoff {
