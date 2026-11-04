@@ -344,12 +344,12 @@
 |╰──────────────────────────────────────────────────────────────────────╯
 |╭ THE RUN ───────────────────╮╭ WHAT HAPPENED ─────────────────────────╮
 |│peak trace ██▍░░░░░░░░░░░░░ ││> Into RT-5.                            │
-|│job pays    45              ││> ping-sweep: sweeping the neighbours.  │
-|│data copied 66              ││> Into VT-6.                            │
-|│fights      0 (0 put down)  ││+ siphon: 66 marks of data copied out.  │
-|│locks broken0               ││+ Objective done. Get out.              │
-|│fragments   0               ││+ You jack out clean.                   │
-|│cycles left 27              ││                                        │
+|│job pays     45             ││> ping-sweep: sweeping the neighbours.  │
+|│data copied  66             ││> Into VT-6.                            │
+|│fights       0 (0 put down) ││+ siphon: 66 marks of data copied out.  │
+|│locks broken 0              ││+ Objective done. Get out.              │
+|│fragments    0              ││+ You jack out clean.                   │
+|│cycles left  27             ││                                        │
 |│                            ││. Job done: 45 paid, 33 for the data.   │
 |│                            ││. Heat +4.                              │
 |│                            ││                                        │
@@ -366,13 +366,13 @@
 |│INTEGRITY ██████████████ 8/8    ││[a] ping-sweep cy1  ░░░░░ 0         │
 |│armor 0   weak to badge locks   ││[b] dictionary cy1  ███▍░ 2         │
 |│                                ││[c] badge-clon cy1  █████ 3         │
-|│IT WILL   TRACE   starts a trace││[d] siphon     cy2  ░░░░░ 0         │
-|│THEN      ? ? ?  (watch a full c││                                    │
+|│IT WILL    TRACE                ││[d] siphon     cy2  ░░░░░ 0         │
+|│          starts a tracer       ││                                    │
+|│THEN      ? ? ?                 ││                                    │
 |│SEEN      nothing yet           ││                                    │
 |│MOVE      ■ □ □ □ □ □ □ □ 1/8   ││                                    │
-|│                                ││                                    │
-|│                                ││                                    │
-|│                                ││                                    │
+|│Watch a full cycle of 4 or scan ││                                    │
+|│it to learn the pattern.        ││                                    │
 |╰────────────────────────────────╯╰────────────────────────────────────╯
 | FIGHT LOG ─────────────────────────────────────────────────────────────
 |T+06 > Into RT-6.
@@ -382,15 +382,15 @@
 | NULLROUTE // Mirrorglass Ltd T1 // Copy @ VT                     CY 29
 |███▶░░░░░░░░░░░░░░░░░░░░░░░░░░ TRACE  11 ░░░░░░░░░░░░░░░░░░░░░░░░░░◀███
 |╭ NODE MAP ─────────────────────────────────╮╭ HERE ───────────────────╮
-|│                                           ││VT-6 Data vault d3       │
+|│⠂     ⠂     ⠂     ⠂     ⠂     ⠂     ⠂     ⠂││VT-6 Data vault d3       │
 |│           ⢀⡠○FW ⠢⡀               ⢀⣀⣀⡠⡤◉VT ││1 RT-4  open             │
-|│        ⢀⡠⠒⠁      ⠑⢄    ⣀⠤○RT1⠲⢎⡉⠉⠁ ⢠⠊     ││2 RT-5  open             │
+|│   ⠂    ⢀⡠⠒⠁   ⠂  ⠑⢄ ⠂  ⣀⠤○RT1⠲⢎⡉⠉⠁ ⢠⠊ ⠂   ││2 RT-5  open             │
 |│     ⢀⠤⠊⠁          ⣀⡣⡔⠊⠉        ⠈⠑⢢⢔⡁      ││                         │
-|│○GW ⠺⢗⡒⠒⠢⠤⠤⠤⠤◆FW ⠲⢍⡀ ⠈⢢         ⢀⠔⠁ ⠈⣑⠦○AC ││                         │
+|│○GW ⠺⢗⡒⠒⠢⠤⠤⠤⠤◆FW ⠲⢍⡀ ⠈⢢ ⠂     ⠂ ⢀⠔⠁ ⠈⣑⠦○AC ││                         │
 |│      ⠈⠑⠢⢄⡀        ⠈⠑⠢⢄⡑⢄      ⡠⣃⡠⠔⠊⠉      ││                         │
-|│          ⠈⠑⠢○FW ⠒⠒⠒⠒⠢⠤⠬⠽⠦○RT2⠚⠛⠒⠒⠢⠤⠤⠤⠤○SR ││                         │
+|│   ⠂     ⠂⠈⠑⠢○FW ⠒⠒⠒⠒⠢⠤⠬⠽⠦○RT2⠚⠛⠒⠒⠢⠤⠤⠤⠤○SR ││⠂                        │
 |│                                           ││                         │
-|│d0           d1           d2           d3  ││                         │
+|│d0    ⠂     ⠂d1   ⠂     ⠂ d2  ⠂     ⠂  d3 ⠂││                         │
 |╰───────────────────────────────────────────╯╰─────────────────────────╯
 | LOG ───────────────────────────────────────────────────────────────────
 |T+04 > Into RT-5.

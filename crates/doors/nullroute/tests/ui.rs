@@ -615,3 +615,84 @@ fn a_reckless_run_ends_burned_and_the_debrief_says_so() {
     }
     assert!(burned, "a noisy run burned and the debrief said BURNED");
 }
+
+/// The cleaned buffer as an ANSI capture (truecolor), for turning into pictures.
+fn ansi(buffer: &russh_bbs_door::buffer::Buffer) -> String {
+    use russh_bbs_door::style::{Color, Modifier};
+    let color = |c: Color, fg: bool| -> String {
+        let base = if fg { 30 } else { 40 };
+        match c {
+            Color::Reset => format!("{}", base + 9),
+            Color::Rgb(r, g, b) => format!("{};2;{r};{g};{b}", base + 8),
+            Color::Indexed(n) => format!("{};5;{n}", base + 8),
+            Color::Black => format!("{base}"),
+            Color::Red => format!("{}", base + 1),
+            Color::Green => format!("{}", base + 2),
+            Color::Yellow => format!("{}", base + 3),
+            Color::Blue => format!("{}", base + 4),
+            Color::Magenta => format!("{}", base + 5),
+            Color::Cyan => format!("{}", base + 6),
+            Color::Gray => format!("{}", base + 7),
+            Color::DarkGray => format!("{}", base + 60),
+            Color::LightRed => format!("{}", base + 61),
+            Color::LightGreen => format!("{}", base + 62),
+            Color::LightYellow => format!("{}", base + 63),
+            Color::LightBlue => format!("{}", base + 64),
+            Color::LightMagenta => format!("{}", base + 65),
+            Color::LightCyan => format!("{}", base + 66),
+            Color::White => format!("{}", base + 67),
+        }
+    };
+    let mut out = String::new();
+    for y in 0..buffer.area.height {
+        let mut x = 0;
+        while x < buffer.area.width {
+            let cell = &buffer[(x, y)];
+            let mut sgr = vec!["0".to_owned()];
+            for (m, code) in [
+                (Modifier::BOLD, "1"),
+                (Modifier::DIM, "2"),
+                (Modifier::ITALIC, "3"),
+                (Modifier::UNDERLINED, "4"),
+                (Modifier::REVERSED, "7"),
+            ] {
+                if cell.modifier.contains(m) {
+                    sgr.push(code.to_owned());
+                }
+            }
+            sgr.push(color(cell.fg, true));
+            sgr.push(color(cell.bg, false));
+            out.push_str(&format!("\u{1b}[{}m{}", sgr.join(";"), cell.symbol()));
+            x += u16::try_from(
+                russh_bbs_door::text::Span::raw(cell.symbol())
+                    .width()
+                    .clamp(1, 2),
+            )
+            .unwrap_or(1);
+        }
+        out.push_str("\u{1b}[0m\n");
+    }
+    out
+}
+
+#[test]
+#[ignore = "writes ANSI captures of every screen for the pull request: SHOTS_DIR=/some/dir cargo test --test ui shots -- --ignored"]
+fn shots() {
+    use russh_bbs_door::{ColorDepth, Composite, DoorPalette, DoorSurface};
+    let dir = std::path::PathBuf::from(std::env::var("SHOTS_DIR").expect("SHOTS_DIR"));
+    std::fs::create_dir_all(&dir).unwrap();
+    let door = Nullroute::new().unwrap();
+    for (tier, tier_name) in [(Tier::Unicode, "unicode"), (Tier::Ascii, "ascii")] {
+        let e = env(tier);
+        for (name, d) in screens(&door, &e) {
+            for size in SIZES {
+                let mut surface = DoorSurface::new(size.0, size.1, DoorPalette::mono());
+                surface.draw(|canvas| d.render(canvas, &e));
+                let clean =
+                    surface.composite(Composite::new(ColorDepth::TrueColor, tier == Tier::Ascii));
+                let file = dir.join(format!("{tier_name}-{}x{}-{name}.ansi", size.0, size.1));
+                std::fs::write(file, ansi(clean.buffer())).unwrap();
+            }
+        }
+    }
+}

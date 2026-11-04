@@ -56,6 +56,8 @@ pub(super) const AMBER: Color = Color::Rgb(0xff, 0xb8, 0x3d);
 pub(super) const VIOLET: Color = Color::Rgb(0xb4, 0x8c, 0xff);
 /// Steel: edges and empty gauge cells.
 pub(super) const STEEL: Color = Color::Rgb(0x4a, 0x66, 0x78);
+/// The faint grid under the map.
+pub(super) const GRID: Color = Color::Rgb(0x1f, 0x30, 0x3c);
 /// The glow behind the node you stand on.
 pub(super) const GLOW: Color = Color::Rgb(0x0b, 0x3a, 0x4a);
 

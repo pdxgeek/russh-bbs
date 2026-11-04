@@ -26,31 +26,27 @@ fn intent_color(i: Intent) -> russh_bbs_door::style::Color {
 
 /// A few rows of art for each kind of machine, in box drawing and blocks (the framework gives the
 /// ASCII tier its own stand-ins).
-fn art(kind: CmKind) -> [&'static str; 4] {
+fn art(kind: CmKind) -> [&'static str; 3] {
     match kind {
         CmKind::Sentry => [
             "  \u{2554}\u{2550}\u{2550}\u{2550}\u{2557}  ",
             "  \u{2551}\u{25C9} \u{25C9}\u{2551}  ",
             "  \u{2560}\u{2550}\u{2564}\u{2550}\u{2563}  ",
-            "  \u{255A}\u{2550}\u{2569}\u{2550}\u{255D}  ",
         ],
         CmKind::Tracer => [
             " \u{2500}\u{2500}\u{25B6}\u{25B6}\u{25B6}\u{25B6}\u{25B6} ",
             " \u{2591}\u{2592}\u{2593}\u{2588}\u{2593}\u{2592}\u{2591}  ",
             " \u{2500}\u{2500}\u{25B6}\u{25B6}\u{25B6}\u{25B6}\u{25B6} ",
-            " \u{2591}\u{2591}\u{2592}\u{2593}\u{2588}\u{2588}\u{2593} ",
         ],
         CmKind::Wall => [
             " \u{2588}\u{2588}\u{2588}\u{2593}\u{2588}\u{2588}\u{2588}\u{2593}\u{2588}\u{2588} ",
             " \u{2593}\u{2588}\u{2588}\u{2588}\u{2593}\u{2588}\u{2588}\u{2588}\u{2593}\u{2588} ",
             " \u{2588}\u{2588}\u{2588}\u{2593}\u{2588}\u{2588}\u{2588}\u{2593}\u{2588}\u{2588} ",
-            " \u{2593}\u{2588}\u{2588}\u{2588}\u{2593}\u{2588}\u{2588}\u{2588}\u{2593}\u{2588} ",
         ],
         CmKind::Warden => [
             " \u{256D}\u{2500}\u{2500}\u{25C9}\u{2500}\u{2500}\u{256E} ",
             " \u{2502}\u{2593}\u{2588}\u{2588}\u{2588}\u{2593}\u{2502} ",
             " \u{251C}\u{2500}\u{2524}\u{2588}\u{251C}\u{2500}\u{2524} ",
-            " \u{2570}\u{2500}\u{2500}\u{252C}\u{2500}\u{2500}\u{256F} ",
         ],
     }
 }
@@ -123,21 +119,20 @@ fn telegraph(pen: &mut Pen<'_, '_>, e: &Encounter, rect: Rect) {
     let tone = intent_color(now);
     let mut lines: Vec<Line<'static>> = Vec::new();
     lines.push(Line::from(vec![
-        Span::styled("IT WILL  ", pen.ink.dim),
+        Span::styled("IT WILL   ", pen.ink.dim),
         Span::styled(
             format!(" {} ", now.word()),
             bold(tone).add_modifier(russh_bbs_door::style::Modifier::UNDERLINED),
         ),
-        Span::styled(format!("  {}", now.gloss()), fg(tone)),
+    ]));
+    lines.push(Line::from(vec![
+        Span::styled("          ", pen.ink.dim),
+        Span::styled(now.gloss(), fg(tone)),
     ]));
     let forecast = e.forecast(3);
     let mut next = vec![Span::styled("THEN      ", pen.ink.dim)];
     if forecast.is_empty() {
         next.push(Span::styled("? ? ?", fg(STEEL)));
-        next.push(Span::styled(
-            format!("  (watch a full cycle of {} or scan it)", e.pattern.len()),
-            pen.ink.dim,
-        ));
     } else {
         for i in forecast {
             next.push(Span::styled(format!("{} ", i.word()), fg(intent_color(i))));
@@ -172,7 +167,16 @@ fn telegraph(pen: &mut Pen<'_, '_>, e: &Encounter, rect: Rect) {
         pen.ink.plain,
     ));
     lines.push(Line::from(pips));
-    pen.text(rect, lines);
+    if !e.pattern_known() {
+        lines.push(Line::styled(
+            format!(
+                "Watch a full cycle of {} or scan it to learn the pattern.",
+                e.pattern.len()
+            ),
+            pen.ink.dim,
+        ));
+    }
+    pen.wrapped(rect, lines);
 }
 
 /// Your scripts: the key, the name, the cycles, what it would do now as a bar, and its state.
@@ -320,7 +324,7 @@ pub(super) fn draw(pen: &mut Pen<'_, '_>, s: &Session, a: &Active, area: Rect) {
             let [m, t] = rows(
                 li,
                 [
-                    Constraint::Length(if large { 9 } else { 8 }),
+                    Constraint::Length(if large { 8 } else { 7 }),
                     Constraint::Min(5),
                 ],
             );

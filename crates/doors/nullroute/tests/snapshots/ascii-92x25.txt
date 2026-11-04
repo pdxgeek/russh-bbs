@@ -446,12 +446,12 @@
 |+------------------------------------------------------------------------------------------+
 |+ THE RUN -----------------------------++ WHAT HAPPENED -----------------------------------+
 ||peak trace ###................. 15    ||> Into RT-5.                                      |
-||job pays    45                        ||> ping-sweep: sweeping the neighbours.            |
-||data copied 66                        ||> Into VT-6.                                      |
-||fights      0 (0 put down)            ||+ siphon: 66 marks of data copied out.            |
-||locks broken0                         ||+ Objective done. Get out.                        |
-||fragments   0                         ||+ You jack out clean.                             |
-||cycles left 27                        ||                                                  |
+||job pays     45                       ||> ping-sweep: sweeping the neighbours.            |
+||data copied  66                       ||> Into VT-6.                                      |
+||fights       0 (0 put down)           ||+ siphon: 66 marks of data copied out.            |
+||locks broken 0                        ||+ Objective done. Get out.                        |
+||fragments    0                        ||+ You jack out clean.                             |
+||cycles left  27                       ||                                                  |
 ||                                      ||. Job done: 45 paid, 33 for the data. Heat +4.    |
 ||                                      ||                                                  |
 ||                                      ||                                                  |
@@ -475,14 +475,14 @@
 || -->>>>>                                    ||[a] ping-sweep    cy1  .......... 0         |
 || .:###:.                                    ||[b] dictionary    cy1  #######... 2         |
 || -->>>>>                                    ||[c] badge-clone   cy1  ########## 3         |
-|| ..:####                                    ||[d] siphon        cy2  .......... 0         |
-||INTEGRITY ########################## 8/8    ||                                            |
-||armor 0   weak to badge locks               ||[w] brace: next strike at 3/4, costs a cycle|
-||IT WILL   TRACE   starts a tracer           ||[x] break off: costs trace, damage stays    |
-||THEN      ? ? ?  (watch a full cycle of 4 or||                                            |
+||INTEGRITY ########################## 8/8    ||[d] siphon        cy2  .......... 0         |
+||armor 0   weak to badge locks               ||                                            |
+||                                            ||[w] brace: next strike at 3/4, costs a cycle|
+||IT WILL    TRACE                            ||[x] break off: costs trace, damage stays    |
+||          starts a tracer                   ||                                            |
+||THEN      ? ? ?                             ||                                            |
 ||SEEN      nothing yet                       ||                                            |
 ||MOVE      # o o o o o o o 1/8               ||                                            |
-||                                            ||                                            |
 |+--------------------------------------------++--------------------------------------------+
 |+ FIGHT LOG -------------------------------------------------------------------------------+
 ||T+03 > ping-sweep: sweeping the neighbours.                                               |

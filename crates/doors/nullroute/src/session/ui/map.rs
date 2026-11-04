@@ -208,6 +208,18 @@ impl Widget for MapView<'_> {
             });
         }
 
+        if !self.ascii {
+            // A faint grid under everything, so unknown ground reads as unmapped, not as empty.
+            let grid = Style::new().fg(super::GRID);
+            for y in (area.y..area.y + area.height).step_by(2) {
+                for x in (area.x..area.x + area.width).step_by(6) {
+                    if let Some(cell) = buf.cell_mut((x + (y - area.y) % 4 / 2 * 3, y)) {
+                        cell.set_char('\u{2802}');
+                        cell.set_style(grid);
+                    }
+                }
+            }
+        }
         if self.ascii {
             self.draw_ascii_edges(&edges, buf);
         } else {

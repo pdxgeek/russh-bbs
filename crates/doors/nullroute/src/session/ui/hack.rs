@@ -488,7 +488,7 @@ pub(super) fn debrief(pen: &mut Pen<'_, '_>, s: &Session, report: &Report, area:
     ));
     let mut row = |k: &str, v: String| {
         lines.push(Line::from(vec![
-            Span::styled(format!("{k:<12}"), pen.ink.dim),
+            Span::styled(format!("{k:<13}"), pen.ink.dim),
             Span::styled(v, pen.ink.plain),
         ]));
     };
@@ -512,7 +512,7 @@ pub(super) fn debrief(pen: &mut Pen<'_, '_>, s: &Session, report: &Report, area:
     let notes: Vec<Line<'static>> = report
         .notes
         .iter()
-        .flat_map(|n| wrap(n, width.saturating_sub(2)))
+        .flat_map(|n| wrap(n, width.saturating_sub(4)))
         .map(|n| {
             let (style, tag) = log_style(&n);
             if n.is_empty() {
