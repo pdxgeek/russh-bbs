@@ -242,6 +242,7 @@ impl<D> ClientHandler<D> {
         // the waiting room nor a founder-claim session comes through here (M3-J).
         crate::community::note_sign_in(&*self.directory, start.account).await;
         self.account = Some(start.account);
+        self.guard.set_account(start.account);
         let mut flow = MemberFlow::new(
             &start.handle,
             start.access,
