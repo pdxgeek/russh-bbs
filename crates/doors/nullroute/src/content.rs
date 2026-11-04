@@ -420,7 +420,11 @@ pub struct RigTable {
     pub fence: Vec<FenceDef>,
 }
 
-fn id_problems<'a>(table: &str, nums: impl Iterator<Item = u8>, names: impl Iterator<Item = &'a str>) -> Vec<String> {
+fn id_problems<'a>(
+    table: &str,
+    nums: impl Iterator<Item = u8>,
+    names: impl Iterator<Item = &'a str>,
+) -> Vec<String> {
     let mut problems = Vec::new();
     let nums: Vec<u8> = nums.collect();
     for (n, num) in nums.iter().enumerate() {
@@ -433,7 +437,9 @@ fn id_problems<'a>(table: &str, nums: impl Iterator<Item = u8>, names: impl Iter
             problems.push(format!("[{table}] #{n}: name must be 1 to 40 characters"));
         }
         if !plain_text(name) {
-            problems.push(format!("[{table}] #{n}: name has characters the board strips"));
+            problems.push(format!(
+                "[{table}] #{n}: name has characters the board strips"
+            ));
         }
     }
     problems
@@ -441,22 +447,39 @@ fn id_problems<'a>(table: &str, nums: impl Iterator<Item = u8>, names: impl Iter
 
 impl Table for CorpsTable {
     fn validate(&self) -> Vec<String> {
-        let mut problems = id_problems("fixer", self.fixer.iter().map(|f| f.num), self.fixer.iter().map(|f| f.name.as_str()));
-        problems.extend(id_problems("corp", self.corp.iter().map(|c| c.num), self.corp.iter().map(|c| c.name.as_str())));
+        let mut problems = id_problems(
+            "fixer",
+            self.fixer.iter().map(|f| f.num),
+            self.fixer.iter().map(|f| f.name.as_str()),
+        );
+        problems.extend(id_problems(
+            "corp",
+            self.corp.iter().map(|c| c.num),
+            self.corp.iter().map(|c| c.name.as_str()),
+        ));
         if self.fixer.is_empty() || self.corp.is_empty() {
             problems.push("needs at least one fixer and one corp".into());
         }
         for fixer in &self.fixer {
             if !plain_text(&fixer.blurb) || fixer.blurb.chars().count() > 80 {
-                problems.push(format!("fixer `{}`: blurb must be plain and at most 80 characters", fixer.name));
+                problems.push(format!(
+                    "fixer `{}`: blurb must be plain and at most 80 characters",
+                    fixer.name
+                ));
             }
         }
         for corp in &self.corp {
             if !self.fixer.iter().any(|f| f.num == corp.patron) {
-                problems.push(format!("corp `{}`: patron {} is not a fixer", corp.name, corp.patron));
+                problems.push(format!(
+                    "corp `{}`: patron {} is not a fixer",
+                    corp.name, corp.patron
+                ));
             }
             if !plain_text(&corp.style) || corp.style.chars().count() > 80 {
-                problems.push(format!("corp `{}`: style must be plain and at most 80 characters", corp.name));
+                problems.push(format!(
+                    "corp `{}`: style must be plain and at most 80 characters",
+                    corp.name
+                ));
             }
             for (what, value) in [
                 ("lock_pct", corp.lock_pct),
@@ -475,7 +498,10 @@ impl Table for CorpsTable {
                 problems.push(format!("corp `{}`: trace_pct must be 50 to 300", corp.name));
             }
             if !(-3..=3).contains(&corp.sec_bonus) || corp.watch > 5 {
-                problems.push(format!("corp `{}`: sec_bonus must be -3 to 3 and watch at most 5", corp.name));
+                problems.push(format!(
+                    "corp `{}`: sec_bonus must be -3 to 3 and watch at most 5",
+                    corp.name
+                ));
             }
         }
         problems
@@ -484,27 +510,44 @@ impl Table for CorpsTable {
 
 impl Table for NodesTable {
     fn validate(&self) -> Vec<String> {
-        let mut problems = id_problems("node", self.node.iter().map(|n| n.num), self.node.iter().map(|n| n.name.as_str()));
+        let mut problems = id_problems(
+            "node",
+            self.node.iter().map(|n| n.num),
+            self.node.iter().map(|n| n.name.as_str()),
+        );
         for role in [Role::Entry, Role::Mid, Role::Objective] {
             if !self.node.iter().any(|n| n.role == role) {
                 problems.push(format!("no node has the role {role:?}"));
             }
         }
-        if !self.node.iter().any(|n| n.role == Role::Mid && n.weight > 0) {
+        if !self
+            .node
+            .iter()
+            .any(|n| n.role == Role::Mid && n.weight > 0)
+        {
             problems.push("no mid node has a weight".into());
         }
         for node in &self.node {
             if node.code.len() != 2 || !node.code.bytes().all(|b| b.is_ascii_uppercase()) {
-                problems.push(format!("node `{}`: code must be two capital letters", node.name));
+                problems.push(format!(
+                    "node `{}`: code must be two capital letters",
+                    node.name
+                ));
             }
             if self.node.iter().filter(|n| n.code == node.code).count() > 1 {
                 problems.push(format!("node code `{}` is used twice", node.code));
             }
             if node.lock_pct > 100 || !(0..=6).contains(&node.sec) {
-                problems.push(format!("node `{}`: lock_pct must be 0 to 100 and sec 0 to 6", node.name));
+                problems.push(format!(
+                    "node `{}`: lock_pct must be 0 to 100 and sec 0 to 6",
+                    node.name
+                ));
             }
             if node.lock_pct > 0 && node.bias.iter().sum::<u32>() == 0 {
-                problems.push(format!("node `{}`: a lockable node needs a lock bias", node.name));
+                problems.push(format!(
+                    "node `{}`: a lockable node needs a lock bias",
+                    node.name
+                ));
             }
         }
         problems
@@ -513,7 +556,11 @@ impl Table for NodesTable {
 
 impl Table for ScriptsTable {
     fn validate(&self) -> Vec<String> {
-        let mut problems = id_problems("script", self.script.iter().map(|s| s.num), self.script.iter().map(|s| s.name.as_str()));
+        let mut problems = id_problems(
+            "script",
+            self.script.iter().map(|s| s.num),
+            self.script.iter().map(|s| s.name.as_str()),
+        );
         for s in &self.script {
             let family_ok = match s.effect {
                 Effect::Scan | Effect::Map => s.family == Family::Probe,
@@ -523,24 +570,52 @@ impl Table for ScriptsTable {
                 _ => s.family == Family::Utility,
             };
             if !family_ok {
-                problems.push(format!("script `{}`: effect {:?} does not belong to family {:?}", s.name, s.effect, s.family));
+                problems.push(format!(
+                    "script `{}`: effect {:?} does not belong to family {:?}",
+                    s.name, s.effect, s.family
+                ));
             }
-            if !(1..=9).contains(&s.power) || !(1..=8).contains(&s.memory) || !(1..=3).contains(&s.cycles) || s.noise > 30 || s.min_skill > 5 {
-                problems.push(format!("script `{}`: power 1-9, memory 1-8, cycles 1-3, noise <= 30, min_skill <= 5", s.name));
+            if !(1..=9).contains(&s.power)
+                || !(1..=8).contains(&s.memory)
+                || !(1..=3).contains(&s.cycles)
+                || s.noise > 30
+                || s.min_skill > 5
+            {
+                problems.push(format!(
+                    "script `{}`: power 1-9, memory 1-8, cycles 1-3, noise <= 30, min_skill <= 5",
+                    s.name
+                ));
             }
             if s.starter && (s.price != 0 || s.min_rep != 0 || s.min_skill != 0) {
-                problems.push(format!("script `{}`: a starter script has no price, rep or skill gate", s.name));
+                problems.push(format!(
+                    "script `{}`: a starter script has no price, rep or skill gate",
+                    s.name
+                ));
             }
             if !s.starter && s.price == 0 {
-                problems.push(format!("script `{}`: a script that is not a starter needs a price", s.name));
+                problems.push(format!(
+                    "script `{}`: a script that is not a starter needs a price",
+                    s.name
+                ));
             }
             if !plain_text(&s.blurb) || s.blurb.chars().count() > 70 {
-                problems.push(format!("script `{}`: blurb must be plain and at most 70 characters", s.name));
+                problems.push(format!(
+                    "script `{}`: blurb must be plain and at most 70 characters",
+                    s.name
+                ));
             }
         }
-        let starter_memory: u32 = self.script.iter().filter(|s| s.starter).map(|s| s.memory).sum();
+        let starter_memory: u32 = self
+            .script
+            .iter()
+            .filter(|s| s.starter)
+            .map(|s| s.memory)
+            .sum();
         if starter_memory <= 8 {
-            problems.push("the starter scripts must not all fit the base deck (the deck must be a choice)".into());
+            problems.push(
+                "the starter scripts must not all fit the base deck (the deck must be a choice)"
+                    .into(),
+            );
         }
         problems
     }
@@ -548,7 +623,11 @@ impl Table for ScriptsTable {
 
 impl Table for ContractsTable {
     fn validate(&self) -> Vec<String> {
-        let mut problems = id_problems("contract", self.contract.iter().map(|c| c.num), self.contract.iter().map(|c| c.title.as_str()));
+        let mut problems = id_problems(
+            "contract",
+            self.contract.iter().map(|c| c.num),
+            self.contract.iter().map(|c| c.title.as_str()),
+        );
         for tier in 1..=3 {
             if !self.contract.iter().any(|c| c.tier == tier) {
                 problems.push(format!("no contract template for tier {tier}"));
@@ -556,13 +635,22 @@ impl Table for ContractsTable {
         }
         for c in &self.contract {
             if !(1..=3).contains(&c.tier) || c.reward_min == 0 || c.reward_max < c.reward_min {
-                problems.push(format!("contract `{}`: tier 1-3 and 0 < reward_min <= reward_max", c.title));
+                problems.push(format!(
+                    "contract `{}`: tier 1-3 and 0 < reward_min <= reward_max",
+                    c.title
+                ));
             }
             if !plain_text(&c.verb) || c.verb.is_empty() || c.verb.chars().count() > 12 {
-                problems.push(format!("contract `{}`: verb must be plain and at most 12 characters", c.title));
+                problems.push(format!(
+                    "contract `{}`: verb must be plain and at most 12 characters",
+                    c.title
+                ));
             }
             if !matches!(c.effect, Effect::Copy | Effect::Plant | Effect::Shred) {
-                problems.push(format!("contract `{}`: the objective effect must be copy, plant or shred", c.title));
+                problems.push(format!(
+                    "contract `{}`: the objective effect must be copy, plant or shred",
+                    c.title
+                ));
             }
         }
         problems
@@ -571,8 +659,18 @@ impl Table for ContractsTable {
 
 impl Table for RigTable {
     fn validate(&self) -> Vec<String> {
-        let mut problems = id_problems("part", self.part.iter().map(|p| p.num), self.part.iter().map(|p| p.name.as_str()));
-        if self.part.len() != 5 || !self.part.iter().enumerate().all(|(i, p)| usize::from(p.num) == i) {
+        let mut problems = id_problems(
+            "part",
+            self.part.iter().map(|p| p.num),
+            self.part.iter().map(|p| p.name.as_str()),
+        );
+        if self.part.len() != 5
+            || !self
+                .part
+                .iter()
+                .enumerate()
+                .all(|(i, p)| usize::from(p.num) == i)
+        {
             problems.push("the five parts must be numbered 0 to 4 in order".into());
         }
         for part in &self.part {
@@ -581,12 +679,21 @@ impl Table for RigTable {
             }
             for level in &part.levels {
                 if level.cost == 0 || !plain_text(&level.name) || level.name.chars().count() > 30 {
-                    problems.push(format!("part `{}`: a level needs a plain name (30 characters) and a cost", part.name));
+                    problems.push(format!(
+                        "part `{}`: a level needs a plain name (30 characters) and a cost",
+                        part.name
+                    ));
                 }
             }
         }
         let h = &self.hideout;
-        if h.bot_cost == 0 || h.bot_income == 0 || h.bot_max == 0 || h.proxy_cost == 0 || h.stash_step == 0 || h.proxy_max == 0 {
+        if h.bot_cost == 0
+            || h.bot_income == 0
+            || h.bot_max == 0
+            || h.proxy_cost == 0
+            || h.stash_step == 0
+            || h.proxy_max == 0
+        {
             problems.push("hideout numbers must be set".into());
         }
         if self.fence.is_empty() || self.fence.first().is_some_and(|f| f.cost != 0) {

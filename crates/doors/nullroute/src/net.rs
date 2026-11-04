@@ -272,7 +272,8 @@ impl Network {
     }
 
     fn roll_security(rng: &mut DoorRng, def: &NodeDef, corp: &CorpDef, tier: u8) -> u8 {
-        let raw = def.sec + corp.sec_bonus + tier_add(tier) + i32::try_from(rng.below(2)).unwrap_or(0);
+        let raw =
+            def.sec + corp.sec_bonus + tier_add(tier) + i32::try_from(rng.below(2)).unwrap_or(0);
         clamp_u8(raw, security_cap(tier))
     }
 
@@ -345,11 +346,14 @@ impl Network {
     }
 
     /// The nodes a contract can aim at: objective nodes with `code`, decoys excluded.
-    #[must_use]
-    pub fn targets<'a>(&'a self, content: &'a Content, code: &'a str) -> impl Iterator<Item = &'a Node> {
-        self.nodes.iter().filter(move |n| {
-            !n.honeypot && content.node(n.kind).is_some_and(|d| d.code == code)
-        })
+    pub fn targets<'a>(
+        &'a self,
+        content: &'a Content,
+        code: &'a str,
+    ) -> impl Iterator<Item = &'a Node> {
+        self.nodes
+            .iter()
+            .filter(move |n| !n.honeypot && content.node(n.kind).is_some_and(|d| d.code == code))
     }
 
     /// The neighbours of `id` through links with `stealth` at most `scan` (0 for the visible ones).
@@ -460,7 +464,10 @@ impl Network {
         let mut needed: Vec<Lock> = match self.tier {
             1 => Lock::ALL.to_vec(),
             2 => {
-                let others: Vec<Lock> = Lock::ALL.into_iter().filter(|l| *l != corp.favoured).collect();
+                let others: Vec<Lock> = Lock::ALL
+                    .into_iter()
+                    .filter(|l| *l != corp.favoured)
+                    .collect();
                 let extra = others[rng.below(u32::try_from(others.len()).unwrap_or(1)) as usize];
                 vec![corp.favoured, extra]
             }
@@ -469,7 +476,11 @@ impl Network {
         needed.dedup();
         let objective_ids: Vec<NodeId> = ["VT", "AC", "SR"]
             .iter()
-            .flat_map(|code| self.targets(content, code).map(|n| n.id).collect::<Vec<_>>())
+            .flat_map(|code| {
+                self.targets(content, code)
+                    .map(|n| n.id)
+                    .collect::<Vec<_>>()
+            })
             .collect();
         for round in 0..6 {
             let mut changed = false;
@@ -503,7 +514,6 @@ impl Network {
     }
 
     /// The objective floor's nodes, in id order.
-    #[must_use]
     pub fn floor(&self) -> impl Iterator<Item = &Node> {
         let last = self.nodes.iter().map(|n| n.layer).max().unwrap_or(0);
         self.nodes.iter().filter(move |n| n.layer == last)

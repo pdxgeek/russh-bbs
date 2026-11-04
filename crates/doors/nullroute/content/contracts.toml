@@ -8,8 +8,8 @@ verb = "Steal"
 target = "VT"
 effect = "copy"
 tier = 1
-reward_min = 55
-reward_max = 95
+reward_min = 34
+reward_max = 59
 heat = 3
 
 [[contract]]
@@ -19,8 +19,8 @@ verb = "Wipe"
 target = "VT"
 effect = "shred"
 tier = 1
-reward_min = 60
-reward_max = 100
+reward_min = 37
+reward_max = 62
 heat = 4
 
 [[contract]]
@@ -30,8 +30,8 @@ verb = "Plant"
 target = "AC"
 effect = "plant"
 tier = 1
-reward_min = 65
-reward_max = 105
+reward_min = 40
+reward_max = 65
 heat = 4
 
 [[contract]]
@@ -41,8 +41,8 @@ verb = "Ransom"
 target = "SR"
 effect = "plant"
 tier = 1
-reward_min = 70
-reward_max = 110
+reward_min = 43
+reward_max = 68
 heat = 5
 
 [[contract]]
@@ -52,8 +52,8 @@ verb = "Steal"
 target = "VT"
 effect = "copy"
 tier = 2
-reward_min = 150
-reward_max = 230
+reward_min = 93
+reward_max = 143
 heat = 7
 
 [[contract]]
@@ -63,8 +63,8 @@ verb = "Wipe"
 target = "VT"
 effect = "shred"
 tier = 2
-reward_min = 160
-reward_max = 240
+reward_min = 99
+reward_max = 149
 heat = 8
 
 [[contract]]
@@ -74,8 +74,8 @@ verb = "Plant"
 target = "AC"
 effect = "plant"
 tier = 2
-reward_min = 170
-reward_max = 250
+reward_min = 105
+reward_max = 155
 heat = 8
 
 [[contract]]
@@ -85,8 +85,8 @@ verb = "Ransom"
 target = "SR"
 effect = "plant"
 tier = 2
-reward_min = 180
-reward_max = 260
+reward_min = 112
+reward_max = 161
 heat = 9
 
 [[contract]]
@@ -96,8 +96,8 @@ verb = "Steal"
 target = "VT"
 effect = "copy"
 tier = 3
-reward_min = 340
-reward_max = 480
+reward_min = 211
+reward_max = 298
 heat = 14
 
 [[contract]]
@@ -107,8 +107,8 @@ verb = "Plant"
 target = "AC"
 effect = "plant"
 tier = 3
-reward_min = 360
-reward_max = 500
+reward_min = 223
+reward_max = 310
 heat = 15
 
 [[contract]]
@@ -118,6 +118,6 @@ verb = "Wipe"
 target = "VT"
 effect = "shred"
 tier = 3
-reward_min = 350
-reward_max = 490
+reward_min = 217
+reward_max = 304
 heat = 14

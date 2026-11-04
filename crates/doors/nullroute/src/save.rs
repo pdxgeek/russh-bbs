@@ -94,7 +94,12 @@ pub fn encode(p: &Player) -> Vec<u8> {
     let mut w = Writer::default();
     w.u64(p.seed);
     w.u32(p.season);
-    w.list(p.name.as_bytes().get(..p.name.len().min(NAME_BYTES_MAX)).unwrap_or_default());
+    w.list(
+        p.name
+            .as_bytes()
+            .get(..p.name.len().min(NAME_BYTES_MAX))
+            .unwrap_or_default(),
+    );
     w.i64(p.day);
     w.u32(p.cycles);
     w.u32(p.marks);

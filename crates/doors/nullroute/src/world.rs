@@ -16,10 +16,10 @@ use crate::net::NodeId;
 use crate::run::RunResult;
 
 /// The most contracts on the board.
-pub const BOARD_MAX: usize = 16;
+pub const BOARD_MAX: usize = 24;
 
 /// New contracts posted each night.
-pub const NIGHTLY_CONTRACTS: usize = 5;
+pub const NIGHTLY_CONTRACTS: usize = 8;
 
 /// Days a contract stays on the board.
 pub const CONTRACT_DAYS: i64 = 3;
@@ -101,7 +101,11 @@ impl World {
     }
 
     fn net_mut(&mut self, corp: u8, tier: u8) -> &mut NetState {
-        if let Some(at) = self.nets.iter().position(|n| n.corp == corp && n.tier == tier) {
+        if let Some(at) = self
+            .nets
+            .iter()
+            .position(|n| n.corp == corp && n.tier == tier)
+        {
             return &mut self.nets[at];
         }
         self.nets.push(NetState {
@@ -142,7 +146,8 @@ impl World {
     /// and new ones are posted.
     pub fn nightly(&mut self, content: &Content, rng: &mut DoorRng, day: i64) {
         let roll = i64::from(rng.range(0, 10)) - 5;
-        self.market_pct = u32::try_from((i64::from(self.market_pct) + roll).clamp(80, 130)).unwrap_or(100);
+        self.market_pct =
+            u32::try_from((i64::from(self.market_pct) + roll).clamp(80, 130)).unwrap_or(100);
         for net in &mut self.nets {
             let patch = content.corp(net.corp).map_or(30, |c| c.patch_pct);
             net.holes.retain(|_| !rng.chance(patch, 100));
@@ -154,7 +159,8 @@ impl World {
         self.nets
             .retain(|n| !n.holes.is_empty() || n.alert > 0 || n.backdoor || n.breaches > 0);
         self.board.retain(|c| c.expires >= day);
-        self.board.extend(gen_contracts(content, rng, day, NIGHTLY_CONTRACTS));
+        self.board
+            .extend(gen_contracts(content, rng, day, NIGHTLY_CONTRACTS));
         while self.board.len() > BOARD_MAX {
             self.board.remove(0);
         }
@@ -165,24 +171,47 @@ impl World {
 /// Post `count` contracts for `day`. The tier mix is 55 percent tier 1, 30 percent tier 2 and 15
 /// percent tier 3; the fixer is never one whose client the target is.
 #[must_use]
-pub fn gen_contracts(content: &Content, rng: &mut DoorRng, day: i64, count: usize) -> Vec<Contract> {
+pub fn gen_contracts(
+    content: &Content,
+    rng: &mut DoorRng,
+    day: i64,
+    count: usize,
+) -> Vec<Contract> {
     let mut out = Vec::new();
     for k in 0..count {
         let roll = rng.below(100);
-        let tier: u8 = if roll < 55 { 1 } else if roll < 85 { 2 } else { 3 };
-        let templates: Vec<_> = content.contracts.contract.iter().filter(|c| c.tier == tier).collect();
+        let tier: u8 = if roll < 55 {
+            1
+        } else if roll < 85 {
+            2
+        } else {
+            3
+        };
+        let templates: Vec<_> = content
+            .contracts
+            .contract
+            .iter()
+            .filter(|c| c.tier == tier)
+            .collect();
         if templates.is_empty() || content.corps.corp.is_empty() {
             continue;
         }
         let tmpl = templates[rng.below(u32::try_from(templates.len()).unwrap_or(1)) as usize];
-        let corp = &content.corps.corp[rng.below(u32::try_from(content.corps.corp.len()).unwrap_or(1)) as usize];
-        let fixers: Vec<_> = content.corps.fixer.iter().filter(|f| f.num != corp.patron).collect();
+        let corp = &content.corps.corp
+            [rng.below(u32::try_from(content.corps.corp.len()).unwrap_or(1)) as usize];
+        let fixers: Vec<_> = content
+            .corps
+            .fixer
+            .iter()
+            .filter(|f| f.num != corp.patron)
+            .collect();
         if fixers.is_empty() {
             continue;
         }
         let fixer = fixers[rng.below(u32::try_from(fixers.len()).unwrap_or(1)) as usize];
         out.push(Contract {
-            id: u32::try_from(day.max(0)).unwrap_or(0).saturating_mul(16) + u32::try_from(k).unwrap_or(0),
+            id: u32::try_from(day.max(0)).unwrap_or(0).saturating_mul(16)
+                + u32::try_from(k).unwrap_or(0),
             tmpl: tmpl.num,
             corp: corp.num,
             fixer: fixer.num,
@@ -192,4 +221,16 @@ pub fn gen_contracts(content: &Content, rng: &mut DoorRng, day: i64, count: usiz
         });
     }
     out
+}
+
+/// The board a visitor sees before any nightly tick has run (a new board, or a replay with no
+/// world): the same jobs for everyone on a given day.
+#[must_use]
+pub fn first_board(content: &Content, today: i64) -> Vec<Contract> {
+    gen_contracts(
+        content,
+        &mut DoorRng::from_label("nullroute-first-board", today),
+        today,
+        NIGHTLY_CONTRACTS,
+    )
 }

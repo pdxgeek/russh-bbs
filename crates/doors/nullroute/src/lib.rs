@@ -25,7 +25,11 @@
 //! hideouts, bounties and the fixer arcs on top of `Player::standing`.
 
 #![forbid(unsafe_code)]
+// The run and the screens are state machines and one-screen-per-view lists; splitting them by line
+// count would scatter one rule across files. Run state is a set of independent flags.
+#![allow(clippy::too_many_lines, clippy::struct_excessive_bools)]
 
+pub mod autoplay;
 pub mod content;
 pub mod net;
 pub mod player;
@@ -38,7 +42,8 @@ use std::sync::Arc;
 
 use russh_bbs_door::tick::{TickCtx, TickError};
 use russh_bbs_door::{
-    BlobKind, Door, DoorInfo, DoorRng, DoorSession, InvalidDoorId, MigrateError, Save as SaveInput, Start,
+    BlobKind, Door, DoorInfo, DoorRng, DoorSession, InvalidDoorId, MigrateError, Save as SaveInput,
+    Start,
 };
 
 use crate::content::Content;
@@ -99,7 +104,15 @@ impl Door for Nullroute {
 
     fn open(&self, start: Start<'_>, rng: &mut DoorRng) -> Box<dyn DoorSession> {
         let today = start.today.as_raw();
-        let fresh = |rng: &mut DoorRng| Player::new(&self.content, rng.next_u64(), &start.env.handle, start.season, today);
+        let fresh = |rng: &mut DoorRng| {
+            Player::new(
+                &self.content,
+                rng.next_u64(),
+                &start.env.handle,
+                start.season,
+                today,
+            )
+        };
         let (mut player, saved) = match start.save {
             SaveInput::Fresh => (fresh(rng), Vec::new()),
             SaveInput::Loaded { bytes, .. } => match save::decode(bytes) {
@@ -132,7 +145,10 @@ impl Door for Nullroute {
     }
 
     fn daily_tick(&self, tick: &mut TickCtx<'_>) -> Result<(), TickError> {
-        let mut world = tick.world().and_then(save::decode_world).unwrap_or_default();
+        let mut world = tick
+            .world()
+            .and_then(save::decode_world)
+            .unwrap_or_default();
         let day = tick.day().as_raw();
         world.nightly(&self.content, tick.rng(), day);
         tick.set_world(save::encode_world(&world));

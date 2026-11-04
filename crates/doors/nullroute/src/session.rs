@@ -5,13 +5,13 @@
 
 use std::sync::Arc;
 
-use russh_bbs_door::{Canvas, Ctx, DoorEnv, DoorKey, DoorRng, DoorSession, DoorStyle, Flow};
+use russh_bbs_door::{Canvas, Ctx, DoorEnv, DoorKey, DoorSession, DoorStyle, Flow};
 
 use crate::content::Content;
 use crate::player::{DECK_MAX, JACK_IN_CYCLES, PARTS, Player};
 use crate::run::{Act, Refused, Run, Status, TRACE_MAX};
 use crate::save;
-use crate::world::{Contract, World, gen_contracts};
+use crate::world::{Contract, World};
 
 type Line = (String, DoorStyle);
 
@@ -54,12 +54,18 @@ fn letter(c: char) -> Option<usize> {
 }
 
 fn digit(c: char) -> Option<usize> {
-    c.to_digit(10).and_then(|d| usize::try_from(d).ok()).filter(|d| *d >= 1)
+    c.to_digit(10)
+        .and_then(|d| usize::try_from(d).ok())
+        .filter(|d| *d >= 1)
 }
 
 fn bar(trace: u32) -> String {
     let filled = usize::try_from(trace.min(TRACE_MAX) / 5).unwrap_or(0);
-    format!("[{}{}] {trace:>3}/{TRACE_MAX}", "#".repeat(filled), "-".repeat(20 - filled))
+    format!(
+        "[{}{}] {trace:>3}/{TRACE_MAX}",
+        "#".repeat(filled),
+        "-".repeat(20 - filled)
+    )
 }
 
 impl Session {
@@ -76,12 +82,13 @@ impl Session {
             msgs.push((note, DoorStyle::Accent));
         }
         let mut offers: Vec<Contract> = if world.board.is_empty() {
-            gen_contracts(&content, &mut DoorRng::from_label("nullroute-first-board", today), today, 5)
+            crate::world::first_board(&content, today)
         } else {
             world.board.clone()
         };
         offers.retain(|c| c.expires >= today);
-        offers.sort_by_key(|c| std::cmp::Reverse(c.id));
+        // Jobs you can take first, the best pay first.
+        offers.sort_by_key(|c| (p.closed(&content, c).is_some(), std::cmp::Reverse(c.reward)));
         offers.truncate(9);
         Self {
             content,
@@ -122,7 +129,23 @@ impl Session {
         );
         match self.p.closed(&self.content, c) {
             Some(why) => (format!("{text}  ({why})"), DoorStyle::Dim),
-            None => (text, DoorStyle::Plain),
+            None => match tmpl {
+                // Say so before the player walks to the briefing: the deck has no tool for it.
+                Some(t)
+                    if !self
+                        .p
+                        .deck
+                        .iter()
+                        .filter_map(|n| self.content.script(*n))
+                        .any(|s| s.effect == t.effect) =>
+                {
+                    (
+                        format!("{text}  (no {:?} script in the deck)", t.effect),
+                        DoorStyle::Dim,
+                    )
+                }
+                _ => (text, DoorStyle::Plain),
+            },
         }
     }
 
@@ -154,13 +177,24 @@ impl Session {
                             "{} {}{}",
                             c.rig.part.get(i).map_or("?", |d| d.name.as_str()),
                             p.rig.get(i).copied().unwrap_or(0),
-                            if p.fried & (1 << i) != 0 { " FRIED" } else { "" }
+                            if p.fried & (1 << i) != 0 {
+                                " FRIED"
+                            } else {
+                                ""
+                            }
                         )
                     })
                     .collect();
                 out.push((format!("Rig: {}", parts.join(", ")), Plain));
                 out.push((
-                    format!("Deck {}/{} slots, memory {}/{}: {}", p.deck.len(), p.slots(), p.deck_memory(c), p.memory(), self.deck_names()),
+                    format!(
+                        "Deck {}/{} slots, memory {}/{}: {}",
+                        p.deck.len(),
+                        p.slots(),
+                        p.deck_memory(c),
+                        p.memory(),
+                        self.deck_names()
+                    ),
                     Plain,
                 ));
                 out.push((
@@ -180,13 +214,20 @@ impl Session {
                         c.corps
                             .fixer
                             .iter()
-                            .map(|f| format!("{} {:+}", f.name, p.standing.get(usize::from(f.num)).copied().unwrap_or(0)))
+                            .map(|f| format!(
+                                "{} {:+}",
+                                f.name,
+                                p.standing.get(usize::from(f.num)).copied().unwrap_or(0)
+                            ))
                             .collect::<Vec<_>>()
                             .join("  ")
                     ),
                     Dim,
                 ));
-                out.push((format!("Runs {}  Jobs {}  Burned {}", p.runs, p.jobs, p.burns), Dim));
+                out.push((
+                    format!("Runs {}  Jobs {}  Burned {}", p.runs, p.jobs, p.burns),
+                    Dim,
+                ));
                 out.push((String::new(), Plain));
                 out.extend(self.msgs.iter().cloned());
                 out.push((String::new(), Plain));
@@ -207,7 +248,13 @@ impl Session {
             View::Brief(contract) => out.extend(self.brief_lines(contract)),
             View::Deck(page) => {
                 out.push((
-                    format!("DECK  {}/{} slots  memory {}/{}", p.deck.len(), p.slots(), p.deck_memory(c), p.memory()),
+                    format!(
+                        "DECK  {}/{} slots  memory {}/{}",
+                        p.deck.len(),
+                        p.slots(),
+                        p.deck_memory(c),
+                        p.memory()
+                    ),
                     Accent,
                 ));
                 let start = page * PAGE;
@@ -224,7 +271,11 @@ impl Session {
                                 s.power,
                                 s.memory,
                                 s.noise,
-                                if s.min_skill > 0 { format!(" skill {}", s.min_skill) } else { String::new() },
+                                if s.min_skill > 0 {
+                                    format!(" skill {}", s.min_skill)
+                                } else {
+                                    String::new()
+                                },
                             ),
                             if p.deck.contains(num) { Strong } else { Plain },
                         ));
@@ -234,11 +285,27 @@ impl Session {
                 out.push(("[a-l] load/unload  [n]/[p] page  [Esc] back".into(), Strong));
             }
             View::Shop(page) => {
-                out.push((format!("SCRIPT SHOP  marks {}  market {}%", p.marks, self.world.market_pct), Accent));
+                out.push((
+                    format!(
+                        "SCRIPT SHOP  marks {}  market {}%",
+                        p.marks, self.world.market_pct
+                    ),
+                    Accent,
+                ));
                 let start = page * PAGE;
-                for (i, s) in self.for_sale().into_iter().enumerate().skip(start).take(PAGE) {
+                for (i, s) in self
+                    .for_sale()
+                    .into_iter()
+                    .enumerate()
+                    .skip(start)
+                    .take(PAGE)
+                {
                     let price = s.price * self.world.market_pct / 100;
-                    let gate = if p.rep < s.min_rep { format!(" (rep {})", s.min_rep) } else { String::new() };
+                    let gate = if p.rep < s.min_rep {
+                        format!(" (rep {})", s.min_rep)
+                    } else {
+                        String::new()
+                    };
                     out.push((
                         format!(
                             "[{}] {:<17} {:<7} pow {} mem {} {:>4} marks{gate}  {}",
@@ -250,7 +317,11 @@ impl Session {
                             price,
                             s.blurb
                         ),
-                        if p.rep < s.min_rep || p.marks < price { Dim } else { Plain },
+                        if p.rep < s.min_rep || p.marks < price {
+                            Dim
+                        } else {
+                            Plain
+                        },
                     ));
                 }
                 out.extend(self.msgs.iter().cloned());
@@ -264,7 +335,11 @@ impl Session {
                     let now = if lvl == 0 {
                         "stock".to_owned()
                     } else {
-                        c.rig.part.get(i).and_then(|d| d.levels.get(lvl - 1)).map_or("?".into(), |l| l.name.clone())
+                        c.rig
+                            .part
+                            .get(i)
+                            .and_then(|d| d.levels.get(lvl - 1))
+                            .map_or("?".into(), |l| l.name.clone())
                     };
                     let next = p
                         .upgrade_cost(c, i)
@@ -274,26 +349,57 @@ impl Session {
                     } else {
                         String::new()
                     };
-                    out.push((format!("[{}] {name:<15} {now:<20} {next}{fried}", i + 1), Plain));
+                    out.push((
+                        format!("[{}] {name:<15} {now:<20} {next}{fried}", i + 1),
+                        Plain,
+                    ));
                 }
                 out.push(("cpu +4 cycles. memory +4 mem +1 slot. cooling: fewer fries. interface: +5% success. shield: -6% trace.".into(), Dim));
                 out.extend(self.msgs.iter().cloned());
-                out.push(("[1-5] upgrade  [x] repair a fried part  [Esc] back".into(), Strong));
+                out.push((
+                    "[1-5] upgrade  [x] repair a fried part  [Esc] back".into(),
+                    Strong,
+                ));
             }
             View::Hideout => {
                 let h = &c.rig.hideout;
-                out.push((format!("HIDEOUT  marks {} (safe {})", p.marks, p.stash), Accent));
-                out.push((format!("Bots: {}/{} earning {} each a night.", p.bots, h.bot_max, h.bot_income), Plain));
-                out.push((format!("Workbench: {}", if p.workbench { "built (coding comes later)" } else { "not built" }), Plain));
+                out.push((
+                    format!("HIDEOUT  marks {} (safe {})", p.marks, p.stash),
+                    Accent,
+                ));
+                out.push((
+                    format!(
+                        "Bots: {}/{} earning {} each a night.",
+                        p.bots, h.bot_max, h.bot_income
+                    ),
+                    Plain,
+                ));
+                out.push((
+                    format!(
+                        "Workbench: {}",
+                        if p.workbench {
+                            "built (coding comes later)"
+                        } else {
+                            "not built"
+                        }
+                    ),
+                    Plain,
+                ));
                 out.push((
                     format!(
                         "Fence: {} at {} percent.",
-                        c.rig.fence.get(usize::from(p.fence)).map_or("?", |f| f.name.as_str()),
+                        c.rig
+                            .fence
+                            .get(usize::from(p.fence))
+                            .map_or("?", |f| f.name.as_str()),
                         c.fence_rate(p.fence)
                     ),
                     Plain,
                 ));
-                out.push(("Heat 50 and up brings raids; the safe is never touched.".into(), Dim));
+                out.push((
+                    "Heat 50 and up brings raids; the safe is never touched.".into(),
+                    Dim,
+                ));
                 out.extend(self.msgs.iter().cloned());
                 out.push((
                     format!("[b] bot {}  [w] workbench {}  [f] better fence  [s] safe +{}  [t] take {}  [Esc] back", h.bot_cost, h.workbench_cost, h.stash_step, h.stash_step),
@@ -319,7 +425,11 @@ impl Session {
             .filter_map(|n| self.content.script(*n))
             .map(|s| s.name.as_str())
             .collect();
-        if names.is_empty() { "(empty)".into() } else { names.join(", ") }
+        if names.is_empty() {
+            "(empty)".into()
+        } else {
+            names.join(", ")
+        }
     }
 
     fn for_sale(&self) -> Vec<&crate::content::ScriptDef> {
@@ -345,28 +455,48 @@ impl Session {
             Accent,
         )];
         if let Some(corp) = corp {
-            out.push((format!("Target: {} (tier {})", corp.name, contract.tier), Plain));
+            out.push((
+                format!("Target: {} (tier {})", corp.name, contract.tier),
+                Plain,
+            ));
             out.push((crate::run::corp_intel(corp), Dim));
         }
         if let Some(t) = tmpl {
             out.push((
-                format!("Objective: {} at the {} node; you need a {:?} script in the deck.", t.verb, t.target, t.effect),
+                format!(
+                    "Objective: {} at the {} node; you need a {:?} script in the deck.",
+                    t.verb, t.target, t.effect
+                ),
                 Plain,
             ));
         }
-        out.push((format!("Pays {}.  Heat on success about +{}.", contract.reward, tmpl.map_or(0, |t| t.heat)), Plain));
+        out.push((
+            format!(
+                "Pays {}.  Heat on success about +{}.",
+                contract.reward,
+                tmpl.map_or(0, |t| t.heat)
+            ),
+            Plain,
+        ));
         if let Some(state) = self.world.net(contract.corp, contract.tier) {
             out.push((
                 format!(
                     "Street word: alert {}, {} open hole(s){}.",
                     state.alert,
                     state.holes.len(),
-                    if state.backdoor { ", a backdoor is in" } else { "" }
+                    if state.backdoor {
+                        ", a backdoor is in"
+                    } else {
+                        ""
+                    }
                 ),
                 Dim,
             ));
         } else {
-            out.push(("Street word: nothing has been broken there lately.".into(), Dim));
+            out.push((
+                "Street word: nothing has been broken there lately.".into(),
+                Dim,
+            ));
         }
         out.push((format!("Deck: {}", self.deck_names()), Plain));
         out.push((
@@ -391,7 +521,11 @@ impl Session {
                 self.corp_name(net.corp),
                 net.tier,
                 effect,
-                if run.objective_done() { "  DONE - jack out" } else { "" }
+                if run.objective_done() {
+                    "  DONE - jack out"
+                } else {
+                    ""
+                }
             ),
             Accent,
         ));
@@ -406,17 +540,28 @@ impl Session {
             flags.push_str(" [ALARM]");
         }
         out.push((
-            format!("TRACE {}  cycles {}  soak {}{flags}", bar(run.trace), run.cycles, run.buffer()),
+            format!(
+                "TRACE {}  cycles {}  soak {}{flags}",
+                bar(run.trace),
+                run.cycles,
+                run.buffer()
+            ),
             if run.trace >= 70 { Bad } else { Plain },
         ));
         let here = net.nodes.get(usize::from(run.at));
         out.push((
-            format!("At {}", here.map_or(String::new(), |_| run.describe(c, run.at))),
+            format!(
+                "At {}",
+                here.map_or(String::new(), |_| run.describe(c, run.at))
+            ),
             Strong,
         ));
         let exits = run.exits();
         for (i, id) in exits.iter().enumerate().take(7) {
-            out.push((format!("  {}) {}", i + 1, run.describe(c, *id)), if run.is_open(*id) { Plain } else { Dim }));
+            out.push((
+                format!("  {}) {}", i + 1, run.describe(c, *id)),
+                if run.is_open(*id) { Plain } else { Dim },
+            ));
         }
         if exits.is_empty() {
             out.push(("  no known exits: scan for hidden links".into(), Dim));
@@ -436,7 +581,11 @@ impl Session {
             .enumerate()
             .map(|(i, slot)| {
                 let s = c.script(slot.script);
-                let left = if slot.left == u32::MAX { String::new() } else { format!(" x{}", slot.left) };
+                let left = if slot.left == u32::MAX {
+                    String::new()
+                } else {
+                    format!(" x{}", slot.left)
+                };
                 format!(
                     "[{}] {} p{}{left}",
                     char::from(b'a' + u8::try_from(i).unwrap_or(0)),
@@ -449,12 +598,18 @@ impl Session {
             deck.push(String::new());
         }
         for pair in deck.chunks(2) {
-            out.push((format!("{:<38}{}", pair[0], pair.get(1).map_or("", String::as_str)), Good));
+            out.push((
+                format!("{:<38}{}", pair[0], pair.get(1).map_or("", String::as_str)),
+                Good,
+            ));
         }
         let keys = match active.aim {
             Some(slot) => format!(
                 "Aim {}: press 1-9 for the target node, Esc to cancel",
-                run.deck.get(slot).and_then(|s| c.script(s.script)).map_or("?", |s| s.name.as_str())
+                run.deck
+                    .get(slot)
+                    .and_then(|s| c.script(s.script))
+                    .map_or("?", |s| s.name.as_str())
             ),
             None => "[1-9] move  [a-f] script  [o] jack out".to_owned(),
         };
@@ -479,7 +634,10 @@ impl Session {
         let contract = active.contract;
         let mut notes: Vec<String> = active.run.log.iter().rev().take(6).rev().cloned().collect();
         notes.push(String::new());
-        notes.extend(self.p.finish_run(&self.content, &contract, &result, ctx.rng()));
+        notes.extend(
+            self.p
+                .finish_run(&self.content, &contract, &result, ctx.rng()),
+        );
         let (corp, tier) = (contract.corp, contract.tier);
         self.world.apply_run(corp, tier, &result);
         let applied = result.clone();
@@ -492,17 +650,24 @@ impl Session {
     }
 
     fn run_key(&mut self, key: DoorKey, ctx: &mut Ctx<'_>) {
-        let View::Run(active) = &mut self.view else { return };
+        let View::Run(active) = &mut self.view else {
+            return;
+        };
         let content = Arc::clone(&self.content);
         let act = match (key, active.aim) {
             (DoorKey::Escape, Some(_)) => {
                 active.aim = None;
                 return;
             }
-            (DoorKey::Char(ch), Some(slot)) => digit(ch).and_then(|n| active.run.exits().get(n - 1).copied()).map(|t| {
-                active.aim = None;
-                Act::Use { slot, target: Some(t) }
-            }),
+            (DoorKey::Char(ch), Some(slot)) => digit(ch)
+                .and_then(|n| active.run.exits().get(n - 1).copied())
+                .map(|t| {
+                    active.aim = None;
+                    Act::Use {
+                        slot,
+                        target: Some(t),
+                    }
+                }),
             (DoorKey::Char(ch), None) => {
                 if let Some(n) = digit(ch) {
                     active.run.exits().get(n - 1).copied().map(Act::Move)
@@ -536,7 +701,9 @@ impl Session {
             }
         }
         if active.run.status != Status::Active {
-            let View::Run(finished) = std::mem::replace(&mut self.view, View::Home) else { return };
+            let View::Run(finished) = std::mem::replace(&mut self.view, View::Home) else {
+                return;
+            };
             self.finish_run(ctx, &finished);
         }
     }
@@ -588,7 +755,11 @@ impl Session {
                     'j' => match self.p.begin_run(&c, self.season, &self.world, &contract) {
                         Ok(run) => {
                             self.msgs.clear();
-                            self.view = View::Run(Box::new(Active { run, contract, aim: None }));
+                            self.view = View::Run(Box::new(Active {
+                                run,
+                                contract,
+                                aim: None,
+                            }));
                         }
                         Err(why) => self.say(Err(why)),
                     },
@@ -598,14 +769,20 @@ impl Session {
             (View::Deck(page), DoorKey::Char(ch)) => {
                 let page = *page;
                 match ch.to_ascii_lowercase() {
-                    'n' if (page + 1) * PAGE < self.p.owned.len() => self.view = View::Deck(page + 1),
+                    'n' if (page + 1) * PAGE < self.p.owned.len() => {
+                        self.view = View::Deck(page + 1);
+                    }
                     'p' if page > 0 => self.view = View::Deck(page - 1),
                     other => {
                         if let Some(num) = letter(other)
                             .filter(|i| *i < PAGE)
                             .and_then(|i| self.p.owned.get(page * PAGE + i).copied())
                         {
-                            let r = if self.p.deck.contains(&num) { self.p.unload(&c, num) } else { self.p.load(&c, num) };
+                            let r = if self.p.deck.contains(&num) {
+                                self.p.unload(&c, num)
+                            } else {
+                                self.p.load(&c, num)
+                            };
                             self.say(r);
                         }
                     }
@@ -653,16 +830,13 @@ impl Session {
                     self.say(r);
                 }
             }
-            (View::Debrief(_), DoorKey::Enter | DoorKey::Escape | DoorKey::Char(' ')) => {
-                self.msgs.clear();
-                self.view = View::Home;
-            }
             (View::Contracts | View::Brief(_), DoorKey::Escape) => {
                 let back = matches!(self.view, View::Brief(_));
                 self.msgs.clear();
                 self.view = if back { View::Contracts } else { View::Home };
             }
-            (View::Deck(_) | View::Shop(_) | View::Rig | View::Hideout, DoorKey::Escape) => {
+            (View::Deck(_) | View::Shop(_) | View::Rig | View::Hideout, DoorKey::Escape)
+            | (View::Debrief(_), DoorKey::Enter | DoorKey::Escape | DoorKey::Char(' ')) => {
                 self.msgs.clear();
                 self.view = View::Home;
             }
@@ -716,6 +890,9 @@ impl DoorSession for Session {
     }
 
     fn look_around(&self, _env: &DoorEnv) -> Vec<String> {
-        self.lines(usize::MAX / 4).into_iter().map(|(text, _)| text).collect()
+        self.lines(usize::MAX / 4)
+            .into_iter()
+            .map(|(text, _)| text)
+            .collect()
     }
 }

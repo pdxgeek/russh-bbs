@@ -6,16 +6,18 @@
 use russh_bbs_door::DoorRng;
 
 use crate::content::{Content, Family};
-use crate::run::{Run, RunResult, RunSetup, Status};
 use crate::net::Network;
+use crate::run::{Run, RunResult, RunSetup, Status};
 use crate::world::{Contract, World};
 
+/// Marks a new character starts with: enough for one tool script and a proxy.
+pub const START_MARKS: u32 = 90;
 /// The deck's hard limit on scripts.
 pub const DECK_MAX: usize = 6;
 /// Cycles a day with a bare rig.
 pub const BASE_CYCLES: u32 = 40;
 /// Cycles to jack in.
-pub const JACK_IN_CYCLES: u32 = 4;
+pub const JACK_IN_CYCLES: u32 = 5;
 /// The most days of catch-up applied after time away.
 pub const MAX_CATCH_UP_DAYS: i64 = 7;
 /// Heat is capped here.
@@ -108,14 +110,20 @@ impl Player {
     /// A new character with the starter scripts and nothing else.
     #[must_use]
     pub fn new(content: &Content, seed: u64, name: &str, season: u32, today: i64) -> Self {
-        let owned: Vec<u8> = content.scripts.script.iter().filter(|s| s.starter).map(|s| s.num).collect();
+        let owned: Vec<u8> = content
+            .scripts
+            .script
+            .iter()
+            .filter(|s| s.starter)
+            .map(|s| s.num)
+            .collect();
         let mut player = Self {
             seed,
             season,
             name: name.to_owned(),
             day: today,
             cycles: BASE_CYCLES,
-            marks: 60,
+            marks: START_MARKS,
             stash: 0,
             heat: 0,
             rep: 0,
@@ -195,7 +203,11 @@ impl Player {
     /// Memory the deck uses.
     #[must_use]
     pub fn deck_memory(&self, content: &Content) -> u32 {
-        self.deck.iter().filter_map(|n| content.script(*n)).map(|s| s.memory).sum()
+        self.deck
+            .iter()
+            .filter_map(|n| content.script(*n))
+            .map(|s| s.memory)
+            .sum()
     }
 
     /// The skill level in a family.
@@ -223,7 +235,11 @@ impl Player {
             return Err("Already loaded.".into());
         }
         if self.deck.len() >= self.slots() {
-            return Err(format!("No free slot ({} of {}).", self.deck.len(), self.slots()));
+            return Err(format!(
+                "No free slot ({} of {}).",
+                self.deck.len(),
+                self.slots()
+            ));
         }
         if self.deck_memory(content) + script.memory > self.memory() {
             return Err(format!(
@@ -250,16 +266,28 @@ impl Player {
     /// # Errors
     /// If it was not loaded.
     pub fn unload(&mut self, content: &Content, num: u8) -> Result<String, String> {
-        let at = self.deck.iter().position(|n| *n == num).ok_or("Not loaded.")?;
+        let at = self
+            .deck
+            .iter()
+            .position(|n| *n == num)
+            .ok_or("Not loaded.")?;
         self.deck.remove(at);
-        Ok(format!("{} unloaded.", content.script(num).map_or("script", |s| s.name.as_str())))
+        Ok(format!(
+            "{} unloaded.",
+            content.script(num).map_or("script", |s| s.name.as_str())
+        ))
     }
 
     /// Buy a script at the market price.
     ///
     /// # Errors
     /// Why not.
-    pub fn buy_script(&mut self, content: &Content, num: u8, market_pct: u32) -> Result<String, String> {
+    pub fn buy_script(
+        &mut self,
+        content: &Content,
+        num: u8,
+        market_pct: u32,
+    ) -> Result<String, String> {
         let script = content.script(num).ok_or("No such script.")?;
         if self.owned.contains(&num) {
             return Err("You already own it.".into());
@@ -268,7 +296,10 @@ impl Player {
             return Err("Not for sale.".into());
         }
         if self.rep < script.min_rep {
-            return Err(format!("Nobody sells you that yet (reputation {} needed).", script.min_rep));
+            return Err(format!(
+                "Nobody sells you that yet (reputation {} needed).",
+                script.min_rep
+            ));
         }
         let price = script.price * market_pct / 100;
         if self.marks < price {
@@ -283,7 +314,9 @@ impl Player {
     #[must_use]
     pub fn upgrade_cost(&self, content: &Content, part: usize) -> Option<u32> {
         let def = content.rig.part.get(part)?;
-        def.levels.get(usize::from(*self.rig.get(part)?)).map(|l| l.cost)
+        def.levels
+            .get(usize::from(*self.rig.get(part)?))
+            .map(|l| l.cost)
     }
 
     /// Upgrade a rig part.
@@ -294,7 +327,9 @@ impl Player {
         if self.fried & (1 << part) != 0 {
             return Err("Repair it first.".into());
         }
-        let cost = self.upgrade_cost(content, part).ok_or("Already at the top.")?;
+        let cost = self
+            .upgrade_cost(content, part)
+            .ok_or("Already at the top.")?;
         if self.marks < cost {
             return Err(format!("{cost} marks needed."));
         }
@@ -354,7 +389,10 @@ impl Player {
         }
         self.marks -= h.bot_cost;
         self.bots += 1;
-        Ok(format!("A bot starts earning: {} marks a night.", h.bot_income))
+        Ok(format!(
+            "A bot starts earning: {} marks a night.",
+            h.bot_income
+        ))
     }
 
     /// Build the workbench.
@@ -379,13 +417,20 @@ impl Player {
     /// # Errors
     /// Why not.
     pub fn upgrade_fence(&mut self, content: &Content) -> Result<String, String> {
-        let next = content.rig.fence.get(usize::from(self.fence) + 1).ok_or("This is the best fence there is.")?;
+        let next = content
+            .rig
+            .fence
+            .get(usize::from(self.fence) + 1)
+            .ok_or("This is the best fence there is.")?;
         if self.marks < next.cost {
             return Err(format!("{} marks needed.", next.cost));
         }
         self.marks -= next.cost;
         self.fence += 1;
-        Ok(format!("{} now takes your data at {} percent.", next.name, next.rate))
+        Ok(format!(
+            "{} now takes your data at {} percent.",
+            next.name, next.rate
+        ))
     }
 
     /// Move marks into the safe (`true`) or out of it.
@@ -394,14 +439,21 @@ impl Player {
     /// If there is nothing to move.
     pub fn move_stash(&mut self, content: &Content, into: bool) -> Result<String, String> {
         let step = content.rig.hideout.stash_step;
-        let (from, to) = if into { (&mut self.marks, &mut self.stash) } else { (&mut self.stash, &mut self.marks) };
+        let (from, to) = if into {
+            (&mut self.marks, &mut self.stash)
+        } else {
+            (&mut self.stash, &mut self.marks)
+        };
         let n = (*from).min(step);
         if n == 0 {
             return Err("Nothing to move.".into());
         }
         *from -= n;
         *to += n;
-        Ok(format!("{n} marks {} the safe.", if into { "into" } else { "out of" }))
+        Ok(format!(
+            "{n} marks {} the safe.",
+            if into { "into" } else { "out of" }
+        ))
     }
 
     /// The price of one proxy now (heat makes them dearer).
@@ -425,7 +477,10 @@ impl Player {
         }
         self.marks -= price;
         self.proxies += 1;
-        Ok(format!("Proxy bought for {price}: it will soak {} trace.", content.rig.hideout.proxy_buffer))
+        Ok(format!(
+            "Proxy bought for {price}: it will soak {} trace.",
+            content.rig.hideout.proxy_buffer
+        ))
     }
 
     /// Spend cycles keeping your head down.
@@ -449,15 +504,25 @@ impl Player {
     #[must_use]
     pub fn closed(&self, content: &Content, contract: &Contract) -> Option<String> {
         let fixer = content.fixer(contract.fixer)?;
-        let standing = self.standing.get(usize::from(contract.fixer)).copied().unwrap_or(0);
+        let standing = self
+            .standing
+            .get(usize::from(contract.fixer))
+            .copied()
+            .unwrap_or(0);
         if standing <= -3 {
             return Some(format!("{} will not deal with you.", fixer.name));
         }
         if contract.tier >= 2 && self.rep < if contract.tier == 2 { 10 } else { 40 } {
-            return Some(format!("Needs reputation {}.", if contract.tier == 2 { 10 } else { 40 }));
+            return Some(format!(
+                "Needs reputation {}.",
+                if contract.tier == 2 { 10 } else { 40 }
+            ));
         }
         if contract.tier == 3 && standing < 2 {
-            return Some(format!("{} wants to trust you first (standing 2).", fixer.name));
+            return Some(format!(
+                "{} wants to trust you first (standing 2).",
+                fixer.name
+            ));
         }
         if (contract.tier == 3 && self.heat >= 60) || (contract.tier == 2 && self.heat >= 85) {
             return Some("Too hot: the fixer is staying away from you.".into());
@@ -489,14 +554,25 @@ impl Player {
             return Err("Your deck is empty.".into());
         }
         if self.deck.len() > self.slots() || self.deck_memory(content) > self.memory() {
-            return Err("Your deck no longer fits the rig (a part is fried). Unload something.".into());
+            return Err(
+                "Your deck no longer fits the rig (a part is fried). Unload something.".into(),
+            );
         }
         let tmpl = content.contract(contract.tmpl).ok_or("Unknown contract.")?;
-        if !self.deck.iter().filter_map(|n| content.script(*n)).any(|s| s.effect == tmpl.effect) {
-            return Err(format!("The job needs a {:?} script in your deck.", tmpl.effect));
+        if !self
+            .deck
+            .iter()
+            .filter_map(|n| content.script(*n))
+            .any(|s| s.effect == tmpl.effect)
+        {
+            return Err(format!(
+                "The job needs a {:?} script in your deck.",
+                tmpl.effect
+            ));
         }
         let corp = content.corp(contract.corp).ok_or("Unknown corporation.")?;
-        let net = Network::generate(content, season, corp, contract.tier).ok_or("The network will not load.")?;
+        let net = Network::generate(content, season, corp, contract.tier)
+            .ok_or("The network will not load.")?;
         let state = world.net(contract.corp, contract.tier);
         let setup = RunSetup {
             net,
@@ -540,10 +616,13 @@ impl Player {
                 self.cycles = 0;
                 let add = 10 + 3 * u32::from(contract.tier);
                 self.heat = (self.heat + add).min(HEAT_MAX);
-                notes.push(format!("Burned. Heat +{add}. The rest of the day is gone, and the loot with it."));
+                notes.push(format!(
+                    "Burned. Heat +{add}. The rest of the day is gone, and the loot with it."
+                ));
                 let fry = 80u32.saturating_sub(20 * u32::from(self.level(part::COOLING)));
                 if rng.chance(fry, 100) {
-                    let live: Vec<usize> = (0..PARTS).filter(|p| self.fried & (1 << p) == 0).collect();
+                    let live: Vec<usize> =
+                        (0..PARTS).filter(|p| self.fried & (1 << p) == 0).collect();
                     if !live.is_empty() {
                         let p = live[rng.below(u32::try_from(live.len()).unwrap_or(1)) as usize];
                         self.fried |= 1 << p;
@@ -563,7 +642,8 @@ impl Player {
                     pay += contract.reward;
                     self.jobs += 1;
                     self.rep += 3 * u32::from(contract.tier);
-                    let heat = contract.tier.pow(2) as u32 + content.contract(contract.tmpl).map_or(0, |t| t.heat);
+                    let heat = u32::from(contract.tier).pow(2)
+                        + content.contract(contract.tmpl).map_or(0, |t| t.heat);
                     let heat = heat + if result.peak >= 80 { 3 } else { 0 };
                     let heat = heat.saturating_sub(result.heat_cut);
                     self.heat = (self.heat + heat).min(HEAT_MAX);
@@ -572,9 +652,14 @@ impl Player {
                         self.done.remove(0);
                     }
                     self.done.push(contract.id);
-                    notes.push(format!("Job done: {} paid, {sold} for the data. Heat +{heat}.", contract.reward));
+                    notes.push(format!(
+                        "Job done: {} paid, {sold} for the data. Heat +{heat}.",
+                        contract.reward
+                    ));
                 } else if sold > 0 {
-                    notes.push(format!("You got out with data worth {sold}, but not the job."));
+                    notes.push(format!(
+                        "You got out with data worth {sold}, but not the job."
+                    ));
                 } else {
                     notes.push("You got out with nothing.".into());
                 }
@@ -592,10 +677,10 @@ impl Player {
             }
         };
         bump(&mut self.standing, contract.fixer, 1);
-        if let Some(corp) = content.corp(contract.corp) {
-            if corp.patron != contract.fixer {
-                bump(&mut self.standing, corp.patron, -1);
-            }
+        if let Some(corp) = content.corp(contract.corp)
+            && corp.patron != contract.fixer
+        {
+            bump(&mut self.standing, corp.patron, -1);
         }
     }
 
@@ -636,7 +721,9 @@ impl Player {
                     ""
                 };
                 self.heat = self.heat.saturating_sub(10);
-                notes.push(format!("RAID on the hideout: {lost} marks{bot} gone. The safe held."));
+                notes.push(format!(
+                    "RAID on the hideout: {lost} marks{bot} gone. The safe held."
+                ));
             }
             self.heat = self.heat.saturating_sub(h.heat_decay);
         }

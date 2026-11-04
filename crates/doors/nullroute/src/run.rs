@@ -154,6 +154,37 @@ pub struct RunResult {
     pub xp: [u32; 5],
 }
 
+/// What the player knows of one node.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NodeView {
+    /// The node's id.
+    pub id: NodeId,
+    /// The name, such as `FW-3`.
+    pub name: String,
+    /// The type's name.
+    pub kind: String,
+    /// The type's two-letter code.
+    pub code: String,
+    /// How deep the node is (0 is the entry).
+    pub depth: u8,
+    /// Whether it has been scanned.
+    pub scanned: bool,
+    /// Whether it can be entered.
+    pub open: bool,
+    /// The lock and its level, if scanned and still locked.
+    pub lock: Option<(Lock, u8)>,
+    /// The patrol, if scanned.
+    pub patrol: Patrol,
+    /// The patrol's level.
+    pub patrol_level: u8,
+    /// Whether a jam switched the patrol off.
+    pub patrol_off: bool,
+    /// A black wall that was purged.
+    pub wall_breached: bool,
+    /// A scan showed it is a honeypot.
+    pub honeypot: bool,
+}
+
 /// A run in progress.
 #[derive(Debug, Clone)]
 pub struct Run {
@@ -371,7 +402,9 @@ impl Run {
         if base == 0 || self.status != Status::Active {
             return;
         }
-        let mut value = base * self.corp_trace_pct / 100;
+        // Deeper tiers are watched harder: x1.0, x1.3, x1.6.
+        let tier_pct = 100 + 30 * (u32::from(self.setup.net.tier.clamp(1, 3)) - 1);
+        let mut value = base * self.corp_trace_pct / 100 * tier_pct / 100;
         if self.alarm {
             value = value * 3 / 2;
         }
@@ -454,8 +487,19 @@ impl Run {
         }
         self.cycles -= 1;
         let (name, kind, patrol, honeypot, level) = {
-            let node = self.setup.net.nodes.get(usize::from(to)).ok_or(Refused::NotAdjacent)?;
-            (node.name.clone(), node.kind, node.patrol, node.honeypot, self.security(to))
+            let node = self
+                .setup
+                .net
+                .nodes
+                .get(usize::from(to))
+                .ok_or(Refused::NotAdjacent)?;
+            (
+                node.name.clone(),
+                node.kind,
+                node.patrol,
+                node.honeypot,
+                self.security(to),
+            )
         };
         self.at = to;
         self.visited |= bit(to);
@@ -497,7 +541,10 @@ impl Run {
         rng: &mut DoorRng,
     ) -> Result<(), Refused> {
         let slot_state = *self.deck.get(slot).ok_or(Refused::NoSlot)?;
-        let script = content.script(slot_state.script).ok_or(Refused::NoSlot)?.clone();
+        let script = content
+            .script(slot_state.script)
+            .ok_or(Refused::NoSlot)?
+            .clone();
         if slot_state.left == 0 {
             return Err(Refused::NoCharges);
         }
@@ -517,10 +564,10 @@ impl Run {
             return Err(Refused::NoCycles);
         }
         self.cycles -= cost;
-        if let Some(slot_mut) = self.deck.get_mut(slot) {
-            if slot_mut.left != u32::MAX {
-                slot_mut.left -= 1;
-            }
+        if let Some(slot_mut) = self.deck.get_mut(slot)
+            && slot_mut.left != u32::MAX
+        {
+            slot_mut.left -= 1;
         }
         self.apply(content, &script, aimed, rng);
         self.ambient(false);
@@ -528,9 +575,16 @@ impl Run {
     }
 
     /// Whether the script can do anything at all here; if not, it is refused for free.
-    fn check_useful(&self, content: &Content, script: &ScriptDef, target: Option<NodeId>) -> Result<(), Refused> {
+    fn check_useful(
+        &self,
+        content: &Content,
+        script: &ScriptDef,
+        target: Option<NodeId>,
+    ) -> Result<(), Refused> {
         let here = self.setup.net.nodes.get(usize::from(self.at));
-        let code_here = here.and_then(|n| content.node(n.kind)).map(|d| d.code.as_str());
+        let code_here = here
+            .and_then(|n| content.node(n.kind))
+            .map(|d| d.code.as_str());
         match script.effect {
             Effect::Crack | Effect::Spoof | Effect::Overflow => {
                 let id = target.ok_or(Refused::NeedsTarget)?;
@@ -541,7 +595,9 @@ impl Run {
             Effect::Jam => {
                 let id = target.ok_or(Refused::NeedsTarget)?;
                 let patrol = self.setup.net.nodes.get(usize::from(id)).map(|n| n.patrol);
-                if !matches!(patrol, Some(Patrol::Sentry | Patrol::Tracer)) || self.jammed & bit(id) != 0 {
+                if !matches!(patrol, Some(Patrol::Sentry | Patrol::Tracer))
+                    || self.jammed & bit(id) != 0
+                {
                     return Err(Refused::NothingToDo);
                 }
             }
@@ -567,11 +623,7 @@ impl Run {
                     return Err(Refused::NothingToDo);
                 }
             }
-            Effect::Cutfeed => {
-                if !self.feed {
-                    return Err(Refused::NothingToDo);
-                }
-            }
+            Effect::Cutfeed if !self.feed => return Err(Refused::NothingToDo),
             _ => {}
         }
         Ok(())
@@ -583,7 +635,13 @@ impl Run {
         }
     }
 
-    fn apply(&mut self, content: &Content, script: &ScriptDef, target: Option<NodeId>, rng: &mut DoorRng) {
+    fn apply(
+        &mut self,
+        content: &Content,
+        script: &ScriptDef,
+        target: Option<NodeId>,
+        rng: &mut DoorRng,
+    ) {
         let power = script.power;
         match script.effect {
             Effect::Scan => {
@@ -711,7 +769,11 @@ impl Run {
         };
         let (name, node_lock) = (node.name.clone(), node.lock);
         if node_lock != Some(lock) {
-            self.say(format!("{}: {name} is not a {} lock. Wasted.", script.name, lock.word()));
+            self.say(format!(
+                "{}: {name} is not a {} lock. Wasted.",
+                script.name,
+                lock.word()
+            ));
             self.add_trace(script.noise, true);
             return;
         }
@@ -730,39 +792,67 @@ impl Run {
 
     fn jam(&mut self, script: &ScriptDef, id: NodeId, rng: &mut DoorRng) {
         let level = self.security(id);
-        let name = self.setup.net.nodes.get(usize::from(id)).map(|n| n.name.clone()).unwrap_or_default();
+        let name = self
+            .setup
+            .net
+            .nodes
+            .get(usize::from(id))
+            .map(|n| n.name.clone())
+            .unwrap_or_default();
         if self.roll(script, level, rng) {
             self.jammed |= bit(id);
             self.say(format!("{}: the patrol at {name} goes blind.", script.name));
             self.add_trace(script.noise, true);
             self.grow(script.family);
         } else {
-            self.say(format!("{}: the patrol at {name} shrugs it off.", script.name));
+            self.say(format!(
+                "{}: the patrol at {name} shrugs it off.",
+                script.name
+            ));
             self.add_trace(script.noise * 2, true);
         }
     }
 
     fn purge(&mut self, script: &ScriptDef, id: NodeId, rng: &mut DoorRng) {
         let level = self.security(id);
-        let name = self.setup.net.nodes.get(usize::from(id)).map(|n| n.name.clone()).unwrap_or_default();
+        let name = self
+            .setup
+            .net
+            .nodes
+            .get(usize::from(id))
+            .map(|n| n.name.clone())
+            .unwrap_or_default();
         if self.roll(script, level, rng) {
             self.opened |= bit(id);
             self.broken.push(id);
-            self.say(format!("{}: a hole in the black wall at {name}.", script.name));
+            self.say(format!(
+                "{}: a hole in the black wall at {name}.",
+                script.name
+            ));
             self.add_trace(script.noise, true);
             self.grow(script.family);
         } else {
-            self.say(format!("{}: the black wall at {name} closes ranks.", script.name));
+            self.say(format!(
+                "{}: the black wall at {name} closes ranks.",
+                script.name
+            ));
             self.add_trace(script.noise * 2, true);
         }
     }
 
     fn here(&self) -> Option<(&crate::net::Node, bool)> {
-        self.setup.net.nodes.get(usize::from(self.at)).map(|n| (n, n.honeypot))
+        self.setup
+            .net
+            .nodes
+            .get(usize::from(self.at))
+            .map(|n| (n, n.honeypot))
     }
 
     fn trip_decoy(&mut self, script: &ScriptDef) {
-        self.say(format!("{}: nothing but a trap. The alarm goes up.", script.name));
+        self.say(format!(
+            "{}: nothing but a trap. The alarm goes up.",
+            script.name
+        ));
         if !self.alarm {
             self.alarm = true;
             self.add_trace(15, false);
@@ -770,10 +860,15 @@ impl Run {
     }
 
     fn copy(&mut self, content: &Content, script: &ScriptDef) {
-        let Some((node, honey)) = self.here() else { return };
+        let Some((node, honey)) = self.here() else {
+            return;
+        };
         let (value, code) = (
             node.value,
-            content.node(node.kind).map(|d| d.code.clone()).unwrap_or_default(),
+            content
+                .node(node.kind)
+                .map(|d| d.code.clone())
+                .unwrap_or_default(),
         );
         if honey {
             self.trip_decoy(script);
@@ -781,7 +876,10 @@ impl Run {
         }
         self.copied |= bit(self.at);
         self.loot += value;
-        self.say(format!("{}: {value} marks of data copied out.", script.name));
+        self.say(format!(
+            "{}: {value} marks of data copied out.",
+            script.name
+        ));
         self.add_trace(script.noise, true);
         if self.setup.effect == Effect::Copy && code == self.setup.target && !self.objective {
             self.objective = true;
@@ -792,7 +890,10 @@ impl Run {
 
     fn plant(&mut self, content: &Content, script: &ScriptDef) {
         let Some((node, _)) = self.here() else { return };
-        let code = content.node(node.kind).map(|d| d.code.clone()).unwrap_or_default();
+        let code = content
+            .node(node.kind)
+            .map(|d| d.code.clone())
+            .unwrap_or_default();
         self.say(format!("{}: a backdoor is planted.", script.name));
         self.planted = true;
         self.add_trace(script.noise, true);
@@ -804,8 +905,13 @@ impl Run {
     }
 
     fn shred(&mut self, content: &Content, script: &ScriptDef) {
-        let Some((node, honey)) = self.here() else { return };
-        let code = content.node(node.kind).map(|d| d.code.clone()).unwrap_or_default();
+        let Some((node, honey)) = self.here() else {
+            return;
+        };
+        let code = content
+            .node(node.kind)
+            .map(|d| d.code.clone())
+            .unwrap_or_default();
         if honey {
             self.trip_decoy(script);
             return;
@@ -835,31 +941,68 @@ impl Run {
         }
     }
 
-    /// The text for a node as the player may know it: the name always, the details only if
-    /// scanned.
+    /// What the player knows of a node: the name, the depth and type always, the lock, security
+    /// and patrol only once scanned.
+    #[must_use]
+    pub fn view(&self, content: &Content, id: NodeId) -> Option<NodeView> {
+        let node = self.setup.net.nodes.get(usize::from(id))?;
+        let scanned = self.scanned & bit(id) != 0;
+        let open = self.is_open(id);
+        let patrol = if scanned { node.patrol } else { Patrol::None };
+        Some(NodeView {
+            id,
+            name: node.name.clone(),
+            kind: content
+                .node(node.kind)
+                .map_or_else(|| "node".to_owned(), |d| d.name.clone()),
+            code: content
+                .node(node.kind)
+                .map_or_else(String::new, |d| d.code.clone()),
+            depth: node.layer,
+            scanned,
+            open,
+            lock: if scanned && !open {
+                node.lock.map(|l| (l, self.security(id)))
+            } else {
+                None
+            },
+            patrol,
+            patrol_level: self.security(id),
+            patrol_off: self.jammed & bit(id) != 0,
+            wall_breached: node.patrol == Patrol::BlackWall && open && scanned,
+            honeypot: self.decoys & bit(id) != 0,
+        })
+    }
+
+    /// The text for a node as the player may know it.
     #[must_use]
     pub fn describe(&self, content: &Content, id: NodeId) -> String {
-        let Some(node) = self.setup.net.nodes.get(usize::from(id)) else {
+        let Some(v) = self.view(content, id) else {
             return String::new();
         };
-        let kind = content.node(node.kind).map_or("node", |d| d.name.as_str());
-        if self.scanned & bit(id) == 0 {
-            let lock = if self.is_open(id) { "open" } else { "locked?" };
-            return format!("{} {kind} ({lock})", node.name);
+        let mut parts = vec![format!("{} {} d{}", v.name, v.kind, v.depth)];
+        if !v.scanned {
+            parts.push(if v.open {
+                "open".to_owned()
+            } else {
+                "locked?".to_owned()
+            });
+            return parts.join(", ");
         }
-        let mut parts = vec![format!("{} {kind}", node.name)];
-        if self.is_open(id) {
+        if v.open {
             parts.push("open".to_owned());
-        } else if let Some(lock) = node.lock {
-            parts.push(format!("{} lock {}", lock.word(), self.security(id)));
+        } else if let Some((lock, level)) = v.lock {
+            parts.push(format!("{} lock {level}", lock.word()));
         }
-        match node.patrol {
+        let off = if v.patrol_off { " (jammed)" } else { "" };
+        match v.patrol {
             Patrol::None => {}
-            Patrol::Sentry => parts.push(if self.jammed & bit(id) != 0 { "sentry (jammed)".into() } else { "sentry".into() }),
-            Patrol::Tracer => parts.push(if self.jammed & bit(id) != 0 { "tracer (jammed)".into() } else { "tracer".into() }),
-            Patrol::BlackWall => parts.push(if self.is_open(id) { "black wall (breached)".into() } else { format!("black wall {}", self.security(id)) }),
+            Patrol::Sentry => parts.push(format!("sentry {}{off}", v.patrol_level)),
+            Patrol::Tracer => parts.push(format!("tracer {}{off}", v.patrol_level)),
+            Patrol::BlackWall if v.wall_breached => parts.push("black wall (breached)".to_owned()),
+            Patrol::BlackWall => parts.push(format!("black wall {}", v.patrol_level)),
         }
-        if self.decoys & bit(id) != 0 {
+        if v.honeypot {
             parts.push("HONEYPOT".to_owned());
         }
         parts.join(", ")
@@ -874,7 +1017,10 @@ impl Run {
 
 /// The best script of each kind in a list of script numbers.
 #[must_use]
-pub fn capability_of(content: &Content, scripts: impl Iterator<Item = u8>) -> crate::net::Capability {
+pub fn capability_of(
+    content: &Content,
+    scripts: impl Iterator<Item = u8>,
+) -> crate::net::Capability {
     let mut cap = crate::net::Capability::default();
     for script in scripts.filter_map(|n| content.script(n)) {
         let power = u8::try_from(script.power).unwrap_or(9);

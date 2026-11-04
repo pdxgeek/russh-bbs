@@ -33,6 +33,7 @@ use russh_bbs_core::scheduler::{Scheduler, SchedulerStore};
 use russh_bbs_door::tick::{self, TickPolicy};
 use russh_bbs_door::{Door, InvalidDoorId};
 use russh_bbs_door_example::CoinToss;
+use russh_bbs_door_nullroute::Nullroute;
 
 pub(crate) use draw::{DrawCtx, render};
 pub(crate) use exec::{Request, Response, run};
@@ -82,7 +83,7 @@ impl Doors {
     /// # Errors
     /// Only if a built-in door has an invalid id, which a test rules out.
     pub fn builtin() -> Result<Self, InvalidDoorId> {
-        Ok(Self::new(vec![CoinToss::shared()?]))
+        Ok(Self::new(vec![CoinToss::shared()?, Nullroute::shared()?]))
     }
 
     /// No doors: the Doors menu item then opens an empty list.
