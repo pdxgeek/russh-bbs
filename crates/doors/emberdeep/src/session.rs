@@ -16,6 +16,10 @@ use crate::hero::Hero;
 use crate::rules::{CREATION_POINTS, CREATION_TRAITS, DEPTH_MAX, RECOVERY_DAYS};
 use crate::world::World;
 
+mod places;
+
+pub(crate) use places::Spot;
+
 const WRAP: usize = 72;
 const LOG_KEEP: usize = 8;
 const TRAIT_KEYS: &str = "abcdefghijklmnopqrstuvwx";
@@ -113,6 +117,8 @@ enum Screen {
     Sheet,
     Hall,
     Map,
+    /// A place in the town.
+    Spot(Spot),
 }
 
 enum Mode {
@@ -134,6 +140,8 @@ pub(crate) struct Session {
     day: i64,
     target: usize,
     dirty: bool,
+    /// Whether the hero's gifts to the town have been sent to the world this visit.
+    reconciled: bool,
 }
 
 impl Session {
@@ -152,6 +160,7 @@ impl Session {
             day: today,
             target: 0,
             dirty: false,
+            reconciled: false,
         };
         if content.is_none() {
             return session;
@@ -220,7 +229,9 @@ impl Session {
             ctx.edit_world(move |old| {
                 let mut world = World::for_season(old, season);
                 world.apply(&change);
-                Some(world.encode())
+                let bytes = world.encode();
+                // Nothing to write when the world already holds this change.
+                (old != Some(bytes.as_slice())).then_some(bytes)
             });
         }
     }
@@ -335,6 +346,7 @@ impl Session {
             match (screen, key) {
                 (_, DoorKey::Escape | DoorKey::Backspace) => self.mode = Mode::Play(Screen::Main),
                 (Screen::Skills, DoorKey::Char(ch)) => self.skills_key(ch, ctx),
+                (Screen::Spot(spot), DoorKey::Char(ch)) => self.spot_key(spot, ch, ctx),
                 _ => {}
             }
             return Flow::Stay;
@@ -400,12 +412,24 @@ impl Session {
         let Some(game) = self.game.as_ref() else {
             return Flow::Stay;
         };
-        let express: Vec<u8> = game.world.shortcuts.iter().map(|(d, _)| *d).collect();
+        let express: Vec<u8> = game
+            .ways_down(&self.content)
+            .iter()
+            .map(|(d, _)| *d)
+            .collect();
         match key {
             DoorKey::Char('d') => self.act(Action::Descend(1), ctx),
             DoorKey::Char('s') => self.mode = Mode::Play(Screen::Skills),
             DoorKey::Char('h') => self.mode = Mode::Play(Screen::Sheet),
             DoorKey::Char('r') => self.mode = Mode::Play(Screen::Hall),
+            DoorKey::Char('b') => self.mode = Mode::Play(Screen::Spot(Spot::Tavern)),
+            DoorKey::Char('m') => self.mode = Mode::Play(Screen::Spot(Spot::Market)),
+            DoorKey::Char('i') => self.mode = Mode::Play(Screen::Spot(Spot::Gear)),
+            DoorKey::Char('f') => self.mode = Mode::Play(Screen::Spot(Spot::Forge)),
+            DoorKey::Char('t') => self.mode = Mode::Play(Screen::Spot(Spot::Temple)),
+            DoorKey::Char('g') => self.mode = Mode::Play(Screen::Spot(Spot::Guild)),
+            DoorKey::Char('l') => self.mode = Mode::Play(Screen::Spot(Spot::Library)),
+            DoorKey::Char('w') => self.mode = Mode::Play(Screen::Spot(Spot::Works)),
             DoorKey::Char('q') => return Flow::Exit,
             DoorKey::Char(ch) if ch.is_ascii_digit() && ch != '0' => {
                 let n = ch.to_digit(10).unwrap_or(0) as usize - 1;
@@ -528,6 +552,7 @@ impl Session {
                 (Some(game), Screen::Sheet) => Lines::head(self.sheet_lines(game)),
                 (Some(game), Screen::Hall) => Lines::head(Self::hall_lines(game)),
                 (Some(game), Screen::Map) => Lines::head(self.map_lines(game)),
+                (Some(game), Screen::Spot(spot)) => Lines::head(self.spot_lines(game, *spot)),
                 (None, _) => Lines::head(vec![plain("No hero.")]),
             },
         }
@@ -695,10 +720,11 @@ impl Session {
                     )
                 })
                 .collect();
-            body.push(styled(
-                format!("Wounds: {}", list.join(", ")),
-                DoorStyle::Bad,
-            ));
+            body.extend(
+                wrap(&format!("Wounds: {}", list.join(", ")), WRAP)
+                    .into_iter()
+                    .map(|l| styled(l, DoorStyle::Bad)),
+            );
         }
         if !h.scars.is_empty() {
             let list: Vec<&str> = h
@@ -707,10 +733,11 @@ impl Session {
                 .filter_map(|s| self.content.scar(s))
                 .map(|s| s.name.as_str())
                 .collect();
-            body.push(styled(
-                format!("Scars: {}", list.join(", ")),
-                DoorStyle::Dim,
-            ));
+            body.extend(
+                wrap(&format!("Scars: {}", list.join(", ")), WRAP)
+                    .into_iter()
+                    .map(|l| styled(l, DoorStyle::Dim)),
+            );
         }
         body.push(plain("Tavern board:"));
         let news: Vec<&String> = game.world.news.iter().rev().take(3).collect();
@@ -721,7 +748,7 @@ impl Session {
             body.push(styled(format!("  {line}"), DoorStyle::Dim));
         }
         keys.push(plain("[d] Descend into the Emberdeep (1 turn)"));
-        for (n, (depth, kind)) in game.world.shortcuts.iter().enumerate().take(9) {
+        for (n, (depth, kind)) in game.ways_down(&self.content).iter().enumerate().take(9) {
             keys.push(plain(format!(
                 "[{}] Take the {} down to level {depth} ({} turn)",
                 n + 1,
@@ -730,8 +757,12 @@ impl Session {
             )));
         }
         keys.push(plain(
-            "[s] Skills and attributes   [h] Hero sheet   [r] The hall   [q] Leave",
+            "[b] Tavern   [m] Market   [i] Gear   [f] Forge   [t] Temple",
         ));
+        keys.push(plain(
+            "[g] Guild hall   [l] Library   [w] Town works   [s] Skills",
+        ));
+        keys.push(plain("[h] Hero sheet   [r] The hall   [q] Leave"));
     }
 
     fn delve_lines(
@@ -752,7 +783,11 @@ impl Session {
             DoorStyle::Accent,
         ));
         body.extend(wrap(&template.text, WRAP).into_iter().map(plain));
-        if let Some(shortcut) = game.world.shortcut_at(depth) {
+        if let Some((_, shortcut)) = game
+            .ways_down(&self.content)
+            .into_iter()
+            .find(|(d, _)| *d == depth)
+        {
             body.push(styled(
                 format!(
                     "A {} runs from this level to the surface.",
@@ -997,12 +1032,8 @@ impl Session {
         )));
         out.push(plain(format!(
             "Weapon {}  Armour {}",
-            self.content
-                .weapon(&h.weapon)
-                .map_or("?", |w| w.name.as_str()),
-            self.content
-                .armour(&h.armour)
-                .map_or("?", |a| a.name.as_str())
+            crate::town::item_name(&self.content, &h.weapon, &h.wkit),
+            crate::town::item_name(&self.content, &h.armour, &h.akit)
         )));
         out.push(plain(format!(
             "Capabilities: {}",
@@ -1210,6 +1241,19 @@ fn empty_content() -> Content {
             weapon: Vec::new(),
             armour: Vec::new(),
         },
+        affixes: crate::content_town::Affixes {
+            affix: Vec::new(),
+            core: Vec::new(),
+        },
+        recipes: crate::content_town::Recipes { recipe: Vec::new() },
+        projects: crate::content_town::Projects {
+            project: Vec::new(),
+        },
+        town: crate::content_town::TownTables {
+            contract: Vec::new(),
+            companion: Vec::new(),
+            rumour: Vec::new(),
+        },
     }
 }
 
@@ -1224,6 +1268,16 @@ impl DoorSession for Session {
                 self.absorb(events);
                 self.dirty = true;
             }
+        }
+        if !self.reconciled {
+            self.reconciled = true;
+            if let Some(game) = self.game.as_mut() {
+                // Tell the world again what this hero has given, in case an earlier write was
+                // lost; the world keeps the largest totals, so this credits nothing twice.
+                let mut again = game.pledges_of_hero();
+                game.changes.append(&mut again);
+            }
+            self.flush_changes(ctx);
         }
         let flow = match &self.mode {
             Mode::Stuck(_) => {

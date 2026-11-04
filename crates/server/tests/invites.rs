@@ -188,13 +188,55 @@ async fn drain(channel: &mut Channel<Msg>) -> String {
     seen
 }
 
+/// Read until the first byte arrives (bounded by `common::WAIT`), then until the channel has
+/// been quiet for a moment. Unlike `drain`, a slow server cannot make this return empty.
+async fn drain_after_output(channel: &mut Channel<Msg>) -> String {
+    let mut seen = String::new();
+    let first = timeout(common::WAIT, async {
+        loop {
+            match channel.wait().await {
+                Some(ChannelMsg::Data { data }) => return Some(data),
+                Some(_) => {}
+                None => return None,
+            }
+        }
+    })
+    .await
+    .expect("no output within the deadline");
+    if let Some(data) = first {
+        seen.push_str(&String::from_utf8_lossy(&data));
+        seen.push_str(&drain(channel).await);
+    }
+    seen
+}
+
 /// The screen as a person sees it after sending `input`: drain what the server drew, force a
-/// full redraw, and replay it onto a blank 80x24 screen.
+/// full redraw, and replay it onto a blank 80x24 screen. The redraw is always painted, so wait
+/// for it rather than for a fixed quiet period.
 async fn press(channel: &mut Channel<Msg>, input: &str) -> String {
     channel.data_bytes(input.as_bytes().to_vec()).await.unwrap();
     drain(channel).await;
     channel.window_change(80, 24, 0, 0).await.unwrap();
-    strip_ansi(&drain(channel).await)
+    strip_ansi(&drain_after_output(channel).await)
+}
+
+/// Like `press`, but keep asking for a full redraw until the screen shows `needle` (matched on
+/// the flattened words), failing with the last screen seen once `common::WAIT` has passed.
+async fn press_until(channel: &mut Channel<Msg>, input: &str, needle: &str) -> String {
+    channel.data_bytes(input.as_bytes().to_vec()).await.unwrap();
+    let mut last = String::new();
+    let found = timeout(common::WAIT, async {
+        loop {
+            channel.window_change(80, 24, 0, 0).await.unwrap();
+            last = strip_ansi(&drain_after_output(channel).await);
+            if flat(&last).contains(needle) {
+                return;
+            }
+        }
+    })
+    .await;
+    assert!(found.is_ok(), "no {needle:?} in time; last screen: {last}");
+    last
 }
 
 /// Type `text` and press Enter.
@@ -210,9 +252,9 @@ async fn stranger(rig: &Rig) -> (Handle<Client>, Channel<Msg>, PrivateKey, Strin
     let key = new_client_key();
     let session = login(rig.addr(), "anyone", &key).await;
     let mut channel = common::open_shell(&session, 80, 24).await;
-    drain(&mut channel).await;
+    drain_after_output(&mut channel).await;
     channel.window_change(80, 24, 0, 0).await.unwrap();
-    let home = strip_ansi(&drain(&mut channel).await);
+    let home = strip_ansi(&drain_after_output(&mut channel).await);
     (session, channel, key, home)
 }
 
@@ -221,14 +263,13 @@ async fn founder_at_menu(rig: &Rig) -> (Handle<Client>, Channel<Msg>, PrivateKey
     let key = new_client_key();
     let session = login(rig.addr(), "claim", &key).await;
     let mut channel = common::open_shell(&session, 80, 24).await;
-    drain(&mut channel).await;
+    drain_after_output(&mut channel).await;
     line(&mut channel, &rig.token).await;
     line(&mut channel, "founder password one").await;
     line(&mut channel, "founder password one").await;
     press(&mut channel, "x").await;
     press(&mut channel, "n").await;
-    let menu = press(&mut channel, "y").await;
-    assert!(flat(&menu).contains("Main menu"), "{menu}");
+    press_until(&mut channel, "y", "Main menu").await;
     (session, channel, key)
 }
 

@@ -1,18 +1,67 @@
-# Starting weapons and armour. Drops and crafting arrive with the town slice (M4-E2).
+# Weapons and armour. The first six of each are the callings' starting kits (price 0: not sold);
+# the rest are for sale at the market (price above 0) or drop below (band says how deep).
+# A band-n item needs hero level 3n - 2.
 weapon = [
+  # Starting kits.
   { id = "iron-halberd", name = "Iron Halberd", reach = "melee", attr = "might", damage = [6, 10] },
   { id = "stiletto", name = "Stiletto", reach = "melee", attr = "finesse", damage = [4, 8] },
   { id = "censer-mace", name = "Censer Mace", reach = "melee", attr = "spirit", damage = [5, 9] },
   { id = "rune-hammer", name = "Rune Hammer", reach = "melee", attr = "wits", damage = [5, 9] },
   { id = "pathfinder-sling", name = "Pathfinder Sling", reach = "ranged", attr = "finesse", damage = [4, 7] },
   { id = "dueling-blade", name = "Dueling Blade", reach = "melee", attr = "finesse", damage = [5, 9] },
+
+  # Band 1: the Upper Works.
+  { id = "hand-axe", name = "Hand Axe", reach = "melee", attr = "might", damage = [6, 10], band = 1, price = 30 },
+  { id = "quick-knife", name = "Quick Knife", reach = "melee", attr = "finesse", damage = [5, 8], band = 1, price = 26 },
+  { id = "prayer-flail", name = "Prayer Flail", reach = "melee", attr = "spirit", damage = [5, 9], band = 1, price = 28 },
+  { id = "tinker-mallet", name = "Tinker's Mallet", reach = "melee", attr = "wits", damage = [5, 9], band = 1, price = 28 },
+  { id = "shortbow", name = "Shortbow", reach = "ranged", attr = "finesse", damage = [4, 8], band = 1, price = 34 },
+
+  # Band 2: the Slag Galleries.
+  { id = "forge-axe", name = "Forge Axe", reach = "melee", attr = "might", damage = [9, 14], band = 2, price = 80 },
+  { id = "slag-rapier", name = "Slag Rapier", reach = "melee", attr = "finesse", damage = [8, 13], band = 2, price = 78 },
+  { id = "censer-staff", name = "Censer Staff", reach = "melee", attr = "spirit", damage = [8, 13], band = 2, price = 78 },
+  { id = "rune-mallet", name = "Rune Mallet", reach = "melee", attr = "wits", damage = [8, 13], band = 2, price = 78 },
+  { id = "longbow", name = "Longbow", reach = "ranged", attr = "finesse", damage = [7, 12], band = 2, price = 84 },
+
+  # Band 3: the Glass Halls.
+  { id = "glass-cleaver", name = "Glass Cleaver", reach = "melee", attr = "might", damage = [12, 18], band = 3, price = 160 },
+  { id = "glass-sabre", name = "Glass Sabre", reach = "melee", attr = "finesse", damage = [11, 17], band = 3, price = 156 },
+  { id = "prism-censer", name = "Prism Censer", reach = "melee", attr = "spirit", damage = [11, 17], band = 3, price = 156 },
+  { id = "prism-hammer", name = "Prism Hammer", reach = "melee", attr = "wits", damage = [11, 17], band = 3, price = 156 },
+  { id = "glass-bow", name = "Glass Bow", reach = "ranged", attr = "finesse", damage = [10, 15], band = 3, price = 164 },
+
+  # Band 4: the Hearth of Kings.
+  { id = "hearth-greataxe", name = "Hearth Greataxe", reach = "melee", attr = "might", damage = [16, 24], band = 4, price = 300 },
+  { id = "kings-blade", name = "King's Blade", reach = "melee", attr = "finesse", damage = [15, 22], band = 4, price = 296 },
+  { id = "hearth-flail", name = "Hearth Flail", reach = "melee", attr = "spirit", damage = [15, 23], band = 4, price = 296 },
+  { id = "kings-hammer", name = "King's Hammer", reach = "melee", attr = "wits", damage = [15, 23], band = 4, price = 296 },
+  { id = "kings-bow", name = "King's Bow", reach = "ranged", attr = "finesse", damage = [13, 20], band = 4, price = 310 },
+
+  # Band 5: the Cold Furnace (found, not sold).
+  { id = "coldsteel-axe", name = "Coldsteel Axe", reach = "melee", attr = "might", damage = [20, 30], band = 5 },
+  { id = "coldsteel-rapier", name = "Coldsteel Rapier", reach = "melee", attr = "finesse", damage = [19, 28], band = 5 },
+  { id = "coldsteel-hammer", name = "Coldsteel Hammer", reach = "melee", attr = "wits", damage = [19, 29], band = 5 },
 ]
 
 armour = [
+  # Starting kits.
   { id = "ringmail", name = "Ringmail", armor = 2 },
   { id = "forge-leathers", name = "Forge Leathers", armor = 1 },
   { id = "pilgrim-robe", name = "Pilgrim Robe", armor = 1 },
   { id = "smith-apron", name = "Smith's Apron", armor = 2 },
   { id = "trail-coat", name = "Trail Coat", armor = 1 },
   { id = "fencing-jacket", name = "Fencing Jacket", armor = 1 },
+
+  { id = "oiled-leathers", name = "Oiled Leathers", armor = 2, band = 1, price = 26 },
+  { id = "scrap-plate", name = "Scrap Plate", armor = 3, band = 1, price = 40 },
+  { id = "forge-coat", name = "Forge Coat", armor = 4, band = 2, price = 78 },
+  { id = "slag-mail", name = "Slag Mail", armor = 5, band = 2, price = 96 },
+  { id = "banded-robe", name = "Banded Robe", armor = 4, band = 2, price = 80 },
+  { id = "prism-coat", name = "Prism Coat", armor = 6, band = 3, price = 150 },
+  { id = "glass-scale", name = "Glass Scale", armor = 7, band = 3, price = 180 },
+  { id = "king-robe", name = "King's Robe", armor = 8, band = 4, price = 270 },
+  { id = "hearth-plate", name = "Hearth Plate", armor = 9, band = 4, price = 310 },
+  { id = "coldsteel-plate", name = "Coldsteel Plate", armor = 11, band = 5 },
+  { id = "furnace-mantle", name = "Furnace Mantle", armor = 10, band = 5 },
 ]
