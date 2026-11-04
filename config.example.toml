@@ -75,12 +75,17 @@ tls_mode = "require"          # "require" (encrypt only unless tls_root_cert is 
 iam_auth = false              # true is refused at boot: IAM token auth is not built
 
 [blobs]
-# Parsed only: no blob store exists yet (D30).
+# Member-uploaded bytes (D30). Nothing uses the store until file areas land (M4-F2).
 backend = "local"             # "local" or "s3"
-# dir = "/data/blobs"         # with backend = "local"
+# dir = "/data/blobs"         # with backend = "local"; default: blobs/ in the data directory
 # endpoint = "https://minio.example:9000"   # with backend = "s3"; credentials come from the environment
-# bucket = "russh-bbs"
+#                                           # (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY), never this file
+# bucket = "russh-bbs"        # must already exist
 # region = "us-east-1"
+# path_style = true           # MinIO and most self-hosted servers
+# ca_file = "/data/blobs-ca.pem"            # replaces the platform CA store for the S3 connection
+# multipart_threshold_bytes = 16777216      # s3 uploads above this go up in parts (min 5 MiB)
+max_object_bytes = 268435456  # the largest object either backend stores
 
 [telnet]
 # Telnet is unencrypted (D27, D85). Turning it on is low-security mode: the server logs a
