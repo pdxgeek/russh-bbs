@@ -2876,6 +2876,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "russh-bbs-door"
+version = "0.0.0"
+dependencies = [
+ "ratatui",
+ "russh-bbs-core",
+ "serde",
+ "tempfile",
+ "thiserror",
+ "tokio",
+ "toml",
+ "tracing",
+]
+
+[[package]]
+name = "russh-bbs-door-example"
+version = "0.0.0"
+dependencies = [
+ "russh-bbs-door",
+ "serde",
+ "tokio",
+ "toml",
+]
+
+[[package]]
 name = "russh-bbs-proto"
 version = "0.0.0"
 

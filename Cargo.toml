@@ -5,6 +5,8 @@ members = [
     "crates/store",
     "crates/server",
     "crates/proto",
+    "crates/doors/framework",
+    "crates/doors/example",
     "crates/api",
 ]
 
@@ -18,6 +20,7 @@ publish = false
 # Internal crates. Dependency direction: server, store, api -> core. core depends on none of them.
 russh-bbs-core = { path = "crates/core" }
 russh-bbs-store = { path = "crates/store" }
+russh-bbs-door = { path = "crates/doors/framework" }
 
 # External crates.
 unicode-normalization = "0.1"
