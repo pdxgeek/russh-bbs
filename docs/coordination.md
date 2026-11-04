@@ -72,6 +72,23 @@ A slice with an unmet dependency is not claimable.
 
 **Parallelism.** Slices run in parallel only when their Owns paths do not overlap and their dependencies are merged. Slices that add migrations to the same backend are serialized (B → C → D → E/F/H). Migration numbers are taken at merge time: merge `main` first, then number the migration.
 
+### M3.5: Look and feel (owner approved, 2026-11-04)
+
+A milestone of its own, between M3 and M4: cool looks and customization for the board. Plan: [ui-refresh.md](ui-refresh.md). The door game UI slices (S3, E3, N3, L3, H3) wait for UI-5; M4 engine and content slices continue in parallel. UI-1 to UI-4, UI-6, UI-8 and UI-9 share `crates/server/src/ui`, so they run one at a time (UI-5 and UI-7 can overlap them).
+
+| Slice | Owns | Depends on | Status | Branch / PR |
+|---|---|---|---|---|
+| UI-1 Frame and widgets | `crates/server/src/ui` (frame, header and status bars, popups, tables, scrollbars, colour-depth fallback), the screens it converts (main menu, forum lists, members list) and their tests | none | Open | Security markers keep their reserved cell and style (D39); render tests at 80x24, 100x30 and 132x43 in every tier, layout and theme. |
+| UI-2 Theme packs v2 and board identity | `crates/server/src/ui/theme` and themes, the `[board]` config (`crates/server/src/config`, `docs/config.md`, `config.example.toml`), member settings for motion, colour depth and borders (`crates/core/src/terminal_settings` and its migration) | UI-1 | Open | Palette roles, borders, layout presets (including dashboard and wide), three new distinct themes; hostile theme tests. |
+| UI-3 Board art | an `.ans` (CP437) parser that never passes sequences through, the `.art.toml` format, art slots, the large-letter fallback, the sysop theme preview screen | UI-2 | Open | Fuzz and property tests for the parser; no reserved style or marker glyphs from art; size caps; original art per new theme. |
+| UI-4 Screens on the new widgets | dashboard home, reader, three-pane chat, mail and community screens, motion | UI-3 | Open | Motion respects the D49 redraw cap and is off in accessibility mode. |
+| UI-5 Door canvas widgets | `crates/doors/framework` (`Canvas` gains the widgets) | UI-1 | Open | Plumbing only; the game UI slices use it. |
+| UI-6 Sysop menus and pages | a menu file (`menus.toml` in the data directory: order, labels, hotkeys, which areas show, nested submenus), sysop pages (bulletins and info screens: art plus text, linked from menus), the loader with a schema and caps, the sysop preview | UI-4 | Open | The menu tree stays core-defined (D54): a menu file only rearranges, renames and hides built-in items and adds page items; it cannot add actions or bypass `core::access`. |
+| UI-7 Theme gallery, import and export | a theme gallery screen for members (preview, then pick), sysop import and export of theme packs (one file with art), and versioned theme files | UI-3 | Open | Imported packs go through the same validation as theme files; nothing executes. |
+| UI-8 Effects and graphics | the effect engine and frame budget, braille and half-block canvases, the original animated login intro, image-to-cells for sysop logos and member avatars, dashboard charts (`crates/server/src/ui`) | UI-4 | Open | No terminal graphics protocols (sixel, kitty, iTerm) are ever sent: everything is styled cells. Motion off disables it, and it is off in accessibility mode. Image decoding uses a maintained pure-Rust crate (justified, `cargo deny`), with size and pixel caps. A per-session frame budget, with a benchmark of frame cost and bytes per frame. |
+| UI-9 Interaction | a bounded mouse-event parser (ssh and telnet), click, scroll and pane drag, the `Ctrl-K` command palette (fuzzy search filtered by `core::access`), toasts, split-screen multitasking with chat beside any screen, the live header ticker | UI-4 | Open | The palette never lists what the member cannot reach (no-leak tests). Toasts and panes never cover the marker cell. Everything stays usable from the keyboard alone. |
+| M3.5-QA Milestone QA gate | `docs/qa/m3-5.md` and the fix rows it adds | UI-1 to UI-9 | Open | The QA gate from milestones.md, with emphasis on: every screen at 80x24 and in the ASCII tier; hostile themes, art and menu files; markers that cannot be hidden; redraw cost with motion on. |
+
 ### M4: Doors (owner approved, 2026-11-04)
 
 Approved by the owner on 2026-11-04 by adding them here. The other M4 work (`BlobStore`, file areas over SFTP, global new-scan) still needs its own slices. Designs: [doors/](doors/README.md). Every game slice follows the door framework rules and the RPG rule in that index. Each game has its own systems and engine, and only the plumbing is shared. A game's slices run in order; different games may run in parallel once the framework is merged, because their crates do not overlap.
@@ -81,24 +98,24 @@ Approved by the owner on 2026-11-04 by adding them here. The other M4 work (`Blo
 | M4-D0 Door framework and example door | `crates/doors/framework` (Door trait, session hand-off, save API, per-door permissions, scheduler hook, sandbox rules), store tables and migrations for door saves on both backends, the menu entry, a tiny example door | M3 gate closed | In review ([PR #84](https://github.com/pdxgeek/russh-bbs/pull/84), branch `m4/door-framework`) | Plumbing only, no game mechanics. Done when a door runs in a session with no filesystem or network access (M4 "Done when"), saves and loads through the store, ticks daily, and behaves the same over ssh and telnet. |
 | M4-S1 Saltmarch engine | `crates/doors/saltmarch` | M4-D0 | Open | Tide, map generation, clan, crew, hold and economy; deterministic, with replay tests. |
 | M4-S2 Saltmarch expeditions and combat | `crates/doors/saltmarch` | M4-S1 | Open | Events, skirmish, content loader with schema tests. |
-| M4-S3 Saltmarch UI | `crates/doors/saltmarch` | M4-S2 | Open | All screens, three tiers, layouts, look-around. |
+| M4-S3 Saltmarch UI | `crates/doors/saltmarch` | M4-S2, UI-5 | Open | All screens, three tiers, layouts, look-around. |
 | M4-S4 Saltmarch social | `crates/doors/saltmarch` | M4-S3 | Open | Raids, pacts, market, letters, league, hall. |
 | M4-S5 Saltmarch content and balance | `crates/doors/saltmarch` | M4-S4 | Open | Launch content budget, auto-play balance harness. |
 | M4-E1 Emberdeep engine | `crates/doors/emberdeep` | M4-D0 | Open | Dungeon generation, hero, combat, torch-turns; replay tests. |
 | M4-E2 Emberdeep town and crafting | `crates/doors/emberdeep` | M4-E1 | Open | Town, projects, gear, crafting. |
-| M4-E3 Emberdeep UI | `crates/doors/emberdeep` | M4-E2 | Open | Dungeon view, combat panel, town, look-around. |
+| M4-E3 Emberdeep UI | `crates/doors/emberdeep` | M4-E2, UI-5 | Open | Dungeon view, combat panel, town, look-around. |
 | M4-E4 Emberdeep social, content and balance | `crates/doors/emberdeep` | M4-E3 | Open | Parties, rescues, duels, shared projects, content pass, balance. |
 | M4-N1 Nullroute engine | `crates/doors/nullroute` | M4-D0 | Open | Network generation, trace, deck, runs; replay tests. |
 | M4-N2 Nullroute countermeasures and coding | `crates/doors/nullroute` | M4-N1 | Open | Encounters, script degradation, module editor. |
-| M4-N3 Nullroute UI | `crates/doors/nullroute` | M4-N2 | Open | Node map, run log, deck panel, look-around. |
+| M4-N3 Nullroute UI | `crates/doors/nullroute` | M4-N2, UI-5 | Open | Node map, run log, deck panel, look-around. |
 | M4-N4 Nullroute social, content and balance | `crates/doors/nullroute` | M4-N3 | Open | Crews, honeypots, bounties, heat, fixer arcs, balance. |
 | M4-L1 Long Haul engine | `crates/doors/long-haul` | M4-D0 | Open | Frontier generation, economy, ship, jumps; replay tests. |
 | M4-L2 Long Haul crew, events and combat | `crates/doors/long-haul` | M4-L1 | Open | Crew, transit events, contracts, ship combat, boarding. |
-| M4-L3 Long Haul UI | `crates/doors/long-haul` | M4-L2 | Open | Star chart, bridge, route planner, combat panel, look-around. |
+| M4-L3 Long Haul UI | `crates/doors/long-haul` | M4-L2, UI-5 | Open | Star chart, bridge, route planner, combat panel, look-around. |
 | M4-L4 Long Haul social, content and balance | `crates/doors/long-haul` | M4-L3 | Open | Convoys, opt-in piracy, player outposts, arcs, economy simulation. |
 | M4-H1 Hallpass engine | `crates/doors/hallpass` | M4-D0 | Open | Timetable, places, character schedules, stats, schemes, heat and the file, day tick; replay tests. |
 | M4-H2 Hallpass classes, clubs and characters | `crates/doors/hallpass` | M4-H1 | Open | Class minigames, clubs, conversations, friendships, storylines. |
-| M4-H3 Hallpass UI | `crates/doors/hallpass` | M4-H2 | Open | Timetable, map, scenes, minigames, look-around. |
+| M4-H3 Hallpass UI | `crates/doors/hallpass` | M4-H2, UI-5 | Open | Timetable, map, scenes, minigames, look-around. |
 | M4-H4 Hallpass social, mystery and balance | `crates/doors/hallpass` | M4-H3 | Open | Structured player schemes, template rumours, opt-out, election, awards, the mystery, balance. |
 
 ### M3: Public core
