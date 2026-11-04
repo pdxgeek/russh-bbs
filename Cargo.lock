@@ -2901,6 +2901,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "russh-bbs-door-long-haul"
+version = "0.0.0"
+dependencies = [
+ "proptest",
+ "russh-bbs-core",
+ "russh-bbs-door",
+ "serde",
+ "tokio",
+ "toml",
+]
+
+[[package]]
 name = "russh-bbs-proto"
 version = "0.0.0"
 
