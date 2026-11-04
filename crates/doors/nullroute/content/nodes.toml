@@ -1,0 +1,112 @@
+# Node types (M4-N1). `role`: entry, mid or objective. `lock_pct` is the chance a node of the type is
+# locked; `bias` weights the lock family as [crack, spoof, overflow]. `sec` is the type's base security.
+# `watches`: a live camera feed that adds trace to every move until it is cut. `code` shows in the
+# node name (for example FW-2). Objective types name the contract targets that use them.
+
+[[node]]
+num = 0
+code = "GW"
+name = "Public gateway"
+role = "entry"
+weight = 0
+sec = 0
+lock_pct = 0
+bias = [1, 1, 1]
+noise = 0
+watches = false
+
+[[node]]
+num = 1
+code = "RT"
+name = "Router"
+role = "mid"
+weight = 30
+sec = 1
+lock_pct = 25
+bias = [2, 1, 1]
+noise = 1
+watches = false
+
+[[node]]
+num = 2
+code = "FW"
+name = "Firewall"
+role = "mid"
+weight = 25
+sec = 2
+lock_pct = 90
+bias = [1, 1, 3]
+noise = 2
+watches = false
+
+[[node]]
+num = 3
+code = "BR"
+name = "Badge reader"
+role = "mid"
+weight = 15
+sec = 2
+lock_pct = 90
+bias = [1, 4, 1]
+noise = 1
+watches = false
+
+[[node]]
+num = 4
+code = "TM"
+name = "Terminal"
+role = "mid"
+weight = 20
+sec = 1
+lock_pct = 60
+bias = [4, 1, 1]
+noise = 1
+watches = false
+
+[[node]]
+num = 5
+code = "CM"
+name = "Camera"
+role = "mid"
+weight = 12
+sec = 1
+lock_pct = 0
+bias = [1, 1, 1]
+noise = 3
+watches = true
+
+[[node]]
+num = 6
+code = "VT"
+name = "Data vault"
+role = "objective"
+weight = 0
+sec = 2
+lock_pct = 100
+bias = [1, 1, 2]
+noise = 2
+watches = false
+
+[[node]]
+num = 7
+code = "AC"
+name = "Admin console"
+role = "objective"
+weight = 0
+sec = 3
+lock_pct = 100
+bias = [2, 2, 1]
+noise = 2
+watches = false
+
+[[node]]
+num = 8
+code = "SR"
+name = "Server room"
+role = "objective"
+weight = 0
+sec = 2
+lock_pct = 100
+bias = [1, 2, 2]
+noise = 3
+watches = false
