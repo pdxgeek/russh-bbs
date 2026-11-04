@@ -213,9 +213,9 @@ async fn the_layout_and_theme_switch_live_and_are_remembered() {
     assert!(moved.contains("> [o] Sysop tools"), "{moved}");
     send(&mut channel, UP).await;
     assert!(full(&mut channel).await.contains("> [s] Terminal settings"));
-    // Five rows up from "Terminal settings": Invites, Community (M3-J), Members, Chat (M3-F),
-    // Files.
-    for _ in 0..5 {
+    // Six rows up from "Terminal settings": Invites, Community (M3-J), Members, Doors (M4-D0),
+    // Chat (M3-F), Files.
+    for _ in 0..6 {
         send(&mut channel, UP).await;
     }
     assert!(full(&mut channel).await.contains("> [a] Files"));

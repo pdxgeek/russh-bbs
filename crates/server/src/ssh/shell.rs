@@ -371,6 +371,8 @@ impl<D: Backend> Shell<D> {
                 self.run_mail(request).await;
             } else if let Some(request) = effects.community_request.take() {
                 self.run_community(request).await;
+            } else if let Some(request) = effects.door_request.take() {
+                self.run_doors(request).await;
             } else {
                 break;
             }
@@ -1103,6 +1105,18 @@ impl<D: Backend> Shell<D> {
                 None => break,
             }
         }
+    }
+
+    /// Run the door request a screen is waiting on and give it the answer (M4-D0, D98): open a
+    /// door, or write what it asked to save. `doors.run` is checked against the snapshot loaded
+    /// for this action; a slow or failing store closes the door with a plain message.
+    async fn run_doors(&mut self, request: crate::doors::Request) {
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let clock = self.parts.screen.door_clock();
+        let response = crate::doors::run(&*self.parts.directory, &access, &clock, request).await;
+        self.parts.screen.deliver_door(response);
     }
 
     /// Run the mail request a screen is waiting on and give it the answer (M3-I). Core checks

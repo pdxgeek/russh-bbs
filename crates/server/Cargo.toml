@@ -11,6 +11,9 @@ workspace = true
 [dependencies]
 russh-bbs-core = { workspace = true }
 russh-bbs-store = { workspace = true }
+# The door framework and the example door the board ships with (M4-D0, D98).
+russh-bbs-door = { workspace = true }
+russh-bbs-door-example = { workspace = true }
 russh = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }

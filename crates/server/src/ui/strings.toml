@@ -49,6 +49,7 @@ title = "Main menu"
 [menu.main.item]
 forums = "Forums"
 chat = "Chat"
+doors = "Doors"
 mail = "Mail"
 files = "Files"
 members = "Members"

@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO door_state (door, season, updated_at) VALUES (?1, 2, ?2)\n               ON CONFLICT (door) DO UPDATE SET season = door_state.season + 1, updated_at = ?2\n               RETURNING season AS \"season!\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "season!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "2afc3d5404283d93af2dd2aaa6117ea2e845b519acae57c1da216b7e03013e7a"
+}

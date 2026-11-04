@@ -90,6 +90,9 @@ pub enum Action {
     Polls,
     /// Open the chat room list (`chat.join`, M3-F).
     Chat,
+    /// Open the door list (`doors.run`, M4-D0, D98): the front end hands the session to the door
+    /// framework and gets it back when the member leaves.
+    Doors,
     /// End the session.
     LogOff,
 }
@@ -115,6 +118,7 @@ impl Action {
                 Some(Permission::CommunityView)
             }
             Self::Chat => Some(Permission::ChatJoin),
+            Self::Doors => Some(Permission::DoorsRun),
             Self::LogOff => None,
         }
     }

@@ -12,12 +12,14 @@ crates/
   core/    russh-bbs-core    domain types, traits, rules, sanitizer, icon registry, invites, ledger, scheduler
   store/   russh-bbs-store   SQLite and Postgres implementations of core's storage traits, one migration set each (`sqlite/`, `postgres/` modules; D44)
   server/  russh-bbs-server  the binary: SSH + SFTP front end, TUI, config
+  doors/framework  russh-bbs-door          the Door trait, saves host, daily tick, replay and simulation helpers, sandbox audit (M4-D0, D98)
+  doors/example    russh-bbs-door-example  the coin toss; each game is another crates/doors/<name>
   proto/   russh-bbs-proto   reserved: wire types for the future client (empty until M9)
   api/     russh-bbs-api     reserved: GraphQL front end (M5)
 docs/
 ```
 
-Dependency direction: `server`, `api`, `store` → `core`. `core` depends on none of them.
+Dependency direction: `server`, `api`, `store` → `core`. `core` depends on none of them. A door crate depends on the framework only; the framework depends on `core`; the server depends on the framework and the doors it ships (D98).
 
 ## Layers
 
@@ -71,7 +73,7 @@ Rules never live in a front end. A rule that exists in both the TUI and GraphQL 
 - **Deployment:** a container image is a first-class deliverable (D25): static binary, non-root, one `/data` volume, logs to stdout. With Postgres and an object store configured, the only state left on the volume is the SSH host key, which can instead be supplied from a secret or environment variable, making the container replaceable.
 - **Logging:** `tracing`, structured, never logging content, keys, or invite codes.
 - **Time:** injected `Clock` trait.
-- **Doors:** `Door` trait in core; Rust-native runtime in M4; WASM runtime later.
+- **Doors (M4-D0, D98):** persistence, caps, seasons, bars and the audited staff tools are in `core::doors`; the `Door` trait, the host that opens a door and flushes its saves, the daily tick, the replay and simulation helpers, the content loader and the sandbox audit are the `russh-bbs-door` crate; the server lists the doors it ships (`server::doors::Doors`), draws a door inside the usual box and status row, and runs its two store requests (open, flush) with the member's snapshot. Doors are in-process Rust libraries that get only the framework's API; that is a source-audited rule for first-party code, not isolation, and a process boundary or the WASM runtime (M7) is needed before any other author's door runs (D98 (7)). See [doors/README.md](doors/README.md).
 
 ## Mail stages
 

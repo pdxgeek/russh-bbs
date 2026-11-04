@@ -265,6 +265,10 @@ pub(crate) struct KeyEffects {
     /// (M3-I). The session runs it against the store and the mail key and gives the answer to
     /// [`Screen::deliver_mail`].
     pub(crate) mail_request: Option<mail::Request>,
+    /// A door request (open a door, write what it asked to save) the door screens are waiting on
+    /// (M4-D0). The session runs it against the store and gives the answer to
+    /// [`Screen::deliver_door`].
+    pub(crate) door_request: Option<crate::doors::Request>,
     /// Keys held back because `members_request` has to be answered first. The session applies
     /// them after delivering the answer, so a fast typist's next key is not lost.
     pub(crate) held_back: Vec<Key>,
@@ -292,6 +296,7 @@ impl KeyEffects {
         self.chat_request = later.chat_request;
         self.forum_request = later.forum_request;
         self.mail_request = later.mail_request;
+        self.door_request = later.door_request;
         self.community_request = later.community_request;
         self.held_back = later.held_back;
     }
@@ -309,6 +314,8 @@ pub(crate) enum Content {
     Forums(Box<ForumsContent>),
     /// The mail screens (M3-I). The member's flow waits inside and comes back when they leave.
     Mail(Box<MailContent>),
+    /// The door screens (M4-D0). The member's flow waits inside and comes back when they leave.
+    Doors(Box<DoorsContent>),
     /// A resource limit refused the session (M2-H): the honest message, then the session ends.
     /// The lines are fixed words and numbers from core's `LimitRefusal`, so they need no
     /// sanitizing.
@@ -334,6 +341,7 @@ impl Content {
             Self::Member(flow) => Some(flow),
             Self::Forums(session) => Some(&session.flow),
             Self::Mail(session) => Some(&session.flow),
+            Self::Doors(session) => Some(&session.flow),
             Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
         }
     }
@@ -343,6 +351,7 @@ impl Content {
             Self::Member(flow) => Some(flow),
             Self::Forums(session) => Some(&mut session.flow),
             Self::Mail(session) => Some(&mut session.flow),
+            Self::Doors(session) => Some(&mut session.flow),
             Self::Room(_) | Self::Claim(_) | Self::Limited(_) => None,
         }
     }
@@ -356,6 +365,9 @@ impl Content {
                 .flow
                 .view(ui.theme(session.flow.settings().theme()).strings()),
             Self::Mail(session) => session
+                .flow
+                .view(ui.theme(session.flow.settings().theme()).strings()),
+            Self::Doors(session) => session
                 .flow
                 .view(ui.theme(session.flow.settings().theme()).strings()),
             Self::Limited(lines) => View {
@@ -376,9 +388,12 @@ impl Content {
     fn menu_page(&self) -> Option<MenuPage> {
         match self {
             Self::Member(flow) => flow.menu_page(),
-            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Mail(_) | Self::Limited(_) => {
-                None
-            }
+            Self::Room(_)
+            | Self::Claim(_)
+            | Self::Forums(_)
+            | Self::Mail(_)
+            | Self::Doors(_)
+            | Self::Limited(_) => None,
         }
     }
 
@@ -387,9 +402,12 @@ impl Content {
     fn is_framed_screen(&self) -> bool {
         match self {
             Self::Member(flow) => flow.is_invite_screen(),
-            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Mail(_) | Self::Limited(_) => {
-                false
-            }
+            Self::Room(_)
+            | Self::Claim(_)
+            | Self::Forums(_)
+            | Self::Mail(_)
+            | Self::Doors(_)
+            | Self::Limited(_) => false,
         }
     }
 
@@ -397,9 +415,12 @@ impl Content {
     fn members_view(&self) -> Option<ScreenView> {
         match self {
             Self::Member(flow) => flow.members_view(),
-            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Mail(_) | Self::Limited(_) => {
-                None
-            }
+            Self::Room(_)
+            | Self::Claim(_)
+            | Self::Forums(_)
+            | Self::Mail(_)
+            | Self::Doors(_)
+            | Self::Limited(_) => None,
         }
     }
 
@@ -407,9 +428,12 @@ impl Content {
     fn community_view(&self) -> Option<ScreenView> {
         match self {
             Self::Member(flow) => flow.community_view(),
-            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Mail(_) | Self::Limited(_) => {
-                None
-            }
+            Self::Room(_)
+            | Self::Claim(_)
+            | Self::Forums(_)
+            | Self::Mail(_)
+            | Self::Doors(_)
+            | Self::Limited(_) => None,
         }
     }
 
@@ -417,9 +441,12 @@ impl Content {
     fn queue_view(&self) -> Option<QueueView> {
         match self {
             Self::Member(flow) => flow.queue_view(),
-            Self::Room(_) | Self::Claim(_) | Self::Forums(_) | Self::Mail(_) | Self::Limited(_) => {
-                None
-            }
+            Self::Room(_)
+            | Self::Claim(_)
+            | Self::Forums(_)
+            | Self::Mail(_)
+            | Self::Doors(_)
+            | Self::Limited(_) => None,
         }
     }
 
@@ -597,6 +624,8 @@ impl Screen {
         let mut moved = ForumMove::Stay;
         // The same for the mail screens (M3-I).
         let mut mail_moved = MailMove::Stay;
+        // And for the door screens (M4-D0).
+        let mut door_moved = DoorMove::Stay;
         match &mut self.content {
             Content::Room(room) => {
                 for input in keys.iter().copied().filter_map(room_input) {
@@ -661,6 +690,9 @@ impl Screen {
             Content::Mail(session) => {
                 mail_moved = mail_keys(&mut session.screen, keys, self.viewport, &mut effects);
             }
+            Content::Doors(session) => {
+                door_moved = doors::keys(&mut session.screen, keys, &mut effects);
+            }
             Content::Member(flow) => {
                 for (index, input) in keys
                     .iter()
@@ -692,6 +724,10 @@ impl Screen {
                         }
                         MemberEffect::Mail => {
                             mail_moved = MailMove::Open(index);
+                            break;
+                        }
+                        MemberEffect::Doors => {
+                            door_moved = DoorMove::Open(index);
                             break;
                         }
                         MemberEffect::Disconnect => {
@@ -741,6 +777,7 @@ impl Screen {
         }
         self.forum_transitions(&mut effects, keys, moved);
         self.mail_transitions(&mut effects, keys, mail_moved);
+        self.door_transitions(&mut effects, keys, door_moved);
         if let Some((from, ask)) = open_editor_at {
             self.open_editor(&ask);
             let rest = keys.get(from..).unwrap_or_default();
@@ -937,6 +974,7 @@ impl Screen {
             | Content::Claim(_)
             | Content::Member(_)
             | Content::Forums(_)
+            | Content::Doors(_)
             | Content::Limited(_) => None,
         }
     }
@@ -986,6 +1024,7 @@ impl Screen {
             | Content::Claim(_)
             | Content::Member(_)
             | Content::Mail(_)
+            | Content::Doors(_)
             | Content::Limited(_) => None,
         }
     }
@@ -1035,6 +1074,7 @@ impl Screen {
             | Content::Claim(_)
             | Content::Forums(_)
             | Content::Mail(_)
+            | Content::Doors(_)
             | Content::Limited(_) => None,
         }
     }
@@ -1114,6 +1154,7 @@ impl Screen {
             | Content::Claim(_)
             | Content::Forums(_)
             | Content::Mail(_)
+            | Content::Doors(_)
             | Content::Limited(_) => None,
         }
     }
@@ -1127,6 +1168,7 @@ impl Screen {
             | Content::Member(_)
             | Content::Forums(_)
             | Content::Mail(_)
+            | Content::Doors(_)
             | Content::Limited(_) => false,
         };
         self.dirty = true;
@@ -1265,7 +1307,11 @@ impl Screen {
         let farewell = match &self.content {
             Content::Member(flow) => flow.farewell(self.content.strings(&self.ui)),
             Content::Limited(lines) => Some(lines.clone()),
-            Content::Room(_) | Content::Claim(_) | Content::Forums(_) | Content::Mail(_) => None,
+            Content::Room(_)
+            | Content::Claim(_)
+            | Content::Forums(_)
+            | Content::Mail(_)
+            | Content::Doors(_) => None,
         };
         for line in farewell.into_iter().flatten() {
             bytes.extend_from_slice(line.as_bytes());
@@ -1279,6 +1325,9 @@ impl Screen {
         reason = "one match over every screen the session can show; splitting it hides the flow"
     )]
     fn draw(&mut self) -> io::Result<Vec<u8>> {
+        if let Some(frame) = self.draw_doors()? {
+            return Ok(frame);
+        }
         if let Content::Forums(session) = &self.content {
             let settings = session.flow.settings();
             let theme = self.ui.theme(settings.theme());
@@ -1468,7 +1517,7 @@ fn tell_flow_the_terminal(content: &mut Content, pty: PtySize) {
 /// The size to draw at: the client's, with a member's width and height overrides applied.
 fn drawn_size(pty: PtySize, content: &Content) -> PtySize {
     match content {
-        Content::Member(_) | Content::Forums(_) | Content::Mail(_) => {
+        Content::Member(_) | Content::Forums(_) | Content::Mail(_) | Content::Doors(_) => {
             content.flow().map_or(pty, |flow| {
                 let (cols, rows) = flow.settings().size(pty.cols(), pty.rows());
                 PtySize::from_request(u32::from(cols), u32::from(rows))
@@ -1655,6 +1704,9 @@ fn member_input(key: Key) -> Option<MemberInput> {
         | Key::Other => None,
     }
 }
+
+mod doors;
+use doors::{DoorMove, DoorsContent};
 
 #[cfg(test)]
 mod tests;

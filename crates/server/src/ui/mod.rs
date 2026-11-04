@@ -51,6 +51,7 @@ pub enum UiError {
 pub struct Ui {
     themes: ThemeSet,
     mail: MailKeysHandle,
+    doors: crate::doors::Doors,
 }
 
 /// The keys mail is sealed with (M3-I), carried to the sessions beside the screens' words because
@@ -102,6 +103,20 @@ impl Ui {
         self.mail.0.clone()
     }
 
+    /// The same screens with the doors this board runs (M4-D0). Without them the Doors menu item
+    /// opens an empty list.
+    #[must_use]
+    pub fn with_doors(mut self, doors: crate::doors::Doors) -> Self {
+        self.doors = doors;
+        self
+    }
+
+    /// The doors this board runs.
+    #[must_use]
+    pub fn doors(&self) -> &crate::doors::Doors {
+        &self.doors
+    }
+
     /// Like [`Ui::standard`], with the sysop's themes from `dir` added. A bad theme file never
     /// fails this: it is skipped with a logged warning (see [`theme`]).
     pub fn standard_with_themes(dir: &Path) -> Result<Self, UiError> {
@@ -133,6 +148,7 @@ impl Ui {
         Ok(Self {
             themes: ThemeSet::shipped(&strings)?,
             mail: MailKeysHandle::default(),
+            doors: crate::doors::Doors::none(),
         })
     }
 

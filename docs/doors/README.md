@@ -40,6 +40,22 @@ The framework is the first M4 slice. **It shares plumbing only.** Each game has 
 - **Credits.** Doors keep their own in-game currency. Whether season results pay board credits (M3-C) is a sysop setting, off by default.
 - **Inter-BBS.** Leagues shared between boards wait for federation (M8). Each game keeps a season summary format that could be exchanged later.
 
+### Framework status (M4-D0, D98)
+
+**Implemented:** everything in the list above except what is named under *Planned*. It lives in `crates/doors/framework` (`russh-bbs-door`), with the persistence and staff tools in `core::doors` and migration `0023`, and the example door (a coin toss with a daily allowance, saved state, a world and a daily tick) in `crates/doors/example`. **Verified:** the shared store suite on SQLite, Postgres 16 and TLS-required Postgres 16; unit and integration tests for the framework and the example; tests over a real russh client and a real telnet client that make the same walk on both transports (`crates/server/tests/doors.rs`); the path test for `doors.run` (`crates/server/tests/access_paths.rs`); and a hand walk with the OpenSSH client and a raw telnet client, reported in the pull request. **Planned, not built:** screens for the staff tools (bar, reset, end a season exist only as audited functions), a key bound to a door's look-around view, a per-door on/off setting, per-door permission grants, and any process boundary for doors by other authors (D98 (7)).
+
+**Writing a door.** A game is a new crate `crates/doors/<name>` that depends on `russh-bbs-door` (plus `serde` and `toml` for content) and nothing else.
+
+1. Implement `Door`: `info()` (a short slug id that never changes, a title, the save and world versions), `open(start, rng)` and, if the game has days, `has_daily_tick()` and `daily_tick()`. Add `migrate()` the day you raise a version; saves are forward-only.
+2. Implement `DoorSession`: `key()`, `render()` and `look_around()`. Keep the **engine pure** (state plus an action gives a new state and events, using only `ctx.rng()` and `ctx.now()`) and keep the screen thin, so a recorded `ReplayLog` reproduces the saved state exactly.
+3. Save with `ctx.request_save(bytes)` after anything worth keeping (the board writes it before the next key). Change the shared world with `ctx.edit_world(|old| new)`; the closure may run more than once. Never hold a handle to anything else: there is none to hold.
+4. Draw with `Canvas::text` and `DoorStyle`. Pass a name a player typed through `ctx.player_name`; pass text another player will see through `ctx.player_text`, or use templates.
+5. Put events, items and dialogue in TOML tables embedded with `include_str!`, give each a `content::Table` with `validate()`, and test it with `content::check`.
+6. Test: a source audit (`sandbox::audit_crate(env!("CARGO_MANIFEST_DIR"))`), replay logs for each branch, the migrations, and a `sim::Simulation` run with bots for the balance numbers.
+7. Register the door in `server::doors::Doors::builtin()`. The board then lists it, gives it a scheduler job if it has a tick, and runs it over ssh and telnet with no further work.
+
+The RPG rule above is the game's to meet, in its own engine; the framework has no character, combat, economy or progression code, and a game must not borrow another game's.
+
 ## Build order (proposed)
 
 1. Door framework, with a tiny example door.
