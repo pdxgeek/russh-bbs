@@ -10,7 +10,10 @@
 )]
 
 use russh_bbs_door::DoorRng;
+use russh_bbs_door_long_haul::combat::{Maneuver, Orders};
 use russh_bbs_door_long_haul::content::Content;
+use russh_bbs_door_long_haul::crew::{CrewMember, Goal, GoalKind, Role};
+use russh_bbs_door_long_haul::scene::Scene;
 use russh_bbs_door_long_haul::engine::{Action, Env};
 use russh_bbs_door_long_haul::events::{Event, Refusal};
 use russh_bbs_door_long_haul::frontier::Frontier;
@@ -175,5 +178,184 @@ impl Harness {
             .iter()
             .position(|m| m.good == g)
             .map(|i| u8::try_from(i).unwrap())
+    }
+}
+
+/// A crew member of a role and skill with a plain goal that nothing in a test will meet by
+/// accident (dock at 30 new stations).
+pub fn member(role: Role, skill: u8) -> CrewMember {
+    CrewMember {
+        name: format!("{} Test", role.name()),
+        role,
+        skill,
+        uses: 0,
+        wage: 60,
+        mood: [0; 4],
+        loyalty: 50,
+        goal: Goal {
+            kind: GoalKind::Docks,
+            target: 30,
+            progress: 0,
+            text: 0,
+        },
+        sworn: false,
+        hurt_days: 0,
+        scars: 0,
+    }
+}
+
+pub fn orders(weapons: u8, shields: u8, engines: u8) -> Orders {
+    Orders {
+        weapons,
+        shields,
+        engines,
+        maneuver: Maneuver::Hold,
+    }
+}
+
+impl Harness {
+    /// Run `f` with an engine environment on this harness.
+    pub fn with_env<R>(&mut self, f: impl FnOnce(&mut Env<'_>) -> R) -> R {
+        let mut env = Env::new(
+            &self.content,
+            &self.frontier,
+            &mut self.world,
+            &mut self.rng,
+            self.today,
+        );
+        let out = f(&mut env);
+        self.deltas.append(&mut env.deltas);
+        out
+    }
+
+    /// Open a fight with the enemy whose id is `enemy`.
+    pub fn fight(&mut self, p: &mut Player, enemy: &str) -> Vec<Event> {
+        let ix = self
+            .content
+            .enemies
+            .enemy
+            .iter()
+            .position(|e| e.id == enemy)
+            .unwrap();
+        let mut events = Vec::new();
+        self.with_env(|env| p.start_combat(env, u8::try_from(ix).unwrap(), &mut events));
+        events
+    }
+
+    /// Open a boarding of the layout whose id is `layout`.
+    pub fn board(&mut self, p: &mut Player, layout: &str) -> Vec<Event> {
+        let mut events = Vec::new();
+        self.with_env(|env| p.start_boarding(env, layout, &mut events));
+        events
+    }
+
+    /// Open the transit event whose id is `event` as the captain's scene.
+    pub fn open_event(&self, p: &mut Player, event: &str) {
+        let ix = self.content.transit.event_ix(event).unwrap();
+        p.scene = Some(Scene::Event(u16::try_from(ix).unwrap()));
+    }
+
+    /// Fit a module by id (no slot check; a test sets up what it needs).
+    pub fn fit(&self, p: &mut Player, module: &str) {
+        p.ship.modules.push(russh_bbs_door_long_haul::ship::Installed {
+            module: self.module(module),
+            wear: 0,
+        });
+    }
+
+    /// Put a crew member of `role` aboard, at the front of nothing in particular.
+    pub fn sign(&self, p: &mut Player, role: Role, skill: u8) -> usize {
+        p.crew.push(member(role, skill));
+        p.crew.len() - 1
+    }
+
+    /// The index of an enemy by id.
+    pub fn enemy_ix(&self, id: &str) -> usize {
+        self.content
+            .enemies
+            .enemy
+            .iter()
+            .position(|e| e.id == id)
+            .unwrap()
+    }
+}
+
+impl Harness {
+    /// Play any open scene to its end with a plain policy. Returns every event produced.
+    /// Panics if a scene refuses to end (a bug the caller wants to see).
+    pub fn finish_scene(&mut self, p: &mut Player) -> Vec<Event> {
+        use russh_bbs_door_long_haul::boarding::Drill;
+        use russh_bbs_door_long_haul::combat::Phase;
+        let mut all = Vec::new();
+        for step in 0..400u32 {
+            let Some(scene) = p.scene.clone() else {
+                return all;
+            };
+            let action = match &scene {
+                Scene::Event(_) => {
+                    // The first option this captain may take.
+                    let mut done = false;
+                    for n in 0..5u8 {
+                        if let Ok(mut ev) = self.go_strict(p, &Action::Choose(n)) {
+                            all.append(&mut ev);
+                            done = true;
+                            break;
+                        }
+                    }
+                    assert!(done, "an event with no open option");
+                    continue;
+                }
+                Scene::Combat(c) => {
+                    if c.phase == Phase::Won {
+                        Action::Wreck { board: step % 2 == 0 }
+                    } else if c.round >= 8 {
+                        Action::Run
+                    } else {
+                        Action::Fight(orders(3, 2, 1))
+                    }
+                }
+                Scene::Boarding(b) => {
+                    let def = b.def(&self.content);
+                    let room = b.room(&self.content);
+                    let foes = b.foes_here(&self.content);
+                    let bit = |r: u8| 1u16 << u32::from(r);
+                    if foes > 0 {
+                        Action::Skirmish(Drill::Fight)
+                    } else if b.looted & bit(b.at) == 0 && (room.credits[1] > 0 || room.tons > 0 || room.parts > 0) {
+                        Action::Skirmish(Drill::Take)
+                    } else if room.cache > 0 && b.read & bit(b.at) == 0 {
+                        Action::Skirmish(Drill::Search)
+                    } else if let Some(&to) = room.exits.iter().find(|&&e| {
+                        let t = &def.rooms[usize::from(e)];
+                        b.looted & bit(e) == 0 && (t.lock == 0 || b.opened & bit(e) != 0)
+                            && (t.credits[1] > 0 || t.tons > 0 || t.parts > 0)
+                    }) {
+                        Action::Skirmish(Drill::Move(to))
+                    } else if let Some(&to) = room.exits.iter().find(|&&e| {
+                        let t = &def.rooms[usize::from(e)];
+                        t.lock > 0 && b.opened & bit(e) == 0
+                    }) {
+                        Action::Skirmish(Drill::Breach(to))
+                    } else {
+                        Action::Skirmish(Drill::Withdraw)
+                    }
+                }
+            };
+            match self.go_strict(p, &action) {
+                Ok(mut ev) => all.append(&mut ev),
+                Err(_) => {
+                    // A refused plain move: pull out (or run) so the scene ends.
+                    let out = match &scene {
+                        Scene::Event(_) => unreachable!(),
+                        Scene::Combat(_) => Action::Run,
+                        Scene::Boarding(_) => Action::Skirmish(Drill::Withdraw),
+                    };
+                    if let Ok(mut ev) = self.go_strict(p, &out) {
+                        all.append(&mut ev);
+                    }
+                }
+            }
+        }
+        panic!("a scene did not end in 400 steps: {:?}", p.scene);
     }
 }

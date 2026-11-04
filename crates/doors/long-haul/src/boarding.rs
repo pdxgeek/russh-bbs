@@ -346,7 +346,7 @@ impl Boarding {
 
 impl Player {
     /// Put together a party and start a boarding.
-    pub(crate) fn start_boarding(&mut self, env: &mut Env<'_>, id: &str, events: &mut Vec<Event>) {
+    pub fn start_boarding(&mut self, env: &mut Env<'_>, id: &str, events: &mut Vec<Event>) {
         let Some(layout) = env.content.derelicts.derelict.iter().position(|d| d.id == id) else {
             return;
         };
@@ -674,10 +674,11 @@ impl Player {
                 } else {
                     self.injure(ci, rng, 3, 7, events);
                 }
-            } else if clean {
-                if let Some(c) = self.crew.get_mut(ci) {
-                    c.nudge(crate::crew::DANGER, 1);
-                }
+            } else if !clean {
+                // The ones still standing drag the rest out, and come back hurt.
+                self.injure(ci, rng, 2, 4, events);
+            } else if let Some(c) = self.crew.get_mut(ci) {
+                c.nudge(crate::crew::DANGER, 1);
             }
         }
         to_lose.sort_unstable();

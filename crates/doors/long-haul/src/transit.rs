@@ -589,7 +589,7 @@ impl Player {
             Req::Hazard { hazard } => w
                 .frontier
                 .system(w.system)
-                .is_some_and(|s| s.hazard.name().eq_ignore_ascii_case(hazard) || (hazard == "none" && s.hazard == crate::frontier::Hazard::None)),
+                .is_some_and(|s| s.hazard.id() == hazard),
             Req::Economy { economy } => w.frontier.system(w.system).is_some_and(|s| {
                 s.stations.iter().any(|&st| {
                     w.frontier

@@ -240,7 +240,8 @@ impl Player {
                     let help = u8::from(medic_aboard && c.role != Role::Medic);
                     c.hurt_days = c.hurt_days.saturating_sub(1 + help);
                 }
-                let delta = i16::try_from((c.mood_score() / 10).clamp(-3, 2)).unwrap_or(0);
+                let score = c.mood_score();
+                let delta = i16::try_from(((score + 3 * score.signum()) / 6).clamp(-3, 2)).unwrap_or(0);
                 c.shift_loyalty(delta);
             }
             if day >= self.wages_due {
@@ -373,7 +374,7 @@ impl Player {
         self.injure(i, rng, min, max, events);
     }
 
-    pub(crate) fn injure(
+    pub fn injure(
         &mut self,
         index: usize,
         rng: &mut DoorRng,
@@ -411,7 +412,7 @@ impl Player {
         self.lose_crew(i, events);
     }
 
-    pub(crate) fn lose_crew(&mut self, index: usize, events: &mut Vec<Event>) {
+    pub fn lose_crew(&mut self, index: usize, events: &mut Vec<Event>) {
         if index >= self.crew.len() {
             return;
         }

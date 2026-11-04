@@ -549,7 +549,7 @@ impl Player {
     }
 
     /// Start a fight. The captain's hull and crew are what they are.
-    pub(crate) fn start_combat(
+    pub fn start_combat(
         &mut self,
         env: &mut Env<'_>,
         enemy: u8,
@@ -817,8 +817,8 @@ impl Player {
     /// A grapple landed: the crew either turns the boarders back or loses cargo to them.
     fn repel_boarders(&mut self, env: &mut Env<'_>, fight: &mut Combat, events: &mut Vec<Event>) {
         let fit = self.crew.iter().filter(|c| c.fit()).count();
-        let defence = 4
-            + u32::try_from(fit).unwrap_or(0) * 3
+        let defence = 6
+            + u32::try_from(fit).unwrap_or(0) * 4
             + u32::from(self.crew_bonus(Role::Gunner)) * 3
             + u32::from(self.level(Skill::Stealth).min(3));
         let attack = u32::from(fight.boarders) * 5 + env.rng.below(6);

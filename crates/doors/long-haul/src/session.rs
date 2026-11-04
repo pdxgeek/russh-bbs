@@ -5,10 +5,13 @@
 //! This is the minimal screen of slice L1. The chart, the planner and the combat panel are
 //! the UI slice (L3); the screen reads the same lines for the look-around view.
 
+mod screens;
+
 use std::sync::Arc;
 
 use russh_bbs_door::{Canvas, Ctx, DoorEnv, DoorKey, DoorRng, DoorSession, DoorStyle, Flow};
 
+use crate::combat::Maneuver;
 use crate::content::{Content, Faction};
 use crate::engine::{Action, Env, RepairTarget};
 use crate::events::Event;
@@ -44,6 +47,8 @@ enum Mode {
     Yard(usize),
     Loan,
     News,
+    Crew(usize),
+    Jobs(usize),
 }
 
 pub(crate) struct Session {
@@ -55,6 +60,8 @@ pub(crate) struct Session {
     mode: Mode,
     log: Vec<(String, DoorStyle)>,
     opened_at: Option<i64>,
+    /// The manoeuvre the next combat round will use.
+    maneuver: Maneuver,
 }
 
 fn cr(n: i64) -> String {
@@ -149,6 +156,7 @@ impl Session {
             mode,
             log: Vec::new(),
             opened_at: None,
+            maneuver: Maneuver::Hold,
         };
         // Settling is deterministic from the save and the day, so doing it at open is safe even
         // if the captain leaves without another key; the first key saves it.
@@ -173,10 +181,25 @@ impl Session {
                 | Event::Repossessed { .. }
                 | Event::DriveFault { .. }
                 | Event::Hazard { avoided: false, .. }
+                | Event::YouWereHit { .. }
+                | Event::Beaten { .. }
+                | Event::Boarded { .. }
+                | Event::CrewHurt { .. }
+                | Event::CrewLost { .. }
+                | Event::Deserted { .. }
+                | Event::Mutiny { .. }
+                | Event::WagesMissed { .. }
+                | Event::ContractFailed { .. }
+                | Event::Downed { .. }
                 | Event::Standing { change: ..=-1, .. } => DoorStyle::Bad,
-                Event::Charted { .. } | Event::SkillUp { .. } | Event::Standing { .. } => {
-                    DoorStyle::Good
-                }
+                Event::Charted { .. }
+                | Event::SkillUp { .. }
+                | Event::CrewSkill { .. }
+                | Event::YouHit { .. }
+                | Event::Wrecked { .. }
+                | Event::GoalMet { .. }
+                | Event::ContractDone { .. }
+                | Event::Standing { .. } => DoorStyle::Good,
                 _ => DoorStyle::Plain,
             };
             let text = event.text(&self.content, &self.frontier);
@@ -323,6 +346,11 @@ impl Session {
             'y' if player.docked.is_some() => self.mode = Mode::Yard(0),
             'l' if player.docked.is_some() => self.mode = Mode::Loan,
             'n' => self.mode = Mode::News,
+            'c' => self.mode = Mode::Crew(0),
+            'b' if player.docked.is_some() => self.mode = Mode::Jobs(0),
+            'p' if player.docked.is_some() => {
+                self.act(ctx, &Action::Provision);
+            }
             'f' => {
                 self.act(ctx, &Action::Refuel(u16::MAX));
             }
@@ -582,7 +610,7 @@ impl Session {
                     max_hp,
                     player.ship.fuel,
                     stats.fuel_cap,
-                    player.ship.cargo_tons(),
+                    player.hold_used(),
                     stats.cargo_cap
                 ),
                 DoorStyle::Plain,
@@ -597,7 +625,11 @@ impl Session {
         let mut out = vec![(String::new(), DoorStyle::Plain)];
         let docked = player.docked.is_some();
         let system = self.frontier.system(player.at);
-        let mut keys = vec!["[j] jump".to_owned(), "[n] news".to_owned()];
+        let mut keys = vec![
+            "[j] jump".to_owned(),
+            "[n] news".to_owned(),
+            "[c] crew".to_owned(),
+        ];
         if docked {
             keys.splice(
                 0..0,
@@ -608,6 +640,8 @@ impl Session {
                     "[y] yard".to_owned(),
                     "[l] loan".to_owned(),
                     "[g] guild".to_owned(),
+                    "[b] jobs".to_owned(),
+                    "[p] rations".to_owned(),
                     "[u] undock".to_owned(),
                 ],
             );
@@ -677,7 +711,7 @@ impl Session {
                 DoorStyle::Dim,
             ));
         }
-        let standing: Vec<String> = [Faction::League, Faction::Miners, Faction::Free]
+        let standing: Vec<String> = Faction::ALL
             .iter()
             .map(|f| format!("{} {:+}", f.name(), player.standing[f.index()]))
             .collect();
@@ -986,6 +1020,14 @@ impl Session {
             return self.intro_lines();
         };
         out.extend(self.header(player));
+        if player.scene.is_some() {
+            out.extend(self.scene_lines(player));
+            out.push((String::new(), DoorStyle::Plain));
+            for (text, style) in &self.log {
+                out.push((text.clone(), *style));
+            }
+            return out;
+        }
         match &self.mode {
             Mode::Bridge | Mode::Pick(_) | Mode::Unreadable => {
                 let budget = height.saturating_sub(out.len() + self.log.len().min(LOG_LINES) + 1);
@@ -1030,6 +1072,8 @@ impl Session {
             Mode::Yard(cursor) => out.extend(self.yard_lines(height, *cursor)),
             Mode::Loan => out.extend(Self::loan_lines(player)),
             Mode::News => out.extend(self.news_lines(player)),
+            Mode::Crew(cursor) => out.extend(self.crew_lines(player, *cursor)),
+            Mode::Jobs(cursor) => out.extend(self.jobs_lines(player, *cursor)),
         }
         out.push((String::new(), DoorStyle::Plain));
         for (text, style) in &self.log {
@@ -1041,6 +1085,9 @@ impl Session {
 
 impl DoorSession for Session {
     fn key(&mut self, key: DoorKey, ctx: &mut Ctx<'_>) -> Flow {
+        if self.player.as_ref().is_some_and(|p| p.scene.is_some()) {
+            return self.scene_key(key, ctx);
+        }
         match self.mode {
             Mode::Unreadable => Flow::Exit,
             Mode::Pick(_) => self.pick_key(key, ctx),
@@ -1071,6 +1118,14 @@ impl DoorSession for Session {
                 }
                 Flow::Stay
             }
+            Mode::Crew(_) => {
+                self.crew_key(key, ctx);
+                Flow::Stay
+            }
+            Mode::Jobs(_) => {
+                self.jobs_key(key, ctx);
+                Flow::Stay
+            }
         }
     }
 
@@ -1080,7 +1135,7 @@ impl DoorSession for Session {
         let lines = self.lines(height);
         // Keep the newest log lines visible when the screen is short.
         let skip = lines.len().saturating_sub(height);
-        let skip = if matches!(self.mode, Mode::Market(_) | Mode::Yard(_)) {
+        let skip = if matches!(self.mode, Mode::Market(_) | Mode::Yard(_) | Mode::Crew(_) | Mode::Jobs(_)) {
             0
         } else {
             skip
