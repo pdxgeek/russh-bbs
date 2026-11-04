@@ -99,6 +99,7 @@ impl Rig {
             .attach_fingerprint(account.id, &fp)
             .await
             .unwrap();
+        common::remember(fp, account.username.as_str());
         let settings = TerminalSettings::new(None, None, true, true, Some(Tier::Ascii)).unwrap();
         self.store
             .set_terminal_settings(account.id, &settings)
@@ -146,7 +147,7 @@ async fn login(addr: SocketAddr, key: &PrivateKey) -> Handle<Client> {
     let mut session = common::connect(addr).await;
     let result = session
         .authenticate_publickey(
-            "anyone",
+            &common::user_for(key, "anyone"),
             PrivateKeyWithHashAlg::new(Arc::new(key.clone()), None),
         )
         .await

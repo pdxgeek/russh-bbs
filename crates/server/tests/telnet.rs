@@ -730,10 +730,15 @@ async fn ssh_in(rig: &Rig, id: AccountId) -> (Handle<Client>, russh::Channel<rus
     let fp =
         Fingerprint::parse(&key.public_key().fingerprint(HashAlg::Sha256).to_string()).unwrap();
     rig.store.attach_fingerprint(id, &fp).await.unwrap();
+    let handle = rig
+        .rows(&format!("SELECT username FROM accounts WHERE id = {id}"))
+        .await
+        .remove(0);
+    common::remember(&fp, &handle);
     let mut session = common::connect(rig.ssh.local_addr()).await;
     let result = session
         .authenticate_publickey(
-            "anyone",
+            &common::user_for(&key, "anyone"),
             PrivateKeyWithHashAlg::new(Arc::new(key.clone()), None),
         )
         .await
@@ -1385,4 +1390,112 @@ async fn the_forum_and_mail_screens_carry_the_unencrypted_row_too() {
     tn.keys("\u{1b}").await;
     let mail = words_of(&tn.keys("m").await);
     assert!(mail.contains("UNENCRYPTED"), "{mail}");
+}
+
+// ------------------------------------------------ the same join-then-sign-in over both transports
+
+/// Words of an ssh screen after `keys`: send them, ask for a full redraw at a new size and read
+/// until the server is quiet.
+async fn ssh_keys(
+    channel: &mut russh::Channel<russh::client::Msg>,
+    keys: &str,
+    rows: &mut u32,
+) -> String {
+    channel.data_bytes(keys.as_bytes().to_vec()).await.unwrap();
+    *rows = if *rows == 24 { 25 } else { 24 };
+    channel.window_change(80, *rows, 0, 0).await.unwrap();
+    let mut seen = String::new();
+    while let Ok(msg) = timeout(Duration::from_millis(700), channel.wait()).await {
+        match msg {
+            Some(russh::ChannelMsg::Data { data }) => {
+                seen.push_str(&String::from_utf8_lossy(&data));
+            }
+            Some(_) => {}
+            None => break,
+        }
+    }
+    words_of(&seen)
+}
+
+/// The last frame in `words` (a redraw repeats the whole screen) without the telnet marker,
+/// which is all telnet adds; everything else must match ssh.
+fn without_the_marker(words: &str) -> String {
+    let frame = words.rfind("russh bbs").map_or(words, |at| &words[at..]);
+    frame
+        .replace(
+            "UNENCRYPTED anyone on the network can read this session",
+            "",
+        )
+        .replace("UNENCRYPTED", "")
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+#[tokio::test]
+async fn the_same_join_then_sign_in_script_gives_the_same_screens_over_ssh_and_telnet() {
+    let script: [(&str, &str); 6] = [
+        ("n", "the form"),
+        ("walker\r", "handle"),
+        ("a long join password\r", "password"),
+        ("a long join password\r", "joined"),
+        ("x", "main menu"),
+        ("", ""),
+    ];
+    // ssh, no key, `new`.
+    let ssh_rig = Rig::start(true).await;
+    ssh_rig.mode(RegistrationMode::Open).await;
+    let mut session = common::connect(ssh_rig.ssh.local_addr()).await;
+    assert!(matches!(
+        session.authenticate_password("new", "").await.unwrap(),
+        AuthResult::Success
+    ));
+    let mut channel = common::open_shell(&session, 80, 24).await;
+    let mut rows = 24;
+    let ssh_home = ssh_keys(&mut channel, "", &mut rows).await;
+    let mut ssh_screens = vec![ssh_home];
+    for (keys, _) in &script[..4] {
+        ssh_screens.push(ssh_keys(&mut channel, keys, &mut rows).await);
+    }
+
+    // telnet, `new`.
+    let tn_rig = Rig::start(true).await;
+    tn_rig.mode(RegistrationMode::Open).await;
+    let (mut tn, home) = join(&tn_rig).await;
+    let mut tn_screens = vec![home];
+    for (keys, _) in &script[..4] {
+        tn_screens.push(words_of(&tn.keys(keys).await));
+    }
+
+    for (index, (ssh, telnet)) in ssh_screens.iter().zip(&tn_screens).enumerate() {
+        assert!(telnet.contains("UNENCRYPTED"), "step {index}: {telnet}");
+        assert!(!ssh.contains("UNENCRYPTED"), "step {index}: {ssh}");
+        assert_eq!(
+            without_the_marker(ssh),
+            without_the_marker(telnet),
+            "step {index} differs between ssh and telnet"
+        );
+    }
+    drop(tn);
+    // And then the sign-in: handle and password over ssh, login and password over telnet.
+    let mut again = Tn::connect(tn_rig.addr(), 80, 24).await;
+    again.log_in("walker", "a long join password").await;
+    let telnet_first = words_of(&again.read_until(&footer_at(24)).await);
+    let mut ssh_again = common::connect(ssh_rig.ssh.local_addr()).await;
+    assert!(matches!(
+        ssh_again
+            .authenticate_password("walker", "a long join password")
+            .await
+            .unwrap(),
+        AuthResult::Success
+    ));
+    let mut ssh_channel = common::open_shell(&ssh_again, 80, 24).await;
+    let mut rows = 24;
+    let ssh_first = ssh_keys(&mut ssh_channel, "", &mut rows).await;
+    assert_eq!(
+        without_the_marker(&ssh_first),
+        without_the_marker(&telnet_first),
+        "the first screen after sign-in differs"
+    );
+    assert!(ssh_first.contains("Signed in as walker"), "{ssh_first}");
 }

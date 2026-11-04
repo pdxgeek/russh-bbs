@@ -85,6 +85,7 @@ impl Rig {
             .attach_fingerprint(account.id, &fp)
             .await
             .unwrap();
+        common::remember(fp, account.username.as_str());
         (account, key)
     }
 
@@ -100,7 +101,7 @@ async fn login(addr: SocketAddr, user: &str, key: &PrivateKey) -> Handle<Client>
     let mut session = common::connect(addr).await;
     let result = session
         .authenticate_publickey(
-            user,
+            &common::user_for(key, user),
             PrivateKeyWithHashAlg::new(Arc::new(key.clone()), None),
         )
         .await

@@ -108,8 +108,8 @@ impl QueueStore for SqliteStore {
         }
         let id = sqlx::query_scalar!(
             r#"INSERT INTO invite_request
-                   (fingerprint, handle, message, created_at, expires_at, kind, password_hash)
-               VALUES (?, ?, ?, ?, ?, ?, ?)
+                   (fingerprint, handle, message, created_at, expires_at, kind, password_hash, key_bound)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                RETURNING id AS "id!""#,
             fingerprint,
             handle,
@@ -118,6 +118,7 @@ impl QueueStore for SqliteStore {
             expires,
             kind_text,
             new.password_hash,
+            new.key_bound,
         )
         .fetch_one(&mut *tx)
         .await;
@@ -181,7 +182,7 @@ impl QueueStore for SqliteStore {
         let mut tx = self.pool().begin().await.map_err(backend)?;
         let claimed = sqlx::query!(
             r#"DELETE FROM invite_request WHERE id = ?1 AND expires_at > ?2
-               RETURNING fingerprint, handle, password_hash"#,
+               RETURNING fingerprint, handle, password_hash, key_bound AS "key_bound: bool""#,
             id,
             now,
         )
@@ -212,10 +213,12 @@ impl QueueStore for SqliteStore {
             Some(ErrorKind::UniqueViolation) => ApproveError::HandleTaken,
             _ => ApproveError::Store(backend(error)),
         })?;
-        // A request made with a password (telnet, D94) binds the hash it carried and no key.
-        let binding = match claimed.password_hash.as_deref() {
-            Some(hash) => Binding::Password(hash),
-            None => Binding::Key(claimed.fingerprint.as_str()),
+        // A request made with a password binds the hash it carried; it binds its fingerprint
+        // too when that is a real SSH key and not a keyless request's stand-in (D94, D96).
+        let binding = match (claimed.password_hash.as_deref(), claimed.key_bound) {
+            (Some(hash), true) => Binding::KeyAndPassword(claimed.fingerprint.as_str(), hash),
+            (Some(hash), false) => Binding::Password(hash),
+            (None, _) => Binding::Key(claimed.fingerprint.as_str()),
         };
         bind(&mut tx, row.id, binding)
             .await

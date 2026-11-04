@@ -16,25 +16,23 @@ use russh_bbs_core::store::{Account, AccountState, SettingKey, StoreError};
 use sqlx::error::ErrorKind;
 
 use super::PostgresStore;
+use super::binding::{BindFailure, bind};
+use crate::binding::Binding;
 use crate::directory;
 use crate::error::{backend, kind};
 use crate::rows::AccountRow;
 
-impl FounderStore for PostgresStore {
-    async fn founder_claimed(&self) -> Result<bool, StoreError> {
-        directory::founder_claimed(self).await
-    }
-
-    async fn claim_founder(
+impl PostgresStore {
+    /// Make the founder, bound to `binding`, if and only if nobody has claimed (D41, D94).
+    async fn claim_bound(
         &self,
         username: Username,
-        fingerprint: &Fingerprint,
+        binding: Binding<'_>,
     ) -> Result<Option<Account>, StoreError> {
         let flag = SettingKey::FounderClaimed.as_str();
         let skeleton = username.skeleton();
         let name = username.as_str();
         let state = AccountState::Active.as_str();
-        let fingerprint = fingerprint.as_str();
 
         let mut tx = self.pool().begin().await.map_err(backend)?;
         let flagged = sqlx::query!(
@@ -70,23 +68,45 @@ impl FounderStore for PostgresStore {
         .execute(&mut *tx)
         .await
         .map_err(backend)?;
-        sqlx::query!(
-            "INSERT INTO account_keys (fingerprint, account_id) VALUES ($1, $2)",
-            fingerprint,
-            row.id,
-        )
-        .execute(&mut *tx)
-        .await
-        .map_err(|error| match kind(&error) {
-            Some(ErrorKind::UniqueViolation) => StoreError::FingerprintTaken,
-            _ => backend(error),
-        })?;
+        bind(&mut tx, row.id, binding)
+            .await
+            .map_err(|failure| match failure {
+                BindFailure::KeyTaken => StoreError::FingerprintTaken,
+                BindFailure::Store(error) => error,
+            })?;
         let account = row.into_account()?;
         // The claim and its audit row commit together or not at all.
         self.audit_in(&mut tx, &events::founder_claimed(account.id))
             .await?;
         tx.commit().await.map_err(backend)?;
         Ok(Some(account))
+    }
+}
+
+impl FounderStore for PostgresStore {
+    async fn founder_claimed(&self) -> Result<bool, StoreError> {
+        directory::founder_claimed(self).await
+    }
+    async fn claim_founder(
+        &self,
+        username: Username,
+        fingerprint: &Fingerprint,
+    ) -> Result<Option<Account>, StoreError> {
+        self.claim_bound(username, Binding::Key(fingerprint.as_str()))
+            .await
+    }
+
+    async fn claim_founder_password(
+        &self,
+        username: Username,
+        password_hash: &str,
+        fingerprint: Option<&Fingerprint>,
+    ) -> Result<Option<Account>, StoreError> {
+        let binding = match fingerprint {
+            Some(fingerprint) => Binding::KeyAndPassword(fingerprint.as_str(), password_hash),
+            None => Binding::Password(password_hash),
+        };
+        self.claim_bound(username, binding).await
     }
 }
 

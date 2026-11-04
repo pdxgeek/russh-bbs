@@ -100,7 +100,7 @@ async fn login(addr: SocketAddr, user: &str, key: &PrivateKey) -> Handle<Client>
     let mut session = common::connect(addr).await;
     let result = session
         .authenticate_publickey(
-            user,
+            &common::user_for(key, user),
             PrivateKeyWithHashAlg::new(Arc::new(key.clone()), None),
         )
         .await
@@ -204,6 +204,8 @@ async fn founder_at_menu(rig: &Rig) -> (Handle<Client>, Channel<Msg>, PrivateKey
     let mut channel = common::open_shell(&session, 80, 24).await;
     drain(&mut channel).await;
     line(&mut channel, &rig.token).await;
+    line(&mut channel, "founder password one").await;
+    line(&mut channel, "founder password one").await;
     press(&mut channel, "x").await;
     press(&mut channel, "n").await;
     let menu = press(&mut channel, "y").await;
@@ -235,6 +237,7 @@ async fn member(rig: &Rig, name: &str) -> PrivateKey {
         .attach_fingerprint(account.id, &fingerprint_of(&key))
         .await
         .unwrap();
+    common::remember(fingerprint_of(&key), account.username.as_str());
     key
 }
 

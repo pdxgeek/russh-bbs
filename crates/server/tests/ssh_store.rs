@@ -33,7 +33,7 @@ async fn authenticate(
     let mut session = connect(addr).await;
     let result = session
         .authenticate_publickey(
-            "anyone",
+            &common::user_for(key, "anyone"),
             PrivateKeyWithHashAlg::new(Arc::new(key.clone()), None),
         )
         .await
@@ -74,6 +74,7 @@ async fn a_stored_member_key_is_member_and_an_unknown_key_is_restricted() {
         .attach_fingerprint(account.id, &fingerprint_of(&member_key))
         .await
         .unwrap();
+    common::remember(fingerprint_of(&member_key), account.username.as_str());
 
     let host_key = HostKey::load_or_create(&dir.path().join("host_key")).unwrap();
     let config = ServerConfig {

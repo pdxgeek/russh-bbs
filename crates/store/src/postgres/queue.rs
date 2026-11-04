@@ -115,8 +115,8 @@ impl QueueStore for PostgresStore {
         }
         let id = sqlx::query_scalar!(
             "INSERT INTO invite_request
-                 (fingerprint, handle, message, created_at, expires_at, kind, password_hash)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)
+                 (fingerprint, handle, message, created_at, expires_at, kind, password_hash, key_bound)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
              RETURNING id",
             fingerprint,
             handle,
@@ -125,6 +125,7 @@ impl QueueStore for PostgresStore {
             expires,
             kind_text,
             new.password_hash,
+            new.key_bound,
         )
         .fetch_one(&mut *tx)
         .await
@@ -180,7 +181,7 @@ impl QueueStore for PostgresStore {
         let mut tx = self.pool().begin().await.map_err(backend)?;
         let claimed = sqlx::query!(
             "DELETE FROM invite_request WHERE id = $1 AND expires_at > $2
-             RETURNING fingerprint, handle, password_hash",
+             RETURNING fingerprint, handle, password_hash, key_bound",
             id,
             now,
         )
@@ -211,10 +212,12 @@ impl QueueStore for PostgresStore {
             Some(ErrorKind::UniqueViolation) => ApproveError::HandleTaken,
             _ => ApproveError::Store(backend(error)),
         })?;
-        // A request made with a password (telnet, D94) binds the hash it carried and no key.
-        let binding = match claimed.password_hash.as_deref() {
-            Some(hash) => Binding::Password(hash),
-            None => Binding::Key(claimed.fingerprint.as_str()),
+        // A request made with a password binds the hash it carried; it binds its fingerprint
+        // too when that is a real SSH key and not a keyless request's stand-in (D94, D96).
+        let binding = match (claimed.password_hash.as_deref(), claimed.key_bound) {
+            (Some(hash), true) => Binding::KeyAndPassword(claimed.fingerprint.as_str(), hash),
+            (Some(hash), false) => Binding::Password(hash),
+            (None, _) => Binding::Key(claimed.fingerprint.as_str()),
         };
         bind(&mut tx, row.id, binding)
             .await

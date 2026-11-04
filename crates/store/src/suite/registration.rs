@@ -391,6 +391,7 @@ fn application(key: u32, handle: &str, kind: RequestKind) -> NewRequest {
         fingerprint: fingerprint(key),
         kind,
         password_hash: None,
+        key_bound: true,
     }
 }
 

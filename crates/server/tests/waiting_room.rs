@@ -112,7 +112,7 @@ async fn try_login(addr: SocketAddr, key: &PrivateKey) -> Option<(Handle<Client>
     let result = timeout(
         common::WAIT,
         session.authenticate_publickey(
-            "anyone",
+            &common::user_for(key, "anyone"),
             PrivateKeyWithHashAlg::new(Arc::new(key.clone()), None),
         ),
     )
@@ -245,7 +245,9 @@ async fn an_unknown_key_walks_every_invite_mode_screen() {
     let request = press(&mut channel, b"i").await;
     assert!(request.contains("Request an invite"), "{request}");
     type_line(&mut channel, "newcomer").await;
-    let sent = type_line(&mut channel, "a friend of a friend").await;
+    type_line(&mut channel, "a friend of a friend").await;
+    type_line(&mut channel, "a long join password").await;
+    let sent = type_line(&mut channel, "a long join password").await;
     let sent = flat(&sent);
     assert!(
         sent.contains("Thank you. If your request is kept"),
@@ -257,7 +259,9 @@ async fn an_unknown_key_walks_every_invite_mode_screen() {
     let redeem = press(&mut channel, b"c").await;
     assert!(redeem.contains("Invite code"), "{redeem}");
     type_line(&mut channel, "ABC-123").await;
-    let result = type_line(&mut channel, "newcomer").await;
+    type_line(&mut channel, "newcomer").await;
+    type_line(&mut channel, "a long join password").await;
+    let result = type_line(&mut channel, "a long join password").await;
     let result = flat(&result);
     assert!(result.contains("That invite could not be used"), "{result}");
 
@@ -266,7 +270,9 @@ async fn an_unknown_key_walks_every_invite_mode_screen() {
     press(&mut channel, b"\x1b").await;
     press(&mut channel, b"c").await;
     type_line(&mut channel, "ABC-123").await;
-    let again = type_line(&mut channel, "zorgon_member").await;
+    type_line(&mut channel, "zorgon_member").await;
+    type_line(&mut channel, "a long join password").await;
+    let again = type_line(&mut channel, "a long join password").await;
     let again = flat(&again);
     assert_eq!(again, result, "a member's handle changed the reply");
 
@@ -286,7 +292,9 @@ async fn switching_the_registration_mode_changes_the_screen_set() {
     let form = press(&mut channel, b"a").await;
     assert!(form.contains("Apply for membership"));
     type_line(&mut channel, "applicant").await;
-    let result = type_line(&mut channel, "I like boards").await;
+    type_line(&mut channel, "I like boards").await;
+    type_line(&mut channel, "a long join password").await;
+    let result = type_line(&mut channel, "a long join password").await;
     let result = flat(&result);
     // M2-G: the application form is live and answers with one fixed text.
     assert!(
@@ -305,7 +313,9 @@ async fn switching_the_registration_mode_changes_the_screen_set() {
     assert!(home.contains("Create an account"), "{home}");
     assert!(!home.contains("Request an invite") && !home.contains("Apply for membership"));
     press(&mut channel2, b"n").await;
-    let result = type_line(&mut channel2, "freshname").await;
+    type_line(&mut channel2, "freshname").await;
+    type_line(&mut channel2, "a long join password").await;
+    let result = type_line(&mut channel2, "a long join password").await;
     // M2-G: the create-account form is live; a stranger's handle makes a member at once.
     assert!(flat(&result).contains("Signed in as freshname"), "{result}");
 
@@ -389,10 +399,15 @@ async fn too_many_form_submissions_end_the_session() {
     let rig = Rig::start(RegistrationMode::Open, limits).await;
     let (_session, mut channel, _home) = enter_room(&rig).await;
     press(&mut channel, b"n").await;
-    press(&mut channel, b"\r").await;
-    press(&mut channel, b"\r").await;
-    channel.data_bytes(&b"\r"[..]).await.unwrap();
-    let tail = drain(&mut channel).await;
+    // The create form has three fields now (handle, password, repeat): three Enters submit it,
+    // so the third submission is the ninth Enter. Everything the server says is kept.
+    let mut tail = String::new();
+    for _ in 0..9 {
+        if channel.data_bytes(&b"\r"[..]).await.is_err() {
+            break;
+        }
+        tail.push_str(&drain(&mut channel).await);
+    }
     assert!(
         flat(&strip_ansi(&tail)).contains("Too many attempts"),
         "{tail:?}"
@@ -470,7 +485,9 @@ async fn the_claim_entry_on_a_claimed_board_reveals_nothing() {
         drain(&mut channel).await;
         channel.window_change(80, 24, 0, 0).await.unwrap();
         let prompt = strip_ansi(&drain(&mut channel).await);
-        let after = type_line(&mut channel, "AAAA-BBBB-CCCC-DDDD").await;
+        type_line(&mut channel, "AAAA-BBBB-CCCC-DDDD").await;
+        type_line(&mut channel, "a long join password").await;
+        let after = type_line(&mut channel, "a long join password").await;
         let lower = format!("{prompt}\n{after}").to_lowercase();
         for secret in [
             "zorgon",

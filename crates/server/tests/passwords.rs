@@ -104,6 +104,7 @@ impl Rig {
             .attach_fingerprint(account.id, &fp)
             .await
             .unwrap();
+        common::remember(fp, account.username.as_str());
         let settings = TerminalSettings::new(None, None, true, true, Some(Tier::Ascii)).unwrap();
         self.store
             .set_terminal_settings(account.id, &settings)
@@ -147,7 +148,7 @@ async fn by_key(addr: SocketAddr, key: &PrivateKey) -> Handle<Client> {
     let mut session = common::connect(addr).await;
     let result = session
         .authenticate_publickey(
-            "anyone",
+            &common::user_for(key, "anyone"),
             PrivateKeyWithHashAlg::new(Arc::new(key.clone()), None),
         )
         .await
@@ -259,9 +260,14 @@ async fn to_password_page(channel: &mut Channel<client::Msg>) -> String {
 // ---------------------------------------------------------------- the method and who gets in
 
 #[tokio::test]
-async fn password_login_is_off_by_default_and_the_method_is_not_offered() {
-    let rig = Rig::start(fast_limits()).await;
-    assert!(!Limits::default().allow_password_login);
+async fn password_login_is_on_by_default_and_off_a_right_password_signs_nobody_in() {
+    // D94 (10): on by default; a sysop may turn it off for a key-only board.
+    assert!(Limits::default().allow_password_login);
+    let rig = Rig::start(Limits {
+        allow_password_login: false,
+        ..fast_limits()
+    })
+    .await;
     let (id, _) = rig.member("alice").await;
     rig.give_password(id, SECRET).await;
     let mut session = common::connect(rig.addr()).await;
@@ -273,7 +279,7 @@ async fn password_login_is_off_by_default_and_the_method_is_not_offered() {
     };
     assert_eq!(
         remaining_methods.iter().copied().collect::<Vec<_>>(),
-        vec![MethodKind::PublicKey]
+        vec![MethodKind::PublicKey, MethodKind::Password]
     );
     // The right password does nothing when the option is off.
     let result = session

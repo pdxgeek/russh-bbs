@@ -99,7 +99,7 @@ async fn login(addr: SocketAddr, user: &str, key: &PrivateKey) -> Handle<Client>
     let mut session = common::connect(addr).await;
     let result = session
         .authenticate_publickey(
-            user,
+            &common::user_for(key, user),
             PrivateKeyWithHashAlg::new(Arc::new(key.clone()), None),
         )
         .await
@@ -220,6 +220,7 @@ async fn member(rig: &Rig, name: &str) -> PrivateKey {
         .attach_fingerprint(account.id, &fingerprint_of(&key))
         .await
         .unwrap();
+    common::remember(fingerprint_of(&key), account.username.as_str());
     key
 }
 
@@ -491,6 +492,7 @@ async fn a_board_built_without_the_mail_key_says_mail_is_not_available() {
         .attach_fingerprint(account.id, &fingerprint_of(&key))
         .await
         .unwrap();
+    common::remember(fingerprint_of(&key), account.username.as_str());
     let config = ServerConfig {
         listen: "127.0.0.1:0".parse().unwrap(),
         limits: Limits {

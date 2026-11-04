@@ -222,6 +222,31 @@ impl fmt::Debug for RedeemRequest {
     }
 }
 
+/// "I already have an account" (D94 (8)): the handle and password to check, and bind this key
+/// to the account they open. The front end applies the password limits first.
+#[derive(Clone)]
+pub struct LinkRequest {
+    /// The handle as typed.
+    pub handle: String,
+    /// The password as typed, wiped when dropped. It is a login attempt, not a new password, so
+    /// it is not held to the password rules.
+    pub password: zeroize::Zeroizing<String>,
+}
+
+impl PartialEq for LinkRequest {
+    fn eq(&self, other: &Self) -> bool {
+        self.handle == other.handle && self.password.as_str() == other.password.as_str()
+    }
+}
+
+impl Eq for LinkRequest {}
+
+impl fmt::Debug for LinkRequest {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("LinkRequest").finish_non_exhaustive()
+    }
+}
+
 /// What the front end should do after an input.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RoomEffect {
@@ -237,6 +262,9 @@ pub enum RoomEffect {
     /// answer; the front end does not report back, because nothing it learns may change what the
     /// person reads.
     RequestInvite(InviteAsk),
+    /// Check a handle and password and bind this key to the account (see [`LinkRequest`]), then
+    /// call [`WaitingRoom::redeem_refused`] if it did not work (one sentence for every cause).
+    LinkKey(LinkRequest),
 }
 
 /// Whether a notice is good news or a problem.
@@ -351,6 +379,14 @@ const CODE: FieldSpec = FieldSpec {
     kind: FieldKind::Code,
 };
 
+const LINK_HANDLE: FieldSpec = FieldSpec {
+    label: strings::LABEL_LINK_HANDLE,
+    kind: FieldKind::Line,
+};
+const LINK_PASSWORD: FieldSpec = FieldSpec {
+    label: strings::LABEL_LINK_PASSWORD,
+    kind: FieldKind::Secret,
+};
 const PASSWORD: FieldSpec = FieldSpec {
     label: strings::LABEL_PASSWORD,
     kind: FieldKind::Secret,
@@ -371,13 +407,16 @@ fn fields_of(page: Page, passwords: bool) -> &'static [FieldSpec] {
         (Page::RedeemInvite, true) => &[CODE, HANDLE, PASSWORD, PASSWORD_AGAIN],
         (Page::CreateAccount, false) => &[HANDLE],
         (Page::CreateAccount, true) => &[HANDLE, PASSWORD, PASSWORD_AGAIN],
+        (Page::LinkKey, _) => &[LINK_HANDLE, LINK_PASSWORD],
     }
 }
 
 /// The words for a valid form that no special case took. Every form is live, so this is the
 /// same sentence the live path shows.
-fn unavailable(page: Page, passwords: bool) -> &'static str {
+fn unavailable(page: Page, passwords: bool, key: bool) -> &'static str {
     match page {
+        Page::RequestInvite if passwords && key => strings::REQUEST_INVITE_ANSWER_KEY_PASSWORD,
+        Page::Apply if passwords && key => strings::APPLY_ANSWER_KEY_PASSWORD,
         // The request form is live (M2-E) and never gets here; the words stay honest anyway.
         Page::RequestInvite if passwords => strings::REQUEST_INVITE_ANSWER_PASSWORD,
         Page::Apply if passwords => strings::APPLY_ANSWER_PASSWORD,
@@ -387,6 +426,7 @@ fn unavailable(page: Page, passwords: bool) -> &'static str {
         // The apply and create-account forms are live (M2-G) and never get here either.
         Page::Apply => strings::APPLY_ANSWER,
         Page::CreateAccount => strings::CREATE_ACCOUNT_FAILED,
+        Page::LinkKey => strings::LINK_KEY_FAILED,
         // Not forms; never submitted.
         Page::Home | Page::Rules => strings::ERR_EMPTY,
     }
@@ -417,6 +457,8 @@ pub struct WaitingRoom {
     degraded: bool,
     /// Whether the forms ask for a password instead of relying on an SSH key (D94).
     passwords: bool,
+    /// Whether the room offers "I already have an account" (a visitor with an SSH key).
+    key_link: bool,
 }
 
 impl fmt::Debug for WaitingRoom {
@@ -448,7 +490,17 @@ impl WaitingRoom {
             max_submissions,
             degraded: false,
             passwords: false,
+            key_link: false,
         }
+    }
+
+    /// Offer "I already have an account" (D94 (8)): a handle and password that bind **this
+    /// connection's SSH key** to an account. Only a room for a visitor who came with a key is
+    /// built this way.
+    #[must_use]
+    pub fn with_key_link(mut self) -> Self {
+        self.key_link = true;
+        self
     }
 
     /// Build the room for a person with **no SSH key** (telnet, D94). Every form that makes an
@@ -511,7 +563,9 @@ impl WaitingRoom {
         if key.eq_ignore_ascii_case(&QUIT_KEY) {
             return RoomEffect::Disconnect;
         }
-        if let Some(entry) = screens::entry_for(self.mode, key) {
+        if self.key_link && key.eq_ignore_ascii_case(&screens::LINK_KEY) {
+            self.go(Page::LinkKey);
+        } else if let Some(entry) = screens::entry_for(self.mode, key) {
             self.go(entry.page);
         }
         RoomEffect::Stay
@@ -574,6 +628,16 @@ impl WaitingRoom {
             return RoomEffect::Disconnect;
         }
         self.active = 0;
+        if self.page == Page::LinkKey && self.validate().is_ok() {
+            let handle = self.values.first().cloned().unwrap_or_default();
+            let password = zeroize::Zeroizing::new(self.values.get(1).cloned().unwrap_or_default());
+            self.clear_form();
+            self.notice = None;
+            return RoomEffect::LinkKey(LinkRequest {
+                handle: handle.trim().to_owned(),
+                password,
+            });
+        }
         if matches!(self.page, Page::RedeemInvite | Page::CreateAccount)
             && self.validate().is_ok()
             && let Some(request) = self.redeem_request()
@@ -591,7 +655,7 @@ impl WaitingRoom {
             self.clear_form();
             self.notice = Some(Notice {
                 kind: NoticeKind::Info,
-                text: unavailable(self.page, self.passwords),
+                text: unavailable(self.page, self.passwords, self.key_link),
             });
             return RoomEffect::RequestInvite(ask);
         }
@@ -601,7 +665,7 @@ impl WaitingRoom {
                 self.clear_form();
                 Notice {
                     kind: NoticeKind::Info,
-                    text: unavailable(self.page, self.passwords),
+                    text: unavailable(self.page, self.passwords, self.key_link),
                 }
             }
             Err(text) => {
@@ -689,7 +753,9 @@ impl WaitingRoom {
     pub fn redeem_refused(&mut self) {
         self.notice = Some(Notice {
             kind: NoticeKind::Error,
-            text: if self.page == Page::CreateAccount {
+            text: if self.page == Page::LinkKey {
+                strings::LINK_KEY_FAILED
+            } else if self.page == Page::CreateAccount {
                 strings::CREATE_ACCOUNT_FAILED
             } else {
                 strings::REDEEM_FAILED
@@ -775,6 +841,12 @@ impl WaitingRoom {
                         label: entry.label,
                     })
                     .collect();
+                if self.key_link {
+                    view.menu.push(MenuItemView {
+                        key: screens::LINK_KEY,
+                        label: strings::MENU_LINK_KEY,
+                    });
+                }
                 view.footer = strings::FOOTER_HOME;
                 if self.degraded {
                     view.note = Some(strings::OPEN_CAPPED_NOTICE);

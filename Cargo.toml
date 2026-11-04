@@ -105,3 +105,11 @@ todo = "warn"
 # Pedantic lints we do not follow:
 module_name_repetitions = "allow" # domain names read better fully qualified
 missing_errors_doc = "allow"      # error types are documented on the type
+
+# Hashing a password costs 19 MiB and two passes (D81). Unoptimized, one hash takes seconds in a
+# debug build and every test that joins or claims waits on it; optimizing just these crates keeps
+# the tests (and a developer's `cargo run`) usable without changing what is hashed.
+[profile.dev.package.argon2]
+opt-level = 3
+[profile.dev.package.blake2]
+opt-level = 3

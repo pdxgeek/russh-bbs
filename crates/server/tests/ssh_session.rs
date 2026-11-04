@@ -63,7 +63,7 @@ async fn other_keys_do_not_disconnect() {
     let mut channel = open_shell(&session, 80, 24).await;
     read_until(&mut channel, "Disconnect").await;
 
-    channel.data_bytes(&b"hello\x1b[A"[..]).await.unwrap();
+    channel.data_bytes(&b"zzz\x1b[A"[..]).await.unwrap();
     // Still alive: a following q is honored.
     channel.data_bytes(&b"q"[..]).await.unwrap();
     read_until(&mut channel, "\x1b[?1049l").await;

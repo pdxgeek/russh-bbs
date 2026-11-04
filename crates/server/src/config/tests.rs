@@ -50,7 +50,7 @@ fn defaults_only() {
     assert!(!got.sources.is_set("ssh.listen"));
     assert_eq!(got.config.registration_mode, RegistrationMode::Invite);
     assert_eq!(got.config.ssh.listen.to_string(), "0.0.0.0:2222");
-    assert!(!got.config.ssh.allow_password_login);
+    assert!(got.config.ssh.allow_password_login);
     assert!(!got.config.telnet.enabled && !got.config.telnet.allow_login);
     assert_eq!(got.config.datasource.kind, DatasourceKind::Sqlite);
     // The defaults reproduce the transport limits of D22 and D37 exactly.
@@ -253,16 +253,17 @@ fn telnet_is_off_by_default_and_on_warns_and_reaches_the_limits() {
 }
 
 #[test]
-fn password_login_is_off_by_default_and_on_reaches_the_limits_without_a_warning() {
-    let off = from_file("").expect("parses");
-    assert!(!off.config.ssh.allow_password_login);
-    assert!(!off.config.limits().allow_password_login);
-    let on = from_file("[ssh]\nallow_password_login = true\n").expect("parses");
+fn password_login_is_on_by_default_and_off_reaches_the_limits_without_a_warning() {
+    // D94 (10): ssh is the transport, the account is handle plus password.
+    let on = from_file("").expect("parses");
     assert!(on.config.ssh.allow_password_login);
     assert!(on.config.limits().allow_password_login);
+    let off = from_file("[ssh]\nallow_password_login = false\n").expect("parses");
+    assert!(!off.config.ssh.allow_password_login);
+    assert!(!off.config.limits().allow_password_login);
     // It is built now (M3-D): the "does nothing yet" warning is gone.
     assert!(
-        !on.warnings
+        !off.warnings
             .iter()
             .any(|w| w.contains("allow_password_login"))
     );

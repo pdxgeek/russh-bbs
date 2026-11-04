@@ -20,6 +20,19 @@ pub const APPLY_HEADING: &str = "Apply for membership";
 /// Heading of the create-account form.
 pub const CREATE_ACCOUNT_HEADING: &str = "Create an account";
 
+/// Heading of the form that binds this key to an existing account (D94 (8)).
+pub const LINK_KEY_HEADING: &str = "I already have an account";
+/// Menu entry for it.
+pub const MENU_LINK_KEY: &str = "I already have an account";
+/// Label of its handle field.
+pub const LABEL_LINK_HANDLE: &str = "Your handle";
+/// Label of its password field.
+pub const LABEL_LINK_PASSWORD: &str = "Your password";
+/// The one answer when the handle and password do not open an account (or this key cannot be
+/// added): the same words for every cause, like a failed login.
+pub const LINK_KEY_FAILED: &str =
+    "That handle and password did not work. Check them and try again.";
+
 /// Menu labels.
 pub const MENU_RULES: &str = "Read the rules";
 /// See [`MENU_RULES`].
@@ -76,6 +89,13 @@ pub const REQUEST_INVITE_ANSWER: &str = "Thank you. If your request is kept, the
 /// key, so it says what is kept instead and how to find out. Shown before the store is asked and
 /// the same whether the request was kept or dropped.
 pub const REQUEST_INVITE_ANSWER_PASSWORD: &str = "Thank you. If your request is kept, the staff and trusted members here can read your handle and your message, and the staff decide when they can. Your password is kept only as a salted hash. Nobody is notified: log in again later with this handle and password to find out.";
+
+/// [`REQUEST_INVITE_ANSWER`] for a visitor with an SSH key who also chose a password (D94 (6)):
+/// the account will have both.
+pub const REQUEST_INVITE_ANSWER_KEY_PASSWORD: &str = "Thank you. If your request is kept, the staff and trusted members here can read your handle, your message and this key's fingerprint, and the staff decide when they can. Your password is kept only as a salted hash. Nobody is notified: connect again later with this same key, or log in with your handle and password, to find out.";
+
+/// [`APPLY_ANSWER`] for a visitor with an SSH key who also chose a password (D94 (6)).
+pub const APPLY_ANSWER_KEY_PASSWORD: &str = "Thank you. If your application is kept, the staff and trusted members here can read your handle, your message and this key's fingerprint, and the staff decide when they can. Your password is kept only as a salted hash. This key stays outside the board until they say yes. Nobody is notified: connect again later with this same key, or log in with your handle and password, to find out.";
 
 /// The one answer to the application form (M2-G). Like [`REQUEST_INVITE_ANSWER`] it is shown
 /// before the store is asked and is the same whether the application was kept or dropped (a

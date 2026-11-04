@@ -99,7 +99,7 @@ async fn login(addr: SocketAddr, user: &str, key: &PrivateKey) -> Handle<Client>
         .unwrap();
     let result = session
         .authenticate_publickey(
-            user,
+            &common::user_for(key, user),
             PrivateKeyWithHashAlg::new(Arc::new(key.clone()), None),
         )
         .await
@@ -111,7 +111,7 @@ async fn login(addr: SocketAddr, user: &str, key: &PrivateKey) -> Handle<Client>
 /// Read until quiet and return the printable text of everything received, joined as words.
 async fn words(channel: &mut russh::Channel<client::Msg>) -> String {
     let mut raw = String::new();
-    while let Ok(msg) = timeout(Duration::from_millis(150), channel.wait()).await {
+    while let Ok(msg) = timeout(Duration::from_millis(1500), channel.wait()).await {
         match msg {
             Some(ChannelMsg::Data { data }) => raw.push_str(&String::from_utf8_lossy(&data)),
             Some(_) => {}
@@ -148,11 +148,16 @@ async fn shell(session: &Handle<Client>) -> (russh::Channel<client::Msg>, String
     (channel, first)
 }
 
+/// The password every claimant in these tests chooses (the claim also asks for one, D94 (6)).
+const FOUNDER_PASSWORD: &str = "a founder's long password";
+
 async fn submit(channel: &mut russh::Channel<client::Msg>, token: &str) -> String {
-    channel
-        .data_bytes(format!("{token}\r").into_bytes())
-        .await
-        .unwrap();
+    for line in [token, FOUNDER_PASSWORD, FOUNDER_PASSWORD] {
+        channel
+            .data_bytes(format!("{line}\r").into_bytes())
+            .await
+            .unwrap();
+    }
     words(channel).await
 }
 
@@ -179,6 +184,7 @@ async fn the_full_claim_story() {
     assert!(after.contains("Signed in as founder."), "{after}");
     assert!(!after.contains(&token));
     assert_eq!(access_of(&rig, &key_a).await, Access::Member);
+    common::remember(key_a.public_key().fingerprint(HashAlg::Sha256), "founder");
     // The claim wrote its audit row in its transaction (M2-C): one row, no token in it.
     let rows =
         russh_bbs_core::audit::known_events(rig.store.page(&AuditQuery::default()).await.unwrap());

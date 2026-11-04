@@ -116,10 +116,10 @@ pub async fn open_account<S: RegistrationStore, C: Clock>(
     open(store, gate, access, username, fingerprint, Bound::Key, peer).await
 }
 
-/// [`open_account`] for a person with no SSH key (telnet, D94). The account is bound to the
-/// password whose argon2id hash is `password_hash` ([`crate::passwords::hash_new`]); the gate
-/// counts the attempt per [`password_identity`] of the handle and per network. Every other rule
-/// and every refusal is the key path's.
+/// [`open_account`] with a password (D94). The account is bound to the password whose argon2id
+/// hash is `password_hash` ([`crate::passwords::hash_new`]) and to `fingerprint` when the
+/// visitor has an SSH key; without one the gate counts the attempt per [`password_identity`] of
+/// the handle. Every other rule and every refusal is the key path's.
 ///
 /// # Errors
 /// As [`open_account`].
@@ -129,16 +129,17 @@ pub async fn open_account_with_password<S: RegistrationStore, C: Clock>(
     access: &Snapshot,
     username: Username,
     password_hash: &str,
+    fingerprint: Option<&Fingerprint>,
     peer: Option<IpAddr>,
 ) -> Result<Opened, OpenError> {
-    let identity = password_identity(&username);
+    let identity = fingerprint.map_or_else(|| password_identity(&username), Fingerprint::clone);
     open(
         store,
         gate,
         access,
         username,
         &identity,
-        Bound::Password(password_hash),
+        Bound::Password(password_hash, fingerprint.is_some()),
         peer,
     )
     .await
@@ -147,7 +148,8 @@ pub async fn open_account_with_password<S: RegistrationStore, C: Clock>(
 /// What the new account is bound to.
 enum Bound<'a> {
     Key,
-    Password(&'a str),
+    /// The hash, and whether the visitor's key (`fingerprint`) is bound too.
+    Password(&'a str, bool),
 }
 
 async fn open<S: RegistrationStore, C: Clock>(
@@ -180,7 +182,11 @@ async fn open<S: RegistrationStore, C: Clock>(
     let cap = daily_cap(store).await;
     let made = match bound {
         Bound::Key => store.open_account(username, fingerprint, cap).await,
-        Bound::Password(hash) => store.open_account_password(username, hash, cap).await,
+        Bound::Password(hash, with_key) => {
+            store
+                .open_account_password(username, hash, with_key.then_some(fingerprint), cap)
+                .await
+        }
     };
     match made {
         Ok(opened) => {
@@ -233,14 +239,16 @@ where
     submit_request(store, gate, access, ask, fingerprint, peer).await
 }
 
-/// [`submit_application`] for a person with no SSH key (telnet, D94): the request carries the
-/// hash of the password they chose and approval makes a password account.
+/// [`submit_application`] with a password (D94): the request carries the hash of the password
+/// they chose, and `fingerprint` when they have an SSH key (approval binds both; without one it
+/// makes a password account).
 pub async fn submit_application_with_password<S, C>(
     store: &S,
     gate: &RequestGate<C>,
     access: &Snapshot,
     mut ask: InviteAsk,
     password_hash: String,
+    fingerprint: Option<&Fingerprint>,
     peer: Option<IpAddr>,
 ) -> Submission
 where
@@ -259,5 +267,5 @@ where
             return Submission::Dropped(DropReason::Store);
         }
     }
-    submit_request_with_password(store, gate, access, ask, password_hash, peer).await
+    submit_request_with_password(store, gate, access, ask, password_hash, fingerprint, peer).await
 }

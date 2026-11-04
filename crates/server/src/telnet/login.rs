@@ -13,6 +13,7 @@
 use std::net::SocketAddr;
 
 use russh_bbs_core::passwords::{Login, authenticate};
+use russh_bbs_core::signin::{Route, route};
 use russh_bbs_core::store::Account;
 use russh_bbs_core::waiting_room::Verdict;
 use tokio::time::{Instant, sleep, timeout, timeout_at};
@@ -39,10 +40,6 @@ const BANNER: [&str; 8] = [
     "New here? Type new as your login name to join.",
     "",
 ];
-
-/// The login name that opens the waiting room instead of asking for a password (D94). Reserved
-/// as a handle, so no member's login is taken by it.
-const JOIN_NAME: &str = "new";
 
 /// Where the login prompt led.
 pub(super) enum Entry {
@@ -73,7 +70,7 @@ impl<D: Backend> Connection<D> {
             let Line::Text(user) = link.read_line(true, MAX_HANDLE).await else {
                 return None;
             };
-            if user.trim().eq_ignore_ascii_case(JOIN_NAME) {
+            if route(&user) == Route::Join {
                 link.send_text("\r\n").await;
                 return Some(Entry::Join);
             }

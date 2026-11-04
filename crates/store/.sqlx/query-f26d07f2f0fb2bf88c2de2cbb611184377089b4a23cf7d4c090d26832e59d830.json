@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO invite_request\n                   (fingerprint, handle, message, created_at, expires_at, kind, password_hash, key_bound)\n               VALUES (?, ?, ?, ?, ?, ?, ?, ?)\n               RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 8
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "f26d07f2f0fb2bf88c2de2cbb611184377089b4a23cf7d4c090d26832e59d830"
+}

@@ -42,7 +42,7 @@ async fn password_auth_fails() {
 }
 
 #[tokio::test]
-async fn none_auth_fails_and_only_publickey_is_offered() {
+async fn none_auth_fails_and_the_methods_are_publickey_and_password() {
     let t = start_server(fast_limits()).await;
     let mut session = connect(t.addr()).await;
     let result = session.authenticate_none("anyone").await.unwrap();
@@ -53,7 +53,36 @@ async fn none_auth_fails_and_only_publickey_is_offered() {
         panic!("none auth must not succeed");
     };
     let offered: Vec<_> = remaining_methods.iter().copied().collect();
-    assert_eq!(offered, vec![MethodKind::PublicKey]);
+    assert_eq!(offered, vec![MethodKind::PublicKey, MethodKind::Password]);
+}
+
+#[tokio::test]
+async fn a_client_with_no_key_reaches_the_waiting_room_by_password_only_under_the_visitor_names() {
+    // D94 (7), (10), D96: `none` is never accepted (OpenSSH would then never offer a key). Under
+    // `new` and `claim` a password prompt answered with anything lets a key-less client in; under
+    // every other name the same attempt is the one refusal.
+    let t = start_server(fast_limits()).await;
+    for name in ["alice", "new", "claim"] {
+        let mut session = connect(t.addr()).await;
+        let result = session.authenticate_none(name).await.unwrap();
+        assert!(
+            matches!(result, AuthResult::Failure { .. }),
+            "{name}: {result:?}"
+        );
+    }
+    for name in ["new", "claim", "NEW"] {
+        let mut session = connect(t.addr()).await;
+        let result = session.authenticate_password(name, "").await.unwrap();
+        assert!(matches!(result, AuthResult::Success), "{name}: {result:?}");
+    }
+    let mut refusals = Vec::new();
+    for name in ["alice", "bob", "nobody-at-all", ""] {
+        let mut session = connect(t.addr()).await;
+        let result = session.authenticate_password(name, "").await.unwrap();
+        refusals.push(format!("{result:?}"));
+        assert!(matches!(result, AuthResult::Failure { .. }), "{name}");
+    }
+    assert!(refusals.iter().all(|r| r == &refusals[0]), "{refusals:?}");
 }
 
 #[tokio::test]

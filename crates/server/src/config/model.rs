@@ -85,8 +85,7 @@ pub struct SshConfig {
     pub max_auth_attempts: u32,
     /// Milliseconds a failed authentication is delayed.
     pub auth_rejection_millis: u64,
-    /// Opt-in password login over SSH (D28, D81). Off by default: the server then offers public
-    /// key only.
+    /// Password login over SSH (D81, D94 (10)). On by default; off, the server offers keys only.
     pub allow_password_login: bool,
     /// Milliseconds between two redraws of one session at the fastest (D49).
     pub redraw_interval_millis: u64,
@@ -115,7 +114,7 @@ impl Default for SshConfig {
             max_auth_attempts: limits.max_auth_attempts,
             auth_rejection_millis: u64::try_from(limits.auth_rejection_time.as_millis())
                 .unwrap_or(u64::MAX),
-            allow_password_login: false,
+            allow_password_login: true,
             redraw_interval_millis: u64::try_from(limits.redraw_interval.as_millis())
                 .unwrap_or(u64::MAX),
             requests_per_second: limits.requests_per_second,

@@ -1,6 +1,7 @@
 //! Password hashes over Postgres (M3-D, D81). The table holds argon2id PHC strings only; nothing
 //! here ever sees a plain-text password.
 
+use russh_bbs_core::access::Fingerprint;
 use russh_bbs_core::audit::AuditEvent;
 use russh_bbs_core::passwords::{LoginRecord, PasswordStore};
 use russh_bbs_core::store::{AccountId, StoreError};
@@ -52,6 +53,31 @@ impl PasswordStore for PostgresStore {
         .await
         .map_err(backend)?;
         Ok(keys > 0)
+    }
+
+    async fn link_key(
+        &self,
+        account: AccountId,
+        fingerprint: &Fingerprint,
+        audit: &AuditEvent,
+    ) -> Result<(), StoreError> {
+        let id = account.as_raw();
+        let fingerprint = fingerprint.as_str();
+        let mut tx = self.pool().begin().await.map_err(backend)?;
+        sqlx::query!(
+            "INSERT INTO account_keys (fingerprint, account_id) VALUES ($1, $2)",
+            fingerprint,
+            id,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|error| match kind(&error) {
+            Some(ErrorKind::UniqueViolation) => StoreError::FingerprintTaken,
+            Some(ErrorKind::ForeignKeyViolation) => StoreError::AccountNotFound,
+            _ => backend(error),
+        })?;
+        self.audit_in(&mut tx, audit).await?;
+        tx.commit().await.map_err(backend)
     }
 
     async fn set_hash(

@@ -20,8 +20,10 @@ Built on the [`russh`](https://crates.io/crates/russh) crate. This project is no
 ```bash
 docker run -d --name bbs -p 2222:2222 -v bbs-data:/data ghcr.io/pdxgeek/russh-bbs:latest
 docker logs bbs        # shows the one-time founder token on first start
-ssh -p 2222 claim@localhost
+ssh -p 2222 claim@localhost    # become the sysop: paste the token, choose a password
 ```
+
+Then, from any machine: `ssh -p 2222 new@host` to join (the waiting room; you choose a password; with no key, press Enter at the password prompt) and `ssh -p 2222 <handle>@host` to sign in (a key you added to that handle, or your password). A telnet client can do the same if the sysop turns telnet on: type `new` at `login:` to join.
 
 Or `docker compose up -d` with the example [compose.yaml](compose.yaml). All state lives in the `/data` volume. Images are published on version tags only. Full guide, including backups, upgrades and the host key fingerprint: [docs/deploy.md](docs/deploy.md). The container is not a sandbox for door games.
 

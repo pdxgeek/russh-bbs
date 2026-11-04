@@ -106,7 +106,7 @@ async fn login(addr: SocketAddr, user: &str, key: &PrivateKey) -> Handle<Client>
     let mut session = common::connect(addr).await;
     let result = session
         .authenticate_publickey(
-            user,
+            &common::user_for(key, user),
             PrivateKeyWithHashAlg::new(Arc::new(key.clone()), None),
         )
         .await
@@ -221,6 +221,8 @@ async fn founder_at_menu(rig: &Rig) -> (Handle<Client>, Channel<Msg>, PrivateKey
     let mut channel = common::open_shell(&session, 80, 24).await;
     drain(&mut channel).await;
     line(&mut channel, &rig.token).await;
+    line(&mut channel, "founder password one").await;
+    line(&mut channel, "founder password one").await;
     press(&mut channel, "x").await;
     press(&mut channel, "n").await;
     let menu = press(&mut channel, "y").await;
@@ -246,7 +248,9 @@ async fn texts(rig: &Rig, sql: &str) -> Vec<String> {
 /// On the request form: type a handle and a message and press Enter; returns the screen.
 async fn ask(channel: &mut Channel<Msg>, handle: &str, message: &str) -> String {
     line(channel, handle).await;
-    line(channel, message).await
+    line(channel, message).await;
+    line(channel, "a long join password").await;
+    line(channel, "a long join password").await
 }
 
 /// A stranger who has opened the request form.
@@ -273,6 +277,7 @@ async fn member_with(rig: &Rig, name: &str, role: Slug, state: AccountState) -> 
         .attach_fingerprint(account.id, &fingerprint_of(&key))
         .await
         .unwrap();
+    common::remember(fingerprint_of(&key), account.username.as_str());
     key
 }
 
@@ -386,7 +391,7 @@ async fn a_stranger_reads_the_same_words_whatever_the_queue_does_with_the_reques
     // A key that already has an account that is not active (it still reaches the room).
     let suspended_key =
         member_with(&rig, "suspended-one", Slug::MEMBER, AccountState::Suspended).await;
-    let session = login(rig.addr(), "anyone", &suspended_key).await;
+    let session = login(rig.addr(), "new", &suspended_key).await;
     let mut channel = common::open_shell(&session, 80, 24).await;
     drain(&mut channel).await;
     press(&mut channel, "i").await;
@@ -437,7 +442,10 @@ async fn a_request_stores_only_the_documented_fields_and_no_address() {
             // D94/D95 (0020): the argon2id hash of the password a request made without an SSH
             // key (telnet) chose, so approval can make the account. Never the password, and
             // never an address; NULL for a key request.
-            "password_hash"
+            "password_hash",
+            // D96 (0021): whether `fingerprint` is a real key to bind on approval, or only the
+            // stand-in identity of a keyless request. A flag, not personal data.
+            "key_bound"
         ]
     );
     assert_eq!(
@@ -572,7 +580,11 @@ async fn the_sysop_approves_from_the_screen_and_the_requester_becomes_a_member()
     assert_eq!(approved.len(), 1);
     assert!(!format!("{audit:?}").contains("friend of alice"));
 
-    // The requester reconnects with the same key and is a member.
+    // The requester reconnects with the same key, under their new handle, and is a member.
+    common::remember(
+        key.public_key().fingerprint(russh::keys::HashAlg::Sha256),
+        "hopeful",
+    );
     let session = login(rig.addr(), "anyone", &key).await;
     let mut channel = common::open_shell(&session, 80, 24).await;
     drain(&mut channel).await;

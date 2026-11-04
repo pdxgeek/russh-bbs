@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "DELETE FROM invite_request WHERE id = $1 AND expires_at > $2\n             RETURNING fingerprint, handle, password_hash",
+  "query": "DELETE FROM invite_request WHERE id = $1 AND expires_at > $2\n             RETURNING fingerprint, handle, password_hash, key_bound",
   "describe": {
     "columns": [
       {
@@ -17,6 +17,11 @@
         "ordinal": 2,
         "name": "password_hash",
         "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "key_bound",
+        "type_info": "Bool"
       }
     ],
     "parameters": {
@@ -28,8 +33,9 @@
     "nullable": [
       false,
       false,
-      true
+      true,
+      false
     ]
   },
-  "hash": "0d4ad64ee952920d7dec7aae272c89d6c1869588b8149a8841982e48059f2b44"
+  "hash": "ba689a2345f7651628959da314635cca95efd79b3822f49627299e01cf7829a4"
 }

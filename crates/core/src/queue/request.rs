@@ -150,6 +150,9 @@ pub struct NewRequest {
     /// chose on the form. Approval binds the new account to it instead of to a key, and
     /// `fingerprint` is then the stand-in [`password_identity`]. `None` for a key request.
     pub password_hash: Option<String>,
+    /// Whether `fingerprint` is a real SSH key to bind on approval (`true`) or only the stand-in
+    /// [`password_identity`] of a keyless request (`false`, D96).
+    pub key_bound: bool,
 }
 
 impl fmt::Debug for NewRequest {

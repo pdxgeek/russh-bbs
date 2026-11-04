@@ -8,7 +8,7 @@ use super::hash::{self, DUMMY_HASH, needs_rehash};
 use super::offload::{Offload, Unavailable};
 use super::secret::{MAX_ATTEMPT_BYTES, PolicyError, Secret, check_new};
 use super::store::PasswordStore;
-use crate::access::{Denied, Permission, Snapshot};
+use crate::access::{Denied, Fingerprint, Permission, Snapshot};
 use crate::audit::events;
 use crate::store::{Account, StoreError};
 
@@ -96,6 +96,43 @@ pub async fn authenticate<S: PasswordStore, O: Offload>(
         upgrade(store, offload, &found.account, &target, &attempt).await;
     }
     Ok(Login::Accepted(found.account))
+}
+
+/// "I already have an account" (D94 (8)): check `user` and `password` exactly as a login does
+/// ([`authenticate`]: same dummy-hash path, same single refusal) and, if they match an active
+/// member, bind `fingerprint` to that account, audited. Every failure (unknown handle, wrong
+/// password, no password, suspended, a key that already has an account, a store error) is
+/// [`Login::Denied`]. The caller applies the per-handle and per-network password limits first.
+///
+/// # Errors
+/// [`StoreError`] only if the first lookup fails; the caller refuses the attempt.
+pub async fn link_key_by_password<S: PasswordStore, O: Offload>(
+    store: &S,
+    offload: &O,
+    user: &str,
+    password: &str,
+    fingerprint: &Fingerprint,
+) -> Result<Login, StoreError> {
+    let Login::Accepted(account) = authenticate(store, offload, user, password).await? else {
+        return Ok(Login::Denied);
+    };
+    match store
+        .link_key(
+            account.id,
+            fingerprint,
+            &events::key_linked(account.id, fingerprint),
+        )
+        .await
+    {
+        Ok(()) => {
+            tracing::info!(account = %account.id, fingerprint = %fingerprint, "key linked by password");
+            Ok(Login::Accepted(account))
+        }
+        Err(error) => {
+            warn!(account = %account.id, %error, "key could not be linked");
+            Ok(Login::Denied)
+        }
+    }
 }
 
 /// A wipe-on-drop copy of a typed login attempt for a hashing job; over-long text becomes empty

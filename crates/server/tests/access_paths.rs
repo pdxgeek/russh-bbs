@@ -299,7 +299,7 @@ async fn login(addr: SocketAddr, user: &str, key: &PrivateKey) -> Handle<Client>
     let mut session = common::connect(addr).await;
     let result = session
         .authenticate_publickey(
-            user,
+            &common::user_for(key, user),
             PrivateKeyWithHashAlg::new(Arc::new(key.clone()), None),
         )
         .await
@@ -357,6 +357,8 @@ async fn founder_at_menu(rig: &Rig, key: &PrivateKey) -> (Handle<Client>, Channe
     let mut channel = common::open_shell(&session, 80, 24).await;
     words(&mut channel).await;
     send(&mut channel, &format!("{}\r", rig.token)).await;
+    send(&mut channel, &format!("{}\r", "founder password one")).await;
+    send(&mut channel, &format!("{}\r", "founder password one")).await;
     send(&mut channel, "x").await;
     send(&mut channel, "n").await;
     send(&mut channel, "y").await;
@@ -732,6 +734,7 @@ async fn member_at_menu(
         .await
         .unwrap();
     rig.store.attach_fingerprint(account.id, &fp).await.unwrap();
+    common::remember(fp, account.username.as_str());
     let session = login(rig.addr(), name, &key).await;
     let mut channel = common::open_shell(&session, 80, 24).await;
     words(&mut channel).await;
@@ -1179,6 +1182,7 @@ async fn moderating_needs_community_moderate_and_is_audited_and_last_callers_lis
         .await
         .unwrap();
     rig.store.attach_fingerprint(maude.id, &fp).await.unwrap();
+    common::remember(fp, maude.username.as_str());
     let session = login(rig.addr(), "maude", &key).await;
     let mut channel = common::open_shell(&session, 80, 24).await;
     words(&mut channel).await;

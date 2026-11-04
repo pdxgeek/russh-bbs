@@ -22,6 +22,39 @@ use tokio::time::timeout;
 
 pub const WAIT: Duration = Duration::from_secs(10);
 
+static HANDLES: std::sync::Mutex<Vec<(String, String)>> = std::sync::Mutex::new(Vec::new());
+
+/// Remember that the key with this fingerprint belongs to the account `handle`, so a test that
+/// signs in "as anyone" with it uses the handle as the SSH user name (D94 (10): a key signs in
+/// only under the handle it is bound to).
+#[allow(clippy::needless_pass_by_value)]
+pub fn remember(fingerprint: impl ToString, handle: &str) {
+    HANDLES
+        .lock()
+        .unwrap()
+        .push((fingerprint.to_string(), handle.to_owned()));
+}
+
+/// The SSH user name for `key`: `asked` as it is, except the placeholder `anyone`, which becomes
+/// the handle of the account the key was remembered for, or `new` (the waiting room) for a key
+/// nobody remembered.
+pub fn user_for(key: &PrivateKey, asked: &str) -> String {
+    if asked != "anyone" {
+        return asked.to_owned();
+    }
+    let fingerprint = key
+        .public_key()
+        .fingerprint(russh::keys::HashAlg::Sha256)
+        .to_string();
+    HANDLES
+        .lock()
+        .unwrap()
+        .iter()
+        .rev()
+        .find(|(known, _)| *known == fingerprint)
+        .map_or_else(|| "new".to_owned(), |(_, handle)| handle.clone())
+}
+
 pub struct TestServer {
     pub server: SshServer,
     pub host_key: HostKey,
@@ -91,7 +124,7 @@ pub async fn login(addr: SocketAddr) -> (Handle<Client>, PrivateKey) {
     let mut session = connect(addr).await;
     let result = session
         .authenticate_publickey(
-            "anyone",
+            "new",
             PrivateKeyWithHashAlg::new(Arc::new(key.clone()), None),
         )
         .await

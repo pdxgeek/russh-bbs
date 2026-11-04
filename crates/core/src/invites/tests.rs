@@ -74,6 +74,7 @@ impl InviteStore for Fake {
         hash: &CodeHash,
         username: Username,
         password_hash: &str,
+        _fingerprint: Option<&Fingerprint>,
     ) -> Result<Redeemed, RedeemError> {
         self.password_hashes
             .lock()

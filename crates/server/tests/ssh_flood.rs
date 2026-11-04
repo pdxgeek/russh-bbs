@@ -246,7 +246,10 @@ async fn stalled_client(addr: std::net::SocketAddr) -> client::Handle<Client> {
         .unwrap();
     let key = common::new_client_key();
     let result = session
-        .authenticate_publickey("anyone", PrivateKeyWithHashAlg::new(Arc::new(key), None))
+        .authenticate_publickey(
+            &common::user_for(&key, "anyone"),
+            PrivateKeyWithHashAlg::new(Arc::new(key), None),
+        )
         .await
         .unwrap();
     assert!(matches!(result, AuthResult::Success));

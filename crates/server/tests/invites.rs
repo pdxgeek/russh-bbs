@@ -105,7 +105,7 @@ async fn login(addr: SocketAddr, user: &str, key: &PrivateKey) -> Handle<Client>
     let mut session = common::connect(addr).await;
     let result = session
         .authenticate_publickey(
-            user,
+            &common::user_for(key, user),
             PrivateKeyWithHashAlg::new(Arc::new(key.clone()), None),
         )
         .await
@@ -202,6 +202,9 @@ async fn line(channel: &mut Channel<Msg>, text: &str) -> String {
     press(channel, &format!("{text}\r")).await
 }
 
+/// The password every joiner in these tests chooses (every join form asks for one, D94 (6)).
+const JOIN_PASSWORD: &str = "a long join password";
+
 /// A stranger's key opens the waiting room: its home screen is returned.
 async fn stranger(rig: &Rig) -> (Handle<Client>, Channel<Msg>, PrivateKey, String) {
     let key = new_client_key();
@@ -220,6 +223,8 @@ async fn founder_at_menu(rig: &Rig) -> (Handle<Client>, Channel<Msg>, PrivateKey
     let mut channel = common::open_shell(&session, 80, 24).await;
     drain(&mut channel).await;
     line(&mut channel, &rig.token).await;
+    line(&mut channel, "founder password one").await;
+    line(&mut channel, "founder password one").await;
     press(&mut channel, "x").await;
     press(&mut channel, "n").await;
     let menu = press(&mut channel, "y").await;
@@ -250,7 +255,13 @@ async fn redeem_as_stranger(
     let (session, mut channel, key, _) = stranger(rig).await;
     press(&mut channel, "c").await;
     line(&mut channel, code).await;
-    let screen = line(&mut channel, handle).await;
+    line(&mut channel, handle).await;
+    line(&mut channel, JOIN_PASSWORD).await;
+    let screen = line(&mut channel, JOIN_PASSWORD).await;
+    common::remember(
+        key.public_key().fingerprint(HashAlg::Sha256).to_string(),
+        handle,
+    );
     (session, channel, key, screen)
 }
 
