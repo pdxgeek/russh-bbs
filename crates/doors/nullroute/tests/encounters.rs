@@ -744,3 +744,62 @@ fn nothing_in_the_content_has_a_countermeasure_for_the_wrong_patrol() {
         );
     }
 }
+
+/// Win a fight with the given scripts by the plainest rule: every move, play the unsealed script that
+/// does the most (no bracing, no reading the pattern). Returns the moves it took, or
+/// `None` if the machine's patience ran out first.
+fn win_with(d: &CmDef, level: u8, start: usize, scripts: &[&ScriptDef], skill: u8) -> Option<u32> {
+    let mut e = Encounter::new(d, 3, 0, level, start);
+    let mut moves = 0;
+    while !e.spent() {
+        moves += 1;
+        let sealed = e.sealed;
+        let best = scripts
+            .iter()
+            .filter(|s| sealed != Some(s.family))
+            .max_by_key(|s| e.damage(s, skill));
+        let (dealt, family) = if let Some(s) = best {
+            (e.damage(s, skill), Some(s.family))
+        } else {
+            (0, None)
+        };
+        if e.hit(dealt) {
+            return Some(moves);
+        }
+        e.resolve(dealt, family);
+    }
+    None
+}
+
+#[test]
+fn every_tier_has_a_deck_that_can_win_every_fight_in_it() {
+    // The fairness promise for fights, as the networks have theirs for locks: the scripts a player
+    // of that tier plausibly owns can always win, whatever the machine and wherever its pattern
+    // starts, inside the eight moves. Tier 1 is the starter breaks; tier 2 adds power 4 and a
+    // purge; tier 3 has power 6 scripts.
+    let c = content();
+    let s = |n: u8| c.script(n).unwrap();
+    let decks: [(u8, Vec<&ScriptDef>, Vec<u8>); 3] = [
+        (1, vec![s(5), s(8)], vec![1, 2, 3]),
+        (2, vec![s(6), s(9), s(21)], vec![2, 3]),
+        (3, vec![s(7), s(10), s(22)], vec![3, 4]),
+    ];
+    let mut failures = Vec::new();
+    for (tier, deck, levels) in decks {
+        for d in c
+            .cms
+            .cm
+            .iter()
+            .filter(|d| d.kind != CmKind::Warden && d.tier_min <= tier && tier <= d.tier_max)
+        {
+            for level in &levels {
+                for start in 0..d.pattern.len() {
+                    if win_with(d, *level, start, &deck, 0).is_none() {
+                        failures.push(format!("{} T{tier} L{level} start {start}", d.name));
+                    }
+                }
+            }
+        }
+    }
+    assert!(failures.is_empty(), "cannot be won: {failures:#?}");
+}

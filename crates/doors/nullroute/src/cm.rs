@@ -186,7 +186,7 @@ impl Encounter {
     /// machine behaves the same every time you meet it).
     #[must_use]
     pub fn new(def: &CmDef, node: NodeId, from: NodeId, level: u8, start: usize) -> Self {
-        let max = def.integrity + 2 * u32::from(level);
+        let max = def.integrity + u32::from(level);
         Self {
             cm: def.num,
             name: def.name.clone(),
@@ -296,7 +296,10 @@ impl Encounter {
             _ => return 0,
         };
         let raw = base + if tuned { TUNED_BONUS } else { 0 } + u32::from(skill) / 2;
+        // Armor takes points off a hit, but a hit that lands always does something (a warden aside,
+        // which is handled above): armor makes a fight longer, it does not make it impossible.
         raw.saturating_sub(self.armor_now().saturating_sub(script.pierce))
+            .max(1)
             .min(self.cap())
     }
 

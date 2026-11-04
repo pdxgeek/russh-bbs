@@ -406,7 +406,7 @@ pub struct CmDef {
     pub tier_min: u8,
     /// Highest tier it appears in.
     pub tier_max: u8,
-    /// Base integrity (the node's security adds 2 a level).
+    /// Base integrity (the node's security adds 1 a level).
     pub integrity: u32,
     /// Base armor (damage taken falls by this).
     pub armor: u32,
