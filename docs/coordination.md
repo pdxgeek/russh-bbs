@@ -79,7 +79,7 @@ Approved by the owner on 2026-11-04 by adding them here. The other M4 work (`Blo
 | Slice | Owns | Depends on | Status | Branch / PR |
 |---|---|---|---|---|
 | M4-D0 Door framework and example door | `crates/doors/framework` (Door trait, session hand-off, save API, per-door permissions, scheduler hook, sandbox rules), store tables and migrations for door saves on both backends, the menu entry, a tiny example door | M3 gate closed | In review ([PR #84](https://github.com/pdxgeek/russh-bbs/pull/84), branch `m4/door-framework`) | Plumbing only, no game mechanics. Done when a door runs in a session with no filesystem or network access (M4 "Done when"), saves and loads through the store, ticks daily, and behaves the same over ssh and telnet. |
-| M4-S1 Saltmarch engine | `crates/doors/saltmarch` | M4-D0 | In review | Branch `m4/saltmarch-engine`, PR link below. Tide, map generation, clan, crew, hold and economy; deterministic, with replay tests. |
+| M4-S1 Saltmarch engine | `crates/doors/saltmarch` | M4-D0 | In review | Branch `m4/saltmarch-engine`, [PR #87](https://github.com/pdxgeek/russh-bbs/pull/87). Tide, map generation, clan, crew, hold and economy; deterministic, with replay tests. |
 | M4-S2 Saltmarch expeditions and combat | `crates/doors/saltmarch` | M4-S1 | Open | Events, skirmish, content loader with schema tests. |
 | M4-S3 Saltmarch UI | `crates/doors/saltmarch` | M4-S2 | Open | All screens, three tiers, layouts, look-around. |
 | M4-S4 Saltmarch social | `crates/doors/saltmarch` | M4-S3 | Open | Raids, pacts, market, letters, league, hall. |
