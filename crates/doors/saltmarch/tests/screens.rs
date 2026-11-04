@@ -26,6 +26,12 @@ use russh_bbs_door_saltmarch::content::Catalog;
 use russh_bbs_door_saltmarch::crew::{Bond, Crew, Injured};
 use russh_bbs_door_saltmarch::engine::{self, Action, Env};
 use russh_bbs_door_saltmarch::map::Map;
+use russh_bbs_door_saltmarch::social::letters::LetterBody;
+use russh_bbs_door_saltmarch::social::ledger::Letter;
+use russh_bbs_door_saltmarch::social::market::{self, Memo, Parcel, Side};
+use russh_bbs_door_saltmarch::social::pact::{self};
+use russh_bbs_door_saltmarch::social::raid::{Fate, Outcome, Report, Role};
+use russh_bbs_door_saltmarch::social::{Body, Defender};
 use russh_bbs_door_saltmarch::tide::Tide;
 use russh_bbs_door_saltmarch::trip::{Kit, Phase};
 use russh_bbs_door_saltmarch::types::{Resource, Trade};
@@ -43,6 +49,129 @@ fn a_world(seed: u64) -> World {
         w.trade(Resource::Timber, 25 - day * 3);
         w.end_day(DAY - 12 + i64::from(day), &mut rng);
     }
+    // The other clans on the rolls, with what they have posted, a pact, an offer to the
+    // showcase clan, standing orders on the exchange and a season in the book.
+    w.register_founded("ann", 0, DAY);
+    let guard = |id, name: &str, trade, hp, atk, def| Defender {
+        id,
+        name: name.to_owned(),
+        trade,
+        hp,
+        atk,
+        def,
+        spd: 4,
+        mass: 6,
+        row: 0,
+        aquatic: false,
+        armed: false,
+    };
+    for (name, site, founded, score, rating, flood, sluice, guards) in [
+        ("Cove", 7u8, DAY - 30, 64u32, 5u8, 8u8, Some(60u8), 4usize),
+        ("Dun", 3, DAY - 20, 51, 3, 0, None, 3),
+        ("Eelmoor", 11, DAY - 2, 38, 1, 0, None, 2),
+    ] {
+        w.register_founded(name, site, founded);
+        let c = w.clans.last_mut().unwrap();
+        c.score = score;
+        c.posted.seen = DAY;
+        c.posted.buildings = 6;
+        c.posted.crew = 6;
+        c.posted.rating = rating;
+        c.posted.flood = flood;
+        c.posted.sluice = sluice;
+        c.posted.tallies = 120;
+        c.posted.stock[Resource::Salt.index()] = 25;
+        c.posted.stock[Resource::Iron.index()] = 10;
+        c.posted.stock[Resource::Food.index()] = 15;
+        c.posted.guard = [
+            guard(1, "Holt Marrow", Trade::Fighter, 22, 5, 2),
+            guard(2, "Nan Sedge", Trade::Smith, 20, 4, 2),
+            guard(3, "Orrin Pike", Trade::Wader, 15, 3, 0),
+            guard(4, "Tamsin Reed", Trade::Healer, 12, 2, 0),
+        ]
+        .into_iter()
+        .take(guards)
+        .collect();
+    }
+    w.clans[0].posted.buildings = 9;
+    w.clans[0].posted.crew = 7;
+    w.clans[0].score = 57;
+    // Cove and Dun keep a pact; Dun has offered one to the showcase clan.
+    let signed = w.propose(1, 2, pact::TRUCE | pact::TRADE, DAY - 9).unwrap();
+    w.accept(2, signed, DAY - 9).unwrap();
+    w.propose_with(
+        2,
+        0,
+        pact::TRUCE | pact::TRADE,
+        DAY - 1,
+        "offer-trade".into(),
+        Some("fair prices, fair weather".into()),
+    )
+    .unwrap();
+    w.social.mail.clear();
+    w.social.next_seq = 0;
+    for (who, what, qty, price, side) in [
+        (1u8, Resource::Salt, 12u32, 5u16, Side::Ask),
+        (2, Resource::Salt, 8, 6, Side::Ask),
+        (1, Resource::Salt, 10, 4, Side::Bid),
+        (2, Resource::Iron, 6, 11, Side::Ask),
+    ] {
+        market::post(&mut w, who, side, what, qty, price, DAY - 1).unwrap();
+    }
+    w.social.mail.clear();
+    for day in 0..6 {
+        w.social.exchange.today[Resource::Salt.index()] = (10, 10 * (4 + day % 3));
+        w.social.exchange.end_day();
+    }
+    w.social.mail.clear();
+    w.social.book.push(
+        russh_bbs_door_saltmarch::social::hall::SeasonRecord::of(&w, DAY - 1),
+    );
+    w.social.book[0].season = 0;
+    w
+}
+
+/// The same world with the night's news for the showcase clan: a raid on its hold, a sale on
+/// the exchange and a letter.
+fn a_world_with_news(seed: u64) -> World {
+    let mut w = a_world(seed);
+    w.social.deliver(
+        0,
+        Body::Raid(Report {
+            order: 3,
+            role: Role::Defender,
+            outcome: Outcome::Won,
+            raider: "Cove".into(),
+            defender: "ann".into(),
+            minute: 410,
+            level: 38,
+            flooded: false,
+            rounds: 6,
+            loot: vec![(Resource::Salt, 4), (Resource::Iron, 1)],
+            tallies: 20,
+            fates: vec![(1, Fate::Hurt)],
+            hurt: vec![1],
+            taunt: "taunt-keeps".into(),
+        }),
+    );
+    w.social.deliver(
+        0,
+        Body::Parcel(Parcel {
+            goods: None,
+            tallies: 49,
+            memo: Memo::Sold,
+            about: Some((Resource::Salt, 10)),
+        }),
+    );
+    w.social.deliver(
+        0,
+        Body::Letter(LetterBody {
+            from: "Dun".into(),
+            template: "greeting-trade".into(),
+            line: Some("see you at the weir".into()),
+            day: DAY,
+        }),
+    );
     w
 }
 
@@ -59,10 +188,21 @@ struct Visit {
 
 impl Visit {
     fn open(door: &Saltmarch, env: DoorEnv, seed: u64, save: Option<Vec<u8>>, day: i64) -> Self {
+        Self::open_in(door, env, seed, save, day, a_world)
+    }
+
+    fn open_in(
+        door: &Saltmarch,
+        env: DoorEnv,
+        seed: u64,
+        save: Option<Vec<u8>>,
+        day: i64,
+        world: fn(u64) -> World,
+    ) -> Self {
         let world = save
             .as_deref()
             .and_then(Clan::decode)
-            .map(|c| a_world(c.seed).encode());
+            .map(|c| world(c.seed).encode());
         let driver = Driver::open(
             door,
             Start {
@@ -278,6 +418,24 @@ fn showcase(door: &Saltmarch) -> Vec<u8> {
     clan.stats.fights_won = 5;
     clan.stats.shifts = 31;
     clan.stats.earned = 640;
+    clan.social.raids_won = 2;
+    clan.social.repelled = 1;
+    clan.social.grudges.push("Cove".to_owned());
+    for (from, template, line, offer, read) in [
+        ("Dun", "offer-trade", Some("fair prices, fair weather"), Some((3u32, 3u8)), false),
+        ("Cove", "taunt-keeps", None, None, false),
+        ("Eelmoor", "greeting-reeds", Some("the weir is full this week"), None, true),
+    ] {
+        clan.social.receive(Letter {
+            seq: 0,
+            from: from.to_owned(),
+            template: template.to_owned(),
+            line: line.map(str::to_owned),
+            day: DAY - 1,
+            offer,
+            read,
+        });
+    }
     clan.refresh_candidates(&cat, &mut rng);
     clan.encode()
 }
@@ -389,6 +547,10 @@ fn all_screens(door: &Saltmarch, env: &DoorEnv) -> Vec<(&'static str, Visit)> {
     let mut out: Vec<(&'static str, Visit)> = Vec::new();
     out.push(("naming", open(None, DAY)));
     out.push(("report", open(Some(base.clone()), DAY + 2)));
+    out.push((
+        "report-news",
+        Visit::open_in(door, env.clone(), 9, Some(base.clone()), DAY + 2, a_world_with_news),
+    ));
     out.push(("home", open(Some(base.clone()), DAY)));
     out.push(("hold", at("go:hold")));
     out.push(("crew", at("go:crew")));
@@ -406,6 +568,19 @@ fn all_screens(door: &Saltmarch, env: &DoorEnv) -> Vec<(&'static str, Visit)> {
         let mut v = at("go:court");
         assert!(v.choose("go:letters"));
         out.push(("letters", v));
+        let mut v = at("go:court");
+        assert!(v.choose("go:exchange"));
+        out.push(("exchange", v));
+        let mut v = at("go:court");
+        assert!(v.choose("go:raid"));
+        out.push(("raid", v));
+        let mut v = at("go:court");
+        assert!(v.choose("go:pacts"));
+        out.push(("pacts", v));
+        let mut v = at("go:court");
+        assert!(v.choose("go:letters"));
+        assert!(v.choose("compose"));
+        out.push(("compose", v));
     }
     {
         let mut v = at("go:expedition");
@@ -646,7 +821,7 @@ fn every_screen_has_a_look_around_that_describes_it() {
             "{name} describes the same as another screen"
         );
     }
-    assert_eq!(seen.len(), 16);
+    assert_eq!(seen.len(), 21);
 }
 
 #[test]

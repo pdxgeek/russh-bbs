@@ -655,6 +655,8 @@ pub struct Catalog {
     pub groups: Vec<GroupDef>,
     /// What each kind of tile yields.
     pub gathers: Vec<GatherDef>,
+    /// Letter templates between clans.
+    pub letters: crate::social::letters::Letters,
 }
 
 /// The text of every table, so tests can swap one and prove a bad edit is caught.
@@ -680,6 +682,8 @@ pub struct Texts<'a> {
     pub foes: &'a str,
     /// Gathering.
     pub gather: &'a str,
+    /// Letter templates.
+    pub letters: &'a str,
 }
 
 impl Texts<'static> {
@@ -697,6 +701,7 @@ impl Texts<'static> {
             events: EVENTS_TOML,
             foes: FOES_TOML,
             gather: GATHER_TOML,
+            letters: crate::social::letters::LETTERS_TOML,
         }
     }
 }
@@ -729,6 +734,7 @@ impl Catalog {
             foes: foes.foes,
             groups: foes.groups,
             gathers: content::load::<Gathers>("gather", t.gather)?.entries,
+            letters: content::load::<crate::social::letters::Letters>("letters", t.letters)?,
         };
         let problems = catalog.cross_check();
         if problems.is_empty() {

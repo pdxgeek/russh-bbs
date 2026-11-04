@@ -1,0 +1,88 @@
+# Letter templates between clan leaders. Players pick a template; the line they may add is
+# sanitized and rate-limited by the board. `kind` groups them on the screen; `requires` is the
+# history that opens a template (a clan with no raids won cannot gloat, a clan with no betrayal
+# on record cannot apologise for one). `{clan}` is the sender and `{you}` the recipient.
+
+[[letter]]
+id = "greeting-reeds"
+kind = "greeting"
+requires = "always"
+text = "{clan} sends greeting to {you}. The reeds are high on our flats and the salt is good. May the water be kind to you."
+
+[[letter]]
+id = "greeting-trade"
+kind = "greeting"
+requires = "trader"
+text = "{clan} to {you}: we have seen your name on the Tidecourt's boards, and we deal fairly. Come and trade."
+
+[[letter]]
+id = "greeting-neighbour"
+kind = "greeting"
+requires = "always"
+text = "{clan} to {you}: we keep a light on the high ground of our hold. If you ever need it, it is yours."
+
+[[letter]]
+id = "thanks-pact"
+kind = "thanks"
+requires = "pact"
+text = "{clan} to {you}: the pact holds and so do we. Thank you for keeping to it."
+
+[[letter]]
+id = "thanks-trade"
+kind = "thanks"
+requires = "trader"
+text = "{clan} to {you}: a fair price and a full measure. We will remember who sold honestly."
+
+[[letter]]
+id = "warning-flats"
+kind = "warning"
+requires = "always"
+text = "{clan} to {you}: keep your crews off our flats at the low water. We watch them."
+
+[[letter]]
+id = "warning-remember"
+kind = "warning"
+requires = "raided"
+text = "{clan} to {you}: we have not forgotten the night the water ran red at our gate."
+
+[[letter]]
+id = "taunt-keeps"
+kind = "taunt"
+requires = "raids-won"
+text = "{clan} to {you}: the sea keeps what we carried off your hold. It keeps it well."
+
+[[letter]]
+id = "taunt-light"
+kind = "taunt"
+requires = "raids-won"
+text = "{clan} to {you}: your gate was lightly held. We left it standing, which is more than you would have done."
+
+[[letter]]
+id = "taunt-hold"
+kind = "taunt"
+requires = "raided"
+text = "{clan} to {you}: come again when the tide is in. Our sluice is thirsty."
+
+[[letter]]
+id = "apology-oath"
+kind = "apology"
+requires = "betrayal"
+text = "{clan} to {you}: we broke faith, and the Tidecourt knows it. We do not ask you to forgive, only to know we know."
+
+[[letter]]
+id = "offer-truce"
+kind = "offer"
+requires = "always"
+text = "{clan} to {you}: no raids between our holds. Let the two of us face the water, not each other."
+
+[[letter]]
+id = "offer-trade"
+kind = "offer"
+requires = "always"
+text = "{clan} to {you}: a pact of honest dealing. The exchange takes less from us both."
+
+[[letter]]
+id = "offer-guard"
+kind = "offer"
+requires = "always"
+text = "{clan} to {you}: when the water comes for one of us, the other stands at the gate."

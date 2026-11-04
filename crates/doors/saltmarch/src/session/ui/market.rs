@@ -12,7 +12,7 @@ use crate::types::Resource;
 use crate::world::World;
 
 /// A trail of prices as a string of bar glyphs scaled between its own lowest and highest.
-fn spark(ui: &Ui<'_>, trail: &[u16], width: usize) -> String {
+pub(super) fn spark(ui: &Ui<'_>, trail: &[u16], width: usize) -> String {
     let take = trail.len().saturating_sub(width);
     let trail = &trail[take..];
     let (lo, hi) = trail
@@ -45,7 +45,7 @@ fn change(trail: &[u16]) -> Option<i32> {
     Some((i32::from(now) - before) * 100 / before)
 }
 
-fn price(p: u16) -> String {
+pub(super) fn price(p: u16) -> String {
     format!("{}.{:02}", p / 100, p % 100)
 }
 

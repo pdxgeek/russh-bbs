@@ -51,6 +51,7 @@ mod plan;
 mod report;
 mod scene;
 mod skirmish;
+mod social;
 mod tides;
 
 use art::{Ground, landscape};
@@ -540,6 +541,7 @@ fn screen(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     footer(ui, f, foot, notes);
     match ui.s.mode {
         Mode::Report => report::draw(ui, f, body),
+        Mode::Line(_) => social::compose(ui, f, body),
         Mode::Menu(menu) => match menu {
             MenuId::Main | MenuId::Hold => holdscreen::draw(ui, f, body, menu == MenuId::Main),
             MenuId::Crew => crewscreen::draw(ui, f, body),
@@ -553,7 +555,11 @@ fn screen(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
             },
             MenuId::Map => mapscreen::draw(ui, f, body, false),
             MenuId::Court => court::draw(ui, f, body),
-            MenuId::Letters => court::letters(ui, f, body),
+            MenuId::Letters => social::letters(ui, f, body),
+            MenuId::Exchange => social::exchange(ui, f, body),
+            MenuId::Raid => social::raid(ui, f, body),
+            MenuId::Pacts => social::pacts(ui, f, body),
+            MenuId::Compose => social::compose(ui, f, body),
             MenuId::League => court::league(ui, f, body),
             MenuId::Hall => court::hall(ui, f, body),
         },
@@ -624,14 +630,20 @@ fn footer(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect, notes: usize) {
         Mode::Menu(MenuId::Trip) => "arrows walk  Enter",
         Mode::Menu(MenuId::Crew) => "up/down crew  </> order",
         Mode::Menu(MenuId::Map) => "arrows pan  Esc",
+        Mode::Menu(MenuId::Letters) => "up/down letter  Enter  Esc",
+        Mode::Menu(MenuId::Exchange | MenuId::Raid | MenuId::Pacts | MenuId::Compose) => {
+            "</> page  up/down  Enter  Esc"
+        }
+        Mode::Line(_) => "type  Enter  Esc",
         _ => "up/down  Enter  Esc",
     };
     let hint_w = hint.chars().count() + 2;
     let order = match ui.s.mode {
         Mode::Menu(
-            MenuId::Map | MenuId::Tides | MenuId::Letters | MenuId::League | MenuId::Hall,
+            MenuId::Map | MenuId::Tides | MenuId::League | MenuId::Hall,
         )
-        | Mode::Report => None,
+        | Mode::Report
+        | Mode::Line(_) => None,
         _ => ui.entries.get(ui.s.cursor).map(|e| e.text.clone()),
     };
     let room = usize::from(area.width).saturating_sub(hint_w + 4);

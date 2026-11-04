@@ -136,6 +136,26 @@ impl Unit {
         }
     }
 
+    /// A unit from numbers posted for a raid: the raiders on the party side and the home guard
+    /// on the foe side (a guard fights as a bruiser: it holds its ground and hits what is in
+    /// reach).
+    #[must_use]
+    pub fn posted(side: Side, d: &crate::social::Defender) -> Self {
+        let mut u = Self::blank(side, d.name.clone());
+        u.crew = d.id;
+        u.trade = Some(d.trade);
+        u.hp = d.hp.max(1);
+        u.max_hp = u.hp;
+        u.atk = d.atk.max(1);
+        u.def = d.def.max(0);
+        u.spd = d.spd.max(1);
+        u.mass = d.mass.clamp(1, 10);
+        u.row = d.row.min(2);
+        u.aquatic = d.aquatic;
+        u.armed = d.armed;
+        u
+    }
+
     /// A party unit from a crew member. `armed` is whether they carry arms from the kit.
     #[must_use]
     pub fn from_crew(cat: &Catalog, c: &Crew, armed: bool) -> Self {

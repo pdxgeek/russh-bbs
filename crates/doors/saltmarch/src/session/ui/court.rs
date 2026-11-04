@@ -14,10 +14,10 @@ use crate::map::SIZE;
 use crate::types::Resource;
 use crate::world::World;
 
-/// The league as `(name, score, is_us)`, best first. Our own score is live; the others are as
-/// they were when they last saved.
+/// The league as `(name, renown, is_us)`, best first. Our own renown is live; the others are as
+/// they were when they last saved. This is the one place the league's number is chosen.
 pub(super) fn standings(ui: &Ui<'_>) -> Vec<(String, u32, bool)> {
-    let mine = ui.clan.score(&ui.s.cat);
+    let mine = ui.s.renown().total();
     let mut out: Vec<(String, u32, bool)> =
         ui.s.world
             .standings()
@@ -85,7 +85,7 @@ fn ordinal(n: usize) -> String {
 }
 
 /// The biggest movers in the market since yesterday: `(resource, percent)`.
-fn movers(ui: &Ui<'_>) -> Vec<(Resource, i32)> {
+pub(super) fn movers(ui: &Ui<'_>) -> Vec<(Resource, i32)> {
     let mut out: Vec<(Resource, i32)> = Resource::ALL
         .iter()
         .filter_map(|&r| {
@@ -176,77 +176,6 @@ pub(super) fn draw(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     );
 }
 
-/// The post: no letters from other clans yet, and the notices that are true today.
-pub(super) fn letters(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
-    let p = &ui.pal;
-    let [left, right] =
-        Layout::horizontal([Constraint::Percentage(55), Constraint::Min(24)]).areas(area);
-    let tomorrow = ui.s.tide.table(ui.s.today + 1);
-    let mut lines = vec![
-        Line::from(Span::styled("Letters", p.accent)),
-        Line::from(Span::styled(
-            "  None waiting. Letters between clan leaders arrive with the social update.",
-            p.dim,
-        )),
-        Line::raw(""),
-        Line::from(Span::styled("Notices pinned at the Tidecourt", p.accent)),
-        Line::from(vec![
-            Span::styled(format!("  {} ", ui.look.g("≈", "~")), p.sea()),
-            Span::styled(
-                format!(
-                    "The harbour-reeve says tomorrow's tides are {}{}.",
-                    tomorrow.phase,
-                    if tomorrow.storm {
-                        ", with a storm surge"
-                    } else {
-                        ""
-                    }
-                ),
-                p.plain,
-            ),
-        ]),
-    ];
-    let gate = ui.clan.candidates.len();
-    lines.push(Line::from(vec![
-        Span::styled(format!("  {} ", ui.look.g("▸", ">")), p.peat()),
-        Span::styled(
-            format!(
-                "{gate} hand{} wait{} at your gate for work.",
-                if gate == 1 { "" } else { "s" },
-                if gate == 1 { "s" } else { "" }
-            ),
-            p.plain,
-        ),
-    ]));
-    for (r, pct) in movers(ui) {
-        lines.push(Line::from(vec![
-            Span::styled(format!("  {} ", ui.look.g("◈", "$")), p.gold()),
-            Span::styled(format!("{} is {pct:+}% on the day.", r.name()), p.plain),
-        ]));
-    }
-    f.render_widget(
-        Paragraph::new(lines)
-            .wrap(Wrap { trim: true })
-            .block(ui.panel("The post")),
-        left,
-    );
-    let night: Vec<Line<'static>> = if ui.s.report.is_empty() {
-        vec![Line::styled("Nothing to read from the last night.", p.dim)]
-    } else {
-        ui.s.report
-            .iter()
-            .take(usize::from(right.height).saturating_sub(2))
-            .map(|l| Line::styled(l.clone(), p.plain))
-            .collect()
-    };
-    f.render_widget(
-        Paragraph::new(night)
-            .wrap(Wrap { trim: true })
-            .block(ui.panel("The last ledger")),
-        right,
-    );
-}
-
 /// The league table and a map of where the holds stand.
 pub(super) fn league(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     let p = &ui.pal;
@@ -258,7 +187,7 @@ pub(super) fn league(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     .areas(area);
     let all = standings(ui);
     let lead = all.first().map_or(1, |c| c.1.max(1));
-    let name_w = usize::from(left.width).saturating_sub(26).clamp(8, 24);
+    let name_w = usize::from(left.width).saturating_sub(28).clamp(8, 24);
     let bar_w = 10u16;
     let rows: Vec<Row<'static>> = all
         .iter()
@@ -287,14 +216,15 @@ pub(super) fn league(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
             [
                 Constraint::Length(3),
                 Constraint::Min(8),
-                Constraint::Length(5),
+                Constraint::Length(7),
                 Constraint::Length(bar_w),
             ],
         )
-        .header(Row::new(vec!["#", "clan", "score", ""]).style(p.dim))
+        .header(Row::new(vec!["#", "clan", "renown", ""]).style(p.dim))
         .block(ui.panel("The league table")),
         left,
     );
+    let rn = ui.s.renown();
     // Where the holds stand on the marsh: a braille plot of the sites.
     let [map_area, note] =
         Layout::vertical([Constraint::Min(8), Constraint::Length(4)]).areas(right);
@@ -369,23 +299,47 @@ pub(super) fn league(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     f.render_widget(canvas, map_area);
     f.render_widget(
         Paragraph::new(vec![
-            Line::styled(
-                "Score: buildings, crew skill, bonds, crew and tallies. Renown joins it with the social update.",
-                p.dim,
-            ),
+            Line::from(vec![
+                Span::styled(format!("Your renown {}: ", rn.total()), p.gold()),
+                Span::styled(
+                    format!(
+                        "hold {}, crew {}, deeds {}, pacts {}, raids {} (at most {}), wealth {}{}",
+                        rn.hold,
+                        rn.crew,
+                        rn.deeds,
+                        rn.pacts,
+                        rn.raids,
+                        crate::social::renown::RAIDS_MAX,
+                        rn.wealth,
+                        if rn.penalty > 0 {
+                            format!(", betrayals -{}", rn.penalty)
+                        } else {
+                            String::new()
+                        }
+                    ),
+                    p.dim,
+                ),
+            ]),
         ])
         .wrap(Wrap { trim: true }),
         note,
     );
 }
 
-/// The Hall of Tides: the clan's record, its retired crew and its dead.
+/// The Hall of Tides: the clan's record, its retired crew and its dead, this season's records
+/// so far and how the last season is remembered.
 pub(super) fn hall(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     let p = &ui.pal;
     let clan = ui.clan;
+    let roomy = ui.look.size >= Size::Roomy;
     let [left, right] =
-        Layout::horizontal([Constraint::Percentage(58), Constraint::Min(26)]).areas(area);
-    let width = usize::from(left.width).saturating_sub(4);
+        Layout::horizontal([Constraint::Percentage(52), Constraint::Min(30)]).areas(area);
+    let [entries, record] = Layout::vertical([
+        Constraint::Min(5),
+        Constraint::Length(if roomy { 9 } else { 6 }),
+    ])
+    .areas(left);
+    let width = usize::from(entries.width).saturating_sub(4);
     let mut lines: Vec<Line<'static>> = Vec::new();
     if clan.hall.is_empty() {
         lines.push(Line::styled(
@@ -393,43 +347,97 @@ pub(super) fn hall(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
             p.dim,
         ));
     }
-    let rows = usize::from(left.height).saturating_sub(2);
+    let rows = usize::from(entries.height).saturating_sub(2);
     for h in clan.hall.iter().rev().take(rows) {
-        let text = fit(&h.text, width.saturating_sub(5));
         lines.push(Line::from(vec![
             Span::styled(format!("S{} ", h.season), p.gold()),
             Span::styled(format!("{} ", ui.look.g("†", "+")), p.slate()),
-            Span::styled(text, p.plain),
+            Span::styled(fit(&h.text, width.saturating_sub(5)), p.plain),
         ]));
     }
-    f.render_widget(Paragraph::new(lines).block(ui.panel("Hall of Tides")), left);
-    let st = &clan.stats;
-    let rows = vec![
-        ("seasons played", u32::from(clan.seasons_played).max(1)),
-        ("shifts worked", st.shifts),
-        ("goods crafted", st.crafted),
-        ("expeditions", st.trips),
-        ("came home", st.returned),
-        ("cut off", st.cut_off),
-        ("swept by the flood", st.swept),
-        ("skirmishes won", st.fights_won),
-        ("of fights fought", st.fights),
-        ("bonds formed", st.bonds),
-        ("crew lost", st.lost),
-        ("tallies earned", st.earned),
-    ];
-    let table_rows: Vec<Row<'static>> = rows
-        .into_iter()
-        .map(|(k, v)| {
-            Row::new(vec![
-                Span::styled(k, p.dim),
-                Span::styled(v.to_string(), p.plain),
-            ])
-        })
-        .collect();
     f.render_widget(
-        Table::new(table_rows, [Constraint::Min(16), Constraint::Length(7)])
+        Paragraph::new(lines).block(ui.panel("Hall of Tides")),
+        entries,
+    );
+    let (st, so) = (&clan.stats, &clan.social);
+    let mut rec = vec![
+        Line::from(vec![
+            Span::styled("Raids   ", p.dim),
+            Span::styled(
+                format!(
+                    "{} won, {} lost, {} beaten off, {} suffered",
+                    so.raids_won, so.raids_lost, so.repelled, so.raided
+                ),
+                p.plain,
+            ),
+        ]),
+        Line::from(vec![
+            Span::styled("Trips   ", p.dim),
+            Span::styled(
+                format!(
+                    "{} out, {} home, {} fights won of {}",
+                    st.trips, st.returned, st.fights_won, st.fights
+                ),
+                p.plain,
+            ),
+        ]),
+        Line::from(vec![
+            Span::styled("Crew    ", p.dim),
+            Span::styled(
+                format!("{} bonds, {} lost, {} seasons played", st.bonds, st.lost, clan.seasons_played.max(1)),
+                p.plain,
+            ),
+        ]),
+    ];
+    if roomy {
+        rec.push(Line::from(vec![
+            Span::styled("Hold    ", p.dim),
+            Span::styled(
+                format!("{} shifts, {} goods crafted, {} tallies earned", st.shifts, st.crafted, st.earned),
+                p.plain,
+            ),
+        ]));
+        if !so.grudges.is_empty() {
+            rec.push(Line::from(vec![
+                Span::styled("Remembers  ", p.dim),
+                Span::styled(so.grudges.join(", "), p.rust()),
+            ]));
+        }
+    }
+    f.render_widget(
+        Paragraph::new(rec)
+            .wrap(Wrap { trim: true })
             .block(ui.panel(&format!("The {} clan", clan.name))),
+        record,
+    );
+    // The season's records so far, and how the last season is remembered.
+    let now = crate::social::hall::SeasonRecord::of(&ui.s.world, ui.s.today);
+    let mut lines: Vec<Line<'static>> = Vec::new();
+    lines.push(Line::styled(
+        format!("Season {} so far", ui.s.world.season),
+        p.accent,
+    ));
+    if now.records.is_empty() {
+        lines.push(Line::styled("  no records yet", p.dim));
+    }
+    for h in &now.records {
+        lines.push(Line::from(vec![
+            Span::styled(format!("  {}: ", h.record.title()), p.dim),
+            Span::styled(format!("{} ({})", fit(&h.clan, 18), h.value), p.plain),
+        ]));
+    }
+    if let Some(last) = ui.s.world.social.book.last() {
+        lines.push(Line::raw(""));
+        lines.push(Line::styled(format!("Season {} in the book", last.season), p.accent));
+        for (i, (name, score)) in last.top.iter().enumerate().take(3) {
+            lines.push(Line::styled(format!("  {}. {} ({score})", i + 1, fit(name, 20)), p.plain));
+        }
+        lines.push(Line::styled(last.ending.clone(), p.dim));
+    }
+    f.render_widget(
+        Paragraph::new(lines)
+            .wrap(Wrap { trim: true })
+            .block(ui.panel("The season's records")),
         right,
     );
     let _ = (World::new(0, 0, 0), hue::SEA, Daypart::Day);

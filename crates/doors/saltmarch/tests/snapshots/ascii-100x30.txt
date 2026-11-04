@@ -45,18 +45,49 @@ ________________________________________________________________________________
 |+ Kell Brinecook is over a broken leg.                ||   |*      **      **         **      **  |
 |x Kell Brinecook is marked for it: Limp.              ||50 |*     **         **      **        ***|
 |# Raids: none. Nobody came for the hold.              ||   |** ***            ***  **            *|
-|@ Letters: none waiting at the post.                  ||   |* **                 **               |
+|@ Letters: 2 waiting at the post.                     ||   |* **                 **               |
 |                                                      ||0  |*                                     |
 |The crew this morning                                 ||   +--------------------------------------|
 |o Hale Peatcutter   wader      age 46 well  &         ||  00          06     12     18          24|
 |o Kell Brinecook    raker      age 26 well            |+------------------------------------------+
-+------------------------------------------------------++ Standings: you are 1st of 1 -------------+
-+ Today -----------------------------------------------+| 1  ann                               277 |
-|30 tide-turns. middling tides.                        ||                                          |
-|Over the flood line: 06:00-09:20, 18:20-21:40         ||                                          |
-|Lows, the best time on the flats: 01:23 (20), 13:47   ||                                          |
++------------------------------------------------------++ Standings: you are 1st of 4 -------------+
++ Today -----------------------------------------------+| 1  ann                               282 |
+|30 tide-turns. middling tides.                        || 2  Cove                               64 |
+|Over the flood line: 06:00-09:20, 18:20-21:40         || 3  Dun                                51 |
+|Lows, the best time on the flats: 01:23 (20), 13:47   || 4  Eelmoor                            38 |
 |(20)                                                  ||                                          |
 |7 crew, 2 at the gate, morale 78.                     ||                                          |
+|                                                      ||                                          |
++------------------------------------------------------++------------------------------------------+
+ >                                                                                         any key
+===== report-news 100x30 ascii
+ # ann  day 3 of season 1                                     turns ########## 30/30  $ 341 tallies
+ ~ TIDE ##########------------------|-----------  27 v low in 1h23 (20)  middling tides       calm
+ 00:00 ::........::::---===++++********++++===---::::........::::---===++++*********+++===--- 24:00
+       ^      now 00:00
++------------------++------------------++------------------++------------------++------------------+
+|         2        ||         7        ||         2        ||         1        ||         0        |
+|   nights passed  ||  made overnight  ||  injuries healed ||     setbacks     ||     crew news    |
++------------------++------------------++------------------++------------------++------------------+
++ While you were away ---------------------------------++ Today: middling tides -------------------+
+|2 nights passed  ( the tide ran on without you        ||100|*                                     |
+|% Made:  +2 fish  +2 peat  +2 salt  +1 preserved food ||   |*          ***                ***     |
+|! Cove raided the hold in the night and took 4 salt, 1||   |**************************************|
+|iron, 20 tallies.                                     ||   |*      **      **         **      **  |
+|x Hale Peatcutter suffers a hamstrung leg.            ||50 |*     **         **      **        ***|
+|$ The exchange paid 49 tallies for 10 salt, less its  ||   |** ***            ***  **            *|
+|levy.                                                 ||   |* **                 **               |
+|@ A letter from Dun waits at the post.                ||0  |*                                     |
+|+ Wren Weirkeeper is over a deep chill.               ||   +--------------------------------------|
+|+ Kell Brinecook is over a broken leg.                ||  00          06     12     18          24|
+|x Kell Brinecook is marked for it: Limp.              |+------------------------------------------+
++------------------------------------------------------++ Standings: you are 1st of 4 -------------+
++ Today -----------------------------------------------+| 1  ann                               282 |
+|30 tide-turns. middling tides.                        || 2  Cove                               64 |
+|Over the flood line: 06:00-09:20, 18:20-21:40         || 3  Dun                                51 |
+|Lows, the best time on the flats: 01:23 (20), 13:47   || 4  Eelmoor                            38 |
+|(20)                                                  ||                                          |
+|7 crew, 2 at the gate, morale 73.                     ||                                          |
 |                                                      ||                                          |
 +------------------------------------------------------++------------------------------------------+
  >                                                                                         any key
@@ -263,13 +294,13 @@ ________________________________________________________________________________
 +--------------------------------------------------------------------------------------------------+
 + Where to --------------------------------------++ Notices ---------------------------------------+
 | a The market: prices, sales and purchases      ||The Tidecourt stands on stilts where no tide has|
-| b The league table                             ||ever reached it.                                |
-| c The Hall of Tides                            ||Market movers since last night:                 |
-| d The post: letters and notices                ||^ peat +2%                                      |
-| e The quay: the tide table                     ||v iron -2%                                      |
-|                                                ||^ silt-glass +2%                                |
-|                                                ||1 hold is registered this season; you stand 1st.|
-|                                                ||                                                |
+| b The exchange: trade with other clans         ||ever reached it.                                |
+| c The gate: send a raid                        ||Market movers since last night:                 |
+| d Pacts and diplomacy                          ||^ peat +2%                                      |
+| e The post: 2 unread                           ||v iron -2%                                      |
+| f The league table                             ||^ silt-glass +2%                                |
+| g The Hall of Tides                            ||4 holds are registered this season; you stand   |
+| h The quay: the tide table                     ||1st.                                            |
 |                                                ||                                                |
 |                                                ||                                                |
 |                                                ||                                                |
@@ -283,19 +314,19 @@ ________________________________________________________________________________
  00:00 ::::::----=====++++++++++++++====----::::::::::::::----=====+++++++++++++====----::::: 24:00
        ^      now 00:00
 + The league table -----------------------------------++ Holds on the marsh -----------------------+
-|#   clan                             score           ||                                           |
-| 1  >ann                              277  ##########||                                           |
-|                                                     ||     **            ******             **** |
-|                                                     ||     ****           *****              *** |
-|                                                     ||****    *           *****              *** |
+|#   clan                             renow           ||                                           |
+| 1  >ann                              282  ##########||                                           |
+| 2   Cove                              64  ##=-------||     **            ******             **** |
+| 3   Dun                               51  #=--------||     ****           *****              *** |
+| 4   Eelmoor                           38  #=--------||****    *           *****              *** |
 |                                                     ||*******    *       ********          ***** |
 |                                                     ||                  ***********       ****** |
-|                                                     ||               ***************     ******* |
+|                                                     ||               ***********o***     ******* |
 |                                                     ||       ***************************         |
 |                                                     ||    *******H***  *********    ****         |
-|                                                     ||** *************** *******************     |
+|                                                     ||** *************** *********o*********     |
 |                                                     ||   **************       ***************    |
-|                                                     || *************           **************    |
+|                                                     || ******o******           **************    |
 |                                                     ||*************                  *****       |
 |                                                     ||***************               *****        |
 |                                                     ||***************             **********     |
@@ -303,9 +334,9 @@ ________________________________________________________________________________
 |                                                     ||******             ******   **********     |
 |                                                     ||                  ****** ********          |
 |                                                     |+-------------------------------------------+
-|                                                     |Score: buildings, crew skill, bonds, crew and
-|                                                     |tallies. Renown joins it with the social
-|                                                     |update.
+|                                                     |Your renown 282: hold 45, crew 220, deeds 5,
+|                                                     |pacts 0, raids 6 (at most 18), wealth 6
+|                                                     |
 +-----------------------------------------------------+
  >                                                                             up/down  Enter  Esc
 ===== hall 100x30 ascii
@@ -313,19 +344,174 @@ ________________________________________________________________________________
  ~ TIDE ############----------------|-----------  30 ^ high in 5h59 (73)  neap tides          calm
  00:00 ::::::----=====++++++++++++++====----::::::::::::::----=====+++++++++++++====----::::: 24:00
        ^      now 00:00
-+ Hall of Tides -----------------------------------------++ The ann clan --------------------------+
-|S1 + Mudge Tarrow retired to the hearth, with a good ~  ||seasons played                   1      |
-|S1 + Wick Saltmarsh, raker, was kept by the Deep.       ||shifts worked                    31     |
-|                                                        ||goods crafted                    0      |
-|                                                        ||expeditions                      6      |
-|                                                        ||came home                        4      |
-|                                                        ||cut off                          0      |
-|                                                        ||swept by the flood               0      |
-|                                                        ||skirmishes won                   5      |
-|                                                        ||of fights fought                 7      |
-|                                                        ||bonds formed                     0      |
-|                                                        ||crew lost                        0      |
-|                                                        ||tallies earned                   640    |
++ Hall of Tides -----------------------------------++ The season's records ------------------------+
+|S1 + Mudge Tarrow retired to the hearth, with a~  ||Season 1 so far                               |
+|S1 + Wick Saltmarsh, raker, was kept by the Dee~  ||Longest pact kept (days): Cove and Dun (9)    |
+|                                                  ||                                              |
+|                                                  ||Season 0 in the book                          |
+|                                                  ||1. Cove (64)                                  |
+|                                                  ||2. ann (57)                                   |
+|                                                  ||3. Dun (51)                                   |
+|                                                  ||It was a quiet season: the water did most of  |
+|                                                  ||the talking. Cove held the highest ground.    |
+|                                                  ||                                              |
+|                                                  ||                                              |
+|                                                  ||                                              |
+|                                                  ||                                              |
+|                                                  ||                                              |
++--------------------------------------------------+|                                              |
++ The ann clan ------------------------------------+|                                              |
+|Raids   2 won, 0 lost, 1 beaten off, 0 suffered   ||                                              |
+|Trips   6 out, 4 home, 5 fights won of 7          ||                                              |
+|Crew    0 bonds, 0 lost, 1 seasons played         ||                                              |
+|Hold    31 shifts, 0 goods crafted, 640 tallies   ||                                              |
+|earned                                            ||                                              |
+|Remembers  Cove                                   ||                                              |
+|                                                  ||                                              |
++--------------------------------------------------++----------------------------------------------+
+ >                                                                             up/down  Enter  Esc
+===== letters 100x30 ascii
+ # ann  day 1 of season 1                                     turns ########## 30/30  $ 312 tallies
+ ~ TIDE ############----------------|-----------  30 ^ high in 5h59 (73)  neap tides          calm
+ 00:00 ::::::----=====++++++++++++++====----::::::::::::::----=====+++++++++++++====----::::: 24:00
+       ^      now 00:00
++ The post (2 unread) -----------------++ Letter --------------------------------------------------+
+|> * Dun pact                          ||Dun to ann: a pact of honest dealing. The exchange takes  |
+|  * Cove                              ||less from us both.                                        |
+|    Eelmoor                           ||                                                          |
+|                                      ||Dun says: fair prices, fair weather                       |
+|                                      ||                                                          |
+|                                      ||The offer: truce, trade                                   |
+|                                      ||                                                          |
+|                                      ||Letters are read by the board and by the clan they are    |
+|                                      ||for. Nothing sent here is private.                        |
+|                                      ||                                                          |
+|                                      ||                                                          |
+|                                      ||                                                          |
+|                                      ||                                                          |
+|                                      ||                                                          |
+|                                      ||                                                          |
+|                                      ||                                                          |
+|                                      ||                                                          |
+|                                      |+----------------------------------------------------------+
+|                                      |+ Orders --------------------------------------------------+
+|                                      || a Write a letter                                         |
+|                                      || b Reply to Dun                                           |
+|                                      || c Block letters from Dun                                 |
+|                                      || d Throw this letter away                                 |
++--------------------------------------++----------------------------------------------------------+
+ > Write a letter                                                       up/down letter  Enter  Esc
+===== exchange 100x30 ascii
+ # ann  day 1 of season 1                                     turns ########## 30/30  $ 312 tallies
+ ~ TIDE ############----------------|-----------  30 ^ high in 5h59 (73)  neap tides          calm
+ 00:00 ::::::----=====++++++++++++++====----::::::::::::::----=====+++++++++++++====----::::: 24:00
+       ^      now 00:00
++ The exchange: salt ------------------------------------++ Orders --------------------------------+
+|Tidecourt pays 3, sells at 5                            || a Next good (now salt)                 |
+|Asks: goods for sale                                    || b Previous good                        |
+| Cove                  12 @    5                        || c Buy 5 salt at the best ask, 5 each   |
+| Dun                    8 @    6                        || d Sell 5 salt to the best bid, 4 each  |
+|Bids: tallies offered                                   || e Post an ask: 5 salt at 3 each        |
+| Cove                  10 @    4                        || f Post an ask: 5 salt at 4 each (pat~  |
+|                                                        || g Post an ask: all 18 salt at 3 each   |
+|                                                        || h Post a bid: 5 salt at 3 each         |
+|                                                        || i Post a bid: 5 salt at 2 each (pati~  |
+|                                                        ||                                        |
+|                                                        ||                                        |
+|                                                        ||                                        |
+|                                                        ||                                        |
+|                                                        ||                                        |
+|                                                        ||                                        |
+|                                                        ||                                        |
+|                                                        ||                                        |
+|                                                        ||                                        |
++--------------------------------------------------------+|                                        |
++ Prices, two weeks -------------------------------------+|                                        |
+|Tidecourt   .-*.-#.-=.:- 3.92                           ||                                        |
+|Exchange          .-#.-# 6.00                           ||                                        |
+|Fees: 2% to post, 3% of a sale (half between trade partn||                                        |
++--------------------------------------------------------++----------------------------------------+
+ > Next good (now salt)                                              </> page  up/down  Enter  Esc
+===== raid 100x30 ascii
+ # ann  day 1 of season 1                                     turns ########## 30/30  $ 312 tallies
+ ~ TIDE ############----------------|-----------  30 ^ high in 5h59 (73)  neap tides          calm
+ 00:00 ::::::----=====++++++++++++++====----::::::::::::::----=====+++++++++++++====----::::: 24:00
+       ^      now 00:00
++ Target: Cove ----------------------------------++ Your raiders ----------------------------------+
+|renown 64   rating 5   sluice at 60             ||Cress Hero~ boatwright hp 34 atk 10             |
+|Guard at the gate (4 of 6 crew):                ||Sedge Nett~ healer     hp 29 atk 9              |
+|  Holt Marrowfighter  hp22 a5 d2                ||Odds at this tide: you should win               |
+|  Nan Sedge  smith    hp20 a4 d2                ||Costs 4 turns. The raiders are away from the    |
+|  Orrin Pike wader    hp15 a3 d0                |+------------------------------------------------+
+|  Tamsin Reedhealer   hp12 a2 d0                |+ The tide --------------------------------------+
+|Stores, a scout's guess: salt 25, iron 10, prese||It lands tomorrow, at a turn of the water:      |
+|The way is open.                                ||> 00:35 low  water 23  on foot                  |
+|                                                ||06:47 high water 77  needs a boat               |
+|                                                ||12:59 low  water 23  on foot                    |
+|                                                ||19:11 high water 77  needs a boat               |
+|                                                ||Their sluice floods the approach at water 60.   |
+|                                                ||                                                |
+|                                                ||                                                |
+|                                                ||                                                |
++------------------------------------------------+|                                                |
++ Orders ----------------------------------------+|                                                |
+| a Next target (now Cove)                       ||                                                |
+| b Previous target                              ||                                                |
+| c More raiders (now 2)                         ||                                                |
+| d Fewer raiders                                ||                                                |
+| e Next turn of the water                       ||                                                |
+| f Send the raid on Cove (4 turns)              ||                                                |
++------------------------------------------------++------------------------------------------------+
+ > Next target (now Cove)                                            </> page  up/down  Enter  Esc
+===== pacts 100x30 ascii
+ # ann  day 1 of season 1                                     turns ########## 30/30  $ 312 tallies
+ ~ TIDE ############----------------|-----------  30 ^ high in 5h59 (73)  neap tides          calm
+ 00:00 ::::::----=====++++++++++++++====----::::::::::::::----=====+++++++++++++====----::::: 24:00
+       ^      now 00:00
++ Pacts -------------------------------------++ Terms ---------------------------------------------+
+|Standing with the Tidecourt +0              ||With Cove  renown 64                                |
+|Pacts in force                              ||[x] truce            neither clan raids the other   |
+|none                                        ||[ ] trade            half the exchange levy between |
+|                                            ||you                                                 |
+|                                            ||[ ] mutual defence   closed: needs a defence        |
+|                                            ||building                                            |
+|                                            ||[ ] shared causeways closed: needs a causeway laid  |
+|                                            ||                                                    |
+|                                            ||                                                    |
+|                                            ||                                                    |
+|                                            ||                                                    |
+|                                            ||                                                    |
+|                                            ||                                                    |
+|                                            ||                                                    |
+|                                            ||                                                    |
+|                                            ||                                                    |
+|                                            ||                                                    |
+|                                            |+----------------------------------------------------+
+|                                            |+ Orders --------------------------------------------+
+|                                            || a Next clan (now Cove)                             |
+|                                            || b Previous clan                                    |
+|                                            || c Add trade: half the exchange levy between you    |
+|                                            || d Offer Cove a pact                                |
++--------------------------------------------++----------------------------------------------------+
+ > Next clan (now Cove)                                              </> page  up/down  Enter  Esc
+===== compose 100x30 ascii
+ # ann  day 1 of season 1                                     turns ########## 30/30  $ 312 tallies
+ ~ TIDE ############----------------|-----------  30 ^ high in 5h59 (73)  neap tides          calm
+ 00:00 ::::::----=====++++++++++++++====----::::::::::::::----=====+++++++++++++====----::::: 24:00
+       ^      now 00:00
++ A letter ----------------------------------------------++ Orders --------------------------------+
+|To      Cove                                            || a Next recipient (now Cove)            |
+|Kind    greeting                                        || b Previous recipient                   |
+|                                                        || c Next words                           |
+|ann sends greeting to Cove. The reeds are high on our   || d Add a line of your own               |
+|flats and the salt is good. May the water be kind to    || e Send the letter to Cove              |
+|you.                                                    ||                                        |
+|                                                        ||                                        |
+|No line of your own.                                    ||                                        |
+|                                                        ||                                        |
+|                                                        ||                                        |
+|                                                        ||                                        |
+|                                                        ||                                        |
 |                                                        ||                                        |
 |                                                        ||                                        |
 |                                                        ||                                        |
@@ -338,38 +524,7 @@ ________________________________________________________________________________
 |                                                        ||                                        |
 |                                                        ||                                        |
 +--------------------------------------------------------++----------------------------------------+
- >                                                                             up/down  Enter  Esc
-===== letters 100x30 ascii
- # ann  day 1 of season 1                                     turns ########## 30/30  $ 312 tallies
- ~ TIDE ############----------------|-----------  30 ^ high in 5h59 (73)  neap tides          calm
- 00:00 ::::::----=====++++++++++++++====----::::::::::::::----=====+++++++++++++====----::::: 24:00
-       ^      now 00:00
-+ The post -------------------------------------------++ The last ledger --------------------------+
-|Letters                                              ||Nothing to read from the last night.       |
-|None waiting. Letters between clan leaders arrive    ||                                           |
-|with the social update.                              ||                                           |
-|                                                     ||                                           |
-|Notices pinned at the Tidecourt                      ||                                           |
-|~ The harbour-reeve says tomorrow's tides are        ||                                           |
-|middling.                                            ||                                           |
-|> 2 hands wait at your gate for work.                ||                                           |
-|$ peat is +2% on the day.                            ||                                           |
-|$ iron is -2% on the day.                            ||                                           |
-|$ silt-glass is +2% on the day.                      ||                                           |
-|                                                     ||                                           |
-|                                                     ||                                           |
-|                                                     ||                                           |
-|                                                     ||                                           |
-|                                                     ||                                           |
-|                                                     ||                                           |
-|                                                     ||                                           |
-|                                                     ||                                           |
-|                                                     ||                                           |
-|                                                     ||                                           |
-|                                                     ||                                           |
-|                                                     ||                                           |
-+-----------------------------------------------------++-------------------------------------------+
- >                                                                             up/down  Enter  Esc
+ > Next recipient (now Cove)                                         </> page  up/down  Enter  Esc
 ===== plan 100x30 ascii
  # ann  day 1 of season 1                                     turns ########## 30/30  $ 312 tallies
  ~ TIDE ############----------------|-----------  30 ^ high in 5h59 (73)  neap tides          calm

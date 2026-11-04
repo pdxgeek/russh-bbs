@@ -13,13 +13,18 @@ use crate::engine::{self, Action, Env};
 use crate::event::Event;
 use crate::hold::PLOTS;
 use crate::map::Map;
+use crate::social::dispatch;
+use crate::social::ledger::Acks;
+use crate::social::{Posted, renown};
 use crate::tide::{DayTable, Tide, Warning};
 use crate::types::{Resource, Track, Trade};
 use crate::world::World;
 
+mod social;
 mod trip_ui;
 mod ui;
 
+use social::{Soc, SocialUi};
 use trip_ui::{Edit, Plan};
 
 use crate::trip::{Reach, ReachKey};
@@ -46,6 +51,14 @@ enum MenuId {
     League,
     /// The Hall of Tides.
     Hall,
+    /// The exchange: the player market.
+    Exchange,
+    /// The gate: raids.
+    Raid,
+    /// Pacts and diplomacy.
+    Pacts,
+    /// Writing a letter.
+    Compose,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -58,12 +71,15 @@ enum Mode {
     Report,
     /// In a menu.
     Menu(MenuId),
+    /// Typing the line of a letter.
+    Line(String),
 }
 
 enum Act {
     Go(MenuId),
     Do(Action),
     Edit(Edit),
+    Soc(Soc),
     Leave,
 }
 
@@ -121,8 +137,14 @@ pub(crate) struct Session {
     pan: (i16, i16),
     /// What the nights brought, for the morning report's dashboard.
     ledger: Vec<Event>,
-    /// The score last written to the league table.
+    /// The renown last written to the league table.
     scored: u32,
+    /// What the clan last showed the marsh (its posted defence), as the world has it.
+    posted: Posted,
+    /// What to tell the world it may now forget, once the fold is saved.
+    acks: Acks,
+    /// The social screens' state.
+    soc: SocialUi,
     /// The last search of the marsh, kept while the party stands still.
     reach: Mutex<Option<(ReachKey, Arc<Reach>)>>,
 }
@@ -133,13 +155,18 @@ fn morning_report(events: &[Event]) -> Vec<String> {
         .iter()
         .filter(|e| matches!(e, Event::Night { .. }))
         .count();
-    if nights == 0 {
+    let news = events.iter().any(|e| !matches!(e, Event::Night { .. }));
+    if nights == 0 && !news {
         return Vec::new();
     }
-    let mut lines = vec![format!(
-        "{nights} night{} passed.",
-        if nights == 1 { "" } else { "s" }
-    )];
+    let mut lines = vec![if nights == 0 {
+        "News from the Tidecourt.".to_owned()
+    } else {
+        format!(
+            "{nights} night{} passed.",
+            if nights == 1 { "" } else { "s" }
+        )
+    }];
     lines.extend(
         events
             .iter()
@@ -154,7 +181,7 @@ impl Session {
         let Setup {
             cat,
             settings,
-            world,
+            mut world,
             world_stored,
             mut clan,
             today,
@@ -166,6 +193,15 @@ impl Session {
         let tide = Tide::new(world.seed);
         let mut report = Vec::new();
         let mut ledger = Vec::new();
+        let mut acks = Acks::default();
+        let mail = clan
+            .as_ref()
+            .map(|c| dispatch::mail_for(&world, &c.name))
+            .unwrap_or_default();
+        // The session's own view of the rolls always includes the clan itself.
+        if let Some(c) = &clan {
+            world.register_founded(&c.name, c.site, c.founded);
+        }
         // Nothing is written until the first key; a provisional world or a new season is.
         let mut dirty = rolled || (!world_stored && clan.is_some());
         if let Some(c) = clan.as_mut() {
@@ -187,10 +223,18 @@ impl Session {
                 settings,
                 day: today,
             };
-            let events = engine::catch_up(&env, c, today);
-            dirty |= !events.is_empty();
+            let (events, folded) = engine::catch_up_with(&env, c, today, &mail);
+            dirty |= !events.is_empty() || !folded.is_empty();
+            acks = folded;
             report = morning_report(&events);
             ledger = events;
+        }
+        // The session's view of its own hold is today's, not the world's older copy.
+        if let Some(c) = clan.as_ref() {
+            let rn = renown::of(&cat, c, &world, today).total();
+            if let Some(i) = world.ix(&c.name) {
+                world.clans[usize::from(i)].score = rn;
+            }
         }
         let mode = if unreadable {
             Mode::Unreadable
@@ -223,8 +267,18 @@ impl Session {
             pan: (0, 0),
             ledger,
             scored: 0,
+            posted: Posted::default(),
+            acks,
+            soc: SocialUi::default(),
             reach: Mutex::new(None),
         }
+    }
+
+    /// The clan's renown today: the number the league ranks by.
+    fn renown(&self) -> renown::Renown {
+        self.clan.as_ref().map_or_else(Default::default, |c| {
+            renown::of(&self.cat, c, &self.world, self.today)
+        })
     }
 
     fn env(&self) -> Env<'_> {
@@ -245,14 +299,19 @@ impl Session {
         }
         self.world_stored = true;
         let (season, seed, day) = (self.world.season, self.world.seed, self.today);
-        let who = self.clan.as_ref().map(|c| (c.name.clone(), c.site));
+        let who = self
+            .clan
+            .as_ref()
+            .map(|c| (c.name.clone(), c.site, c.founded));
         ctx.edit_world(move |old| {
-            let mut w = old
-                .and_then(World::decode)
-                .filter(|w| w.season == season)
-                .unwrap_or_else(|| World::new(season, seed, day));
-            if let Some((name, site)) = &who {
-                w.register(name, *site);
+            let decoded = old.and_then(World::decode);
+            let mut w = match decoded {
+                Some(w) if w.season == season => w,
+                // The first clan of a season makes its world, carrying the book of the last.
+                other => World::successor(other.as_ref(), season, seed, day),
+            };
+            if let Some((name, site, founded)) = &who {
+                w.register_founded(name, *site, *founded);
             }
             Some(w.encode())
         });
@@ -261,15 +320,25 @@ impl Session {
     fn save(&mut self, ctx: &mut Ctx<'_>) {
         let Some(c) = &self.clan else { return };
         ctx.request_save(c.encode());
-        // The league table reads the score the clan had when it was last saved.
-        let score = c.score(&self.cat);
-        if score != self.scored {
-            self.scored = score;
+        // What the clan has folded the world may now forget (the save above is written first).
+        if !self.acks.is_empty() {
+            let acks = std::mem::take(&mut self.acks);
             let (season, name) = (self.world.season, c.name.clone());
-            ctx.edit_world(move |old| {
-                let mut w = old.and_then(World::decode).filter(|w| w.season == season)?;
-                w.set_score(&name, score).then(|| w.encode())
-            });
+            ctx.edit_world(move |old| dispatch::ack(old, season, &name, acks.upto, &acks.receipts));
+        }
+        // The league reads the renown the clan had when it was last saved, and raiders read
+        // what it last posted (rounded, so the world is not rewritten for every shift).
+        let rn = renown::of(&self.cat, c, &self.world, self.today).total();
+        let posted = Posted::of(&self.cat, c, self.today);
+        if rn != self.scored || posted != self.posted {
+            self.scored = rn;
+            self.posted = posted.clone();
+            let (season, name) = (self.world.season, c.name.clone());
+            if let Some(i) = self.world.ix(&name) {
+                self.world.clans[usize::from(i)].score = rn;
+                self.world.clans[usize::from(i)].posted = posted.clone();
+            }
+            ctx.edit_world(move |old| dispatch::post_update(old, season, &name, &posted, Some(rn)));
         }
     }
 
@@ -600,7 +669,10 @@ impl Session {
                     ));
                 }
             }
-            MenuId::Tides | MenuId::Map | MenuId::Letters | MenuId::League | MenuId::Hall => {}
+            MenuId::Tides | MenuId::Map | MenuId::League | MenuId::Hall => {}
+            MenuId::Exchange | MenuId::Raid | MenuId::Pacts | MenuId::Letters | MenuId::Compose => {
+                out = self.social_entries(menu, clan)
+            }
             MenuId::Court => {
                 out.push(entry(
                     "go:market",
@@ -608,16 +680,35 @@ impl Session {
                     Act::Go(MenuId::Market),
                 ));
                 out.push(entry(
+                    "go:exchange",
+                    "The exchange: trade with other clans",
+                    Act::Go(MenuId::Exchange),
+                ));
+                out.push(entry(
+                    "go:raid",
+                    "The gate: send a raid",
+                    Act::Go(MenuId::Raid),
+                ));
+                out.push(entry(
+                    "go:pacts",
+                    "Pacts and diplomacy",
+                    Act::Go(MenuId::Pacts),
+                ));
+                out.push(entry(
+                    "go:letters",
+                    if clan.social.unread() > 0 {
+                        format!("The post: {} unread", clan.social.unread())
+                    } else {
+                        "The post: letters and notices".to_owned()
+                    },
+                    Act::Go(MenuId::Letters),
+                ));
+                out.push(entry(
                     "go:league",
                     "The league table",
                     Act::Go(MenuId::League),
                 ));
                 out.push(entry("go:hall", "The Hall of Tides", Act::Go(MenuId::Hall)));
-                out.push(entry(
-                    "go:letters",
-                    "The post: letters and notices",
-                    Act::Go(MenuId::Letters),
-                ));
                 out.push(entry(
                     "go:tides",
                     "The quay: the tide table",
@@ -777,6 +868,14 @@ impl Session {
                     ));
                 }
             }
+            Mode::Menu(
+                m @ (MenuId::Exchange
+                | MenuId::Raid
+                | MenuId::Pacts
+                | MenuId::Letters
+                | MenuId::Compose),
+            ) => out.extend(self.social_lines(*m, clan)),
+            Mode::Line(buffer) => out.push((format!("Your line: {buffer}_"), DoorStyle::Strong)),
             Mode::Menu(MenuId::Plan) => out.extend(self.plan_lines(clan)),
             Mode::Menu(MenuId::Trip) => out.extend(self.trip_lines(clan)),
             Mode::Menu(MenuId::Hold) => {
@@ -849,13 +948,41 @@ impl DoorSession for Session {
                 self.notes.clear();
                 return Flow::Stay;
             }
+            Mode::Line(mut buffer) => {
+                match key {
+                    DoorKey::Char(c)
+                        if buffer.chars().count() < crate::social::letters::LINE_MAX =>
+                    {
+                        buffer.push(c);
+                    }
+                    DoorKey::Backspace => {
+                        buffer.pop();
+                    }
+                    DoorKey::Escape => self.mode = Mode::Menu(MenuId::Compose),
+                    DoorKey::Enter => {
+                        self.take_line(&buffer, ctx);
+                        return Flow::Stay;
+                    }
+                    _ => {}
+                }
+                if matches!(self.mode, Mode::Line(_)) {
+                    self.mode = Mode::Line(buffer);
+                }
+                return Flow::Stay;
+            }
             Mode::Menu(menu) => {
                 if key == DoorKey::Escape {
                     if menu == MenuId::Main || menu == MenuId::Trip {
                         return Flow::Exit;
                     }
                     self.mode = Mode::Menu(match menu {
-                        MenuId::Letters | MenuId::League | MenuId::Hall => MenuId::Court,
+                        MenuId::Letters
+                        | MenuId::League
+                        | MenuId::Hall
+                        | MenuId::Exchange
+                        | MenuId::Raid
+                        | MenuId::Pacts => MenuId::Court,
+                        MenuId::Compose => MenuId::Letters,
                         _ => MenuId::Main,
                     });
                     self.cursor = 0;
@@ -896,6 +1023,7 @@ impl DoorSession for Session {
                         self.notes.clear();
                     }
                     Act::Edit(e) => self.edit(e),
+                    Act::Soc(s) => self.soc_act(s, ctx),
                     Act::Leave => return Flow::Exit,
                     Act::Do(action) => self.act(action, ctx),
                 }
@@ -956,6 +1084,33 @@ impl Session {
             MenuId::Map => {
                 let step = |v: i16, d: i16| (v + d * 4).clamp(-40, 40);
                 self.pan = (step(self.pan.0, dx), step(self.pan.1, dy));
+            }
+            MenuId::Exchange | MenuId::Raid | MenuId::Pacts | MenuId::Compose if dx != 0 => {
+                // Left and right turn the page: the next good, target or recipient.
+                let tag = match (menu, dx > 0) {
+                    (MenuId::Exchange, true) => "good:next",
+                    (MenuId::Exchange, false) => "good:prev",
+                    (MenuId::Raid, true) => "target:next",
+                    (MenuId::Raid, false) => "target:prev",
+                    (MenuId::Pacts, true) => "ptarget:next",
+                    (MenuId::Pacts, false) => "ptarget:prev",
+                    (_, true) => "to:next",
+                    (_, false) => "to:prev",
+                };
+                return entries.iter().position(|e| e.tag == tag);
+            }
+            MenuId::Letters if dy != 0 => {
+                let n = self.clan.as_ref().map_or(0, |c| c.social.inbox.len());
+                if n > 0 {
+                    self.soc.letter =
+                        (self.soc.letter + n).wrapping_add_signed(isize::from(dy)) % n;
+                    self.cursor = 0;
+                    if let Some(c) = self.clan.as_mut()
+                        && let Some(l) = c.social.inbox.get_mut(self.soc.letter)
+                    {
+                        l.read = true;
+                    }
+                }
             }
             MenuId::Crew => {
                 let n = self.clan.as_ref().map_or(0, |c| c.crew.len());
