@@ -34,6 +34,9 @@ pub(crate) enum Mode {
     Schedule(u16),
     Stats,
     News,
+    Talk,
+    Clubs,
+    Journal,
 }
 
 #[derive(Debug, Clone)]
@@ -120,7 +123,10 @@ impl Session {
                     }
                 } else if matches!(action, Action::Drop(_)) {
                     self.mode = Mode::Plans;
-                } else if matches!(action, Action::Go(_) | Action::Study(_)) {
+                } else if matches!(
+                    action,
+                    Action::Go(_) | Action::Study(_) | Action::Talk(_) | Action::Meet
+                ) {
                     self.mode = Mode::Main;
                 }
             }
@@ -225,6 +231,12 @@ impl Session {
         if g.player.run.is_some() {
             return self.run_view();
         }
+        if g.player.life.lesson.is_some() {
+            return self.lesson_screen();
+        }
+        if g.player.life.scene.is_some() {
+            return self.scene_screen();
+        }
         match &self.mode {
             Mode::Main => self.main_view(),
             Mode::Go => self.go_view(),
@@ -240,6 +252,9 @@ impl Session {
             Mode::Schedule(id) => self.schedule_view(*id),
             Mode::Stats => self.stats_view(),
             Mode::News => self.news_view(),
+            Mode::Talk => self.talk_view(),
+            Mode::Clubs => self.clubs_view(),
+            Mode::Journal => self.journal_view(),
         }
     }
 
@@ -364,7 +379,10 @@ impl Session {
             let here: Vec<String> = g
                 .npcs_at(&g.player.place, g.player.day, slot)
                 .iter()
-                .map(|n| format!("{} ({})", n.name, n.title))
+                .map(|n| match g.regard(&n.id).word() {
+                    "" => format!("{} ({})", n.name, n.title),
+                    word => format!("{} ({}, {word})", n.name, n.title),
+                })
                 .collect();
             if !here.is_empty() {
                 body.extend(wrap(&format!("Here: {}.", here.join("; ")), WIDTH));
@@ -425,11 +443,20 @@ impl Session {
         if self.can(&Action::Loiter) {
             add('l', "Loiter and listen", Cmd::Do(Action::Loiter));
         }
+        let talks = g.talks_here().len();
+        if talks > 0 {
+            add('t', &format!("Talk to someone ({talks})"), Cmd::To(Mode::Talk));
+        }
+        if self.can(&Action::Meet) {
+            add('m', "Go to your club meeting", Cmd::Do(Action::Meet));
+        }
         if self.can(&Action::Rest) {
             add('r', "Rest, head down", Cmd::Do(Action::Rest));
         }
         add('p', "Schemes", Cmd::To(Mode::Plans));
+        add('c', "Clubs", Cmd::To(Mode::Clubs));
         add('f', "You: file, grades, standing", Cmd::To(Mode::Stats));
+        add('j', "Journal: stories, friends, rivals", Cmd::To(Mode::Journal));
         add('n', "News and rumours", Cmd::To(Mode::News));
         if self.can(&Action::Sleep) {
             add('z', "Lights out", Cmd::Do(Action::Sleep));
@@ -1115,6 +1142,169 @@ impl Session {
         for line in g.player.news.iter().rev().take(3) {
             body.push(format!("Earlier: {line}"));
         }
+        (
+            body.iter().flat_map(|l| wrap(l, WIDTH)).collect(),
+            vec![Self::back("Back")],
+        )
+    }
+
+    fn lesson_screen(&self) -> (Vec<String>, Vec<Item>) {
+        let Some(view) = self.game.lesson_view() else {
+            return (Vec::new(), vec![Self::back("Back")]);
+        };
+        let name = self
+            .content()
+            .subject(&view.subject)
+            .map_or(view.subject.as_str(), |s| s.name.as_str());
+        let mut body = vec![format!(
+            "{name}: puzzle {} of {}",
+            u32::from(view.number) + 1,
+            view.rounds
+        )];
+        body.extend(view.round.prompt.iter().cloned());
+        let mut items = Vec::new();
+        for (i, option) in view.round.options.iter().enumerate() {
+            let key = DIGITS.get(i).copied().unwrap_or('9');
+            if view.open.get(i).copied().unwrap_or(false) {
+                items.push(Item {
+                    key,
+                    label: option.clone(),
+                    cmd: Cmd::Do(Action::Answer(u8::try_from(i).unwrap_or(0))),
+                });
+            } else {
+                body.push(format!("  (ruled out) {option}"));
+            }
+        }
+        items.push(Item {
+            key: 'x',
+            label: "Walk out of the lesson".into(),
+            cmd: Cmd::Do(Action::Abandon),
+        });
+        (body.iter().flat_map(|l| wrap(l, WIDTH)).collect(), items)
+    }
+
+    fn scene_screen(&self) -> (Vec<String>, Vec<Item>) {
+        let Some(view) = self.game.scene_view() else {
+            return (Vec::new(), vec![Self::back("Back")]);
+        };
+        let mut body = vec![format!("{} - {}", view.who, view.title), view.text.clone()];
+        let mut items = Vec::new();
+        for (i, choice) in view.choices.iter().enumerate() {
+            let key = DIGITS.get(i).copied().unwrap_or('9');
+            if choice.open {
+                items.push(Item {
+                    key,
+                    label: choice.label.clone(),
+                    cmd: Cmd::Do(Action::Choose(u8::try_from(i).unwrap_or(0))),
+                });
+            } else {
+                body.push(format!("  (shut: needs {}) {}", choice.wants, choice.label));
+            }
+        }
+        items.push(Item {
+            key: 'x',
+            label: "Excuse yourself".into(),
+            cmd: Cmd::Do(Action::Abandon),
+        });
+        (body.iter().flat_map(|l| wrap(l, WIDTH)).collect(), items)
+    }
+
+    fn talk_view(&self) -> (Vec<String>, Vec<Item>) {
+        let items: Vec<Item> = self
+            .game
+            .talks_here()
+            .into_iter()
+            .map(|t| Item {
+                key: ' ',
+                label: t.title.clone(),
+                cmd: Cmd::Do(Action::Talk(t.id.clone())),
+            })
+            .collect();
+        (
+            vec!["Who do you want a word with?".to_owned()],
+            self.paged(items, Self::back("Back")),
+        )
+    }
+
+    fn clubs_view(&self) -> (Vec<String>, Vec<Item>) {
+        let g = &self.game;
+        let mut body = vec![format!(
+            "Clubs (you can belong to {}):",
+            g.content.rules.max_clubs
+        )];
+        let mut items = Vec::new();
+        for club in &g.content.clubs {
+            let rank = g.player.life.rank_in(&club.id);
+            if rank > 0 {
+                let merit = g
+                    .player
+                    .life
+                    .clubs
+                    .iter()
+                    .find(|m| m.club == club.id)
+                    .map_or(0, |m| m.merit);
+                let rank_name = club
+                    .ranks
+                    .get(usize::try_from(rank - 1).unwrap_or(0))
+                    .map_or("", |r| r.0.as_str());
+                body.push(format!(
+                    "{}: {rank_name}, merit {merit}. Meets {}.",
+                    club.name,
+                    g.content
+                        .place(&club.place)
+                        .map_or("somewhere", |p| p.name.as_str())
+                ));
+                items.push(Item {
+                    key: ' ',
+                    label: format!("Leave {}", club.name),
+                    cmd: Cmd::Do(Action::Quit(club.id.clone())),
+                });
+            } else if let Some(why) = g.join_block(club) {
+                body.push(format!("{}: {why}", club.name));
+            } else {
+                body.push(format!("{}: {}", club.name, club.blurb));
+                items.push(Item {
+                    key: ' ',
+                    label: format!("Join {}", club.name),
+                    cmd: Cmd::Do(Action::Join(club.id.clone())),
+                });
+            }
+        }
+        (
+            body.iter().flat_map(|l| wrap(l, WIDTH)).collect(),
+            self.paged(items, Self::back("Back")),
+        )
+    }
+
+    fn journal_view(&self) -> (Vec<String>, Vec<Item>) {
+        let g = &self.game;
+        let mut body = vec!["Stories:".to_owned()];
+        let journal = g.journal();
+        if journal.is_empty() {
+            body.push("  (nothing yet)".to_owned());
+        }
+        body.extend(journal.into_iter().map(|l| format!("  {l}")));
+        let mut friends: Vec<String> = Vec::new();
+        let mut rivals: Vec<String> = Vec::new();
+        for (id, _) in &g.player.life.bonds {
+            if let Some(n) = g.content.npc(id) {
+                match g.regard(id) {
+                    crate::talk::Regard::Friend => friends.push(n.name.clone()),
+                    crate::talk::Regard::Rival | crate::talk::Regard::Betrayed => {
+                        rivals.push(n.name.clone());
+                    }
+                    crate::talk::Regard::Neutral => {}
+                }
+            }
+        }
+        body.push(format!(
+            "Friends: {}.",
+            if friends.is_empty() { "none yet".into() } else { friends.join(", ") }
+        ));
+        body.push(format!(
+            "Rivals: {}.",
+            if rivals.is_empty() { "none".into() } else { rivals.join(", ") }
+        ));
         (
             body.iter().flat_map(|l| wrap(l, WIDTH)).collect(),
             vec![Self::back("Back")],

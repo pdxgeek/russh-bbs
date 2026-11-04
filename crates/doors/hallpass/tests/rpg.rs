@@ -391,6 +391,21 @@ fn no_content_is_dead_every_option_is_open_to_some_build() {
         everything.game.player.traits.push(t.to_owned());
     }
     everything.game.player.traits.push("ghost".into());
+    everything.give("greasepaint", 1);
+    everything.give("servo", 1);
+    for club in ["robotics", "rowing"] {
+        everything
+            .game
+            .player
+            .life
+            .clubs
+            .push(russh_bbs_door_hallpass::state::Membership {
+                club: club.into(),
+                rank: 2,
+                merit: 5,
+                last_meet: -1,
+            });
+    }
     everything.game.player.legend = 100;
     everything.game.player.notoriety = 10;
     for k in [

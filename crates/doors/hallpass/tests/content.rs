@@ -45,7 +45,7 @@ fn the_shipped_content_loads_and_has_the_amount_this_slice_promises() {
     let c = Content::embedded().unwrap();
     assert_eq!(c.problems(), Vec::<String>::new());
     assert_eq!(c.periods.len(), 9);
-    assert_eq!(c.subjects.len(), 5);
+    assert_eq!(c.subjects.len(), 6);
     assert_eq!(c.cliques.len(), 6);
     assert!(c.places.len() >= 25, "{}", c.places.len());
     assert!(c.npcs.len() >= 18, "{}", c.npcs.len());
@@ -55,15 +55,20 @@ fn the_shipped_content_loads_and_has_the_amount_this_slice_promises() {
         4,
         "one big scheme per world effect"
     );
-    assert_eq!(c.effects.len(), 4);
+    assert_eq!(c.effects.len(), 5, "four big schemes and one storyline ending");
     assert!(c.twists.len() >= 6 && c.getaways.len() >= 6);
     assert!(c.endings.len() >= 5);
-    // Every big scheme names an effect, and every effect is used by one.
+    // Every big scheme names an effect, and every effect is used by a big scheme or a story ending.
     for e in &c.effects {
+        let by_story = c.arcs.iter().flat_map(|a| a.ending.iter()).any(|end| {
+            end.effects
+                .contains(&russh_bbs_door_hallpass::effect::Eff::World(e.id.clone()))
+        });
         assert!(
-            c.methods
-                .iter()
-                .any(|m| m.effect.as_deref() == Some(e.id.as_str())),
+            by_story
+                || c.methods
+                    .iter()
+                    .any(|m| m.effect.as_deref() == Some(e.id.as_str())),
             "{} unused",
             e.id
         );

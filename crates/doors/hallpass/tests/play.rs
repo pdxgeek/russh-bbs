@@ -150,7 +150,7 @@ fn a_first_morning_replays_to_the_same_state_as_the_engine_played_by_hand() {
         start: Day::from_raw(day).start().as_raw(),
         season: 1,
         save: None,
-        keys: keys("1g8a"),
+        keys: keys("1g8a123"),
     };
     let run = replay::run(&door, &log, &env());
     let player = decode_player(run.save.as_deref().unwrap()).unwrap();
@@ -158,6 +158,9 @@ fn a_first_morning_replays_to_the_same_state_as_the_engine_played_by_hand() {
     let mut sb = Sandbox::on("smooth_talker", 7, day);
     sb.goto("room_maths");
     sb.ok(russh_bbs_door_hallpass::game::Action::Attend);
+    for answer in 0..3 {
+        sb.ok(russh_bbs_door_hallpass::game::Action::Answer(answer));
+    }
     assert_eq!(
         player, sb.game.player,
         "the screen adds nothing the engine does not do"
@@ -399,7 +402,7 @@ async fn a_session_through_the_store_saves_and_comes_back_where_it_left_off() {
         Running::open(&store, door.clone(), ann, &e, c, seed)
     };
     let mut run = open(1).await.unwrap();
-    for key in keys("1g8a") {
+    for key in keys("1g8a123") {
         run.key(key);
         run.flush(&store).await.unwrap();
     }

@@ -10,9 +10,11 @@
 //! | `item:X` | the player carries item `X` |
 //! | `know:X` | the player has learned `X` (a route, a routine) |
 //! | `world:X` | the big-scheme effect `X` is active in the shared world |
+//! | `arc:ID@STEP` | the storyline `ID` is at step `STEP` (H2) |
+//! | `ended:ID@ENDING` | the storyline `ID` finished with `ENDING` (H2) |
 //! | `expelled` | the character has been expelled |
 //! | `not:<cond>` | the inner condition does not hold |
-//! | `stat>=N` (also `<=`, `>`, `<`, `=`) | a number compares: `legend`, `notoriety`, `heat`, `file`, `cool`, `nerve`, `cash`, `grades`, `pulled`, `caught`, `skill:ID`, `standing:CLIQUE`, `wary:NPC`, `grade:SUBJECT` |
+//! | `stat>=N` (also `<=`, `>`, `<`, `=`) | a number compares: `legend`, `notoriety`, `heat`, `file`, `cool`, `nerve`, `cash`, `grades`, `pulled`, `caught`, `skill:ID`, `standing:CLIQUE`, `wary:NPC`, `grade:SUBJECT`, and from H2 `bond:NPC` (friendship, negative for a rival), `rank:CLUB` (0 when not a member), `day` (the day of the term, from 0) |
 
 use serde::Deserialize;
 
@@ -62,6 +64,12 @@ pub enum Stat {
     Wary(String),
     /// One subject's grade.
     Grade(String),
+    /// Friendship with a character: positive for a friend, negative for a rival.
+    Bond(String),
+    /// Rank in a club, 0 when not a member.
+    Rank(String),
+    /// The day of the term, from 0.
+    Day,
 }
 
 /// One parsed condition.
@@ -77,6 +85,20 @@ pub enum Cond {
     Know(String),
     /// `world:X`
     World(String),
+    /// `arc:ID@STEP`
+    Arc {
+        /// The storyline.
+        arc: String,
+        /// The step it is at.
+        step: String,
+    },
+    /// `ended:ID@ENDING`
+    Ended {
+        /// The storyline.
+        arc: String,
+        /// The ending it reached.
+        ending: String,
+    },
     /// `expelled`
     Expelled,
     /// `not:<cond>`
@@ -114,6 +136,7 @@ fn stat_of(name: &str) -> Option<Stat> {
         "grades" => Stat::Grades,
         "pulled" => Stat::Pulled,
         "caught" => Stat::Caught,
+        "day" => Stat::Day,
         other => {
             let (kind, id) = other.split_once(':')?;
             if id.is_empty() {
@@ -124,6 +147,8 @@ fn stat_of(name: &str) -> Option<Stat> {
                 "standing" => Stat::Standing(id.to_owned()),
                 "wary" => Stat::Wary(id.to_owned()),
                 "grade" => Stat::Grade(id.to_owned()),
+                "bond" => Stat::Bond(id.to_owned()),
+                "rank" => Stat::Rank(id.to_owned()),
                 _ => return None,
             }
         }
@@ -165,6 +190,18 @@ impl Cond {
             "item" => Ok(Self::Item(id)),
             "know" => Ok(Self::Know(id)),
             "world" => Ok(Self::World(id)),
+            "arc" | "ended" => {
+                let (arc, rest) = id.split_once('@').ok_or_else(bad)?;
+                if arc.is_empty() || rest.is_empty() {
+                    return Err(bad());
+                }
+                let (arc, rest) = (arc.to_owned(), rest.to_owned());
+                Ok(if kind == "arc" {
+                    Self::Arc { arc, step: rest }
+                } else {
+                    Self::Ended { arc, ending: rest }
+                })
+            }
             _ => Err(bad()),
         }
     }
@@ -181,13 +218,20 @@ impl Cond {
             Self::Item(i) => format!("carrying {}", words(i)),
             Self::Know(k) => format!("learning the {}", words(k)),
             Self::World(w) => format!("the school having changed ({})", words(w)),
+            Self::Arc { arc, step } => format!("the {} story being at {}", words(arc), words(step)),
+            Self::Ended { arc, ending } => {
+                format!("the {} story having ended {}", words(arc), words(ending))
+            }
             Self::Expelled => "being expelled".to_owned(),
             Self::Not(inner) => format!("not {}", inner.describe()),
             Self::Cmp { stat, op, value } => {
                 let name = match stat {
-                    Stat::Skill(id) | Stat::Standing(id) | Stat::Wary(id) | Stat::Grade(id) => {
-                        words(id)
-                    }
+                    Stat::Skill(id)
+                    | Stat::Standing(id)
+                    | Stat::Wary(id)
+                    | Stat::Grade(id)
+                    | Stat::Bond(id)
+                    | Stat::Rank(id) => words(id),
                     other => format!("{other:?}").to_lowercase(),
                 };
                 let symbol = match op {
@@ -260,6 +304,26 @@ mod tests {
             }
         );
         assert_eq!(Cond::parse("expelled").unwrap(), Cond::Expelled);
+        assert_eq!(
+            Cond::parse("bond:sol>=-10").unwrap(),
+            Cond::Cmp {
+                stat: Stat::Bond("sol".into()),
+                op: Op::Ge,
+                value: -10
+            }
+        );
+        assert_eq!(
+            Cond::parse("arc:bell@start").unwrap(),
+            Cond::Arc {
+                arc: "bell".into(),
+                step: "start".into()
+            }
+        );
+        assert!(Cond::parse("ended:bell@").is_err() && Cond::parse("arc:bell").is_err());
+        assert!(matches!(
+            Cond::parse("day>=3").unwrap(),
+            Cond::Cmp { stat: Stat::Day, .. }
+        ));
         for bad in [
             "",
             "tag:",

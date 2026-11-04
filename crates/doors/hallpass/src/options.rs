@@ -32,7 +32,19 @@ impl Game {
         }
         if self.player.run.is_some() {
             proposals.extend((0..=3).map(|push| Action::RunPhase { push }));
+        } else if self.player.life.lesson.is_some() {
+            proposals.extend((0..4).map(Action::Answer));
+            proposals.push(Action::Abandon);
+        } else if self.player.life.scene.is_some() {
+            proposals.extend((0..8).map(Action::Choose));
+            proposals.push(Action::Abandon);
         } else {
+            proposals.extend(self.talks_here().into_iter().map(|t| Action::Talk(t.id.clone())));
+            for club in &self.content.clubs {
+                proposals.push(Action::Join(club.id.clone()));
+                proposals.push(Action::Quit(club.id.clone()));
+            }
+            proposals.push(Action::Meet);
             proposals.extend(self.reachable().into_iter().map(Action::Go));
             proposals.push(Action::Attend);
             proposals.extend(

@@ -81,6 +81,32 @@ impl Sandbox {
     pub fn world(&self) -> &World {
         &self.game.world
     }
+
+    /// Answer the lesson in progress with `right` puzzles right and the rest wrong (a test may
+    /// read the answer; the screen never shows it).
+    pub fn take_lesson(&mut self, right: usize) -> Vec<Event> {
+        let mut events = Vec::new();
+        let mut n = 0;
+        while let Some(view) = self.game.lesson_view() {
+            let pick = if n < right {
+                view.round.answer
+            } else {
+                (0..view.round.options.len())
+                    .find(|i| *i != view.round.answer && view.open[*i])
+                    .unwrap()
+            };
+            events.extend(self.ok(Action::Answer(u8::try_from(pick).unwrap())));
+            n += 1;
+        }
+        events
+    }
+
+    /// Go to the lesson (already in the right room) and answer `right` puzzles right.
+    pub fn attend(&mut self, right: usize) -> Vec<Event> {
+        let mut events = self.ok(Action::Attend);
+        events.extend(self.take_lesson(right));
+        events
+    }
 }
 
 /// Count how many events satisfy `f`.

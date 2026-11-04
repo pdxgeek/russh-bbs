@@ -35,6 +35,21 @@ skill_levels = [0, 3, 8, 15, 25, 40]
 honour_roll = 75
 pinned_legend_pct = 100
 
+# Classes (M4-H2). A lesson is `lesson_rounds` puzzles; the grade and skill gain depend on how many
+# are right (one entry for each score from none to all).
+lesson_rounds = 3
+lesson_gains = [-1, 1, 3, 5]
+lesson_xp = [0, 1, 2, 3]
+level_grades = [62, 80]     # puzzles get harder as the grade rises: under 62, under 80, else
+poor_grade = 40             # a subject under this on Friday's report goes on the file
+
+# Clubs and friendships (M4-H2).
+max_clubs = 2
+friend_bond = 12
+rival_bond = -12
+betray_bond = -30
+betray_to = -40
+
 # File: consequences when the points first reach a level.
 [[tier]]
 at = 3
@@ -75,6 +90,14 @@ text = "missed detention"
 [[file_kind]]
 id = "out_of_bounds"
 text = "out of bounds after lights-out"
+
+[[file_kind]]
+id = "poor_report"
+text = "a poor mark on Friday's report"
+
+[[file_kind]]
+id = "named_names"
+text = "named a friend to the staff"
 
 [[file_kind]]
 id = "summons_skipped"

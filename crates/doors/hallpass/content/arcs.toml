@@ -1,0 +1,101 @@
+# Storylines: multi-day arcs under the timetable. A story starts by itself when its `start`
+# conditions hold. Conversations tagged with the story's id and a step move it on (`arc:ID:STEP`) or
+# end it (`arc_end:ID:ENDING`); a choice that moves it to one step shuts the conversations of the
+# other. An ending's own effects follow when it comes about; `world:` changes the school for everyone.
+
+# ---------------------------------------------------------------- the prefects' ledger
+
+[[arc]]
+id = "ledger"
+name = "The prefects' ledger"
+blurb = "Tilly saw a prefect hide a ledger in the quad."
+start = ["day>=4"]
+first = "found"
+[[arc.step]]
+id = "found"
+text = "Tilly saw Tobias Bramley hide a book. Ask her what she saw."
+[[arc.step]]
+id = "confront"
+text = "You are going to ask Bramley about the ledger. Give it a day."
+[[arc.step]]
+id = "paper"
+text = "You told Wren. She wants a day to check the story."
+[[arc.step]]
+id = "owes"
+text = "Bramley is thinking about your price. Give him two days."
+[[arc.step]]
+id = "expose"
+text = "You hold proof. Cordelia Wick is the one to bring it to."
+[[arc.ending]]
+id = "shrugged"
+name = "Let it lie"
+text = "You let it go. The ledger stays in its hiding place, and nobody is any wiser."
+[[arc.ending]]
+id = "returned"
+name = "Put it all back"
+text = "Bramley puts the confiscated things back where they came from, and you have a prefect who owes you a quiet word."
+effects = ["bond:bramley:+6", "stand:lamplighters:+5", "stat:legend:+2"]
+[[arc.ending]]
+id = "owed"
+name = "A favour owed"
+text = "Bramley keeps his hiding place and you keep your silence. Neither of you will mention it again."
+effects = ["know:bramley_owes", "stat:cash:+8", "bond:bramley:-3"]
+[[arc.ending]]
+id = "purged"
+name = "The prefects stood down"
+text = "Cordelia Wick takes the ledger to the headmistress herself. The Lamplighters are stood down for the term, and the corridors are quieter for it."
+effects = ["world:prefects_stood_down", "stand:lamplighters:-6", "stand:the_bench:+6", "stat:legend:+10", "bond:wick:+4"]
+[[arc.ending]]
+id = "headline"
+name = "Front page"
+text = "The Ink Society prints the story under a headline in letters an inch high. For a day, everyone is reading it."
+effects = ["world:paper_hijack", "stand:ink_society:+8", "stand:lamplighters:-8", "stat:legend:+6", "bond:wren:+5", "bond:bramley:-14"]
+
+# ---------------------------------------------------------------- the light in the east wing
+
+[[arc]]
+id = "east_light"
+name = "The light in the East Wing"
+blurb = "Mr. Fenn says a light shows in the closed wing at night."
+start = ["day>=8"]
+first = "rumour"
+[[arc.step]]
+id = "rumour"
+text = "Mr. Fenn has seen a light in the closed East Wing. Ask him about it."
+[[arc.step]]
+id = "watch"
+text = "You offered to watch with Fenn. He wants to talk tomorrow."
+[[arc.step]]
+id = "told"
+text = "You told Mr. Marsh about the light. He will want to talk."
+[[arc.step]]
+id = "seen"
+text = "You saw the lantern. Fenn has something to show you."
+[[arc.step]]
+id = "soames"
+text = "You have an old diary page. Reverend Soames might read it."
+[[arc.ending]]
+id = "ignored"
+name = "Not your business"
+text = "The light goes out, or you stop looking. Either way the East Wing keeps its secret a while longer."
+effects = ["know:east_light_ignored"]
+[[arc.ending]]
+id = "quiet"
+name = "Say nothing"
+text = "You say you saw nothing, and so did Mr. Fenn. The East Wing stays closed."
+effects = ["bond:fenn:+2", "know:east_light_quiet"]
+[[arc.ending]]
+id = "informer"
+name = "The informer"
+text = "Mr. Marsh posts a watch on the Old Wing and thanks you for your public spirit. The Bench hears who told."
+effects = ["bond:marsh:+6", "wary:marsh:-1", "stand:lamplighters:+6", "stand:the_bench:-10"]
+[[arc.ending]]
+id = "secret"
+name = "A secret kept"
+text = "The diary page is yours alone, folded small in a pocket you do not mention."
+effects = ["know:diary_page", "stat:legend:+4"]
+[[arc.ending]]
+id = "shared"
+name = "Shared with the chaplain"
+text = "Reverend Soames reads the page twice and says he will think about the East Wing, and that you did right to bring it to him."
+effects = ["know:soames_trust", "know:diary_page", "bond:soames:+8", "stat:legend:+6"]

@@ -45,6 +45,9 @@ pub fn to_u32(v: i64) -> u32 {
     u32::try_from(v.clamp(0, i64::from(u32::MAX))).unwrap_or(0)
 }
 
+/// The most flags (things learned, story marks) a character keeps. Well under the save cap.
+pub const KNOW_CAP: usize = 160;
+
 /// One line on the file.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FileEntry {
@@ -195,6 +198,148 @@ impl Wire for Status {
     }
 }
 
+
+// ---------------------------------------------------------------- school life (H2)
+
+/// A club a character belongs to.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Membership {
+    /// The club id.
+    pub club: String,
+    /// Rank, from 1.
+    pub rank: u8,
+    /// Merit earned at meetings and in club business.
+    pub merit: u16,
+    /// The last day a meeting was attended.
+    pub last_meet: i64,
+}
+wire_struct!(Membership {
+    club,
+    rank,
+    merit,
+    last_meet
+});
+
+/// Where a character is in a storyline.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ArcProgress {
+    /// The storyline id.
+    pub id: String,
+    /// The step it is at.
+    pub step: String,
+    /// The day that step began.
+    pub since: i64,
+    /// The ending reached, once it is over.
+    pub ended: Option<String>,
+}
+wire_struct!(ArcProgress {
+    id,
+    step,
+    since,
+    ended
+});
+
+/// A lesson under way: the minigame of the period.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Lesson {
+    /// The subject.
+    pub subject: String,
+    /// Where the puzzles come from: round `n` is a pure function of `(seed, n, level)`.
+    pub seed: u64,
+    /// The round now up, from 0.
+    pub round: u8,
+    /// Rounds answered right so far.
+    pub right: u8,
+    /// How hard the puzzles are, 0 to 2, fixed when the lesson began.
+    pub level: u8,
+    /// How many wrong answers are struck out for the player, fixed when the lesson began.
+    pub hints: u8,
+}
+wire_struct!(Lesson {
+    subject,
+    seed,
+    round,
+    right,
+    level,
+    hints
+});
+
+/// A conversation under way.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Scene {
+    /// The conversation id.
+    pub talk: String,
+    /// The node now up.
+    pub node: String,
+    /// Choices made so far.
+    pub chosen: u8,
+}
+wire_struct!(Scene { talk, node, chosen });
+
+/// What H2 adds to a character. Appended to the save in version 2; a version 1 save gets the
+/// empty value (see `save::migrate`).
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct SchoolLife {
+    /// Clubs joined.
+    pub clubs: Vec<Membership>,
+    /// Friendship (positive) or rivalry (negative) by character, -100 to 100.
+    pub bonds: Map<i16>,
+    /// Storylines begun.
+    pub arcs: Vec<ArcProgress>,
+    /// The lesson being taken, if any.
+    pub lesson: Option<Lesson>,
+    /// The conversation being had, if any.
+    pub scene: Option<Scene>,
+    /// The day each conversation was last had.
+    pub talked: Map<i64>,
+    /// The helpers of the latest scheme, whom a headmistress may ask about.
+    pub last_allies: Vec<String>,
+    /// Lessons finished with every answer right.
+    pub perfect: u16,
+    /// Lessons taken.
+    pub lessons: u16,
+}
+wire_struct!(SchoolLife {
+    clubs,
+    bonds,
+    arcs,
+    lesson,
+    scene,
+    talked,
+    last_allies,
+    perfect,
+    lessons
+});
+
+impl SchoolLife {
+    /// Friendship with a character.
+    #[must_use]
+    pub fn bond_with(&self, npc: &str) -> i32 {
+        map_get(&self.bonds, npc).map_or(0, |v| i32::from(*v))
+    }
+
+    /// Change a friendship.
+    pub fn add_bond(&mut self, npc: &str, delta: i32) {
+        let now = self.bond_with(npc) + delta;
+        map_set(&mut self.bonds, npc, to_i16(now.clamp(-100, 100)));
+    }
+
+    /// Rank in a club, 0 when not a member.
+    #[must_use]
+    pub fn rank_in(&self, club: &str) -> i32 {
+        self.clubs
+            .iter()
+            .find(|m| m.club == club)
+            .map_or(0, |m| i32::from(m.rank))
+    }
+
+    /// A storyline's progress.
+    #[must_use]
+    pub fn arc(&self, id: &str) -> Option<&ArcProgress> {
+        self.arcs.iter().find(|a| a.id == id)
+    }
+}
+
 /// One player's character.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[allow(clippy::struct_excessive_bools)] // plain saved state: each flag is its own fact
@@ -287,6 +432,8 @@ pub struct Player {
     pub news: Vec<String>,
     /// How past terms ended.
     pub history: Vec<TermResult>,
+    /// Classes, clubs, friendships and storylines (save version 2).
+    pub life: SchoolLife,
 }
 
 wire_struct!(Player {
@@ -333,7 +480,8 @@ wire_struct!(Player {
     final_warning,
     next_scheme,
     news,
-    history
+    history,
+    life
 });
 
 impl Player {
@@ -385,6 +533,7 @@ impl Player {
             next_scheme: 1,
             news: Vec::new(),
             history: Vec::new(),
+            life: SchoolLife::default(),
         }
     }
 
@@ -402,7 +551,7 @@ impl Player {
 
     /// Learn something.
     pub fn learn(&mut self, what: &str) {
-        if !self.knows(what) && self.knowledge.len() < LIST_CAP {
+        if !self.knows(what) && self.knowledge.len() < KNOW_CAP {
             self.knowledge.push(what.to_owned());
         }
     }
