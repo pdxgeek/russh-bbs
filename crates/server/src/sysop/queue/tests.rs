@@ -8,7 +8,7 @@ use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
 use ratatui::style::Modifier;
 use russh_bbs_core::access::{Permission, Slug, Snapshot, Via};
-use russh_bbs_core::icons::Tier;
+use russh_bbs_core::icons::{SecurityMarker, Tier};
 use russh_bbs_core::queue::{
     Message, PendingRequest, Queue, QueueKey, QueueMode, QueueScreen, QueueView, RequestId,
     RequestKind, Response, Voucher,
@@ -20,7 +20,11 @@ use russh_bbs_core::terminal_settings::TerminalSettings;
 use super::lines;
 use crate::settings::Look;
 use crate::ui::Ui;
-use crate::ui::classic::{ContentScreen, MENU_MARKERS, render_content};
+use crate::ui::classic::{ContentScreen, render_content};
+
+/// The queue is a staff screen: while telnet is on it carries `LOW-SECURITY` in its status row
+/// (D27); nothing else is drawn there (D93).
+const QUEUE_MARKERS: [SecurityMarker; 1] = [SecurityMarker::LowSecurity];
 
 fn draw(view: &QueueView, tier: Tier, size: (u16, u16)) -> Buffer {
     let ui = Ui::standard().unwrap();
@@ -37,7 +41,7 @@ fn draw(view: &QueueView, tier: Tier, size: (u16, u16)) -> Buffer {
                     lines: lines(view, ui.strings(), look, width),
                     look,
                     tier,
-                    markers: &MENU_MARKERS,
+                    markers: &QUEUE_MARKERS,
                 },
             );
         })
@@ -142,9 +146,9 @@ fn the_fullest_screens_fit_80x24_with_their_footer_in_every_tier() {
                     out.contains(footer),
                     "{tier:?} {name} {what}: footer clipped\n{out}"
                 );
-                // The status row still shows the server-readable marker.
+                // The status row still shows the low-security marker.
                 assert!(
-                    row(&buffer, 23).contains("The server can read"),
+                    row(&buffer, 23).contains("telnet is on"),
                     "{tier:?} {name} {what}: {:?}",
                     row(&buffer, 23)
                 );
@@ -214,7 +218,7 @@ fn requester_text_never_reaches_the_status_row_or_takes_the_marker_style() {
                     );
                 }
             }
-            assert!(row(buffer, 23).contains("The server can read"));
+            assert!(row(buffer, 23).contains("telnet is on"));
             assert!(!row(buffer, 23).contains("FAKE"));
         }
     }

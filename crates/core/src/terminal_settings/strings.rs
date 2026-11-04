@@ -26,10 +26,8 @@ pub const FIRST_LOGIN: &str = "member.first_login";
 pub const TERMINAL_LINE: &str = "member.terminal_line";
 /// The terminal line while no tier has been chosen.
 pub const TERMINAL_LINE_UNSET: &str = "member.terminal_line_unset";
-/// The one D78 (7) explanation about mail, in the welcome message. Shown to a member who may
-/// read mail; no mail, chat or board screen carries it (D78).
-pub const MAIL_NOTE: &str = "member.mail_note";
-/// Said instead of [`MAIL_NOTE`] where mail is withheld (telnet, D85/D90).
+/// Said in the welcome where mail is withheld (telnet, D85/D90). The D78 mail-at-rest sentence
+/// is gone (D93).
 pub const MAIL_SSH_ONLY: &str = "member.mail_ssh_only";
 /// Login footer.
 pub const LOGIN_FOOTER: &str = "member.login_footer";
@@ -146,8 +144,7 @@ pub const LAYOUT_LIGHTBAR: &str = "member.layout_lightbar";
 pub const LAYOUT_COMPACT: &str = "member.layout_compact";
 
 /// Every key above except [`TITLE`]; the string table must hold exactly these in `member.*`.
-pub const TEXT_KEYS: [&str; 59] = [
-    MAIL_NOTE,
+pub const TEXT_KEYS: [&str; 58] = [
     MAIL_SSH_ONLY,
     LOGIN_HEADING,
     SIGNED_IN_AS,

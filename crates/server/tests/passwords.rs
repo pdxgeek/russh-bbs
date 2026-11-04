@@ -304,10 +304,7 @@ async fn when_on_the_method_is_offered_and_the_right_password_signs_in() {
     let mut channel = at_menu(&session).await;
     let screen = full(&mut channel).await;
     assert!(screen.contains("Main menu"), "{screen}");
-    assert!(
-        screen.contains("The server can read what you do here."),
-        "{screen}"
-    );
+    assert!(!screen.contains("SERVER-READABLE"), "{screen}");
     // The registry shows a signed-in member with no key.
     let sessions = rig.server.sessions();
     let mine = sessions.iter().find(|s| s.shell_open).unwrap();

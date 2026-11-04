@@ -176,10 +176,10 @@ async fn the_founder_walks_main_menu_settings_back_and_log_off() {
     ] {
         assert!(menu.contains(expected), "{expected:?} missing: {menu}");
     }
-    // The server-readable marker is drawn in the Unicode tier (the style is checked by the
-    // unit tests on the cell buffer; here the codepoints must arrive).
+    // D93: the server-readable row is gone (over ssh no marker is drawn on a member screen).
+    assert!(!menu.contains("SERVER-READABLE"), "{menu}");
     assert!(
-        menu.contains("The server can read what you do here."),
+        !menu.contains("The server can read what you do here."),
         "{menu}"
     );
 

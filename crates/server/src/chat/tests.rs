@@ -726,11 +726,10 @@ mod drawing {
             let buffer = draw(&screen, Tier::Ascii, size);
             let text = rows(&buffer);
             assert_eq!(text.len(), usize::from(size.1));
-            // The last row is the reserved status row, drawn by the layout: the marker words.
-            let last = text.last().unwrap();
+            // D93: no status row is reserved on a member screen, so the box reaches the end.
             assert!(
-                last.contains("server can read") || size.0 < 40,
-                "{size:?}: {last:?}"
+                !text.join("\n").contains("server can read"),
+                "{size:?}: no server-readable row"
             );
             let body = text.join("\n");
             // A 20-column window wraps a line over several rows; the newest line is whole only

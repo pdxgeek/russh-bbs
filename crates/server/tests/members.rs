@@ -284,11 +284,8 @@ async fn a_member_browses_the_list_searches_and_opens_a_profile() {
     for hidden in ["pending_pat", "approved_ann", "suspended_sam", "Hidden"] {
         assert!(!list.contains(hidden), "{hidden} leaked: {list}");
     }
-    // The server-readable marker is in the status row, not removed by the new screens.
-    assert!(
-        list.contains("The server can read what you do here."),
-        "{list}"
-    );
+    // D93: no server-readable status row.
+    assert!(!list.contains("SERVER-READABLE"), "{list}");
 
     // Open a profile; every field is plain text, the website included.
     send(&mut channel, "2").await;

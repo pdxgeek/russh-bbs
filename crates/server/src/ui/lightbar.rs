@@ -20,7 +20,7 @@ use crate::settings;
 
 /// Draw the screen: content box above, status row below.
 pub(crate) fn render(frame: &mut Frame<'_>, screen: &MenuScreen<'_>) {
-    let (content, status) = chrome::split_status(frame.area());
+    let (content, status) = chrome::split_status(frame.area(), screen.markers);
     let lines = if screen.page.help {
         classic::help_lines(screen, Some(keys::HELP_LIGHTBAR))
     } else {

@@ -56,12 +56,40 @@ fn draw(
     color: bool,
     size: (u16, u16),
 ) -> Buffer {
-    draw_on(chosen, theme, page, body, tier, color, size, false)
+    draw_on(
+        &MENU_MARKERS,
+        chosen,
+        theme,
+        page,
+        body,
+        tier,
+        color,
+        size,
+        false,
+    )
+}
+
+/// The markers still drawn in a status row (D93): telnet's and the low-security mode's. The
+/// machinery tests use them so the reserved style and position stay proven in every layout.
+const DRAWN: [SecurityMarker; 2] = [SecurityMarker::Unencrypted, SecurityMarker::LowSecurity];
+
+/// [`draw`] with [`DRAWN`] in the status row.
+fn draw_marked(
+    chosen: LayoutId,
+    theme: &Theme,
+    page: &MenuPage,
+    body: &[String],
+    tier: Tier,
+    color: bool,
+    size: (u16, u16),
+) -> Buffer {
+    draw_on(&DRAWN, chosen, theme, page, body, tier, color, size, false)
 }
 
 /// [`draw`] on a transport that withholds mail (`mail_over_ssh_only`, telnet).
 #[allow(clippy::too_many_arguments)]
 fn draw_on(
+    markers: &[SecurityMarker],
     chosen: LayoutId,
     theme: &Theme,
     page: &MenuPage,
@@ -94,7 +122,7 @@ fn draw_on(
                     }),
                     look,
                     tier,
-                    markers: &MENU_MARKERS,
+                    markers,
                     mail_over_ssh_only,
                 },
             );
@@ -204,10 +232,10 @@ fn a_submenu_and_help_draw_in_every_layout() {
     }
 }
 
-/// The D78 (7) explanation makes the help screen two lines longer; the sysop's help (the longest
-/// menu) in every layout must still end with its footer on a standard 80x24 screen.
+/// D93: the help screen has no sentence about mail at rest. The sysop's help (the longest menu)
+/// in every layout must still end with its footer on a standard 80x24 screen.
 #[test]
-fn the_help_screen_with_the_mail_explanation_fits_80x24_in_every_layout() {
+fn the_help_screen_has_no_mail_sentence_and_fits_80x24_in_every_layout() {
     let ui = ui();
     let theme = ui.theme(ThemeName::default_theme());
     for chosen in LayoutId::ALL {
@@ -220,13 +248,11 @@ fn the_help_screen_with_the_mail_explanation_fits_80x24_in_every_layout() {
             false,
             (80, 24),
         ));
-        for expected in [
-            "Sysop tools",
-            "No one, the sysop included, can read your mail through the board.",
-            "It is not end-to-end encrypted.",
-            "Any key: close help",
-        ] {
+        for expected in ["Sysop tools", "Any key: close help"] {
             assert!(help.contains(expected), "{chosen:?} {expected:?}:\n{help}");
+        }
+        for gone in ["can read your mail", "encrypted at rest", "end-to-end"] {
+            assert!(!help.contains(gone), "{chosen:?} {gone:?}:\n{help}");
         }
     }
 }
@@ -239,6 +265,7 @@ fn the_help_screen_over_telnet_says_mail_is_ssh_only_and_not_the_d78_sentence() 
     let theme = ui.theme(ThemeName::default_theme());
     for chosen in LayoutId::ALL {
         let help = text(&draw_on(
+            &MENU_MARKERS,
             chosen,
             theme,
             &page(&[MenuKey::Char('?')]),
@@ -342,12 +369,7 @@ fn the_lightbar_marks_the_cursor_row_without_the_security_style() {
             .flat_map(|y| (0..100).map(move |x| (x, y)))
             .filter(|&(x, y)| buffer[(x, y)].modifier.contains(Modifier::REVERSED))
             .count();
-        let status_cue = Icon::from(SecurityMarker::ServerReadable).render(Tier::Ascii);
-        assert_eq!(
-            reversed,
-            status_cue.plain().trim_end().chars().count(),
-            "reverse video only on the marker"
-        );
+        assert_eq!(reversed, 0, "no member screen draws a marker (D93)");
     }
 }
 
@@ -440,13 +462,13 @@ fn every_layout_theme_and_tier_draws_at_tiny_sizes_without_panicking() {
 // ---- security markers: every layout x every shipped theme ----
 
 #[test]
-fn every_layout_and_theme_draws_the_marker_in_the_reserved_style_in_the_status_row_only() {
+fn every_layout_and_theme_draws_the_markers_in_the_reserved_style_in_the_status_row_only() {
     let ui = ui();
     let page = page(&[]);
     let sizes = [(80, 24), (132, 43), (44, 12), (200, 60)];
     let reference = {
         let default = ui.theme(ThemeName::default_theme());
-        draw(
+        draw_marked(
             LayoutId::Classic,
             default,
             &page,
@@ -463,39 +485,38 @@ fn every_layout_and_theme_draws_the_marker_in_the_reserved_style_in_the_status_r
                 for color in [false, true] {
                     for size in sizes {
                         let last = size.1 - 1;
-                        let clean = draw(chosen, theme, &page, &[], tier, color, size);
+                        let clean = draw_marked(chosen, theme, &page, &[], tier, color, size);
                         let hostile =
-                            draw(chosen, theme, &page, &hostile_body(), tier, color, size);
+                            draw_marked(chosen, theme, &page, &hostile_body(), tier, color, size);
                         let name = format!(
                             "{:?} {chosen:?} {tier:?} color={color} {size:?}",
                             theme.name()
                         );
-                        let marker = Icon::from(SecurityMarker::ServerReadable).render(tier);
-                        let marker = marker.plain().trim_end();
-                        // The marker is in the last row, with the reserved style.
                         let status = row(&hostile, last);
-                        assert!(status.contains(marker), "{name}: {status:?}");
-                        let caption = if size.0 >= 80 {
-                            "The server can read what you do here."
-                        } else {
-                            "The server"
-                        };
+                        let mut marker_cells = 0;
+                        for drawn in DRAWN {
+                            let marker = Icon::from(drawn).render(tier);
+                            let marker = marker.plain().trim_end();
+                            // Each marker is in the last row, with the reserved style.
+                            assert!(status.contains(marker), "{name}: {status:?}");
+                            let start = status.chars().position(|c| marker.starts_with(c)).unwrap();
+                            for i in 0..marker.chars().count() {
+                                let x = u16::try_from(start + i).unwrap();
+                                assert!(is_chrome_cell(&hostile, x, last), "{name}: cell {x}");
+                            }
+                            marker_cells += marker.chars().count();
+                        }
                         assert!(
-                            status.contains(caption),
+                            size.0 < 100 || status.contains("anyone"),
                             "{name}: the caption is not themeable: {status:?}"
                         );
-                        let start = status.chars().position(|c| marker.starts_with(c)).unwrap();
-                        for i in 0..marker.chars().count() {
-                            let x = u16::try_from(start + i).unwrap();
-                            assert!(is_chrome_cell(&hostile, x, last), "{name}: cell {x}");
-                        }
-                        // Nothing outside the marker has the style, and the status row is
+                        // Nothing outside the markers has the style, and the status row is
                         // identical with and without hostile content, style included.
                         let styled = (0..size.1)
                             .flat_map(|y| (0..size.0).map(move |x| (x, y)))
                             .filter(|&(x, y)| is_chrome_cell(&hostile, x, y))
                             .count();
-                        assert_eq!(styled, marker.chars().count(), "{name}: style leaked");
+                        assert_eq!(styled, marker_cells, "{name}: style leaked");
                         for x in 0..size.0 {
                             assert_eq!(hostile[(x, last)], clean[(x, last)], "{name}: cell {x}");
                         }
@@ -514,12 +535,36 @@ fn every_layout_and_theme_draws_the_marker_in_the_reserved_style_in_the_status_r
     }
 }
 
+/// D93, acceptance: at 80x24 no layout, shipped theme or tier draws `SERVER-READABLE` or any
+/// marker on a member screen over ssh.
+#[test]
+fn no_member_screen_draws_server_readable_in_any_layout_theme_or_tier() {
+    let ui = ui();
+    for theme in themes(&ui) {
+        for chosen in LayoutId::ALL {
+            for tier in Tier::ALL {
+                for keys in [&[][..], &[MenuKey::Char('?')][..]] {
+                    let buffer = draw(chosen, theme, &page(keys), &[], tier, true, (80, 24));
+                    let all = text(&buffer);
+                    let name = format!("{:?} {chosen:?} {tier:?}", theme.name());
+                    assert!(!all.contains("SERVER-READABLE"), "{name}\n{all}");
+                    assert!(!all.contains("can read what you do"), "{name}\n{all}");
+                    assert!(
+                        (0..80).all(|x| (0..24).all(|y| !is_chrome_cell(&buffer, x, y))),
+                        "{name}: reserved style on a member screen"
+                    );
+                }
+            }
+        }
+    }
+}
+
 #[test]
 fn the_status_row_is_the_same_whatever_the_theme_or_layout() {
     let ui = ui();
     let page = page(&[]);
     for tier in Tier::ALL {
-        let baseline = draw(
+        let baseline = draw_marked(
             LayoutId::Classic,
             ui.theme(ThemeName::default_theme()),
             &page,
@@ -530,7 +575,7 @@ fn the_status_row_is_the_same_whatever_the_theme_or_layout() {
         );
         for theme in themes(&ui) {
             for chosen in LayoutId::ALL {
-                let other = draw(chosen, theme, &page, &[], tier, true, (100, 30));
+                let other = draw_marked(chosen, theme, &page, &[], tier, true, (100, 30));
                 for x in 0..100 {
                     assert_eq!(
                         other[(x, 29)],
@@ -691,16 +736,21 @@ fn a_theme_file_is_checked_against_a_fixed_schema() {
 
 #[test]
 fn a_theme_cannot_reword_the_security_captions() {
-    for key in ["server_readable", "unavailable"] {
-        let file = format!("name = \"x\"\n[ui.status]\n{key} = \"All is well.\"\n");
-        assert!(
-            matches!(
-                parse(&file),
-                Err(ThemeError::Strings(StringError::Reserved(_)))
-            ),
-            "{key}"
-        );
-    }
+    let key = "unavailable";
+    let file = format!("name = \"x\"\n[ui.status]\n{key} = \"All is well.\"\n");
+    assert!(
+        matches!(
+            parse(&file),
+            Err(ThemeError::Strings(StringError::Reserved(_)))
+        ),
+        "{key}"
+    );
+    // The retired server-readable caption is not a key any more: a theme cannot set it.
+    let retired = "name = \"x\"\n[ui.status]\nserver_readable = \"All is well.\"\n";
+    assert!(matches!(
+        parse(retired),
+        Err(ThemeError::Strings(StringError::Unknown(_)))
+    ));
 }
 
 #[test]
