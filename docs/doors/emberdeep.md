@@ -1,6 +1,6 @@
 # Emberdeep: a fantasy delving door (design)
 
-Status: **Engine implemented (M4-E1, D101); town and crafting implemented (M4-E2, D110); the full UI implemented (M4-E3, D-TBD)**; social play and the content pass are still **Proposed**. The design below is the target; [Implementation notes (M4-E1)](#implementation-notes-m4-e1) and [Implementation notes (M4-E2)](#implementation-notes-m4-e2) and [Implementation notes (M4-E3)](#implementation-notes-m4-e3) say what exists, how it behaves and what was not built. Shared platform rules are in [README.md](README.md). This is the "small daily-turn RPG" that M4 plans as a first game, and the smallest engine of the set.
+Status: **Engine implemented (M4-E1, D101); town and crafting implemented (M4-E2, D110); the full UI implemented (M4-E3, D115)**; social play and the content pass are still **Proposed**. The design below is the target; [Implementation notes (M4-E1)](#implementation-notes-m4-e1) and [Implementation notes (M4-E2)](#implementation-notes-m4-e2) and [Implementation notes (M4-E3)](#implementation-notes-m4-e3) say what exists, how it behaves and what was not built. Shared platform rules are in [README.md](README.md). This is the "small daily-turn RPG" that M4 plans as a first game, and the smallest engine of the set.
 
 ## Pitch
 
@@ -226,7 +226,7 @@ The core tension: **how deep do you go today?** Each level down is richer and mo
 
 ## Implementation notes (M4-E3)
 
-**Status.** Every screen is drawn with ratatui into the door's own buffer (D104), over the same engine and the same keys (D-TBD). **Implemented:** the dungeon view and its map, the combat panel, the hero sheet and the skill tree, the town hub and each of its eight places, event scenes, the hall, hero creation, the death screen, and a look-around for all of them. **Verified:** by render tests of every screen at 80x24, 100x30 and 132x43 in each icon tier and each colour depth (shape, ASCII-only in the ASCII tier, no marker style), pinned text snapshots, a look-around test for every screen, an interaction test of one whole day, the framework's sandbox audit, and a walk over a real OpenSSH client with a screenshot of each screen (attached to the pull request). **Not built:** mouse (UI-9), effects and motion (UI-8), and the social slice.
+**Status.** Every screen is drawn with ratatui into the door's own buffer (D104), over the same engine and the same keys (D115). **Implemented:** the dungeon view and its map, the combat panel, the hero sheet and the skill tree, the town hub and each of its eight places, event scenes, the hall, hero creation, the death screen, and a look-around for all of them. **Verified:** by render tests of every screen at 80x24, 100x30 and 132x43 in each icon tier and each colour depth (shape, ASCII-only in the ASCII tier, no marker style), pinned text snapshots, a look-around test for every screen, an interaction test of one whole day, the framework's sandbox audit, and a walk over a real OpenSSH client with a screenshot of each screen (attached to the pull request). **Not built:** mouse (UI-9), effects and motion (UI-8), and the social slice.
 
 ### What is built, and where
 
