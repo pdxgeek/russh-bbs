@@ -186,7 +186,7 @@ The shape is what the design asks for: boldness pays in legend and costs in the 
 
 ## Implementation notes (M4-H2)
 
-Slice 2 builds on the H1 engine in the same crate. Decision D-TBD records the choices that were real alternatives. The ownership split of the code: `lesson.rs` (class minigames), `club.rs` (clubs), `talk.rs` (conversations, friendships, storylines), `effect.rs` (the effect language), `check.rs` (cross-table checks), and four new tables, `lessons.toml`, `clubs.toml`, `talks.toml` and `arcs.toml`.
+Slice 2 builds on the H1 engine in the same crate. Decision D114 records the choices that were real alternatives. The ownership split of the code: `lesson.rs` (class minigames), `club.rs` (clubs), `talk.rs` (conversations, friendships, storylines), `effect.rs` (the effect language), `check.rs` (cross-table checks), and four new tables, `lessons.toml`, `clubs.toml`, `talks.toml` and `arcs.toml`.
 
 ### What is implemented (and tested)
 
