@@ -284,10 +284,9 @@ async fn a_member_invites_a_stranger_who_redeems_and_becomes_a_member() {
         screen.lines().count()
     );
     assert!(screen.lines().all(|l| l.chars().count() <= 80), "{screen}");
-    let status_row = screen.lines().last().unwrap();
     assert!(
-        status_row.contains("The server can read what you do here"),
-        "status row: {status_row:?}"
+        !screen.contains("SERVER-READABLE"),
+        "no status row (D93): {screen}"
     );
     assert!(!words.to_lowercase().contains("private"));
 

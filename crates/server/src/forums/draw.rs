@@ -85,7 +85,7 @@ pub(crate) fn render(frame: &mut Frame<'_>, screen: &ForumsScreen, ctx: &DrawCtx
         render_reader(frame, area, screen, reader, stored, width, ctx);
         return;
     }
-    let (content, _) = chrome::split_status(area);
+    let (content, _) = chrome::split_status(area, &MENU_MARKERS);
     let (width, rows) = settings::inner_size(content);
     classic::render_content(
         frame,
@@ -118,7 +118,7 @@ fn render_reader(
     };
     // The remove confirmation takes the place of the prompt row.
     if let Some(text) = confirm_text(reader) {
-        let (content, status) = chrome::split_status(area);
+        let (content, status) = chrome::split_status(area, &MENU_MARKERS);
         let (bold, _, _, _) = classic::styles(ctx.look);
         let lines = vec![
             Line::styled(clean(&reader_title(reader), 120), bold),

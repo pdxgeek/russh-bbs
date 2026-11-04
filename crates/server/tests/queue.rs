@@ -301,10 +301,9 @@ fn assert_fits_80x24(screen: &str) {
         screen.lines().count()
     );
     assert!(screen.lines().all(|l| l.chars().count() <= 80), "{screen}");
-    let status = screen.lines().last().unwrap();
     assert!(
-        status.contains("The server can read what you do here"),
-        "status row: {status:?}"
+        !screen.contains("SERVER-READABLE"),
+        "no status row (D93): {screen}"
     );
 }
 

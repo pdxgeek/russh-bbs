@@ -253,8 +253,9 @@ async fn the_layout_and_theme_switch_live_and_are_remembered() {
         green.contains("MAIN MENU"),
         "the theme's own wording: {green}"
     );
+    assert!(!green.contains("SERVER-READABLE"), "{green}");
     assert!(
-        green.contains("The server can read what you do here."),
+        !green.contains("The server can read what you do here."),
         "{green}"
     );
     assert!(green.contains("?: HELP"), "{green}");

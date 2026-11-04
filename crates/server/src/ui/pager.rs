@@ -14,6 +14,7 @@ use russh_bbs_core::icons::{SecurityMarker, Tier};
 use russh_bbs_core::terminal_settings::{Pager, PagerPrompt};
 
 use super::chrome;
+use super::classic::MENU_MARKERS;
 use super::keys;
 use super::strings::StringTable;
 use crate::settings::{self, Look};
@@ -23,7 +24,7 @@ const PROMPT_ROWS: usize = 2;
 
 /// Rows of text one page holds in a frame of `area` (always at least one).
 pub(crate) fn text_rows(area: Rect) -> usize {
-    let (content, _) = chrome::split_status(area);
+    let (content, _) = chrome::split_status(area, &MENU_MARKERS);
     settings::inner_size(content)
         .1
         .saturating_sub(PROMPT_ROWS)
@@ -32,7 +33,7 @@ pub(crate) fn text_rows(area: Rect) -> usize {
 
 /// Columns of text one row holds in a frame of `area` (always at least one).
 pub(crate) fn text_width(area: Rect) -> usize {
-    let (content, _) = chrome::split_status(area);
+    let (content, _) = chrome::split_status(area, &MENU_MARKERS);
     settings::inner_size(content).0.max(1)
 }
 
@@ -63,7 +64,7 @@ pub(crate) fn render(
     tier: Tier,
     markers: &[SecurityMarker],
 ) {
-    let (content, status) = chrome::split_status(frame.area());
+    let (content, status) = chrome::split_status(frame.area(), markers);
     let view = pager.view(text_rows(frame.area()));
     let dim = Style::new().add_modifier(Modifier::DIM);
     let mut lines: Vec<Line<'static>> = view

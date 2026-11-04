@@ -17,7 +17,7 @@ use crate::settings;
 /// Draw the screen: text above, status row below. The look is borderless (see
 /// `Look::themed`), so `boxed` draws only the paragraph.
 pub(crate) fn render(frame: &mut Frame<'_>, screen: &MenuScreen<'_>) {
-    let (content, status) = chrome::split_status(frame.area());
+    let (content, status) = chrome::split_status(frame.area(), screen.markers);
     let lines = if screen.page.help {
         classic::help_lines(screen, None)
     } else {

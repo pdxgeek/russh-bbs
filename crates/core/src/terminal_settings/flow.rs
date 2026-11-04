@@ -120,8 +120,8 @@ pub struct MemberFlow {
     /// How the session signed in. A password session must give the current password again to
     /// set or clear one (M3-D, D81).
     login: LoginMethod,
-    /// Whether the welcome carries the D78 mail sentence. Off where mail is withheld (telnet):
-    /// it says "Mail is available over ssh." instead.
+    /// True where mail is offered. Off where mail is withheld: the welcome then says
+    /// "Mail is available over ssh." D93 retired the D78 mail-at-rest sentence everywhere.
     mail_note: bool,
 }
 
@@ -152,8 +152,7 @@ impl MemberFlow {
         }
     }
 
-    /// Say "Mail is available over ssh." instead of the D78 mail sentence (the transport
-    /// withholds mail, so a sentence about mail at rest would be misleading there).
+    /// Say "Mail is available over ssh." (the transport withholds mail).
     #[must_use]
     pub const fn without_mail_note(mut self) -> Self {
         self.mail_note = false;
@@ -885,14 +884,11 @@ impl MemberFlow {
         });
         view.body.push(String::new());
         view.body.push(self.terminal_line(words));
-        if self.access.allows(Permission::MailRead) {
+        // D93: no sentence about mail at rest. Only a transport that withholds mail says so.
+        if self.access.allows(Permission::MailRead) && !self.mail_note {
             view.body.push(String::new());
-            let note = if self.mail_note {
-                strings::MAIL_NOTE
-            } else {
-                strings::MAIL_SSH_ONLY
-            };
-            view.body.push(words.text(note).to_owned());
+            view.body
+                .push(words.text(strings::MAIL_SSH_ONLY).to_owned());
         }
         view.footer = strings::LOGIN_FOOTER;
     }

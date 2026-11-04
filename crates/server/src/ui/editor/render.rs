@@ -34,7 +34,7 @@ const ASCII_BORDER: border::Set = border::Set {
 pub(super) fn render(editor: &Editor, frame: &mut Frame<'_>, view: &EditorView<'_>) {
     let look = Look::of(view.settings);
     let tier = view.settings.icon_tier();
-    let (content, status) = chrome::split_status(frame.area());
+    let (content, status) = chrome::split_status(frame.area(), view.markers);
     frame.render_widget(Clear, content);
 
     let (chars, lines) = editor.measure();

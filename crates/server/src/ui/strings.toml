@@ -33,7 +33,6 @@ key_back = "Esc      back one menu (nothing at the main menu)"
 key_quit = "Ctrl-C   log off from anywhere (Ctrl-D does the same)"
 menu = "To choose an item, press the letter shown in brackets."
 lightbar = "In the lightbar layout, Up and Down move the highlighted row and Enter chooses it."
-mail = "No one, the sysop included, can read your mail through the board. Mail is encrypted at rest. It is not end-to-end encrypted."
 footer = "Any key: close help"
 
 [ui.pager]
@@ -42,7 +41,6 @@ end = "-- End ({page} of {pages}) --   Space/Enter: finish   b: back"
 clipped = "{hidden} more lines are not shown. Turn Pause on under Terminal settings to page through long text."
 
 [ui.status]
-server_readable = "The server can read what you do here."
 unavailable = "security markers unavailable"
 
 [menu.main]
@@ -195,7 +193,6 @@ first_login = "This is your first login."
 terminal_line = "Terminal: {icons} icons, color {color}, pause {pause}"
 terminal_line_unset = "Terminal: icon style not chosen yet (plain ASCII, no color until you do)"
 mail_ssh_only = "Mail is available over ssh."
-mail_note = "No one, the sysop included, can read your mail through the board. Mail is encrypted at rest. It is not end-to-end encrypted."
 login_footer = "Any key: continue   Ctrl-C: log off"
 glyph_heading = "Icon check"
 glyph_why = "The server cannot see your terminal font, so it asks. This shows one icon style."

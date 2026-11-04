@@ -127,7 +127,7 @@ fn render_reader(
     };
     // The confirmation takes the place of the prompt row.
     if let Some(text) = confirm_text(reader) {
-        let (content, status) = chrome::split_status(area);
+        let (content, status) = chrome::split_status(area, &MENU_MARKERS);
         let (bold, _, _, _) = classic::styles(ctx.look);
         let mut lines = vec![
             Line::styled(clean(&reader_title(reader), 120), bold),

@@ -264,27 +264,19 @@ async fn two_members_send_reply_with_a_quote_delete_and_report_and_the_file_hold
     let ann_key = member(&rig, "ann").await;
     let bob_key = member(&rig, "bob").await;
 
-    // The welcome (login) screen carries the one D78 explanation.
+    // D93: the welcome (login) screen carries no explanation of mail at rest.
     let session = login(rig.addr(), "anyone", &bob_key).await;
     let mut bob = common::open_shell(&session, 80, 24).await;
     let welcome = flat(&strip_ansi(&drain(&mut bob).await).replace(['|', '+'], " "));
-    assert!(
-        welcome.contains(
-            "No one, the sysop included, can read your mail through the board. Mail is encrypted \
-             at rest. It is not end-to-end encrypted."
-        ),
-        "{welcome}"
-    );
+    assert!(!welcome.contains("can read your mail"), "{welcome}");
+    assert!(!welcome.contains("encrypted at rest"), "{welcome}");
     press(&mut bob, "x").await;
     press(&mut bob, "n").await;
     let menu = press(&mut bob, "y").await;
     assert!(flat(&menu).contains("Main menu"), "{menu}");
-    // ... and so does the help screen.
+    // ... and neither does the help screen.
     let help = press(&mut bob, "?").await;
-    assert!(
-        flat(&help).contains("No one, the sysop included, can read your mail"),
-        "{help}"
-    );
+    assert!(!flat(&help).contains("can read your mail"), "{help}");
     press(&mut bob, "x").await;
     let (_ann_session, mut ann) = member_at_menu(&rig, &ann_key).await;
 

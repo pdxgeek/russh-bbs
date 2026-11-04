@@ -45,6 +45,11 @@
 //!   is never drawn into). On a terminal with no styling at all, position is the only cue.
 //!   Callers must draw ASCII-tier markers in a chrome-only position.
 //!
+//! **Which markers are drawn (D93).** Only `UNENCRYPTED` (telnet) and `LOW-SECURITY` (while
+//! telnet is on) are drawn today. [`SecurityMarker::ServerReadable`] stays in the registry for
+//! future use but no screen draws it: what the server can read is explained in the docs, not on
+//! member screens. Nothing the server can read is ever called private, secure or encrypted.
+//!
 //! The marker *type* is separate from [`ContentIcon`], so layout and theme code that accepts
 //! only content icons cannot be handed one. [`Rendered::is_security_chrome`] tells a renderer
 //! it must not hide, replace or restyle the marker.
@@ -177,7 +182,7 @@ impl ContentIcon {
 /// Security chrome. Drawn only by chrome code; see the module docs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum SecurityMarker {
-    /// The server operator can read this content.
+    /// The server operator can read this content. Not drawn by any screen (D93).
     ServerReadable,
     /// End-to-end encrypted (future; arrives with the native client, decisions D3 to D5).
     E2eeLock,
