@@ -152,7 +152,7 @@ The content is data, not code: RON or TOML tables in the crate, validated at loa
 
 ## Implementation notes (M4-S1)
 
-Crate `crates/doors/saltmarch` (`russh-bbs-door-saltmarch`, door id `saltmarch`, save version 1, world version 1). Decision: D99.
+Crate `crates/doors/saltmarch` (`russh-bbs-door-saltmarch`, door id `saltmarch`, save version 1, world version 1). Decision: D100.
 
 **Implemented and tested** (engine only; the door is not yet registered on the board):
 
@@ -164,7 +164,7 @@ Crate `crates/doors/saltmarch` (`russh-bbs-door-saltmarch`, door id `saltmarch`,
 | Hold: 5x4 plots opened by shelter, 3 building tracks with one construction each, requirements, caps, labour sped by the right trades, crew cap, healing, morale, peat upkeep, the sluice | `hold.rs`, `engine.rs` | unit tests |
 | Economy: 13 resources, tallies, 7 recipes (workshop-learned or locked), shifts by hand (tide-gated), nightly production by posted crew, the Tidecourt market with a 10%/15% spread and nightly price drift | `types.rs`, `world.rs`, `engine.rs` | unit tests; store test that a sale moves tomorrow's price down |
 | Tide-turns: 30 a day, each turn moves the clan's clock 48 minutes; `Wait` lets the water move | `engine.rs` | unit tests |
-| Nightly tick: the framework's tick advances the shared world; a clan's own nights run when it next opens (D99) | `lib.rs`, `engine::catch_up` | replay and store tests; nine days at once equals nine days one by one |
+| Nightly tick: the framework's tick advances the shared world; a clan's own nights run when it next opens (D100) | `lib.rs`, `engine::catch_up` | replay and store tests; nine days at once equals nine days one by one |
 | Saves through the framework: versioned, capped, never overwriting what it cannot read | `clan.rs`, `world.rs`, `codec.rs` | `tests/play.rs` |
 | Content as data: 7 TOML tables with schema tests | `content/`, `content.rs` | `tests/content.rs` |
 | Sandbox audit | all of `src/` | `tests/sandbox.rs` |
