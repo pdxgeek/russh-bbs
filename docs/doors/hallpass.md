@@ -240,7 +240,7 @@ Club ranks reached by the 200 players of 40 terms (players at ranks 1 / 2 / 3 / 
 
 ## Implementation notes (M4-H3)
 
-Slice 3 gives the engine its screens. Decision D-TBD (number assigned at merge) records the choices that were real alternatives. The code is `crates/doors/hallpass/src/session/ui/` (one module per family of screens); `session.rs` keeps the menu, the keys and the text screen, and the new modules only read the engine. The walk over `ssh` and the pictures are in [qa/m4-h3-walk.md](../qa/m4-h3-walk.md).
+Slice 3 gives the engine its screens. Decision D119 (number assigned at merge) records the choices that were real alternatives. The code is `crates/doors/hallpass/src/session/ui/` (one module per family of screens); `session.rs` keeps the menu, the keys and the text screen, and the new modules only read the engine. The walk over `ssh` and the pictures are in [qa/m4-h3-walk.md](../qa/m4-h3-walk.md).
 
 ### What is implemented (and tested)
 
