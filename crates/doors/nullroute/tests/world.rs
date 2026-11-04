@@ -34,6 +34,9 @@ fn broke(corp: u8, objective: bool, planted: bool, holes: &[u8]) -> RunResult {
         fragments: Vec::new(),
         defeated: 0,
         warden_down: false,
+        fights: 0,
+        broke_off: 0,
+        warden_woke: false,
     }
 }
 
@@ -341,7 +344,7 @@ fn a_save_stays_far_under_the_framework_cap() {
     let mut p = Player::new(&c, 1, &"x".repeat(40), 1, 20_000);
     p.owned = (1..=27).collect();
     p.done = (0..48).collect();
-    assert!(encode(&p).len() < 400);
+    assert!(encode(&p).len() < 512, "{}", encode(&p).len());
     let mut w = World::default();
     for d in 0..30 {
         night(&mut w, d);

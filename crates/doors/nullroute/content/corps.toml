@@ -35,7 +35,7 @@ watch = 0
 patch_pct = 30
 blackwall_pct = 25
 favoured = "overflow"
-cm_bias = ["armored", "wall"]
+cm_bias = ["armored"]
 warden = 21
 
 [[corp]]
@@ -111,5 +111,5 @@ watch = 1
 patch_pct = 30
 blackwall_pct = 40
 favoured = "spoof"
-cm_bias = ["wall", "mend"]
+cm_bias = ["mend", "armored"]
 warden = 23

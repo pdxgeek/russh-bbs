@@ -229,6 +229,9 @@ pub fn assemble(content: &Content, build: Build, num: u8) -> Result<ScriptDef, S
     })
 }
 
+/// How `best_build` ranks a build: a warden tuning, then power (with pierce), then quiet.
+type Score = (bool, u32, std::cmp::Reverse<u32>);
+
 /// The best build `have` can make that fits the budgets, by a plain rule: it prefers a warden
 /// target, then the most power, then the least noise. `None` if there is no effect fragment.
 /// Used by the headless player and the tests; a person chooses by hand.
@@ -251,7 +254,7 @@ pub fn best_build(content: &Content, have: &[u8]) -> Option<Build> {
     );
     targets.insert(0, 0);
     modifiers.insert(0, 0);
-    let mut best: Option<(Build, (bool, u32, std::cmp::Reverse<u32>))> = None;
+    let mut best: Option<(Build, Score)> = None;
     for &effect in &effects {
         for &target in &targets {
             for &modifier in &modifiers {

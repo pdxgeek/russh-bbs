@@ -435,7 +435,9 @@ impl Player {
     /// How many of fragment `num` the character carries.
     #[must_use]
     pub fn fragment_count(&self, num: u8) -> usize {
-        self.fragments.iter().filter(|n| **n == num).count()
+        self.fragments
+            .iter()
+            .fold(0, |n, f| n + usize::from(*f == num))
     }
 
     /// Code a new script at the workbench: burns the three fragments and [`CODE_CYCLES`] cycles.

@@ -38,7 +38,7 @@ pub const WARDEN_WAKES_AT: u32 = 55;
 pub const WARDEN_ARRIVES_IN: u32 = 3;
 
 /// Moves before a warden you broke off from comes back.
-pub const WARDEN_RETURNS_IN: u32 = 2;
+pub const WARDEN_RETURNS_IN: u32 = 1;
 
 /// The most fragments one run can bring out.
 pub const FRAGMENTS_PER_RUN: usize = 6;
@@ -195,6 +195,12 @@ pub struct RunResult {
     pub defeated: u32,
     /// A warden was put down.
     pub warden_down: bool,
+    /// Fights begun (a fight resumed after breaking off counts again).
+    pub fights: u32,
+    /// Times you broke off, or were thrown out.
+    pub broke_off: u32,
+    /// Whether a warden woke.
+    pub warden_woke: bool,
 }
 
 /// What the player knows of one node.
@@ -296,6 +302,8 @@ pub struct Run {
     used: Vec<u16>,
     frags: Vec<u8>,
     defeated: u32,
+    fights: u32,
+    broke_off: u32,
 }
 
 const fn bit(id: NodeId) -> u32 {
@@ -359,6 +367,8 @@ impl Run {
             used: Vec::new(),
             frags: Vec::new(),
             defeated: 0,
+            fights: 0,
+            broke_off: 0,
             setup,
         };
         run.say(format!("Jacked in to {}.", corp.name));
@@ -1077,6 +1087,9 @@ impl Run {
             fragments: self.frags.clone(),
             defeated: self.defeated,
             warden_down: self.warden.as_ref().is_some_and(|w| w.down),
+            fights: self.fights,
+            broke_off: self.broke_off,
+            warden_woke: self.warden.as_ref().is_some_and(|w| w.awake || w.down),
         }
     }
 
@@ -1249,9 +1262,9 @@ impl Run {
     }
 
     fn wake_warden(&mut self) {
-        let wake = self.trace >= WARDEN_WAKES_AT || self.alarm;
+        let loud = self.trace >= WARDEN_WAKES_AT || self.alarm;
         let woke = match self.warden.as_mut() {
-            Some(w) if wake && !w.awake && !w.down => {
+            Some(w) if loud && !w.awake && !w.down => {
                 w.awake = true;
                 w.arrives_in = WARDEN_ARRIVES_IN;
                 true
@@ -1298,6 +1311,7 @@ impl Run {
             "{} finds you. A warden: only a script tuned to wardens will scratch it.",
             e.name
         );
+        self.fights += 1;
         self.enc = Some(e);
         self.say(line);
     }
@@ -1308,6 +1322,7 @@ impl Run {
             e.resume(from);
             e.stun = stun;
             let line = format!("{} is waiting where you left it.", e.name);
+            self.fights += 1;
             self.enc = Some(e);
             self.say(line);
             return;
@@ -1324,6 +1339,7 @@ impl Run {
             def.name,
             e.intent().gloss()
         );
+        self.fights += 1;
         self.enc = Some(e);
         self.say(line);
     }
@@ -1373,7 +1389,8 @@ impl Run {
         ) {
             return Err(Refused::NothingToDo);
         }
-        let cost = self.script_cycles(script);
+        // A move in a fight is quick: one cycle, whatever the script costs outside one.
+        let cost = 1;
         if self.cycles < cost {
             return Err(Refused::NoCycles);
         }
@@ -1393,12 +1410,16 @@ impl Run {
         let mut dealt = 0;
         match script.effect {
             Effect::Crack | Effect::Spoof | Effect::Overflow | Effect::Purge | Effect::Jam => {
-                let (name, hit) = {
-                    let enc = self.enc.as_ref().expect("checked above");
-                    (enc.name.clone(), enc.damage(script, skill))
+                let Some((name, hit)) = self
+                    .enc
+                    .as_ref()
+                    .map(|enc| (enc.name.clone(), enc.damage(script, skill)))
+                else {
+                    return Err(Refused::NothingToDo);
                 };
                 dealt = hit;
-                self.add_trace(script.noise, true);
+                // The machine already knows you are there: a fight is half as quiet as a probe.
+                self.add_trace(script.noise.div_ceil(2), true);
                 if script.effect == Effect::Jam {
                     if let Some(e) = self.enc.as_mut() {
                         e.stun += 1;
@@ -1522,6 +1543,7 @@ impl Run {
         if e.kind != CmKind::Wall && e.node != e.from {
             self.at = e.from;
         }
+        self.broke_off += 1;
         self.say(format!("You break off from {}.", e.name));
         if e.kind == CmKind::Warden {
             if let Some(w) = self.warden.as_mut() {

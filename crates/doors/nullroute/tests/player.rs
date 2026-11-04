@@ -49,6 +49,9 @@ fn result(status: Status, objective: bool, loot: u32, peak: u32) -> RunResult {
         fragments: Vec::new(),
         defeated: 0,
         warden_down: false,
+        fights: 0,
+        broke_off: 0,
+        warden_woke: false,
     }
 }
 

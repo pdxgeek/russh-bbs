@@ -3,6 +3,7 @@
 //! map, run log and deck panel) is slice N3, and nothing here holds a rule: every decision is
 //! made by [`Player`] and [`Run`].
 
+use std::fmt::Write as _;
 use std::sync::Arc;
 
 use russh_bbs_door::{Canvas, Ctx, DoorEnv, DoorKey, DoorSession, DoorStyle, Flow};
@@ -205,7 +206,7 @@ impl Session {
         match &self.view {
             View::Run(active) => return self.run_lines(active, rows),
             View::Code(draft) => {
-                let body = self.code_lines(draft);
+                let body = self.code_lines(*draft);
                 let hint = match draft.step {
                     CodeStep::Confirm => "[Enter] code it   [Esc] back",
                     CodeStep::Effect => "[1-9] pick   [Esc] back",
@@ -507,7 +508,7 @@ impl Session {
             .collect()
     }
 
-    fn code_lines(&self, d: &Draft) -> Vec<Line> {
+    fn code_lines(&self, d: Draft) -> Vec<Line> {
         use DoorStyle::{Accent, Bad, Dim, Good, Plain};
         let c = &*self.content;
         let mut out = vec![(
@@ -538,8 +539,8 @@ impl Session {
                 Err(why) => out.push((why, Bad)),
             }
         }
-        match d.step {
-            CodeStep::Confirm => match code::assemble(c, d.build, crate::code::CODED_BASE) {
+        if d.step == CodeStep::Confirm {
+            match code::assemble(c, d.build, crate::code::CODED_BASE) {
                 Ok(s) => {
                     let tuned = s
                         .target
@@ -553,8 +554,9 @@ impl Session {
                     ));
                 }
                 Err(why) => out.push((why, Bad)),
-            },
-            _ => {
+            }
+        } else {
+            {
                 let title = match d.step {
                     CodeStep::Effect => "Pick an EFFECT",
                     CodeStep::Target => "Pick a TARGET type (0 for none)",
@@ -769,7 +771,7 @@ impl Session {
             flags.push_str("[ALARM] ");
         }
         if let Some(w) = run.warden().filter(|w| w.awake && !w.down) {
-            flags.push_str(&format!("[WARDEN HUNTING: {} moves] ", w.arrives_in));
+            let _ = write!(flags, "[WARDEN HUNTING: {} moves] ", w.arrives_in);
         }
         if !flags.is_empty() {
             body.push((flags.trim_end().to_owned(), Bad));
@@ -929,8 +931,8 @@ impl Session {
                 Dim,
             );
         } else {
-            let next: Vec<&str> = forecast.iter().map(|i| i.word()).collect();
-            body.push((format!("Then: {}", next.join(", ")), Dim));
+            let upcoming: Vec<&str> = forecast.iter().map(|i| i.word()).collect();
+            body.push((format!("Then: {}", upcoming.join(", ")), Dim));
         }
         let mut notes = Vec::new();
         if e.stun > 0 {
@@ -1030,8 +1032,8 @@ impl Session {
         if active.run.encounter().is_some() {
             active.aim = None;
             let act = match key {
-                DoorKey::Char(ch) if matches!(ch, 'w' | 'W') => Some(Act::Brace),
-                DoorKey::Char(ch) if matches!(ch, 'x' | 'X') => Some(Act::BreakOff),
+                DoorKey::Char('w' | 'W') => Some(Act::Brace),
+                DoorKey::Char('x' | 'X') => Some(Act::BreakOff),
                 DoorKey::Char(ch) => letter(ch)
                     .filter(|s| *s < active.run.deck.len())
                     .map(|slot| Act::Use { slot, target: None }),

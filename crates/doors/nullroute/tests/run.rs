@@ -504,7 +504,7 @@ fn a_sentry_starts_a_fight_that_a_jam_or_a_fork_changes() {
         run
     };
     let plain = enter(&[PING, JAMMER, FORK], None);
-    let fight = plain.encounter().expect("a sentry is a fight");
+    let fight = plain.encounter().unwrap();
     assert_eq!(fight.stun, 0);
     let jammed = enter(&[PING, JAMMER, FORK], Some((1, Some(1))));
     assert_eq!(

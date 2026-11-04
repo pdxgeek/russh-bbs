@@ -154,10 +154,10 @@ pub fn encode(p: &Player) -> Vec<u8> {
     w.0
 }
 
-/// Bring a version 1 save to version 2: no fragments, no coded scripts.
+/// Bring a version 1 save to version 2: no fragments, no coded scripts. `None` if the bytes are
+/// not a version 1 save.
 ///
-/// # Errors
-/// If the bytes are not a version 1 save.
+#[must_use]
 pub fn migrate_save_v1(bytes: &[u8]) -> Option<Vec<u8>> {
     let mut out = bytes.to_vec();
     out.push(0);
@@ -165,10 +165,10 @@ pub fn migrate_save_v1(bytes: &[u8]) -> Option<Vec<u8>> {
     decode(&out).map(|_| out)
 }
 
-/// Bring a version 1 world to version 2: no season yet, nothing learned.
+/// Bring a version 1 world to version 2: no season yet, nothing learned. `None` if the bytes are
+/// not a version 1 world.
 ///
-/// # Errors
-/// If the bytes are not a version 1 world.
+#[must_use]
 pub fn migrate_world_v1(bytes: &[u8]) -> Option<Vec<u8>> {
     let mut out = bytes.to_vec();
     out.extend_from_slice(&0u32.to_le_bytes());

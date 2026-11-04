@@ -46,6 +46,19 @@ fn thirty_days_with_twelve_bots_gives_sane_numbers() {
             r.peaks.iter().filter(|p| **p >= 60).count(),
             r.peaks.len()
         );
+        eprintln!(
+            "  N2: fights {} won {} broke off {} | fragments {} coded {} | degraded decks {} of {} runs, patched rows at the end {} | wardens woke {} down {}",
+            r.fights,
+            r.defeated,
+            r.broke_off,
+            r.fragments,
+            r.coded,
+            r.degraded_decks,
+            r.runs(),
+            r.patched_rows,
+            r.wardens_woke,
+            r.wardens_down
+        );
         // Money comes in at a pace that buys a rig over a month, not in a day and not never.
         assert!((60.0..220.0).contains(&per_player_day), "{per_player_day}");
         assert!(mean(&r.rig) >= 3.0, "the bots upgraded their rigs");

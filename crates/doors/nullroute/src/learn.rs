@@ -6,17 +6,17 @@
 //! the deck screen says so before you jack in. The counts fall every night ([`DECAY_PER_NIGHT`]) and
 //! a new season starts them from nothing, so a script recovers with time.
 //!
-//! Two things soften it, and both are choices: a **polymorphic** build is learned half as fast
-//! (`slow`), and the starter scripts are *commodity*: everyone has them, so a corporation gets wary
-//! of them but never patches them (a green rig is never shut out of tier 1).
+//! Two things soften it. A **polymorphic** build is learned half as fast (`slow`), a choice made at
+//! the workbench. And the starter scripts are *commodity*: everyone has them, so a corporation
+//! never bothers to learn them and a green rig is never shut out of tier 1.
 
 use crate::content::ScriptDef;
 
 /// Uses after which a corporation is wary of a script.
-pub const WARY_AT: u32 = 8;
+pub const WARY_AT: u32 = 10;
 
 /// Uses after which a corporation has patched a script.
-pub const LEARNED_AT: u32 = 16;
+pub const LEARNED_AT: u32 = 20;
 
 /// Uses forgotten each night.
 pub const DECAY_PER_NIGHT: u32 = 2;
@@ -38,8 +38,11 @@ pub enum Stage {
 /// The stage of `script` after `uses` runs against a corporation.
 #[must_use]
 pub fn stage(script: &ScriptDef, uses: u32) -> Stage {
+    if commodity(script) {
+        return Stage::Fresh;
+    }
     let uses = if script.slow { uses / 2 } else { uses };
-    if uses >= LEARNED_AT && !commodity(script) {
+    if uses >= LEARNED_AT {
         Stage::Patched
     } else if uses >= WARY_AT {
         Stage::Wary
