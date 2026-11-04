@@ -8,18 +8,11 @@
 
 use std::time::Duration;
 
+use russh_bbs_core::passwords::{Backoff, DEFAULT_HANDLE_BACKOFF, DEFAULT_NETWORK_BACKOFF};
 use russh_bbs_core::waiting_room::{DEFAULT_MAX_SUBMISSIONS, RatePolicy};
 
 use super::terminal::RenderCap;
 use crate::waiting_room::{DEFAULT_IP_RATE, DEFAULT_KEY_RATE, DEFAULT_MAX_TRACKED};
-
-/// Defaults for password attempts per handle: a burst of 5, then one every 30 seconds. A person
-/// who mistypes a few times is never blocked; a guesser gets about 2 tries a minute per handle,
-/// and the 12-character minimum makes that hopeless (D81).
-pub const DEFAULT_PASSWORD_ACCOUNT_RATE: RatePolicy = RatePolicy::new(5, Duration::from_secs(30));
-/// Defaults for password attempts per network: a burst of 10, then one every 6 seconds (10 a
-/// minute), so one address cannot sweep many handles (D81).
-pub const DEFAULT_PASSWORD_NETWORK_RATE: RatePolicy = RatePolicy::new(10, Duration::from_secs(6));
 
 /// Timeouts and caps for the SSH front end.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -70,10 +63,12 @@ pub struct Limits {
     /// transport, the account is handle plus password. Off, only a key bound to a handle signs
     /// in and the server never reads a password over ssh.
     pub allow_password_login: bool,
-    /// Password attempts per handle, whether or not the handle exists (D81).
-    pub password_account_rate: RatePolicy,
-    /// Password attempts per network (an IPv4 address or an IPv6 /64), whatever the handle (D81).
-    pub password_network_rate: RatePolicy,
+    /// The wait after wrong passwords for one handle, whether or not it exists; a correct
+    /// password clears it, and keys are never held by it (D100).
+    pub password_handle_backoff: Backoff,
+    /// The wait after wrong passwords from one network (an IPv4 address or an IPv6 /64),
+    /// whatever the handle; firmer than the handle's (D100).
+    pub password_network_backoff: Backoff,
     /// Whether the board is in low-security mode: the sysop turned the telnet transport on
     /// (D27, M3-H). Staff screens then carry the `LOW-SECURITY` marker. It changes nothing else
     /// about an SSH session.
@@ -100,8 +95,8 @@ impl Default for Limits {
             flood_strikes: 1000,
             write_stall: Duration::from_secs(10),
             allow_password_login: true,
-            password_account_rate: DEFAULT_PASSWORD_ACCOUNT_RATE,
-            password_network_rate: DEFAULT_PASSWORD_NETWORK_RATE,
+            password_handle_backoff: DEFAULT_HANDLE_BACKOFF,
+            password_network_backoff: DEFAULT_NETWORK_BACKOFF,
             low_security: false,
         }
     }

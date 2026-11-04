@@ -6,8 +6,8 @@ use std::future::Future;
 use std::net::IpAddr;
 use std::sync::Arc;
 
-use russh_bbs_core::passwords::{Offload, Unavailable, login_handle};
-use russh_bbs_core::waiting_room::{KeyedLimiter, SystemClock, Verdict, client_network};
+use russh_bbs_core::passwords::{AttemptGate, Offload, Unavailable};
+use russh_bbs_core::waiting_room::{SystemClock, Verdict};
 use tokio::sync::Semaphore;
 
 use super::limits::Limits;
@@ -52,27 +52,22 @@ impl Offload for HashPool {
 #[derive(Debug)]
 pub(crate) struct PasswordLogin {
     enabled: bool,
-    /// Attempts per handle, typed or not: an unknown name is limited exactly like a member's, so
-    /// a limited reply says nothing about who exists.
-    accounts: KeyedLimiter<String, SystemClock>,
-    networks: KeyedLimiter<IpAddr, SystemClock>,
+    /// The backoff for wrong passwords, per handle and per network (D100). A handle that does
+    /// not exist is limited exactly like a member's, so a limited reply says nothing about who
+    /// exists. Keys never come through here.
+    gate: AttemptGate<SystemClock>,
     pool: HashPool,
 }
 
 impl PasswordLogin {
     pub(crate) fn new(limits: &Limits) -> Self {
-        let clock = SystemClock::new();
         Self {
             enabled: limits.allow_password_login,
-            accounts: KeyedLimiter::new(
-                limits.password_account_rate,
+            gate: AttemptGate::new(
+                limits.password_handle_backoff,
+                limits.password_network_backoff,
                 limits.max_tracked_sources,
-                clock,
-            ),
-            networks: KeyedLimiter::new(
-                limits.password_network_rate,
-                limits.max_tracked_sources,
-                clock,
+                SystemClock::new(),
             ),
             pool: HashPool::new(),
         }
@@ -83,19 +78,78 @@ impl PasswordLogin {
         self.enabled
     }
 
-    /// Count one attempt by `peer` for `user`. The network is charged first, then the handle;
-    /// an attempt over either limit is refused before any hashing.
+    /// May `peer` try a password for `user` now? Counts nothing: the attempt is counted by
+    /// [`failed`](Self::failed) once it is known to be wrong. An attempt over either limit is
+    /// refused before any hashing.
     pub(crate) fn admit(&self, peer: Option<IpAddr>, user: &str) -> Verdict {
-        if let Some(ip) = peer
-            && let limited @ Verdict::Limited { .. } = self.networks.check(&client_network(ip))
-        {
-            return limited;
-        }
-        self.accounts.check(&login_handle(user).unwrap_or_default())
+        self.gate
+            .admit(peer, &AttemptGate::<SystemClock>::handle_key(user))
+    }
+
+    /// `peer` tried a wrong password for `user`.
+    pub(crate) fn failed(&self, peer: Option<IpAddr>, user: &str) {
+        self.gate
+            .failed(peer, &AttemptGate::<SystemClock>::handle_key(user));
+    }
+
+    /// The right password was given for `user`: the handle's failures are forgotten.
+    pub(crate) fn succeeded(&self, user: &str) {
+        self.gate
+            .succeeded(&AttemptGate::<SystemClock>::handle_key(user));
     }
 
     /// Where the slow hashing runs.
     pub(crate) const fn pool(&self) -> &HashPool {
         &self.pool
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used, clippy::panic)]
+
+    use std::net::IpAddr;
+
+    use russh_bbs_core::waiting_room::Verdict;
+
+    use super::{Limits, PasswordLogin};
+
+    fn ip(text: &str) -> IpAddr {
+        text.parse().unwrap()
+    }
+
+    #[test]
+    fn a_network_hammering_one_handle_hits_the_network_limit_before_the_handle_waits() {
+        let login = PasswordLogin::new(&Limits::default());
+        let attacker = Some(ip("198.51.100.7"));
+        let owner = Some(ip("203.0.113.5"));
+        // The default network allowance is 3 free failures, the handle's 4.
+        for _ in 0..4 {
+            assert!(login.admit(attacker, "Carol").is_allowed());
+            login.failed(attacker, "Carol");
+        }
+        assert!(
+            !login.admit(attacker, "carol").is_allowed(),
+            "network waits"
+        );
+        assert!(
+            login.admit(owner, "carol").is_allowed(),
+            "the handle has not started to wait, so the owner from elsewhere signs in"
+        );
+    }
+
+    #[test]
+    fn a_limited_answer_is_the_same_for_a_known_and_an_unknown_name() {
+        let login = PasswordLogin::new(&Limits::default());
+        let peer = Some(ip("198.51.100.7"));
+        for _ in 0..4 {
+            login.failed(peer, "carol");
+            login.failed(peer, "ghost");
+        }
+        let (Verdict::Limited { .. }, Verdict::Limited { .. }) =
+            (login.admit(peer, "carol"), login.admit(peer, "ghost"))
+        else {
+            panic!("both limited");
+        };
     }
 }
