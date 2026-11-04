@@ -1,7 +1,14 @@
 //! The RPG rule for the engine slice: every element of a captain's build must change what
 //! happens. Each test sets up the same situation for two builds and shows the outcomes differ,
 //! so no skill, perk or standing is a number on a screen.
-#![allow(clippy::unwrap_used, clippy::panic, clippy::too_many_lines)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::panic,
+    clippy::too_many_lines,
+    clippy::many_single_char_names,
+    clippy::assert_is_empty,
+    clippy::similar_names
+)]
 
 mod common;
 

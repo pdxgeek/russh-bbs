@@ -1,6 +1,13 @@
 //! Branch tests for the loan, the ship and the shared world: what a debt, a worn drive, a
 //! module, a hull or a first chart changes.
-#![allow(clippy::unwrap_used, clippy::panic, clippy::too_many_lines)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::panic,
+    clippy::too_many_lines,
+    clippy::many_single_char_names,
+    clippy::assert_is_empty,
+    clippy::similar_names
+)]
 
 mod common;
 
@@ -585,7 +592,7 @@ fn the_first_captain_to_arrive_charts_a_system_for_everyone_and_a_second_gets_no
     );
     // The scanner decides how much the first chart is worth.
     let blind = {
-        let mut p = h.captain("dockhand");
+        let p = h.captain("dockhand");
         let sys = &h.frontier.systems[usize::from(target)];
         p.survey_value(&h.content, sys)
     };

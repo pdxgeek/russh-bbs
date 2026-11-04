@@ -498,11 +498,15 @@ impl Player {
     #[must_use]
     pub fn survey_value(&self, content: &Content, system: &System) -> u32 {
         let stats = self.stats(content);
-        let base = 100
-            + u32::from(system.richness) * 60
-            + u32::from(system.planets) * 25
-            + u32::from(system.belts) * 20
-            + if system.hazard == Hazard::None { 0 } else { 80 };
+        let base = 400
+            + u32::from(system.richness) * 150
+            + u32::from(system.planets) * 60
+            + u32::from(system.belts) * 50
+            + if system.hazard == Hazard::None {
+                0
+            } else {
+                200
+            };
         let scan = if stats.scan == 0 {
             250
         } else {

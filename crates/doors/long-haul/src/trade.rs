@@ -290,7 +290,7 @@ impl Player {
                 .modules
                 .get(usize::from(inst.module))
                 .map_or(0, |m| i64::from(m.price));
-            cost += price * i64::from(inst.wear) / 1000 * 60 / 100;
+            cost += price * i64::from(inst.wear) / 1000 * 35 / 100;
             work += u32::from(inst.wear);
         };
         match target {
@@ -310,10 +310,11 @@ impl Player {
             let hull = content.hulls.get(usize::from(self.ship.hull));
             let max = hull.map_or(0, |h| h.hull_points);
             let missing = u32::from(max.saturating_sub(self.ship.hull_hp));
-            // Sixty percent of the hull's price per structural point, so a repair always costs
-            // more than the trade-in value it restores (resale is fifty percent).
+            // Thirty percent of the hull's price over the whole range of structural points. A
+            // hull trades in at half price whatever its state, so repairing it never adds to
+            // net worth (the invariant test relies on that).
             if let Some(h) = hull {
-                cost += i64::from(missing) * i64::from(h.price) * 60
+                cost += i64::from(missing) * i64::from(h.price) * 30
                     / (i64::from(h.hull_points.max(1)) * 100);
             }
             work += missing * 12;

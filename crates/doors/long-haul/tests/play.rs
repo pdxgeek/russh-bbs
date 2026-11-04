@@ -1,6 +1,13 @@
 //! The door through the framework: replay, saves, the daily tick, the headless run and the
 //! sandbox audit.
-#![allow(clippy::unwrap_used, clippy::panic, clippy::too_many_lines)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::panic,
+    clippy::too_many_lines,
+    clippy::many_single_char_names,
+    clippy::assert_is_empty,
+    clippy::similar_names
+)]
 
 use std::sync::Arc;
 

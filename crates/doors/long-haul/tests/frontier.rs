@@ -1,6 +1,13 @@
 //! Property tests for frontier generation: every seed gives a connected, well-formed map with
 //! the economies, shipyards and starting neighbourhood the game depends on.
-#![allow(clippy::unwrap_used, clippy::panic, clippy::too_many_lines)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::panic,
+    clippy::too_many_lines,
+    clippy::many_single_char_names,
+    clippy::assert_is_empty,
+    clippy::similar_names
+)]
 
 use std::collections::HashSet;
 
@@ -124,6 +131,22 @@ fn check(frontier: &Frontier, content: &Content) {
         .filter(|s| hops[usize::from(s.system)] <= 3)
         .count();
     assert!(near >= 6, "only {near} stations within three hops of home");
+    let starts = frontier.start_stations(content);
+    assert!(
+        (3..=6).contains(&starts.len()),
+        "{} start stations",
+        starts.len()
+    );
+    assert!(starts.contains(&frontier.home_station));
+    for &s in &starts {
+        let st = frontier.station(s).unwrap();
+        let eco = content.economies[usize::from(st.economy)].id.as_str();
+        assert!(eco != "haven" && eco != "military");
+        assert!(
+            !frontier.systems[usize::from(st.system)].uncharted,
+            "start systems are charted"
+        );
+    }
     let uncharted = frontier.systems.iter().filter(|s| s.uncharted).count();
     assert!(
         (8..=60).contains(&uncharted),

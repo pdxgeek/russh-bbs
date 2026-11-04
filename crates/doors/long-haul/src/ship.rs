@@ -242,23 +242,25 @@ impl Ship {
             .max(1)
     }
 
-    /// Credits a module is worth at a yard (half its price, less wear).
+    /// Credits a module is worth at a yard (half its price, less up to an eighth for wear).
     #[must_use]
     pub fn module_resale(inst: &Installed, content: &Content) -> i64 {
         content
             .modules
             .get(usize::from(inst.module))
             .map_or(0, |m| {
-                i64::from(m.price) / 2 * (2000 - i64::from(inst.wear.min(WEAR_MAX))) / 2000
+                i64::from(m.price) / 2 * (4000 - i64::from(inst.wear.min(WEAR_MAX))) / 4000
             })
     }
 
-    /// Credits the hull is worth at a yard (half its price, scaled by structure).
+    /// Credits the hull trades in for: half its price, whatever shape it is in (a wreck is
+    /// priced in the repair bill, not here, so repairing never adds to net worth).
     #[must_use]
     pub fn hull_resale(&self, content: &Content) -> i64 {
-        content.hulls.get(usize::from(self.hull)).map_or(0, |h| {
-            i64::from(h.price) / 2 * i64::from(self.hull_hp) / i64::from(h.hull_points.max(1))
-        })
+        content
+            .hulls
+            .get(usize::from(self.hull))
+            .map_or(0, |h| i64::from(h.price) / 2)
     }
 
     /// Whether the structure is too weak to jump (under a fifth).

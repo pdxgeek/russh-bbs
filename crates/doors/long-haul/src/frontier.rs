@@ -98,8 +98,8 @@ impl Role {
     #[must_use]
     pub const fn target_pct(self) -> i64 {
         match self {
-            Self::Produces => 150,
-            Self::Needs => 60,
+            Self::Produces => 140,
+            Self::Needs => 65,
             Self::Neutral => 100,
         }
     }
@@ -283,6 +283,32 @@ impl Frontier {
             home_station,
             adj,
         }
+    }
+
+    /// The stations a new captain may start at: charted, near home, and not a haven or a
+    /// military post, in id order. New captains are spread over them (by name) so a busy board
+    /// does not begin with everyone bidding for the same stock.
+    #[must_use]
+    pub fn start_stations(&self, content: &Content) -> Vec<u16> {
+        let home_system = self.station(self.home_station).map_or(0, |s| s.system);
+        let hops = self.hops_from(home_system);
+        let mut found: Vec<(u8, u16)> = self
+            .stations
+            .iter()
+            .filter(|s| {
+                let eco = content.economies[usize::from(s.economy)].id.as_str();
+                s.id != self.home_station
+                    && hops[usize::from(s.system)] <= 3
+                    && !self.systems[usize::from(s.system)].uncharted
+                    && eco != "haven"
+                    && eco != "military"
+            })
+            .map(|s| (hops[usize::from(s.system)], s.id))
+            .collect();
+        found.sort_unstable();
+        let mut out = vec![self.home_station];
+        out.extend(found.into_iter().take(5).map(|(_, id)| id));
+        out
     }
 
     /// Neighbouring systems as `(system, lane length)`.
@@ -609,17 +635,23 @@ fn settle_home_region(
     stations: &mut Vec<Station>,
     rng: &mut DoorRng,
 ) {
+    // Stations a new captain could start at or trade with: near home, not a haven or a post.
     let near = |stations: &[Station]| {
         stations
             .iter()
-            .filter(|s| hops[usize::from(s.system)] <= 3)
+            .filter(|s| {
+                let eco = content.economies[usize::from(s.economy)].id.as_str();
+                hops[usize::from(s.system)] <= HOME_CHARTED_HOPS
+                    && eco != "haven"
+                    && eco != "military"
+            })
             .count()
     };
     let mut order: Vec<usize> = (0..systems.len())
         .filter(|&i| hops[i] <= HOME_CHARTED_HOPS)
         .collect();
     order.sort_by_key(|&i| (hops[i], i));
-    for pass in 0..3usize {
+    for pass in 0..6usize {
         for &i in &order {
             if near(stations) >= 6 {
                 return;

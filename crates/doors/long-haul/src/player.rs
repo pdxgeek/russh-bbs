@@ -216,7 +216,14 @@ impl Player {
             standing = [bg.standing.league, bg.standing.miners, bg.standing.free];
             scanner = bg.perk() == Some(Perk::GuildContact);
         }
-        let home = frontier.home_station;
+        let starts = frontier.start_stations(content);
+        let mut hash: u64 = 0xCBF2_9CE4_8422_2325;
+        for byte in captain.bytes() {
+            hash = (hash ^ u64::from(byte)).wrapping_mul(0x0000_0100_0000_01B3);
+        }
+        let pick =
+            usize::try_from(hash % u64::try_from(starts.len().max(1)).unwrap_or(1)).unwrap_or(0);
+        let home = starts.get(pick).copied().unwrap_or(frontier.home_station);
         let system = frontier.station(home).map_or(0, |s| s.system);
         let mut player = Self {
             captain: captain.chars().take(CAPTAIN_MAX).collect(),

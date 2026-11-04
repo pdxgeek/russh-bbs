@@ -1,6 +1,13 @@
 //! Shared setup for the engine tests: a frontier, a world, a seeded RNG and a day, and a few
 //! ways to put a captain where a test needs one.
-#![allow(dead_code, clippy::unwrap_used, clippy::panic, missing_docs)]
+#![allow(
+    dead_code,
+    unreachable_pub,
+    clippy::unwrap_used,
+    clippy::panic,
+    clippy::unused_self,
+    missing_docs
+)]
 
 use russh_bbs_door::DoorRng;
 use russh_bbs_door_long_haul::content::Content;
@@ -19,6 +26,7 @@ pub struct Harness {
     pub rng: DoorRng,
     pub today: i64,
     pub deltas: Vec<Delta>,
+    made: std::cell::Cell<u32>,
 }
 
 impl Harness {
@@ -33,6 +41,7 @@ impl Harness {
             rng: DoorRng::from_seed(seed),
             today: DAY0,
             deltas: Vec::new(),
+            made: std::cell::Cell::new(0),
         }
     }
 
@@ -44,7 +53,15 @@ impl Harness {
             .iter()
             .position(|b| b.id == background)
             .unwrap();
-        Player::new(&self.content, &self.frontier, "Tester", ix, self.today)
+        let n = self.made.get();
+        self.made.set(n + 1);
+        Player::new(
+            &self.content,
+            &self.frontier,
+            &format!("Tester{n}"),
+            ix,
+            self.today,
+        )
     }
 
     pub fn reseed(&mut self, seed: u64) {
