@@ -40,7 +40,7 @@ impl Player {
     #[must_use]
     pub fn spread_at(&self, content: &Content, station: &Station) -> i64 {
         let faction = content.economies[usize::from(station.economy)].faction;
-        spread_pm(self.level(Skill::Trade), self.standing[faction.index()])
+        spread_pm(self.eff(Skill::Trade), self.standing[faction.index()])
     }
 
     /// Whether this captain may buy a good in a slot here (contraband only from a haven that
@@ -116,7 +116,7 @@ impl Player {
             return Err(Refusal::NothingToDo);
         }
         let stats = self.stats(content);
-        let free = u32::from(stats.cargo_cap).saturating_sub(self.ship.cargo_tons());
+        let free = u32::from(stats.cargo_cap).saturating_sub(self.hold_used());
         if free == 0 {
             return Err(Refusal::HoldFull);
         }
@@ -281,7 +281,7 @@ impl Player {
     #[must_use]
     pub fn repair_quote(&self, env: &Env<'_>, target: RepairTarget) -> (i64, u32) {
         let content = env.content;
-        let eng = i64::from(self.level(Skill::Engineer).min(10));
+        let eng = i64::from(self.eff(Skill::Engineer).min(10));
         let discount = 100 - 5 * eng;
         let mut cost = 0i64;
         let mut work = 0u32;
@@ -415,11 +415,18 @@ impl Player {
         without.modules.remove(index);
         let stats = without.stats(
             content,
-            self.level(Skill::Pilot),
-            self.level(Skill::Engineer),
+            self.eff(Skill::Pilot),
+            self.eff(Skill::Engineer),
         );
-        if self.ship.cargo_tons() > u32::from(stats.cargo_cap) {
+        if self.hold_used() > u32::from(stats.cargo_cap) {
             return Err(Refusal::HoldWouldOverflow);
+        }
+        let hull_berths = content
+            .hulls
+            .get(usize::from(self.ship.hull))
+            .map_or(0, |h| usize::from(h.berths));
+        if self.berths_used() > hull_berths + usize::from(stats.berths) {
+            return Err(Refusal::NoBerth);
         }
         self.ship.modules.remove(index);
         self.ship.fuel = self.ship.fuel.min(stats.fuel_cap);
@@ -482,8 +489,11 @@ impl Player {
             cargo: Vec::new(),
         };
         let stats = trial.stats(content, 0, 0);
-        if self.ship.cargo_tons() > u32::from(stats.cargo_cap) {
+        if self.hold_used() > u32::from(stats.cargo_cap) {
             return Err(Refusal::HoldWouldOverflow);
+        }
+        if self.berths_used() > usize::from(new.berths) + usize::from(stats.berths) {
+            return Err(Refusal::NoBerth);
         }
         if !kept.iter().any(|k| {
             content
@@ -526,6 +536,17 @@ impl Player {
         if self.perk(env.content) == Some(Perk::GuildContact) {
             total = total * 125 / 100;
         }
+        // The Guild pays its friends more and its enemies less (and shuts its office on a name
+        // that has sunk far enough).
+        let guild = self.standing[Faction::Guild.index()];
+        if guild <= crate::contracts::OFFICE_SHUT {
+            return Err(Refusal::Barred(Faction::Guild));
+        }
+        if guild >= crate::contracts::PREMIUM_STANDING {
+            total = total * 110 / 100;
+        } else if guild <= -25 {
+            total = total * 85 / 100;
+        }
         self.survey.clear();
         self.credit(Cause::Survey, total);
         let mut events = vec![Event::SurveySold { lots, total }];
@@ -548,6 +569,6 @@ impl Player {
     /// Fuel and wear gained by a use, exposed for tests of the Engineering branch.
     #[must_use]
     pub fn wear_for(&self, base: u32) -> u16 {
-        wear_gain(base, self.level(Skill::Engineer))
+        wear_gain(base, self.eff(Skill::Engineer))
     }
 }

@@ -19,13 +19,61 @@ use common::Harness;
 use proptest::prelude::*;
 use russh_bbs_door::DoorRng;
 use russh_bbs_door_long_haul::content::GoodClass;
+use russh_bbs_door_long_haul::boarding::Drill;
+use russh_bbs_door_long_haul::combat::{Maneuver, Orders};
 use russh_bbs_door_long_haul::engine::{Action, RepairTarget};
+use russh_bbs_door_long_haul::scene::Scene;
 use russh_bbs_door_long_haul::events::Event;
 use russh_bbs_door_long_haul::market::{FULL_STOCK_DEPTHS, MULT_MAX, MULT_MIN, depth_at, step_mid};
 use russh_bbs_door_long_haul::player::{Cause, Player};
 use russh_bbs_door_long_haul::ship::WEAR_MAX;
 
+/// Random play inside an open scene: mostly scene actions, now and then a stray one.
+fn pick_scene_action(p: &Player, pick: &mut DoorRng) -> Option<Action> {
+    let scene = p.scene.as_ref()?;
+    if pick.below(12) == 0 {
+        return Some(Action::Undock);
+    }
+    Some(match scene {
+        Scene::Event(_) => Action::Choose(u8::try_from(pick.below(6)).unwrap()),
+        Scene::Combat(_) => match pick.below(10) {
+            0 | 1 => Action::Run,
+            2 => Action::Wreck {
+                board: pick.below(2) == 0,
+            },
+            _ => Action::Fight(Orders {
+                weapons: u8::try_from(pick.below(7)).unwrap(),
+                shields: u8::try_from(pick.below(5)).unwrap(),
+                engines: u8::try_from(pick.below(4)).unwrap(),
+                maneuver: match pick.below(3) {
+                    0 => Maneuver::Hold,
+                    1 => Maneuver::Close,
+                    _ => Maneuver::Open,
+                },
+            }),
+        },
+        Scene::Boarding(_) => Action::Skirmish(match pick.below(8) {
+            0 => Drill::Move(u8::try_from(pick.below(5)).unwrap()),
+            1 => Drill::Breach(u8::try_from(pick.below(5)).unwrap()),
+            2 | 3 => Drill::Fight,
+            4 => Drill::Search,
+            5 => Drill::Patch,
+            6 => Drill::Take,
+            _ => {
+                if pick.below(4) == 0 {
+                    Drill::Withdraw
+                } else {
+                    Drill::Move(u8::try_from(pick.below(5)).unwrap())
+                }
+            }
+        }),
+    })
+}
+
 fn pick_action(h: &Harness, p: &Player, pick: &mut DoorRng) -> Action {
+    if let Some(action) = pick_scene_action(p, pick) {
+        return action;
+    }
     let n_slots = h
         .frontier
         .station(p.docked.unwrap_or(h.frontier.home_station))
@@ -39,7 +87,7 @@ fn pick_action(h: &Harness, p: &Player, pick: &mut DoorRng) -> Action {
         .collect();
     let slot = u8::try_from(pick.below(n_slots)).unwrap();
     let tons = u16::try_from(pick.range(1, 45)).unwrap();
-    match pick.below(40) {
+    match pick.below(48) {
         0 => Action::Dock(here.stations.first().copied().unwrap_or(0)),
         1 => Action::Dock(
             u16::try_from(pick.below(u32::try_from(h.frontier.stations.len()).unwrap())).unwrap(),
@@ -68,6 +116,11 @@ fn pick_action(h: &Harness, p: &Player, pick: &mut DoorRng) -> Action {
         33 => Action::Borrow(i64::from(pick.range(1, 8000))),
         34 | 35 => Action::Repay(i64::from(pick.range(1, 4000))),
         36 => Action::CallTow,
+        37 | 38 => Action::Hire(u8::try_from(pick.below(3)).unwrap()),
+        39 => Action::Dismiss(u8::try_from(pick.below(4)).unwrap()),
+        40 => Action::Provision,
+        41..=44 => Action::Accept(u8::try_from(pick.below(8)).unwrap()),
+        45 => Action::Abandon(u8::try_from(pick.below(4)).unwrap()),
         _ => Action::Sell { slot, tons: 999 },
     }
 }
@@ -89,9 +142,21 @@ fn check_captain(h: &Harness, p: &Player) {
         stats.fuel_cap
     );
     assert!(
-        p.ship.cargo_tons() <= u32::from(stats.cargo_cap),
+        p.hold_used() <= u32::from(stats.cargo_cap),
         "hold over capacity"
     );
+    assert!(p.crew.len() <= 8 && p.contracts.len() <= 4);
+    assert!(
+        p.berths_used() <= p.berths(&h.content),
+        "{} aboard in {} berths",
+        p.berths_used(),
+        p.berths(&h.content)
+    );
+    for c in &p.crew {
+        assert!(c.loyalty <= 100 && (1..=10).contains(&c.skill));
+        assert!(c.mood.iter().all(|m| (-10..=10).contains(m)));
+        assert!(!c.sworn || c.loyalty >= 70, "a sworn hand stays loyal");
+    }
     assert!(p.ship.modules.iter().all(|m| m.wear <= WEAR_MAX));
     let max_hp = h.content.hulls[usize::from(p.ship.hull)].hull_points;
     assert!(
@@ -127,6 +192,7 @@ fn check_captain(h: &Harness, p: &Player) {
         Cause::Tow,
         Cause::Dock,
         Cause::Payment,
+        Cause::Crew,
     ] {
         assert_eq!(
             p.ledger.income[cause.index()],
@@ -166,17 +232,26 @@ fn check_world(h: &Harness) {
     assert!(h.world.events.len() <= 24);
 }
 
-/// What an action is allowed to add to net worth: profit on cargo sold, and new survey data.
-fn allowed_gain(events: &[Event], survey_bonus: i64) -> i64 {
+/// What an action is allowed to add to net worth: profit on cargo sold, new survey data, and
+/// credits that come from contracts, salvage and events (the ledger says which).
+fn allowed_gain(events: &[Event], survey_bonus: i64, new_data: i64, earned: i64) -> i64 {
     events
         .iter()
         .map(|e| match e {
             Event::Sold { profit, .. } => (*profit).max(0),
-            Event::Charted { value, .. } | Event::Scanned { value, .. } => i64::from(*value),
             _ => 0,
         })
         .sum::<i64>()
         + survey_bonus
+        + new_data
+        + earned
+}
+
+fn earned_total(p: &Player) -> i64 {
+    [Cause::Contract, Cause::Salvage, Cause::Event]
+        .iter()
+        .map(|c| p.ledger.income[c.index()])
+        .sum()
 }
 
 fn play(season: u32, seed: u64, steps: usize) -> std::collections::BTreeSet<String> {
@@ -202,7 +277,8 @@ fn play(season: u32, seed: u64, steps: usize) -> std::collections::BTreeSet<Stri
             nw_settled <= nw_before,
             "interest and payments cannot raise net worth"
         );
-        let result = h.go(&mut p, &action);
+        let earned_before = earned_total(&p);
+        let result = h.go_strict(&mut p, &action);
         match &result {
             Err(refusal) => {
                 assert_eq!(
@@ -236,7 +312,18 @@ fn play(season: u32, seed: u64, steps: usize) -> std::collections::BTreeSet<Stri
                         _ => 0,
                     })
                     .sum();
-                let gain = allowed_gain(events, sold_survey.max(0));
+                let lots_after: i64 = p.survey.iter().map(|s| i64::from(s.value)).sum();
+                let kept = if events.iter().any(|e| matches!(e, Event::SurveySold { .. })) {
+                    0
+                } else {
+                    survey_value
+                };
+                let gain = allowed_gain(
+                    events,
+                    sold_survey.max(0),
+                    (lots_after - kept).max(0),
+                    earned_total(&p) - earned_before,
+                );
                 let nw_after = p.net_worth(&h.content);
                 assert!(
                     nw_after <= nw_settled + gain,
@@ -284,6 +371,10 @@ fn the_fuzzer_reaches_most_kinds_of_event() {
         "Skimmed",
         "Scanned",
         "SkillUp",
+        "Transit",
+        "Outcome",
+        "Hired",
+        "Accepted",
     ] {
         assert!(
             seen.contains(want),

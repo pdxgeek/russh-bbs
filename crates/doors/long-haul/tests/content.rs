@@ -6,7 +6,7 @@ use russh_bbs_door_long_haul::content::{Content, GoodClass, TABLES};
 #[test]
 fn every_embedded_table_loads_and_validates() {
     let content = Content::embedded().unwrap();
-    assert_eq!(TABLES.len(), 6);
+    assert_eq!(TABLES.len(), 11);
     assert_eq!(content.goods.len(), 30);
     assert_eq!(content.economies.len(), 6);
     assert_eq!(content.hulls.len(), 4);

@@ -78,6 +78,26 @@ impl Harness {
             self.today,
         );
         p.settle(&mut env);
+        // The engine tests that came before transit events act as if an event that opened on
+        // arrival had been waved away. Tests of scenes use scene actions, which keep it.
+        if !action.is_scene() {
+            p.scene = None;
+        }
+        let result = p.apply(&mut env, action);
+        self.deltas.append(&mut env.deltas);
+        result
+    }
+
+    /// Like [`Harness::go`] but leaves any open scene in place, so `Busy` can be seen.
+    pub fn go_strict(&mut self, p: &mut Player, action: &Action) -> Result<Vec<Event>, Refusal> {
+        let mut env = Env::new(
+            &self.content,
+            &self.frontier,
+            &mut self.world,
+            &mut self.rng,
+            self.today,
+        );
+        p.settle(&mut env);
         let result = p.apply(&mut env, action);
         self.deltas.append(&mut env.deltas);
         result

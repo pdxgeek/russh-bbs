@@ -14,17 +14,24 @@
 
 #![forbid(unsafe_code)]
 
+pub mod boarding;
 pub mod codec;
+pub mod combat;
 pub mod content;
+pub mod contracts;
+pub mod crew;
+mod crewops;
 pub mod engine;
 pub mod events;
 pub mod frontier;
 pub mod market;
 pub mod player;
+pub mod scene;
 mod session;
 pub mod ship;
 pub mod skills;
 pub mod trade;
+pub mod transit;
 pub mod world;
 
 use std::sync::{Arc, Mutex, PoisonError};
@@ -43,7 +50,7 @@ use crate::world::World;
 /// The door's id. It never changes: saves and the world are filed under it.
 pub const DOOR_ID: &str = "long-haul";
 /// The player save's version (see [`player::SAVE_FORMAT`] for the format byte inside it).
-pub const SAVE_VERSION: u32 = 1;
+pub const SAVE_VERSION: u32 = 2;
 /// The shared world's version.
 pub const WORLD_VERSION: u32 = 1;
 
@@ -160,10 +167,15 @@ impl Door for LongHaul {
         ))
     }
 
-    fn migrate(&self, _kind: BlobKind, from: u32, _bytes: &[u8]) -> Result<Vec<u8>, MigrateError> {
-        // Version 1 is the first: there is nothing older to read. When a version 2 exists, add
-        // its `from == 1` step here and keep it for good (D98 (3): saves are forward-only).
-        Err(MigrateError::Unsupported(from))
+    fn migrate(&self, kind: BlobKind, from: u32, bytes: &[u8]) -> Result<Vec<u8>, MigrateError> {
+        // Save version 1 (the L1 engine's) becomes version 2 by appending empty crew, contract
+        // and scene sections (D98 (3): saves are forward-only, and these steps stay for good).
+        match (kind, from) {
+            (BlobKind::Save, 1) => {
+                Player::migrate_v1(bytes).ok_or(MigrateError::Unsupported(from))
+            }
+            _ => Err(MigrateError::Unsupported(from)),
+        }
     }
 
     fn has_daily_tick(&self) -> bool {

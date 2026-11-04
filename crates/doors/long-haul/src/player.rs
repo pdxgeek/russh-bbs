@@ -7,13 +7,22 @@
 //! [`Player::debit`], which keep the [`Ledger`] the "no money from nothing" tests audit.
 
 use crate::codec::{Reader, Writer};
-use crate::content::{Content, Perk};
+use crate::content::{Content, FACTIONS, Perk};
+use crate::contracts::Contract;
+use crate::crew::CrewMember;
 use crate::frontier::Frontier;
+use crate::scene::Scene;
 use crate::ship::{Installed, Lot, MAX_LOTS, Ship};
 use crate::skills::{Skill, level_of, xp_for};
 
-/// The save's format byte.
-pub const SAVE_FORMAT: u8 = 1;
+/// The save's format byte. Format 1 is the L1 engine's; format 2 appends crew, contracts,
+/// the open scene and the wider ledger after the L1 body, so a format-1 save migrates by
+/// changing the byte and appending an empty tail ([`Player::migrate_v1`]).
+pub const SAVE_FORMAT: u8 = 2;
+/// Causes the format-1 ledger knew.
+const LEGACY_CAUSES: usize = 12;
+/// Most keys remembered of jobs and recruits already taken.
+pub const MAX_TAKEN: usize = 48;
 /// Drive-days a captain gets each real day.
 pub const ALLOWANCE: i32 = 10;
 /// The longest captain name kept.
@@ -48,10 +57,18 @@ pub enum Cause {
     Tow,
     /// Dock fees.
     Dock,
+    /// Wages, signing fees, rations and a mutineers' cut.
+    Crew,
+    /// Contract rewards.
+    Contract,
+    /// Loot from wrecks and boardings.
+    Salvage,
+    /// Gains and losses in transit events.
+    Event,
 }
 
 /// How many causes there are.
-pub const CAUSES: usize = 12;
+pub const CAUSES: usize = 16;
 
 impl Cause {
     /// Position in a ledger array.
@@ -70,6 +87,10 @@ impl Cause {
             Self::Fine => 9,
             Self::Tow => 10,
             Self::Dock => 11,
+            Self::Crew => 12,
+            Self::Contract => 13,
+            Self::Salvage => 14,
+            Self::Event => 15,
         }
     }
 }
@@ -141,6 +162,24 @@ pub struct Counters {
     pub tows: u32,
     /// Contraband tons sold.
     pub contraband_sold: u32,
+    /// Fights won.
+    pub fights_won: u32,
+    /// Fights lost.
+    pub fights_lost: u32,
+    /// Fights run from.
+    pub fled: u32,
+    /// Boardings brought home.
+    pub boardings: u32,
+    /// Contracts finished.
+    pub contracts_done: u32,
+    /// Hands lost for good.
+    pub crew_lost: u32,
+    /// Mutinies.
+    pub mutinies: u32,
+    /// Desertions.
+    pub deserted: u32,
+    /// Transit events seen.
+    pub transits: u32,
 }
 
 /// A captain.
@@ -152,8 +191,8 @@ pub struct Player {
     pub background: u8,
     /// Experience per skill.
     pub xp: [u32; 5],
-    /// Standing with the League, the Miners and the Free Captains.
-    pub standing: [i16; 3],
+    /// Standing with the League, the Miners, the Free Captains, the Guild and the Church.
+    pub standing: [i16; FACTIONS],
     /// Credits in hand.
     pub cash: i64,
     /// The loan.
@@ -184,6 +223,20 @@ pub struct Player {
     pub stats: Counters,
     /// Credits of sales since standing last rose, per faction.
     pub turnover: [i64; 3],
+    /// The crew.
+    pub crew: Vec<CrewMember>,
+    /// The last real day the galley is stocked for.
+    pub rations_until: i64,
+    /// The next wage day.
+    pub wages_due: i64,
+    /// Story flags set by choices (see the transit table's flag list).
+    pub flags: u32,
+    /// Jobs taken.
+    pub contracts: Vec<Contract>,
+    /// Keys of offers and recruits already taken.
+    pub taken: Vec<u64>,
+    /// An open scene, if any.
+    pub scene: Option<Scene>,
 }
 
 impl Player {
@@ -202,7 +255,7 @@ impl Player {
             .or_else(|| content.backgrounds.first());
         let mut xp = [0u32; 5];
         let (mut cash, mut loan, mut standing, mut scanner) =
-            (1500i64, 18_000i64, [0i16; 3], false);
+            (1500i64, 18_000i64, [0i16; FACTIONS], false);
         if let Some(bg) = bg {
             let s = bg.skills;
             for (slot, level) in xp
@@ -213,7 +266,13 @@ impl Player {
             }
             cash = i64::from(bg.cash);
             loan = i64::from(bg.loan);
-            standing = [bg.standing.league, bg.standing.miners, bg.standing.free];
+            standing = [
+                bg.standing.league,
+                bg.standing.miners,
+                bg.standing.free,
+                bg.standing.guild,
+                bg.standing.church,
+            ];
             scanner = bg.perk() == Some(Perk::GuildContact);
         }
         let starts = frontier.start_stations(content);
@@ -251,11 +310,24 @@ impl Player {
             ledger: Ledger::default(),
             stats: Counters::default(),
             turnover: [0; 3],
+            crew: Vec::new(),
+            rations_until: 0,
+            wages_due: today + 7,
+            flags: 0,
+            contracts: Vec::new(),
+            taken: Vec::new(),
+            scene: None,
         };
         // The loan bought the ship the captain already flies; only the purse is cash in hand.
         player.credit(Cause::Start, cash);
         player.debt.principal = loan;
         player
+    }
+
+    /// Tons the hold is carrying: the captain's cargo and the clients'.
+    #[must_use]
+    pub fn hold_used(&self) -> u32 {
+        self.ship.cargo_tons() + self.contract_tons()
     }
 
     /// Add credits to the purse.
@@ -311,15 +383,56 @@ impl Player {
     /// The stored form.
     #[must_use]
     pub fn encode(&self) -> Vec<u8> {
+        self.encode_with(SAVE_FORMAT)
+    }
+
+    /// The format-1 byte layout (the L1 engine's), kept so the migration has a real input to
+    /// be tested against. It drops everything format 2 adds.
+    #[must_use]
+    pub fn encode_v1(&self) -> Vec<u8> {
+        self.encode_with(1)
+    }
+
+    /// The bytes that make a format-1 save a format-2 save with nothing in the new sections.
+    #[must_use]
+    pub fn migrate_v1(bytes: &[u8]) -> Option<Vec<u8>> {
+        if bytes.first() != Some(&1) {
+            return None;
+        }
+        let mut out = bytes.to_vec();
+        out[0] = 2;
         let mut w = Writer::new();
-        w.u8(SAVE_FORMAT);
+        for _ in 0..FACTIONS - 3 {
+            w.i32(0);
+        }
+        for _ in 0..2 * (CAUSES - LEGACY_CAUSES) {
+            w.i64(0);
+        }
+        for _ in 0..9 {
+            w.u32(0);
+        }
+        w.i64(0);
+        w.i64(0);
+        w.u32(0);
+        w.len(0);
+        w.len(0);
+        w.len(0);
+        w.u8(0);
+        out.extend_from_slice(&w.finish());
+        Some(out)
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn encode_with(&self, format: u8) -> Vec<u8> {
+        let mut w = Writer::new();
+        w.u8(format);
         w.text(&self.captain);
         w.u8(self.background);
         for xp in self.xp {
             w.u32(xp);
         }
-        for s in self.standing {
-            w.i32(i32::from(s));
+        for s in self.standing.iter().take(3) {
+            w.i32(i32::from(*s));
         }
         w.i64(self.cash);
         w.i64(self.debt.principal);
@@ -370,8 +483,14 @@ impl Player {
             w.u32(s.value);
         }
         w.u8(self.repossessions);
-        for v in self.ledger.income.into_iter().chain(self.ledger.spend) {
-            w.i64(v);
+        for v in self
+            .ledger
+            .income
+            .iter()
+            .take(LEGACY_CAUSES)
+            .chain(self.ledger.spend.iter().take(LEGACY_CAUSES))
+        {
+            w.i64(*v);
         }
         let c = self.stats;
         for v in [
@@ -388,7 +507,55 @@ impl Player {
         for t in self.turnover {
             w.i64(t);
         }
+        if format >= 2 {
+            self.write_tail(&mut w);
+        }
         w.finish()
+    }
+
+    fn write_tail(&self, w: &mut Writer) {
+        for s in self.standing.iter().skip(3) {
+            w.i32(i32::from(*s));
+        }
+        for v in self
+            .ledger
+            .income
+            .iter()
+            .skip(LEGACY_CAUSES)
+            .chain(self.ledger.spend.iter().skip(LEGACY_CAUSES))
+        {
+            w.i64(*v);
+        }
+        let c = self.stats;
+        for v in [
+            c.fights_won,
+            c.fights_lost,
+            c.fled,
+            c.boardings,
+            c.contracts_done,
+            c.crew_lost,
+            c.mutinies,
+            c.deserted,
+            c.transits,
+        ] {
+            w.u32(v);
+        }
+        w.i64(self.rations_until);
+        w.i64(self.wages_due);
+        w.u32(self.flags);
+        w.len(self.crew.len());
+        for c in &self.crew {
+            c.write(w);
+        }
+        crate::contracts::write_all(w, &self.contracts);
+        w.len(self.taken.len());
+        for k in &self.taken {
+            w.u64(*k);
+        }
+        match &self.scene {
+            None => w.u8(0),
+            Some(s) => s.write(w),
+        }
     }
 
     /// Read a save, or `None` if any byte is wrong or missing. `content` and `frontier` bound
@@ -398,7 +565,8 @@ impl Player {
     #[allow(clippy::too_many_lines)]
     pub fn decode(bytes: &[u8], content: &Content, frontier: &Frontier) -> Option<Self> {
         let mut r = Reader::new(bytes);
-        if r.u8()? != SAVE_FORMAT {
+        let format = r.u8()?;
+        if format != 1 && format != SAVE_FORMAT {
             return None;
         }
         let captain = r.text()?;
@@ -410,8 +578,8 @@ impl Player {
         for slot in &mut xp {
             *slot = r.u32()?;
         }
-        let mut standing = [0i16; 3];
-        for slot in &mut standing {
+        let mut standing = [0i16; FACTIONS];
+        for slot in standing.iter_mut().take(3) {
             *slot = i16::try_from(r.i32()?.clamp(-100, 100)).ok()?;
         }
         let cash = r.i64()?;
@@ -498,10 +666,15 @@ impl Player {
         }
         let repossessions = r.u8()?;
         let mut ledger = Ledger::default();
-        for slot in ledger.income.iter_mut().chain(ledger.spend.iter_mut()) {
+        for slot in ledger
+            .income
+            .iter_mut()
+            .take(LEGACY_CAUSES)
+            .chain(ledger.spend.iter_mut().take(LEGACY_CAUSES))
+        {
             *slot = r.i64()?;
         }
-        let stats = Counters {
+        let mut stats = Counters {
             jumps: r.u32()?,
             tons_traded: r.u32()?,
             inspections: r.u32()?,
@@ -509,10 +682,54 @@ impl Player {
             charted: r.u32()?,
             tows: r.u32()?,
             contraband_sold: r.u32()?,
+            ..Counters::default()
         };
         let mut turnover = [0i64; 3];
         for slot in &mut turnover {
             *slot = r.i64()?;
+        }
+        let mut crew = Vec::new();
+        let mut contracts = Vec::new();
+        let mut taken = Vec::new();
+        let (mut rations_until, mut wages_due, mut flags) = (0i64, last_day + 7, 0u32);
+        let mut scene = None;
+        if format >= 2 {
+            for slot in standing.iter_mut().skip(3) {
+                *slot = i16::try_from(r.i32()?.clamp(-100, 100)).ok()?;
+            }
+            for slot in ledger
+                .income
+                .iter_mut()
+                .skip(LEGACY_CAUSES)
+                .chain(ledger.spend.iter_mut().skip(LEGACY_CAUSES))
+            {
+                *slot = r.i64()?;
+            }
+            stats.fights_won = r.u32()?;
+            stats.fights_lost = r.u32()?;
+            stats.fled = r.u32()?;
+            stats.boardings = r.u32()?;
+            stats.contracts_done = r.u32()?;
+            stats.crew_lost = r.u32()?;
+            stats.mutinies = r.u32()?;
+            stats.deserted = r.u32()?;
+            stats.transits = r.u32()?;
+            rations_until = r.i64()?;
+            wages_due = r.i64()?;
+            flags = r.u32()?;
+            let n = r.len(crate::crew::MAX_CREW, 20)?;
+            for _ in 0..n {
+                crew.push(CrewMember::read(&mut r, content, frontier)?);
+            }
+            let n = r.len(crate::contracts::MAX_CONTRACTS, 20)?;
+            for _ in 0..n {
+                contracts.push(Contract::read(&mut r, content, frontier)?);
+            }
+            let n = r.len(MAX_TAKEN, 8)?;
+            for _ in 0..n {
+                taken.push(r.u64()?);
+            }
+            scene = Scene::read(&mut r, content, crew.len(), frontier)?;
         }
         r.done().then_some(Self {
             captain,
@@ -540,6 +757,13 @@ impl Player {
             ledger,
             stats,
             turnover,
+            crew,
+            rations_until,
+            wages_due,
+            flags,
+            contracts,
+            taken,
+            scene,
         })
     }
 }

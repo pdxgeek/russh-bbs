@@ -13,18 +13,28 @@ const NEWS_TOML: &str = include_str!("../content/news.toml");
 const SHIPS_TOML: &str = include_str!("../content/ships.toml");
 const BACKGROUNDS_TOML: &str = include_str!("../content/backgrounds.toml");
 const NAMES_TOML: &str = include_str!("../content/names.toml");
+const CREW_TOML: &str = include_str!("../content/crew.toml");
+const TRANSIT_TOML: &str = include_str!("../content/transit.toml");
+const ENEMIES_TOML: &str = include_str!("../content/enemies.toml");
+const DERELICTS_TOML: &str = include_str!("../content/derelicts.toml");
+const JOBS_TOML: &str = include_str!("../content/jobs.toml");
 
 /// The embedded tables as `(name, text)`, for the schema test.
-pub const TABLES: [(&str, &str); 6] = [
+pub const TABLES: [(&str, &str); 11] = [
     ("goods", GOODS_TOML),
     ("economies", ECONOMIES_TOML),
     ("news", NEWS_TOML),
     ("ships", SHIPS_TOML),
     ("backgrounds", BACKGROUNDS_TOML),
     ("names", NAMES_TOML),
+    ("crew", CREW_TOML),
+    ("transit", TRANSIT_TOML),
+    ("enemies", ENEMIES_TOML),
+    ("derelicts", DERELICTS_TOML),
+    ("jobs", JOBS_TOML),
 ];
 
-fn ident_ok(id: &str) -> bool {
+pub(crate) fn ident_ok(id: &str) -> bool {
     !id.is_empty()
         && id.len() <= 24
         && id
@@ -32,11 +42,11 @@ fn ident_ok(id: &str) -> bool {
             .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'_' || b == b'-')
 }
 
-fn text_ok(text: &str, max: usize) -> bool {
+pub(crate) fn text_ok(text: &str, max: usize) -> bool {
     !text.trim().is_empty() && text.chars().count() <= max && plain_text(text)
 }
 
-fn duplicates<'a>(ids: impl Iterator<Item = &'a str>, what: &str, problems: &mut Vec<String>) {
+pub(crate) fn duplicates<'a>(ids: impl Iterator<Item = &'a str>, what: &str, problems: &mut Vec<String>) {
     let mut seen = HashSet::new();
     for id in ids {
         if !ident_ok(id) {
@@ -117,7 +127,8 @@ impl Table for GoodsTable {
     }
 }
 
-/// Who runs a station, for standing.
+/// A faction, for standing. Three run stations; the Guild and the Church keep offices and
+/// post jobs but own no dock (so only the first three can bar a ship from a station).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Faction {
@@ -127,9 +138,25 @@ pub enum Faction {
     Miners,
     /// The Free Captains.
     Free,
+    /// The Cartographers' Guild.
+    Guild,
+    /// The Quiet Church, who run the old gates and want them back.
+    Church,
 }
 
+/// How many factions there are.
+pub const FACTIONS: usize = 5;
+
 impl Faction {
+    /// Every faction, in save order.
+    pub const ALL: [Self; FACTIONS] = [
+        Self::League,
+        Self::Miners,
+        Self::Free,
+        Self::Guild,
+        Self::Church,
+    ];
+
     /// Index into a standing array.
     #[must_use]
     pub const fn index(self) -> usize {
@@ -137,6 +164,8 @@ impl Faction {
             Self::League => 0,
             Self::Miners => 1,
             Self::Free => 2,
+            Self::Guild => 3,
+            Self::Church => 4,
         }
     }
 
@@ -147,6 +176,21 @@ impl Faction {
             Self::League => "Station League",
             Self::Miners => "Miners' Union",
             Self::Free => "Free Captains",
+            Self::Guild => "Cartographers' Guild",
+            Self::Church => "Quiet Church",
+        }
+    }
+
+    /// The faction this one is at odds with, if any: a deed that raises one lowers the other
+    /// by a third as much.
+    #[must_use]
+    pub const fn rival(self) -> Option<Self> {
+        match self {
+            Self::League => Some(Self::Free),
+            Self::Free => Some(Self::League),
+            Self::Miners => Some(Self::Church),
+            Self::Church => Some(Self::Miners),
+            Self::Guild => None,
         }
     }
 }
@@ -399,6 +443,10 @@ impl Slots {
     }
 }
 
+fn six() -> u8 {
+    6
+}
+
 /// A hull class.
 #[derive(Debug, Clone, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -413,12 +461,18 @@ pub struct Hull {
     pub price: u32,
     /// Structural points.
     pub hull_points: u16,
+    /// Reactor points to hand out in a fight, before an engineer's help.
+    #[serde(default = "six")]
+    pub reactor: u8,
     /// Base cargo tons.
     pub cargo: u16,
     /// Base fuel capacity.
     pub fuel: u16,
     /// Drive speed scale, per-mille.
     pub speed_pm: u32,
+    /// Berths built into the hull, before any cabin module (crew and passengers sleep here).
+    #[serde(default)]
+    pub berths: u8,
     /// Module slots.
     pub slots: Slots,
 }
@@ -452,13 +506,16 @@ pub struct Module {
     /// Scanner: grade.
     #[serde(default)]
     pub scan: u8,
-    /// Weapon: power (used by combat, a later slice).
+    /// Weapon: power.
     #[serde(default)]
     pub power: u8,
+    /// Weapon: the range band it works best at (`close`, `mid` or `far`; empty means `mid`).
+    #[serde(default)]
+    pub reach: String,
     /// Shield: percent of hazard damage absorbed.
     #[serde(default)]
     pub shield: u8,
-    /// Cabin: berths (used by crew, a later slice).
+    /// Cabin: berths.
     #[serde(default)]
     pub berths: u8,
     /// Refinery: extra fuel from skimming, per-mille.
@@ -529,6 +586,12 @@ impl Table for ShipsTable {
                 SlotKind::Refinery => m.refine_pm > 0,
                 SlotKind::Lab => m.lab_pm > 0,
             };
+            if !matches!(m.reach.as_str(), "" | "close" | "mid" | "far") {
+                problems.push(format!(
+                    "module `{}`: reach must be close, mid or far",
+                    m.id
+                ));
+            }
             if !does_something {
                 problems.push(format!(
                     "module `{}`: a {} module must set its own effect",
@@ -564,7 +627,7 @@ pub struct SkillLevels {
     pub survey: u8,
 }
 
-/// Starting standing with the three factions.
+/// Starting standing with the factions (the Guild and the Church default to nothing).
 #[derive(Debug, Clone, Copy, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Standing {
@@ -574,6 +637,12 @@ pub struct Standing {
     pub miners: i16,
     /// Free Captains.
     pub free: i16,
+    /// Cartographers' Guild.
+    #[serde(default)]
+    pub guild: i16,
+    /// Quiet Church.
+    #[serde(default)]
+    pub church: i16,
 }
 
 /// The perk a background carries.
@@ -779,6 +848,16 @@ pub struct Content {
     pub backgrounds: Vec<Background>,
     /// Name parts.
     pub names: Names,
+    /// Crew names, goals and roles.
+    pub crew: crate::crew::CrewTable,
+    /// Transit events and their flags.
+    pub transit: crate::transit::TransitTable,
+    /// Enemy ship types.
+    pub enemies: crate::combat::EnemyTable,
+    /// Derelict and wreck layouts.
+    pub derelicts: crate::boarding::DerelictTable,
+    /// Passenger kinds and client lines.
+    pub jobs: crate::contracts::JobTable,
 }
 
 impl Content {
@@ -793,6 +872,11 @@ impl Content {
         let ships: ShipsTable = content::load("ships", SHIPS_TOML)?;
         let backgrounds: BackgroundsTable = content::load("backgrounds", BACKGROUNDS_TOML)?;
         let names: Names = content::load("names", NAMES_TOML)?;
+        let crew = content::load("crew", CREW_TOML)?;
+        let transit = content::load("transit", TRANSIT_TOML)?;
+        let enemies = content::load("enemies", ENEMIES_TOML)?;
+        let derelicts = content::load("derelicts", DERELICTS_TOML)?;
+        let jobs = content::load("jobs", JOBS_TOML)?;
         let all = Self {
             goods: goods.good,
             economies: economies.economy,
@@ -801,6 +885,11 @@ impl Content {
             modules: ships.module,
             backgrounds: backgrounds.background,
             names,
+            crew,
+            transit,
+            enemies,
+            derelicts,
+            jobs,
         };
         let problems = all.link_problems();
         if problems.is_empty() {
@@ -891,6 +980,21 @@ impl Content {
         }
         if self.hull_ix("freighter").is_none() || self.hull_ix("courier").is_none() {
             problems.push("the `freighter` and `courier` hulls are required".into());
+        }
+        problems.extend(self.transit.link_problems(self));
+        for e in &self.enemies.enemy {
+            if let Some(w) = &e.wreck
+                && !self.derelicts.derelict.iter().any(|d| d.id == *w)
+            {
+                problems.push(format!("enemy `{}` has unknown wreck `{w}`", e.id));
+            }
+        }
+        for d in &self.derelicts.derelict {
+            for r in &d.rooms {
+                if !r.good.is_empty() && self.good_ix(&r.good).is_none() {
+                    problems.push(format!("derelict `{}` holds unknown good `{}`", d.id, r.good));
+                }
+            }
         }
         for id in ["ion1", "pod1", "tank1", "scan1"] {
             if self.module_ix(id).is_none() {
