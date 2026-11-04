@@ -72,9 +72,38 @@ A slice with an unmet dependency is not claimable.
 
 **Parallelism.** Slices run in parallel only when their Owns paths do not overlap and their dependencies are merged. Slices that add migrations to the same backend are serialized (B → C → D → E/F/H). Migration numbers are taken at merge time: merge `main` first, then number the migration.
 
+### M4: Doors (owner approved, 2026-11-04)
+
+Approved by the owner on 2026-11-04 by adding them here. The other M4 work (`BlobStore`, file areas over SFTP, global new-scan) still needs its own slices. Designs: [doors/](doors/README.md). Every game slice follows the door framework rules and the RPG rule in that index. Each game has its own systems and engine, and only the plumbing is shared. A game's slices run in order; different games may run in parallel once the framework is merged, because their crates do not overlap.
+
+| Slice | Owns | Depends on | Status | Branch / PR |
+|---|---|---|---|---|
+| M4-D0 Door framework and example door | `crates/doors/framework` (Door trait, session hand-off, save API, per-door permissions, scheduler hook, sandbox rules), store tables and migrations for door saves on both backends, the menu entry, a tiny example door | M3 gate closed | Open | Plumbing only, no game mechanics. Done when a door runs in a session with no filesystem or network access (M4 "Done when"), saves and loads through the store, ticks daily, and behaves the same over ssh and telnet. |
+| M4-S1 Saltmarch engine | `crates/doors/saltmarch` | M4-D0 | Open | Tide, map generation, clan, crew, hold and economy; deterministic, with replay tests. |
+| M4-S2 Saltmarch expeditions and combat | `crates/doors/saltmarch` | M4-S1 | Open | Events, skirmish, content loader with schema tests. |
+| M4-S3 Saltmarch UI | `crates/doors/saltmarch` | M4-S2 | Open | All screens, three tiers, layouts, look-around. |
+| M4-S4 Saltmarch social | `crates/doors/saltmarch` | M4-S3 | Open | Raids, pacts, market, letters, league, hall. |
+| M4-S5 Saltmarch content and balance | `crates/doors/saltmarch` | M4-S4 | Open | Launch content budget, auto-play balance harness. |
+| M4-E1 Emberdeep engine | `crates/doors/emberdeep` | M4-D0 | Open | Dungeon generation, hero, combat, torch-turns; replay tests. |
+| M4-E2 Emberdeep town and crafting | `crates/doors/emberdeep` | M4-E1 | Open | Town, projects, gear, crafting. |
+| M4-E3 Emberdeep UI | `crates/doors/emberdeep` | M4-E2 | Open | Dungeon view, combat panel, town, look-around. |
+| M4-E4 Emberdeep social, content and balance | `crates/doors/emberdeep` | M4-E3 | Open | Parties, rescues, duels, shared projects, content pass, balance. |
+| M4-N1 Nullroute engine | `crates/doors/nullroute` | M4-D0 | Open | Network generation, trace, deck, runs; replay tests. |
+| M4-N2 Nullroute countermeasures and coding | `crates/doors/nullroute` | M4-N1 | Open | Encounters, script degradation, module editor. |
+| M4-N3 Nullroute UI | `crates/doors/nullroute` | M4-N2 | Open | Node map, run log, deck panel, look-around. |
+| M4-N4 Nullroute social, content and balance | `crates/doors/nullroute` | M4-N3 | Open | Crews, honeypots, bounties, heat, fixer arcs, balance. |
+| M4-L1 Long Haul engine | `crates/doors/long-haul` | M4-D0 | Open | Frontier generation, economy, ship, jumps; replay tests. |
+| M4-L2 Long Haul crew, events and combat | `crates/doors/long-haul` | M4-L1 | Open | Crew, transit events, contracts, ship combat, boarding. |
+| M4-L3 Long Haul UI | `crates/doors/long-haul` | M4-L2 | Open | Star chart, bridge, route planner, combat panel, look-around. |
+| M4-L4 Long Haul social, content and balance | `crates/doors/long-haul` | M4-L3 | Open | Convoys, opt-in piracy, player outposts, arcs, economy simulation. |
+| M4-H1 Hallpass engine | `crates/doors/hallpass` | M4-D0 | Open | Timetable, places, character schedules, stats, schemes, heat and the file, day tick; replay tests. |
+| M4-H2 Hallpass classes, clubs and characters | `crates/doors/hallpass` | M4-H1 | Open | Class minigames, clubs, conversations, friendships, storylines. |
+| M4-H3 Hallpass UI | `crates/doors/hallpass` | M4-H2 | Open | Timetable, map, scenes, minigames, look-around. |
+| M4-H4 Hallpass social, mystery and balance | `crates/doors/hallpass` | M4-H3 | Open | Structured player schemes, template rumours, opt-out, election, awards, the mystery, balance. |
+
 ### M3: Public core
 
-Proposed by the orchestrator on 2026-11-03; **not claimable until the owner approves this table** (merging the PR that adds it is the approval). M4 and later milestones are not claimable until the owner adds their slices here.
+Proposed by the orchestrator on 2026-11-03; **not claimable until the owner approves this table** (merging the PR that adds it is the approval). M5 and later milestones are not claimable until the owner adds their slices here; M4's non-door work also still needs its slices.
 
 Every slice: adds its permission rows to [access.md](access.md) and the `Permission` enum in the same PR as the action (M2-B cross-slice note), calls `core::access` from every action path, sanitizes all content with the shared sanitizer, writes audit rows for staff actions, adds migrations for **both** backends with the shared store suite run on SQLite, Postgres 16 and TLS-required Postgres 16, uses [third-party.md](third-party.md) defaults (D47), and builds its screens on the M2-A framework (string table, universal keys, markers only through `Rendered::to_terminal()`/`chrome_style()` in a chrome-only position). Nothing the server can read is called private, secure or encrypted, or shown with a lock; compose and read screens do not carry a per-screen "visible to the sysop" line (D78).
 
