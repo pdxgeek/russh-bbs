@@ -9,30 +9,58 @@ use ratatui::Frame;
 use ratatui::text::{Line, Span};
 use russh_bbs_core::waiting_room::NoticeKind;
 
-use super::chrome;
 use super::classic::{self, MenuScreen};
 use super::keys;
 use crate::settings;
 
-/// Draw the screen: text above, status row below. The look is borderless (see
-/// `Look::themed`), so `boxed` draws only the paragraph.
+/// Draw the screen: text above, the status bar below. The look is borderless (see
+/// `Look::themed`), so there is no header bar and `boxed` draws only the paragraph.
 pub(crate) fn render(frame: &mut Frame<'_>, screen: &MenuScreen<'_>) {
-    let (content, status) = chrome::split_status(frame.area(), screen.markers);
+    let hints = classic::menu_hints(screen.strings, false);
+    let body = classic::frame_spec(screen, &hints).draw(frame);
     let lines = if screen.page.help {
-        classic::help_lines(screen, None)
+        help_lines(screen)
     } else {
         menu_lines(screen)
     };
     settings::boxed(
         frame,
-        content,
+        body,
         screen.strings.text(keys::TITLE),
         lines,
         screen.look,
     );
-    if let Some(row) = status {
-        chrome::render_status(frame, row, screen.markers, screen.tier, screen.strings);
+}
+
+/// The compact help: one line each, no panes.
+fn help_lines(screen: &MenuScreen<'_>) -> Vec<Line<'static>> {
+    let (_, dim, heading, key) = classic::styles(screen.look);
+    let strings = screen.strings;
+    let mut out = vec![
+        Line::styled(strings.text(keys::HELP_TITLE).to_owned(), heading),
+        Line::raw(strings.text(keys::HELP_INTRO).to_owned()),
+    ];
+    for line in [
+        keys::HELP_KEY_HELP,
+        keys::HELP_KEY_BACK,
+        keys::HELP_KEY_QUIT,
+    ] {
+        out.push(Line::styled(format!("  {}", strings.text(line)), key));
     }
+    if screen.mail_over_ssh_only {
+        out.push(Line::raw(
+            strings.text(keys::NOTICE_MAIL_SSH_ONLY).to_owned(),
+        ));
+    }
+    out.push(Line::raw(strings.text(keys::HELP_MENU).to_owned()));
+    for item in &screen.page.items {
+        out.push(classic::item_line(strings, item, key, dim));
+    }
+    out.push(Line::styled(
+        strings.text(keys::HELP_FOOTER).to_owned(),
+        dim,
+    ));
+    out
 }
 
 fn menu_lines(screen: &MenuScreen<'_>) -> Vec<Line<'static>> {
@@ -74,9 +102,5 @@ fn menu_lines(screen: &MenuScreen<'_>) -> Vec<Line<'static>> {
             bold,
         ));
     }
-    out.push(Line::styled(
-        strings.text(keys::FOOTER_MENU).to_owned(),
-        dim,
-    ));
     out
 }

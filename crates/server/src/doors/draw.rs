@@ -75,7 +75,7 @@ pub(crate) fn render(frame: &mut Frame<'_>, screen: &DoorsScreen, ctx: &DrawCtx<
         }
         State::List => list_lines(screen, ctx),
     };
-    classic::render_content(
+    classic::render_content_bare(
         frame,
         ContentScreen {
             strings: ctx.strings,
@@ -83,6 +83,7 @@ pub(crate) fn render(frame: &mut Frame<'_>, screen: &DoorsScreen, ctx: &DrawCtx<
             look: ctx.look,
             tier: ctx.tier,
             markers: &MENU_MARKERS,
+            clock: None,
         },
     );
 }

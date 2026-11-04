@@ -89,6 +89,10 @@ pub(crate) struct ClientHandler<D> {
     /// The one channel that was granted a PTY and may run the shell.
     shell_channel: Option<ChannelId>,
     pty: Option<PtySize>,
+    /// `TERM` from the pty request and `COLORTERM` from an env request, kept only to choose the
+    /// colour depth (UI-1). Bounded, printable ASCII.
+    term: Option<String>,
+    colorterm: Option<String>,
     /// Whether the shell task has been started on `shell_channel`.
     shell_started: bool,
     throttle: Arc<Throttle>,
@@ -141,6 +145,8 @@ impl<D> ClientHandler<D> {
             shell_channel: None,
             pty: None,
             shell_started: false,
+            term: None,
+            colorterm: None,
             throttle,
             budget: SessionBudget::new(&limits, Instant::now()),
             limits,
@@ -580,7 +586,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
     async fn pty_request(
         &mut self,
         channel: ChannelId,
-        _term: &str,
+        term: &str,
         col_width: u32,
         row_height: u32,
         _pix_width: u32,
@@ -595,6 +601,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
         }
         let size = PtySize::from_request(col_width, row_height);
         self.pty = Some(size);
+        self.term = terminal_word(term);
         self.shell_channel = Some(channel);
         self.guard.set_size(size);
         debug!(session = ?self.guard.id(), cols = size.cols(), rows = size.rows(), "pty granted");
@@ -646,6 +653,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
         let size = self.pty.unwrap_or(size);
         let mut screen = Screen::new(size, self.limits.render_cap, content, Arc::clone(&self.ui))?;
         screen.set_low_security(self.limits.low_security);
+        screen.set_client_terminal(self.term.as_deref(), self.colorterm.as_deref());
         let shell = Shell::new(ShellParts {
             output: Output::Ssh {
                 handle: session.handle(),
@@ -777,10 +785,17 @@ impl<D: Backend> Handler for ClientHandler<D> {
     async fn env_request(
         &mut self,
         channel: ChannelId,
-        _variable_name: &str,
-        _variable_value: &str,
+        variable_name: &str,
+        variable_value: &str,
         session: &mut Session,
     ) -> Result<(), Self::Error> {
+        // Only `COLORTERM` is read, and only to choose how many colours to draw (UI-1). It is
+        // never put in an environment: nothing runs here. Every other variable is refused.
+        if variable_name == "COLORTERM" && self.open_channels.contains(&channel) {
+            self.colorterm = terminal_word(variable_value);
+            session.channel_success(channel)?;
+            return Ok(());
+        }
         debug!(session = ?self.guard.id(), "env request refused");
         session.channel_failure(channel)?;
         Ok(())
@@ -860,4 +875,16 @@ fn retry_methods(_password: bool) -> Auth {
         )),
         partial_success: false,
     }
+}
+
+/// A terminal word (`TERM`, `COLORTERM`) from the client: at most 40 printable ASCII characters
+/// from the set a terminal name uses, or nothing. It only ever picks a colour depth.
+fn terminal_word(value: &str) -> Option<String> {
+    let word: String = value.chars().take(41).collect();
+    let valid = !word.is_empty()
+        && word.chars().count() <= 40
+        && word
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.' | '+'));
+    valid.then_some(word)
 }

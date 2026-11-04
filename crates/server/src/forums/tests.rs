@@ -112,6 +112,8 @@ fn draw(screen: &ForumsScreen, area: Rect) -> Buffer {
         settings: &settings,
         look: Look::of(&settings),
         tier: Tier::Ascii,
+        markers: &[],
+        clock: Some("UTC 12:00"),
     };
     let mut terminal = Terminal::new(TestBackend::new(area.width, area.height)).unwrap();
     terminal.draw(|frame| render(frame, screen, &ctx)).unwrap();
@@ -166,8 +168,9 @@ fn keys_are_ignored_while_a_request_is_pending_except_logoff() {
 fn the_board_list_opens_a_board_and_esc_leaves() {
     let mut screen = open(false);
     let shown = text(&screen);
-    assert!(shown.contains("1. General (2 threads)"), "{shown}");
+    assert!(shown.contains("1. General"), "{shown}");
     assert!(shown.contains("2. Tech"), "{shown}");
+    assert!(shown.contains("Threads"), "the column header:\n{shown}");
     assert!(!shown.contains("n new board"), "{shown}");
     press(&mut screen, Key::Down);
     let request = expect_request(press(&mut screen, Key::Enter));
@@ -183,7 +186,7 @@ fn the_board_list_opens_a_board_and_esc_leaves() {
         .map(|next| assert!(matches!(next, Request::Boards)))
         .unwrap();
     assert!(
-        text(&screen).contains("Problem: That is not available."),
+        text(&screen).contains("Problem") && text(&screen).contains("That is not available."),
         "{}",
         text(&screen)
     );
@@ -270,7 +273,9 @@ fn search_sends_what_was_typed_and_shows_results_that_open_at_their_post() {
     })));
     let shown = text(&screen);
     assert!(
-        shown.contains("General / Gardening") && shown.contains("tomatoes need sun"),
+        shown.contains("General")
+            && shown.contains("Gardening")
+            && shown.contains("tomatoes need sun"),
         "{shown}"
     );
     assert!(matches!(
@@ -363,7 +368,7 @@ fn removing_a_post_asks_first_and_only_y_removes() {
     press(&mut screen, Key::Char('x'));
     let shown = text(&screen);
     assert!(
-        shown.contains("opening post") && shown.contains("whole thread"),
+        shown.contains("opening") && shown.contains("whole") && shown.contains("Confirm"),
         "{shown}"
     );
     assert!(matches!(
