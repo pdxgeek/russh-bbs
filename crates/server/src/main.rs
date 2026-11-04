@@ -139,7 +139,11 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
     .context("building the screens")?
     .with_mail_keys(Arc::new(mail_keys))
     // The doors built into this board (M4-D0): the example coin toss until a game replaces it.
-    .with_doors(Doors::builtin().context("building the doors")?);
+    .with_doors(
+        Doors::builtin()
+            .map_err(|e| anyhow::anyhow!("{e}"))
+            .context("building the doors")?,
+    );
     // The store decides who is a member; an unknown key or a store error is Restricted.
     let ui = Arc::new(ui);
     let board_doors = ui.doors().clone();

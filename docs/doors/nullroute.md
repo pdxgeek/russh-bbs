@@ -1,6 +1,6 @@
 # Nullroute: a hacking door (design)
 
-Status: **Proposed**. Shared platform rules are in [README.md](README.md).
+Status: **Engine implemented (M4-N1, in review)**; the rest is **Proposed**. Shared platform rules are in [README.md](README.md). Implementation notes are at the end.
 
 ## Pitch
 
@@ -99,3 +99,61 @@ Inside a network, a fight with a countermeasure is a short turn-based exchange. 
 - **Cycles:** 40 cycles a day?
 - **Player-versus-player hacks:** on by default?
 - **Tone:** a gritty near-future city, or something stranger?
+
+## Implementation notes (M4-N1: the engine)
+
+Decision: [D102](../decisions.md). Crate: `crates/doors/nullroute` (`russh-bbs-door-nullroute`), registered in `Doors::builtin()`.
+
+### What is implemented and verified
+
+| Area | Implemented | Verified by |
+|---|---|---|
+| Procedural networks | Layered graph per (season, corporation, tier): entry, `tier + 1` mid layers, an objective floor (vault, admin console, server room) and, by corporation, a decoy vault. Hidden links, locks in three families, sentries, tracers, black walls (tier 2+), live cameras. Regenerated, never stored | `tests/net.rs`: determinism; property tests (400 cases each) for shape, connectivity, security cap, link ranges, unique names, decoys only as vaults, the full toolkit reaching every objective, the fairness guarantee per tier, the starter scripts opening tier 1, holes only widening and alert only narrowing reach |
+| Corporation styles | Five corporations: firewall-heavy (Kestrel), aggressive tracers (Halcyon), decoys and hidden links (Mirrorglass), badly configured but watched (Pennywhistle), black walls (Orrery) | `corporations_differ_in_style` counts the differences over 60 seasons |
+| The trace and being burned | 0 to 100; climbs with node noise, script noise, failed breaks, patrols, a live camera, a tracer, the alarm, the corporation's watchfulness, the corporation and the tier; falls with a shield, a mask, proxies, decoys, reroutes. At 100: burned | `tests/run.rs` (22 tests) |
+| The deck | Up to 6 scripts in the rig's memory; 27 scripts in 5 families; charges; costs in cycles; skill gates | `tests/run.rs`, `tests/player.rs` |
+| Runs | Move, scan, map, break, jam, purge, fork, mask, decoy, reroute, copy, plant, shred, cut feed, scrub logs, jack out | `tests/run.rs` |
+| Cycles per day | 40 plus 4 per CPU level; jacking in costs 5 | `tests/player.rs` |
+| Rig and hideout | Five parts, three levels each, fried parts count as stock until repaired; bots, workbench (no use yet), fence (3 levels), safe, proxies, laying low | `tests/player.rs` |
+| Heat and its decay | Added by jobs and burns, falls 4 a night and 12 for 8 cycles laid low; closes tier-3 jobs at 60 and tier-2 at 85; raises proxy prices at 30; raids the hideout at 50 and up (never the safe) | `tests/player.rs` |
+| Nightly tick | World half in the tick (patching, alert cooling, market, contracts); player half at the player's next visit (bots, heat, raids), at most 7 nights, seeded so it cannot be rerolled | `tests/world.rs`, `tests/player.rs`, `tests/play.rs` |
+| Saves | Hand-written binary, version 1, every length and range checked, pinned byte layouts, no migration yet (nothing older exists) | `tests/world.rs` |
+| Playable screen | Contracts, briefing, deck, shop, rig, hideout, the run (node list, trace bar, deck, log), debrief; fits the door area (72 by 19 at 80x24) with the key hints always in view; the same text is the look-around view | `tests/play.rs`; a walk with the OpenSSH client (below) |
+| Sandbox | The framework's source audit passes; the manifest has the framework, `serde` and `toml` only (`proptest` and `tokio` are dev-dependencies) | `tests/sandbox.rs` |
+
+### The RPG rule, as implemented
+
+Every element below changes what can happen, and each has a test:
+
+- **Deck against locks.** A lock opens only to its own family at power at least its security. `on_a_known_network_each_deck_reaches_a_different_set_of_nodes` pins the reachable set for six decks on one network; `across_generated_networks_one_family_often_opens_what_another_does_not` shows it on generated tier-3 networks (at least 90 percent differ).
+- **Memory, slots and the first deck.** The five starter scripts weigh 9 and a stock rig holds 8, so the first deck is a choice; a schema test pins it.
+- **Skills grow by use.** Each family's skill rises with successful uses (thresholds 4, 12, 30, 60, 100) and the best scripts will not load below skill 3. Skill also adds 3 percent success a level.
+- **Scouting pays, and the world remembers.** A broken lock is a hole for every player until the nightly patch (by the corporation's diligence); completing an objective raises the corporation's alert (every security level plus one, so a starter deck is shut out of a firewall for a day); a planted backdoor gives later runs a trace buffer.
+- **Choices close doors.** A job raises the hirer's standing and lowers the target's patron; at -3 that fixer will not deal with you. Tier 3 wants reputation 40 and standing 2.
+- **Consequences persist.** Burns fry a part (cooling lowers the chance from 80 to 20 percent), heat follows you, a dropped line costs heat.
+- **Not built yet:** several endings, branch coverage in the balance harness, and the story arcs (N4).
+
+### Numbers: the headless 30-day simulation
+
+`cargo test -p russh-bbs-door-nullroute --test sim -- --nocapture`. A bot plays the engine API like a person (it scouts, jams, breaks, buys what a sensible player buys, one in three plays recklessly). 12 players share a world for 30 days, three seeds:
+
+| Seed | Runs | Done | Burned | Empty-handed | Earned (marks/player/day) | Final rig (of 15) | Final heat |
+|---|---|---|---|---|---|---|---|
+| 1 | 725 | 492 | 22 | 211 | 111 | 8.6 | 60 |
+| 2 | 790 | 641 | 13 | 136 | 147 | 11.8 | 65 |
+| 3 | 766 | 561 | 4 | 201 | 128 | 10.8 | 48 |
+
+About 2.2 runs per player a day (contracts, not cycles, are the limit once the board is shared). Tier 1: 80 to 85 percent done, under 1 percent burned. Tier 2: 34 to 65 percent done, up to 9 percent burned. **Tier 3 is never played by the bot in 30 days** (it needs reputation 40, standing 2 and 60-power scripts that the bot buys last); that is a balance finding for N4, not a result. Money arrives at about 110 to 150 marks a day against about 3,000 for the upgrades the bot buys, so a rig is a month's work.
+
+The framework's own `Simulation` also runs six screen-reading bots for 30 days through the real store, tick and save path (`tests/play.rs`): 180 visits, about 2,500 keys, 150 runs, 114 jobs, 114 breaches in the world. A save is under 400 bytes even at its maximum (`a_save_stays_far_under_the_framework_cap`), and the world under 4 KB after a month of breaches.
+
+### What was walked over a real ssh client
+
+OpenSSH 9.6 against the built server on a fresh SQLite board, at 80x24: claim the board, Doors, open Nullroute; contracts and a briefing; buy a proxy; jack in; scan, move, break a lock, walk to a vault, copy, jack out; the debrief; leave and come back with marks, cycles, skills and standing saved; the shop (buy a script), the hideout; start a run and kill the connection, then reconnect and see the dropped-line penalty. Not exercised: telnet by hand (the screen is shown identical on both transports by a test, and the framework walks both), a real day boundary on a long-running server (the tick is tested with a manual clock, and it ran at start-up), Postgres (this crate adds no storage of its own), colour and the Nerd Font tiers (the screen uses only the framework's styles and no symbols).
+
+### Seams left for the next slices
+
+- **N2.** `Run::step` resolves a patrol in one step (the `Patrol` enum and `Run::add_trace` are the hook points); replace it with encounters. Script degradation: a per-corporation use count belongs beside `NetState` in the world. The module editor needs the workbench (`Player::workbench`) and fragments (not in the content yet).
+- **N3.** `session.rs` is the only screen code and holds no rules; `Run::view`/`NodeView` is the knowledge-respecting view of a node for a map. `look_around` is the same text.
+- **N4.** Crews need a shared run (`Run` is per player today); honeypots at hideouts need a per-player world record; fixer arcs build on `Player::standing` and `Contract`; the autoplay harness reports ends of runs by tier and is the base for the branch-coverage report.
+- **Content still to write (design budget):** 7 more corporations, 21 more node types, 33 scripts, 30 fragments, about 70 more contract templates, 5 fixer arcs, 25 more rig parts and about 12 more hideout upgrades. The tables and the schema tests are in place; the content is data.
