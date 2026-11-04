@@ -1,4 +1,5 @@
-//! The player's save, format version 1. Everything the game needs to continue exactly where the
+//! The player's save, format version 2 (version 1 is the same bytes without the trailing town
+//! section; [`upgrade_v1`] appends an empty one). Everything the game needs to continue exactly where the
 //! hero stopped, the fight included (disconnecting is not an escape) and the hero's own random
 //! generator (reopening is not a re-roll). The shared world is a separate blob (`world`).
 
@@ -8,12 +9,12 @@ use crate::codec::{Reader, Writer};
 use crate::combat::{Enemy, Fight, Stance};
 use crate::content::{Content, Intent, Row};
 use crate::game::{Game, Place, Today};
-use crate::hero::{Hero, derive};
-use crate::rules::DEPTH_MAX;
+use crate::hero::{Bond, Hero, Item, Kit, Taken, derive};
+use crate::rules::{CORES_MAX, DEPTH_MAX, FOUND_MAX, PACK_MAX};
 use crate::world::World;
 
 /// The save format version this code writes.
-pub const SAVE_VERSION: u32 = 1;
+pub const SAVE_VERSION: u32 = 2;
 
 const TAG_TOWN: u8 = 0;
 const TAG_DELVE: u8 = 1;
@@ -186,6 +187,7 @@ impl Game {
             w.u8(*b);
             w.u8(*c);
         }
+        write_town(&mut w, self);
         w.0
     }
 
@@ -220,7 +222,9 @@ impl Game {
             explored.push(r.u32()?);
         }
         let prev_room = read_room(&mut r)?;
-        let today = read_today(&mut r)?;
+        let mut today = read_today(&mut r)?;
+        let mut hero = hero;
+        read_town(&mut r, &mut hero, &mut today)?;
         if !r.done() {
             return None;
         }
@@ -238,6 +242,187 @@ impl Game {
             world: World::new(season),
             changes: Vec::new(),
         })
+    }
+}
+
+const LIST_MAX: usize = 40;
+
+fn write_kit(w: &mut Writer, kit: &Kit) {
+    write_list(w, &kit.affixes);
+    w.bool(kit.core.is_some());
+    if let Some(core) = &kit.core {
+        w.str(core);
+    }
+    w.u8(kit.wear);
+}
+
+fn read_kit(r: &mut Reader<'_>) -> Option<Kit> {
+    let affixes = read_list(r)?;
+    let core = if r.bool()? { Some(r.str()?) } else { None };
+    let wear = r.u8()?;
+    (affixes.len() <= 3 && wear <= 100).then_some(Kit {
+        affixes,
+        core,
+        wear,
+    })
+}
+
+fn write_items(w: &mut Writer, items: &[Item]) {
+    w.count(items.len());
+    for it in items {
+        w.str(&it.base);
+        write_kit(w, &it.kit);
+    }
+}
+
+fn read_items(r: &mut Reader<'_>, max: usize) -> Option<Vec<Item>> {
+    let n = r.count()?;
+    if n > max {
+        return None;
+    }
+    (0..n)
+        .map(|_| {
+            Some(Item {
+                base: r.str()?,
+                kit: read_kit(r)?,
+            })
+        })
+        .collect()
+}
+
+/// The format-2 section: everything the town slice added, after the format-1 bytes.
+fn write_town(w: &mut Writer, g: &Game) {
+    let h = &g.hero;
+    write_kit(w, &h.wkit);
+    write_kit(w, &h.akit);
+    write_items(w, &h.pack);
+    write_items(w, &h.found);
+    write_list(w, &h.cores);
+    write_list(w, &h.recipes);
+    w.u32(h.debt);
+    w.bool(h.bond.is_some());
+    if let Some(b) = &h.bond {
+        w.str(&b.id);
+        w.u8(b.level);
+        w.u8(b.progress);
+        w.i64(b.last);
+    }
+    write_list(w, &h.closed);
+    w.count(h.given.len());
+    for (project, coin, salvage) in &h.given {
+        w.str(project);
+        w.u32(*coin);
+        w.u32(*salvage);
+    }
+    w.bool(h.contract.is_some());
+    if let Some(c) = &h.contract {
+        w.str(&c.id);
+        w.i64(c.day);
+        w.bool(c.done);
+    }
+    w.u16(h.contracts_done);
+    let t = &g.today;
+    w.u8(t.drinks);
+    w.u8(t.gambles);
+    w.u8(t.trained);
+    w.bool(t.courted);
+    w.count(t.bought.len());
+    for b in &t.bought {
+        w.u8(*b);
+    }
+    w.count(t.tips.len());
+    for b in &t.tips {
+        w.u8(*b);
+    }
+    w.bool(t.shut_out);
+}
+
+fn read_town(r: &mut Reader<'_>, h: &mut Hero, today: &mut Today) -> Option<()> {
+    h.wkit = read_kit(r)?;
+    h.akit = read_kit(r)?;
+    h.pack = read_items(r, PACK_MAX)?;
+    h.found = read_items(r, FOUND_MAX)?;
+    h.cores = read_list(r)?;
+    h.recipes = read_list(r)?;
+    if h.cores.len() > CORES_MAX || h.recipes.len() > LIST_MAX {
+        return None;
+    }
+    h.debt = r.u32()?;
+    h.bond = if r.bool()? {
+        let bond = Bond {
+            id: r.str()?,
+            level: r.u8()?,
+            progress: r.u8()?,
+            last: r.i64()?,
+        };
+        (bond.level <= 3).then_some(bond)
+    } else {
+        None
+    };
+    h.closed = read_list(r)?;
+    let n = r.count()?;
+    if n > LIST_MAX {
+        return None;
+    }
+    h.given = (0..n)
+        .map(|_| Some((r.str()?, r.u32()?, r.u32()?)))
+        .collect::<Option<Vec<_>>>()?;
+    h.contract = if r.bool()? {
+        Some(Taken {
+            id: r.str()?,
+            day: r.i64()?,
+            done: r.bool()?,
+        })
+    } else {
+        None
+    };
+    h.contracts_done = r.u16()?;
+    today.drinks = r.u8()?;
+    today.gambles = r.u8()?;
+    today.trained = r.u8()?;
+    today.courted = r.bool()?;
+    let n = r.count()?;
+    today.bought = (0..n).map(|_| r.u8()).collect::<Option<Vec<_>>>()?;
+    let n = r.count()?;
+    today.tips = (0..n).map(|_| r.u8()).collect::<Option<Vec<_>>>()?;
+    today.shut_out = r.bool()?;
+    Some(())
+}
+
+/// Bring a format-1 save up to format 2: the same hero with an empty town section.
+pub(crate) fn upgrade_v1(bytes: &[u8]) -> Option<Vec<u8>> {
+    // Parse the old bytes by decoding a copy that has the empty section appended; a v1 save
+    // that was damaged does not decode and is refused (never guessed at).
+    let mut out = bytes.to_vec();
+    let empty = Game::empty_town_section();
+    out.extend_from_slice(&empty);
+    Game::decode(&out).map(|_| out)
+}
+
+impl Game {
+    /// The bytes of a town section for a hero with no gear marks and nothing in the town.
+    fn empty_town_section() -> Vec<u8> {
+        let mut w = Writer::default();
+        write_kit(&mut w, &Kit::default());
+        write_kit(&mut w, &Kit::default());
+        w.count(0); // pack
+        w.count(0); // found
+        w.count(0); // cores
+        w.count(0); // recipes
+        w.u32(0); // debt
+        w.bool(false); // bond
+        w.count(0); // closed
+        w.count(0); // given
+        w.bool(false); // contract
+        w.u16(0); // contracts done
+        w.u8(0); // drinks
+        w.u8(0); // gambles
+        w.u8(0); // trained
+        w.bool(false); // courted
+        w.count(0); // bought
+        w.count(0); // tips
+        w.bool(false); // shut out
+        w.0
     }
 }
 
@@ -301,6 +486,18 @@ fn read_hero(r: &mut Reader<'_>) -> Option<Hero> {
         deaths: r.u16()?,
         best_depth: r.u8()?,
         kills: r.u32()?,
+        wkit: Kit::default(),
+        akit: Kit::default(),
+        pack: Vec::new(),
+        found: Vec::new(),
+        cores: Vec::new(),
+        recipes: Vec::new(),
+        debt: 0,
+        bond: None,
+        closed: Vec::new(),
+        given: Vec::new(),
+        contract: None,
+        contracts_done: 0,
     })
 }
 

@@ -347,6 +347,9 @@ pub struct WoundDef {
     pub days: u32,
     /// What it does while it lasts.
     pub effects: Vec<Effect>,
+    /// A boon (a good thing that wears off) rather than an injury.
+    #[serde(default)]
+    pub boon: bool,
     /// Percent chance it leaves a scar when it runs out.
     #[serde(default)]
     pub scar_pct: u32,
@@ -369,6 +372,12 @@ pub struct Weapon {
     pub attr: Attr,
     /// Lowest and highest base damage.
     pub damage: [u32; 2],
+    /// The depth band it belongs to (a band-n item needs hero level `3n - 2`).
+    #[serde(default = "one")]
+    pub band: u32,
+    /// What the market asks (0: not sold; a starting kit or a find).
+    #[serde(default)]
+    pub price: u32,
 }
 
 /// Armour.
@@ -381,6 +390,12 @@ pub struct Armour {
     pub name: String,
     /// Flat damage taken off every hit.
     pub armor: u32,
+    /// The depth band it belongs to (a band-n item needs hero level `3n - 2`).
+    #[serde(default = "one")]
+    pub band: u32,
+    /// What the market asks (0: not sold; a starting kit or a find).
+    #[serde(default)]
+    pub price: u32,
 }
 
 /// An entry in the intent table of a monster.
@@ -431,6 +446,9 @@ pub struct Monster {
     /// Monsters that fight beside it.
     #[serde(default)]
     pub adds: Vec<String>,
+    /// The ember-core a guardian drops.
+    #[serde(default)]
+    pub core: Option<String>,
 }
 
 /// A trap.
@@ -636,6 +654,20 @@ pub enum Gain {
     },
     /// A relic of the old forges.
     Relic,
+    /// Teaches a forge recipe.
+    Recipe {
+        /// The recipe id.
+        id: String,
+    },
+    /// An ember-core.
+    Core {
+        /// The core id.
+        id: String,
+    },
+}
+
+fn one() -> u32 {
+    1
 }
 
 fn yes() -> bool {
@@ -760,7 +792,7 @@ pub struct Rooms {
     pub room: Vec<RoomTemplate>,
 }
 
-fn id_ok(id: &str) -> bool {
+pub(crate) fn id_ok(id: &str) -> bool {
     !id.is_empty()
         && id.len() <= 40
         && id
@@ -768,11 +800,11 @@ fn id_ok(id: &str) -> bool {
             .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
 }
 
-fn text_ok(text: &str) -> bool {
+pub(crate) fn text_ok(text: &str) -> bool {
     !text.trim().is_empty() && text.chars().count() <= TEXT_MAX && plain_text(text)
 }
 
-fn check_ids<'a>(table: &str, ids: impl Iterator<Item = &'a str>, problems: &mut Vec<String>) {
+pub(crate) fn check_ids<'a>(table: &str, ids: impl Iterator<Item = &'a str>, problems: &mut Vec<String>) {
     let mut seen: Vec<&str> = Vec::new();
     for id in ids {
         if !id_ok(id) {
@@ -785,7 +817,7 @@ fn check_ids<'a>(table: &str, ids: impl Iterator<Item = &'a str>, problems: &mut
     }
 }
 
-fn check_text(table: &str, id: &str, text: &str, problems: &mut Vec<String>) {
+pub(crate) fn check_text(table: &str, id: &str, text: &str, problems: &mut Vec<String>) {
     if !text_ok(text) {
         problems.push(format!(
             "[{table}] `{id}`: text must be 1 to {TEXT_MAX} plain characters"
@@ -793,7 +825,7 @@ fn check_text(table: &str, id: &str, text: &str, problems: &mut Vec<String>) {
     }
 }
 
-fn check_effects(table: &str, id: &str, effects: &[Effect], problems: &mut Vec<String>) {
+pub(crate) fn check_effects(table: &str, id: &str, effects: &[Effect], problems: &mut Vec<String>) {
     if effects.is_empty() {
         problems.push(format!("[{table}] `{id}`: needs at least one effect"));
     }
@@ -1198,6 +1230,14 @@ pub struct Content {
     pub wounds: Wounds,
     /// Weapons and armour.
     pub gear: Gear,
+    /// Affixes and ember-cores.
+    pub affixes: crate::content_town::Affixes,
+    /// Forge recipes.
+    pub recipes: crate::content_town::Recipes,
+    /// Town projects.
+    pub projects: crate::content_town::Projects,
+    /// Contracts, companions and rumours.
+    pub town: crate::content_town::TownTables,
 }
 
 impl Content {
@@ -1216,6 +1256,10 @@ impl Content {
             rooms: content::load("rooms", ROOMS_TOML)?,
             wounds: content::load("wounds", WOUNDS_TOML)?,
             gear: content::load("gear", GEAR_TOML)?,
+            affixes: content::load("affixes", crate::content_town::AFFIXES_TOML)?,
+            recipes: content::load("recipes", crate::content_town::RECIPES_TOML)?,
+            projects: content::load("projects", crate::content_town::PROJECTS_TOML)?,
+            town: content::load("town", crate::content_town::TOWN_TOML)?,
         };
         let problems = content.cross_check();
         if problems.is_empty() {
@@ -1237,6 +1281,7 @@ impl Content {
         self.check_wound_and_trap_links(&mut problems);
         self.check_effect_moves(&mut problems);
         self.check_rooms(&mut problems);
+        self.check_town(&mut problems);
         for (id, why) in [
             ("brink", "a death save survived"),
             ("dragged-home", "a rescue"),
@@ -1247,6 +1292,195 @@ impl Content {
             }
         }
         problems
+    }
+
+    fn check_town(&self, problems: &mut Vec<String>) {
+        use crate::content_town::{ContractKind, Learn, Makes, ProjectEffect, RumourEffect, Slot};
+        for w in &self.gear.weapon {
+            if self.armour(&w.id).is_some() {
+                problems.push(format!("`{}` is both a weapon and an armour", w.id));
+            }
+            if !(1..=5).contains(&w.band) {
+                problems.push(format!("weapon `{}`: band must be 1 to 5", w.id));
+            }
+        }
+        for a in &self.gear.armour {
+            if !(1..=5).contains(&a.band) {
+                problems.push(format!("armour `{}`: band must be 1 to 5", a.id));
+            }
+        }
+        for a in self
+            .affixes
+            .affix
+            .iter()
+            .map(|a| (&a.id, &a.effects))
+            .chain(self.affixes.core.iter().map(|c| (&c.id, &c.effects)))
+        {
+            for e in a.1 {
+                if let Effect::Move { id } = e
+                    && self.mv(id).is_none()
+                {
+                    problems.push(format!("`{}` names unknown move `{id}`", a.0));
+                }
+            }
+        }
+        for m in &self.bestiary.monster {
+            if let Some(core) = &m.core {
+                if self.core(core).is_none() {
+                    problems.push(format!("monster `{}`: unknown core `{core}`", m.id));
+                }
+                if !m.guardian {
+                    problems.push(format!("monster `{}`: only a guardian drops a core", m.id));
+                }
+            }
+        }
+        for r in &self.recipes.recipe {
+            match &r.makes {
+                Makes::Item { base, affixes } => {
+                    let Some(slot) = self.base_slot(base) else {
+                        problems.push(format!("recipe `{}`: unknown base `{base}`", r.id));
+                        continue;
+                    };
+                    for a in affixes {
+                        match self.affix(a) {
+                            None => problems.push(format!("recipe `{}`: unknown affix `{a}`", r.id)),
+                            Some(def) if !def.slot.fits(slot) => problems.push(format!(
+                                "recipe `{}`: affix `{a}` does not fit a {base}",
+                                r.id
+                            )),
+                            Some(_) => {}
+                        }
+                    }
+                }
+                Makes::Core { id } => {
+                    if self.core(id).is_none() {
+                        problems.push(format!("recipe `{}`: unknown core `{id}`", r.id));
+                    }
+                }
+            }
+            match &r.learn {
+                Learn::Calling { id } if self.calling(id).is_none() => {
+                    problems.push(format!("recipe `{}`: unknown calling `{id}`", r.id));
+                }
+                Learn::Node { id } if self.node(id).is_none() => {
+                    problems.push(format!("recipe `{}`: unknown node `{id}`", r.id));
+                }
+                _ => {}
+            }
+            for need in &r.need {
+                self.check_need("recipe", &r.id, need, problems);
+            }
+        }
+        for p in &self.projects.project {
+            for req in &p.requires {
+                if self.project(req).is_none() {
+                    problems.push(format!("project `{}`: unknown requirement `{req}`", p.id));
+                }
+            }
+            if let ProjectEffect::Forge { level } | ProjectEffect::Temple { level } | ProjectEffect::Market { level } | ProjectEffect::Guild { level } = p.effect
+                && !(1..=3).contains(&level)
+            {
+                problems.push(format!("project `{}`: level must be 1 to 3", p.id));
+            }
+        }
+        for c in &self.town.contract {
+            if let Some(m) = &c.monster {
+                match self.monster(m) {
+                    None => problems.push(format!("contract `{}`: unknown monster `{m}`", c.id)),
+                    Some(def) if def.guardian || def.band > (c.depth - 1) / 5 + 1 => {
+                        problems.push(format!(
+                            "contract `{}`: `{m}` is a guardian or lives deeper than level {}",
+                            c.id, c.depth
+                        ));
+                    }
+                    Some(_) => {}
+                }
+            }
+            if matches!(c.kind, ContractKind::Heirloom | ContractKind::Rescue)
+                && c.room.is_some_and(|k| {
+                    !matches!(
+                        k,
+                        RoomKind::Vault
+                            | RoomKind::Forge
+                            | RoomKind::Flooded
+                            | RoomKind::Shrine
+                            | RoomKind::Corridor
+                    )
+                })
+            {
+                problems.push(format!(
+                    "contract `{}`: the room must be a vault, forge, flooded hall, shrine or corridor",
+                    c.id
+                ));
+            }
+            if let Some(r) = &c.recipe {
+                if self.recipe(r).is_none() {
+                    problems.push(format!("contract `{}`: unknown recipe `{r}`", c.id));
+                }
+            }
+            if let Some(r) = &c.core {
+                if self.core(r).is_none() {
+                    problems.push(format!("contract `{}`: unknown core `{r}`", c.id));
+                }
+            }
+            for need in &c.need {
+                self.check_need("contract", &c.id, need, problems);
+            }
+        }
+        for c in &self.town.companion {
+            for s in &c.steps {
+                for e in &s.effects {
+                    if let Effect::Move { id } = e
+                        && self.mv(id).is_none()
+                    {
+                        problems.push(format!("companion `{}`: unknown move `{id}`", c.id));
+                    }
+                }
+            }
+        }
+        for r in &self.town.rumour {
+            if let RumourEffect::Boon { id } = &r.effect
+                && !self.wound(id).is_some_and(|w| w.boon)
+            {
+                problems.push(format!("rumour `{}`: `{id}` is not a boon", r.id));
+            }
+        }
+        for id in ["hangover", "roughed-up", "drilled"] {
+            if self.wound(id).is_none() {
+                problems.push(format!("the wound or boon `{id}` (the town) must exist"));
+            }
+        }
+        let _ = Slot::Any;
+        for room in &self.rooms.room {
+            for o in &room.option {
+                for g in o.ok.iter().chain(&o.fail) {
+                    match g {
+                        Gain::Recipe { id } if self.recipe(id).is_none() => {
+                            problems.push(format!("room `{}`: unknown recipe `{id}`", room.id));
+                        }
+                        Gain::Core { id } if self.core(id).is_none() => {
+                            problems.push(format!("room `{}`: unknown core `{id}`", room.id));
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
+    }
+
+    fn check_need(&self, table: &str, id: &str, need: &Need, problems: &mut Vec<String>) {
+        match need {
+            Need::Calling { id: c } if self.calling(c).is_none() => {
+                problems.push(format!("{table} `{id}`: unknown calling `{c}`"));
+            }
+            Need::Node { id: n } if self.node(n).is_none() => {
+                problems.push(format!("{table} `{id}`: unknown node `{n}`"));
+            }
+            Need::Trait { id: t } if self.trait_or_scar(t).is_none() => {
+                problems.push(format!("{table} `{id}`: unknown trait `{t}`"));
+            }
+            _ => {}
+        }
     }
 
     fn check_callings(&self, problems: &mut Vec<String>) {
@@ -1430,6 +1664,54 @@ impl Content {
     #[must_use]
     pub fn armour(&self, id: &str) -> Option<&Armour> {
         self.gear.armour.iter().find(|a| a.id == id)
+    }
+
+    /// A weapon or an armour by id, with the slot it fits.
+    #[must_use]
+    pub fn base_slot(&self, id: &str) -> Option<crate::content_town::Slot> {
+        if self.weapon(id).is_some() {
+            Some(crate::content_town::Slot::Weapon)
+        } else if self.armour(id).is_some() {
+            Some(crate::content_town::Slot::Armour)
+        } else {
+            None
+        }
+    }
+
+    /// An affix by id.
+    #[must_use]
+    pub fn affix(&self, id: &str) -> Option<&crate::content_town::Affix> {
+        self.affixes.affix.iter().find(|a| a.id == id)
+    }
+
+    /// An ember-core by id.
+    #[must_use]
+    pub fn core(&self, id: &str) -> Option<&crate::content_town::Core> {
+        self.affixes.core.iter().find(|a| a.id == id)
+    }
+
+    /// A recipe by id.
+    #[must_use]
+    pub fn recipe(&self, id: &str) -> Option<&crate::content_town::Recipe> {
+        self.recipes.recipe.iter().find(|a| a.id == id)
+    }
+
+    /// A town project by id.
+    #[must_use]
+    pub fn project(&self, id: &str) -> Option<&crate::content_town::Project> {
+        self.projects.project.iter().find(|a| a.id == id)
+    }
+
+    /// A contract by id.
+    #[must_use]
+    pub fn contract(&self, id: &str) -> Option<&crate::content_town::Contract> {
+        self.town.contract.iter().find(|a| a.id == id)
+    }
+
+    /// A companion by id.
+    #[must_use]
+    pub fn companion(&self, id: &str) -> Option<&crate::content_town::Companion> {
+        self.town.companion.iter().find(|a| a.id == id)
     }
 
     /// The guardian of a band.

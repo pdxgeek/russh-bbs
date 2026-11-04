@@ -759,6 +759,12 @@ impl Game {
         );
         self.gain_xp(xp, ev);
         self.add_fatigue(3 + i32::try_from(fight.enemies.len()).unwrap_or(1), &d);
+        self.wear_after_fight(content, fight.guardian, ev);
+        if let Place::Delve { depth, .. } = self.place {
+            let ids: Vec<String> = fight.enemies.iter().map(|e| e.id.clone()).collect();
+            self.contract_beast(content, &ids, depth, ev);
+            self.drops_after_fight(content, depth, &fight, ev);
+        }
         if let Place::Delve { depth, room } = self.place {
             self.today.cleared.push((depth, room));
             if let Some(name) = guardian_name {
@@ -772,6 +778,46 @@ impl Game {
                 let by = self.hero.name.clone();
                 self.emit(crate::world::Change::Slain(band, by));
             }
+        }
+    }
+
+    /// Fighting wears the weapon and the armour; a guardian's fight wears them twice as much.
+    fn wear_after_fight(&mut self, content: &Content, guardian: bool, ev: &mut Vec<Event>) {
+        let amount: u8 = if guardian { 4 } else { 2 };
+        for (kit, what) in [(&mut self.hero.wkit, "weapon"), (&mut self.hero.akit, "armour")] {
+            let before = kit.wear;
+            kit.wear = kit.wear.saturating_add(amount).min(100);
+            if before < 100 && kit.wear >= 100 {
+                say(
+                    ev,
+                    Tone::Bad,
+                    format!("Your {what} is broken. It will serve only poorly until the smith sees it."),
+                );
+            } else if before < 75 && kit.wear >= 75 {
+                say(ev, Tone::Dim, format!("Your {what} is badly worn."));
+            }
+        }
+        let _ = content;
+    }
+
+    /// What a won fight leaves: a guardian's ember-core, and now and then a piece of gear.
+    fn drops_after_fight(&mut self, content: &Content, depth: u8, fight: &Fight, ev: &mut Vec<Event>) {
+        let band = u32::from(dungeon::band_of(depth));
+        for e in &fight.enemies {
+            let Some(core) = content.monster(&e.id).and_then(|m| m.core.clone()) else {
+                continue;
+            };
+            if self.hero.cores.len() < crate::rules::CORES_MAX {
+                let name = content.core(&core).map_or("an ember-core", |c| c.name.as_str());
+                say(ev, Tone::Good, format!("From its ashes you take a {name}."));
+                self.hero.cores.push(core);
+            }
+        }
+        let chance = if fight.guardian { 60 } else { 12 };
+        if self.rng.below(100) < chance
+            && let Some(item) = self.roll_drop(content, band)
+        {
+            self.pick_up(content, item, ev);
         }
     }
 
