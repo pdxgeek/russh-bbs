@@ -34,6 +34,7 @@ use russh_bbs_door::Door;
 use russh_bbs_door::tick::{self, TickPolicy};
 use russh_bbs_door_emberdeep::Emberdeep;
 use russh_bbs_door_example::CoinToss;
+use russh_bbs_door_hallpass::Hallpass;
 use russh_bbs_door_long_haul::LongHaul;
 use russh_bbs_door_nullroute::Nullroute;
 use russh_bbs_door_saltmarch::Saltmarch;
@@ -92,6 +93,7 @@ impl Doors {
             Emberdeep::shared()?,
             Nullroute::shared()?,
             LongHaul::shared()?,
+            Hallpass::shared()?,
         ]))
     }
 

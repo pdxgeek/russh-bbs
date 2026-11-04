@@ -12,4 +12,11 @@ wound = [
   { id = "brink", name = "The Brink", days = 3, effects = [{ kind = "max_hp", amount = -8 }, { kind = "death_save", amount = -5 }], scar_pct = 50, scar = "nightmares" },
   { id = "dragged-home", name = "Dragged Home", days = 2, effects = [{ kind = "fatigue_guard", amount = -20 }, { kind = "max_hp", amount = -4 }] },
   { id = "weakened", name = "Weakened", days = 3, effects = [{ kind = "attr", attr = "might", amount = -2 }, { kind = "attr", attr = "spirit", amount = -1 }, { kind = "damage", amount = -1 }] },
+  # Boons and town troubles: found in the tavern, the guild and the dice-crew's debt book.
+  { id = "merry", name = "Merry", boon = true, days = 1, effects = [{ kind = "loot_pct", amount = 8 }, { kind = "attr", attr = "spirit", amount = 1 }] },
+  { id = "sharp-eared", name = "Sharp-Eared", boon = true, days = 1, effects = [{ kind = "trap_sense", amount = 3 }] },
+  { id = "lucky-streak", name = "Lucky Streak", boon = true, days = 2, effects = [{ kind = "death_save", amount = 8 }, { kind = "crit_pct", amount = 3 }] },
+  { id = "drilled", name = "Drilled", boon = true, days = 1, effects = [{ kind = "start_focus", amount = 1 }, { kind = "damage", amount = 1 }] },
+  { id = "hangover", name = "Hangover", days = 1, effects = [{ kind = "attr", attr = "wits", amount = -2 }, { kind = "fatigue_guard", amount = -10 }] },
+  { id = "roughed-up", name = "Roughed Up", days = 3, effects = [{ kind = "max_hp", amount = -6 }, { kind = "damage", amount = -1 }] },
 ]

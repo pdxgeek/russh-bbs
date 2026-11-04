@@ -1,0 +1,291 @@
+# The school map. Exits are undirected. `hours` lists the slot kinds a place is open in
+# (class, chapel, lunch, free, after, evening, night). `unlock` lists conditions; a locked
+# place opens if ANY of them holds (see the condition language in content.rs).
+# `change` entries replace the description for the slot kinds they list.
+
+[[place]]
+id = "dorm"
+name = "Fenwick dormitory"
+wing = "main"
+look = "Eight iron beds, eight trunks, one radiator that clanks."
+exits = ["common_room", "quad"]
+hours = ["class", "chapel", "lunch", "free", "after", "evening", "night"]
+tags = ["rest"]
+[[place.change]]
+kinds = ["night"]
+text = "Dark, snoring, and a floorboard by the door that gives you away."
+
+[[place]]
+id = "common_room"
+name = "Common room"
+wing = "main"
+look = "Sagging armchairs, a chess set missing a bishop, the notice board."
+exits = ["dorm", "quad", "main_hall"]
+hours = ["lunch", "free", "after", "evening"]
+tags = ["rumours"]
+
+[[place]]
+id = "quad"
+name = "The Quad"
+wing = "grounds"
+look = "Wet flagstones around a dry fountain. Every path in the school crosses it."
+exits = ["dorm", "common_room", "main_hall", "grounds", "library", "classroom_corridor", "gym"]
+hours = ["class", "chapel", "lunch", "free", "after", "evening", "night"]
+[[place.change]]
+kinds = ["class"]
+text = "Empty, apart from a pigeon and whoever is out of lessons."
+
+[[place]]
+id = "main_hall"
+name = "Great Hall"
+wing = "main"
+look = "Long tables under portraits of headmistresses who all look disappointed."
+exits = ["quad", "common_room", "admin_corridor", "chapel", "tuck_shop"]
+hours = ["chapel", "lunch", "free", "after", "evening"]
+tags = ["dining"]
+[[place.change]]
+kinds = ["lunch", "evening"]
+text = "Clattering trays, a hundred voices and the tannoy over the top table."
+
+[[place]]
+id = "tuck_shop"
+name = "The tuck shop"
+wing = "main"
+look = "A hatch, a counter, and Mrs. Tarn's ledger of debts."
+exits = ["main_hall", "quad"]
+hours = ["lunch", "free", "after"]
+shop = "tuck"
+
+[[place]]
+id = "classroom_corridor"
+name = "Classroom corridor"
+wing = "main"
+look = "Brown doors, a noticeboard and a fire alarm behind glass."
+exits = ["quad", "admin_corridor", "room_maths", "room_sciences", "room_languages", "room_history", "art_room"]
+hours = ["class", "lunch", "free", "after", "evening"]
+tags = ["noticeboard"]
+
+[[place]]
+id = "room_maths"
+name = "Maths room"
+wing = "main"
+look = "Chalk dust and the smell of old erasers."
+exits = ["classroom_corridor"]
+hours = ["class", "free", "after"]
+[[place]]
+id = "room_sciences"
+name = "Science lab"
+wing = "main"
+look = "Fume cupboards, gas taps, and a skeleton called Gerald."
+exits = ["classroom_corridor"]
+hours = ["class", "free", "after"]
+[[place]]
+id = "room_languages"
+name = "Languages room"
+wing = "main"
+look = "Verb tables on every wall, and a gramophone nobody may touch."
+exits = ["classroom_corridor"]
+hours = ["class", "free", "after"]
+[[place]]
+id = "room_history"
+name = "History room"
+wing = "main"
+look = "Maps of countries that have changed their names since."
+exits = ["classroom_corridor"]
+hours = ["class", "free", "after"]
+[[place]]
+id = "art_room"
+name = "Art room"
+wing = "main"
+look = "Paint-spattered stools and a cupboard of supplies that is always open to someone."
+exits = ["classroom_corridor"]
+hours = ["class", "free", "after", "evening"]
+shop = "art"
+
+[[place]]
+id = "library"
+name = "Library"
+wing = "main"
+look = "Green lamps, a hush that has teeth, and the restricted shelf behind a grille."
+exits = ["quad", "admin_corridor"]
+hours = ["class", "lunch", "free", "after", "evening"]
+tags = ["study"]
+
+[[place]]
+id = "admin_corridor"
+name = "Admin corridor"
+wing = "main"
+look = "Polished floor, closed doors, and nowhere to explain yourself."
+exits = ["main_hall", "classroom_corridor", "library", "staffroom", "headmistress_office", "deputy_office"]
+hours = ["class", "lunch", "free", "after"]
+tags = ["patrolled"]
+
+[[place]]
+id = "staffroom"
+name = "Staffroom"
+wing = "main"
+look = "A kettle, a biscuit tin, a rota on the wall and a jar of sugar nobody labels."
+exits = ["admin_corridor", "cellars"]
+hours = ["lunch", "free", "after"]
+lock = "staffroom"
+unlock = ["know:staff_rota", "item:lockpicks", "item:master_key", "world:deputy_moved"]
+
+[[place]]
+id = "headmistress_office"
+name = "Headmistress's office"
+wing = "main"
+look = "A desk the size of a boat. The files live in the cabinet behind it."
+exits = ["admin_corridor"]
+hours = ["class", "lunch", "free", "after"]
+lock = "office"
+unlock = ["item:master_key"]
+
+[[place]]
+id = "deputy_office"
+name = "Deputy head's office"
+wing = "main"
+look = "Everything squared to the desk edge. A framed rule for every day of the week."
+exits = ["admin_corridor"]
+hours = ["class", "lunch", "free", "after"]
+lock = "deputy"
+unlock = ["item:master_key", "item:lockpicks", "world:deputy_moved"]
+
+[[place]]
+id = "gym"
+name = "Gymnasium"
+wing = "grounds"
+look = "Rope, wall bars, and a vaulting horse older than the headmistress."
+exits = ["quad", "grounds"]
+hours = ["class", "free", "after", "evening"]
+
+[[place]]
+id = "grounds"
+name = "The grounds"
+wing = "grounds"
+look = "Lawn sloping to a fog-bound lake. Gravel paths, one gate."
+exits = ["quad", "gym", "car_park", "boathouse", "chapel", "caretaker_shed"]
+hours = ["class", "chapel", "lunch", "free", "after", "evening", "night"]
+[[place.change]]
+kinds = ["night"]
+text = "Fog off the lake and the far-off sound of a prefect's torch."
+
+[[place]]
+id = "car_park"
+name = "Staff car park"
+wing = "grounds"
+look = "Five cars in a row. The long grey one is the headmistress's."
+exits = ["grounds"]
+hours = ["class", "lunch", "free", "after"]
+
+[[place]]
+id = "boathouse"
+name = "The boathouse"
+wing = "grounds"
+look = "Racked sculls, a smell of varnish, and the Rowing Eight's gear store."
+exits = ["grounds", "tunnels"]
+hours = ["free", "after", "evening", "night"]
+shop = "boats"
+tags = ["hide"]
+
+[[place]]
+id = "chapel"
+name = "Chapel"
+wing = "grounds"
+look = "Cold stone and a hymn board with one number missing."
+exits = ["main_hall", "grounds", "organ_loft"]
+hours = ["chapel", "free", "after", "evening"]
+
+[[place]]
+id = "organ_loft"
+name = "Organ loft"
+wing = "grounds"
+look = "Pipes, a bench, and a view of everyone's head."
+exits = ["chapel"]
+hours = ["chapel", "free", "after", "evening"]
+lock = "organ"
+unlock = ["item:lockpicks", "item:master_key", "know:organ_key_spot"]
+
+[[place]]
+id = "caretaker_shed"
+name = "Caretaker's shed"
+wing = "grounds"
+look = "Tools on hooks, a kettle on a paraffin stove, and Mr. Fenn's armchair."
+exits = ["grounds", "old_wing"]
+hours = ["lunch", "free", "after", "evening"]
+shop = "caretaker"
+
+[[place]]
+id = "workshop"
+name = "The Workshop"
+wing = "old"
+look = "Benches, a soldering iron and half a clock. The Workshop's den."
+exits = ["old_wing"]
+hours = ["free", "after", "evening"]
+shop = "workshop"
+
+[[place]]
+id = "paper_office"
+name = "Paper office"
+wing = "old"
+look = "A press, a pasteboard and the Ink Society's one good typewriter."
+exits = ["old_wing"]
+hours = ["free", "after", "evening"]
+lock = "paper"
+unlock = ["standing:ink_society>=15", "item:lockpicks", "item:master_key"]
+
+[[place]]
+id = "old_wing"
+name = "The Old Wing"
+wing = "old"
+look = "Creaking boards, a damp patch shaped like a map of Ireland, and a door chained shut at the far end."
+exits = ["caretaker_shed", "workshop", "paper_office", "detention_room", "east_wing", "cellars"]
+hours = ["free", "after", "evening", "night"]
+
+[[place]]
+id = "detention_room"
+name = "Detention room"
+wing = "old"
+look = "Twelve desks, one clock, no windows worth the name."
+exits = ["old_wing"]
+hours = ["after"]
+tags = ["detention"]
+
+[[place]]
+id = "east_wing"
+name = "The East Wing"
+wing = "east"
+look = "Closed for years. Nobody says why."
+exits = ["old_wing"]
+hours = ["night"]
+lock = "east"
+unlock = ["item:east_wing_key"]
+
+[[place]]
+id = "cellars"
+name = "The cellars"
+wing = "under"
+look = "Barrels, pipes and a passage that smells of lake water."
+exits = ["old_wing", "staffroom", "tunnels"]
+hours = ["free", "after", "evening", "night"]
+lock = "cellar"
+unlock = ["know:caretaker_rounds", "item:tunnel_map", "item:master_key"]
+
+[[place]]
+id = "tunnels"
+name = "The tunnels"
+wing = "under"
+look = "Brick arches under the old wing. Someone has chalked arrows on the walls."
+exits = ["cellars", "boathouse", "chapel"]
+hours = ["free", "after", "evening", "night"]
+lock = "tunnels"
+unlock = ["item:tunnel_map"]
+
+[[place]]
+id = "staff_quarters"
+name = "Staff quarters"
+wing = "main"
+look = "A passage of doors with brass numbers. Staff only."
+exits = ["admin_corridor"]
+hours = ["class", "chapel", "lunch", "free", "after", "evening", "night"]
+lock = "quarters"
+unlock = ["item:master_key"]

@@ -10,6 +10,43 @@ use crate::rules::{
     xp_for_level,
 };
 
+/// Wear, affixes and an ember-core on one piece of gear.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub(crate) struct Kit {
+    pub(crate) affixes: Vec<String>,
+    pub(crate) core: Option<String>,
+    /// 0 (new) to 100 (broken).
+    pub(crate) wear: u8,
+}
+
+/// A piece of gear that is not being worn.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct Item {
+    pub(crate) base: String,
+    pub(crate) kit: Kit,
+}
+
+/// The companion a hero is courting.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct Bond {
+    pub(crate) id: String,
+    /// 0 (a first acquaintance) to 3.
+    pub(crate) level: u8,
+    /// Good days toward the next rung.
+    pub(crate) progress: u8,
+    /// The last day the hero called.
+    pub(crate) last: i64,
+}
+
+/// A contract the hero has taken from the tavern board.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct Taken {
+    pub(crate) id: String,
+    pub(crate) day: i64,
+    /// Whether the deed is done and only the turning in is left.
+    pub(crate) done: bool,
+}
+
 /// A hero.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct Hero {
@@ -39,6 +76,27 @@ pub(crate) struct Hero {
     pub(crate) deaths: u16,
     pub(crate) best_depth: u8,
     pub(crate) kills: u32,
+    /// Affixes, core and wear of the worn weapon.
+    pub(crate) wkit: Kit,
+    /// Affixes, core and wear of the worn armour.
+    pub(crate) akit: Kit,
+    /// Spare gear at home (safe when the hero dies).
+    pub(crate) pack: Vec<Item>,
+    /// Gear picked up this delve (carried, like salvage; lost with the hero, home on arrival).
+    pub(crate) found: Vec<Item>,
+    /// Ember-cores not slotted into anything.
+    pub(crate) cores: Vec<String>,
+    /// Recipes learned below or at the library (calling and node recipes are not listed).
+    pub(crate) recipes: Vec<String>,
+    /// Coin owed to the dice-crew.
+    pub(crate) debt: u32,
+    pub(crate) bond: Option<Bond>,
+    /// Companions who have moved on.
+    pub(crate) closed: Vec<String>,
+    /// What the hero has given to each town project, in all: project, coin, salvage.
+    pub(crate) given: Vec<(String, u32, u32)>,
+    pub(crate) contract: Option<Taken>,
+    pub(crate) contracts_done: u16,
 }
 
 /// Everything the rules read about a hero, computed from the hero and the content.
@@ -144,7 +202,35 @@ pub(crate) fn derive(hero: &Hero, content: &Content) -> Derived {
     if let Some(armour) = content.armour(&hero.armour) {
         d.armor += i32::try_from(armour.armor).unwrap_or(0);
     }
+    // Wear takes a point off every 25: a broken weapon bites for 4 less, broken armour stops 4 less.
+    d.damage -= i32::from(hero.wkit.wear / 25);
+    d.armor -= i32::from(hero.akit.wear / 25);
     let mut effects: Vec<&Effect> = Vec::new();
+    for kit in [&hero.wkit, &hero.akit] {
+        effects.extend(
+            kit.affixes
+                .iter()
+                .filter_map(|id| content.affix(id))
+                .flat_map(|a| a.effects.iter()),
+        );
+        effects.extend(
+            kit.core
+                .iter()
+                .filter_map(|id| content.core(id))
+                .flat_map(|c| c.effects.iter()),
+        );
+    }
+    if let Some(bond) = &hero.bond
+        && let Some(companion) = content.companion(&bond.id)
+    {
+        effects.extend(
+            companion
+                .steps
+                .iter()
+                .take(usize::from(bond.level))
+                .flat_map(|s| s.effects.iter()),
+        );
+    }
     effects.extend(
         hero.nodes
             .iter()
@@ -242,6 +328,18 @@ impl Hero {
             deaths: 0,
             best_depth: 0,
             kills: 0,
+            wkit: Kit::default(),
+            akit: Kit::default(),
+            pack: Vec::new(),
+            found: Vec::new(),
+            cores: Vec::new(),
+            recipes: Vec::new(),
+            debt: 0,
+            bond: None,
+            closed: Vec::new(),
+            given: Vec::new(),
+            contract: None,
+            contracts_done: 0,
         };
         hero.hp = derive(&hero, content).max_hp;
         Ok(hero)
@@ -252,6 +350,25 @@ impl Hero {
         if let Some(def) = content.calling(&self.calling) {
             self.weapon.clone_from(&def.weapon);
             self.armour.clone_from(&def.armour);
+        }
+        self.wkit = Kit::default();
+        self.akit = Kit::default();
+    }
+
+    /// Whether the hero knows a recipe: from the calling, from a skill node, or learned.
+    pub(crate) fn knows(&self, recipe: &crate::content_town::Recipe) -> bool {
+        use crate::content_town::Learn;
+        match &recipe.learn {
+            Learn::Calling { id } => self.calling == *id,
+            Learn::Node { id } => self.nodes.contains(id),
+            Learn::Found | Learn::Library => self.recipes.contains(&recipe.id),
+        }
+    }
+
+    /// Learn a recipe from below or the library (a no-op if already known).
+    pub(crate) fn learn(&mut self, id: &str) {
+        if !self.recipes.iter().any(|r| r == id) {
+            self.recipes.push(id.to_owned());
         }
     }
 

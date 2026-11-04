@@ -6,13 +6,14 @@
 use russh_bbs_door::DoorRng;
 
 use crate::combat::{Fight, FightAct};
-use crate::content::{Attr, Content, Gain, Intent, RoomKind, RoomOption, ShortcutKind, Weapon};
+use crate::content::{Attr, Content, Gain, Intent, RoomKind, RoomOption, Weapon};
 use crate::dungeon::{self, Dir, Level};
 use crate::hero::{Derived, Hero, derive, fatigue_steps, modifier};
 use crate::rules::{
     BASE_CARRY, DEPTH_MAX, NIGHT_BELOW_TURNS, RECOVERY_DAYS, RESCUE_TURNS, REST_TURNS,
     TURNS_PER_DAY,
 };
+use crate::town::TownAct;
 use crate::world::{Change, Fallen, World};
 
 /// How a line of the log is drawn.
@@ -51,7 +52,7 @@ pub(crate) enum Event {
 pub(crate) struct Refused(pub(crate) String);
 
 impl Refused {
-    fn new(text: &str) -> Self {
+    pub(crate) fn new(text: &str) -> Self {
         Self(text.to_owned())
     }
 }
@@ -81,6 +82,20 @@ pub(crate) struct Today {
     pub(crate) cleared: Vec<(u8, u8)>,
     /// Depth, room, state: 1 spotted, 2 sprung or disarmed.
     pub(crate) traps: Vec<(u8, u8, u8)>,
+    /// Drinks taken at the tavern.
+    pub(crate) drinks: u8,
+    /// Games of dice played.
+    pub(crate) gambles: u8,
+    /// Drills at the guild hall.
+    pub(crate) trained: u8,
+    /// Whether the hero has called on a companion.
+    pub(crate) courted: bool,
+    /// Market stalls already bought from, by index.
+    pub(crate) bought: Vec<u8>,
+    /// Levels a rumour has opened the map of for the next descent.
+    pub(crate) tips: Vec<u8>,
+    /// Thrown out of the dice game for the night.
+    pub(crate) shut_out: bool,
 }
 
 impl Today {
@@ -146,6 +161,8 @@ pub(crate) enum Action {
     Buy(String),
     Raise(Attr),
     Fight(FightAct),
+    /// Something in the town's places.
+    Town(TownAct),
 }
 
 /// One hero's whole game.
@@ -169,7 +186,7 @@ pub(crate) struct Game {
     pub(crate) changes: Vec<Change>,
 }
 
-fn say(ev: &mut Vec<Event>, tone: Tone, text: impl Into<String>) {
+pub(crate) fn say(ev: &mut Vec<Event>, tone: Tone, text: impl Into<String>) {
     ev.push(Event::Say(tone, text.into()));
 }
 
@@ -299,6 +316,7 @@ impl Game {
             }
         }
         self.age_wounds(content, elapsed, &mut ev);
+        self.town_morning(content, today, &mut ev);
         let d = self.derived(content);
         match self.place.clone() {
             Place::Town => {
@@ -327,7 +345,11 @@ impl Game {
             let Some(def) = content.wound(&id) else {
                 continue;
             };
-            let mut line = format!("Your {} has healed.", def.name.to_lowercase());
+            let mut line = if def.boon {
+                format!("Your {} wears off.", def.name.to_lowercase())
+            } else {
+                format!("Your {} has healed.", def.name.to_lowercase())
+            };
             if let Some(scar) = &def.scar
                 && def.scar_pct > 0
                 && self.rng.below(100) < def.scar_pct
@@ -420,7 +442,23 @@ impl Game {
 
     fn wake_in_temple(&mut self, content: &Content, ev: &mut Vec<Event>) {
         self.place = Place::Town;
+        let kept = self.town_fx(content).reliquary.then(|| {
+            (
+                self.hero.weapon.clone(),
+                std::mem::take(&mut self.hero.wkit),
+            )
+        });
         self.hero.reset_gear(content);
+        if let Some((weapon, kit)) = kept {
+            self.hero.weapon = weapon;
+            self.hero.wkit = kit;
+            say(
+                ev,
+                Tone::Good,
+                "The reliquary kept your weapon safe. Your armour and your pack are lost in the deep.",
+            );
+        }
+        self.hero.found.clear();
         self.hero.coin -= self.hero.coin / 4;
         self.hero.salvage = 0;
         self.hero.inflict(content, "weakened");
@@ -527,7 +565,7 @@ impl Game {
         }
         let d = self.derived(content);
         let mut best = i64::from(depth);
-        for (at, kind) in &self.world.shortcuts {
+        for (at, kind) in &self.ways_down(content) {
             if *at <= depth {
                 best = best.min(i64::from(depth - at) + i64::from(kind.flat_cost()));
             }
@@ -539,6 +577,9 @@ impl Game {
             cost += (carried - allowed + 9) / 10;
         }
         if self.hero.fatigue >= 75 {
+            cost += 1;
+        }
+        if self.escorting(content) {
             cost += 1;
         }
         u32::try_from(cost).unwrap_or(u32::MAX)
@@ -573,6 +614,7 @@ impl Game {
                 let name = content.node(&id).map_or("a skill", |n| n.name.as_str());
                 say(&mut ev, Tone::Good, format!("You learn {name}."));
             }
+            (Place::Town, Action::Town(act)) => self.town_act(content, act, &mut ev)?,
             (Place::Town, Action::Raise(attr)) => {
                 self.hero.raise(attr).map_err(Refused::new)?;
                 say(
@@ -595,17 +637,18 @@ impl Game {
         depth: u8,
         ev: &mut Vec<Event>,
     ) -> Result<(), Refused> {
+        let ways = self.ways_down(content);
         let cost = if depth == 1 {
             1
         } else {
-            self.world
-                .shortcut_at(depth)
-                .map(ShortcutKind::flat_cost)
+            ways.iter()
+                .find(|(d, _)| *d == depth)
+                .map(|(_, k)| k.flat_cost())
                 .ok_or_else(|| Refused::new("There is no shortcut to that level."))?
         };
         self.spend(cost)?;
         let level = dungeon::generate(content, self.season, self.epoch, depth);
-        self.enter_level(depth, level.entry);
+        self.enter_level(&level, level.entry, ev);
         self.prev_room = level.entry;
         if depth == 1 {
             say(
@@ -614,10 +657,10 @@ impl Game {
                 "You light your torch and go down the Emberdeep's first stair.",
             );
         } else {
-            let kind = self
-                .world
-                .shortcut_at(depth)
-                .map_or("shortcut", ShortcutKind::label);
+            let kind = ways
+                .iter()
+                .find(|(d, _)| *d == depth)
+                .map_or("shortcut", |(_, k)| k.label());
             say(
                 ev,
                 Tone::Good,
@@ -627,10 +670,22 @@ impl Game {
         Ok(())
     }
 
-    fn enter_level(&mut self, depth: u8, entry: u8) {
+    fn enter_level(&mut self, level: &Level, entry: u8, ev: &mut Vec<Event>) {
+        let depth = level.depth;
         self.place = Place::Delve { depth, room: entry };
         self.hero.best_depth = self.hero.best_depth.max(depth);
         self.mark(depth, entry);
+        if let Some(at) = self.today.tips.iter().position(|d| *d == depth) {
+            self.today.tips.remove(at);
+            if let Some(mask) = self.explored.get_mut(usize::from(depth) - 1) {
+                *mask = level.all_mask();
+            }
+            say(
+                ev,
+                Tone::Good,
+                "The rumour was good: the whole level is on your map.",
+            );
+        }
     }
 
     fn mark(&mut self, depth: u8, room: u8) {
@@ -731,6 +786,9 @@ impl Game {
         if self.is_hostile(content, level, target) {
             say(ev, Tone::Bad, "A pack is here, and it has seen you.");
         }
+        if let Some(t) = level.room(target) {
+            self.contract_room(content, t.kind, level.depth, ev);
+        }
         self.check_trap(content, level, target, &d, ev);
         Ok(())
     }
@@ -822,7 +880,7 @@ impl Game {
         }
         self.spend(1)?;
         let next = dungeon::generate(content, self.season, self.epoch, depth + 1);
-        self.enter_level(depth + 1, next.entry);
+        self.enter_level(&next, next.entry, ev);
         self.prev_room = next.entry;
         say(
             ev,
@@ -877,6 +935,14 @@ impl Game {
         self.fight = None;
         self.hero.stash = self.hero.stash.saturating_add(self.hero.salvage);
         self.hero.salvage = 0;
+        for item in std::mem::take(&mut self.hero.found) {
+            if self.hero.pack.len() < crate::rules::PACK_MAX {
+                self.hero.pack.push(item);
+            } else {
+                // No room at home: the find is broken up for salvage.
+                self.hero.stash = self.hero.stash.saturating_add(5);
+            }
+        }
         let name = self.hero.name.clone();
         if depth > 0 {
             self.emit(Change::Depth(name, self.hero.best_depth));
@@ -1064,6 +1130,36 @@ impl Game {
                 self.hero.relics = self.hero.relics.saturating_add(1);
                 say(ev, Tone::Good, "+1 relic of the old forges");
             }
+            Gain::Recipe { id } => self.find_recipe(content, id, ev),
+            Gain::Core { id } => self.find_core(content, id, ev),
+        }
+    }
+
+    fn find_recipe(&mut self, content: &Content, id: &str, ev: &mut Vec<Event>) {
+        let name = content.recipe(id).map_or("a recipe", |r| r.name.as_str());
+        if content.recipe(id).is_some_and(|r| self.hero.knows(r)) {
+            say(
+                ev,
+                Tone::Dim,
+                format!("You already know the pattern for {name}."),
+            );
+        } else {
+            self.hero.learn(id);
+            say(ev, Tone::Good, format!("You learn a recipe: {name}."));
+        }
+    }
+
+    fn find_core(&mut self, content: &Content, id: &str, ev: &mut Vec<Event>) {
+        let name = content.core(id).map_or("a core", |c| c.name.as_str());
+        if self.hero.cores.len() < crate::rules::CORES_MAX {
+            self.hero.cores.push(id.to_owned());
+            say(ev, Tone::Good, format!("+1 {name}"));
+        } else {
+            say(
+                ev,
+                Tone::Dim,
+                format!("You find a {name}, but have no room for it."),
+            );
         }
     }
 

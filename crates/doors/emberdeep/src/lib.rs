@@ -18,12 +18,14 @@
 mod codec;
 mod combat;
 pub mod content;
+pub mod content_town;
 mod dungeon;
 mod game;
 mod hero;
 mod rules;
 mod save;
 mod session;
+mod town;
 mod world;
 
 #[cfg(test)]
@@ -40,7 +42,7 @@ use crate::content::Content;
 use crate::world::{WORLD_FORMAT, World};
 
 pub use crate::save::{SAVE_VERSION, Summary, Whereabouts, summarize};
-pub use crate::world::{WorldSummary, summarize_world};
+pub use crate::world::{TownSummary, WorldSummary, summarize_town, summarize_world};
 
 /// The door's id: the key of its saves and world on every board.
 pub const DOOR_ID: &str = "emberdeep";
@@ -101,9 +103,14 @@ impl Door for Emberdeep {
         ))
     }
 
-    fn migrate(&self, _kind: BlobKind, from: u32, _bytes: &[u8]) -> Result<Vec<u8>, MigrateError> {
-        // Format 1 is the first. When a version 2 exists, this is where 1 becomes 2.
-        Err(MigrateError::Unsupported(from))
+    fn migrate(&self, kind: BlobKind, from: u32, bytes: &[u8]) -> Result<Vec<u8>, MigrateError> {
+        // Format 1 (M4-E1) becomes format 2 (the town slice) by appending an empty town section;
+        // a blob that does not read as format 1 is refused, never guessed at.
+        match (kind, from) {
+            (BlobKind::Save, 1) => save::upgrade_v1(bytes).ok_or(MigrateError::Corrupt(1)),
+            (BlobKind::World, 1) => world::upgrade_v1(bytes).ok_or(MigrateError::Corrupt(1)),
+            _ => Err(MigrateError::Unsupported(from)),
+        }
     }
 
     fn has_daily_tick(&self) -> bool {
