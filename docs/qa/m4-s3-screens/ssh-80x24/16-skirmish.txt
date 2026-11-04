@@ -1,0 +1,24 @@
+  ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+  │Saltmarch                                                                 │
+  │                                                                          │
+  │ ⌂ founder  day 1 of season 1        turns ██████▎░░░ 19/30  ◈ 40 tallies │
+  │ ≈ TIDE █████████┃█░░  88 ↑ high in 0h42 (91)  spring tides  ▲▲ FLOOD ▲▲  │
+  │ x SKIRMISH, round 1   odds ++ easy   solid ground   morale ████▊░░░      │
+  │ order Wrack-gull 2 › Wrack-gull 1 › Wrack-gull 3 › Wrack-gull 4 › ▶Yarrow│
+  │╭ back ───╮╭ middle ──╮╭ front ─────╮╭ front ─────╮╭ middle ──╮╭ back ───╮│
+  ││·        ││·         ││▶Yarrow     ││ Wrack-gull~││·         ││·        ││
+  ││         ││          ││████▏░ 14/20││████████ 5/5││          ││         ││
+  ││         ││          ││[t]wader    ││[a]swarms   ││          ││         ││
+  ││         ││          ││ Hale       ││ Wrack-gull~││          ││         ││
+  ││         ││          ││████▌░ 18/24││████████ 5/5││          ││         ││
+  ││         ││          ││[u]raker    ││[b]swarms   ││          ││         ││
+  │╰─────────╯╰──────────╯╰────────────╯╰────────────╯╰──────────╯╰─────────╯│
+  │╭ Yarrow Brinecook to act ───────────────────────────────────────────────╮│
+  ││Strike  [a]Wrack-gull 1 [b]Wrack-gull 2 [c]Wrack-gull 3 [d]Wrack-gull 4 ││
+  ││Special [e]Wrack-gull 1 [f]Wrack-gull 2 [g]Wrack-gull 3 [h]Wrack-gull 4 ││
+  ││Throw   [p]Wrack-gull 1 [q]Wrack-gull 2 [r]Wrack-gull 3 [s]Wrack-gull 4 ││
+  ││Shove   [l]Wrack-gull 1 [m]Wrack-gull 2 [n]Wrack-gull 3 [o]Wrack-gull 4 ││
+  │╰────────────────────────────────────────────────────────────────────────╯│
+  │ Wrack-gull hits Yarrow Brinecook for 3.                                  │
+  │ » Yarrow Brinecook strikes Wrack-gull                arrows walk  Enter  │
+  └──────────────────────────────────────────────────────────────────────────┘

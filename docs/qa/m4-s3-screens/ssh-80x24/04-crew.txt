@@ -1,0 +1,24 @@
+  ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+  │Saltmarch                                                                 │
+  │                                                                          │
+  │ ⌂ founder  day 1 of season 1        turns ██████████ 30/30  ◈ 40 tallies │
+  │ ≈ TIDE ███████████░░░░┃░░░░░░  52 ↓ low in 3h18 (9)  spring tides  calm  │
+  │╭ Crew 3/3 ──────────────────────────╮╭ Yarrow Brinecook, the wader ─────╮│
+  ││ name               trade      age  ││Age     ████▉░░░░░░ 27 (retires at││
+  ││▸Yarrow Brinecook   wader      27   ││grit ██▍░ 6  wit ██░░ 5  reac █▌░░││
+  ││ Hale Mudfoot       raker      45   ││◆ Greedy Works hard fo~           ││
+  ││ Edda Fogwalker     smith      39   ││◆ Sea-born Grew up on ~           ││
+  ││                                    ││✓ no injuries                     ││
+  ││                                    ││♡ no bonds yet: hardship shared ma││
+  ││                                    ││Skills                            ││
+  ││                                    ││wader      █▉░░░░░░░░░░░░░░░░░  1 ││
+  ││                                    ││                                  ││
+  ││                                    ││                                  ││
+  ││                                    │╰──────────────────────────────────╯│
+  ││                                    │╭ Orders for Yarrow Brinecook ─────╮│
+  ││                                    ││ a Take on Garrick Mudfoot, hea~  ││
+  ││                                    ││ b Take on Cormac Gullcall, fig~  ││
+  ││                                    ││ c Train Yarrow Brinecook in wa~  ││
+  │╰────────────────────────────────────╯╰──────────────────────────────────╯│
+  │ » Take on Garrick Mudfoot, healer (age 27), 22~ up/down crew  </> order  │
+  └──────────────────────────────────────────────────────────────────────────┘

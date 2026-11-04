@@ -40,7 +40,7 @@ id = "main_hall"
 name = "Great Hall"
 wing = "main"
 look = "Long tables under portraits of headmistresses who all look disappointed."
-exits = ["quad", "common_room", "admin_corridor", "chapel", "tuck_shop"]
+exits = ["quad", "common_room", "admin_corridor", "chapel", "tuck_shop", "green_room"]
 hours = ["chapel", "lunch", "free", "after", "evening"]
 tags = ["dining"]
 [[place.change]]
@@ -107,7 +107,7 @@ id = "library"
 name = "Library"
 wing = "main"
 look = "Green lamps, a hush that has teeth, and the restricted shelf behind a grille."
-exits = ["quad", "admin_corridor"]
+exits = ["quad", "admin_corridor", "restricted_stacks"]
 hours = ["class", "lunch", "free", "after", "evening"]
 tags = ["study"]
 
@@ -231,7 +231,7 @@ look = "A press, a pasteboard and the Ink Society's one good typewriter."
 exits = ["old_wing"]
 hours = ["free", "after", "evening"]
 lock = "paper"
-unlock = ["standing:ink_society>=15", "item:lockpicks", "item:master_key"]
+unlock = ["standing:ink_society>=15", "rank:paper>=1", "item:lockpicks", "item:master_key"]
 
 [[place]]
 id = "old_wing"
@@ -265,10 +265,10 @@ id = "cellars"
 name = "The cellars"
 wing = "under"
 look = "Barrels, pipes and a passage that smells of lake water."
-exits = ["old_wing", "staffroom", "tunnels"]
+exits = ["old_wing", "staffroom", "tunnels", "candle_den"]
 hours = ["free", "after", "evening", "night"]
 lock = "cellar"
-unlock = ["know:caretaker_rounds", "item:tunnel_map", "item:master_key"]
+unlock = ["know:caretaker_rounds", "rank:candle>=1", "item:tunnel_map", "item:master_key"]
 
 [[place]]
 id = "tunnels"
@@ -289,3 +289,35 @@ exits = ["admin_corridor"]
 hours = ["class", "chapel", "lunch", "free", "after", "evening", "night"]
 lock = "quarters"
 unlock = ["item:master_key"]
+
+[[place]]
+id = "restricted_stacks"
+name = "The restricted stacks"
+wing = "main"
+look = "A cage of shelves behind the grille: old registers, banned novels and the school's own memory."
+exits = ["library"]
+hours = ["class", "lunch", "free", "after", "evening"]
+tags = ["study", "restricted"]
+lock = "stacks"
+unlock = ["grade:history>=70", "rank:chess>=2", "know:restricted_key"]
+
+[[place]]
+id = "green_room"
+name = "The green room"
+wing = "main"
+look = "Greasepaint, a rail of costumes from forty winters of plays, and a mirror with a crack in it."
+exits = ["main_hall"]
+hours = ["free", "after", "evening"]
+shop = "greenroom"
+lock = "greenroom"
+unlock = ["rank:drama>=2"]
+
+[[place]]
+id = "candle_den"
+name = "The candle room"
+wing = "under"
+look = "A low vault off the cellars, stub candles in the niches, and a ring of chairs that are not school issue."
+exits = ["cellars"]
+hours = ["evening", "night"]
+lock = "candles"
+unlock = ["rank:candle>=1"]
