@@ -1,0 +1,2349 @@
+=== town 80x24 (door 74x19)
+|◆ EMBERDEEP · Cindermere ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Warden
+|Deepest █████▊░░░░░░░░░░░░░░░░░░ 6/25  Torch  ████████████████ 25/25 turns
+|Health █████████████████████░░░ 62/71  Level up ██████░░░░░░░░░░ 300/400xp
+|╭ Under the hill ───────────────────╮╭ Places ───────────────────────────╮
+|│     ◖                          .  ││▸ [b] Tavern     3 postings today  │
+|│        ▄▄▄▄▄              ░.      ││  [m] Market     4 stalls          │
+|│ ▄▄▄▄▄▁▂██▪██▆▆▇▇███████▇▆▀▀▀      ││  [i] Gear       0 spare piece(s)  │
+|│ ██▪█████████████████████████▇▅▃▁  ││  [f] Forge      forge level 2     │
+|│███████████████████████████████████││  [t] Temple     tend you: 18c     │
+|╰───────────────────────────────────╯│  [g] Guild hall drill 32c, 0 today│
+|╭ Tavern board ─────────────────────╮│  [l] Library    reading room shut │
+|│▪ Ash opened a lift at level 6.    ││  [w] Town works 1 of 11 finished  │
+|│▪ Brindle felled the guardian of   ││  [s] Skills     3 point(s) to spe…│
+|│▪ the Upper Works.                 ││  [h] Hero sheet level 4           │
+|│▪ Mott did not come back from level││  [r] The hall   1 fallen          │
+|│▪ 4.                               ││[d] Descend to level 1 (1 turn)    │
+|│                                   ││[1] lift to level 6 (1 turn)       │
+|╰───────────────────────────────────╯╰───────────────────────────────────╯
+|[Up/Down Enter] open a place  [d] descend  [q] leave the door
+=== town 100x30 (door 74x23)
+|◆ EMBERDEEP · Cindermere ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Warden
+|Deepest █████▊░░░░░░░░░░░░░░░░░░ 6/25  Torch  ████████████████ 25/25 turns
+|Health █████████████████████░░░ 62/71  Level up ██████░░░░░░░░░░ 300/400xp
+|╭ Under the hill ───────────────────╮╭ Places ───────────────────────────╮
+|│     ◖                          .  ││▸ [b] Tavern     3 postings today  │
+|│        ▄▄▄▄▄  ▄▄▄▄▄       ░.      ││  [m] Market     4 stalls          │
+|│ ▄▄▄▄▄  ██▪██▄▄█████▇▆▆▆▅▃▀▀▀   *  ││  [i] Gear       0 spare piece(s)  │
+|│ ██▪██▅▆▇███████████████████▆▃▁    ││  [f] Forge      forge level 2     │
+|│▁▃▆████████████████████████████▆▃  ││  [t] Temple     tend you: 18c     │
+|│███████████████████████████████████││  [g] Guild hall drill 32c, 0 today│
+|╰───────────────────────────────────╯│  [l] Library    reading room shut │
+|╭ Tavern board ─────────────────────╮│  [w] Town works 1 of 11 finished  │
+|│▪ Ash opened a lift at level 6.    ││  [s] Skills     3 point(s) to spe…│
+|│▪ Brindle felled the guardian of   ││  [h] Hero sheet level 4           │
+|│▪ the Upper Works.                 ││  [r] The hall   1 fallen          │
+|│▪ Mott did not come back from level││                                   │
+|│▪ 4.                               ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││[d] Descend to level 1 (1 turn)    │
+|│                                   ││[1] lift to level 6 (1 turn)       │
+|╰───────────────────────────────────╯╰───────────────────────────────────╯
+|[Up/Down Enter] open a place  [d] descend  [q] leave the door
+=== town 132x43 (door 74x36)
+|◆ EMBERDEEP · Cindermere ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Warden
+|Deepest █████▊░░░░░░░░░░░░░░░░░░ 6/25  Torch  ████████████████ 25/25 turns
+|Health █████████████████████░░░ 62/71  Level up ██████░░░░░░░░░░ 300/400xp
+|╭ Under the hill ───────────────────╮╭ Places ───────────────────────────╮
+|│     ◖                          .  ││▸ [b] Tavern     3 postings today  │
+|│        .      ▄▄▄▄▄      ░ .      ││  [m] Market     4 stalls          │
+|│        ▄▄▄▄▄* █████▁▁▁    ░    *  ││  [i] Gear       0 spare piece(s)  │
+|│        ██▪██▄▅▆▇███████▆▄▀▀▀     .││  [f] Forge      forge level 2     │
+|│ ▄▄▄▄▄▂▄▆▇█████████████████▇▃      ││  [t] Temple     tend you: 18c     │
+|│ ██▪█████████████████████████▇▃    ││  [g] Guild hall drill 32c, 0 today│
+|│ ▂▆████████████████████████████▇▂  ││  [l] Library    reading room shut │
+|│▆████████████████████████████████▆▁││  [w] Town works 1 of 11 finished  │
+|│███████████████████████████████████││  [s] Skills     3 point(s) to spe…│
+|╰───────────────────────────────────╯│  [h] Hero sheet level 4           │
+|╭ Tavern board ─────────────────────╮│  [r] The hall   1 fallen          │
+|│▪ Ash opened a lift at level 6.    ││                                   │
+|│▪ Brindle felled the guardian of   ││                                   │
+|│▪ the Upper Works.                 ││                                   │
+|│▪ Mott did not come back from level││                                   │
+|│▪ 4.                               ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││[d] Descend to level 1 (1 turn)    │
+|│                                   ││[1] lift to level 6 (1 turn)       │
+|╰───────────────────────────────────╯╰───────────────────────────────────╯
+|[Up/Down Enter] open a place  [d] descend  [q] leave the door
+=== sheet-numbers 80x24 (door 74x19)
+|◆ EMBERDEEP · Hero sheet ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Warden
+|Deepest █████▊░░░░░░░░░░░░░░░░░░ 6/25  Torch  ████████████████ 25/25 turns
+|Health █████████████████████░░░ 62/71  Level up ██████░░░░░░░░░░ 300/400xp
+| Numbers │ Marks │ Moves & knacks
+|╭ Numbers ──────────────────────────────╮╭ Detail ───────────────────────╮
+|│  Might   ████████░░░░ 13              ││Finesse                        │
+|│▸ Finesse ██████░░░░░░ 10              ││Speed and precision. Adds to   │
+|│  Wits    █████░░░░░░░  9              ││damage with light and ranged   │
+|│  Spirit  ██████░░░░░░ 10              ││weapons, and to slipping blows.│
+|│  Armor         2                      ││                               │
+|│  Damage        +0                     ││Base 10, with everything you   │
+|│  Crit          0%                     ││carry and know: 10.            │
+|│  Evade         5%                     ││                               │
+|│  Death save    +0%                    ││                               │
+|│  Carry         20                     ││                               │
+|│  Climb ease    0                      ││                               │
+|│  Loot          +0%                    ││                               │
+|╰───────────────────────────────────────╯╰───────────────────────────────╯
+|[Up/Down] choose  [Left/Right] tab  [Esc] back
+=== sheet-numbers 100x30 (door 74x23)
+|◆ EMBERDEEP · Hero sheet ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Warden
+|Deepest █████▊░░░░░░░░░░░░░░░░░░ 6/25  Torch  ████████████████ 25/25 turns
+|Health █████████████████████░░░ 62/71  Level up ██████░░░░░░░░░░ 300/400xp
+| Numbers │ Marks │ Moves & knacks
+|╭ Numbers ──────────────────────────────╮╭ Detail ───────────────────────╮
+|│  Might   ████████░░░░ 13              ││Finesse                        │
+|│▸ Finesse ██████░░░░░░ 10              ││Speed and precision. Adds to   │
+|│  Wits    █████░░░░░░░  9              ││damage with light and ranged   │
+|│  Spirit  ██████░░░░░░ 10              ││weapons, and to slipping blows.│
+|│  Armor         2                      ││                               │
+|│  Damage        +0                     ││Base 10, with everything you   │
+|│  Crit          0%                     ││carry and know: 10.            │
+|│  Evade         5%                     ││                               │
+|│  Death save    +0%                    ││                               │
+|│  Carry         20                     ││                               │
+|│  Climb ease    0                      ││                               │
+|│  Loot          +0%                    ││                               │
+|│  Trap sense    +0                     ││                               │
+|│  Fatigue guard 0%                     ││                               │
+|│  Weapon  Iron Halberd                 ││                               │
+|│  Armour  Ringmail                     ││                               │
+|╰───────────────────────────────────────╯╰───────────────────────────────╯
+|[Up/Down] choose  [Left/Right] tab  [Esc] back
+=== sheet-numbers 132x43 (door 74x36)
+|◆ EMBERDEEP · Hero sheet ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Warden
+|Deepest █████▊░░░░░░░░░░░░░░░░░░ 6/25  Torch  ████████████████ 25/25 turns
+|Health █████████████████████░░░ 62/71  Level up ██████░░░░░░░░░░ 300/400xp
+| Numbers │ Marks │ Moves & knacks
+|╭ Numbers ──────────────────────────────╮╭ Detail ───────────────────────╮
+|│  Might   ████████░░░░ 13              ││Finesse                        │
+|│▸ Finesse ██████░░░░░░ 10              ││Speed and precision. Adds to   │
+|│  Wits    █████░░░░░░░  9              ││damage with light and ranged   │
+|│  Spirit  ██████░░░░░░ 10              ││weapons, and to slipping blows.│
+|│  Armor         2                      ││                               │
+|│  Damage        +0                     ││Base 10, with everything you   │
+|│  Crit          0%                     ││carry and know: 10.            │
+|│  Evade         5%                     ││                               │
+|│  Death save    +0%                    ││                               │
+|│  Carry         20                     ││                               │
+|│  Climb ease    0                      ││                               │
+|│  Loot          +0%                    ││                               │
+|│  Trap sense    +0                     ││                               │
+|│  Fatigue guard 0%                     ││                               │
+|│  Weapon  Iron Halberd                 ││                               │
+|│  Armour  Ringmail                     ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|╰───────────────────────────────────────╯╰───────────────────────────────╯
+|[Up/Down] choose  [Left/Right] tab  [Esc] back
+=== sheet-marks 80x24 (door 74x19)
+|◆ EMBERDEEP · Hero sheet ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Warden
+|Deepest █████▊░░░░░░░░░░░░░░░░░░ 6/25  Torch  ████████████████ 25/25 turns
+|Health █████████████████████░░░ 62/71  Level up ██████░░░░░░░░░░ 300/400xp
+| Numbers │ Marks │ Moves & knacks
+|╭ Marks ────────────────────────────────╮╭ Detail ───────────────────────╮
+|│▸ trait  Quick                         ││Quick                          │
+|│  trait  Stout                         ││You are hard to hit.           │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|╰───────────────────────────────────────╯╰───────────────────────────────╯
+|[Up/Down] choose  [Left/Right] tab  [Esc] back
+=== sheet-marks 100x30 (door 74x23)
+|◆ EMBERDEEP · Hero sheet ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Warden
+|Deepest █████▊░░░░░░░░░░░░░░░░░░ 6/25  Torch  ████████████████ 25/25 turns
+|Health █████████████████████░░░ 62/71  Level up ██████░░░░░░░░░░ 300/400xp
+| Numbers │ Marks │ Moves & knacks
+|╭ Marks ────────────────────────────────╮╭ Detail ───────────────────────╮
+|│▸ trait  Quick                         ││Quick                          │
+|│  trait  Stout                         ││You are hard to hit.           │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|╰───────────────────────────────────────╯╰───────────────────────────────╯
+|[Up/Down] choose  [Left/Right] tab  [Esc] back
+=== sheet-marks 132x43 (door 74x36)
+|◆ EMBERDEEP · Hero sheet ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Warden
+|Deepest █████▊░░░░░░░░░░░░░░░░░░ 6/25  Torch  ████████████████ 25/25 turns
+|Health █████████████████████░░░ 62/71  Level up ██████░░░░░░░░░░ 300/400xp
+| Numbers │ Marks │ Moves & knacks
+|╭ Marks ────────────────────────────────╮╭ Detail ───────────────────────╮
+|│▸ trait  Quick                         ││Quick                          │
+|│  trait  Stout                         ││You are hard to hit.           │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|╰───────────────────────────────────────╯╰───────────────────────────────╯
+|[Up/Down] choose  [Left/Right] tab  [Esc] back
+=== sheet-moves 80x24 (door 74x19)
+|◆ EMBERDEEP · Hero sheet ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Warden
+|Deepest █████▊░░░░░░░░░░░░░░░░░░ 6/25  Torch  ████████████████ 25/25 turns
+|Health █████████████████████░░░ 62/71  Level up ██████░░░░░░░░░░ 300/400xp
+| Numbers │ Marks │ Moves & knacks
+|╭ Moves & knacks ───────────────────────╮╭ Detail ───────────────────────╮
+|│▸ Hold the Line       2f               ││Hold the Line                  │
+|│  Shield Bash         1f               ││Plant your feet; the next hits │
+|│  knack               brawn            ││are soaked up.                 │
+|│                                       ││Costs 2 focus. Reach: the front│
+|│                                       ││row.                           │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|╰───────────────────────────────────────╯╰───────────────────────────────╯
+|[Up/Down] choose  [Left/Right] tab  [Esc] back
+=== sheet-moves 100x30 (door 74x23)
+|◆ EMBERDEEP · Hero sheet ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Warden
+|Deepest █████▊░░░░░░░░░░░░░░░░░░ 6/25  Torch  ████████████████ 25/25 turns
+|Health █████████████████████░░░ 62/71  Level up ██████░░░░░░░░░░ 300/400xp
+| Numbers │ Marks │ Moves & knacks
+|╭ Moves & knacks ───────────────────────╮╭ Detail ───────────────────────╮
+|│▸ Hold the Line       2f               ││Hold the Line                  │
+|│  Shield Bash         1f               ││Plant your feet; the next hits │
+|│  knack               brawn            ││are soaked up.                 │
+|│                                       ││Costs 2 focus. Reach: the front│
+|│                                       ││row.                           │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|╰───────────────────────────────────────╯╰───────────────────────────────╯
+|[Up/Down] choose  [Left/Right] tab  [Esc] back
+=== sheet-moves 132x43 (door 74x36)
+|◆ EMBERDEEP · Hero sheet ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Warden
+|Deepest █████▊░░░░░░░░░░░░░░░░░░ 6/25  Torch  ████████████████ 25/25 turns
+|Health █████████████████████░░░ 62/71  Level up ██████░░░░░░░░░░ 300/400xp
+| Numbers │ Marks │ Moves & knacks
+|╭ Moves & knacks ───────────────────────╮╭ Detail ───────────────────────╮
+|│▸ Hold the Line       2f               ││Hold the Line                  │
+|│  Shield Bash         1f               ││Plant your feet; the next hits │
+|│  knack               brawn            ││are soaked up.                 │
+|│                                       ││Costs 2 focus. Reach: the front│
+|│                                       ││row.                           │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|╰───────────────────────────────────────╯╰───────────────────────────────╯
+|[Up/Down] choose  [Left/Right] tab  [Esc] back
+=== hall-standings 80x24 (door 74x19)
+|◆ EMBERDEEP · The Hall · season 1 · the dungeon remade 0x
+| Standings │ The dead │ The world
+|╭ Deepest heroes ───────────────╮╭ The guardians ────────────────────────╮
+|│Brindle L14█████████           ││1 the Upper Works                      │
+|│Ash     L11███████             ││    slain by Brindle                   │
+|│Wren    L9██████               ││2 the Slag Galleries                   │
+|│Ember   L6███                  ││    unbroken                           │
+|│Tallow  L3                     ││3 the Glass Halls                      │
+|│                               ││    unbroken                           │
+|│                               ││4 the Hearth of Kin…                   │
+|│                               ││    unbroken                           │
+|│                               ││5 the Cold Furnace                     │
+|│                               ││    unbroken                           │
+|│                               ││You: level 6, 31 kills, 0 death(s)     │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|╰───────────────────────────────╯╰───────────────────────────────────────╯
+|[Left/Right] tab  [Esc] back
+=== hall-standings 100x30 (door 74x23)
+|◆ EMBERDEEP · The Hall · season 1 · the dungeon remade 0x
+| Standings │ The dead │ The world
+|╭ Deepest heroes ───────────────╮╭ The guardians ────────────────────────╮
+|│Brindle L14█████████           ││1 the Upper Works                      │
+|│Ash     L11███████             ││    slain by Brindle                   │
+|│Wren    L9██████               ││2 the Slag Galleries                   │
+|│Ember   L6███                  ││    unbroken                           │
+|│Tallow  L3                     ││3 the Glass Halls                      │
+|│                               ││    unbroken                           │
+|│                               ││4 the Hearth of Kin…                   │
+|│                               ││    unbroken                           │
+|│                               ││5 the Cold Furnace                     │
+|│                               ││    unbroken                           │
+|│                               ││You: level 6, 31 kills, 0 death(s)     │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|╰───────────────────────────────╯╰───────────────────────────────────────╯
+|[Left/Right] tab  [Esc] back
+=== hall-standings 132x43 (door 74x36)
+|◆ EMBERDEEP · The Hall · season 1 · the dungeon remade 0x
+| Standings │ The dead │ The world
+|╭ Deepest heroes ───────────────╮╭ The guardians ────────────────────────╮
+|│Brindle L14█████████           ││1 the Upper Works                      │
+|│Ash     L11███████             ││    slain by Brindle                   │
+|│Wren    L9██████               ││2 the Slag Galleries                   │
+|│Ember   L6███                  ││    unbroken                           │
+|│Tallow  L3                     ││3 the Glass Halls                      │
+|│                               ││    unbroken                           │
+|│                               ││4 the Hearth of Kin…                   │
+|│                               ││    unbroken                           │
+|│                               ││5 the Cold Furnace                     │
+|│                               ││    unbroken                           │
+|│                               ││You: level 6, 31 kills, 0 death(s)     │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|│                               ││                                       │
+|╰───────────────────────────────╯╰───────────────────────────────────────╯
+|[Left/Right] tab  [Esc] back
+=== hall-dead 80x24 (door 74x19)
+|◆ EMBERDEEP · The Hall · season 1 · the dungeon remade 0x
+| Standings │ The dead │ The world
+|╭ In memory ─────────────────────────────────────────────────────────────╮
+|│†  Mott           level 4  6d ago  carried home by Wren                 │
+|│†  Tallow         level 7  1d ago  waiting, 2 day(s) left               │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|╰────────────────────────────────────────────────────────────────────────╯
+|[Left/Right] tab  [Esc] back
+=== hall-dead 100x30 (door 74x23)
+|◆ EMBERDEEP · The Hall · season 1 · the dungeon remade 0x
+| Standings │ The dead │ The world
+|╭ In memory ─────────────────────────────────────────────────────────────╮
+|│†  Mott           level 4  6d ago  carried home by Wren                 │
+|│†  Tallow         level 7  1d ago  waiting, 2 day(s) left               │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|╰────────────────────────────────────────────────────────────────────────╯
+|[Left/Right] tab  [Esc] back
+=== hall-dead 132x43 (door 74x36)
+|◆ EMBERDEEP · The Hall · season 1 · the dungeon remade 0x
+| Standings │ The dead │ The world
+|╭ In memory ─────────────────────────────────────────────────────────────╮
+|│†  Mott           level 4  6d ago  carried home by Wren                 │
+|│†  Tallow         level 7  1d ago  waiting, 2 day(s) left               │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|╰────────────────────────────────────────────────────────────────────────╯
+|[Left/Right] tab  [Esc] back
+=== hall-world 80x24 (door 74x19)
+|◆ EMBERDEEP · The Hall · season 1 · the dungeon remade 0x
+| Standings │ The dead │ The world
+|╭ What heroes have changed ─────────╮╭ News of the season ───────────────╮
+|│▪ A lift at level 6                ││▸ Ash opened a lift at level 6.    │
+|│◆ New Bellows for the Forge        ││▸ Brindle felled the guardian of t…│
+|│                                   ││▸ Mott did not come back from leve…│
+|│                                   ││▸ Tallow did not come back from le…│
+|│                                   ││▸ Ash opened a lift on level 6.    │
+|│                                   ││▸ Brindle slew the guardian of ban…│
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|╰───────────────────────────────────╯╰───────────────────────────────────╯
+|[Left/Right] tab  [Esc] back
+=== hall-world 100x30 (door 74x23)
+|◆ EMBERDEEP · The Hall · season 1 · the dungeon remade 0x
+| Standings │ The dead │ The world
+|╭ What heroes have changed ─────────╮╭ News of the season ───────────────╮
+|│▪ A lift at level 6                ││▸ Ash opened a lift at level 6.    │
+|│◆ New Bellows for the Forge        ││▸ Brindle felled the guardian of t…│
+|│                                   ││▸ Mott did not come back from leve…│
+|│                                   ││▸ Tallow did not come back from le…│
+|│                                   ││▸ Ash opened a lift on level 6.    │
+|│                                   ││▸ Brindle slew the guardian of ban…│
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|╰───────────────────────────────────╯╰───────────────────────────────────╯
+|[Left/Right] tab  [Esc] back
+=== hall-world 132x43 (door 74x36)
+|◆ EMBERDEEP · The Hall · season 1 · the dungeon remade 0x
+| Standings │ The dead │ The world
+|╭ What heroes have changed ─────────╮╭ News of the season ───────────────╮
+|│▪ A lift at level 6                ││▸ Ash opened a lift at level 6.    │
+|│◆ New Bellows for the Forge        ││▸ Brindle felled the guardian of t…│
+|│                                   ││▸ Mott did not come back from leve…│
+|│                                   ││▸ Tallow did not come back from le…│
+|│                                   ││▸ Ash opened a lift on level 6.    │
+|│                                   ││▸ Brindle slew the guardian of ban…│
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|│                                   ││                                   │
+|╰───────────────────────────────────╯╰───────────────────────────────────╯
+|[Left/Right] tab  [Esc] back
+=== market 80x24 (door 74x19)
+|◆ EMBERDEEP · The Market ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|stalls under the hill   Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Market ────────────────────────────╮╭ Preview ─────────────────────╮
+|│Wares                 Stats     Lv Price││Prism Coat                    │
+|│[-] Glass Sabre       11-17 Fin 7  SOLD ││arm 6                         │
+|│[1] Prism Hammer      11-17 Wit 7  156c ││Needs hero level 7 (you are   │
+|│[2] Prism Coat        arm 6     7  150c ││4).                           │
+|│[3] Sturdy Scrap Plat arm 3     1  56c  ││                              │
+|│                                        ││Coin 84 -> -66                │
+|│Shelf price, 14 days 61c - 245c         ││                              │
+|│█▁     █▁                               ││                              │
+|│██▃ ▂▃ ██▆▂ ▆▄                          ││                              │
+|│██████▆████▅██                          ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] Buy 2  [2] Buy 3  [3] Buy 4  [4] Sell 10 salvage (8c)  [Esc] back
+=== market 100x30 (door 74x23)
+|◆ EMBERDEEP · The Market ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|stalls under the hill   Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Market ────────────────────────────╮╭ Preview ─────────────────────╮
+|│Wares                 Stats     Lv Price││Prism Coat                    │
+|│[-] Glass Sabre       11-17 Fin 7  SOLD ││arm 6                         │
+|│[1] Prism Hammer      11-17 Wit 7  156c ││Needs hero level 7 (you are   │
+|│[2] Prism Coat        arm 6     7  150c ││4).                           │
+|│[3] Sturdy Scrap Plat arm 3     1  56c  ││                              │
+|│                                        ││Coin 84 -> -66                │
+|│Shelf price, 14 days 61c - 245c         ││                              │
+|│█▁     █▁                               ││                              │
+|│██▃ ▂▃ ██▆▂ ▆▄                          ││                              │
+|│██████▆████▅██                          ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] Buy 2  [2] Buy 3  [3] Buy 4  [4] Sell 10 salvage (8c)  [Esc] back
+=== market 132x43 (door 74x36)
+|◆ EMBERDEEP · The Market ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|stalls under the hill   Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Market ────────────────────────────╮╭ Preview ─────────────────────╮
+|│Wares                 Stats     Lv Price││Prism Coat                    │
+|│[-] Glass Sabre       11-17 Fin 7  SOLD ││arm 6                         │
+|│[1] Prism Hammer      11-17 Wit 7  156c ││Needs hero level 7 (you are   │
+|│[2] Prism Coat        arm 6     7  150c ││4).                           │
+|│[3] Sturdy Scrap Plat arm 3     1  56c  ││                              │
+|│                                        ││Coin 84 -> -66                │
+|│Shelf price, 14 days 61c - 245c         ││                              │
+|│█▁     █▁                               ││                              │
+|│██▃ ▂▃ ██▆▂ ▆▄                          ││                              │
+|│██████▆████▅██                          ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] Buy 2  [2] Buy 3  [3] Buy 4  [4] Sell 10 salvage (8c)  [Esc] back
+=== gear 80x24 (door 74x19)
+|◆ EMBERDEEP · Gear ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ Gear ──────────────────────────────────╮╭ Preview ─────────────────────╮
+|│     Piece            Stats    Wear     ││Glass Sabre                   │
+|│Hand Rune Hammer      5-9 Wit  ████ 0%  ││11-17 Fin                     │
+|│Body Smith's Apron    arm 2    ████ 0%  ││Sells for 78c: Coin 84 -> 162 │
+|│[1]  Glass Sabre      11-17 Fi ████ 0%  ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│Armor 2  Damage +0  Crit 0%  Evade 5%   ││                              │
+|│                                        ││                              │
+|│                  ·                     ││                              │
+|│  ·                   ·  ·    ·      · ·││                              │
+|│▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] Wield 1  [2] Sell 1  [Esc] back
+=== gear 100x30 (door 74x23)
+|◆ EMBERDEEP · Gear ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ Gear ──────────────────────────────────╮╭ Preview ─────────────────────╮
+|│     Piece            Stats    Wear     ││Glass Sabre                   │
+|│Hand Rune Hammer      5-9 Wit  ████ 0%  ││11-17 Fin                     │
+|│Body Smith's Apron    arm 2    ████ 0%  ││Sells for 78c: Coin 84 -> 162 │
+|│[1]  Glass Sabre      11-17 Fi ████ 0%  ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│Armor 2  Damage +0  Crit 0%  Evade 5%   ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                  ·                     ││                              │
+|│  ·                   ·  ·    ·      · ·││                              │
+|│▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] Wield 1  [2] Sell 1  [Esc] back
+=== gear 132x43 (door 74x36)
+|◆ EMBERDEEP · Gear ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ Gear ──────────────────────────────────╮╭ Preview ─────────────────────╮
+|│     Piece            Stats    Wear     ││Glass Sabre                   │
+|│Hand Rune Hammer      5-9 Wit  ████ 0%  ││11-17 Fin                     │
+|│Body Smith's Apron    arm 2    ████ 0%  ││Sells for 78c: Coin 84 -> 162 │
+|│[1]  Glass Sabre      11-17 Fi ████ 0%  ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│Armor 2  Damage +0  Crit 0%  Evade 5%   ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                  ·                     ││                              │
+|│  ·                   ·  ·    ·      · ·││                              │
+|│▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] Wield 1  [2] Sell 1  [Esc] back
+=== forge 80x24 (door 74x19)
+|◆ EMBERDEEP · The Forge ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Forge ─────────────────────────────╮╭ Preview ─────────────────────╮
+|│Forge level 2  ●●○○                     ││Runesmith's Mallet            │
+|│weapon Rune Hammer    ████████████ sound││A mallet with the maker's     │
+|│armour Smith's Apron  ████████████ sound││marks cut into the head.      │
+|│                                        ││                              │
+|│Recipe            Salv Coin  Fg         ││Salvage 45 -> 28              │
+|│[1] Runesmith's M 17s  24c   F1  ready  ││Coin 84 -> 60                 │
+|│                                        ││Ready: press Enter.           │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                  ·                     ││                              │
+|│  ·                   ·  ·    ·      · ·││                              │
+|│▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] Make Runesmith's Mallet  [Esc] back
+=== forge 100x30 (door 74x23)
+|◆ EMBERDEEP · The Forge ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Forge ─────────────────────────────╮╭ Preview ─────────────────────╮
+|│Forge level 2  ●●○○                     ││Runesmith's Mallet            │
+|│weapon Rune Hammer    ████████████ sound││A mallet with the maker's     │
+|│armour Smith's Apron  ████████████ sound││marks cut into the head.      │
+|│                                        ││                              │
+|│Recipe            Salv Coin  Fg         ││Salvage 45 -> 28              │
+|│[1] Runesmith's M 17s  24c   F1  ready  ││Coin 84 -> 60                 │
+|│                                        ││Ready: press Enter.           │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                  ·                     ││                              │
+|│  ·                   ·  ·    ·      · ·││                              │
+|│▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] Make Runesmith's Mallet  [Esc] back
+=== forge 132x43 (door 74x36)
+|◆ EMBERDEEP · The Forge ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Forge ─────────────────────────────╮╭ Preview ─────────────────────╮
+|│Forge level 2  ●●○○                     ││Runesmith's Mallet            │
+|│weapon Rune Hammer    ████████████ sound││A mallet with the maker's     │
+|│armour Smith's Apron  ████████████ sound││marks cut into the head.      │
+|│                                        ││                              │
+|│Recipe            Salv Coin  Fg         ││Salvage 45 -> 28              │
+|│[1] Runesmith's M 17s  24c   F1  ready  ││Coin 84 -> 60                 │
+|│                                        ││Ready: press Enter.           │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                  ·                     ││                              │
+|│  ·                   ·  ·    ·      · ·││                              │
+|│▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] Make Runesmith's Mallet  [Esc] back
+=== temple 80x24 (door 74x19)
+|◆ EMBERDEEP · The Temple ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|of the Low Flame   Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Temple ────────────────────────────╮╭ Preview ─────────────────────╮
+|│  ▲   Temple level 0                    ││Cure Gash                     │
+|│ ◢█◣  Being tended costs 2 turn(s).     ││Lifts the wound at once, with │
+|│  ▀                                     ││no scar.                      │
+|│                                        ││Coin 84 -> 54                 │
+|│Health  ██████████████████▋░░░░░░░ 43/60││                              │
+|│                                        ││                              │
+|│✚ Gash (3d)                             ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│▲      ▲      ▲      ▲      ▲      ▲    ││                              │
+|│i      i      i      i      i      i    ││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] Be tended (34c)  [2] Cure gash (30c)  [Esc] back
+=== temple 100x30 (door 74x23)
+|◆ EMBERDEEP · The Temple ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|of the Low Flame   Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Temple ────────────────────────────╮╭ Preview ─────────────────────╮
+|│  ▲   Temple level 0                    ││Cure Gash                     │
+|│ ◢█◣  Being tended costs 2 turn(s).     ││Lifts the wound at once, with │
+|│  ▀                                     ││no scar.                      │
+|│                                        ││Coin 84 -> 54                 │
+|│Health  ██████████████████▋░░░░░░░ 43/60││                              │
+|│                                        ││                              │
+|│✚ Gash (3d)                             ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│▲      ▲      ▲      ▲      ▲      ▲    ││                              │
+|│i      i      i      i      i      i    ││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] Be tended (34c)  [2] Cure gash (30c)  [Esc] back
+=== temple 132x43 (door 74x36)
+|◆ EMBERDEEP · The Temple ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|of the Low Flame   Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Temple ────────────────────────────╮╭ Preview ─────────────────────╮
+|│  ▲   Temple level 0                    ││Cure Gash                     │
+|│ ◢█◣  Being tended costs 2 turn(s).     ││Lifts the wound at once, with │
+|│  ▀                                     ││no scar.                      │
+|│                                        ││Coin 84 -> 54                 │
+|│Health  ██████████████████▋░░░░░░░ 43/60││                              │
+|│                                        ││                              │
+|│✚ Gash (3d)                             ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│▲      ▲      ▲      ▲      ▲      ▲    ││                              │
+|│i      i      i      i      i      i    ││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] Be tended (34c)  [2] Cure gash (30c)  [Esc] back
+=== guild 80x24 (door 74x19)
+|◆ EMBERDEEP · The Guild Hall ━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|drills and old hands   Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Guild Hall ────────────────────────╮╭ Preview ─────────────────────╮
+|│Level  ████████▋░░░░░░░░░░░░░░ 300/400xp││Drill                         │
+|│                                        ││A quarter of the way to the   │
+|│Drills today ○                          ││next level and a one-day boon.│
+|│                                        ││Coin 84 -> 52                 │
+|│The hall drills heroes up to level 8: 1 ││                              │
+|│drill(s) a day, 32c and a turn each.    ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                  ·                     ││                              │
+|│  ·                   ·  ·    ·      · ·││                              │
+|│▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] Drill (32c, 1 turn)  [Esc] back
+=== guild 100x30 (door 74x23)
+|◆ EMBERDEEP · The Guild Hall ━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|drills and old hands   Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Guild Hall ────────────────────────╮╭ Preview ─────────────────────╮
+|│Level  ████████▋░░░░░░░░░░░░░░ 300/400xp││Drill                         │
+|│                                        ││A quarter of the way to the   │
+|│Drills today ○                          ││next level and a one-day boon.│
+|│                                        ││Coin 84 -> 52                 │
+|│The hall drills heroes up to level 8: 1 ││                              │
+|│drill(s) a day, 32c and a turn each.    ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                  ·                     ││                              │
+|│  ·                   ·  ·    ·      · ·││                              │
+|│▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] Drill (32c, 1 turn)  [Esc] back
+=== guild 132x43 (door 74x36)
+|◆ EMBERDEEP · The Guild Hall ━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|drills and old hands   Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Guild Hall ────────────────────────╮╭ Preview ─────────────────────╮
+|│Level  ████████▋░░░░░░░░░░░░░░ 300/400xp││Drill                         │
+|│                                        ││A quarter of the way to the   │
+|│Drills today ○                          ││next level and a one-day boon.│
+|│                                        ││Coin 84 -> 52                 │
+|│The hall drills heroes up to level 8: 1 ││                              │
+|│drill(s) a day, 32c and a turn each.    ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                  ·                     ││                              │
+|│  ·                   ·  ·    ·      · ·││                              │
+|│▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] Drill (32c, 1 turn)  [Esc] back
+=== tavern 80x24 (door 74x19)
+|◆ EMBERDEEP · The Tavern ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|the Banked Ember   Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Tavern ────────────────────────────╮╭ Preview ─────────────────────╮
+|│The board                 Lvl  Pay   Day││The Blister Brood             │
+|│[1] Beast: The Spitting … L2+  40c   3d ││A slag crawler heavy with     │
+|│[2] Beast: The Blister B… L6+  90c   4d ││eggs. Kill it before it nests │
+|│[3] Beast: Hollow Sir Al… L2+  56c   4d ││under the stair.              │
+|│                                        ││                              │
+|│Drinks ○○○   Dice ○○○                   ││Level 6+ · 90c · 90xp · 4     │
+|│                                        ││day(s)                        │
+|│                                        ││                              │
+|│Debt  ████████████▎░░░░░░░░░░░░░░░░░░░░░││                              │
+|│                  ·                     ││                              │
+|│  ·                   ·  ·    ·      · ·││                              │
+|│▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] Take 1  [2] Take 2  [3] Take 3  [4] Drink (4c)  [5] Dice for 5c
+|[6] Dice for 20c  [7] Dice for 50c  [8] Pay the crew
+|[9] Call on Maren the Lamp-Tend…  [a] Call on Odo the Cellarman (…
+=== tavern 100x30 (door 74x23)
+|◆ EMBERDEEP · The Tavern ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|the Banked Ember   Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Tavern ────────────────────────────╮╭ Preview ─────────────────────╮
+|│The board                 Lvl  Pay   Day││The Blister Brood             │
+|│[1] Beast: The Spitting … L2+  40c   3d ││A slag crawler heavy with     │
+|│[2] Beast: The Blister B… L6+  90c   4d ││eggs. Kill it before it nests │
+|│[3] Beast: Hollow Sir Al… L2+  56c   4d ││under the stair.              │
+|│                                        ││                              │
+|│Drinks ○○○   Dice ○○○                   ││Level 6+ · 90c · 90xp · 4     │
+|│                                        ││day(s)                        │
+|│                                        ││                              │
+|│Debt  ████████████▎░░░░░░░░░░░░░░░░░░░░░││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                  ·                     ││                              │
+|│  ·                   ·  ·    ·      · ·││                              │
+|│▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] Take 1  [2] Take 2  [3] Take 3  [4] Drink (4c)  [5] Dice for 5c
+|[6] Dice for 20c  [7] Dice for 50c  [8] Pay the crew
+|[9] Call on Maren the Lamp-Tend…  [a] Call on Odo the Cellarman (…
+=== tavern 132x43 (door 74x36)
+|◆ EMBERDEEP · The Tavern ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|the Banked Ember   Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Tavern ────────────────────────────╮╭ Preview ─────────────────────╮
+|│The board                 Lvl  Pay   Day││The Blister Brood             │
+|│[1] Beast: The Spitting … L2+  40c   3d ││A slag crawler heavy with     │
+|│[2] Beast: The Blister B… L6+  90c   4d ││eggs. Kill it before it nests │
+|│[3] Beast: Hollow Sir Al… L2+  56c   4d ││under the stair.              │
+|│                                        ││                              │
+|│Drinks ○○○   Dice ○○○                   ││Level 6+ · 90c · 90xp · 4     │
+|│                                        ││day(s)                        │
+|│                                        ││                              │
+|│Debt  ████████████▎░░░░░░░░░░░░░░░░░░░░░││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                  ·                     ││                              │
+|│  ·                   ·  ·    ·      · ·││                              │
+|│▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] Take 1  [2] Take 2  [3] Take 3  [4] Drink (4c)  [5] Dice for 5c
+|[6] Dice for 20c  [7] Dice for 50c  [8] Pay the crew
+|[9] Call on Maren the Lamp-Tend…  [a] Call on Odo the Cellarman (…
+=== library 80x24 (door 74x19)
+|◆ EMBERDEEP · The Library ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|dust, relics and patterns   Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Library ───────────────────────────╮╭ Preview ─────────────────────╮
+|│The shelves are dust and the reading    ││Nothing to do                 │
+|│room is shut. You hold 0 relic(s) no one││Nothing here is open to you   │
+|│can read yet. The town could build a    ││today.                        │
+|│reading room.                           ││                              │
+|│                                        ││                              │
+|│Patterns read                           ││                              │
+|│  none yet                              ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│               ✦     $          $   $✦  ││                              │
+|│$         $  $               ✦      ✦   ││                              │
+|│ ✦      $$$    $ ✦    ✦           ✦     ││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[Esc] back
+=== library 100x30 (door 74x23)
+|◆ EMBERDEEP · The Library ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|dust, relics and patterns   Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Library ───────────────────────────╮╭ Preview ─────────────────────╮
+|│The shelves are dust and the reading    ││Nothing to do                 │
+|│room is shut. You hold 0 relic(s) no one││Nothing here is open to you   │
+|│can read yet. The town could build a    ││today.                        │
+|│reading room.                           ││                              │
+|│                                        ││                              │
+|│Patterns read                           ││                              │
+|│  none yet                              ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│               ✦     $          $   $✦  ││                              │
+|│$         $  $               ✦      ✦   ││                              │
+|│ ✦      $$$    $ ✦    ✦           ✦     ││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[Esc] back
+=== library 132x43 (door 74x36)
+|◆ EMBERDEEP · The Library ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|dust, relics and patterns   Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Library ───────────────────────────╮╭ Preview ─────────────────────╮
+|│The shelves are dust and the reading    ││Nothing to do                 │
+|│room is shut. You hold 0 relic(s) no one││Nothing here is open to you   │
+|│can read yet. The town could build a    ││today.                        │
+|│reading room.                           ││                              │
+|│                                        ││                              │
+|│Patterns read                           ││                              │
+|│  none yet                              ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│               ✦     $          $   $✦  ││                              │
+|│$         $  $               ✦      ✦   ││                              │
+|│ ✦      $$$    $ ✦    ✦           ✦     ││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[Esc] back
+=== works 80x24 (door 74x19)
+|◆ EMBERDEEP · The Town Works ━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Town Works ────────────────────────╮╭ Preview ─────────────────────╮
+|│Finished ██▏░░░░░░░░░░░░░░░░░░░░ 1 of 11││The Great Hearth              │
+|│                                        ││A king's hearth under the     │
+|│The Great Hearth                        ││forge: the finest patterns and│
+|│▊░░░░░░░░░░░ 40/600c  ▌░░░░░░░░░ 10/220s││the cheapest repairs.         │
+|│                                        ││Gives: forge                  │
+|│A Roof for the Temple                   ││                              │
+|│░░░░░░░░░░░░░ 0/160c  ░░░░░░░░░░░░ 0/50s││Coin 40 -> 65/600             │
+|│                                        ││                              │
+|│Market Stalls                           ││                              │
+|│░░░░░░░░░░░░░ 0/180c  ░░░░░░░░░░░░ 0/40s││                              │
+|│                                        ││                              │
+|│You have given 0 coin and 0 salvage this││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] give 25c: The Great Hearth  [2] give 25s: The Great Hearth
+|[3] give 25c: A Roof for the Te…  [4] give 25s: A Roof for the Te…
+|[5] give 25c: Market Stalls  [6] give 25s: Market Stalls
+=== works 100x30 (door 74x23)
+|◆ EMBERDEEP · The Town Works ━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Town Works ────────────────────────╮╭ Preview ─────────────────────╮
+|│Finished ██▏░░░░░░░░░░░░░░░░░░░░ 1 of 11││The Great Hearth              │
+|│                                        ││A king's hearth under the     │
+|│The Great Hearth                        ││forge: the finest patterns and│
+|│▊░░░░░░░░░░░ 40/600c  ▌░░░░░░░░░ 10/220s││the cheapest repairs.         │
+|│                                        ││Gives: forge                  │
+|│A Roof for the Temple                   ││                              │
+|│░░░░░░░░░░░░░ 0/160c  ░░░░░░░░░░░░ 0/50s││Coin 40 -> 65/600             │
+|│                                        ││                              │
+|│Market Stalls                           ││                              │
+|│░░░░░░░░░░░░░ 0/180c  ░░░░░░░░░░░░ 0/40s││                              │
+|│                                        ││                              │
+|│Guildhall Annex                         ││                              │
+|│░░░░░░░░░░░░░ 0/200c  ░░░░░░░░░░░░ 0/70s││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│You have given 0 coin and 0 salvage this││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] give 25c: The Great Hearth  [2] give 25s: The Great Hearth
+|[3] give 25c: A Roof for the Te…  [4] give 25s: A Roof for the Te…
+|[5] give 25c: Market Stalls  [6] give 25s: Market Stalls
+=== works 132x43 (door 74x36)
+|◆ EMBERDEEP · The Town Works ━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Runesmith
+|Coin 84  Salvage 0  Store 45  Turns 25/25
+|╭ The Town Works ────────────────────────╮╭ Preview ─────────────────────╮
+|│Finished ██▏░░░░░░░░░░░░░░░░░░░░ 1 of 11││The Great Hearth              │
+|│                                        ││A king's hearth under the     │
+|│The Great Hearth                        ││forge: the finest patterns and│
+|│▊░░░░░░░░░░░ 40/600c  ▌░░░░░░░░░ 10/220s││the cheapest repairs.         │
+|│                                        ││Gives: forge                  │
+|│A Roof for the Temple                   ││                              │
+|│░░░░░░░░░░░░░ 0/160c  ░░░░░░░░░░░░ 0/50s││Coin 40 -> 65/600             │
+|│                                        ││                              │
+|│Market Stalls                           ││                              │
+|│░░░░░░░░░░░░░ 0/180c  ░░░░░░░░░░░░ 0/40s││                              │
+|│                                        ││                              │
+|│Guildhall Annex                         ││                              │
+|│░░░░░░░░░░░░░ 0/200c  ░░░░░░░░░░░░ 0/70s││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│                                        ││                              │
+|│You have given 0 coin and 0 salvage this││                              │
+|╰────────────────────────────────────────╯╰──────────────────────────────╯
+|[1] give 25c: The Great Hearth  [2] give 25s: The Great Hearth
+|[3] give 25c: A Roof for the Te…  [4] give 25s: A Roof for the Te…
+|[5] give 25c: Market Stalls  [6] give 25s: Market Stalls
+=== skills 80x24 (door 74x19)
+|◆ EMBERDEEP · Skills ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Cutthroat
+|Level  ██████████▌░░░░░░░░░░░░░░░░░ 300/400xp to level 5
+|Points  2 skill · 1 attribute   A skill you take can close others for good
+|╭ Skill tree ───────────────────────────╮╭ Detail ───────────────────────╮
+|│  [1] T1 Quick Hands          ready    ││Knifework                      │
+|│  [2] T1 Light Step           ready    ││A cut that does not stop       │
+|│  [3] T1 Cutpurse             ready    ││bleeding.                      │
+|│▸ [4] T2 Knifework            locked   ││move Open Vein                 │
+|│  [5] T2 Shadow               locked   ││Needs Quick Hands.             │
+|│  [6] T2 Fence                locked   ││Level 3 needed.                │
+|│  [7] T3 Assassin             locked   ││You need an earlier skill      │
+|│  [8] T3 Skirmisher           locked   ││first.                         │
+|│  [9] T3 Trapfinder           locked   ││                               │
+|│  [a] T4 Bloodletter          locked   ││                               │
+|│  [b] T4 Ghost                locked   ││                               │
+|│  [c] T4 Master Thief         locked   ││                               │
+|╰───────────────────────────────────────╯╰───────────────────────────────╯
+|[Enter] take  [Up/Down] choose
+|[M F W S] raise might, finesse, wits, spirit  [Esc] back
+=== skills 100x30 (door 74x23)
+|◆ EMBERDEEP · Skills ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Cutthroat
+|Level  ██████████▌░░░░░░░░░░░░░░░░░ 300/400xp to level 5
+|Points  2 skill · 1 attribute   A skill you take can close others for good
+|╭ Skill tree ───────────────────────────╮╭ Detail ───────────────────────╮
+|│  [1] T1 Quick Hands          ready    ││Knifework                      │
+|│  [2] T1 Light Step           ready    ││A cut that does not stop       │
+|│  [3] T1 Cutpurse             ready    ││bleeding.                      │
+|│▸ [4] T2 Knifework            locked   ││move Open Vein                 │
+|│  [5] T2 Shadow               locked   ││Needs Quick Hands.             │
+|│  [6] T2 Fence                locked   ││Level 3 needed.                │
+|│  [7] T3 Assassin             locked   ││You need an earlier skill      │
+|│  [8] T3 Skirmisher           locked   ││first.                         │
+|│  [9] T3 Trapfinder           locked   ││                               │
+|│  [a] T4 Bloodletter          locked   ││                               │
+|│  [b] T4 Ghost                locked   ││                               │
+|│  [c] T4 Master Thief         locked   ││                               │
+|│  [d] T5 Death Blossom        locked   ││                               │
+|│  [e] T5 Vanish               locked   ││                               │
+|│  [f] T5 The Big Heist        locked   ││                               │
+|│                                       ││                               │
+|╰───────────────────────────────────────╯╰───────────────────────────────╯
+|[Enter] take  [Up/Down] choose
+|[M F W S] raise might, finesse, wits, spirit  [Esc] back
+=== skills 132x43 (door 74x36)
+|◆ EMBERDEEP · Skills ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L4 Cutthroat
+|Level  ██████████▌░░░░░░░░░░░░░░░░░ 300/400xp to level 5
+|Points  2 skill · 1 attribute   A skill you take can close others for good
+|╭ Skill tree ───────────────────────────╮╭ Detail ───────────────────────╮
+|│  [1] T1 Quick Hands          ready    ││Knifework                      │
+|│  [2] T1 Light Step           ready    ││A cut that does not stop       │
+|│  [3] T1 Cutpurse             ready    ││bleeding.                      │
+|│▸ [4] T2 Knifework            locked   ││move Open Vein                 │
+|│  [5] T2 Shadow               locked   ││Needs Quick Hands.             │
+|│  [6] T2 Fence                locked   ││Level 3 needed.                │
+|│  [7] T3 Assassin             locked   ││You need an earlier skill      │
+|│  [8] T3 Skirmisher           locked   ││first.                         │
+|│  [9] T3 Trapfinder           locked   ││                               │
+|│  [a] T4 Bloodletter          locked   ││                               │
+|│  [b] T4 Ghost                locked   ││                               │
+|│  [c] T4 Master Thief         locked   ││                               │
+|│  [d] T5 Death Blossom        locked   ││                               │
+|│  [e] T5 Vanish               locked   ││                               │
+|│  [f] T5 The Big Heist        locked   ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|│                                       ││                               │
+|╰───────────────────────────────────────╯╰───────────────────────────────╯
+|[Enter] take  [Up/Down] choose
+|[M F W S] raise might, finesse, wits, spirit  [Esc] back
+=== delve-lift-runesmith 80x24 (door 74x19)
+|◆ EMBERDEEP · Level 1 · the Upper Works ━━━━━━━━━━━━━━ Ember L1 Runesmith
+|Depth  █░░░░░░░░░░░░░░░░░░░░░░░░ 1/25  Torch  ████████████▏░░░ 19/25 turns
+|Health ████████████████████████ 56/56  Fatigue ░░░░░░░░░░░░░░░░░░░░░░░░ 0%
+|╭ Floor 1 ──────────────────╮╭ The Broken Lift ──────────────────────────╮
+|│[?]   [F]   [·]          · ││An iron cage hangs in a shaft above the    │
+|│ │     │     │             ││stair, its winch jammed and its chain …    │
+|│[+]───[L]───[$]            ││                                           │
+|│ │     │  ░  │         ░ · ││[1] ◆ Re-seat the winch with rune-work 2t  │
+|│<@>   [▲]───[L]       ·    ││ ✗ Rig the winch with … (only without run… │
+|│ │    ·      │·            ││ ✗ Haul the chain up b… (needs brawn)      │
+|│[?]        ░[?]───[·]      ││ ✗ Study the broken li… (only without run… │
+|│Light ●●●● bright          ││                                           │
+|│@ you  ▼ way down  ▲ way up││[n] Ember Shrine  [s] unexplored           │
+|╰───────────────────────────╯╰───────────────────────────────────────────╯
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|[n e s w] move  [1] act  [r] camp (2t)  [u] climb (1t)  [m] map
+|[c] sheet  [Esc] leave door
+=== delve-lift-runesmith 100x30 (door 74x23)
+|◆ EMBERDEEP · Level 1 · the Upper Works ━━━━━━━━━━━━━━ Ember L1 Runesmith
+|Depth  █░░░░░░░░░░░░░░░░░░░░░░░░ 1/25  Torch  ████████████▏░░░ 19/25 turns
+|Health ████████████████████████ 56/56  Fatigue ░░░░░░░░░░░░░░░░░░░░░░░░ 0%
+|╭ Floor 1 ──────────────────╮╭ The Broken Lift ──────────────────────────╮
+|│[?]   [F]   [·]          · ││An iron cage hangs in a shaft above the    │
+|│ │     │     │             ││stair, its winch jammed and its chain      │
+|│[+]───[L]───[$]            ││slack. A working lift would save everyone a│
+|│ │     │  ░  │         ░ · ││long climb.                                │
+|│<@>   [▲]───[L]       ·    ││                                           │
+|│ │    ·      │·            ││[1] ◆ Re-seat the winch with rune-work 2t  │
+|│[?]        ░[?]───[·]      ││ ✗ Rig the winch with … (only without run… │
+|│Light ●●●● bright          ││ ✗ Haul the chain up b… (needs brawn)      │
+|│@ you  ▼ way down  ▲ way up││ ✗ Study the broken li… (only without run… │
+|│L lair  G guardian  S shaft││                                           │
+|│$ vault  F forge  ~ flooded││[n] Ember Shrine  [s] unexplored           │
+|╰───────────────────────────╯╰───────────────────────────────────────────╯
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|
+|
+|[n e s w] move  [1] act  [r] camp (2t)  [u] climb (1t)  [m] map
+|[c] sheet  [Esc] leave door
+=== delve-lift-runesmith 132x43 (door 74x36)
+|◆ EMBERDEEP · Level 1 · the Upper Works ━━━━━━━━━━━━━━ Ember L1 Runesmith
+|Depth  █░░░░░░░░░░░░░░░░░░░░░░░░ 1/25  Torch  ████████████▏░░░ 19/25 turns
+|Health ████████████████████████ 56/56  Fatigue ░░░░░░░░░░░░░░░░░░░░░░░░ 0%
+|╭ Floor 1 ────────────────────────────╮╭ The Broken Lift ────────────────╮
+|│╭───╮   ╭───╮   ╭───╮    ·     ░     ││    ║        ║        ║        ║ │
+|││ ? │  ·│ F │   │ · │        ·       ││    │        │        │        │ │
+|│╰───╯   ╰───╯   ╰───╯          ░     ││    ║        ║        ║        ║ │
+|│  │       │       │    ░ ·       ░   ││An iron cage hangs in a shaft    │
+|│╭───╮   ╭───╮   ╭───╮ ·              ││above the stair, its winch jammed│
+|││ + │───│ L │───│ $ │            ·   ││and its chain slack. A working   │
+|│╰───╯   ╰───╯   ╰───╯       ·        ││lift would save everyone a long  │
+|│· │       │       │░       ·         ││climb.                           │
+|│╭───╮   ╭───╮   ╭───╮     ·       ·  ││                                 │
+|││ @ │   │ ▲ │───│ L │            ·   ││[1] ◆ Re-seat the winch wit… 2t  │
+|│╰───╯· ░╰───╯   ╰───╯   ░            ││ ✗ Rig the winch with … (only w… │
+|│· │            · ░│        ·         ││ ✗ Haul the chain up b… (needs … │
+|│╭───╮  ░        ╭───╮   ╭───╮        ││ ✗ Study the broken li… (only w… │
+|││ ? │ ·       · │ ? │───│ · │·       ││                                 │
+|│╰───╯          ░╰───╯ · ╰───╯  ·     ││[n] Ember Shrine  [s] unexplored │
+|│Light ●●●● bright                    ││                                 │
+|│@ you  ▼ way down  ▲ way up  L lair  ││                                 │
+|│G guardian  S shaft  $ vault  F forge││                                 │
+|│~ flooded  + shrine  ? unvisited     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|╰─────────────────────────────────────╯╰─────────────────────────────────╯
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|
+|
+|
+|
+|[n e s w] move  [1] act  [r] camp (2t)  [u] climb (1t)  [m] map
+|[c] sheet  [Esc] leave door
+=== delve-lift-warden 80x24 (door 74x19)
+|◆ EMBERDEEP · Level 1 · the Upper Works ━━━━━━━━━━━━━━━━━ Ember L1 Warden
+|Depth  █░░░░░░░░░░░░░░░░░░░░░░░░ 1/25  Torch  ████████████▏░░░ 19/25 turns
+|Health ████████████████████████ 62/62  Fatigue ░░░░░░░░░░░░░░░░░░░░░░░░ 0%
+|╭ Floor 1 ──────────────────╮╭ The Broken Lift ──────────────────────────╮
+|│[?]   [F]   [·]          · ││An iron cage hangs in a shaft above the    │
+|│ │     │     │             ││stair, its winch jammed and its chain …    │
+|│[+]───[L]───[$]            ││                                           │
+|│ │     │  ░  │         ░ · ││[1] ◆ Haul the chain up by… 3t · Might 13  │
+|│<@>   [▲]───[L]       ·    ││ ✗ Re-seat the winch w… (needs runecraft)  │
+|│ │    ·      │·            ││ ✗ Rig the winch with … (needs tinker)     │
+|│[?]        ░[?]───[·]      ││ ✗ Study the broken li… (only without bra… │
+|│Light ●●●● bright          ││                                           │
+|│@ you  ▼ way down  ▲ way up││[n] Ember Shrine  [s] unexplored           │
+|╰───────────────────────────╯╰───────────────────────────────────────────╯
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|[n e s w] move  [1] act  [r] camp (2t)  [u] climb (1t)  [m] map
+|[c] sheet  [Esc] leave door
+=== delve-lift-warden 100x30 (door 74x23)
+|◆ EMBERDEEP · Level 1 · the Upper Works ━━━━━━━━━━━━━━━━━ Ember L1 Warden
+|Depth  █░░░░░░░░░░░░░░░░░░░░░░░░ 1/25  Torch  ████████████▏░░░ 19/25 turns
+|Health ████████████████████████ 62/62  Fatigue ░░░░░░░░░░░░░░░░░░░░░░░░ 0%
+|╭ Floor 1 ──────────────────╮╭ The Broken Lift ──────────────────────────╮
+|│[?]   [F]   [·]          · ││An iron cage hangs in a shaft above the    │
+|│ │     │     │             ││stair, its winch jammed and its chain      │
+|│[+]───[L]───[$]            ││slack. A working lift would save everyone a│
+|│ │     │  ░  │         ░ · ││long climb.                                │
+|│<@>   [▲]───[L]       ·    ││                                           │
+|│ │    ·      │·            ││[1] ◆ Haul the chain up by… 3t · Might 13  │
+|│[?]        ░[?]───[·]      ││ ✗ Re-seat the winch w… (needs runecraft)  │
+|│Light ●●●● bright          ││ ✗ Rig the winch with … (needs tinker)     │
+|│@ you  ▼ way down  ▲ way up││ ✗ Study the broken li… (only without bra… │
+|│L lair  G guardian  S shaft││                                           │
+|│$ vault  F forge  ~ flooded││[n] Ember Shrine  [s] unexplored           │
+|╰───────────────────────────╯╰───────────────────────────────────────────╯
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|
+|
+|[n e s w] move  [1] act  [r] camp (2t)  [u] climb (1t)  [m] map
+|[c] sheet  [Esc] leave door
+=== delve-lift-warden 132x43 (door 74x36)
+|◆ EMBERDEEP · Level 1 · the Upper Works ━━━━━━━━━━━━━━━━━ Ember L1 Warden
+|Depth  █░░░░░░░░░░░░░░░░░░░░░░░░ 1/25  Torch  ████████████▏░░░ 19/25 turns
+|Health ████████████████████████ 62/62  Fatigue ░░░░░░░░░░░░░░░░░░░░░░░░ 0%
+|╭ Floor 1 ────────────────────────────╮╭ The Broken Lift ────────────────╮
+|│╭───╮   ╭───╮   ╭───╮    ·     ░     ││    ║        ║        ║        ║ │
+|││ ? │  ·│ F │   │ · │        ·       ││    │        │        │        │ │
+|│╰───╯   ╰───╯   ╰───╯          ░     ││    ║        ║        ║        ║ │
+|│  │       │       │    ░ ·       ░   ││An iron cage hangs in a shaft    │
+|│╭───╮   ╭───╮   ╭───╮ ·              ││above the stair, its winch jammed│
+|││ + │───│ L │───│ $ │            ·   ││and its chain slack. A working   │
+|│╰───╯   ╰───╯   ╰───╯       ·        ││lift would save everyone a long  │
+|│· │       │       │░       ·         ││climb.                           │
+|│╭───╮   ╭───╮   ╭───╮     ·       ·  ││                                 │
+|││ @ │   │ ▲ │───│ L │            ·   ││[1] ◆ Haul the c… 3t · Might 13  │
+|│╰───╯· ░╰───╯   ╰───╯   ░            ││ ✗ Re-seat the winch w… (needs … │
+|│· │            · ░│        ·         ││ ✗ Rig the winch with … (needs … │
+|│╭───╮  ░        ╭───╮   ╭───╮        ││ ✗ Study the broken li… (only w… │
+|││ ? │ ·       · │ ? │───│ · │·       ││                                 │
+|│╰───╯          ░╰───╯ · ╰───╯  ·     ││[n] Ember Shrine  [s] unexplored │
+|│Light ●●●● bright                    ││                                 │
+|│@ you  ▼ way down  ▲ way up  L lair  ││                                 │
+|│G guardian  S shaft  $ vault  F forge││                                 │
+|│~ flooded  + shrine  ? unvisited     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|╰─────────────────────────────────────╯╰─────────────────────────────────╯
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|
+|
+|
+|
+|[n e s w] move  [1] act  [r] camp (2t)  [u] climb (1t)  [m] map
+|[c] sheet  [Esc] leave door
+=== delve-torch-low 80x24 (door 74x19)
+|◆ EMBERDEEP · Level 1 · the Upper Works ━━━━━━━━━━━━━━━━━ Ember L1 Warden
+|Depth  █░░░░░░░░░░░░░░░░░░░░░░░░ 1/25  Torch  ██░░░░░░░░░░░░░░░ 3/25 turns
+|Health ████████████████████████ 62/62  Fatigue ░░░░░░░░░░░░░░░░░░░░░░░░ 0%
+|╭ Floor 1 ──────────────────╮╭ Sooty Gallery ────────────────────────────╮
+|│[?]   [F]   <@>·           ││A long gallery, every surface furred with  │
+|│ │     │     │ ░           ││soot. Footprints, not all of them human.   │
+|│[+]───[L]───[$]            ││ ✗ Follow the footprin… (needs forage)     │
+|│ │     │     │             ││[s] Coffer Room                            │
+|│[?]   [▲]───[L] ░ ░ ░ · ░  ││                                           │
+|│       ░░    │        ░    ││                                           │
+|│·           [?]───[·]·     ││                                           │
+|│Light ●●○○ guttering       ││                                           │
+|│@ you  ▼ way down  ▲ way up││                                           │
+|╰───────────────────────────╯╰───────────────────────────────────────────╯
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|[n e s w] move  [r] camp (2t)  [u] climb (1t)  [m] map  [c] sheet
+|[Esc] leave door
+=== delve-torch-low 100x30 (door 74x23)
+|◆ EMBERDEEP · Level 1 · the Upper Works ━━━━━━━━━━━━━━━━━ Ember L1 Warden
+|Depth  █░░░░░░░░░░░░░░░░░░░░░░░░ 1/25  Torch  ██░░░░░░░░░░░░░░░ 3/25 turns
+|Health ████████████████████████ 62/62  Fatigue ░░░░░░░░░░░░░░░░░░░░░░░░ 0%
+|╭ Floor 1 ──────────────────╮╭ Sooty Gallery ────────────────────────────╮
+|│[?]   [F]   <@>·           ││A long gallery, every surface furred with  │
+|│ │     │     │ ░           ││soot. Footprints, not all of them human.   │
+|│[+]───[L]───[$]            ││ ✗ Follow the footprin… (needs forage)     │
+|│ │     │     │             ││[s] Coffer Room                            │
+|│[?]   [▲]───[L] ░ ░ ░ · ░  ││                                           │
+|│       ░░    │        ░    ││                                           │
+|│·           [?]───[·]·     ││                                           │
+|│Light ●●○○ guttering       ││                                           │
+|│@ you  ▼ way down  ▲ way up││                                           │
+|│L lair  G guardian  S shaft││                                           │
+|│$ vault  F forge  ~ flooded││                                           │
+|╰───────────────────────────╯╰───────────────────────────────────────────╯
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|
+|
+|[n e s w] move  [r] camp (2t)  [u] climb (1t)  [m] map  [c] sheet
+|[Esc] leave door
+=== delve-torch-low 132x43 (door 74x36)
+|◆ EMBERDEEP · Level 1 · the Upper Works ━━━━━━━━━━━━━━━━━ Ember L1 Warden
+|Depth  █░░░░░░░░░░░░░░░░░░░░░░░░ 1/25  Torch  ██░░░░░░░░░░░░░░░ 3/25 turns
+|Health ████████████████████████ 62/62  Fatigue ░░░░░░░░░░░░░░░░░░░░░░░░ 0%
+|╭ Floor 1 ────────────────────────────╮╭ Sooty Gallery ──────────────────╮
+|│╭───╮   ╭───╮  ·╭───╮        ·       ││      │     ·    │   ··     │    │
+|││ ? │   │ F │  ░│ @ │        ░░      ││      │          │·         │    │
+|│╰───╯   ╰───╯   ╰───╯        ░       ││      │          │          │    │
+|│  │       │       │            ·░    ││A long gallery, every surface    │
+|│╭───╮   ╭───╮   ╭───╮ · ░        ·   ││furred with soot. Footprints, not│
+|││ + │───│ L │───│ $ │ ░        ·     ││all of them human.               │
+|│╰───╯   ╰───╯  ·╰───╯·             ░ ││ ✗ Follow the footprin… (needs … │
+|│  │       │       │            ·     ││[s] Coffer Room                  │
+|│╭───╮   ╭───╮ ░ ╭───╮                ││                                 │
+|││ ? │   │ ▲ │───│ L │                ││                                 │
+|│╰───╯░  ╰───╯   ╰───╯░               ││                                 │
+|│               ░  │                  ││                                 │
+|│                ╭───╮   ╭───╮        ││                                 │
+|│        ░·      │ ? │───│ · │  ░     ││                                 │
+|│░           ·   ╰───╯   ╰───╯   ░   ·││                                 │
+|│Light ●●○○ guttering                 ││                                 │
+|│@ you  ▼ way down  ▲ way up  L lair  ││                                 │
+|│G guardian  S shaft  $ vault  F forge││                                 │
+|│~ flooded  + shrine  ? unvisited     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|╰─────────────────────────────────────╯╰─────────────────────────────────╯
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|
+|
+|
+|
+|[n e s w] move  [r] camp (2t)  [u] climb (1t)  [m] map  [c] sheet
+|[Esc] leave door
+=== delve-lair 80x24 (door 74x19)
+|◆ EMBERDEEP · Level 1 · the Upper Works ━━━━━━━━━━━━━━━━ Ember L1 Duelist
+|Depth  █░░░░░░░░░░░░░░░░░░░░░░░░ 1/25  Torch  ███████▋░░░░░░░░ 12/25 turns
+|Health ████████████████████████ 52/52  Fatigue ░░░░░░░░░░░░░░░░░░░░░░░░ 0%
+|╭ Floor 1 ──────────────────╮╭ Bone Pit ─────────────────────────────────╮
+|│[?]   [F]   [·]  ·░      ░·││A wide pit ringed with bones, the stairs to│
+|│ │     │ ·   │░          ░ ││the lower hall visible beyond. Shapes lift…│
+|│[+]───[L]───[$]            ││A pack bars the way out of this room.      │
+|│ │     │     │             ││                                           │
+|│[?]   [▲]───<@>            ││[1]   Fight the pack                   0t  │
+|│   ░    ░    │      · ░    ││ ✗ Creep around the rim (needs sneak)      │
+|│            [?]───[·]      ││ ✗ Set a snare line an… (needs ensnare)    │
+|│Light ●●●○ steady          ││                                           │
+|│@ you  ▼ way down  ▲ way up││[n] Coffer Room  [s] unexplored            │
+|│L lair  G guardian  S shaft││[w] The Landing                            │
+|╰───────────────────────────╯╰───────────────────────────────────────────╯
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|[n e s w] move  [1] act  [u] climb (1t)  [m] map  [c] sheet
+=== delve-lair 100x30 (door 74x23)
+|◆ EMBERDEEP · Level 1 · the Upper Works ━━━━━━━━━━━━━━━━ Ember L1 Duelist
+|Depth  █░░░░░░░░░░░░░░░░░░░░░░░░ 1/25  Torch  ███████▋░░░░░░░░ 12/25 turns
+|Health ████████████████████████ 52/52  Fatigue ░░░░░░░░░░░░░░░░░░░░░░░░ 0%
+|╭ Floor 1 ──────────────────╮╭ Bone Pit ─────────────────────────────────╮
+|│[?]   [F]   [·]  ·░      ░·││A wide pit ringed with bones, the stairs to│
+|│ │     │ ·   │░          ░ ││the lower hall visible beyond. Shapes lift │
+|│[+]───[L]───[$]            ││from the heaps as you enter.               │
+|│ │     │     │             ││A pack bars the way out of this room.      │
+|│[?]   [▲]───<@>            ││                                           │
+|│   ░    ░    │      · ░    ││[1]   Fight the pack                   0t  │
+|│            [?]───[·]      ││ ✗ Creep around the rim (needs sneak)      │
+|│Light ●●●○ steady          ││ ✗ Set a snare line an… (needs ensnare)    │
+|│@ you  ▼ way down  ▲ way up││                                           │
+|│L lair  G guardian  S shaft││[n] Coffer Room  [s] unexplored            │
+|│$ vault  F forge  ~ flooded││[w] The Landing                            │
+|│+ shrine  ? unvisited      ││                                           │
+|╰───────────────────────────╯╰───────────────────────────────────────────╯
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|
+|
+|[n e s w] move  [1] act  [u] climb (1t)  [m] map  [c] sheet
+=== delve-lair 132x43 (door 74x36)
+|◆ EMBERDEEP · Level 1 · the Upper Works ━━━━━━━━━━━━━━━━ Ember L1 Duelist
+|Depth  █░░░░░░░░░░░░░░░░░░░░░░░░ 1/25  Torch  ███████▋░░░░░░░░ 12/25 turns
+|Health ████████████████████████ 52/52  Fatigue ░░░░░░░░░░░░░░░░░░░░░░░░ 0%
+|╭ Floor 1 ────────────────────────────╮╭ Bone Pit ───────────────────────╮
+|│╭───╮   ╭───╮·  ╭───╮    ░·░       · ││ ·            ·    · ·   ·       │
+|││ ? │   │ F │ ░ │ · │    ░ ░         ││      ◉      ·         ·         │
+|│╰───╯   ╰───╯   ╰───╯        ·       ││                                 │
+|│  │       │       │        ░░  ░ ·   ││A wide pit ringed with bones, the│
+|│╭───╮   ╭───╮·  ╭───╮                ││stairs to the lower hall visible │
+|││ + │───│ L │───│ $ │ ░              ││beyond. Shapes lift from the     │
+|│╰───╯   ╰───╯   ╰───╯       ░       ░││heaps as you enter.              │
+|│ ·│ ░     │    ·  │                  ││A pack bars the way out of this …│
+|│╭───╮   ╭───╮   ╭───╮                ││                                 │
+|││ ? │   │ ▲ │───│ @ │                ││[1]   Fight the pack         0t  │
+|│╰───╯   ╰───╯   ╰───╯      ░  ░      ││ ✗ Creep around the rim (needs … │
+|│      ·        ·  │  ·               ││ ✗ Set a snare line an… (needs … │
+|│                ╭───╮   ╭───╮  ·  ░  ││                                 │
+|│░ · ░           │ ? │───│ · │  ░     ││[n] Coffer Room  [s] unexplored  │
+|│                ╰───╯   ╰───╯ · ░  ··││[w] The Landing                  │
+|│Light ●●●○ steady                    ││                                 │
+|│@ you  ▼ way down  ▲ way up  L lair  ││                                 │
+|│G guardian  S shaft  $ vault  F forge││                                 │
+|│~ flooded  + shrine  ? unvisited     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|╰─────────────────────────────────────╯╰─────────────────────────────────╯
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|
+|
+|
+|
+|[n e s w] move  [1] act  [u] climb (1t)  [m] map  [c] sheet
+=== delve-forge 80x24 (door 74x19)
+|◆ EMBERDEEP · Level 13 · the Glass Halls ━━━━━━━━━━ Ember L1 Ember-Priest
+|Depth  ████████████▌░░░░░░░░░░░ 13/25  Torch  ██████████████▏░ 22/25 turns
+|Health ████████████████████████ 52/52  Fatigue ░░░░░░░░░░░░░░░░░░░░░░░░ 0%
+|╭ Floor 13 ─────────────────╮╭ Hot Forge ────────────────────────────────╮
+|│     ·[▼]   [·]───[▲]───[$]││A forge that never went cold. The air      │
+|│    ·  │    ·      │  ·  │ ││shimmers and the bellows breathe by        │
+|│   ░  [?]───[$]───[·]   [L]││themselves.                                │
+|│           ░       │       ││                                           │
+|│        ·· ·[·]───[?]      ││[1]   Work the bellows and… 2t · Might 12  │
+|│·   ░        ·   ░ │ ░     ││ ✗ Walk the coals unto… (needs warding)    │
+|│  ░  ░            [?]───<@>││ ✗ Read the forge-mast… (needs runecraft)  │
+|│Light ●●●● bright          ││                                           │
+|│@ you  ▼ way down  ▲ way up││[w] unexplored                             │
+|╰───────────────────────────╯╰───────────────────────────────────────────╯
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|[n e s w] move  [1] act  [r] camp (2t)  [u] climb (8t)  [m] map
+|[c] sheet  [Esc] leave door
+=== delve-forge 100x30 (door 74x23)
+|◆ EMBERDEEP · Level 13 · the Glass Halls ━━━━━━━━━━ Ember L1 Ember-Priest
+|Depth  ████████████▌░░░░░░░░░░░ 13/25  Torch  ██████████████▏░ 22/25 turns
+|Health ████████████████████████ 52/52  Fatigue ░░░░░░░░░░░░░░░░░░░░░░░░ 0%
+|╭ Floor 13 ─────────────────╮╭ Hot Forge ────────────────────────────────╮
+|│     ·[▼]   [·]───[▲]───[$]││A forge that never went cold. The air      │
+|│    ·  │    ·      │  ·  │ ││shimmers and the bellows breathe by        │
+|│   ░  [?]───[$]───[·]   [L]││themselves.                                │
+|│           ░       │       ││                                           │
+|│        ·· ·[·]───[?]      ││[1]   Work the bellows and… 2t · Might 12  │
+|│·   ░        ·   ░ │ ░     ││ ✗ Walk the coals unto… (needs warding)    │
+|│  ░  ░            [?]───<@>││ ✗ Read the forge-mast… (needs runecraft)  │
+|│Light ●●●● bright          ││                                           │
+|│@ you  ▼ way down  ▲ way up││[w] unexplored                             │
+|│L lair  G guardian  S shaft││                                           │
+|│$ vault  F forge  ~ flooded││                                           │
+|╰───────────────────────────╯╰───────────────────────────────────────────╯
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|
+|
+|[n e s w] move  [1] act  [r] camp (2t)  [u] climb (8t)  [m] map
+|[c] sheet  [Esc] leave door
+=== delve-forge 132x43 (door 74x36)
+|◆ EMBERDEEP · Level 13 · the Glass Halls ━━━━━━━━━━ Ember L1 Ember-Priest
+|Depth  ████████████▌░░░░░░░░░░░ 13/25  Torch  ██████████████▏░ 22/25 turns
+|Health ████████████████████████ 52/52  Fatigue ░░░░░░░░░░░░░░░░░░░░░░░░ 0%
+|╭ Floor 13 ───────────────────────────╮╭ Hot Forge ──────────────────────╮
+|│     ·  ╭───╮· ·╭───╮   ╭───╮   ╭───╮││                ·          ·     │
+|│    ·  ░│ ▼ │   │ · │───│ ▲ │───│ $ │││· ··     ··  ·                   │
+|│   ░  ░ ╰───╯   ╰───╯   ╰───╯   ╰───╯││▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀│
+|│          │░              │ ░     │  ││A forge that never went cold. The│
+|│        ╭───╮   ╭───╮   ╭───╮   ╭───╮││air shimmers and the bellows     │
+|│·   ░   │ ? │───│ $ │───│ · │   │ L │││breathe by themselves.           │
+|│  ░  ░  ╰───╯   ╰───╯   ╰───╯   ╰───╯││                                 │
+|│     ░                    │          ││[1]   Work the b… 2t · Might 12  │
+|│   ·         ·  ╭───╮   ╭───╮        ││ ✗ Walk the coals unto… (needs … │
+|│    ░           │ · │───│ ? │░       ││ ✗ Read the forge-mast… (needs … │
+|│                ╰───╯   ╰───╯·       ││                                 │
+|│                          │     ░    ││[w] unexplored                   │
+|│              ·         ╭───╮ ░░╭───╮││                                 │
+|│  ·         ·          ·│ ? │───│ @ │││                                 │
+|│          ░             ╰───╯   ╰───╯││                                 │
+|│Light ●●●● bright                    ││                                 │
+|│@ you  ▼ way down  ▲ way up  L lair  ││                                 │
+|│G guardian  S shaft  $ vault  F forge││                                 │
+|│~ flooded  + shrine  ? unvisited     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|╰─────────────────────────────────────╯╰─────────────────────────────────╯
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|
+|
+|
+|
+|[n e s w] move  [1] act  [r] camp (2t)  [u] climb (8t)  [m] map
+|[c] sheet  [Esc] leave door
+=== map 80x24 (door 74x19)
+|◆ EMBERDEEP · Map of level 1 · the Upper Works ━━━━━━━━ Ember L1 Wanderer
+|╭ The floor as your torch showed it ──╮╭ Key ────────────────────────────╮
+|│╭───╮   ╭───╮   ╭───╮·   ░           ││8 of 12 rooms explored           │
+|││ ? │   │ F │   │ @ │       ·        ││Light ●●●○                       │
+|│╰───╯   ╰───╯   ╰───╯                ││                                 │
+|│  │       │     ░·│             ·    ││@ you                            │
+|│╭───╮   ╭───╮   ╭───╮                ││▼ way down                       │
+|││ + │───│ L │───│ $ │                ││▲ way up                         │
+|│╰───╯   ╰───╯   ╰───╯      ··        ││L lair                           │
+|│  │ ░     │░      │ ░░          ░ ·  ││G guardian                       │
+|│╭───╮   ╭───╮   ╭───╮                ││S shaft                          │
+|││ ? │  ·│ ▲ │───│ L │                ││$ vault                          │
+|│╰───╯   ╰───╯   ╰───╯    ░      · ░  ││F forge                          │
+|│               ░  │          ·       ││~ flooded                        │
+|│  ·             ╭───╮   ╭───╮     ·  ││+ shrine                         │
+|│     ·          │ ? │───│ · │ ·   ·  ││? unvisited                      │
+|│░               ╰───╯   ╰───╯        ││                                 │
+|╰─────────────────────────────────────╯╰─────────────────────────────────╯
+|[Esc] back
+=== map 100x30 (door 74x23)
+|◆ EMBERDEEP · Map of level 1 · the Upper Works ━━━━━━━━ Ember L1 Wanderer
+|╭ The floor as your torch showed it ──╮╭ Key ────────────────────────────╮
+|│╭───╮   ╭───╮   ╭───╮·   ░           ││8 of 12 rooms explored           │
+|││ ? │   │ F │   │ @ │       ·        ││Light ●●●○                       │
+|│╰───╯   ╰───╯   ╰───╯                ││                                 │
+|│  │       │     ░·│             ·    ││@ you                            │
+|│╭───╮   ╭───╮   ╭───╮                ││▼ way down                       │
+|││ + │───│ L │───│ $ │                ││▲ way up                         │
+|│╰───╯   ╰───╯   ╰───╯      ··        ││L lair                           │
+|│  │ ░     │░      │ ░░          ░ ·  ││G guardian                       │
+|│╭───╮   ╭───╮   ╭───╮                ││S shaft                          │
+|││ ? │  ·│ ▲ │───│ L │                ││$ vault                          │
+|│╰───╯   ╰───╯   ╰───╯    ░      · ░  ││F forge                          │
+|│               ░  │          ·       ││~ flooded                        │
+|│  ·             ╭───╮   ╭───╮     ·  ││+ shrine                         │
+|│     ·          │ ? │───│ · │ ·   ·  ││? unvisited                      │
+|│░               ╰───╯   ╰───╯        ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|╰─────────────────────────────────────╯╰─────────────────────────────────╯
+|[Esc] back
+=== map 132x43 (door 74x36)
+|◆ EMBERDEEP · Map of level 1 · the Upper Works ━━━━━━━━ Ember L1 Wanderer
+|╭ The floor as your torch showed it ──╮╭ Key ────────────────────────────╮
+|│╭───╮   ╭───╮   ╭───╮·   ░           ││8 of 12 rooms explored           │
+|││ ? │   │ F │   │ @ │       ·        ││Light ●●●○                       │
+|│╰───╯   ╰───╯   ╰───╯                ││                                 │
+|│  │       │     ░·│             ·    ││@ you                            │
+|│╭───╮   ╭───╮   ╭───╮                ││▼ way down                       │
+|││ + │───│ L │───│ $ │                ││▲ way up                         │
+|│╰───╯   ╰───╯   ╰───╯      ··        ││L lair                           │
+|│  │ ░     │░      │ ░░          ░ ·  ││G guardian                       │
+|│╭───╮   ╭───╮   ╭───╮                ││S shaft                          │
+|││ ? │  ·│ ▲ │───│ L │                ││$ vault                          │
+|│╰───╯   ╰───╯   ╰───╯    ░      · ░  ││F forge                          │
+|│               ░  │          ·       ││~ flooded                        │
+|│  ·             ╭───╮   ╭───╮     ·  ││+ shrine                         │
+|│     ·          │ ? │───│ · │ ·   ·  ││? unvisited                      │
+|│░               ╰───╯   ╰───╯        ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|│                                     ││                                 │
+|╰─────────────────────────────────────╯╰─────────────────────────────────╯
+|[Esc] back
+=== fight-one 80x24 (door 74x19)
+|◆ EMBERDEEP · Fight · round 1 ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L1 Warden
+|Order You ▸ (1) Slag Rat ▲
+|Health █████████████████████████ 62/62   [a]●Aggr │ [g] Guard │ [v] Evas
+|Focus  ●●●○○ 3/5   ward 4               You stand front
+|╭────────────────────────────────────────────────────────────────────────╮
+|│▶(1) Slag Rat  front                        ██████████████▊░░░░░░░░ 9/14│
+|│   next ▲ winds up a crushing blow  (double damage; an evasive stanc…)  │
+|│   marked +25%                                                          │
+|╰────────────────────────────────────────────────────────────────────────╯
+|
+|╭ You ───────────────────────────────────────────────────────────────────╮
+|│Aggressive: hit harder, get hit harder.                                 │
+|│Hand Iron Halberd  wear 0%                                              │
+|╰────────────────────────────────────────────────────────────────────────╯
+|[x] attack  [1] Hold the Line (2f)  [2] Shield Bash (1f)  [b] step back
+|[f] flee  [z] quick (1t)  [Up/Down] aim
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+=== fight-one 100x30 (door 74x23)
+|◆ EMBERDEEP · Fight · round 1 ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L1 Warden
+|Order You ▸ (1) Slag Rat ▲
+|Health █████████████████████████ 62/62   [a]●Aggr │ [g] Guard │ [v] Evas
+|Focus  ●●●○○ 3/5   ward 4               You stand front
+|╭────────────────────────────────────────────────────────────────────────╮
+|│▶(1) Slag Rat  front                        ██████████████▊░░░░░░░░ 9/14│
+|│   next ▲ winds up a crushing blow  (double damage; an evasive stanc…)  │
+|│   marked +25%                                                          │
+|╰────────────────────────────────────────────────────────────────────────╯
+|
+|╭ You ───────────────────────────────────────────────────────────────────╮
+|│Aggressive: hit harder, get hit harder.                                 │
+|│Hand Iron Halberd  wear 0%                                              │
+|│Body Ringmail  wear 0%                                                  │
+|│                                                                        │
+|│                                                                        │
+|╰────────────────────────────────────────────────────────────────────────╯
+|[x] attack  [1] Hold the Line (2f)  [2] Shield Bash (1f)  [b] step back
+|[f] flee  [z] quick (1t)  [Up/Down] aim
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|
+=== fight-one 132x43 (door 74x36)
+|◆ EMBERDEEP · Fight · round 1 ━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L1 Warden
+|Order You ▸ (1) Slag Rat ▲
+|Health █████████████████████████ 62/62   [a]●Aggr │ [g] Guard │ [v] Evas
+|Focus  ●●●○○ 3/5   ward 4               You stand front
+|╭────────────────────────────────────────────────────────────────────────╮
+|│▶(1) Slag Rat  front                        ██████████████▊░░░░░░░░ 9/14│
+|│   next ▲ winds up a crushing blow  (double damage; an evasive stanc…)  │
+|│   marked +25%                                                          │
+|╰────────────────────────────────────────────────────────────────────────╯
+|
+|╭ You ───────────────────────────────────────────────────────────────────╮
+|│Aggressive: hit harder, get hit harder.                                 │
+|│Hand Iron Halberd  wear 0%                                              │
+|│Body Ringmail  wear 0%                                                  │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|╰────────────────────────────────────────────────────────────────────────╯
+|[x] attack  [1] Hold the Line (2f)  [2] Shield Bash (1f)  [b] step back
+|[f] flee  [z] quick (1t)  [Up/Down] aim
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|
+|
+|
+=== fight-four 80x24 (door 74x19)
+|◆ EMBERDEEP · Fight · round 3 ━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L1 Duelist
+|Order You ▸ (1) ▲ ▸ (2) ■ ▸ (3) ● ▸ (4) ▸
+|Health █████████████████████████ 52/52   [a]●Aggr │ [g] Guard │ [v] Evas
+|Focus  ●●●○○ 3/5   ward 4               You stand front
+|▶(1) Slag Rat  front                          ██████████████▊░░░░░░░░ 9/14
+|   next ▲ winds up a crushing blow  marked +25%
+| (2) Cinder Imp  back  out of reach           ██████████████████████ 11/11
+|   next ■ braces behind its guard  bleeding 3
+| (3) Rust Warden  front                       ██████████████████████ 22/22
+|   next ● draws breath to rally
+| (4) Slag Rat  front                          ██████████████████████ 14/14
+|   next ▸ readies a blow
+|
+|
+|[x] attack  [1] Feint (1f)  [2] Lunge (2f)  [b] step back  [f] flee
+|[Up/Down] aim
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+=== fight-four 100x30 (door 74x23)
+|◆ EMBERDEEP · Fight · round 3 ━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L1 Duelist
+|Order You ▸ (1) ▲ ▸ (2) ■ ▸ (3) ● ▸ (4) ▸
+|Health █████████████████████████ 52/52   [a]●Aggr │ [g] Guard │ [v] Evas
+|Focus  ●●●○○ 3/5   ward 4               You stand front
+|▶(1) Slag Rat  front                          ██████████████▊░░░░░░░░ 9/14
+|   next ▲ winds up a crushing blow  (double damage; an evasive stance …)
+|   marked +25%
+| (2) Cinder Imp  back  out of reach           ██████████████████████ 11/11
+|   next ■ braces behind its guard  (takes half damage, does not attack)
+|   bleeding 3
+| (3) Rust Warden  front                       ██████████████████████ 22/22
+|   next ● draws breath to rally  (allies hit harder next round)
+|   no marks on it
+| (4) Slag Rat  front                          ██████████████████████ 14/14
+|   next ▸ readies a blow  (a plain blow)
+|   no marks on it
+|
+|[x] attack  [1] Feint (1f)  [2] Lunge (2f)  [b] step back  [f] flee
+|[Up/Down] aim
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|
+=== fight-four 132x43 (door 74x36)
+|◆ EMBERDEEP · Fight · round 3 ━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L1 Duelist
+|Order You ▸ (1) ▲ ▸ (2) ■ ▸ (3) ● ▸ (4) ▸
+|Health █████████████████████████ 52/52   [a]●Aggr │ [g] Guard │ [v] Evas
+|Focus  ●●●○○ 3/5   ward 4               You stand front
+|╭────────────────────────────────────────────────────────────────────────╮
+|│▶(1) Slag Rat  front                        ██████████████▊░░░░░░░░ 9/14│
+|│   next ▲ winds up a crushing blow  (double damage; an evasive stanc…)  │
+|│   marked +25%                                                          │
+|╰────────────────────────────────────────────────────────────────────────╯
+|
+|╭────────────────────────────────────────────────────────────────────────╮
+|│ (2) Cinder Imp  back  out of reach         ██████████████████████ 11/11│
+|│   next ■ braces behind its guard  (takes half damage, does not atta…)  │
+|│   bleeding 3                                                           │
+|╰────────────────────────────────────────────────────────────────────────╯
+|
+|╭────────────────────────────────────────────────────────────────────────╮
+|│ (3) Rust Warden  front                     ██████████████████████ 22/22│
+|│   next ● draws breath to rally  (allies hit harder next round)         │
+|│   no marks on it                                                       │
+|╰────────────────────────────────────────────────────────────────────────╯
+|
+|╭────────────────────────────────────────────────────────────────────────╮
+|│ (4) Slag Rat  front                        ██████████████████████ 14/14│
+|│   next ▸ readies a blow  (a plain blow)                                │
+|│   no marks on it                                                       │
+|╰────────────────────────────────────────────────────────────────────────╯
+|
+|[x] attack  [1] Feint (1f)  [2] Lunge (2f)  [b] step back  [f] flee
+|[Up/Down] aim
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|
+|
+|
+=== fight-guardian 80x24 (door 74x19)
+|◆ EMBERDEEP · Fight · round 5 · GUARDIAN ━━━━━━━━━━ Ember L1 Ember-Priest
+|Order You ▸ (1) The Bellows G… ▲ ▸ (2) Slag Rat ■
+|Health █████████████████████████ 52/52   [a]●Aggr │ [g] Guard │ [v] Evas
+|Focus  ●●●○○ 3/5   ward 4               You stand front
+|╭────────────────────────────────────────────────────────────────────────╮
+|│▶(1) The Bellows Golem  front               ██████████████▋░░░░░░░ 53/80│
+|│   next ▲ winds up a crushing blow  (double damage; an evasive stanc…)  │
+|│   marked +25%                                                          │
+|╰────────────────────────────────────────────────────────────────────────╯
+|╭────────────────────────────────────────────────────────────────────────╮
+|│ (2) Slag Rat  front                        ██████████████████████ 14/14│
+|│   next ■ braces behind its guard  (takes half damage, does not atta…)  │
+|│   bleeding 3                                                           │
+|╰────────────────────────────────────────────────────────────────────────╯
+|[x] attack  [1] Cinder Bolt (2f)  [2] Ember Mend (2f)  [b] step back
+|[f] flee  [Up/Down] aim
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+=== fight-guardian 100x30 (door 74x23)
+|◆ EMBERDEEP · Fight · round 5 · GUARDIAN ━━━━━━━━━━ Ember L1 Ember-Priest
+|Order You ▸ (1) The Bellows G… ▲ ▸ (2) Slag Rat ■
+|Health █████████████████████████ 52/52   [a]●Aggr │ [g] Guard │ [v] Evas
+|Focus  ●●●○○ 3/5   ward 4               You stand front
+|╭────────────────────────────────────────────────────────────────────────╮
+|│▶(1) The Bellows Golem  front               ██████████████▋░░░░░░░ 53/80│
+|│   next ▲ winds up a crushing blow  (double damage; an evasive stanc…)  │
+|│   marked +25%                                                          │
+|╰────────────────────────────────────────────────────────────────────────╯
+|
+|╭────────────────────────────────────────────────────────────────────────╮
+|│ (2) Slag Rat  front                        ██████████████████████ 14/14│
+|│   next ■ braces behind its guard  (takes half damage, does not atta…)  │
+|│   bleeding 3                                                           │
+|╰────────────────────────────────────────────────────────────────────────╯
+|
+|
+|[x] attack  [1] Cinder Bolt (2f)  [2] Ember Mend (2f)  [b] step back
+|[f] flee  [Up/Down] aim
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|
+=== fight-guardian 132x43 (door 74x36)
+|◆ EMBERDEEP · Fight · round 5 · GUARDIAN ━━━━━━━━━━ Ember L1 Ember-Priest
+|Order You ▸ (1) The Bellows G… ▲ ▸ (2) Slag Rat ■
+|Health █████████████████████████ 52/52   [a]●Aggr │ [g] Guard │ [v] Evas
+|Focus  ●●●○○ 3/5   ward 4               You stand front
+|╭────────────────────────────────────────────────────────────────────────╮
+|│▶(1) The Bellows Golem  front               ██████████████▋░░░░░░░ 53/80│
+|│   next ▲ winds up a crushing blow  (double damage; an evasive stanc…)  │
+|│   marked +25%                                                          │
+|╰────────────────────────────────────────────────────────────────────────╯
+|
+|╭────────────────────────────────────────────────────────────────────────╮
+|│ (2) Slag Rat  front                        ██████████████████████ 14/14│
+|│   next ■ braces behind its guard  (takes half damage, does not atta…)  │
+|│   bleeding 3                                                           │
+|╰────────────────────────────────────────────────────────────────────────╯
+|
+|╭ You ───────────────────────────────────────────────────────────────────╮
+|│Aggressive: hit harder, get hit harder.                                 │
+|│Hand Censer Mace  wear 0%                                               │
+|│Body Pilgrim Robe  wear 0%                                              │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|╰────────────────────────────────────────────────────────────────────────╯
+|[x] attack  [1] Cinder Bolt (2f)  [2] Ember Mend (2f)  [b] step back
+|[f] flee  [Up/Down] aim
+|──────────────────────────────────────────────────────────────────────────
+|
+|
+|
+|
+|
+=== dead 80x24 (door 74x19)
+|◆ EMBERDEEP · The dark ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L1 Warden
+|╭ You are dead ──────────────────────────────────────────────────────────╮
+|│                                                                        │
+|│    ▄▄▄      Your body lies in the dark, on level 1. Another hero may   │
+|│   ▟███▙     carry you home. After that you wake in the temple,         │
+|│   █ † █     weakened, and the gear and pack are lost.                  │
+|│   █RIP█                                                                │
+|│  ▀▀▀▀▀▀▀                                                               │
+|│                                                                        │
+|│    ·               ◉          ·                    ·   ·    ◉          │
+|│    · ◉ ·    ◉         ·                                ◉   ◉           │
+|│              ◉         ◉·        ◉          ·                   ·      │
+|│                               ◉             ·              ·           │
+|│              ·     ·                               ·                   │
+|│                                                                        │
+|│ Time left ██████████████████████████████████░░░░░░░░░░░░░░░░░ 2 day(s) │
+|│                                                                        │
+|╰────────────────────────────────────────────────────────────────────────╯
+|[g] give up and wake in the temple  [Esc] leave
+=== dead 100x30 (door 74x23)
+|◆ EMBERDEEP · The dark ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L1 Warden
+|╭ You are dead ──────────────────────────────────────────────────────────╮
+|│                                                                        │
+|│    ▄▄▄      Your body lies in the dark, on level 1. Another hero may   │
+|│   ▟███▙     carry you home. After that you wake in the temple,         │
+|│   █ † █     weakened, and the gear and pack are lost.                  │
+|│   █RIP█                                                                │
+|│  ▀▀▀▀▀▀▀                                                               │
+|│                                                                        │
+|│    ·               ◉          ·                    ·   ·    ◉          │
+|│    · ◉ ·    ◉         ·                                ◉   ◉           │
+|│              ◉         ◉·        ◉          ·                   ·      │
+|│                               ◉             ·              ·           │
+|│              ·     ·                               ·                   │
+|│  ·        ·         ·                                        ·         │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│ Time left ██████████████████████████████████░░░░░░░░░░░░░░░░░ 2 day(s) │
+|│                                                                        │
+|╰────────────────────────────────────────────────────────────────────────╯
+|[g] give up and wake in the temple  [Esc] leave
+=== dead 132x43 (door 74x36)
+|◆ EMBERDEEP · The dark ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Ember L1 Warden
+|╭ You are dead ──────────────────────────────────────────────────────────╮
+|│                                                                        │
+|│    ▄▄▄      Your body lies in the dark, on level 1. Another hero may   │
+|│   ▟███▙     carry you home. After that you wake in the temple,         │
+|│   █ † █     weakened, and the gear and pack are lost.                  │
+|│   █RIP█                                                                │
+|│  ▀▀▀▀▀▀▀                                                               │
+|│                                                                        │
+|│    ·               ◉          ·                    ·   ·    ◉          │
+|│    · ◉ ·    ◉         ·                                ◉   ◉           │
+|│              ◉         ◉·        ◉          ·                   ·      │
+|│                               ◉             ·              ·           │
+|│              ·     ·                               ·                   │
+|│  ·        ·         ·                                        ·         │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│ Time left ██████████████████████████████████░░░░░░░░░░░░░░░░░ 2 day(s) │
+|│                                                                        │
+|╰────────────────────────────────────────────────────────────────────────╯
+|[g] give up and wake in the temple  [Esc] leave
+=== create-calling 80x24 (door 74x19)
+|◆ EMBERDEEP · A new hero · 1 of 3: choose a calling ━━━━━━━━━━━━━━━━━━━━━━
+|╭ Callings ──────────╮╭──────────────────────────────────────────────────╮
+|│  [1] Warden        ││Tends the old fires: bolts of cinder, a mending   │
+|│  [2] Cutthroat     ││flame, a prayer for the way back.                 │
+|│▸ [3] Ember-Priest  ││                                                  │
+|│  [4] Runesmith     ││Might    ███████████████████▌░░░░░░░░░░░░░░░░░░░ 8│
+|│  [5] Wanderer      ││Finesse  ███████████████████▌░░░░░░░░░░░░░░░░░░░ 8│
+|│  [6] Duelist       ││Wits     ███████████████████████▊░░░░░░░░░░░░░░ 10│
+|│                    ││Spirit   ████████████████████████████▌░░░░░░░░░ 12│
+|│                    ││32 hit points                                     │
+|│                    ││Censer Mace, Pilgrim Robe                         │
+|│                    ││Moves: Cinder Bolt, Ember Mend                    │
+|│                    ││Knacks: bless, lore                               │
+|│                    ││First skills: Kindled Faith, Warding Flame, Pilgr…│
+|│                    ││                                                  │
+|╰────────────────────╯╰──────────────────────────────────────────────────╯
+|
+|
+|[1-6] choose  [Up/Down] browse  [Enter] pick  [Esc] leave
+=== create-calling 100x30 (door 74x23)
+|◆ EMBERDEEP · A new hero · 1 of 3: choose a calling ━━━━━━━━━━━━━━━━━━━━━━
+|╭ Callings ──────────╮╭──────────────────────────────────────────────────╮
+|│  [1] Warden        ││Tends the old fires: bolts of cinder, a mending   │
+|│  [2] Cutthroat     ││flame, a prayer for the way back.                 │
+|│▸ [3] Ember-Priest  ││                                                  │
+|│  [4] Runesmith     ││Might    ███████████████████▌░░░░░░░░░░░░░░░░░░░ 8│
+|│  [5] Wanderer      ││Finesse  ███████████████████▌░░░░░░░░░░░░░░░░░░░ 8│
+|│  [6] Duelist       ││Wits     ███████████████████████▊░░░░░░░░░░░░░░ 10│
+|│                    ││Spirit   ████████████████████████████▌░░░░░░░░░ 12│
+|│                    ││32 hit points                                     │
+|│                    ││Censer Mace, Pilgrim Robe                         │
+|│                    ││Moves: Cinder Bolt, Ember Mend                    │
+|│                    ││Knacks: bless, lore                               │
+|│                    ││First skills: Kindled Faith, Warding Flame, Pilgr…│
+|│                    ││                                                  │
+|│                    ││                                                  │
+|│                    ││                                                  │
+|│                    ││                                                  │
+|│                    ││                                                  │
+|╰────────────────────╯╰──────────────────────────────────────────────────╯
+|
+|
+|[1-6] choose  [Up/Down] browse  [Enter] pick  [Esc] leave
+=== create-calling 132x43 (door 74x36)
+|◆ EMBERDEEP · A new hero · 1 of 3: choose a calling ━━━━━━━━━━━━━━━━━━━━━━
+|╭ Callings ──────────╮╭──────────────────────────────────────────────────╮
+|│  [1] Warden        ││Tends the old fires: bolts of cinder, a mending   │
+|│  [2] Cutthroat     ││flame, a prayer for the way back.                 │
+|│▸ [3] Ember-Priest  ││                                                  │
+|│  [4] Runesmith     ││Might    ███████████████████▌░░░░░░░░░░░░░░░░░░░ 8│
+|│  [5] Wanderer      ││Finesse  ███████████████████▌░░░░░░░░░░░░░░░░░░░ 8│
+|│  [6] Duelist       ││Wits     ███████████████████████▊░░░░░░░░░░░░░░ 10│
+|│                    ││Spirit   ████████████████████████████▌░░░░░░░░░ 12│
+|│                    ││32 hit points                                     │
+|│                    ││Censer Mace, Pilgrim Robe                         │
+|│                    ││Moves: Cinder Bolt, Ember Mend                    │
+|│                    ││Knacks: bless, lore                               │
+|│                    ││First skills: Kindled Faith, Warding Flame, Pilgr…│
+|│                    ││                                                  │
+|│                    ││                                                  │
+|│                    ││                                                  │
+|│                    ││                                                  │
+|│                    ││                                                  │
+|│                    ││                                                  │
+|│                    ││                                                  │
+|│                    ││                                                  │
+|│                    ││                                                  │
+|│                    ││                                                  │
+|│                    ││                                                  │
+|│                    ││                                                  │
+|│                    ││                                                  │
+|│                    ││                                                  │
+|│                    ││                                                  │
+|│                    ││                                                  │
+|│                    ││                                                  │
+|│                    ││                                                  │
+|╰────────────────────╯╰──────────────────────────────────────────────────╯
+|
+|
+|[1-6] choose  [Up/Down] browse  [Enter] pick  [Esc] leave
+=== create-traits 80x24 (door 74x19)
+|◆ EMBERDEEP · A new hero · 2 of 3: choose two traits ━━━━━━━━━━━━━━━━━━━━━
+|╭ Traits (1 of 2) ──────╮╭───────────────────────╮╭──────────────────────╮
+|│[a] Keen-Eyed          ││ [i] Night-Eyed        ││[q] Brawny            │
+|│[b] Iron Gut           ││ [j] Bookish           ││[r] Lucky             │
+|│[c] Quick              ││ [k] Bruiser           ││[s] Cautious          │
+|│[d] Stout              ││ [l] Nimble Fingers    ││[t] Reckless          │
+|│[e] Sure-Handed        ││ [m] Rune-Touched      ││[u] Fire-Blooded      │
+|│[f] Scavenger          ││ [n] Pious             ││[v] Ready             │
+|│[g] Pack Rat           ││ [o]◆Woodsman          ││[w] Tinker            │
+|│[h] Stubborn           ││▸[p] Climber           ││[x] Sharp-Tongued     │
+|╰───────────────────────╯╰───────────────────────╯╰──────────────────────╯
+|Climber: Walls are only slow stairs.
+|
+|
+|
+|
+|
+|
+|[a-x] pick or drop  [Arrows] browse  [Enter] continue (pick two)
+=== create-traits 100x30 (door 74x23)
+|◆ EMBERDEEP · A new hero · 2 of 3: choose two traits ━━━━━━━━━━━━━━━━━━━━━
+|╭ Traits (1 of 2) ──────╮╭───────────────────────╮╭──────────────────────╮
+|│[a] Keen-Eyed          ││ [i] Night-Eyed        ││[q] Brawny            │
+|│[b] Iron Gut           ││ [j] Bookish           ││[r] Lucky             │
+|│[c] Quick              ││ [k] Bruiser           ││[s] Cautious          │
+|│[d] Stout              ││ [l] Nimble Fingers    ││[t] Reckless          │
+|│[e] Sure-Handed        ││ [m] Rune-Touched      ││[u] Fire-Blooded      │
+|│[f] Scavenger          ││ [n] Pious             ││[v] Ready             │
+|│[g] Pack Rat           ││ [o]◆Woodsman          ││[w] Tinker            │
+|│[h] Stubborn           ││▸[p] Climber           ││[x] Sharp-Tongued     │
+|╰───────────────────────╯╰───────────────────────╯╰──────────────────────╯
+|Climber: Walls are only slow stairs.
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|[a-x] pick or drop  [Arrows] browse  [Enter] continue (pick two)
+=== create-traits 132x43 (door 74x36)
+|◆ EMBERDEEP · A new hero · 2 of 3: choose two traits ━━━━━━━━━━━━━━━━━━━━━
+|╭ Traits (1 of 2) ──────╮╭───────────────────────╮╭──────────────────────╮
+|│[a] Keen-Eyed          ││ [i] Night-Eyed        ││[q] Brawny            │
+|│[b] Iron Gut           ││ [j] Bookish           ││[r] Lucky             │
+|│[c] Quick              ││ [k] Bruiser           ││[s] Cautious          │
+|│[d] Stout              ││ [l] Nimble Fingers    ││[t] Reckless          │
+|│[e] Sure-Handed        ││ [m] Rune-Touched      ││[u] Fire-Blooded      │
+|│[f] Scavenger          ││ [n] Pious             ││[v] Ready             │
+|│[g] Pack Rat           ││ [o]◆Woodsman          ││[w] Tinker            │
+|│[h] Stubborn           ││▸[p] Climber           ││[x] Sharp-Tongued     │
+|╰───────────────────────╯╰───────────────────────╯╰──────────────────────╯
+|Climber: Walls are only slow stairs.
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|
+|[a-x] pick or drop  [Arrows] browse  [Enter] continue (pick two)
+=== create-points 80x24 (door 74x19)
+|◆ EMBERDEEP · A new hero · 3 of 3: spend four points ━━━━━━━━━━━━━━━━━━━━━
+|╭ Attributes ────────────────────────────────────────────────────────────╮
+|│Points left 3                                                           │
+|│                                                                        │
+|│[1] Might    █████████████████████████████▎░░░░░░░░░░░░░░░░░░░░░░ 9 (+1)│
+|│[2] Finesse  ██████████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░ 8 (+0)│
+|│[3] Wits     ███████████████████████████████▉░░░░░░░░░░░░░░░░░░░ 10 (+0)│
+|│[4] Spirit   ██████████████████████████████████████▎░░░░░░░░░░░░ 12 (+0)│
+|│                                                                        │
+|│Tends the old fires: bolts of cinder, a mending flame, a prayer for the │
+|│way back.                                                               │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|╰────────────────────────────────────────────────────────────────────────╯
+|
+|
+|[1-4] add a point  [Enter] begin  [Backspace] undo
+=== create-points 100x30 (door 74x23)
+|◆ EMBERDEEP · A new hero · 3 of 3: spend four points ━━━━━━━━━━━━━━━━━━━━━
+|╭ Attributes ────────────────────────────────────────────────────────────╮
+|│Points left 3                                                           │
+|│                                                                        │
+|│[1] Might    █████████████████████████████▎░░░░░░░░░░░░░░░░░░░░░░ 9 (+1)│
+|│[2] Finesse  ██████████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░ 8 (+0)│
+|│[3] Wits     ███████████████████████████████▉░░░░░░░░░░░░░░░░░░░ 10 (+0)│
+|│[4] Spirit   ██████████████████████████████████████▎░░░░░░░░░░░░ 12 (+0)│
+|│                                                                        │
+|│Tends the old fires: bolts of cinder, a mending flame, a prayer for the │
+|│way back.                                                               │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|╰────────────────────────────────────────────────────────────────────────╯
+|
+|
+|[1-4] add a point  [Enter] begin  [Backspace] undo
+=== create-points 132x43 (door 74x36)
+|◆ EMBERDEEP · A new hero · 3 of 3: spend four points ━━━━━━━━━━━━━━━━━━━━━
+|╭ Attributes ────────────────────────────────────────────────────────────╮
+|│Points left 3                                                           │
+|│                                                                        │
+|│[1] Might    █████████████████████████████▎░░░░░░░░░░░░░░░░░░░░░░ 9 (+1)│
+|│[2] Finesse  ██████████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░ 8 (+0)│
+|│[3] Wits     ███████████████████████████████▉░░░░░░░░░░░░░░░░░░░ 10 (+0)│
+|│[4] Spirit   ██████████████████████████████████████▎░░░░░░░░░░░░ 12 (+0)│
+|│                                                                        │
+|│Tends the old fires: bolts of cinder, a mending flame, a prayer for the │
+|│way back.                                                               │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|│                                                                        │
+|╰────────────────────────────────────────────────────────────────────────╯
+|
+|
+|[1-4] add a point  [Enter] begin  [Backspace] undo

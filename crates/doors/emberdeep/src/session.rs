@@ -17,6 +17,7 @@ use crate::rules::{CREATION_POINTS, CREATION_TRAITS, DEPTH_MAX, RECOVERY_DAYS};
 use crate::world::World;
 
 mod places;
+mod ui;
 
 pub(crate) use places::Spot;
 
@@ -110,6 +111,20 @@ enum CreateStep {
     Points,
 }
 
+/// What only the screens care about: a cursor in a list, a tab, where the town's list stood.
+/// None of it is saved or reaches the engine.
+#[derive(Debug, Clone, Copy, Default)]
+struct UiState {
+    /// The row under the cursor on the current screen.
+    cursor: usize,
+    /// The tab on the sheet and the hall.
+    tab: usize,
+    /// The cursor of the town's list of places (kept while a place is open).
+    home: usize,
+    /// The screen the cursor belongs to.
+    on: Option<Screen>,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Screen {
     Main,
@@ -142,6 +157,7 @@ pub(crate) struct Session {
     dirty: bool,
     /// Whether the hero's gifts to the town have been sent to the world this visit.
     reconciled: bool,
+    ui: UiState,
 }
 
 impl Session {
@@ -161,6 +177,7 @@ impl Session {
             target: 0,
             dirty: false,
             reconciled: false,
+            ui: UiState::default(),
         };
         if content.is_none() {
             return session;
@@ -249,6 +266,12 @@ impl Session {
         let traits = self.content.traits.traits.len();
         match c.step {
             CreateStep::Calling => match key {
+                DoorKey::Up => c.calling = c.calling.saturating_sub(1),
+                DoorKey::Down => c.calling = (c.calling + 1).min(callings.saturating_sub(1)),
+                DoorKey::Enter => {
+                    c.step = CreateStep::Traits;
+                    c.cursor = 0;
+                }
                 DoorKey::Char(ch) if ch.is_ascii_digit() => {
                     let n = ch.to_digit(10).unwrap_or(0) as usize;
                     if (1..=callings).contains(&n) {
@@ -260,6 +283,18 @@ impl Session {
                 _ => {}
             },
             CreateStep::Traits => match key {
+                DoorKey::Up => c.cursor = c.cursor.saturating_sub(1),
+                DoorKey::Down => c.cursor = (c.cursor + 1).min(traits.saturating_sub(1)),
+                DoorKey::Left => c.cursor = c.cursor.saturating_sub(8),
+                DoorKey::Right => c.cursor = (c.cursor + 8).min(traits.saturating_sub(1)),
+                DoorKey::Char(' ') => {
+                    let at = c.cursor;
+                    if let Some(p) = c.traits.iter().position(|t| *t == at) {
+                        c.traits.remove(p);
+                    } else if c.traits.len() < CREATION_TRAITS && at < traits {
+                        c.traits.push(at);
+                    }
+                }
                 DoorKey::Char(ch) => {
                     if let Some(at) = TRAIT_KEYS.find(ch).filter(|at| *at < traits) {
                         c.cursor = at;
@@ -345,6 +380,42 @@ impl Session {
         if screen != Screen::Main {
             match (screen, key) {
                 (_, DoorKey::Escape | DoorKey::Backspace) => self.mode = Mode::Play(Screen::Main),
+                (_, DoorKey::Up) => self.ui.cursor = self.ui.cursor.saturating_sub(1),
+                (_, DoorKey::Down) => {
+                    let last = self.list_len(screen).saturating_sub(1);
+                    self.ui.cursor = (self.ui.cursor + 1).min(last);
+                }
+                (Screen::Sheet | Screen::Hall, DoorKey::Left | DoorKey::Right) => {
+                    let tabs = if screen == Screen::Hall {
+                        ui::HALL_TABS
+                    } else {
+                        ui::SHEET_TABS
+                    };
+                    self.ui.tab = if key == DoorKey::Left {
+                        (self.ui.tab + tabs - 1) % tabs
+                    } else {
+                        (self.ui.tab + 1) % tabs
+                    };
+                    self.ui.cursor = 0;
+                }
+                (Screen::Skills, DoorKey::Enter) => {
+                    let id = self
+                        .game
+                        .as_ref()
+                        .and_then(|g| self.tree(&g.hero.calling).get(self.ui.cursor).cloned());
+                    if let Some(id) = id {
+                        self.act(Action::Buy(id), ctx);
+                    }
+                }
+                (Screen::Spot(spot), DoorKey::Enter) => {
+                    let entry = self
+                        .game
+                        .as_ref()
+                        .and_then(|g| self.spot_view(g, spot).1.into_iter().nth(self.ui.cursor));
+                    if let Some(e) = entry {
+                        self.act(e.action, ctx);
+                    }
+                }
                 (Screen::Skills, DoorKey::Char(ch)) => self.skills_key(ch, ctx),
                 (Screen::Spot(spot), DoorKey::Char(ch)) => self.spot_key(spot, ch, ctx),
                 _ => {}
@@ -398,6 +469,59 @@ impl Session {
         }
     }
 
+    /// How many rows the list on `screen` has, so the cursor stops at the end.
+    fn list_len(&self, screen: Screen) -> usize {
+        let Some(game) = self.game.as_ref() else {
+            return 0;
+        };
+        match screen {
+            Screen::Skills => self.tree(&game.hero.calling).len(),
+            Screen::Spot(spot) => self.spot_view(game, spot).1.len(),
+            Screen::Sheet => ui::sheet_len(self, game, self.ui.tab),
+            Screen::Main | Screen::Hall | Screen::Map => 0,
+        }
+    }
+
+    /// What the pictures show that the plain lines do not say: the map in words, and the options
+    /// this build cannot take, with the reason.
+    fn look_extra(&self) -> Vec<String> {
+        let (Mode::Play(screen), Some(game)) = (&self.mode, &self.game) else {
+            return Vec::new();
+        };
+        let wrapped = |lines: Vec<String>| -> Vec<String> {
+            lines
+                .into_iter()
+                .flat_map(|l| {
+                    let indent = l.chars().take_while(|c| *c == ' ').count();
+                    wrap(&l, WRAP - indent)
+                        .into_iter()
+                        .enumerate()
+                        .map(move |(i, w)| {
+                            format!(
+                                "{}{w}",
+                                " ".repeat(if i == 0 { indent } else { indent + 2 })
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                })
+                .collect()
+        };
+        match screen {
+            Screen::Map => wrapped(ui::describe_map(game, &self.content)),
+            Screen::Main if game.fight.is_none() => {
+                let Place::Delve { depth, room } = game.place else {
+                    return Vec::new();
+                };
+                let mut out = ui::describe_map(game, &self.content);
+                for (label, why) in ui::closed_options(&self.content, game, depth, room) {
+                    out.push(format!("Closed to you: {label} ({why})."));
+                }
+                wrapped(out)
+            }
+            _ => Vec::new(),
+        }
+    }
+
     fn tree(&self, calling: &str) -> Vec<String> {
         self.content
             .nodes
@@ -418,6 +542,16 @@ impl Session {
             .map(|(d, _)| *d)
             .collect();
         match key {
+            DoorKey::Up => self.ui.home = self.ui.home.saturating_sub(1),
+            DoorKey::Down => {
+                self.ui.home = (self.ui.home + 1).min(ui::PLACES.len().saturating_sub(1));
+            }
+            DoorKey::Enter => {
+                let ch = ui::PLACES.get(self.ui.home).map(|(c, _)| *c);
+                if let Some(ch) = ch {
+                    return self.town_key(DoorKey::Char(ch), ctx);
+                }
+            }
             DoorKey::Char('d') => self.act(Action::Descend(1), ctx),
             DoorKey::Char('s') => self.mode = Mode::Play(Screen::Skills),
             DoorKey::Char('h') => self.mode = Mode::Play(Screen::Sheet),
@@ -1299,33 +1433,33 @@ impl DoorSession for Session {
             }
             self.dirty = false;
         }
+        // A new screen starts with the cursor at the top and the first tab.
+        let now = match &self.mode {
+            Mode::Play(screen) if *screen != Screen::Main => Some(*screen),
+            _ => None,
+        };
+        if now != self.ui.on {
+            self.ui.on = now;
+            self.ui.cursor = 0;
+            self.ui.tab = 0;
+        }
         flow
     }
 
-    fn render(&self, canvas: &mut Canvas<'_>, _env: &DoorEnv) {
-        canvas.clear();
-        let lines = self.lines();
-        let height = usize::from(canvas.height());
-        let room_for_log = height.saturating_sub(lines.head.len() + lines.keys.len());
-        let skip = lines.log.len().saturating_sub(room_for_log);
-        let shown = lines
-            .head
-            .iter()
-            .chain(lines.log.iter().skip(skip))
-            .chain(lines.keys.iter());
-        for (y, (text, style)) in shown.take(height).enumerate() {
-            canvas.text(0, u16::try_from(y).unwrap_or(u16::MAX), text, *style);
-        }
+    fn render(&self, canvas: &mut Canvas<'_>, env: &DoorEnv) {
+        ui::draw(self, canvas, env);
     }
 
     fn look_around(&self, _env: &DoorEnv) -> Vec<String> {
         let lines = self.lines();
+        let extra = self.look_extra();
         lines
             .head
             .into_iter()
-            .chain(lines.log)
-            .chain(lines.keys)
             .map(|(text, _)| text)
+            .chain(extra)
+            .chain(lines.log.into_iter().map(|(text, _)| text))
+            .chain(lines.keys.into_iter().map(|(text, _)| text))
             .collect()
     }
 }
