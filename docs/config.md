@@ -98,6 +98,25 @@ Where member-uploaded bytes will live. The store is built at start so a bad dire
 | `blobs.max_object_bytes` | integer, 1 to 2^40 | `268435456` (256 MiB) | `RUSSH_BBS_BLOBS_MAX_OBJECT_BYTES` | none | The largest object either backend stores; a put over it fails and stores nothing. The per-file and per-day upload limits (M2-H) apply below this at M4-F2 |
 | `blobs.multipart_threshold_bytes` | integer, 5 MiB to 5 GiB (only with `s3`) | `16777216` (16 MiB) | `RUSSH_BBS_BLOBS_MULTIPART_THRESHOLD_BYTES` | none | Uploads larger than this go up in parts of this size. A put holds about three parts in memory, whatever the object size. `max_object_bytes` divided by this must stay under 10,000 (the S3 part limit) |
 
+### `[board]` (UI-2)
+
+The board's identity, and what members may choose. Every key is optional and the defaults draw exactly what the screens drew before. Text is the sysop's own words, not member content, but it still goes through the shared sanitizer: control characters, invisible characters and the reserved security-marker glyphs are **refused** (not silently changed), and so is any text that says the board is private, secure or encrypted (the server can read everything except PGP-encrypted mail and files members encrypt themselves; `docs/threat-model.md`).
+
+| Key | Type | Default | Environment | Flag | Used by |
+|---|---|---|---|---|---|
+| `board.name` | text, 1 to 40 characters | `russh-bbs` | `RUSSH_BBS_BOARD_NAME` | none | The header bar, the box titles and the login banner |
+| `board.tagline` | text, up to 80 characters | `A bulletin board in your terminal.` | `RUSSH_BBS_BOARD_TAGLINE` | none | The identity panel of the dashboard, wide and split layouts |
+| `board.location` | text, up to 80 characters | empty | `RUSSH_BBS_BOARD_LOCATION` | none | The identity panel |
+| `board.since` | text, up to 16 characters | empty | `RUSSH_BBS_BOARD_SINCE` | none | The identity panel |
+| `board.accent` | `#rrggbb`, a 0-255 index or one of the sixteen colour names | the style's accent | `RUSSH_BBS_BOARD_ACCENT` | none | Replaces the style's `accent` colour (the board name in the header, pointers, rules) |
+| `board.style` | a style name | `default` | `RUSSH_BBS_BOARD_STYLE` | none | The style members who never chose one get; must be in `board.styles` when that is set |
+| `board.layout` | `classic`, `lightbar`, `compact`, `dashboard`, `wide`, `focus` or `split` | `classic` | `RUSSH_BBS_BOARD_LAYOUT` | none | The layout members who never chose one get; must be in `board.layouts` when that is set |
+| `board.styles` | comma-separated style names | empty (every loaded style) | `RUSSH_BBS_BOARD_STYLES` | none | The styles members can pick. **One entry locks the style for everyone**, whatever they stored. A name that is not loaded is ignored with a warning at start |
+| `board.layouts` | comma-separated layout names | empty (all seven) | `RUSSH_BBS_BOARD_LAYOUTS` | none | The layouts members can pick. One entry locks the layout |
+| `board.motion` | boolean | `true` | `RUSSH_BBS_BOARD_MOTION` | none | `false` turns motion off for every member (the setting is stored; nothing animates yet, UI-4 and UI-8 will read it) |
+
+A member's own choices (style, layout, motion, colour depth ceiling, border set) are stored per member and apply at once; they can only narrow what the board allows and what the client's terminal can show (see [ui.md](ui.md#styles-layouts-and-board-identity-ui-2)).
+
 ### `[mail]` (M3-I, D90)
 
 | Key | Type | Default | Environment | Flag | Used by |

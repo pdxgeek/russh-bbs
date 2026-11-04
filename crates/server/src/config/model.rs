@@ -34,6 +34,8 @@ pub struct Config {
     pub waiting_room: WaitingRoomConfig,
     /// Internal mail (M3-I, D90): where the key that seals stored mail lives.
     pub mail: MailConfig,
+    /// The board's identity, defaults and what members may choose (UI-2).
+    pub board: BoardConfig,
 }
 
 impl Default for Config {
@@ -47,6 +49,51 @@ impl Default for Config {
             feeds: FeedsConfig::default(),
             waiting_room: WaitingRoomConfig::default(),
             mail: MailConfig::default(),
+            board: BoardConfig::default(),
+        }
+    }
+}
+
+/// `[board]` (UI-2): the board's name and look. Checked by `ui::board::Board::from_config`.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct BoardConfig {
+    /// The board's name, shown in the header and on the login screen.
+    pub name: String,
+    /// A short line under the name on the home screen.
+    pub tagline: String,
+    /// Where the board is, or any other short line (optional).
+    pub location: String,
+    /// When the board started, e.g. `2026` (optional).
+    pub since: String,
+    /// An accent colour (`#rrggbb`, a 0-255 index or a colour name) that replaces the style's.
+    pub accent: Option<String>,
+    /// The style new members start with. Unset: `default`.
+    pub style: Option<String>,
+    /// The layout new members start with. Unset: `classic`.
+    pub layout: Option<String>,
+    /// The styles members may pick from, comma-separated. Empty: every loaded style. One entry
+    /// locks the choice for everyone.
+    pub styles: String,
+    /// The layouts members may pick from, comma-separated. Empty: all. One entry locks it.
+    pub layouts: String,
+    /// Whether members may have motion at all. Off turns it off for everyone.
+    pub motion: bool,
+}
+
+impl Default for BoardConfig {
+    fn default() -> Self {
+        Self {
+            name: "russh-bbs".to_owned(),
+            tagline: "A bulletin board in your terminal.".to_owned(),
+            location: String::new(),
+            since: String::new(),
+            accent: None,
+            style: None,
+            layout: None,
+            styles: String::new(),
+            layouts: String::new(),
+            motion: true,
         }
     }
 }

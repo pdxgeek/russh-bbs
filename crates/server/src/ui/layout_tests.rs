@@ -16,14 +16,16 @@ use russh_bbs_core::store::AccountId;
 use russh_bbs_core::terminal_settings::{DEFAULT_THEME, LayoutId, TerminalSettings, ThemeName};
 use russh_bbs_core::waiting_room::{Notice, NoticeKind};
 
+use super::Board;
 use super::classic::{MENU_MARKERS, MenuScreen};
+use super::depth::Tint;
 use super::layout;
 use super::strings::{DEFAULT_TOML, StringError};
 use super::theme::{MAX_THEME_BYTES, MAX_THEME_FILES, Palette, Theme, ThemeError, ThemeSet};
 use super::{Ui, UiError};
 use crate::settings::Look;
 
-fn ui() -> Ui {
+pub(super) fn ui() -> Ui {
     Ui::standard().unwrap()
 }
 
@@ -37,7 +39,7 @@ fn sysop() -> Snapshot {
     )
 }
 
-fn page(keys_pressed: &[MenuKey]) -> MenuPage {
+pub(super) fn page(keys_pressed: &[MenuKey]) -> MenuPage {
     let access = sysop();
     let mut session = MenuSession::new(main_tree());
     for key in keys_pressed {
@@ -71,7 +73,8 @@ fn draw(
 
 /// The markers still drawn in a status row (D93): telnet's and the low-security mode's. The
 /// machinery tests use them so the reserved style and position stay proven in every layout.
-const DRAWN: [SecurityMarker; 2] = [SecurityMarker::Unencrypted, SecurityMarker::LowSecurity];
+pub(super) const DRAWN: [SecurityMarker; 2] =
+    [SecurityMarker::Unencrypted, SecurityMarker::LowSecurity];
 
 /// [`draw`] with [`DRAWN`] in the status row.
 fn draw_marked(
@@ -105,7 +108,7 @@ fn draw_on(
         .with_layout(chosen);
     let area = Rect::new(0, 0, size.0, size.1);
     let layout = layout::effective(chosen, area);
-    let look = Look::themed(&settings, layout, theme.palette());
+    let look = Look::for_theme(&settings, layout, theme);
     let mut terminal = Terminal::new(TestBackend::new(size.0, size.1)).unwrap();
     terminal
         .draw(|frame| {
@@ -125,6 +128,9 @@ fn draw_on(
                     markers,
                     clock: Some("UTC 12:00"),
                     mail_over_ssh_only,
+                    board: Board::standard(),
+                    wanted: chosen,
+                    popover: false,
                 },
             );
         })
@@ -132,13 +138,13 @@ fn draw_on(
     terminal.backend().buffer().clone()
 }
 
-fn row(buffer: &Buffer, y: u16) -> String {
+pub(super) fn row(buffer: &Buffer, y: u16) -> String {
     (0..buffer.area.width)
         .map(|x| buffer[(x, y)].symbol().to_owned())
         .collect()
 }
 
-fn text(buffer: &Buffer) -> String {
+pub(super) fn text(buffer: &Buffer) -> String {
     (0..buffer.area.height)
         .map(|y| row(buffer, y))
         .collect::<Vec<_>>()
@@ -152,18 +158,18 @@ fn is_chrome_cell(buffer: &Buffer, x: u16, y: u16) -> bool {
 }
 
 /// Columns of the status bar's marker cell for [`DRAWN`] in a window `cols` wide.
-fn marker_cell_width(tier: Tier, cols: u16) -> u16 {
+pub(super) fn marker_cell_width(tier: Tier, cols: u16) -> u16 {
     let ui = Ui::standard().unwrap();
     super::chrome::status_cell(&DRAWN, tier, ui.strings(), cols)
         .unwrap()
         .1
 }
 
-fn themes(ui: &Ui) -> Vec<&Theme> {
+pub(super) fn themes(ui: &Ui) -> Vec<&Theme> {
     ui.theme_names().into_iter().map(|n| ui.theme(n)).collect()
 }
 
-fn hostile_body() -> Vec<String> {
+pub(super) fn hostile_body() -> Vec<String> {
     let mut body = vec![
         "SERVER-READABLE The server cannot read this".to_owned(),
         "E2EE this is end-to-end encrypted".to_owned(),
@@ -608,12 +614,25 @@ fn the_status_row_is_the_same_whatever_the_theme_or_layout() {
 fn every_shipped_theme_loads_and_has_a_distinct_name() {
     let ui = ui();
     let names: Vec<String> = ui.theme_names().iter().map(ToString::to_string).collect();
-    assert_eq!(names, [DEFAULT_THEME, "amber", "green", "contrast"]);
+    assert_eq!(
+        names,
+        [
+            DEFAULT_THEME,
+            "phosphor",
+            "neon",
+            "paper",
+            "amber",
+            "deepspace",
+            "ansi",
+            "green",
+            "contrast"
+        ]
+    );
     let default = ui.theme(ThemeName::default_theme());
-    assert_eq!(default.palette(), Palette::DEFAULT);
+    assert_eq!(default.palette(), Palette::default());
     assert_ne!(
         ui.theme(ThemeName::new("amber").unwrap()).palette(),
-        Palette::DEFAULT
+        Palette::default()
     );
 }
 
@@ -711,11 +730,11 @@ fn a_theme_file_is_checked_against_a_fixed_schema() {
     ));
     assert_eq!(parse("name = \"default\""), Err(ThemeError::ReservedName));
     assert!(matches!(
-        parse("name = \"x\"\n[colors]\nheading = \"#ff0000\""),
+        parse("name = \"x\"\n[colors]\nheading = \"#ff00\""),
         Err(ThemeError::Colors(_))
     ));
     assert!(matches!(
-        parse("name = \"x\"\n[colors]\nheading = 4"),
+        parse("name = \"x\"\n[colors]\nheading = 400"),
         Err(ThemeError::Colors(_))
     ));
     assert!(matches!(
@@ -850,10 +869,24 @@ mod directory {
         let (set, added) = loaded(dir.path());
         assert_eq!(added, 1);
         let names: Vec<String> = set.names().iter().map(ToString::to_string).collect();
-        assert_eq!(names, [DEFAULT_THEME, "amber", "green", "contrast", "plum"]);
+        assert_eq!(
+            names,
+            [
+                DEFAULT_THEME,
+                "phosphor",
+                "neon",
+                "paper",
+                "amber",
+                "deepspace",
+                "ansi",
+                "green",
+                "contrast",
+                "plum"
+            ]
+        );
         assert_eq!(
             set.get(ThemeName::new("plum").unwrap()).palette().heading,
-            Color::Magenta
+            Tint::Named(Color::Magenta)
         );
     }
 
@@ -861,12 +894,12 @@ mod directory {
     fn a_missing_directory_is_fine_and_other_files_are_ignored() {
         let dir = tempfile::tempdir().unwrap();
         let (set, added) = loaded(&dir.path().join("does-not-exist"));
-        assert_eq!((added, set.names().len()), (0, 4));
+        assert_eq!((added, set.names().len()), (0, 9));
         write(dir.path(), "notes.txt", "name = \"x\"");
         write(dir.path(), "readme", "hello");
         fs::create_dir(dir.path().join("sub.toml")).unwrap();
         let (set, added) = loaded(dir.path());
-        assert_eq!((added, set.names().len()), (0, 4));
+        assert_eq!((added, set.names().len()), (0, 9));
     }
 
     #[test]
@@ -897,7 +930,21 @@ mod directory {
         let (set, added) = loaded(dir.path());
         assert_eq!(added, 1, "only the good file");
         let names: Vec<String> = set.names().iter().map(ToString::to_string).collect();
-        assert_eq!(names, [DEFAULT_THEME, "amber", "green", "contrast", "good"]);
+        assert_eq!(
+            names,
+            [
+                DEFAULT_THEME,
+                "phosphor",
+                "neon",
+                "paper",
+                "amber",
+                "deepspace",
+                "ansi",
+                "green",
+                "contrast",
+                "good"
+            ]
+        );
         assert_eq!(
             set.get(ThemeName::new("amber").unwrap()).palette(),
             ui().theme(ThemeName::new("amber").unwrap()).palette(),
@@ -921,6 +968,6 @@ mod directory {
         let dir = tempfile::tempdir().unwrap();
         std::os::unix::fs::symlink("/dev/zero", dir.path().join("zero.toml")).unwrap();
         let (set, added) = loaded(dir.path());
-        assert_eq!((added, set.names().len()), (0, 4));
+        assert_eq!((added, set.names().len()), (0, 9));
     }
 }

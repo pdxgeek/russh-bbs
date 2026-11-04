@@ -128,6 +128,12 @@ pub struct MemberFlow {
     /// The themes the server has loaded, in the order "next theme" cycles. Empty until the
     /// front end sets them; then the theme key does nothing.
     themes: Vec<ThemeName>,
+    /// The layouts the sysop allows, in cycle order. Empty means every layout; one entry means
+    /// the sysop fixed it.
+    layouts: Vec<LayoutId>,
+    /// What a member who has not chosen gets: the board's default layout and theme.
+    board_layout: LayoutId,
+    board_theme: ThemeName,
     /// How the session signed in. A password session must give the current password again to
     /// set or clear one (M3-D, D81).
     login: LoginMethod,
@@ -164,6 +170,9 @@ impl MemberFlow {
             menu: MenuSession::new(main_tree()),
             terminal: None,
             themes: Vec::new(),
+            layouts: Vec::new(),
+            board_layout: LayoutId::Classic,
+            board_theme: ThemeName::default_theme(),
             login: LoginMethod::Key,
             mail_note: true,
             key_notices: Vec::new(),
@@ -213,6 +222,44 @@ impl MemberFlow {
     /// front end calls this once at the start with the server's loaded set.
     pub fn set_themes(&mut self, themes: Vec<ThemeName>) {
         self.themes = themes;
+    }
+
+    /// Tell the flow which layouts the sysop allows, in cycle order. Empty allows every layout;
+    /// a single entry fixes the layout and the settings key then changes nothing.
+    pub fn set_layouts(&mut self, layouts: Vec<LayoutId>) {
+        self.layouts = layouts;
+    }
+
+    /// Tell the flow the board's default layout and theme, which a member who has not chosen
+    /// follows.
+    pub fn set_board_defaults(&mut self, layout: LayoutId, theme: ThemeName) {
+        self.board_layout = layout;
+        self.board_theme = theme;
+    }
+
+    /// The layout in force: the member's choice if the sysop allows it, else the board's
+    /// default if allowed, else the first allowed layout.
+    #[must_use]
+    pub fn effective_layout(&self) -> LayoutId {
+        let allowed = |layout: &LayoutId| self.layouts.is_empty() || self.layouts.contains(layout);
+        self.settings
+            .layout_choice()
+            .filter(allowed)
+            .or_else(|| Some(self.board_layout).filter(allowed))
+            .or_else(|| self.layouts.first().copied())
+            .unwrap_or(self.board_layout)
+    }
+
+    /// The theme in force, by the same rule as [`Self::effective_layout`].
+    #[must_use]
+    pub fn effective_theme(&self) -> ThemeName {
+        let allowed = |theme: &ThemeName| self.themes.is_empty() || self.themes.contains(theme);
+        self.settings
+            .theme_choice()
+            .filter(allowed)
+            .or_else(|| Some(self.board_theme).filter(allowed))
+            .or_else(|| self.themes.first().copied())
+            .unwrap_or(self.board_theme)
     }
 
     /// Tell the flow how big the real terminal is, so the settings screen can say when a
@@ -415,9 +462,9 @@ impl MemberFlow {
             MemberInput::Escape => MenuKey::Back,
             // The cursor keys only mean something in a layout that draws a cursor; elsewhere
             // Enter must not act on a selection the member cannot see.
-            MemberInput::Up if self.settings.layout().has_cursor() => MenuKey::Up,
-            MemberInput::Down if self.settings.layout().has_cursor() => MenuKey::Down,
-            MemberInput::Enter if self.settings.layout().has_cursor() => MenuKey::Select,
+            MemberInput::Up if self.effective_layout().has_cursor() => MenuKey::Up,
+            MemberInput::Down if self.effective_layout().has_cursor() => MenuKey::Down,
+            MemberInput::Enter if self.effective_layout().has_cursor() => MenuKey::Select,
             MemberInput::Enter
             | MemberInput::Backspace
             | MemberInput::Up
@@ -747,10 +794,18 @@ impl MemberFlow {
             MemberInput::Char('p' | 'P') => {
                 self.save(self.settings.with_pause(!self.settings.pause()))
             }
-            MemberInput::Char('l' | 'L') => {
-                self.save(self.settings.with_layout(self.settings.layout().next()))
-            }
+            MemberInput::Char('l' | 'L') => self.next_layout(),
             MemberInput::Char('t' | 'T') => self.next_theme(),
+            MemberInput::Char('m' | 'M') => {
+                self.save(self.settings.with_motion(!self.settings.motion()))
+            }
+            MemberInput::Char('d' | 'D') => self.save(
+                self.settings
+                    .with_depth_cap(self.settings.depth_cap().next()),
+            ),
+            MemberInput::Char('r' | 'R') => {
+                self.save(self.settings.with_borders(self.settings.borders().next()))
+            }
             MemberInput::Char('i' | 'I') => {
                 self.page = Page::GlyphTest(GlyphTest::new(self.settings.needs_glyph_test()));
                 MemberEffect::Stay
@@ -770,10 +825,41 @@ impl MemberFlow {
         }
     }
 
-    /// Switch to the theme after the current one in the server's list (the first, if the current
-    /// one is not in it). Nothing happens when the server has loaded no themes.
+    /// Switch to the layout after the one in force, among the layouts the sysop allows (all, if
+    /// none are listed; the first allowed, if the one in force is not among them). One allowed
+    /// layout is a lock: nothing changes.
+    fn next_layout(&mut self) -> MemberEffect {
+        if self.layouts.len() == 1 {
+            return MemberEffect::Stay;
+        }
+        let current = self
+            .settings
+            .layout_choice()
+            .unwrap_or_else(|| self.effective_layout());
+        let next = if self.layouts.is_empty() {
+            current.next()
+        } else {
+            self.layouts
+                .iter()
+                .position(|layout| *layout == current)
+                .map_or(self.layouts[0], |at| {
+                    self.layouts[(at + 1) % self.layouts.len()]
+                })
+        };
+        self.save(self.settings.with_layout(next))
+    }
+
+    /// Switch to the theme after the one in force in the server's list (the first, if the one in
+    /// force is not in it). Nothing happens when the server has loaded no themes or the sysop
+    /// fixed the theme (a list of one).
     fn next_theme(&mut self) -> MemberEffect {
-        let current = self.settings.theme();
+        if self.themes.len() < 2 {
+            return MemberEffect::Stay;
+        }
+        let current = self
+            .settings
+            .theme_choice()
+            .unwrap_or_else(|| self.effective_theme());
         let next = self
             .themes
             .iter()
@@ -1046,6 +1132,40 @@ impl MemberFlow {
         ));
     }
 
+    /// The layout and theme in force, in words, each with where it comes from: the sysop's
+    /// lock, the board's default, or nothing when the member chose it.
+    fn look_texts(&self, words: &dyn TextSource) -> (String, String) {
+        let origin = |locked: bool, chosen: bool| {
+            if locked {
+                words.text(strings::SET_BY_SYSOP)
+            } else if chosen {
+                ""
+            } else {
+                words.text(strings::BOARD_DEFAULT)
+            }
+        };
+        let layout = self.effective_layout();
+        let theme = self.effective_theme();
+        (
+            format!(
+                "{}{}",
+                words.text(layout.label_key()),
+                origin(
+                    self.layouts.len() == 1,
+                    self.settings.layout_choice() == Some(layout)
+                )
+            ),
+            format!(
+                "{}{}",
+                theme.as_str(),
+                origin(
+                    self.themes.len() == 1,
+                    self.settings.theme_choice() == Some(theme)
+                )
+            ),
+        )
+    }
+
     fn settings_view(&self, view: &mut View, words: &dyn TextSource) {
         let s = &self.settings;
         let number = |value: Option<u16>| {
@@ -1080,6 +1200,7 @@ impl MemberFlow {
             ));
         }
         let value = |key: &str, value: &str| fill(words.text(key), &[("value", value)]);
+        let (layout_text, theme_text) = self.look_texts(words);
         view.body = vec![
             width,
             height,
@@ -1091,20 +1212,24 @@ impl MemberFlow {
             ),
             fill(
                 words.text(strings::SETTING_LOOK),
+                &[("layout", &layout_text), ("theme", &theme_text)],
+            ),
+            fill(
+                words.text(strings::SETTING_DISPLAY),
                 &[
-                    ("layout", words.text(layout_name(s.layout()))),
-                    ("theme", s.theme().as_str()),
+                    ("motion", words.text(on_off(s.motion()))),
+                    ("depth", words.text(s.depth_cap().label_key())),
+                    ("borders", words.text(s.borders().label_key())),
                 ],
             ),
         ];
         let entry = |key, label| MenuItemView { key, label };
         view.menu = vec![
+            // Two keys to a row (the row's text names the second), so the screen fits 80x24.
             entry('w', strings::MENU_WIDTH),
-            entry('h', strings::MENU_HEIGHT),
             entry('c', strings::MENU_COLOR),
-            entry('p', strings::MENU_PAUSE),
             entry('l', strings::MENU_LAYOUT),
-            entry('t', strings::MENU_THEME),
+            entry('m', strings::MENU_DISPLAY),
             entry('i', strings::MENU_ICONS),
         ];
         if self.access.allows(Permission::AccountSetPassword) {
@@ -1126,15 +1251,6 @@ impl MemberFlow {
             fill(words.text(strings::GOODBYE), &[("handle", &self.handle)]),
             words.text(strings::SETTINGS_SAVED_NOTE).to_owned(),
         ];
-    }
-}
-
-/// The string-table key of a layout's name.
-const fn layout_name(layout: LayoutId) -> &'static str {
-    match layout {
-        LayoutId::Classic => strings::LAYOUT_CLASSIC,
-        LayoutId::Lightbar => strings::LAYOUT_LIGHTBAR,
-        LayoutId::Compact => strings::LAYOUT_COMPACT,
     }
 }
 

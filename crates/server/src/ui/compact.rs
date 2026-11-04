@@ -71,6 +71,9 @@ fn menu_lines(screen: &MenuScreen<'_>) -> Vec<Line<'static>> {
         heading,
     )];
     out.extend(screen.body.iter().map(|text| Line::raw(text.clone())));
+    if let Some(note) = classic::fallback_note(screen) {
+        out.push(Line::styled(note, classic::styles(screen.look).1));
+    }
     for item in &screen.page.items {
         let mut spans = vec![
             Span::styled(item.hotkey.to_string(), key),

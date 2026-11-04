@@ -37,6 +37,7 @@ use russh_bbs_core::icons::{SecurityMarker, Tier};
 
 use super::chrome;
 use super::strings::StringTable;
+use super::theme::skin::{blend, gradient_depth};
 use crate::settings::Look;
 
 /// Fewest rows for the header bar to appear.
@@ -185,6 +186,15 @@ impl<'a> FrameSpec<'a> {
     /// Draw the bars into `frame` and return the body rectangle for the screen's content.
     pub(crate) fn draw(&self, frame: &mut Frame<'_>) -> Rect {
         let parts = self.parts(frame.area());
+        // The style's glass and texture first, over everything above the status bar: the status
+        // bar clears its own row, so the marker cell never carries any of it.
+        let above = Rect {
+            height: parts
+                .status
+                .map_or(frame.area().height, |_| frame.area().height - 1),
+            ..frame.area()
+        };
+        super::backdrop::paint(frame, above, self.look);
         if let Some(area) = parts.header {
             self.draw_header(frame, area);
         }
@@ -213,14 +223,18 @@ impl<'a> FrameSpec<'a> {
         let bar = self.bar();
         frame.render_widget(Clear, area);
         frame.render_widget(Block::default().style(bar), area);
-        let accent = self.look.accent(
-            Style::new().add_modifier(Modifier::BOLD),
-            self.look.palette().heading,
-        );
-        let mut left = vec![
-            Span::styled(" ".to_owned(), bar),
-            Span::styled(self.board.as_str().to_owned(), bar.patch(accent)),
-        ];
+        let (before, after) = self.look.skin().deco.flank(self.look.ascii());
+        let mut left = vec![Span::styled(" ".to_owned(), bar)];
+        if !before.is_empty() {
+            left.push(Span::styled(
+                before.to_owned(),
+                bar.patch(self.look.muted()),
+            ));
+        }
+        left.extend(self.name_spans(bar));
+        if !after.is_empty() {
+            left.push(Span::styled(after.to_owned(), bar.patch(self.look.muted())));
+        }
         if let Some(place) = self.place {
             left.push(Span::styled(self.separator().to_owned(), bar));
             left.push(Span::styled(place.as_str().to_owned(), bar));
@@ -246,6 +260,33 @@ impl<'a> FrameSpec<'a> {
             };
             frame.render_widget(Paragraph::new(Line::from(right)), right_area);
         }
+    }
+
+    /// The board name in the accent, as a gradient from the first accent to the second where the
+    /// style asks for one and the colour depth has the steps for it.
+    fn name_spans(&self, bar: Style) -> Vec<Span<'static>> {
+        let bold = Style::new().add_modifier(Modifier::BOLD);
+        let palette = self.look.palette();
+        let name = self.board.as_str();
+        let count = name.chars().count();
+        if self.look.skin().gradient && gradient_depth(self.look.depth()) && count > 1 {
+            let last = u32::try_from(count - 1).unwrap_or(1);
+            let spans: Vec<Span<'static>> = name
+                .chars()
+                .enumerate()
+                .map(|(at, c)| {
+                    let t = u8::try_from(u32::try_from(at).unwrap_or(0) * 255 / last)
+                        .unwrap_or(u8::MAX);
+                    let tint = blend(palette.accent, palette.accent2, t).unwrap_or(palette.accent);
+                    Span::styled(c.to_string(), bar.patch(self.look.accent(bold, tint)))
+                })
+                .collect();
+            return spans;
+        }
+        vec![Span::styled(
+            name.to_owned(),
+            bar.patch(self.look.accent(bold, palette.accent)),
+        )]
     }
 
     fn draw_status(&self, frame: &mut Frame<'_>, area: Rect) {

@@ -1,0 +1,48 @@
+# Shipped style: Deep Space. Cold blues on a starfield, centred spaced-out titles, diamonds
+# around the board name and a blue-to-violet gradient where the terminal has the colours.
+name = "deepspace"
+
+[colors]
+surface = "#03050f"
+panel = "#070b1c"
+popup = "#0c1330"
+stripe = "#0a0f26"
+head = "#14224a"
+bar = "#0e1a3d"
+bar_text = "#cfe3ff"
+text = "#c5d4f5"
+muted = "#7a90c2"
+border = "#4b7be0"
+heading = "#8fc2ff"
+key = "#ffd77a"
+accent = "#6fa8ff"
+accent2 = "#b48cff"
+selected = "#03050f"
+select_bg = "#8fc2ff"
+info = "#7fd6ff"
+success = "#6dffb8"
+warning = "#ffc857"
+error = "#ff7886"
+link = "#7fd6ff"
+quote = "#9fb2de"
+timestamp = "#7a90c2"
+title = "#cfe3ff"
+
+[style.borders]
+frame = "plain"
+pane = "rounded"
+popup = "double"
+
+[style.title]
+treatment = "spaced"
+align = "center"
+
+[style.header]
+decoration = "diamonds"
+gradient = true
+
+[style.backdrop]
+kind = "stars"
+
+[style.motion]
+default = true

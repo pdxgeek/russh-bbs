@@ -129,6 +129,20 @@ impl Tint {
     }
 }
 
+impl Tint {
+    /// The colour as 24-bit RGB, or `None` for the terminal's own default (`Reset`), whose
+    /// value the server cannot know. Used for contrast checks, never for drawing.
+    #[must_use]
+    pub fn rgb(self) -> Option<(u8, u8, u8)> {
+        match self {
+            Self::Rgb(r, g, b, _) => Some((r, g, b)),
+            Self::Indexed(i) => Some(indexed_rgb(i)),
+            Self::Named(Color::Reset) => None,
+            Self::Named(color) => Some(named_rgb(color)),
+        }
+    }
+}
+
 /// The xterm default RGB of palette cell `i`.
 #[must_use]
 pub fn indexed_rgb(i: u8) -> (u8, u8, u8) {
@@ -255,7 +269,8 @@ impl Surfaces {
 }
 
 /// The xterm RGB of a named colour (anything else is a neutral grey).
-fn named_rgb(color: Color) -> (u8, u8, u8) {
+#[must_use]
+pub fn named_rgb(color: Color) -> (u8, u8, u8) {
     let index = match color {
         Color::Black => 0,
         Color::Red => 1,

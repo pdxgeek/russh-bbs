@@ -1,0 +1,24 @@
+ ░▒▓ Night Owl BBS ▓▒░ │ Main menu                                    UTC 15:47
+╔═════════╡ Main menu ╞══════════╗╔═══╡ This board ╞════╗╔══════╡ Clock ╞══════╗
+║ Signed in as founder.          ║║ Night Owl BBS       ║║ UTC 15:47           ║
+║                                ║║ After hours, all    ║║                     ║
+║   [f] Forums                   ║║ hours.              ║║                     ║
+║   [m] Mail                     ║║ Portland, OR        ║║                     ║
+║   [a] Files  (not built yet)   ║╚═════════════════════╝╚═════════════════════╝
+║   [c] Chat                     ║╔══╡ Who is online ╞══╗╔══╡ Last callers ╞═══╗
+║   [d] Doors                    ║║ Nothing to show     ║║ Nothing to show     ║
+║   [u] Members                  ║║ yet.                ║║ yet.                ║
+║   [y] Community                ║║                     ║║                     ║
+║   [i] Invites                  ║║                     ║║                     ║
+║ > [s] Terminal settings        ║║                     ║║                     ║
+║   [o] Sysop tools              ║║                     ║║                     ║
+║   [l] Log off                  ║╚═════════════════════╝╚═════════════════════╝
+║                                ║╔════╡ New posts ╞════╗╔═══╡ Unread mail ╞═══╗
+║                                ║║ Nothing to show     ║║ Nothing to show     ║
+║                                ║║ yet.                ║║ yet.                ║
+║                                ║║                     ║║                     ║
+║                                ║║                     ║║                     ║
+║                                ║║                     ║║                     ║
+║                                ║║                     ║║                     ║
+╚════════════════════════════════╝╚═════════════════════╝╚═════════════════════╝
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
