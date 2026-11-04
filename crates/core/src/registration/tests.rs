@@ -380,6 +380,7 @@ fn application() -> InviteAsk {
         message: "hello".to_owned(),
         // Callers cannot smuggle an invite request through the application path.
         kind: RequestKind::Invite,
+        password: None,
     }
 }
 

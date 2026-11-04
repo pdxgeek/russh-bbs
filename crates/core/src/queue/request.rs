@@ -5,6 +5,7 @@ use std::fmt;
 use sha2::{Digest as _, Sha256};
 
 use crate::access::Fingerprint;
+use crate::passwords::Secret;
 use crate::sanitize::{Sanitized, SingleLine, Username};
 use crate::store::{AccountId, UnixSeconds};
 
@@ -123,6 +124,9 @@ pub struct InviteAsk {
     pub message: String,
     /// Which form it came from.
     pub kind: RequestKind,
+    /// The password the person chose, over telnet (D94); `None` for a key request. The front
+    /// end hashes it before anything is stored.
+    pub password: Option<Secret>,
 }
 
 impl fmt::Debug for InviteAsk {

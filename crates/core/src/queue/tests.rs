@@ -34,6 +34,7 @@ fn ask(name: &str, message: &str) -> InviteAsk {
         handle: handle(name),
         message: message.to_owned(),
         kind: RequestKind::Invite,
+        password: None,
     }
 }
 
