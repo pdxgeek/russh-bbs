@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO door_bar (door, account_id, barred_by, at) VALUES (?, ?, ?, ?)\n               ON CONFLICT (door, account_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "b72916d3d08c602bd24c9feaeadf12f3a5130172b2d470fad9ba6f036c450ef0"
+}

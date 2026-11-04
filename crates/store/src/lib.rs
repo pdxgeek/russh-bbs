@@ -24,6 +24,8 @@ mod community_rows;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod credit_rows;
 mod directory;
+#[cfg(any(feature = "sqlite", feature = "postgres"))]
+mod door_rows;
 mod draft_rows;
 mod error;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]

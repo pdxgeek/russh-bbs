@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT season, version, revision, data, updated_at\n               FROM door_save WHERE door = ? AND account_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "season",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "version",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "revision",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "data",
+        "ordinal": 3,
+        "type_info": "Blob"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 4,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "b15a221216dd49929018c522b31c6ab55fa2d15626856c915879508cee922197"
+}
