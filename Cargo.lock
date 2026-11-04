@@ -3156,6 +3156,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "russh-bbs-door-long-haul"
+version = "0.0.0"
+dependencies = [
+ "proptest",
+ "russh-bbs-core",
+ "russh-bbs-door",
+ "serde",
+ "tokio",
+ "toml",
+]
+
+[[package]]
 name = "russh-bbs-door-nullroute"
 version = "0.0.0"
 dependencies = [
@@ -3201,6 +3213,7 @@ dependencies = [
  "russh-bbs-door",
  "russh-bbs-door-emberdeep",
  "russh-bbs-door-example",
+ "russh-bbs-door-long-haul",
  "russh-bbs-door-nullroute",
  "russh-bbs-door-saltmarch",
  "russh-bbs-store",

@@ -1,0 +1,47 @@
+# Who the captain was before the loan. Each background changes the starting skills, purse,
+# standing and loan, and carries one perk that opens an option the others do not have
+# (the engine names the perks; `tests/branches.rs` pins what each one does).
+
+[[background]]
+id = "dockhand"
+name = "Dock Brat"
+blurb = "Grew up under the cranes. Knows a bargain and a spanner."
+perk = "known-face"
+perk_text = "Refuel at League docks costs a tenth less."
+skills = { trade = 2, pilot = 0, engineer = 1, stealth = 0, survey = 0 }
+cash = 1800
+loan = 20000
+standing = { league = 10, miners = 0, free = 0 }
+
+[[background]]
+id = "washout"
+name = "Navy Washout"
+blurb = "Flew for the League until the paperwork caught up."
+perk = "old-codes"
+perk_text = "Military posts wave you through: no inspections there, and the dock fee is waived."
+skills = { trade = 0, pilot = 2, engineer = 1, stealth = 0, survey = 0 }
+cash = 1500
+loan = 18000
+standing = { league = 15, miners = 0, free = -10 }
+
+[[background]]
+id = "dropout"
+name = "Survey Dropout"
+blurb = "Left the Guild with a half-finished thesis and a good scanner."
+perk = "guild-contact"
+perk_text = "Survey data sells for a quarter more, and a Survey Scanner comes with the ship."
+skills = { trade = 0, pilot = 0, engineer = 0, stealth = 0, survey = 2 }
+cash = 1500
+loan = 19000
+standing = { league = 5, miners = 0, free = 0 }
+
+[[background]]
+id = "runner"
+name = "Free Captain's Kid"
+blurb = "Raised on a haven's back decks. Knows who buys what, and who to avoid."
+perk = "fence"
+perk_text = "Havens pay a tenth more for contraband, and docks look at you a little less."
+skills = { trade = 0, pilot = 0, engineer = 0, stealth = 2, survey = 0 }
+cash = 1200
+loan = 22000
+standing = { league = -10, miners = 0, free = 20 }
