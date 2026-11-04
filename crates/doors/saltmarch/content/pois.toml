@@ -1,0 +1,144 @@
+# Point-of-interest templates. The generator places `count` of each on a tile of one of the
+# `tiles` kinds, in the distance `band` from the Tidecourt ("near", "mid", "far") or in the
+# Deep. `paints` turns the tile into that kind (a drowned town, a wreck).
+
+[[poi]]
+id = "reed-camp"
+name = "Reed-cutters' camp"
+blurb = "A ring of lean-tos. The cutters will trade, if you bring salt."
+kind = "camp"
+tiles = ["reedbed", "island"]
+band = "near"
+count = 3
+
+[[poi]]
+id = "drover-camp"
+name = "Drovers' camp"
+blurb = "Peat drovers rest here between tides."
+kind = "camp"
+tiles = ["island", "peat-bog"]
+band = "mid"
+count = 2
+
+[[poi]]
+id = "tide-shrine"
+name = "Tide shrine"
+blurb = "A leaning stone with a high-water line scored in it."
+kind = "shrine"
+tiles = ["island", "salt-pan"]
+band = "near"
+count = 2
+
+[[poi]]
+id = "drowned-chapel"
+name = "Drowned chapel"
+blurb = "A roofless chapel. The bell is still down there."
+kind = "shrine"
+tiles = ["mudflat", "salt-pan"]
+band = "mid"
+count = 2
+
+[[poi]]
+id = "sunk-street"
+name = "Sunk street"
+blurb = "A street of the old coast, paved and flooded twice a day."
+kind = "salvage"
+tiles = ["mudflat", "channel"]
+band = "near"
+count = 3
+paints = "drowned-town"
+
+[[poi]]
+id = "sunk-market"
+name = "Sunk market"
+blurb = "A market hall with its stalls still in rows."
+kind = "salvage"
+tiles = ["mudflat", "channel"]
+band = "mid"
+count = 3
+paints = "drowned-town"
+
+[[poi]]
+id = "grounded-barge"
+name = "Grounded barge"
+blurb = "A barge that never floated off. Timber and iron, if you can cut it free."
+kind = "salvage"
+tiles = ["mudflat", "channel", "salt-pan"]
+band = "mid"
+count = 4
+paints = "wreck"
+
+[[poi]]
+id = "heron-hide"
+name = "Heron hide"
+blurb = "A bird-watcher's hide, abandoned long before the sea came."
+kind = "salvage"
+tiles = ["reedbed", "peat-bog"]
+band = "near"
+count = 2
+
+[[poi]]
+id = "eel-lair"
+name = "Eel-hole"
+blurb = "Something long and angry lives under this bank."
+kind = "lair"
+tiles = ["channel", "mere"]
+band = "mid"
+count = 3
+
+[[poi]]
+id = "bog-hag-lair"
+name = "Hag's hummock"
+blurb = "Lights over the peat, and nothing that should make them."
+kind = "lair"
+tiles = ["peat-bog"]
+band = "far"
+count = 3
+
+[[poi]]
+id = "hermit-reed"
+name = "Reed hermit"
+blurb = "An old woman who reads the weather in the reed-heads."
+kind = "hermit"
+tiles = ["reedbed", "island"]
+band = "far"
+count = 2
+
+[[poi]]
+id = "ferry-trader"
+name = "Ferry stage"
+blurb = "A ferryman with a few things to sell and a lot of opinions."
+kind = "trader"
+tiles = ["island", "mudflat"]
+band = "mid"
+count = 2
+
+[[poi]]
+id = "counting-house"
+name = "Counting-house ruin"
+blurb = "A strong-room that the water has not yet opened."
+kind = "ruin"
+tiles = ["island", "mudflat", "salt-pan"]
+band = "far"
+count = 2
+rooms = 4
+
+[[poi]]
+id = "deep-spire"
+name = "The Drowned Spire"
+blurb = "The top of something very tall, standing in the Deep."
+kind = "ruin"
+tiles = ["deep"]
+band = "deep"
+count = 2
+rooms = 6
+
+[[poi]]
+id = "deep-wreck"
+name = "Deep wreck"
+blurb = "A ship's hull the size of a hall."
+kind = "salvage"
+tiles = ["deep"]
+band = "deep"
+count = 3
+paints = "wreck"

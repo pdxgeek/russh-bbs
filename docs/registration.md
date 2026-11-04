@@ -52,7 +52,9 @@ The notice is the one thing a stranger can read about the cap (D2 asks for it). 
 
 ## Passwords on every join, and the user name (FIX-M3-12, D94 (6) to (10), D96)
 
-Every join form (redeem, request, apply, create an account) asks for a password and its repeat, over ssh as over telnet, and the founder claim asks for one too. A visitor with an SSH key is bound to the key and the password; one with no key (`ssh new@host` with no key offered, or telnet) to the password alone. The SSH user name picks the path: `new` is the waiting room (any key or none), `claim` the founder claim, any other name a sign-in. A visitor with a key also sees "I already have an account" (`e`): a handle and password that bind this key to that account. `docs/decisions.md` D96 has the rules and what each refusal says.
+Every join form (redeem, request, apply, create an account) asks for a password and its repeat, over ssh as over telnet, and the founder claim asks for one too. A visitor with an SSH key is bound to the key and the password; one with no key (`ssh new@host` with no key offered, or telnet) to the password alone. The SSH user name picks the path: `new` is the waiting room (any key or none), `claim` the founder claim, any other name a sign-in. The rules screen (`r`) shows the sysop's rules and nothing else: no privacy notice on screen (D93); what the server can read is in `threat-model.md`. Approval wording (queue header, confirm, "Approved") names "the account" and "they can sign in now", true for an applicant with a key or without (D96). The Password screen says a password signs you in over SSH, and says so when the sysop turned password login off.
+
+A visitor with a key also sees "I already have an account" (`e`): a handle and password that bind this key to that account. `docs/decisions.md` D96 has the rules and what each refusal says.
 
 ## Keys, linking and recovery (FIX-M3-11, D97)
 

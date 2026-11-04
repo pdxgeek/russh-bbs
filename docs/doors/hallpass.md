@@ -123,14 +123,14 @@ The core tension: **the bigger the prank, the bigger the heat.** Every period go
 
 ## Open questions
 
-- **Periods:** seven periods a day? *Engine answer (M4-H1, D100): seven day periods plus evening and lights-out, nine slots, all set in `content/timetable.toml`.*
+- **Periods:** seven periods a day? *Engine answer (M4-H1, D101): seven day periods plus evening and lights-out, nine slots, all set in `content/timetable.toml`.*
 - **Setting:** keep the boarding-school setting, or a day school in a town?
 - **Player-versus-player:** should it be on by default, given the opt-out?
 
 
 ## Implementation notes (M4-H1)
 
-Slice 1 of 6 is built in `crates/doors/hallpass` (`russh-bbs-door-hallpass`), registered in `server::doors::Doors::builtin()`. Decision D100 records the choices below that were real alternatives.
+Slice 1 of 6 is built in `crates/doors/hallpass` (`russh-bbs-door-hallpass`), registered in `server::doors::Doors::builtin()`. Decision D101 records the choices below that were real alternatives.
 
 ### What is implemented (and tested)
 
