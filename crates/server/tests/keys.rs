@@ -24,6 +24,7 @@ use russh::keys::{HashAlg, PrivateKey, PrivateKeyWithHashAlg};
 use russh_bbs_core::access::{Fingerprint, Slug};
 use russh_bbs_core::audit::{AuditQuery, AuditStore, FixedClock};
 use russh_bbs_core::icons::Tier;
+use russh_bbs_core::passwords::Backoff;
 use russh_bbs_core::passwords::PasswordStore;
 use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::{AccountId, AccountState, AccountStore, NewAccount};
@@ -77,8 +78,8 @@ impl Rig {
         let limits = Limits {
             ip_rate: loose,
             key_rate: loose,
-            password_account_rate: loose,
-            password_network_rate: loose,
+            password_handle_backoff: Backoff::UNLIMITED,
+            password_network_backoff: Backoff::UNLIMITED,
             ..fast_limits()
         };
         let config = ServerConfig {
