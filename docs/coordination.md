@@ -121,7 +121,7 @@ Approved by the owner on 2026-11-04 by adding them here. The other M4 work is in
 | M4-N3 Nullroute UI | `crates/doors/nullroute` | M4-N2, UI-5 | Open | Node map, run log, deck panel, look-around. |
 | M4-N4 Nullroute social, content and balance | `crates/doors/nullroute` | M4-N3 | Open | Crews, honeypots, bounties, heat, fixer arcs, balance. |
 | M4-L1 Long Haul engine | `crates/doors/long-haul` | M4-D0 | In review ([PR #93](https://github.com/pdxgeek/russh-bbs/pull/93), branch `m4/long-haul-engine`) | Frontier generation, economy, ship, jumps; replay tests. Built: see [doors/long-haul.md](doors/long-haul.md), D103. |
-| M4-L2 Long Haul crew, events and combat | `crates/doors/long-haul` | M4-L1 | Open | Crew, transit events, contracts, ship combat, boarding. |
+| M4-L2 Long Haul crew, events and combat | `crates/doors/long-haul` | M4-L1 | Claimed (branch `m4/long-haul-crew`) | Crew, transit events, contracts, ship combat, boarding. |
 | M4-L3 Long Haul UI | `crates/doors/long-haul` | M4-L2, UI-5 | Open | Star chart, bridge, route planner, combat panel, look-around. |
 | M4-L4 Long Haul social, content and balance | `crates/doors/long-haul` | M4-L3 | Open | Convoys, opt-in piracy, player outposts, arcs, economy simulation. |
 | M4-H1 Hallpass engine | `crates/doors/hallpass` | M4-D0 | Open | Timetable, places, character schedules, stats, schemes, heat and the file, day tick; replay tests. |
