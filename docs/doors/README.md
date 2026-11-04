@@ -25,7 +25,7 @@ Every door has an RPG layer, and every part of it must change what happens, not 
 
 ## What every door shares (the door framework, M4)
 
-The framework is the first M4 slice; every game builds on it.
+The framework is the first M4 slice. **It shares plumbing only.** Each game has its own systems and its own engine (the tide and the marsh, the node graph and the trace, the economy and the jump routes, the dungeon and torch-turns, the timetable and schemes), and no game reuses another's combat, economy or progression code. The RPG rule above is a design bar each game meets in its own way, not a shared module. What is shared:
 
 - **Its own crate.** Each game lives in `crates/doors/<name>` and implements the framework's `Door` trait. The menu hands the session to the door, and the door hands it back. Doors never touch the board's internals.
 - **A deterministic engine.** Each game is a pure rules engine: state plus an action gives a new state plus events. It uses a seeded RNG and the board's injected clock. Every game is tested by replay: a recorded action log must reproduce the saved state exactly.
