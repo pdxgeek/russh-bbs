@@ -647,11 +647,14 @@ impl Player {
         .collect()
     }
 
-    /// Take offer number `index` of the board here.
-    pub(crate) fn accept(&mut self, env: &Env<'_>, index: usize) -> Result<Vec<Event>, Refusal> {
+    /// Take the offer with this key from the board here.
+    pub(crate) fn accept(&mut self, env: &Env<'_>, key: u64) -> Result<Vec<Event>, Refusal> {
         self.docked_at(env)?;
         let offers = self.board_here(env);
-        let offer = offers.get(index).ok_or(Refusal::NoSuchThing)?;
+        let offer = offers
+            .iter()
+            .find(|o| o.key == key)
+            .ok_or(Refusal::NoSuchThing)?;
         if let Some(need) = offer.locked {
             return Err(Refusal::NeedStanding {
                 faction: offer.contract.faction,

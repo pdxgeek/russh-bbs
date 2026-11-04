@@ -288,7 +288,8 @@ fn business(h: &mut Harness, bot: &mut Bot, here: u16) {
             }
         }
         if let Some(i) = pick {
-            act(h, bot, &Action::Accept(u8::try_from(i).unwrap()));
+            let key = offers[i].key;
+            act(h, bot, &Action::Accept(key));
         }
     }
     bot.dest = None;

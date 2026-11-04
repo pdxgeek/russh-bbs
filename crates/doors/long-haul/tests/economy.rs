@@ -119,7 +119,21 @@ fn pick_action(h: &Harness, p: &Player, pick: &mut DoorRng) -> Action {
         37 | 38 => Action::Hire(u8::try_from(pick.below(3)).unwrap()),
         39 => Action::Dismiss(u8::try_from(pick.below(4)).unwrap()),
         40 => Action::Provision,
-        41..=44 => Action::Accept(u8::try_from(pick.below(8)).unwrap()),
+        41..=44 => {
+            let offers = p.docked.map_or_else(Vec::new, |st| {
+                russh_bbs_door_long_haul::contracts::board(
+                    &h.content,
+                    &h.frontier,
+                    st,
+                    p.last_day,
+                    &p.standing,
+                )
+            });
+            let key = offers
+                .get(usize::try_from(pick.below(8)).unwrap())
+                .map_or_else(|| pick.next_u64(), |o| o.key);
+            Action::Accept(key)
+        }
         45 => Action::Abandon(u8::try_from(pick.below(4)).unwrap()),
         _ => Action::Sell { slot, tons: 999 },
     }

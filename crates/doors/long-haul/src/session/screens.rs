@@ -563,7 +563,10 @@ impl Session {
         match key {
             DoorKey::Escape | DoorKey::Char('q') => self.mode = Mode::Bridge,
             DoorKey::Enter => {
-                self.act(ctx, &Action::Accept(u8::try_from(at).unwrap_or(0)));
+                if let Some(offer) = self.offers(p).get(at) {
+                    let key = offer.key;
+                    self.act(ctx, &Action::Accept(key));
+                }
             }
             DoorKey::Char('a') => {
                 self.act(ctx, &Action::Abandon(0));

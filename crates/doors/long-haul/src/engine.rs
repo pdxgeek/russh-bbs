@@ -156,8 +156,9 @@ pub enum Action {
     Dismiss(u8),
     /// Stock the galley for a week.
     Provision,
-    /// Take offer `n` of the board at this dock.
-    Accept(u8),
+    /// Take the offer with this key from the board at this dock (the key, not a position, so
+    /// a board that changed under the captain's eyes cannot hand them a different job).
+    Accept(u64),
     /// Give up contract `n`.
     Abandon(u8),
     /// Pick option `n` of the open transit event.
@@ -393,7 +394,7 @@ impl Player {
             Action::Hire(slot) => self.hire(env, *slot),
             Action::Dismiss(i) => self.dismiss(env, usize::from(*i)),
             Action::Provision => self.provision(env),
-            Action::Accept(i) => self.accept(env, usize::from(*i)),
+            Action::Accept(key) => self.accept(env, *key),
             Action::Abandon(i) => self.abandon(usize::from(*i)),
             Action::Choose(n) => self.choose(env, usize::from(*n)),
             Action::Fight(orders) => self.fight_round(env, *orders),

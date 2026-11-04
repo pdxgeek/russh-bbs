@@ -39,11 +39,6 @@ fn find(h: &Harness, standing: &[i16; 5], pick: impl Fn(&Offer) -> bool) -> (u16
     panic!("no such offer anywhere");
 }
 
-fn index_of(h: &Harness, station: u16, day: i64, standing: &[i16; 5], key: u64) -> u8 {
-    let offers = board(&h.content, &h.frontier, station, day, standing);
-    u8::try_from(offers.iter().position(|o| o.key == key).unwrap()).unwrap()
-}
-
 /// A captain with room for everything, docked at `station` on `day`.
 fn ready(h: &mut Harness, station: u16, day: i64) -> Player {
     h.today = day;
@@ -67,8 +62,8 @@ fn accept(
     day: i64,
     o: &Offer,
 ) -> Result<Vec<Event>, Refusal> {
-    let ix = index_of(h, station, day, &p.standing, o.key);
-    h.go(p, &Action::Accept(ix))
+    let _ = (station, day);
+    h.go(p, &Action::Accept(o.key))
 }
 
 #[test]
