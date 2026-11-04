@@ -19,11 +19,27 @@ pub enum LayoutId {
     Lightbar,
     /// One line per item, no border or art, for narrow terminals and screen readers.
     Compact,
+    /// Menu on the left, a widget grid on the right (UI-2).
+    Dashboard,
+    /// Three columns for wide terminals: navigation, content, widgets (UI-2).
+    Wide,
+    /// Content full-screen under a slim header, widgets in a pop-over (UI-2).
+    Focus,
+    /// A screen beside a second pane (UI-2).
+    Split,
 }
 
 impl LayoutId {
     /// Every layout, in the order "next layout" cycles through them.
-    pub const ALL: [Self; 3] = [Self::Classic, Self::Lightbar, Self::Compact];
+    pub const ALL: [Self; 7] = [
+        Self::Classic,
+        Self::Lightbar,
+        Self::Compact,
+        Self::Dashboard,
+        Self::Wide,
+        Self::Focus,
+        Self::Split,
+    ];
 
     /// The layout after this one, wrapping.
     #[must_use]
@@ -31,7 +47,25 @@ impl LayoutId {
         match self {
             Self::Classic => Self::Lightbar,
             Self::Lightbar => Self::Compact,
-            Self::Compact => Self::Classic,
+            Self::Compact => Self::Dashboard,
+            Self::Dashboard => Self::Wide,
+            Self::Wide => Self::Focus,
+            Self::Focus => Self::Split,
+            Self::Split => Self::Classic,
+        }
+    }
+
+    /// The string-table key of this layout's name, for the settings screen.
+    #[must_use]
+    pub const fn label_key(self) -> &'static str {
+        match self {
+            Self::Classic => super::strings::LAYOUT_CLASSIC,
+            Self::Lightbar => super::strings::LAYOUT_LIGHTBAR,
+            Self::Compact => super::strings::LAYOUT_COMPACT,
+            Self::Dashboard => super::strings::LAYOUT_DASHBOARD,
+            Self::Wide => super::strings::LAYOUT_WIDE,
+            Self::Focus => super::strings::LAYOUT_FOCUS,
+            Self::Split => super::strings::LAYOUT_SPLIT,
         }
     }
 
@@ -39,7 +73,7 @@ impl LayoutId {
     /// Layouts without one leave those keys alone, so Enter never acts on an unseen selection.
     #[must_use]
     pub const fn has_cursor(self) -> bool {
-        matches!(self, Self::Lightbar)
+        !matches!(self, Self::Classic | Self::Compact)
     }
 }
 
@@ -50,6 +84,10 @@ pub const fn layout_to_stored(layout: LayoutId) -> &'static str {
         LayoutId::Classic => "classic",
         LayoutId::Lightbar => "lightbar",
         LayoutId::Compact => "compact",
+        LayoutId::Dashboard => "dashboard",
+        LayoutId::Wide => "wide",
+        LayoutId::Focus => "focus",
+        LayoutId::Split => "split",
     }
 }
 
@@ -59,6 +97,117 @@ pub fn layout_from_stored(text: &str) -> Option<LayoutId> {
     LayoutId::ALL
         .into_iter()
         .find(|layout| layout_to_stored(*layout) == text)
+}
+
+/// A member's colour-depth ceiling (UI-2). It can only lower what the client advertises
+/// (`ColorDepth::effective` in the server), never raise it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum DepthCap {
+    /// Use what the terminal advertises.
+    #[default]
+    Auto,
+    /// At most the sixteen named colours.
+    Ansi16,
+    /// At most the 256-colour palette.
+    Ansi256,
+    /// At most 24-bit colour (no cap in practice).
+    TrueColor,
+}
+
+impl DepthCap {
+    /// Every cap, in the order "next" cycles.
+    pub const ALL: [Self; 4] = [Self::Auto, Self::Ansi16, Self::Ansi256, Self::TrueColor];
+
+    /// The cap after this one, wrapping.
+    #[must_use]
+    pub const fn next(self) -> Self {
+        match self {
+            Self::Auto => Self::Ansi16,
+            Self::Ansi16 => Self::Ansi256,
+            Self::Ansi256 => Self::TrueColor,
+            Self::TrueColor => Self::Auto,
+        }
+    }
+
+    /// The string-table key of this cap's name.
+    #[must_use]
+    pub const fn label_key(self) -> &'static str {
+        match self {
+            Self::Auto => super::strings::DEPTH_AUTO,
+            Self::Ansi16 => super::strings::DEPTH_16,
+            Self::Ansi256 => super::strings::DEPTH_256,
+            Self::TrueColor => super::strings::DEPTH_TRUECOLOR,
+        }
+    }
+}
+
+/// The stable text stored for a depth cap.
+#[must_use]
+pub const fn depth_cap_to_stored(cap: DepthCap) -> &'static str {
+    match cap {
+        DepthCap::Auto => "auto",
+        DepthCap::Ansi16 => "16",
+        DepthCap::Ansi256 => "256",
+        DepthCap::TrueColor => "truecolor",
+    }
+}
+
+/// Parse the stored depth cap text.
+#[must_use]
+pub fn depth_cap_from_stored(text: &str) -> Option<DepthCap> {
+    DepthCap::ALL
+        .into_iter()
+        .find(|cap| depth_cap_to_stored(*cap) == text)
+}
+
+/// Which borders a member draws (UI-2): the style's own, or plain ASCII.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum BorderChoice {
+    /// The style's border set.
+    #[default]
+    ThemeDefault,
+    /// Plain `+ - |` borders whatever the style says.
+    Ascii,
+}
+
+impl BorderChoice {
+    /// Every choice, in the order "next" cycles.
+    pub const ALL: [Self; 2] = [Self::ThemeDefault, Self::Ascii];
+
+    /// The other choice.
+    #[must_use]
+    pub const fn next(self) -> Self {
+        match self {
+            Self::ThemeDefault => Self::Ascii,
+            Self::Ascii => Self::ThemeDefault,
+        }
+    }
+
+    /// The string-table key of this choice's name.
+    #[must_use]
+    pub const fn label_key(self) -> &'static str {
+        match self {
+            Self::ThemeDefault => super::strings::BORDERS_THEME,
+            Self::Ascii => super::strings::BORDERS_ASCII,
+        }
+    }
+}
+
+/// The stable text stored for a border choice.
+#[must_use]
+pub const fn borders_to_stored(borders: BorderChoice) -> &'static str {
+    match borders {
+        BorderChoice::ThemeDefault => "theme",
+        BorderChoice::Ascii => "ascii",
+    }
+}
+
+/// Parse the stored border choice text.
+#[must_use]
+pub fn borders_from_stored(text: &str) -> Option<BorderChoice> {
+    BorderChoice::ALL
+        .into_iter()
+        .find(|b| borders_to_stored(*b) == text)
 }
 
 /// The most characters a theme name may have.

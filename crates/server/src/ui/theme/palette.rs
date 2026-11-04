@@ -229,8 +229,9 @@ fn surfaces_of(border: Tint) -> Surfaces {
         other => {
             let (r, g, b) = other.rgb().unwrap_or((0, 160, 160));
             let shade = |percent: u16| {
-                let scale =
-                    |c: u8| u8::try_from((u16::from(c) * percent / 100).min(255)).unwrap_or(u8::MAX);
+                let scale = |c: u8| {
+                    u8::try_from((u16::from(c) * percent / 100).min(255)).unwrap_or(u8::MAX)
+                };
                 (scale(r), scale(g), scale(b))
             };
             let tint = |percent, named| {

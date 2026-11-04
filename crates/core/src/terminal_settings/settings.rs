@@ -1,6 +1,6 @@
 //! The settings themselves and the rules that turn them into what is drawn.
 
-use super::layout::{LayoutId, ThemeName};
+use super::layout::{BorderChoice, DepthCap, LayoutId, ThemeName};
 use crate::icons::Tier;
 
 /// Narrowest width override accepted, in cells.
@@ -36,8 +36,13 @@ pub struct TerminalSettings {
     color: bool,
     pause: bool,
     tier: Option<Tier>,
-    layout: LayoutId,
-    theme: ThemeName,
+    /// `None` follows the board's default.
+    layout: Option<LayoutId>,
+    /// `None` follows the board's default.
+    theme: Option<ThemeName>,
+    motion: bool,
+    depth_cap: DepthCap,
+    borders: BorderChoice,
 }
 
 impl Default for TerminalSettings {
@@ -49,8 +54,11 @@ impl Default for TerminalSettings {
             color: true,
             pause: true,
             tier: None,
-            layout: LayoutId::Classic,
-            theme: ThemeName::default_theme(),
+            layout: None,
+            theme: None,
+            motion: true,
+            depth_cap: DepthCap::Auto,
+            borders: BorderChoice::ThemeDefault,
         }
     }
 }
@@ -76,8 +84,11 @@ impl TerminalSettings {
             color,
             pause,
             tier,
-            layout: LayoutId::Classic,
-            theme: ThemeName::default_theme(),
+            layout: None,
+            theme: None,
+            motion: true,
+            depth_cap: DepthCap::Auto,
+            borders: BorderChoice::ThemeDefault,
         })
     }
 
@@ -162,40 +173,112 @@ impl TerminalSettings {
     /// The chosen layout (classic until another is picked).
     #[must_use]
     pub const fn layout(&self) -> LayoutId {
+        match self.layout {
+            Some(layout) => layout,
+            None => LayoutId::Classic,
+        }
+    }
+
+    /// The layout the member picked, or `None` to follow the board's default.
+    #[must_use]
+    pub const fn layout_choice(&self) -> Option<LayoutId> {
         self.layout
+    }
+
+    /// The theme the member picked, or `None` to follow the board's default.
+    #[must_use]
+    pub const fn theme_choice(&self) -> Option<ThemeName> {
+        self.theme
+    }
+
+    /// Whether animation is on (the member's choice; accessibility and slow terminals can
+    /// still turn it off).
+    #[must_use]
+    pub const fn motion(&self) -> bool {
+        self.motion
+    }
+
+    /// The member's colour-depth ceiling.
+    #[must_use]
+    pub const fn depth_cap(&self) -> DepthCap {
+        self.depth_cap
+    }
+
+    /// The member's border choice.
+    #[must_use]
+    pub const fn borders(&self) -> BorderChoice {
+        self.borders
+    }
+
+    /// Turn motion on or off.
+    #[must_use]
+    pub const fn with_motion(mut self, motion: bool) -> Self {
+        self.motion = motion;
+        self
+    }
+
+    /// Set the colour-depth ceiling.
+    #[must_use]
+    pub const fn with_depth_cap(mut self, cap: DepthCap) -> Self {
+        self.depth_cap = cap;
+        self
+    }
+
+    /// Set the border choice.
+    #[must_use]
+    pub const fn with_borders(mut self, borders: BorderChoice) -> Self {
+        self.borders = borders;
+        self
+    }
+
+    /// Follow the board's default layout again.
+    #[must_use]
+    pub const fn with_default_layout(mut self) -> Self {
+        self.layout = None;
+        self
+    }
+
+    /// Follow the board's default theme again.
+    #[must_use]
+    pub const fn with_default_theme(mut self) -> Self {
+        self.theme = None;
+        self
     }
 
     /// The chosen theme's name (`default` until another is picked). Whether a theme of that
     /// name is loaded is the server's question; an unknown name draws the default theme.
     #[must_use]
     pub const fn theme(&self) -> ThemeName {
-        self.theme
+        match self.theme {
+            Some(theme) => theme,
+            None => ThemeName::default_theme(),
+        }
     }
 
     /// Choose a layout. Takes effect on the next draw, without reconnecting.
     #[must_use]
     pub const fn with_layout(mut self, layout: LayoutId) -> Self {
-        self.layout = layout;
+        self.layout = Some(layout);
         self
     }
 
     /// Choose a theme by name.
     #[must_use]
     pub const fn with_theme(mut self, theme: ThemeName) -> Self {
-        self.theme = theme;
+        self.theme = Some(theme);
         self
     }
 
     /// Set or clear the width override.
     pub fn with_width(self, width: Option<u16>) -> Result<Self, SettingsError> {
-        let kept = Self::new(width, self.height, self.color, self.pause, self.tier)?;
-        Ok(kept.with_layout(self.layout).with_theme(self.theme))
+        Self::new(width, self.height, self.color, self.pause, self.tier)?;
+        Ok(Self { width, ..self })
     }
 
     /// Set or clear the height override.
     pub fn with_height(self, height: Option<u16>) -> Result<Self, SettingsError> {
-        let kept = Self::new(self.width, height, self.color, self.pause, self.tier)?;
-        Ok(kept.with_layout(self.layout).with_theme(self.theme))
+        Self::new(self.width, height, self.color, self.pause, self.tier)?;
+        Ok(Self { height, ..self })
     }
 
     /// Turn color on or off.

@@ -189,7 +189,9 @@ impl<'a> FrameSpec<'a> {
         // The style's glass and texture first, over everything above the status bar: the status
         // bar clears its own row, so the marker cell never carries any of it.
         let above = Rect {
-            height: parts.status.map_or(frame.area().height, |_| frame.area().height - 1),
+            height: parts
+                .status
+                .map_or(frame.area().height, |_| frame.area().height - 1),
             ..frame.area()
         };
         super::backdrop::paint(frame, above, self.look);
@@ -224,7 +226,10 @@ impl<'a> FrameSpec<'a> {
         let (before, after) = self.look.skin().deco.flank(self.look.ascii());
         let mut left = vec![Span::styled(" ".to_owned(), bar)];
         if !before.is_empty() {
-            left.push(Span::styled(before.to_owned(), bar.patch(self.look.muted())));
+            left.push(Span::styled(
+                before.to_owned(),
+                bar.patch(self.look.muted()),
+            ));
         }
         left.extend(self.name_spans(bar));
         if !after.is_empty() {

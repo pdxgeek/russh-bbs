@@ -1,0 +1,582 @@
+=== phosphor / lightbar / 80x24 / unicode truecolor / colors=b7bb4b51bac09687
+ russh-bbs │ Main menu                                                UTC 12:00
+  ┌[ Main menu ]─────────────────────────────────────────────────────────────┐
+  │ Signed in as alice.                                                      │
+  │                                                                          │
+  │ > [f] Forums                                                             │
+  │   [m] Mail                                                               │
+  │   [a] Files  (not built yet)                                             │
+  │   [c] Chat                                                               │
+  │   [d] Doors                                                              │
+  │   [u] Members                                                            │
+  │   [y] Community                                                          │
+  │   [i] Invites                                                            │
+  │   [s] Terminal settings                                                  │
+  │   [o] Sysop tools                                                        │
+  │   [l] Log off                                                            │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  └──────────────────────────────────────────────────────────────────────────┘
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== phosphor / lightbar / 132x43 / unicode truecolor / colors=5a65356275bb74f9
+ russh-bbs │ Main menu                                                                                                    UTC 12:00
+                            ┌[ Main menu ]─────────────────────────────────────────────────────────────┐
+                            │ Signed in as alice.                                                      │
+                            │                                                                          │
+                            │ > [f] Forums                                                             │
+                            │   [m] Mail                                                               │
+                            │   [a] Files  (not built yet)                                             │
+                            │   [c] Chat                                                               │
+                            │   [d] Doors                                                              │
+                            │   [u] Members                                                            │
+                            │   [y] Community                                                          │
+                            │   [i] Invites                                                            │
+                            │   [s] Terminal settings                                                  │
+                            │   [o] Sysop tools                                                        │
+                            │   [l] Log off                                                            │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            └──────────────────────────────────────────────────────────────────────────┘
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== phosphor / lightbar / 80x24 / ascii mono / colors=9dcf6729c0eda2f9
+ russh-bbs | Main menu                                                UTC 12:00
+  +[ Main menu ]-------------------------------------------------------------+
+  | Signed in as alice.                                                      |
+  |                                                                          |
+  | > [f] Forums                                                             |
+  |   [m] Mail                                                               |
+  |   [a] Files  (not built yet)                                             |
+  |   [c] Chat                                                               |
+  |   [d] Doors                                                              |
+  |   [u] Members                                                            |
+  |   [y] Community                                                          |
+  |   [i] Invites                                                            |
+  |   [s] Terminal settings                                                  |
+  |   [o] Sysop tools                                                        |
+  |   [l] Log off                                                            |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  +--------------------------------------------------------------------------+
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== neon / lightbar / 80x24 / unicode truecolor / colors=44644920196f76b7
+ » russh-bbs « │ Main menu                                            UTC 12:00
+  ╭« Main menu »─────────────────────────────────────────────────────────────╮
+  │ Signed in as alice.                                                      │
+  │                                                                          │
+  │ > [f] Forums                                                             │
+  │   [m] Mail                                                               │
+  │   [a] Files  (not built yet)                                             │
+  │   [c] Chat                                                               │
+  │   [d] Doors                                                              │
+  │   [u] Members                                                            │
+  │   [y] Community                                                          │
+  │   [i] Invites                                                            │
+  │   [s] Terminal settings                                                  │
+  │   [o] Sysop tools                                                        │
+  │   [l] Log off                                                            │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  ╰──────────────────────────────────────────────────────────────────────────╯
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== neon / lightbar / 132x43 / unicode truecolor / colors=d97a0f6e9d2c5b1d
+ » russh-bbs « │ Main menu                                                                                                UTC 12:00
+                            ╭« Main menu »─────────────────────────────────────────────────────────────╮
+   .     .     .     .     .│ Signed in as alice.                                                      │ .     .     .     .     .
+                            │                                                                          │
+                            │ > [f] Forums                                                             │
+   .     .     .     .     .│   [m] Mail                                                               │ .     .     .     .     .
+                            │   [a] Files  (not built yet)                                             │
+                            │   [c] Chat                                                               │
+   .     .     .     .     .│   [d] Doors                                                              │ .     .     .     .     .
+                            │   [u] Members                                                            │
+                            │   [y] Community                                                          │
+   .     .     .     .     .│   [i] Invites                                                            │ .     .     .     .     .
+                            │   [s] Terminal settings                                                  │
+                            │   [o] Sysop tools                                                        │
+   .     .     .     .     .│   [l] Log off                                                            │ .     .     .     .     .
+                            │                                                                          │
+                            │                                                                          │
+   .     .     .     .     .│                                                                          │ .     .     .     .     .
+                            │                                                                          │
+                            │                                                                          │
+   .     .     .     .     .│                                                                          │ .     .     .     .     .
+                            │                                                                          │
+                            │                                                                          │
+   .     .     .     .     .│                                                                          │ .     .     .     .     .
+                            │                                                                          │
+                            │                                                                          │
+   .     .     .     .     .│                                                                          │ .     .     .     .     .
+                            │                                                                          │
+                            │                                                                          │
+   .     .     .     .     .│                                                                          │ .     .     .     .     .
+                            │                                                                          │
+                            │                                                                          │
+   .     .     .     .     .│                                                                          │ .     .     .     .     .
+                            │                                                                          │
+                            │                                                                          │
+   .     .     .     .     .│                                                                          │ .     .     .     .     .
+                            │                                                                          │
+                            │                                                                          │
+   .     .     .     .     .│                                                                          │ .     .     .     .     .
+                            │                                                                          │
+                            │                                                                          │
+   .     .     .     .     .╰──────────────────────────────────────────────────────────────────────────╯ .     .     .     .     .
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== neon / lightbar / 80x24 / ascii mono / colors=9ed22e10edd1dfbf
+ >> russh-bbs << | Main menu                                          UTC 12:00
+  +<< Main menu >>-----------------------------------------------------------+
+  | Signed in as alice.                                                      |
+  |                                                                          |
+  | > [f] Forums                                                             |
+  |   [m] Mail                                                               |
+  |   [a] Files  (not built yet)                                             |
+  |   [c] Chat                                                               |
+  |   [d] Doors                                                              |
+  |   [u] Members                                                            |
+  |   [y] Community                                                          |
+  |   [i] Invites                                                            |
+  |   [s] Terminal settings                                                  |
+  |   [o] Sysop tools                                                        |
+  |   [l] Log off                                                            |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  +--------------------------------------------------------------------------+
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== paper / lightbar / 80x24 / unicode truecolor / colors=9691a23cf15d7a4e
+ russh-bbs │ Main menu                                                UTC 12:00
+  ╭ Main menu ───────────────────────────────────────────────────────────────╮
+  │ Signed in as alice.                                                      │
+  │                                                                          │
+  │ > [f] Forums                                                             │
+  │   [m] Mail                                                               │
+  │   [a] Files  (not built yet)                                             │
+  │   [c] Chat                                                               │
+  │   [d] Doors                                                              │
+  │   [u] Members                                                            │
+  │   [y] Community                                                          │
+  │   [i] Invites                                                            │
+  │   [s] Terminal settings                                                  │
+  │   [o] Sysop tools                                                        │
+  │   [l] Log off                                                            │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  ╰──────────────────────────────────────────────────────────────────────────╯
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== paper / lightbar / 132x43 / unicode truecolor / colors=1af8682e4f3e7b22
+ russh-bbs │ Main menu                                                                                                    UTC 12:00
+                            ╭ Main menu ───────────────────────────────────────────────────────────────╮
+                            │ Signed in as alice.                                                      │
+                            │                                                                          │
+                            │ > [f] Forums                                                             │
+                            │   [m] Mail                                                               │
+                            │   [a] Files  (not built yet)                                             │
+                            │   [c] Chat                                                               │
+                            │   [d] Doors                                                              │
+                            │   [u] Members                                                            │
+                            │   [y] Community                                                          │
+                            │   [i] Invites                                                            │
+                            │   [s] Terminal settings                                                  │
+                            │   [o] Sysop tools                                                        │
+                            │   [l] Log off                                                            │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            ╰──────────────────────────────────────────────────────────────────────────╯
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== paper / lightbar / 80x24 / ascii mono / colors=574f2908268a7665
+ russh-bbs | Main menu                                                UTC 12:00
+  + Main menu ---------------------------------------------------------------+
+  | Signed in as alice.                                                      |
+  |                                                                          |
+  | > [f] Forums                                                             |
+  |   [m] Mail                                                               |
+  |   [a] Files  (not built yet)                                             |
+  |   [c] Chat                                                               |
+  |   [d] Doors                                                              |
+  |   [u] Members                                                            |
+  |   [y] Community                                                          |
+  |   [i] Invites                                                            |
+  |   [s] Terminal settings                                                  |
+  |   [o] Sysop tools                                                        |
+  |   [l] Log off                                                            |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  +--------------------------------------------------------------------------+
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== amber / lightbar / 80x24 / unicode truecolor / colors=6fb0362c88cc168b
+ russh-bbs │ Main menu                                                UTC 12:00
+  ┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+  ┃ Signed in as alice.                                                      ┃
+  ┃                                                                          ┃
+  ┃ > [f] Forums                                                             ┃
+  ┃   [m] Mail                                                               ┃
+  ┃   [a] Files  (not built yet)                                             ┃
+  ┃   [c] Chat                                                               ┃
+  ┃   [d] Doors                                                              ┃
+  ┃   [u] Members                                                            ┃
+  ┃   [y] Community                                                          ┃
+  ┃   [i] Invites                                                            ┃
+  ┃   [s] Terminal settings                                                  ┃
+  ┃   [o] Sysop tools                                                        ┃
+  ┃   [l] Log off                                                            ┃
+  ┃                                                                          ┃
+  ┃                                                                          ┃
+  ┃                                                                          ┃
+  ┃                                                                          ┃
+  ┃                                                                          ┃
+  ┃                                                                          ┃
+  ┃                                                                          ┃
+  ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== amber / lightbar / 132x43 / unicode truecolor / colors=241b5c8ae8b7b27f
+ russh-bbs │ Main menu                                                                                                    UTC 12:00
+                            ┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+                            ┃ Signed in as alice.                                                      ┃
+                            ┃                                                                          ┃
+                            ┃ > [f] Forums                                                             ┃
+                            ┃   [m] Mail                                                               ┃
+                            ┃   [a] Files  (not built yet)                                             ┃
+                            ┃   [c] Chat                                                               ┃
+                            ┃   [d] Doors                                                              ┃
+                            ┃   [u] Members                                                            ┃
+                            ┃   [y] Community                                                          ┃
+                            ┃   [i] Invites                                                            ┃
+                            ┃   [s] Terminal settings                                                  ┃
+                            ┃   [o] Sysop tools                                                        ┃
+                            ┃   [l] Log off                                                            ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┃                                                                          ┃
+                            ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== amber / lightbar / 80x24 / ascii mono / colors=574f2908268a7665
+ russh-bbs | Main menu                                                UTC 12:00
+  + MAIN MENU ---------------------------------------------------------------+
+  | Signed in as alice.                                                      |
+  |                                                                          |
+  | > [f] Forums                                                             |
+  |   [m] Mail                                                               |
+  |   [a] Files  (not built yet)                                             |
+  |   [c] Chat                                                               |
+  |   [d] Doors                                                              |
+  |   [u] Members                                                            |
+  |   [y] Community                                                          |
+  |   [i] Invites                                                            |
+  |   [s] Terminal settings                                                  |
+  |   [o] Sysop tools                                                        |
+  |   [l] Log off                                                            |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  +--------------------------------------------------------------------------+
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== deepspace / lightbar / 80x24 / unicode truecolor / colors=7086d1b4927fd1b7
+ ◆ russh-bbs ◆ │ Main menu                                            UTC 12:00
+  ┌─────────────────────────── M A I N   M E N U ────────────────────────────┐
+  │ Signed in as alice.                                                      │
+  │                                                                          │
+  │ > [f] Forums                                                             │
+  │   [m] Mail                                                               │
+  │   [a] Files  (not built yet)                                             │ .
+  │   [c] Chat                                                               │
+* │   [d] Doors                                                              │
+ .│   [u] Members                                                            │
+  │   [y] Community                                                          │
+  │   [i] Invites                                                            │
+  │   [s] Terminal settings                                                  │
+. │   [o] Sysop tools                                                        │
+  │   [l] Log off                                                            │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │ .
+  │                                                                          │.
+ .│                                                                          │
+  │                                                                          │
+  │                                                                          │
+  └──────────────────────────────────────────────────────────────────────────┘ .
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== deepspace / lightbar / 132x43 / unicode truecolor / colors=b53be370cddc35bb
+ ◆ russh-bbs ◆ │ Main menu                                                                                                UTC 12:00
+      .                   . ┌─────────────────────────── M A I N   M E N U ────────────────────────────┐             .
+     .      .  .        .   │ Signed in as alice.                                                      │    *      .       .
+                            │                                                                          │
+  *     .       .        *  │ > [f] Forums                                                             │     .*
+                          * │   [m] Mail                                                               │
+         *               .  │   [a] Files  (not built yet)                                             │
+          .           .     │   [c] Chat                                                               │
+*      * *                  │   [d] Doors                                                              │         ..
+ .           .          *   │   [u] Members                                                            │
+                            │   [y] Community                                                          │                        .
+              .          .  │   [i] Invites                                                            │       .           ..
+    *    *                 .│   [s] Terminal settings                                                  │          .                .
+.                        .  │   [o] Sysop tools                                                        │                .
+   *    .     .*   .        │   [l] Log off                                                            │
+                            │                                                                          │  *..  .    .  .         .
+                            │                                                                          │   .          *
+  .                       * │                                                                          │                      .    *
+    .       .    .          │                                                                          │          .        .
+ .                     .    │                                                                          │                         .
+  .       .          .      │                                                                          │.    .
+             .    .*        │                                                                          │.     *          .
+          .    .            │                                                                          │
+    .                       │                                                                          │        .
+                            │                                                                          │     .
+     .                      │                                                                          │.
+                           *│                                                                          │
+                            │                                                                          │
+      .        .            │                                                                          │
+                            │                                                                          │        .              *
+                   *        │                                                                          │                  .  .
+       .            .*      │                                                                          │ .        . .
+                            │                                                                          │   .
+  *           .             │                                                                          │      . * .   **  .
+                 *          │                                                                          │ *      .        .   .
+                   *   .  . │                                                                          │  .
+                      * .   │                                                                          │ .                       .
+                          * │                                                                          │         .   .  .
+                   *     .  │                                                                          │
+               .     .      │                                                                          │                          .
+         .            *     │                                                                          │               .        .
+          *           .     └──────────────────────────────────────────────────────────────────────────┘     . .              .
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== deepspace / lightbar / 80x24 / ascii mono / colors=26b03a700921901d
+ * russh-bbs * | Main menu                                            UTC 12:00
+  +--------------------------- M A I N   M E N U ----------------------------+
+  | Signed in as alice.                                                      |
+  |                                                                          |
+  | > [f] Forums                                                             |
+  |   [m] Mail                                                               |
+  |   [a] Files  (not built yet)                                             |
+  |   [c] Chat                                                               |
+  |   [d] Doors                                                              |
+  |   [u] Members                                                            |
+  |   [y] Community                                                          |
+  |   [i] Invites                                                            |
+  |   [s] Terminal settings                                                  |
+  |   [o] Sysop tools                                                        |
+  |   [l] Log off                                                            |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  +--------------------------------------------------------------------------+
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== ansi / lightbar / 80x24 / unicode truecolor / colors=a6f6d6e60faac9b6
+ ░▒▓ russh-bbs ▓▒░ │ Main menu                                        UTC 12:00
+  ╔══════════════════════════════╡ Main menu ╞═══════════════════════════════╗
+  ║ Signed in as alice.                                                      ║
+  ║                                                                          ║
+  ║ > [f] Forums                                                             ║
+  ║   [m] Mail                                                               ║
+  ║   [a] Files  (not built yet)                                             ║
+  ║   [c] Chat                                                               ║
+  ║   [d] Doors                                                              ║
+  ║   [u] Members                                                            ║
+  ║   [y] Community                                                          ║
+  ║   [i] Invites                                                            ║
+  ║   [s] Terminal settings                                                  ║
+  ║   [o] Sysop tools                                                        ║
+  ║   [l] Log off                                                            ║
+  ║                                                                          ║
+  ║                                                                          ║
+  ║                                                                          ║
+  ║                                                                          ║
+  ║                                                                          ║
+  ║                                                                          ║
+  ║                                                                          ║
+  ╚══════════════════════════════════════════════════════════════════════════╝
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== ansi / lightbar / 132x43 / unicode truecolor / colors=ccc307e4a516aaa6
+ ░▒▓ russh-bbs ▓▒░ │ Main menu                                                                                            UTC 12:00
+                            ╔══════════════════════════════╡ Main menu ╞═══════════════════════════════╗
+                            ║ Signed in as alice.                                                      ║
+                            ║                                                                          ║
+                            ║ > [f] Forums                                                             ║
+                            ║   [m] Mail                                                               ║
+                            ║   [a] Files  (not built yet)                                             ║
+                            ║   [c] Chat                                                               ║
+                            ║   [d] Doors                                                              ║
+                            ║   [u] Members                                                            ║
+                            ║   [y] Community                                                          ║
+                            ║   [i] Invites                                                            ║
+                            ║   [s] Terminal settings                                                  ║
+                            ║   [o] Sysop tools                                                        ║
+                            ║   [l] Log off                                                            ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ║                                                                          ║
+                            ╚══════════════════════════════════════════════════════════════════════════╝
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== ansi / lightbar / 80x24 / ascii mono / colors=e25f2b8a699ce7b3
+ ## russh-bbs ## | Main menu                                          UTC 12:00
+  +------------------------------| Main menu |-------------------------------+
+  | Signed in as alice.                                                      |
+  |                                                                          |
+  | > [f] Forums                                                             |
+  |   [m] Mail                                                               |
+  |   [a] Files  (not built yet)                                             |
+  |   [c] Chat                                                               |
+  |   [d] Doors                                                              |
+  |   [u] Members                                                            |
+  |   [y] Community                                                          |
+  |   [i] Invites                                                            |
+  |   [s] Terminal settings                                                  |
+  |   [o] Sysop tools                                                        |
+  |   [l] Log off                                                            |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  +--------------------------------------------------------------------------+
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+

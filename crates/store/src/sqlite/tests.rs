@@ -188,6 +188,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         23,
         "2fac0fcd70cfa71c55db73b38d29d4cb2dc855f785c10bd11bf7e988807e666d5c9e7fbd64544901323dac6d98637a78",
     ),
+    (
+        24,
+        "03d23122f5c4dccb326d80c051c8cfa21bbdb3dea40b4ac04b86031b56dae5d99f0b28822b812e2a8e6f55924bafdfe2",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {
@@ -476,6 +480,73 @@ async fn a_row_the_code_could_not_have_written_is_corrupt_not_a_default() {
     .unwrap();
     let result = store.terminal_settings(alice.id).await;
     assert!(matches!(result, Err(StoreError::Corrupt(_))), "{result:?}");
+}
+
+#[tokio::test]
+async fn the_database_refuses_an_unknown_layout_depth_or_borders() {
+    let (_dir, store) = temp_store().await;
+    let alice = account(&store, "alice").await;
+    for (column, value) in [
+        ("layout", "grid"),
+        ("depth_cap", "24"),
+        ("borders", "heavy"),
+        ("theme", "Bad Name"),
+    ] {
+        let result = sqlx::query(&format!(
+            "INSERT INTO terminal_settings (account_id, color, pause, {column}) VALUES (?, 1, 1, ?)"
+        ))
+        .bind(alice.id.as_raw())
+        .bind(value)
+        .execute(store.pool())
+        .await;
+        assert!(result.is_err(), "{column}={value}");
+    }
+}
+
+/// Migration 0024 rebuilds `terminal_settings`: a row written by 0023 keeps its explicit layout
+/// and theme and reads the new settings as their defaults.
+#[tokio::test]
+async fn a_row_from_before_0024_keeps_its_choices_and_gets_default_ui_settings() {
+    use russh_bbs_core::terminal_settings::{BorderChoice, DepthCap, LayoutId};
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("old.db");
+    let pool = scratch_pool(&path).await;
+    let old = sqlx::migrate::Migrator {
+        migrations: std::borrow::Cow::Owned(
+            MIGRATOR
+                .iter()
+                .filter(|m| m.version < 24)
+                .cloned()
+                .collect(),
+        ),
+        ..sqlx::migrate::Migrator::DEFAULT
+    };
+    old.run(&pool).await.unwrap();
+    sqlx::query(
+        "INSERT INTO accounts (username, username_skeleton, role, state) \
+         VALUES ('alice', 'alice', 'member', 'active')",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO terminal_settings (account_id, color, pause, icon_tier, layout, theme) \
+         VALUES (1, 1, 1, 'unicode', 'lightbar', 'amber')",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    pool.close().await;
+    let store = SqliteStore::open(&path).await.unwrap();
+    let read = store
+        .terminal_settings(russh_bbs_core::store::AccountId::from_raw(1))
+        .await
+        .unwrap();
+    assert_eq!(read.layout_choice(), Some(LayoutId::Lightbar));
+    assert_eq!(read.theme_choice().unwrap().as_str(), "amber");
+    assert!(read.motion());
+    assert_eq!(read.depth_cap(), DepthCap::Auto);
+    assert_eq!(read.borders(), BorderChoice::ThemeDefault);
 }
 
 #[tokio::test]

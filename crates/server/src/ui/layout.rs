@@ -14,15 +14,21 @@ use ratatui::layout::Rect;
 use russh_bbs_core::terminal_settings::LayoutId;
 
 use super::classic::{self, MenuScreen};
-use super::{compact, lightbar};
+use super::{compact, lightbar, panes};
 
 /// The smallest area `layout` is drawn in, as `(columns, rows)`, and the layout used below it.
-/// `None` for a layout with no minimum.
+/// `None` for a layout with no minimum. The chain from every layout ends at compact, so a tiny
+/// terminal always gets a drawing; the pane layouts fall back toward the lightbar first because
+/// it keeps the cursor the pane layouts also have.
 const fn requirement(layout: LayoutId) -> Option<((u16, u16), LayoutId)> {
     match layout {
         LayoutId::Classic => Some(((24, 9), LayoutId::Compact)),
         LayoutId::Lightbar => Some(((44, 12), LayoutId::Classic)),
         LayoutId::Compact => None,
+        LayoutId::Dashboard => Some(((72, 20), LayoutId::Lightbar)),
+        LayoutId::Wide => Some(((110, 22), LayoutId::Dashboard)),
+        LayoutId::Focus => Some(((40, 10), LayoutId::Lightbar)),
+        LayoutId::Split => Some(((72, 16), LayoutId::Lightbar)),
     }
 }
 
@@ -46,5 +52,8 @@ pub(crate) fn render_menu(frame: &mut Frame<'_>, layout: LayoutId, screen: &Menu
         LayoutId::Classic => classic::render(frame, screen),
         LayoutId::Lightbar => lightbar::render(frame, screen),
         LayoutId::Compact => compact::render(frame, screen),
+        LayoutId::Dashboard | LayoutId::Wide | LayoutId::Focus | LayoutId::Split => {
+            panes::render(frame, layout, screen);
+        }
     }
 }

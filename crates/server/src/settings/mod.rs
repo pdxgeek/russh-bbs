@@ -188,14 +188,20 @@ impl Look {
 
     /// Ordinary text on a panel: the style's text and panel colours.
     pub(crate) fn text(self) -> Style {
-        self.fg(self.palette.text).patch(self.bg(self.palette.panel))
+        self.fg(self.palette.text)
+            .patch(self.bg(self.palette.panel))
     }
 
     /// The border block for `element`: the skin's border set (ASCII in the ASCII tier or when
     /// the member chose it), the border colour, the panel background and the title written in
     /// the skin's treatment. `centered` is the screen's own title alignment when the skin has
     /// none. The block does not clear what is under it; use [`Look::panel`] for that.
-    pub(crate) fn block(self, title: Option<&str>, element: Element, centered: bool) -> Block<'static> {
+    pub(crate) fn block(
+        self,
+        title: Option<&str>,
+        element: Element,
+        centered: bool,
+    ) -> Block<'static> {
         let set = if self.ascii_borders {
             BorderSet::Ascii
         } else {

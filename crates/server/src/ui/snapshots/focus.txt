@@ -1,0 +1,582 @@
+=== phosphor / focus / 80x24 / unicode truecolor / colors=0324acc4dbc2fd04
+ russh-bbs │ Main menu                                                UTC 12:00
+           Main menu
+           ────────────────────────────────────────
+           Signed in as alice.
+
+           > [f] Forums
+             [m] Mail
+             [a] Files  (not built yet)
+             [c] Chat
+             [d] Doors
+             [u] Members
+             [y] Community
+             [i] Invites
+             [s] Terminal settings
+             [o] Sysop tools
+             [l] Log off
+
+
+
+
+
+
+
+ Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
+
+=== phosphor / focus / 132x43 / unicode truecolor / colors=ca83066a80d27b9c
+ russh-bbs │ Main menu                                                                                                    UTC 12:00
+                                     Main menu
+                                     ────────────────────────────────────────
+                                     Signed in as alice.
+
+                                     > [f] Forums
+
+                                       [m] Mail
+
+                                       [a] Files  (not built yet)
+
+                                       [c] Chat
+
+                                       [d] Doors
+
+                                       [u] Members
+
+                                       [y] Community
+
+                                       [i] Invites
+
+                                       [s] Terminal settings
+
+                                       [o] Sysop tools
+
+                                       [l] Log off
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
+
+=== phosphor / focus / 80x24 / ascii mono / colors=9d1d1ccead27a2c8
+ russh-bbs | Main menu                                                UTC 12:00
+           Main menu
+           ----------------------------------------
+           Signed in as alice.
+
+           > [f] Forums
+             [m] Mail
+             [a] Files  (not built yet)
+             [c] Chat
+             [d] Doors
+             [u] Members
+             [y] Community
+             [i] Invites
+             [s] Terminal settings
+             [o] Sysop tools
+             [l] Log off
+
+
+
+
+
+
+
+ Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
+
+=== neon / focus / 80x24 / unicode truecolor / colors=231b8f457d5f4375
+ » russh-bbs « │ Main menu                                            UTC 12:00
+           Main menu
+   .     . ────────────────────────────────────────                        .
+           Signed in as alice.
+
+   .     . > [f] Forums                                                    .
+             [m] Mail
+             [a] Files  (not built yet)
+   .     .   [c] Chat                                                      .
+             [d] Doors
+             [u] Members
+   .     .   [y] Community                                                 .
+             [i] Invites
+             [s] Terminal settings
+   .     .   [o] Sysop tools                                               .
+             [l] Log off
+
+   .     .                                                                 .
+
+
+   .     .                                                                 .
+
+
+ Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
+
+=== neon / focus / 132x43 / unicode truecolor / colors=c35c2eeeba4aab2e
+ » russh-bbs « │ Main menu                                                                                                UTC 12:00
+                                     Main menu
+   .     .     .     .     .     .   ────────────────────────────────────────                      .     .     .     .     .     .
+                                     Signed in as alice.
+
+   .     .     .     .     .     .   > [f] Forums                                                  .     .     .     .     .     .
+
+                                       [m] Mail
+   .     .     .     .     .     .                                                                 .     .     .     .     .     .
+                                       [a] Files  (not built yet)
+
+   .     .     .     .     .     .     [c] Chat                                                    .     .     .     .     .     .
+
+                                       [d] Doors
+   .     .     .     .     .     .                                                                 .     .     .     .     .     .
+                                       [u] Members
+
+   .     .     .     .     .     .     [y] Community                                               .     .     .     .     .     .
+
+                                       [i] Invites
+   .     .     .     .     .     .                                                                 .     .     .     .     .     .
+                                       [s] Terminal settings
+
+   .     .     .     .     .     .     [o] Sysop tools                                             .     .     .     .     .     .
+
+                                       [l] Log off
+   .     .     .     .     .     .                                                                 .     .     .     .     .     .
+
+
+   .     .     .     .     .     .                                                                 .     .     .     .     .     .
+
+
+   .     .     .     .     .     .                                                                 .     .     .     .     .     .
+
+
+   .     .     .     .     .     .                                                                 .     .     .     .     .     .
+
+
+   .     .     .     .     .     .                                                                 .     .     .     .     .     .
+
+
+   .     .     .     .     .     .                                                                 .     .     .     .     .     .
+ Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
+
+=== neon / focus / 80x24 / ascii mono / colors=c3b6cfa674f51c8e
+ >> russh-bbs << | Main menu                                          UTC 12:00
+           Main menu
+           ----------------------------------------
+           Signed in as alice.
+
+           > [f] Forums
+             [m] Mail
+             [a] Files  (not built yet)
+             [c] Chat
+             [d] Doors
+             [u] Members
+             [y] Community
+             [i] Invites
+             [s] Terminal settings
+             [o] Sysop tools
+             [l] Log off
+
+
+
+
+
+
+
+ Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
+
+=== paper / focus / 80x24 / unicode truecolor / colors=c25d7f16d431373b
+ russh-bbs │ Main menu                                                UTC 12:00
+           Main menu
+           ────────────────────────────────────────
+           Signed in as alice.
+
+           > [f] Forums
+             [m] Mail
+             [a] Files  (not built yet)
+             [c] Chat
+             [d] Doors
+             [u] Members
+             [y] Community
+             [i] Invites
+             [s] Terminal settings
+             [o] Sysop tools
+             [l] Log off
+
+
+
+
+
+
+
+ Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
+
+=== paper / focus / 132x43 / unicode truecolor / colors=3e67b98152e7b2a3
+ russh-bbs │ Main menu                                                                                                    UTC 12:00
+                                     Main menu
+                                     ────────────────────────────────────────
+                                     Signed in as alice.
+
+                                     > [f] Forums
+
+                                       [m] Mail
+
+                                       [a] Files  (not built yet)
+
+                                       [c] Chat
+
+                                       [d] Doors
+
+                                       [u] Members
+
+                                       [y] Community
+
+                                       [i] Invites
+
+                                       [s] Terminal settings
+
+                                       [o] Sysop tools
+
+                                       [l] Log off
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
+
+=== paper / focus / 80x24 / ascii mono / colors=9d1d1ccead27a2c8
+ russh-bbs | Main menu                                                UTC 12:00
+           Main menu
+           ----------------------------------------
+           Signed in as alice.
+
+           > [f] Forums
+             [m] Mail
+             [a] Files  (not built yet)
+             [c] Chat
+             [d] Doors
+             [u] Members
+             [y] Community
+             [i] Invites
+             [s] Terminal settings
+             [o] Sysop tools
+             [l] Log off
+
+
+
+
+
+
+
+ Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
+
+=== amber / focus / 80x24 / unicode truecolor / colors=3d0e691a983745df
+ russh-bbs │ Main menu                                                UTC 12:00
+           Main menu
+           ────────────────────────────────────────
+           Signed in as alice.
+
+           > [f] Forums
+             [m] Mail
+             [a] Files  (not built yet)
+             [c] Chat
+             [d] Doors
+             [u] Members
+             [y] Community
+             [i] Invites
+             [s] Terminal settings
+             [o] Sysop tools
+             [l] Log off
+
+
+
+
+
+
+
+ Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
+
+=== amber / focus / 132x43 / unicode truecolor / colors=1ac3f262222e20af
+ russh-bbs │ Main menu                                                                                                    UTC 12:00
+                                     Main menu
+                                     ────────────────────────────────────────
+                                     Signed in as alice.
+
+                                     > [f] Forums
+
+                                       [m] Mail
+
+                                       [a] Files  (not built yet)
+
+                                       [c] Chat
+
+                                       [d] Doors
+
+                                       [u] Members
+
+                                       [y] Community
+
+                                       [i] Invites
+
+                                       [s] Terminal settings
+
+                                       [o] Sysop tools
+
+                                       [l] Log off
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
+
+=== amber / focus / 80x24 / ascii mono / colors=9d1d1ccead27a2c8
+ russh-bbs | Main menu                                                UTC 12:00
+           Main menu
+           ----------------------------------------
+           Signed in as alice.
+
+           > [f] Forums
+             [m] Mail
+             [a] Files  (not built yet)
+             [c] Chat
+             [d] Doors
+             [u] Members
+             [y] Community
+             [i] Invites
+             [s] Terminal settings
+             [o] Sysop tools
+             [l] Log off
+
+
+
+
+
+
+
+ Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
+
+=== deepspace / focus / 80x24 / unicode truecolor / colors=1c2c54fb7795fc2f
+ ◆ russh-bbs ◆ │ Main menu                                            UTC 12:00
+      .    Main menu
+     .     ────────────────────────────────────────
+           Signed in as alice.
+  *     .                                                             .  *
+           > [f] Forums                                                     .
+         *   [m] Mail                                                  .       .
+             [a] Files  (not built yet)
+*      * *   [c] Chat                                                  .
+ .           [d] Doors
+             [u] Members
+             [y] Community
+    *    *   [i] Invites
+.            [s] Terminal settings                                       .
+   *    .    [o] Sysop tools
+             [l] Log off
+
+  .                                                                            .
+    .                                                                    .   ..
+ .
+  .                                                                    .
+
+                                                                               .
+ Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
+
+=== deepspace / focus / 132x43 / unicode truecolor / colors=24899caa96e9f0b3
+ ◆ russh-bbs ◆ │ Main menu                                                                                                UTC 12:00
+      .                   .          Main menu                                                     *                 .
+     .      .  .        .         .  ────────────────────────────────────────                               *      .       .
+                                     Signed in as alice.
+  *     .       .        *                                                                                   .*
+                          *          > [f] Forums                                                     .
+         *               .
+          .           .            *   [m] Mail                                                      .
+*      * *                                                                                       .               ..
+ .           .          *              [a] Files  (not built yet)
+                                   .                                                                                            .
+              .          .             [c] Chat                                                                .           ..
+    *    *                 .     .                                                                 .              .                .
+.                        .             [d] Doors                                                                        .
+   *    .     .*   .         .*                                                                     .
+                                   *   [u] Members                                                        *..  .    .  .         .
+                                                                                                    ..     .          *
+  .                       *            [y] Community                                                                          .    *
+    .       .    .             .                                                                  .               .        .
+ .                     .               [i] Invites                                                  *                            .
+  .       .          .                                                                                . .    .
+             .    .*              **   [s] Terminal settings                                        .   .     *          .
+          .    .
+    .                                  [o] Sysop tools                                                          .
+                                                                                                   ...       .
+     .                                 [l] Log off                                                      .
+                           *                                                                       *
+
+      .        .                                                                                       *
+                                                                                                 .              .              *
+                   *          *                                                                                           .  .
+       .            .*                                                                               ..  .        . .
+                             *     .                                                                       .
+  *           .                                                                                       .       . * .   **  .
+                 *                                                                                       *      .        .   .
+                   *   .  .                                                                            .  .
+                      * .                                                                           *    .                       .
+                          *   *.                                                                   *             .   .  .
+                   *     .      . .
+               .     .                                                                                                            .
+         .            *                                                                           *  *                 .        .
+          *           .      *                                                                               . .              .
+ Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
+
+=== deepspace / focus / 80x24 / ascii mono / colors=a0dc47eae8b2dd70
+ * russh-bbs * | Main menu                                            UTC 12:00
+           Main menu
+           ----------------------------------------
+           Signed in as alice.
+
+           > [f] Forums
+             [m] Mail
+             [a] Files  (not built yet)
+             [c] Chat
+             [d] Doors
+             [u] Members
+             [y] Community
+             [i] Invites
+             [s] Terminal settings
+             [o] Sysop tools
+             [l] Log off
+
+
+
+
+
+
+
+ Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
+
+=== ansi / focus / 80x24 / unicode truecolor / colors=602e0607a2cd930f
+ ░▒▓ russh-bbs ▓▒░ │ Main menu                                        UTC 12:00
+           Main menu
+           ────────────────────────────────────────
+           Signed in as alice.
+
+           > [f] Forums
+             [m] Mail
+             [a] Files  (not built yet)
+             [c] Chat
+             [d] Doors
+             [u] Members
+             [y] Community
+             [i] Invites
+             [s] Terminal settings
+             [o] Sysop tools
+             [l] Log off
+
+
+
+
+
+
+
+ Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
+
+=== ansi / focus / 132x43 / unicode truecolor / colors=a6808eaf5500aaa7
+ ░▒▓ russh-bbs ▓▒░ │ Main menu                                                                                            UTC 12:00
+                                     Main menu
+                                     ────────────────────────────────────────
+                                     Signed in as alice.
+
+                                     > [f] Forums
+
+                                       [m] Mail
+
+                                       [a] Files  (not built yet)
+
+                                       [c] Chat
+
+                                       [d] Doors
+
+                                       [u] Members
+
+                                       [y] Community
+
+                                       [i] Invites
+
+                                       [s] Terminal settings
+
+                                       [o] Sysop tools
+
+                                       [l] Log off
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
+
+=== ansi / focus / 80x24 / ascii mono / colors=c3b6cfa674f51c8e
+ ## russh-bbs ## | Main menu                                          UTC 12:00
+           Main menu
+           ----------------------------------------
+           Signed in as alice.
+
+           > [f] Forums
+             [m] Mail
+             [a] Files  (not built yet)
+             [c] Chat
+             [d] Doors
+             [u] Members
+             [y] Community
+             [i] Invites
+             [s] Terminal settings
+             [o] Sysop tools
+             [l] Log off
+
+
+
+
+
+
+
+ Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
+

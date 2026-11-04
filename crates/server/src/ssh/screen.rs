@@ -367,16 +367,16 @@ impl Content {
         match self {
             Self::Room(room) => room.view(),
             Self::Claim(form) => form.view(),
-            Self::Member(flow) => flow.view(ui.theme(flow.settings().theme()).strings()),
+            Self::Member(flow) => flow.view(ui.theme_for(flow.settings()).strings()),
             Self::Forums(session) => session
                 .flow
-                .view(ui.theme(session.flow.settings().theme()).strings()),
+                .view(ui.theme_for(session.flow.settings()).strings()),
             Self::Mail(session) => session
                 .flow
-                .view(ui.theme(session.flow.settings().theme()).strings()),
+                .view(ui.theme_for(session.flow.settings()).strings()),
             Self::Doors(session) => session
                 .flow
-                .view(ui.theme(session.flow.settings().theme()).strings()),
+                .view(ui.theme_for(session.flow.settings()).strings()),
             Self::Limited(lines) => View {
                 title: TITLE,
                 heading: if lines.iter().any(|line| line == REVOKED_LINE) {
@@ -471,26 +471,28 @@ impl Content {
     /// How to draw: a member's settings choose color and borders; everyone else gets the
     /// plain layout (the waiting room and claim prompt predate settings and use no color).
     fn look(&self, ui: &Ui, area: Rect, depth: ColorDepth) -> Option<Look> {
-        self.flow().map(|flow| {
-            let settings = flow.settings();
-            let theme = ui.theme(settings.theme());
-            let layout = layout::effective(settings.layout(), area);
-            Look::themed(settings, layout, theme.palette()).at_depth(depth)
-        })
+        self.flow()
+            .map(|flow| ui.look(flow.settings(), area, depth))
     }
 
     /// The layout in force for a member at `area` (their choice, or a fallback that fits).
-    fn layout(&self, area: Rect) -> LayoutId {
+    fn layout(&self, ui: &Ui, area: Rect) -> LayoutId {
         self.flow().map_or(LayoutId::Classic, |flow| {
-            layout::effective(flow.settings().layout(), area)
+            layout::effective(ui.layout_for(flow.settings()), area)
         })
+    }
+
+    /// The layout the member chose, whatever fits on screen (for the fallback note).
+    fn wanted_layout(&self, ui: &Ui) -> LayoutId {
+        self.flow()
+            .map_or(LayoutId::Classic, |flow| ui.layout_for(flow.settings()))
     }
 
     /// The strings to draw with: the member's theme, or the default for everyone else.
     fn strings<'a>(&self, ui: &'a Ui) -> &'a StringTable {
         self.flow().map_or_else(
             || ui.strings(),
-            |flow| ui.theme(flow.settings().theme()).strings(),
+            |flow| ui.theme_for(flow.settings()).strings(),
         )
     }
 }
@@ -512,6 +514,9 @@ pub(crate) struct Screen {
     pty: PtySize,
     /// The content changed since the last frame; the next [`Screen::render`] draws it.
     dirty: bool,
+    /// The focus layout's widget pop-over is open (UI-2). Toggled with Tab; any other key
+    /// closes it first.
+    popover: bool,
     /// The window or the drawn size changed (or the screen must be cleared); the next render
     /// clears the client's screen and repaints everything.
     rebuild: bool,
@@ -600,6 +605,7 @@ impl Screen {
             ui,
             pty: size,
             dirty: false,
+            popover: false,
             rebuild: false,
             degrade_on_leave: false,
             editor: None,
@@ -660,6 +666,47 @@ impl Screen {
         reason = "one match over every screen the session can show; splitting it hides the flow"
     )]
     pub(crate) fn apply_keys(&mut self, keys: &[Key]) -> KeyEffects {
+        if self.focus_menu_showing() {
+            // Tab opens the widget pop-over of the focus layout and closes it again; Esc and any
+            // other key close it and are then handled as usual, so nothing is swallowed twice.
+            let mut rest: Vec<Key> = Vec::with_capacity(keys.len());
+            for key in keys.iter().copied() {
+                match key {
+                    Key::Ctrl('i') => {
+                        self.popover = !self.popover;
+                        self.dirty = true;
+                    }
+                    Key::Escape if self.popover => {
+                        self.popover = false;
+                        self.dirty = true;
+                    }
+                    other => {
+                        if self.popover {
+                            self.popover = false;
+                            self.dirty = true;
+                        }
+                        rest.push(other);
+                    }
+                }
+            }
+            return self.apply_keys_inner(&rest);
+        }
+        if self.popover {
+            self.popover = false;
+            self.dirty = true;
+        }
+        self.apply_keys_inner(keys)
+    }
+
+    /// Whether the member is at a menu drawn in the focus layout, where Tab means something.
+    fn focus_menu_showing(&self) -> bool {
+        self.chat.is_none()
+            && self.editor.is_none()
+            && self.content.menu_page().is_some()
+            && self.content.layout(&self.ui, self.viewport) == LayoutId::Focus
+    }
+
+    fn apply_keys_inner(&mut self, keys: &[Key]) -> KeyEffects {
         if self.chat.is_some() {
             return self.apply_chat_keys(keys);
         }
@@ -1385,13 +1432,12 @@ impl Screen {
         );
         if let Content::Forums(session) = &self.content {
             let settings = session.flow.settings();
-            let theme = self.ui.theme(settings.theme());
-            let layout = layout::effective(settings.layout(), self.viewport);
+            let theme = self.ui.theme_for(settings);
             let ctx = DrawCtx {
                 ui: &self.ui,
                 strings: theme.strings(),
                 settings,
-                look: Look::themed(settings, layout, theme.palette()).at_depth(self.depth()),
+                look: self.ui.look(settings, self.viewport, self.depth()),
                 tier: settings.icon_tier(),
                 markers: self.status_markers(),
                 clock: Some(clock.as_str()),
@@ -1403,13 +1449,12 @@ impl Screen {
         }
         if let Content::Mail(session) = &self.content {
             let settings = session.flow.settings();
-            let theme = self.ui.theme(settings.theme());
-            let layout = layout::effective(settings.layout(), self.viewport);
+            let theme = self.ui.theme_for(settings);
             let ctx = mail::DrawCtx {
                 ui: &self.ui,
                 strings: theme.strings(),
                 settings,
-                look: Look::themed(settings, layout, theme.palette()).at_depth(self.depth()),
+                look: self.ui.look(settings, self.viewport, self.depth()),
                 tier: settings.icon_tier(),
             };
             let tier = ctx.tier;
@@ -1422,7 +1467,8 @@ impl Screen {
         let drew_editor = self.draw_editor()?;
         let view = self.content.view(&self.ui);
         let look = self.content.look(&self.ui, self.viewport, self.depth());
-        let layout = self.content.layout(self.viewport);
+        let layout = self.content.layout(&self.ui, self.viewport);
+        let wanted = self.content.wanted_layout(&self.ui);
         let menu = self.content.menu_page();
         // The community screens (M3-J) produce the members screens' view and are drawn the same.
         let members_view = self
@@ -1512,6 +1558,9 @@ impl Screen {
                         markers: staff_markers,
                         clock,
                         mail_over_ssh_only: false,
+                        board: self.ui.board(),
+                        wanted,
+                        popover: self.popover,
                     },
                 ),
                 // The invite screens (M2-D): the same framed layout, with the reserved status row.
@@ -1587,7 +1636,8 @@ fn window_size(window: PtySize) -> Size {
 fn prepare_member(content: &mut Content, pty: PtySize, ui: &Ui) {
     tell_flow_the_terminal(content, pty);
     if let Some(flow) = content.flow_mut() {
-        flow.set_themes(ui.theme_names());
+        flow.set_themes(ui.allowed_styles());
+        flow.set_layouts(ui.allowed_layouts());
     }
 }
 

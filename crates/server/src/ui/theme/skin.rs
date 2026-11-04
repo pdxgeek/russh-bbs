@@ -275,9 +275,12 @@ impl Skin {
                         skin.gradient = *on;
                         continue;
                     }
-                    return Err(style_error(format!("`style.{section}.{key}` has the wrong type")));
+                    return Err(style_error(format!(
+                        "`style.{section}.{key}` has the wrong type"
+                    )));
                 };
-                let bad = || style_error(format!("`style.{section}.{key}` = {text:?} is not known"));
+                let bad =
+                    || style_error(format!("`style.{section}.{key}` = {text:?} is not known"));
                 match (section.as_str(), key.as_str()) {
                     ("borders", "frame") => skin.frame = BorderSet::parse(text).ok_or_else(bad)?,
                     ("borders", "pane") => skin.pane = BorderSet::parse(text).ok_or_else(bad)?,
@@ -295,7 +298,9 @@ impl Skin {
                     ("header", "decoration") => {
                         skin.deco = HeaderDeco::parse(text).ok_or_else(bad)?;
                     }
-                    ("backdrop", "kind") => skin.backdrop = Backdrop::parse(text).ok_or_else(bad)?,
+                    ("backdrop", "kind") => {
+                        skin.backdrop = Backdrop::parse(text).ok_or_else(bad)?
+                    }
                     _ => {
                         return Err(style_error(format!(
                             "`style.{section}.{key}` is not a style setting"
@@ -316,7 +321,7 @@ fn style_error(message: String) -> ThemeError {
 /// the sixteen names, `"reset"` for the terminal's own, or `{ rgb = "#rrggbb", named = "red" }`
 /// to choose the sixteen-colour fallback. A hex colour without a fallback gets the nearest of
 /// the sixteen.
-pub(super) fn parse_tint(value: &toml::Value) -> Result<Tint, String> {
+pub(crate) fn parse_tint(value: &toml::Value) -> Result<Tint, String> {
     match value {
         toml::Value::Integer(index) => u8::try_from(*index)
             .map(Tint::Indexed)
@@ -415,7 +420,9 @@ mod tests {
     #[test]
     fn colours_parse_in_every_form() {
         assert_eq!(
-            parse_tint(&toml::Value::String("#102030".into())).unwrap().rgb(),
+            parse_tint(&toml::Value::String("#102030".into()))
+                .unwrap()
+                .rgb(),
             Some((0x10, 0x20, 0x30))
         );
         assert_eq!(

@@ -887,8 +887,14 @@ fn the_settings_screen_switches_layout_live_and_saves_it() {
     assert!(text(&f.view(words())).contains("Layout: lightbar"));
     press(&mut f, "l");
     assert_eq!(f.settings().layout(), LayoutId::Compact);
+    press(&mut f, "llll");
+    assert_eq!(f.settings().layout(), LayoutId::Split);
     press(&mut f, "l");
-    assert_eq!(f.settings().layout(), LayoutId::Classic);
+    assert_eq!(
+        f.settings().layout(),
+        LayoutId::Classic,
+        "wraps after seven"
+    );
 }
 
 #[test]
@@ -974,4 +980,178 @@ fn cursor_keys_move_the_menu_only_in_a_layout_with_a_cursor() {
         0,
         "the cursor stops at the first item"
     );
+}
+
+#[test]
+fn the_seven_layouts_cycle_and_round_trip_their_stored_text() {
+    assert_eq!(LayoutId::ALL.len(), 7);
+    let mut layout = LayoutId::Classic;
+    for expected in LayoutId::ALL {
+        assert_eq!(layout, expected);
+        assert_eq!(layout_from_stored(layout_to_stored(layout)), Some(layout));
+        assert_ne!(words().text(layout.label_key()), layout.label_key());
+        layout = layout.next();
+    }
+    assert_eq!(layout, LayoutId::Classic);
+    for text in ["dashboard", "wide", "focus", "split"] {
+        assert!(layout_from_stored(text).is_some(), "{text}");
+    }
+    assert_eq!(layout_from_stored("grid"), None);
+    for layout in LayoutId::ALL {
+        assert_eq!(
+            layout.has_cursor(),
+            !matches!(layout, LayoutId::Classic | LayoutId::Compact)
+        );
+    }
+}
+
+#[test]
+fn depth_cap_and_borders_cycle_and_round_trip_their_stored_text() {
+    let mut cap = DepthCap::Auto;
+    for expected in DepthCap::ALL {
+        assert_eq!(cap, expected);
+        assert_eq!(depth_cap_from_stored(depth_cap_to_stored(cap)), Some(cap));
+        assert_ne!(words().text(cap.label_key()), cap.label_key());
+        cap = cap.next();
+    }
+    assert_eq!(cap, DepthCap::Auto);
+    assert_eq!(depth_cap_from_stored("24"), None);
+    for borders in BorderChoice::ALL {
+        assert_eq!(
+            borders_from_stored(borders_to_stored(borders)),
+            Some(borders)
+        );
+        assert_eq!(borders.next().next(), borders);
+        assert_ne!(words().text(borders.label_key()), borders.label_key());
+    }
+    assert_eq!(borders_from_stored("heavy"), None);
+}
+
+#[test]
+fn new_settings_default_to_following_the_board_with_motion_on() {
+    let s = TerminalSettings::default();
+    assert_eq!(s.layout_choice(), None);
+    assert_eq!(s.theme_choice(), None);
+    assert!(s.motion());
+    assert_eq!(s.depth_cap(), DepthCap::Auto);
+    assert_eq!(s.borders(), BorderChoice::ThemeDefault);
+    let chosen = s
+        .with_layout(LayoutId::Wide)
+        .with_theme(ThemeName::new("amber").unwrap());
+    assert_eq!(chosen.layout_choice(), Some(LayoutId::Wide));
+    assert_eq!(chosen.with_default_layout().layout_choice(), None);
+    assert_eq!(chosen.with_default_theme().theme_choice(), None);
+    // A size change keeps every other setting.
+    let sized = chosen.with_motion(false).with_width(Some(100)).unwrap();
+    assert_eq!(sized.layout_choice(), Some(LayoutId::Wide));
+    assert!(!sized.motion());
+}
+
+#[test]
+fn motion_depth_and_borders_keys_save_at_once_and_show_in_words() {
+    let mut f = at_settings();
+    let out = text(&f.view(words()));
+    assert!(
+        out.contains("Motion: on   Depth: auto   Borders: style's own"),
+        "{out}"
+    );
+    let effects = press(&mut f, "m");
+    assert!(matches!(effects.last(), Some(MemberEffect::Save(s)) if !s.motion()));
+    let effects = press(&mut f, "d");
+    assert!(
+        matches!(effects.last(), Some(MemberEffect::Save(s)) if s.depth_cap() == DepthCap::Ansi16)
+    );
+    let effects = press(&mut f, "r");
+    assert!(
+        matches!(effects.last(), Some(MemberEffect::Save(s)) if s.borders() == BorderChoice::Ascii)
+    );
+    let out = text(&f.view(words()));
+    assert!(
+        out.contains("Motion: off   Depth: 16 colors   Borders: ascii"),
+        "{out}"
+    );
+    press(&mut f, "ddd");
+    assert_eq!(f.settings().depth_cap(), DepthCap::Auto);
+}
+
+#[test]
+fn the_new_settings_need_the_settings_permission() {
+    let mut f = at_settings();
+    f.set_access(Snapshot::from_role(
+        Some(AccountId::from_raw(1)),
+        &Slug::MEMBER,
+        10,
+        &Via::Account,
+        std::iter::empty(),
+    ));
+    for key in ["m", "d", "r"] {
+        assert_eq!(press(&mut f, key), [MemberEffect::Stay], "{key}");
+    }
+    assert!(f.settings().motion());
+}
+
+#[test]
+fn the_layout_key_cycles_only_the_layouts_the_sysop_allows() {
+    let mut f = at_settings_with_themes();
+    f.set_layouts(vec![LayoutId::Dashboard, LayoutId::Focus]);
+    // No choice yet and the board default (classic) is not allowed: the first allowed.
+    assert_eq!(f.effective_layout(), LayoutId::Dashboard);
+    press(&mut f, "l");
+    assert_eq!(f.settings().layout_choice(), Some(LayoutId::Focus));
+    press(&mut f, "l");
+    assert_eq!(f.settings().layout(), LayoutId::Dashboard);
+    // A stored choice that is no longer allowed moves to the first allowed.
+    let mut g = flow(
+        TerminalSettings::default()
+            .with_tier(Tier::Ascii)
+            .with_layout(LayoutId::Split),
+        None,
+    );
+    press(&mut g, "xs");
+    g.set_layouts(vec![LayoutId::Wide, LayoutId::Focus]);
+    assert_eq!(g.effective_layout(), LayoutId::Wide);
+    press(&mut g, "l");
+    assert_eq!(g.settings().layout(), LayoutId::Wide);
+}
+
+#[test]
+fn a_single_allowed_layout_or_theme_is_locked_and_the_screen_says_so() {
+    let mut f = at_settings_with_themes();
+    f.set_layouts(vec![LayoutId::Wide]);
+    f.set_themes(vec![ThemeName::new("amber").unwrap()]);
+    assert_eq!(press(&mut f, "l"), [MemberEffect::Stay]);
+    assert_eq!(press(&mut f, "t"), [MemberEffect::Stay]);
+    assert_eq!(f.settings().layout_choice(), None, "nothing was saved");
+    assert_eq!(f.effective_layout(), LayoutId::Wide);
+    assert_eq!(f.effective_theme().as_str(), "amber");
+    let out = text(&f.view(words()));
+    assert!(
+        out.contains("Layout: wide (set by the sysop)   Theme: amber (set by the sysop)"),
+        "{out}"
+    );
+}
+
+#[test]
+fn a_member_who_has_not_chosen_follows_the_board_default_and_the_screen_says_so() {
+    let mut f = at_settings_with_themes();
+    f.set_board_defaults(LayoutId::Dashboard, ThemeName::new("amber").unwrap());
+    assert_eq!(f.effective_layout(), LayoutId::Dashboard);
+    assert_eq!(f.effective_theme().as_str(), "amber");
+    let out = text(&f.view(words()));
+    assert!(
+        out.contains("Layout: dashboard (board default)   Theme: amber (board default)"),
+        "{out}"
+    );
+    // The key moves on from what they see, not from classic.
+    press(&mut f, "l");
+    assert_eq!(f.settings().layout(), LayoutId::Wide);
+    press(&mut f, "t");
+    assert_eq!(f.settings().theme().as_str(), "mono");
+    // A cursor layout in force by default gives the cursor keys meaning.
+    let mut g = at_settings();
+    g.set_board_defaults(LayoutId::Lightbar, ThemeName::default_theme());
+    press(&mut g, "b");
+    let before = g.menu_page().unwrap().cursor;
+    g.input(MemberInput::Down);
+    assert_eq!(g.menu_page().unwrap().cursor, before + 1);
 }

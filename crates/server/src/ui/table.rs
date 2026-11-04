@@ -29,9 +29,7 @@ use ratatui::Frame;
 use ratatui::layout::{Alignment, Constraint, Layout, Margin, Rect};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
-use ratatui::widgets::{
-    Block, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState,
-};
+use ratatui::widgets::{Block, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState};
 use russh_bbs_core::sanitize::SingleLine;
 
 use super::frame::ChromeText;
@@ -40,7 +38,6 @@ use crate::ui::theme::Element;
 
 /// Longest cell text kept, in characters, whatever the column.
 const CELL_MAX: usize = 160;
-
 
 /// How wide a column is.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

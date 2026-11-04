@@ -20,7 +20,9 @@ use crate::settings::Look;
 
 /// Paint the style's background and texture over `area`.
 pub(crate) fn paint(frame: &mut Frame<'_>, area: Rect, look: Look) {
-    let base = look.fg(look.palette().text).patch(look.bg(look.palette().surface));
+    let base = look
+        .fg(look.palette().text)
+        .patch(look.bg(look.palette().surface));
     if base != Style::new() {
         frame.render_widget(Block::default().style(base), area);
     }
