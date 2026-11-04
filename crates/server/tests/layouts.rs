@@ -245,13 +245,20 @@ async fn the_layout_and_theme_switch_live_and_are_remembered() {
     assert!(!compact.contains('\u{250c}'), "no box in compact");
     assert!(!compact.contains("> ["), "no pointer in compact");
 
-    // Back to classic, then step through the themes: amber, green, contrast, default.
+    // Back to classic (compact, dashboard, wide, focus, split, classic), then step through the
+    // themes: default, phosphor, neon, paper, amber, deepspace, ansi, green, contrast.
     send(&mut channel, "s").await;
-    send(&mut channel, "l").await;
-    send(&mut channel, "t").await;
+    for _ in 0..5 {
+        send(&mut channel, "l").await;
+    }
+    for _ in 0..4 {
+        send(&mut channel, "t").await;
+    }
     let amber = full(&mut channel).await;
     assert!(amber.contains("Theme: amber"), "{amber}");
-    send(&mut channel, "t").await;
+    for _ in 0..3 {
+        send(&mut channel, "t").await;
+    }
     assert!(full(&mut channel).await.contains("Theme: green"));
     send(&mut channel, "\u{1b}").await;
     let green = full(&mut channel).await;
