@@ -30,7 +30,9 @@ fn salt_scenario(trait_id: &str, seed: u64) -> (Sandbox, u16) {
 
 #[test]
 fn a_scheme_runs_from_plan_to_aftermath_and_everything_it_touches_changes() {
-    let seed = seed_where(|e| pulled(e), |s| salt_scenario("smooth_talker", s));
+    let clean_getaway =
+        |e: &[Event]| pulled(e) && !e.iter().any(|x| matches!(x, Event::Pinned { .. }));
+    let seed = seed_where(clean_getaway, |s| salt_scenario("smooth_talker", s));
     let (mut sb, id) = salt_scenario("smooth_talker", seed);
     let before = sb.game.player.clone();
     let events = run_scheme(&mut sb, id, 0);
@@ -253,7 +255,7 @@ fn getting_caught_costs_the_file_a_detention_and_the_campaign() {
     assert!(p.detention >= 1);
     assert_eq!(
         p.file.last().map(|e| (e.kind.as_str(), e.sev)),
-        Some(("caught", 2))
+        Some(("caught", 1))
     );
     assert_eq!(p.legend, 0, "no legend for a failure");
     assert!(

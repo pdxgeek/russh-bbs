@@ -10,6 +10,13 @@ use crate::game::{Action, Game};
 use crate::state::Status;
 
 impl Game {
+    /// Whether `apply` would accept `action` now (tried on a copy; nothing changes).
+    #[must_use]
+    pub fn can(&self, action: &Action) -> bool {
+        let mut copy = self.clone();
+        copy.apply(action, &mut DoorRng::from_seed(0)).is_ok()
+    }
+
     /// Every action the engine would accept now.
     #[must_use]
     pub fn legal_actions(&self) -> Vec<Action> {
@@ -74,11 +81,7 @@ impl Game {
                 }));
             }
         }
-        proposals.retain(|action| {
-            let mut copy = self.clone();
-            let mut rng = DoorRng::from_seed(0);
-            copy.apply(action, &mut rng).is_ok()
-        });
+        proposals.retain(|action| self.can(action));
         proposals
     }
 }

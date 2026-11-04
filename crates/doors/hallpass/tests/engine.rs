@@ -138,18 +138,29 @@ fn a_locked_place_opens_for_any_one_of_its_conditions_and_the_world_can_open_it(
 #[test]
 fn walking_is_limited_each_period_and_the_map_has_a_cost() {
     let mut sb = Sandbox::new("fast_runner", 1);
+    let per_period = sb.game.player.moves;
+    assert_eq!(
+        usize::from(per_period),
+        sb.game.content.rules.moves_per_slot
+    );
     // Dorm, quad, corridor, maths room: three corridors.
     sb.goto("room_maths");
+    assert_eq!(sb.game.player.moves, per_period - 3);
+    sb.ok(Action::Go("classroom_corridor".into()));
+    sb.ok(Action::Go("quad".into()));
     assert_eq!(sb.game.player.moves, 0);
     assert!(
-        sb.try_(Action::Go("classroom_corridor".into())).is_err(),
+        sb.try_(Action::Go("dorm".into())).is_err(),
         "out of corridors this period"
     );
-    sb.ok(Action::Attend);
-    assert_eq!(sb.game.player.moves, 3, "the next period starts fresh");
+    sb.ok(Action::Rest);
+    assert_eq!(
+        sb.game.player.moves, per_period,
+        "the next period starts fresh"
+    );
     // One hop away is cheaper than three.
     sb.ok(Action::Go("classroom_corridor".into()));
-    assert_eq!(sb.game.player.moves, 2);
+    assert_eq!(sb.game.player.moves, per_period - 1);
     // A place that is shut cannot be walked to, even if it is close.
     assert!(
         sb.game
@@ -285,18 +296,34 @@ fn detention_is_served_or_it_goes_on_the_file() {
 fn the_file_has_consequences_at_each_level_and_a_full_file_ends_the_term() {
     let mut sb = Sandbox::new("fast_runner", 1);
     let rules = sb.game.content.rules.clone();
-    sb.game.add_file("caught", 2);
-    assert_eq!(sb.game.player.detention, 2, "level 2: detentions");
-    sb.game.add_file("caught", 2);
+    let tiers = sb.game.content.tiers.clone();
+    let add_to = |sb: &mut Sandbox, points: i32| {
+        while sb.game.player.file_points() < points {
+            sb.game.add_file("caught", 1);
+        }
+    };
+    // One level at a time, each does what the table says.
+    add_to(&mut sb, tiers[0].at - 1);
+    assert_eq!(
+        sb.game.player.detention, 0,
+        "below the first level nothing happens"
+    );
+    add_to(&mut sb, tiers[0].at);
+    assert_eq!(
+        i32::from(sb.game.player.detention),
+        tiers[0].amount,
+        "detentions"
+    );
+    add_to(&mut sb, tiers[1].at);
     assert!(
         sb.game.player.privileges_until > sb.game.player.day,
-        "level 4: privileges lost"
+        "privileges lost"
     );
     assert!(sb.try_(Action::Buy("salt".into())).is_err());
-    sb.game.add_file("caught", 2);
-    assert!(sb.game.player.letter, "level 6: a letter home");
-    sb.game.add_file("caught", 2);
-    assert!(sb.game.player.summons, "level 8: the headmistress");
+    add_to(&mut sb, tiers[2].at);
+    assert!(sb.game.player.letter, "a letter home");
+    add_to(&mut sb, tiers[3].at);
+    assert!(sb.game.player.summons, "the headmistress");
     // The next morning she keeps you for the first period and remembers you.
     let events = sb.game.sync_day(monday() + 1);
     assert!(
@@ -307,13 +334,19 @@ fn the_file_has_consequences_at_each_level_and_a_full_file_ends_the_term() {
     assert_eq!(sb.game.player.slot, 1);
     assert!(sb.game.player.wary_of("vane") >= 1);
     assert!(!sb.game.player.summons);
-    // Privileges are lost, so no allowance; a letter halves it later.
+    // Privileges are lost, so no allowance that morning.
     assert_eq!(sb.game.player.cash, rules.start_cash);
-    sb.game.add_file("caught", 2);
+    add_to(&mut sb, rules.file_full);
     assert_eq!(sb.game.player.file_points(), rules.file_full);
-    assert!(sb.game.player.final_warning);
+    assert!(
+        sb.game.player.final_warning,
+        "a full file is a final warning"
+    );
     let events = sb.game.add_file("caught", 1);
-    assert!(events.iter().any(|e| matches!(e, Event::Expelled)));
+    assert!(
+        events.iter().any(|e| matches!(e, Event::Expelled)),
+        "one more line ends it"
+    );
     assert_eq!(sb.game.player.status, Status::Expelled);
     assert_eq!(
         sb.game.player.history.last().map(|r| r.ending.as_str()),
@@ -383,7 +416,7 @@ fn the_term_ends_with_one_of_several_endings_depending_on_what_you_did() {
             &|s| s.game.player.file = vec![russh_bbs_door_hallpass::state::FileEntry {
                 day: 0,
                 kind: "caught".into(),
-                sev: 10
+                sev: 12
             }]
         ),
         "expelled"

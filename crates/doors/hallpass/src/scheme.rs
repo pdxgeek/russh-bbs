@@ -253,9 +253,8 @@ impl Game {
         let mut parts: Vec<(String, i32)> = vec![("base".into(), rules.base_chance)];
         parts.push((format!("skill: {skill}"), 6 * self.skill_level(skill)));
         let careful = phase != Phase::Escape;
-        if careful {
-            parts.push(("scouting".into(), 5 * i32::from(scheme.scout)));
-        }
+        // Watching a place teaches the way out as well as the way in.
+        parts.push(("scouting".into(), 5 * i32::from(scheme.scout)));
         parts.push(("method".into(), -method.difficulty));
         parts.push((
             "twists".into(),
@@ -830,7 +829,7 @@ impl Game {
                 place.replace('_', " "),
                 method.name.to_lowercase()
             )));
-            events.extend(self.add_file("caught", to_u8((method.severity + 1).min(3))));
+            events.extend(self.add_file("caught", to_u8(method.severity)));
         } else {
             events.extend(self.pulled_off(scheme, run, method, target, &place, repeats, rng));
         }

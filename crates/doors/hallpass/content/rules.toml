@@ -9,8 +9,8 @@ start_nerve_max = 6
 start_grade = 55
 max_schemes = 3
 max_twists = 2
-moves_per_slot = 3          # hops through open places per period
-file_full = 10              # a full file at term end is expulsion; one more entry on a full file is too
+moves_per_slot = 5          # hops through open places per period
+file_full = 12              # a full file at term end is expulsion; one more entry on a full file is too
 clean_days = 7              # a week of good conduct strikes one point off the file
 clean_days_pet = 5
 catch_up_days = 42          # days of decay applied after an absence (a whole term at most)
@@ -21,8 +21,8 @@ wary_decay_days = 7
 campaign_window_days = 10
 ally_cooldown_days = 3
 schedule_horizon_days = 6
-base_chance = 60
-flub_margin = 20
+base_chance = 75
+flub_margin = 25
 nerve_push_bonus = 8
 slip_out_base = 55
 skip_notice_base = 15
@@ -37,25 +37,25 @@ pinned_legend_pct = 100
 
 # File: consequences when the points first reach a level.
 [[tier]]
-at = 2
+at = 3
 effect = "detention"
 amount = 2
 text = "Mr. Marsh writes you up. Two detentions."
 
 [[tier]]
-at = 4
+at = 5
 effect = "privileges"
 amount = 5
 text = "Privileges lost for five days: no tuck shop, no allowance."
 
 [[tier]]
-at = 6
+at = 8
 effect = "letter"
 amount = 1
 text = "A letter goes home. Your allowance is halved and your cool takes a dent."
 
 [[tier]]
-at = 8
+at = 10
 effect = "summons"
 amount = 1
 text = "You are to report to the headmistress first thing tomorrow."

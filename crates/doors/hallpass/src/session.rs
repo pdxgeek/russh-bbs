@@ -188,8 +188,9 @@ impl Session {
             .join(" ")
     }
 
-    fn legal(&self) -> Vec<Action> {
-        self.game.legal_actions()
+    /// Whether the engine would accept `action` now.
+    fn can(&self, action: &Action) -> bool {
+        self.game.can(action)
     }
 
     /// The screen: header lines, body lines, and the menu.
@@ -365,8 +366,18 @@ impl Session {
         if g.player.summons {
             body.push("You are summoned to the headmistress tomorrow.".to_owned());
         }
-        let legal = self.legal();
-        let has = |f: &dyn Fn(&Action) -> bool| legal.iter().any(f);
+        let shop_items: Vec<Action> = g
+            .content
+            .items
+            .iter()
+            .filter(|i| {
+                g.content
+                    .place(&g.player.place)
+                    .and_then(|p| p.shop.as_deref())
+                    == Some(i.shop.as_str())
+            })
+            .map(|i| Action::Buy(i.id.clone()))
+            .collect();
         let mut items = Vec::new();
         let mut add = |key: char, label: &str, cmd: Cmd| {
             items.push(Item {
@@ -375,28 +386,32 @@ impl Session {
                 cmd,
             });
         };
-        if has(&|a| matches!(a, Action::Go(_))) {
+        if !g.reachable().is_empty() {
             add('g', "Go somewhere", Cmd::To(Mode::Go));
         }
-        if has(&|a| matches!(a, Action::Attend)) {
+        if self.can(&Action::Attend) {
             add('a', "Attend (class or detention)", Cmd::Do(Action::Attend));
         }
-        if has(&|a| matches!(a, Action::Study(_))) {
+        if g.content
+            .subjects
+            .first()
+            .is_some_and(|s| self.can(&Action::Study(s.id.clone())))
+        {
             add('s', "Study", Cmd::To(Mode::Study));
         }
-        if has(&|a| matches!(a, Action::Buy(_))) {
+        if shop_items.iter().any(|a| self.can(a)) {
             add('b', "Buy something", Cmd::To(Mode::Shop));
         }
-        if has(&|a| matches!(a, Action::Loiter)) {
+        if self.can(&Action::Loiter) {
             add('l', "Loiter and listen", Cmd::Do(Action::Loiter));
         }
-        if has(&|a| matches!(a, Action::Rest)) {
+        if self.can(&Action::Rest) {
             add('r', "Rest and keep your head down", Cmd::Do(Action::Rest));
         }
         add('p', "Schemes", Cmd::To(Mode::Plans));
         add('f', "You: file, grades, standing", Cmd::To(Mode::Stats));
         add('n', "News and rumours", Cmd::To(Mode::News));
-        if has(&|a| matches!(a, Action::Sleep)) {
+        if self.can(&Action::Sleep) {
             add('z', "Lights out", Cmd::Do(Action::Sleep));
         }
         add('q', "Leave the school", Cmd::Leave);
@@ -734,7 +749,6 @@ impl Session {
             odds.join(", "),
             g.trace_chance(s, 0)
         ));
-        let legal = self.legal();
         let mut items = vec![
             Item {
                 key: 't',
@@ -747,17 +761,14 @@ impl Session {
                 cmd: Cmd::To(Mode::Getaway(id)),
             },
         ];
-        if legal
-            .iter()
-            .any(|a| matches!(a, Action::Recruit { scheme, .. } if *scheme == id))
-        {
+        if !g.recruitable(s).is_empty() {
             items.push(Item {
                 key: 'r',
                 label: "Recruit someone who is here".into(),
                 cmd: Cmd::To(Mode::Recruit(id)),
             });
         }
-        if legal.contains(&Action::Scout(id)) {
+        if self.can(&Action::Scout(id)) {
             items.push(Item {
                 key: 'w',
                 label: "Scout the place (uses this period)".into(),
@@ -769,7 +780,7 @@ impl Session {
             label: "Choose the day and period".into(),
             cmd: Cmd::To(Mode::Schedule(id)),
         });
-        if legal.contains(&Action::BeginRun(id)) {
+        if self.can(&Action::BeginRun(id)) {
             items.push(Item {
                 key: 'x',
                 label: "GO: run the scheme now".into(),
@@ -907,20 +918,33 @@ impl Session {
         let Some(s) = g.player.scheme(id) else {
             return self.plans_view();
         };
+        // Scouting is what tells you who will be about.
+        let place = g.scheme_place(s).unwrap_or_default();
+        let watching = |s: &crate::state::Scheme, day: i64, slot: u8| -> String {
+            if s.scout == 0 {
+                String::new()
+            } else {
+                format!(
+                    ", {} watching",
+                    g.witnesses_at(&place, day, usize::from(slot))
+                )
+            }
+        };
         let items: Vec<Item> = g
             .candidate_times(s)
             .into_iter()
             .map(|(day, slot)| Item {
                 key: ' ',
                 label: format!(
-                    "{} (day {}), {}: {}",
+                    "{} (day {}), {}: {}{}",
                     ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][Game::weekday(day)],
                     day - g.world.term_start + 1,
                     g.content
                         .periods
                         .get(usize::from(slot))
                         .map_or("?", |p| p.name.as_str()),
-                    g.activity(day, usize::from(slot))
+                    g.activity(day, usize::from(slot)),
+                    watching(s, day, slot)
                 ),
                 cmd: Cmd::Do(Action::Schedule {
                     scheme: id,

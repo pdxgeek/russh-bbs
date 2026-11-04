@@ -768,6 +768,7 @@ file_table!(CastFile, |f: &CastFile| {
     dupes("npc", f.npc.iter().map(|c| c.id.as_str()), &mut out);
     let cliques: HashSet<&str> = f.clique.iter().map(|c| c.id.as_str()).collect();
     for c in &f.clique {
+        plain(&c.id, &c.name, &mut out);
         plain(&c.id, &c.blurb, &mut out);
         for r in &c.rivals {
             if !cliques.contains(r.as_str()) {
@@ -805,6 +806,7 @@ file_table!(TraitsFile, |f: &TraitsFile| {
     dupes("trait", f.traits.iter().map(|s| s.id.as_str()), &mut out);
     let skills: HashSet<&str> = f.skill.iter().map(|s| s.id.as_str()).collect();
     for t in &f.traits {
+        plain(&t.id, &t.name, &mut out);
         plain(&t.id, &t.blurb, &mut out);
         for (s, _) in &t.skills {
             if !skills.contains(s.as_str()) {
@@ -842,6 +844,14 @@ file_table!(SchemesFile, |f: &SchemesFile| {
     dupes("method", f.method.iter().map(|t| t.id.as_str()), &mut out);
     dupes("twist", f.twist.iter().map(|t| t.id.as_str()), &mut out);
     dupes("getaway", f.getaway.iter().map(|t| t.id.as_str()), &mut out);
+    for t in &f.twist {
+        plain(&t.id, &t.name, &mut out);
+        plain(&t.id, &t.blurb, &mut out);
+    }
+    for g in &f.getaway {
+        plain(&g.id, &g.name, &mut out);
+        plain(&g.id, &g.blurb, &mut out);
+    }
     for t in &f.target {
         plain(&t.id, &t.name, &mut out);
         if !["staff", "prefect", "clique", "school"].contains(&t.kind.as_str()) {
@@ -907,12 +917,14 @@ file_table!(WorldFile, |f: &WorldFile| {
     dupes("effect", f.effect.iter().map(|e| e.id.as_str()), &mut out);
     dupes("ending", f.ending.iter().map(|e| e.id.as_str()), &mut out);
     for e in &f.effect {
+        plain(&e.id, &e.name, &mut out);
         plain(&e.id, &e.headline, &mut out);
         if e.days < 0 {
             out.push(format!("effect `{}` has negative days", e.id));
         }
     }
     for e in &f.ending {
+        plain(&e.id, &e.name, &mut out);
         plain(&e.id, &e.text, &mut out);
     }
     if f.ending.last().is_none_or(|e| e.id != "scraped_through") {

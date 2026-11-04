@@ -8,6 +8,8 @@
     clippy::panic
 )]
 
+pub mod bot;
+
 use std::sync::Arc;
 
 use russh_bbs_door::DoorRng;
@@ -16,7 +18,8 @@ use russh_bbs_door_hallpass::game::{Action, Event, Game, Refused};
 use russh_bbs_door_hallpass::state::World;
 
 pub fn content() -> Arc<Content> {
-    Arc::new(Content::embedded().unwrap())
+    static CONTENT: std::sync::OnceLock<Arc<Content>> = std::sync::OnceLock::new();
+    Arc::clone(CONTENT.get_or_init(|| Arc::new(Content::embedded().unwrap())))
 }
 
 /// The first Monday on or after day 20_000, so the timetable is known.
