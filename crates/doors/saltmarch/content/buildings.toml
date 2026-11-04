@@ -1,0 +1,234 @@
+# The hold's buildings, three tracks. `cost` is paid when work starts; `build_turns` is the
+# labour it takes. `produce` is the nightly yield at one worker's full power; `consume` is what
+# the building eats to make it (no input, no output). A work building with `max_level` can only
+# be worked by hand when the water is at or below that level.
+
+# ---- Shelter ----
+[[building]]
+id = "hut"
+name = "Reed hut"
+track = "shelter"
+tier = 1
+blurb = "Reed walls, a peat fire. Room for two more crew."
+cost = { timber = 6, reed = 4 }
+build_turns = 3
+max = 3
+crew_cap = 2
+
+[[building]]
+id = "watchfire"
+name = "Watchfire"
+track = "shelter"
+tier = 1
+blurb = "A beacon fire and a bench around it. The crew sing, now and then."
+cost = { timber = 4, reed = 2, peat = 4 }
+build_turns = 2
+morale = 2
+upkeep_peat = 1
+
+[[building]]
+id = "longhouse"
+name = "Longhouse"
+track = "shelter"
+tier = 2
+blurb = "One long roof over a long table. Room for three more crew."
+requires = ["hut"]
+cost = { timber = 14, reed = 8, rope = 2, tallies = 20 }
+build_turns = 6
+crew_cap = 3
+morale = 1
+upkeep_peat = 1
+
+[[building]]
+id = "infirmary"
+name = "Infirmary"
+track = "shelter"
+tier = 2
+blurb = "Dry beds, salt water and clean reed. The hurt heal faster."
+requires = ["hut"]
+cost = { timber = 10, reed = 6, salt = 4, tallies = 15 }
+build_turns = 5
+heal_steps = 1
+upkeep_peat = 1
+
+[[building]]
+id = "gatehouse"
+name = "Gatehouse"
+track = "shelter"
+tier = 2
+blurb = "A gate with a bench and a lamp. More wanderers stop to ask for work."
+requires = ["hut"]
+cost = { timber = 12, iron = 2, tallies = 15 }
+build_turns = 5
+recruit = 1
+
+# ---- Work ----
+[[building]]
+id = "salt-pan"
+name = "Salt pan"
+track = "work"
+tier = 1
+blurb = "Shallow beds that the sun and the wind turn to salt. Flooded at high water."
+cost = { timber = 4, reed = 6, tallies = 5 }
+build_turns = 3
+max = 3
+produce = { salt = 3 }
+trade = "raker"
+slots = 1
+max_level = 45
+
+[[building]]
+id = "peat-stack"
+name = "Peat stack"
+track = "work"
+tier = 1
+blurb = "Cut turves stacked to dry under a reed roof."
+cost = { timber = 5, reed = 4 }
+build_turns = 3
+max = 3
+produce = { peat = 3 }
+trade = "raker"
+slots = 1
+max_level = 70
+
+[[building]]
+id = "fish-weir"
+name = "Fish weir"
+track = "work"
+tier = 1
+blurb = "A fence of stakes across a channel. It only works when the water is out."
+cost = { timber = 4, reed = 8 }
+build_turns = 3
+max = 2
+produce = { fish = 4 }
+trade = "wader"
+slots = 1
+max_level = 35
+
+[[building]]
+id = "reed-garden"
+name = "Reed garden"
+track = "work"
+tier = 1
+blurb = "Cut-and-regrow beds beside the hold. Slow, but the reed never runs out."
+cost = { timber = 4, tallies = 5 }
+build_turns = 2
+max = 2
+produce = { reed = 3 }
+trade = "wader"
+slots = 1
+max_level = 60
+
+[[building]]
+id = "drift-rack"
+name = "Drift rack"
+track = "work"
+tier = 1
+blurb = "A rack on the seaward bank where the tide leaves its timber."
+cost = { reed = 6, tallies = 5 }
+build_turns = 2
+max = 2
+produce = { timber = 2 }
+trade = "salvager"
+slots = 1
+max_level = 80
+
+[[building]]
+id = "smokehouse"
+name = "Smokehouse"
+track = "work"
+tier = 2
+blurb = "Fish, salt and a slow peat fire make food that keeps."
+requires = ["salt-pan"]
+cost = { timber = 8, salt = 6, tallies = 10 }
+build_turns = 4
+consume = { fish = 3, salt = 1 }
+produce = { food = 3 }
+trade = "raker"
+slots = 1
+upkeep_peat = 1
+
+[[building]]
+id = "ropewalk"
+name = "Ropewalk"
+track = "work"
+tier = 2
+blurb = "A long shed for twisting reed into rope."
+requires = ["hut"]
+cost = { timber = 6, reed = 10, tallies = 10 }
+build_turns = 4
+trade = "wader"
+slots = 1
+
+[[building]]
+id = "smithy"
+name = "Smithy"
+track = "work"
+tier = 2
+blurb = "A forge on the high ground. Iron becomes tools and arms."
+requires = ["peat-stack"]
+cost = { timber = 8, iron = 6, tallies = 25 }
+build_turns = 6
+trade = "smith"
+slots = 1
+upkeep_peat = 1
+
+[[building]]
+id = "boatyard"
+name = "Boatyard"
+track = "work"
+tier = 3
+blurb = "A slip and a shed. Flat-bottomed boats for the channels."
+requires = ["smithy", "ropewalk"]
+cost = { timber = 20, iron = 4, rope = 4, tallies = 40 }
+build_turns = 8
+trade = "boatwright"
+slots = 1
+upkeep_peat = 1
+
+# ---- Defence ----
+[[building]]
+id = "palisade"
+name = "Palisade"
+track = "defence"
+tier = 1
+blurb = "Sharpened stakes round the hold."
+cost = { timber = 12, reed = 4 }
+build_turns = 4
+defence = 3
+
+[[building]]
+id = "watch-tower"
+name = "Watch-tower"
+track = "defence"
+tier = 2
+blurb = "A tall platform. You see the marsh, and the marsh sees you."
+requires = ["palisade"]
+cost = { timber = 14, rope = 2, tallies = 15 }
+build_turns = 5
+defence = 2
+survey = 3
+
+[[building]]
+id = "sluice"
+name = "Sluice"
+track = "defence"
+tier = 2
+blurb = "Gates in the bank. Open at the right tide, they flood the approach to the hold."
+requires = ["palisade"]
+cost = { timber = 16, iron = 3, tallies = 30 }
+build_turns = 8
+defence = 1
+flood_defence = 8
+
+[[building]]
+id = "mudworks"
+name = "Mudworks"
+track = "defence"
+tier = 3
+blurb = "Ditches and sucking mud at the foot of the bank."
+requires = ["sluice"]
+cost = { timber = 20, reed = 10, tallies = 40 }
+build_turns = 8
+defence = 4
+flood_defence = 4
