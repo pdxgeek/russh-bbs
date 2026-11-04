@@ -19,6 +19,8 @@ russh-bbs-door-hallpass = { workspace = true }
 russh-bbs-door-emberdeep = { workspace = true }
 russh-bbs-door-saltmarch = { workspace = true }
 russh-bbs-door-nullroute = { workspace = true }
+# Long Haul, the space trade door (M4-L1).
+russh-bbs-door-long-haul = { workspace = true }
 russh = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }

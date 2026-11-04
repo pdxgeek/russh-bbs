@@ -35,6 +35,7 @@ use russh_bbs_door::tick::{self, TickPolicy};
 use russh_bbs_door_emberdeep::Emberdeep;
 use russh_bbs_door_example::CoinToss;
 use russh_bbs_door_hallpass::Hallpass;
+use russh_bbs_door_long_haul::LongHaul;
 use russh_bbs_door_nullroute::Nullroute;
 use russh_bbs_door_saltmarch::Saltmarch;
 
@@ -81,7 +82,7 @@ impl Doors {
     }
 
     /// The doors that ship with the board: the example coin toss, until a game replaces it as
-    /// the first door, and the games (Saltmarch, Emberdeep; the rest register here when they exist).
+    /// the first door, and the games (Saltmarch, Emberdeep, Nullroute and Long Haul; the rest register here when they exist).
     ///
     /// # Errors
     /// Only if a built-in door has an invalid id or broken content, which tests rule out.
@@ -91,6 +92,7 @@ impl Doors {
             Saltmarch::shared()?,
             Emberdeep::shared()?,
             Nullroute::shared()?,
+            LongHaul::shared()?,
             Hallpass::shared()?,
         ]))
     }

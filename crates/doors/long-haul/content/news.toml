@@ -1,0 +1,203 @@
+# News events. An event starts at one station, changes the target stock of the listed goods
+# (`target_pm` is per-mille of the usual target: low means a shortage and a dear price, high
+# means a glut and a cheap one), reaches `radius` hops with a falling effect, and lasts
+# `duration` nights. News travels one hop a night, so a captain far away learns of it late.
+# `origin` limits where it can start; `only` limits which stations an effect touches.
+
+[[event]]
+id = "plague"
+kind = "Plague"
+headline = "Fever ward overflowing at {station}; medicine is running out."
+origin = []
+radius = 2
+duration = 6
+weight = 3
+inspection_pm = 0
+effects = [
+  { good = "medicine", target_pm = 250, only = [] },
+  { good = "antitoxin", target_pm = 300, only = [] },
+]
+
+[[event]]
+id = "strike"
+kind = "Strike"
+headline = "Foundry workers down tools at {station}; plate and parts dry up."
+origin = ["industrial"]
+radius = 1
+duration = 5
+weight = 3
+inspection_pm = 0
+effects = [
+  { good = "alloy", target_pm = 300, only = [] },
+  { good = "parts", target_pm = 300, only = [] },
+  { good = "tools", target_pm = 400, only = [] },
+]
+
+[[event]]
+id = "collapse"
+kind = "Mine collapse"
+headline = "Shaft collapse at {station}; ore and earths are scarce."
+origin = ["mining"]
+radius = 2
+duration = 7
+weight = 3
+inspection_pm = 0
+effects = [
+  { good = "ore", target_pm = 250, only = [] },
+  { good = "rare_earths", target_pm = 300, only = [] },
+]
+
+[[event]]
+id = "harvest"
+kind = "Bumper harvest"
+headline = "Record harvest at {station}; grain is cheap this week."
+origin = ["farming"]
+radius = 2
+duration = 6
+weight = 3
+inspection_pm = 0
+effects = [
+  { good = "grain", target_pm = 2200, only = [] },
+  { good = "seed_stock", target_pm = 1800, only = [] },
+]
+
+[[event]]
+id = "blight"
+kind = "Crop blight"
+headline = "Blight in the vats and fields at {station}; food will run short."
+origin = ["farming"]
+radius = 2
+duration = 8
+weight = 2
+inspection_pm = 0
+effects = [
+  { good = "grain", target_pm = 300, only = [] },
+  { good = "vat_protein", target_pm = 350, only = [] },
+  { good = "seed_stock", target_pm = 400, only = [] },
+]
+
+[[event]]
+id = "war"
+kind = "Border war"
+headline = "Shots exchanged near {station}; garrisons want rods, plate and coils."
+origin = ["military", "haven"]
+radius = 3
+duration = 10
+weight = 2
+inspection_pm = 100
+effects = [
+  { good = "reactor_rods", target_pm = 400, only = ["military", "haven"] },
+  { good = "alloy", target_pm = 400, only = ["military", "haven"] },
+  { good = "coils", target_pm = 450, only = ["military", "haven"] },
+  { good = "slug_guns", target_pm = 500, only = [] },
+]
+
+[[event]]
+id = "blockade"
+kind = "Blockade"
+headline = "Patrol cordon around {station}; staples cannot get through."
+origin = []
+radius = 1
+duration = 6
+weight = 2
+inspection_pm = 150
+effects = [
+  { good = "water", target_pm = 300, only = [] },
+  { good = "grain", target_pm = 300, only = [] },
+  { good = "vat_protein", target_pm = 300, only = [] },
+]
+
+[[event]]
+id = "rush"
+kind = "Strike rich"
+headline = "Rich seam reported near {station}; every prospector wants tools and gas."
+origin = ["mining"]
+radius = 2
+duration = 6
+weight = 2
+inspection_pm = 0
+effects = [
+  { good = "tools", target_pm = 400, only = [] },
+  { good = "volatiles", target_pm = 400, only = [] },
+  { good = "parts", target_pm = 500, only = [] },
+]
+
+[[event]]
+id = "scare"
+kind = "Reactor scare"
+headline = "Containment alarm at {station}; reactor rods are being hoarded."
+origin = []
+radius = 2
+duration = 5
+weight = 1
+inspection_pm = 50
+effects = [{ good = "reactor_rods", target_pm = 300, only = [] }]
+
+[[event]]
+id = "festival"
+kind = "Festival"
+headline = "Founders' fair at {station}; wine, spice and curios sell dear."
+origin = []
+radius = 1
+duration = 4
+weight = 3
+inspection_pm = 0
+effects = [
+  { good = "glass_wine", target_pm = 350, only = [] },
+  { good = "salt_spice", target_pm = 400, only = [] },
+  { good = "curios", target_pm = 450, only = [] },
+]
+
+[[event]]
+id = "leak"
+kind = "Data leak"
+headline = "A vault of cores spilled onto the lanes from {station}; cores and chips are cheap."
+origin = ["research"]
+radius = 2
+duration = 5
+weight = 2
+inspection_pm = 0
+effects = [
+  { good = "data_cores", target_pm = 2500, only = [] },
+  { good = "circuits", target_pm = 1800, only = [] },
+]
+
+[[event]]
+id = "recall"
+kind = "Drive recall"
+headline = "Maker recalls a coil batch sold through {station}; coils and glass are short."
+origin = ["industrial", "research"]
+radius = 2
+duration = 6
+weight = 2
+inspection_pm = 0
+effects = [
+  { good = "coils", target_pm = 300, only = [] },
+  { good = "sensor_glass", target_pm = 400, only = [] },
+]
+
+[[event]]
+id = "burst"
+kind = "Water main"
+headline = "Main burst at {station}; ice water is wanted by the ton."
+origin = []
+radius = 1
+duration = 4
+weight = 3
+inspection_pm = 0
+effects = [{ good = "water", target_pm = 250, only = [] }]
+
+[[event]]
+id = "crackdown"
+kind = "Crackdown"
+headline = "Customs sweep near {station}; inspectors are boarding everything."
+origin = ["military", "industrial", "research"]
+radius = 2
+duration = 5
+weight = 2
+inspection_pm = 350
+effects = [
+  { good = "ghostwire", target_pm = 400, only = [] },
+  { good = "dreamsilt", target_pm = 400, only = [] },
+  { good = "stripped_cores", target_pm = 400, only = [] },
+]
