@@ -1505,3 +1505,92 @@ fn waiting_moves_the_clock_on_so_a_gated_job_opens_when_the_water_falls() {
         Err(ActionError::NoTurns { need: 5, have: 2 })
     ));
 }
+
+#[test]
+fn the_sea_born_work_the_wet_better_a_limp_works_it_worse_and_a_drinker_costs_tallies() {
+    let fx = Fx::new();
+    let up = fx.moment(|l| (WATER_UP..70).contains(&l));
+    let calm = fx.moment(|l| l < WATER_UP - 5);
+    // A smokehouse has no tide gate, so the water changes only the hand's yield.
+    let made = |trait_id: Option<&str>, moment: (i64, u8)| {
+        (0..300u64)
+            .map(|seed| {
+                let mut clan = fx.clan();
+                place(&mut clan, 0, "smokehouse");
+                clan.turns_used = moment.1;
+                if let Some(t) = trait_id {
+                    clan.crew[1].traits.push(t.into());
+                }
+                let party = vec![clan.crew[1].id];
+                let events = apply(
+                    &fx.env(moment.0),
+                    &mut clan,
+                    Action::Shift {
+                        plot: 0,
+                        crew: party,
+                    },
+                    &mut rng(seed),
+                )
+                .unwrap();
+                events
+                    .iter()
+                    .map(|e| {
+                        if let Event::Produced { qty, .. } = e {
+                            *qty
+                        } else {
+                            0
+                        }
+                    })
+                    .sum::<u32>()
+            })
+            .sum::<u32>()
+    };
+    let (plain_up, sea_up, limp_up) = (
+        made(None, up),
+        made(Some("sea-born"), up),
+        made(Some("limp"), up),
+    );
+    assert!(
+        sea_up > plain_up + plain_up / 10,
+        "sea-born in rising water: {sea_up} vs {plain_up}"
+    );
+    assert!(
+        limp_up + limp_up / 10 < plain_up,
+        "a limp in rising water: {limp_up} vs {plain_up}"
+    );
+    // In calm water the sea-born have no edge (their gift is the wet), and the limp only costs its 10%.
+    let (plain_calm, sea_calm) = (made(None, calm), made(Some("sea-born"), calm));
+    assert!(
+        sea_calm.abs_diff(plain_calm) < plain_calm / 10,
+        "{sea_calm} vs {plain_calm}"
+    );
+    // A drinker is a tally a night; the fearful, like the haunted, stay in when the flood is up.
+    let mut clan = fx.clan();
+    clan.crew[0].traits.push("drinks".into());
+    let tallies = clan.tallies;
+    quiet_night(&fx, &mut clan, 2);
+    assert_eq!(tallies - clan.tallies, 2);
+    let flood = fx.moment(|l| l >= 70);
+    for trait_id in ["fearful", "haunted"] {
+        let mut c = fx.clan();
+        place(&mut c, 0, "smokehouse");
+        c.turns_used = flood.1;
+        c.crew[1].traits.push(trait_id.into());
+        let party = vec![c.crew[1].id];
+        assert!(
+            matches!(
+                apply(
+                    &fx.env(flood.0),
+                    &mut c,
+                    Action::Shift {
+                        plot: 0,
+                        crew: party
+                    },
+                    &mut rng(1)
+                ),
+                Err(ActionError::Refuses(_))
+            ),
+            "{trait_id}"
+        );
+    }
+}
