@@ -1,5 +1,5 @@
 //! The application frame: a **header bar** on top, a **status bar** at the bottom, and the
-//! body between them (UI-1, D100).
+//! body between them (UI-1, D102).
 //!
 //! ```text
 //! russh-bbs  |  Forums                                     UTC 14:05    <- header bar
@@ -16,7 +16,7 @@
 //! API takes [`ChromeText`], which can be built only from the string table or a `'static` str, so
 //! a member's text cannot be passed to a bar by mistake. Content goes in the body.
 //!
-//! **Security markers (D39, D93, D100).** The status bar's left cell is the marker cell. It is
+//! **Security markers (D39, D93, D102).** The status bar's left cell is the marker cell. It is
 //! drawn by [`chrome::status_cell`] with the reserved style (bold + reverse) and **no colour at
 //! all**: the bar's background starts after it, so no theme can tint it. It is part of the
 //! rectangle this module owns and never of the body, so nothing the body, a table or a popup

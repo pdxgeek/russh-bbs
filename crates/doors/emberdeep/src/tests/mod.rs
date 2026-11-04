@@ -1,0 +1,25 @@
+//! Unit tests for the engine, grouped by what they prove.
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::too_many_lines,
+    clippy::many_single_char_names,
+    clippy::match_same_arms,
+    clippy::assert_is_empty,
+    clippy::single_match_else,
+    clippy::int_plus_one,
+    clippy::neg_multiply,
+    clippy::map_unwrap_or,
+    clippy::manual_assert_eq
+)]
+
+mod branches;
+mod combat;
+mod death;
+mod dungeon;
+mod economy;
+mod hero;
+mod saves;
+mod support;
+mod world;

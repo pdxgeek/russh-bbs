@@ -1,5 +1,5 @@
 //! Popups and modals: a centred box over the body, with a title, wrapped text and the keys that
-//! answer it (UI-1, D100).
+//! answer it (UI-1, D102).
 //!
 //! ```text
 //!        +- Confirm ---------------------------+

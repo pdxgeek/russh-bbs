@@ -146,11 +146,11 @@ fn q_disconnects_from_home_but_is_text_in_a_form() {
 }
 
 #[test]
-fn rules_page_shows_the_fixed_privacy_note() {
+fn rules_page_shows_the_rules_and_no_privacy_notice() {
     let mut room = room(RegistrationMode::Invite);
     room.input(RoomInput::Char('r'));
     let view = room.view();
-    assert_eq!(view.note, Some(strings::PRIVACY_NOTE));
+    assert_eq!(view.note, None, "D93: no privacy notices in the UI");
     assert_eq!(view.body.len(), strings::DEFAULT_RULES.lines().count());
 }
 
