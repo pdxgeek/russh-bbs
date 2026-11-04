@@ -171,12 +171,15 @@ See the pull request for the commands and their results. In short: unit and inte
 
 ### Balance (first numbers, from the simulation)
 
-Forty terms of each of four bots on one shared school (`cargo test -p russh-bbs-door-hallpass --test sim -- --nocapture`). The bots play only through the public actions; "reckless" skips class, pushes nerve and starts schemes at any heat, "cautious" only at low heat and scouts to the maximum.
+Forty terms of each of four bots (the table below is from the final tuning) on one shared school (`cargo test -p russh-bbs-door-hallpass --test sim -- --nocapture`). The bots play only through the public actions; "reckless" skips class, pushes nerve and starts schemes at any heat, "cautious" only at low heat and scouts to the maximum.
 
 | Bot | Legend | File at term end | Pulled off | Caught | Traced | Expelled |
 |---|---|---|---|---|---|---|
-| cautious | about 27 | about 2 | about 4.7 | about 4.1 | about 0.2 | 0% |
-| balanced | about 36 | about 7 | about 5.2 | about 4.3 | about 0.4 | about 15% |
-| reckless | about 60 | about 11.5 | about 5.4 | about 5.0 | about 2.6 | about 75% |
+| cautious | 48.0 | 0.3 | 8.3 | 1.9 | 0.5 | 0% |
+| balanced | 52.4 | 5.8 | 6.8 | 3.3 | 0.5 | 2% |
+| reckless | 76.0 | 11.2 | 6.2 | 3.8 | 2.8 | 57% |
+| variety (random feasible schemes, for coverage) | 24.0 | 1.5 | 3.4 | 1.1 | 0.1 | 0% |
+
+Endings over the 160 terms: model pupil 60, scraped through 41, infamous 30, expelled 24, phantom 5. Eleven of the thirteen methods were played (the paper headline and the paper hijack sit behind a locked office the bots do not try to open). Cautious is nearly as good as balanced here because the bots scout to the maximum; the sim is a baseline, not a target.
 
 The shape is what the design asks for: boldness pays in legend and costs in the file, and careful play keeps a clean sheet. Real balance is H4's job; these numbers are a baseline, not a target.
