@@ -3,7 +3,7 @@
 //! slice. Every line is plain text, so the same lines are both the drawing and the
 //! look-around view, and a bot can read them.
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use russh_bbs_door::{Canvas, Ctx, DoorEnv, DoorKey, DoorSession, DoorStyle, Flow};
 
@@ -17,6 +17,12 @@ use crate::tide::{DayTable, Tide, Warning};
 use crate::types::{Resource, Track, Trade};
 use crate::world::World;
 
+mod trip_ui;
+
+use trip_ui::{Edit, Plan};
+
+use crate::trip::{Reach, ReachKey};
+
 /// The most menu entries (one key each, `a` to `z`).
 const MENU_MAX: usize = 26;
 
@@ -27,6 +33,8 @@ enum MenuId {
     Crew,
     Market,
     Tides,
+    Plan,
+    Trip,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -44,6 +52,7 @@ enum Mode {
 enum Act {
     Go(MenuId),
     Do(Action),
+    Edit(Edit),
     Leave,
 }
 
@@ -89,6 +98,9 @@ pub(crate) struct Session {
     notes: Vec<(String, DoorStyle)>,
     report: Vec<String>,
     dirty: bool,
+    plan: Plan,
+    /// The last search of the marsh, kept while the party stands still.
+    reach: Mutex<Option<(ReachKey, Arc<Reach>)>>,
 }
 
 /// What happened while the player was away, one line each, led by how many nights passed.
@@ -158,10 +170,12 @@ impl Session {
             Mode::Unreadable
         } else if clan.is_none() {
             Mode::Naming(default_name)
-        } else if report.is_empty() {
-            Mode::Menu(MenuId::Main)
-        } else {
+        } else if !report.is_empty() {
             Mode::Report
+        } else if clan.as_ref().is_some_and(|c| c.trip.is_some()) {
+            Mode::Menu(MenuId::Trip)
+        } else {
+            Mode::Menu(MenuId::Main)
         };
         Self {
             cat,
@@ -176,6 +190,8 @@ impl Session {
             notes: Vec::new(),
             report,
             dirty,
+            plan: Plan::default(),
+            reach: Mutex::new(None),
         }
     }
 
@@ -247,6 +263,13 @@ impl Session {
                 self.report = morning_report(&events);
                 self.dirty = true;
                 self.clan = Some(clan);
+                if matches!(self.mode, Mode::Menu(MenuId::Trip | MenuId::Plan)) {
+                    self.mode = if self.report.is_empty() {
+                        Mode::Menu(MenuId::Main)
+                    } else {
+                        Mode::Report
+                    };
+                }
             }
         }
     }
@@ -277,6 +300,11 @@ impl Session {
                     "go:market",
                     "The Tidecourt market",
                     Act::Go(MenuId::Market),
+                ));
+                out.push(entry(
+                    "go:expedition",
+                    "Send a party out on the marsh",
+                    Act::Go(MenuId::Plan),
                 ));
                 out.push(entry(
                     "go:tides",
@@ -521,6 +549,8 @@ impl Session {
                 }
             }
             MenuId::Tides => {}
+            MenuId::Plan => out = self.plan_entries(clan),
+            MenuId::Trip => out = self.trip_entries(clan),
         }
         out.truncate(MENU_MAX);
         out
@@ -531,6 +561,7 @@ impl Session {
         let minute = env.minute(clan);
         let level = self.tide.level(minute);
         let (wait, high) = self.tide.next_turn(minute);
+        let next_level = self.tide.level(minute + wait);
         let table: DayTable = self.tide.table(self.today);
         let warn = match self.tide.warning(level, self.today) {
             Warning::Calm => ("", DoorStyle::Plain),
@@ -540,7 +571,7 @@ impl Session {
         };
         let mut out = vec![(
             format!(
-                "Tide: water {level}, next {} in {}h{:02}m, {} tides{}{}",
+                "Tide: water {level}, next {} in {}h{:02}m (water {next_level}), {} tides{}{}",
                 if high { "high" } else { "low" },
                 wait / 60,
                 wait % 60,
@@ -671,6 +702,8 @@ impl Session {
                     ));
                 }
             }
+            Mode::Menu(MenuId::Plan) => out.extend(self.plan_lines(clan)),
+            Mode::Menu(MenuId::Trip) => out.extend(self.trip_lines(clan)),
             Mode::Menu(MenuId::Hold) => {
                 let built: Vec<String> = clan
                     .hold
@@ -743,7 +776,7 @@ impl DoorSession for Session {
             }
             Mode::Menu(menu) => {
                 if key == DoorKey::Escape {
-                    if menu == MenuId::Main {
+                    if menu == MenuId::Main || menu == MenuId::Trip {
                         return Flow::Exit;
                     }
                     self.mode = Mode::Menu(MenuId::Main);
@@ -768,9 +801,13 @@ impl DoorSession for Session {
                 }
                 match entries.swap_remove(index).act {
                     Act::Go(next) => {
+                        if next == MenuId::Plan {
+                            self.plan = Plan::default();
+                        }
                         self.mode = Mode::Menu(next);
                         self.notes.clear();
                     }
+                    Act::Edit(e) => self.edit(e),
                     Act::Leave => return Flow::Exit,
                     Act::Do(action) => self.act(action, ctx),
                 }
@@ -797,6 +834,7 @@ impl Session {
         let Some(mut clan) = self.clan.take() else {
             return;
         };
+        let on_trip = matches!(action, Action::Depart { .. } | Action::Go(_));
         let result = engine::apply(&self.env(), &mut clan, action, ctx.rng());
         self.clan = Some(clan);
         match result {
@@ -818,20 +856,32 @@ impl Session {
                         Some(w.encode())
                     });
                 }
-                self.notes = events
-                    .iter()
-                    .map(|e| {
-                        let style = if matches!(
-                            e,
-                            Event::Injured { .. } | Event::Pocketed { .. } | Event::Starved { .. }
-                        ) {
-                            DoorStyle::Bad
-                        } else {
-                            DoorStyle::Good
-                        };
-                        (e.to_string(), style)
-                    })
-                    .collect();
+                let mut notes: Vec<(String, DoorStyle)> = Vec::new();
+                for e in &events {
+                    let style = match e {
+                        Event::Injured { .. }
+                        | Event::Pocketed { .. }
+                        | Event::Starved { .. }
+                        | Event::Died { .. }
+                        | Event::Dropped { .. }
+                        | Event::LeftBehind { .. } => DoorStyle::Bad,
+                        Event::Told(_) | Event::Fight(_) => DoorStyle::Plain,
+                        Event::Scene { .. } => continue,
+                        _ => DoorStyle::Good,
+                    };
+                    for line in trip_ui::wrap(&e.to_string(), 76) {
+                        notes.push((line, style));
+                    }
+                }
+                let keep = notes.len().saturating_sub(16);
+                self.notes = notes.split_off(keep);
+                if on_trip {
+                    self.mode = if self.clan.as_ref().is_some_and(|c| c.trip.is_some()) {
+                        Mode::Menu(MenuId::Trip)
+                    } else {
+                        Mode::Menu(MenuId::Main)
+                    };
+                }
                 self.save(ctx);
             }
             Err(e) => self.notes = vec![(e.to_string(), DoorStyle::Bad)],
