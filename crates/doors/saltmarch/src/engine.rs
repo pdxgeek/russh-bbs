@@ -450,9 +450,9 @@ pub fn apply(
             });
         }
         Action::Depart { party, kit, target } => {
-            trip::depart(env, clan, &party, kit, target, &mut events)?;
+            trip::depart(env, clan, &party, kit, target, rng, &mut events)?;
         }
-        Action::Go(act) => return trip::apply(env, clan, act, rng),
+        Action::Go(act) => return trip::apply(env, clan, act),
         Action::Sluice { level } => {
             if !clan.hold.built(env.cat).any(|(_, b)| b.is_sluice()) {
                 return Err(ActionError::NoSluice);

@@ -290,6 +290,9 @@ pub struct Trip {
     pub scenes: u8,
     /// Fights fought.
     pub fights: u8,
+    /// The trip's own dice. They live in the save, so a dropped connection cannot re-roll a
+    /// choice: the same save and the same key always give the same result (D102).
+    pub rng: [u64; 4],
 }
 
 /// What a player can do on a trip.
@@ -437,6 +440,9 @@ impl Trip {
         w.u8(self.hardship);
         w.u8(self.scenes);
         w.u8(self.fights);
+        for word in self.rng {
+            w.u64(word);
+        }
     }
 
     /// Read from a save.
@@ -487,6 +493,7 @@ impl Trip {
             .map(|_| Some((r.u8()?, r.u8()?, r.u8()?)))
             .collect::<Option<Vec<_>>>()?;
         let (hardship, scenes, fights) = (r.u8()?, r.u8()?, r.u8()?);
+        let dice = [r.u64()?, r.u64()?, r.u64()?, r.u64()?];
         let on_map = |(x, y): (u8, u8)| usize::from(x) < SIZE && usize::from(y) < SIZE;
         (!party.is_empty() && party.len() <= MAX_PARTY && on_map(at)).then_some(Self {
             party,
@@ -504,6 +511,7 @@ impl Trip {
             hardship,
             scenes,
             fights,
+            rng: dice,
         })
     }
 }
@@ -1492,6 +1500,7 @@ pub fn depart(
     party: &[u16],
     kit: Kit,
     target: Option<(u8, u8)>,
+    rng: &mut DoorRng,
     events: &mut Vec<Event>,
 ) -> Result<(), ActionError> {
     let cat = env.cat;
@@ -1560,6 +1569,9 @@ pub fn depart(
         hardship: 0,
         scenes: 0,
         fights: 0,
+        // The one thing the session's seed does: start the trip's dice. Nothing has been
+        // rolled yet, so there is nothing to gain by opening the door again.
+        rng: DoorRng::from_seed(rng.next_u64()).state(),
     });
     events.push(Event::Departed {
         crew: u8::try_from(party.len()).unwrap_or(1),
@@ -1952,15 +1964,20 @@ fn choose(
     let Phase::Scene(scene) = &trip.phase else {
         return Err(ActionError::NotNow("There is no scene.".to_owned()));
     };
-    let index = usize::from(
-        *scene
-            .offered
-            .get(usize::from(n))
-            .ok_or(ActionError::BadChoice(n))?,
-    );
     let event = scene.event.clone();
-    let def = env.cat.event(&event).ok_or(ActionError::BadChoice(n))?;
-    let option = &def.options[index];
+    let def = env.cat.event(&event);
+    let picked = scene.offered.get(usize::from(n)).copied();
+    // A scene saved before the tables were edited may name a scene that is gone, or options
+    // that are: the moment passes, and the party can go on.
+    if def.is_none() || (scene.offered.is_empty() && n == 0) {
+        trip.phase = Phase::Free;
+        events.push(Event::Told("The moment passes.".to_owned()));
+        return Ok(None);
+    }
+    let index = usize::from(picked.ok_or(ActionError::BadChoice(n))?);
+    let option = def
+        .and_then(|d| d.options.get(index))
+        .ok_or(ActionError::BadChoice(n))?;
     let failed = fail_chance(env.cat, clan, trip, &event, index)
         .is_some_and(|p| p > 0 && rng.chance(p, 100));
     trip.phase = Phase::Free;
@@ -1988,16 +2005,15 @@ fn choose(
 ///
 /// # Errors
 /// [`ActionError`] says why.
-pub fn apply(
-    env: &Env<'_>,
-    clan: &mut Clan,
-    act: TripAction,
-    rng: &mut DoorRng,
-) -> Result<Vec<Event>, ActionError> {
+pub fn apply(env: &Env<'_>, clan: &mut Clan, act: TripAction) -> Result<Vec<Event>, ActionError> {
     let mut trip = clan.trip.take().ok_or(ActionError::NoTrip)?;
     let before = (clan.clone(), trip.clone());
     let mut events = Vec::new();
-    let result = run(env, clan, &mut trip, act, rng, &mut events);
+    // The dice come from the save, not the session, and go back into it: a refused action
+    // rolls nothing, and a key whose result was lost rolls the same again.
+    let mut dice = DoorRng::from_state(trip.rng);
+    let result = run(env, clan, &mut trip, act, &mut dice, &mut events);
+    trip.rng = dice.state();
     match result {
         Err(e) => {
             // Restore exactly: a refusal changes nothing.
@@ -2008,7 +2024,7 @@ pub fn apply(
         Ok(end) => {
             let end = end.or_else(|| after_action(env, clan, &trip));
             match end {
-                Some(e) => conclude(env, clan, trip, e, rng, &mut events),
+                Some(e) => conclude(env, clan, trip, e, &mut dice, &mut events),
                 None => clan.trip = Some(trip),
             }
             Ok(events)

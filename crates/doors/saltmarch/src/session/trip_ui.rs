@@ -243,6 +243,7 @@ impl Session {
             hardship: 0,
             scenes: 0,
             fights: 0,
+            rng: [1; 4],
         }
         .capacity(clan, &self.cat);
         let target = self.plan.target.map_or_else(
@@ -310,8 +311,15 @@ impl Session {
     }
 
     fn scene_entries(&self, s: &trip::Scene) -> Vec<Entry> {
+        let pass = || {
+            vec![entry(
+                "choose:0",
+                "Let the moment pass",
+                Act::Do(Action::Go(TripAction::Choose(0))),
+            )]
+        };
         let Some(def) = self.cat.event(&s.event) else {
-            return Vec::new();
+            return pass();
         };
         let Some(clan) = &self.clan else {
             return Vec::new();
@@ -322,8 +330,8 @@ impl Session {
         s.offered
             .iter()
             .enumerate()
-            .map(|(n, &i)| {
-                let o = &def.options[usize::from(i)];
+            .filter_map(|(n, &i)| {
+                let o = def.options.get(usize::from(i))?;
                 let risk = trip::fail_chance(&self.cat, clan, t, &s.event, usize::from(i))
                     .filter(|p| *p > 0)
                     .map_or(String::new(), |p| format!(" [{p}% to go badly]"));
@@ -340,11 +348,11 @@ impl Session {
                 } else {
                     ""
                 };
-                entry(
+                Some(entry(
                     format!("choose:{n}"),
                     format!("{}{risk}{fight}", o.label),
                     Act::Do(Action::Go(TripAction::Choose(u8::try_from(n).unwrap_or(0)))),
-                )
+                ))
             })
             .collect()
     }

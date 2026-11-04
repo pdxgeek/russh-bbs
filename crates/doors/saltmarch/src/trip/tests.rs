@@ -26,6 +26,41 @@ fn rng(seed: u64) -> DoorRng {
     DoorRng::from_seed(seed)
 }
 
+/// The session's seed only starts the trip's dice; tests start them from a fixed one.
+fn depart(
+    env: &Env<'_>,
+    clan: &mut Clan,
+    party: &[u16],
+    kit: Kit,
+    target: Option<(u8, u8)>,
+    events: &mut Vec<Event>,
+) -> Result<(), ActionError> {
+    super::depart(env, clan, party, kit, target, &mut rng(77), events)
+}
+
+/// A trip's dice are in its save; tests that want a particular roll put the generator they
+/// hold into the trip first, and take the dice back after, so a run of calls goes on from one
+/// stream.
+fn apply(
+    env: &Env<'_>,
+    clan: &mut Clan,
+    act: TripAction,
+    session: &mut DoorRng,
+) -> Result<Vec<Event>, ActionError> {
+    let old = clan.trip.as_ref().map(|t| t.rng);
+    if let Some(t) = clan.trip.as_mut() {
+        t.rng = session.state();
+    }
+    let result = super::apply(env, clan, act);
+    match (&result, clan.trip.as_mut(), old) {
+        // A refusal rolls nothing: the trip is exactly as it was.
+        (Err(_), Some(t), Some(old)) => t.rng = old,
+        (_, Some(t), _) => *session = DoorRng::from_state(t.rng),
+        _ => {}
+    }
+    result
+}
+
 struct Fx {
     cat: Catalog,
     map: Map,
@@ -1567,4 +1602,101 @@ fn marks_are_remembered_forgotten_and_capped() {
     }
     assert_eq!(clan.marks.len(), MARKS_CAP);
     assert!(!clan.has_mark("m0") && clan.has_mark(&format!("m{}", MARKS_CAP + 4)));
+}
+
+#[test]
+fn the_dice_are_in_the_save_so_a_lost_key_cannot_be_rolled_again() {
+    let fx = Fx::new();
+    let env = fx.env(DAY);
+    let mut clan = on_trip(&fx, &[1, 2]);
+    clan.trip.as_mut().unwrap().phase = Phase::Scene(Scene {
+        event: "sucking-mud".into(),
+        offered: vec![0, 1, 2],
+    });
+    // The same save and the same key give the same result however often it is tried...
+    let run = || {
+        let mut c = clan.clone();
+        let ev = super::apply(&env, &mut c, TripAction::Choose(1)).unwrap();
+        (c, ev)
+    };
+    let first = run();
+    for _ in 0..5 {
+        assert_eq!(run(), first);
+    }
+    // ...and the dice moved on, so the next choice is not the same roll again.
+    assert_ne!(
+        first.0.trip.as_ref().map(|t| t.rng),
+        clan.trip.as_ref().map(|t| t.rng)
+    );
+    // Different dice give different outcomes: the choice goes both ways.
+    let mut outcomes = std::collections::BTreeSet::new();
+    for seed in 0..40 {
+        let mut c = clan.clone();
+        c.trip.as_mut().unwrap().rng = DoorRng::from_seed(seed).state();
+        let ev = super::apply(&env, &mut c, TripAction::Choose(1)).unwrap();
+        outcomes.insert(ev.len() * 100 + usize::try_from(c.stats.injuries).unwrap());
+    }
+    assert!(outcomes.len() > 1, "{outcomes:?}");
+    // A refused action rolls nothing.
+    let before = clan.clone();
+    let mut again = clan.clone();
+    assert!(super::apply(&env, &mut again, TripAction::Gather).is_err());
+    assert_eq!(again, before);
+    // The session's seed starts the dice once, at departure.
+    let dice = |seed: u64| {
+        let mut c = fx.clan();
+        super::depart(
+            &env,
+            &mut c,
+            &[1, 2],
+            kit(),
+            None,
+            &mut rng(seed),
+            &mut Vec::new(),
+        )
+        .unwrap();
+        c.trip.unwrap().rng
+    };
+    assert_ne!(dice(1), dice(2));
+    assert_ne!(dice(1), [0; 4]);
+}
+
+#[test]
+fn a_scene_the_tables_no_longer_have_passes_and_the_party_goes_on() {
+    let fx = Fx::new();
+    let env = fx.env(DAY);
+    let at = |scene: Scene| {
+        let mut clan = on_trip(&fx, &[1, 2]);
+        clan.trip.as_mut().unwrap().phase = Phase::Scene(scene);
+        clan
+    };
+    // The scene is gone from the tables.
+    let mut gone = at(Scene {
+        event: "a-scene-that-was-cut".into(),
+        offered: vec![0, 1],
+    });
+    let ev = super::apply(&env, &mut gone, TripAction::Choose(0)).unwrap();
+    assert!(matches!(gone.trip.as_ref().unwrap().phase, Phase::Free));
+    assert!(
+        ev.iter()
+            .any(|e| matches!(e, Event::Told(t) if t.contains("passes")))
+    );
+    // An option the scene no longer has is a plain refusal that changes nothing.
+    let mut cut = at(Scene {
+        event: "sucking-mud".into(),
+        offered: vec![9],
+    });
+    let before = cut.clone();
+    assert_eq!(
+        super::apply(&env, &mut cut, TripAction::Choose(0)),
+        Err(ActionError::BadChoice(0))
+    );
+    assert_eq!(cut, before);
+    // A scene with nothing to offer can be let go.
+    let mut empty = at(Scene {
+        event: "sucking-mud".into(),
+        offered: vec![],
+    });
+    assert!(super::apply(&env, &mut empty, TripAction::Choose(0)).is_ok());
+    assert!(matches!(empty.trip.as_ref().unwrap().phase, Phase::Free));
 }

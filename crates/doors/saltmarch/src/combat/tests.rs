@@ -4,8 +4,7 @@
     clippy::unwrap_used,
     clippy::panic,
     clippy::too_many_lines,
-    clippy::many_single_char_names,
-    clippy::print_stderr
+    clippy::many_single_char_names
 )]
 
 use super::*;
@@ -757,10 +756,6 @@ fn the_odds_read_matches_how_quick_resolve_goes() {
         tally[i][1] += u32::from(v == Verdict::Won);
     }
     let rate = |i: usize| f64::from(tally[i][1]) / f64::from(tally[i][0].max(1));
-    eprintln!(
-        "odds -> win rate: {:?}",
-        (0..4).map(|i| (tally[i][0], rate(i))).collect::<Vec<_>>()
-    );
     assert!(
         tally.iter().all(|t| t[0] >= 40),
         "every class occurs: {tally:?}"
