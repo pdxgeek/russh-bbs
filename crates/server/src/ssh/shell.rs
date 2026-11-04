@@ -58,8 +58,8 @@ use tracing::{debug, info, warn};
 use super::Backend;
 use super::abort::Abort;
 use super::password::PasswordLogin;
-use super::registry::SessionRef;
-use super::screen::Screen;
+use super::registry::{Revocation, SessionRef};
+use super::screen::{REVOKED_LINE, Screen};
 use super::terminal::{KeyParser, PtySize};
 use crate::chat::{ChatSession, Hub};
 use crate::founder::Founder;
@@ -230,6 +230,9 @@ const PUSH_RECHECK: Duration = Duration::from_secs(10);
 
 impl<D: Backend> Shell<D> {
     pub(crate) fn new(parts: ShellParts<D>) -> Self {
+        if let Some(account) = parts.account {
+            parts.session.set_account(account);
+        }
         Self {
             parts,
             keys: KeyParser::new(),
@@ -267,6 +270,10 @@ impl<D: Backend> Shell<D> {
             sleep_until(next_cycle).await;
             let batch = self.parts.inbox.take();
             if batch.closed {
+                return;
+            }
+            if self.parts.session.revoke_signal().is_revoked() {
+                self.end_revoked().await;
                 return;
             }
             self.pump_chat().await; // what the room sent, before the keys act (M3-F)
@@ -458,6 +465,7 @@ impl<D: Backend> Shell<D> {
             tokio::select! {
                 () = inbox => {}
                 () = room => {}
+                () = self.parts.session.revoke_signal().revoked() => {}
             }
         };
         match self.keys.deadline() {
@@ -568,6 +576,42 @@ impl<D: Backend> Shell<D> {
     }
 
     /// End the shell: restore the client's terminal, then close the channel.
+    /// Record the account this session became (FIX-M3-14), and whether it also used the
+    /// password, so a later revocation can find it.
+    fn sign_in_as(&self, account: AccountId, by_password: bool) {
+        self.parts.session.set_account(account);
+        if by_password {
+            self.parts.session.mark_password();
+        }
+    }
+
+    /// The credential this session signed in with was revoked (FIX-M3-14, D99): show the one
+    /// fixed line and close like a log off, the same over ssh and telnet.
+    async fn end_revoked(&mut self) {
+        info!(session = ?self.parts.session.id(), "session ended: its sign-in was revoked");
+        self.parts
+            .screen
+            .limit_reached(vec![REVOKED_LINE.to_owned()]);
+        self.draw_frame().await;
+        self.finish().await;
+    }
+
+    /// End this account's other live sessions that used the credential `what` revoked, and
+    /// write one `session.revoked` row for each (ids and a reason only). This session stays
+    /// open. In this process only: see `docs/access.md`.
+    async fn revoke_others(&self, what: &Revocation) {
+        let Some(account) = self.parts.account else {
+            return;
+        };
+        for ended in self.parts.session.revoke_others(account, what) {
+            let event =
+                russh_bbs_core::audit::events::session_revoked(account, ended.as_raw(), what.tag());
+            if let Err(error) = self.parts.directory.append(&event).await {
+                warn!(session = ?self.parts.session.id(), %error, "session.revoked could not be audited");
+            }
+        }
+    }
+
     async fn finish(&mut self) {
         match self.parts.screen.leave() {
             Ok(bytes) => {
@@ -646,6 +690,7 @@ impl<D: Backend> Shell<D> {
                 }
                 let start = self.account_start(&account).await;
                 self.parts.account = Some(start.account);
+                self.sign_in_as(start.account, true);
                 let flow = self.member_flow(start);
                 self.parts.screen.claim_accepted(flow);
                 false
@@ -760,6 +805,7 @@ impl<D: Backend> Shell<D> {
         // A member who just joined starts a member session: last callers lists them.
         crate::community::note_sign_in(&*self.parts.directory, start.account).await;
         self.parts.account = Some(start.account);
+        self.sign_in_as(start.account, true);
         let flow = self.member_flow(start);
         self.parts.screen.redeemed(flow);
     }
@@ -797,6 +843,7 @@ impl<D: Backend> Shell<D> {
         let start = self.account_start(&account).await;
         crate::community::note_sign_in(&*self.parts.directory, start.account).await;
         self.parts.account = Some(start.account);
+        self.sign_in_as(start.account, true);
         let flow = self.member_flow(start);
         self.parts.screen.redeemed(flow);
     }
@@ -870,6 +917,12 @@ impl<D: Backend> Shell<D> {
         let start = self.account_start(&account).await;
         crate::community::note_sign_in(&*self.parts.directory, start.account).await;
         self.parts.account = Some(start.account);
+        self.sign_in_as(start.account, request.password.is_some());
+        if request.password.is_some()
+            && let Some(fingerprint) = self.parts.fingerprint.clone()
+        {
+            self.revoke_others(&Revocation::Recovery(fingerprint)).await;
+        }
         let flow = self.member_flow(start);
         self.parts.screen.redeemed(flow);
     }
@@ -1157,6 +1210,14 @@ impl<D: Backend> Shell<D> {
             warn!(session = ?self.parts.session.id(), "password request timed out");
             russh_bbs_core::passwords::Response::Refused(russh_bbs_core::passwords::Refusal::Failed)
         });
+        if matches!(
+            response,
+            russh_bbs_core::passwords::Response::Done(
+                russh_bbs_core::passwords::Done::Set | russh_bbs_core::passwords::Done::Cleared
+            )
+        ) {
+            self.revoke_others(&Revocation::Password).await;
+        }
         self.parts.screen.deliver_password(response);
     }
 
@@ -1167,6 +1228,10 @@ impl<D: Backend> Shell<D> {
         let Some(access) = self.parts.screen.access().cloned() else {
             return;
         };
+        let removing = match &request {
+            russh_bbs_core::keys::Request::Remove(fingerprint) => Some(fingerprint.clone()),
+            _ => None,
+        };
         let response = timeout(
             PASSWORD_REQUEST_TIMEOUT,
             russh_bbs_core::keys::execute(&*self.parts.directory, &access, request),
@@ -1176,6 +1241,12 @@ impl<D: Backend> Shell<D> {
             warn!(session = ?self.parts.session.id(), "keys request timed out");
             russh_bbs_core::keys::Response::Refused(russh_bbs_core::keys::Refusal::Failed)
         });
+        if let (Some(fingerprint), russh_bbs_core::keys::Response::Keys { changed, .. }) =
+            (removing, &response)
+            && *changed == Some(russh_bbs_core::keys::Change::Removed)
+        {
+            self.revoke_others(&Revocation::Key(fingerprint)).await;
+        }
         self.parts.screen.deliver_keys(response);
     }
 
