@@ -317,7 +317,7 @@ end loyalty: hauler 96.0, neglect 53.6
 
 ## Implementation notes (M4-L3)
 
-Slice M4-L3, branch `m4/long-haul-ui`, decision D-TBD (the number is assigned at merge). Everything here is **Implemented and tested** unless it says otherwise. The UI lives in `crates/doors/long-haul/src/session/ui/`; the engine is untouched (a few `Session` fields and `Mode` variants were added, and `Mode::Nav` became the chart and the planner).
+Slice M4-L3, branch `m4/long-haul-ui`, decision D118 (the number is assigned at merge). Everything here is **Implemented and tested** unless it says otherwise. The UI lives in `crates/doors/long-haul/src/session/ui/`; the engine is untouched (a few `Session` fields and `Mode` variants were added, and `Mode::Nav` became the chart and the planner).
 
 ### The screens
 
