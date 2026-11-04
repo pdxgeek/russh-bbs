@@ -244,10 +244,10 @@ pub(crate) fn framed(look: Look, title: Option<String>) -> Block<'static> {
     let mut block = Block::default()
         .borders(Borders::ALL)
         .border_style(look.accent(Style::new(), look.palette().border));
+    // Plain line-drawing characters, like the older boxes (`settings::boxed`), so every screen
+    // reads as one family and the text helpers that strip box characters keep working.
     if look.ascii() {
         block = block.border_set(ASCII_BORDER);
-    } else {
-        block = block.border_type(ratatui::widgets::BorderType::Rounded);
     }
     if let Some(title) = title {
         let heading = look.accent(
@@ -341,7 +341,8 @@ pub(crate) fn render(
         .collect();
     let columns: Vec<&Column<'_>> = shown_at.iter().map(|at| &spec.columns[*at]).collect();
     let number_width = u16::from(spec.numbered) * 3;
-    let widths = column_widths(&columns, body_width.saturating_sub(2 + number_width));
+    // One column of air before the right border (and the scrollbar).
+    let widths = column_widths(&columns, body_width.saturating_sub(3 + number_width));
 
     let ascii = look.ascii();
     let surfaces = look.surfaces();
@@ -406,7 +407,7 @@ pub(crate) fn render(
     }
     // Rows are drawn one by one into their own rectangles: the pointer, the stripe and an
     // optional detail line then never depend on how a table widget measures its cells.
-    let pointer = if ascii { "> " } else { "\u{25b8} " };
+    let pointer = "> ";
     for (offset, at) in (top..top + shown).enumerate() {
         let Ok(offset) = u16::try_from(offset) else {
             break;

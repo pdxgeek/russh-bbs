@@ -888,3 +888,33 @@ fn terminal_word(value: &str) -> Option<String> {
             .all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.' | '+'));
     valid.then_some(word)
 }
+
+#[cfg(test)]
+mod terminal_word_tests {
+    use super::terminal_word;
+
+    #[test]
+    fn a_terminal_word_is_a_short_name_or_nothing() {
+        assert_eq!(
+            terminal_word("xterm-256color").as_deref(),
+            Some("xterm-256color")
+        );
+        assert_eq!(terminal_word("truecolor").as_deref(), Some("truecolor"));
+        assert_eq!(
+            terminal_word("tmux-256color").as_deref(),
+            Some("tmux-256color")
+        );
+        for bad in [
+            "",
+            "x y",
+            "a\u{1b}[31m",
+            "\u{27e6}",
+            "a;b",
+            &"a".repeat(41),
+            "../../etc",
+        ] {
+            assert_eq!(terminal_word(bad), None, "{bad:?}");
+        }
+        assert!(terminal_word(&"a".repeat(40)).is_some());
+    }
+}

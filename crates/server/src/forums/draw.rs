@@ -140,14 +140,16 @@ fn state_hints(state: &State) -> Vec<Hint<'static>> {
                 hints.push(hint("n", "new board"));
             }
             if list.can_feeds {
-                hints.push(hint("f", "add feed"));
+                hints.push(hint("f", "add a feed"));
             }
             hints.push(hint("Esc", "back"));
             hints
         }
         State::Threads { page, .. } => {
             let mut hints = vec![hint("Enter", "read"), hint("1-9", "jump")];
-            if !page.board.feed {
+            if page.board.feed {
+                hints.push(hint("feed", "read only"));
+            } else {
                 hints.push(hint("w", "write"));
             }
             hints.push(hint("n/b", "page"));
