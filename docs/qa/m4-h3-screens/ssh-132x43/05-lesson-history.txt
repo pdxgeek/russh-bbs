@@ -1,0 +1,43 @@
+
+                            ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+                            │Hallpass                                                                  │
+                            │                                                                          │
+                            │ ♜ GREYWATER ACADEMY  · founder                     term 1 · Wed day 1/42 │
+                            │ ▐Hist▌  Maths   Lunch    Art      Sci    Games   After    Eve     Night  │
+                            │▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄│
+                            │ ⌛ History  puzzle 1 of 3  ○○○  0 right  Mr. Wystan Alder                │
+                            │╔════════════════════════════════════════════════════════════════════════╗│
+                            │║                                                                        ║│
+                            │║                                                                        ║│
+                            │║                                                                        ║│
+                            │║                                                                        ║│
+                            │║                                                                        ║│
+                            │║                                                                        ║│
+                            │║                                                                        ║│
+                            │║                                                                        ║│
+                            │║                                                                        ║│
+                            │║                              ├──●───●──●─┤                             ║│
+                            │║                             1100  1500 1800                            ║│
+                            │║                                                                        ║│
+                            │║                     Which of these happened latest?                    ║│
+                            │║                                                                        ║│
+                            │║                                                                        ║│
+                            │║                                                                        ║│
+                            │║                                                                        ║│
+                            │║                                                                        ║│
+                            │║                                                                        ║│
+                            │║                                                                        ║│
+                            │║                                                                        ║│
+                            │╚════════════════════════════════════════════════════════════════════════╝│
+                            │╭ Your answer ───────────────────────────────────────────────────────────╮│
+                            ││ 1 ▸ The tunnels were bricked up and then reopened                      ││
+                            ││ 2   The chapel bell was cast                                           ││
+                            ││ 3   The lake froze for a whole winter                                  ││
+                            ││ x   walk out of the lesson                                             ││
+                            ││                                                                        ││
+                            │╰────────────────────────────────────────────────────────────────────────╯│
+                            │ Mr. Alder asks which of three events came first or last, and wants no    │
+                            │ fidgeting.                                                               │
+                            │ » The tunnels were bricked up and then reopened     up/down  Enter  Esc  │
+                            └──────────────────────────────────────────────────────────────────────────┘
+

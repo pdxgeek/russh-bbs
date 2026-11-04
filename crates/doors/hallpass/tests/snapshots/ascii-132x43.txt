@@ -1,0 +1,1276 @@
+===== enrol 132x43 ascii
+                                                          G R E Y W A T E R
+                                                          =================
+                                                            A C A D E M Y
+
+             A boarding school on a fog-bound lake, too many locked doors, and a headmistress with a file on everybody.
+
+
++ Who do you want to be known as? -------------------------------------------------------------------------------------------------+
+| > 1  Smooth talker                                                                                                               |
+|      Words are your best tool. Forgeries and fibs come easily.                                                                   |
+|   2  Teacher's pet                                                                                                               |
+|      Staff trust you, grades come easier, and your file clears faster. The rough crowd will not touch you.                       |
+|   3  Fast runner                                                                                                                 |
+|      You are out of the door before the bell stops.                                                                              |
+|   4  Tinkerer                                                                                                                    |
+|      Your hands know their way around a mechanism.                                                                               |
+|   q  Leave                                                                                                                       |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
++----------------------------------------------------------------------------------------------------------------------------------+
+                                          The school keeps a file on everybody. Mind yours.
+===== day 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch         [Art]           Sci           Games         After           Eve           Night
+--------------------------------------------==============..........................................................................
+--------------------------------------------##############..........................................................................
++ The Quad ------------------------------------++ You --------------------------------++ Today ------------------------------------+
+|Grounds wing                                  ||heat   ########=------------------- 9|| x First period  Hist  History room        |
+|Empty, apart from a pigeon and whoever is out ||file   ############=------------ 6/12|| x Second period Maths  Maths room         |
+|of lessons.                                   ||nerve  ****** 6/6                    || x Lunch         Lunch                     |
+|Here: Tobias Bramley, Sol Marchetti           ||legend 23   $ cash 18                || > Third period  Art  Art room             |
+|Now: Art class                                || DETENTION  1 owed                   ||   Fourth period Sci  Science lab          |
+|Next: Sci in the Science lab                  ||schemes                              ||   Free period   Games  Gymnasium          |
+|Classroom cor~: Wick, Hollis                  || #1 Swap the sugar for salt    READY ||   After school  After                     |
+|The grounds: Fenn                             ||                                     ||   Evening       Eve                       |
+|Gymnasium: Gale, Crouch                       ||                                     ||   Lights-out    Night                     |
+|                                              ||                                     ||                                           |
++----------------------------------------------+|                                     ||                                           |
++ Nearby --------------------------------------+|                                     ||                                           |
+|Classroom corridor: Wick, Hollis              ||                                     ||                                           |
+|The grounds: Fenn                             ||                                     ||                                           |
+|Gymnasium: Gale, Crouch                       ||                                     ||                                           |
+|Library: Lund                                 ||                                     ||                                           |
+|                                              ||                                     ||                                           |
+|                                              ||                                     ||                                           |
+|                                              ||                                     ||                                           |
+|                                              ||                                     ||                                           |
+|                                              ||                                     ||                                           |
+|                                              ||                                     ||                                           |
+|                                              ||                                     ||                                           |
+|                                              ||                                     ||                                           |
+|                                              ||                                     ||                                           |
+|                                              ||                                     ||                                           |
+|                                              ||                                     ||                                           |
+|                                              ||                                     ||                                           |
+|                                              ||                                     ||                                           |
+|                                              ||                                     ||                                           |
+|                                              ||                                     ||                                           |
+|                                              ||                                     ||                                           |
+|                                              ||                                     ||                                           |
+|                                              ||                                     ||                                           |
+|                                              ||                                     ||                                           |
++----------------------------------------------++-------------------------------------++-------------------------------------------+
+ g Go   l Loiter   t Talk   r Rest   p Schemes   c Clubs   f File   j Journal   n Paper   q Leave
+ > Go somewhere                                                                                                up/down  Enter  Esc
+===== map 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch         [Art]           Sci           Games         After           Eve           Night
+--------------------------------------------==============..........................................................................
+--------------------------------------------##############..........................................................................
++ Greywater Academy -----------------------------------------------------------------++ The place ---------------------------------+
+|                                          o Science     o Languages                 ||@ The Quad  Grounds wing                    |
+|                                           |           /                            ||you are here                                |
+|                                           |          /                             ||hours class chapel lunch free after evening |
+|                                           |         /                              ||night                                       |
+|              o Dorm        o Art room!---o Classes!----o History                   ||doors Classroom corridor, Common room,      |
+|               |         \               /           \                              ||Fenwick dormitory, The grounds, Gymnasium,  |
+|               |          \             /             \                             ||Library, Great Hall, The tuck shop          |
+|               |           \           /               \                            ||here Tobias Bramley, Sol Marchetti          |
+|o Stacks      - Common rm-- @ The Quad!   - Tuck shop   o Maths                     ||                                            |
+|           \             \ / |         \ /                                          |+--------------------------------------------+
+|            \             /  |          /                                           |+ Who is where ------------------------------+
+|             \           / \ |         / \                                          ||Ruddock  Art room                           |
+|X Head's      o Library     - Hall        o Gym!        X Loft                      ||Fenn  The grounds                           |
+|           \   |           / |         \             \ /                            ||Wick  Classroom corridor                    |
+|            \  |          /  |          \             /                             ||Bramley  The Quad                           |
+|             \ |         /   |           \           / \                            ||Gale  Gymnasium                             |
+|o Deputy------o Admin       X Greenroom   - Chapel------o Grounds!----o Car park    ||Hollis  Classroom corridor                  |
+|             / |                         /             / |                          ||Crouch  Gymnasium                           |
+|            /  |                        /             /  |                          ||Marchetti  The Quad                         |
+|           /   |                       /             /   |                          ||Lund  Library                               |
+|X Quarters    - Staffroom   X Tunnels------ Boathouse   - Shed                      ||Also: Admin to Classes, Quad to Grounds.    |
+|                         \   |                         /                            ||                                            |
+|                          \  |                        /                             ||                                            |
+|                           \ |                       /                              ||                                            |
+|              X Candles-----X Cellars------ Old Wing----X East Wing                 ||                                            |
+|                                         / |         \                              ||                                            |
+|                                        /  |          \                             ||                                            |
+|                                       /   |           \                            ||                                            |
+|                            X Paper       - Detention   - Workshop                  ||                                            |
+|                                                                                    ||                                            |
+|                                                                                    ||                                            |
+|                                                                                    ||                                            |
+|                                                                                    ||                                            |
+|                                                                                    ||                                            |
+|                                                                                    ||                                            |
+|                                                                                    ||                                            |
++ @you oreach .open -shut Xlocked !staff --------------------------------------------++--------------------------------------------+
+ > The Quad                                                                                           arrows choose  Enter go  Esc
+===== map-moved 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch         [Art]           Sci           Games         After           Eve           Night
+--------------------------------------------==============..........................................................................
+--------------------------------------------##############..........................................................................
++ Greywater Academy -----------------------------------------------------------------++ The place ---------------------------------+
+|                                          o Science     o Languages                 ||o Fenwick dormitory  Main wing              |
+|                                           |           /                            ||1 corridor away                             |
+|                                           |          /                             ||hours class chapel lunch free after evening |
+|                                           |         /                              ||night                                       |
+|              o Dorm        o Art room!---o Classes!----o History                   ||doors Common room, The Quad                 |
+|               |         \               /           \                              ||here nobody you can see                     |
+|               |          \             /             \                             ||                                            |
+|               |           \           /               \                            ||                                            |
+|o Stacks      - Common rm---@ The Quad!   - Tuck shop   o Maths                     ||                                            |
+|           \             \ / |         \ /                                          |+--------------------------------------------+
+|            \             /  |          /                                           |+ Who is where ------------------------------+
+|             \           / \ |         / \                                          ||Ruddock  Art room                           |
+|X Head's      o Library     - Hall        o Gym!        X Loft                      ||Fenn  The grounds                           |
+|           \   |           / |         \             \ /                            ||Wick  Classroom corridor                    |
+|            \  |          /  |          \             /                             ||Bramley  The Quad                           |
+|             \ |         /   |           \           / \                            ||Gale  Gymnasium                             |
+|o Deputy------o Admin       X Greenroom   - Chapel------o Grounds!----o Car park    ||Hollis  Classroom corridor                  |
+|             / |                         /             / |                          ||Crouch  Gymnasium                           |
+|            /  |                        /             /  |                          ||Marchetti  The Quad                         |
+|           /   |                       /             /   |                          ||Lund  Library                               |
+|X Quarters    - Staffroom   X Tunnels------ Boathouse   - Shed                      ||Also: Admin to Classes, Quad to Grounds.    |
+|                         \   |                         /                            ||                                            |
+|                          \  |                        /                             ||                                            |
+|                           \ |                       /                              ||                                            |
+|              X Candles-----X Cellars------ Old Wing----X East Wing                 ||                                            |
+|                                         / |         \                              ||                                            |
+|                                        /  |          \                             ||                                            |
+|                                       /   |           \                            ||                                            |
+|                            X Paper       - Detention   - Workshop                  ||                                            |
+|                                                                                    ||                                            |
+|                                                                                    ||                                            |
+|                                                                                    ||                                            |
+|                                                                                    ||                                            |
+|                                                                                    ||                                            |
+|                                                                                    ||                                            |
+|                                                                                    ||                                            |
++ @you oreach .open -shut Xlocked !staff --------------------------------------------++--------------------------------------------+
+ > Fenwick dormitory                                                                                  arrows choose  Enter go  Esc
+===== schemes 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch         [Art]           Sci           Games         After           Eve           Night
+--------------------------------------------==============..........................................................................
+--------------------------------------------##############..........................................................................
++ Your schemes -----------------------------------------------++ The scheme -------------------------------------------------------+
+| 1 #1 Swap the sugar for salt - Mr. Pell [READY]             ||Your schemes. Mischief against authority and rivals: that is the   |
+| 2 Start a new scheme                                        ||game.                                                              |
+| b Back                                                      ||                                                                   |
+|                                                             ||Swap the sugar for salt                                            |
+|                                                             ||Every cup of tea in the staffroom, a surprise.                     |
+|                                                             ||scouting 0/0                                                       |
+|                                                             ||READY: press Enter to see it through                               |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
++-------------------------------------------------------------++-------------------------------------------------------------------+
+ > #1 Swap the sugar for salt - Mr. Pell [READY]                                                               up/down  Enter  Esc
+===== target 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch         [Art]           Sci           Games         After           Eve           Night
+--------------------------------------------==============..........................................................................
+--------------------------------------------##############..........................................................................
++ Aimed at ---------------------------------------------------++ The target -------------------------------------------------------+
+| 1 Dame Vane (staff)                                         ||Who or what is it aimed at? (Nobody is ever named by typing.)      |
+| 2 Mr. Marsh (staff)                                         ||                                                                   |
+| 3 Mr. Pell (staff)                                          ||Dame Vane                                                          |
+| 4 Ms. Orrin (staff)                                         ||a staff                                                            |
+| 5 Madame Thorne (staff)                                     ||Keeps every file in a cabinet she alone has the key to.            |
+| 6 Mr. Alder (staff)                                         ||wary of you ooo                                                    |
+| 7 Reverend Soames (staff)                                   ||                                                                   |
+| 8 Mrs. Tarn (staff)                                         ||                                                                   |
+| 9 Cordelia Wick (prefect)                                   ||                                                                   |
+| . More                                                      ||                                                                   |
+| b Back                                                      ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
++-------------------------------------------------------------++-------------------------------------------------------------------+
+ > Dame Vane (staff)                                                                                           up/down  Enter  Esc
+===== method 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch         [Art]           Sci           Games         After           Eve           Night
+--------------------------------------------==============..........................................................................
+--------------------------------------------##############..........................................................................
++ What will you do? ------------------------------------------++ The trick --------------------------------------------------------+
+| 1 Swap the sugar for salt                                   ||What will you do to Dame Vane?                                     |
+| 2 Forge a timetable change                                  ||                                                                   |
+| 3 Fill their car with rowing balls                          ||Swap the sugar for salt                                            |
+| 4 Plant a stink bomb                                        ||Every cup of tea in the staffroom, a surprise.                     |
+| 5 Rig the dining-hall tannoy                                ||hard   ############################=---------------------------- 20|
+| 6 Slip a headline into the paper                            ||legend ########=------------------------------------------------- 6|
+| b Back                                                      ||heat   ###########=---------------------------------------------- 6|
+|                                                             ||needs A tin of cooking salt                                        |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
++-------------------------------------------------------------++-------------------------------------------------------------------+
+ > Swap the sugar for salt                                                                                     up/down  Enter  Esc
+===== planner 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch         [Art]           Sci           Games         After           Eve           Night
+--------------------------------------------==============..........................................................................
+--------------------------------------------##############..........................................................................
++ Scheme #1 ------------------------------------------------++ The odds -----------------------------------------------------------+
+|target  Mr. Pell                                           ||>sneak  #########################=------------------------------  46%|
+|method  Swap the sugar for salt                            || act    #############################---------------------------  52%|
+|where   Staffroom +                                        || escape ##############################=-------------------------  54%|
+|twists  none                                               || traced  7% if it goes clean                                         |
+|getaway Slip away                                          ||why sneak is 46%:                                                    |
+|items   A tin of cooking salt +                            || +75 base                          -20 method                        |
+|when    Wed day 13, After school +                         ||  -8 2 watching                     -1 heat                          |
+|scout    0/0 +                                             ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           || READY  go when the time comes                                       |
++-----------------------------------------------------------++---------------------------------------------------------------------+
+ t Twists   y Getaway   d Set time   z Tear up   b Back
+ > Twists                                                                                            </> odds  up/down  Enter  Esc
+===== planner-odds 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch         [Art]           Sci           Games         After           Eve           Night
+--------------------------------------------==============..........................................................................
+--------------------------------------------##############..........................................................................
++ Scheme #1 ------------------------------------------------++ The odds -----------------------------------------------------------+
+|target  Mr. Pell                                           || sneak  #########################=------------------------------  46%|
+|method  Swap the sugar for salt                            ||>act    #############################---------------------------  52%|
+|where   Staffroom +                                        || escape ##############################=-------------------------  54%|
+|twists  none                                               || traced  7% if it goes clean                                         |
+|getaway Slip away                                          ||why act is 52%:                                                      |
+|items   A tin of cooking salt +                            || +75 base                           +6 skill: bluff                  |
+|when    Wed day 13, After school +                         || -20 method                         -8 2 watching                    |
+|scout    0/0 +                                             ||  -1 heat                                                            |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           || READY  go when the time comes                                       |
++-----------------------------------------------------------++---------------------------------------------------------------------+
+ t Twists   y Getaway   d Set time   z Tear up   b Back
+ > Twists                                                                                            </> odds  up/down  Enter  Esc
+===== twists 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch         [Art]           Sci           Games         After           Eve           Night
+--------------------------------------------==============..........................................................................
+--------------------------------------------##############..........................................................................
++ Twists -----------------------------------------------------++ The twist --------------------------------------------------------+
+| 1 [ ] With a decoy - Something to draw their eyes the oth~  ||Twists for #1 (up to 2). Each changes the odds, the legend and the |
+| 2 [ ] Leave a calling card - A small drawing of an owl. E~  ||heat.                                                              |
+| 3 [ ] With a gadget - A little mechanical help.             ||                                                                   |
+| 4 [ ] Twice in one go - Do it and then do it again.         ||With a decoy                                                       |
+| b Back                                                      ||Something to draw their eyes the other way.                        |
+|                                                             ||hard   -------------------------------------------------------- -12|
+|                                                             ||legend +0%  heat +2                                                |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
++-------------------------------------------------------------++-------------------------------------------------------------------+
+ > [ ] With a decoy - Something to draw their eyes the other way.                                              up/down  Enter  Esc
+===== getaway 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch         [Art]           Sci           Games         After           Eve           Night
+--------------------------------------------==============..........................................................................
+--------------------------------------------##############..........................................................................
++ Getaway ----------------------------------------------------++ The getaway ------------------------------------------------------+
+| 1 * Slip away - Walk, do not run.                           ||How do you get away from #1?                                       |
+| 2 A friend to cover for you - You were somewhere else, an~  ||                                                                   |
+| 3 Lie low - Spend the next period out of sight. Heat drop~  ||Slip away                                                          |
+| 4 Look the picture of innocence - Straight to the next le~  ||Walk, do not run.                                                  |
+| b Back                                                      ||escape +0  traced +0                                               |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
++-------------------------------------------------------------++-------------------------------------------------------------------+
+ > * Slip away - Walk, do not run.                                                                             up/down  Enter  Esc
+===== schedule 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch         [Art]           Sci           Games         After           Eve           Night
+--------------------------------------------==============..........................................................................
+--------------------------------------------##############..........................................................................
++ When? ------------------------------------------------------++ The time ---------------------------------------------------------+
+| 1 Wed (day 13), After school: after                         ||When? These are the periods where the place is open and the target |
+| 2 Mon (day 18), After school: after                         ||is where the trick needs them.                                     |
+| b Back                                                      ||                                                                   |
+|                                                             ||After school - after                                               |
+|                                                             ||the place is open                                                  |
+|                                                             ||scout it to learn who will be about                                |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
++-------------------------------------------------------------++-------------------------------------------------------------------+
+ > Wed (day 13), After school: after                                                                           up/down  Enter  Esc
+===== file 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch         [Art]           Sci           Games         After           Eve           Night
+--------------------------------------------==============..........................................................................
+--------------------------------------------##############..........................................................................
+ b Back
++ Pupil file ---------------------------------------++ Record -----------------------------++ Marks and skills --------------------+
+|OFFICE OF THE HEADMISTRESS                         ||#  3 Mr. Marsh writes you up. Two    ||Maths  ######################=----- 82|
+|ann  CONFIDENTIAL                                  ||     detentions.                     ||Scienc~#################----------- 61|
+|---------------------------------------------------||#  5 Privileges lost for five days:  ||Langua~#############=-------------- 47|
+| 1. day 5  caught red-handed                      *||     no tuck shop, no allowance.     ||History#########################=-- 90|
+| 2. day 7  caught red-handed                     **||.  8 A letter goes home. Your        ||Art    ##########=----------------- 38|
+| 3. day 9  a poor mark on Friday's report         *||     allowance is halved and your    ||Games  ###################=-------- 70|
+| 4. day 11 out of bounds after lights-out        **||. 10 You are to report to the        ||                                      |
+|                                                   ||     headmistress first thing        ||Sneak ooooo  Bluff *oooo  Tinker ooooo|
+|                                                   ||# 12 expulsion at term end           ||                                      |
+|                                                   ||                                     ||                                      |
+|                                                   ||pulled off 3  caught 2  traced 1  big||                                      |
+|                                                   ||cool 48  notoriety 4  heat 9         ||                                      |
+|                                                   ||known as Smooth talker               ||                                      |
+|                                                   ||                                     ||                                      |
+|                                                   ||                                     ||                                      |
+|                                                   ||                                     ||                                      |
+|                                                   ||                                     ||                                      |
+|                                                   ||                                     |+--------------------------------------+
+|                                                   ||                                     |+ Standing ----------------------------+
+|                                                   ||                                     ||Rowing Eight ----------O----------- +3|
+|                                                   ||                                     ||Ink Society  ----------+O--------- +10|
+|                                                   ||                                     ||Bench        ----------O----------- -4|
+|                                                   ||                                     ||Lamplighters ----------O----------- +0|
+|                                                   ||                                     ||Workshop     ----------O----------- +0|
+|                                                   ||                                     ||Strays       ----------O----------- +0|
+|                                                   ||                                     ||                                      |
+|                                                   ||                                     ||watching you  nobody yet              |
+|                                                   ||                                     ||                                      |
+|                                                   ||                                     ||                                      |
+|                                                   ||                                     ||                                      |
+|                                                   ||                                     ||                                      |
+|                                                   ||                                     ||                                      |
+|---------------------------------------------------||                                     ||                                      |
+|thick  ###################=------------------- 6/12||                                     ||                                      |
+| DETENTION  1 owed                                 ||                                     ||                                      |
++---------------------------------------------------++-------------------------------------++--------------------------------------+
+ > Back                                                                                                        up/down  Enter  Esc
+===== file-marks 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch         [Art]           Sci           Games         After           Eve           Night
+--------------------------------------------==============..........................................................................
+--------------------------------------------##############..........................................................................
+ b Back
++ Pupil file ---------------------------------------++ Record -----------------------------++ Marks and skills --------------------+
+|OFFICE OF THE HEADMISTRESS                         ||#  3 Mr. Marsh writes you up. Two    ||Maths  ######################=----- 82|
+|ann  CONFIDENTIAL                                  ||     detentions.                     ||Scienc~#################----------- 61|
+|---------------------------------------------------||#  5 Privileges lost for five days:  ||Langua~#############=-------------- 47|
+| 1. day 5  caught red-handed                      *||     no tuck shop, no allowance.     ||History#########################=-- 90|
+| 2. day 7  caught red-handed                     **||.  8 A letter goes home. Your        ||Art    ##########=----------------- 38|
+| 3. day 9  a poor mark on Friday's report         *||     allowance is halved and your    ||Games  ###################=-------- 70|
+| 4. day 11 out of bounds after lights-out        **||. 10 You are to report to the        ||                                      |
+|                                                   ||     headmistress first thing        ||Sneak ooooo  Bluff *oooo  Tinker ooooo|
+|                                                   ||# 12 expulsion at term end           ||                                      |
+|                                                   ||                                     ||                                      |
+|                                                   ||pulled off 3  caught 2  traced 1  big||                                      |
+|                                                   ||cool 48  notoriety 4  heat 9         ||                                      |
+|                                                   ||known as Smooth talker               ||                                      |
+|                                                   ||                                     ||                                      |
+|                                                   ||                                     ||                                      |
+|                                                   ||                                     ||                                      |
+|                                                   ||                                     ||                                      |
+|                                                   ||                                     |+--------------------------------------+
+|                                                   ||                                     |+ Standing ----------------------------+
+|                                                   ||                                     ||Rowing Eight ----------O----------- +3|
+|                                                   ||                                     ||Ink Society  ----------+O--------- +10|
+|                                                   ||                                     ||Bench        ----------O----------- -4|
+|                                                   ||                                     ||Lamplighters ----------O----------- +0|
+|                                                   ||                                     ||Workshop     ----------O----------- +0|
+|                                                   ||                                     ||Strays       ----------O----------- +0|
+|                                                   ||                                     ||                                      |
+|                                                   ||                                     ||watching you  nobody yet              |
+|                                                   ||                                     ||                                      |
+|                                                   ||                                     ||                                      |
+|                                                   ||                                     ||                                      |
+|                                                   ||                                     ||                                      |
+|                                                   ||                                     ||                                      |
+|---------------------------------------------------||                                     ||                                      |
+|thick  ###################=------------------- 6/12||                                     ||                                      |
+| DETENTION  1 owed                                 ||                                     ||                                      |
++---------------------------------------------------++-------------------------------------++--------------------------------------+
+ > Back                                                                                                        up/down  Enter  Esc
+===== clubs 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch         [Art]           Sci           Games         After           Eve           Night
+--------------------------------------------==============..........................................................................
+--------------------------------------------##############..........................................................................
++ Clubs (up to 2) ----------------------------------------------------------++ The club -------------------------------------------+
+|>1 Chess Circle    **oo Knight                               M t W t F S S ||Quiet, ruthless, and housed among the library's green|
+|   Players         closed                                    M T w T f S S ||lamps.                                               |
+|   Rowing Club     closed                                    m T w T f S S ||meets Library, advisor Mr. Wystan Alder              |
+|   School Paper    closed                                    M t W t F s S ||merit  ########################=---------------- 6/10|
+|   Robotics Club   closed                                    M t W t F s S ||                                                     |
+|   Candle Society  closed                                    M T W T F S S ||                                                     |
+|  b Back                                                                   ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
++---------------------------------------------------------------------------++-----------------------------------------------------+
+ > The Chess Circle                                                                                            up/down  Enter  Esc
+===== journal 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch         [Art]           Sci           Games         After           Eve           Night
+--------------------------------------------==============..........................................................................
+--------------------------------------------##############..........................................................................
+ b Back
++ Stories --------------------------------------------------++ Friends and rivals -------------------------------------------------+
+|The prefects' ledger ooooo                                 ||Brandt ----------------------'--+--'-------O-------------- +45 friend|
+| Tilly saw Tobias Bramley hide a book. Ask her what she    ||Pell   ----------------------'--+--'-O-------------------- +20 friend|
+| saw.                                                      ||Marsh  ---------------------O'--+--'----------------------- -18 rival|
+|The light in the East~ ooooo                               ||                                                                     |
+| Mr. Fenn has seen a light in the closed East Wing. Ask    ||                                                                     |
+| him about it.                                             ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
++-----------------------------------------------------------++---------------------------------------------------------------------+
+ > Back                                                                                                        up/down  Enter  Esc
+===== paper 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch         [Art]           Sci           Games         After           Eve           Night
+--------------------------------------------==============..........................................................................
+--------------------------------------------##############..........................................................................
++----------------------------------------------------------------------------------------------------------------------------------+
+|                                    THE GREYWATER GAZETTE   term 1, day 13   price: one rumour                                    |
++----------------------------------------------------------------------------------------------------------------------------------+
++ Headlines -------------------------------------------------------------++ In force and in whispers ------------------------------+
+|day 10 Fire drill muddle: nobody knows whose idea it was.               ||* The deputy head has been moved to the Old Wing (1 day)|
+|day 7  Deputy head moved to the Old Wing, say sources close to the Old  ||                                                        |
+|       Wing.                                                            ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
++------------------------------------------------------------------------++--------------------------------------------------------+
+ b Back   h Hall of legend   y Yearbook
+ > Back                                                                                                        up/down  Enter  Esc
+===== hall 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch         [Art]           Sci           Games         After           Eve           Night
+--------------------------------------------==============..........................................................................
+--------------------------------------------##############..........................................................................
+ b Back
+                     + Hall of legend ------------------------------------------------------------------------+
+                     | 1 Wick          ################################################################# 74   |
+                     | 2 Marguerite    #####################################################=----------- 61   |
+                     | 3 Pip           #################################=------------------------------- 38   |
+                     | 4 Rafe          ###################=--------------------------------------------- 22   |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     |                                                                                        |
+                     +----------------------------------------------------------------------------------------+
+ > Back to the paper                                                                                           up/down  Enter  Esc
+===== yearbook 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch         [Art]           Sci           Games         After           Eve           Night
+--------------------------------------------==============..........................................................................
+--------------------------------------------##############..........................................................................
+ b Back
++ The yearbook -------------------------------------------------------------++ Your terms -----------------------------------------+
+| TERM 2  Sol                                                               ||This is your first term.                             |
+|        71 legend, 1 changes to the school                                 ||                                                     |
+| TERM 1  Wick                                                              ||                                                     |
+|        88 legend, 3 changes to the school                                 ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
+|                                                                           ||                                                     |
++---------------------------------------------------------------------------++-----------------------------------------------------+
+ > Back to the paper                                                                                           up/down  Enter  Esc
+===== study 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths         [Lunch]         Art            Sci           Games         After           Eve           Night
+-----------------------------===============........................................................................................
+-----------------------------###############........................................................................................
++ Study which subject? -------------------------------------++ Grades -------------------------------------------------------------+
+| 1 Maths (now 82)                                          ||Maths  ################################################=---------- 82|
+| 2 Sciences (now 61)                                       ||Scienc~###################################=----------------------- 61|
+| 3 Languages (now 47)                                      ||Langua~###########################=------------------------------- 47|
+| 4 History (now 90)                                        ||History#####################################################------ 90|
+| 5 Art (now 38)                                            ||Art    ######################=------------------------------------ 38|
+| 6 Games (now 70)                                          ||Games  #########################################=----------------- 70|
+| b Back                                                    ||                                                                     |
+|                                                           ||Honour roll at 75. Under 40 goes on the file on Friday.              |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
+|                                                           ||                                                                     |
++-----------------------------------------------------------++---------------------------------------------------------------------+
+ > Maths (now 82)                                                                                              up/down  Enter  Esc
+===== shop 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths         [Lunch]         Art            Sci           Games         After           Eve           Night
+-----------------------------===============........................................................................................
+-----------------------------###############........................................................................................
++ For sale --------------------------------------------------------------++ Your pockets ------------------------------------------+
+| 1 A tin of cooking salt - 2 cash                                       ||cash 18                                                 |
+| b Back                                                                 || 1x A tin of cooking salt                               |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
+|                                                                        ||                                                        |
++------------------------------------------------------------------------++--------------------------------------------------------+
+ > A tin of cooking salt - 2 cash                                                                              up/down  Enter  Esc
+===== lesson 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist         [Maths]         Lunch          Art            Sci           Games         After           Eve           Night
+--------------===============.......................................................................................................
+--------------###############.......................................................................................................
+ S Maths  puzzle 1 of 3  ooo  0 right  Mr. Hobart Pell
++----------------------------------------------------------------------------------------------------------------------------------+
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                             . : - = #                                                            |
+|                                                             2 4 8 ? ?                                                            |
+|                                                            + * / - = pi                                                          |
+|                                                                                                                                  |
+|                                                      Continue the sequence:                                                      |
+|                                                        6, 9, 13, 18, 24, ?                                                       |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
++----------------------------------------------------------------------------------------------------------------------------------+
++ Your answer ---------------------------------------------------------------------------------------------------------------------+
+| 1 > 29                                                                                                                           |
+| 2   33                                                                                                                           |
+| 3   31                                                                                                                           |
+| 4   32                                                                                                                           |
+| x   walk out of the lesson                                                                                                       |
+|                                                                                                                                  |
++----------------------------------------------------------------------------------------------------------------------------------+
+ Mr. Pell chalks a row of numbers on the board and says one of them is
+ missing. Continue each row.
+ > 29                                                                                                          up/down  Enter  Esc
+===== lesson-sciences 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch          Art           [Sci]          Games         After           Eve           Night
+----------------------------------------------------------===============...........................................................
+----------------------------------------------------------###############...........................................................
+ % Sciences  puzzle 1 of 3  ooo  0 right  Ms. Ines Orrin
++----------------------------------------------------------------------------------------------------------------------------------+
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                             \______/                                                             |
+|                                                             (g) ^ (g)                                                            |
+|                                                            -----------                                                           |
+|                                                                                                                                  |
+|                                                     Flasks: A 5g, B 9g, C 2g.                                                    |
+|                                             Which two on the scale read exactly 11g?                                             |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
++----------------------------------------------------------------------------------------------------------------------------------+
++ Your answer ---------------------------------------------------------------------------------------------------------------------+
+| 1 > B and C                                                                                                                      |
+| 2   A and C                                                                                                                      |
+| 3   A and B                                                                                                                      |
+| x   walk out of the lesson                                                                                                       |
+|                                                                                                                                  |
++----------------------------------------------------------------------------------------------------------------------------------+
+ Ms. Orrin sets out flasks on the bench scale. Find the pair that makes
+ the reading.
+ > B and C                                                                                                     up/down  Enter  Esc
+===== lesson-history 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+    [Hist]         Maths          Lunch          Art            Sci           Games         After           Eve           Night
+==============......................................................................................................................
+##############......................................................................................................................
+ H History  puzzle 1 of 3  ooo  0 right  Mr. Wystan Alder
++----------------------------------------------------------------------------------------------------------------------------------+
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                           |--o---o--o-|                                                          |
+|                                                          1100  1500 1800                                                         |
+|                                                                                                                                  |
+|                                                  Which of these happened latest?                                                 |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
++----------------------------------------------------------------------------------------------------------------------------------+
++ Your answer ---------------------------------------------------------------------------------------------------------------------+
+| 1 > The school paper first printed                                                                                               |
+| 2   Dame Vane became headmistress                                                                                                |
+| 3   The founding of the Academy                                                                                                  |
+| x   walk out of the lesson                                                                                                       |
+|                                                                                                                                  |
++----------------------------------------------------------------------------------------------------------------------------------+
+ Mr. Alder asks which of three events came first or last, and wants no
+ fidgeting.
+ > The school paper first printed                                                                              up/down  Enter  Esc
+===== talk 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 21/42
+    [Hist]         Maths          Lunch          Art            Sci           Games         After           Eve           Night
+==============......................................................................................................................
+##############......................................................................................................................
++ Who do you want a word with? -------------------------------++ The person -------------------------------------------------------+
+| 1 Mr. Marsh has noticed you                                 ||Who do you want a word with?                                       |
+| b Back                                                      ||                                                                   |
+|                                                             ||Mr. Quillon Marsh                                                  |
+|                                                             ||Deputy head                                                        |
+|                                                             ||Patrols the quad with a clipboard and a theory about you.          |
+|                                                             ||bond   --------------------O-'-+-'----------------------- -18 rival|
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
+|                                                             ||                                                                   |
++-------------------------------------------------------------++-------------------------------------------------------------------+
+ > Mr. Marsh has noticed you                                                                                   up/down  Enter  Esc
+===== scene 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 21/42
+    [Hist]         Maths          Lunch          Art            Sci           Games         After           Eve           Night
+==============......................................................................................................................
+##############......................................................................................................................
++----------------++ Mr. Marsh has noticed you -------------------------------------------------------------------------------------+
+|     .-""-.     ||Mr. Quillon Marsh                                                                                               |
+|    / ____ \    ||Mr. Marsh taps the clipboard against his leg. 'Your name appears more often than I would like.'                 |
+|    | o  o |    ||                                                                                                                |
+|    |  --  |    ||bond   ---------------------------------------O--'----+----'------------------------------------------ -18 rival|
+|     \____/     ||                                                                                                                |
+|    /|    |\    ||Patrols the quad with a clipboard and a theory about you.                                                       |
+|Marsh           ||wary of you **o                                                                                                 |
+|Deputy head     ||                                                                                                                |
+|RIVAL           ||                                                                                                                |
+|                ||                                                                                                                |
+|                ||                                                                                                                |
+|                ||                                                                                                                |
+|                ||                                                                                                                |
+|                ||                                                                                                                |
+|                ||                                                                                                                |
+|                ||                                                                                                                |
+|                ||                                                                                                                |
+|                ||                                                                                                                |
+|                ||                                                                                                                |
+|                ||                                                                                                                |
+|                ||                                                                                                                |
+|                ||                                                                                                                |
+|                ||                                                                                                                |
+|                ||                                                                                                                |
+|                ||                                                                                                                |
+|                ||                                                                                                                |
+|                ||                                                                                                                |
+|                ||                                                                                                                |
+|                ||                                                                                                                |
+|                ||                                                                                                                |
++----------------++----------------------------------------------------------------------------------------------------------------+
++ You say -------------------------------------------------------------------------------------------------------------------------+
+| 1 > Apologise, smoothly                                                                                                          |
+| x   Remind him of your fine grades  needs grades at least 70                                                                     |
+| 3   Stare at the floor                                                                                                           |
+| x   excuse yourself                                                                                                              |
++----------------------------------------------------------------------------------------------------------------------------------+
+ > Apologise, smoothly                                                                                         up/down  Enter  Esc
+===== run 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch          Art            Sci           Games        [After]          Eve           Night
+----------------------------------------------------------------------------------------==============..............................
+----------------------------------------------------------------------------------------##############..............................
+ #1  Swap the sugar for salt -> Mr. Pell
++ 1 SNEAK ---------------------------------++ 2 ACT -----------------------------------++ 3 ESCAPE --------------------------------+
+|>  46%  NOW                               ||   52%  ahead                             ||   54%  ahead                             |
++------------------------------------------++------------------------------------------++------------------------------------------+
++ Nerve ---------------------------------------++ Spend nerve ---------------------------------------------------------------------+
+|# # # # # #                                   || 0 spend 0 #############################=----------------------------------  46%  |
+|6 of 6 left                                   || 1 spend 1 ##################################=-----------------------------  54%  |
+|slips none yet                                || 2 spend 2 #######################################=------------------------  62%  |
+|heat 9                                        || 3 spend 3 ############################################=-------------------  70%  |
+|                                              ||base +75, method -20, 2 watching -8, heat -1                                      |
+|                                              ||                                                                                  |
++----------------------------------------------++----------------------------------------------------------------------------------+
++ What happened -------------------------------------------------------------------------------------------------------------------+
+|You are in position in the Staffroom. The corridor is quiet. For now.                                                             |
+|2 staff or prefects about. Each phase can go wrong in its own way; nerve buys the odds.                                           |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
++----------------------------------------------------------------------------------------------------------------------------------+
+ > Go, spending 0 nerve                                                                                        up/down  Enter  Esc
+===== run-act 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
+     Hist          Maths          Lunch          Art            Sci           Games        [After]          Eve           Night
+----------------------------------------------------------------------------------------==============..............................
+----------------------------------------------------------------------------------------##############..............................
+ #1  Swap the sugar for salt -> Mr. Pell
++ 1 SNEAK ---------------------------------++ 2 ACT -----------------------------------++ 3 ESCAPE --------------------------------+
+|+ clear                                   ||>  44%  NOW                               ||   54%  ahead                             |
++------------------------------------------++------------------------------------------++------------------------------------------+
++ Nerve ---------------------------------------++ Spend nerve ---------------------------------------------------------------------+
+|# # # # # .                                   || 0 spend 0 ############################=-----------------------------------  44%  |
+|5 of 6 left                                   || 1 spend 1 #################################=------------------------------  52%  |
+|slips x 1                                     || 2 spend 2 ######################################=-------------------------  60%  |
+|heat 9                                        || 3 spend 3 ###########################################=--------------------  68%  |
+|                                              ||base +75, skill: bluff +6, method -20, 2 watching -8, heat -1, earlier slips -8   |
+|                                              ||                                                                                  |
++----------------------------------------------++----------------------------------------------------------------------------------+
++ What happened -------------------------------------------------------------------------------------------------------------------+
+|You are in position in the Staffroom. The corridor is quiet. For now.                                                             |
+|2 staff or prefects about. Each phase can go wrong in its own way; nerve buys the odds.                                           |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
++----------------------------------------------------------------------------------------------------------------------------------+
+ > Go, spending 0 nerve                                                                                        up/down  Enter  Esc
+===== over 132x43 ascii
+ # GREYWATER ACADEMY  - ann                                                                                  term 1 - Wed day 13/42
++ End of term ----------------------------------------------------------++ Hall of legend -----------------------------------------+
+|The term is over.                                                      || 1 Wick          ################################## 74   |
+|                                                                       || 2 Marguerite    ############################------ 61   |
+|SCRAPED THROUGH                                                        || 3 Pip           #################=---------------- 38   |
+|A middling term. The school barely noticed you.                        || 4 Rafe          ##########------------------------ 22   |
+|                                                                       ||                                                         |
+|legend 26   file 6   average grade 64                                  ||                                                         |
+|                                                                       ||                                                         |
+|A new term starts when the school year turns over.                     ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
++-----------------------------------------------------------------------++---------------------------------------------------------+
+ > Leave                                                                                                            up/down  Enter
+

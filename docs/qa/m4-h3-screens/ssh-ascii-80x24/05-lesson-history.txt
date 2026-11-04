@@ -1,0 +1,24 @@
+  +------------------------------- russh-bbs --------------------------------+
+  |Hallpass                                                                  |
+  |                                                                          |
+  | # GREYWATER ACADEMY  - founder                     term 1 - Wed day 1/42 |
+  | [Hist]  Maths   Lunch    Art      Sci    Games   After    Eve     Night  |
+  |========..................................................................|
+  | H History  puzzle 1 of 3  ooo  0 right  Mr. Wystan Alder                 |
+  |+------------------------------------------------------------------------+|
+  ||                                                                        ||
+  ||                              |--o---o--o-|                             ||
+  ||                     Which of these happened latest?                    ||
+  ||                                                                        ||
+  |+------------------------------------------------------------------------+|
+  |+ Your answer -----------------------------------------------------------+|
+  || 1 > Dame Vane became headmistress                                      ||
+  || 2   The chapel bell was cast                                           ||
+  || 3   The founding of the Academy                                        ||
+  || x   walk out of the lesson                                             ||
+  ||                                                                        ||
+  |+------------------------------------------------------------------------+|
+  | Mr. Alder asks which of three events came first or last, and wants no    |
+  | fidgeting.                                                               |
+  | > Dame Vane became headmistress                     up/down  Enter  Esc  |
+  +--------------------------------------------------------------------------+

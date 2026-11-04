@@ -1,0 +1,24 @@
+  ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+  │Hallpass                                                                  │
+  │                                                                          │
+  │ ♜ GREYWATER ACADEMY  · founder                     term 1 · Wed day 1/42 │
+  │  Hist   Maths  ▐Lunch▌   Art      Sci    Games   After    Eve     Night  │
+  │━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄│
+  │╭ Twists ──────────────────────────────╮╭ The twist ─────────────────────╮│
+  ││ 1 [ ] With a decoy - Something to ~  ││With a decoy                    ││
+  ││ 2 [ ] Timed for the bell - It all ~  ││Something to draw their eyes the││
+  ││ 3 [ ] Leave a calling card - A sma~  ││other way.                      ││
+  ││ 4 [ ] With a gadget - A little mec~  ││hard   ░░░░░░░░░░░░░░░░░░░░░ -12││
+  ││ b Back                               ││legend +0%  heat +2             ││
+  ││                                      ││                                ││
+  ││                                      ││                                ││
+  ││                                      ││                                ││
+  ││                                      ││                                ││
+  ││                                      ││                                ││
+  ││                                      ││                                ││
+  ││                                      ││                                ││
+  ││                                      ││                                ││
+  ││                                      ││                                ││
+  │╰──────────────────────────────────────╯╰────────────────────────────────╯│
+  │ » [ ] With a decoy - Something to draw their eyes ~ up/down  Enter  Esc  │
+  └──────────────────────────────────────────────────────────────────────────┘

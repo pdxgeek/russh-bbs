@@ -252,7 +252,9 @@ fn the_screen_fits_80_by_24_in_every_mode_and_reads_the_same_over_telnet() {
         assert_eq!(a.look_around(&ssh), b.look_around(&telnet));
         a.take_effects();
         b.take_effects();
-        seen.push(screen.join("\n"));
+        // The words of the screen are read from the look-around: the picture is drawn with
+        // widgets and tested in tests/ui.rs.
+        seen.push(a.look_around(&ssh).join("\n"));
     }
     let all = seen.join("\n");
     for needle in [

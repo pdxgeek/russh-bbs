@@ -1,0 +1,24 @@
+  +------------------------------- russh-bbs --------------------------------+
+  |Hallpass                                                                  |
+  |                                                                          |
+  | # GREYWATER ACADEMY  - founder                     term 1 - Wed day 1/42 |
+  |  Hist   Maths  [Lunch]   Art      Sci    Games   After    Eve     Night  |
+  |----------------========..................................................|
+  |+ Classroom corridor ----------------++ You -----------------------------+|
+  ||Main wing                           ||heat   ------------------------- 0||
+  ||Brown doors, a noticeboard and a    ||file   ---------------------- 0/12||
+  ||fire alarm behind glass.            ||nerve  ****** 6/6                 ||
+  ||Nobody else is here.                ||legend 0   $ cash 12              ||
+  ||Now: lunch                          ||                                  ||
+  ||Next: Art in the Art room           ||                                  ||
+  ||The Quad: Marsh, Wick, Marchetti, Lu||                                  ||
+  ||                                    ||                                  ||
+  ||                                    ||                                  ||
+  ||                                    ||                                  ||
+  |+------------------------------------++----------------------------------+|
+  | g Go   l Loiter   r Rest   p Schemes   c Clubs   f File   j Journal      |
+  | n Paper   q Leave                                                        |
+  | Not quite. It was 40.                                                    |
+  | Maths: 1 of 3 right, grade -1.                                           |
+  | > Go somewhere                                      up/down  Enter  Esc  |
+  +--------------------------------------------------------------------------+

@@ -1,0 +1,43 @@
+
+                            ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+                            │Hallpass                                                                  │
+                            │                                                                          │
+                            │ ♜ GREYWATER ACADEMY  · founder                     term 1 · Wed day 1/42 │
+                            │  Hist   Maths  ▐Lunch▌   Art      Sci    Games   After    Eve     Night  │
+                            │━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄│
+                            │╭ Scheme #1 ────────────────────────╮╭ The odds ─────────────────────────╮│
+                            ││target  Dame Vane                  ││▸sneak  █████████▍░░░░░░░░░░░░  43%││
+                            ││method  Swap the sugar for salt    ││ act    ████████████░░░░░░░░░░  55%││
+                            ││where   Staffroom ✗                ││ escape ████████████░░░░░░░░░░  55%││
+                            ││twists  none                       ││ traced  4% if it goes clean       ││
+                            ││getaway Slip away                  ││why sneak is 43%:                  ││
+                            ││items   A tin of cooking salt ✗    ││ +75 base                          ││
+                            ││when    not set ✗                  ││ -20 method                        ││
+                            ││scout    0/0 ✓                     ││ -12 3 watching                    ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││ NOT READY  needs items, a time    ││
+                            │╰───────────────────────────────────╯╰───────────────────────────────────╯│
+                            │ t Twists   y Getaway   d Set time   z Tear up   b Back                   │
+                            │ Plan #1: Swap the sugar for salt - Dame Vane.                            │
+                            │ » Twists                                  </> odds  up/down  Enter  Esc  │
+                            └──────────────────────────────────────────────────────────────────────────┘
+

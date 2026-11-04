@@ -1,0 +1,43 @@
+
+                            ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+                            │Hallpass                                                                  │
+                            │                                                                          │
+                            │ ♜ GREYWATER ACADEMY  · founder                     term 1 · Wed day 1/42 │
+                            │  Hist   Maths  ▐Lunch▌   Art      Sci    Games   After    Eve     Night  │
+                            │━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄│
+                            │╭ Clubs (up to 2) ───────────────────────────────────────────────────────╮│
+                            ││   Chess Circle    closed                                 M T W T F S S ││
+                            ││▸  Players         closed                                 M T W T F S S ││
+                            ││   Rowing Club     closed                                 M T W T F S S ││
+                            ││   School Paper    closed                                 M T W T F S S ││
+                            ││   Robotics Club   closed                                 M T W T F S S ││
+                            ││   Candle Society  closed                                 M T W T F S S ││
+                            ││  b Back                                                                ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            ││                                                                        ││
+                            │╰────────────────────────────────────────────────────────────────────────╯│
+                            │╭ The club ──────────────────────────────────────────────────────────────╮│
+                            ││The winter play, the green room, and a great deal of weeping.           ││
+                            ││meets Great Hall, advisor Madame Delphine Thorne                        ││
+                            ││Sign up at Great Hall.                                                  ││
+                            │╰────────────────────────────────────────────────────────────────────────╯│
+                            │ » The Players                                       up/down  Enter  Esc  │
+                            └──────────────────────────────────────────────────────────────────────────┘
+
