@@ -19,15 +19,15 @@ use std::fmt;
 use std::str::FromStr;
 use std::sync::Arc;
 
-use ratatui::buffer::Buffer;
-use ratatui::layout::Rect;
 use russh_bbs_core::limits::{Day, ManualClock};
 use russh_bbs_core::store::UnixSeconds;
 
-use crate::canvas::{Canvas, DoorPalette};
+use crate::canvas::DoorPalette;
+use crate::color::ColorDepth;
 use crate::door::{Door, DoorEnv, Flow, Save, Start};
 use crate::host::Driver;
 use crate::key::DoorKey;
+use crate::surface::{Composite, DoorSurface};
 
 /// Everything needed to rerun a visit.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -213,16 +213,15 @@ pub fn run_checked(
 /// what is on screen.
 #[must_use]
 pub fn draw_to_text(driver: &Driver, env: &DoorEnv, cols: u16, rows: u16) -> Vec<String> {
-    let area = Rect::new(0, 0, cols, rows);
-    let mut buf = Buffer::empty(area);
-    let palette = DoorPalette::mono();
-    driver.render(&mut Canvas::new(&mut buf, area, &palette), env);
-    (0..rows)
-        .map(|y| {
-            let row: String = (0..cols).map(|x| buf[(x, y)].symbol().to_owned()).collect();
-            row.trim_end().to_owned()
-        })
-        .collect()
+    let mut surface = DoorSurface::new(cols, rows, DoorPalette::mono());
+    surface.draw(|canvas| driver.render(canvas, env));
+    // The same cleaning the board does, so a test sees what a member would.
+    surface
+        .composite(Composite::new(
+            ColorDepth::Mono,
+            env.tier == crate::Tier::Ascii,
+        ))
+        .rows_text()
 }
 
 /// Records the keys of a live (or test) session into a [`ReplayLog`].

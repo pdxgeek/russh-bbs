@@ -8,7 +8,8 @@
 //! - a shared world (total tosses, the day count) changed by sessions and by the daily tick;
 //! - content as data ([`content`]): flavor lines in an embedded TOML table with a schema test;
 //! - a player-typed nickname that goes through the framework's reserved-name rule;
-//! - a text-first screen that doubles as its look-around view.
+//! - a ratatui screen (a table, a gauge, a sparkline and a braille chart) in a large window and
+//!   a text screen in a small one, the text doubling as the look-around view.
 //!
 //! The crate depends on the framework and nothing else, and `tests/sandbox.rs` proves it
 //! contains no filesystem, network, process, thread, clock or printing API.
@@ -19,6 +20,7 @@ pub mod content;
 pub mod engine;
 pub mod save;
 mod session;
+pub use session::{PANELS_MIN_COLS, PANELS_MIN_ROWS};
 pub mod world;
 
 use std::sync::Arc;
