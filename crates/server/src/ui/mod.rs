@@ -14,12 +14,16 @@
 pub(crate) mod chrome;
 pub(crate) mod classic;
 pub(crate) mod compact;
+pub mod depth;
 pub mod editor;
+pub(crate) mod frame;
 pub(crate) mod keys;
 pub(crate) mod layout;
 pub(crate) mod lightbar;
 pub(crate) mod pager;
+pub(crate) mod popup;
 pub mod strings;
+pub(crate) mod table;
 pub mod theme;
 
 use std::path::Path;

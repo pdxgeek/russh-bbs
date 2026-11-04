@@ -298,6 +298,7 @@ impl<D: Backend> Connection<D> {
         };
         // The board is in low-security mode whenever this transport runs (D27).
         screen.set_low_security(true);
+        screen.set_client_terminal(link.terminal.as_deref(), None);
         let inbox = Arc::new(Inbox::default());
         let _close = CloseInbox(Arc::clone(&inbox));
         let abort = Arc::new(Abort::default());
@@ -382,6 +383,8 @@ pub(super) struct Link {
     pub(super) pending: VecDeque<crate::ssh::terminal::Key>,
     /// The client's window, clamped.
     pub(super) window: PtySize,
+    /// The terminal type the client reported, if it did (RFC 1091); picks the colour depth.
+    pub(super) terminal: Option<String>,
     budget: SessionBudget,
     reported_dropped: u64,
     write_stall: Duration,
@@ -405,6 +408,7 @@ impl Link {
             keys: KeyParser::new(),
             pending: VecDeque::new(),
             window,
+            terminal: None,
             budget: SessionBudget::new(limits, std::time::Instant::now()),
             reported_dropped: 0,
             write_stall: limits.write_stall,
@@ -447,6 +451,9 @@ impl Link {
         if let Some((cols, rows)) = decoded.window {
             self.window = clamp_window(cols, rows);
             self.session.set_size(self.window);
+        }
+        if self.terminal.is_none() {
+            self.terminal.clone_from(&decoded.terminal);
         }
         Some(decoded)
     }

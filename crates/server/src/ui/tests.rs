@@ -236,6 +236,7 @@ fn draw_with(
                     look: Look::of(&TerminalSettings::default().with_tier(tier)),
                     tier,
                     markers,
+                    clock: Some("UTC 12:00"),
                     mail_over_ssh_only: false,
                 },
             );
@@ -278,7 +279,9 @@ fn the_main_menu_lists_its_items_with_hotkeys_and_the_footer() {
         "[s] Terminal settings",
         "[l] Log off",
         "[a] Files  (not built yet)",
-        "?: help   Esc: back   Ctrl-C: log off",
+        "? help",
+        "Esc back",
+        "Ctrl-C log off",
     ] {
         assert!(out.contains(expected), "{expected:?} missing:\n{out}");
     }
@@ -394,8 +397,8 @@ fn the_status_row_shows_the_markers_in_the_reserved_style_in_every_tier() {
     }
 }
 
-/// D93: a member screen over ssh draws no `SERVER-READABLE` row and reserves none, so content
-/// gets the last row back.
+/// D93 (amended by D109): a member screen over ssh draws no `SERVER-READABLE` marker. The last
+/// row is now the status bar with the keys, and its marker cell stays empty.
 #[test]
 fn a_member_screen_has_no_status_row_and_no_server_readable() {
     for tier in Tier::ALL {
@@ -406,9 +409,10 @@ fn a_member_screen_has_no_status_row_and_no_server_readable() {
             assert!(!all.contains("SERVER-READABLE"), "{tier:?} {size:?}\n{all}");
             assert!(!all.contains("can read what you do"), "{all}");
             if size == (80, 24) {
-                // The box reaches the last row: nothing is reserved under it.
+                // UI-1: the last row is the status bar. It carries the keys, and its marker
+                // cell is empty because no marker applies on a member screen over ssh.
                 let last = row(&buffer, size.1 - 1);
-                assert!(last.trim_start().starts_with(['└', '+']), "{last:?}");
+                assert!(last.trim_start().starts_with("? help"), "{last:?}");
             }
             assert!(
                 (0..size.0).all(|x| (0..size.1).all(|y| !is_chrome_cell(&buffer, x, y))),

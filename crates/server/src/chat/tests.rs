@@ -645,7 +645,7 @@ mod drawing {
     use crate::chat::lines;
     use crate::settings::Look;
     use crate::ui::Ui;
-    use crate::ui::classic::{ContentScreen, MENU_MARKERS, render_content};
+    use crate::ui::classic::{ContentScreen, MENU_MARKERS, render_content_bare};
 
     fn room(n: i64, name: &str) -> Room {
         Room {
@@ -664,7 +664,7 @@ mod drawing {
                 let width = usize::from(frame.area().width.min(crate::settings::MAX_WIDTH))
                     .saturating_sub(2);
                 let height = crate::chat::box_height(frame.area().height);
-                render_content(
+                render_content_bare(
                     frame,
                     ContentScreen {
                         strings: ui.strings(),
@@ -672,6 +672,7 @@ mod drawing {
                         look,
                         tier,
                         markers: &MENU_MARKERS,
+                        clock: None,
                     },
                 );
             })
@@ -822,7 +823,7 @@ fn coming_into_a_room_says_which_room_you_are_in() {
 
     use crate::settings::Look;
     use crate::ui::Ui;
-    use crate::ui::classic::{ContentScreen, MENU_MARKERS, render_content};
+    use crate::ui::classic::{ContentScreen, MENU_MARKERS, render_content_bare};
 
     let mut screen = ChatScreen::open();
     screen.deliver(ChatResponse::Joined {
@@ -841,7 +842,7 @@ fn coming_into_a_room_says_which_room_you_are_in() {
     let mut terminal = Terminal::new(TestBackend::new(80, 24)).unwrap();
     terminal
         .draw(|frame| {
-            render_content(
+            render_content_bare(
                 frame,
                 ContentScreen {
                     strings: ui.strings(),
@@ -849,6 +850,7 @@ fn coming_into_a_room_says_which_room_you_are_in() {
                     look,
                     tier: Tier::Ascii,
                     markers: &MENU_MARKERS,
+                    clock: None,
                 },
             );
         })

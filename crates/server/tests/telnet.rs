@@ -57,6 +57,7 @@ const SB: u8 = 250;
 const SE: u8 = 240;
 const OPT_ECHO: u8 = 1;
 const OPT_SGA: u8 = 3;
+const OPT_TTYPE: u8 = 24;
 const OPT_NAWS: u8 = 31;
 
 /// What the footer paints on the last row: the move, the line clear, the marker in its reserved
@@ -402,6 +403,7 @@ async fn the_server_offers_only_what_a_character_mode_screen_needs() {
         [
             (DO, OPT_SGA),
             (DO, OPT_NAWS),
+            (DO, OPT_TTYPE),
             (WILL, OPT_ECHO),
             (WILL, OPT_SGA)
         ]

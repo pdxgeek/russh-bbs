@@ -96,7 +96,7 @@ pub(crate) fn render(frame: &mut Frame<'_>, screen: &MailScreen, ctx: &DrawCtx<'
         return;
     }
     let width = usize::from(area.width.min(settings::MAX_WIDTH)).saturating_sub(2);
-    classic::render_content(
+    classic::render_content_bare(
         frame,
         ContentScreen {
             strings: ctx.strings,
@@ -104,6 +104,7 @@ pub(crate) fn render(frame: &mut Frame<'_>, screen: &MailScreen, ctx: &DrawCtx<'
             look: ctx.look,
             tier: ctx.tier,
             markers: &MENU_MARKERS,
+            clock: None,
         },
     );
 }
