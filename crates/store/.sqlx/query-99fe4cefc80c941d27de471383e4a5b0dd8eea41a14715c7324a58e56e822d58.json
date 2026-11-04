@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE login_code SET redeemed_at = ?1\n               WHERE code_hash = ?2 AND kind = ?3 AND redeemed_at IS NULL AND voided_at IS NULL\n                 AND expires_at > ?1\n                 AND EXISTS (SELECT 1 FROM accounts a\n                             WHERE a.id = login_code.account_id AND a.state = 'active')\n               RETURNING account_id AS \"account_id!\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "account_id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "99fe4cefc80c941d27de471383e4a5b0dd8eea41a14715c7324a58e56e822d58"
+}

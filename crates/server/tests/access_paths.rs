@@ -66,6 +66,11 @@ use tokio::time::timeout;
 /// create-account form gives its one refusal and makes no account, each on the very next
 /// attempt.
 ///
+/// The keys permissions (FIX-M3-11) have their path tests at the end of this file: without
+/// `keys.manage` My keys is not offered and a screen already open closes on the next key; without
+/// `keys.redeem` the waiting room refuses a valid code with the one sentence and the code is not
+/// used up; without `keys.recover` the staff screen is not offered. Each is back on the next action.
+///
 /// The community permissions (M3-J) have their path tests at the end of this file: posting a
 /// one-liner or a wall line, voting, making a poll, reading, and moderating each refuse and write
 /// nothing once the permission is taken away, on the very next key.
@@ -93,6 +98,9 @@ const WIRED: &[Permission] = &[
     Permission::MailRead,
     Permission::MailSend,
     Permission::MailReport,
+    Permission::KeysManage,
+    Permission::KeysRedeem,
+    Permission::KeysRecover,
     Permission::FilesList,
     Permission::LimitsEdit,
     Permission::ChatJoin,
@@ -1239,5 +1247,147 @@ async fn moderating_needs_community_moderate_and_is_audited_and_last_callers_lis
         1
     );
     let _ = &mut alice_channel;
+    rig.server.shutdown().await;
+}
+
+#[tokio::test]
+async fn my_keys_needs_keys_manage_and_a_removal_closes_the_open_screen() {
+    let rig = Rig::start().await;
+    let (_alice, _session, mut channel) = member_at_menu(&rig, "alice").await;
+
+    // Held: Members offers My keys, the screen opens, and a code is made.
+    send(&mut channel, "u").await;
+    assert!(full(&mut channel).await.contains("[k] My keys"));
+    send(&mut channel, "k").await;
+    assert!(full(&mut channel).await.contains("[l] Link a new machine"));
+    send(&mut channel, "l").await;
+    assert!(full(&mut channel).await.contains("Code:"));
+    send(&mut channel, "x").await;
+    assert_eq!(count(&rig, "login_code").await, 1);
+
+    // Taken away while the screen is open: the next key closes it, says why, and makes no code.
+    let taken = rig.revoke(Permission::KeysManage).await;
+    let first = send(&mut channel, "l").await;
+    let screen = format!("{first} {}", full(&mut channel).await);
+    assert!(
+        screen.contains("You are not allowed to do that."),
+        "{screen}"
+    );
+    assert_eq!(count(&rig, "login_code").await, 1, "no code was made");
+    send(&mut channel, "u").await;
+    let menu = full(&mut channel).await;
+    assert!(!menu.contains("[k] My keys"), "{menu}");
+    send(&mut channel, "k").await;
+    assert!(
+        !full(&mut channel)
+            .await
+            .contains("Keys sign you in without a password")
+    );
+
+    // Put back: it works on the next action.
+    rig.restore(&taken, Permission::KeysManage).await;
+    send(&mut channel, "x").await;
+    assert!(full(&mut channel).await.contains("[k] My keys"));
+    send(&mut channel, "k").await;
+    send(&mut channel, "l").await;
+    assert!(full(&mut channel).await.contains("Code:"));
+    assert_eq!(count(&rig, "login_code").await, 2);
+    rig.server.shutdown().await;
+}
+
+#[tokio::test]
+async fn redeeming_a_code_needs_keys_redeem_and_a_refusal_uses_nothing_up() {
+    let rig = Rig::start().await;
+    let (alice, _session, mut channel) = member_at_menu(&rig, "alice").await;
+    send(&mut channel, "u").await;
+    send(&mut channel, "k").await;
+    send(&mut channel, "l").await;
+    let shown = full(&mut channel).await;
+    // `words` turns the dash into a space, so the two halves are put back together.
+    let code = shown
+        .split("Code: ")
+        .nth(1)
+        .map(|rest| {
+            rest.split_whitespace()
+                .take(2)
+                .collect::<Vec<_>>()
+                .join("-")
+        })
+        .unwrap();
+
+    let machine = |rig: &Rig| {
+        let addr = rig.addr();
+        async move {
+            let key = new_client_key();
+            let session = login(addr, "new", &key).await;
+            let mut channel = common::open_shell(&session, 80, 24).await;
+            words(&mut channel).await;
+            (session, channel, key)
+        }
+    };
+    // `waiting` holds `keys.redeem`; take it away and a valid code is refused like a bad one.
+    sqlx::query(
+        "DELETE FROM role_permission WHERE role = 'waiting' AND permission = 'keys.redeem'",
+    )
+    .execute(&rig.db)
+    .await
+    .unwrap();
+    let (_s, mut visitor, _key) = machine(&rig).await;
+    send(&mut visitor, "d").await;
+    send(&mut visitor, &format!("{code}\r")).await;
+    let refused = full(&mut visitor).await;
+    assert!(refused.contains("That code did not work."), "{refused}");
+    assert_eq!(count(&rig, "account_keys").await, 1);
+    assert_eq!(
+        count(&rig, "login_code WHERE redeemed_at IS NOT NULL").await,
+        0
+    );
+
+    // Put back: the same code works on the next attempt, so the refusal used nothing up.
+    sqlx::query("INSERT INTO role_permission (role, permission) VALUES ('waiting', 'keys.redeem')")
+        .execute(&rig.db)
+        .await
+        .unwrap();
+    let (_s, mut visitor, _key) = machine(&rig).await;
+    send(&mut visitor, "d").await;
+    send(&mut visitor, &format!("{code}\r")).await;
+    let joined = full(&mut visitor).await;
+    assert!(joined.contains("Signed in as alice"), "{joined}");
+    assert_eq!(count(&rig, "account_keys").await, 2);
+    let _ = alice;
+    rig.server.shutdown().await;
+}
+
+#[tokio::test]
+async fn issuing_a_recovery_code_needs_keys_recover_and_a_removal_makes_none() {
+    let rig = Rig::start().await;
+    let key = new_client_key();
+    let (_session, mut channel) = founder_at_menu(&rig, &key).await;
+    let (_alice, _alice_session, _alice_channel) = member_at_menu(&rig, "alice").await;
+
+    send(&mut channel, "o").await;
+    assert!(full(&mut channel).await.contains("[r] Recovery code"));
+    send(&mut channel, "r").await;
+    send(&mut channel, "alice\r").await;
+    assert!(full(&mut channel).await.contains("Code:"));
+    assert_eq!(count(&rig, "login_code").await, 1);
+    send(&mut channel, "x").await;
+
+    // Taken away while the screen is open: the next key closes it and no code is made.
+    let taken = rig.revoke(Permission::KeysRecover).await;
+    let first = send(&mut channel, "a").await;
+    let screen = format!("{first} {}", full(&mut channel).await);
+    assert!(
+        screen.contains("You are not allowed to do that."),
+        "{screen}"
+    );
+    assert_eq!(count(&rig, "login_code").await, 1, "no code was made");
+    send(&mut channel, "o").await;
+    assert!(!full(&mut channel).await.contains("[r] Recovery code"));
+
+    // Put back: it works on the next action.
+    rig.restore(&taken, Permission::KeysRecover).await;
+    send(&mut channel, "x").await;
+    assert!(full(&mut channel).await.contains("[r] Recovery code"));
     rig.server.shutdown().await;
 }

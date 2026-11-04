@@ -3,6 +3,7 @@
 
 use russh_bbs_core::access::Fingerprint;
 use russh_bbs_core::audit::AuditEvent;
+use russh_bbs_core::keys::NoticeKind;
 use russh_bbs_core::passwords::{LoginRecord, PasswordStore};
 use russh_bbs_core::store::{AccountId, StoreError};
 use sqlx::error::ErrorKind;
@@ -63,11 +64,13 @@ impl PasswordStore for PostgresStore {
     ) -> Result<(), StoreError> {
         let id = account.as_raw();
         let fingerprint = fingerprint.as_str();
+        let now = self.clock().now().as_raw();
         let mut tx = self.pool().begin().await.map_err(backend)?;
         sqlx::query!(
-            "INSERT INTO account_keys (fingerprint, account_id) VALUES ($1, $2)",
+            "INSERT INTO account_keys (fingerprint, account_id, created_at) VALUES ($1, $2, $3)",
             fingerprint,
             id,
+            now,
         )
         .execute(&mut *tx)
         .await
@@ -76,6 +79,18 @@ impl PasswordStore for PostgresStore {
             Some(ErrorKind::ForeignKeyViolation) => StoreError::AccountNotFound,
             _ => backend(error),
         })?;
+        // The member is told at the next sign-in (FIX-M3-11).
+        let (kind, at) = (NoticeKind::KeyLinked.as_str(), now);
+        sqlx::query!(
+            "INSERT INTO key_notice (account_id, kind, fingerprint, at) VALUES ($1, $2, $3, $4)",
+            id,
+            kind,
+            fingerprint,
+            at,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(backend)?;
         self.audit_in(&mut tx, audit).await?;
         tx.commit().await.map_err(backend)
     }

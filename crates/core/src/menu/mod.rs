@@ -73,6 +73,11 @@ pub enum Action {
     EditOwnProfile,
     /// Open the sysop's queue of invite requests (`members.approve`, M2-E).
     SysopQueue,
+    /// Open My keys: list, add and remove keys and make a device-link code (`keys.manage`,
+    /// FIX-M3-11).
+    MyKeys,
+    /// Open the staff screen that issues a one-time recovery code (`keys.recover`, FIX-M3-11).
+    RecoveryCode,
     /// Open the vouch screen: pending requests a member can speak for (`members.vouch`, M2-E).
     VouchQueue,
     /// Open the one-liners (`community.view`, M3-J).
@@ -103,6 +108,8 @@ impl Action {
             Self::MemberList | Self::OwnProfile => Some(Permission::MembersView),
             Self::EditOwnProfile => Some(Permission::AccountEditProfile),
             Self::SysopQueue => Some(Permission::MembersApprove),
+            Self::RecoveryCode => Some(Permission::KeysRecover),
+            Self::MyKeys => Some(Permission::KeysManage),
             Self::VouchQueue => Some(Permission::MembersVouch),
             Self::Oneliners | Self::GraffitiWall | Self::LastCallers | Self::Polls => {
                 Some(Permission::CommunityView)

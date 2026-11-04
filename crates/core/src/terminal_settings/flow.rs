@@ -19,6 +19,10 @@ use crate::community::{
 };
 use crate::icons::Tier;
 use crate::invites::{InviteOutcome, InviteRequest, InviteScreen};
+use crate::keys::{
+    KeysKey, KeysScreen, RecoveryScreen, Request as KeysRequest, Response as KeysResponse,
+    Step as KeysStep,
+};
 use crate::menu::{Action, MenuKey, MenuOutcome, MenuPage, MenuSession, main_tree};
 use crate::passwords::{
     LoginMethod, PasswordKey, PasswordScreen, Request as PasswordRequest,
@@ -92,6 +96,10 @@ enum Page {
     Settings,
     /// The password screen, opened from the settings (M3-D).
     Password(Box<PasswordScreen>),
+    /// My keys, opened from the settings (FIX-M3-11).
+    Keys(Box<KeysScreen>),
+    /// The staff recovery-code screen, under Sysop tools (FIX-M3-11).
+    Recovery(Box<RecoveryScreen>),
     EditWidth(String),
     EditHeight(String),
     /// An invite screen (create, list, tree). Not `PartialEq`: it may hold a one-time code.
@@ -123,6 +131,10 @@ pub struct MemberFlow {
     /// True where mail is offered. Off where mail is withheld: the welcome then says
     /// "Mail is available over ssh." D93 retired the D78 mail-at-rest sentence everywhere.
     mail_note: bool,
+    /// Lines about key changes since the last sign-in, shown on the login screen (FIX-M3-11).
+    key_notices: Vec<String>,
+    /// Whether the session is over telnet, which has no key to bind (the code page says so).
+    telnet: bool,
 }
 
 impl MemberFlow {
@@ -149,6 +161,8 @@ impl MemberFlow {
             themes: Vec::new(),
             login: LoginMethod::Key,
             mail_note: true,
+            key_notices: Vec::new(),
+            telnet: false,
         }
     }
 
@@ -163,6 +177,22 @@ impl MemberFlow {
     #[must_use]
     pub const fn signed_in_with_password(mut self) -> Self {
         self.login = LoginMethod::Password;
+        self
+    }
+
+    /// Show these lines on the login screen: what changed in the account's keys since the last
+    /// sign-in (FIX-M3-11, [`crate::keys::notice_lines`]). Empty shows nothing.
+    #[must_use]
+    pub fn with_key_notices(mut self, lines: Vec<String>) -> Self {
+        self.key_notices = lines;
+        self
+    }
+
+    /// Mark the session as over telnet, so a device-link code made here says it can be used from
+    /// an ssh connection only.
+    #[must_use]
+    pub const fn over_telnet(mut self) -> Self {
+        self.telnet = true;
         self
     }
 
@@ -242,6 +272,18 @@ impl MemberFlow {
             });
             return MemberEffect::Stay;
         }
+        if (matches!(self.page, Page::Keys(_)) && !self.access.allows(Permission::KeysManage))
+            || (matches!(self.page, Page::Recovery(_))
+                && !self.access.allows(Permission::KeysRecover))
+        {
+            // Same rule: the permission went away since the screen opened.
+            self.page = Page::Home;
+            self.notice = Some(Notice {
+                kind: NoticeKind::Error,
+                text: strings::MEMBERS_NOT_PERMITTED,
+            });
+            return MemberEffect::Stay;
+        }
         if let Page::Members(screen) = &self.page
             && !screen.still_permitted(&self.access)
         {
@@ -291,6 +333,7 @@ impl MemberFlow {
             Page::Community(_) => self.community_input(input),
             Page::Settings => self.settings_input(input),
             Page::Password(_) => self.password_input(input),
+            Page::Keys(_) | Page::Recovery(_) => self.keys_input(input),
             Page::EditWidth(_) | Page::EditHeight(_) => self.edit_input(input),
             Page::Invites(_) => self.invite_input(input),
             Page::Logoff => MemberEffect::Disconnect,
@@ -311,6 +354,8 @@ impl MemberFlow {
             | Page::Community(_)
             | Page::Invites(_)
             | Page::Password(_)
+            | Page::Keys(_)
+            | Page::Recovery(_)
             | Page::Logoff => false,
         }
     }
@@ -388,6 +433,14 @@ impl MemberFlow {
                 )));
                 MemberEffect::Stay
             }
+            MenuOutcome::Action(Action::MyKeys) => {
+                self.page = Page::Keys(Box::new(KeysScreen::open(self.telnet)));
+                MemberEffect::Stay
+            }
+            MenuOutcome::Action(Action::RecoveryCode) => {
+                self.page = Page::Recovery(Box::new(RecoveryScreen::open()));
+                MemberEffect::Stay
+            }
             MenuOutcome::Action(Action::VouchQueue) => {
                 self.page = Page::Queue(Box::new(QueueScreen::open(
                     QueueMode::Vouch,
@@ -437,6 +490,8 @@ impl MemberFlow {
             | Action::Chat
             | Action::LogOff
             | Action::SysopQueue
+            | Action::RecoveryCode
+            | Action::MyKeys
             | Action::VouchQueue
             | Action::InviteCreate
             | Action::InviteList
@@ -745,6 +800,57 @@ impl MemberFlow {
         }
     }
 
+    fn keys_input(&mut self, input: MemberInput) -> MemberEffect {
+        let key = match input {
+            MemberInput::Char(c) => KeysKey::Char(c),
+            MemberInput::Enter => KeysKey::Enter,
+            MemberInput::Backspace => KeysKey::Backspace,
+            MemberInput::Escape => KeysKey::Escape,
+            MemberInput::Up | MemberInput::Down | MemberInput::Quit => return MemberEffect::Stay,
+        };
+        let step = match &mut self.page {
+            Page::Keys(screen) => screen.press(key),
+            Page::Recovery(screen) => screen.press(key),
+            _ => return MemberEffect::Stay,
+        };
+        self.after_keys(step);
+        MemberEffect::Stay
+    }
+
+    fn after_keys(&mut self, step: KeysStep) {
+        match step {
+            KeysStep::Stay => {}
+            KeysStep::Leave => self.page = Page::Home,
+            KeysStep::Denied => {
+                self.page = Page::Home;
+                self.notice = Some(Notice {
+                    kind: NoticeKind::Error,
+                    text: strings::MEMBERS_NOT_PERMITTED,
+                });
+            }
+        }
+    }
+
+    /// The keys request the My keys or recovery screen is waiting on, once. The front end runs
+    /// it with `keys::execute` and gives the answer to [`MemberFlow::deliver_keys`].
+    pub fn take_keys_request(&mut self) -> Option<KeysRequest> {
+        match &mut self.page {
+            Page::Keys(screen) => screen.take_request(),
+            Page::Recovery(screen) => screen.take_request(),
+            _ => None,
+        }
+    }
+
+    /// Hand the answer of a keys request to the screen.
+    pub fn deliver_keys(&mut self, response: KeysResponse) {
+        let step = match &mut self.page {
+            Page::Keys(screen) => screen.deliver(response),
+            Page::Recovery(screen) => screen.deliver(response),
+            _ => return,
+        };
+        self.after_keys(step);
+    }
+
     /// The password request the screen is waiting on, once. The front end runs it with
     /// `passwords::execute` and gives the answer to [`MemberFlow::deliver_password`].
     pub fn take_password_request(&mut self) -> Option<PasswordRequest> {
@@ -864,6 +970,8 @@ impl MemberFlow {
             Page::EditHeight(typed) => edit_view(&mut view, strings::FIELD_HEIGHT, typed),
             Page::Invites(screen) => return screen.view(),
             Page::Password(screen) => return screen.view(),
+            Page::Keys(screen) => return screen.view(),
+            Page::Recovery(screen) => return screen.view(),
             Page::Logoff => self.logoff_view(&mut view, words),
         }
         view
@@ -889,6 +997,10 @@ impl MemberFlow {
             view.body.push(String::new());
             view.body
                 .push(words.text(strings::MAIL_SSH_ONLY).to_owned());
+        }
+        if !self.key_notices.is_empty() {
+            view.body.push(String::new());
+            view.body.extend(self.key_notices.iter().cloned());
         }
         view.footer = strings::LOGIN_FOOTER;
     }

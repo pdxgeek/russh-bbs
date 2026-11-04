@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO account_keys (fingerprint, account_id, created_at) VALUES (?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "88ddf79d94fcf5366a5ee2f195387ae435df36ccc75c7b8137ef246d921a92a7"
+}

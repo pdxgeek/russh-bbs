@@ -97,6 +97,7 @@ pub(crate) async fn waiting_holds_exactly_the_waiting_room_permissions<H: Harnes
         Permission::InviteRedeem,
         Permission::MembershipApply,
         Permission::MembershipOpen,
+        Permission::KeysRedeem,
     ]
     .into();
     assert_eq!(set, want);
@@ -259,6 +260,7 @@ pub(crate) async fn unknown_and_inactive_accounts_get_the_waiting_snapshot<H: Ha
                     | Permission::InviteRedeem
                     | Permission::MembershipApply
                     | Permission::MembershipOpen
+                    | Permission::KeysRedeem
             );
             assert_eq!(
                 snapshot.resolve(permission, None).is_granted(),

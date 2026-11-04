@@ -4,7 +4,8 @@ use super::*;
 use crate::access::{Permission, PermissionCheck, Slug, Snapshot, Via};
 use crate::store::AccountId;
 
-/// A session holding the `member` stand-in: everything that exists except `members.approve`.
+/// A session holding the `member` stand-in: everything that exists except `members.approve`
+/// and `keys.recover` (the two things Sysop tools needs).
 fn member() -> Snapshot {
     Snapshot::from_role(
         Some(AccountId::from_raw(1)),
@@ -14,7 +15,7 @@ fn member() -> Snapshot {
         Permission::ALL
             .iter()
             .copied()
-            .filter(|p| *p != Permission::MembersApprove),
+            .filter(|p| !matches!(p, Permission::MembersApprove | Permission::KeysRecover)),
     )
 }
 

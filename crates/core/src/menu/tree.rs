@@ -73,11 +73,18 @@ static MAIN_ITEMS: [Item; 10] = [
     item('l', "menu.main.item.logoff", Target::Action(Action::LogOff)),
 ];
 
-static SYSOP_ITEMS: [Item; 1] = [item(
-    'q',
-    "menu.sysop.item.queue",
-    Target::Action(Action::SysopQueue),
-)];
+static SYSOP_ITEMS: [Item; 2] = [
+    item(
+        'q',
+        "menu.sysop.item.queue",
+        Target::Action(Action::SysopQueue),
+    ),
+    item(
+        'r',
+        "menu.sysop.item.recovery",
+        Target::Action(Action::RecoveryCode),
+    ),
+];
 
 static INVITES_ITEMS: [Item; 3] = [
     item(
@@ -97,7 +104,7 @@ static INVITES_ITEMS: [Item; 3] = [
     ),
 ];
 
-static MEMBERS_ITEMS: [Item; 4] = [
+static MEMBERS_ITEMS: [Item; 5] = [
     item(
         'l',
         "menu.members.item.list",
@@ -117,6 +124,11 @@ static MEMBERS_ITEMS: [Item; 4] = [
         'v',
         "menu.members.item.vouch",
         Target::Action(Action::VouchQueue),
+    ),
+    item(
+        'k',
+        "menu.members.item.keys",
+        Target::Action(Action::MyKeys),
     ),
 ];
 

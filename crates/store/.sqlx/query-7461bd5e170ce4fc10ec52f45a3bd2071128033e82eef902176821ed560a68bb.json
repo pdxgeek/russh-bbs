@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE login_code SET voided_at = $1\n             WHERE account_id = $2 AND kind = $3 AND redeemed_at IS NULL AND voided_at IS NULL\n               AND expires_at > $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7461bd5e170ce4fc10ec52f45a3bd2071128033e82eef902176821ed560a68bb"
+}

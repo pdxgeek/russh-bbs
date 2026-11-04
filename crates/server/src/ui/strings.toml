@@ -80,6 +80,7 @@ title = "Sysop tools"
 
 [menu.sysop.item]
 queue = "Invite requests"
+recovery = "Recovery code"
 
 [menu.members]
 title = "Members"
@@ -88,6 +89,7 @@ title = "Members"
 list = "Member list"
 profile = "My profile"
 edit = "Edit my profile"
+keys = "My keys"
 vouch = "Vouch for a request"
 
 [members.list]

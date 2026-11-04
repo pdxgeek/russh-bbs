@@ -12,6 +12,7 @@ pub mod forums;
 pub mod founder;
 pub mod icons;
 pub mod invites;
+pub mod keys;
 pub mod limits;
 pub mod mail;
 pub mod menu;

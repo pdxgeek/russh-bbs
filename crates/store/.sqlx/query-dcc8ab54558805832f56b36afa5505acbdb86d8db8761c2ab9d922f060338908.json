@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO account_password (account_id, hash) VALUES ($1, $2)\n             ON CONFLICT (account_id) DO UPDATE SET\n                 hash = excluded.hash, updated_at = extract(epoch FROM now())::bigint",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "dcc8ab54558805832f56b36afa5505acbdb86d8db8761c2ab9d922f060338908"
+}

@@ -50,6 +50,15 @@ pub enum Permission {
     /// `account.set_password`.
     #[strum(serialize = "account.set_password")]
     AccountSetPassword,
+    /// `keys.manage`.
+    #[strum(serialize = "keys.manage")]
+    KeysManage,
+    /// `keys.redeem`.
+    #[strum(serialize = "keys.redeem")]
+    KeysRedeem,
+    /// `keys.recover`.
+    #[strum(serialize = "keys.recover")]
+    KeysRecover,
     /// `members.view`.
     #[strum(serialize = "members.view")]
     MembersView,

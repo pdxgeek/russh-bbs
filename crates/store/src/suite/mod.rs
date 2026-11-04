@@ -18,6 +18,7 @@ pub(crate) mod feeds;
 pub(crate) mod forums;
 pub(crate) mod founder;
 pub(crate) mod invites;
+pub(crate) mod keys;
 pub(crate) mod limits;
 pub(crate) mod mail;
 pub(crate) mod password_accounts;
@@ -40,6 +41,7 @@ use russh_bbs_core::feeds::FeedStore;
 use russh_bbs_core::forums::ForumStore;
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::invites::InviteStore;
+use russh_bbs_core::keys::KeyStore;
 use russh_bbs_core::limits::LimitStore;
 use russh_bbs_core::mail::MailStore;
 use russh_bbs_core::passwords::PasswordStore;
@@ -56,6 +58,7 @@ pub(crate) trait TestStore:
     AccountStore
     + AccountStateStore
     + InviteStore
+    + KeyStore
     + AccessStore
     + AuditStore
     + CommunityStore
@@ -87,6 +90,7 @@ impl<T> TestStore for T where
     T: AccountStore
         + AccountStateStore
         + InviteStore
+        + KeyStore
         + AccessStore
         + AuditStore
         + CommunityStore
@@ -175,7 +179,7 @@ macro_rules! shared_suite {
             #[allow(unused_imports)]
             use super::*;
             use $crate::suite::{
-                access, access_edit, accounts, audit, chat, community, credits, drafts, feeds, forums, founder, invites, limits,
+                access, access_edit, accounts, audit, chat, community, credits, drafts, feeds, forums, founder, invites, keys, limits,
                 mail, password_accounts, passwords, profiles,
                 queue, registration, scheduler, terminal_settings,
             };
@@ -322,6 +326,23 @@ macro_rules! shared_suite {
                 password_accounts::a_visitor_with_a_key_gets_the_key_and_the_password_on_every_path,
                 password_accounts::the_founder_can_be_claimed_with_a_password_with_or_without_a_key,
                 password_accounts::a_key_is_linked_once_audited_and_a_taken_key_changes_nothing,
+                keys::keys_are_listed_added_and_removed_with_audit_rows_and_notices,
+                keys::the_last_way_in_is_never_removed,
+                keys::two_removals_racing_for_the_last_two_keys_cannot_both_succeed,
+                keys::a_key_that_has_an_account_cannot_be_added_and_nothing_is_written,
+                keys::a_link_code_binds_a_key_once_and_expires_to_the_second,
+                keys::a_code_is_used_once_when_two_redeem_it_at_the_same_time,
+                keys::the_hourly_limit_holds_and_a_newer_code_voids_the_last,
+                keys::a_recovery_code_binds_a_key_and_replaces_the_password_in_one_step,
+                keys::a_recovery_for_an_expired_or_inactive_account_is_refused,
+                keys::rank_follows_the_roles,
+                keys::key_use_is_remembered_and_a_linked_key_is_told,
+                keys::a_key_change_never_lands_without_its_audit_row,
+                keys::only_the_hash_of_a_code_is_stored_and_nothing_secret_is_audited,
+                keys::the_roles_hold_the_key_permissions_the_docs_say,
+                keys::deleting_an_account_deletes_its_codes_and_notices,
+                keys::keys_and_codes_survive_a_reopen,
+                keys::a_broken_store_errors_instead_of_pretending_there_is_nothing,
                 invites::a_created_invite_is_stored_hashed_bound_to_the_inviter_and_audited,
                 invites::redeeming_makes_an_active_member_with_the_inviter_recorded,
                 invites::a_code_works_once,

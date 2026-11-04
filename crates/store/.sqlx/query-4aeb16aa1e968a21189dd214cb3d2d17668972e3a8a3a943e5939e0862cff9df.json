@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT count(*) AS \"n!: i64\", min(created_at) AS \"oldest?: i64\"\n                   FROM login_code WHERE account_id = ? AND kind = ? AND created_at > ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "n!: i64",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "oldest?: i64",
+        "ordinal": 1,
+        "type_info": "Null"
+      }
+    ],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "4aeb16aa1e968a21189dd214cb3d2d17668972e3a8a3a943e5939e0862cff9df"
+}

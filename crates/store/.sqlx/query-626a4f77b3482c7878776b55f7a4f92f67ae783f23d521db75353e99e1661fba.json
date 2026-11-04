@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO login_code (kind, code_hash, account_id, issued_by, created_at, expires_at)\n             VALUES (?, ?, ?, ?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": []
+  },
+  "hash": "626a4f77b3482c7878776b55f7a4f92f67ae783f23d521db75353e99e1661fba"
+}

@@ -54,13 +54,17 @@ The notice is the one thing a stranger can read about the cap (D2 asks for it). 
 
 Every join form (redeem, request, apply, create an account) asks for a password and its repeat, over ssh as over telnet, and the founder claim asks for one too. A visitor with an SSH key is bound to the key and the password; one with no key (`ssh new@host` with no key offered, or telnet) to the password alone. The SSH user name picks the path: `new` is the waiting room (any key or none), `claim` the founder claim, any other name a sign-in. A visitor with a key also sees "I already have an account" (`e`): a handle and password that bind this key to that account. `docs/decisions.md` D96 has the rules and what each refusal says.
 
+## Keys, linking and recovery (FIX-M3-11, D97)
+
+A visitor with an SSH key who already has an account has three ways to add that key, all in the waiting room: **I already have an account** (handle and password, D96), **Link this device** (a one-time code made on a signed-in session) and **Recovery code** (a one-time code from staff, with a new password). They are in [accounts.md](accounts.md), which also tells staff to confirm the person's identity outside the board before issuing a recovery code. A visitor with no key (telnet, or ssh with no key offered) is shown none of the three that bind a key.
+
 ## Over telnet: password accounts (FIX-M3-10, D94, D95)
 
 A telnet client has no key, so the same waiting room has one difference: a visitor types `new` at the `login:` prompt, and every form that makes or asks for an account (redeem an invite, request an invite, apply, create an account) also asks for **a password and the same password again** (12 to 128 printable ASCII characters, D81). Nothing else about the room changes: the modes, the menu, the words, the permissions, the limits and the no-leak rule are the ssh room's, built by the same function.
 
 - **Redeem and `open`** make an `active` account at once, bound to the password and to no key (`account_password`, no `account_keys` row), in the same transaction and with the same audit rows as the key path. The new member carries on in the same session as a plain member and can log in again with handle and password.
 - **Request and apply** queue a request exactly as for a key, but it holds the **argon2id hash** of the chosen password (`invite_request.password_hash`, migration 0020) instead of relying on a key. The queue's one-request-per-identity rule, its rate limits and the denial cooldown use a stand-in identity derived from the handle (`password_identity`), so two requests for one handle (or a lookalike) are one. Approval makes an `active` account with `invited_by` = the approver and moves the hash to `account_password`; denial and expiry delete it. The fixed answer says "your password is kept only as a salted hash" and how to find out: log in again later with the handle and password. Nobody is notified.
-- The password and the invite code cross the wire in clear (the `UNENCRYPTED` marker is on every screen). A password account cannot clear its password (it has no key to fall back on). A member may later add an SSH key over ssh (FIX-M3-11).
+- The password and the invite code cross the wire in clear (the `UNENCRYPTED` marker is on every screen). A password account cannot clear its password (it has no key to fall back on). A member may later add an SSH key over ssh: paste it under Members, My keys, or link a machine (see [accounts.md](accounts.md), FIX-M3-11).
 - Tests: `tests/telnet.rs` over a raw TCP telnet client, the shared store suite (`password_accounts`) on SQLite and Postgres 16 (plain and TLS-required), and a real `telnet` client.
 
 ## What is stored

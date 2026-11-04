@@ -103,6 +103,30 @@ pub enum Action {
     /// (D94 (8), D96). The actor is the account, the target the key's fingerprint.
     #[strum(serialize = "key.linked")]
     KeyLinked,
+    /// A member pasted a key into My keys (FIX-M3-11, D97). The actor is the account, the target
+    /// the key's fingerprint.
+    #[strum(serialize = "key.added")]
+    KeyAdded,
+    /// A member removed a key in My keys (FIX-M3-11). The actor is the account, the target the
+    /// key's fingerprint.
+    #[strum(serialize = "key.removed")]
+    KeyRemoved,
+    /// A signed-in member made a device-link code (FIX-M3-11). The target is the account; the
+    /// code is never written.
+    #[strum(serialize = "device_code.issued")]
+    DeviceCodeIssued,
+    /// A device-link code bound a key to the account in the waiting room (FIX-M3-11). The actor
+    /// and the target are the account's; the note names the key's fingerprint.
+    #[strum(serialize = "device_code.redeemed")]
+    DeviceCodeRedeemed,
+    /// Staff made a recovery code for a member (FIX-M3-11). The actor is the staff member, the
+    /// target the account; the code is never written.
+    #[strum(serialize = "recovery_code.issued")]
+    RecoveryCodeIssued,
+    /// A recovery code bound a key and set a new password in the waiting room (FIX-M3-11). The
+    /// actor and the target are the account.
+    #[strum(serialize = "recovery_code.redeemed")]
+    RecoveryCodeRedeemed,
     /// Staff removed a one-liner or a graffiti wall line (M3-J, D86). The target is the author.
     #[strum(serialize = "community.entry_removed")]
     CommunityEntryRemoved,

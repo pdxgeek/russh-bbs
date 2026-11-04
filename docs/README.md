@@ -19,6 +19,7 @@ Status of the project: M0, M1, M2 and M3 are merged. M1's QA gate passed except 
 | One-liners, graffiti wall, last callers, polls | [community.md](community.md) |
 | The sysop queue (request an invite, approve, deny, vouch) | [queue.md](queue.md) |
 | Registration modes `invite`, `apply`, `open`; the daily cap | [registration.md](registration.md) |
+| Keys, linking a new machine, staff recovery codes | [accounts.md](accounts.md) |
 | Configuration keys, env vars, flags | [config.md](config.md) |
 | Scope and order of work | [features.md](features.md), [mvp-scope.md](mvp-scope.md), [milestones.md](milestones.md) |
 | Terminal UI, menus, layouts, themes, icons | [ui.md](ui.md) |

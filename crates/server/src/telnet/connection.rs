@@ -232,9 +232,14 @@ impl<D: Backend> Connection<D> {
                 // Last callers (M3-J): a telnet member session is recorded like an ssh one,
                 // at the same point (after the limits admit it).
                 crate::community::note_sign_in(&*self.directory, start.account).await;
+                let notices =
+                    russh_bbs_core::keys::notices_for_sign_in(&*self.directory, start.account)
+                        .await;
                 let flow =
                     MemberFlow::new(&start.handle, access, start.previous_login, start.settings)
-                        .signed_in_with_password();
+                        .signed_in_with_password()
+                        .over_telnet()
+                        .with_key_notices(russh_bbs_core::keys::notice_lines(&notices));
                 (Content::Member(Box::new(flow)), Some(meter))
             }
             Ok(Err(LimitError::Refused(refusal))) => {

@@ -77,6 +77,71 @@ pub fn key_linked(account: AccountId, fingerprint: &Fingerprint) -> AuditEvent {
     .detail("handle and password")
 }
 
+/// `account` pasted `fingerprint` into My keys (FIX-M3-11). The fingerprint is public.
+#[must_use]
+pub fn key_added(account: AccountId, fingerprint: &Fingerprint) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(account),
+        Action::KeyAdded,
+        Target::Key(fingerprint.clone()),
+    )
+    .detail("my keys")
+}
+
+/// `account` removed `fingerprint` in My keys (FIX-M3-11).
+#[must_use]
+pub fn key_removed(account: AccountId, fingerprint: &Fingerprint) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(account),
+        Action::KeyRemoved,
+        Target::Key(fingerprint.clone()),
+    )
+    .detail("my keys")
+}
+
+/// `account` made a device-link code (FIX-M3-11). No code, no hash.
+#[must_use]
+pub fn device_code_issued(account: AccountId) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(account),
+        Action::DeviceCodeIssued,
+        Target::Account(account),
+    )
+}
+
+/// A device-link code bound `fingerprint` to `account` (FIX-M3-11).
+#[must_use]
+pub fn device_code_redeemed(account: AccountId, fingerprint: &Fingerprint) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(account),
+        Action::DeviceCodeRedeemed,
+        Target::Key(fingerprint.clone()),
+    )
+    .detail("device link code")
+}
+
+/// `staff` made a recovery code for `account` (FIX-M3-11). No code, no hash.
+#[must_use]
+pub fn recovery_code_issued(staff: AccountId, account: AccountId) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(staff),
+        Action::RecoveryCodeIssued,
+        Target::Account(account),
+    )
+}
+
+/// A recovery code bound `fingerprint` to `account` and set a new password (FIX-M3-11). No
+/// password, no hash.
+#[must_use]
+pub fn recovery_code_redeemed(account: AccountId, fingerprint: &Fingerprint) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(account),
+        Action::RecoveryCodeRedeemed,
+        Target::Key(fingerprint.clone()),
+    )
+    .detail("recovery code, password replaced")
+}
+
 /// A custom group was created.
 #[must_use]
 pub fn group_created(actor: Actor, group: GroupId, name: &Slug) -> AuditEvent {
