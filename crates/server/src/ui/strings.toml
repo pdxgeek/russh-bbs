@@ -13,9 +13,12 @@
 title = "russh-bbs"
 pointer = ">"
 
-[ui.footer]
-menu = "?: help   Esc: back   Ctrl-C: log off"
-lightbar = "Up/Down: move   Enter: choose   ?: help   Esc: back   Ctrl-C: log off"
+[ui.hint]
+help = "help"
+back = "back"
+logoff = "log off"
+move = "move"
+choose = "choose"
 
 [ui.notice]
 info = "Notice"

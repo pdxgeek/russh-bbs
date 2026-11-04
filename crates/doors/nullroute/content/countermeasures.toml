@@ -1,0 +1,400 @@
+# Countermeasures (M4-N2). `num` is stable: add rows, never renumber. 20 patrols (sentries, tracers, black
+# walls) and 3 wardens. `pattern` is the cycle of intents the countermeasure repeats; the first beat of a
+# fight is chosen by the node, the rest are always in this order, so a pattern can be learned. Intents:
+# probe (a light touch), strike (the real hit), charge (the next strike is doubled), guard (armor +3 for
+# your move), seal (the family you used last cannot be used next beat), trace (starts a tracer and adds
+# trace), mend (heals), counter (a break script you play is echoed back as trace). `weak` is the lock
+# family whose break scripts hurt it +2. `tags` match a corporation's `cm_bias`. `drop` is the percent
+# chance a defeated countermeasure leaves a fragment. A warden is hardened: only a script tuned to wardens
+# hurts it (see fragments.toml, `target = "warden"`).
+
+[[cm]]
+num = 1
+name = "Watchman"
+kind = "sentry"
+tier_min = 1
+tier_max = 2
+integrity = 7
+armor = 0
+strike = 4
+weak = "crack"
+pattern = ["probe", "strike", "probe", "strike"]
+weight = 10
+tags = []
+mend = 0
+drop = 30
+blurb = "Walks a fixed beat. Strikes on every second step."
+
+[[cm]]
+num = 2
+name = "Picket"
+kind = "sentry"
+tier_min = 1
+tier_max = 2
+integrity = 8
+armor = 0
+strike = 4
+weak = "spoof"
+pattern = ["probe", "probe", "strike"]
+weight = 10
+tags = ["slow"]
+mend = 0
+drop = 30
+blurb = "Two quiet beats, then one hit."
+
+[[cm]]
+num = 3
+name = "Gatekeeper"
+kind = "sentry"
+tier_min = 1
+tier_max = 3
+integrity = 9
+armor = 0
+strike = 5
+weak = "overflow"
+pattern = ["guard", "strike", "probe"]
+weight = 8
+tags = ["armored"]
+mend = 0
+drop = 30
+blurb = "Raises its guard before it hits. Hit it while the guard is down."
+
+[[cm]]
+num = 4
+name = "Lookout"
+kind = "sentry"
+tier_min = 1
+tier_max = 2
+integrity = 6
+armor = 0
+strike = 4
+weak = "crack"
+pattern = ["strike", "probe", "strike", "strike"]
+weight = 8
+tags = ["swift"]
+mend = 0
+drop = 30
+blurb = "Frail but fast: three hits in four beats."
+
+[[cm]]
+num = 5
+name = "Warder"
+kind = "sentry"
+tier_min = 2
+tier_max = 3
+integrity = 11
+armor = 1
+strike = 9
+weak = "spoof"
+pattern = ["charge", "strike", "probe", "seal"]
+weight = 8
+tags = ["armored"]
+mend = 0
+drop = 40
+blurb = "Charges a double strike, then seals the family you used last."
+
+[[cm]]
+num = 6
+name = "Hawkeye"
+kind = "sentry"
+tier_min = 2
+tier_max = 3
+integrity = 10
+armor = 1
+strike = 8
+weak = "overflow"
+pattern = ["probe", "strike", "counter", "strike"]
+weight = 7
+tags = ["watcher"]
+mend = 0
+drop = 40
+blurb = "Reflects break scripts back at you when it counters."
+
+[[cm]]
+num = 7
+name = "Enforcer"
+kind = "sentry"
+tier_min = 3
+tier_max = 3
+integrity = 14
+armor = 2
+strike = 11
+weak = "crack"
+pattern = ["charge", "strike", "guard", "strike", "seal"]
+weight = 6
+tags = ["armored", "swift"]
+mend = 0
+drop = 50
+blurb = "Heavy hitter. Jam it while it charges."
+
+[[cm]]
+num = 8
+name = "Sniffer"
+kind = "tracer"
+tier_min = 1
+tier_max = 2
+integrity = 6
+armor = 0
+strike = 2
+weak = "spoof"
+pattern = ["trace", "probe", "trace", "probe"]
+weight = 10
+tags = ["trace"]
+mend = 0
+drop = 30
+blurb = "Follows your packets. Never hits hard, never lets go."
+
+[[cm]]
+num = 9
+name = "Bloodhound"
+kind = "tracer"
+tier_min = 1
+tier_max = 3
+integrity = 8
+armor = 0
+strike = 3
+weak = "overflow"
+pattern = ["probe", "trace", "strike", "trace"]
+weight = 8
+tags = ["trace", "swift"]
+mend = 0
+drop = 30
+blurb = "Closes on a hot trail."
+
+[[cm]]
+num = 10
+name = "Leech"
+kind = "tracer"
+tier_min = 2
+tier_max = 3
+integrity = 9
+armor = 1
+strike = 4
+weak = "crack"
+pattern = ["trace", "mend", "trace", "strike"]
+weight = 7
+tags = ["trace", "mend"]
+mend = 3
+drop = 40
+blurb = "Feeds on the trace and heals between bites."
+
+[[cm]]
+num = 11
+name = "Spiderling"
+kind = "tracer"
+tier_min = 1
+tier_max = 2
+integrity = 7
+armor = 0
+strike = 2
+weak = "crack"
+pattern = ["probe", "trace", "probe", "probe", "trace"]
+weight = 9
+tags = ["deceptive"]
+mend = 0
+drop = 30
+blurb = "Spins a web of small traces. Reads quiet, is not."
+
+[[cm]]
+num = 12
+name = "Echo"
+kind = "tracer"
+tier_min = 2
+tier_max = 3
+integrity = 10
+armor = 1
+strike = 5
+weak = "spoof"
+pattern = ["counter", "trace", "probe", "trace"]
+weight = 7
+tags = ["deceptive", "trace"]
+mend = 0
+drop = 40
+blurb = "Answers a break script with your own noise."
+
+[[cm]]
+num = 13
+name = "Dragnet"
+kind = "tracer"
+tier_min = 3
+tier_max = 3
+integrity = 13
+armor = 2
+strike = 6
+weak = "overflow"
+pattern = ["trace", "charge", "strike", "seal", "trace"]
+weight = 6
+tags = ["trace", "armored"]
+mend = 0
+drop = 50
+blurb = "The whole net closes at once."
+
+[[cm]]
+num = 14
+name = "Curtain Wall"
+kind = "wall"
+tier_min = 2
+tier_max = 3
+integrity = 12
+armor = 1
+strike = 4
+weak = "overflow"
+pattern = ["guard", "probe", "guard", "strike"]
+weight = 10
+tags = ["wall", "armored"]
+mend = 0
+drop = 40
+blurb = "Guards on every other beat. Purge it while the guard is down."
+
+[[cm]]
+num = 15
+name = "Bulkhead"
+kind = "wall"
+tier_min = 2
+tier_max = 3
+integrity = 14
+armor = 2
+strike = 5
+weak = "crack"
+pattern = ["probe", "guard", "strike", "mend"]
+weight = 8
+tags = ["wall", "armored"]
+mend = 2
+drop = 40
+blurb = "Slow, thick, and mends itself."
+
+[[cm]]
+num = 16
+name = "Glass Pane"
+kind = "wall"
+tier_min = 2
+tier_max = 3
+integrity = 10
+armor = 1
+strike = 3
+weak = "spoof"
+pattern = ["counter", "probe", "counter", "strike"]
+weight = 7
+tags = ["wall", "deceptive"]
+mend = 0
+drop = 40
+blurb = "A pane that shows you yourself. Counters break scripts."
+
+[[cm]]
+num = 17
+name = "Palisade"
+kind = "wall"
+tier_min = 2
+tier_max = 3
+integrity = 11
+armor = 0
+strike = 6
+weak = "overflow"
+pattern = ["charge", "strike", "probe"]
+weight = 8
+tags = ["wall"]
+mend = 0
+drop = 40
+blurb = "Soft but violent: one big hit on a long wind-up."
+
+[[cm]]
+num = 18
+name = "Slag"
+kind = "wall"
+tier_min = 2
+tier_max = 3
+integrity = 13
+armor = 1
+strike = 4
+weak = "crack"
+pattern = ["mend", "probe", "guard", "strike"]
+weight = 7
+tags = ["wall", "mend"]
+mend = 3
+drop = 40
+blurb = "Heals fast. Burst it, do not nibble it."
+
+[[cm]]
+num = 19
+name = "Citadel"
+kind = "wall"
+tier_min = 3
+tier_max = 3
+integrity = 18
+armor = 2
+strike = 7
+weak = "spoof"
+pattern = ["guard", "charge", "strike", "seal", "mend"]
+weight = 6
+tags = ["wall", "armored"]
+mend = 3
+drop = 50
+blurb = "The corporation's pride. Everything at once, slowly."
+
+[[cm]]
+num = 20
+name = "Null Door"
+kind = "wall"
+tier_min = 3
+tier_max = 3
+integrity = 16
+armor = 3
+strike = 8
+weak = "overflow"
+pattern = ["probe", "guard", "charge", "strike"]
+weight = 6
+tags = ["wall"]
+mend = 0
+drop = 50
+blurb = "Armoured to the teeth. Only a piercing script gets through quickly."
+
+[[cm]]
+num = 21
+name = "Bulwark"
+kind = "warden"
+tier_min = 1
+tier_max = 3
+integrity = 22
+armor = 3
+strike = 12
+weak = "crack"
+pattern = ["charge", "strike", "guard", "seal", "strike", "mend"]
+weight = 1
+tags = ["armored"]
+mend = 3
+drop = 100
+blurb = "A warden: a corporate AI that hunts you from node to node. Plated and patient."
+
+[[cm]]
+num = 22
+name = "Hound"
+kind = "warden"
+tier_min = 1
+tier_max = 3
+integrity = 21
+armor = 3
+strike = 11
+weak = "spoof"
+pattern = ["trace", "strike", "trace", "charge", "strike", "counter"]
+weight = 1
+tags = ["trace"]
+mend = 0
+drop = 100
+blurb = "A warden that follows your trace like a scent."
+
+[[cm]]
+num = 23
+name = "Mimic"
+kind = "warden"
+tier_min = 1
+tier_max = 3
+integrity = 20
+armor = 3
+strike = 10
+weak = "overflow"
+pattern = ["counter", "mend", "strike", "seal", "trace", "strike"]
+weight = 1
+tags = ["deceptive"]
+mend = 3
+drop = 100
+blurb = "A warden that copies your last move back at you."

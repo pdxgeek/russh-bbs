@@ -4,7 +4,10 @@
 //! shows. A refusal changes nothing: every action checks everything before it touches the
 //! save, the world or the RNG.
 
+use crate::combat::Range;
 use crate::content::{Content, Faction, SlotKind};
+use crate::contracts::Kind;
+use crate::crew::Role;
 use crate::frontier::{Frontier, Hazard};
 use crate::skills::Skill;
 
@@ -200,6 +203,292 @@ pub enum Event {
         /// New level.
         level: u8,
     },
+    /// A fight began.
+    FightBegins {
+        /// The enemy type.
+        enemy: u8,
+    },
+    /// The captain got away.
+    Ran {
+        /// Fuel burned.
+        fuel: u16,
+    },
+    /// The getaway failed.
+    RunFailed,
+    /// The range band changed.
+    RangeShift {
+        /// The new band.
+        to: Range,
+        /// Whether the captain's manoeuvre won it.
+        by_you: bool,
+    },
+    /// The captain's guns hit.
+    YouHit {
+        /// Absorbed by the enemy's shield.
+        shield: u16,
+        /// Through to the hull.
+        hull: u16,
+    },
+    /// The captain's guns missed.
+    YouMissed,
+    /// A shot went to the escorted ship.
+    WardHit {
+        /// Its hull percent now.
+        ward: u8,
+    },
+    /// The shields soaked a volley.
+    Shielded,
+    /// The captain's hull was hit.
+    YouWereHit {
+        /// Points lost.
+        hull: u16,
+    },
+    /// The enemy missed.
+    EnemyMissed,
+    /// The grapple fell short.
+    GrappleFailed,
+    /// The engineer patched the hull.
+    Patched {
+        /// Points restored.
+        hull: u16,
+    },
+    /// Boarders were thrown back.
+    BoardersRepelled,
+    /// Boarders took cargo and cash.
+    Boarded {
+        /// Tons taken.
+        tons: u32,
+        /// Credits taken.
+        cash: i64,
+    },
+    /// The enemy broke off and got away.
+    EnemyEscaped,
+    /// Both sides broke off.
+    BrokeOff,
+    /// The enemy was wrecked.
+    Wrecked {
+        /// The enemy type.
+        enemy: u8,
+        /// Credits salvaged.
+        loot: i64,
+    },
+    /// A bounty target was wrecked.
+    BountyHit {
+        /// The enemy type.
+        enemy: u8,
+    },
+    /// The captain was beaten.
+    Beaten {
+        /// Tons taken.
+        tons: u32,
+        /// Credits taken.
+        cash: i64,
+        /// A fine added.
+        fine: i64,
+    },
+    /// A hand signed on.
+    Hired {
+        /// Their name.
+        name: String,
+        /// Their role.
+        role: Role,
+        /// The signing fee.
+        fee: i64,
+    },
+    /// A hand was let go.
+    Dismissed {
+        /// Their name.
+        name: String,
+    },
+    /// Wages paid.
+    WagesPaid {
+        /// Credits.
+        amount: i64,
+    },
+    /// Wages could not be paid.
+    WagesMissed {
+        /// Credits owed.
+        owed: i64,
+    },
+    /// Rations bought.
+    Provisioned {
+        /// Credits.
+        cost: i64,
+        /// Days covered.
+        days: i64,
+    },
+    /// A hand's goal was met: they are sworn to the ship.
+    GoalMet {
+        /// Their name.
+        name: String,
+        /// The goal's wording.
+        goal: u8,
+    },
+    /// A hand left at a dock.
+    Deserted {
+        /// Their name.
+        name: String,
+        /// The goal they left with unmet.
+        goal: u8,
+    },
+    /// Several hands left together, with a cut.
+    Mutiny {
+        /// How many.
+        left: u8,
+        /// Credits taken.
+        stolen: i64,
+    },
+    /// A hand was hurt.
+    CrewHurt {
+        /// Their name.
+        name: String,
+        /// Days until fit.
+        days: u8,
+        /// Whether it left a scar.
+        scarred: bool,
+    },
+    /// A hand was lost.
+    CrewLost {
+        /// Their name.
+        name: String,
+        /// Their role.
+        role: Role,
+    },
+    /// A hand's skill went up.
+    CrewSkill {
+        /// Their name.
+        name: String,
+        /// Their role.
+        role: Role,
+        /// New skill.
+        skill: u8,
+    },
+    /// A boarding began.
+    BoardStart {
+        /// The layout.
+        layout: u8,
+    },
+    /// The party entered a room.
+    RoomEntered {
+        /// The layout.
+        layout: u8,
+        /// The room.
+        room: u8,
+    },
+    /// A sealed door was cut open.
+    Breached {
+        /// The room behind it.
+        room: u8,
+    },
+    /// The party struck the hostiles.
+    Struck {
+        /// Killed this round.
+        killed: u8,
+        /// Left in the room.
+        left: u8,
+    },
+    /// A hand went down.
+    Downed {
+        /// Their name.
+        name: String,
+    },
+    /// The captain went down.
+    CaptainDown,
+    /// The hostiles hit the party.
+    PartyHit {
+        /// Hit points lost in all.
+        hp: u16,
+    },
+    /// The party took a room's loot.
+    Looted {
+        /// Credits.
+        credits: u32,
+        /// Hull points of parts.
+        parts: u16,
+        /// Tons of cargo.
+        tons: u16,
+    },
+    /// A data cache was read.
+    CacheRead {
+        /// Survey value.
+        value: u32,
+    },
+    /// A wound was patched.
+    Patched2 {
+        /// Hit points restored.
+        hp: u16,
+    },
+    /// The boarding ended.
+    BoardEnd {
+        /// Credits brought home.
+        credits: u32,
+        /// Hull points of parts.
+        parts: u16,
+        /// Tons brought aboard.
+        tons: u16,
+        /// Survey value kept.
+        survey: u32,
+        /// Whether the party got out (otherwise it was wiped out and the haul lost).
+        clean: bool,
+    },
+    /// A transit event opened.
+    Transit {
+        /// The event.
+        event: u16,
+    },
+    /// The result of a choice.
+    Outcome {
+        /// The event.
+        event: u16,
+        /// The option picked.
+        option: u8,
+        /// The outcome drawn.
+        outcome: u8,
+    },
+    /// Cargo found.
+    CargoFound {
+        /// The good.
+        good: u8,
+        /// Tons.
+        tons: u16,
+    },
+    /// Cargo lost.
+    CargoLost {
+        /// The good.
+        good: u8,
+        /// Tons.
+        tons: u16,
+    },
+    /// Cargo dumped or taken.
+    CargoDumped {
+        /// Tons.
+        tons: u32,
+    },
+    /// A contract was taken.
+    Accepted {
+        /// The kind.
+        kind: Kind,
+        /// The destination station.
+        to: u16,
+    },
+    /// A contract was finished.
+    ContractDone {
+        /// The kind.
+        kind: Kind,
+        /// Who posted it.
+        faction: Faction,
+        /// Credits paid.
+        reward: i64,
+    },
+    /// A contract failed or was given up.
+    ContractFailed {
+        /// The kind.
+        kind: Kind,
+        /// Who posted it.
+        faction: Faction,
+        /// Whether it ran out of time.
+        late: bool,
+    },
     /// Standing with a faction changed.
     Standing {
         /// Which.
@@ -365,6 +654,186 @@ impl Event {
             Self::Standing { faction, change } => {
                 format!("Standing with the {}: {change:+}.", faction.name())
             }
+            Self::FightBegins { enemy } => {
+                let e = &content.enemies.enemy[usize::from(*enemy)];
+                format!(
+                    "{} ({}) closes on you. {}",
+                    e.name,
+                    e.faction.name(),
+                    e.blurb
+                )
+            }
+            Self::Ran { fuel } => format!("You broke away and burned {fuel} fuel getting clear."),
+            Self::RunFailed => "The getaway failed; they are still on you.".to_owned(),
+            Self::RangeShift { to, by_you } => format!(
+                "The range is now {}{}.",
+                to.name(),
+                if *by_you { " (your move)" } else { " (theirs)" }
+            ),
+            Self::YouHit { shield, hull } => {
+                format!("Your guns hit: {shield} to their shields, {hull} to the hull.")
+            }
+            Self::YouMissed => "Your guns miss.".to_owned(),
+            Self::WardHit { ward } => format!("The ship you escort is hit; it is at {ward} %."),
+            Self::Shielded => "The shields soak the volley.".to_owned(),
+            Self::YouWereHit { hull } => format!("You are hit: {hull} hull points."),
+            Self::EnemyMissed => "Their volley goes wide.".to_owned(),
+            Self::GrappleFailed => "Their grapples fall short.".to_owned(),
+            Self::Patched { hull } => format!("Your engineer patches {hull} hull points."),
+            Self::BoardersRepelled => "Boarders thrown back by your crew.".to_owned(),
+            Self::Boarded { tons, cash } => format!(
+                "Boarders strip the hold: {tons} t gone, {cash} cr taken from the strongbox."
+            ),
+            Self::EnemyEscaped => "The enemy breaks off and burns for the dark.".to_owned(),
+            Self::BrokeOff => "Both ships break off, spent.".to_owned(),
+            Self::Wrecked { enemy, loot } => format!(
+                "{} is wrecked. Salvage: {loot} cr.",
+                content.enemies.enemy[usize::from(*enemy)].name
+            ),
+            Self::BountyHit { enemy } => format!(
+                "That was the bounty: {} taken. Collect at the posting station.",
+                content.enemies.enemy[usize::from(*enemy)].name
+            ),
+            Self::Beaten { tons, cash, fine } => {
+                format!("You are beaten. {tons} t taken, {cash} cr taken, fine {fine} cr.")
+            }
+            Self::Hired { name, role, fee } => {
+                format!("{name} signs on as {} (signing fee {fee} cr).", role.name())
+            }
+            Self::Dismissed { name } => format!("{name} is paid off and leaves the ship."),
+            Self::WagesPaid { amount } => format!("The crew's wages were paid: {amount} cr."),
+            Self::WagesMissed { owed } => {
+                format!("Wages missed: {owed} cr owed. The crew notices.")
+            }
+            Self::Provisioned { cost, days } => {
+                format!("The galley is stocked for {days} days: {cost} cr.")
+            }
+            Self::GoalMet { name, goal } => format!(
+                "{name}: {}",
+                content
+                    .crew
+                    .goal
+                    .get(usize::from(*goal))
+                    .map_or("It is done.", |g| g.done.as_str())
+            ),
+            Self::Deserted { name, goal } => format!(
+                "{name} left the ship. {}",
+                content
+                    .crew
+                    .goal
+                    .get(usize::from(*goal))
+                    .map_or("", |g| g.leave.as_str())
+            ),
+            Self::Mutiny { left, stolen } => format!(
+                "Mutiny: {left} hands walk off together and take {stolen} cr from the strongbox."
+            ),
+            Self::CrewHurt {
+                name,
+                days,
+                scarred,
+            } => format!(
+                "{name} is hurt and off duty for {days} days{}.",
+                if *scarred {
+                    "; it will leave a scar"
+                } else {
+                    ""
+                }
+            ),
+            Self::CrewLost { name, role } => {
+                format!("{name}, your {}, is lost.", role.name().to_lowercase())
+            }
+            Self::CrewSkill { name, role, skill } => {
+                format!(
+                    "{name} is now a {} of skill {skill}.",
+                    role.name().to_lowercase()
+                )
+            }
+            Self::BoardStart { layout } => format!(
+                "You go aboard: {}.",
+                content.derelicts.derelict[usize::from(*layout)].name
+            ),
+            Self::RoomEntered { layout, room } => {
+                let r = &content.derelicts.derelict[usize::from(*layout)].rooms[usize::from(*room)];
+                format!("{}. {}", r.name, r.text)
+            }
+            Self::Breached { room } => format!("The door to room {room} is cut open."),
+            Self::Struck { killed, left } => {
+                format!("The party strikes: {killed} down, {left} left in the room.")
+            }
+            Self::Downed { name } => format!("{name} goes down."),
+            Self::CaptainDown => "The captain goes down.".to_owned(),
+            Self::PartyHit { hp } => format!("The party takes {hp} points of hurt."),
+            Self::Looted {
+                credits,
+                parts,
+                tons,
+            } => {
+                format!("Taken: {credits} cr, {parts} hull points of parts, {tons} t of cargo.")
+            }
+            Self::CacheRead { value } => {
+                format!("A data cache is read: survey data worth {value} cr.")
+            }
+            Self::Patched2 { hp } => format!("A wound is patched: {hp} hit points."),
+            Self::BoardEnd {
+                credits,
+                parts,
+                tons,
+                survey,
+                clean,
+            } => {
+                if *clean {
+                    format!(
+                        "Back aboard with {credits} cr, {parts} hull points of parts, {tons} t of cargo and {survey} cr of survey data."
+                    )
+                } else {
+                    "The party is wiped out; what was taken is lost.".to_owned()
+                }
+            }
+            Self::Transit { event } => {
+                let e = &content.transit.event[usize::from(*event)];
+                format!("{}. {}", e.title, e.text)
+            }
+            Self::Outcome {
+                event,
+                option,
+                outcome,
+            } => content.transit.event[usize::from(*event)].options[usize::from(*option)].outcomes
+                [usize::from(*outcome)]
+            .text
+            .clone(),
+            Self::CargoFound { good: g, tons } => format!("{tons} t of {} comes aboard.", good(g)),
+            Self::CargoLost { good: g, tons } => format!("{tons} t of {} is gone.", good(g)),
+            Self::CargoDumped { tons } => format!("{tons} t of cargo is lost."),
+            Self::Accepted { kind, to } => {
+                format!(
+                    "{} contract taken: bring it to {}.",
+                    kind.name(),
+                    station(to)
+                )
+            }
+            Self::ContractDone {
+                kind,
+                faction,
+                reward,
+            } => format!(
+                "{} done for the {}: {reward} cr.",
+                kind.name(),
+                faction.name()
+            ),
+            Self::ContractFailed {
+                kind,
+                faction,
+                late,
+            } => format!(
+                "{} for the {} {}.",
+                kind.name(),
+                faction.name(),
+                if *late {
+                    "ran out of time"
+                } else {
+                    "was given up"
+                }
+            ),
         }
     }
 }
@@ -443,6 +912,47 @@ pub enum Refusal {
     NoGuild,
     /// A tow is only for a ship that cannot jump anywhere.
     NotStranded,
+    /// A scene is open; finish it first.
+    Busy,
+    /// No event is waiting for a choice.
+    NoEvent,
+    /// No fight is open.
+    NoFight,
+    /// No boarding is open.
+    NoBoarding,
+    /// More reactor power than the ship has.
+    OverPower {
+        /// What the reactor can give.
+        budget: u8,
+    },
+    /// A manoeuvre needs engine power.
+    NoEnginePower,
+    /// An option's requirement is not met.
+    Needs(String),
+    /// Recruits here will not sign with this captain.
+    Unwelcome(Faction),
+    /// Eight hands is the most.
+    CrewFull,
+    /// No free berth.
+    NoBerth,
+    /// A job needs more standing.
+    NeedStanding {
+        /// Whose.
+        faction: Faction,
+        /// What it takes.
+        need: i16,
+    },
+    /// Four jobs at a time.
+    TooManyJobs,
+    /// Hostiles are in the room.
+    FoesHere,
+    /// A sealed door: the party's engineering is not up to it.
+    Sealed {
+        /// The lock's level.
+        lock: u8,
+    },
+    /// Nobody aboard can read the cache.
+    NoReader,
 }
 
 impl Refusal {
@@ -489,6 +999,36 @@ impl Refusal {
             Self::NoGuild => "No Cartographers' Guild office here.".to_owned(),
             Self::NotStranded => {
                 "You can still jump somewhere; the tow yard does not take that call.".to_owned()
+            }
+            Self::Busy => "You are in the middle of something. Finish it first.".to_owned(),
+            Self::NoEvent => "Nothing is waiting for a choice.".to_owned(),
+            Self::NoFight => "There is no fight to fight.".to_owned(),
+            Self::NoBoarding => "There is no boarding under way.".to_owned(),
+            Self::OverPower { budget } => {
+                format!("The reactor gives {budget} points; the order asks for more.")
+            }
+            Self::NoEnginePower => {
+                "A manoeuvre needs at least one point of engine power.".to_owned()
+            }
+            Self::Needs(what) => format!("Closed to you: {what}."),
+            Self::Unwelcome(f) => format!(
+                "Recruits here will not sign with you: the {} have a bad word for your name.",
+                f.name()
+            ),
+            Self::CrewFull => "Eight hands is the most a ship can carry.".to_owned(),
+            Self::NoBerth => "No free berth aboard.".to_owned(),
+            Self::NeedStanding { faction, need } => format!(
+                "The {} will not post that for you: it needs standing {need:+}.",
+                faction.name()
+            ),
+            Self::TooManyJobs => "You are carrying all the jobs you can.".to_owned(),
+            Self::FoesHere => "Hostiles are in the room.".to_owned(),
+            Self::Sealed { lock } => format!(
+                "The door is sealed (lock {lock}); the party's engineering is not up to it."
+            ),
+            Self::NoReader => {
+                "Nobody aboard can read that cache: it needs a scientist or a practised surveyor."
+                    .to_owned()
             }
         }
     }

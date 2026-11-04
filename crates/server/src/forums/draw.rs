@@ -10,6 +10,7 @@ use ratatui::text::{Line, Span};
 use russh_bbs_core::icons::Tier;
 use russh_bbs_core::sanitize::SingleLine;
 use russh_bbs_core::terminal_settings::{TerminalSettings, format_utc};
+use russh_bbs_core::waiting_room::NoticeKind;
 
 use russh_bbs_core::forums::{SearchPage, ThreadPage};
 
@@ -17,10 +18,13 @@ use super::exec::BoardList;
 use super::flow::{ForumsScreen, Input, InputKind, ListView, State, confirm_text, reader_title};
 use super::strings;
 use crate::settings::{self, Look};
-use crate::ui::classic::{self, ContentScreen, MENU_MARKERS};
+use crate::ui::classic::{self, MENU_MARKERS};
 use crate::ui::editor::EditorView;
+use crate::ui::frame::{ChromeText, FrameSpec, Hint};
+use crate::ui::popup::{self, Popup, PopupKind, PopupLine};
 use crate::ui::strings::StringTable;
-use crate::ui::{Ui, chrome, pager};
+use crate::ui::table::{self, Cell, CellStyle, Column, TableRow, TableSpec, Title, Width};
+use crate::ui::{Ui, pager};
 
 /// What drawing needs besides the screen.
 pub(crate) struct DrawCtx<'a> {
@@ -29,6 +33,10 @@ pub(crate) struct DrawCtx<'a> {
     pub(crate) settings: &'a TerminalSettings,
     pub(crate) look: Look,
     pub(crate) tier: Tier,
+    /// The markers the status bar's marker cell shows (FIX-M3-6).
+    pub(crate) markers: &'a [russh_bbs_core::icons::SecurityMarker],
+    /// The header bar's clock text.
+    pub(crate) clock: Option<&'a str>,
 }
 
 /// Member text, cleaned once more on its way to the terminal.
@@ -47,22 +55,6 @@ fn fit(text: &str, width: usize) -> String {
         }
     }
     out
-}
-
-fn row(selected: bool, number: usize, text: &str, width: usize, bold: Style) -> Line<'static> {
-    let lead = if selected { "> " } else { "  " };
-    let n = if number < 9 {
-        format!("{}. ", number + 1)
-    } else {
-        "   ".to_owned()
-    };
-    let text = fit(text, width.saturating_sub(lead.len() + n.len()));
-    let style = if selected {
-        bold.add_modifier(Modifier::UNDERLINED)
-    } else {
-        Style::new()
-    };
-    Line::styled(format!("{lead}{n}{text}"), style)
 }
 
 /// Draw whatever the forum screen is showing into `frame`.
@@ -85,18 +77,104 @@ pub(crate) fn render(frame: &mut Frame<'_>, screen: &ForumsScreen, ctx: &DrawCtx
         render_reader(frame, area, screen, reader, stored, width, ctx);
         return;
     }
-    let (content, _) = chrome::split_status(area, &MENU_MARKERS);
-    let (width, rows) = settings::inner_size(content);
-    classic::render_content(
-        frame,
-        ContentScreen {
-            strings: ctx.strings,
-            lines: lines(screen, Space { width, rows }, ctx),
-            look: ctx.look,
-            tier: ctx.tier,
-            markers: &MENU_MARKERS,
-        },
-    );
+    let hints = state_hints(&screen.state);
+    let body = FrameSpec::new(ctx.strings, ctx.look, ctx.tier)
+        .markers(ctx.markers)
+        .place(ChromeText::fixed(strings::TITLE_BOARDS))
+        .clock(ctx.clock)
+        .hints(&hints)
+        .draw(frame);
+    match &screen.state {
+        State::Boards { list, cursor } => board_table(frame, body, screen, ctx, list, *cursor),
+        State::Threads { page, cursor } => thread_table(frame, body, screen, ctx, page, *cursor),
+        State::Results {
+            page,
+            query,
+            cursor,
+        } => result_table(frame, body, screen, ctx, page, query, *cursor),
+        State::Start | State::Reader(_) | State::Editor(_) | State::Input(_) => {
+            let (width, rows) = settings::inner_size(body);
+            let _ = (width, rows);
+            settings::boxed(
+                frame,
+                body,
+                ctx.strings.text(crate::ui::keys::TITLE),
+                lines(screen, ctx),
+                ctx.look,
+            );
+        }
+    }
+    // A problem is a modal over the screen; the key that dismisses it also acts, as before.
+    if let Some((NoticeKind::Error, text)) = &screen.notice {
+        let keys = [Hint::new(
+            ChromeText::fixed("any key"),
+            ChromeText::fixed("close"),
+        )];
+        popup::render(
+            frame,
+            body,
+            ctx.look,
+            &Popup {
+                kind: PopupKind::Error,
+                title: ChromeText::table(ctx.strings, crate::ui::keys::NOTICE_ERROR),
+                lines: vec![PopupLine::content(text)],
+                keys: &keys,
+            },
+        );
+    }
+}
+
+/// The status-bar hints for a forum screen: fixed words, never member text.
+fn state_hints(state: &State) -> Vec<Hint<'static>> {
+    let hint = |key: &'static str, label: &'static str| {
+        Hint::new(ChromeText::fixed(key), ChromeText::fixed(label))
+    };
+    match state {
+        State::Boards { list, .. } => {
+            let mut hints = vec![
+                hint("Enter", "open"),
+                hint("1-9", "jump"),
+                hint("s", "search"),
+            ];
+            if list.can_manage {
+                hints.push(hint("n", "new board"));
+            }
+            if list.can_feeds {
+                hints.push(hint("f", "add a feed"));
+            }
+            hints.push(hint("Esc", "back"));
+            hints
+        }
+        State::Threads { page, .. } => {
+            let mut hints = vec![hint("Enter", "read"), hint("1-9", "jump")];
+            if page.board.feed {
+                hints.push(hint("feed", "read only"));
+            } else {
+                hints.push(hint("w", "write"));
+            }
+            hints.push(hint("n/b", "page"));
+            hints.push(hint("s", "search"));
+            if page.can_feeds && (!page.board.restricted || page.board.feed) {
+                hints.push(hint("p", "public RSS"));
+            }
+            if page.board.feed && page.can_feeds {
+                hints.push(hint("x", "remove feed"));
+            }
+            if page.can_manage && page.board.restricted {
+                hints.push(hint("a", "let in"));
+            }
+            hints.push(hint("Esc", "back"));
+            hints
+        }
+        State::Results { .. } => vec![
+            hint("Enter", "read"),
+            hint("1-9", "jump"),
+            hint("n/b", "page"),
+            hint("Esc", "back"),
+        ],
+        State::Input(_) => vec![hint("Enter", "continue"), hint("Esc", "cancel")],
+        State::Start | State::Reader(_) | State::Editor(_) => vec![hint("Esc", "back")],
+    }
 }
 
 fn render_reader(
@@ -116,21 +194,6 @@ fn render_reader(
         rebuilt = screen.pager_for(reader, width);
         &rebuilt
     };
-    // The remove confirmation takes the place of the prompt row.
-    if let Some(text) = confirm_text(reader) {
-        let (content, status) = chrome::split_status(area, &MENU_MARKERS);
-        let (bold, _, _, _) = classic::styles(ctx.look);
-        let lines = vec![
-            Line::styled(clean(&reader_title(reader), 120), bold),
-            Line::raw(""),
-            Line::raw(text.to_owned()),
-        ];
-        settings::boxed(frame, content, strings::TITLE_BOARDS, lines, ctx.look);
-        if let Some(row) = status {
-            chrome::render_status(frame, row, &MENU_MARKERS, ctx.tier, ctx.strings);
-        }
-        return;
-    }
     let title = fit(&clean(&reader_title(reader), 120), width.saturating_sub(4));
     pager::render(
         frame,
@@ -141,10 +204,36 @@ fn render_reader(
         ctx.tier,
         &MENU_MARKERS,
     );
+    // The remove confirmation is a modal over the page.
+    if let Some(text) = confirm_text(reader) {
+        let keys = [
+            Hint::new(ChromeText::fixed("y"), ChromeText::fixed("remove")),
+            Hint::new(
+                ChromeText::fixed("any other key"),
+                ChromeText::fixed("keep"),
+            ),
+        ];
+        popup::render(
+            frame,
+            area,
+            ctx.look,
+            &Popup {
+                kind: PopupKind::Confirm,
+                title: ChromeText::fixed("Confirm"),
+                lines: vec![
+                    PopupLine::content(&clean(&reader_title(reader), 120)),
+                    PopupLine::plain(text),
+                ],
+                keys: &keys,
+            },
+        );
+    }
 }
 
+/// An info notice as a line in a prompt screen. A problem is not drawn here: it is a modal
+/// popup over the screen (see [`render`]).
 fn notice(screen: &ForumsScreen, ctx: &DrawCtx<'_>, out: &mut Vec<Line<'static>>) {
-    if let Some((kind, text)) = &screen.notice {
+    if let Some((kind @ NoticeKind::Info, text)) = &screen.notice {
         let (bold, _, _, _) = classic::styles(ctx.look);
         out.push(classic::notice_line(
             ctx.strings,
@@ -156,330 +245,241 @@ fn notice(screen: &ForumsScreen, ctx: &DrawCtx<'_>, out: &mut Vec<Line<'static>>
     }
 }
 
-/// The styles every list screen uses, bundled to keep the argument lists short.
-#[derive(Clone, Copy)]
-struct Styles {
-    bold: Style,
-    dim: Style,
-    heading: Style,
+/// Remember which rows the table drew, so paging and jump keys know (FIX-M3-4).
+fn remember(screen: &ForumsScreen, drawn: table::TableView) {
+    screen.view.set(ListView {
+        top: drawn.top,
+        shown: drawn.shown,
+    });
 }
 
-/// The room inside the box: columns and rows.
-#[derive(Clone, Copy)]
-struct Space {
-    width: usize,
-    rows: usize,
+/// "3-9 of 40" under a table that scrolls; nothing when every row is shown.
+fn position(drawn: table::TableView, total: usize) -> Option<String> {
+    (drawn.shown < total)
+        .then(|| format!("{}-{} of {total}", drawn.top + 1, drawn.top + drawn.shown))
 }
 
-/// How many terminal rows `text` takes when the box wraps it at `width` columns (words wrap,
-/// a word longer than a row is cut). Counts a little high rather than low.
-fn wrapped_rows(text: &str, width: usize) -> usize {
-    let width = width.max(1);
-    let mut rows = 1;
-    let mut used = 0;
-    for word in text.split(' ') {
-        let w = Span::raw(word).width();
-        if used > 0 && used + 1 + w > width {
-            rows += 1;
-            used = 0;
-        }
-        if used > 0 {
-            used += 1;
-        }
-        let mut w = w;
-        while w > width {
-            rows += 1;
-            w -= width;
-        }
-        used += w;
+/// A notice that is not a problem stays a line under the table (problems are modals).
+fn info_footer(screen: &ForumsScreen, ctx: &DrawCtx<'_>) -> Option<String> {
+    match &screen.notice {
+        Some((NoticeKind::Info, text)) => Some(format!(
+            "{}: {text}",
+            ctx.strings.text(crate::ui::keys::NOTICE_INFO)
+        )),
+        _ => None,
     }
-    rows
 }
 
-fn rows_of(lines: &[Line<'_>], width: usize) -> usize {
-    lines
-        .iter()
-        .map(|line| wrapped_rows(&line.to_string(), width))
-        .sum()
+fn footer_of(parts: &[Option<String>]) -> Option<String> {
+    let text: Vec<&str> = parts.iter().flatten().map(String::as_str).collect();
+    (!text.is_empty()).then(|| text.join("  -  "))
 }
 
-/// One list screen: what goes above the items, the items, what goes below them.
-struct ListScreen<'a> {
-    head: Vec<Line<'static>>,
-    /// Shown instead of items when there are none.
-    empty: Option<&'a str>,
-    total: usize,
-    cursor: usize,
-    /// Terminal rows one item takes.
-    item_rows: usize,
-    /// Lines under the items and above the help (a page number). Dropped first when short.
-    extra: Vec<Line<'static>>,
-    help: &'a str,
-}
-
-/// Lay out a list so the selected item is always drawn and the notice line is never pushed
-/// off (FIX-M3-4). The window follows the cursor and is remembered in `screen.view`. When
-/// the items do not all fit, a position line says which ones are shown; when even that does
-/// not leave room for one item, the help and the page line go first.
-fn list_lines(
+fn board_table(
+    frame: &mut Frame<'_>,
+    body: Rect,
     screen: &ForumsScreen,
-    space: Space,
     ctx: &DrawCtx<'_>,
-    styles: Styles,
-    list: ListScreen<'_>,
-    item: impl Fn(usize, usize) -> Vec<Line<'static>>,
-) -> Vec<Line<'static>> {
-    let mut notice_lines = Vec::new();
-    notice(screen, ctx, &mut notice_lines);
-    let mut tail = list.extra;
-    tail.push(Line::raw(""));
-    tail.push(Line::styled(list.help.to_owned(), styles.dim));
-    let used_notice = rows_of(&notice_lines, space.width);
-    let item_rows = list.item_rows.max(1);
-    // On a very small screen the selected row and the notice outrank the heading's extra
-    // lines (a description, a blank): drop those until one row fits.
-    let mut head = list.head;
-    while head.len() > 1 && rows_of(&head, space.width) + used_notice + item_rows > space.rows {
-        head.remove(1);
-    }
-    let used_head = rows_of(&head, space.width);
-    let used_tail = rows_of(&tail, space.width);
-
-    let room = |tail_rows: usize, position: usize| {
-        space
-            .rows
-            .saturating_sub(used_head + used_notice + tail_rows + position)
-            / item_rows
-    };
-    // Prefer everything; then drop the help and page lines; the position line goes last
-    // because it only helps, while the selected row and the notice must stay.
-    let total = list.total;
-    let (show_tail, position, fits) = [(true, false), (true, true), (false, false), (false, true)]
-        .into_iter()
-        .map(|(tail, pos)| {
-            let fits = room(if tail { used_tail } else { 0 }, usize::from(pos));
-            (tail, pos, fits)
-        })
-        .find(|&(_, pos, fits)| fits >= 1 && (pos || total <= fits))
-        .unwrap_or((false, false, 1));
-    let position = usize::from(position);
-    let visible = fits.max(1).min(list.total.max(1));
-
-    let previous = screen.view.get();
-    let mut top = previous.top.min(list.total.saturating_sub(visible));
-    let cursor = list.cursor.min(list.total.saturating_sub(1));
-    if cursor < top {
-        top = cursor;
-    } else if cursor >= top + visible {
-        top = cursor + 1 - visible;
-    }
-    let shown = visible.min(list.total.saturating_sub(top));
-    screen.view.set(ListView { top, shown });
-
-    let mut out = head;
-    match list.empty {
-        Some(text) if list.total == 0 => out.push(Line::raw(text.to_owned())),
-        _ => {}
-    }
-    for at in top..top + shown {
-        out.extend(item(at, at - top));
-    }
-    if position == 1 && list.total > 0 {
-        out.push(Line::styled(
-            format!("{}-{} of {}", top + 1, top + shown, list.total),
-            styles.dim,
-        ));
-    }
-    out.extend(notice_lines);
-    if show_tail {
-        out.extend(tail);
-    }
-    out
-}
-
-fn lines(screen: &ForumsScreen, space: Space, ctx: &DrawCtx<'_>) -> Vec<Line<'static>> {
-    let (bold, dim, heading, _) = classic::styles(ctx.look);
-    let styles = Styles { bold, dim, heading };
-    let mut out = Vec::new();
-    match &screen.state {
-        State::Start | State::Reader(_) | State::Editor(_) => {
-            out.push(Line::styled(strings::TITLE_BOARDS.to_owned(), heading));
-            out.push(Line::raw(""));
-            notice(screen, ctx, &mut out);
-        }
-        State::Boards { list, cursor } => {
-            let help = match (list.can_manage, list.can_feeds) {
-                (true, true) => strings::HELP_BOARDS_FEEDS,
-                (false, true) => strings::HELP_BOARDS_FEEDS_ONLY,
-                (true, false) => strings::HELP_BOARDS_MANAGE,
-                (false, false) => strings::HELP_BOARDS,
-            };
-            return board_screen(screen, space, ctx, styles, list, *cursor, help);
-        }
-        State::Threads { page, cursor } => {
-            let help = if page.board.feed {
-                if page.can_feeds {
-                    strings::HELP_THREADS_FEED_STAFF
-                } else {
-                    strings::HELP_THREADS_FEED
-                }
-            } else if page.can_manage && page.board.restricted {
-                strings::HELP_THREADS_MANAGE
-            } else if page.can_feeds && !page.board.restricted {
-                strings::HELP_THREADS_STAFF
-            } else {
-                strings::HELP_THREADS
-            };
-            return thread_screen(screen, space, ctx, styles, page, *cursor, help);
-        }
-        State::Results {
-            page,
-            query,
-            cursor,
-        } => return result_screen(screen, space, ctx, styles, page, query, *cursor),
-        State::Input(input) => input_lines(screen, input, heading, dim, ctx, &mut out),
-    }
-    out
-}
-
-fn board_screen(
-    screen: &ForumsScreen,
-    space: Space,
-    ctx: &DrawCtx<'_>,
-    styles: Styles,
     list: &BoardList,
     cursor: usize,
-    help: &str,
-) -> Vec<Line<'static>> {
-    let head = vec![
-        Line::styled(strings::TITLE_BOARDS.to_owned(), styles.heading),
-        Line::raw(""),
+) {
+    let columns = vec![
+        Column::new(ChromeText::fixed("Board"), Width::Fill(2)),
+        Column::new(ChromeText::fixed("Threads"), Width::Fixed(7)).right(),
+        Column::new(ChromeText::fixed("About"), Width::Fill(3)).hide_below(60),
     ];
-    let plan = ListScreen {
-        head,
-        empty: Some(strings::NO_BOARDS),
-        total: list.boards.len(),
-        cursor,
-        item_rows: 1,
-        extra: Vec::new(),
-        help,
-    };
-    list_lines(screen, space, ctx, styles, plan, |at, number| {
-        let board = &list.boards[at];
-        let threads = if board.threads == 1 {
-            "thread"
-        } else {
-            "threads"
-        };
-        let about = if board.description.is_empty() {
-            String::new()
-        } else {
-            format!(" - {}", clean(&board.description, 160))
-        };
-        let tag = if board.feed {
-            format!(" [{}]", strings::FEED_BOARD_TAG)
-        } else {
-            String::new()
-        };
-        let text = format!(
-            "{}{tag} ({} {threads}){about}",
-            clean(&board.name, 40),
-            board.threads
-        );
-        vec![row(at == cursor, number, &text, space.width, styles.bold)]
-    })
+    let rows: Vec<TableRow> = list
+        .boards
+        .iter()
+        .map(|board| {
+            let tag = if board.feed {
+                format!(" [{}]", strings::FEED_BOARD_TAG)
+            } else {
+                String::new()
+            };
+            TableRow::new(vec![
+                Cell::content(&format!("{}{tag}", clean(&board.name, 40))).styled(CellStyle::Bold),
+                Cell::plain(board.threads.to_string()),
+                Cell::content(&board.description).styled(CellStyle::Dim),
+            ])
+        })
+        .collect();
+    let total = rows.len();
+    let previous = screen.view.get();
+    let drawn = table::render(
+        frame,
+        body,
+        ctx.look,
+        &TableSpec {
+            title: Title::Chrome(ChromeText::fixed(strings::TITLE_BOARDS)),
+            columns,
+            rows,
+            selected: Some(cursor),
+            bordered: true,
+            top: previous.top,
+            empty: strings::NO_BOARDS,
+            numbered: true,
+            footer: None,
+        },
+    );
+    remember(screen, drawn);
+    draw_info(frame, body, screen, ctx, position(drawn, total));
 }
 
-fn thread_screen(
+fn thread_table(
+    frame: &mut Frame<'_>,
+    body: Rect,
     screen: &ForumsScreen,
-    space: Space,
     ctx: &DrawCtx<'_>,
-    styles: Styles,
     page: &ThreadPage,
     cursor: usize,
-    help: &str,
-) -> Vec<Line<'static>> {
-    let mut head = vec![Line::styled(clean(&page.board.name, 40), styles.heading)];
-    if !page.board.description.is_empty() {
-        head.push(Line::styled(
-            clean(&page.board.description, 160),
-            styles.dim,
-        ));
-    }
-    head.push(Line::raw(""));
-    let plan = ListScreen {
-        head,
-        empty: Some(strings::NO_THREADS),
-        total: page.threads.len(),
-        cursor,
-        item_rows: 1,
-        extra: vec![
-            Line::raw(""),
-            Line::styled(format!("Page {}", page.page + 1), styles.dim),
-        ],
-        help,
-    };
-    list_lines(screen, space, ctx, styles, plan, |at, number| {
-        let thread = &page.threads[at];
-        let who = thread.author.as_deref().unwrap_or(strings::GONE_MEMBER);
-        let text = format!(
-            "{}  [{}, {} {}, {}]",
-            clean(&thread.subject, 120),
-            clean(who, 64),
-            thread.posts,
-            if thread.posts == 1 { "post" } else { "posts" },
-            format_utc(thread.last_post_at)
-        );
-        vec![row(at == cursor, number, &text, space.width, styles.bold)]
-    })
+) {
+    let columns = vec![
+        Column::new(ChromeText::fixed("Subject"), Width::Fill(3)),
+        Column::new(ChromeText::fixed("From"), Width::Fixed(14)).hide_below(60),
+        Column::new(ChromeText::fixed("Posts"), Width::Fixed(5)).right(),
+        Column::new(ChromeText::fixed("Last post"), Width::Fixed(20)).hide_below(78),
+    ];
+    let rows: Vec<TableRow> = page
+        .threads
+        .iter()
+        .map(|thread| {
+            let who = thread.author.as_deref().unwrap_or(strings::GONE_MEMBER);
+            TableRow::new(vec![
+                Cell::content(&thread.subject),
+                Cell::content(who).styled(CellStyle::Key),
+                Cell::plain(thread.posts.to_string()),
+                Cell::plain(format_utc(thread.last_post_at)).styled(CellStyle::Dim),
+            ])
+        })
+        .collect();
+    let total = rows.len();
+    let previous = screen.view.get();
+    let board_name = clean(&page.board.name, 40);
+    let drawn = table::render(
+        frame,
+        body,
+        ctx.look,
+        &TableSpec {
+            title: Title::Content(&board_name),
+            columns,
+            rows,
+            selected: Some(cursor),
+            bordered: true,
+            top: previous.top,
+            empty: strings::NO_THREADS,
+            numbered: true,
+            footer: None,
+        },
+    );
+    remember(screen, drawn);
+    let about = (!page.board.description.is_empty()).then(|| clean(&page.board.description, 160));
+    draw_info(
+        frame,
+        body,
+        screen,
+        ctx,
+        footer_of(&[
+            Some(format!("Page {}", page.page + 1)),
+            position(drawn, total),
+            about,
+        ]),
+    );
 }
 
-fn result_screen(
+fn result_table(
+    frame: &mut Frame<'_>,
+    body: Rect,
     screen: &ForumsScreen,
-    space: Space,
     ctx: &DrawCtx<'_>,
-    styles: Styles,
     page: &SearchPage,
     query: &str,
     cursor: usize,
-) -> Vec<Line<'static>> {
-    let head = vec![
-        Line::styled(strings::TITLE_SEARCH.to_owned(), styles.heading),
-        Line::styled(format!("for: {}", clean(query, 200)), styles.dim),
-        Line::raw(""),
+) {
+    let columns = vec![
+        Column::new(ChromeText::fixed("Board"), Width::Fixed(16)).hide_below(60),
+        Column::new(ChromeText::fixed("Subject"), Width::Fill(1)),
     ];
+    let rows: Vec<TableRow> = page
+        .hits
+        .iter()
+        .map(|hit| {
+            TableRow::new(vec![
+                Cell::content(&hit.board_name).styled(CellStyle::Key),
+                Cell::content(&hit.subject).styled(CellStyle::Bold),
+            ])
+            .with_detail(Cell::content(&hit.snippet))
+        })
+        .collect();
+    let total = rows.len();
+    let previous = screen.view.get();
+    let title = format!("{} for: {}", strings::TITLE_SEARCH, clean(query, 200));
     let empty = if page.searched {
         strings::NO_RESULTS
     } else {
         strings::NOT_SEARCHED
     };
-    let plan = ListScreen {
-        head,
-        empty: Some(empty),
-        total: page.hits.len(),
-        cursor,
-        item_rows: 2,
-        extra: Vec::new(),
-        help: strings::HELP_RESULTS,
+    let drawn = table::render(
+        frame,
+        body,
+        ctx.look,
+        &TableSpec {
+            title: Title::Content(&title),
+            columns,
+            rows,
+            selected: Some(cursor),
+            bordered: true,
+            top: previous.top,
+            empty,
+            numbered: true,
+            footer: None,
+        },
+    );
+    remember(screen, drawn);
+    draw_info(frame, body, screen, ctx, position(drawn, total));
+}
+
+/// The one line under a list's border: an info notice, or the position. Drawn on the table's
+/// bottom border row so the list keeps every row.
+fn draw_info(
+    frame: &mut Frame<'_>,
+    body: Rect,
+    screen: &ForumsScreen,
+    ctx: &DrawCtx<'_>,
+    other: Option<String>,
+) {
+    let text = footer_of(&[info_footer(screen, ctx), other]);
+    let Some(text) = text else { return };
+    if body.height < 3 || body.width < 6 {
+        return;
+    }
+    let row = Rect {
+        x: body.x + 2,
+        y: body.y + body.height - 1,
+        width: body.width - 4,
+        height: 1,
     };
-    list_lines(screen, space, ctx, styles, plan, |at, number| {
-        let hit = &page.hits[at];
-        let text = format!(
-            "{} / {}",
-            clean(&hit.board_name, 40),
-            clean(&hit.subject, 120)
-        );
-        vec![
-            row(at == cursor, number, &text, space.width, styles.bold),
-            Line::styled(
-                format!(
-                    "      {}",
-                    fit(&clean(&hit.snippet, 120), space.width.saturating_sub(6))
-                ),
-                styles.dim,
-            ),
-        ]
-    })
+    let dim = Style::new().add_modifier(Modifier::DIM);
+    let clipped = table::clip(
+        &text,
+        usize::from(row.width.saturating_sub(2)),
+        ctx.look.ascii(),
+    );
+    frame.render_widget(Line::styled(format!(" {clipped} "), dim), row);
+}
+
+/// The lines of the screens that are not lists: the start screen and the one-line prompts.
+fn lines(screen: &ForumsScreen, ctx: &DrawCtx<'_>) -> Vec<Line<'static>> {
+    let (_, dim, heading, _) = classic::styles(ctx.look);
+    let mut out = Vec::new();
+    if let State::Input(input) = &screen.state {
+        input_lines(screen, input, heading, dim, ctx, &mut out);
+    } else {
+        out.push(Line::styled(strings::TITLE_BOARDS.to_owned(), heading));
+        out.push(Line::raw(""));
+        notice(screen, ctx, &mut out);
+    }
+    out
 }
 
 fn input_lines(

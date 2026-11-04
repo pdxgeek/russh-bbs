@@ -43,6 +43,11 @@ impl Writer {
         self.out.extend_from_slice(&value.to_le_bytes());
     }
 
+    /// A little-endian `u64`.
+    pub fn u64(&mut self, value: u64) {
+        self.out.extend_from_slice(&value.to_le_bytes());
+    }
+
     /// A list length (at most 65 535; longer lists are cut by the caller's own caps).
     pub fn len(&mut self, len: usize) {
         self.u16(u16::try_from(len).unwrap_or(u16::MAX));
@@ -114,6 +119,11 @@ impl<'a> Reader<'a> {
     /// A little-endian `i64`.
     pub fn i64(&mut self) -> Option<i64> {
         Some(i64::from_le_bytes(self.take(8)?.try_into().ok()?))
+    }
+
+    /// A little-endian `u64`.
+    pub fn u64(&mut self) -> Option<u64> {
+        Some(u64::from_le_bytes(self.take(8)?.try_into().ok()?))
     }
 
     /// A list length, refused if more than `max` or if the bytes left could not hold that many

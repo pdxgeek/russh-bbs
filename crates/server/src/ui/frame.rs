@@ -1,0 +1,319 @@
+//! The application frame: a **header bar** on top, a **status bar** at the bottom, and the
+//! body between them (UI-1, D109).
+//!
+//! ```text
+//! russh-bbs  |  Forums                                     UTC 14:05    <- header bar
+//!   ...body: whatever the screen draws, handed back as a Rect...
+//! [marker cell]   ? help   Esc back   Ctrl-C log off                      <- status bar
+//! ```
+//!
+//! **Using it.** A screen builds a [`FrameSpec`] (strings, look, tier, the markers that apply,
+//! the area's name, hints), calls [`FrameSpec::draw`], and draws its content into the returned
+//! body rectangle. The same spec serves every layout; a new layout or screen never draws its
+//! own bars.
+//!
+//! **What the bars may say.** Only chrome: string-table words, fixed key names, and a clock. The
+//! API takes [`ChromeText`], which can be built only from the string table or a `'static` str, so
+//! a member's text cannot be passed to a bar by mistake. Content goes in the body.
+//!
+//! **Security markers (D39, D93, D109).** The status bar's left cell is the marker cell. It is
+//! drawn by [`chrome::status_cell`] with the reserved style (bold + reverse) and **no colour at
+//! all**: the bar's background starts after it, so no theme can tint it. It is part of the
+//! rectangle this module owns and never of the body, so nothing the body, a table or a popup
+//! draws can reach it (ratatui clips every widget to its rectangle; popups are clamped to the
+//! body). When the bar is too small to show a marker it says so in words. Nothing else in the
+//! frame uses reverse video, so the style stays unique to the markers.
+//!
+//! **Sizes.** The status bar needs two rows (one for it, one for the body). The header also needs
+//! 12 rows and 40 columns and is dropped for the compact layout and below that. On a terminal too
+//! small for either the body simply gets the space.
+
+use ratatui::Frame;
+use ratatui::layout::Rect;
+use ratatui::style::{Modifier, Style};
+use ratatui::text::{Line, Span};
+use ratatui::widgets::{Block, Clear, Paragraph};
+use russh_bbs_core::icons::{SecurityMarker, Tier};
+
+use super::chrome;
+use super::strings::StringTable;
+use crate::settings::Look;
+
+/// Fewest rows for the header bar to appear.
+pub(crate) const HEADER_MIN_ROWS: u16 = 12;
+/// Fewest columns for the header bar to appear.
+pub(crate) const HEADER_MIN_COLS: u16 = 40;
+
+/// Text that is allowed in a bar: words from the string table, or fixed words in the code.
+/// It cannot be made from an arbitrary `&str`, which keeps member text out of the bars.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct ChromeText<'a>(&'a str);
+
+impl<'a> ChromeText<'a> {
+    /// The string table's word for `key`.
+    pub(crate) fn table(strings: &'a StringTable, key: &'a str) -> Self {
+        Self(strings.text(key))
+    }
+
+    /// A fixed word in the code (a key name such as `Esc`).
+    pub(crate) const fn fixed(text: &'static str) -> ChromeText<'static> {
+        ChromeText(text)
+    }
+
+    pub(crate) fn as_str(self) -> &'a str {
+        self.0
+    }
+}
+
+/// One entry in the status bar: the key and what it does.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct Hint<'a> {
+    pub(crate) key: ChromeText<'a>,
+    pub(crate) label: ChromeText<'a>,
+}
+
+impl<'a> Hint<'a> {
+    pub(crate) const fn new(key: ChromeText<'a>, label: ChromeText<'a>) -> Self {
+        Self { key, label }
+    }
+}
+
+/// How a frame is split.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct Parts {
+    pub(crate) header: Option<Rect>,
+    pub(crate) body: Rect,
+    pub(crate) status: Option<Rect>,
+}
+
+/// Everything the frame needs to draw its two bars.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct FrameSpec<'a> {
+    strings: &'a StringTable,
+    look: Look,
+    tier: Tier,
+    markers: &'a [SecurityMarker],
+    board: ChromeText<'a>,
+    place: Option<ChromeText<'a>>,
+    clock: Option<&'a str>,
+    hints: &'a [Hint<'a>],
+    header: bool,
+}
+
+impl<'a> FrameSpec<'a> {
+    /// A frame for the board called by the string table's title. The header is on unless the
+    /// look is borderless (the compact layout).
+    pub(crate) fn new(strings: &'a StringTable, look: Look, tier: Tier) -> Self {
+        Self {
+            strings,
+            look,
+            tier,
+            markers: &[],
+            board: ChromeText::table(strings, super::keys::TITLE),
+            place: None,
+            clock: None,
+            hints: &[],
+            header: !look.is_borderless(),
+        }
+    }
+
+    /// The security markers that apply to this screen (drawn in the status bar's left cell).
+    #[must_use]
+    pub(crate) const fn markers(mut self, markers: &'a [SecurityMarker]) -> Self {
+        self.markers = markers;
+        self
+    }
+
+    /// The name of the area the member is in, shown beside the board name.
+    #[must_use]
+    pub(crate) const fn place(mut self, place: ChromeText<'a>) -> Self {
+        self.place = Some(place);
+        self
+    }
+
+    /// The clock text for the header's right end, e.g. `UTC 14:05`. Numbers and fixed words
+    /// only; it is redrawn with the screen, not by a timer (D49).
+    #[must_use]
+    pub(crate) const fn clock(mut self, clock: Option<&'a str>) -> Self {
+        self.clock = clock;
+        self
+    }
+
+    /// The keys for this screen, most important first. Hints that do not fit are dropped from
+    /// the end, never clipped.
+    #[must_use]
+    pub(crate) const fn hints(mut self, hints: &'a [Hint<'a>]) -> Self {
+        self.hints = hints;
+        self
+    }
+
+    /// Turn the header on or off (a layout that wants none).
+    #[must_use]
+    pub(crate) const fn header(mut self, on: bool) -> Self {
+        self.header = on;
+        self
+    }
+
+    /// Split `area` into header, body and status bar.
+    pub(crate) fn parts(&self, area: Rect) -> Parts {
+        let status = (area.height >= 2).then(|| Rect {
+            y: area.y + area.height - 1,
+            height: 1,
+            ..area
+        });
+        let after_status = if status.is_some() {
+            area.height - 1
+        } else {
+            area.height
+        };
+        let header =
+            (self.header && area.height >= HEADER_MIN_ROWS && area.width >= HEADER_MIN_COLS)
+                .then_some(Rect { height: 1, ..area });
+        let top = u16::from(header.is_some());
+        let body = Rect {
+            y: area.y + top,
+            height: after_status - top,
+            ..area
+        };
+        Parts {
+            header,
+            body,
+            status,
+        }
+    }
+
+    /// Draw the bars into `frame` and return the body rectangle for the screen's content.
+    pub(crate) fn draw(&self, frame: &mut Frame<'_>) -> Rect {
+        let parts = self.parts(frame.area());
+        if let Some(area) = parts.header {
+            self.draw_header(frame, area);
+        }
+        if let Some(area) = parts.status {
+            self.draw_status(frame, area);
+        }
+        parts.body
+    }
+
+    fn bar(&self) -> Style {
+        let surfaces = self.look.surfaces();
+        self.look
+            .bg(surfaces.bar_bg)
+            .patch(self.look.fg(surfaces.bar_fg))
+    }
+
+    fn separator(&self) -> &'static str {
+        if self.look.ascii() {
+            " | "
+        } else {
+            " \u{2502} "
+        }
+    }
+
+    fn draw_header(&self, frame: &mut Frame<'_>, area: Rect) {
+        let bar = self.bar();
+        frame.render_widget(Clear, area);
+        frame.render_widget(Block::default().style(bar), area);
+        let accent = self.look.accent(
+            Style::new().add_modifier(Modifier::BOLD),
+            self.look.palette().heading,
+        );
+        let mut left = vec![
+            Span::styled(" ".to_owned(), bar),
+            Span::styled(self.board.as_str().to_owned(), bar.patch(accent)),
+        ];
+        if let Some(place) = self.place {
+            left.push(Span::styled(self.separator().to_owned(), bar));
+            left.push(Span::styled(place.as_str().to_owned(), bar));
+        }
+        let right = self
+            .clock
+            .map(|clock| Span::styled(format!("{clock} "), bar))
+            .into_iter()
+            .collect::<Vec<_>>();
+        let right_width = u16::try_from(Line::from(right.clone()).width()).unwrap_or(0);
+        // The clock goes first: if the area is narrow, the place name is what gives way.
+        let right_width = right_width.min(area.width / 2);
+        let left_area = Rect {
+            width: area.width - right_width,
+            ..area
+        };
+        frame.render_widget(Paragraph::new(Line::from(left)), left_area);
+        if right_width > 0 {
+            let right_area = Rect {
+                x: area.x + area.width - right_width,
+                width: right_width,
+                ..area
+            };
+            frame.render_widget(Paragraph::new(Line::from(right)), right_area);
+        }
+    }
+
+    fn draw_status(&self, frame: &mut Frame<'_>, area: Rect) {
+        frame.render_widget(Clear, area);
+        // The marker cell first: the reserved style and no colour.
+        let cell = chrome::status_cell(self.markers, self.tier, self.strings, area.width);
+        let used = cell.as_ref().map_or(0, |(_, used)| *used);
+        if let Some((line, used)) = cell {
+            frame.render_widget(
+                Paragraph::new(line),
+                Rect {
+                    width: used,
+                    ..area
+                },
+            );
+        }
+        // Then the bar, starting after the cell, with a gap when there was a marker.
+        let gap = u16::from(used > 0).saturating_mul(2).min(area.width - used);
+        let rest = Rect {
+            x: area.x + used,
+            width: area.width - used,
+            ..area
+        };
+        let bar = self.bar();
+        frame.render_widget(Block::default().style(bar), rest);
+        let hints_area = Rect {
+            x: rest.x + gap,
+            width: rest.width.saturating_sub(gap),
+            ..rest
+        };
+        if hints_area.width == 0 {
+            return;
+        }
+        frame.render_widget(
+            Paragraph::new(self.hint_line(bar, hints_area.width)),
+            hints_area,
+        );
+    }
+
+    /// The hints that fit in `width` columns, key chips in the theme's key colour.
+    fn hint_line(&self, bar: Style, width: u16) -> Line<'static> {
+        let key_style = bar.patch(self.look.accent(
+            Style::new().add_modifier(Modifier::BOLD),
+            self.look.palette().key,
+        ));
+        let mut spans = vec![Span::styled(" ".to_owned(), bar)];
+        let mut used = 1_usize;
+        for hint in self.hints {
+            let key = hint.key.as_str();
+            let label = hint.label.as_str();
+            let need = key.chars().count() + 1 + label.chars().count() + 2;
+            if used + need > usize::from(width) {
+                break;
+            }
+            spans.push(Span::styled(key.to_owned(), key_style));
+            spans.push(Span::styled(format!(" {label}  "), bar));
+            used += need;
+        }
+        Line::from(spans)
+    }
+}
+
+/// `UTC HH:MM` for the header, from a Unix time in seconds.
+#[must_use]
+pub(crate) fn clock_text(unix_seconds: u64) -> String {
+    let minutes = unix_seconds / 60 % (24 * 60);
+    format!("UTC {:02}:{:02}", minutes / 60, minutes % 60)
+}
+
+#[cfg(test)]
+mod tests;

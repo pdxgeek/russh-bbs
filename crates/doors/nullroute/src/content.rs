@@ -17,6 +17,10 @@ pub const SCRIPTS_TOML: &str = include_str!("../content/scripts.toml");
 pub const CONTRACTS_TOML: &str = include_str!("../content/contracts.toml");
 /// Rig parts, the hideout and the fence.
 pub const RIG_TOML: &str = include_str!("../content/rig.toml");
+/// Countermeasures and wardens (M4-N2).
+pub const COUNTERMEASURES_TOML: &str = include_str!("../content/countermeasures.toml");
+/// Fragments for the module editor (M4-N2).
+pub const FRAGMENTS_TOML: &str = include_str!("../content/fragments.toml");
 
 /// The three ways a node can be locked, and the three break effects that open them.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
@@ -212,6 +216,12 @@ pub struct CorpDef {
     pub blackwall_pct: u32,
     /// The lock family the corporation leans on.
     pub favoured: Lock,
+    /// Countermeasure tags the corporation favours: their weight triples when a patrol is picked.
+    #[serde(default)]
+    pub cm_bias: Vec<String>,
+    /// The warden (a countermeasure number) that hunts runs on its tier-3 networks.
+    #[serde(default)]
+    pub warden: u8,
 }
 
 /// A node type's role in a network.
@@ -282,6 +292,200 @@ pub struct ScriptDef {
     pub min_skill: u32,
     /// Owned from the first visit.
     pub starter: bool,
+    /// One line.
+    pub blurb: String,
+    /// The kind of countermeasure the script is tuned to (+3 power against it in an encounter).
+    #[serde(default)]
+    pub target: Option<CmKind>,
+    /// Armor ignored in an encounter.
+    #[serde(default)]
+    pub pierce: u32,
+    /// A corporation learns it half as fast.
+    #[serde(default)]
+    pub slow: bool,
+    /// The identity a corporation learns (set on load; not in the table).
+    #[serde(skip)]
+    pub sig: u16,
+}
+
+/// What a countermeasure is.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum CmKind {
+    /// Watches a node and hits when you stay.
+    Sentry,
+    /// Follows your trace.
+    Tracer,
+    /// A black wall: closes a node until it is breached.
+    Wall,
+    /// A corporate AI that hunts you from node to node.
+    Warden,
+}
+
+impl CmKind {
+    /// All four, in a fixed order.
+    pub const ALL: [Self; 4] = [Self::Sentry, Self::Tracer, Self::Wall, Self::Warden];
+
+    /// The name on the screen.
+    #[must_use]
+    pub const fn word(self) -> &'static str {
+        match self {
+            Self::Sentry => "sentry",
+            Self::Tracer => "tracer",
+            Self::Wall => "black wall",
+            Self::Warden => "warden",
+        }
+    }
+}
+
+/// What a countermeasure does on its beat.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Intent {
+    /// A light touch of trace.
+    Probe,
+    /// The real hit.
+    Strike,
+    /// The next strike is doubled.
+    Charge,
+    /// Armor +3 against your move this beat.
+    Guard,
+    /// The family you used last cannot be used next beat.
+    Seal,
+    /// Starts a tracer and adds trace.
+    Trace,
+    /// Heals.
+    Mend,
+    /// A break script you play is echoed back as trace.
+    Counter,
+}
+
+impl Intent {
+    /// The word shown above the fight.
+    #[must_use]
+    pub const fn word(self) -> &'static str {
+        match self {
+            Self::Probe => "PROBE",
+            Self::Strike => "STRIKE",
+            Self::Charge => "CHARGE",
+            Self::Guard => "GUARD",
+            Self::Seal => "SEAL",
+            Self::Trace => "TRACE",
+            Self::Mend => "MEND",
+            Self::Counter => "COUNTER",
+        }
+    }
+
+    /// What it means, in a few words.
+    #[must_use]
+    pub const fn gloss(self) -> &'static str {
+        match self {
+            Self::Probe => "light touch",
+            Self::Strike => "hits hard",
+            Self::Charge => "next strike x2: jam it",
+            Self::Guard => "armor up: do not attack",
+            Self::Seal => "seals your last family",
+            Self::Trace => "starts a tracer",
+            Self::Mend => "heals itself",
+            Self::Counter => "echoes break scripts",
+        }
+    }
+}
+
+/// A countermeasure: an enemy with a pattern to learn. Wardens are the `Warden` kind.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CmDef {
+    /// Stable id.
+    pub num: u8,
+    /// Name.
+    pub name: String,
+    /// Kind.
+    pub kind: CmKind,
+    /// Lowest tier it appears in.
+    pub tier_min: u8,
+    /// Highest tier it appears in.
+    pub tier_max: u8,
+    /// Base integrity (the node's security adds 1 a level).
+    pub integrity: u32,
+    /// Base armor (damage taken falls by this).
+    pub armor: u32,
+    /// Trace of a strike, before the corporation's multipliers.
+    pub strike: u32,
+    /// The lock family whose break scripts hurt it +2.
+    pub weak: Lock,
+    /// The cycle of intents it repeats.
+    pub pattern: Vec<Intent>,
+    /// Weight when picking a patrol.
+    pub weight: u32,
+    /// Tags, matched with a corporation's `cm_bias`.
+    #[serde(default)]
+    pub tags: Vec<String>,
+    /// Integrity a mend heals.
+    #[serde(default)]
+    pub mend: u32,
+    /// Percent chance a defeated one leaves a fragment.
+    pub drop: u32,
+    /// One line.
+    pub blurb: String,
+}
+
+/// What a fragment contributes to a coded script.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum FragKind {
+    /// The effect.
+    Effect,
+    /// The target type.
+    Target,
+    /// A modifier.
+    Modifier,
+}
+
+/// A fragment of code, found on runs and combined at the workbench.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct FragmentDef {
+    /// Stable id (1 to 31: it is packed into a script's identity).
+    pub num: u8,
+    /// Name.
+    pub name: String,
+    /// Which slot of the editor it fills.
+    pub kind: FragKind,
+    /// The effect, for an effect fragment.
+    #[serde(default)]
+    pub effect: Option<Effect>,
+    /// The target type, for a target fragment.
+    #[serde(default)]
+    pub target: Option<CmKind>,
+    /// The modifier's name, for a modifier fragment.
+    #[serde(default)]
+    pub modifier: Option<String>,
+    /// Added to the build's power.
+    #[serde(default)]
+    pub power: i32,
+    /// Added to the build's memory.
+    #[serde(default)]
+    pub memory: i32,
+    /// Added to the build's noise.
+    #[serde(default)]
+    pub noise: i32,
+    /// Added to the build's cycles.
+    #[serde(default)]
+    pub cycles: i32,
+    /// Armor the build ignores.
+    #[serde(default)]
+    pub pierce: u32,
+    /// Limits the build to this many uses a run (0 leaves it as the effect has it).
+    #[serde(default)]
+    pub charges: u32,
+    /// A corporation learns the build half as fast.
+    #[serde(default)]
+    pub slow: bool,
+    /// Lowest tier of network it can be found in.
+    pub rank: u8,
+    /// Drop weight.
+    pub weight: u32,
     /// One line.
     pub blurb: String,
 }
@@ -406,6 +610,22 @@ pub struct ScriptsTable {
 pub struct ContractsTable {
     /// Templates.
     pub contract: Vec<ContractDef>,
+}
+
+/// `countermeasures.toml`.
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CmTable {
+    /// Countermeasures and wardens.
+    pub cm: Vec<CmDef>,
+}
+
+/// `fragments.toml`.
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct FragmentsTable {
+    /// Fragments.
+    pub fragment: Vec<FragmentDef>,
 }
 
 /// `rig.toml`.
@@ -657,6 +877,163 @@ impl Table for ContractsTable {
     }
 }
 
+impl Table for CmTable {
+    fn validate(&self) -> Vec<String> {
+        let mut problems = id_problems(
+            "cm",
+            self.cm.iter().map(|c| c.num),
+            self.cm.iter().map(|c| c.name.as_str()),
+        );
+        for c in &self.cm {
+            if !(1..=3).contains(&c.tier_min) || c.tier_max < c.tier_min || c.tier_max > 3 {
+                problems.push(format!("cm `{}`: tiers must be 1 to 3, min <= max", c.name));
+            }
+            if !(4..=40).contains(&c.integrity) || c.armor > 5 || !(1..=20).contains(&c.strike) {
+                problems.push(format!(
+                    "cm `{}`: integrity 4-40, armor <= 5, strike 1-20",
+                    c.name
+                ));
+            }
+            if c.pattern.len() < 2 || c.pattern.len() > 8 {
+                problems.push(format!("cm `{}`: a pattern has 2 to 8 beats", c.name));
+            }
+            if !c.pattern.iter().any(|i| {
+                matches!(
+                    i,
+                    Intent::Strike | Intent::Probe | Intent::Trace | Intent::Counter
+                )
+            }) {
+                problems.push(format!(
+                    "cm `{}`: its pattern never touches the trace",
+                    c.name
+                ));
+            }
+            if c.pattern.contains(&Intent::Mend) != (c.mend > 0) {
+                problems.push(format!(
+                    "cm `{}`: `mend` must be set exactly when the pattern mends",
+                    c.name
+                ));
+            }
+            if c.weight == 0 || c.drop > 100 {
+                problems.push(format!("cm `{}`: weight above 0, drop at most 100", c.name));
+            }
+            if !plain_text(&c.blurb) || c.blurb.chars().count() > 90 {
+                problems.push(format!(
+                    "cm `{}`: blurb must be plain and at most 90 characters",
+                    c.name
+                ));
+            }
+            for tag in &c.tags {
+                if tag.is_empty() || !tag.bytes().all(|b| b.is_ascii_lowercase()) {
+                    problems.push(format!("cm `{}`: tags are lowercase words", c.name));
+                }
+            }
+        }
+        for tier in 1..=3u8 {
+            for kind in [CmKind::Sentry, CmKind::Tracer] {
+                if !self
+                    .cm
+                    .iter()
+                    .any(|c| c.kind == kind && c.tier_min <= tier && tier <= c.tier_max)
+                {
+                    problems.push(format!("no {} for tier {tier}", kind.word()));
+                }
+            }
+        }
+        for tier in 2..=3u8 {
+            if !self
+                .cm
+                .iter()
+                .any(|c| c.kind == CmKind::Wall && c.tier_min <= tier && tier <= c.tier_max)
+            {
+                problems.push(format!("no black wall for tier {tier}"));
+            }
+        }
+        if !self.cm.iter().any(|c| c.kind == CmKind::Warden) {
+            problems.push("needs at least one warden".into());
+        }
+        problems
+    }
+}
+
+impl Table for FragmentsTable {
+    fn validate(&self) -> Vec<String> {
+        let mut problems = id_problems(
+            "fragment",
+            self.fragment.iter().map(|f| f.num),
+            self.fragment.iter().map(|f| f.name.as_str()),
+        );
+        for f in &self.fragment {
+            if !(1..=31).contains(&f.num) {
+                problems.push(format!("fragment `{}`: num must be 1 to 31", f.name));
+            }
+            let set = (f.effect.is_some(), f.target.is_some(), f.modifier.is_some());
+            let ok = match f.kind {
+                FragKind::Effect => set == (true, false, false),
+                FragKind::Target => set == (false, true, false),
+                FragKind::Modifier => set == (false, false, true),
+            };
+            if !ok {
+                problems.push(format!(
+                    "fragment `{}`: set exactly the field its kind names",
+                    f.name
+                ));
+            }
+            if let Some(effect) = f.effect
+                && !codable(effect)
+            {
+                problems.push(format!("fragment `{}`: {effect:?} cannot be coded", f.name));
+            }
+            if f.target == Some(CmKind::Warden) && f.kind != FragKind::Target {
+                problems.push(format!("fragment `{}`: only a target tunes", f.name));
+            }
+            if !(1..=3).contains(&f.rank) || f.weight == 0 {
+                problems.push(format!("fragment `{}`: rank 1-3 and a weight", f.name));
+            }
+            if !(-4..=6).contains(&f.power)
+                || !(-3..=4).contains(&f.memory)
+                || !(-4..=6).contains(&f.noise)
+                || !(-1..=0).contains(&f.cycles)
+                || f.pierce > 3
+                || f.charges > 3
+            {
+                problems.push(format!("fragment `{}`: a number is out of range", f.name));
+            }
+            if !plain_text(&f.blurb) || f.blurb.chars().count() > 70 {
+                problems.push(format!(
+                    "fragment `{}`: blurb must be plain and at most 70 characters",
+                    f.name
+                ));
+            }
+        }
+        for kind in [FragKind::Effect, FragKind::Target, FragKind::Modifier] {
+            let n = self.fragment.iter().filter(|f| f.kind == kind).count();
+            if n == 0 {
+                problems.push(format!("no {kind:?} fragments"));
+            }
+        }
+        problems
+    }
+}
+
+/// The effects the module editor can build: the ones that matter in a fight or on the way in.
+#[must_use]
+pub const fn codable(effect: Effect) -> bool {
+    matches!(
+        effect,
+        Effect::Scan
+            | Effect::Crack
+            | Effect::Spoof
+            | Effect::Overflow
+            | Effect::Mask
+            | Effect::Decoy
+            | Effect::Reroute
+            | Effect::Jam
+            | Effect::Fork
+            | Effect::Purge
+    )
+}
+
 impl Table for RigTable {
     fn validate(&self) -> Vec<String> {
         let mut problems = id_problems(
@@ -721,6 +1098,10 @@ pub struct Content {
     pub contracts: ContractsTable,
     /// Rig, hideout and fence.
     pub rig: RigTable,
+    /// Countermeasures and wardens.
+    pub cms: CmTable,
+    /// Fragments for coding.
+    pub fragments: FragmentsTable,
 }
 
 impl Content {
@@ -736,13 +1117,31 @@ impl Content {
     /// # Errors
     /// The first table that does not load.
     pub fn try_embedded() -> Result<Self, content::ContentError> {
+        let mut scripts: ScriptsTable = content::load("scripts", SCRIPTS_TOML)?;
+        for s in &mut scripts.script {
+            s.sig = u16::from(s.num);
+        }
         Ok(Self {
             corps: content::load("corps", CORPS_TOML)?,
             nodes: content::load("nodes", NODES_TOML)?,
-            scripts: content::load("scripts", SCRIPTS_TOML)?,
+            scripts,
             contracts: content::load("contracts", CONTRACTS_TOML)?,
             rig: content::load("rig", RIG_TOML)?,
+            cms: content::load("countermeasures", COUNTERMEASURES_TOML)?,
+            fragments: content::load("fragments", FRAGMENTS_TOML)?,
         })
+    }
+
+    /// A countermeasure by number.
+    #[must_use]
+    pub fn cm(&self, num: u8) -> Option<&CmDef> {
+        self.cms.cm.iter().find(|c| c.num == num)
+    }
+
+    /// A fragment by number.
+    #[must_use]
+    pub fn fragment(&self, num: u8) -> Option<&FragmentDef> {
+        self.fragments.fragment.iter().find(|f| f.num == num)
     }
 
     /// A corporation by number.

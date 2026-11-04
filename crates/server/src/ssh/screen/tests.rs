@@ -488,3 +488,169 @@ fn a_multi_line_paste_into_the_chat_line_cannot_send_it() {
     // A typed Enter still sends.
     assert_eq!(chat_key(Key::Enter), Some(ChatKey::Enter));
 }
+
+// ---- UI-1: the frame's status bar and the client's colour depth ----
+
+mod frame {
+    use russh_bbs_core::access::{Permission, Slug, Snapshot, Via};
+    use russh_bbs_core::icons::Tier;
+    use russh_bbs_core::sanitize::sanitize_username;
+    use russh_bbs_core::store::AccountId;
+    use russh_bbs_core::terminal_settings::{MemberFlow, TerminalSettings};
+
+    use super::{Key, PtySize, RenderCap, Screen, text};
+
+    fn member_screen(role: &Slug, rank: u8, settings: TerminalSettings, size: PtySize) -> Screen {
+        let flow = MemberFlow::new(
+            &sanitize_username("alice").unwrap(),
+            Snapshot::from_role(
+                Some(AccountId::from_raw(1)),
+                role,
+                rank,
+                &Via::Account,
+                Permission::ALL.iter().copied(),
+            ),
+            None,
+            settings,
+        );
+        Screen::new(
+            size,
+            RenderCap::default(),
+            super::super::Content::Member(Box::new(flow)),
+            std::sync::Arc::new(crate::ui::Ui::standard().unwrap()),
+        )
+        .unwrap()
+    }
+
+    /// The words of every full redraw after each key in `presses`, as one string per press.
+    fn walk(screen: &mut Screen, presses: &[Key]) -> Vec<String> {
+        let mut frames = vec![text(&screen.enter().unwrap())];
+        for key in presses {
+            screen.apply_keys(&[*key]);
+            // A window change of the same size repaints everything, so the words are whole.
+            let size = screen.pty;
+            screen.set_size(size);
+            frames.push(text(&screen.render().unwrap().unwrap_or_default()));
+        }
+        frames
+    }
+
+    fn ascii() -> TerminalSettings {
+        TerminalSettings::default().with_tier(Tier::Ascii)
+    }
+
+    /// FIX-M3-6: while the board is in low-security mode every screen of a staff session shows
+    /// `LOW-SECURITY` in the status bar's marker cell: login, menu, settings, members,
+    /// community and the sysop menu. A plain member never does, and nobody does outside the mode.
+    #[test]
+    fn low_security_shows_on_every_screen_of_a_staff_session_and_only_there() {
+        let size = PtySize::from_request(80, 24);
+        let presses = [
+            Key::Char('x'),
+            Key::Char('s'),
+            Key::Escape,
+            Key::Char('u'),
+            Key::Escape,
+            Key::Char('y'),
+            Key::Escape,
+            Key::Char('o'),
+        ];
+        for (role, rank, low, expect) in [
+            (&Slug::SYSOP, 100, true, true),
+            (&Slug::SYSOP, 100, false, false),
+            (&Slug::MEMBER, 10, true, false),
+        ] {
+            let mut screen = member_screen(role, rank, ascii(), size);
+            screen.set_low_security(low);
+            for (at, frame) in walk(&mut screen, &presses).iter().enumerate() {
+                assert_eq!(
+                    frame.contains("LOW-SECURITY"),
+                    expect,
+                    "{role:?} low={low} after {at} keys:\n{frame}"
+                );
+                // The caption is split by cursor moves in a diff redraw; its words are whole.
+                assert_eq!(frame.contains("telnet"), expect, "{frame}");
+            }
+        }
+    }
+
+    fn all_sgr(bytes: &str) -> Vec<String> {
+        bytes
+            .split("\u{1b}[")
+            .skip(1)
+            .filter_map(|part| part.split_once('m').map(|(sgr, _)| sgr.to_owned()))
+            .collect()
+    }
+
+    fn first_frame(term: Option<&str>, colorterm: Option<&str>, color: bool) -> String {
+        let mut screen = member_screen(
+            &Slug::MEMBER,
+            10,
+            TerminalSettings::default()
+                .with_tier(Tier::Unicode)
+                .with_color(color),
+            PtySize::from_request(100, 30),
+        );
+        screen.set_client_terminal(term, colorterm);
+        screen.apply_keys(&[Key::Char('x')]);
+        text(&screen.enter().unwrap())
+    }
+
+    /// The client's `TERM` and `COLORTERM` pick the depth the bars are painted in, and the
+    /// member's colour setting only lowers it.
+    #[test]
+    fn the_clients_terminal_picks_the_colour_depth_and_the_member_can_only_lower_it() {
+        let has = |frame: &str, part: &str| all_sgr(frame).iter().any(|s| s.contains(part));
+        // Truecolor: 24-bit backgrounds on the bars.
+        let truecolor = first_frame(Some("xterm-256color"), Some("truecolor"), true);
+        assert!(has(&truecolor, "48;2;"), "{:?}", all_sgr(&truecolor));
+        // 256 colours: palette backgrounds, no 24-bit ones.
+        let c256 = first_frame(Some("xterm-256color"), None, true);
+        assert!(
+            has(&c256, "48;5;") && !has(&c256, "48;2;"),
+            "{:?}",
+            all_sgr(&c256)
+        );
+        // Sixteen colours (TERM=xterm, or nothing said): palette cells 0 to 15 only, never a
+        // 24-bit colour or a cell of the 256-colour cube.
+        for frame in [
+            first_frame(Some("xterm"), None, true),
+            first_frame(None, None, true),
+        ] {
+            let sgr = all_sgr(&frame);
+            assert!(!sgr.iter().any(|s| s.contains(";2;")), "{sgr:?}");
+            for part in &sgr {
+                let numbers: Vec<&str> = part.split(';').collect();
+                for window in numbers.windows(3) {
+                    if matches!(window[0], "38" | "48") && window[1] == "5" {
+                        assert!(window[2].parse::<u8>().unwrap() <= 15, "{part}");
+                    }
+                }
+            }
+            assert!(
+                sgr.iter().any(|s| s.contains("48;5;")),
+                "bars are painted: {sgr:?}"
+            );
+        }
+        // A terminal that says it has no colour gets none.
+        let mono = first_frame(Some("vt100"), None, true);
+        let colour_sgr: Vec<_> = all_sgr(&mono)
+            .into_iter()
+            .filter(|s| {
+                s.split(';')
+                    .any(|p| matches!(p.parse::<u8>(), Ok(30..=38 | 40..=48 | 90..=107)))
+            })
+            .collect();
+        assert!(colour_sgr.is_empty(), "{colour_sgr:?}");
+        // Colour off wins over a truecolor client; it never raises a lower depth either.
+        let off = first_frame(Some("xterm-256color"), Some("truecolor"), false);
+        let colour_sgr: Vec<_> = all_sgr(&off)
+            .into_iter()
+            .filter(|s| {
+                s.split(';')
+                    .any(|p| matches!(p.parse::<u8>(), Ok(30..=38 | 40..=48 | 90..=107)))
+            })
+            .collect();
+        assert!(colour_sgr.is_empty(), "{colour_sgr:?}");
+    }
+}

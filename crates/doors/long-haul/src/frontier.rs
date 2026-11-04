@@ -70,6 +70,17 @@ pub enum Hazard {
 }
 
 impl Hazard {
+    /// The id event tables use: `none`, `nebula`, `radiation` or `debris`.
+    #[must_use]
+    pub const fn id(self) -> &'static str {
+        match self {
+            Self::None => "none",
+            Self::Nebula => "nebula",
+            Self::Radiation => "radiation",
+            Self::Debris => "debris",
+        }
+    }
+
     /// Display name.
     #[must_use]
     pub const fn name(self) -> &'static str {

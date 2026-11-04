@@ -5,7 +5,8 @@
 //! and the branch tests in `tests/branches.rs` compare level 0 with level 10 for every skill.
 
 /// The five skills.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Skill {
     /// Narrows the spread on every trade.
     Trade,

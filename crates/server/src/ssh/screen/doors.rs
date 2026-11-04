@@ -143,7 +143,7 @@ impl Screen {
         let env = self.door_env(&settings, session.flow.handle());
         let ctx = doors::DrawCtx {
             strings: theme.strings(),
-            look: Look::themed(&settings, layout, theme.palette()),
+            look: Look::themed(&settings, layout, theme.palette()).at_depth(self.depth()),
             tier: settings.icon_tier(),
         };
         let tier = ctx.tier;

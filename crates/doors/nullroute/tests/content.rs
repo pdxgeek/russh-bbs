@@ -3,8 +3,9 @@
 
 use russh_bbs_door::content::{self, ContentError};
 use russh_bbs_door_nullroute::content::{
-    CONTRACTS_TOML, CORPS_TOML, Content, ContractsTable, CorpsTable, NODES_TOML, NodesTable,
-    RIG_TOML, RigTable, Role, SCRIPTS_TOML, ScriptsTable,
+    CONTRACTS_TOML, CORPS_TOML, COUNTERMEASURES_TOML, CmKind, CmTable, Content, ContractsTable,
+    CorpsTable, FRAGMENTS_TOML, FragKind, FragmentsTable, NODES_TOML, NodesTable, RIG_TOML,
+    RigTable, Role, SCRIPTS_TOML, ScriptsTable,
 };
 
 #[test]
@@ -20,6 +21,14 @@ fn every_embedded_table_passes_its_schema_test() {
         Ok(())
     );
     assert_eq!(content::check::<RigTable>("rig", RIG_TOML), Ok(()));
+    assert_eq!(
+        content::check::<CmTable>("countermeasures", COUNTERMEASURES_TOML),
+        Ok(())
+    );
+    assert_eq!(
+        content::check::<FragmentsTable>("fragments", FRAGMENTS_TOML),
+        Ok(())
+    );
     assert!(Content::try_embedded().is_ok());
 }
 
@@ -152,5 +161,104 @@ fn broken_edits_are_refused_not_loaded() {
     assert!(matches!(
         broken::<NodesTable>(&huge),
         ContentError::TooLarge { .. }
+    ));
+}
+
+#[test]
+fn the_n2_content_budget_is_met() {
+    let c = Content::try_embedded().unwrap();
+    let patrols = c.cms.cm.iter().filter(|d| d.kind != CmKind::Warden).count();
+    assert_eq!(patrols, 20, "20 countermeasures");
+    assert_eq!(
+        c.cms.cm.iter().filter(|d| d.kind == CmKind::Warden).count(),
+        3,
+        "3 wardens"
+    );
+    assert_eq!(c.scripts.script.len(), 60, "60 scripts");
+    assert_eq!(c.fragments.fragment.len(), 30, "30 fragments");
+    for kind in [FragKind::Effect, FragKind::Target, FragKind::Modifier] {
+        assert!(c.fragments.fragment.iter().any(|f| f.kind == kind));
+    }
+    // Every kind of countermeasure comes in a handful of variants, so a pattern is worth learning.
+    for kind in [CmKind::Sentry, CmKind::Tracer, CmKind::Wall] {
+        assert!(c.cms.cm.iter().filter(|d| d.kind == kind).count() >= 6);
+    }
+}
+
+#[test]
+fn corporation_styles_point_at_real_tags_and_real_wardens() {
+    let c = Content::try_embedded().unwrap();
+    for corp in &c.corps.corp {
+        assert!(
+            !corp.cm_bias.is_empty(),
+            "{} has a countermeasure style",
+            corp.name
+        );
+        for tag in &corp.cm_bias {
+            assert!(
+                c.cms.cm.iter().any(|d| d.tags.contains(tag)),
+                "{}: no countermeasure is tagged `{tag}`",
+                corp.name
+            );
+        }
+        let w = c.cm(corp.warden).unwrap();
+        assert_eq!(w.kind, CmKind::Warden, "{}", corp.name);
+    }
+    // The styles differ: no two corporations have the same bias.
+    for (i, a) in c.corps.corp.iter().enumerate() {
+        for b in &c.corps.corp[i + 1..] {
+            assert_ne!(a.cm_bias, b.cm_bias, "{} and {}", a.name, b.name);
+        }
+    }
+}
+
+#[test]
+fn stock_scripts_are_never_tuned_to_wardens_and_signatures_are_unique() {
+    let c = Content::try_embedded().unwrap();
+    let mut sigs = std::collections::BTreeSet::new();
+    for s in &c.scripts.script {
+        assert_ne!(s.target, Some(CmKind::Warden), "{}", s.name);
+        assert!(s.pierce <= 2, "{}", s.name);
+        assert!(sigs.insert(s.sig), "{} shares a signature", s.name);
+        assert_eq!(s.sig, u16::from(s.num));
+    }
+    // Only the break, jam and purge families carry a tuning or pierce: the rest cannot hurt a thing.
+    for s in &c.scripts.script {
+        if s.target.is_some() || s.pierce > 0 {
+            assert!(
+                matches!(
+                    s.effect,
+                    russh_bbs_door_nullroute::content::Effect::Jam
+                        | russh_bbs_door_nullroute::content::Effect::Purge
+                ),
+                "{}",
+                s.name
+            );
+        }
+    }
+}
+
+#[test]
+fn a_broken_countermeasure_or_fragment_table_is_refused() {
+    let broken = |toml: String| content::check::<CmTable>("countermeasures", &toml);
+    // A pattern that mends needs a mend amount, and the other way round.
+    let bad = COUNTERMEASURES_TOML.replacen("mend = 3", "mend = 0", 1);
+    assert!(matches!(broken(bad), Err(ContentError::Invalid { .. })));
+    // A duplicate id.
+    let dup = COUNTERMEASURES_TOML.replacen("num = 2\n", "num = 1\n", 1);
+    assert!(matches!(broken(dup), Err(ContentError::Invalid { .. })));
+    // An unknown field is refused, not ignored.
+    let extra = COUNTERMEASURES_TOML.replacen("armor = 0", "armour = 0", 1);
+    assert!(broken(extra).is_err());
+    // A fragment must fill exactly the slot its kind names, and cannot code a utility effect.
+    let frag = FRAGMENTS_TOML.replacen("effect = \"crack\"", "effect = \"copy\"", 1);
+    assert!(matches!(
+        content::check::<FragmentsTable>("fragments", &frag),
+        Err(ContentError::Invalid { .. })
+    ));
+    let slot = FRAGMENTS_TOML.replacen("kind = \"effect\"", "kind = \"modifier\"", 1);
+    assert!(matches!(
+        content::check::<FragmentsTable>("fragments", &slot),
+        Err(ContentError::Invalid { .. })
     ));
 }
