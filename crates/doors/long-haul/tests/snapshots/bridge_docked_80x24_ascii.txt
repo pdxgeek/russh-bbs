@@ -1,0 +1,19 @@
+* LONG HAUL  Tester0  18,450 cr  debt 20,000  days ********** 10
++ Mule-class freighter ----------------++ LOCAL SPACE -------------------+
+|HULL   ####################### 100/100||..o..          o   .F. ..o...   |
+|FUEL   ############### 120/120 ~7 hops||o          ?. . . .   o      o  |
+|REACTOR****** 6 pts                   ||.          .     I Pellam Wake..|
+|HOLD   ##########------------- 18/40 t||    .?      M   .      ?. A  R..|
+|WEAR   ---------------------- worst 0%||  o Garnet Drop.@      . . .o   |
+|PAYDAY --------------- 1,000 cr in 7 d||   .o...M...M           ?. . .  |
+|DATE   season 1 - voyage day 0 - 0 jum||   ?    .        o. .?       M. |
++--------------------------------------+|. . .?.?          .I. .?   .M   |
++ ALERTS ------------------------------++--------------------------------+
+|The galley is empty. Stock it at a do~|+ ON WATCH ----------------------+
+|Gunner Test is hurt for 3 d.          ||Pilot Test    Pilot     **...   |
+|Medic Test is restless (loyalty 9).   ||Engineer Test Engineer  **...   |
+|Hold: 12 t Ice Water, 6 t Grain Sacks ||Gunner Test   Gunner    ***..   |
+|Docked at Narrow Forge [Industrial st~||Medic Test    Medic     *....   |
++--------------------------------------++--------------------------------+
+[v] chart  [j] route  [m] market  [b] jobs  [y] yard  [l] loan  [f] fuel
+[r] repair  [u] undock  [c] crew  [a] standing  [n] news  [q] leave

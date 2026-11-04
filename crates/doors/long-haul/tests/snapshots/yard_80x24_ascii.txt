@@ -1,0 +1,19 @@
+* LONG HAUL  Tester0  18,450 cr  debt 20,000  days ********** 10
++ SHIPYARD  (negative is what you pay) ----------------------------------+
+|  Buy  Cargo Pod (cargo)                                         -1,800 |
+|> Buy  Bulk Pod (cargo)                                          -4,200 |
+|  Buy  Fuel Tank (tank)                                          -1,200 |
+|  Buy  Deep Tank (tank)                                          -3,000 |
+|  Buy  Survey Scanner (scanner)                                  -2,500 |
+|  Buy  Deep-field Scanner (scanner)                              -7,000 |
+|  Buy  Cartographer's Array (scanner)                           -16,000 |
+|  Buy  Crew Cabin (cabin)                                        -1,500 |
+|  Buy  Skimmer Refinery (refinery)                               -4,500 |
+|  Hull Wren-class courier                                         3,000 |
+|  Hull Pick-class prospector                                     -9,000 |
+|  Hull Talon-class gunship                                      -18,000 |
+|  Sell Ion Drive Mk1 (wear 0%)                                    1,750 |
+|  Sell Cargo Pod (wear 0%)                                          900 |
+|  Sell Fuel Tank (wear 0%)                                          600 |
++------------------------------------------------------------------------+
+[arrows] choose  [Enter] do it  [Esc] back
