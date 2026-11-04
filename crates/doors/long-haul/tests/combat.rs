@@ -574,3 +574,53 @@ fn an_escorted_ship_takes_some_of_the_fire() {
     }
     assert!(hit, "the ward is sometimes the target");
 }
+
+#[test]
+fn wrecking_the_navys_cutters_closes_the_leagues_docks_and_the_havens_still_welcome_you() {
+    // A deed outlasts the fight: two cutters cost 50 standing with the League, and the League's
+    // docks then refuse the ship (the L1 rule), while a Free Captains haven does not.
+    let mut h = Harness::new(1, 10);
+    let mut p = armed(&h, "runner");
+    h.fit(&mut p, "lance2");
+    p.standing = [0; 5];
+    p.docked = None;
+    // Cutters that stand and fight: try again if one breaks off.
+    let mut seed = 0;
+    while p.stats.fights_won < 2 && seed < 200 {
+        seed += 1;
+        h.reseed(seed);
+        h.fight(&mut p, "cutter");
+        if let Some(Scene::Combat(c)) = &mut p.scene {
+            c.e_hull = 2;
+            c.e_shield = 0;
+            c.range = Range::Mid;
+            c.intent = Intent::Brace;
+            c.shown = Intent::Brace;
+        }
+        let _ = h.go_strict(&mut p, &Action::Fight(orders(6, 0, 0)));
+        p.scene = None;
+    }
+    assert_eq!(p.stats.fights_won, 2);
+    assert!(p.standing[Faction::League.index()] <= -40);
+    let post = h.station("military");
+    h.orbit(&mut p, post);
+    assert_eq!(
+        h.go_strict(&mut p, &Action::Dock(post)).unwrap_err(),
+        Refusal::Barred(Faction::League)
+    );
+    // The rival is pleased: the Free Captains took note.
+    assert!(p.standing[Faction::Free.index()] > 0);
+    let haven = h
+        .stations("haven")
+        .into_iter()
+        .find(|s| {
+            !h.frontier
+                .system(h.frontier.station(*s).unwrap().system)
+                .unwrap()
+                .uncharted
+        })
+        .unwrap();
+    h.orbit(&mut p, haven);
+    let docked = h.go_strict(&mut p, &Action::Dock(haven));
+    assert!(docked.is_ok(), "{docked:?}");
+}

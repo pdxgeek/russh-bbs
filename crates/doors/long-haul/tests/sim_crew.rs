@@ -82,6 +82,10 @@ fn tally(bot: &mut Bot, events: &[Event]) {
             Event::BoardEnd { clean: true, .. } => "boardings",
             Event::BoardEnd { clean: false, .. } => "wiped out",
             Event::WagesMissed { .. } => "wages missed",
+            Event::Towed { .. } => "towed",
+            Event::Repossessed { .. } => "repossessed",
+            Event::DueMissed { .. } => "missed payment",
+            Event::Seized { .. } => "seized",
             _ => continue,
         };
         *bot.tally.entry(key).or_default() += 1;
@@ -115,8 +119,32 @@ fn play_scene(h: &mut Harness, bot: &mut Bot) {
         return;
     };
     match scene {
-        Scene::Event(_) => {
-            // A random open option: the crew-gated ones get used when they are open.
+        Scene::Event(ix) => {
+            // Hunters look for the option that starts a fight.
+            if bot.s == Strategy::Hunter {
+                let fighting: Vec<usize> = h.content.transit.event[usize::from(ix)]
+                    .options
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, o)| {
+                        o.outcomes.iter().any(|out| {
+                            out.effects.iter().any(|f| {
+                                matches!(
+                                    f,
+                                    russh_bbs_door_long_haul::transit::Effect::Combat { .. }
+                                )
+                            })
+                        })
+                    })
+                    .map(|(n, _)| n)
+                    .collect();
+                for n in fighting {
+                    if act(h, bot, &Action::Choose(u8::try_from(n).unwrap())) {
+                        return;
+                    }
+                }
+            }
+            // Otherwise a random open option: the crew-gated ones get used when they are open.
             let opts = 5u32;
             let start = bot.rng.below(opts);
             for k in 0..opts {
@@ -185,7 +213,10 @@ fn play_scene(h: &mut Harness, bot: &mut Bot) {
 
 fn business(h: &mut Harness, bot: &mut Bot, here: u16) {
     let shipyard = h.frontier.station(here).unwrap().shipyard;
-    // Fuel and wear.
+    // A captain short of fuel money borrows a little, as a person would, and refuels.
+    if bot.p.cash < 500 && bot.p.debt.principal + 2_000 <= bot.p.credit_limit() {
+        act(h, bot, &Action::Borrow(2_000));
+    }
     act(h, bot, &Action::Refuel(u16::MAX));
     if bot.p.worst_wear_pct() > 40 || bot.p.ship.hull_hp < 70 {
         act(h, bot, &Action::Repair(RepairTarget::All));
@@ -279,6 +310,28 @@ fn business(h: &mut Harness, bot: &mut Bot, here: u16) {
             }
         }
     }
+    // A battered ship goes to the nearest repair dock before anything else.
+    let max_hull = h.content.hulls[usize::from(bot.p.ship.hull)].hull_points;
+    let battered = u32::from(bot.p.ship.hull_hp) * 100 < u32::from(max_hull) * 65
+        || bot.p.worst_wear_pct() > 45;
+    if battered && !h.frontier.station(here).unwrap().repair {
+        let sys = h.frontier.station(here).unwrap().system;
+        let hops = h.frontier.hops_from(sys);
+        let yard = h
+            .frontier
+            .stations
+            .iter()
+            .filter(|s| {
+                s.repair
+                    && hops[usize::from(s.system)] <= 6
+                    && !h.frontier.systems[usize::from(s.system)].uncharted
+            })
+            .min_by_key(|s| hops[usize::from(s.system)])
+            .map(|s| s.id);
+        if yard.is_some() {
+            bot.dest = yard;
+        }
+    }
     // With no job to carry, wander to a nearby market and read its board.
     if bot.dest.is_none() {
         let sys = h.frontier.station(here).unwrap().system;
@@ -344,8 +397,8 @@ fn play_day(h: &mut Harness, bot: &mut Bot) {
                 bot.handled = Some((here, h.today));
                 business(h, bot, here);
             }
-            // With nothing to do, wait out the day; otherwise leave for the destination.
-            if bot.dest.is_none() || !act(h, bot, &Action::Undock) {
+            // With nothing to do, or no fuel to do it with, wait out the day; otherwise leave.
+            if bot.dest.is_none() || bot.p.ship.fuel < 12 || !act(h, bot, &Action::Undock) {
                 return;
             }
             continue;
