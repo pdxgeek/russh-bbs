@@ -42,7 +42,7 @@ pub fn migrate(kind: BlobKind, from: u32, bytes: &[u8]) -> Result<Vec<u8>, Migra
             upgraded.extend(encode(&SchoolLife::default()));
             decode_player(&upgraded)
                 .map(|_| upgraded)
-                .ok_or(MigrateError::Unsupported(from))
+                .ok_or(MigrateError::Corrupt(from))
         }
         _ => Err(MigrateError::Unsupported(from)),
     }

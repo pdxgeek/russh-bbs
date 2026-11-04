@@ -103,7 +103,10 @@ impl Eff {
     pub fn parse(text: &str) -> Result<Self, BadEff> {
         let bad = || BadEff(text.to_owned());
         let parts: Vec<&str> = text.trim().split(':').collect();
-        if parts.iter().any(|p| p.is_empty() || p.contains(char::is_whitespace)) {
+        if parts
+            .iter()
+            .any(|p| p.is_empty() || p.contains(char::is_whitespace))
+        {
             return Err(bad());
         }
         let num = |s: &str| s.trim_start_matches('+').parse::<i32>().map_err(|_| bad());
@@ -148,7 +151,10 @@ mod tests {
             Eff::parse("stand:the_bench:+5").unwrap(),
             Eff::Stand("the_bench".into(), 5)
         );
-        assert_eq!(Eff::parse("bond:sol:-4").unwrap(), Eff::Bond("sol".into(), -4));
+        assert_eq!(
+            Eff::parse("bond:sol:-4").unwrap(),
+            Eff::Bond("sol".into(), -4)
+        );
         assert_eq!(
             Eff::parse("stat:cash:3").unwrap(),
             Eff::Stat(Gauge::Cash, 3)
@@ -157,7 +163,10 @@ mod tests {
             Eff::parse("arc_end:bell:good").unwrap(),
             Eff::ArcEnd("bell".into(), "good".into())
         );
-        assert_eq!(Eff::parse("betray:last_ally").unwrap(), Eff::Betray("last_ally".into()));
+        assert_eq!(
+            Eff::parse("betray:last_ally").unwrap(),
+            Eff::Betray("last_ally".into())
+        );
         for bad in [
             "",
             "stand:x",

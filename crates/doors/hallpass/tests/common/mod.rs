@@ -13,9 +13,12 @@ pub mod bot;
 use std::sync::Arc;
 
 use russh_bbs_door::DoorRng;
+use russh_bbs_door_hallpass::cond::{Cond, Op, Stat};
 use russh_bbs_door_hallpass::content::Content;
 use russh_bbs_door_hallpass::game::{Action, Event, Game, Refused};
-use russh_bbs_door_hallpass::state::World;
+use russh_bbs_door_hallpass::state::{
+    ArcProgress, FileEntry, Membership, Wary, World, map_set, to_u8,
+};
 
 pub fn content() -> Arc<Content> {
     static CONTENT: std::sync::OnceLock<Arc<Content>> = std::sync::OnceLock::new();
@@ -217,4 +220,139 @@ pub fn legend_of(events: &[Event]) -> u32 {
             _ => None,
         })
         .unwrap_or(0)
+}
+
+/// Make `cond` hold for the character, directly in their state. Used to ask "is there any build
+/// for which this is open?" without playing days to get there.
+pub fn satisfy(game: &mut Game, cond: &Cond) {
+    let day = game.player.day;
+    match cond {
+        Cond::Tag(t) => {
+            let id = game
+                .content
+                .traits
+                .iter()
+                .find(|x| x.tags.contains(t))
+                .map(|x| x.id.clone())
+                .unwrap();
+            if !game.player.traits.contains(&id) {
+                game.player.traits.push(id);
+            }
+        }
+        Cond::Trait(t) => {
+            if !game.player.traits.contains(t) {
+                game.player.traits.push(t.clone());
+            }
+        }
+        Cond::Item(i) => map_set(&mut game.player.inventory, i, 1),
+        Cond::Know(k) => game.player.learn(k),
+        Cond::World(w) => game
+            .world
+            .active
+            .push(russh_bbs_door_hallpass::state::Active {
+                id: w.clone(),
+                since: day,
+                until: None,
+                by: "x".into(),
+            }),
+        Cond::Arc { arc, step } => {
+            game.player.life.arcs.retain(|a| a.id != *arc);
+            game.player.life.arcs.push(ArcProgress {
+                id: arc.clone(),
+                step: step.clone(),
+                since: day - 30,
+                ended: None,
+            });
+        }
+        Cond::Ended { arc, ending } => {
+            game.player.life.arcs.retain(|a| a.id != *arc);
+            game.player.life.arcs.push(ArcProgress {
+                id: arc.clone(),
+                step: "x".into(),
+                since: day - 30,
+                ended: Some(ending.clone()),
+            });
+        }
+        Cond::Not(inner) => match inner.as_ref() {
+            Cond::Trait(t) => game.player.traits.retain(|x| x != t),
+            Cond::Know(k) => game.player.knowledge.retain(|x| x != k),
+            _ => {}
+        },
+        Cond::Expelled => {}
+        Cond::Cmp { stat, op, value } => {
+            let v = match op {
+                Op::Gt => value + 1,
+                Op::Lt => value - 1,
+                _ => *value,
+            };
+            let p = &mut game.player;
+            match stat {
+                Stat::Legend => p.legend = u32::try_from(v.max(0)).unwrap(),
+                Stat::Notoriety => p.notoriety = to_u8(v),
+                Stat::Heat => p.heat = to_u8(v),
+                Stat::File => {
+                    p.file.push(FileEntry {
+                        day,
+                        kind: "caught".into(),
+                        sev: to_u8(v),
+                    });
+                }
+                Stat::Cool => p.cool = i16::try_from(v).unwrap(),
+                Stat::Nerve => {
+                    p.nerve_max = p.nerve_max.max(to_u8(v));
+                    p.nerve = to_u8(v);
+                }
+                Stat::Cash => p.cash = v,
+                Stat::Grades => {
+                    for (_, g) in &mut p.grades {
+                        *g = to_u8(v);
+                    }
+                }
+                Stat::Pulled => p.pulled = u16::try_from(v.max(0)).unwrap(),
+                Stat::Caught => p.caught = u16::try_from(v.max(0)).unwrap(),
+                Stat::Skill(id) => {
+                    map_set(
+                        &mut p.xp,
+                        id,
+                        if matches!(op, Op::Le | Op::Lt) {
+                            0
+                        } else {
+                            100
+                        },
+                    );
+                }
+                Stat::Standing(id) => map_set(&mut p.standing, id, i16::try_from(v).unwrap()),
+                Stat::Wary(id) => map_set(
+                    &mut p.wary,
+                    id,
+                    Wary {
+                        level: to_u8(v),
+                        last: day,
+                    },
+                ),
+                Stat::Grade(id) => map_set(&mut p.grades, id, to_u8(v)),
+                Stat::Bond(id) => map_set(&mut p.life.bonds, id, i16::try_from(v).unwrap()),
+                Stat::Rank(id) => {
+                    p.life.clubs.retain(|m| m.club != *id);
+                    if v > 0 {
+                        p.life.clubs.push(Membership {
+                            club: id.clone(),
+                            rank: to_u8(v),
+                            merit: 99,
+                            last_meet: -1,
+                        });
+                    }
+                }
+                Stat::Day => game.world.term_start = day - i64::from(v),
+            }
+        }
+    }
+}
+
+/// Stand the character where `npc` is in the first period of their day.
+pub fn meet(game: &mut Game, npc: &str) {
+    let day = game.player.day;
+    let spec = game.content.npc(npc).unwrap().clone();
+    game.player.slot = 0;
+    game.player.place = game.npc_place(&spec, day, 0).to_owned();
 }

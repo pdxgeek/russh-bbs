@@ -322,7 +322,10 @@ mod tests {
         assert!(Cond::parse("ended:bell@").is_err() && Cond::parse("arc:bell").is_err());
         assert!(matches!(
             Cond::parse("day>=3").unwrap(),
-            Cond::Cmp { stat: Stat::Day, .. }
+            Cond::Cmp {
+                stat: Stat::Day,
+                ..
+            }
         ));
         for bad in [
             "",

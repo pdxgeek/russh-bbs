@@ -482,10 +482,10 @@ impl Game {
         ))];
         if let Some(spec) = content.lesson_for(&done.subject) {
             let xp = rules.lesson_xp[score];
-            if xp > 0 {
-                if let Some(skill) = self.gain_xp(&spec.skill, xp) {
-                    events.push(Event::Say(format!("Your {skill} has improved.")));
-                }
+            if xp > 0
+                && let Some(skill) = self.gain_xp(&spec.skill, xp)
+            {
+                events.push(Event::Say(format!("Your {skill} has improved.")));
             }
         }
         // The teacher notices the work.

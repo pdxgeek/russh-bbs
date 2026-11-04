@@ -487,7 +487,8 @@ impl Game {
                 self.player.life.add_bond(&t, 1);
             }
             events.push(Event::Say(
-                "Friday's report puts you on the honour roll. The staff think better of you.".into(),
+                "Friday's report puts you on the honour roll. The staff think better of you."
+                    .into(),
             ));
         } else if self
             .player
@@ -520,6 +521,14 @@ impl Game {
         let low = self.player.heat > 0 && self.player.run.is_none();
         let _ = low;
         self.player.heat = to_u8(i32::from(self.player.heat) - rules.heat_decay);
+        // Marks slip when they are not kept up.
+        if day.rem_euclid(rules.grade_decay_days.max(1)) == 0 {
+            for (_, g) in &mut self.player.grades {
+                if *g > 30 {
+                    *g -= 1;
+                }
+            }
+        }
         // Notoriety fades slowly, but never below a trait's floor.
         if day.rem_euclid(rules.notoriety_decay_every.max(1)) == 0 {
             self.player.notoriety = to_u8(i32::from(self.player.notoriety) - 1);
@@ -925,9 +934,7 @@ impl Game {
             .as_deref()
             .map_or(0, |t| self.player.life.bond_with(t));
         let grade_now = i32::from(map_get(&self.player.grades, &subject).copied().unwrap_or(0));
-        let chance = (rules.skip_notice_base
-            - (grade_now - 55) / 6
-            - teacher_bond / 4
+        let chance = (rules.skip_notice_base - (grade_now - 55) / 6 - teacher_bond / 4
             + wary * 8
             + i32::from(self.player.heat) / 4
             + i32::from(self.player.notoriety) / 4

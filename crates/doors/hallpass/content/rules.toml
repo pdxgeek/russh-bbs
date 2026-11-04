@@ -38,9 +38,10 @@ pinned_legend_pct = 100
 # Classes (M4-H2). A lesson is `lesson_rounds` puzzles; the grade and skill gain depend on how many
 # are right (one entry for each score from none to all).
 lesson_rounds = 3
-lesson_gains = [-1, 1, 3, 5]
+lesson_gains = [-3, -1, 1, 2]
 lesson_xp = [0, 1, 2, 3]
 level_grades = [62, 80]     # puzzles get harder as the grade rises: under 62, under 80, else
+grade_decay_days = 1        # a subject loses a point this often unless it is kept up (never under 30)
 poor_grade = 40             # a subject under this on Friday's report goes on the file
 
 # Clubs and friendships (M4-H2).

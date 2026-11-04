@@ -19,7 +19,7 @@ mod common;
 
 use std::collections::BTreeMap;
 
-use common::bot::{Policy, balanced, cautious, play_day, reckless, variety};
+use common::bot::{Policy, balanced, cautious, play_day, reckless, scholar, variety};
 use common::{content, monday};
 use russh_bbs_door::DoorRng;
 use russh_bbs_door_hallpass::game::{Action, Event, Game};
@@ -45,6 +45,17 @@ struct Outcome {
     big: u16,
     curve: Curve,
     methods: Vec<String>,
+    /// Average grade at the end.
+    grades: i32,
+    /// Lessons taken and lessons with every puzzle right.
+    lessons: (u16, u16),
+    /// Club and rank at the end.
+    clubs: Vec<(String, u8)>,
+    /// Each storyline begun and how it stands: its ending, or `open`.
+    arcs: Vec<(String, String)>,
+    /// Friends and rivals made.
+    friends: usize,
+    rivals: usize,
 }
 
 /// One whole term on one shared school with one player per policy.
@@ -102,6 +113,46 @@ fn term(policies: &[Policy], traits: &[&str], seed: u64) -> (Vec<Outcome>, World
         .into_iter()
         .enumerate()
         .map(|(i, mut g)| {
+            let (grades, lessons, clubs, arcs, friends, rivals) = {
+                let p = &g.player;
+                (
+                    g.average_grade(),
+                    (p.life.lessons, p.life.perfect),
+                    p.life
+                        .clubs
+                        .iter()
+                        .map(|m| (m.club.clone(), m.rank))
+                        .collect(),
+                    p.life
+                        .arcs
+                        .iter()
+                        .map(|a| {
+                            (
+                                a.id.clone(),
+                                a.ended.clone().unwrap_or_else(|| "open".into()),
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                    p.life
+                        .bonds
+                        .iter()
+                        .filter(|(n, _)| {
+                            g.regard(n) == russh_bbs_door_hallpass::talk::Regard::Friend
+                        })
+                        .count(),
+                    p.life
+                        .bonds
+                        .iter()
+                        .filter(|(n, _)| {
+                            matches!(
+                                g.regard(n),
+                                russh_bbs_door_hallpass::talk::Regard::Rival
+                                    | russh_bbs_door_hallpass::talk::Regard::Betrayed
+                            )
+                        })
+                        .count(),
+                )
+            };
             g.world = world.clone();
             g.sync_day(end);
             let ending = g
@@ -120,6 +171,12 @@ fn term(policies: &[Policy], traits: &[&str], seed: u64) -> (Vec<Outcome>, World
                 big: g.player.big,
                 curve: curves[i].clone(),
                 methods: g.player.done.iter().map(|(k, _)| k.clone()).collect(),
+                grades,
+                lessons,
+                clubs,
+                arcs,
+                friends,
+                rivals,
             }
         })
         .collect();
@@ -237,4 +294,87 @@ fn over_many_terms_the_playstyles_pay_differently_and_every_ending_and_branch_is
         "many different tricks get used: {methods:?}"
     );
     let _ = Status::Active;
+}
+
+fn life_policies() -> Vec<Policy> {
+    vec![scholar(), cautious(), balanced(), reckless(), variety()]
+}
+
+#[test]
+fn school_life_in_numbers_grades_club_ranks_and_storyline_endings() {
+    let seeds = 40u64;
+    let mut stats: BTreeMap<&'static str, Vec<Outcome>> = BTreeMap::new();
+    for seed in 0..seeds {
+        let (outcomes, _) = term(
+            &life_policies(),
+            &["smooth_talker", "fast_runner", "tinkerer", "teachers_pet"],
+            seed,
+        );
+        for o in outcomes {
+            stats.entry(o.policy).or_default().push(o);
+        }
+    }
+    let mean =
+        |v: &[Outcome], f: &dyn Fn(&Outcome) -> f64| v.iter().map(f).sum::<f64>() / v.len() as f64;
+    eprintln!("\n=== school life: {seeds} terms per policy ===");
+    eprintln!(
+        "{:<9} {:>7} {:>8} {:>8} {:>8} {:>8} {:>8} {:>9}",
+        "policy", "grades", "lessons", "perfect", "clubs", "friends", "rivals", "honour%"
+    );
+    for (name, v) in &stats {
+        eprintln!(
+            "{:<9} {:>7.1} {:>8.1} {:>8.1} {:>8.2} {:>8.1} {:>8.1} {:>8.0}%",
+            name,
+            mean(v, &|o| f64::from(o.grades)),
+            mean(v, &|o| f64::from(o.lessons.0)),
+            mean(v, &|o| f64::from(o.lessons.1)),
+            mean(v, &|o| o.clubs.len() as f64),
+            mean(v, &|o| o.friends as f64),
+            mean(v, &|o| o.rivals as f64),
+            100.0 * mean(v, &|o| f64::from(u8::from(o.grades >= 75))),
+        );
+    }
+    // Club ranks reached, over every player.
+    let mut ranks: BTreeMap<(String, u8), u32> = BTreeMap::new();
+    let mut by_arc: BTreeMap<String, BTreeMap<String, u32>> = BTreeMap::new();
+    for o in stats.values().flatten() {
+        for (club, rank) in &o.clubs {
+            *ranks.entry((club.clone(), *rank)).or_default() += 1;
+        }
+        for (arc, end) in &o.arcs {
+            *by_arc
+                .entry(arc.clone())
+                .or_default()
+                .entry(end.clone())
+                .or_default() += 1;
+        }
+    }
+    eprintln!("\nclub ranks reached (club, rank: players):");
+    for ((club, rank), n) in &ranks {
+        eprintln!("  {club:<9} rank {rank}: {n}");
+    }
+    eprintln!("storyline endings (how each story stood at term end, players):");
+    for (arc, ends) in &by_arc {
+        eprintln!("  {arc}: {ends:?}");
+    }
+    let grades = |n: &str| mean(&stats[n], &|o| f64::from(o.grades));
+    assert!(
+        grades("scholar") > grades("reckless"),
+        "a pupil who works has better marks than one who skips: {} vs {}",
+        grades("scholar"),
+        grades("reckless")
+    );
+    assert!(
+        ranks.keys().any(|(_, r)| *r >= 2),
+        "clubs are climbed: {ranks:?}"
+    );
+    assert!(
+        by_arc.len() == 2,
+        "both storylines begin for somebody: {by_arc:?}"
+    );
+    let finished: usize = by_arc
+        .values()
+        .map(|e| e.keys().filter(|k| *k != "open").count())
+        .sum();
+    assert!(finished >= 3, "several storyline endings occur: {by_arc:?}");
 }

@@ -105,21 +105,29 @@ impl Game {
         }
     }
 
-    /// Whether a conversation can be started now.
+    /// Whether a conversation can be started now: its character is here and it is ready.
     #[must_use]
     pub fn talk_open(&self, talk: &Talk) -> bool {
         let Some(slot) = self.current_slot() else {
             return false;
         };
         let p = &self.player;
-        if p.run.is_some() || p.life.lesson.is_some() || p.life.scene.is_some() {
+        self.talk_ready(talk)
+            && self
+                .npcs_at(&p.place, p.day, slot)
+                .iter()
+                .any(|n| n.id == talk.npc)
+    }
+
+    /// Whether everything but the character's being here holds for a conversation: the pupil is
+    /// free, its conditions hold, it has not been had, and its storyline is at its step.
+    #[must_use]
+    pub fn talk_ready(&self, talk: &Talk) -> bool {
+        if self.current_slot().is_none() {
             return false;
         }
-        if !self
-            .npcs_at(&p.place, p.day, slot)
-            .iter()
-            .any(|n| n.id == talk.npc)
-        {
+        let p = &self.player;
+        if p.run.is_some() || p.life.lesson.is_some() || p.life.scene.is_some() {
             return false;
         }
         if !self.all_hold(&talk.when) {
@@ -136,7 +144,8 @@ impl Game {
         }
         if let (Some(arc), Some(step)) = (&talk.arc, &talk.step) {
             match p.life.arc(arc) {
-                Some(a) if a.ended.is_none() && a.step == *step && p.day - a.since >= talk.wait => {}
+                Some(a) if a.ended.is_none() && a.step == *step && p.day - a.since >= talk.wait => {
+                }
                 _ => return false,
             }
         }
@@ -273,7 +282,7 @@ impl Game {
     // ------------------------------------------------------------ effects
 
     /// Carry out effects. `depth` stops an ending from ending another story forever.
-    pub(crate) fn apply_effects(&mut self, effects: &[Eff], depth: u8) -> Vec<Event> {
+    pub fn apply_effects(&mut self, effects: &[Eff], depth: u8) -> Vec<Event> {
         let mut events = Vec::new();
         for effect in effects {
             events.extend(self.apply_effect(effect, depth));
@@ -320,7 +329,11 @@ impl Game {
             }
             Eff::Item(item) => {
                 let have = self.player.count(item);
-                map_set(&mut self.player.inventory, item, have.saturating_add(1).min(3));
+                map_set(
+                    &mut self.player.inventory,
+                    item,
+                    have.saturating_add(1).min(3),
+                );
                 Vec::new()
             }
             Eff::Xp(skill, n) => self
@@ -342,11 +355,11 @@ impl Game {
                 }
             }
             Eff::Arc(arc, step) => {
-                if let Some(a) = self.player.life.arcs.iter_mut().find(|a| a.id == *arc) {
-                    if a.ended.is_none() {
-                        a.step.clone_from(step);
-                        a.since = day;
-                    }
+                if let Some(a) = self.player.life.arcs.iter_mut().find(|a| a.id == *arc)
+                    && a.ended.is_none()
+                {
+                    a.step.clone_from(step);
+                    a.since = day;
                 }
                 Vec::new()
             }
@@ -433,7 +446,7 @@ impl Game {
     // ------------------------------------------------------------ helpers remember
 
     /// After a scheme: the helpers who were in it think better or worse of you.
-    pub(crate) fn allies_remember(&mut self, allies: &[(String, String)], busted: bool) -> Vec<Event> {
+    pub fn allies_remember(&mut self, allies: &[(String, String)], busted: bool) -> Vec<Event> {
         let mut events = Vec::new();
         self.player.life.last_allies = allies.iter().map(|(n, _)| n.clone()).collect();
         for (npc, _) in allies {
@@ -468,7 +481,14 @@ impl Game {
             .arcs
             .iter()
             .filter(|a| self.player.life.arc(&a.id).is_none() && self.all_hold(&a.start))
-            .map(|a| (a.id.clone(), a.first.clone(), a.name.clone(), a.blurb.clone()))
+            .map(|a| {
+                (
+                    a.id.clone(),
+                    a.first.clone(),
+                    a.name.clone(),
+                    a.blurb.clone(),
+                )
+            })
             .collect();
         for (id, first, name, blurb) in starting {
             if self.player.life.arcs.len() >= 12 {

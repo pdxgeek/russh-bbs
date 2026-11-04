@@ -198,7 +198,6 @@ impl Wire for Status {
     }
 }
 
-
 // ---------------------------------------------------------------- school life (H2)
 
 /// A club a character belongs to.

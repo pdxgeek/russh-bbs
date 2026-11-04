@@ -445,7 +445,11 @@ impl Session {
         }
         let talks = g.talks_here().len();
         if talks > 0 {
-            add('t', &format!("Talk to someone ({talks})"), Cmd::To(Mode::Talk));
+            add(
+                't',
+                &format!("Talk to someone ({talks})"),
+                Cmd::To(Mode::Talk),
+            );
         }
         if self.can(&Action::Meet) {
             add('m', "Go to your club meeting", Cmd::Do(Action::Meet));
@@ -456,7 +460,11 @@ impl Session {
         add('p', "Schemes", Cmd::To(Mode::Plans));
         add('c', "Clubs", Cmd::To(Mode::Clubs));
         add('f', "You: file, grades, standing", Cmd::To(Mode::Stats));
-        add('j', "Journal: stories, friends, rivals", Cmd::To(Mode::Journal));
+        add(
+            'j',
+            "Journal: stories, friends, rivals",
+            Cmd::To(Mode::Journal),
+        );
         add('n', "News and rumours", Cmd::To(Mode::News));
         if self.can(&Action::Sleep) {
             add('z', "Lights out", Cmd::Do(Action::Sleep));
@@ -1299,11 +1307,19 @@ impl Session {
         }
         body.push(format!(
             "Friends: {}.",
-            if friends.is_empty() { "none yet".into() } else { friends.join(", ") }
+            if friends.is_empty() {
+                "none yet".into()
+            } else {
+                friends.join(", ")
+            }
         ));
         body.push(format!(
             "Rivals: {}.",
-            if rivals.is_empty() { "none".into() } else { rivals.join(", ") }
+            if rivals.is_empty() {
+                "none".into()
+            } else {
+                rivals.join(", ")
+            }
         ));
         (
             body.iter().flat_map(|l| wrap(l, WIDTH)).collect(),

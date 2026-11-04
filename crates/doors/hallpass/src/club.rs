@@ -136,7 +136,10 @@ impl Game {
         };
         let day = self.player.day;
         self.kind(day, slot) == club.kind
-            && (club.days.is_empty() || club.days.contains(&u8::try_from(Self::weekday(day)).unwrap_or(0)))
+            && (club.days.is_empty()
+                || club
+                    .days
+                    .contains(&u8::try_from(Self::weekday(day)).unwrap_or(0)))
             && self.player.place == club.place
             && self.place_open(&club.place, day, slot)
     }
@@ -150,7 +153,13 @@ impl Game {
             .find(|c| self.player.life.rank_in(&c.id) > 0 && self.meeting_on(c))
             .cloned()
             .ok_or_else(|| Refused::new("None of your clubs meets here and now."))?;
-        if self.player.life.clubs.iter().any(|m| m.club == club.id && m.last_meet == day) {
+        if self
+            .player
+            .life
+            .clubs
+            .iter()
+            .any(|m| m.club == club.id && m.last_meet == day)
+        {
             return Err(Refused::new("You have been to this one today."));
         }
         if self.kind(day, usize::from(self.player.slot)) == "after" && self.player.due > 0 {
@@ -160,7 +169,13 @@ impl Game {
         let mut events = vec![Event::Say(format!("The {} meets.", club.name))];
         let skill = self.skill_level(&club.skill);
         let merit = 1 + i32::from(skill >= 2);
-        if let Some(m) = self.player.life.clubs.iter_mut().find(|m| m.club == club.id) {
+        if let Some(m) = self
+            .player
+            .life
+            .clubs
+            .iter_mut()
+            .find(|m| m.club == club.id)
+        {
             m.last_meet = day;
         }
         events.extend(self.add_merit(&club.id, merit));
@@ -186,7 +201,13 @@ impl Game {
         let Some(club) = self.content.club(club_id).cloned() else {
             return Vec::new();
         };
-        let Some(m) = self.player.life.clubs.iter_mut().find(|m| m.club == club_id) else {
+        let Some(m) = self
+            .player
+            .life
+            .clubs
+            .iter_mut()
+            .find(|m| m.club == club_id)
+        else {
             return Vec::new();
         };
         let total = (i32::from(m.merit) + merit).clamp(0, i32::from(u16::MAX));

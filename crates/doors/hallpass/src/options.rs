@@ -39,7 +39,11 @@ impl Game {
             proposals.extend((0..8).map(Action::Choose));
             proposals.push(Action::Abandon);
         } else {
-            proposals.extend(self.talks_here().into_iter().map(|t| Action::Talk(t.id.clone())));
+            proposals.extend(
+                self.talks_here()
+                    .into_iter()
+                    .map(|t| Action::Talk(t.id.clone())),
+            );
             for club in &self.content.clubs {
                 proposals.push(Action::Join(club.id.clone()));
                 proposals.push(Action::Quit(club.id.clone()));

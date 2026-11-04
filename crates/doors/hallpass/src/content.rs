@@ -93,6 +93,8 @@ pub struct Rules {
     pub lesson_gains: Vec<i32>,
     /// Skill experience by the number of puzzles answered right.
     pub lesson_xp: Vec<i32>,
+    /// Days per point a subject's grade slips when it is not kept up (never under 30).
+    pub grade_decay_days: i64,
     /// Grade under which a subject is a poor mark on Friday's report.
     pub poor_grade: i32,
     /// Clubs a character can belong to at once.
@@ -1183,13 +1185,23 @@ file_table!(WorldFile, |f: &WorldFile| {
     out
 });
 
-
 file_table!(LessonsFile, |f: &LessonsFile| {
     let mut out = Vec::new();
-    dupes("lesson", f.lesson.iter().map(|l| l.subject.as_str()), &mut out);
+    dupes(
+        "lesson",
+        f.lesson.iter().map(|l| l.subject.as_str()),
+        &mut out,
+    );
     for l in &f.lesson {
-        if !["sequence", "balance", "vocab", "timeline", "pattern", "relay"].contains(&l.kind.as_str()) {
-            out.push(format!("lesson `{}` has unknown kind `{}`", l.subject, l.kind));
+        if ![
+            "sequence", "balance", "vocab", "timeline", "pattern", "relay",
+        ]
+        .contains(&l.kind.as_str())
+        {
+            out.push(format!(
+                "lesson `{}` has unknown kind `{}`",
+                l.subject, l.kind
+            ));
         }
         plain("lesson", &l.intro, &mut out);
     }
@@ -1213,7 +1225,9 @@ file_table!(LessonsFile, |f: &LessonsFile| {
     }
     for m in &f.motif {
         if m.glyphs.len() < 4
-            || m.glyphs.iter().any(|g| g.chars().count() != 1 || !plain_text(g) || g.trim().is_empty())
+            || m.glyphs
+                .iter()
+                .any(|g| g.chars().count() != 1 || !plain_text(g) || g.trim().is_empty())
         {
             out.push("a motif needs four or more distinct one-character glyphs".into());
         }
@@ -1232,19 +1246,28 @@ file_table!(ClubsFile, |f: &ClubsFile| {
             || c.ranks.first().map(|r| r.1) != Some(0)
             || c.ranks.windows(2).any(|w| w[0].1 >= w[1].1)
         {
-            out.push(format!("club `{}`: ranks must be three or more and start at merit 0 and rise", c.id));
+            out.push(format!(
+                "club `{}`: ranks must be three or more and start at merit 0 and rise",
+                c.id
+            ));
         }
         for (name, _) in &c.ranks {
             plain(&c.id, name, &mut out);
         }
         if !["free", "after", "evening", "night", "lunch"].contains(&c.kind.as_str()) {
-            out.push(format!("club `{}` meets in unknown slot kind `{}`", c.id, c.kind));
+            out.push(format!(
+                "club `{}` meets in unknown slot kind `{}`",
+                c.id, c.kind
+            ));
         }
         if c.days.iter().any(|d| *d > 6) {
             out.push(format!("club `{}` meets on a weekday over 6", c.id));
         }
         if c.event_legend < 0 || c.members.is_empty() {
-            out.push(format!("club `{}` needs members and a non-negative event bonus", c.id));
+            out.push(format!(
+                "club `{}` needs members and a non-negative event bonus",
+                c.id
+            ));
         }
     }
     out
@@ -1259,12 +1282,19 @@ file_table!(TalksFile, |f: &TalksFile| {
             out.push(format!("talk `{}` has no first node `{}`", t.id, t.first));
         }
         if !t.once && t.cooldown < 1 {
-            out.push(format!("talk `{}` repeats, so it needs a cooldown of a day or more", t.id));
+            out.push(format!(
+                "talk `{}` repeats, so it needs a cooldown of a day or more",
+                t.id
+            ));
         }
         if t.arc.is_some() != t.step.is_some() {
             out.push(format!("talk `{}`: `arc` and `step` go together", t.id));
         }
-        dupes(&format!("node of talk `{}`", t.id), t.node.iter().map(|n| n.id.as_str()), &mut out);
+        dupes(
+            &format!("node of talk `{}`", t.id),
+            t.node.iter().map(|n| n.id.as_str()),
+            &mut out,
+        );
         for n in &t.node {
             plain(&t.id, &n.text, &mut out);
             if !n.choice.iter().any(|c| c.needs.is_empty()) {
@@ -1277,7 +1307,10 @@ file_table!(TalksFile, |f: &TalksFile| {
                 plain(&t.id, &c.label, &mut out);
                 plain(&t.id, &c.say, &mut out);
                 if !c.next.is_empty() && !t.node.iter().any(|x| x.id == c.next) {
-                    out.push(format!("talk `{}` node `{}` leads to unknown node `{}`", t.id, n.id, c.next));
+                    out.push(format!(
+                        "talk `{}` node `{}` leads to unknown node `{}`",
+                        t.id, n.id, c.next
+                    ));
                 }
             }
         }
@@ -1289,12 +1322,20 @@ file_table!(TalksFile, |f: &TalksFile| {
                 continue;
             }
             if let Some(n) = t.node.iter().find(|n| n.id == id) {
-                stack.extend(n.choice.iter().filter(|c| !c.next.is_empty()).map(|c| c.next.as_str()));
+                stack.extend(
+                    n.choice
+                        .iter()
+                        .filter(|c| !c.next.is_empty())
+                        .map(|c| c.next.as_str()),
+                );
             }
         }
         for n in &t.node {
             if !seen.contains(n.id.as_str()) {
-                out.push(format!("talk `{}` node `{}` can never be reached", t.id, n.id));
+                out.push(format!(
+                    "talk `{}` node `{}` can never be reached",
+                    t.id, n.id
+                ));
             }
         }
     }
@@ -1307,13 +1348,27 @@ file_table!(ArcsFile, |f: &ArcsFile| {
     for a in &f.arc {
         plain(&a.id, &a.name, &mut out);
         plain(&a.id, &a.blurb, &mut out);
-        dupes(&format!("step of arc `{}`", a.id), a.step.iter().map(|s| s.id.as_str()), &mut out);
-        dupes(&format!("ending of arc `{}`", a.id), a.ending.iter().map(|s| s.id.as_str()), &mut out);
+        dupes(
+            &format!("step of arc `{}`", a.id),
+            a.step.iter().map(|s| s.id.as_str()),
+            &mut out,
+        );
+        dupes(
+            &format!("ending of arc `{}`", a.id),
+            a.ending.iter().map(|s| s.id.as_str()),
+            &mut out,
+        );
         if !a.step.iter().any(|s| s.id == a.first) {
-            out.push(format!("arc `{}` starts at unknown step `{}`", a.id, a.first));
+            out.push(format!(
+                "arc `{}` starts at unknown step `{}`",
+                a.id, a.first
+            ));
         }
         if a.ending.len() < 2 {
-            out.push(format!("arc `{}` needs at least two endings so the choices matter", a.id));
+            out.push(format!(
+                "arc `{}` needs at least two endings so the choices matter",
+                a.id
+            ));
         }
         if a.start.is_empty() {
             out.push(format!("arc `{}` needs a start condition", a.id));

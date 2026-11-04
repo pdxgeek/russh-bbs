@@ -83,7 +83,9 @@ impl Content {
                 Eff::Trait(t) => match self.trait_spec(t) {
                     None => missing("trait", t),
                     Some(spec) if spec.start => {
-                        out.push(format!("{what}: `{t}` is a starting trait, not an earned one"));
+                        out.push(format!(
+                            "{what}: `{t}` is a starting trait, not an earned one"
+                        ));
                     }
                     Some(_) => {}
                 },
@@ -166,7 +168,12 @@ impl Content {
             for c in &t.when {
                 walk(&format!("talk `{}`", t.id), c, &mut out);
             }
-            for c in t.node.iter().flat_map(|n| n.choice.iter()).flat_map(|c| &c.needs) {
+            for c in t
+                .node
+                .iter()
+                .flat_map(|n| n.choice.iter())
+                .flat_map(|c| &c.needs)
+            {
                 walk(&format!("talk `{}`", t.id), c, &mut out);
             }
         }
@@ -191,14 +198,21 @@ impl Content {
         {
             out.push("lesson rules: gains and xp need one entry per possible score, and level_grades two rising grades".into());
         }
-        if r.betray_bond >= 0 || r.betray_to > r.betray_bond || r.rival_bond >= 0 || r.friend_bond <= 0 {
+        if r.betray_bond >= 0
+            || r.betray_to > r.betray_bond
+            || r.rival_bond >= 0
+            || r.friend_bond <= 0
+        {
             out.push("bond rules: friend positive, rival and betrayal negative, betrayal leaves a bond at or under its limit".into());
         }
         for s in &self.subjects {
             match self.lessons.iter().find(|l| l.subject == s.id) {
                 None => out.push(format!("subject `{}` has no lesson", s.id)),
                 Some(l) if !self.skills.iter().any(|k| k.id == l.skill) => {
-                    out.push(format!("lesson `{}` trains unknown skill `{}`", l.subject, l.skill));
+                    out.push(format!(
+                        "lesson `{}` trains unknown skill `{}`",
+                        l.subject, l.skill
+                    ));
                 }
                 Some(_) => {}
             }
@@ -214,7 +228,11 @@ impl Content {
         }
         for n in &self.npcs {
             for a in &n.ally {
-                self.cond_problems(&format!("character `{}` as {}", n.id, a.role), &a.needs, &mut out);
+                self.cond_problems(
+                    &format!("character `{}` as {}", n.id, a.role),
+                    &a.needs,
+                    &mut out,
+                );
             }
         }
         for t in &self.traits {
@@ -264,7 +282,10 @@ impl Content {
             }
             self.cond_problems(&what, &c.join, &mut out);
             // The meeting must be possible: the place is open in that kind of slot.
-            if self.place(&c.place).is_some_and(|p| !p.hours.contains(&c.kind)) {
+            if self
+                .place(&c.place)
+                .is_some_and(|p| !p.hours.contains(&c.kind))
+            {
                 out.push(format!("{what} meets at a time its place is shut"));
             }
         }
@@ -295,7 +316,12 @@ impl Content {
         let mut ended: HashSet<(String, String)> = HashSet::new();
         let mut entered: HashSet<(String, String)> = HashSet::new();
         for t in &self.talks {
-            for e in t.node.iter().flat_map(|n| n.choice.iter()).flat_map(|c| c.effects.iter()) {
+            for e in t
+                .node
+                .iter()
+                .flat_map(|n| n.choice.iter())
+                .flat_map(|c| c.effects.iter())
+            {
                 match e {
                     Eff::ArcEnd(a, end) => {
                         ended.insert((a.clone(), end.clone()));
@@ -320,12 +346,14 @@ impl Content {
                 if s.id != a.first && !entered.contains(&(a.id.clone(), s.id.clone())) {
                     out.push(format!("{what}: step `{}` can never be entered", s.id));
                 }
-                if !self
-                    .talks
-                    .iter()
-                    .any(|t| t.arc.as_deref() == Some(a.id.as_str()) && t.step.as_deref() == Some(s.id.as_str()))
-                {
-                    out.push(format!("{what}: step `{}` has no conversation to move it on", s.id));
+                if !self.talks.iter().any(|t| {
+                    t.arc.as_deref() == Some(a.id.as_str())
+                        && t.step.as_deref() == Some(s.id.as_str())
+                }) {
+                    out.push(format!(
+                        "{what}: step `{}` has no conversation to move it on",
+                        s.id
+                    ));
                 }
             }
         }
