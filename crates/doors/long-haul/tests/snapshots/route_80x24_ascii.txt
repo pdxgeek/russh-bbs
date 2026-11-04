@@ -1,0 +1,19 @@
+* LONG HAUL  Tester0  18,450 cr  debt 20,000  days ********** 10
++ ROUTE  to signal --------------------------++ TRACK -------------------+
+|Leg                   Span  Fuel  Days  Evt ||      o.      .o=         |
+|Garnet Dr~>Pellam W~    65    18     4  50% ||  ?. . . =F==o Corran Run |
+|Pellam Wa~>Pellam H~    60    17     3  50% ||   .    I         o..I    |
+|Pellam Ho~>Corran R~    43    12     3  50% ||    M signal ?= A =R.     |
+|Corran Run>Ismay Ti~    52    15     3  56% ||   M ..@     . . o        |
+|Ismay Tide>Bellis C~    69    19     4  56% ||M..     o .?  ?.  .M.    ?|
+|Bellis Cr~>Umber Re~    54    15     3  56% ||         .I .?   M   ?    |
+|Umber Rea~>Bellis V~    51    14     3  50% |+--------------------------+
+|Bellis Ve~>Wren Run     45    13     3  50% |+ LIKELY EVENTS -----------+
+|Wren Run>signal ! ?     54    15     3  64% ||goal  Fastest  Thriftiest |
++--------------------------------------------+|distress   1.0 expected   |
++ COST --------------------------------------+|pirate     0.7 expected   |
+|FUEL   #################| 138/120 (tank 120)||drive      0.7 expected   |
+|DAYS   #################| 29 (10 left today)||signal     0.5 expected   |
+|RISK   ############### 99% to meet something||                          |
++--------------------------------------------++--------------------------+
+[Enter] fly next leg  [g] change goal  [Esc] back to chart

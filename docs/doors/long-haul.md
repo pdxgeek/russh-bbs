@@ -1,6 +1,6 @@
 # Long Haul: a space trade and exploration door (design)
 
-Status: **Proposed** design; slices **M4-L1 (the engine)** and **M4-L2 (crew, events, combat, jobs)** are implemented in `crates/doors/long-haul` and described under [Implementation notes (M4-L1)](#implementation-notes-m4-l1) and [Implementation notes (M4-L2)](#implementation-notes-m4-l2) at the end. The full UI and the social layer are not built. Shared platform rules are in [README.md](README.md).
+Status: **Proposed** design; slices **M4-L1 (the engine)** and **M4-L2 (crew, events, combat, jobs)** are implemented in `crates/doors/long-haul` and described under [Implementation notes (M4-L1)](#implementation-notes-m4-l1) and [Implementation notes (M4-L2)](#implementation-notes-m4-l2) at the end. Slice **M4-L3 (the UI)** is implemented too, described under [Implementation notes (M4-L3)](#implementation-notes-m4-l3). The social layer is not built. Shared platform rules are in [README.md](README.md).
 
 ## Pitch
 
@@ -314,3 +314,49 @@ end loyalty: hauler 96.0, neglect 53.6
 
 * **Tests** (`cargo test -p russh-bbs-door-long-haul`, 153 tests): the L1 suites unchanged and passing (the harness now waves away a scene that an old test did not expect); `tests/crew.rs` (hiring, upkeep, goals, unrest, injury, the role bonuses); `tests/events.rs` (the table, **every option of every event for a loaded captain across 12 seeds with the invariants checked**, scene blocking and reload, crew/standing/flag branches, weights by system, cargo and standing); `tests/combat.rs` (a property test of random fights plus the branches); `tests/boarding.rs` (a property test of random orders plus the branches); `tests/contracts.rs` (every kind of job end to end, standing as a gate, the Guild price); `tests/saves.rs` (a **frozen L1 save** from commit 68e6cb6 migrates and loads, damaged and newer saves are refused); `tests/screens.rs` (framework replay of a scene, a fight, a boarding, hiring and jobs, and every event and layout and enemy on screen at 71 columns); schema tests that reject a dead-end event, an unknown flag, an unreachable room, wild enemy stats and a missing client line; the economy fuzzer now plays scenes and the new actions (refused actions leave the captain, the world and the RNG untouched, the ledger balances, nothing is created from nothing except contract, salvage and event credits and new survey data); the sandbox audit; the 60-day sim.
 * **Not exercised:** a hand walk with a real SSH client (the environment has no OpenSSH client; the screens were exercised through the framework's replay and the shared door path through the server's russh-client tests with the example door); Long Haul over telnet; a real day boundary on a long-lived server; two live captains hunting the same bounty.
+
+## Implementation notes (M4-L3)
+
+Slice M4-L3, branch `m4/long-haul-ui`, decision D-TBD (the number is assigned at merge). Everything here is **Implemented and tested** unless it says otherwise. The UI lives in `crates/doors/long-haul/src/session/ui/`; the engine is untouched (a few `Session` fields and `Mode` variants were added, and `Mode::Nav` became the chart and the planner).
+
+### The screens
+
+| Screen | Key | What it draws |
+|---|---|---|
+| Star chart | `v`, or `j` | The frontier as a braille raster: stars, known lanes (solid), lanes to uncharted signals (dotted), **fuel range rings** (a full tank and half a tank, from the ship), stations coloured by the faction that runs them (or by how fresh your price intel is, `o`), `?` for an uncharted signal one lane from a charted system, `▲` for the ship, an amber cursor you walk with the arrow keys (it goes to the nearest system in that direction), three zooms (`+`/`-`), a system card (star, hazard, stations with their economy, yard and repair, the lane cost from here, and a fastest route to the cursor). Labels are placed greedily and never overlap. |
+| Route planner | `Enter` on the chart | A path over the **charted** lanes (an uncharted signal may be the last stop) chosen as *Fastest*, *Thriftiest* or *Safest* (`g`): each leg's span, fuel, days and chance of an event; meters for fuel against the tank, days against what is left today, and the chance of meeting anything; a track map; the **expected events by family** (from the same weights the engine draws with). `Enter` flies the **first leg** (an ordinary `Action::Jump`); the plan stays until the target is reached, and a scene that opens takes the screen first. Legs the tank cannot cover are red. |
+| Bridge | start | Hull, fuel (with how many short hops it buys), reactor pips, a hold gauge, wear, payday and the voyage date, as gauges; alerts (fuel below the cheapest lane, hull, worn modules, payment you cannot meet, an empty galley, a restless or hurt hand, a job about to be late, a route set); the hold; a local chart; the crew on watch. |
+| Combat | a fight | The range between the ships with the **telegraphed** intent as an arrow (`Combat::shown`, which can lie; the real intent is never read), both hulls and the enemy's shield, the **reactor split as three adjustable gauges** (`Up`/`Down` pick, `Left`/`Right` move a point; the total stays the budget; `Enter` fires; `1`-`4` are the old presets and fire at once), the manoeuvre (`c`/`o`/`h`), the run chance, and the fight log. |
+| Boarding | a boarding | The wreck's rooms laid out by distance from the airlock with the party's room, hostiles (`!`), sealed doors (`L<n>`, a red link), loot (`$`) and caches (`#`); the party's health and what has been taken; the room and the numbered orders. |
+| Crew | `c` | The roster (loyalty, sworn, restless, hurt) and recruits at a dock, with a detail pane: skill pips with scars, the four parts of mood as centred bars, loyalty, the goal and its progress. |
+| Market | `m` | Every good with stock, mid price, **how far it sits from base** (a signed percent, so colour is not the only cue), buy, sell, held, and what the station makes or wants; a **sparkline of the selected good's price across every station you have intel for**, nearest first, with the cheapest and dearest named. The prices are as last seen, not live (the pane says so). |
+| Jobs | `b` | Carried jobs with a days-left bar, the board as a table, and a detail pane with the client's words, a closed offer's standing need, and the route (jumps, fuel, days) to the destination. |
+| Event scenes | an event | A framed vignette (braille, by event family), the story, and the choices; a choice the crew or standing closes stays on the list in dim with `closed: <why>`. |
+| Standing | `a` | Five factions on bars that run both ways from zero, with what the engine does at the current value (docks closed at -40, offices shut, better jobs at +25, recruits refusing at -25, military posts turning a smuggler away), read from the engine's own constants. |
+| Others | `d` `y` `l` `n` | The dock chooser, the yard, the loan office (debt against the credit limit, payday) and the news, in the same frames. |
+| Intro | first visit | The choice of background over a star strip with a freighter crossing, and the perk. |
+
+Colours are the theme's roles (`DoorStyle` through `DoorFrame::style`) plus three accents of the ship's own (hull grey, engine amber, starfield blue) and one accent per faction; the board brings each colour down to the member's depth. Nothing is conveyed by colour alone: values are printed, `closed:` and `NOT ENOUGH FUEL` are words.
+
+### Sizes, tiers and the look-around
+
+* A window of at least **60x15** gets the full screens; a smaller one gets the L1/L2 text screens (also the look-around). Layouts reflow with the area (a side panel on the chart and a third pane on the bridge from 96 columns, taller panels with height).
+* **The board's box caps the door at 74 columns** (`MAX_WIDTH` 76 less the border), so at 100x30 and 132x43 the door gets more rows but not more columns. The screens are written for any width and are tested at 130 columns; the cap is a server setting (see [coordination](../coordination.md)).
+* **ASCII tier:** the chart is redrawn in plain characters (lanes as `.`, range rings as `:`, a letter per station type, `@` for the ship), bars are `#` and `-`, and the composite swaps the box drawing and block characters. The tests require pure ASCII. The Nerd Font tier draws exactly what the Unicode tier draws (a door has no icon font, D104).
+* **Look-around:** every screen has a text view (`tests/ui.rs`): the chart lists every lane from the ship with its spans, fuel and days and a route to the cursor; the planner lists every leg; the boarding view maps the rooms and their exits; combat gives the reactor split; the rest reuse the L1/L2 text. Lines are wrapped to 71 columns.
+* The screen holds no rules: it calls `Ship::fuel_for`, `Ship::days_for`, `Player::transit_chance`, `Player::event_weights`, `Player::gear`, `Player::firepower`, `Player::run_chance`, `market_rows`, `contracts::board` and the constants the engine publishes.
+
+### Decisions and limitations worth knowing
+
+* **Route flying is one leg per key.** A multi-jump autopilot would roll several events in one key; one leg lets an event, a fight or a refusal interrupt, and the plan remains.
+* **Only charted systems are waypoints.** A route never passes through an uncharted signal; it may end at one. A signal two lanes from the chart is not shown.
+* **Market sparklines use remembered prices.** The engine keeps one memory of each station (`Intel`), not a history, so the sparkline is the price landscape across stations, not a price over time. A time series would need the engine to keep one.
+* **The fight log and the footer message** come from the session's log, which now keeps 24 lines (the text screens still show the last four).
+* **No animation.** Every frame is a pure function of the game state, so a recorded replay draws the same screen. Effects wait for UI-8.
+* **Not built:** mouse (UI-9), a heat overlay for one chosen good, a Nerd Font icon set (D104: none for doors).
+
+### Verified, and not
+
+* `cargo test -p russh-bbs-door-long-haul --test ui`: 19 scenes x 3 sizes x 2 tiers as stored snapshots (`tests/snapshots/`, rewrite with `UPDATE_SNAPSHOTS=1`), pure ASCII in the ASCII tier, Nerd Font equals Unicode, wide and tiny windows, a look-around for every screen, planning spends nothing, and a full trip by keys (see the test for what each leg does and where it injects a scene).
+* Walked over a real SSH server (`russh-bbs-server` with SQLite) from a russh client at 80x24, 100x30 and 132x43 in the Unicode tier with colour, through every screen above; the screenshots are in the pull request.
+* **Not exercised:** the OpenSSH client (none in this environment), telnet, a real terminal emulator's rendering of the ambiguous-width shapes (`▲ ● ○ ◆`), the Nerd Font tier on a real terminal.

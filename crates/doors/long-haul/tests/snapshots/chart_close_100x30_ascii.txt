@@ -1,0 +1,23 @@
+* LONG HAUL  Tester0  18,450 cr  debt 20,000  days ********** 10
++ STAR CHART  close  by faction -----------------------------------------+
+|                                        .I Pellam Wake                  |
+|                   .                    .                               |
+|                                       .                                |
+|                    .                 .                                 |
+|                                      .                                 |
+|                      M Esker Stair  .                      ?.signal . .|
+|                      ........      .                                   |
+|                      .       ......@ Garnet Drop              .        |
+|                      .                                                 |
+|                      .                                          .    . |
+|                      .                                                 |
+|                     M Pellam Drop                          signal ?. . |
+|......M.Farrow Rest..                                                   |
+|      .                                                                 |
++------------------------------------------------------------------------+
++ SYSTEM ----------------------------------------------------------------+
+|Garnet Drop  binary pair - radiation belt                               |
+|I Narrow Forge Industrial station - size 2 - yard                       |
++------------------------------------------------------------------------+
+[arrows] move  [Enter] plan route  [+/-] zoom  [o] overlay  [.] to ship
+[Esc] back

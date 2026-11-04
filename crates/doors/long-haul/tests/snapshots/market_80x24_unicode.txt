@@ -1,0 +1,19 @@
+▲ LONG HAUL  Tester0  18,450 cr  debt 20,000  days ●●●●●●●●●● 10
+╭ Narrow Forge - Industrial station ─────────────────╮╭ PRICES SEEN ─────╮
+│Good         Stock   Mid    vs   Buy  Sell Own Role ││Drive Coils       │
+│ Salt Spice    524   100   -9%   105    95   0      ││base 260 cr - held│
+│ Machine Par   470   137  -23%   144   130   0 makes││legal             │
+│ Drive Coils   402   180  -30%   189   171   0 makes││   █              │
+│ Sensor Glas   325   221   -7%   232   209   0      ││▃▆▅█              │
+│ Biogel        365   164   +9%   172   155   0      ││████              │
+│ Seed Stock    539    98   +3%   103    93   0      ││low  180 Narrow   │
+│ Data Cores    102   658  +56%   689   622   0 needs││Forge             │
+│ Kiln Cerami   672    77  -23%    81    73   0 makes││high 392 Iron Yard│
+│ Rare Earths   115   594  +56%   622   561   0 needs││                  │
+│ Reactor Rod    80   780  +50%   816   734   0 needs││                  │
+│                                                    ││                  │
+│                                                    ││                  │
+│                                                    ││                  │
+│                                                    ││                  │
+╰────────────────────────────────────────────────────╯╰──────────────────╯
+[b/B] buy 1/10  [a] fill  [s/S] sell 1/10  [z] sell all  [Esc] back

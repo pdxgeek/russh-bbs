@@ -1,0 +1,23 @@
+* LONG HAUL  Tester0  18,450 cr  debt 20,000  days ********** 10
++ A freighter with a dead drive -----------------------------------------+
+|[ distress ]              DISTRESS                                      |
+|                          A mid-size hauler drifts across the lane,     |
+|                          running lights blinking the distress code. Her|
+|                          master is on the comm, calm in the way of     |
+|                          someone who has been calm for hours.          |
+|                                                                        |
+|                                                                        |
+|                                                                        |
+|                                                                        |
+|                                                                        |
+|                                                                        |
+|[1] Help them fix the drive                                             |
+|[2] Offer a tow to the next dock                                        |
+|[3] Strip her hold while she waits                                      |
+|[4] Note it on the log and move on                                      |
+|                                                                        |
+|                                                                        |
+|                                                                        |
+|                                                                        |
++------------------------------------------------------------------------+
+[1-9] choose  [q] leave door (scene is kept)
