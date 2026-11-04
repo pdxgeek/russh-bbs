@@ -243,7 +243,7 @@ Same crate, **save version 2, world version 2** (version 1 worlds migrate; saves
 
 ## Implementation notes (M4-S4)
 
-Same crate, **save version 3, world version 3** (version 2 saves and worlds migrate; a test builds the old bytes by hand for each). Decision: D-TBD. The rules are in `src/social/`; the orders and the screens that ask for them are `session/social.rs` and `session/ui/social.rs`, `court.rs`, `report.rs`. Nothing changed in the framework: everything uses `Ctx::edit_world`, `Ctx::player_text` and the daily tick as they were.
+Same crate, **save version 3, world version 3** (version 2 saves and worlds migrate; a test builds the old bytes by hand for each). Decision: D120. The rules are in `src/social/`; the orders and the screens that ask for them are `session/social.rs` and `session/ui/social.rs`, `court.rs`, `report.rs`. Nothing changed in the framework: everything uses `Ctx::edit_world`, `Ctx::player_text` and the daily tick as they were.
 
 **The constraint that shapes it.** A session can read only its own clan's save, and it can change anything shared only by asking the board for a compare-and-swap edit of the world (D98); the world it opened with is a snapshot. So nothing in S4 reaches into another player's save, and nothing settles at once:
 
