@@ -247,6 +247,32 @@ impl fmt::Debug for LinkRequest {
     }
 }
 
+/// A device-link code or a staff recovery code to redeem, and for a recovery code the new
+/// password. The code and the password leave the room only inside the effect.
+#[derive(Clone)]
+pub struct CodeRequest {
+    /// The code as typed (sanitized and length-capped, not yet normalized or hashed).
+    pub code: String,
+    /// The new password, for a recovery code; `None` for a device-link code.
+    pub password: Option<Secret>,
+}
+
+impl PartialEq for CodeRequest {
+    fn eq(&self, other: &Self) -> bool {
+        self.code == other.code
+            && self.password.as_ref().map(Secret::expose) == other.password.as_ref().map(Secret::expose)
+    }
+}
+
+impl Eq for CodeRequest {}
+
+impl fmt::Debug for CodeRequest {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Both are credentials: never in a log or a test failure message.
+        f.debug_struct("CodeRequest").finish_non_exhaustive()
+    }
+}
+
 /// What the front end should do after an input.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RoomEffect {
@@ -265,6 +291,12 @@ pub enum RoomEffect {
     /// Check a handle and password and bind this key to the account (see [`LinkRequest`]), then
     /// call [`WaitingRoom::redeem_refused`] if it did not work (one sentence for every cause).
     LinkKey(LinkRequest),
+    /// Redeem a device-link code and bind this key to the account it was made for, then call
+    /// [`WaitingRoom::redeem_refused`] if it did not work (one sentence for every cause).
+    LinkDevice(CodeRequest),
+    /// Redeem a staff recovery code: bind this key and set the new password, then call
+    /// [`WaitingRoom::redeem_refused`] if it did not work.
+    Recover(CodeRequest),
 }
 
 /// Whether a notice is good news or a problem.
@@ -408,6 +440,8 @@ fn fields_of(page: Page, passwords: bool) -> &'static [FieldSpec] {
         (Page::CreateAccount, false) => &[HANDLE],
         (Page::CreateAccount, true) => &[HANDLE, PASSWORD, PASSWORD_AGAIN],
         (Page::LinkKey, _) => &[LINK_HANDLE, LINK_PASSWORD],
+        (Page::LinkDevice, _) => &[CODE],
+        (Page::Recover, _) => &[CODE, PASSWORD, PASSWORD_AGAIN],
     }
 }
 
@@ -427,6 +461,7 @@ fn unavailable(page: Page, passwords: bool, key: bool) -> &'static str {
         Page::Apply => strings::APPLY_ANSWER,
         Page::CreateAccount => strings::CREATE_ACCOUNT_FAILED,
         Page::LinkKey => strings::LINK_KEY_FAILED,
+        Page::LinkDevice | Page::Recover => crate::keys::strings::CODE_REFUSED,
         // Not forms; never submitted.
         Page::Home | Page::Rules => strings::ERR_EMPTY,
     }
@@ -565,6 +600,10 @@ impl WaitingRoom {
         }
         if self.key_link && key.eq_ignore_ascii_case(&screens::LINK_KEY) {
             self.go(Page::LinkKey);
+        } else if self.key_link && key.eq_ignore_ascii_case(&screens::LINK_DEVICE_KEY) {
+            self.go(Page::LinkDevice);
+        } else if self.key_link && key.eq_ignore_ascii_case(&screens::RECOVER_KEY) {
+            self.go(Page::Recover);
         } else if let Some(entry) = screens::entry_for(self.mode, key) {
             self.go(entry.page);
         }
@@ -637,6 +676,23 @@ impl WaitingRoom {
                 handle: handle.trim().to_owned(),
                 password,
             });
+        }
+        if matches!(self.page, Page::LinkDevice | Page::Recover) && self.validate().is_ok() {
+            let code = self.values.first().cloned().unwrap_or_default();
+            let password = (self.page == Page::Recover)
+                .then(|| self.values.get(1).cloned().map(Secret::new))
+                .flatten();
+            self.clear_form();
+            self.notice = None;
+            let request = CodeRequest {
+                code: code.trim().to_owned(),
+                password,
+            };
+            return if self.page == Page::Recover {
+                RoomEffect::Recover(request)
+            } else {
+                RoomEffect::LinkDevice(request)
+            };
         }
         if matches!(self.page, Page::RedeemInvite | Page::CreateAccount)
             && self.validate().is_ok()
@@ -755,6 +811,8 @@ impl WaitingRoom {
             kind: NoticeKind::Error,
             text: if self.page == Page::LinkKey {
                 strings::LINK_KEY_FAILED
+            } else if matches!(self.page, Page::LinkDevice | Page::Recover) {
+                crate::keys::strings::CODE_REFUSED
             } else if self.page == Page::CreateAccount {
                 strings::CREATE_ACCOUNT_FAILED
             } else {
@@ -846,6 +904,14 @@ impl WaitingRoom {
                         key: screens::LINK_KEY,
                         label: strings::MENU_LINK_KEY,
                     });
+                    view.menu.push(MenuItemView {
+                        key: screens::LINK_DEVICE_KEY,
+                        label: crate::keys::strings::MENU_LINK_DEVICE,
+                    });
+                    view.menu.push(MenuItemView {
+                        key: screens::RECOVER_KEY,
+                        label: crate::keys::strings::MENU_RECOVER,
+                    });
                 }
                 view.footer = strings::FOOTER_HOME;
                 if self.degraded {
@@ -859,6 +925,9 @@ impl WaitingRoom {
             page => {
                 if self.degraded && page == Page::Apply {
                     view.note = Some(strings::OPEN_CAPPED_NOTICE);
+                }
+                if page == Page::Recover {
+                    view.note = Some(crate::keys::strings::RECOVER_NOTE);
                 }
                 view.fields = fields_of(self.page, self.passwords)
                     .iter()

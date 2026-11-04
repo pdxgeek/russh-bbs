@@ -43,6 +43,7 @@ use russh_bbs_core::founder::{ClaimEffect, ClaimForm, ClaimInput};
 use russh_bbs_core::icons::{SecurityMarker, Tier};
 use russh_bbs_core::invites::{InviteOutcome, InviteRequest};
 use russh_bbs_core::menu::MenuPage;
+use russh_bbs_core::keys::{Request as KeysRequest, Response as KeysResponse};
 use russh_bbs_core::passwords::{Request as PasswordRequest, Response as PasswordResponse};
 use russh_bbs_core::profiles::{
     Request as MembersRequest, Response as MembersResponse, ScreenView,
@@ -56,7 +57,7 @@ use russh_bbs_core::terminal_settings::{
     LayoutId, MemberEffect, MemberFlow, MemberInput, TerminalSettings,
 };
 use russh_bbs_core::waiting_room::{
-    LinkRequest, Page, RedeemRequest, RoomEffect, RoomInput, View, WaitingRoom,
+    CodeRequest, LinkRequest, Page, RedeemRequest, RoomEffect, RoomInput, View, WaitingRoom,
 };
 
 use super::terminal::{Key, PtySize, RenderCap};
@@ -216,6 +217,16 @@ pub(crate) struct KeyEffects {
     /// (D94 (8)). The session checks them and reports through [`Screen::redeem_refused`] or
     /// [`Screen::redeemed`].
     pub(crate) link: Option<LinkRequest>,
+    /// A device-link code the visitor typed (FIX-M3-11): bind this key to the account it was
+    /// made for. The session redeems it and reports through [`Screen::redeem_refused`] or
+    /// [`Screen::redeemed`].
+    pub(crate) link_device: Option<CodeRequest>,
+    /// A staff recovery code and a new password the visitor typed (FIX-M3-11), redeemed the same
+    /// way.
+    pub(crate) recover: Option<CodeRequest>,
+    /// A keys request (list, add, remove, make a code) the My keys or recovery screen is waiting
+    /// on (FIX-M3-11). The session runs it and gives the answer to [`Screen::deliver_keys`].
+    pub(crate) keys_request: Option<KeysRequest>,
     /// A request for an invite the visitor made in the waiting room (M2-E). The session offers
     /// it to the queue (it needs the store and the peer address). It never reports back: the
     /// room has already shown its one fixed answer.
@@ -268,6 +279,9 @@ impl KeyEffects {
         self.save_settings = later.save_settings.or(self.save_settings.take());
         self.redeem = later.redeem.or(self.redeem.take());
         self.link = later.link.or(self.link.take());
+        self.link_device = later.link_device.or(self.link_device.take());
+        self.recover = later.recover.or(self.recover.take());
+        self.keys_request = later.keys_request;
         self.invite = later.invite.or(self.invite.take());
         self.request_invite = later.request_invite.or(self.request_invite.take());
         self.members_request = later.members_request;
@@ -595,6 +609,14 @@ impl Screen {
                         RoomEffect::LinkKey(request) => {
                             effects.link = Some(request);
                         }
+                        RoomEffect::LinkDevice(request) => {
+                            effects.link_device = Some(request);
+                            break;
+                        }
+                        RoomEffect::Recover(request) => {
+                            effects.recover = Some(request);
+                            break;
+                        }
                         RoomEffect::Redeem(request) => {
                             effects.redeem = Some(request);
                             break;
@@ -693,6 +715,12 @@ impl Screen {
                     // And the password screen (M3-D).
                     if let Some(request) = flow.take_password_request() {
                         effects.password_request = Some(request);
+                        effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
+                        break;
+                    }
+                    // And My keys and the recovery screen (FIX-M3-11).
+                    if let Some(request) = flow.take_keys_request() {
+                        effects.keys_request = Some(request);
                         effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
                         break;
                     }
@@ -976,6 +1004,15 @@ impl Screen {
     pub(crate) fn deliver_password(&mut self, response: PasswordResponse) {
         if let Content::Member(flow) = &mut self.content {
             flow.deliver_password(response);
+        }
+        self.dirty = true;
+    }
+
+    /// The answer to the keys request taken from [`KeyEffects`]. The screen shows it on the next
+    /// render.
+    pub(crate) fn deliver_keys(&mut self, response: KeysResponse) {
+        if let Content::Member(flow) = &mut self.content {
+            flow.deliver_keys(response);
         }
         self.dirty = true;
     }

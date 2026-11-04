@@ -10,6 +10,7 @@ One named permission per action, a closed enum in `core::access`. Names are `are
 |---|---|
 | Waiting room | `waiting.view`, `invite.request`, `invite.redeem`, `membership.apply`, `membership.open` |
 | Account | `account.edit_profile`, `account.edit_settings`, `account.set_password` |
+| Keys | `keys.manage`, `keys.redeem`, `keys.recover` |
 | Members | `members.view`, `members.approve`, `members.deny`, `members.vouch`, `members.suspend`, `members.edit`, `members.delete_data` |
 | Invites | `invites.create`, `invites.revoke`, `invites.view_tree` |
 | Forums | `forum.list`, `forum.read`, `forum.post`, `forum.reply`, `forum.edit_own`, `forum.moderate`, `forum.manage` |

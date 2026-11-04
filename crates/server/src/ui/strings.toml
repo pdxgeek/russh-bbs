@@ -80,6 +80,7 @@ title = "Sysop tools"
 
 [menu.sysop.item]
 queue = "Invite requests"
+recovery = "Recovery code"
 
 [menu.members]
 title = "Members"

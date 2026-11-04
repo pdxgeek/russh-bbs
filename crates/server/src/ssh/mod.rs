@@ -36,6 +36,7 @@ use russh_bbs_core::feeds::FeedStore;
 use russh_bbs_core::forums::ForumStore;
 use russh_bbs_core::founder::FounderStore;
 use russh_bbs_core::invites::InviteStore;
+use russh_bbs_core::keys::KeyStore;
 use russh_bbs_core::limits::LimitStore;
 use russh_bbs_core::mail::MailStore;
 use russh_bbs_core::passwords::PasswordStore;
@@ -56,6 +57,7 @@ pub trait Backend:
     + FounderStore
     + MemberSessions
     + InviteStore
+    + KeyStore
     + ProfileStore
     + PasswordStore
     + QueueStore
@@ -78,6 +80,7 @@ impl<T> Backend for T where
         + FounderStore
         + MemberSessions
         + InviteStore
+        + KeyStore
         + ProfileStore
         + PasswordStore
         + QueueStore

@@ -37,6 +37,7 @@ use russh_bbs_core::invites::{
     redeem_invite, redeem_invite_with_password,
 };
 use russh_bbs_core::limits::{LimitError, MemberMeter, SystemClock};
+use russh_bbs_core::keys::{redeem_link_code, redeem_recovery_code};
 use russh_bbs_core::passwords::hash_new;
 use russh_bbs_core::passwords::{Login, link_key_by_password};
 use russh_bbs_core::queue::{
@@ -49,7 +50,7 @@ use russh_bbs_core::registration::{
 use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::{Account, AccountId};
 use russh_bbs_core::terminal_settings::{MemberFlow, MemberStart, TerminalSettings};
-use russh_bbs_core::waiting_room::{JoinKind, LinkRequest, RedeemRequest};
+use russh_bbs_core::waiting_room::{CodeRequest, JoinKind, LinkRequest, RedeemRequest};
 use tokio::sync::{Notify, mpsc};
 use tokio::time::{sleep_until, timeout, timeout_at};
 use tracing::{debug, info, warn};
@@ -306,6 +307,12 @@ impl<D: Backend> Shell<D> {
             if !leaving && let Some(request) = effects.link.take() {
                 self.try_link(request).await;
             }
+            if !leaving && let Some(request) = effects.link_device.take() {
+                self.try_code(request).await;
+            }
+            if !leaving && let Some(request) = effects.recover.take() {
+                self.try_code(request).await;
+            }
             if !leaving
                 && let Some(token) = effects.claim_token
                 && self.try_claim(&token, effects.claim_password.take()).await
@@ -356,6 +363,8 @@ impl<D: Backend> Shell<D> {
                 self.run_queue(request).await;
             } else if let Some(request) = effects.password_request.take() {
                 self.run_password(request).await;
+            } else if let Some(request) = effects.keys_request.take() {
+                self.run_keys(request).await;
             } else if let Some(request) = effects.forum_request.take() {
                 self.run_forums(request).await;
             } else if let Some(request) = effects.mail_request.take() {
@@ -800,11 +809,69 @@ impl<D: Backend> Shell<D> {
             None => start.access,
         };
         let flow = MemberFlow::new(&start.handle, access, start.previous_login, start.settings);
+        // The telnet transport is the one with an access filter (D27): it has no key to bind.
+        let flow = if self.parts.access_filter.is_some() {
+            flow.over_telnet()
+        } else {
+            flow
+        };
         if self.parts.fingerprint.is_none() {
             flow.signed_in_with_password()
         } else {
             flow
         }
+    }
+
+    /// A device-link code or a staff recovery code typed in the waiting room (FIX-M3-11): bind
+    /// this connection's key to the account the code was made for (a recovery code also sets
+    /// the new password), subject to the same per-network limit as a password attempt and one of
+    /// its own per key. Every failure is the room's one refusal.
+    async fn try_code(&mut self, request: CodeRequest) {
+        let Some(fingerprint) = self.parts.fingerprint.clone() else {
+            self.parts.screen.redeem_refused();
+            return;
+        };
+        let attempt = format!("code-{fingerprint}");
+        if let russh_bbs_core::waiting_room::Verdict::Limited { retry_after } =
+            self.parts.passwords.admit(self.parts.peer_ip, &attempt)
+        {
+            info!(session = ?self.parts.session.id(), ?retry_after, "code redemption rate limited");
+            self.parts.screen.redeem_refused();
+            return;
+        }
+        let directory = &*self.parts.directory;
+        let work = async {
+            let access = directory.access_for(None).await.ok()?;
+            match &request.password {
+                Some(password) => {
+                    redeem_recovery_code(
+                        directory,
+                        self.parts.passwords.pool(),
+                        &access,
+                        &request.code,
+                        &fingerprint,
+                        password,
+                    )
+                    .await
+                    .ok()
+                }
+                None => redeem_link_code(directory, &access, &request.code, &fingerprint)
+                    .await
+                    .ok(),
+            }
+        };
+        let Ok(Some(account)) = timeout(PASSWORD_REQUEST_TIMEOUT, work).await else {
+            self.parts.screen.redeem_refused();
+            return;
+        };
+        self.parts
+            .session
+            .set_authenticated(fingerprint, Access::Member);
+        let start = self.account_start(&account).await;
+        crate::community::note_sign_in(&*self.parts.directory, start.account).await;
+        self.parts.account = Some(start.account);
+        let flow = self.member_flow(start);
+        self.parts.screen.redeemed(flow);
     }
 
     /// Offer a request for an invite, or a membership application, typed in the waiting room to
@@ -1079,6 +1146,25 @@ impl<D: Backend> Shell<D> {
             russh_bbs_core::passwords::Response::Refused(russh_bbs_core::passwords::Refusal::Failed)
         });
         self.parts.screen.deliver_password(response);
+    }
+
+    /// Run the keys request the My keys or recovery screen is waiting on and give it the answer.
+    /// Core checks the permission against the snapshot loaded for this action
+    /// (`keys::execute`); a slow or failing store gets "failed".
+    async fn run_keys(&mut self, request: russh_bbs_core::keys::Request) {
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let response = timeout(
+            PASSWORD_REQUEST_TIMEOUT,
+            russh_bbs_core::keys::execute(&*self.parts.directory, &access, request),
+        )
+        .await
+        .unwrap_or_else(|_| {
+            warn!(session = ?self.parts.session.id(), "keys request timed out");
+            russh_bbs_core::keys::Response::Refused(russh_bbs_core::keys::Refusal::Failed)
+        });
+        self.parts.screen.deliver_keys(response);
     }
 
     /// Store settings the member changed. A failure is logged; the session keeps its choice.
