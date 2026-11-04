@@ -1,12 +1,14 @@
 # Emberdeep UI screenshots (M4-E3)
 
-Two sets, both made from the code in this branch.
+All made from the code in this branch.
 
-**`real-ssh/`** are the real thing: an OpenSSH client in a 80x24 terminal (tmux) against a running `russh-bbs-server`, signed in as the sysop and walked through one whole day (make a hero, each place in town, down the stair, an event, a fight, the map, back up). The capture is the terminal screen with its colours (`tmux capture-pane -e`) drawn to a PNG with a monospace font; the board composites doors at **16 colours** today (D104), so this is the plainest the screens will look.
+**`real-ssh/`**: the real thing. An OpenSSH client in an 80x24 terminal (tmux, `TERM=xterm-direct` so the board composites in true colour, D109) against a running `russh-bbs-server`, signed in as the sysop and walked through one whole day: make a hero, each place in town, down the stair, a fight, an event, the map, back up. The capture is the terminal screen with its colours (`tmux capture-pane -e`) drawn to a PNG with a monospace font; a real terminal's font and exact colours differ.
 
-**`sizes/`** are the same screens at the three terminal sizes (80x24 is above; 100x30 and 132x43 here), in true colour and in the ASCII icon tier, and at the full window width where the board does not cap the box (130x39, the wide layouts). They come from `cargo test -p russh-bbs-door-emberdeep --test screens dump_screens -- --ignored` with `EMBERDEEP_SHOTS=dir` and the same PNG drawing.
+**`real-ssh-16/`**: the same walk from a client that only says `TERM=screen`, so the board composites at **16 colours**, the plainest the screens will look.
 
-## Real ssh, 80x24, 16 colours
+**`sizes/`**: the same screens at the three terminal sizes (80x24 is `real-ssh/`; 100x30 and 132x43 here), in true colour and in the ASCII icon tier, and at the full window width where the board does not cap the box (130x39, the wide layouts). They come from `EMBERDEEP_SHOTS=dir cargo test -p russh-bbs-door-emberdeep --test screens dump_screens -- --ignored` and the same PNG drawing.
+
+## Real ssh, 80x24, true colour
 
 | Screen | Picture |
 |---|---|
@@ -25,7 +27,6 @@ Two sets, both made from the code in this branch.
 | Skill tree with a detail pane | ![13-skills](real-ssh/13-skills.png) |
 | Hero sheet: numbers | ![14-sheet](real-ssh/14-sheet.png) |
 | Hero sheet: marks | ![15-sheet-marks](real-ssh/15-sheet-marks.png) |
-| Hero sheet: moves and knacks | ![15b-sheet-moves](real-ssh/15b-sheet-moves.png) |
 | The hall: standings | ![16-hall](real-ssh/16-hall.png) |
 | The hall: the dead | ![17-hall-dead](real-ssh/17-hall-dead.png) |
 | The hall: what heroes changed | ![18-hall-world](real-ssh/18-hall-world.png) |
@@ -37,6 +38,19 @@ Two sets, both made from the code in this branch.
 | The sheet, opened below | ![25-sheet-delve](real-ssh/25-sheet-delve.png) |
 | Deeper in the level | ![26-delve-late](real-ssh/26-delve-late.png) |
 | Back in town, torches spent | ![27-back-in-town](real-ssh/27-back-in-town.png) |
+
+## Real ssh, 80x24, 16 colours
+
+| Screen | Picture |
+|---|---|
+| Cindermere: skyline, tavern board, the places, the way down | ![04-town](real-ssh-16/04-town.png) |
+| Market: stalls, a 14-day shelf-price sparkline, a cost preview | ![05-market](real-ssh-16/05-market.png) |
+| Forge: repairs, recipes, a cost preview with what is left | ![07-forge](real-ssh-16/07-forge.png) |
+| Hero sheet: numbers | ![14-sheet](real-ssh-16/14-sheet.png) |
+| The hall: standings | ![16-hall](real-ssh-16/16-hall.png) |
+| An event scene: choices, and the ones this build cannot take with the reason | ![21-event-scene](real-ssh-16/21-event-scene.png) |
+| Deeper in the level | ![26-delve-late](real-ssh-16/26-delve-late.png) |
+| Back in town, torches spent | ![27-back-in-town](real-ssh-16/27-back-in-town.png) |
 
 ## Other sizes, tiers and depths
 

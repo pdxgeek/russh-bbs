@@ -747,7 +747,7 @@ fn tavern(
             frame.render_widget(
                 plain_table(
                     cx,
-                    &["The board", "Depth", "Pay", "Days"],
+                    &["The board", "Lvl", "Pay", "Days"],
                     &[
                         Constraint::Fill(1),
                         Constraint::Length(4),

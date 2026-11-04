@@ -226,7 +226,7 @@ The core tension: **how deep do you go today?** Each level down is richer and mo
 
 ## Implementation notes (M4-E3)
 
-**Status.** Every screen is drawn with ratatui into the door's own buffer (D104), over the same engine and the same keys (D-TBD). **Implemented:** the dungeon view and its map, the combat panel, the hero sheet and the skill tree, the town hub and each of its eight places, event scenes, the hall, hero creation, the death screen, and a look-around for all of them. **Verified:** by render tests of every screen at 80x24, 100x30 and 132x43 in each icon tier and each colour depth (shape, ASCII-only in the ASCII tier, no marker style), pinned text snapshots, a look-around test for every screen, an interaction test of one whole day, the framework's sandbox audit, and a walk over a real OpenSSH client with a screenshot of each screen (attached to the pull request). **Not built:** mouse (UI-9), effects and motion (UI-8), a per-member colour depth, and the social slice.
+**Status.** Every screen is drawn with ratatui into the door's own buffer (D104), over the same engine and the same keys (D-TBD). **Implemented:** the dungeon view and its map, the combat panel, the hero sheet and the skill tree, the town hub and each of its eight places, event scenes, the hall, hero creation, the death screen, and a look-around for all of them. **Verified:** by render tests of every screen at 80x24, 100x30 and 132x43 in each icon tier and each colour depth (shape, ASCII-only in the ASCII tier, no marker style), pinned text snapshots, a look-around test for every screen, an interaction test of one whole day, the framework's sandbox audit, and a walk over a real OpenSSH client with a screenshot of each screen (attached to the pull request). **Not built:** mouse (UI-9), effects and motion (UI-8), and the social slice.
 
 ### What is built, and where
 
@@ -251,7 +251,7 @@ The core tension: **how deep do you go today?** Each level down is richer and mo
 - **The light is a picture.** How far the torch reaches (0 to 3 rooms) and how warm it burns come from the turns left; they change how the map is drawn and nothing else. The fog is drawn over the whole grid, so it never shows where an unseen room is.
 - **Two builds, one room.** A room option the build cannot take is listed under the ones it can, with the first condition it fails (`needs runecraft`, `needs Might 12`, `a runesmith only`). The look-around says the same ("Closed to you: ..."), so a screen reader hears what a sighted player sees. A `◆` marks an option that exists only because of the build.
 - **Prices that move.** The market shows the average ask of the shelf over the last fourteen days as a sparkline; it asks the engine for each day (the market is a pure function of the day), it does not invent a curve.
-- **Colour.** Text uses the theme's roles; art uses Emberdeep's own colours. The board composites doors at 16 colours today (D104), so the ramps are made of saturated stops that degrade to black, red, yellow and white and not to grey; at truecolor they are smooth gradients. Nothing relies on colour alone: every meter prints its numbers, every threat has a word, the stance and the cursor have a mark.
+- **Colour.** Text uses the theme's roles; art uses Emberdeep's own colours. The board composites a door at the client's depth (D109), so the ramps are made of saturated stops that degrade to black, red, yellow and white and not to grey at 16 colours, and are smooth gradients at 256 colours and truecolor (both were walked over ssh). Nothing relies on colour alone: every meter prints its numbers, every threat has a word, the stance and the cursor have a mark.
 - **ASCII tier.** The framework maps box drawing, blocks and arrows; a last pass maps the few icons it does not (ellipsis, the dagger, the lock-and-key marks). The ASCII tier is pure ASCII at every size (tested).
 - **Size.** At the board's 74 by 19 every screen fits (the map and the scene side by side, two rows of gauges, three rows of log, two rows of keys). More height gives a bigger map with boxed rooms, a longer log and room vignettes; at 100 columns and more the dungeon view adds the hero's card. The board's box is capped at 76 columns, so the wide layouts show only where the window is wider than that box can be today; they are tested at full window size.
 
@@ -265,6 +265,6 @@ The core tension: **how deep do you go today?** Each level down is richer and mo
 
 - **Mouse (UI-9)** is a new default-bodied method on `DoorSession`; the lists are `ratatui` `List`s with a cursor in `UiState`, which is where a click would set it.
 - **Effects (UI-8)** run on the surface after `draw`; the screens draw from the state alone (no clock), so a fade between screens needs nothing from them.
-- **A per-member colour depth** changes nothing here: the ramps already degrade; truecolor members will see the smooth ones.
+- **A stored colour cap** (UI-2) changes nothing here: the ramps already degrade at every depth the board composites.
 - **Social (E4).** The hall already has a tab for the dead and for the world; parties and duels add rows to the same list-and-detail widget (`sheet::list_detail`).
 

@@ -242,7 +242,7 @@
 |* EMBERDEEP . The Tavern ----------------------------- Ember L4 Runesmith
 |the Banked Ember   Coin 84  Salvage 0  Store 45  Turns 25/25
 |+ The Tavern ----------------------------++ Preview ---------------------+
-||The board                 Dept Pay   Day||The Blister Brood             |
+||The board                 Lvl  Pay   Day||The Blister Brood             |
 ||[1] Beast: The Spitting ~ L2+  40c   3d ||A slag crawler heavy with     |
 ||[2] Beast: The Blister B~ L6+  90c   4d ||eggs. Kill it before it nests |
 ||[3] Beast: Hollow Sir Al~ L2+  56c   4d ||under the stair.              |
