@@ -31,7 +31,7 @@ use ratatui::style::{Modifier, Style};
 use ratatui::symbols::border;
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{
-    Block, Borders, Paragraph, Row, Scrollbar, ScrollbarOrientation, ScrollbarState, Table,
+    Block, Borders, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState,
 };
 use russh_bbs_core::sanitize::SingleLine;
 
@@ -39,7 +39,7 @@ use super::frame::ChromeText;
 use crate::settings::Look;
 
 /// Longest cell text kept, in characters, whatever the column.
-const CELL_MAX: usize = 240;
+const CELL_MAX: usize = 160;
 
 /// Printable-ASCII box for the ASCII tier.
 pub(crate) const ASCII_BORDER: border::Set = border::Set {
@@ -108,26 +108,32 @@ pub(crate) enum CellStyle {
     Bold,
 }
 
-/// One cell: chrome words or sanitized content.
+/// One cell: chrome words, or content that is sanitized when (and only when) it is drawn.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct Cell {
     text: String,
+    /// The text came from content: [`Cell::shown`] sanitizes it. Rows that scroll out of view
+    /// are never sanitized, which keeps a frame cheap however long the list is.
+    content: bool,
     style: CellStyle,
 }
 
 impl Cell {
-    /// Content from a member, a feed or the store: sanitized here.
+    /// Content from a member, a feed or the store. It is sanitized with the shared sanitizer
+    /// before it can be drawn, whatever the caller did to it.
     pub(crate) fn content(text: &str) -> Self {
         Self {
-            text: SingleLine::new(CELL_MAX).sanitize(text).into_string(),
+            text: text.to_owned(),
+            content: true,
             style: CellStyle::Plain,
         }
     }
 
-    /// Fixed chrome words or a number the code formatted.
+    /// Fixed chrome words.
     pub(crate) fn chrome(text: ChromeText<'_>) -> Self {
         Self {
             text: text_of(text),
+            content: false,
             style: CellStyle::Plain,
         }
     }
@@ -136,7 +142,17 @@ impl Cell {
     pub(crate) fn plain(text: impl Into<String>) -> Self {
         Self {
             text: text.into(),
+            content: false,
             style: CellStyle::Plain,
+        }
+    }
+
+    /// The text to draw: content cleaned by the shared sanitizer, chrome as it is.
+    fn shown(&self) -> String {
+        if self.content {
+            SingleLine::new(CELL_MAX).sanitize(&self.text).into_string()
+        } else {
+            self.text.clone()
         }
     }
 
@@ -245,23 +261,31 @@ pub(crate) fn framed(look: Look, title: Option<String>) -> Block<'static> {
     block
 }
 
-/// Cut `text` to `width` columns, ending with an ellipsis when it was cut.
+/// The terminal columns one character takes.
+fn char_width(c: char) -> usize {
+    let mut buffer = [0_u8; 4];
+    Span::raw(&*c.encode_utf8(&mut buffer)).width()
+}
+
+/// Cut `text` to `width` columns, ending with an ellipsis when it was cut. Linear in the text.
 pub(crate) fn clip(text: &str, width: usize, ascii: bool) -> String {
-    if Span::raw(text).width() <= width {
+    let total: usize = text.chars().map(char_width).sum();
+    if total <= width {
         return text.to_owned();
-    }
-    let ellipsis = if ascii { "..." } else { "\u{2026}" };
-    let room = width.saturating_sub(Span::raw(ellipsis).width());
-    let mut out = String::new();
-    for c in text.chars() {
-        out.push(c);
-        if Span::raw(out.as_str()).width() > room {
-            out.pop();
-            break;
-        }
     }
     if width == 0 {
         return String::new();
+    }
+    let ellipsis = if ascii { "..." } else { "\u{2026}" };
+    let room = width.saturating_sub(ellipsis.chars().map(char_width).sum());
+    let mut out = String::new();
+    let mut used = 0;
+    for c in text.chars() {
+        used += char_width(c);
+        if used > room {
+            break;
+        }
+        out.push(c);
     }
     out.push_str(ellipsis);
     out
@@ -336,28 +360,26 @@ pub(crate) fn render(
     );
     let dim = Style::new().add_modifier(Modifier::DIM);
 
-    let mut constraints: Vec<Constraint> = Vec::new();
-    constraints.extend(widths.iter().map(|w| Constraint::Length(*w)));
-
-    let cells_of = |at: usize, row: &TableRow| -> Row<'static> {
-        let mut cells: Vec<ratatui::widgets::Cell<'static>> = Vec::new();
+    let cells_of = |row: &TableRow| -> Vec<Line<'static>> {
         let picked = shown_at.iter().filter_map(|at| row.cells.get(*at));
-        for (cell, (column, width)) in picked.zip(columns.iter().zip(&widths)) {
-            let text = clip(&cell.text, usize::from(*width), ascii);
-            let style = match cell.style {
-                CellStyle::Plain => Style::new(),
-                CellStyle::Dim => dim,
-                CellStyle::Key => key_style,
-                CellStyle::Bold => Style::new().add_modifier(Modifier::BOLD),
-            };
-            let line = Line::from(Span::styled(text, style));
-            cells.push(ratatui::widgets::Cell::from(if column.align_right {
-                line.alignment(Alignment::Right)
-            } else {
-                line
-            }));
-        }
-        Row::new(cells)
+        picked
+            .zip(columns.iter().zip(&widths))
+            .map(|(cell, (column, width))| {
+                let text = clip(&cell.shown(), usize::from(*width), ascii);
+                let style = match cell.style {
+                    CellStyle::Plain => Style::new(),
+                    CellStyle::Dim => dim,
+                    CellStyle::Key => key_style,
+                    CellStyle::Bold => Style::new().add_modifier(Modifier::BOLD),
+                };
+                let line = Line::from(Span::styled(text, style));
+                if column.align_right {
+                    line.alignment(Alignment::Right)
+                } else {
+                    line
+                }
+            })
+            .collect()
     };
 
     let data_area = Rect {
@@ -436,10 +458,7 @@ pub(crate) fn render(
             width: first.width.saturating_sub(lead.width),
             ..first
         };
-        frame.render_widget(
-            Table::new(vec![cells_of(at, row)], constraints.clone()).column_spacing(2),
-            table_area,
-        );
+        draw_cells(frame, table_area, &widths, cells_of(row));
         if let (Some(detail), true) = (&row.detail, row_area.height >= 2) {
             let second = Rect {
                 y: row_area.y + 1,
@@ -448,7 +467,7 @@ pub(crate) fn render(
             };
             let indent = usize::from(2 + number_width);
             let text = clip(
-                &detail.text,
+                &detail.shown(),
                 usize::from(second.width).saturating_sub(indent),
                 ascii,
             );
@@ -512,8 +531,6 @@ fn draw_header(
 ) {
     let area = Rect { height: 1, ..inner };
     frame.render_widget(Block::default().style(head_style), area);
-    let mut cells: Vec<ratatui::widgets::Cell<'static>> = Vec::new();
-    let mut constraints: Vec<Constraint> = Vec::new();
     let lead = 2 + u16::from(numbered) * 3;
     if numbered {
         frame.render_widget(
@@ -525,30 +542,52 @@ fn draw_header(
             },
         );
     }
-    for (column, width) in columns.iter().zip(widths) {
-        let text = clip(column.title.as_str(), usize::from(*width), ascii);
-        let line = Line::from(Span::raw(text));
-        cells.push(ratatui::widgets::Cell::from(if column.align_right {
-            line.alignment(Alignment::Right)
-        } else {
-            line
-        }));
-        constraints.push(Constraint::Length(*width));
-    }
+    let cells: Vec<Line<'static>> = columns
+        .iter()
+        .zip(widths)
+        .map(|(column, width)| {
+            let line = Line::from(Span::raw(clip(
+                column.title.as_str(),
+                usize::from(*width),
+                ascii,
+            )));
+            if column.align_right {
+                line.alignment(Alignment::Right)
+            } else {
+                line
+            }
+        })
+        .collect();
     let table_area = Rect {
         x: area.x + lead.min(area.width),
         width: area.width.saturating_sub(lead),
         ..area
     };
-    frame.render_widget(
-        Table::new(vec![Row::new(cells)], constraints)
-            .column_spacing(2)
-            .style(head_style),
-        table_area,
-    );
+    draw_cells(frame, table_area, widths, cells);
 }
 
-/// The widths of the shown columns inside `available` columns (spacing of one between them).
+/// Draw `cells` side by side in `area`, each in its column's width with two columns between.
+/// Drawn directly, one paragraph per cell: a table widget would solve a layout for every row.
+fn draw_cells(frame: &mut Frame<'_>, area: Rect, widths: &[u16], cells: Vec<Line<'static>>) {
+    let mut x = area.x;
+    let end = area.x + area.width;
+    for (line, width) in cells.into_iter().zip(widths) {
+        if x >= end {
+            break;
+        }
+        let cell = Rect {
+            x,
+            y: area.y,
+            width: (*width).min(end - x),
+            height: area.height.min(1),
+        };
+        frame.render_widget(Paragraph::new(line), cell);
+        x = x.saturating_add(width.saturating_add(2));
+    }
+}
+
+/// The widths of the shown columns inside `available` columns, with two columns of spacing
+/// between them (the widths and the spacing together fill `available`).
 pub(crate) fn column_widths(columns: &[&Column<'_>], available: u16) -> Vec<u16> {
     if columns.is_empty() {
         return Vec::new();
@@ -561,8 +600,7 @@ pub(crate) fn column_widths(columns: &[&Column<'_>], available: u16) -> Vec<u16>
             Width::Fill(weight) => Constraint::Fill(weight.max(1)),
         })
         .collect();
-    let spacing = u16::try_from(columns.len().saturating_sub(1) * 2).unwrap_or(0);
-    let area = Rect::new(0, 0, available.saturating_add(spacing), 1);
+    let area = Rect::new(0, 0, available, 1);
     Layout::horizontal(constraints)
         .spacing(2)
         .split(area)
@@ -570,3 +608,6 @@ pub(crate) fn column_widths(columns: &[&Column<'_>], available: u16) -> Vec<u16>
         .map(|rect| rect.width)
         .collect()
 }
+
+#[cfg(test)]
+mod tests;

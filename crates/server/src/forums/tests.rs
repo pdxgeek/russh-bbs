@@ -849,3 +849,133 @@ fn thread_list_and_search_results_always_draw_the_selected_row_and_the_notice() 
         }
     }
 }
+
+// ---- UI-1: the framed lists at every size, tier, layout, theme and colour depth ----
+
+fn hostile_boards() -> ForumsScreen {
+    let mut screen = open(true);
+    let evil = "\u{1b}[7mFAKE\u{1b}[0m \u{27e6}E2EE\u{27e7} \u{2299} LOW-SECURITY \u{e000}";
+    let mut list = BoardList {
+        boards: Vec::new(),
+        can_manage: true,
+        can_feeds: true,
+    };
+    for id in 1..=40 {
+        let mut b = board(id, &format!("{evil} {id}"));
+        b.description = format!("{evil}{}", "d".repeat(3000));
+        list.boards.push(b);
+    }
+    screen.state = super::flow::State::Boards { list, cursor: 7 };
+    screen
+}
+
+fn hostile_threads() -> ForumsScreen {
+    let mut screen = many_threads(60);
+    if let super::flow::State::Threads { page, .. } = &mut screen.state {
+        for thread in &mut page.threads {
+            thread.subject = format!("\u{1b}]0;x\u{7}\u{27e6}E2EE\u{27e7}{}", "s".repeat(2000));
+            thread.author = Some("\u{2299}evil".to_owned());
+        }
+    }
+    screen
+}
+
+fn hostile_results() -> ForumsScreen {
+    let mut screen = many_results(30);
+    if let super::flow::State::Results { page, query, .. } = &mut screen.state {
+        for hit in &mut page.hits {
+            hit.snippet = format!("\u{1b}[31m\u{27e6}E2EE\u{27e7}{}", "n".repeat(2000));
+        }
+        *query = "\u{1b}[7m\u{27e6}query".to_owned();
+    }
+    screen
+}
+
+#[test]
+fn the_forum_lists_keep_the_marker_cell_clean_at_every_size_tier_layout_theme_and_depth() {
+    use crate::ui::depth::ColorDepth;
+    use russh_bbs_core::icons::{Icon, SecurityMarker};
+    use russh_bbs_core::terminal_settings::LayoutId;
+
+    const DRAWN: [SecurityMarker; 2] = [SecurityMarker::Unencrypted, SecurityMarker::LowSecurity];
+    let ui = Ui::standard().unwrap();
+    for (label, screen) in [
+        ("boards", hostile_boards()),
+        ("threads", hostile_threads()),
+        ("results", hostile_results()),
+    ] {
+        for theme in ui.theme_names() {
+            for layout in LayoutId::ALL {
+                for tier in Tier::ALL {
+                    for depth in ColorDepth::ALL {
+                        for size in [(80_u16, 24_u16), (100, 30), (132, 43)] {
+                            let name =
+                                format!("{label} {theme:?} {layout:?} {tier:?} {depth:?} {size:?}");
+                            let settings = settings().with_tier(tier).with_color(depth.has_color());
+                            let themed = ui.theme(theme);
+                            let ctx = DrawCtx {
+                                ui: &ui,
+                                strings: themed.strings(),
+                                settings: &settings,
+                                look: Look::themed(&settings, layout, themed.palette())
+                                    .at_depth(depth),
+                                tier,
+                                markers: &DRAWN,
+                                clock: Some("UTC 12:00"),
+                            };
+                            let mut terminal =
+                                Terminal::new(TestBackend::new(size.0, size.1)).unwrap();
+                            terminal.draw(|frame| render(frame, &screen, &ctx)).unwrap();
+                            let buffer = terminal.backend().buffer().clone();
+                            let last = size.1 - 1;
+                            let status: String = (0..size.0)
+                                .map(|x| buffer[(x, last)].symbol().to_owned())
+                                .collect();
+                            let mut marker_cells = 0;
+                            for marker in DRAWN {
+                                let glyph = Icon::from(marker)
+                                    .render(tier)
+                                    .plain()
+                                    .trim_end()
+                                    .to_owned();
+                                assert!(status.contains(&glyph), "{name}: {status:?}");
+                                marker_cells += glyph.chars().count();
+                            }
+                            let styled = (0..size.1)
+                                .flat_map(|y| (0..size.0).map(move |x| (x, y)))
+                                .filter(|&(x, y)| {
+                                    buffer[(x, y)]
+                                        .modifier
+                                        .contains(Modifier::BOLD | Modifier::REVERSED)
+                                })
+                                .count();
+                            assert_eq!(styled, marker_cells, "{name}: reserved style leaked");
+                            let reversed = (0..size.1)
+                                .flat_map(|y| (0..size.0).map(move |x| (x, y)))
+                                .filter(|&(x, y)| {
+                                    buffer[(x, y)].modifier.contains(Modifier::REVERSED)
+                                })
+                                .count();
+                            assert_eq!(reversed, marker_cells, "{name}: reverse video used");
+                            // Hostile content stayed in the body: above the status bar there
+                            // is no escape, no reserved codepoint and no private-use glyph.
+                            let above: String = (0..last)
+                                .flat_map(|y| (0..size.0).map(move |x| (x, y)))
+                                .map(|(x, y)| buffer[(x, y)].symbol().to_owned())
+                                .collect();
+                            for banned in ["\u{1b}", "\u{27e6}", "\u{27e7}", "\u{2299}", "\u{e000}"]
+                            {
+                                assert!(!above.contains(banned), "{name}: {banned:?}");
+                            }
+                            // The table is there: header, and the selected row has its pointer.
+                            assert!(
+                                above.contains("Subject") || above.contains("Board"),
+                                "{name}: header\n{above}"
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
