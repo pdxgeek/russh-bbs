@@ -30,7 +30,7 @@ Dependency direction: `server`, `api`, `store` → `core`. `core` depends on non
         └──────────────┬───────────────────────────────┘
                  russh-bbs-core   (rules, sanitizer, traits)
                        │ traits
-                 russh-bbs-store  (SQLite or Postgres, blobs on disk)
+                 russh-bbs-store  (SQLite or Postgres, blobs on disk or in a bucket)
 ```
 
 Rules never live in a front end. A rule that exists in both the TUI and GraphQL is a bug.
@@ -64,7 +64,7 @@ Rules never live in a front end. A rule that exists in both the TUI and GraphQL 
 - Datasource chosen in config (D6, D24): SQLite in WAL mode (default) or Postgres. Managed Postgres is this backend with TLS. PGlite was tried and does not work with the pooled client (D44). No MySQL. Each backend has its own forward-only migrations and passes the same behavior test suite.
   - **Implemented (M1-B, `russh-bbs-store`):** `SqliteStore` over `sqlx` (D34, D35, D36): `accounts`, `account_keys`, `settings`; core traits in `russh-bbs-core::store` (`AccountStore`, `SettingsStore`); `MemberDirectory` implemented for the store. Opened at start-up from `datasource.path` (`--db` / `RUSSH_BBS_DB`, see [config.md](config.md)). Planned: boards, posts, mail, files and invites in their milestones.
   - **Implemented (M1-G, D44):** `crates/store/src/{sqlite,postgres}` side by side, each with its own migrations (`migrations/{sqlite,postgres}/`) and `.sqlx` data in one directory; shared rules (membership, role, founder flag) once in `directory.rs`, shared account row mapping in `rows.rs`. `main.rs` opens the store the config selects and runs the same server code over it (generic over core traits). One behavior suite in `crates/store/src/suite` runs against both backends; Postgres adds TLS (always on, D31) and refuses URL/socket settings that would weaken it.
-- File blobs behind one `BlobStore` trait with object-store semantics (D30), addressed by BLAKE3 hash; metadata in the database. Backends: local directory (default) and S3-compatible, both through `object_store`, both behaving identically, including quarantine as a prefix plus a database flag. Managed Postgres such as RDS is just the Postgres backend with TLS (D31).
+- File blobs behind one `BlobStore` trait with object-store semantics (D30), keyed `<namespace>/<random id>` with the SHA-256 and size stored in a trailer on the object and verified on read (D106); metadata in the database. Backends: local directory (default, hand-written: temp file, fsync, hard link) and S3-compatible (through `object_store`), both behaving identically and held to it by one shared suite, including quarantine as a prefix plus a database flag. Managed Postgres such as RDS is just the Postgres backend with TLS (D31).
 - Backups with a tested restore procedure (M5).
 
 ## Cross-cutting

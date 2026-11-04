@@ -27,6 +27,8 @@ pub const CONTAINER_CONFIG: &str = "/data/config.toml";
 pub(crate) const HOST_KEY_FILE: &str = "host_ed25519_key";
 /// Name of the mail key file inside the default data directory (M3-I, D90).
 pub(crate) const MAIL_KEY_FILE: &str = "mail.key";
+/// Name of the blob directory inside the default data directory (D30, M4-F1).
+pub(crate) const BLOBS_DIR: &str = "blobs";
 /// Name of the database file inside the default data directory.
 pub(crate) const DB_FILE: &str = "russh-bbs.db";
 
