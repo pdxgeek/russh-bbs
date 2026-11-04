@@ -1,0 +1,19 @@
+* LONG HAUL  Tester0  18,450 cr  debt 20,000  days ********** 10
++ STAR CHART  region  by faction ----------------------------------------+
+|   :?     o....   o....            o         ...o.                   :  |
+|   : .         . .               .  .  ..F..o     ..          ?. .   :  |
+|  :..I...       o             ?.     .I Pellam Wake o              o  : |
+|..M      o... .A              .      .               ...I         .   : |
+|  :..   .    M       .?        M    .       ?. .A   .R..         .    : |
+|  :  .M.    .      o  .        .....@ Garnet Drop. .             R    : |
+|  :         .       ..o...     M               ?. o                   : |
+|  :         M             M....      o . .?        ..M.       ?.      : |
+|  I          ..I. .?     ?            ..I. .        .   ?        .    : |
+|  ..                 .?.              .     ?     .M              F  :  |
++------------------------------------------------------------------------+
++ SYSTEM ----------------------------------------------------------------+
+|Garnet Drop  binary pair - radiation belt                               |
+|I Narrow Forge Industrial station - size 2 - yard                       |
++------------------------------------------------------------------------+
+[arrows] move  [Enter] plan route  [+/-] zoom  [o] overlay  [.] to ship
+[Esc] back

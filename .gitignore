@@ -29,3 +29,4 @@ host_ed25519_key*
 ssh_host_*
 *_ed25519_key
 *.pem
+*.whl
