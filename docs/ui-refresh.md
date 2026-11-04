@@ -126,7 +126,7 @@ A **widget** is a small live panel the layouts place in their widget areas (the 
   - a blinking cursor in inputs.
 
   Members can turn motion off, and it is always off in accessibility mode.
-- **Doors:** the framework's `Canvas` gains the same widgets, so the game UI slices (S3, E3, N3, L3, H3) use them.
+- **Doors get all of ratatui** (owner, 2026-11-04). A door renders any ratatui widget into its own off-screen buffer, and the framework cleans every cell as it composites it onto the screen: the sanitizer runs on each symbol, the reserved marker style is removed, and everything is clipped to the door's area. Doors can use colours and every widget, but they can never forge a marker or draw outside their box. The game UI slices (S3, E3, N3, L3, H3) build on it.
 
 ## Customization (sysop and member)
 
@@ -202,7 +202,7 @@ Under Sysop tools, a **theme preview** renders each installed theme against samp
 3. **UI-3: board art.** The `.ans` parser, the `.art.toml` format, art slots, the large-letter fallback, and the sysop theme preview. Ships one original art set per new theme.
 4. **UI-10: widget system** (runs before UI-4). The widget trait and registry, the launch set of widgets, sysop defaults and locks, the member Widgets screen, per-member storage and refresh budgets.
 5. **UI-4: screens.** The dashboard home, the reader, three-pane chat, mail and the community screens moved onto the new widgets, plus motion.
-5. **UI-5: door canvas.** The framework `Canvas` gains the widgets, so the game UI slices can use them.
+5. **UI-5: full ratatui for doors.** An off-screen buffer per door, composited with per-cell cleaning; any widget and any colour; mouse events and effects added as UI-8 and UI-9 land. The game UI slices use it.
 6. **UI-6: sysop menus and pages.** A `menus.toml` reorders, renames, hides and nests the built-in menu items, and adds sysop pages (bulletins and info screens with art). It cannot add actions or bypass access checks.
 7. **UI-7: theme gallery, import and export.** Members preview and pick a theme from a gallery; sysops import and export theme packs (one file, art included).
 8. **UI-8: effects and graphics.**

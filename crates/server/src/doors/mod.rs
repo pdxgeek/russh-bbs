@@ -30,10 +30,13 @@ use std::sync::Arc;
 use russh_bbs_core::doors::DoorStore;
 use russh_bbs_core::limits::{Clock, SystemClock};
 use russh_bbs_core::scheduler::{Scheduler, SchedulerStore};
+use russh_bbs_door::Door;
 use russh_bbs_door::tick::{self, TickPolicy};
-use russh_bbs_door::{Door, InvalidDoorId};
+use russh_bbs_door_emberdeep::Emberdeep;
 use russh_bbs_door_example::CoinToss;
 use russh_bbs_door_hallpass::Hallpass;
+use russh_bbs_door_nullroute::Nullroute;
+use russh_bbs_door_saltmarch::Saltmarch;
 
 pub(crate) use draw::{DrawCtx, render};
 pub(crate) use exec::{Request, Response, run};
@@ -78,16 +81,17 @@ impl Doors {
     }
 
     /// The doors that ship with the board: the example coin toss, until a game replaces it as
-    /// the first door. (Saltmarch, Emberdeep and the rest register here when they exist.)
+    /// the first door, and the games (Saltmarch, Emberdeep; the rest register here when they exist).
     ///
     /// # Errors
-    /// Only if a built-in door has an invalid id, which a test rules out.
-    pub fn builtin() -> Result<Self, InvalidDoorId> {
-        // Hallpass's embedded content is checked by its own tests; a failure there is a build bug and
-        // is reported as the only error this function has.
+    /// Only if a built-in door has an invalid id or broken content, which tests rule out.
+    pub fn builtin() -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         Ok(Self::new(vec![
             CoinToss::shared()?,
-            Hallpass::shared().map_err(|_| InvalidDoorId)?,
+            Saltmarch::shared()?,
+            Emberdeep::shared()?,
+            Nullroute::shared()?,
+            Hallpass::shared()?,
         ]))
     }
 

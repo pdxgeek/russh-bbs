@@ -33,12 +33,19 @@ The framework is the first M4 slice. **It shares plumbing only.** Each game has 
 - **Daily tick.** A door that has days registers one scheduler job (M3-C). The job is idempotent per day and catches up after downtime by replaying missed days, with a cap.
 - **Access.** Each door has a play permission. Staff tools (reset a player, end a season, bar a player from the door) are separate permissions, rank-checked (D69) and audited.
 - **Sanitizing.** Every name or text a player types goes through the shared sanitizer and the reserved-name rule. Text one player shows another is rate-limited and comes from templates where the game allows it.
-- **UI.** Ratatui on the board's screen framework: classic, lightbar and compact layouts, themes, and the three icon tiers. Every game is playable at 80x24 in the ASCII tier. Every map or board screen has a text "look around" view for screen readers.
+- **UI.** Full ratatui (UI-5): each door renders any widget into its own buffer, and the framework cleans every cell (sanitizer, no reserved style, clipped to the door's area) as it composites it. It is built on the board's screen framework: classic, lightbar and compact layouts, themes, and the three icon tiers. Every game is playable at 80x24 in the ASCII tier. Every map or board screen has a text "look around" view for screen readers.
 - **Transports.** Doors behave the same over ssh and telnet (D94).
 - **Content is data.** Events, quests, items and dialogue are RON or TOML tables in the crate, validated at load by a schema test, so writers can add content without touching the engine.
 - **Balance.** Each game ships an auto-play harness that simulates many seasons and reports economy and win-rate curves. Balance changes come with its numbers.
 - **Credits.** Doors keep their own in-game currency. Whether season results pay board credits (M3-C) is a sysop setting, off by default.
 - **Inter-BBS.** Leagues shared between boards wait for federation (M8). Each game keeps a season summary format that could be exchanged later.
+
+### Game status
+
+| Game | Slice | Status |
+|---|---|---|
+| Emberdeep | M4-E1 engine (D101) | **Implemented**: hero, seasonal shared dungeon, combat, torch-turns, death and rescue, nightly tick, saves, minimal text screen. Later slices Planned. See [emberdeep.md](emberdeep.md) |
+| Saltmarch, Nullroute, Long Haul, Hallpass | | Proposed |
 
 ### Framework status (M4-D0, D98)
 
