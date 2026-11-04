@@ -176,7 +176,19 @@ impl Event {
             Self::WorldChange(id) => format!("The school has changed: {id}."),
             Self::Expelled => "Expelled.".to_owned(),
             Self::TermEnded(id) => format!("The term is over: {id}."),
-            Self::Scheduled { day, slot, .. } => format!("Set for day {day}, period {}.", slot + 1),
+            Self::Scheduled { day, slot, .. } => format!(
+                "Set for {}, period {}.",
+                [
+                    "Monday",
+                    "Tuesday",
+                    "Wednesday",
+                    "Thursday",
+                    "Friday",
+                    "Saturday",
+                    "Sunday"
+                ][Game::weekday(*day)],
+                slot + 1
+            ),
         }
     }
 }

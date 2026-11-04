@@ -170,6 +170,39 @@ impl Cond {
     }
 }
 
+impl Cond {
+    /// A few plain words for a condition, for a player who is being told what a lock wants.
+    #[must_use]
+    pub fn describe(&self) -> String {
+        let words = |id: &str| id.replace('_', " ");
+        match self {
+            Self::Tag(t) => format!("a knack for {}", words(t)),
+            Self::Trait(t) => format!("being {}", words(t)),
+            Self::Item(i) => format!("carrying {}", words(i)),
+            Self::Know(k) => format!("learning the {}", words(k)),
+            Self::World(w) => format!("the school having changed ({})", words(w)),
+            Self::Expelled => "being expelled".to_owned(),
+            Self::Not(inner) => format!("not {}", inner.describe()),
+            Self::Cmp { stat, op, value } => {
+                let name = match stat {
+                    Stat::Skill(id) | Stat::Standing(id) | Stat::Wary(id) | Stat::Grade(id) => {
+                        words(id)
+                    }
+                    other => format!("{other:?}").to_lowercase(),
+                };
+                let symbol = match op {
+                    Op::Ge => "at least",
+                    Op::Le => "at most",
+                    Op::Gt => "over",
+                    Op::Lt => "under",
+                    Op::Eq => "exactly",
+                };
+                format!("{name} {symbol} {value}")
+            }
+        }
+    }
+}
+
 impl TryFrom<String> for Cond {
     type Error = BadCond;
     fn try_from(text: String) -> Result<Self, BadCond> {

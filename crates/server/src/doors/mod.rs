@@ -33,6 +33,7 @@ use russh_bbs_core::scheduler::{Scheduler, SchedulerStore};
 use russh_bbs_door::tick::{self, TickPolicy};
 use russh_bbs_door::{Door, InvalidDoorId};
 use russh_bbs_door_example::CoinToss;
+use russh_bbs_door_hallpass::Hallpass;
 
 pub(crate) use draw::{DrawCtx, render};
 pub(crate) use exec::{Request, Response, run};
@@ -82,7 +83,12 @@ impl Doors {
     /// # Errors
     /// Only if a built-in door has an invalid id, which a test rules out.
     pub fn builtin() -> Result<Self, InvalidDoorId> {
-        Ok(Self::new(vec![CoinToss::shared()?]))
+        // Hallpass's embedded content is checked by its own tests; a failure there is a build bug and
+        // is reported as the only error this function has.
+        Ok(Self::new(vec![
+            CoinToss::shared()?,
+            Hallpass::shared().map_err(|_| InvalidDoorId)?,
+        ]))
     }
 
     /// No doors: the Doors menu item then opens an empty list.

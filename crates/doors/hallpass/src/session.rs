@@ -14,7 +14,8 @@ use crate::save::encode_player;
 use crate::state::Status;
 use crate::world::WorldDelta;
 
-const WIDTH: usize = 78;
+/// Narrow enough for the door area inside the board's frame on an 80-column terminal.
+const WIDTH: usize = 70;
 
 /// Which screen is up.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -59,18 +60,20 @@ pub(crate) struct Session {
 }
 
 fn wrap(text: &str, width: usize) -> Vec<String> {
+    let indent: String = text.chars().take_while(|c| *c == ' ').collect();
     let mut lines = Vec::new();
-    let mut line = String::new();
+    let mut line = indent.clone();
     for word in text.split_whitespace() {
-        if !line.is_empty() && line.chars().count() + 1 + word.chars().count() > width {
-            lines.push(std::mem::take(&mut line));
+        let started = line.len() > indent.len();
+        if started && line.chars().count() + 1 + word.chars().count() > width {
+            lines.push(std::mem::replace(&mut line, indent.clone()));
         }
-        if !line.is_empty() {
+        if line.len() > indent.len() {
             line.push(' ');
         }
         line.push_str(word);
     }
-    if !line.is_empty() {
+    if line.len() > indent.len() {
         lines.push(line);
     }
     lines
@@ -137,10 +140,9 @@ impl Session {
 
     // ------------------------------------------------------------ building the screen
 
-    fn status_line(&self) -> String {
+    fn status_lines(&self) -> [String; 2] {
         let g = &self.game;
         let p = &g.player;
-        let day = g.term_day() + 1;
         let slot = g.current_slot().map_or_else(
             || "lights out".to_owned(),
             |s| {
@@ -151,20 +153,26 @@ impl Session {
                     .to_owned()
             },
         );
-        format!(
-            "Term {} day {}/{}  {}  |  heat {} file {}/{} legend {} nerve {}/{} cash {}",
-            p.term,
-            day.max(1),
-            g.content.rules.term_days,
-            slot,
-            p.heat,
-            p.file_points(),
-            g.content.rules.file_full,
-            p.legend,
-            p.nerve,
-            p.nerve_max,
-            p.cash
-        )
+        [
+            format!(
+                "Term {} - day {} of {} - {}",
+                p.term,
+                (g.term_day() + 1).max(1),
+                g.content.rules.term_days,
+                slot
+            ),
+            format!(
+                "heat {}  file {}/{}  legend {}  nerve {}/{}  cash {}  walk {}",
+                p.heat,
+                p.file_points(),
+                g.content.rules.file_full,
+                p.legend,
+                p.nerve,
+                p.nerve_max,
+                p.cash,
+                p.moves
+            ),
+        ]
     }
 
     fn timetable_strip(&self) -> String {
@@ -175,8 +183,22 @@ impl Session {
             .map(|slot| {
                 let act = g.activity(day, slot);
                 let short: String = match act.strip_prefix("class:") {
-                    Some(s) => s.chars().take(3).collect(),
-                    None => act.chars().take(4).collect(),
+                    Some(sub) => {
+                        let mut it = sub.chars();
+                        it.next()
+                            .map(|c| c.to_ascii_uppercase())
+                            .into_iter()
+                            .chain(it.take(2))
+                            .collect()
+                    }
+                    None => match act {
+                        "lunch" => "Lunch".to_owned(),
+                        "free" => "Free".to_owned(),
+                        "after" => "After".to_owned(),
+                        "evening" => "Eve".to_owned(),
+                        "night" => "Night".to_owned(),
+                        other => other.chars().take(5).collect(),
+                    },
                 };
                 if now == Some(slot) {
                     format!("[{short}]")
@@ -406,7 +428,7 @@ impl Session {
             add('l', "Loiter and listen", Cmd::Do(Action::Loiter));
         }
         if self.can(&Action::Rest) {
-            add('r', "Rest and keep your head down", Cmd::Do(Action::Rest));
+            add('r', "Rest, head down", Cmd::Do(Action::Rest));
         }
         add('p', "Schemes", Cmd::To(Mode::Plans));
         add('f', "You: file, grades, standing", Cmd::To(Mode::Stats));
@@ -419,9 +441,13 @@ impl Session {
     }
 
     fn go_view(&self) -> (Vec<String>, Vec<Item>) {
-        let items: Vec<Item> = self
-            .game
-            .reachable()
+        let mut places = self.game.reachable();
+        places.sort_by_key(|p| {
+            self.content()
+                .place(p)
+                .map_or(p.clone(), |x| x.name.clone())
+        });
+        let items: Vec<Item> = places
             .into_iter()
             .map(|p| Item {
                 label: self
@@ -549,7 +575,9 @@ impl Session {
         };
         let m = g.content.method(&s.method).map_or("?", |m| m.name.as_str());
         let t = g.content.target(&s.target).map_or("?", |t| t.name.as_str());
-        let state = if g.readiness(s).ready() {
+        let state = if g.player.run.as_ref().is_some_and(|r| r.scheme == id) {
+            "RUNNING"
+        } else if g.readiness(s).ready() {
             "READY"
         } else {
             "setup"
@@ -722,6 +750,23 @@ impl Session {
         if !extra.is_empty() {
             body.push(format!("Also helping: {}.", extra.join("; ")));
         }
+        if let Some(lock) = g
+            .scheme_place(s)
+            .and_then(|p| g.content.place(&p))
+            .filter(|p| p.lock.is_some())
+        {
+            let open = lock.unlock.iter().any(|c| g.holds(c));
+            let ways: Vec<String> = lock
+                .unlock
+                .iter()
+                .map(crate::cond::Cond::describe)
+                .collect();
+            body.push(if open {
+                "The way in: open to you.".to_owned()
+            } else {
+                format!("The way in is locked. Any of: {}.", ways.join("; "))
+            });
+        }
         body.push(format!(
             "Scouting {}/{}. {}",
             r.scout_have,
@@ -764,26 +809,26 @@ impl Session {
         if !g.recruitable(s).is_empty() {
             items.push(Item {
                 key: 'r',
-                label: "Recruit someone who is here".into(),
+                label: "Recruit someone here".into(),
                 cmd: Cmd::To(Mode::Recruit(id)),
             });
         }
         if self.can(&Action::Scout(id)) {
             items.push(Item {
                 key: 'w',
-                label: "Scout the place (uses this period)".into(),
+                label: "Scout (takes the period)".into(),
                 cmd: Cmd::Do(Action::Scout(id)),
             });
         }
         items.push(Item {
             key: 'd',
-            label: "Choose the day and period".into(),
+            label: "Set the day and period".into(),
             cmd: Cmd::To(Mode::Schedule(id)),
         });
         if self.can(&Action::BeginRun(id)) {
             items.push(Item {
                 key: 'x',
-                label: "GO: run the scheme now".into(),
+                label: "GO: run it now".into(),
                 cmd: Cmd::Do(Action::BeginRun(id)),
             });
         }
@@ -1122,11 +1167,13 @@ impl Session {
 
     // ------------------------------------------------------------ drawing
 
-    fn lines(&self, height: usize) -> Vec<(String, DoorStyle)> {
-        let (mut body, items) = self.view();
+    fn lines(&self, height: usize, columns: bool) -> Vec<(String, DoorStyle)> {
+        let (body, items) = self.view();
+        let mut body: Vec<String> = body.iter().flat_map(|l| wrap(l, WIDTH)).collect();
         let mut top = vec![
             ("HALLPASS - Greywater Academy".to_owned(), DoorStyle::Strong),
-            (self.status_line(), DoorStyle::Dim),
+            (self.status_lines()[0].clone(), DoorStyle::Dim),
+            (self.status_lines()[1].clone(), DoorStyle::Dim),
             ("-".repeat(WIDTH), DoorStyle::Dim),
         ];
         let mut tail: Vec<(String, DoorStyle)> = Vec::new();
@@ -1140,11 +1187,20 @@ impl Session {
             );
         }
         tail.push(("-".repeat(WIDTH), DoorStyle::Dim));
-        tail.extend(
-            items
-                .iter()
-                .map(|i| (format!("[{}] {}", i.key, i.label), DoorStyle::Plain)),
-        );
+        let cells: Vec<String> = items
+            .iter()
+            .map(|i| format!("[{}] {}", i.key, i.label))
+            .collect();
+        if columns && cells.len() > 6 && cells.iter().all(|c| c.chars().count() <= 33) {
+            let rows = cells.len().div_ceil(2);
+            for row in 0..rows {
+                let left = cells.get(row).cloned().unwrap_or_default();
+                let right = cells.get(row + rows).cloned().unwrap_or_default();
+                tail.push((format!("{left:<35}{right}"), DoorStyle::Plain));
+            }
+        } else {
+            tail.extend(cells.into_iter().map(|c| (c, DoorStyle::Plain)));
+        }
         let room = height.saturating_sub(top.len() + tail.len());
         if body.len() > room {
             body.truncate(room.saturating_sub(1));
@@ -1205,13 +1261,18 @@ impl DoorSession for Session {
     fn render(&self, canvas: &mut Canvas<'_>, _env: &DoorEnv) {
         canvas.clear();
         let height = usize::from(canvas.height());
-        for (y, (line, style)) in self.lines(height).into_iter().take(height).enumerate() {
+        for (y, (line, style)) in self
+            .lines(height, true)
+            .into_iter()
+            .take(height)
+            .enumerate()
+        {
             canvas.text(0, u16::try_from(y).unwrap_or(u16::MAX), &line, style);
         }
     }
 
     fn look_around(&self, _env: &DoorEnv) -> Vec<String> {
-        self.lines(usize::MAX / 2)
+        self.lines(usize::MAX / 2, false)
             .into_iter()
             .map(|(line, _)| line)
             .collect()

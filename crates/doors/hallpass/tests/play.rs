@@ -127,7 +127,7 @@ fn a_log_in_text_form_round_trips_and_a_log_for_another_door_is_refused() {
 
 #[test]
 fn a_first_morning_replays_to_the_same_state_as_the_engine_played_by_hand() {
-    // Enrol as the first trait (1), walk to the maths room (g, next page, 2), attend (a).
+    // Enrol as the first trait (1), walk to the maths room (g, 8: the maths room in the list), attend (a).
     let door = Hallpass::new().unwrap();
     let day = common::monday();
     let log = ReplayLog {
@@ -136,7 +136,7 @@ fn a_first_morning_replays_to_the_same_state_as_the_engine_played_by_hand() {
         start: Day::from_raw(day).start().as_raw(),
         season: 1,
         save: None,
-        keys: keys("1g.2a"),
+        keys: keys("1g8a"),
     };
     let run = replay::run(&door, &log, &env());
     let player = decode_player(run.save.as_deref().unwrap()).unwrap();
@@ -240,7 +240,7 @@ fn the_screen_fits_80_by_24_in_every_mode_and_reads_the_same_over_telnet() {
     let all = seen.join("\n");
     for needle in [
         "HALLPASS",
-        "Term 1 day",
+        "Term 1 - day",
         "[g] Go somewhere",
         "Odds:",
         "Twists for",
@@ -385,7 +385,7 @@ async fn a_session_through_the_store_saves_and_comes_back_where_it_left_off() {
         Running::open(&store, door.clone(), ann, &e, c, seed)
     };
     let mut run = open(1).await.unwrap();
-    for key in keys("1g.2a") {
+    for key in keys("1g8a") {
         run.key(key);
         run.flush(&store).await.unwrap();
     }
