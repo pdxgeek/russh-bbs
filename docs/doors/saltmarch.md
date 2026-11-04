@@ -1,6 +1,6 @@
 # Saltmarch: the flagship door (design)
 
-Status: **Proposed** (owner asked for it on 2026-11-04). Planned for M4 on the door framework. Nothing here is built.
+Status: **Engine slice (M4-S1) implemented, in review**; expeditions, combat, screens, social features and the full content budget are **planned** (slices S2 to S5). Owner asked for the game on 2026-11-04. See [Implementation notes (M4-S1)](#implementation-notes-m4-s1) for what exists; the rest of this document is still the design.
 
 Saltmarch is an original daily-turn clan game. It uses the mechanics the BBS door genre shares (a daily allowance of turns, a home base you build up, a party you send out, raids on other players, a league table that resets by season). Its world, systems, names and text are its own; it is not modelled on any one existing game.
 
@@ -149,3 +149,30 @@ The content is data, not code: RON or TOML tables in the crate, validated at loa
 - **PvP intensity:** raids on by default, or off unless the sysop enables them?
 - **Credits link:** should renown or season placement pay board credits (M3-C)?
 - **Name:** "Saltmarch" is a working title.
+
+## Implementation notes (M4-S1)
+
+Crate `crates/doors/saltmarch` (`russh-bbs-door-saltmarch`, door id `saltmarch`, save version 1, world version 1). Decision: D100.
+
+**Implemented and tested** (engine only; the door is not yet registered on the board):
+
+| Design item | Where | Verified by |
+|---|---|---|
+| Tide table per day, spring/neap on 14 days, storms, three water bands, warning strip data | `tide.rs` | unit tests; property tests for determinism, smoothness and bounds over random seeds |
+| Seasonal 64x64 map from a seed: 10 generated tile kinds (+ causeway for players), elevations, hold sites, tracks to the Tidecourt, points of interest from templates, the Deep | `map.rs` | property tests: determinism, well-formedness, spacing, **every hold reachable on foot at a neap low**, POIs on their templates' tiles |
+| Clan and crew: 8 trades, grit/wit/reach, skills that grow with use (levels 0 to 10), 13 traits (4 are scars), 8 injuries that heal and can scar, aging by the fortnight with retirement and epitaphs, bonds from shared hardship with morale cost on a death | `crew.rs`, `clan.rs`, `engine.rs` | `engine/tests.rs`: each trait field, skill, injury and bond rule changes an outcome in a test (see below) |
+| Hold: 5x4 plots opened by shelter, 3 building tracks with one construction each, requirements, caps, labour sped by the right trades, crew cap, healing, morale, peat upkeep, the sluice | `hold.rs`, `engine.rs` | unit tests |
+| Economy: 13 resources, tallies, 7 recipes (workshop-learned or locked), shifts by hand (tide-gated), nightly production by posted crew, the Tidecourt market with a 10%/15% spread and nightly price drift | `types.rs`, `world.rs`, `engine.rs` | unit tests; store test that a sale moves tomorrow's price down |
+| Tide-turns: 30 a day, each turn moves the clan's clock 48 minutes; `Wait` lets the water move | `engine.rs` | unit tests |
+| Nightly tick: the framework's tick advances the shared world; a clan's own nights run when it next opens (D100) | `lib.rs`, `engine::catch_up` | replay and store tests; nine days at once equals nine days one by one |
+| Saves through the framework: versioned, capped, never overwriting what it cannot read | `clan.rs`, `world.rs`, `codec.rs` | `tests/play.rs` |
+| Content as data: 7 TOML tables with schema tests | `content/`, `content.rs` | `tests/content.rs` |
+| Sandbox audit | all of `src/` | `tests/sandbox.rs` |
+
+**How outcomes are changed (the RPG rule), each with a test:** accident odds fall with *steady* and *sea-born* and rise with *clumsy*, *drinks* and the water; *greedy* pockets part of a shift, *lucky* doubles it; *fearful* and *haunted* refuse the flood; *quick study* trains faster; *hardy* heals faster; an infirmary or a healer on the crew heal faster; a skilled hand out-produces a novice, an own-trade hand an off-trade one; a bonded pair out-produces strangers; hard water forms bonds sooner; losing a bonded partner costs morale; a scar from a broken leg lowers wet-water yield; a tower and a wader that reads the flats chart further; grit wanes with age; low morale drives crew away, and the unbonded go first; an empty larder starves the weakest on the third night and writes an epitaph; a sluice floods the approach only when built, set and the water is up.
+
+**Headless 60-day run** (`tests/sim.rs`, six simulated clans through the framework's simulation; builders, workers and an idler): builders end well ahead of workers, who end well ahead of the idler, and the numbers are in the pull request. They are placeholders for the balance slice (S5).
+
+**Deliberately not in this slice:** expeditions, events and skirmish (S2); the real screens, the three icon tiers and layouts (S3; `session.rs` is a plain debug screen that is also the look-around); raids, pacts, letters, the league, the hall screen and causeway tolls (S4); the full content budget and the auto-play balance harness (S5); a date rule for ending a season; inter-BBS summaries.
+
+**Differences from the design text, on purpose:** a raw `Fish` resource (the smokehouse turns it into preserved food); `reed-garden` and `drift-rack` buildings so reed and timber exist before expeditions do; a new clan starts with a fish weir and a peat stack already staffed; the shifts and the nightly output are in percent of "a standard hand" (see `Crew::power`). Content counts are below the launch budget (18 of 18 buildings but 7 of about 40 recipes, 15 of 40 map templates, 13 of 16 traits, 8 of 30 injuries).

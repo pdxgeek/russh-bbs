@@ -242,6 +242,7 @@ impl<D> ClientHandler<D> {
         // the waiting room nor a founder-claim session comes through here (M3-J).
         crate::community::note_sign_in(&*self.directory, start.account).await;
         self.account = Some(start.account);
+        self.guard.set_account(start.account);
         let mut flow = MemberFlow::new(
             &start.handle,
             start.access,
@@ -250,6 +251,9 @@ impl<D> ClientHandler<D> {
         );
         if self.password_account.is_some() {
             flow = flow.signed_in_with_password();
+        }
+        if !self.passwords.enabled() {
+            flow = flow.with_password_login_off();
         }
         // Key changes since the last sign-in (FIX-M3-11), told once.
         let notices =

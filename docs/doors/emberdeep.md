@@ -1,6 +1,6 @@
 # Emberdeep: a fantasy delving door (design)
 
-Status: **Engine implemented (M4-E1, D99)**; town, crafting, the full UI, social play and the content pass are still **Proposed**. The design below is the target; [Implementation notes (M4-E1)](#implementation-notes-m4-e1) says what exists, how it behaves and what was not built. Shared platform rules are in [README.md](README.md). This is the "small daily-turn RPG" that M4 plans as a first game, and the smallest engine of the set.
+Status: **Engine implemented (M4-E1, D101)**; town, crafting, the full UI, social play and the content pass are still **Proposed**. The design below is the target; [Implementation notes (M4-E1)](#implementation-notes-m4-e1) says what exists, how it behaves and what was not built. Shared platform rules are in [README.md](README.md). This is the "small daily-turn RPG" that M4 plans as a first game, and the smallest engine of the set.
 
 ## Pitch
 
@@ -116,7 +116,7 @@ The core tension: **how deep do you go today?** Each level down is richer and mo
 
 ### Rules as built
 
-**Time and randomness.** All time is the board's clock as a calendar day number. All randomness is the **hero's own `DoorRng`, whose state is part of the save** (D99): reopening a save or disconnecting mid-fight is not a re-roll. The session seed is used once, to start a new hero's generator.
+**Time and randomness.** All time is the board's clock as a calendar day number. All randomness is the **hero's own `DoorRng`, whose state is part of the save** (D101): reopening a save or disconnecting mid-fight is not a re-roll. The session seed is used once, to start a new hero's generator.
 
 **The day.** 25 torch-turns, refilled each calendar day. Walking into a room costs 1 (2 into a flooded hall or onto a collapsed stair, 1 there with the `pathfind` capability), going down a stair 1, a played fight 2, a quick-resolved fight 1, a camp rest 2, carrying a fallen hero home 3, and an option its own cost. With no turns left below, the only action is the climb.
 

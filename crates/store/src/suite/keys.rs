@@ -811,3 +811,103 @@ pub(crate) async fn a_broken_store_errors_instead_of_pretending_there_is_nothing
     assert!(store.account_rank(alice.id).await.is_err());
     assert!(store.active_account("alice").await.is_err());
 }
+
+/// FIX-M3-13 (QA P1): a newer code voids every unused code of the same account and kind, in the
+/// issuing transaction, even when both are made in the same second. Other kinds and other
+/// accounts are untouched, and a refusal (the hourly limit) voids nothing.
+pub(crate) async fn a_newer_code_voids_every_older_unused_code_of_its_kind<H: Harness>() {
+    let mut h = H::fresh().await;
+    let _clock = clock_at(&mut h, T0);
+    let store = h.store();
+    let alice = with_keys(store, "alice", &[1]).await;
+    let bob = with_keys(store, "bob", &[2]).await;
+    let staff = account(store, "helper", Slug::COSYSOP).await;
+
+    for (round, kind) in [CodeKind::Link, CodeKind::Recovery].into_iter().enumerate() {
+        let base = 60 + u32::try_from(round).unwrap() * 10;
+        let issuer = if kind == CodeKind::Link {
+            &alice
+        } else {
+            &staff
+        };
+        let a = code(kind, 10);
+        let b = code(kind, 11);
+        let c = code(kind, 12);
+        let other = code(kind, 13);
+        issue(store, kind, &alice, issuer, &a).await.unwrap();
+        issue(store, kind, &alice, issuer, &b).await.unwrap();
+        issue(store, kind, &bob, issuer, &other).await.unwrap();
+        issue(store, kind, &alice, issuer, &c).await.unwrap();
+        // A and B are voided, C (newest) and bob's code are live.
+        let voided = count(
+            &h,
+            &format!(
+                "login_code WHERE kind = '{}' AND voided_at IS NOT NULL",
+                kind.as_str()
+            ),
+        )
+        .await;
+        assert_eq!(voided, "2", "{kind:?}");
+        let pw = hash("another long passphrase").unwrap();
+        for (seed, old) in [(base, &a), (base + 1, &b)] {
+            let refusal = match kind {
+                CodeKind::Link => store
+                    .redeem_link_code(&old.hash(), &fingerprint(seed))
+                    .await
+                    .unwrap_err(),
+                CodeKind::Recovery => store
+                    .redeem_recovery_code(&old.hash(), &fingerprint(seed), &pw)
+                    .await
+                    .unwrap_err(),
+            };
+            assert_eq!(refused(&refusal), Some(RedeemRefusal::Code), "{kind:?}");
+        }
+        let done = match kind {
+            CodeKind::Link => store
+                .redeem_link_code(&c.hash(), &fingerprint(base + 2))
+                .await
+                .unwrap(),
+            CodeKind::Recovery => store
+                .redeem_recovery_code(&c.hash(), &fingerprint(base + 2), &pw)
+                .await
+                .unwrap(),
+        };
+        assert_eq!(done.id, alice.id);
+        // Bob's code was not voided by alice's.
+        let bobs = match kind {
+            CodeKind::Link => store
+                .redeem_link_code(&other.hash(), &fingerprint(base + 3))
+                .await
+                .unwrap(),
+            CodeKind::Recovery => store
+                .redeem_recovery_code(&other.hash(), &fingerprint(base + 3), &pw)
+                .await
+                .unwrap(),
+        };
+        assert_eq!(bobs.id, bob.id);
+    }
+
+    // A link code does not void a recovery code of the same account, nor the reverse.
+    let carol = with_keys(store, "carol", &[3]).await;
+    let recovery = code(CodeKind::Recovery, 20);
+    issue(store, CodeKind::Recovery, &carol, &staff, &recovery)
+        .await
+        .unwrap();
+    issue(
+        store,
+        CodeKind::Link,
+        &carol,
+        &carol,
+        &code(CodeKind::Link, 21),
+    )
+    .await
+    .unwrap();
+    store
+        .redeem_recovery_code(
+            &recovery.hash(),
+            &fingerprint(64),
+            &hash("another long passphrase").unwrap(),
+        )
+        .await
+        .unwrap();
+}

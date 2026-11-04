@@ -1,5 +1,7 @@
 # Terminal UI: menus, layouts, themes, icons
 
+A UI refresh and board customization plan (owner approved, 2026-11-04) is in [ui-refresh.md](ui-refresh.md).
+
 Status: **Partly implemented.** The forum screens (M3-E, below) are the first long-text screens. The menu tree, universal keys and string table (M2-A) and the **classic, lightbar and compact layouts with theme packs and live switching** (M3-A, D82) exist; two-pane, tabs, dashboard and command line, declarative layout files and art blocks do not.
 
 ## Four separate layers

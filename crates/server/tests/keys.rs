@@ -711,3 +711,275 @@ async fn a_password_only_visitor_is_not_offered_the_key_entries() {
     assert!(!flat(&nothing).contains("Code"), "{nothing}");
     rig.stop().await;
 }
+
+#[tokio::test]
+async fn a_newer_link_code_voids_the_older_unused_one() {
+    // QA P1 (FIX-M3-13): codes A then B for one member, nothing expires; A must be refused and
+    // B must still work.
+    let rig = Rig::start().await;
+    let (_id, key) = member_with(&rig, "maker", Slug::MEMBER, Some(PASSWORD)).await;
+    let (_s, mut maker, _) = at_menu(&rig, "maker", &key).await;
+    my_keys(&mut maker).await;
+    let older = code_in(&press(&mut maker, "l").await);
+    press(&mut maker, "x").await;
+    let newer = code_in(&press(&mut maker, "l").await);
+    press(&mut maker, "x").await;
+    assert_ne!(older, newer);
+    assert_eq!(count(&rig, "login_code").await, 2);
+    assert_eq!(
+        count(&rig, "login_code WHERE voided_at IS NOT NULL").await,
+        1
+    );
+
+    let (_s, mut machine, key_a, _) = new_machine(&rig).await;
+    press(&mut machine, "d").await;
+    let answer = line(&mut machine, &older).await;
+    assert!(flat(&answer).contains(REFUSED), "{answer}");
+    assert!(!key_signs_in(rig.addr(), "maker", &key_a).await);
+
+    let (_s, mut machine, key_b, _) = new_machine(&rig).await;
+    press(&mut machine, "d").await;
+    let joined = line(&mut machine, &newer).await;
+    assert!(flat(&joined).contains("Signed in as maker"), "{joined}");
+    assert!(key_signs_in(rig.addr(), "maker", &key_b).await);
+    rig.stop().await;
+}
+
+// ---------------------------------------------------------------- revocation (FIX-M3-14)
+
+/// What a session reads when the credential it signed in with was revoked.
+const REVOKED_LINE: &str = "Your sign-in was revoked. Please sign in again.";
+
+/// Read until the server closes the channel; everything it drew. Panics if it stays open.
+async fn closed_with(channel: &mut Channel<Msg>) -> String {
+    let mut seen = String::new();
+    loop {
+        match timeout(Duration::from_secs(5), channel.wait())
+            .await
+            .expect("the session was not closed")
+        {
+            Some(ChannelMsg::Data { data }) => seen.push_str(&String::from_utf8_lossy(&data)),
+            Some(ChannelMsg::Close) | None => return flat(&strip_ansi(&seen)),
+            Some(_) => {}
+        }
+    }
+}
+
+/// A session that signed in with the password: at the main menu.
+async fn password_menu(rig: &Rig, handle: &str, password: &str) -> (Handle<Client>, Channel<Msg>) {
+    let mut session = common::connect(rig.addr()).await;
+    let result = session
+        .authenticate_password(handle, password)
+        .await
+        .unwrap();
+    assert!(matches!(result, AuthResult::Success), "{result:?}");
+    let mut channel = common::open_shell(&session, 80, 24).await;
+    drain(&mut channel).await;
+    channel.window_change(80, 24, 0, 0).await.unwrap();
+    let signed_in = strip_ansi(&drain(&mut channel).await);
+    assert!(flat(&signed_in).contains("Signed in as"), "{signed_in}");
+    let menu = press(&mut channel, "\r").await;
+    assert!(flat(&menu).contains("Main menu"), "{menu}");
+    (session, channel)
+}
+
+/// Several sessions of one member at once, and calls to spare (the defaults are 2 and 5).
+async fn roomy(rig: &Rig) {
+    sqlx::query(
+        "UPDATE role_limit SET value = 50 WHERE role = 'member' AND kind IN ('max_sessions', 'calls_per_day')",
+    )
+    .execute(&rig.db)
+    .await
+    .unwrap();
+}
+
+/// Give `account` one more key, as if it had been linked earlier.
+async fn extra_key(rig: &Rig, account: AccountId, handle: &str) -> PrivateKey {
+    let key = new_client_key();
+    rig.store
+        .attach_fingerprint(account, &fingerprint_of(&key))
+        .await
+        .unwrap();
+    common::remember(fingerprint_of(&key), handle);
+    key
+}
+
+/// The menu still answers: the session is open.
+async fn still_open(channel: &mut Channel<Msg>) {
+    let menu = press(channel, "\r").await;
+    assert!(flat(&menu).contains("Main menu"), "{menu}");
+}
+
+async fn revocations(rig: &Rig) -> Vec<String> {
+    sqlx::query_scalar::<_, String>(
+        "SELECT detail FROM audit_log WHERE action = 'session.revoked' ORDER BY id",
+    )
+    .fetch_all(&rig.db)
+    .await
+    .unwrap()
+}
+
+#[tokio::test]
+async fn removing_a_key_ends_the_sessions_signed_in_with_it_and_only_those() {
+    // QA P2 (FIX-M3-14): S1 signed in with key C, S2 removes C: S1 is closed.
+    let rig = Rig::start().await;
+    roomy(&rig).await;
+    let (id, key_c) = member_with(&rig, "maker", Slug::MEMBER, Some(PASSWORD)).await;
+    let key_d = extra_key(&rig, id, "maker").await;
+    let (_s1, mut s1, _) = at_menu(&rig, "maker", &key_c).await;
+    let (_s1b, mut s1b, _) = at_menu(&rig, "maker", &key_c).await;
+    let (_s2, mut s2, _) = at_menu(&rig, "maker", &key_d).await;
+    let (_s3, mut s3) = password_menu(&rig, "maker", PASSWORD).await;
+
+    let listed = my_keys(&mut s2).await;
+    let number = number_of(&listed, &key_c);
+    press(&mut s2, "r").await;
+    press(&mut s2, &number.to_string()).await;
+    let done = press(&mut s2, "y").await;
+    assert!(flat(&done).contains("Key removed"), "{done}");
+
+    // Both sessions on the removed key end, with the one fixed line.
+    for gone in [&mut s1, &mut s1b] {
+        let last = closed_with(gone).await;
+        assert!(last.contains(REVOKED_LINE), "{last}");
+    }
+    // The acting session, and the session that used the password, stay.
+    let menu = press(&mut s2, "b").await;
+    assert!(flat(&menu).contains("Members"), "{menu}");
+    still_open(&mut s3).await;
+    assert!(!key_signs_in(rig.addr(), "maker", &key_c).await);
+    assert_eq!(
+        revocations(&rig).await.len(),
+        2,
+        "one row per ended session"
+    );
+    for row in revocations(&rig).await {
+        assert!(row.ends_with(", key removed"), "{row}");
+    }
+    rig.stop().await;
+}
+
+#[tokio::test]
+async fn setting_the_password_ends_the_other_password_sessions_not_the_key_ones() {
+    let rig = Rig::start().await;
+    roomy(&rig).await;
+    let (id, key) = member_with(&rig, "maker", Slug::MEMBER, Some(PASSWORD)).await;
+    let other_key = extra_key(&rig, id, "maker").await;
+    let (_p1, mut by_password) = password_menu(&rig, "maker", PASSWORD).await;
+    let (_k1, mut by_other_key, _) = at_menu(&rig, "maker", &other_key).await;
+    let (_k2, mut actor, _) = at_menu(&rig, "maker", &key).await;
+
+    // The actor (a key session) sets a new password: no current password asked.
+    press(&mut actor, "s").await;
+    press(&mut actor, "s").await;
+    press(&mut actor, "s").await;
+    line(&mut actor, NEW_PASSWORD).await;
+    let done = line(&mut actor, NEW_PASSWORD).await;
+    assert!(flat(&done).contains("Password set."), "{done}");
+
+    let last = closed_with(&mut by_password).await;
+    assert!(last.contains(REVOKED_LINE), "{last}");
+    still_open(&mut by_other_key).await;
+    // The acting session is still at its password page.
+    let page = press(&mut actor, "").await;
+    assert!(flat(&page).contains("Password set"), "{page}");
+    assert_eq!(revocations(&rig).await.len(), 1);
+    assert!(
+        revocations(&rig).await[0].ends_with(", password changed"),
+        "{:?}",
+        revocations(&rig).await
+    );
+    rig.stop().await;
+}
+
+#[tokio::test]
+async fn a_password_session_that_changes_the_password_stays_and_the_others_go() {
+    let rig = Rig::start().await;
+    roomy(&rig).await;
+    let (_id, _key) = member_with(&rig, "maker", Slug::MEMBER, Some(PASSWORD)).await;
+    let (_p1, mut first) = password_menu(&rig, "maker", PASSWORD).await;
+    let (_p2, mut actor) = password_menu(&rig, "maker", PASSWORD).await;
+    press(&mut actor, "s").await;
+    press(&mut actor, "s").await;
+    press(&mut actor, "s").await;
+    line(&mut actor, PASSWORD).await; // the current password
+    line(&mut actor, NEW_PASSWORD).await;
+    let done = line(&mut actor, NEW_PASSWORD).await;
+    assert!(flat(&done).contains("Password set."), "{done}");
+    let last = closed_with(&mut first).await;
+    assert!(last.contains(REVOKED_LINE), "{last}");
+    let page = press(&mut actor, "").await;
+    assert!(flat(&page).contains("Password set"), "{page}");
+    rig.stop().await;
+}
+
+#[tokio::test]
+async fn redeeming_a_recovery_code_ends_the_password_sessions_and_the_older_key_sessions() {
+    let rig = Rig::start().await;
+    roomy(&rig).await;
+    let (_s, mut staff, _key) = founder_at_menu(&rig).await;
+    let (id, old_key) = member_with(&rig, "alice", Slug::MEMBER, Some(PASSWORD)).await;
+    let (_a, mut on_old_key, _) = at_menu(&rig, "alice", &old_key).await;
+    let (_b, mut on_password) = password_menu(&rig, "alice", PASSWORD).await;
+    let _ = id;
+
+    press(&mut staff, "o").await;
+    press(&mut staff, "r").await;
+    let code = code_in(&line(&mut staff, "alice").await);
+
+    let (_m, mut machine, _new_key, _) = new_machine(&rig).await;
+    press(&mut machine, "y").await;
+    line(&mut machine, &code).await;
+    line(&mut machine, NEW_PASSWORD).await;
+    let joined = line(&mut machine, NEW_PASSWORD).await;
+    assert!(flat(&joined).contains("Signed in as alice"), "{joined}");
+
+    for gone in [&mut on_old_key, &mut on_password] {
+        let last = closed_with(gone).await;
+        assert!(last.contains(REVOKED_LINE), "{last}");
+    }
+    // The session that redeemed the code stays signed in.
+    still_open_after_login(&mut machine).await;
+    assert_eq!(revocations(&rig).await.len(), 2);
+    for row in revocations(&rig).await {
+        assert!(row.ends_with(", recovery code"), "{row}");
+    }
+    rig.stop().await;
+}
+
+/// The redeeming session is at its login screen: any key takes it on to the menu.
+async fn still_open_after_login(channel: &mut Channel<Msg>) {
+    let menu = press(channel, "\r").await;
+    assert!(flat(&menu).contains("Main menu"), "{menu}");
+}
+
+#[tokio::test]
+async fn a_newer_recovery_code_voids_the_older_one() {
+    // QA P1 for the staff kind (FIX-M3-13).
+    let rig = Rig::start().await;
+    let (_s, mut staff, _key) = founder_at_menu(&rig).await;
+    let (_id, _key) = member_with(&rig, "alice", Slug::MEMBER, Some(PASSWORD)).await;
+    press(&mut staff, "o").await;
+    press(&mut staff, "r").await;
+    let older = code_in(&line(&mut staff, "alice").await);
+    // "x" leaves the code page for the handle form again.
+    press(&mut staff, "x").await;
+    let newer = code_in(&line(&mut staff, "alice").await);
+    assert_ne!(older, newer);
+
+    let (_m, mut machine, key_a, _) = new_machine(&rig).await;
+    press(&mut machine, "y").await;
+    line(&mut machine, &older).await;
+    line(&mut machine, NEW_PASSWORD).await;
+    let refused = line(&mut machine, NEW_PASSWORD).await;
+    assert!(flat(&refused).contains(REFUSED), "{refused}");
+    assert!(!key_signs_in(rig.addr(), "alice", &key_a).await);
+
+    let (_m2, mut machine, _key_b, _) = new_machine(&rig).await;
+    press(&mut machine, "y").await;
+    line(&mut machine, &newer).await;
+    line(&mut machine, NEW_PASSWORD).await;
+    let ok = line(&mut machine, NEW_PASSWORD).await;
+    assert!(flat(&ok).contains("Signed in as alice"), "{ok}");
+    rig.stop().await;
+}

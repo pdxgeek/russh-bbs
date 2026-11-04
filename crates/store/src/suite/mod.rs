@@ -340,6 +340,7 @@ macro_rules! shared_suite {
                 keys::a_link_code_binds_a_key_once_and_expires_to_the_second,
                 keys::a_code_is_used_once_when_two_redeem_it_at_the_same_time,
                 keys::the_hourly_limit_holds_and_a_newer_code_voids_the_last,
+                keys::a_newer_code_voids_every_older_unused_code_of_its_kind,
                 keys::a_recovery_code_binds_a_key_and_replaces_the_password_in_one_step,
                 keys::a_recovery_for_an_expired_or_inactive_account_is_refused,
                 keys::rank_follows_the_roles,

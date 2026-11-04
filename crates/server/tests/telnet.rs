@@ -1526,3 +1526,76 @@ async fn the_same_join_then_sign_in_script_gives_the_same_screens_over_ssh_and_t
     );
     assert!(ssh_first.contains("Signed in as walker"), "{ssh_first}");
 }
+
+// ---------------------------------------------------------------- revocation (FIX-M3-14)
+
+// `words_of` turns the hyphen into a space.
+const REVOKED_LINE: &str = "Your sign in was revoked. Please sign in again.";
+
+/// Send keys on an ssh channel and read until the screen they lead to shows `needle`.
+async fn ssh_send(channel: &mut russh::Channel<russh::client::Msg>, keys: &str, needle: &str) {
+    channel.data_bytes(keys.as_bytes().to_vec()).await.unwrap();
+    channel.window_change(80, 25, 0, 0).await.unwrap();
+    let mut seen = String::new();
+    while !words_of(&seen).contains(needle) {
+        match timeout(WAIT, channel.wait())
+            .await
+            .unwrap_or_else(|_| panic!("no {needle:?}; saw {:?}", words_of(&seen)))
+        {
+            Some(russh::ChannelMsg::Data { data }) => {
+                seen.push_str(&String::from_utf8_lossy(&data));
+            }
+            Some(_) => {}
+            None => panic!("ssh closed before {needle:?}: {:?}", words_of(&seen)),
+        }
+    }
+}
+
+#[tokio::test]
+async fn a_password_change_in_one_telnet_session_ends_the_other_and_keeps_itself() {
+    let rig = Rig::start(true).await;
+    let alice = rig.member("alice").await;
+    let mut first = at_menu(&rig, "alice").await;
+    let mut actor = at_menu(&rig, "alice").await;
+
+    actor.keys("s").await;
+    actor.keys("s").await;
+    actor.keys("s").await;
+    actor.type_text(&format!("{SECRET}\r")).await;
+    actor.type_text(&format!("{NEW_PASSWORD}\r")).await;
+    let done = words_of(&fill(&mut actor, &[NEW_PASSWORD]).await);
+    assert!(done.contains("Password set."), "{done}");
+
+    // The first session reads the fixed line and is closed cleanly.
+    let last = words_of(&first.read_to_close().await);
+    assert!(last.contains(REVOKED_LINE), "{last}");
+    // The acting session stays: it answers a key.
+    let page = actor.keys("b").await;
+    assert!(page.contains("Terminal settings"), "{page}");
+    assert_eq!(
+        rig.rows("SELECT detail FROM audit_log WHERE action = 'session.revoked'")
+            .await
+            .len(),
+        1
+    );
+    let _ = alice;
+}
+
+#[tokio::test]
+async fn an_ssh_key_session_setting_the_password_ends_the_telnet_session_that_used_it() {
+    let rig = Rig::start(true).await;
+    let alice = rig.member("alice").await;
+    let mut telnet = at_menu(&rig, "alice").await;
+    let (_ssh, mut channel) = ssh_in(&rig, alice).await;
+    // Main menu, then Settings, Password, Set; the key session is not asked for the current one.
+    ssh_send(&mut channel, "\r", "Main menu").await;
+    ssh_send(&mut channel, "s", "Terminal settings").await;
+    ssh_send(&mut channel, "s", "Set or change password").await;
+    ssh_send(&mut channel, "s", "New password").await;
+    ssh_send(&mut channel, &format!("{NEW_PASSWORD}\r"), "Repeat").await;
+    ssh_send(&mut channel, &format!("{NEW_PASSWORD}\r"), "Password set.").await;
+    let last = words_of(&telnet.read_to_close().await);
+    assert!(last.contains(REVOKED_LINE), "{last}");
+    // The ssh key session that made the change is still open.
+    ssh_send(&mut channel, "b", "Password").await;
+}
