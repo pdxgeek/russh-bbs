@@ -32,11 +32,15 @@ use russh_bbs_core::chat::{ChatNotice, ChatRequest, ChatResponse};
 use russh_bbs_core::founder::{ClaimOutcome, claim_founder};
 use russh_bbs_core::invites::{
     CODE_BYTES, InviteError, InviteOutcome, InviteRequest, create_invite, invite_tree, my_invites,
-    redeem_invite,
+    redeem_invite, redeem_invite_with_password,
 };
 use russh_bbs_core::limits::{LimitError, MemberMeter, SystemClock};
-use russh_bbs_core::queue::{InviteAsk, RequestKind, submit_request};
-use russh_bbs_core::registration::{OpenError, open_account, submit_application};
+use russh_bbs_core::passwords::hash_new;
+use russh_bbs_core::queue::{InviteAsk, RequestKind, submit_request, submit_request_with_password};
+use russh_bbs_core::registration::{
+    OpenError, open_account, open_account_with_password, submit_application,
+    submit_application_with_password,
+};
 use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::{Account, AccountId};
 use russh_bbs_core::terminal_settings::{MemberFlow, MemberStart, TerminalSettings};
@@ -608,38 +612,70 @@ impl<D: Backend> Shell<D> {
     /// rate limit, a full day, a slow or broken store) is the same refusal on screen, and the
     /// reason goes to the log only, never the code.
     async fn try_redeem(&mut self, request: RedeemRequest) {
-        let Some(fingerprint) = self.parts.fingerprint.clone() else {
-            self.parts.screen.redeem_refused();
-            return;
-        };
-        let RedeemRequest { join, handle } = request;
+        let RedeemRequest {
+            join,
+            handle,
+            password,
+        } = request;
+        let fingerprint = self.parts.fingerprint.clone();
         let work = async {
             let Ok(access) = self.parts.directory.access_for(None).await else {
                 return Made::Refused;
             };
             let directory = &*self.parts.directory;
-            match join {
-                JoinKind::Invite { code } => {
-                    match redeem_invite(directory, &access, &code, handle, &fingerprint).await {
+            // A visitor with an SSH key is bound to it; one without (telnet, D94) is bound to
+            // the password they chose on the form. Neither can use the other's path.
+            let bound = match (&fingerprint, &password) {
+                (Some(fingerprint), _) => Bound::Key(fingerprint),
+                (None, Some(password)) => {
+                    match hash_new(self.parts.passwords.pool(), password).await {
+                        Ok(hash) => Bound::Password(hash),
+                        Err(error) => {
+                            info!(session = ?self.parts.session.id(), %error, "password not usable; registration refused");
+                            return Made::Refused;
+                        }
+                    }
+                }
+                (None, None) => return Made::Refused,
+            };
+            match (join, bound) {
+                (JoinKind::Invite { code }, Bound::Key(fingerprint)) => {
+                    match redeem_invite(directory, &access, &code, handle, fingerprint).await {
                         Ok(redeemed) => Made::Account(redeemed.account),
                         Err(_) => Made::Refused,
                     }
                 }
-                JoinKind::Open => {
-                    match open_account(
+                (JoinKind::Invite { code }, Bound::Password(hash)) => {
+                    match redeem_invite_with_password(directory, &access, &code, handle, &hash)
+                        .await
+                    {
+                        Ok(redeemed) => Made::Account(redeemed.account),
+                        Err(_) => Made::Refused,
+                    }
+                }
+                (JoinKind::Open, Bound::Key(fingerprint)) => {
+                    let opened = open_account(
                         directory,
                         self.parts.session.open_gate(),
                         &access,
                         handle,
-                        &fingerprint,
+                        fingerprint,
                         self.parts.peer_ip,
                     )
-                    .await
-                    {
-                        Ok(opened) => Made::Account(opened.account),
-                        Err(OpenError::CapReached) => Made::CapReached,
-                        Err(_) => Made::Refused,
-                    }
+                    .await;
+                    made_by_open(opened)
+                }
+                (JoinKind::Open, Bound::Password(hash)) => {
+                    let opened = open_account_with_password(
+                        directory,
+                        self.parts.session.open_gate(),
+                        &access,
+                        handle,
+                        &hash,
+                        self.parts.peer_ip,
+                    )
+                    .await;
+                    made_by_open(opened)
                 }
             }
         };
@@ -659,19 +695,39 @@ impl<D: Backend> Shell<D> {
                 return;
             }
         };
-        self.parts
-            .session
-            .set_authenticated(fingerprint, Access::Member);
+        match fingerprint {
+            Some(fingerprint) => self
+                .parts
+                .session
+                .set_authenticated(fingerprint, Access::Member),
+            None => self
+                .parts
+                .session
+                .set_authenticated_by_password(Access::Member),
+        }
         let start = self.account_start(&account).await;
         // A member who just joined starts a member session: last callers lists them.
         crate::community::note_sign_in(&*self.parts.directory, start.account).await;
         self.parts.account = Some(start.account);
-        self.parts.screen.redeemed(MemberFlow::new(
-            &start.handle,
-            start.access,
-            start.previous_login,
-            start.settings,
-        ));
+        let flow = self.member_flow(start);
+        self.parts.screen.redeemed(flow);
+    }
+
+    /// The signed-in flow for a session start. A session with no SSH key signed in (or joined)
+    /// by password, so changing the password asks for the current one (D81); the transport's
+    /// access filter (staff roles dropped over telnet, D27) is applied before the flow sees the
+    /// snapshot.
+    fn member_flow(&self, start: MemberStart) -> MemberFlow {
+        let access = match self.parts.access_filter {
+            Some(filter) => filter(&start.access),
+            None => start.access,
+        };
+        let flow = MemberFlow::new(&start.handle, access, start.previous_login, start.settings);
+        if self.parts.fingerprint.is_none() {
+            flow.signed_in_with_password()
+        } else {
+            flow
+        }
     }
 
     /// Offer a request for an invite, or a membership application, typed in the waiting room to
@@ -680,22 +736,37 @@ impl<D: Backend> Shell<D> {
     /// runs, so nothing here reaches the screen or delays it: a drop (a
     /// rate limit, a full queue, a repeat, a recent refusal, a slow or broken store) is logged
     /// by core without the request's text and looks like a kept request to the person. The
-    /// waiting snapshot must hold `invite.request` (checked in core).
-    async fn try_request_invite(&mut self, ask: InviteAsk) {
-        let Some(fingerprint) = self.parts.fingerprint.clone() else {
-            return;
-        };
+    /// waiting snapshot must hold `invite.request` (checked in core). A visitor with no SSH key
+    /// (telnet, D94) is queued with the hash of the password they chose.
+    async fn try_request_invite(&mut self, mut ask: InviteAsk) {
+        let fingerprint = self.parts.fingerprint.clone();
+        let password = ask.password.take();
         let work = async {
             let access = self.parts.directory.access_for(None).await.ok()?;
             let directory = &*self.parts.directory;
             let gate = self.parts.session.request_gate();
             let peer = self.parts.peer_ip;
+            if let Some(fingerprint) = &fingerprint {
+                return Some(match ask.kind {
+                    RequestKind::Invite => {
+                        submit_request(directory, gate, &access, ask, fingerprint, peer).await
+                    }
+                    RequestKind::Application => {
+                        submit_application(directory, gate, &access, ask, fingerprint, peer).await
+                    }
+                });
+            }
+            let password = password?;
+            let hash = hash_new(self.parts.passwords.pool(), &password)
+                .await
+                .ok()?;
             Some(match ask.kind {
                 RequestKind::Invite => {
-                    submit_request(directory, gate, &access, ask, &fingerprint, peer).await
+                    submit_request_with_password(directory, gate, &access, ask, hash, peer).await
                 }
                 RequestKind::Application => {
-                    submit_application(directory, gate, &access, ask, &fingerprint, peer).await
+                    submit_application_with_password(directory, gate, &access, ask, hash, peer)
+                        .await
                 }
             })
         };
@@ -965,4 +1036,19 @@ enum Made {
     Account(Account),
     CapReached,
     Refused,
+}
+
+/// What a new account is bound to: the presenting key, or the hash of a chosen password.
+enum Bound<'a> {
+    Key(&'a Fingerprint),
+    Password(String),
+}
+
+/// The outcome of `open` registration as the room reads it.
+fn made_by_open(opened: Result<russh_bbs_core::registration::Opened, OpenError>) -> Made {
+    match opened {
+        Ok(opened) => Made::Account(opened.account),
+        Err(OpenError::CapReached) => Made::CapReached,
+        Err(_) => Made::Refused,
+    }
 }

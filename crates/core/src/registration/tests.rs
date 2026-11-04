@@ -53,6 +53,7 @@ struct Fake {
     answer: Mutex<Option<Result<(), OpenError>>>,
     calls: Mutex<Vec<(String, DailyCap)>>,
     setting: Mutex<Option<Result<Option<String>, ()>>>,
+    password_hashes: Mutex<Vec<String>>,
 }
 
 impl Fake {
@@ -108,6 +109,19 @@ impl RegistrationStore for Fake {
                 },
             }),
         }
+    }
+
+    async fn open_account_password(
+        &self,
+        username: Username,
+        password_hash: &str,
+        cap: DailyCap,
+    ) -> Result<Opened, OpenError> {
+        self.password_hashes
+            .lock()
+            .unwrap()
+            .push(password_hash.to_owned());
+        self.open_account(username, &key(0), cap).await
     }
 }
 
@@ -366,6 +380,7 @@ fn application() -> InviteAsk {
         message: "hello".to_owned(),
         // Callers cannot smuggle an invite request through the application path.
         kind: RequestKind::Invite,
+        password: None,
     }
 }
 
@@ -403,6 +418,14 @@ async fn an_application_needs_membership_apply_not_invite_request() {
             &self,
             _: Username,
             _: &Fingerprint,
+            _: DailyCap,
+        ) -> Result<Opened, OpenError> {
+            Err(OpenError::CapReached)
+        }
+        async fn open_account_password(
+            &self,
+            _: Username,
+            _: &str,
             _: DailyCap,
         ) -> Result<Opened, OpenError> {
             Err(OpenError::CapReached)

@@ -34,6 +34,7 @@ fn ask(name: &str, message: &str) -> InviteAsk {
         handle: handle(name),
         message: message.to_owned(),
         kind: RequestKind::Invite,
+        password: None,
     }
 }
 
@@ -213,6 +214,7 @@ fn nothing_the_requester_typed_is_in_a_debug_line() {
         message: Message::new("secret message"),
         fingerprint: key(7),
         kind: RequestKind::Invite,
+        password_hash: None,
     };
     for shown in [
         format!("{new:?}"),

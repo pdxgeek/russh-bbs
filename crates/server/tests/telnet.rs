@@ -113,8 +113,7 @@ impl Rig {
             },
             Arc::new(store.clone()),
             ssh.registry(),
-            // The board has mail keys: mail is withheld over telnet by the transport, not by
-            // their absence (D90).
+            // The board has mail keys, so mail works over telnet as over ssh (D94 (4a)).
             Arc::new(Ui::standard().unwrap().with_mail_keys(Arc::new(
                 russh_bbs_core::mail::MailKeys::single(
                     russh_bbs_core::mail::KeyId::FIRST,
@@ -229,7 +228,12 @@ impl Tn {
         let mut buffer = [0_u8; 4096];
         let n = timeout(WAIT, self.stream.read(&mut buffer))
             .await
-            .expect("the server went quiet")
+            .unwrap_or_else(|_| {
+                panic!(
+                    "the server went quiet; unread: {:?}",
+                    words_of(&String::from_utf8_lossy(&self.text))
+                )
+            })
             .unwrap_or(0);
         for &byte in &buffer[..n] {
             self.rx(byte);
@@ -501,15 +505,13 @@ async fn a_member_signs_in_with_a_password_and_every_screen_carries_the_marker()
     }
     assert!(screens[0].contains("Main menu"), "{:?}", screens[0]);
     assert!(screens[1].contains("Terminal settings"), "{:?}", screens[1]);
-    // The password page never opens over telnet (D27, D91): the entry is listed, and choosing
-    // it is refused with a line.
+    // The password page opens over telnet (D94 (3)): a password session is asked for the
+    // current password first.
     tn.keys("s").await;
+    let page = tn.keys("s").await;
+    assert!(page.contains("Set or change password"), "{page}");
     let after_s = tn.keys("s").await;
-    assert!(
-        !after_s.contains("Current password") && !after_s.contains("New password"),
-        "{after_s}"
-    );
-    assert!(after_s.contains("Set your password over ssh."), "{after_s}");
+    assert!(after_s.contains("Current password"), "{after_s}");
 }
 
 #[tokio::test]
@@ -891,91 +893,496 @@ async fn chat_works_over_telnet_with_both_markers_and_untrusted_input() {
     );
 }
 
+// ----------------------------------------------------- D94: accounts and full access over telnet
+
+use russh_bbs_core::invites::{
+    CODE_BYTES, INVITE_TTL_SECS, InviteCode, InviteStore, NewInvite, Quota,
+};
+use russh_bbs_core::queue::QueueStore;
+use russh_bbs_core::store::{RegistrationMode, set_registration_mode};
+
+const NEW_PASSWORD: &str = "a second long password";
+const GREETING: &str = "Signed in as";
+
+impl Rig {
+    async fn mode(&self, mode: RegistrationMode) {
+        set_registration_mode(&self.store, mode).await.unwrap();
+    }
+
+    /// A one-use invite code made by `inviter`, as the store holds it.
+    async fn invite_code(&self, inviter: AccountId, seed: u8) -> InviteCode {
+        let code = InviteCode::from_bytes([seed; CODE_BYTES]);
+        self.store
+            .create_invite(&NewInvite {
+                inviter,
+                code_hash: code.hash(),
+                ttl_secs: INVITE_TTL_SECS,
+                quota: Quota::Unlimited,
+            })
+            .await
+            .unwrap();
+        code
+    }
+
+    async fn rows(&self, sql: &str) -> Vec<String> {
+        let db = sqlx::SqlitePool::connect_with(
+            sqlx::sqlite::SqliteConnectOptions::new()
+                .filename(self.dir.path().join("bbs.db"))
+                .read_only(true),
+        )
+        .await
+        .unwrap();
+        sqlx::query_scalar::<_, String>(sql)
+            .fetch_all(&db)
+            .await
+            .unwrap()
+    }
+}
+
+/// Connect, type `new` at the login prompt and read the waiting room's first screen.
+async fn join(rig: &Rig) -> (Tn, String) {
+    let mut tn = Tn::connect(rig.addr(), 80, 24).await;
+    tn.read_until("login: ").await;
+    tn.type_text("new\r").await;
+    let first = tn.read_until(&footer_at(24)).await;
+    (tn, words_of(&first))
+}
+
+/// Type each value into the form's fields (Enter after each) and read the screen that follows.
+async fn fill(tn: &mut Tn, values: &[&str]) -> String {
+    for value in values {
+        tn.type_text(&format!("{value}\r")).await;
+    }
+    tn.keys("").await
+}
+
 #[tokio::test]
-async fn mail_is_withheld_over_telnet_with_one_line_and_nothing_is_read_or_sent() {
+async fn mail_works_over_telnet_and_is_sealed_at_rest() {
     let rig = Rig::start(true).await;
     rig.member("alice").await;
     rig.member("bob").await;
-    let mut tn = at_menu(&rig, "alice").await;
-    let screen = words_of(&tn.keys("m").await);
-    assert!(screen.contains("Mail is available over ssh."), "{screen}");
+    let mut alice = at_menu(&rig, "alice").await;
+    let inbox = words_of(&alice.keys("m").await);
+    assert!(inbox.contains("Your mailbox is empty."), "{inbox}");
+    let compose = words_of(&alice.keys("c").await);
     assert!(
-        !screen.contains("Your mailbox"),
-        "no inbox was opened: {screen}"
+        compose.contains("Handle of the member to write to"),
+        "{compose}"
     );
-    // Still at the main menu: the next key is a menu key, not a mail key.
-    let again = words_of(&tn.keys("c").await);
+    alice.type_text("bob\r").await;
+    let editor = words_of(&alice.keys("").await);
+    assert!(editor.contains("Subject"), "{editor}");
+    alice.type_text("Kumquat inventory\r").await;
+    let editor = words_of(&alice.keys("").await);
+    assert!(editor.contains("To bob: Kumquat inventory"), "{editor}");
+    alice.type_text("The count is eleven.").await;
+    let sent = words_of(&alice.keys("\u{18}").await);
+    assert!(sent.contains("Sent."), "{sent}");
+    // The mail is in the store, sealed: the subject is not in the database file.
+    let sealed = rig
+        .rows("SELECT CAST(count(*) AS TEXT) FROM mail_message")
+        .await;
+    assert_eq!(sealed, ["1"]);
+    let file = std::fs::read(rig.dir.path().join("bbs.db")).unwrap();
     assert!(
-        !again.contains("Handle of the member to write to"),
-        "{again}"
+        !file.windows(7).any(|w| w == b"Kumquat"),
+        "the subject is readable in the database file"
     );
-    let stored = russh_bbs_core::mail::MailStore::key_ids_in_use(&rig.store)
-        .await
-        .unwrap();
-    assert!(stored.is_empty(), "nothing was sent");
-}
-
-/// How many codes the account holds (created and not yet redeemed or expired).
-async fn invites_held(rig: &Rig, id: AccountId) -> usize {
-    russh_bbs_core::invites::InviteStore::invites_by(&rig.store, id, 50)
-        .await
-        .unwrap()
-        .len()
-}
-
-#[tokio::test]
-async fn creating_an_invite_is_withheld_over_telnet_and_no_code_is_made_or_shown() {
-    let rig = Rig::start(true).await;
-    let alice = rig.member("alice").await;
-    let mut tn = at_menu(&rig, "alice").await;
-    let menu = words_of(&tn.keys("i").await);
-    assert!(
-        menu.contains("Invites") || menu.contains("invite"),
-        "{menu}"
-    );
-    let screen = words_of(&tn.keys("c").await);
-    assert!(
-        screen.contains("Invites are available over ssh."),
-        "{screen}"
-    );
-    assert!(!screen.contains("Invite code"), "{screen}");
-    assert_eq!(invites_held(&rig, alice).await, 0, "no code was made");
+    // bob reads it over telnet.
+    let mut bob = at_menu(&rig, "bob").await;
+    let inbox = words_of(&bob.keys("m").await);
+    assert!(inbox.contains("Kumquat inventory"), "{inbox}");
+    assert!(inbox.contains("alice"), "{inbox}");
 }
 
 #[tokio::test]
-async fn the_invite_list_and_tree_are_withheld_over_telnet() {
+async fn invites_can_be_created_listed_and_viewed_as_a_tree_over_telnet() {
     let rig = Rig::start(true).await;
     let alice = rig.account("alice", Slug::TRUSTED, Some(SECRET)).await;
     let mut tn = at_menu(&rig, "alice").await;
     tn.keys("i").await;
+    let created = words_of(&tn.keys("c").await);
+    assert!(created.contains("Invite code"), "{created}");
+    assert!(!created.contains("available over ssh"), "{created}");
+    assert_eq!(
+        russh_bbs_core::invites::InviteStore::invites_by(&rig.store, alice, 50)
+            .await
+            .unwrap()
+            .len(),
+        1,
+        "the code was made"
+    );
+    let listed = words_of(&tn.keys("\u{1b}").await);
+    assert!(!listed.contains("available over ssh"), "{listed}");
     for key in ["y", "t"] {
         let screen = words_of(&tn.keys(key).await);
-        assert!(
-            screen.contains("Invites are available over ssh."),
-            "{key}: {screen}"
-        );
+        assert!(!screen.contains("available over ssh"), "{key}: {screen}");
+        tn.keys("\u{1b}").await;
     }
-    assert_eq!(invites_held(&rig, alice).await, 0);
 }
 
 #[tokio::test]
-async fn setting_a_password_is_refused_over_telnet_with_one_line() {
+async fn a_password_can_be_changed_over_telnet_after_giving_the_current_one() {
     let rig = Rig::start(true).await;
     let alice = rig.member("alice").await;
+    let before = rig.store.stored_hash(alice).await.unwrap().unwrap();
     let mut tn = at_menu(&rig, "alice").await;
-    let settings = words_of(&tn.keys("s").await);
-    assert!(settings.contains("Password"), "{settings}");
-    let refused = words_of(&tn.keys("s").await);
-    assert!(refused.contains("Set your password over ssh."), "{refused}");
-    assert!(
-        !refused.contains("Set or change password"),
-        "the password screen did not open: {refused}"
+    tn.keys("s").await;
+    let page = words_of(&tn.keys("s").await);
+    assert!(page.contains("Set or change password"), "{page}");
+    let prompt = words_of(&tn.keys("s").await);
+    assert!(prompt.contains("Current password"), "{prompt}");
+    // A wrong current password changes nothing.
+    tn.type_text("not my password\r").await;
+    tn.type_text(&format!("{NEW_PASSWORD}\r")).await;
+    let refused = words_of(&fill(&mut tn, &[NEW_PASSWORD]).await);
+    assert!(refused.contains("not the current password"), "{refused}");
+    assert_eq!(rig.store.stored_hash(alice).await.unwrap().unwrap(), before);
+    // The right one does, and the new password logs in while the old one no longer does.
+    tn.keys("s").await;
+    tn.type_text(&format!("{SECRET}\r")).await;
+    tn.type_text(&format!("{NEW_PASSWORD}\r")).await;
+    let done = words_of(&fill(&mut tn, &[NEW_PASSWORD]).await);
+    assert!(done.contains("Password set."), "{done}");
+    assert_ne!(rig.store.stored_hash(alice).await.unwrap().unwrap(), before);
+    drop(tn);
+    let mut again = Tn::connect(rig.addr(), 80, 24).await;
+    again.log_in("alice", NEW_PASSWORD).await;
+    let first = again.read_until(&footer_at(24)).await;
+    assert!(words_of(&first).contains("Signed in as alice"), "{first}");
+}
+
+#[tokio::test]
+async fn redeeming_an_invite_over_telnet_makes_a_password_account_that_then_logs_in() {
+    let rig = Rig::start(true).await;
+    let alice = rig.member("alice").await;
+    let code = rig.invite_code(alice, 7).await;
+    let (mut tn, home) = join(&rig).await;
+    assert!(home.contains("Waiting room"), "{home}");
+    assert!(home.contains("Redeem an invite code"), "{home}");
+    let form = words_of(&tn.keys("c").await);
+    assert!(form.contains("Invite code"), "{form}");
+    assert!(form.contains("Choose a password"), "{form}");
+    assert!(form.contains("Type the password again"), "{form}");
+    // The password is never echoed back as text.
+    let typed = fill(
+        &mut tn,
+        &[code.reveal(), "telnetter", NEW_PASSWORD, NEW_PASSWORD],
+    )
+    .await;
+    assert!(!typed.contains(NEW_PASSWORD), "{typed}");
+    assert!(typed.contains("telnetter"), "{typed}");
+    // The new member is signed in (the session carries on as them).
+    let account = rig
+        .rows("SELECT CAST(id AS TEXT) FROM accounts WHERE username = 'telnetter'")
+        .await;
+    assert_eq!(account.len(), 1, "the account was made");
+    // Active, invited by alice, a password and no key.
+    assert_eq!(
+        rig.rows("SELECT state FROM accounts WHERE username = 'telnetter'")
+            .await,
+        ["active"]
     );
-    // The stored password is untouched: the original still signs in.
-    assert!(
-        russh_bbs_core::passwords::PasswordStore::stored_hash(&rig.store, alice)
-            .await
-            .unwrap()
-            .is_some()
+    assert_eq!(
+        rig.rows("SELECT CAST(invited_by AS TEXT) FROM accounts WHERE username = 'telnetter'")
+            .await,
+        [alice.to_string()]
     );
+    assert_eq!(
+        rig.rows("SELECT CAST(count(*) AS TEXT) FROM account_keys")
+            .await,
+        ["0"]
+    );
+    assert_eq!(
+        rig.rows("SELECT CAST(count(*) AS TEXT) FROM account_password WHERE account_id = (SELECT id FROM accounts WHERE username = 'telnetter')")
+            .await,
+        ["1"]
+    );
+    // No password in the database file, only its hash.
+    let file = std::fs::read(rig.dir.path().join("bbs.db")).unwrap();
+    assert!(
+        !file
+            .windows(NEW_PASSWORD.len())
+            .any(|w| w == NEW_PASSWORD.as_bytes()),
+        "the password is readable in the database file"
+    );
+    // They are a plain member in this session and the next: log in again with the password.
+    let screen = words_of(&tn.keys("x").await);
+    assert!(!screen.contains("Sysop tools"), "{screen}");
+    drop(tn);
+    let mut again = Tn::connect(rig.addr(), 80, 24).await;
+    again.log_in("telnetter", NEW_PASSWORD).await;
+    let first = again.read_until(&footer_at(24)).await;
+    assert!(
+        words_of(&first).contains(&format!("{GREETING} telnetter")),
+        "{first}"
+    );
+    // The code was spent.
+    let (mut second, _) = join(&rig).await;
+    second.keys("c").await;
+    let refused = words_of(
+        &fill(
+            &mut second,
+            &[code.reveal(), "another", NEW_PASSWORD, NEW_PASSWORD],
+        )
+        .await,
+    );
+    assert!(
+        refused.contains("That invite could not be used."),
+        "{refused}"
+    );
+}
+
+#[tokio::test]
+async fn open_registration_over_telnet_makes_a_password_account_and_every_refusal_reads_the_same() {
+    let rig = Rig::start(true).await;
+    rig.mode(RegistrationMode::Open).await;
+    rig.member("taken").await;
+    let (mut tn, home) = join(&rig).await;
+    assert!(home.contains("Create an account"), "{home}");
+    tn.keys("n").await;
+    // A taken handle, and a lookalike, get one sentence.
+    let one = words_of(&fill(&mut tn, &["taken", NEW_PASSWORD, NEW_PASSWORD]).await);
+    assert!(one.contains("That account could not be created."), "{one}");
+    // A password that is too short or does not match is a local, typed-text message.
+    let short = words_of(&fill(&mut tn, &["walkin", "short", "short"]).await);
+    assert!(short.contains("Too short"), "{short}");
+    let mismatch = words_of(
+        &fill(
+            &mut tn,
+            &["walkin", NEW_PASSWORD, "something else entirely"],
+        )
+        .await,
+    );
+    assert!(mismatch.contains("did not match"), "{mismatch}");
+    assert_eq!(
+        rig.rows("SELECT CAST(count(*) AS TEXT) FROM accounts WHERE username = 'walkin'")
+            .await,
+        ["0"]
+    );
+    fill(&mut tn, &["walkin", NEW_PASSWORD, NEW_PASSWORD]).await;
+    assert_eq!(
+        rig.rows("SELECT CAST(count(*) AS TEXT) FROM accounts WHERE username = 'walkin'")
+            .await,
+        ["1"]
+    );
+    assert_eq!(
+        rig.rows("SELECT CAST(count(*) AS TEXT) FROM account_keys")
+            .await,
+        ["0"]
+    );
+    drop(tn);
+    let mut again = Tn::connect(rig.addr(), 80, 24).await;
+    again.log_in("walkin", NEW_PASSWORD).await;
+    let first = again.read_until(&footer_at(24)).await;
+    assert!(words_of(&first).contains("Signed in as walkin"), "{first}");
+}
+
+#[tokio::test]
+async fn an_application_over_telnet_waits_with_a_hash_and_approval_makes_a_password_account() {
+    let rig = Rig::start(true).await;
+    rig.mode(RegistrationMode::Apply).await;
+    let sysop = rig.account("the-sysop", Slug::SYSOP, Some(SECRET)).await;
+    let (mut tn, home) = join(&rig).await;
+    assert!(home.contains("Apply for membership"), "{home}");
+    tn.keys("a").await;
+    let answer = words_of(
+        &fill(
+            &mut tn,
+            &[
+                "hopeful",
+                "a friend of a friend",
+                NEW_PASSWORD,
+                NEW_PASSWORD,
+            ],
+        )
+        .await,
+    );
+    // The same fixed answer whether kept or dropped, and honest about what is kept.
+    assert!(
+        answer.contains("Thank you. If your application is kept"),
+        "{answer}"
+    );
+    assert!(answer.contains("salted hash"), "{answer}");
+    assert!(!answer.contains("fingerprint"), "{answer}");
+    // Kept: one request holding a hash, no account yet, so the password cannot log in.
+    let held = loop {
+        let n = rig
+            .rows(
+                "SELECT CAST(count(*) AS TEXT) FROM invite_request WHERE password_hash IS NOT NULL",
+            )
+            .await;
+        if n == ["1"] {
+            break n;
+        }
+        tokio::task::yield_now().await;
+    };
+    assert_eq!(held, ["1"]);
+    let mut early = Tn::connect(rig.addr(), 80, 24).await;
+    early.log_in("hopeful", NEW_PASSWORD).await;
+    let said = early.read_until("Login incorrect.").await;
+    assert!(said.contains("Login incorrect."));
+    // The sysop approves (the queue screen is staff-only, so over the store here).
+    let queue = rig.store.pending_requests(10).await.unwrap();
+    assert_eq!(queue.requests.len(), 1);
+    rig.store
+        .approve_request(queue.requests[0].id, sysop)
+        .await
+        .unwrap();
+    assert_eq!(
+        rig.rows("SELECT CAST(count(*) AS TEXT) FROM invite_request")
+            .await,
+        ["0"]
+    );
+    let mut now = Tn::connect(rig.addr(), 80, 24).await;
+    now.log_in("hopeful", NEW_PASSWORD).await;
+    let first = now.read_until(&footer_at(24)).await;
+    assert!(words_of(&first).contains("Signed in as hopeful"), "{first}");
+}
+
+#[tokio::test]
+async fn a_request_for_an_invite_over_telnet_is_queued_with_a_hash_and_asks_for_no_key() {
+    let rig = Rig::start(true).await;
+    let (mut tn, home) = join(&rig).await;
+    assert!(home.contains("Request an invite"), "{home}");
+    let form = words_of(&tn.keys("i").await);
+    assert!(form.contains("Choose a password"), "{form}");
+    let answer = words_of(&fill(&mut tn, &["asker", "hello", NEW_PASSWORD, NEW_PASSWORD]).await);
+    assert!(
+        answer.contains("Thank you. If your request is kept"),
+        "{answer}"
+    );
+    assert!(
+        answer.contains("log in again later with this handle and password"),
+        "{answer}"
+    );
+    loop {
+        let n = rig
+            .rows("SELECT CAST(count(*) AS TEXT) FROM invite_request WHERE kind = 'invite' AND password_hash IS NOT NULL")
+            .await;
+        if n == ["1"] {
+            break;
+        }
+        tokio::task::yield_now().await;
+    }
+}
+
+/// What a stranger can see over telnet in `mode`: the home, rules and every form, as words.
+async fn visitor_screens(rig: &Rig, mode: RegistrationMode) -> Vec<String> {
+    rig.mode(mode).await;
+    let (mut tn, home) = join(rig).await;
+    let mut out = vec![home];
+    let keys: &[&str] = match mode {
+        RegistrationMode::Invite => &["r", "i", "c"],
+        RegistrationMode::Apply => &["r", "a"],
+        RegistrationMode::Open => &["r", "n"],
+    };
+    for key in keys {
+        out.push(words_of(&tn.keys(key).await));
+        out.push(words_of(&tn.keys("\u{1b}").await));
+    }
+    out
+}
+
+#[tokio::test]
+async fn the_telnet_waiting_room_reveals_nothing_about_the_board_in_any_mode() {
+    for mode in [
+        RegistrationMode::Invite,
+        RegistrationMode::Apply,
+        RegistrationMode::Open,
+    ] {
+        let empty = Rig::start(true).await;
+        let empty_screens = visitor_screens(&empty, mode).await;
+
+        // A busy board: members, staff, a pending request, a denial, boards' worth of state.
+        let busy = Rig::start(true).await;
+        let alice = busy.member("alice").await;
+        busy.account("the-sysop", Slug::SYSOP, Some(SECRET)).await;
+        busy.account("carol", Slug::TRUSTED, Some(SECRET)).await;
+        busy.invite_code(alice, 1).await;
+        let (mut earlier, _) = join(&busy).await;
+        busy.mode(RegistrationMode::Apply).await;
+        earlier.keys("a").await;
+        fill(&mut earlier, &["queued", "hi", NEW_PASSWORD, NEW_PASSWORD]).await;
+        let busy_screens = visitor_screens(&busy, mode).await;
+
+        assert_eq!(
+            empty_screens, busy_screens,
+            "{mode:?}: the room told them apart"
+        );
+        let everything = busy_screens.join("\n");
+        for secret in ["alice", "the-sysop", "carol", "queued"] {
+            assert!(!everything.contains(secret), "{mode:?}: {secret} leaked");
+        }
+    }
+}
+
+#[tokio::test]
+async fn the_founder_claim_is_refused_over_telnet_and_no_sysop_is_made() {
+    let rig = Rig::start(true).await;
+    let mut tn = Tn::connect(rig.addr(), 80, 24).await;
+    tn.read_until("login: ").await;
+    tn.type_text("claim\r").await;
+    tn.read_until("password: ").await;
+    tn.type_text("a-setup-token-typed-as-a-password\r").await;
+    let said = tn.read_until("Login incorrect.").await;
+    assert!(said.contains("Login incorrect."));
+    assert_eq!(
+        rig.rows("SELECT CAST(count(*) AS TEXT) FROM accounts")
+            .await,
+        ["0"]
+    );
+}
+
+#[tokio::test]
+async fn a_sysop_over_telnet_who_joined_by_invite_or_logs_in_keeps_no_staff_powers() {
+    let rig = Rig::start(true).await;
+    rig.account("boss", Slug::SYSOP, Some(SECRET)).await;
+    let mut tn = at_menu(&rig, "boss").await;
+    let menu = words_of(&tn.keys("x").await);
+    assert!(!menu.contains("Sysop tools"), "{menu}");
+}
+
+#[tokio::test]
+async fn the_request_limits_apply_to_the_telnet_forms_and_the_answer_never_changes() {
+    let rig = Rig::start(true).await;
+    rig.mode(RegistrationMode::Apply).await;
+    // Twelve different handles from one network over three connections: the per-network limit
+    // keeps ten, and every answer reads the same.
+    let mut answers = Vec::new();
+    let mut n = 0;
+    for _ in 0..3 {
+        let (mut tn, _) = join(&rig).await;
+        tn.keys("a").await;
+        for _ in 0..4 {
+            n += 1;
+            let handle = format!("hopeful{n}");
+            answers.push(words_of(
+                &fill(&mut tn, &[&handle, "hi", NEW_PASSWORD, NEW_PASSWORD]).await,
+            ));
+            tn.keys("\u{1b}").await;
+            tn.keys("a").await;
+        }
+    }
+    assert!(answers.iter().all(|a| a == &answers[0]), "{answers:?}");
+    // Wait for the last submission to settle, then count what was kept.
+    tokio::time::sleep(Duration::from_millis(500)).await;
+    let kept = rig
+        .rows("SELECT CAST(count(*) AS TEXT) FROM invite_request")
+        .await;
+    assert_eq!(kept, ["10"], "the network limit kept ten of twelve");
+}
+
+#[tokio::test]
+async fn the_forum_and_mail_screens_carry_the_unencrypted_row_too() {
+    // `keys` reads until the marker is painted on the new last row, so reaching each screen at
+    // all proves the row follows it (the forum and mail screens once returned before it).
+    let rig = Rig::start(true).await;
+    rig.member("alice").await;
+    let mut tn = at_menu(&rig, "alice").await;
+    let forums = words_of(&tn.keys("f").await);
+    assert!(forums.contains("UNENCRYPTED"), "{forums}");
+    tn.keys("\u{1b}").await;
+    let mail = words_of(&tn.keys("m").await);
+    assert!(mail.contains("UNENCRYPTED"), "{mail}");
 }

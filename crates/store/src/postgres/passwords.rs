@@ -42,6 +42,18 @@ impl PasswordStore for PostgresStore {
             .ok_or(StoreError::AccountNotFound)
     }
 
+    async fn has_key(&self, account: AccountId) -> Result<bool, StoreError> {
+        let id = account.as_raw();
+        let keys = sqlx::query_scalar!(
+            r#"SELECT count(*) AS "n!" FROM account_keys WHERE account_id = $1"#,
+            id,
+        )
+        .fetch_one(self.pool())
+        .await
+        .map_err(backend)?;
+        Ok(keys > 0)
+    }
+
     async fn set_hash(
         &self,
         account: AccountId,

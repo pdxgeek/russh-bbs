@@ -15,6 +15,7 @@ pub mod host_key;
 pub mod limits;
 pub(crate) mod password;
 pub mod registry;
+pub(crate) mod room;
 pub(crate) mod screen;
 mod server;
 pub(crate) mod shell;

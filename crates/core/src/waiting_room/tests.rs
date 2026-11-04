@@ -669,7 +669,7 @@ fn fill_redeem(room: &mut WaitingRoom, code: &str, handle: &str) -> RoomEffect {
 fn a_filled_redeem_form_hands_the_front_end_a_request_and_forgets_what_was_typed() {
     let mut room = redeem_room();
     let effect = fill_redeem(&mut room, "  ABCD-EFGH  ", "newcomer");
-    let RoomEffect::Redeem(RedeemRequest { join, handle }) = effect else {
+    let RoomEffect::Redeem(RedeemRequest { join, handle, .. }) = effect else {
         unreachable!("expected a redeem request, got {effect:?}");
     };
     assert_eq!(
@@ -769,5 +769,171 @@ fn the_request_does_not_print_the_code() {
 fn the_redeem_form_exists_only_in_invite_mode() {
     for mode in [RegistrationMode::Apply, RegistrationMode::Open] {
         assert!(!pages(mode).contains(&Page::RedeemInvite), "{mode:?}");
+    }
+}
+
+// ---- password sign-up (telnet, D94) ---------------------------------------------------------
+
+fn password_room(mode: RegistrationMode, key: char) -> WaitingRoom {
+    let mut room = WaitingRoom::new(
+        &RoomConfig {
+            mode,
+            ..RoomConfig::default()
+        },
+        5,
+    )
+    .with_password_signup();
+    room.input(RoomInput::Char(key));
+    room
+}
+
+const PASSWORD: &str = "correct horse battery";
+
+fn fill(room: &mut WaitingRoom, values: &[&str]) -> RoomEffect {
+    let mut effect = RoomEffect::Stay;
+    for value in values {
+        type_text(room, value);
+        effect = room.input(RoomInput::Enter);
+    }
+    effect
+}
+
+#[test]
+fn the_password_room_asks_for_a_password_and_its_repeat_on_every_account_form() {
+    for (mode, key, labels) in [
+        (RegistrationMode::Invite, 'c', 4),
+        (RegistrationMode::Invite, 'i', 4),
+        (RegistrationMode::Apply, 'a', 4),
+        (RegistrationMode::Open, 'n', 3),
+    ] {
+        let room = password_room(mode, key);
+        let fields = room.view().fields;
+        assert_eq!(fields.len(), labels, "{mode:?} {key}");
+        assert_eq!(
+            fields[fields.len() - 2].label,
+            strings::LABEL_PASSWORD,
+            "{mode:?} {key}"
+        );
+        assert_eq!(
+            fields[fields.len() - 1].label,
+            strings::LABEL_PASSWORD_AGAIN,
+            "{mode:?} {key}"
+        );
+    }
+}
+
+#[test]
+fn the_key_room_is_unchanged_by_the_password_room_existing() {
+    let mut room = room(RegistrationMode::Invite);
+    room.input(RoomInput::Char('c'));
+    assert_eq!(room.view().fields.len(), 2);
+    let mut room = self::room(RegistrationMode::Open);
+    room.input(RoomInput::Char('n'));
+    assert_eq!(room.view().fields.len(), 1);
+}
+
+#[test]
+fn a_password_never_appears_in_a_view_and_the_effect_carries_it_as_a_secret() {
+    let mut room = password_room(RegistrationMode::Open, 'n');
+    type_text(&mut room, "walkin");
+    room.input(RoomInput::Enter);
+    type_text(&mut room, PASSWORD);
+    let typing = room.view();
+    assert!(!all_text(&typing).contains(PASSWORD));
+    assert_eq!(typing.fields[1].value, "*".repeat(PASSWORD.len()));
+    room.input(RoomInput::Enter);
+    type_text(&mut room, PASSWORD);
+    let RoomEffect::Redeem(request) = room.input(RoomInput::Enter) else {
+        unreachable!("expected a registration");
+    };
+    assert_eq!(request.join, JoinKind::Open);
+    let secret = request.password.clone().unwrap();
+    assert_eq!(secret, crate::passwords::Secret::new(PASSWORD.to_owned()));
+    assert!(!format!("{request:?}").contains(PASSWORD));
+    // And the room forgot it.
+    assert!(room.view().fields.iter().all(|f| f.value.is_empty()));
+}
+
+#[test]
+fn a_mismatched_or_weak_password_never_reaches_the_front_end_and_is_not_kept() {
+    for (first, second, message) in [
+        (
+            PASSWORD,
+            "another horse battery",
+            strings::ERR_PASSWORD_MISMATCH,
+        ),
+        ("short", "short", crate::passwords::strings::ERR_SHORT),
+        ("", "", strings::ERR_EMPTY),
+    ] {
+        let mut room = password_room(RegistrationMode::Open, 'n');
+        let effect = fill(&mut room, &["walkin", first, second]);
+        assert_eq!(effect, RoomEffect::Stay, "{first}/{second}");
+        let view = room.view();
+        assert_eq!(view.notice.unwrap().text, message);
+        assert_eq!(view.notice.unwrap().kind, NoticeKind::Error);
+        // The handle stays, the secrets are wiped and the cursor is on the first of them.
+        assert_eq!(view.fields[0].value, "walkin");
+        assert!(view.fields[1].value.is_empty() && view.fields[2].value.is_empty());
+        assert!(view.fields[1].active);
+    }
+}
+
+#[test]
+fn only_printable_ascii_is_taken_into_a_password_field_and_it_is_not_trimmed() {
+    let mut room = password_room(RegistrationMode::Open, 'n');
+    type_text(&mut room, "walkin");
+    room.input(RoomInput::Enter);
+    type_text(&mut room, " caf\u{e9} \u{1b}[31m\u{7}\u{200b}pass phrase ");
+    // The non-ASCII letter, the escape, the bell and the zero-width space were not taken.
+    assert_eq!(
+        room.view().fields[1].value.len(),
+        " caf [31mpass phrase ".len()
+    );
+    room.input(RoomInput::Enter);
+    type_text(&mut room, " caf [31mpass phrase ");
+    let RoomEffect::Redeem(request) = room.input(RoomInput::Enter) else {
+        unreachable!("expected a registration");
+    };
+    assert_eq!(
+        request.password.unwrap(),
+        crate::passwords::Secret::new(" caf [31mpass phrase ".to_owned())
+    );
+}
+
+#[test]
+fn a_password_stops_at_128_characters() {
+    let mut room = password_room(RegistrationMode::Open, 'n');
+    type_text(&mut room, "walkin");
+    room.input(RoomInput::Enter);
+    type_text(&mut room, &"x".repeat(300));
+    assert_eq!(room.view().fields[1].value.len(), 128);
+}
+
+#[test]
+fn a_request_form_hands_over_the_password_and_shows_the_telnet_answer() {
+    for (mode, key, answer, kind) in [
+        (
+            RegistrationMode::Invite,
+            'i',
+            strings::REQUEST_INVITE_ANSWER_PASSWORD,
+            RequestKind::Invite,
+        ),
+        (
+            RegistrationMode::Apply,
+            'a',
+            strings::APPLY_ANSWER_PASSWORD,
+            RequestKind::Application,
+        ),
+    ] {
+        let mut room = password_room(mode, key);
+        let effect = fill(&mut room, &["hopeful", "a friend", PASSWORD, PASSWORD]);
+        let RoomEffect::RequestInvite(ask) = effect else {
+            unreachable!("expected a request, got {effect:?}");
+        };
+        assert_eq!(ask.kind, kind);
+        assert!(ask.password.is_some());
+        let view = room.view();
+        assert_eq!(view.notice.unwrap().text, answer);
+        assert!(!answer.contains("fingerprint") && !answer.contains("same key"));
     }
 }

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO invite_request (fingerprint, handle, message, created_at, expires_at, kind)\n             VALUES ($1, $2, $3, $4, $5, $6)\n             RETURNING id",
+  "query": "INSERT INTO invite_request\n                 (fingerprint, handle, message, created_at, expires_at, kind, password_hash)\n             VALUES ($1, $2, $3, $4, $5, $6, $7)\n             RETURNING id",
   "describe": {
     "columns": [
       {
@@ -16,6 +16,7 @@
         "Text",
         "Int8",
         "Int8",
+        "Text",
         "Text"
       ]
     },
@@ -23,5 +24,5 @@
       false
     ]
   },
-  "hash": "5870810d01e5710372ee07622c9121f70ea90976cddbd45979e9d64382620e46"
+  "hash": "f8ecd7312f1307670d8e5d059771cabf96540e238409f71f8b6a368e39cbd4bd"
 }

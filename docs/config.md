@@ -103,12 +103,12 @@ The mail key is 54 bytes in a small checked format, created with mode 0600 **onl
 
 Built in M3-H. Turning telnet on is "low-security mode": an unencrypted listener on its own port, with a loud warning in the log and a `LOW-SECURITY` marker on staff screens. **When `telnet.enabled` is `false` (the default) no port is bound.** Telnet follows the `[ssh]` limits and timeouts (`max_connections` and the rest) and the `[waiting_room]` per-network connection rate, with its own counts; see D85.
 
-What a telnet session is: a password login for members who set a password over SSH (a second opt-in, below), the same screens as SSH, and the fixed `UNENCRYPTED` marker on the last row of every screen. It is never a waiting room, a founder claim, a registration, SFTP or a staff session: roles of rank 40 and up (`cosysop`, `sysop`) are dropped, so a sysop who logs in over telnet is an ordinary member, and the password page is not offered there. Only ASCII passwords can be typed.
+What a telnet session is (D94, D95): a password login (a second opt-in, below) or, by typing `new` at the login prompt, the same waiting room as SSH in every registration mode, where redeeming, applying and open registration ask for a password and make a **password account** (no SSH key). After login it is the same member screens as SSH, including mail, invites and the password page, with the fixed `UNENCRYPTED` marker on the last row of every screen. It is never a founder claim, SFTP or a staff session: roles of rank 40 and up (`cosysop`, `sysop`) are dropped, so a sysop who logs in over telnet is an ordinary member. Only ASCII passwords can be typed.
 
 | Key | Type | Default | Environment | Flag | Used by |
 |---|---|---|---|---|---|
 | `telnet.enabled` | boolean | `false` | `RUSSH_BBS_TELNET_ENABLED` | none | The telnet listener (M3-H); off binds no port; on warns at start |
-| `telnet.allow_login` | boolean, needs `telnet.enabled` | `false` | `RUSSH_BBS_TELNET_ALLOW_LOGIN` | none | Member password login over telnet; off shows a two-line refusal and closes |
+| `telnet.allow_login` | boolean, needs `telnet.enabled` | `false` | `RUSSH_BBS_TELNET_ALLOW_LOGIN` | none | Member password login and the waiting room over telnet; off shows a two-line refusal and closes |
 | `telnet.listen` | address, port 1–65535, not the SSH port when enabled | `0.0.0.0:2323` | `RUSSH_BBS_TELNET_LISTEN` | none | The telnet listener's address |
 
 ### `[feeds]` (D89)

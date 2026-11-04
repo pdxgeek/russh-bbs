@@ -632,14 +632,8 @@ impl Screen {
                         MemberEffect::Stay => {}
                         MemberEffect::Save(settings) => effects.save_settings = Some(settings),
                         MemberEffect::Invite(request) => {
-                            // Withheld over telnet (D91): a new or listed code would cross the
-                            // wire in clear. No request is made, so nothing is created.
-                            if self.transport.footer.is_some() {
-                                flow.menu_notice(crate::ui::keys::NOTICE_INVITES_SSH_ONLY);
-                            } else {
-                                effects.invite = Some(request);
-                                break;
-                            }
+                            effects.invite = Some(request);
+                            break;
                         }
                         MemberEffect::OpenChat => {
                             let mut chat = ChatScreen::open();
@@ -657,13 +651,8 @@ impl Screen {
                             break;
                         }
                         MemberEffect::Mail => {
-                            // Mail is withheld over telnet (D90): nothing is read or sent there.
-                            if self.transport.footer.is_some() {
-                                flow.menu_notice(crate::ui::keys::NOTICE_MAIL_SSH_ONLY);
-                            } else {
-                                mail_moved = MailMove::Open(index);
-                                break;
-                            }
+                            mail_moved = MailMove::Open(index);
+                            break;
                         }
                         MemberEffect::Disconnect => {
                             effects.disconnect = true;
@@ -909,11 +898,6 @@ impl Screen {
     /// The mail keys the board loaded at start-up, for running mail requests (`None` on a
     /// board built without them: every mail request then says mail is not available).
     pub(super) fn mail_keys(&self) -> Option<Arc<russh_bbs_core::mail::MailKeys>> {
-        // Withheld over telnet (D90): without keys every mail request fails, so nothing is read
-        // or sent there even if a screen were reached some other way.
-        if self.transport.footer.is_some() {
-            return None;
-        }
         self.ui.mail_keys()
     }
 
@@ -1251,9 +1235,10 @@ impl Screen {
                 look: Look::themed(settings, layout, theme.palette()),
                 tier: settings.icon_tier(),
             };
+            let tier = ctx.tier;
             self.terminal
                 .draw(|frame| forums::render(frame, &session.screen, &ctx))?;
-            return Ok(self.take_output());
+            return Ok(self.finish_frame(tier));
         }
         if let Content::Mail(session) = &self.content {
             let settings = session.flow.settings();
@@ -1266,9 +1251,10 @@ impl Screen {
                 look: Look::themed(settings, layout, theme.palette()),
                 tier: settings.icon_tier(),
             };
+            let tier = ctx.tier;
             self.terminal
                 .draw(|frame| mail::render(frame, &session.screen, &ctx))?;
-            return Ok(self.take_output());
+            return Ok(self.finish_frame(tier));
         }
         // While the editor is open it is drawn instead of the content (the transport's footer
         // row below still follows it).
@@ -1348,7 +1334,7 @@ impl Screen {
                         look,
                         tier,
                         markers: &MENU_MARKERS,
-                        mail_over_ssh_only: self.transport.footer.is_some(),
+                        mail_over_ssh_only: false,
                     },
                 ),
                 // The invite screens (M2-D): the same framed layout, with the reserved status row.
@@ -1366,6 +1352,12 @@ impl Screen {
                 (None, _) => render(frame, &view),
             })?;
         }
+        Ok(self.finish_frame(tier))
+    }
+
+    /// The bytes of the frame just drawn, followed by the transport's marker row if it has one.
+    /// Every screen ends here (the forum and mail screens too), so none can leave the row bare.
+    fn finish_frame(&mut self, tier: Tier) -> Vec<u8> {
         let mut bytes = self.take_output();
         if let Some(footer) = self.transport.footer {
             // After the frame, so a repaint or a clear never leaves the row bare.
@@ -1376,7 +1368,7 @@ impl Screen {
                 footer.window.rows(),
             ));
         }
-        Ok(bytes)
+        bytes
     }
 
     fn take_output(&mut self) -> Vec<u8> {

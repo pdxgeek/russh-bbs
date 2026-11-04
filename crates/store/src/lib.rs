@@ -16,6 +16,8 @@ mod access_rows;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod audit_rows;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
+mod binding;
+#[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod chat_rows;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod community_rows;

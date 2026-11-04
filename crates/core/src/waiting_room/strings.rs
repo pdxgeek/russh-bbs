@@ -59,11 +59,23 @@ pub const LABEL_ABOUT: &str = "A line about yourself";
 /// See [`LABEL_HANDLE`].
 pub const LABEL_CODE: &str = "Invite code";
 
+/// Label of the password field on a sign-up form (telnet, D94).
+pub const LABEL_PASSWORD: &str = "Choose a password (12 to 128 characters)";
+/// Label of the repeat field under [`LABEL_PASSWORD`].
+pub const LABEL_PASSWORD_AGAIN: &str = "Type the password again";
+/// The two password entries differ. Depends only on what was typed.
+pub const ERR_PASSWORD_MISMATCH: &str = "The two passwords did not match. Please type them again.";
+
 /// The one answer to the request-an-invite form (M2-E). It is the same whether the request was
 /// kept or dropped (a rate limit, a full queue, a repeat, a recent refusal), so it tells a
 /// stranger nothing about the board. It says what is true either way: who can read the text if
 /// it is kept, and that nobody is notified.
 pub const REQUEST_INVITE_ANSWER: &str = "Thank you. If your request is kept, the staff and trusted members here can read your handle, your message and this key's fingerprint, and the staff decide when they can. Nobody is notified: connect again later with this same key to find out.";
+
+/// [`REQUEST_INVITE_ANSWER`] for a request made with a password, over telnet (D94): there is no
+/// key, so it says what is kept instead and how to find out. Shown before the store is asked and
+/// the same whether the request was kept or dropped.
+pub const REQUEST_INVITE_ANSWER_PASSWORD: &str = "Thank you. If your request is kept, the staff and trusted members here can read your handle and your message, and the staff decide when they can. Your password is kept only as a salted hash. Nobody is notified: log in again later with this handle and password to find out.";
 
 /// The one answer to the application form (M2-G). Like [`REQUEST_INVITE_ANSWER`] it is shown
 /// before the store is asked and is the same whether the application was kept or dropped (a
@@ -71,6 +83,9 @@ pub const REQUEST_INVITE_ANSWER: &str = "Thank you. If your request is kept, the
 /// It says what is true either way: who can read the text if it is kept, that the account
 /// stays inactive until the staff decide, and that nobody is notified.
 pub const APPLY_ANSWER: &str = "Thank you. If your application is kept, the staff and trusted members here can read your handle, your message and this key's fingerprint, and the staff decide when they can. This key stays outside the board until they say yes. Nobody is notified: connect again later with this same key to find out.";
+
+/// [`APPLY_ANSWER`] for an application made with a password, over telnet (D94).
+pub const APPLY_ANSWER_PASSWORD: &str = "Thank you. If your application is kept, the staff and trusted members here can read your handle and your message, and the staff decide when they can. Your password is kept only as a salted hash, and you cannot log in until they say yes. Nobody is notified: log in again later with this handle and password to find out.";
 
 /// The one answer to a create-account attempt that did not work (M2-G). It is the same for a
 /// taken handle, a key that already has an account, a rate limit, a day whose cap is used up

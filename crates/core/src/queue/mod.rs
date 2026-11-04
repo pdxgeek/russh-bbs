@@ -37,14 +37,15 @@ pub use gate::{
 pub use request::{
     DEFAULT_MAX_PENDING, DENIAL_COOLDOWN_SECS, InviteAsk, MAX_MAX_PENDING, MESSAGE_MAX_CHARS,
     Message, NewRequest, PENDING_TTL_SECS, PendingRequest, RequestId, RequestKind, Voucher,
-    cooldown_key,
+    cooldown_key, password_identity,
 };
 pub use screen::{
     PAGE_SIZE, QueueKey, QueueMode, QueueScreen, QueueStep, QueueView, Row, ViewLine, age_text,
 };
 pub use service::{
     Approval, DropReason, LIST_LIMIT, QueueError, Request, Response, Submission, approve_request,
-    deny_request, execute, list_pending, max_pending, purge_expired, submit_request, vouch_request,
+    deny_request, execute, list_pending, max_pending, purge_expired, submit_request,
+    submit_request_with_password, vouch_request,
 };
 pub use store::{
     ApproveError, DecideError, Purged, Queue, QueueStore, Refusal, SubmitTerms, Submitted,

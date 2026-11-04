@@ -120,10 +120,7 @@ pub struct MemberFlow {
     /// How the session signed in. A password session must give the current password again to
     /// set or clear one (M3-D, D81).
     login: LoginMethod,
-    /// Whether the settings offer the password screen. Off for a transport that is not
-    /// encrypted (telnet, M3-H): a password is set only over SSH (D27).
-    password_screen: bool,
-    /// True where mail is offered. Off where mail is withheld (telnet): the welcome then says
+    /// True where mail is offered. Off where mail is withheld: the welcome then says
     /// "Mail is available over ssh." D93 retired the D78 mail-at-rest sentence everywhere.
     mail_note: bool,
 }
@@ -151,17 +148,8 @@ impl MemberFlow {
             terminal: None,
             themes: Vec::new(),
             login: LoginMethod::Key,
-            password_screen: true,
             mail_note: true,
         }
-    }
-
-    /// Do not offer the password screen in the settings (the transport is not encrypted, so
-    /// nothing typed there may cross it: D27). The screen cannot be opened by its key either.
-    #[must_use]
-    pub const fn without_password_screen(mut self) -> Self {
-        self.password_screen = false;
-        self
     }
 
     /// Say "Mail is available over ssh." (the transport withholds mail).
@@ -169,10 +157,6 @@ impl MemberFlow {
     pub const fn without_mail_note(mut self) -> Self {
         self.mail_note = false;
         self
-    }
-
-    const fn password_screen_open(&self) -> bool {
-        self.password_screen
     }
 
     /// Mark the session as signed in with a password instead of a key (M3-D, D28).
@@ -702,15 +686,7 @@ impl MemberFlow {
                 MemberEffect::Stay
             }
             MemberInput::Char('s' | 'S') if self.access.allows(Permission::AccountSetPassword) => {
-                if self.password_screen_open() {
-                    self.page = Page::Password(Box::new(PasswordScreen::open(self.login)));
-                } else {
-                    // Refused on a transport that is not encrypted (D91).
-                    self.notice = Some(Notice {
-                        kind: NoticeKind::Error,
-                        text: strings::PASSWORD_SSH_ONLY,
-                    });
-                }
+                self.page = Page::Password(Box::new(PasswordScreen::open(self.login)));
                 MemberEffect::Stay
             }
             MemberInput::Char('b' | 'B') | MemberInput::Escape => {

@@ -5,6 +5,7 @@ use std::fmt;
 use sha2::{Digest as _, Sha256};
 
 use crate::access::Fingerprint;
+use crate::passwords::Secret;
 use crate::sanitize::{Sanitized, SingleLine, Username};
 use crate::store::{AccountId, UnixSeconds};
 
@@ -123,6 +124,9 @@ pub struct InviteAsk {
     pub message: String,
     /// Which form it came from.
     pub kind: RequestKind,
+    /// The password the person chose, over telnet (D94); `None` for a key request. The front
+    /// end hashes it before anything is stored.
+    pub password: Option<Secret>,
 }
 
 impl fmt::Debug for InviteAsk {
@@ -142,6 +146,10 @@ pub struct NewRequest {
     pub fingerprint: Fingerprint,
     /// Which form it came from.
     pub kind: RequestKind,
+    /// For a person with no SSH key (telnet, D94): the argon2id PHC hash of the password they
+    /// chose on the form. Approval binds the new account to it instead of to a key, and
+    /// `fingerprint` is then the stand-in [`password_identity`]. `None` for a key request.
+    pub password_hash: Option<String>,
 }
 
 impl fmt::Debug for NewRequest {
@@ -179,6 +187,42 @@ pub struct PendingRequest {
     pub vouchers: Vec<Voucher>,
     /// An invite request or a membership application.
     pub kind: RequestKind,
+}
+
+/// The stand-in key identity of a request made without an SSH key (telnet, D94), so the queue's
+/// one-request-per-identity rule, its rate limits and the denial cooldown work as they do for a
+/// key. It is SHA-256 over a domain prefix and the handle's skeleton, written as a well-formed
+/// `SHA256:` fingerprint, so a lookalike handle shares it. Nothing can be bound to it: no key
+/// hashes to it, and the row that holds it also holds a password hash, which approval uses.
+///
+/// # Panics
+/// Never: the text it builds is always a well-formed fingerprint (a test checks it).
+#[must_use]
+pub fn password_identity(handle: &Username) -> Fingerprint {
+    const ALPHABET: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut hasher = Sha256::new();
+    hasher.update(b"russh-bbs password request identity v1\0");
+    hasher.update(handle.skeleton().as_bytes());
+    let digest = hasher.finalize();
+    // 32 bytes as unpadded base64: 43 characters, the shape of an OpenSSH SHA-256 fingerprint.
+    let mut text = String::from("SHA256:");
+    for chunk in digest.chunks(3) {
+        let b0 = u32::from(chunk.first().copied().unwrap_or(0));
+        let b1 = u32::from(chunk.get(1).copied().unwrap_or(0));
+        let b2 = u32::from(chunk.get(2).copied().unwrap_or(0));
+        let word = (b0 << 16) | (b1 << 8) | b2;
+        let digits = match chunk.len() {
+            1 => 2,
+            2 => 3,
+            _ => 4,
+        };
+        for index in 0..digits {
+            let shift = 18 - 6 * index;
+            let sextet = usize::try_from((word >> shift) & 0x3f).unwrap_or(0);
+            text.push(char::from(ALPHABET.get(sextet).copied().unwrap_or(b'A')));
+        }
+    }
+    Fingerprint::parse(&text).unwrap_or_else(|_| unreachable!("a 43-character base64 body"))
 }
 
 /// The stored form of a denied key: SHA-256 over a domain prefix and the fingerprint text, as

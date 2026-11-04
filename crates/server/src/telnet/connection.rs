@@ -24,12 +24,14 @@ use tokio::time::{Instant, timeout};
 use tracing::{debug, info, warn};
 
 use super::Slot;
+use super::login::Entry;
 use super::protocol::{Decoded, Decoder, OPENING, encode};
 use super::staff::without_staff;
 use crate::ssh::abort::Abort;
 use crate::ssh::budget::SessionBudget;
 use crate::ssh::password::PasswordLogin;
 use crate::ssh::registry::{SessionRef, SessionRegistry};
+use crate::ssh::room::{build_room, room_allowed};
 use crate::ssh::screen::{Content, Screen};
 use crate::ssh::shell::{Inbox, MEMBER_START_TIMEOUT, Output, Shell, ShellParts};
 use crate::ssh::terminal::{KeyParser, PtySize};
@@ -139,8 +141,8 @@ impl<D: Backend> Connection<D> {
             return None;
         }
         let deadline = Instant::now() + self.limits.auth_timeout;
-        let account = match tokio::time::timeout_at(deadline, self.login(link, peer)).await {
-            Ok(Some(account)) => account,
+        let entry = match tokio::time::timeout_at(deadline, self.login(link, peer)).await {
+            Ok(Some(entry)) => entry,
             Ok(None) => return None,
             Err(_) => {
                 info!(%peer, "telnet login timed out; disconnecting");
@@ -148,7 +150,34 @@ impl<D: Backend> Connection<D> {
                 return None;
             }
         };
-        self.start_member(link, account).await
+        match entry {
+            Entry::Member(account) => self.start_member(link, account).await,
+            Entry::Join => self.start_room(link).await,
+        }
+    }
+
+    /// The waiting room for a visitor who typed `new` at the login prompt (D94): the same room
+    /// the ssh visitor gets, in every registration mode, with the sign-up forms asking for a
+    /// password because there is no key to bind. It reveals nothing about the board; it is the
+    /// room's own rule, and this path adds nothing to it. The authentication deadline does not
+    /// run here: filling in a form is not a login attempt.
+    async fn start_room(&self, link: &mut Link) -> Option<Started> {
+        let session = link.session.id();
+        if !room_allowed(&*self.directory, &session).await {
+            // Nothing is offered that could not be confirmed (the store failed, or the
+            // permission was removed): the visitor gets the refusal every failure gets.
+            link.screen_text(&["Your session could not be started."])
+                .await;
+            return None;
+        }
+        let room = build_room(&*self.directory, self.limits.max_form_submissions, &session)
+            .await
+            .with_password_signup();
+        Some(Started {
+            account: None,
+            content: Content::Room(room),
+            meter: None,
+        })
     }
 
     /// The signed-in session for `account`: its access with staff roles dropped, the session
@@ -203,12 +232,9 @@ impl<D: Backend> Connection<D> {
                 // Last callers (M3-J): a telnet member session is recorded like an ssh one,
                 // at the same point (after the limits admit it).
                 crate::community::note_sign_in(&*self.directory, start.account).await;
-                // D27: a password is set only over SSH, and the screen would take it in clear.
                 let flow =
                     MemberFlow::new(&start.handle, access, start.previous_login, start.settings)
-                        .signed_in_with_password()
-                        .without_password_screen()
-                        .without_mail_note();
+                        .signed_in_with_password();
                 (Content::Member(Box::new(flow)), Some(meter))
             }
             Ok(Err(LimitError::Refused(refusal))) => {
@@ -230,7 +256,7 @@ impl<D: Backend> Connection<D> {
         };
         link.session.set_authenticated_by_password(Access::Member);
         Some(Started {
-            account: start.account,
+            account: Some(start.account),
             content,
             meter,
         })
@@ -274,13 +300,14 @@ impl<D: Backend> Connection<D> {
             screen,
             inbox: Arc::clone(&inbox),
             directory: Arc::clone(&self.directory),
-            // No founder claim over telnet: the claim needs a key and an SSH `claim` login.
+            // No founder claim over telnet: the claim needs a key and an SSH `claim` login
+            // (D94 (4)).
             founder: Arc::new(crate::founder::Founder::closed()),
             session: session.clone(),
             abort: Arc::clone(&abort),
             fingerprint: None,
             peer_ip: Some(peer.ip()),
-            account: Some(account),
+            account,
             passwords: Arc::clone(&self.passwords),
             chat: Arc::clone(self.registry.chat()),
             meter,
@@ -332,7 +359,8 @@ impl<D: Backend> Connection<D> {
 
 /// The signed-in session, ready to hand to the shell.
 struct Started {
-    account: russh_bbs_core::store::AccountId,
+    /// The signed-in account; `None` for a visitor in the waiting room.
+    account: Option<russh_bbs_core::store::AccountId>,
     content: Content,
     meter: Option<russh_bbs_core::limits::MemberMeter>,
 }

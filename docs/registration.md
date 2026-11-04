@@ -50,6 +50,15 @@ When the day's places are used:
 
 The notice is the one thing a stranger can read about the cap (D2 asks for it). The waiting room never shows how many places remain, how many accounts were made, or how full the queue is.
 
+## Over telnet: password accounts (FIX-M3-10, D94, D95)
+
+A telnet client has no key, so the same waiting room has one difference: a visitor types `new` at the `login:` prompt, and every form that makes or asks for an account (redeem an invite, request an invite, apply, create an account) also asks for **a password and the same password again** (12 to 128 printable ASCII characters, D81). Nothing else about the room changes: the modes, the menu, the words, the permissions, the limits and the no-leak rule are the ssh room's, built by the same function.
+
+- **Redeem and `open`** make an `active` account at once, bound to the password and to no key (`account_password`, no `account_keys` row), in the same transaction and with the same audit rows as the key path. The new member carries on in the same session as a plain member and can log in again with handle and password.
+- **Request and apply** queue a request exactly as for a key, but it holds the **argon2id hash** of the chosen password (`invite_request.password_hash`, migration 0020) instead of relying on a key. The queue's one-request-per-identity rule, its rate limits and the denial cooldown use a stand-in identity derived from the handle (`password_identity`), so two requests for one handle (or a lookalike) are one. Approval makes an `active` account with `invited_by` = the approver and moves the hash to `account_password`; denial and expiry delete it. The fixed answer says "your password is kept only as a salted hash" and how to find out: log in again later with the handle and password. Nobody is notified.
+- The password and the invite code cross the wire in clear (the `UNENCRYPTED` marker is on every screen). A password account cannot clear its password (it has no key to fall back on). A member may later add an SSH key over ssh (FIX-M3-11).
+- Tests: `tests/telnet.rs` over a raw TCP telnet client, the shared store suite (`password_accounts`) on SQLite and Postgres 16 (plain and TLS-required), and a real `telnet` client.
+
 ## What is stored
 
 | Where | What | Kept until |
@@ -57,6 +66,7 @@ The notice is the one thing a stranger can read about the cap (D2 asks for it). 
 | `invite_request` (M2-E) | now with a `kind` column: `invite` or `application`; otherwise exactly the queue's fields (handle, one-line message, key fingerprint, two times). No address | decided, or 14 days |
 | `registration_day` | UTC day number, how many `open` accounts that day, when the cap first refused someone | 7 days (pruned by the next creation) |
 | `accounts` / `account_keys` | the new account, as for any account | until deleted |
+| `invite_request.password_hash` (0020) | for a request made over telnet: the argon2id hash of the chosen password, never the password | decided, or 14 days |
 
 No address, no user agent, no client banner. The in-memory gates keep the network only as the limiter's key.
 

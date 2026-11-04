@@ -61,6 +61,8 @@ fn weak_hash(password: &str) -> String {
 struct Fake {
     rows: Mutex<Vec<(Account, Option<String>)>>,
     audits: Mutex<Vec<AuditEvent>>,
+    /// Whether the accounts have no SSH key (a password account, D94).
+    keyless: Mutex<bool>,
 }
 
 impl Fake {
@@ -68,6 +70,7 @@ impl Fake {
         Self {
             rows: Mutex::new(rows),
             audits: Mutex::default(),
+            keyless: Mutex::new(false),
         }
     }
 
@@ -103,6 +106,10 @@ impl PasswordStore for Fake {
             .find(|(a, _)| a.id == account)
             .map(|(_, h)| h.clone())
             .ok_or(StoreError::AccountNotFound)
+    }
+
+    async fn has_key(&self, _account: AccountId) -> Result<bool, StoreError> {
+        Ok(!*self.keyless.lock().unwrap())
     }
 
     async fn set_hash(
@@ -814,18 +821,16 @@ mod in_the_session {
         assert!(!lines(&without).contains("No password is set"));
     }
 
+    /// D94 (3): setting or changing one's own password over telnet is allowed, so the settings
+    /// of a password session (the shape telnet gives its members) open the password screen, and
+    /// it asks for the current password first.
     #[test]
-    fn a_transport_that_is_not_encrypted_never_gets_the_password_screen() {
-        let mut f = flow(settings_and_password(), true).without_password_screen();
+    fn a_password_session_gets_the_password_screen_and_must_give_the_current_one() {
+        let mut f = flow(settings_and_password(), true);
         press(&mut f, "xs");
         press(&mut f, "s");
-        assert!(f.take_password_request().is_none());
-        assert!(!lines(&f).contains("password is set"));
-        assert!(!lines(&f).contains("Set or change"));
-        assert_eq!(
-            f.view(&Keys).notice.map(|n| n.text),
-            Some(crate::terminal_settings::strings::PASSWORD_SSH_ONLY)
-        );
+        let request = f.take_password_request().unwrap();
+        assert_eq!(request.method, LoginMethod::Password);
     }
 
     #[test]

@@ -52,6 +52,9 @@ pub const ERR_LONG: &str = "Too long: use at most 128 characters.";
 pub const ERR_CONTROL: &str = "That holds a control character. Use plain characters.";
 /// Notice: wrong current password.
 pub const ERR_CURRENT: &str = "That is not the current password. Nothing was changed.";
+/// Notice: the password is the account's only way in (D94).
+pub const ERR_LAST_CREDENTIAL: &str =
+    "This account has no SSH key, so the password is the only way in. It was not cleared.";
 /// Notice: not allowed.
 pub const ERR_DENIED: &str = "You may not change the password.";
 /// Notice: failure.

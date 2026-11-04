@@ -45,6 +45,7 @@ fn request(key: u32, handle: &str) -> NewRequest {
         message: Message::new(MESSAGE),
         fingerprint: fingerprint(key),
         kind: RequestKind::Invite,
+        password_hash: None,
     }
 }
 

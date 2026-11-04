@@ -390,6 +390,7 @@ fn application(key: u32, handle: &str, kind: RequestKind) -> NewRequest {
         message: Message::new("I would like to join"),
         fingerprint: fingerprint(key),
         kind,
+        password_hash: None,
     }
 }
 

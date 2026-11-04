@@ -22,6 +22,10 @@ const RESERVED_NAMES: &[&str] = &[
     "moderator",
     // Default roles (docs/access.md) not already listed.
     "waiting",
+    // Reserved visitor names (D94): `new` opens the waiting room at the telnet login prompt
+    // (and, later, over ssh), `claim` is the founder claim. No handle may shadow them.
+    "new",
+    "claim",
     "member",
     "trusted",
     // Staff-sounding words (QA M0 N3). Best effort: a name is not how staff status is

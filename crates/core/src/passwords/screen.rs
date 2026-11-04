@@ -270,6 +270,7 @@ impl PasswordScreen {
                 self.notice = Some(match refusal {
                     Refusal::WrongCurrent => error(strings::ERR_CURRENT),
                     Refusal::Policy(policy) => policy_notice(policy),
+                    Refusal::LastCredential => error(strings::ERR_LAST_CREDENTIAL),
                     Refusal::Failed | Refusal::Denied => error(strings::ERR_FAILED),
                 });
                 if was_loading {

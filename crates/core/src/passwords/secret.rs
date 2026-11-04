@@ -53,6 +53,24 @@ impl Secret {
     }
 }
 
+/// A copy is wiped on drop like the original (the waiting room's effects are cloned in tests).
+impl Clone for Secret {
+    fn clone(&self) -> Self {
+        Self(self.copy())
+    }
+}
+
+/// Equality compares in constant time; it exists so values holding a secret can derive
+/// `PartialEq`, not for checking passwords (that is argon2's job).
+impl PartialEq for Secret {
+    fn eq(&self, other: &Self) -> bool {
+        use subtle::ConstantTimeEq as _;
+        self.0.as_bytes().ct_eq(other.0.as_bytes()).into()
+    }
+}
+
+impl Eq for Secret {}
+
 /// The only field is a [`Zeroizing`] string, so dropping a `Secret` overwrites the text.
 impl zeroize::ZeroizeOnDrop for Secret {}
 

@@ -24,9 +24,14 @@
 
 use std::fmt;
 
+use zeroize::Zeroize as _;
+
 use super::screens::{self, Page, QUIT_KEY};
 use super::source::RoomConfig;
 use super::strings;
+use crate::passwords::{
+    MAX_CHARS as PASSWORD_MAX_CHARS, PolicyError, Secret, check_new, strings as password_strings,
+};
 use crate::queue::{InviteAsk, RequestKind};
 use crate::sanitize::USERNAME_MAX_CHARS;
 use crate::sanitize::{MultiLine, SingleLine, Username, UsernameError, sanitize_username};
@@ -202,6 +207,9 @@ pub struct RedeemRequest {
     pub join: JoinKind,
     /// The handle the new account will have.
     pub handle: Username,
+    /// The password the person chose, on a room built [`WaitingRoom::with_password_signup`]
+    /// (telnet, D94); the account is then bound to it and to no key. `None` on a key room.
+    pub password: Option<Secret>,
 }
 
 impl fmt::Debug for RedeemRequest {
@@ -209,6 +217,7 @@ impl fmt::Debug for RedeemRequest {
         f.debug_struct("RedeemRequest")
             .field("join", &self.join)
             .field("handle", &self.handle)
+            .field("password", &self.password.as_ref().map(|_| "<redacted>"))
             .finish()
     }
 }
@@ -308,6 +317,8 @@ enum FieldKind {
     Handle,
     Line,
     Code,
+    /// A password or its repeat: printable ASCII only, shown as `*`, never trimmed (D81).
+    Secret,
 }
 
 impl FieldKind {
@@ -316,6 +327,7 @@ impl FieldKind {
             Self::Handle => USERNAME_MAX_CHARS,
             Self::Line => LINE_MAX_CHARS,
             Self::Code => CODE_MAX_CHARS,
+            Self::Secret => PASSWORD_MAX_CHARS,
         }
     }
 }
@@ -339,20 +351,36 @@ const CODE: FieldSpec = FieldSpec {
     kind: FieldKind::Code,
 };
 
-fn fields_of(page: Page) -> &'static [FieldSpec] {
-    match page {
-        Page::Home | Page::Rules => &[],
-        Page::RequestInvite | Page::Apply => &[HANDLE, ABOUT],
-        Page::RedeemInvite => &[CODE, HANDLE],
-        Page::CreateAccount => &[HANDLE],
+const PASSWORD: FieldSpec = FieldSpec {
+    label: strings::LABEL_PASSWORD,
+    kind: FieldKind::Secret,
+};
+const PASSWORD_AGAIN: FieldSpec = FieldSpec {
+    label: strings::LABEL_PASSWORD_AGAIN,
+    kind: FieldKind::Secret,
+};
+
+/// The fields of `page`. With `passwords` (a room for a person with no SSH key, D94) every form
+/// that makes or asks for an account ends with a password and its repeat.
+fn fields_of(page: Page, passwords: bool) -> &'static [FieldSpec] {
+    match (page, passwords) {
+        (Page::Home | Page::Rules, _) => &[],
+        (Page::RequestInvite | Page::Apply, false) => &[HANDLE, ABOUT],
+        (Page::RequestInvite | Page::Apply, true) => &[HANDLE, ABOUT, PASSWORD, PASSWORD_AGAIN],
+        (Page::RedeemInvite, false) => &[CODE, HANDLE],
+        (Page::RedeemInvite, true) => &[CODE, HANDLE, PASSWORD, PASSWORD_AGAIN],
+        (Page::CreateAccount, false) => &[HANDLE],
+        (Page::CreateAccount, true) => &[HANDLE, PASSWORD, PASSWORD_AGAIN],
     }
 }
 
 /// The words for a valid form that no special case took. Every form is live, so this is the
 /// same sentence the live path shows.
-fn unavailable(page: Page) -> &'static str {
+fn unavailable(page: Page, passwords: bool) -> &'static str {
     match page {
         // The request form is live (M2-E) and never gets here; the words stay honest anyway.
+        Page::RequestInvite if passwords => strings::REQUEST_INVITE_ANSWER_PASSWORD,
+        Page::Apply if passwords => strings::APPLY_ANSWER_PASSWORD,
         Page::RequestInvite => strings::REQUEST_INVITE_ANSWER,
         // The redeem form is live (M2-D) and never gets here; the words stay honest anyway.
         Page::RedeemInvite => strings::REDEEM_FAILED,
@@ -387,6 +415,8 @@ pub struct WaitingRoom {
     submissions: u32,
     max_submissions: u32,
     degraded: bool,
+    /// Whether the forms ask for a password instead of relying on an SSH key (D94).
+    passwords: bool,
 }
 
 impl fmt::Debug for WaitingRoom {
@@ -417,7 +447,19 @@ impl WaitingRoom {
             submissions: 0,
             max_submissions,
             degraded: false,
+            passwords: false,
         }
+    }
+
+    /// Build the room for a person with **no SSH key** (telnet, D94). Every form that makes an
+    /// account or asks for one also asks for a password and its repeat; the password leaves the
+    /// room only inside the effect, as a [`Secret`], and the [`View`] shows `*` for it. The
+    /// pages, the menu and the no-leak rule are the key room's.
+    #[must_use]
+    pub fn with_password_signup(mut self) -> Self {
+        self.passwords = true;
+        self.clear_form();
+        self
     }
 
     /// Turn an `open` room into an `apply` room for the rest of the UTC day because the daily
@@ -491,12 +533,20 @@ impl WaitingRoom {
     }
 
     fn type_char(&mut self, c: char) {
-        let Some(spec) = fields_of(self.page).get(self.active) else {
+        let Some(spec) = fields_of(self.page, self.passwords).get(self.active) else {
             return;
         };
         let Some(value) = self.values.get_mut(self.active) else {
             return;
         };
+        if spec.kind == FieldKind::Secret {
+            // Printable ASCII only (what a telnet login can type back), exactly as typed: no
+            // sanitizer pass that would trim or fold it.
+            if (c.is_ascii_graphic() || c == ' ') && value.chars().count() < PASSWORD_MAX_CHARS {
+                value.push(c);
+            }
+            return;
+        }
         // Re-sanitize the whole buffer on each key: it enforces the length cap and keeps the
         // buffer free of controls, escapes and private-use characters whatever the client sent.
         value.push(c);
@@ -506,7 +556,7 @@ impl WaitingRoom {
     }
 
     fn enter(&mut self) -> RoomEffect {
-        let last = fields_of(self.page).len().saturating_sub(1);
+        let last = fields_of(self.page, self.passwords).len().saturating_sub(1);
         if self.active < last {
             self.active += 1;
             return RoomEffect::Stay;
@@ -541,7 +591,7 @@ impl WaitingRoom {
             self.clear_form();
             self.notice = Some(Notice {
                 kind: NoticeKind::Info,
-                text: unavailable(self.page),
+                text: unavailable(self.page, self.passwords),
             });
             return RoomEffect::RequestInvite(ask);
         }
@@ -551,13 +601,17 @@ impl WaitingRoom {
                 self.clear_form();
                 Notice {
                     kind: NoticeKind::Info,
-                    text: unavailable(self.page),
+                    text: unavailable(self.page, self.passwords),
                 }
             }
-            Err(text) => Notice {
-                kind: NoticeKind::Error,
-                text,
-            },
+            Err(text) => {
+                // A secret is not kept across a refusal: the person types it again.
+                self.clear_secrets();
+                Notice {
+                    kind: NoticeKind::Error,
+                    text,
+                }
+            }
         });
         RoomEffect::Stay
     }
@@ -569,6 +623,7 @@ impl WaitingRoom {
             return Some(RedeemRequest {
                 join: JoinKind::Open,
                 handle,
+                password: self.chosen_password(),
             });
         }
         let code = self.values.first()?.trim().to_owned();
@@ -576,6 +631,7 @@ impl WaitingRoom {
         Some(RedeemRequest {
             join: JoinKind::Invite { code },
             handle,
+            password: self.chosen_password(),
         })
     }
 
@@ -592,7 +648,38 @@ impl WaitingRoom {
             handle,
             message,
             kind,
+            password: self.chosen_password(),
         })
+    }
+
+    /// The password typed on a password form (the first of the two entries; `validate` has
+    /// checked they match), `None` on a key form.
+    fn chosen_password(&self) -> Option<Secret> {
+        if !self.passwords {
+            return None;
+        }
+        let index = fields_of(self.page, true)
+            .iter()
+            .position(|spec| spec.kind == FieldKind::Secret)?;
+        self.values.get(index).cloned().map(Secret::new)
+    }
+
+    /// Wipe the secret fields and put the cursor on the first of them.
+    fn clear_secrets(&mut self) {
+        let mut first = None;
+        for (index, (spec, value)) in fields_of(self.page, self.passwords)
+            .iter()
+            .zip(self.values.iter_mut())
+            .enumerate()
+        {
+            if spec.kind == FieldKind::Secret {
+                value.zeroize();
+                first.get_or_insert(index);
+            }
+        }
+        if let Some(first) = first {
+            self.active = first;
+        }
     }
 
     /// The redemption or account creation did not work. Whatever the reason (an unknown, wrong,
@@ -612,13 +699,29 @@ impl WaitingRoom {
 
     /// Check what was typed. The checks depend only on the text, never on the board's members.
     fn validate(&self) -> Result<(), &'static str> {
-        for (spec, value) in fields_of(self.page).iter().zip(&self.values) {
+        let fields = fields_of(self.page, self.passwords);
+        for (spec, value) in fields.iter().zip(&self.values) {
             if value.trim().is_empty() {
                 return Err(strings::ERR_EMPTY);
             }
             if spec.kind == FieldKind::Handle {
                 sanitize_username(value).map_err(username_error)?;
             }
+        }
+        let mut secrets = fields
+            .iter()
+            .zip(&self.values)
+            .filter(|(spec, _)| spec.kind == FieldKind::Secret)
+            .map(|(_, value)| value);
+        if let (Some(chosen), Some(again)) = (secrets.next(), secrets.next()) {
+            if chosen != again {
+                return Err(strings::ERR_PASSWORD_MISMATCH);
+            }
+            check_new(chosen).map_err(|policy| match policy {
+                PolicyError::TooShort => password_strings::ERR_SHORT,
+                PolicyError::TooLong => password_strings::ERR_LONG,
+                PolicyError::ControlCharacter => password_strings::ERR_CONTROL,
+            })?;
         }
         Ok(())
     }
@@ -630,7 +733,21 @@ impl WaitingRoom {
     }
 
     fn clear_form(&mut self) {
-        self.values = vec![String::new(); fields_of(self.page).len()];
+        for value in &mut self.values {
+            value.zeroize();
+        }
+        self.values = fields_of(self.page, self.passwords)
+            .iter()
+            .map(|spec| {
+                if spec.kind == FieldKind::Secret {
+                    // Room for the longest password, so typing never reallocates (and leaves a
+                    // copy of the text behind).
+                    String::with_capacity(PASSWORD_MAX_CHARS)
+                } else {
+                    String::new()
+                }
+            })
+            .collect();
         self.active = 0;
     }
 
@@ -671,13 +788,18 @@ impl WaitingRoom {
                 if self.degraded && page == Page::Apply {
                     view.note = Some(strings::OPEN_CAPPED_NOTICE);
                 }
-                view.fields = fields_of(self.page)
+                view.fields = fields_of(self.page, self.passwords)
                     .iter()
                     .zip(&self.values)
                     .enumerate()
                     .map(|(index, (spec, value))| FieldView {
                         label: spec.label,
-                        value: value.clone(),
+                        // A password never leaves the room in a view.
+                        value: if spec.kind == FieldKind::Secret {
+                            "*".repeat(value.chars().count())
+                        } else {
+                            value.clone()
+                        },
                         active: index == self.active,
                     })
                     .collect();
