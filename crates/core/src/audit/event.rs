@@ -127,6 +127,12 @@ pub enum Action {
     /// actor and the target are the account.
     #[strum(serialize = "recovery_code.redeemed")]
     RecoveryCodeRedeemed,
+    /// A live session was ended because the credential it signed in with was revoked
+    /// (FIX-M3-14, D99): a key removed, the password set, changed or cleared, or a recovery code
+    /// redeemed. The actor and the target are the account; the note names the session's id (a
+    /// number of this process) and the reason.
+    #[strum(serialize = "session.revoked")]
+    SessionRevoked,
     /// Staff deleted a player's save in a door (M4-D0, D98). The target is the player; the note
     /// names the door. The save's contents are never written.
     #[strum(serialize = "door.player_reset")]
