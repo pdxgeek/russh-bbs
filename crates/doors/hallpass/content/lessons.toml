@@ -1,0 +1,129 @@
+# Class minigames. Each subject uses one kind of puzzle (sequence, balance, vocab, timeline,
+# pattern, relay) for a few rounds; the banks below feed the kinds that need words and dates.
+# The made-up language and history are the school's own.
+
+[[lesson]]
+subject = "maths"
+kind = "sequence"
+skill = "tinker"
+intro = "Mr. Pell chalks a row of numbers on the board and says one of them is missing. Continue each row."
+
+[[lesson]]
+subject = "sciences"
+kind = "balance"
+skill = "tinker"
+intro = "Ms. Orrin sets out flasks on the bench scale. Find the pair that makes the reading."
+
+[[lesson]]
+subject = "languages"
+kind = "vocab"
+skill = "bluff"
+intro = "Madame Thorne reads out Greywater Latin, the old school tongue, and expects you to keep up."
+
+[[lesson]]
+subject = "history"
+kind = "timeline"
+skill = "bluff"
+intro = "Mr. Alder asks which of three events came first or last, and wants no fidgeting."
+
+[[lesson]]
+subject = "art"
+kind = "pattern"
+skill = "sneak"
+intro = "Ms. Ruddock pins up a border design with the last tile missing. Finish the pattern."
+
+[[lesson]]
+subject = "games"
+kind = "relay"
+skill = "fleet"
+intro = "Mr. Gale reads out three runners' times and asks who wins the relay before the whistle."
+
+# ---- vocabulary: Greywater Latin ----
+[[word]]
+term = "lumen"
+meaning = "lamp"
+[[word]]
+term = "aqua grisa"
+meaning = "grey water"
+[[word]]
+term = "porta"
+meaning = "door"
+[[word]]
+term = "silentium"
+meaning = "hush"
+[[word]]
+term = "clavis"
+meaning = "key"
+[[word]]
+term = "umbra"
+meaning = "shadow"
+[[word]]
+term = "pons"
+meaning = "bridge"
+[[word]]
+term = "fenestra"
+meaning = "window"
+[[word]]
+term = "liber"
+meaning = "book"
+[[word]]
+term = "campana"
+meaning = "bell"
+[[word]]
+term = "scala"
+meaning = "stair"
+[[word]]
+term = "vigil"
+meaning = "night watch"
+[[word]]
+term = "nebula"
+meaning = "fog"
+[[word]]
+term = "remus"
+meaning = "oar"
+
+# ---- history: Greywater Academy ----
+[[event]]
+name = "The founding of the Academy"
+year = 1821
+[[event]]
+name = "The lake froze for a whole winter"
+year = 1856
+[[event]]
+name = "The Old Wing was built"
+year = 1869
+[[event]]
+name = "The first Rowing Eight race"
+year = 1884
+[[event]]
+name = "The chapel bell was cast"
+year = 1897
+[[event]]
+name = "The East Wing was closed"
+year = 1911
+[[event]]
+name = "The great fire in the kitchens"
+year = 1923
+[[event]]
+name = "The school paper first printed"
+year = 1934
+[[event]]
+name = "The tunnels were bricked up and then reopened"
+year = 1948
+[[event]]
+name = "The first girls joined the Rowing Eight"
+year = 1971
+[[event]]
+name = "The Workshop opened"
+year = 1986
+[[event]]
+name = "Dame Vane became headmistress"
+year = 2009
+
+# ---- art: border glyphs ----
+[[motif]]
+glyphs = ["o", "x", "+", "#", "~"]
+[[motif]]
+glyphs = ["A", "V", "T", "H", "I"]
+[[motif]]
+glyphs = ["1", "3", "5", "7", "9"]

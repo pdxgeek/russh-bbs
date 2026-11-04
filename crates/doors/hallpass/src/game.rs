@@ -254,6 +254,20 @@ pub enum Action {
     },
     /// Go to bed: end the day.
     Sleep,
+    /// Answer the puzzle now up in a lesson with the option at this index.
+    Answer(u8),
+    /// Walk out of the lesson, or step out of the conversation, in progress.
+    Abandon,
+    /// Start a conversation with someone here.
+    Talk(String),
+    /// Say the choice at this index in the conversation under way.
+    Choose(u8),
+    /// Join a club at its sign-up place.
+    Join(String),
+    /// Leave a club (remembered for the term).
+    Quit(String),
+    /// Go to a meeting of one of your clubs, here and now.
+    Meet,
 }
 
 /// A character in a school, and the rules that change them.
@@ -405,6 +419,13 @@ impl Game {
         self.player.nerve = self.player.nerve_max;
         // One detention a day falls due; new ones given today wait for tomorrow.
         self.player.due = self.player.detention.min(1);
+        // A lesson or a conversation left open overnight is over.
+        if self.player.life.lesson.take().is_some() {
+            events.push(Event::Say(
+                "You left a lesson unfinished; the class moved on without you.".into(),
+            ));
+        }
+        self.player.life.scene = None;
         // A run that was not finished before the day ended is abandoned.
         if let Some(run) = self.player.run.take() {
             self.player.schemes.retain(|s| s.id != run.scheme);
@@ -428,7 +449,9 @@ impl Game {
             )));
         }
         self.allowance(steps.min(3));
+        events.extend(self.weekly_report(today));
         events.extend(self.check_traits());
+        events.extend(self.check_arcs());
         if self.term_over() {
             events.extend(self.finish_term());
             return events;
@@ -441,6 +464,43 @@ impl Game {
             self.term_day() + 1,
             rules.term_days
         )));
+        events
+    }
+
+    /// Friday's report: good marks are noticed and poor ones go on the file.
+    fn weekly_report(&mut self, today: i64) -> Vec<Event> {
+        if Self::weekday(today) != 4 {
+            return Vec::new();
+        }
+        let rules = self.content.rules.clone();
+        let avg = self.average_grade();
+        let mut events = Vec::new();
+        if avg >= rules.honour_roll {
+            self.player.cool = to_i16(i32::from(self.player.cool) + 2);
+            let teachers: Vec<String> = self
+                .content
+                .subjects
+                .iter()
+                .map(|s| s.teacher.clone())
+                .collect();
+            for t in teachers {
+                self.player.life.add_bond(&t, 1);
+            }
+            events.push(Event::Say(
+                "Friday's report puts you on the honour roll. The staff think better of you."
+                    .into(),
+            ));
+        } else if self
+            .player
+            .grades
+            .iter()
+            .any(|(_, g)| i32::from(*g) < rules.poor_grade)
+        {
+            events.push(Event::Say(
+                "Friday's report has a poor mark on it, and a teacher's initials.".into(),
+            ));
+            events.extend(self.add_file("poor_report", 1));
+        }
         events
     }
 
@@ -461,6 +521,14 @@ impl Game {
         let low = self.player.heat > 0 && self.player.run.is_none();
         let _ = low;
         self.player.heat = to_u8(i32::from(self.player.heat) - rules.heat_decay);
+        // Marks slip when they are not kept up.
+        if day.rem_euclid(rules.grade_decay_days.max(1)) == 0 {
+            for (_, g) in &mut self.player.grades {
+                if *g > 30 {
+                    *g -= 1;
+                }
+            }
+        }
         // Notoriety fades slowly, but never below a trait's floor.
         if day.rem_euclid(rules.notoriety_decay_every.max(1)) == 0 {
             self.player.notoriety = to_u8(i32::from(self.player.notoriety) - 1);
@@ -592,6 +660,9 @@ impl Game {
             Stat::Standing(id) => p.standing_with(id),
             Stat::Wary(id) => p.wary_of(id),
             Stat::Grade(id) => map_get(&p.grades, id).map_or(0, |g| i32::from(*g)),
+            Stat::Bond(id) => p.life.bond_with(id),
+            Stat::Rank(id) => p.life.rank_in(id),
+            Stat::Day => i32::try_from(self.term_day()).unwrap_or(i32::MAX),
         }
     }
 
@@ -604,6 +675,16 @@ impl Game {
             Cond::Item(i) => self.player.count(i) > 0,
             Cond::Know(k) => self.player.knows(k),
             Cond::World(w) => self.world.has(w),
+            Cond::Arc { arc, step } => self
+                .player
+                .life
+                .arc(arc)
+                .is_some_and(|a| a.ended.is_none() && a.step == *step),
+            Cond::Ended { arc, ending } => self
+                .player
+                .life
+                .arc(arc)
+                .is_some_and(|a| a.ended.as_deref() == Some(ending.as_str())),
             Cond::Expelled => self.player.status == Status::Expelled,
             Cond::Not(inner) => !self.holds(inner),
             Cond::Cmp { stat, op, value } => op.test(self.stat(stat), *value),
@@ -849,7 +930,11 @@ impl Game {
         let teacher = self.content.subject(&subject).map(|s| s.teacher.clone());
         let wary = teacher.as_deref().map_or(0, |t| self.player.wary_of(t));
         let rules = &self.content.rules;
-        let chance = (rules.skip_notice_base
+        let teacher_bond = teacher
+            .as_deref()
+            .map_or(0, |t| self.player.life.bond_with(t));
+        let grade_now = i32::from(map_get(&self.player.grades, &subject).copied().unwrap_or(0));
+        let chance = (rules.skip_notice_base - (grade_now - 55) / 6 - teacher_bond / 4
             + wary * 8
             + i32::from(self.player.heat) / 4
             + i32::from(self.player.notoriety) / 4
@@ -994,6 +1079,7 @@ impl Game {
         if full {
             return self.expel();
         }
+        let finales = self.club_finales();
         let ending = self
             .content
             .endings
@@ -1002,7 +1088,8 @@ impl Game {
             .map_or_else(|| "scraped_through".to_owned(), |e| e.id.clone());
         self.player.status = Status::Finished;
         self.player.run = None;
-        let mut events = self.record_term(&ending);
+        let mut events = finales;
+        events.extend(self.record_term(&ending));
         events.push(Event::TermEnded(ending));
         events
     }
@@ -1047,7 +1134,32 @@ impl Game {
         if self.player.run.is_some() && !matches!(action, Action::RunPhase { .. }) {
             return Err(Refused::new("A scheme is under way: finish it first."));
         }
+        if self.player.life.lesson.is_some()
+            && !matches!(action, Action::Answer(_) | Action::Abandon)
+        {
+            return Err(Refused::new("You are in the middle of a lesson."));
+        }
+        if self.player.life.scene.is_some()
+            && !matches!(action, Action::Choose(_) | Action::Abandon)
+        {
+            return Err(Refused::new("You are in the middle of a conversation."));
+        }
+        let mut result = self.dispatch(action, rng);
+        if let Ok(events) = &mut result {
+            events.extend(self.check_arcs());
+        }
+        result
+    }
+
+    fn dispatch(&mut self, action: &Action, rng: &mut DoorRng) -> Result<Vec<Event>, Refused> {
         match action {
+            Action::Answer(i) => self.answer(*i, rng),
+            Action::Abandon => self.abandon(rng),
+            Action::Talk(id) => self.start_talk(id),
+            Action::Choose(i) => self.choose(*i, rng),
+            Action::Join(id) => self.join_club(id),
+            Action::Quit(id) => self.quit_club(id),
+            Action::Meet => self.meet(rng),
             Action::Enrol(_) => Err(Refused::new("You have already enrolled.")),
             Action::Go(place) => self.go(place, rng),
             Action::Attend => self.attend(rng),
@@ -1192,31 +1304,7 @@ impl Game {
                     .map_or("classroom", |p| p.name.as_str())
             )));
         }
-        let bonus: i32 = self
-            .player
-            .traits
-            .iter()
-            .filter_map(|t| self.content.trait_spec(t))
-            .map(|t| t.grade_bonus)
-            .sum();
-        let gain = 2 + bonus + i32::try_from(rng.below(2)).unwrap_or(0);
-        let grade = i32::from(
-            map_get(&self.player.grades, subject_id)
-                .copied()
-                .unwrap_or(0),
-        );
-        map_set(
-            &mut self.player.grades,
-            subject_id,
-            to_u8((grade + gain).min(100)),
-        );
-        self.player.attended = true;
-        let mut events = vec![Event::Say(format!(
-            "You sit through {} and learn something (+{gain}).",
-            subject.name
-        ))];
-        events.extend(self.end_slot(Spent::Attended, rng));
-        Ok(events)
+        self.begin_lesson(subject_id, rng)
     }
 
     fn study(&mut self, subject_id: &str, rng: &mut DoorRng) -> Result<Vec<Event>, Refused> {
@@ -1241,6 +1329,8 @@ impl Game {
             .filter_map(|t| self.content.trait_spec(t))
             .map(|t| t.grade_bonus)
             .sum();
+        let restricted = here.tags.iter().any(|t| t == "restricted");
+        let gain = 3 + bonus + if restricted { 2 } else { 0 };
         let grade = i32::from(
             map_get(&self.player.grades, subject_id)
                 .copied()
@@ -1249,11 +1339,10 @@ impl Game {
         map_set(
             &mut self.player.grades,
             subject_id,
-            to_u8((grade + 3 + bonus).min(100)),
+            to_u8((grade + gain).min(100)),
         );
         let mut events = vec![Event::Say(format!(
-            "An hour of {name} under the green lamps (+{}).",
-            3 + bonus
+            "An hour of {name} under the green lamps (+{gain}).",
         ))];
         events.extend(self.end_slot(Spent::Other, rng));
         Ok(events)
@@ -1264,11 +1353,11 @@ impl Game {
             .current_slot()
             .ok_or_else(|| Refused::new("The day is over."))?;
         let day = self.player.day;
-        let others: Vec<(String, String)> = self
+        let others: Vec<(String, String, String)> = self
             .npcs_at(&self.player.place, day, slot)
             .iter()
             .filter(|n| !n.is_authority())
-            .filter_map(|n| n.clique.clone().map(|c| (n.name.clone(), c)))
+            .filter_map(|n| n.clique.clone().map(|c| (n.id.clone(), n.name.clone(), c)))
             .collect();
         let mut events = Vec::new();
         if others.is_empty() {
@@ -1276,11 +1365,12 @@ impl Game {
         } else {
             let pick =
                 usize::try_from(rng.below(u32::try_from(others.len()).unwrap_or(1))).unwrap_or(0);
-            if let Some((name, clique)) = others.get(pick) {
+            if let Some((id, name, clique)) = others.get(pick) {
                 self.player.add_standing(clique, 1);
                 events.push(Event::Say(format!(
                     "You pass the time with {name}. Word gets round that you are all right."
                 )));
+                events.extend(self.change_bond(id, 1));
             }
         }
         self.player.cool = to_i16(i32::from(self.player.cool) + 1);

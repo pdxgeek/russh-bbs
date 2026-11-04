@@ -37,7 +37,7 @@ weekday = 1
 slots = ["class:sciences", "class:art", "lunch", "class:maths", "class:languages", "free", "after", "evening", "night"]
 [[day]]
 weekday = 2
-slots = ["class:history", "class:maths", "lunch", "class:art", "class:sciences", "free", "after", "evening", "night"]
+slots = ["class:history", "class:maths", "lunch", "class:art", "class:sciences", "class:games", "after", "evening", "night"]
 [[day]]
 weekday = 3
 slots = ["class:languages", "class:history", "lunch", "class:sciences", "class:art", "free", "after", "evening", "night"]
@@ -46,7 +46,7 @@ weekday = 4
 slots = ["class:art", "class:sciences", "lunch", "class:languages", "class:maths", "free", "after", "evening", "night"]
 [[day]]
 weekday = 5
-slots = ["class:history", "class:languages", "lunch", "free", "free", "free", "after", "evening", "night"]
+slots = ["class:history", "class:languages", "lunch", "class:games", "free", "free", "after", "evening", "night"]
 [[day]]
 weekday = 6
 slots = ["chapel", "free", "lunch", "free", "free", "free", "after", "evening", "night"]
@@ -76,3 +76,8 @@ id = "art"
 name = "Art"
 room = "art_room"
 teacher = "ruddock"
+[[subject]]
+id = "games"
+name = "Games"
+room = "gym"
+teacher = "gale"
