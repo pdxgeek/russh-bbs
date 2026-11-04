@@ -204,6 +204,7 @@ impl Session {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     fn exchange_entries(&self, clan: &Clan) -> Vec<Entry> {
         let mut out = vec![
             soc(
@@ -329,6 +330,29 @@ impl Session {
     /// Why a raid on `to` is closed today, if it is.
     pub(super) fn raid_closed(&self, to: ClanIx) -> Option<Refusal> {
         let me = self.me()?;
+        // Raids already sent from this session (or since the snapshot) are not in the snapshot
+        // of the world yet: the clan's own pending list knows them.
+        if let Some(clan) = &self.clan {
+            let name = self
+                .world
+                .clans
+                .get(usize::from(to))
+                .map(|c| c.name.as_str());
+            let sent: Vec<&Pending> = clan
+                .social
+                .pending
+                .iter()
+                .filter(|p| p.kind == PendKind::Raid)
+                .collect();
+            if sent.iter().any(|p| Some(p.about.as_str()) == name) {
+                return Some(Refusal::PairCooldown);
+            }
+            if sent.iter().filter(|p| p.day == self.today).count()
+                >= usize::from(caps::RAIDS_PER_DAY)
+            {
+                return Some(Refusal::RaidsToday);
+            }
+        }
         raid::check(&self.world, me, to, self.today).err()
     }
 
@@ -565,6 +589,7 @@ impl Session {
     }
 
     /// Plain lines for the screens the social orders live on (also the look-around's body).
+    #[allow(clippy::too_many_lines)]
     pub(super) fn social_lines(&self, menu: MenuId, clan: &Clan) -> Vec<(String, DoorStyle)> {
         let mut out: Vec<(String, DoorStyle)> = Vec::new();
         let plain = |s: String| (s, DoorStyle::Plain);
@@ -650,14 +675,16 @@ impl Session {
                     if let Some((ix, t)) = others.get(self.soc.pact.target % others.len().max(1)) {
                         out.push(plain(format!("Terms with {}:", t.name)));
                         for term in [TRADE, DEFENCE, CAUSEWAY] {
-                            out.push(plain(match self.world.closed_reason(m, *ix, term, self.today) {
-                                None => format!("  {} is open.", pact::term_name(term)),
-                                Some(why) => format!(
-                                    "  {} is closed: {}.",
-                                    pact::term_name(term),
-                                    why.trim_end_matches('.')
-                                ),
-                            }));
+                            out.push(plain(
+                                match self.world.closed_reason(m, *ix, term, self.today) {
+                                    None => format!("  {} is open.", pact::term_name(term)),
+                                    Some(why) => format!(
+                                        "  {} is closed: {}.",
+                                        pact::term_name(term),
+                                        why.trim_end_matches('.')
+                                    ),
+                                },
+                            ));
                         }
                     }
                 }
@@ -816,7 +843,21 @@ impl Session {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     pub(super) fn soc_act(&mut self, s: Soc, ctx: &mut Ctx<'_>) {
+        let paging = matches!(
+            s,
+            Soc::Good(_)
+                | Soc::RaidTarget(_)
+                | Soc::RaidSize(_)
+                | Soc::RaidWindow(_)
+                | Soc::RaidTaunt(_)
+                | Soc::PactTarget(_)
+                | Soc::PactTerm(_)
+                | Soc::ComposeTo(_)
+                | Soc::ComposeTemplate(_)
+                | Soc::ComposeLine
+        );
         let others = self.others();
         let names: Vec<(ClanIx, String)> =
             others.iter().map(|(i, c)| (*i, c.name.clone())).collect();
@@ -824,7 +865,7 @@ impl Session {
         match s {
             Soc::Good(by) => self.soc.exch = step(self.soc.exch, by, Resource::ALL.len()),
             Soc::RaidTarget(by) => {
-                self.soc.raid.target = step(self.soc.raid.target, by, names.len())
+                self.soc.raid.target = step(self.soc.raid.target, by, names.len());
             }
             Soc::RaidSize(by) => {
                 let size = i16::from(self.soc.raid.size) + i16::from(by);
@@ -928,7 +969,13 @@ impl Session {
                 } else {
                     Send::Decline { pact }
                 };
-                self.send(ctx, kind, format!("pact {pact}"), Self::blank_on(self.today), act);
+                self.send(
+                    ctx,
+                    kind,
+                    format!("pact {pact}"),
+                    Self::blank_on(self.today),
+                    act,
+                );
                 if let Some(c) = self.clan.as_mut() {
                     c.social
                         .inbox
@@ -978,7 +1025,10 @@ impl Session {
             }
             Soc::ComposeSend => self.send_letter(ctx, &names),
         }
-        self.save(ctx);
+        // Paging through targets, goods or words changes nothing worth saving.
+        if !paging {
+            self.save(ctx);
+        }
     }
 
     fn post_order(&mut self, ctx: &mut Ctx<'_>, side: Side, qty: u32, price: u16) {
@@ -1095,6 +1145,7 @@ impl Session {
         }
         clan.turns_used = clan.turns_used.saturating_add(caps::RAID_TURNS);
         clan.social.away.extend(ids.iter().copied());
+        clan.social.away_since = self.today;
         clan.social.raids_sent = clan.social.raids_sent.saturating_add(1);
         hold.turns = caps::RAID_TURNS;
         hold.crew = ids;

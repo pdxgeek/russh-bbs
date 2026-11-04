@@ -632,7 +632,11 @@ pub(in crate::session) fn describe(s: &Session) -> Vec<String> {
             out.push(format!(
                 "Pacts and diplomacy. You hold {n} pact(s). Terms: a truce is always part of a pact; trade, mutual defence and shared causeways are opened or closed by what your hold has built and what your history says."
             ));
-            if let Some(r) = s.me().and_then(|m| s.world.clans.get(usize::from(m))).map(|c| &c.record) {
+            if let Some(r) = s
+                .me()
+                .and_then(|m| s.world.clans.get(usize::from(m)))
+                .map(|c| &c.record)
+            {
                 out.push(format!(
                     "Your standing with the Tidecourt is {}; {} betrayal(s) on record.",
                     r.rep, r.betrayals
@@ -649,7 +653,11 @@ pub(in crate::session) fn describe(s: &Session) -> Vec<String> {
                 out.push(format!(
                     "Reading the letter from {}{}.",
                     l.from,
-                    if l.offer.is_some() { ", which carries a pact offer" } else { "" }
+                    if l.offer.is_some() {
+                        ", which carries a pact offer"
+                    } else {
+                        ""
+                    }
                 ));
             }
         }
@@ -668,8 +676,8 @@ pub(in crate::session) fn describe(s: &Session) -> Vec<String> {
             out.push("The league table: clans ranked by renown, which rewards a big hold, a skilled crew, expeditions, pacts kept and raids won (raids count for little on their own), less any pact broken.".to_owned());
             out.push(standing_line(s, clan));
             out.push(format!(
-                "Your renown: hold {}, crew {}, deeds {}, pacts {}, raids {}, wealth {}, betrayals minus {}.",
-                rn.hold, rn.crew, rn.deeds, rn.pacts, rn.raids, rn.wealth, rn.penalty
+                "Your renown: hold {}, crew {}, deeds {}, the Deep {}, pacts {}, raids {}, wealth {}, betrayals minus {}.",
+                rn.hold, rn.crew, rn.deeds, rn.deep, rn.pacts, rn.raids, rn.wealth, rn.penalty
             ));
         }
         Mode::Menu(MenuId::Hall) => {
@@ -682,10 +690,18 @@ pub(in crate::session) fn describe(s: &Session) -> Vec<String> {
             }
             let now = crate::social::hall::SeasonRecord::of(&s.world, s.today);
             for h in &now.records {
-                out.push(format!("This season, {}: {} ({}).", h.record.title(), h.clan, h.value));
+                out.push(format!(
+                    "This season, {}: {} ({}).",
+                    h.record.title(),
+                    h.clan,
+                    h.value
+                ));
             }
             if let Some(last) = s.world.social.book.last() {
-                out.push(format!("Season {} in the book: {}", last.season, last.ending));
+                out.push(format!(
+                    "Season {} in the book: {}",
+                    last.season, last.ending
+                ));
             }
         }
         _ => {}

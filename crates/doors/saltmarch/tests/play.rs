@@ -483,7 +483,10 @@ fn a_new_season_keeps_the_hall_and_gives_a_fresh_start() {
     assert_eq!(saved.hall[..old.hall.len()], old.hall[..]);
     assert_eq!(saved.hall.len(), old.hall.len() + 1);
     assert!(
-        saved.hall.last().is_some_and(|h| h.season == 1 && h.text.starts_with("Season 1 ended")),
+        saved
+            .hall
+            .last()
+            .is_some_and(|h| h.season == 1 && h.text.starts_with("Season 1 ended")),
         "{:?}",
         saved.hall.last()
     );
@@ -576,7 +579,11 @@ fn a_version_one_world_migrates_through_the_door_and_a_newer_one_is_not_understo
     let v1 = w.finish();
     let door = door();
     let v2 = door.migrate(BlobKind::World, 1, &v1).unwrap();
-    assert_eq!(World::decode(&v2), None, "version 2 is not readable as version 3");
+    assert_eq!(
+        World::decode(&v2),
+        None,
+        "version 2 is not readable as version 3"
+    );
     let v3 = door.migrate(BlobKind::World, 2, &v2).unwrap();
     let world = World::decode(&v3).unwrap();
     assert_eq!(world.clans.len(), 2);

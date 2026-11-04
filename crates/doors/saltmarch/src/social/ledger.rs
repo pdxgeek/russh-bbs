@@ -25,6 +25,9 @@ use crate::engine::injure;
 use crate::event::Event;
 use crate::types::{RESOURCES, Resource};
 
+/// Days a raiding party may be away without a report before it is sent home.
+pub const AWAY_DAYS: i64 = 5;
+
 /// What a pending dispatch is, for the line that says how it came out.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Kind {
@@ -227,6 +230,8 @@ pub struct ClanSocial {
     pub credited_to: u32,
     /// Crew away on a raid (until its report is folded).
     pub away: Vec<u16>,
+    /// The day the crew went away (a raid's report that never comes brings them home).
+    pub away_since: i64,
     /// Letters.
     pub inbox: Vec<Letter>,
     /// Raids sent.
@@ -245,6 +250,8 @@ pub struct ClanSocial {
     pub robbed: u32,
     /// Clans that raided or betrayed this one, remembered (names).
     pub grudges: Vec<String>,
+    /// The clan has set foot in the Deep this season.
+    pub deep: bool,
 }
 
 impl ClanSocial {
@@ -257,6 +264,7 @@ impl ClanSocial {
         for c in &self.away {
             w.u16(*c);
         }
+        w.i64(self.away_since);
         super::write_list(w, &self.inbox);
         for n in [
             self.raids_sent,
@@ -273,6 +281,7 @@ impl ClanSocial {
         for g in &self.grudges {
             w.str(g);
         }
+        w.bool(self.deep);
     }
 
     /// Read.
@@ -281,15 +290,18 @@ impl ClanSocial {
         let pending = super::read_list(r)?;
         let credited_to = r.u32()?;
         let away = (0..r.u8()?).map(|_| r.u16()).collect::<Option<Vec<_>>>()?;
+        let away_since = r.i64()?;
         let inbox = super::read_list(r)?;
         let counts = [r.u16()?, r.u16()?, r.u16()?, r.u16()?, r.u16()?];
         let (plundered, robbed) = (r.u32()?, r.u32()?);
         let grudges = (0..r.u8()?).map(|_| r.str()).collect::<Option<Vec<_>>>()?;
+        let deep = r.bool()?;
         Some(Self {
             seq,
             pending,
             credited_to,
             away,
+            away_since,
             inbox,
             raids_sent: counts[0],
             raids_won: counts[1],
@@ -299,6 +311,7 @@ impl ClanSocial {
             plundered,
             robbed,
             grudges,
+            deep,
         })
     }
 
@@ -412,23 +425,20 @@ pub fn fold(
     // 1. Receipts settle pendings; a pending with none means the edit never ran.
     let pending = std::mem::take(&mut clan.social.pending);
     for p in pending {
-        match mail.receipts.iter().find(|r| r.id == p.id) {
-            Some(r) => {
-                acks.receipts.push(p.id);
-                if let Some(why) = r.refused {
-                    take_back(clan, &p, today);
-                    events.push(Event::Refused {
-                        what: format!("{} ({})", p.kind.name(), p.about),
-                        why,
-                    });
-                }
-            }
-            None => {
+        if let Some(r) = mail.receipts.iter().find(|r| r.id == p.id) {
+            acks.receipts.push(p.id);
+            if let Some(why) = r.refused {
                 take_back(clan, &p, today);
-                events.push(Event::Unsent {
+                events.push(Event::Refused {
                     what: format!("{} ({})", p.kind.name(), p.about),
+                    why,
                 });
             }
+        } else {
+            take_back(clan, &p, today);
+            events.push(Event::Unsent {
+                what: format!("{} ({})", p.kind.name(), p.about),
+            });
         }
     }
     // Receipts for dispatches the clan no longer has pending are stale: just clear them.
@@ -467,6 +477,17 @@ pub fn fold(
             }
             Body::Pact(n) => notice(clan, n, d.seq, today, events),
         }
+    }
+    // A raid whose report never came (the board's tick did not run, or the order was lost)
+    // must not keep a crew away for good: after a few days they come home with nothing said.
+    if !clan.social.away.is_empty()
+        && today - clan.social.away_since >= AWAY_DAYS
+        && !clan.social.pending.iter().any(|p| p.kind == Kind::Raid)
+    {
+        clan.social.away.clear();
+        events.push(Event::Told(
+            "The raiders come home after days with no word of the raid.".to_owned(),
+        ));
     }
     if top > clan.social.credited_to {
         clan.social.credited_to = top;
@@ -538,6 +559,7 @@ fn goods_value(loot: &[(Resource, u32)], tallies: u32) -> u32 {
         + tallies
 }
 
+#[allow(clippy::too_many_lines)]
 fn raid(
     cat: &Catalog,
     clan: &mut Clan,
@@ -595,15 +617,11 @@ fn raid(
             if r.outcome != Outcome::Recalled {
                 push_hall(
                     clan,
-                    format!(
-                        "{} {}.",
-                        if r.outcome == Outcome::Won {
-                            "Raided"
-                        } else {
-                            "Beaten off at the gate of"
-                        },
-                        r.defender
-                    ),
+                    if r.outcome == Outcome::Won {
+                        format!("Raid on {}: the gate fell.", r.defender)
+                    } else {
+                        format!("Raid on {}: beaten off.", r.defender)
+                    },
                 );
             }
         }
@@ -626,14 +644,14 @@ fn raid(
                     loot: r.loot.clone(),
                     tallies: r.tallies,
                 });
-                push_hall(clan, format!("Raided by {}; the gate fell.", r.raider));
+                push_hall(clan, format!("Raided by {}: the gate fell.", r.raider));
             } else {
                 clan.social.repelled = clan.social.repelled.saturating_add(1);
                 clan.morale = clan.morale.saturating_add(3).min(100);
                 events.push(Event::RaidRepelled {
                     by: r.raider.clone(),
                 });
-                push_hall(clan, format!("Beat {} off the gate.", r.raider));
+                push_hall(clan, format!("{} beaten off at the gate.", r.raider));
             }
             for &id in &r.hurt {
                 if clan.crew_by(id).is_some() {

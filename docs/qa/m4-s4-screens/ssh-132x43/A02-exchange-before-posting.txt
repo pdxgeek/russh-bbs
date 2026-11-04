@@ -1,0 +1,43 @@
+
+                            ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+                            │Saltmarch                                                                 │
+                            │                                                                          │
+                            │ ⌂ founder  day 1 of season 1        turns ██████████ 30/30  ◈ 40 tallies │
+                            │ ≈ TIDE ███████░┃░░░  61 ↓ low in 3h46 (9)  spring tides  ▲ HIGH WATER ▲  │
+                            │╭ The exchange: timber ────────────────╮╭ Orders ────────────────────────╮│
+                            ││Tidecourt pays 5, sells at 7          ││ a Next good (now timber)       ││
+                            ││Asks: goods for sale                  ││ b Previous good                ││
+                            ││  none standing                       ││ c Post an ask: 5 timber at 6~  ││
+                            ││Bids: tallies offered                 ││ d Post an ask: 5 timber at 7~  ││
+                            ││  none standing                       ││ e Post an ask: all 12 timber~  ││
+                            ││                                      ││ f Post a bid: 5 timber at 6 ~  ││
+                            ││                                      ││ g Post a bid: 5 timber at 5 ~  ││
+                            ││                                      ││                                ││
+                            ││                                      ││                                ││
+                            ││                                      ││                                ││
+                            ││                                      ││                                ││
+                            ││                                      ││                                ││
+                            ││                                      ││                                ││
+                            ││                                      ││                                ││
+                            ││                                      ││                                ││
+                            ││                                      ││                                ││
+                            ││                                      ││                                ││
+                            ││                                      ││                                ││
+                            ││                                      ││                                ││
+                            ││                                      ││                                ││
+                            ││                                      ││                                ││
+                            ││                                      ││                                ││
+                            ││                                      ││                                ││
+                            ││                                      ││                                ││
+                            ││                                      ││                                ││
+                            ││                                      ││                                ││
+                            ││                                      ││                                ││
+                            ││                                      ││                                ││
+                            │╰──────────────────────────────────────╯│                                ││
+                            │╭ Prices, two weeks ───────────────────╮│                                ││
+                            ││Tidecourt              ▄ 6.00         ││                                ││
+                            ││Exchange   no trades yet              ││                                ││
+                            │╰──────────────────────────────────────╯╰────────────────────────────────╯│
+                            │ » Next good (now timber)                  </> page  up/down  Enter  Esc  │
+                            └──────────────────────────────────────────────────────────────────────────┘
+

@@ -299,8 +299,8 @@ pub fn listing_fee(value: u32) -> u32 {
 /// What the exchange keeps of a sale of `value` tallies. A trade pact between the two clans
 /// halves it.
 #[must_use]
-pub fn levy(value: u32, pact: bool) -> u32 {
-    let pct = if pact {
+pub fn levy(value: u32, partners: bool) -> u32 {
+    let pct = if partners {
         caps::LEVY_PCT / 2
     } else {
         caps::LEVY_PCT
@@ -328,6 +328,7 @@ pub struct Filled {
 /// [`Refusal::BadOrder`] for a bad quantity or price, [`Refusal::TooMany`] if the clan has
 /// [`caps::OWN_ORDERS`] standing, [`Refusal::Full`] if the book is full, and
 /// [`Refusal::MailFull`] if the clan has no room for the parcel.
+#[allow(clippy::too_many_lines)]
 pub fn post(
     w: &mut World,
     owner: ClanIx,
@@ -541,7 +542,7 @@ pub fn tick(w: &mut World, day: i64) {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used)]
+    #![allow(clippy::unwrap_used, clippy::assert_is_empty)]
     use super::*;
 
     fn world() -> World {

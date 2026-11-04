@@ -348,7 +348,7 @@ impl World {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used)]
+    #![allow(clippy::unwrap_used, clippy::assert_is_empty)]
     use super::*;
     use russh_bbs_door::content;
 

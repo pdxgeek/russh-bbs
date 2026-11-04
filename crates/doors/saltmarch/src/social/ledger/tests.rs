@@ -1,11 +1,11 @@
-#![allow(clippy::unwrap_used)]
+#![allow(clippy::unwrap_used, clippy::assert_is_empty)]
 
 use super::*;
 use crate::clan::tests::fixture;
+use crate::social::Receipt;
 use crate::social::market::{Memo, Parcel};
 use crate::social::pact::{Notice, NoticeKind};
 use crate::social::raid::{Fate, Outcome, Report, Role};
-use crate::social::Receipt;
 
 fn pend(id: u16, kind: Kind, goods: Option<(Resource, u32)>, tallies: u32) -> Pending {
     Pending {
@@ -36,7 +36,9 @@ fn a_dispatch_the_world_never_saw_is_taken_back_exactly_once() {
     let (cat, _, mut clan) = fixture();
     clan.stock.take_up_to(Resource::Salt, 100);
     clan.stock.add(Resource::Salt, 4);
-    let id = clan.social.begin(pend(0, Kind::Ask, Some((Resource::Salt, 5)), 2));
+    let id = clan
+        .social
+        .begin(pend(0, Kind::Ask, Some((Resource::Salt, 5)), 2));
     let tallies = clan.tallies;
     let mut events = Vec::new();
     // The edit never ran: no receipt.
@@ -55,7 +57,9 @@ fn a_dispatch_the_world_never_saw_is_taken_back_exactly_once() {
 fn an_accepted_dispatch_keeps_the_escrow_in_the_world_and_a_refused_one_returns_it() {
     let (cat, _, mut clan) = fixture();
     clan.stock.take_up_to(Resource::Salt, 100);
-    let a = clan.social.begin(pend(0, Kind::Ask, Some((Resource::Salt, 5)), 1));
+    let a = clan
+        .social
+        .begin(pend(0, Kind::Ask, Some((Resource::Salt, 5)), 1));
     let b = clan.social.begin(pend(0, Kind::Bid, None, 30));
     let tallies = clan.tallies;
     let mut events = Vec::new();
@@ -71,14 +75,31 @@ fn an_accepted_dispatch_keeps_the_escrow_in_the_world_and_a_refused_one_returns_
             refused: Some(Refusal::TooMany),
         },
     ];
-    let acks = fold(&cat, &mut clan, &mail(vec![], receipts), 20_000, &mut events);
-    assert_eq!(clan.stock.get(Resource::Salt), 0, "the ask's goods stay in the book");
-    assert_eq!(clan.tallies, tallies + 30, "the refused bid's tallies come back");
+    let acks = fold(
+        &cat,
+        &mut clan,
+        &mail(vec![], receipts),
+        20_000,
+        &mut events,
+    );
+    assert_eq!(
+        clan.stock.get(Resource::Salt),
+        0,
+        "the ask's goods stay in the book"
+    );
+    assert_eq!(
+        clan.tallies,
+        tallies + 30,
+        "the refused bid's tallies come back"
+    );
     assert_eq!(acks.receipts, vec![a, b]);
     assert!(clan.social.pending.is_empty());
     assert!(matches!(
         events.as_slice(),
-        [Event::Refused { why: Refusal::TooMany, .. }]
+        [Event::Refused {
+            why: Refusal::TooMany,
+            ..
+        }]
     ));
 }
 
@@ -148,7 +169,10 @@ fn a_won_raid_pays_the_loot_frees_the_party_and_writes_the_fates() {
     assert_eq!(clan.stock.get(Resource::Salt), salt + 10);
     assert_eq!(clan.tallies, tallies + 50);
     assert!(clan.social.away.is_empty(), "the party is home");
-    assert_eq!((clan.social.raids_won, clan.social.plundered), (1, 10 * 4 + 2 * 10 + 50));
+    assert_eq!(
+        (clan.social.raids_won, clan.social.plundered),
+        (1, 10 * 4 + 2 * 10 + 50)
+    );
     assert_eq!(clan.crew.len(), 2, "one did not come back");
     assert!(clan.crew_by(ids[2]).is_none());
     assert!(clan.crew_by(ids[1]).is_some_and(|c| !c.injuries.is_empty()));
@@ -199,16 +223,30 @@ fn a_raid_on_us_takes_only_what_we_still_have_and_hurts_the_guard() {
         20_000,
         &mut events,
     );
-    assert_eq!(clan.stock.get(Resource::Salt), 0, "three, not the ten posted");
+    assert_eq!(
+        clan.stock.get(Resource::Salt),
+        0,
+        "three, not the ten posted"
+    );
     assert_eq!(clan.tallies, 0, "twenty, not the fifty posted");
     assert_eq!(clan.social.raided, 1);
     assert_eq!(clan.morale, morale - 5);
     assert!(clan.crew_by(guard).is_some_and(|c| !c.injuries.is_empty()));
-    assert!(clan.social.grudges.contains(&"Cove".to_owned()), "the clan remembers");
+    assert!(
+        clan.social.grudges.contains(&"Cove".to_owned()),
+        "the clan remembers"
+    );
     // The taunt left with the raid is in the inbox, as a letter from the raider.
     let l = &clan.social.inbox[0];
-    assert_eq!((l.from.as_str(), l.template.as_str()), ("Cove", "taunt-keeps"));
-    assert!(events.iter().any(|e| matches!(e, Event::RaidSuffered { .. })));
+    assert_eq!(
+        (l.from.as_str(), l.template.as_str()),
+        ("Cove", "taunt-keeps")
+    );
+    assert!(
+        events
+            .iter()
+            .any(|e| matches!(e, Event::RaidSuffered { .. }))
+    );
 }
 
 #[test]
@@ -228,7 +266,11 @@ fn a_raid_beaten_off_heartens_the_hold() {
     );
     assert_eq!(clan.stock.get(Resource::Salt), salt);
     assert_eq!((clan.social.repelled, clan.morale), (1, morale + 3));
-    assert!(events.iter().any(|e| matches!(e, Event::RaidRepelled { .. })));
+    assert!(
+        events
+            .iter()
+            .any(|e| matches!(e, Event::RaidRepelled { .. }))
+    );
 }
 
 #[test]
@@ -269,7 +311,11 @@ fn a_pact_offer_becomes_a_letter_that_carries_it_and_a_broken_pact_is_remembered
     assert_eq!(l.template, "offer-trade");
     assert_eq!(l.line.as_deref(), Some("fair seas"));
     assert!(clan.social.grudges.contains(&"Dun".to_owned()));
-    assert!(events.iter().any(|e| matches!(e, Event::PactOffered { .. })));
+    assert!(
+        events
+            .iter()
+            .any(|e| matches!(e, Event::PactOffered { .. }))
+    );
     assert!(events.iter().any(|e| matches!(e, Event::PactBroken { .. })));
 }
 
@@ -297,7 +343,10 @@ fn the_inbox_is_capped_and_a_read_letter_makes_room_before_an_unread_one() {
         read: false,
     });
     assert_eq!(clan.social.inbox.len(), caps::INBOX_CAP);
-    assert!(!clan.social.inbox.iter().any(|l| l.from == "c3"), "the read one went");
+    assert!(
+        !clan.social.inbox.iter().any(|l| l.from == "c3"),
+        "the read one went"
+    );
     // The same delivery twice is one letter.
     clan.social.receive(clan.social.inbox[0].clone());
     assert_eq!(clan.social.inbox.len(), caps::INBOX_CAP);
@@ -310,6 +359,7 @@ fn the_clans_social_state_round_trips() {
         pending: vec![pend(7, Kind::Raid, Some((Resource::Boats, 1)), 0)],
         credited_to: 12,
         away: vec![1, 2],
+        away_since: 20_000,
         inbox: vec![Letter {
             seq: 3,
             from: "Cove".into(),
@@ -327,6 +377,7 @@ fn the_clans_social_state_round_trips() {
         plundered: 60,
         robbed: 70,
         grudges: vec!["Dun".into()],
+        deep: true,
     };
     let mut w = Writer::new();
     s.write(&mut w);
@@ -355,4 +406,33 @@ fn the_posted_defence_is_the_fit_crew_at_home_and_a_scouts_guess_of_the_stores()
     clan.stock.add(Resource::Arms, 1);
     let armed = Posted::of(&cat, &clan, 20_000);
     assert_eq!(armed.guard.iter().filter(|d| d.armed).count(), 1);
+}
+
+#[test]
+fn a_party_whose_raid_report_never_comes_is_sent_home_after_a_few_days() {
+    let (cat, _, mut clan) = fixture();
+    clan.social.away = vec![clan.crew[0].id];
+    clan.social.away_since = 20_000;
+    let mut events = Vec::new();
+    fold(
+        &cat,
+        &mut clan,
+        &mail(vec![], vec![]),
+        20_000 + AWAY_DAYS - 1,
+        &mut events,
+    );
+    assert!(!clan.social.away.is_empty(), "not yet");
+    fold(
+        &cat,
+        &mut clan,
+        &mail(vec![], vec![]),
+        20_000 + AWAY_DAYS,
+        &mut events,
+    );
+    assert!(clan.social.away.is_empty());
+    assert!(
+        events
+            .iter()
+            .any(|e| matches!(e, Event::Told(t) if t.contains("no word")))
+    );
 }

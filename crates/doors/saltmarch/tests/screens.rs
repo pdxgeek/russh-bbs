@@ -26,8 +26,8 @@ use russh_bbs_door_saltmarch::content::Catalog;
 use russh_bbs_door_saltmarch::crew::{Bond, Crew, Injured};
 use russh_bbs_door_saltmarch::engine::{self, Action, Env};
 use russh_bbs_door_saltmarch::map::Map;
-use russh_bbs_door_saltmarch::social::letters::LetterBody;
 use russh_bbs_door_saltmarch::social::ledger::Letter;
+use russh_bbs_door_saltmarch::social::letters::LetterBody;
 use russh_bbs_door_saltmarch::social::market::{self, Memo, Parcel, Side};
 use russh_bbs_door_saltmarch::social::pact::{self};
 use russh_bbs_door_saltmarch::social::raid::{Fate, Outcome, Report, Role};
@@ -124,9 +124,12 @@ fn a_world(seed: u64) -> World {
         w.social.exchange.end_day();
     }
     w.social.mail.clear();
-    w.social.book.push(
-        russh_bbs_door_saltmarch::social::hall::SeasonRecord::of(&w, DAY - 1),
-    );
+    w.social
+        .book
+        .push(russh_bbs_door_saltmarch::social::hall::SeasonRecord::of(
+            &w,
+            DAY - 1,
+        ));
     w.social.book[0].season = 0;
     w
 }
@@ -422,9 +425,21 @@ fn showcase(door: &Saltmarch) -> Vec<u8> {
     clan.social.repelled = 1;
     clan.social.grudges.push("Cove".to_owned());
     for (from, template, line, offer, read) in [
-        ("Dun", "offer-trade", Some("fair prices, fair weather"), Some((3u32, 3u8)), false),
+        (
+            "Dun",
+            "offer-trade",
+            Some("fair prices, fair weather"),
+            Some((3u32, 3u8)),
+            false,
+        ),
         ("Cove", "taunt-keeps", None, None, false),
-        ("Eelmoor", "greeting-reeds", Some("the weir is full this week"), None, true),
+        (
+            "Eelmoor",
+            "greeting-reeds",
+            Some("the weir is full this week"),
+            None,
+            true,
+        ),
     ] {
         clan.social.receive(Letter {
             seq: 0,
@@ -549,7 +564,14 @@ fn all_screens(door: &Saltmarch, env: &DoorEnv) -> Vec<(&'static str, Visit)> {
     out.push(("report", open(Some(base.clone()), DAY + 2)));
     out.push((
         "report-news",
-        Visit::open_in(door, env.clone(), 9, Some(base.clone()), DAY + 2, a_world_with_news),
+        Visit::open_in(
+            door,
+            env.clone(),
+            9,
+            Some(base.clone()),
+            DAY + 2,
+            a_world_with_news,
+        ),
     ));
     out.push(("home", open(Some(base.clone()), DAY)));
     out.push(("hold", at("go:hold")));

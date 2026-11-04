@@ -253,11 +253,11 @@ ________________________________________________________________________________
  ~ TIDE ########-----------|--------  30 ^ high in 5h59 (73)  neap tides  calm
  00:00 *::::---====+++++++++++===---:::::::::::---===++++++++++===---:::: 24:00
 + The league table ----------------------++ Holds on the marsh ----------------+
-|#   clan                renow           ||                                    |
-| 1  >ann                 282  ##########||    **          *****           *** |
-| 2   Cove                 64  ##=-------||    ****        *****           *** |
-| 3   Dun                  51  #=--------||****** * *      *****           *** |
-| 4   Eelmoor              38  #=--------||               ********       ***** |
+|#   clan              renown            ||                                    |
+| 1  >ann               282    ##########||    **          *****           *** |
+| 2   Cove               64    ##=-------||    ****        *****           *** |
+| 3   Dun                51    #=--------||****** * *      *****           *** |
+| 4   Eelmoor            38    #=--------||               ********       ***** |
 |                                        ||           **********o******  ***** |
 |                                        ||   ******H*******************       |
 |                                        ||** *********************o*****      |
@@ -269,8 +269,8 @@ ________________________________________________________________________________
 |                                        ||               **************       |
 |                                        |+------------------------------------+
 |                                        |Your renown 282: hold 45, crew 220,
-|                                        |deeds 5, pacts 0, raids 6 (at most
-|                                        |18), wealth 6
+|                                        |deeds 5, Deep 0, pacts 0, raids 6 (at
+|                                        |most 18), wealth 6
 +----------------------------------------+
  >                                                         up/down  Enter  Esc
 ===== hall 80x24 ascii
@@ -302,8 +302,8 @@ ________________________________________________________________________________
  # ann  day 1 of season 1                 turns ########## 30/30  $ 312 tallies
  ~ TIDE ########-----------|--------  30 ^ high in 5h59 (73)  neap tides  calm
  00:00 *::::---====+++++++++++===---:::::::::::---===++++++++++===---:::: 24:00
-+ The post (2 unread) ---------++ Letter --------------------------------------+
-|> * Dun pact                  ||Dun to ann: a pact of honest dealing. The     |
++ The post (1 unread) ---------++ Letter --------------------------------------+
+|>   Dun pact                  ||Dun to ann: a pact of honest dealing. The     |
 |  * Cove                      ||exchange takes less from us both.             |
 |    Eelmoor                   ||                                              |
 |                              ||Dun says: fair prices, fair weather           |
@@ -360,17 +360,17 @@ ________________________________________________________________________________
 |  Orrin Pike wader    hp15 a3 d0      |+--------------------------------------+
 |  Tamsin Reedhealer   hp12 a2 d0      |+ The tide ----------------------------+
 |Stores, a scout's guess: salt 25, iron||It lands tomorrow, at a turn of the   |
-|The way is open.                      ||water:                                |
+|That clan is too small to be worth a r||water:                                |
 |                                      ||> 00:35 low  water 23  on foot        |
 |                                      ||06:47 high water 77  needs a boat     |
-+--------------------------------------+|12:59 low  water 23  on foot          |
-+ Orders ------------------------------+|19:11 high water 77  needs a boat     |
-| a Next target (now Cove)             ||Their sluice floods the approach at   |
-| b Previous target                    ||water 60.                             |
+|                                      ||12:59 low  water 23  on foot          |
++--------------------------------------+|19:11 high water 77  needs a boat     |
++ Orders ------------------------------+|Their sluice floods the approach at   |
+| a Next target (now Cove)             ||water 60.                             |
+| b Previous target                    ||                                      |
 | c More raiders (now 2)               ||                                      |
 | d Fewer raiders                      ||                                      |
 | e Next turn of the water             ||                                      |
-| f Send the raid on Cove (4 turns)    ||                                      |
 +--------------------------------------++--------------------------------------+
  > Next target (now Cove)                        </> page  up/down  Enter  Esc
 ===== pacts 80x24 ascii

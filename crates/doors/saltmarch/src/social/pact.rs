@@ -40,6 +40,8 @@ pub const COOLING_DAYS: i64 = 3;
 pub const GRUDGE_DAYS: i64 = 7;
 /// Active pacts one clan may hold.
 pub const ACTIVE_CAP: usize = 3;
+/// Days an unanswered offer stands before it lapses.
+pub const OFFER_DAYS: i64 = 7;
 
 /// The name of a term.
 #[must_use]
@@ -336,6 +338,23 @@ impl World {
         if why != Refusal::Terms {
             return Some(why.text());
         }
+        // The truce is closed by the proposer's history or by a fresh grudge between the two.
+        if let Some(me) = self.clans.get(usize::from(proposer))
+            && (me.record.pact_ban_until > day || me.record.betrayals >= 2)
+        {
+            return Some(if me.record.pact_ban_until > day {
+                "cooling off after a broken pact"
+            } else {
+                "two pacts broken: nobody trusts your word"
+            });
+        }
+        if self.social.raid_log.iter().any(|e| {
+            day - e.day < GRUDGE_DAYS
+                && ((e.from == proposer && e.to == target)
+                    || (e.from == target && e.to == proposer))
+        }) {
+            return Some("the two of you raided each other within the week");
+        }
         let broken = [proposer, target].iter().any(|c| {
             self.clans
                 .get(usize::from(*c))
@@ -429,8 +448,8 @@ impl World {
         if me.record.rep <= OUTLAW {
             return Err(Refusal::Outlaw);
         }
-        let clean = me.record.betrayals == 0 && them.record.betrayals == 0;
-        if me.record.betrayals >= 2 || (p.terms & (TRADE | DEFENCE) != 0 && !clean) {
+        let unbroken = me.record.betrayals == 0 && them.record.betrayals == 0;
+        if me.record.betrayals >= 2 || (p.terms & (TRADE | DEFENCE) != 0 && !unbroken) {
             return Err(Refusal::Terms);
         }
         if self.pacts_of(clan).count() >= ACTIVE_CAP || self.pacts_of(p.a).count() >= ACTIVE_CAP {
@@ -528,8 +547,13 @@ impl World {
         Ok(())
     }
 
-    /// The nightly pass: a week of keeping a pact earns both parties standing.
+    /// The nightly pass: an offer nobody answered in a week lapses (so it cannot hold a pair,
+    /// or its proposer's offers, shut for the season), and a week of keeping a pact earns both
+    /// parties standing.
     pub fn pacts_tick(&mut self, day: i64) {
+        self.social
+            .pacts
+            .retain(|p| !(p.state == State::Proposed && day - p.since >= OFFER_DAYS));
         let kept: Vec<(ClanIx, ClanIx)> = self
             .social
             .pacts
@@ -549,7 +573,7 @@ impl World {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used)]
+    #![allow(clippy::unwrap_used, clippy::assert_is_empty)]
     use super::*;
 
     fn world() -> World {
@@ -667,10 +691,19 @@ mod tests {
         let mut w = world();
         assert_eq!(w.closed_reason(0, 1, TRADE, 100), None);
         w.clans[0].posted.buildings = 1;
-        assert_eq!(w.closed_reason(0, 1, TRADE, 100), Some("needs three buildings finished"));
+        assert_eq!(
+            w.closed_reason(0, 1, TRADE, 100),
+            Some("needs three buildings finished")
+        );
         w.clans[0].posted.rating = 0;
-        assert_eq!(w.closed_reason(0, 1, DEFENCE, 100), Some("needs a defence building"));
-        assert_eq!(w.closed_reason(0, 1, CAUSEWAY, 100), Some("needs a causeway laid"));
+        assert_eq!(
+            w.closed_reason(0, 1, DEFENCE, 100),
+            Some("needs a defence building")
+        );
+        assert_eq!(
+            w.closed_reason(0, 1, CAUSEWAY, 100),
+            Some("needs a causeway laid")
+        );
         w.clans[1].record.betrayals = 1;
         w.clans[0].posted.buildings = 5;
         assert_eq!(
@@ -678,7 +711,10 @@ mod tests {
             Some("a pact was broken: merchants will not deal")
         );
         w.clans[0].record.rep = OUTLAW;
-        assert_eq!(w.closed_reason(0, 1, TRUCE, 100), Some(Refusal::Outlaw.text()));
+        assert_eq!(
+            w.closed_reason(0, 1, TRUCE, 100),
+            Some(Refusal::Outlaw.text())
+        );
     }
 
     #[test]
@@ -706,6 +742,27 @@ mod tests {
             w.propose(0, t, TRUCE, 100).unwrap();
         }
         assert_eq!(w.propose(0, 5, TRUCE, 100), Err(Refusal::TooMany));
+    }
+
+    #[test]
+    fn an_offer_nobody_answers_lapses_after_a_week_and_frees_the_pair_and_the_proposer() {
+        let mut w = world();
+        let id = w.propose(0, 1, TRUCE, 100).unwrap();
+        let kept = w.propose(0, 2, TRUCE, 100).unwrap();
+        w.accept(2, kept, 100).unwrap();
+        w.pacts_tick(100 + OFFER_DAYS - 1);
+        assert!(w.social.pacts.iter().any(|p| p.id == id), "not yet");
+        assert_eq!(w.propose(0, 1, TRUCE, 105), Err(Refusal::HasPact));
+        w.pacts_tick(100 + OFFER_DAYS);
+        assert!(!w.social.pacts.iter().any(|p| p.id == id), "lapsed");
+        assert!(
+            w.social.pacts.iter().any(|p| p.id == kept),
+            "a pact in force is not an offer"
+        );
+        assert!(
+            w.propose(0, 1, TRUCE, 108).is_ok(),
+            "the pair is free again"
+        );
     }
 
     #[test]

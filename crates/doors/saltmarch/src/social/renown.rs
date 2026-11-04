@@ -12,6 +12,8 @@ use crate::world::World;
 pub const RAIDS_MAX: u32 = 18;
 /// The most renown pacts can add.
 pub const PACTS_MAX: u32 = 24;
+/// Renown for having stood in the Deep.
+pub const DEEP: u32 = 20;
 /// Renown lost per pact broken.
 pub const BETRAYAL: u32 = 15;
 
@@ -24,6 +26,8 @@ pub struct Renown {
     pub crew: u32,
     /// Expeditions: cargo brought home and fights won.
     pub deeds: u32,
+    /// Having stood in the Deep.
+    pub deep: u32,
     /// Pacts kept, by the week.
     pub pacts: u32,
     /// Raids won.
@@ -38,7 +42,7 @@ impl Renown {
     /// The whole.
     #[must_use]
     pub const fn total(&self) -> u32 {
-        (self.hold + self.crew + self.deeds + self.pacts + self.raids + self.wealth)
+        (self.hold + self.crew + self.deeds + self.deep + self.pacts + self.raids + self.wealth)
             .saturating_sub(self.penalty)
     }
 }
@@ -60,17 +64,15 @@ pub fn of(cat: &Catalog, clan: &Clan, world: &World, today: i64) -> Renown {
     let bonds = u32::try_from(clan.bonds.iter().filter(|b| b.bonded()).count()).unwrap_or(0);
     let crew = u32::try_from(clan.crew.len()).unwrap_or(0);
     let me = world.ix(&clan.name);
-    let pacts: u32 = me
-        .map(|m| {
-            world
-                .social
-                .pacts
-                .iter()
-                .filter(|p| p.state == State::Active && p.has(m))
-                .map(|p| u32::try_from(((today - p.since) / 7).clamp(0, 4)).unwrap_or(0) * 3)
-                .sum()
-        })
-        .unwrap_or(0);
+    let pacts: u32 = me.map_or(0, |m| {
+        world
+            .social
+            .pacts
+            .iter()
+            .filter(|p| p.state == State::Active && p.has(m))
+            .map(|p| u32::try_from(((today - p.since) / 7).clamp(0, 4)).unwrap_or(0) * 3)
+            .sum()
+    });
     let betrayals = me
         .and_then(|m| world.clans.get(usize::from(m)))
         .map_or(0, |c| u32::from(c.record.betrayals));
@@ -78,6 +80,7 @@ pub fn of(cat: &Catalog, clan: &Clan, world: &World, today: i64) -> Renown {
         hold: buildings * 5,
         crew: skill + bonds * 3 + crew * 2,
         deeds: (clan.stats.loot_value / 40).min(30) + clan.stats.fights_won.min(15),
+        deep: if clan.social.deep { DEEP } else { 0 },
         pacts: pacts.min(PACTS_MAX),
         raids: (u32::from(clan.social.raids_won).min(6) * 3).min(RAIDS_MAX),
         wealth: (clan.tallies / 50).min(20),
@@ -87,7 +90,7 @@ pub fn of(cat: &Catalog, clan: &Clan, world: &World, today: i64) -> Renown {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used)]
+    #![allow(clippy::unwrap_used, clippy::assert_is_empty)]
     use super::*;
     use crate::clan::tests::fixture;
 
@@ -107,6 +110,10 @@ mod tests {
         let r = of(&cat, &raider, &w, 100);
         let b = of(&cat, &builder, &w, 100);
         assert_eq!(r.raids, RAIDS_MAX);
+        assert_eq!(r.deep, 0);
+        raider.social.deep = true;
+        assert_eq!(of(&cat, &raider, &w, 100).deep, DEEP);
+        raider.social.deep = false;
         assert!(b.total() > r.total(), "{} vs {}", b.total(), r.total());
     }
 

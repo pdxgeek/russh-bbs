@@ -671,7 +671,7 @@ impl Session {
             }
             MenuId::Tides | MenuId::Map | MenuId::League | MenuId::Hall => {}
             MenuId::Exchange | MenuId::Raid | MenuId::Pacts | MenuId::Letters | MenuId::Compose => {
-                out = self.social_entries(menu, clan)
+                out = self.social_entries(menu, clan);
             }
             MenuId::Court => {
                 out.push(entry(
@@ -906,6 +906,7 @@ impl Session {
 }
 
 impl DoorSession for Session {
+    #[allow(clippy::too_many_lines)]
     fn key(&mut self, key: DoorKey, ctx: &mut Ctx<'_>) -> Flow {
         self.sync_day(ctx);
         if self.dirty && self.clan.is_some() && self.mode != Mode::Unreadable {
@@ -1068,6 +1069,16 @@ impl Session {
         // A crew member who left (retired, deserted, lost) leaves the highlight on the last.
         let crew = self.clan.as_ref().map_or(0, |c| c.crew.len());
         self.crew_sel = self.crew_sel.min(crew.saturating_sub(1));
+        // A letter on the highlight is a letter read.
+        if self.mode == Mode::Menu(MenuId::Letters)
+            && let Some(c) = self.clan.as_mut()
+        {
+            let at = self.soc.letter.min(c.social.inbox.len().saturating_sub(1));
+            self.soc.letter = at;
+            if let Some(l) = c.social.inbox.get_mut(at) {
+                l.read = true;
+            }
+        }
     }
 
     /// An arrow key: it moves what the screen has to move (the lightbar, the roster, the chart)

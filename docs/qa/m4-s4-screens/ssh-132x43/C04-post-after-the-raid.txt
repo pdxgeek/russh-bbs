@@ -1,0 +1,43 @@
+
+                            ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+                            │Saltmarch                                                                 │
+                            │                                                                          │
+                            │ ⌂ founder  day 10 of season 1       turns ██████████ 30/30  ◈ 69 tallies │
+                            │ ≈ TIDE ███████░░░░░░░░┃░░░░░░  35 ↑ high in 4h46 (73)  neap tides  calm  │
+                            │╭ The post (0 unread) ───────╮╭ Letter ──────────────────────────────────╮│
+                            ││No letters. Letters from    ││The harbour-reeve says tomorrow's tides   ││
+                            ││other clan leaders arrive   ││are middling.                             ││
+                            ││here with the morning.      ││2 hand(s) wait at your gate for work.     ││
+                            ││                            ││peat is +2% on the day.                   ││
+                            ││                            ││timber is -2% on the day.                 ││
+                            ││                            ││rope is -2% on the day.                   ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            │╰──────────────────────────────────────────╯│
+                            ││                            │╭ Orders ──────────────────────────────────╮│
+                            ││                            ││ a Write a letter                         ││
+                            │╰────────────────────────────╯╰──────────────────────────────────────────╯│
+                            │ » Write a letter                             up/down letter  Enter  Esc  │
+                            └──────────────────────────────────────────────────────────────────────────┘
+

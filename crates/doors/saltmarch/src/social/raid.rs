@@ -595,6 +595,7 @@ pub fn resolve_all(w: &mut World, cat: &Catalog, tide: &Tide, day: i64, rng: &mu
     }
 }
 
+#[allow(clippy::many_single_char_names, clippy::too_many_lines)]
 fn resolve(w: &mut World, cat: &Catalog, tide: &Tide, o: &Order, rng: &mut DoorRng) {
     let (Some(a), Some(b)) = (
         w.clans.get(usize::from(o.from)).map(|c| c.name.clone()),
@@ -753,7 +754,7 @@ fn resolve(w: &mut World, cat: &Catalog, tide: &Tide, o: &Order, rng: &mut DoorR
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used)]
+    #![allow(clippy::unwrap_used, clippy::assert_is_empty)]
     use super::*;
     use crate::types::Trade;
 
@@ -907,7 +908,10 @@ mod tests {
             crate::combat::Odds::Hard => 1,
             crate::combat::Odds::Grim => 0,
         };
-        assert!(rank(odds_wet) <= rank(odds_dry), "{odds_dry:?} {odds_wet:?}");
+        assert!(
+            rank(odds_wet) <= rank(odds_dry),
+            "{odds_dry:?} {odds_wet:?}"
+        );
         // The flooded guard is stronger unit by unit.
         let a = guard_units(&dry, 1, false);
         let b = guard_units(&wet, 1, true);

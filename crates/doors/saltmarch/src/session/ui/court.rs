@@ -303,10 +303,11 @@ pub(super) fn league(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
                 Span::styled(format!("Your renown {}: ", rn.total()), p.gold()),
                 Span::styled(
                     format!(
-                        "hold {}, crew {}, deeds {}, pacts {}, raids {} (at most {}), wealth {}{}",
+                        "hold {}, crew {}, deeds {}, Deep {}, pacts {}, raids {} (at most {}), wealth {}{}",
                         rn.hold,
                         rn.crew,
                         rn.deeds,
+                        rn.deep,
                         rn.pacts,
                         rn.raids,
                         crate::social::renown::RAIDS_MAX,
@@ -384,7 +385,12 @@ pub(super) fn hall(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
         Line::from(vec![
             Span::styled("Crew    ", p.dim),
             Span::styled(
-                format!("{} bonds, {} lost, {} seasons played", st.bonds, st.lost, clan.seasons_played.max(1)),
+                format!(
+                    "{} bonds, {} lost, {} seasons played",
+                    st.bonds,
+                    st.lost,
+                    clan.seasons_played.max(1)
+                ),
                 p.plain,
             ),
         ]),
@@ -393,7 +399,10 @@ pub(super) fn hall(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
         rec.push(Line::from(vec![
             Span::styled("Hold    ", p.dim),
             Span::styled(
-                format!("{} shifts, {} goods crafted, {} tallies earned", st.shifts, st.crafted, st.earned),
+                format!(
+                    "{} shifts, {} goods crafted, {} tallies earned",
+                    st.shifts, st.crafted, st.earned
+                ),
                 p.plain,
             ),
         ]));
@@ -428,9 +437,15 @@ pub(super) fn hall(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     }
     if let Some(last) = ui.s.world.social.book.last() {
         lines.push(Line::raw(""));
-        lines.push(Line::styled(format!("Season {} in the book", last.season), p.accent));
+        lines.push(Line::styled(
+            format!("Season {} in the book", last.season),
+            p.accent,
+        ));
         for (i, (name, score)) in last.top.iter().enumerate().take(3) {
-            lines.push(Line::styled(format!("  {}. {} ({score})", i + 1, fit(name, 20)), p.plain));
+            lines.push(Line::styled(
+                format!("  {}. {} ({score})", i + 1, fit(name, 20)),
+                p.plain,
+            ));
         }
         lines.push(Line::styled(last.ending.clone(), p.dim));
     }

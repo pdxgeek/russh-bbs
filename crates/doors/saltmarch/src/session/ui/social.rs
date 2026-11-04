@@ -76,10 +76,7 @@ pub(super) fn exchange(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     };
     let mut lines = vec![Line::from(vec![
         Span::styled("Tidecourt pays ", p.dim),
-        Span::styled(
-            World::sell_value(prices, what, 1).to_string(),
-            p.moss(),
-        ),
+        Span::styled(World::sell_value(prices, what, 1).to_string(), p.moss()),
         Span::styled(", sells at ", p.dim),
         Span::styled(World::buy_cost(prices, what, 1).to_string(), p.gold()),
     ])];
@@ -100,7 +97,10 @@ pub(super) fn exchange(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     let waiting = ui.clan.social.pending.len();
     if waiting > 0 {
         lines.push(Line::styled(
-            format!("{waiting} dispatch{} awaiting the Tidecourt", if waiting == 1 { "" } else { "es" }),
+            format!(
+                "{waiting} dispatch{} awaiting the Tidecourt",
+                if waiting == 1 { "" } else { "es" }
+            ),
             p.rust(),
         ));
     }
@@ -119,11 +119,7 @@ pub(super) fn exchange(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
             Span::styled(format!(" {now}"), p.plain),
         ])
     };
-    let mut trail_lines = vec![line(
-        "Tidecourt",
-        &tc,
-        market::price(prices[what.index()]),
-    )];
+    let mut trail_lines = vec![line("Tidecourt", &tc, market::price(prices[what.index()]))];
     trail_lines.push(if ex.is_empty() {
         Line::styled("Exchange   no trades yet", p.dim)
     } else {
@@ -200,7 +196,12 @@ pub(super) fn raid(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     if target.posted.guard.is_empty() {
         lines.push(Line::styled("  nobody: the gate stands open", p.rust()));
     }
-    for d in target.posted.guard.iter().take(usize::from(info.height.saturating_sub(7)).max(1)) {
+    for d in target
+        .posted
+        .guard
+        .iter()
+        .take(usize::from(info.height.saturating_sub(7)).max(1))
+    {
         lines.push(Line::from(vec![
             Span::styled(format!("  {:<11}", fit(&d.name, 11)), p.plain),
             Span::styled(format!("{:<9}", fit(d.trade.name(), 8)), p.peat()),
@@ -216,7 +217,11 @@ pub(super) fn raid(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     lines.push(Line::styled(
         format!(
             "Stores, a scout's guess: {}{}",
-            if stores.is_empty() { "bare".to_owned() } else { stores.join(", ") },
+            if stores.is_empty() {
+                "bare".to_owned()
+            } else {
+                stores.join(", ")
+            },
             if target.posted.tallies > 0 {
                 format!(", {} tallies", target.posted.tallies)
             } else {
@@ -230,7 +235,9 @@ pub(super) fn raid(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
         None => lines.push(Line::styled("The way is open.", p.moss())),
     }
     f.render_widget(
-        Paragraph::new(lines).block(ui.panel(&format!("Target: {}", fit(&target.name, 22)))),
+        Paragraph::new(lines)
+            .wrap(Wrap { trim: true })
+            .block(ui.panel(&format!("Target: {}", fit(&target.name, 22)))),
         info,
     );
     ui.orders(f, orders, "Orders", &items);
@@ -240,7 +247,11 @@ pub(super) fn raid(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     let party = ui.s.raiders();
     let level = windows.get(sel).map_or(50, |w| w.level);
     let [party_area, tide_area] = Layout::vertical([
-        Constraint::Length(u16::try_from(party.len().max(1) + 4).unwrap_or(8).min(right.height / 2 + 1)),
+        Constraint::Length(
+            u16::try_from(party.len().max(1) + 4)
+                .unwrap_or(8)
+                .min(right.height / 2 + 1),
+        ),
         Constraint::Min(5),
     ])
     .areas(right);
@@ -270,7 +281,9 @@ pub(super) fn raid(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
         ));
     }
     f.render_widget(
-        Paragraph::new(lines).wrap(Wrap { trim: true }).block(ui.panel("Your raiders")),
+        Paragraph::new(lines)
+            .wrap(Wrap { trim: true })
+            .block(ui.panel("Your raiders")),
         party_area,
     );
     let mut lines = vec![Line::styled(
@@ -280,10 +293,7 @@ pub(super) fn raid(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     for (i, w) in windows.iter().enumerate() {
         let on = i == sel;
         lines.push(Line::from(vec![
-            Span::styled(
-                if on { ui.look.g("▸ ", "> ") } else { "  " },
-                p.gold(),
-            ),
+            Span::styled(if on { ui.look.g("▸ ", "> ") } else { "  " }, p.gold()),
             Span::styled(
                 format!(
                     "{:02}:{:02} {} water {}",
@@ -295,7 +305,11 @@ pub(super) fn raid(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
                 if on { p.salt() } else { p.plain },
             ),
             Span::styled(
-                if w.needs_boat { "  needs a boat" } else { "  on foot" },
+                if w.needs_boat {
+                    "  needs a boat"
+                } else {
+                    "  on foot"
+                },
                 if w.needs_boat { p.rust() } else { p.moss() },
             ),
         ]));
@@ -315,7 +329,9 @@ pub(super) fn raid(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
         ));
     }
     f.render_widget(
-        Paragraph::new(lines).wrap(Wrap { trim: true }).block(ui.panel("The tide")),
+        Paragraph::new(lines)
+            .wrap(Wrap { trim: true })
+            .block(ui.panel("The tide")),
         tide_area,
     );
 }
@@ -350,7 +366,10 @@ pub(super) fn pacts(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
             }
             if r.pact_ban_until > ui.s.today {
                 lines.push(Line::styled(
-                    format!("Cooling off: no offers until day {}.", r.pact_ban_until - ui.clan.founded + 1),
+                    format!(
+                        "Cooling off: no offers until day {}.",
+                        r.pact_ban_until - ui.clan.founded + 1
+                    ),
                     p.rust(),
                 ));
             }
@@ -362,10 +381,7 @@ pub(super) fn pacts(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
             let other = owner_name(ui, pt.other(m));
             lines.push(Line::from(vec![
                 Span::styled(format!("  {:<14}", fit(&other, 14)), p.plain),
-                Span::styled(
-                    format!("{} days", (ui.s.today - pt.since).max(0)),
-                    p.dim,
-                ),
+                Span::styled(format!("{} days", (ui.s.today - pt.since).max(0)), p.dim),
             ]));
             lines.push(Line::styled(
                 format!("    {}", crate::event::terms_phrase(pt.terms)),
@@ -385,16 +401,25 @@ pub(super) fn pacts(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
             lines.push(Line::styled("Offers you made", p.accent));
             for pt in offered {
                 lines.push(Line::styled(
-                    format!("  to {} ({})", owner_name(ui, pt.b), crate::event::terms_phrase(pt.terms)),
+                    format!(
+                        "  to {} ({})",
+                        owner_name(ui, pt.b),
+                        crate::event::terms_phrase(pt.terms)
+                    ),
                     p.plain,
                 ));
             }
         }
     } else {
-        lines.push(Line::styled("The Tidecourt has not yet entered your clan on its rolls.", p.dim));
+        lines.push(Line::styled(
+            "The Tidecourt has not yet entered your clan on its rolls.",
+            p.dim,
+        ));
     }
     f.render_widget(
-        Paragraph::new(lines).wrap(Wrap { trim: true }).block(ui.panel("Pacts")),
+        Paragraph::new(lines)
+            .wrap(Wrap { trim: true })
+            .block(ui.panel("Pacts")),
         left,
     );
     let others = ui.s.others();
@@ -405,8 +430,7 @@ pub(super) fn pacts(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     ])
     .areas(right);
     let mut lines = Vec::new();
-    if let (Some(m), Some((ix, t))) = (me, others.get(ui.s.soc.pact.target % others.len().max(1)))
-    {
+    if let (Some(m), Some((ix, t))) = (me, others.get(ui.s.soc.pact.target % others.len().max(1))) {
         lines.push(Line::from(vec![
             Span::styled("With ", p.dim),
             Span::styled(fit(&t.name, 20), p.salt()),
@@ -431,7 +455,9 @@ pub(super) fn pacts(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
         lines.push(Line::styled("No other clan is on the rolls yet.", p.dim));
     }
     f.render_widget(
-        Paragraph::new(lines).wrap(Wrap { trim: true }).block(ui.panel("Terms")),
+        Paragraph::new(lines)
+            .wrap(Wrap { trim: true })
+            .block(ui.panel("Terms")),
         terms_area,
     );
     ui.orders(f, orders, "Orders", &items);
@@ -445,8 +471,12 @@ pub(super) fn letters(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
         Layout::horizontal([Constraint::Percentage(40), Constraint::Min(30)]).areas(area);
     let mut lines: Vec<Line<'static>> = Vec::new();
     if inbox.is_empty() {
-        lines.push(Line::styled("No letters. Letters from other clan leaders arrive here with the morning.", p.dim));
+        lines.push(Line::styled(
+            "No letters. Letters from other clan leaders arrive here with the morning.",
+            p.dim,
+        ));
     }
+    let empty = inbox.is_empty();
     let rows = usize::from(left.height).saturating_sub(2);
     let sel = ui.s.soc.letter.min(inbox.len().saturating_sub(1));
     let first = (sel + 1).saturating_sub(rows);
@@ -455,7 +485,11 @@ pub(super) fn letters(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
         lines.push(Line::from(vec![
             Span::styled(if on { ui.look.g("▸ ", "> ") } else { "  " }, p.gold()),
             Span::styled(
-                if l.read { "  " } else { ui.look.g("● ", "* ") },
+                if l.read {
+                    "  "
+                } else {
+                    ui.look.g("● ", "* ")
+                },
                 p.sea(),
             ),
             Span::styled(
@@ -465,8 +499,14 @@ pub(super) fn letters(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
             Span::styled(if l.offer.is_some() { " pact" } else { "" }, p.gold()),
         ]));
     }
+    let list = Paragraph::new(lines)
+        .block(ui.panel(&format!("The post ({} unread)", ui.clan.social.unread())));
     f.render_widget(
-        Paragraph::new(lines).block(ui.panel(&format!("The post ({} unread)", ui.clan.social.unread()))),
+        if empty {
+            list.wrap(Wrap { trim: true })
+        } else {
+            list
+        },
         left,
     );
     let items: Vec<_> = ui.entries.iter().enumerate().collect();
@@ -477,14 +517,13 @@ pub(super) fn letters(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     .areas(right);
     let mut text: Vec<Line<'static>> = Vec::new();
     if let Some(l) = inbox.get(sel) {
-        let words = ui
-            .s
-            .cat
-            .letters
-            .entries
-            .iter()
-            .find(|d| d.id == l.template)
-            .map_or_else(String::new, |d| d.words(&l.from, &ui.clan.name));
+        let words =
+            ui.s.cat
+                .letters
+                .entries
+                .iter()
+                .find(|d| d.id == l.template)
+                .map_or_else(String::new, |d| d.words(&l.from, &ui.clan.name));
         for line in wrap(&words, usize::from(read.width).saturating_sub(4)) {
             text.push(Line::styled(line, p.plain));
         }
@@ -513,20 +552,32 @@ pub(super) fn letters(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
             format!(
                 "The harbour-reeve says tomorrow's tides are {}{}.",
                 tomorrow.phase,
-                if tomorrow.storm { ", with a storm surge" } else { "" }
+                if tomorrow.storm {
+                    ", with a storm surge"
+                } else {
+                    ""
+                }
             ),
             p.plain,
         ));
         text.push(Line::styled(
-            format!("{} hand(s) wait at your gate for work.", ui.clan.candidates.len()),
+            format!(
+                "{} hand(s) wait at your gate for work.",
+                ui.clan.candidates.len()
+            ),
             p.plain,
         ));
         for (r, pct) in court::movers(ui) {
-            text.push(Line::styled(format!("{} is {pct:+}% on the day.", r.name()), p.plain));
+            text.push(Line::styled(
+                format!("{} is {pct:+}% on the day.", r.name()),
+                p.plain,
+            ));
         }
     }
     f.render_widget(
-        Paragraph::new(text).wrap(Wrap { trim: true }).block(ui.panel("Letter")),
+        Paragraph::new(text)
+            .wrap(Wrap { trim: true })
+            .block(ui.panel("Letter")),
         read,
     );
     ui.orders(f, orders, "Orders", &items);
@@ -552,7 +603,10 @@ pub(super) fn compose(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
                 Span::styled(t.kind.name().to_owned(), p.sea()),
             ]));
             lines.push(Line::raw(""));
-            for l in wrap(&t.words(&ui.clan.name, &to.name), usize::from(left.width).saturating_sub(4)) {
+            for l in wrap(
+                &t.words(&ui.clan.name, &to.name),
+                usize::from(left.width).saturating_sub(4),
+            ) {
                 lines.push(Line::styled(l, p.plain));
             }
         }
@@ -584,7 +638,9 @@ pub(super) fn compose(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     }
     let _ = LetterKind::Greeting;
     f.render_widget(
-        Paragraph::new(lines).wrap(Wrap { trim: true }).block(ui.panel("A letter")),
+        Paragraph::new(lines)
+            .wrap(Wrap { trim: true })
+            .block(ui.panel("A letter")),
         left,
     );
     let items: Vec<_> = ui.entries.iter().enumerate().collect();

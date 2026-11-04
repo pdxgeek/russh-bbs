@@ -10,7 +10,8 @@
     clippy::unwrap_used,
     clippy::panic,
     clippy::too_many_lines,
-    clippy::similar_names
+    clippy::similar_names,
+    clippy::assert_is_empty
 )]
 
 use std::sync::Arc;
@@ -150,9 +151,16 @@ impl Board {
     async fn visit(&self, who: u8, handle: &str, seed: u64) -> Seat<'_> {
         let env = DoorEnv::for_tests(handle);
         let clock: Arc<dyn Clock> = self.clock.clone();
-        let run = Running::open(&self.store, self.door.clone(), account(who), &env, clock, seed)
-            .await
-            .unwrap();
+        let run = Running::open(
+            &self.store,
+            self.door.clone(),
+            account(who),
+            &env,
+            clock,
+            seed,
+        )
+        .await
+        .unwrap();
         Seat {
             board: self,
             run,
@@ -189,15 +197,11 @@ impl Seat<'_> {
 
     /// Press the entry whose tag starts with `tag`. `false` if the screen offers none.
     async fn tag(&mut self, tag: &str) -> bool {
-        let found = self
-            .run
-            .look_around(&self.env)
-            .iter()
-            .find_map(|line| {
-                let rest = line.strip_prefix('[')?;
-                let (key, text) = rest.split_once("] ")?;
-                text.starts_with(tag).then(|| key.chars().next())?
-            });
+        let found = self.run.look_around(&self.env).iter().find_map(|line| {
+            let rest = line.strip_prefix('[')?;
+            let (key, text) = rest.split_once("] ")?;
+            text.starts_with(tag).then(|| key.chars().next())?
+        });
         match found {
             Some(c) => {
                 self.key(DoorKey::Char(c)).await;
@@ -280,8 +284,16 @@ async fn replay(board: &Board, log: &Log) {
         run.key(*key);
         run.flush(&fresh.store).await.unwrap();
     }
-    assert_eq!(fresh.save_of(log.who).await, log.after_save, "the save replays");
-    assert_eq!(fresh.world_bytes().await, log.after_world, "the world replays");
+    assert_eq!(
+        fresh.save_of(log.who).await,
+        log.after_save,
+        "the save replays"
+    );
+    assert_eq!(
+        fresh.world_bytes().await,
+        log.after_world,
+        "the world replays"
+    );
     let _ = board;
 }
 
@@ -338,7 +350,10 @@ async fn a_market_trade_between_two_clans_moves_goods_and_tallies_and_loses_only
     assert!(a.said("Sent to the exchange"));
     let ann_posts = a.finish().await;
     let pending = board.clan(1).await.social.pending.len();
-    assert_eq!(pending, 1, "the goods wait in the book, and the clan remembers it");
+    assert_eq!(
+        pending, 1,
+        "the goods wait in the book, and the clan remembers it"
+    );
 
     // Bob sees the ask and buys it.
     let mut b = board.visit(2, "bob", 4).await;
@@ -360,15 +375,29 @@ async fn a_market_trade_between_two_clans_moves_goods_and_tallies_and_loses_only
     let (a1, b1) = (board.clan(1).await, board.clan(2).await);
     assert_eq!(total(&a0, &b0, Resource::Salt), 50);
     assert_eq!(total(&a1, &b1, Resource::Salt), 50, "no goods made or lost");
-    assert_eq!((a1.stock.get(Resource::Salt), b1.stock.get(Resource::Salt)), (45, 5));
+    assert_eq!(
+        (a1.stock.get(Resource::Salt), b1.stock.get(Resource::Salt)),
+        (45, 5)
+    );
     // 5 salt at 4 = 20 tallies; each paid a 1-tallie listing fee; the levy on 20 is nothing.
-    assert_eq!(a1.tallies + b1.tallies + 2, a0.tallies + b0.tallies, "only fees are lost");
+    assert_eq!(
+        a1.tallies + b1.tallies + 2,
+        a0.tallies + b0.tallies,
+        "only fees are lost"
+    );
     assert_eq!(b1.tallies, b0.tallies - 21);
     assert_eq!(a1.tallies, a0.tallies + 19);
     assert!(a1.social.pending.is_empty() && b1.social.pending.is_empty());
     let w = board.world().await;
-    assert!(w.social.mail.is_empty() && w.social.receipts.is_empty(), "the world forgot");
-    assert_eq!(w.social.exchange.today[Resource::Salt.index()], (5, 20) , "the trade is on the record");
+    assert!(
+        w.social.mail.is_empty() && w.social.receipts.is_empty(),
+        "the world forgot"
+    );
+    assert_eq!(
+        w.social.exchange.today[Resource::Salt.index()],
+        (5, 20),
+        "the trade is on the record"
+    );
     for log in [&ann_posts, &bob_buys, &ann_reads, &bob_reads] {
         replay(&board, log).await;
     }
@@ -384,7 +413,12 @@ async fn an_edit_the_board_dropped_gives_the_goods_back_once() {
     board.edit(1, |c| c.stock.add(Resource::Salt, 50)).await;
     let before = board.clan(1).await;
     // A visit whose save is written but whose world edits never run (a crash between the two).
-    let stored = board.store.load_save(&board.id, account(1)).await.unwrap().unwrap();
+    let stored = board
+        .store
+        .load_save(&board.id, account(1))
+        .await
+        .unwrap()
+        .unwrap();
     let world = board.world_bytes().await;
     let env = DoorEnv::for_tests("ann");
     let mut driver = Driver::open(
@@ -406,7 +440,10 @@ async fn an_edit_the_board_dropped_gives_the_goods_back_once() {
         let line = driver
             .look_around(&env)
             .into_iter()
-            .find(|l| l.strip_prefix('[').is_some_and(|r| r.split_once("] ").is_some_and(|(_, t)| t.starts_with(tag))))
+            .find(|l| {
+                l.strip_prefix('[')
+                    .is_some_and(|r| r.split_once("] ").is_some_and(|(_, t)| t.starts_with(tag)))
+            })
             .unwrap_or_else(|| panic!("no {tag}"));
         driver.key(DoorKey::Char(line.chars().nth(1).unwrap()));
     };
@@ -416,7 +453,11 @@ async fn an_edit_the_board_dropped_gives_the_goods_back_once() {
     let effects = driver.take_effects();
     let bytes = effects.save().unwrap().to_vec();
     let mid = Clan::decode(&bytes).unwrap();
-    assert_eq!(mid.stock.get(Resource::Salt), 45, "the salt left the stores");
+    assert_eq!(
+        mid.stock.get(Resource::Salt),
+        45,
+        "the salt left the stores"
+    );
     assert_eq!(mid.social.pending.len(), 1);
     board
         .store
@@ -432,14 +473,20 @@ async fn an_edit_the_board_dropped_gives_the_goods_back_once() {
         )
         .await
         .unwrap();
-    assert!(board.world().await.social.exchange.asks.is_empty(), "the world never heard");
+    assert!(
+        board.world().await.social.exchange.asks.is_empty(),
+        "the world never heard"
+    );
     // The next visit finds no receipt, and takes the goods back.
     let mut a = board.visit(1, "ann", 10).await;
     assert!(a.said("never reached the Tidecourt"), "{}", a.screen());
     a.past_report().await;
     a.finish().await;
     let after = board.clan(1).await;
-    assert_eq!(after.stock.get(Resource::Salt), before.stock.get(Resource::Salt));
+    assert_eq!(
+        after.stock.get(Resource::Salt),
+        before.stock.get(Resource::Salt)
+    );
     assert_eq!(after.tallies, before.tallies, "the fee comes back too");
     assert!(after.social.pending.is_empty());
     // And it does not come back twice.
@@ -493,7 +540,10 @@ async fn a_raid_is_settled_overnight_against_the_posted_guard_and_both_clans_rea
     show_the_post(&board, 1, "ann", 3).await;
     show_the_post(&board, 2, "bob", 4).await;
     let w = board.world().await;
-    assert!(!w.clans[1].posted.guard.is_empty() && w.clans[1].posted.stock[Resource::Salt.index()] >= 55);
+    assert!(
+        !w.clans[1].posted.guard.is_empty()
+            && w.clans[1].posted.stock[Resource::Salt.index()] >= 55
+    );
 
     // Before any raid is won, ann cannot gloat: no taunt among the words she may use.
     let mut a = board.visit(1, "ann", 5).await;
@@ -512,8 +562,14 @@ async fn a_raid_is_settled_overnight_against_the_posted_guard_and_both_clans_rea
     assert!(a.said("slip out toward bob"), "{}", a.screen());
     let sent = a.finish().await;
     let ann = board.clan(1).await;
-    assert!(!ann.social.away.is_empty(), "the raiders are away from the hold");
-    assert_eq!(ann.stock.get(Resource::Salt), stock_before.get(Resource::Salt));
+    assert!(
+        !ann.social.away.is_empty(),
+        "the raiders are away from the hold"
+    );
+    assert_eq!(
+        ann.stock.get(Resource::Salt),
+        stock_before.get(Resource::Salt)
+    );
     // Away crew cannot be sent anywhere else.
     let w = board.world().await;
     assert_eq!(w.social.orders.len(), 1);
@@ -543,17 +599,27 @@ async fn a_raid_is_settled_overnight_against_the_posted_guard_and_both_clans_rea
     let bob_reads = b.finish().await;
     let bob = board.clan(2).await;
     assert_eq!(bob.social.raided, 1);
-    assert_eq!(bob.social.robbed, ann.social.plundered, "what one lost the other took");
+    assert_eq!(
+        bob.social.robbed, ann.social.plundered,
+        "what one lost the other took"
+    );
     assert!(bob.morale < 60 + 10);
     let w = board.world().await;
-    assert!(w.social.mail.is_empty(), "both reports were folded and forgotten");
+    assert!(
+        w.social.mail.is_empty(),
+        "both reports were folded and forgotten"
+    );
     assert_eq!(w.clans[0].record.raids_won, 1);
     assert_eq!(w.clans[1].record.raided, 1);
     // The hold is left alone for two days; the same pair may not raid again for three.
     let mut a = board.visit(1, "ann", 9).await;
     a.past_report().await;
     a.go(&["go:court", "go:raid"]).await;
-    assert!(a.said("raided each other too recently") || a.said("raided lately"), "{}", a.screen());
+    assert!(
+        a.said("raided each other too recently") || a.said("raided lately"),
+        "{}",
+        a.screen()
+    );
     assert!(!a.tag("raid:send:").await);
     // Having won, ann may now use a taunt: the history opens the words.
     a.key(DoorKey::Escape).await;
@@ -649,7 +715,13 @@ async fn caps_and_protections_stop_a_player_griefing_another() {
     let mut a = board.visit(1, "ann", 9).await;
     a.past_report().await;
     a.go(&["go:court", "go:raid"]).await;
-    assert!(a.said("Nobody has seen that clan") || a.said("not on the Tidecourt's rolls") || !a.said("The way is open"), "{}", a.screen());
+    assert!(
+        a.said("Nobody has seen that clan")
+            || a.said("not on the Tidecourt's rolls")
+            || !a.said("The way is open"),
+        "{}",
+        a.screen()
+    );
     assert!(!a.tag("raid:send:").await);
 }
 
@@ -712,13 +784,23 @@ async fn a_pact_is_made_and_broken_and_the_clans_remember() {
     let broken = a.finish().await;
     let w = board.world().await;
     assert!(w.pact_between(0, 1).is_none());
-    assert_eq!((w.clans[0].record.betrayals, w.clans[0].record.rep), (1, -25));
+    assert_eq!(
+        (w.clans[0].record.betrayals, w.clans[0].record.rep),
+        (1, -25)
+    );
     // Bob is told, and remembers; the whole marsh can see it on the deed feed.
     let mut b = board.visit(2, "bob", 7).await;
     assert!(b.said("broke the pact"), "{}", b.screen());
     b.past_report().await;
     b.finish().await;
-    assert!(board.clan(2).await.social.grudges.contains(&"ann".to_owned()));
+    assert!(
+        board
+            .clan(2)
+            .await
+            .social
+            .grudges
+            .contains(&"ann".to_owned())
+    );
     // The betrayal closes options: ann may offer nothing for a few days, trade is closed to her
     // for the season, and her renown pays for it.
     let mut a = board.visit(1, "ann", 8).await;
@@ -730,9 +812,16 @@ async fn a_pact_is_made_and_broken_and_the_clans_remember() {
     while !a.said("Terms with cat") {
         a.go(&["ptarget:next"]).await;
     }
-    assert!(a.said("trade is closed: a pact was broken"), "{}", a.screen());
+    assert!(
+        a.said("trade is closed: a pact was broken"),
+        "{}",
+        a.screen()
+    );
     let w = board.world().await;
-    assert!(w.closed_reason(0, 2, 2, DAY + 10).is_some_and(|r| r.contains("broken")));
+    assert!(
+        w.closed_reason(0, 2, 2, DAY + 10)
+            .is_some_and(|r| r.contains("broken"))
+    );
     for log in [&offered, &accepted, &broken] {
         replay(&board, log).await;
     }
@@ -761,7 +850,10 @@ async fn letters_are_templates_with_a_clean_limited_line_and_a_clan_can_block_a_
         _ => None,
     });
     let line = line.unwrap();
-    assert!(!line.contains('\u{1b}') && !line.contains('\u{7}'), "{line:?}");
+    assert!(
+        !line.contains('\u{1b}') && !line.contains('\u{7}'),
+        "{line:?}"
+    );
     // Bob reads it.
     let mut b = board.visit(2, "bob", 4).await;
     assert!(b.said("A letter from ann"), "{}", b.screen());
@@ -809,7 +901,11 @@ async fn letters_are_templates_with_a_clean_limited_line_and_a_clan_can_block_a_
     a.past_report().await;
     a.go(&["go:court", "go:letters", "compose", "send:"]).await;
     a.finish().await;
-    assert_eq!(board.world().await.social.mail.len(), mail_before, "blocked, quietly");
+    assert_eq!(
+        board.world().await.social.mail.len(),
+        mail_before,
+        "blocked, quietly"
+    );
     for log in [&sent, &read] {
         replay(&board, log).await;
     }
@@ -826,7 +922,11 @@ async fn the_league_ranks_renown_and_the_world_has_what_each_clan_last_saved() {
     board.edit(1, |c| grown(c, 3)).await;
     show_the_post(&board, 1, "ann", 3).await;
     show_the_post(&board, 2, "bob", 4).await;
-    let (w, ann, bob) = (board.world().await, board.clan(1).await, board.clan(2).await);
+    let (w, ann, bob) = (
+        board.world().await,
+        board.clan(1).await,
+        board.clan(2).await,
+    );
     let cat = Catalog::embedded().unwrap();
     for (ix, clan) in [(0, &ann), (1, &bob)] {
         assert_eq!(
@@ -870,7 +970,10 @@ async fn a_season_ends_in_the_book_and_each_clan_writes_where_it_stood() {
     assert_eq!(w.season, 2);
     assert_eq!(w.social.book.len(), 1);
     assert_eq!(w.social.book[0].season, 1);
-    assert_eq!(w.social.book[0].top[0].0, "ann", "the strongest hold topped the league");
+    assert_eq!(
+        w.social.book[0].top[0].0, "ann",
+        "the strongest hold topped the league"
+    );
     assert!(w.social.book[0].ending.contains("ann"));
     let clan = board.clan(1).await;
     assert_eq!(clan.season, 2);

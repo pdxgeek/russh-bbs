@@ -639,9 +639,7 @@ fn footer(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect, notes: usize) {
     };
     let hint_w = hint.chars().count() + 2;
     let order = match ui.s.mode {
-        Mode::Menu(
-            MenuId::Map | MenuId::Tides | MenuId::League | MenuId::Hall,
-        )
+        Mode::Menu(MenuId::Map | MenuId::Tides | MenuId::League | MenuId::Hall)
         | Mode::Report
         | Mode::Line(_) => None,
         _ => ui.entries.get(ui.s.cursor).map(|e| e.text.clone()),

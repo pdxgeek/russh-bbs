@@ -61,9 +61,7 @@ fn line_for(ui: &Ui<'_>, e: &Event) -> Option<(&'static str, Style, String)> {
         | Event::Died { .. }
         | Event::Grief { .. } => (g("†", "t"), p.rust(), e.to_string()),
         Event::TripEnded { .. } => (g("▶", "!"), p.gold(), e.to_string()),
-        Event::RaidWon { .. } | Event::PactSigned { .. } => {
-            (g("▣", "!"), p.gold(), e.to_string())
-        }
+        Event::RaidWon { .. } | Event::PactSigned { .. } => (g("▣", "!"), p.gold(), e.to_string()),
         Event::RaidFailed { .. } | Event::RaidSuffered { .. } | Event::PactBroken { .. } => {
             (g("▣", "!"), p.rust(), e.to_string())
         }
