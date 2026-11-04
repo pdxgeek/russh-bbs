@@ -217,7 +217,7 @@ The main menu in the classic, lightbar and compact layouts (the menu is a ratatu
 - **A raw-socket telnet client** that answers NAWS and the terminal-type request: it signs in with a password, the status bar is painted in 256-colour palette cells (from `TERM=xterm-256color`), the transport's `UNENCRYPTED` row stays below the status bar, and the forum lists, search and members list draw and resize (80x24 to 100x30).
 - **Not verified:** other terminal emulators, a Nerd Font session, a screen reader, a light background, telnet at 132x43, a terminal that reads only SGR 30-37. `pyte` does not implement the alternate screen, so its first telnet frames show the login text under the menu; real terminals switch screens.
 
-## Styles, layouts and board identity (UI-2, D-TBD)
+## Styles, layouts and board identity (UI-2, D117)
 
 Status: **Implemented and tested; walked over real OpenSSH 9.6** (see Verified). Code: `crates/server/src/ui/{theme,backdrop,board,panes,layout}` and `settings::Look`; member settings in `crates/core/src/terminal_settings` (migration `0024_ui_settings`); the `[board]` section in [config.md](config.md#board-ui-2). Screenshots of every look are in [ui-screenshots/](ui-screenshots/README.md).
 
