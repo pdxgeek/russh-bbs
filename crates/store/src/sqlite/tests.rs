@@ -523,8 +523,8 @@ async fn a_row_from_before_0024_keeps_its_choices_and_gets_default_ui_settings()
     };
     old.run(&pool).await.unwrap();
     sqlx::query(
-        "INSERT INTO accounts (username, username_skeleton, role, state) \
-         VALUES ('alice', 'alice', 'member', 'active')",
+        "INSERT INTO accounts (username, username_skeleton, state) \
+         VALUES ('alice', 'alice', 'active')",
     )
     .execute(&pool)
     .await

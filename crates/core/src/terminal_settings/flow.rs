@@ -1132,6 +1132,40 @@ impl MemberFlow {
         ));
     }
 
+    /// The layout and theme in force, in words, each with where it comes from: the sysop's
+    /// lock, the board's default, or nothing when the member chose it.
+    fn look_texts(&self, words: &dyn TextSource) -> (String, String) {
+        let origin = |locked: bool, chosen: bool| {
+            if locked {
+                words.text(strings::SET_BY_SYSOP)
+            } else if chosen {
+                ""
+            } else {
+                words.text(strings::BOARD_DEFAULT)
+            }
+        };
+        let layout = self.effective_layout();
+        let theme = self.effective_theme();
+        (
+            format!(
+                "{}{}",
+                words.text(layout.label_key()),
+                origin(
+                    self.layouts.len() == 1,
+                    self.settings.layout_choice() == Some(layout)
+                )
+            ),
+            format!(
+                "{}{}",
+                theme.as_str(),
+                origin(
+                    self.themes.len() == 1,
+                    self.settings.theme_choice() == Some(theme)
+                )
+            ),
+        )
+    }
+
     fn settings_view(&self, view: &mut View, words: &dyn TextSource) {
         let s = &self.settings;
         let number = |value: Option<u16>| {
@@ -1166,33 +1200,7 @@ impl MemberFlow {
             ));
         }
         let value = |key: &str, value: &str| fill(words.text(key), &[("value", value)]);
-        // The value in force, in words, with where it comes from: the sysop's lock, the board's
-        // default, or nothing when the member chose it.
-        let origin = |locked: bool, chosen: bool| {
-            if locked {
-                words.text(strings::SET_BY_SYSOP)
-            } else if chosen {
-                ""
-            } else {
-                words.text(strings::BOARD_DEFAULT)
-            }
-        };
-        let layout_text = format!(
-            "{}{}",
-            words.text(self.effective_layout().label_key()),
-            origin(
-                self.layouts.len() == 1,
-                s.layout_choice() == Some(self.effective_layout())
-            )
-        );
-        let theme_text = format!(
-            "{}{}",
-            self.effective_theme().as_str(),
-            origin(
-                self.themes.len() == 1,
-                s.theme_choice() == Some(self.effective_theme())
-            )
-        );
+        let (layout_text, theme_text) = self.look_texts(words);
         view.body = vec![
             width,
             height,
