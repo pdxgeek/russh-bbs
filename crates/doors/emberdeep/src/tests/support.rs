@@ -81,3 +81,48 @@ pub(crate) fn run(game: &mut Game, action: Action) -> Vec<Event> {
     let c = content();
     game.apply(&c, action).expect("action allowed")
 }
+
+// ---- the town ----
+
+use crate::town::TownAct;
+use crate::world::Pledge;
+
+/// A hero in town with coin and salvage to spend.
+pub(crate) fn rich_game(calling: &str, traits: [&str; 2], seed: u64) -> Game {
+    let mut g = game_of(calling, traits, seed);
+    g.hero.coin = 2_000;
+    g.hero.stash = 2_000;
+    g.hero.level = 10;
+    g.hero.turns = 25;
+    g
+}
+
+/// Do a town action that must be allowed.
+pub(crate) fn town(game: &mut Game, act: TownAct) -> Vec<Event> {
+    run(game, Action::Town(act))
+}
+
+/// Do a town action that must be refused; returns the reason.
+pub(crate) fn town_refused(game: &mut Game, act: TownAct) -> String {
+    let c = content();
+    game.apply(&c, Action::Town(act))
+        .expect_err("action refused")
+        .0
+}
+
+/// Finish a project (and what it needs first) by a donor named `Town`, in `world`.
+pub(crate) fn finish(world: &mut World, project: &str) {
+    let c = content();
+    let def = c.project(project).expect("project").clone();
+    for req in &def.requires {
+        finish(world, req);
+    }
+    world.apply(&Change::Pledge(Pledge {
+        hero: "Town".to_owned(),
+        project: project.to_owned(),
+        coin: def.coin,
+        salvage: def.salvage,
+    }));
+}
+
+use crate::world::Change;

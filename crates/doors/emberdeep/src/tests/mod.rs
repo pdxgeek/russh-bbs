@@ -14,12 +14,17 @@
     clippy::manual_assert_eq
 )]
 
+mod board;
 mod branches;
 mod combat;
 mod death;
 mod dungeon;
 mod economy;
+mod gear;
 mod hero;
+mod legacy;
+mod projects;
 mod saves;
 mod support;
+mod town;
 mod world;
