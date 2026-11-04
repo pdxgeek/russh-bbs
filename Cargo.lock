@@ -2890,6 +2890,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "russh-bbs-door-emberdeep"
+version = "0.0.0"
+dependencies = [
+ "russh-bbs-core",
+ "russh-bbs-door",
+ "serde",
+ "tokio",
+ "toml",
+]
+
+[[package]]
 name = "russh-bbs-door-example"
 version = "0.0.0"
 dependencies = [

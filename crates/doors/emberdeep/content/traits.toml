@@ -1,0 +1,38 @@
+# Traits are chosen at creation (two). Scars are earned when a wound runs out badly.
+trait = [
+  { id = "keen-eyed", name = "Keen-Eyed", text = "Traps and tripwires show themselves to you.", effects = [{ kind = "trap_sense", amount = 2 }] },
+  { id = "iron-gut", name = "Iron Gut", text = "Long days in the dark wear on you less.", effects = [{ kind = "fatigue_guard", amount = 15 }] },
+  { id = "quick", name = "Quick", text = "You are hard to hit.", effects = [{ kind = "evade_pct", amount = 5 }] },
+  { id = "stout", name = "Stout", text = "A sturdy frame.", effects = [{ kind = "max_hp", amount = 8 }] },
+  { id = "sure-hand", name = "Sure-Handed", text = "Your blows find the gap.", effects = [{ kind = "crit_pct", amount = 5 }] },
+  { id = "scavenger", name = "Scavenger", text = "You find more in every heap of slag.", effects = [{ kind = "loot_pct", amount = 12 }] },
+  { id = "pack-rat", name = "Pack Rat", text = "You carry more than you should.", effects = [{ kind = "carry", amount = 10 }] },
+  { id = "stubborn", name = "Stubborn", text = "You refuse to die when it counts.", effects = [{ kind = "death_save", amount = 10 }] },
+  { id = "night-eyed", name = "Night-Eyed", text = "You find the way back in the dark.", effects = [{ kind = "climb_ease", amount = 1 }] },
+  { id = "bookish", name = "Bookish", text = "More lore than muscle.", effects = [{ kind = "attr", attr = "wits", amount = 2 }, { kind = "attr", attr = "might", amount = -1 }] },
+  { id = "bruiser", name = "Bruiser", text = "More muscle than lore.", effects = [{ kind = "attr", attr = "might", amount = 2 }, { kind = "attr", attr = "wits", amount = -1 }] },
+  { id = "nimble-fingers", name = "Nimble Fingers", text = "No lock stays shut.", effects = [{ kind = "tag", tag = "lockpick" }] },
+  { id = "rune-touched", name = "Rune-Touched", text = "The maker's marks make sense to you.", effects = [{ kind = "tag", tag = "runecraft" }] },
+  { id = "pious", name = "Pious", text = "The shrines answer you.", effects = [{ kind = "tag", tag = "bless" }, { kind = "attr", attr = "spirit", amount = 1 }] },
+  { id = "woodsman", name = "Woodsman", text = "You can live off the land, even down here.", effects = [{ kind = "tag", tag = "forage" }] },
+  { id = "climber", name = "Climber", text = "Walls are only slow stairs.", effects = [{ kind = "tag", tag = "climb" }] },
+  { id = "brawny", name = "Brawny", text = "You can lift what others can only push.", effects = [{ kind = "tag", tag = "brawn" }, { kind = "attr", attr = "might", amount = 1 }] },
+  { id = "lucky", name = "Lucky", text = "Fortune likes you, a little.", effects = [{ kind = "death_save", amount = 6 }, { kind = "loot_pct", amount = 6 }] },
+  { id = "cautious", name = "Cautious", text = "You move behind your guard.", effects = [{ kind = "armor", amount = 1 }, { kind = "evade_pct", amount = -3 }] },
+  { id = "reckless", name = "Reckless", text = "You hit hard and guard badly.", effects = [{ kind = "damage", amount = 2 }, { kind = "armor", amount = -1 }] },
+  { id = "fire-blooded", name = "Fire-Blooded", text = "Heat does not trouble you.", effects = [{ kind = "tag", tag = "warding" }, { kind = "max_hp", amount = 3 }] },
+  { id = "ready", name = "Ready", text = "You start every fight already moving.", effects = [{ kind = "start_focus", amount = 1 }] },
+  { id = "tinker", name = "Tinker", text = "Broken machines are a hobby.", effects = [{ kind = "tag", tag = "tinker" }] },
+  { id = "sharp-tongued", name = "Sharp-Tongued", text = "You can talk a beast down, or glare it down.", effects = [{ kind = "tag", tag = "intimidate" }, { kind = "attr", attr = "spirit", amount = 1 }] },
+]
+
+scar = [
+  { id = "limp", name = "Limp", text = "The climb back is slower now.", effects = [{ kind = "climb_ease", amount = -1 }, { kind = "evade_pct", amount = -4 }] },
+  { id = "scorched-hide", name = "Scorched Hide", text = "Fire scarred you, and now it hardly bites.", effects = [{ kind = "attr", attr = "finesse", amount = -1 }, { kind = "tag", tag = "warding" }] },
+  { id = "cracked-rib", name = "Cracked Rib", text = "It aches in the cold.", effects = [{ kind = "max_hp", amount = -6 }, { kind = "fatigue_guard", amount = -10 }] },
+  { id = "grim-visage", name = "Grim Visage", text = "Strangers do not argue with that face.", effects = [{ kind = "tag", tag = "intimidate" }, { kind = "attr", attr = "wits", amount = -1 }] },
+  { id = "nightmares", name = "Nightmares", text = "You have died once already, and you know the way.", effects = [{ kind = "death_save", amount = 10 }, { kind = "fatigue_guard", amount = -15 }] },
+  { id = "dented-skull", name = "Dented Skull", text = "Thinking takes longer; blows glance off.", effects = [{ kind = "attr", attr = "wits", amount = -1 }, { kind = "armor", amount = 1 }] },
+  { id = "weeping-gash", name = "Weeping Gash", text = "It never quite closed, and neither does your guard.", effects = [{ kind = "crit_pct", amount = 4 }, { kind = "max_hp", amount = -4 }] },
+  { id = "frostbitten", name = "Frostbitten", text = "Numb fingers feel the floor tell its secrets.", effects = [{ kind = "evade_pct", amount = -3 }, { kind = "trap_sense", amount = 1 }] },
+]
