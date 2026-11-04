@@ -603,6 +603,14 @@ fn all_screens(door: &Saltmarch, env: &DoorEnv) -> Vec<(&'static str, Visit)> {
         assert!(v.choose("go:letters"));
         assert!(v.choose("compose"));
         out.push(("compose", v));
+        let mut v = at("go:court");
+        assert!(v.choose("go:letters"));
+        assert!(v.choose("compose"));
+        assert!(v.choose("line"));
+        for c in "see you at the weir".chars() {
+            v.key(DoorKey::Char(c));
+        }
+        out.push(("compose-typing", v));
     }
     {
         let mut v = at("go:expedition");
@@ -843,7 +851,7 @@ fn every_screen_has_a_look_around_that_describes_it() {
             "{name} describes the same as another screen"
         );
     }
-    assert_eq!(seen.len(), 21);
+    assert_eq!(seen.len(), 22);
 }
 
 #[test]
