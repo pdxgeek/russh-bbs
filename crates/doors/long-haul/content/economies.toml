@@ -1,0 +1,70 @@
+# The six station economies. A station produces (cheap, stocked) and needs (dear, short) the
+# goods named here and trades a few others at a balanced price. `law_pm` is the chance in
+# per-mille that a dock inspects a ship carrying contraband. `weight` is how common the
+# economy is. `fuel_pm` scales the fuel price.
+
+[[economy]]
+id = "mining"
+name = "Mining station"
+letter = "M"
+faction = "miners"
+law_pm = 150
+fuel_pm = 900
+weight = 22
+produces = ["ore", "rare_earths", "volatiles", "water"]
+needs = ["grain", "vat_protein", "parts", "medicine", "tools", "coils", "textiles", "antitoxin", "reactor_rods"]
+
+[[economy]]
+id = "farming"
+name = "Farming station"
+letter = "F"
+faction = "league"
+law_pm = 220
+fuel_pm = 1000
+weight = 20
+produces = ["grain", "seed_stock", "vat_protein", "salt_spice", "textiles", "glass_wine"]
+needs = ["tools", "parts", "polymers", "medicine", "water", "biogel", "antitoxin"]
+
+[[economy]]
+id = "industrial"
+name = "Industrial station"
+letter = "I"
+faction = "league"
+law_pm = 300
+fuel_pm = 1100
+weight = 22
+produces = ["alloy", "parts", "tools", "coils", "polymers", "ceramics"]
+needs = ["ore", "rare_earths", "volatiles", "circuits", "grain", "water", "data_cores", "reactor_rods"]
+
+[[economy]]
+id = "research"
+name = "Research station"
+letter = "R"
+faction = "league"
+law_pm = 350
+fuel_pm = 1200
+weight = 14
+produces = ["circuits", "sensor_glass", "data_cores", "lab_samples", "biogel", "antitoxin", "medicine"]
+needs = ["rare_earths", "alloy", "curios", "glass_wine", "ceramics", "salt_spice", "seed_stock"]
+
+[[economy]]
+id = "haven"
+name = "Pirate haven"
+letter = "P"
+faction = "free"
+law_pm = 0
+fuel_pm = 1300
+weight = 10
+produces = ["ghostwire", "dreamsilt", "stripped_cores", "slug_guns", "gate_relics", "curios"]
+needs = ["medicine", "water", "vat_protein", "coils", "glass_wine", "salt_spice", "textiles"]
+
+[[economy]]
+id = "military"
+name = "Military post"
+letter = "A"
+faction = "league"
+law_pm = 600
+fuel_pm = 1000
+weight = 12
+produces = ["reactor_rods", "antitoxin", "alloy"]
+needs = ["parts", "coils", "circuits", "medicine", "vat_protein", "sensor_glass", "lab_samples", "data_cores"]
