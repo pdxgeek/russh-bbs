@@ -1,8 +1,10 @@
 //! Theme packs: a palette and string overrides on top of the default string table, chosen per
 //! member and switched live (M3-A, D82).
 //!
-//! **What a theme can change.** Colors for six roles ([`Palette`]) and the wording of any
-//! string in the table except the reserved ones (the status-line captions). **What it cannot.**
+//! **What a style can change (UI-2).** About twenty colour roles ([`Palette`]), how it draws
+//! ([`Skin`]: border sets, title treatment, header decoration, backdrop, gradients) and the
+//! wording of any string in the table except the reserved ones (the status-line captions). A
+//! file may still set only the six original roles; the rest are derived. **What it cannot.**
 //! The security markers: they are drawn by [`super::chrome`] with the reserved style, in the row
 //! the layout takes out of the screen first, and nothing in this module is an input to that
 //! drawing. A theme also cannot make a marker's *caption* say something else, because the
@@ -22,11 +24,17 @@ use std::fs;
 use std::io::Read;
 use std::path::Path;
 
-use ratatui::style::Color;
 use russh_bbs_core::terminal_settings::{DEFAULT_THEME, ThemeName};
 use tracing::warn;
 
+use super::depth::Tint;
 use super::strings::{StringError, StringTable};
+
+mod palette;
+pub(crate) mod skin;
+
+pub use palette::{Base, Palette, ROLES, check_contrast, contrast_ratio};
+pub use skin::{Backdrop, BorderSet, Element, HeaderDeco, Skin, TitleAlign, TitleTreatment};
 
 /// Longest theme file read, in bytes.
 pub const MAX_THEME_BYTES: usize = 32 * 1024;
@@ -34,41 +42,12 @@ pub const MAX_THEME_BYTES: usize = 32 * 1024;
 /// Most files read from a theme directory; the rest are ignored with a warning.
 pub const MAX_THEME_FILES: usize = 32;
 
-/// The colors a theme sets. Each role is one of the sixteen named terminal colors; nothing here
-/// can draw a security marker, whose style is fixed.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Palette {
-    /// Headings and box titles.
-    pub heading: Color,
-    /// Hotkeys.
-    pub key: Color,
-    /// Box borders.
-    pub border: Color,
-    /// An informational notice.
-    pub info: Color,
-    /// An error notice.
-    pub error: Color,
-    /// The row under the lightbar cursor.
-    pub selected: Color,
-}
-
-impl Palette {
-    /// The colors the screens used before themes existed, plus a selection color.
-    pub const DEFAULT: Self = Self {
-        heading: Color::Cyan,
-        key: Color::Yellow,
-        border: Color::Cyan,
-        info: Color::Green,
-        error: Color::Red,
-        selected: Color::Yellow,
-    };
-}
-
 /// A loaded theme: its name, palette and the full string table with its overrides applied.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Theme {
     name: ThemeName,
     palette: Palette,
+    skin: Skin,
     strings: StringTable,
 }
 
@@ -78,7 +57,8 @@ impl Theme {
     pub fn builtin(strings: StringTable) -> Self {
         Self {
             name: ThemeName::default_theme(),
-            palette: Palette::DEFAULT,
+            palette: Palette::default(),
+            skin: Skin::default(),
             strings,
         }
     }
@@ -93,6 +73,12 @@ impl Theme {
     #[must_use]
     pub const fn palette(&self) -> Palette {
         self.palette
+    }
+
+    /// How the theme draws (borders, titles, decoration).
+    #[must_use]
+    pub const fn skin(&self) -> Skin {
+        self.skin
     }
 
     /// The theme's strings: the default table with this theme's overrides.
@@ -119,9 +105,19 @@ impl Theme {
             return Err(ThemeError::ReservedName);
         }
         let palette = match root.remove("colors") {
-            Some(toml::Value::Table(colors)) => palette_of(&colors)?,
+            Some(toml::Value::Table(colors)) => {
+                let palette = palette_of(&colors)?;
+                let explicit: Vec<&str> = colors.keys().map(String::as_str).collect();
+                check_contrast(&palette, &explicit)?;
+                palette
+            }
             Some(_) => return Err(ThemeError::Colors("`colors` must be a table".to_owned())),
-            None => Palette::DEFAULT,
+            None => Palette::default(),
+        };
+        let skin = match root.remove("style") {
+            Some(toml::Value::Table(style)) => Skin::from_table(&style)?,
+            Some(_) => return Err(ThemeError::Style("`style` must be a table".to_owned())),
+            None => Skin::default(),
         };
         // Everything left is string overrides, in the same nested form as the table itself.
         let overrides = super::strings::flatten_table(&root)?;
@@ -129,6 +125,7 @@ impl Theme {
         Ok(Self {
             name,
             palette,
+            skin,
             strings,
         })
     }
@@ -166,6 +163,23 @@ pub enum ThemeError {
     /// A problem in `[colors]`.
     #[error("theme colors: {0}")]
     Colors(String),
+    /// A problem in `[style]`.
+    #[error("theme style: {0}")]
+    Style(String),
+    /// A text colour cannot be read against its background.
+    #[error(
+        "theme colors: `{role}` on `{against}` has contrast {ratio}; at least {least} is needed to read it"
+    )]
+    Contrast {
+        /// The text role.
+        role: String,
+        /// The background role.
+        against: String,
+        /// The ratio found.
+        ratio: String,
+        /// The ratio needed.
+        least: String,
+    },
     /// A problem in the strings.
     #[error(transparent)]
     Strings(#[from] StringError),
@@ -174,49 +188,40 @@ pub enum ThemeError {
     Read(String),
 }
 
+/// Read `[colors]`: any of the [`ROLES`]. The six original roles set first, then the rest derive
+/// from them, then every explicit role is applied, so a file that sets only `border` still gets
+/// matching bars and selection.
 fn palette_of(colors: &toml::Table) -> Result<Palette, ThemeError> {
-    let mut palette = Palette::DEFAULT;
+    let mut explicit: Vec<(&str, Tint)> = Vec::new();
     for (role, value) in colors {
-        let toml::Value::String(color) = value else {
-            return Err(ThemeError::Colors(format!("`{role}` must be a color name")));
-        };
-        let color = color_named(color)
-            .ok_or_else(|| ThemeError::Colors(format!("`{role}` is not a known color name")))?;
-        match role.as_str() {
-            "heading" => palette.heading = color,
-            "key" => palette.key = color,
-            "border" => palette.border = color,
-            "info" => palette.info = color,
-            "error" => palette.error = color,
-            "selected" => palette.selected = color,
-            _ => return Err(ThemeError::Colors(format!("`{role}` is not a color role"))),
+        if !ROLES.contains(&role.as_str()) {
+            return Err(ThemeError::Colors(format!("`{role}` is not a color role")));
+        }
+        let tint = skin::parse_tint(value)
+            .map_err(|message| ThemeError::Colors(format!("`{role}`: {message}")))?;
+        explicit.push((role.as_str(), tint));
+    }
+    let pick = |role: &str, default: Tint| {
+        explicit
+            .iter()
+            .find(|(name, _)| *name == role)
+            .map_or(default, |(_, tint)| *tint)
+    };
+    let defaults = Base::DEFAULT;
+    let mut palette = Palette::from_base(Base {
+        heading: pick("heading", defaults.heading),
+        key: pick("key", defaults.key),
+        border: pick("border", defaults.border),
+        info: pick("info", defaults.info),
+        error: pick("error", defaults.error),
+        selected: pick("selected", defaults.selected),
+    });
+    for (role, tint) in explicit {
+        if let Some(slot) = palette.role_mut(role) {
+            *slot = tint;
         }
     }
     Ok(palette)
-}
-
-/// The sixteen named terminal colors. No RGB or indexed colors: they look different on every
-/// terminal and a theme author cannot check contrast.
-fn color_named(name: &str) -> Option<Color> {
-    Some(match name {
-        "black" => Color::Black,
-        "red" => Color::Red,
-        "green" => Color::Green,
-        "yellow" => Color::Yellow,
-        "blue" => Color::Blue,
-        "magenta" => Color::Magenta,
-        "cyan" => Color::Cyan,
-        "gray" => Color::Gray,
-        "darkgray" => Color::DarkGray,
-        "lightred" => Color::LightRed,
-        "lightgreen" => Color::LightGreen,
-        "lightyellow" => Color::LightYellow,
-        "lightblue" => Color::LightBlue,
-        "lightmagenta" => Color::LightMagenta,
-        "lightcyan" => Color::LightCyan,
-        "white" => Color::White,
-        _ => return None,
-    })
 }
 
 /// The themes a server offers: the default first, then the shipped ones, then the sysop's.
@@ -301,6 +306,26 @@ impl ThemeSet {
             .unwrap_or_else(|| self.default_theme())
     }
 
+    /// Apply `overrides` (the board's name) to every theme's table, after the theme's own, so
+    /// the sysop's board name wins over a theme that also set it. A value the string table
+    /// refuses leaves that theme as it was and is logged.
+    pub fn apply_overrides(&mut self, overrides: &std::collections::BTreeMap<String, String>) {
+        for theme in &mut self.themes {
+            match theme.strings.with_overrides(overrides) {
+                Ok(strings) => theme.strings = strings,
+                Err(error) => {
+                    warn!(theme = %theme.name, %error, "board text refused for this theme");
+                }
+            }
+        }
+    }
+
+    /// Whether a theme called `name` is loaded.
+    #[must_use]
+    pub fn contains(&self, name: ThemeName) -> bool {
+        self.themes.iter().any(|theme| theme.name == name)
+    }
+
     /// The default theme.
     #[must_use]
     pub fn default_theme(&self) -> &Theme {
@@ -329,9 +354,14 @@ fn read_bounded(path: &Path) -> Result<String, ThemeError> {
     Ok(text)
 }
 
-/// The shipped packs, embedded.
-const SHIPPED: [&str; 3] = [
-    include_str!("themes/amber.toml"),
-    include_str!("themes/green.toml"),
-    include_str!("themes/contrast.toml"),
+/// The shipped packs, embedded: the six styles, then the older colour-only themes.
+const SHIPPED: [&str; 8] = [
+    include_str!("../themes/phosphor.toml"),
+    include_str!("../themes/neon.toml"),
+    include_str!("../themes/paper.toml"),
+    include_str!("../themes/amber.toml"),
+    include_str!("../themes/deepspace.toml"),
+    include_str!("../themes/ansi.toml"),
+    include_str!("../themes/green.toml"),
+    include_str!("../themes/contrast.toml"),
 ];

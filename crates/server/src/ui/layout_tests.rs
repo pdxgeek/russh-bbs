@@ -18,6 +18,7 @@ use russh_bbs_core::waiting_room::{Notice, NoticeKind};
 
 use super::classic::{MENU_MARKERS, MenuScreen};
 use super::layout;
+use super::depth::Tint;
 use super::strings::{DEFAULT_TOML, StringError};
 use super::theme::{MAX_THEME_BYTES, MAX_THEME_FILES, Palette, Theme, ThemeError, ThemeSet};
 use super::{Ui, UiError};
@@ -608,12 +609,12 @@ fn the_status_row_is_the_same_whatever_the_theme_or_layout() {
 fn every_shipped_theme_loads_and_has_a_distinct_name() {
     let ui = ui();
     let names: Vec<String> = ui.theme_names().iter().map(ToString::to_string).collect();
-    assert_eq!(names, [DEFAULT_THEME, "amber", "green", "contrast"]);
+    assert_eq!(names, [DEFAULT_THEME, "phosphor", "neon", "paper", "amber", "deepspace", "ansi", "green", "contrast"]);
     let default = ui.theme(ThemeName::default_theme());
-    assert_eq!(default.palette(), Palette::DEFAULT);
+    assert_eq!(default.palette(), Palette::default());
     assert_ne!(
         ui.theme(ThemeName::new("amber").unwrap()).palette(),
-        Palette::DEFAULT
+        Palette::default()
     );
 }
 
@@ -711,11 +712,11 @@ fn a_theme_file_is_checked_against_a_fixed_schema() {
     ));
     assert_eq!(parse("name = \"default\""), Err(ThemeError::ReservedName));
     assert!(matches!(
-        parse("name = \"x\"\n[colors]\nheading = \"#ff0000\""),
+        parse("name = \"x\"\n[colors]\nheading = \"#ff00\""),
         Err(ThemeError::Colors(_))
     ));
     assert!(matches!(
-        parse("name = \"x\"\n[colors]\nheading = 4"),
+        parse("name = \"x\"\n[colors]\nheading = 400"),
         Err(ThemeError::Colors(_))
     ));
     assert!(matches!(
@@ -850,10 +851,10 @@ mod directory {
         let (set, added) = loaded(dir.path());
         assert_eq!(added, 1);
         let names: Vec<String> = set.names().iter().map(ToString::to_string).collect();
-        assert_eq!(names, [DEFAULT_THEME, "amber", "green", "contrast", "plum"]);
+        assert_eq!(names, [DEFAULT_THEME, "phosphor", "neon", "paper", "amber", "deepspace", "ansi", "green", "contrast", "plum"]);
         assert_eq!(
             set.get(ThemeName::new("plum").unwrap()).palette().heading,
-            Color::Magenta
+            Tint::Named(Color::Magenta)
         );
     }
 
@@ -861,12 +862,12 @@ mod directory {
     fn a_missing_directory_is_fine_and_other_files_are_ignored() {
         let dir = tempfile::tempdir().unwrap();
         let (set, added) = loaded(&dir.path().join("does-not-exist"));
-        assert_eq!((added, set.names().len()), (0, 4));
+        assert_eq!((added, set.names().len()), (0, 9));
         write(dir.path(), "notes.txt", "name = \"x\"");
         write(dir.path(), "readme", "hello");
         fs::create_dir(dir.path().join("sub.toml")).unwrap();
         let (set, added) = loaded(dir.path());
-        assert_eq!((added, set.names().len()), (0, 4));
+        assert_eq!((added, set.names().len()), (0, 9));
     }
 
     #[test]
@@ -897,7 +898,7 @@ mod directory {
         let (set, added) = loaded(dir.path());
         assert_eq!(added, 1, "only the good file");
         let names: Vec<String> = set.names().iter().map(ToString::to_string).collect();
-        assert_eq!(names, [DEFAULT_THEME, "amber", "green", "contrast", "good"]);
+        assert_eq!(names, [DEFAULT_THEME, "phosphor", "neon", "paper", "amber", "deepspace", "ansi", "green", "contrast", "good"]);
         assert_eq!(
             set.get(ThemeName::new("amber").unwrap()).palette(),
             ui().theme(ThemeName::new("amber").unwrap()).palette(),
@@ -921,6 +922,6 @@ mod directory {
         let dir = tempfile::tempdir().unwrap();
         std::os::unix::fs::symlink("/dev/zero", dir.path().join("zero.toml")).unwrap();
         let (set, added) = loaded(dir.path());
-        assert_eq!((added, set.names().len()), (0, 4));
+        assert_eq!((added, set.names().len()), (0, 9));
     }
 }

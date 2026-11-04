@@ -1,0 +1,48 @@
+# Shipped style: Neon Night. Synthwave: deep violet glass, magenta and cyan, a gradient board
+# name, rounded boxes and a faint grid.
+name = "neon"
+
+[colors]
+surface = "#0b0618"
+panel = "#120a26"
+popup = "#1a0f36"
+stripe = "#170c2e"
+head = "#2a1458"
+bar = "#1c0f3d"
+bar_text = "#f4e9ff"
+text = "#e6dcff"
+muted = "#9a8bd0"
+border = "#b44cff"
+heading = "#ff5fdc"
+key = "#3df5ff"
+accent = "#ff2bd6"
+accent2 = "#25e8ff"
+selected = "#0b0618"
+select_bg = "#ff5fdc"
+info = "#3df5ff"
+success = "#5dffa0"
+warning = "#ffd24a"
+error = "#ff6585"
+link = "#3df5ff"
+quote = "#b99cff"
+timestamp = "#9a8bd0"
+title = "#ff7be6"
+
+[style.borders]
+frame = "rounded"
+pane = "rounded"
+popup = "double"
+
+[style.title]
+treatment = "angle"
+align = "left"
+
+[style.header]
+decoration = "chevrons"
+gradient = true
+
+[style.backdrop]
+kind = "grid"
+
+[style.motion]
+default = true

@@ -1,0 +1,48 @@
+# Shipped style: Paper. Calm and light: dark ink on warm paper, thin rounded boxes, no texture
+# and no motion.
+name = "paper"
+
+[colors]
+surface = "#f4efe2"
+panel = "#fbf8ef"
+popup = "#fffdf6"
+stripe = "#f1ebda"
+head = "#e3dac0"
+bar = "#e8e0c8"
+bar_text = "#2b2a26"
+text = "#26241f"
+muted = "#6b665a"
+border = "#8a7f66"
+heading = "#1f3a6b"
+key = "#8a3b12"
+accent = "#1f3a6b"
+accent2 = "#6b4f2a"
+selected = "#fbf8ef"
+select_bg = "#1f3a6b"
+info = "#1d5e8a"
+success = "#2e6b2a"
+warning = "#8a5a00"
+error = "#a3201a"
+link = "#1d4fa8"
+quote = "#5a5446"
+timestamp = "#6b665a"
+title = "#1f3a6b"
+
+[style.borders]
+frame = "rounded"
+pane = "rounded"
+popup = "rounded"
+
+[style.title]
+treatment = "plain"
+align = "left"
+
+[style.header]
+decoration = "none"
+gradient = false
+
+[style.backdrop]
+kind = "none"
+
+[style.motion]
+default = false

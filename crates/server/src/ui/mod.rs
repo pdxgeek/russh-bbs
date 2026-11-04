@@ -11,6 +11,7 @@
 //! string table holds exactly the keys the tree and the layout use, so a bad table stops the
 //! server with a message naming the key instead of drawing blanks.
 
+pub(crate) mod backdrop;
 pub(crate) mod chrome;
 pub(crate) mod classic;
 pub(crate) mod compact;
