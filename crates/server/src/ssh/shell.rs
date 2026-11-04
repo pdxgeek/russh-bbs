@@ -815,6 +815,11 @@ impl<D: Backend> Shell<D> {
         } else {
             flow
         };
+        let flow = if self.parts.passwords.enabled() {
+            flow
+        } else {
+            flow.with_password_login_off()
+        };
         if self.parts.fingerprint.is_none() {
             flow.signed_in_with_password()
         } else {

@@ -145,7 +145,7 @@ sysop = "Invite requests"
 vouch = "Vouch for a request"
 
 [queue.intro]
-sysop = "Invite requests and applications. Approving makes an account for the key that asked."
+sysop = "Invite requests and applications. Approving makes the account."
 vouch = "Invite requests and applications. Your vouch adds your name for the sysops to see; it admits no one."
 
 [queue.row]
@@ -171,12 +171,12 @@ deny = "[d] Deny"
 vouch = "[v] Vouch"
 
 [queue.confirm]
-approve = "Approve {handle}? This makes an account for the key that asked."
+approve = "Approve {handle}? This makes the account."
 deny = "Deny {handle}? The request is deleted and the key is turned away for {hours} hours."
 vouch = "Vouch for {handle}? The sysops will see your name, and you cannot take it back."
 
 [queue.notice]
-approved = "Approved. The account exists and the key can sign in now."
+approved = "Approved. They can sign in now."
 denied = "Denied. The request was deleted."
 vouched = "Vouched. The sysops can see your name."
 gone = "That request is gone: someone decided it, or it expired."

@@ -251,6 +251,9 @@ impl<D> ClientHandler<D> {
         if self.password_account.is_some() {
             flow = flow.signed_in_with_password();
         }
+        if !self.passwords.enabled() {
+            flow = flow.with_password_login_off();
+        }
         // Key changes since the last sign-in (FIX-M3-11), told once.
         let notices =
             russh_bbs_core::keys::notices_for_sign_in(&*self.directory, start.account).await;
