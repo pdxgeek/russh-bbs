@@ -85,12 +85,18 @@ fn bot_visit(door: &Nullroute, seed: u64) -> (ReplayLog, Option<Vec<u8>>) {
 }
 
 #[test]
-fn every_screen_fits_80_by_24_with_its_key_hints_on_the_last_row() {
+fn every_screen_fits_the_door_area_with_its_key_hints_in_view() {
     let door = Nullroute::new().unwrap();
     let env = env();
     let mut d = driver(&door, &env, 4, None);
-    let rows = |d: &Driver| replay::draw_to_text(d, &env, 80, 24);
-    let hint = |text: &[String]| text.iter().rposition(|r| r.contains('[')).unwrap();
+    let rows = |d: &Driver| replay::draw_to_text(d, &env, 72, 19);
+    // The last row with anything on it is the key hints: they are never cut.
+    let last_has_keys = |text: &[String]| {
+        text.iter()
+            .rev()
+            .find(|r| !r.is_empty())
+            .is_some_and(|r| r.contains('['))
+    };
     let mut seen = Vec::new();
     for keys in [
         "",
@@ -109,9 +115,9 @@ fn every_screen_fits_80_by_24_with_its_key_hints_on_the_last_row() {
             });
         }
         let text = rows(&d);
-        assert!(text.iter().all(|r| r.chars().count() <= 80));
+        assert!(text.iter().all(|r| r.chars().count() <= 72));
         assert!(!text[0].is_empty());
-        assert!(hint(&text) < 24);
+        assert!(last_has_keys(&text), "{text:#?}");
         seen.push(text[0].clone());
     }
     assert_eq!(seen.len(), 7);
@@ -123,7 +129,7 @@ fn every_screen_fits_80_by_24_with_its_key_hints_on_the_last_row() {
         d.key(*key);
         let text = rows(&d);
         widest = widest.max(text.iter().map(|r| r.chars().count()).max().unwrap_or(0));
-        assert!(text.iter().all(|r| r.chars().count() <= 80), "{text:#?}");
+        assert!(text.iter().all(|r| r.chars().count() <= 72), "{text:#?}");
         if text.get(1).is_some_and(|r| r.contains("TRACE")) {
             // The key hints are the last line of the run screen and must be on screen.
             assert!(

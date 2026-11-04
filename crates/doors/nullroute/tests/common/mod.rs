@@ -215,7 +215,10 @@ impl ScreenBot {
             .and_then(|r| r.split('/').next())
             .and_then(|n| n.trim().parse().ok())
             .unwrap_or(0);
-        let at = screen.get(2).map_or("", String::as_str);
+        let at = screen
+            .iter()
+            .find(|l| l.starts_with("At "))
+            .map_or("", String::as_str);
         let name = at
             .trim_start_matches("At ")
             .split(' ')

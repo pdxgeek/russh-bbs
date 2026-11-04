@@ -8,7 +8,7 @@ use std::sync::Arc;
 use russh_bbs_door::{Canvas, Ctx, DoorEnv, DoorKey, DoorSession, DoorStyle, Flow};
 
 use crate::content::Content;
-use crate::player::{DECK_MAX, JACK_IN_CYCLES, PARTS, Player};
+use crate::player::{JACK_IN_CYCLES, PARTS, Player};
 use crate::run::{Act, Refused, Run, Status, TRACE_MAX};
 use crate::save;
 use crate::world::{Contract, World};
@@ -46,6 +46,32 @@ pub(crate) struct Session {
     view: View,
     msgs: Vec<Line>,
     saved: Vec<u8>,
+}
+
+/// The widest line the door draws (the canvas is 72 columns at 80x24).
+const WRAP: usize = 68;
+
+/// Split `text` at spaces into lines of at most [`WRAP`] characters.
+fn push_wrapped(out: &mut Vec<Line>, text: &str, style: DoorStyle) {
+    let mut line = String::new();
+    for word in text.split(' ') {
+        if !line.is_empty() && line.chars().count() + 1 + word.chars().count() > WRAP {
+            out.push((std::mem::take(&mut line), style));
+        }
+        if !line.is_empty() {
+            line.push(' ');
+        }
+        line.push_str(word);
+    }
+    out.push((line, style));
+}
+
+/// The body cut to leave room for the hint lines, then the hint lines: the keys are always shown.
+fn fit(mut body: Vec<Line>, hint: Vec<Line>, rows: usize) -> Vec<Line> {
+    let room = rows.saturating_sub(hint.len());
+    body.truncate(room);
+    body.extend(hint);
+    body
 }
 
 fn letter(c: char) -> Option<usize> {
@@ -120,46 +146,44 @@ impl Session {
     fn contract_line(&self, n: usize, c: &Contract) -> Line {
         let tmpl = self.content.contract(c.tmpl);
         let text = format!(
-            "{n}) {} - {}  T{}  pays {}  [{}]",
+            "{n}) {:<6} {:<21} T{} {:>4}  {}",
             tmpl.map_or("?", |t| t.verb.as_str()),
             self.corp_name(c.corp),
             c.tier,
             c.reward,
             self.fixer_name(c.fixer),
         );
-        match self.p.closed(&self.content, c) {
-            Some(why) => (format!("{text}  ({why})"), DoorStyle::Dim),
-            None => match tmpl {
-                // Say so before the player walks to the briefing: the deck has no tool for it.
-                Some(t)
-                    if !self
-                        .p
-                        .deck
-                        .iter()
-                        .filter_map(|n| self.content.script(*n))
-                        .any(|s| s.effect == t.effect) =>
-                {
-                    (
-                        format!("{text}  (no {:?} script in the deck)", t.effect),
-                        DoorStyle::Dim,
-                    )
-                }
-                _ => (text, DoorStyle::Plain),
-            },
+        if self.p.closed(&self.content, c).is_some() {
+            return (format!("{text} (closed)"), DoorStyle::Dim);
+        }
+        match tmpl {
+            // Say so before the player walks to the briefing: the deck has no tool for it.
+            Some(t)
+                if !self
+                    .p
+                    .deck
+                    .iter()
+                    .filter_map(|n| self.content.script(*n))
+                    .any(|s| s.effect == t.effect) =>
+            {
+                (format!("{text} (no {:?})", t.effect), DoorStyle::Dim)
+            }
+            _ => (text, DoorStyle::Plain),
         }
     }
 
+    /// The lines of the current view, fitted to `rows` (the body is cut, never the key hints).
     fn lines(&self, rows: usize) -> Vec<Line> {
         use DoorStyle::{Accent, Dim, Plain, Strong};
         let p = &self.p;
         let c = &*self.content;
-        let mut out: Vec<Line> = Vec::new();
-        let head = format!("NULLROUTE  {}  day {}", p.name, p.day);
+        let mut body: Vec<Line> = Vec::new();
+        let mut hint: Vec<Line> = Vec::new();
         match &self.view {
             View::Run(active) => return self.run_lines(active, rows),
             View::Home => {
-                out.push((head, Accent));
-                out.push((
+                body.push((format!("NULLROUTE  {}  day {}", p.name, p.day), Accent));
+                body.push((
                     format!(
                         "Cycles {}/{}   Marks {} (safe {})   Heat {}   Rep {}",
                         p.cycles,
@@ -185,9 +209,10 @@ impl Session {
                         )
                     })
                     .collect();
-                out.push((format!("Rig: {}", parts.join(", ")), Plain));
-                out.push((
-                    format!(
+                push_wrapped(&mut body, &format!("Rig: {}", parts.join(", ")), Plain);
+                push_wrapped(
+                    &mut body,
+                    &format!(
                         "Deck {}/{} slots, memory {}/{}: {}",
                         p.deck.len(),
                         p.slots(),
@@ -196,58 +221,53 @@ impl Session {
                         self.deck_names()
                     ),
                     Plain,
-                ));
-                out.push((
-                    format!(
-                        "Skills: {}",
-                        crate::content::Family::ALL
-                            .iter()
-                            .map(|f| format!("{} {}", f.word(), p.skill(*f)))
-                            .collect::<Vec<_>>()
-                            .join("  ")
-                    ),
-                    Dim,
-                ));
-                out.push((
-                    format!(
-                        "Fixers: {}",
-                        c.corps
-                            .fixer
-                            .iter()
-                            .map(|f| format!(
-                                "{} {:+}",
-                                f.name,
-                                p.standing.get(usize::from(f.num)).copied().unwrap_or(0)
-                            ))
-                            .collect::<Vec<_>>()
-                            .join("  ")
-                    ),
-                    Dim,
-                ));
-                out.push((
+                );
+                let skills: Vec<String> = crate::content::Family::ALL
+                    .iter()
+                    .map(|f| format!("{} {}", f.word(), p.skill(*f)))
+                    .collect();
+                push_wrapped(&mut body, &format!("Skills: {}", skills.join("  ")), Dim);
+                let fixers: Vec<String> = c
+                    .corps
+                    .fixer
+                    .iter()
+                    .map(|f| {
+                        format!(
+                            "{} {:+}",
+                            f.name,
+                            p.standing.get(usize::from(f.num)).copied().unwrap_or(0)
+                        )
+                    })
+                    .collect();
+                push_wrapped(&mut body, &format!("Fixers: {}", fixers.join("  ")), Dim);
+                body.push((
                     format!("Runs {}  Jobs {}  Burned {}", p.runs, p.jobs, p.burns),
                     Dim,
                 ));
-                out.push((String::new(), Plain));
-                out.extend(self.msgs.iter().cloned());
-                out.push((String::new(), Plain));
-                out.push(("[c] contracts  [d] deck  [s] shop  [r] rig  [h] hideout  [l] lie low  [q] leave".into(), Strong));
+                body.push((String::new(), Plain));
+                self.push_msgs(&mut body);
+                hint.push((
+                    "[c]ontracts [d]eck [s]hop [r]ig [h]ideout [l]ie low [q]uit".into(),
+                    Strong,
+                ));
             }
             View::Contracts => {
-                out.push(("CONTRACTS".into(), Accent));
+                body.push(("CONTRACTS".into(), Accent));
                 if self.offers.is_empty() {
-                    out.push(("The fixers have nothing for you today.".into(), Dim));
+                    body.push(("The fixers have nothing for you today.".into(), Dim));
                 }
                 for (i, offer) in self.offers.iter().enumerate() {
-                    out.push(self.contract_line(i + 1, offer));
+                    body.push(self.contract_line(i + 1, offer));
                 }
-                out.push((String::new(), Plain));
-                out.extend(self.msgs.iter().cloned());
-                out.push(("[1-9] look at a job  [Esc] back".into(), Strong));
+                self.push_msgs(&mut body);
+                hint.push(("[1-9] look at a job   [Esc] back".into(), Strong));
             }
-            View::Brief(contract) => out.extend(self.brief_lines(contract)),
+            View::Brief(contract) => {
+                body = self.brief_lines(contract);
+                hint.push(("[j] jack in   [p] buy a proxy   [Esc] back".into(), Strong));
+            }
             View::Deck(page) => {
-                out.push((
+                body.push((
                     format!(
                         "DECK  {}/{} slots  memory {}/{}",
                         p.deck.len(),
@@ -261,9 +281,14 @@ impl Session {
                 for (i, num) in p.owned.iter().enumerate().skip(start).take(PAGE) {
                     if let Some(s) = c.script(*num) {
                         let mark = if p.deck.contains(num) { '*' } else { ' ' };
-                        out.push((
+                        let skill = if s.min_skill > 0 {
+                            format!(" sk{}", s.min_skill)
+                        } else {
+                            String::new()
+                        };
+                        body.push((
                             format!(
-                                "[{}]{mark}{:<17} {:<7} {:<8} pow {} mem {} noise {}{}",
+                                "[{}]{mark}{:<16} {:<7} {:<8} p{} m{} n{}{skill}",
                                 char::from(b'a' + u8::try_from(i - start).unwrap_or(0)),
                                 s.name,
                                 s.family.word(),
@@ -271,21 +296,23 @@ impl Session {
                                 s.power,
                                 s.memory,
                                 s.noise,
-                                if s.min_skill > 0 {
-                                    format!(" skill {}", s.min_skill)
-                                } else {
-                                    String::new()
-                                },
                             ),
                             if p.deck.contains(num) { Strong } else { Plain },
                         ));
                     }
                 }
-                out.extend(self.msgs.iter().cloned());
-                out.push(("[a-l] load/unload  [n]/[p] page  [Esc] back".into(), Strong));
+                body.push((
+                    "* loaded.  p power, m memory, n noise, sk skill needed".into(),
+                    Dim,
+                ));
+                self.push_msgs(&mut body);
+                hint.push((
+                    "[a-l] load/unload   [n]/[p] page   [Esc] back".into(),
+                    Strong,
+                ));
             }
             View::Shop(page) => {
-                out.push((
+                body.push((
                     format!(
                         "SCRIPT SHOP  marks {}  market {}%",
                         p.marks, self.world.market_pct
@@ -302,20 +329,20 @@ impl Session {
                 {
                     let price = s.price * self.world.market_pct / 100;
                     let gate = if p.rep < s.min_rep {
-                        format!(" (rep {})", s.min_rep)
+                        format!(" rep {}", s.min_rep)
                     } else {
                         String::new()
                     };
-                    out.push((
+                    body.push((
                         format!(
-                            "[{}] {:<17} {:<7} pow {} mem {} {:>4} marks{gate}  {}",
+                            "[{}] {:<16} {:<7} {:<8} p{} m{} {:>4}m{gate}",
                             char::from(b'a' + u8::try_from(i - start).unwrap_or(0)),
                             s.name,
                             s.family.word(),
+                            format!("{:?}", s.effect).to_lowercase(),
                             s.power,
                             s.memory,
                             price,
-                            s.blurb
                         ),
                         if p.rep < s.min_rep || p.marks < price {
                             Dim
@@ -324,11 +351,11 @@ impl Session {
                         },
                     ));
                 }
-                out.extend(self.msgs.iter().cloned());
-                out.push(("[a-l] buy  [n]/[p] page  [Esc] back".into(), Strong));
+                self.push_msgs(&mut body);
+                hint.push(("[a-l] buy   [n]/[p] page   [Esc] back".into(), Strong));
             }
             View::Rig => {
-                out.push((format!("RIG  marks {}", p.marks), Accent));
+                body.push((format!("RIG  marks {}", p.marks), Accent));
                 for i in 0..PARTS {
                     let name = c.rig.part.get(i).map_or("?", |d| d.name.as_str());
                     let lvl = usize::from(p.rig.get(i).copied().unwrap_or(0));
@@ -343,38 +370,42 @@ impl Session {
                     };
                     let next = p
                         .upgrade_cost(c, i)
-                        .map_or("maxed".to_owned(), |cost| format!("next {cost} marks"));
+                        .map_or("maxed".to_owned(), |cost| format!("next {cost}"));
                     let fried = if p.fried & (1 << i) != 0 {
-                        format!("  FRIED (repair {})", p.repair_cost(c, i))
+                        format!(" FRIED, repair {}", p.repair_cost(c, i))
                     } else {
                         String::new()
                     };
-                    out.push((
-                        format!("[{}] {name:<15} {now:<20} {next}{fried}", i + 1),
+                    body.push((
+                        format!("[{}] {name:<14} {now:<19} {next}{fried}", i + 1),
                         Plain,
                     ));
                 }
-                out.push(("cpu +4 cycles. memory +4 mem +1 slot. cooling: fewer fries. interface: +5% success. shield: -6% trace.".into(), Dim));
-                out.extend(self.msgs.iter().cloned());
-                out.push((
-                    "[1-5] upgrade  [x] repair a fried part  [Esc] back".into(),
+                body.push((
+                    "CPU +4 cycles. Memory +4 mem and a slot. Cooling: fewer fries.".into(),
+                    Dim,
+                ));
+                body.push(("Interface: +5% success. Shield: 6% less trace.".into(), Dim));
+                self.push_msgs(&mut body);
+                hint.push((
+                    "[1-5] upgrade   [x] repair a fried part   [Esc] back".into(),
                     Strong,
                 ));
             }
             View::Hideout => {
                 let h = &c.rig.hideout;
-                out.push((
+                body.push((
                     format!("HIDEOUT  marks {} (safe {})", p.marks, p.stash),
                     Accent,
                 ));
-                out.push((
+                body.push((
                     format!(
-                        "Bots: {}/{} earning {} each a night.",
+                        "Bots: {}/{}, {} marks each a night.",
                         p.bots, h.bot_max, h.bot_income
                     ),
                     Plain,
                 ));
-                out.push((
+                body.push((
                     format!(
                         "Workbench: {}",
                         if p.workbench {
@@ -385,7 +416,7 @@ impl Session {
                     ),
                     Plain,
                 ));
-                out.push((
+                body.push((
                     format!(
                         "Fence: {} at {} percent.",
                         c.rig
@@ -396,25 +427,38 @@ impl Session {
                     ),
                     Plain,
                 ));
-                out.push((
+                body.push((
                     "Heat 50 and up brings raids; the safe is never touched.".into(),
                     Dim,
                 ));
-                out.extend(self.msgs.iter().cloned());
-                out.push((
-                    format!("[b] bot {}  [w] workbench {}  [f] better fence  [s] safe +{}  [t] take {}  [Esc] back", h.bot_cost, h.workbench_cost, h.stash_step, h.stash_step),
+                self.push_msgs(&mut body);
+                hint.push((
+                    format!(
+                        "[b] bot {}  [w] workbench {}  [f] better fence",
+                        h.bot_cost, h.workbench_cost
+                    ),
+                    Strong,
+                ));
+                hint.push((
+                    format!("[s] safe +{0}  [t] take {0}  [Esc] back", h.stash_step),
                     Strong,
                 ));
             }
             View::Debrief(notes) => {
-                out.push(("DEBRIEF".into(), Accent));
+                body.push(("DEBRIEF".into(), Accent));
                 for n in notes {
-                    out.push((n.clone(), Plain));
+                    push_wrapped(&mut body, n, Plain);
                 }
-                out.push(("[Enter] continue".into(), Strong));
+                hint.push(("[Enter] continue".into(), Strong));
             }
         }
-        out
+        fit(body, hint, rows)
+    }
+
+    fn push_msgs(&self, body: &mut Vec<Line>) {
+        for (text, style) in &self.msgs {
+            push_wrapped(body, text, *style);
+        }
     }
 
     fn deck_names(&self) -> String {
@@ -442,7 +486,7 @@ impl Session {
     }
 
     fn brief_lines(&self, contract: &Contract) -> Vec<Line> {
-        use DoorStyle::{Accent, Dim, Plain, Strong};
+        use DoorStyle::{Accent, Bad, Dim, Plain};
         let c = &*self.content;
         let tmpl = c.contract(contract.tmpl);
         let corp = c.corp(contract.corp);
@@ -454,21 +498,25 @@ impl Session {
             ),
             Accent,
         )];
+        if let Some(why) = self.p.closed(c, contract) {
+            push_wrapped(&mut out, &why, Bad);
+        }
         if let Some(corp) = corp {
             out.push((
                 format!("Target: {} (tier {})", corp.name, contract.tier),
                 Plain,
             ));
-            out.push((crate::run::corp_intel(corp), Dim));
+            push_wrapped(&mut out, &crate::run::corp_intel(corp), Dim);
         }
         if let Some(t) = tmpl {
-            out.push((
-                format!(
-                    "Objective: {} at the {} node; you need a {:?} script in the deck.",
+            push_wrapped(
+                &mut out,
+                &format!(
+                    "Objective: {} at the {} node; the deck needs a {:?} script.",
                     t.verb, t.target, t.effect
                 ),
                 Plain,
-            ));
+            );
         }
         out.push((
             format!(
@@ -478,33 +526,33 @@ impl Session {
             ),
             Plain,
         ));
-        if let Some(state) = self.world.net(contract.corp, contract.tier) {
-            out.push((
-                format!(
-                    "Street word: alert {}, {} open hole(s){}.",
-                    state.alert,
-                    state.holes.len(),
-                    if state.backdoor {
-                        ", a backdoor is in"
-                    } else {
-                        ""
-                    }
-                ),
-                Dim,
-            ));
+        let word = if let Some(state) = self.world.net(contract.corp, contract.tier) {
+            format!(
+                "Street word: alert {}, {} open hole(s){}.",
+                state.alert,
+                state.holes.len(),
+                if state.backdoor {
+                    ", a backdoor is in"
+                } else {
+                    ""
+                }
+            )
         } else {
-            out.push((
-                "Street word: nothing has been broken there lately.".into(),
-                Dim,
-            ));
-        }
-        out.push((format!("Deck: {}", self.deck_names()), Plain));
-        out.push((
-            format!("Proxies bought: {} (each {} marks, soaks {} trace). Jacking in costs {JACK_IN_CYCLES} cycles.", self.p.proxies, self.p.proxy_price(c), c.rig.hideout.proxy_buffer),
+            "Street word: nothing has been broken there lately.".to_owned()
+        };
+        push_wrapped(&mut out, &word, Dim);
+        push_wrapped(&mut out, &format!("Deck: {}", self.deck_names()), Plain);
+        push_wrapped(
+            &mut out,
+            &format!(
+                "Proxies bought: {} (each {} marks, soaks {} trace). Jacking in costs {JACK_IN_CYCLES} cycles.",
+                self.p.proxies,
+                self.p.proxy_price(c),
+                c.rig.hideout.proxy_buffer
+            ),
             Plain,
-        ));
-        out.extend(self.msgs.iter().cloned());
-        out.push(("[j] jack in  [p] buy a proxy  [Esc] back".into(), Strong));
+        );
+        self.push_msgs(&mut out);
         out
     }
 
@@ -513,58 +561,54 @@ impl Session {
         let c = &*self.content;
         let run = &active.run;
         let net = run.net();
-        let mut out: Vec<Line> = Vec::new();
+        let mut body: Vec<Line> = Vec::new();
         let (target, effect) = run.objective_target();
-        out.push((
+        body.push((
             format!(
-                "{}  tier {}   Objective: {:?} at {target}{}",
+                "{} T{}  {:?} at {target}{}",
                 self.corp_name(net.corp),
                 net.tier,
                 effect,
                 if run.objective_done() {
-                    "  DONE - jack out"
+                    "  DONE: jack out"
                 } else {
                     ""
                 }
             ),
             Accent,
         ));
-        let mut flags = String::new();
-        if run.feed_live() {
-            flags.push_str(" [CAMERA LIVE]");
-        }
-        if run.tracer() {
-            flags.push_str(" [TRACER]");
-        }
-        if run.alarm() {
-            flags.push_str(" [ALARM]");
-        }
-        out.push((
+        body.push((
             format!(
-                "TRACE {}  cycles {}  soak {}{flags}",
+                "TRACE {}  cycles {}  soak {}",
                 bar(run.trace),
                 run.cycles,
                 run.buffer()
             ),
             if run.trace >= 70 { Bad } else { Plain },
         ));
-        let here = net.nodes.get(usize::from(run.at));
-        out.push((
-            format!(
-                "At {}",
-                here.map_or(String::new(), |_| run.describe(c, run.at))
-            ),
-            Strong,
-        ));
+        let mut flags = String::new();
+        if run.feed_live() {
+            flags.push_str("[CAMERA LIVE] ");
+        }
+        if run.tracer() {
+            flags.push_str("[TRACER] ");
+        }
+        if run.alarm() {
+            flags.push_str("[ALARM] ");
+        }
+        if !flags.is_empty() {
+            body.push((flags.trim_end().to_owned(), Bad));
+        }
+        body.push((format!("At {}", run.describe(c, run.at)), Strong));
         let exits = run.exits();
         for (i, id) in exits.iter().enumerate().take(7) {
-            out.push((
+            body.push((
                 format!("  {}) {}", i + 1, run.describe(c, *id)),
                 if run.is_open(*id) { Plain } else { Dim },
             ));
         }
         if exits.is_empty() {
-            out.push(("  no known exits: scan for hidden links".into(), Dim));
+            body.push(("  no known exits: scan for hidden links".into(), Dim));
         }
         let elsewhere: Vec<&str> = net
             .nodes
@@ -573,7 +617,11 @@ impl Session {
             .map(|n| n.name.as_str())
             .collect();
         if !elsewhere.is_empty() {
-            out.push((format!("Known elsewhere: {}", elsewhere.join(" ")), Dim));
+            push_wrapped(
+                &mut body,
+                &format!("Known elsewhere: {}", elsewhere.join(" ")),
+                Dim,
+            );
         }
         let mut deck: Vec<String> = run
             .deck
@@ -594,32 +642,33 @@ impl Session {
                 )
             })
             .collect();
-        while deck.len() < DECK_MAX && deck.len() % 2 == 1 {
+        if deck.len() % 2 == 1 {
             deck.push(String::new());
         }
         for pair in deck.chunks(2) {
-            out.push((
-                format!("{:<38}{}", pair[0], pair.get(1).map_or("", String::as_str)),
+            body.push((
+                format!("{:<34}{}", pair[0], pair.get(1).map_or("", String::as_str)),
                 Good,
             ));
         }
-        let keys = match active.aim {
+        let hint = match active.aim {
             Some(slot) => format!(
-                "Aim {}: press 1-9 for the target node, Esc to cancel",
+                "Aim {}: 1-9 picks the node, Esc cancels",
                 run.deck
                     .get(slot)
                     .and_then(|s| c.script(s.script))
                     .map_or("?", |s| s.name.as_str())
             ),
-            None => "[1-9] move  [a-f] script  [o] jack out".to_owned(),
+            None => "[1-9] move   [a-f] script   [o] jack out".to_owned(),
         };
-        let used = out.len() + 1;
-        let room = rows.saturating_sub(used).min(run.log.len());
+        // The log fills whatever room is left.
+        let room = rows.saturating_sub(body.len() + 1).min(run.log.len());
         for line in run.log.iter().skip(run.log.len() - room) {
-            out.push((format!("> {line}"), Dim));
+            let mut wrapped = Vec::new();
+            push_wrapped(&mut wrapped, &format!("> {line}"), Dim);
+            body.extend(wrapped.into_iter().take(1));
         }
-        out.push((keys, Strong));
-        out
+        fit(body, vec![(hint, Strong)], rows)
     }
 
     fn open_brief(&mut self, index: usize) {
@@ -871,21 +920,9 @@ impl DoorSession for Session {
 
     fn render(&self, canvas: &mut Canvas<'_>, _env: &DoorEnv) {
         canvas.clear();
-        let rows = usize::from(canvas.height());
-        let lines = self.lines(rows);
-        // Keep the last row for the key hints when the screen is short.
-        let take = lines.len().min(rows);
-        let (shown, hint) = if lines.len() > rows {
-            (&lines[..take - 1], lines.last())
-        } else {
-            (&lines[..take], None)
-        };
-        for (y, (text, style)) in shown.iter().enumerate() {
+        for (y, (text, style)) in self.lines(usize::from(canvas.height())).iter().enumerate() {
             let Ok(y) = u16::try_from(y) else { break };
             canvas.text(1, y, text, *style);
-        }
-        if let Some((text, style)) = hint {
-            canvas.text(1, canvas.height().saturating_sub(1), text, *style);
         }
     }
 
