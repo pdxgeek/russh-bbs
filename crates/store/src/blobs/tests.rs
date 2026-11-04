@@ -431,20 +431,33 @@ async fn s3_ca_file_replaces_the_platform_store_and_a_wrong_ca_fails_closed() {
     // The platform store does not trust the test CA, so without `ca_file` the connection fails.
     let mut s = tls.clone();
     s.ca_file = None;
-    assert!(matches!(S3BlobStore::connect(s).await, Err(BlobError::Backend(_))));
+    assert!(matches!(
+        S3BlobStore::connect(s).await,
+        Err(BlobError::Backend(_))
+    ));
     // A CA that did not sign the server's certificate fails closed.
     let mut s = tls.clone();
     s.ca_file = Some(wrong);
-    assert!(matches!(S3BlobStore::connect(s).await, Err(BlobError::Backend(_))));
+    assert!(matches!(
+        S3BlobStore::connect(s).await,
+        Err(BlobError::Backend(_))
+    ));
     // The right CA works, and so does a whole round trip over TLS.
     let mut s = tls;
     s.ca_file = Some(good);
     let store = S3BlobStore::connect(s).await.unwrap();
     let key = BlobKey::generate(fresh_namespace());
     let meta = store
-        .put(&key, Pattern::new(MIN_PART_BYTES + 5, 5), &PutOptions::up_to(1 << 30))
+        .put(
+            &key,
+            Pattern::new(MIN_PART_BYTES + 5, 5),
+            &PutOptions::up_to(1 << 30),
+        )
         .await
         .unwrap();
     assert_eq!(meta.sha256, Pattern::hash(MIN_PART_BYTES + 5, 5));
-    assert_eq!(drain(&store, &key).await.unwrap() as u64, MIN_PART_BYTES + 5);
+    assert_eq!(
+        drain(&store, &key).await.unwrap() as u64,
+        MIN_PART_BYTES + 5
+    );
 }
