@@ -127,14 +127,16 @@ fn list_lines(screen: &DoorsScreen, ctx: &DrawCtx<'_>) -> Vec<Line<'static>> {
     lines
 }
 
-/// The colour depth a door's colours are brought down to. The member's setting is on or off
-/// (`TerminalSettings::color`) and the board's own screens use the sixteen named colours, so
-/// "on" is sixteen colours; a per-member depth would be a settings change (D104).
+/// The colour depth a door's colours are brought down to: the client's (UI-1, D109), lowered by
+/// the member's colour setting, so a door on a 256-colour terminal keeps its 256 colours and a
+/// mono terminal gets weights only.
 const fn depth(look: Look) -> ColorDepth {
-    if look.color() {
-        ColorDepth::Ansi16
-    } else {
-        ColorDepth::Mono
+    use crate::ui::depth::ColorDepth as Seen;
+    match look.depth() {
+        Seen::TrueColor => ColorDepth::TrueColor,
+        Seen::Ansi256 => ColorDepth::Ansi256,
+        Seen::Ansi16 => ColorDepth::Ansi16,
+        Seen::Mono => ColorDepth::Mono,
     }
 }
 

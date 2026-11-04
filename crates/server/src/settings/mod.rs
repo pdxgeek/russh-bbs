@@ -127,11 +127,6 @@ impl Look {
         self.palette
     }
 
-    /// Whether the member sees colour.
-    pub(crate) const fn color(self) -> bool {
-        self.color
-    }
-
     pub(crate) fn accent(self, style: Style, color: Color) -> Style {
         if self.color { style.fg(color) } else { style }
     }
