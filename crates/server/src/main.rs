@@ -128,6 +128,11 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
         None => Ui::standard(),
     }
     .context("building the screens")?
+    // The board's name, accent, defaults and limits (UI-2); the same checks the config ran.
+    .with_board(
+        russh_bbs_server::ui::Board::from_config(&loaded.config.board)
+            .context("reading the [board] settings")?,
+    )
     .with_mail_keys(Arc::new(mail_keys))
     // The doors built into this board (M4-D0): the example coin toss until a game replaces it.
     .with_doors(

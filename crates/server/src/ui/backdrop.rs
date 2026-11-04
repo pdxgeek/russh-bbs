@@ -34,18 +34,8 @@ pub(crate) fn paint(frame: &mut Frame<'_>, area: Rect, look: Look) {
     let buffer = frame.buffer_mut();
     match look.skin().backdrop {
         Backdrop::None => {}
-        Backdrop::Scanlines => {
-            // Every other row a shade darker than the glass.
-            let Some(dark) = blend(surface, Tint::Named(ratatui::style::Color::Black), 90) else {
-                return;
-            };
-            let style = look.bg(dark);
-            for y in (area.y..area.y + area.height).filter(|y| (y - area.y) % 2 == 1) {
-                for x in area.x..area.x + area.width {
-                    buffer[(x, y)].set_style(style);
-                }
-            }
-        }
+        // Scanlines are a pass over the finished screen ([`finish`]), not a background.
+        Backdrop::Scanlines => {}
         Backdrop::Stars => {
             let Some(dim) = blend(surface, palette.text, 110) else {
                 return;
@@ -89,4 +79,40 @@ fn hash(x: u16, y: u16) -> u32 {
     h ^= h >> 15;
     h = h.wrapping_mul(0x2C1B_3C6D);
     h ^ (h >> 12)
+}
+
+/// The last pass of a frame, after the screen has drawn: the **scanline** texture. Every other
+/// row whose background is one of the style's own (the glass, a panel or a popup) gets a shade
+/// darker, so the lines run through panels and text alike. Cells with any other background (the
+/// bars, the selected row, a table header) are left alone, and the last row, where the status bar
+/// and its marker cell live, is never touched. Does nothing for other backdrops, on a mono or
+/// 16-colour terminal, or in the ASCII tier.
+pub(crate) fn finish(frame: &mut Frame<'_>, look: Look) {
+    if look.skin().backdrop != Backdrop::Scanlines || !texture_drawn(look) {
+        return;
+    }
+    let palette = look.palette();
+    let black = Tint::Named(ratatui::style::Color::Black);
+    let shades: Vec<(ratatui::style::Color, ratatui::style::Color)> =
+        [palette.surface, palette.panel, palette.popup]
+            .into_iter()
+            .filter_map(|tint| {
+                let base = look.color_of(tint)?;
+                let dark = look.color_of(blend(tint, black, 88)?)?;
+                Some((base, dark))
+            })
+            .collect();
+    if shades.is_empty() {
+        return;
+    }
+    let area = frame.area();
+    let buffer = frame.buffer_mut();
+    for y in (area.y..area.y + area.height.saturating_sub(1)).filter(|y| (y - area.y) % 2 == 1) {
+        for x in area.x..area.x + area.width {
+            let cell = &mut buffer[(x, y)];
+            if let Some((_, dark)) = shades.iter().find(|(base, _)| *base == cell.bg) {
+                cell.bg = *dark;
+            }
+        }
+    }
 }

@@ -2,7 +2,7 @@
 
 A UI refresh and board customization plan (owner approved, 2026-11-04) is in [ui-refresh.md](ui-refresh.md).
 
-Status: **Partly implemented.** UI-1 (the frame, tables, popups and colour depth, [below](#frame-tables-popups-and-colour-depth-ui-1-d109)) is the foundation the rest of M3.5 builds on. The forum screens (M3-E, below) are the first long-text screens. The menu tree, universal keys and string table (M2-A) and the **classic, lightbar and compact layouts with theme packs and live switching** (M3-A, D82) exist; two-pane, tabs, dashboard and command line, declarative layout files and art blocks do not.
+Status: **Partly implemented.** UI-2 (style packs, seven layouts, board identity, member choices; [below](#styles-layouts-and-board-identity-ui-2-d-tbd)) is built on UI-1. UI-1 (the frame, tables, popups and colour depth, [below](#frame-tables-popups-and-colour-depth-ui-1-d109)) is the foundation the rest of M3.5 builds on. The forum screens (M3-E, below) are the first long-text screens. The menu tree, universal keys and string table (M2-A) and the **classic, lightbar and compact layouts with theme packs and live switching** (M3-A, D82) exist; two-pane, tabs, dashboard and command line, declarative layout files and art blocks do not.
 
 ## Four separate layers
 
@@ -216,6 +216,91 @@ The main menu in the classic, lightbar and compact layouts (the menu is a ratatu
 - **Real OpenSSH 9.6 against the real binary** (scratch board, founder claim, telnet on), read through `pyte` (cell attributes) and `tmux capture-pane`: the main menu, help, forum board list, thread list, search results, an error popup (duplicate board name), the members list and the sysop menu at **80x24, 100x30 and 132x43**; the bars' colours at four client depths (`TERM=xterm-256color` with `COLORTERM=truecolor` sent by `ssh -o SetEnv`: 24-bit; `xterm-256color` alone: palette cells; `xterm`: named colours; `vt100`: no colour) with the reserved style only on the marker cell; `LOW-SECURITY` in the marker cell on the first-run, menu, forum, members and sysop screens while telnet was on; a resize storm in `tmux` (40x10, 30x8, 20x5, 132x43, 44x12, 80x24) that kept the session, the table and the bars.
 - **A raw-socket telnet client** that answers NAWS and the terminal-type request: it signs in with a password, the status bar is painted in 256-colour palette cells (from `TERM=xterm-256color`), the transport's `UNENCRYPTED` row stays below the status bar, and the forum lists, search and members list draw and resize (80x24 to 100x30).
 - **Not verified:** other terminal emulators, a Nerd Font session, a screen reader, a light background, telnet at 132x43, a terminal that reads only SGR 30-37. `pyte` does not implement the alternate screen, so its first telnet frames show the login text under the menu; real terminals switch screens.
+
+## Styles, layouts and board identity (UI-2, D-TBD)
+
+Status: **Implemented and tested; walked over real OpenSSH 9.6** (see Verified). Code: `crates/server/src/ui/{theme,backdrop,board,panes,layout}` and `settings::Look`; member settings in `crates/core/src/terminal_settings` (migration `0024_ui_settings`); the `[board]` section in [config.md](config.md#board-ui-2). Screenshots of every look are in [ui-screenshots/](ui-screenshots/README.md).
+
+Style, layout and widgets are **independent choices**: any style works with any layout. A *style* is how it looks, a *layout* is how the panes are arranged.
+
+### Palette roles
+
+A style gives colours to 24 roles (`ui::theme::ROLES`). Each is a `#rrggbb` truecolor, a 0-255 index, one of the sixteen names, `"reset"` (the terminal's own) or `{ rgb = "#rrggbb", named = "lightred" }` to pick the sixteen-colour fallback (a plain hex colour gets the nearest of the sixteen). Every colour goes down through the depth fallback: truecolor, 256 cells, sixteen names, mono (weights and underline only).
+
+| Group | Roles |
+|---|---|
+| Backgrounds | `surface` (the screen), `panel` (inside boxes), `popup`, `stripe` (every other table row), `head` (table header), `bar` (header and status bar) |
+| Text | `text`, `muted`, `bar_text`, `title`, `heading`, `key` (hotkeys), `link`, `quote`, `timestamp` |
+| Accents | `accent` (the board name, pointers; the board's `accent` replaces it), `accent2` (the end of a gradient), `border` |
+| Selection | `selected` (text) and `select_bg` (the cursor row) |
+| Notices | `info`, `success`, `warning`, `error` |
+
+A file may set only the six original roles (`heading`, `key`, `border`, `info`, `error`, `selected`, the D82 form): the rest are derived, so older theme files keep their look. **There is no role for a security marker and no way to name one.** A style whose text cannot be read against the backgrounds it sets itself (WCAG contrast below 4.5 for text and bar text, 3 for headings, keys, notices and the accent, 2.5 for muted text, 2 for borders) is refused with the roles and the ratio named.
+
+### Skin: how a style draws
+
+`[style.*]` tables in the theme file choose from a fixed set of drawings. A skin has no way to say "bold", "reverse" or any attribute.
+
+| Setting | Values |
+|---|---|
+| `[style.borders]` `frame`, `pane`, `popup` | `plain`, `rounded`, `double`, `thick`, `ascii`, `none` (the ASCII tier, or a member's "borders: ASCII", always draws `+ - |`) |
+| `[style.title]` `treatment`, `align` | `plain`, `caps`, `spaced`, `bracket` (`[ Title ]`), `rule` (`╡ Title ╞`), `angle` (`« Title »`); `left`, `center` |
+| `[style.header]` `decoration`, `gradient` | `none`, `blocks` (`░▒▓ name ▓▒░`), `chevrons`, `diamonds`; a gradient board name from `accent` to `accent2` where the depth is 256 or truecolor (sixteen colours would band, so those draw the flat accent) |
+| `[style.backdrop]` `kind` | `none`, `scanlines` (every other row a shade darker, over the finished screen), `stars`, `grid` (drawn behind the panels, which clear their own area) |
+| `[style.motion]` `default` | a ceiling: `false` means this style never animates (the member's switch can only turn motion off further) |
+
+Every decoration has an ASCII form, and backdrops are dropped on a mono terminal and in the ASCII tier.
+
+### The six styles
+
+| Style | Feel | Colours | Skin |
+|---|---|---|---|
+| `phosphor` | A green CRT | near-black glass, one phosphor hue, bright-white hotkeys | plain frame, thick popups, `[ bracket ]` titles, scanlines |
+| `neon` | Synthwave | violet glass, magenta and cyan | rounded frame, double popups, `« angle »` titles, `» chevrons «` and a magenta-to-cyan gradient name, a faint grid |
+| `paper` | Calm and light | ink on warm paper, no motion | rounded boxes, plain titles, no texture |
+| `amber` | Amber terminal | warm amber on black | thick borders, CAPITAL titles |
+| `deepspace` | Cold blues | deep blue glass, gold hotkeys | rounded panes, double popups, centred `S P A C E D` titles, `◆ name ◆`, a starfield, a blue-to-violet gradient name |
+| `ansi` | A 1994 board | sixteen named colours only (identical at every depth), blue bars, cyan double borders | double borders everywhere, `╡ rule ╡` titles, `░▒▓ name ▓▒░` |
+
+`default`, `green` and `contrast` (colour-only themes, D82) stay. The board ships them all; a sysop adds more as `*.toml` files in `themes/` beside the host key (same loader and limits as D82: 32 files, 32 KiB each, schema-checked, refused with a logged reason, never fatal). Art for each style is UI-3.
+
+### The seven layouts
+
+The **menu screen** is arranged in panes; every other screen draws in the body of the frame with the style's borders and colours (moving them into the panes is UI-4). Below a layout's minimum size it falls back, and **says so** in a dim line ("Showing Dashboard: this terminal is too small for Wide.").
+
+| Layout | Arrangement | Needs | Falls back to |
+|---|---|---|---|
+| `classic` | A hotkey menu in a centred box | 24x9 | compact |
+| `lightbar` | The same box with a cursor (Up, Down, Enter) | 44x12 | classic |
+| `compact` | One column, no box, no header | none | |
+| `dashboard` | Menu on the left, a grid of widget slots on the right (2x3, fewer rows when short) | 72x20 | lightbar |
+| `wide` | Navigation, a content pane (where you are, the signed-in line, the row under the cursor) and a right rail of slots | 110x22 | dashboard |
+| `focus` | The menu as a roomy centred column with no box; `Tab` opens a widgets pop-over | 40x10 | lightbar |
+| `split` | The menu beside a second pane with a divider | 72x16 | lightbar |
+
+**Slots** are named places UI-10's widgets will fill (`panes::Slot`: identity, clock, who is online, last callers, new posts, unread mail, chat, activity). Today the identity slot shows the board's real name, tagline, location and age and the clock slot shows the real time; **every other slot says "Nothing to show yet." It never shows invented numbers.** The geometry is a pure function of the body rectangle (`panes::plan`), tested for overlap and containment from 24x9 to 500x198.
+
+**Not built:** dragging the split divider (UI-9; the grip is drawn), live widgets (UI-10), the other screens inside the panes (UI-4), animated motion (the setting is stored and read as `Look::motion()`; UI-4 and UI-8 will use it).
+
+### Board identity and limits (`[board]`)
+
+The board's name replaces the string table's title in every style (header bar, box titles, member screens), and its tagline, location and "since" fill the identity slot. The text is the sysop's own, but it goes through the shared sanitizer (refused, not altered, if it would change) and the honesty check: **a board cannot be named to claim it is private, secure or encrypted.** `board.accent` replaces the style's accent. `board.style` and `board.layout` are what members who never chose get. `board.styles` and `board.layouts` limit what members may pick; **one entry locks the choice for everyone**, whatever they stored. `board.motion = false` turns motion off board-wide. All keys: [config.md](config.md#board-ui-2).
+
+### Member choices
+
+On the settings screen, saved per member and applied on the next frame: **layout** (`l`), **style** (`t`), **motion** (`m`), **colour depth ceiling** (`d`: auto, 16, 256, truecolor; it can only lower what the client advertises) and **borders** (`r`: the style's own or ASCII). A member who never picked a style or layout follows the board's default (the screen says "board default"); a stored choice the board no longer allows draws the board default. Stored in `terminal_settings` on both backends (migration `0024`; layout and style are nullable, null meaning "follow the board").
+
+### Rules that did not move
+
+- **Markers.** The marker cell is the status bar's left cell, drawn by `chrome::status_cell` with the reserved style and no colour. The backdrop is painted above the status row, the status bar clears its own row, and the scanline pass skips the last row, so no style paints into the marker cell. Reverse video is on the marker and nowhere else, in every style, layout, depth and tier.
+- **Content.** Member text is sanitized by the shared sanitizer wherever it is drawn. A style's title treatment only changes the case or spacing of chrome text (string table or fixed words) and of already-sanitized table titles.
+- **ASCII tier and mono.** Every style and layout draws only ASCII in the ASCII tier and no colour in mono; tests check every cell.
+
+### Verified
+
+- **Unit and render tests** (`ui::{styles_tests,snapshots,resolve_tests,panes,board,theme}`, `config`): six styles that differ in palette and in at least two drawing choices and draw different characters; contrast at 16, 256 and truecolor; every style x layout x {80x24, 132x43} in Unicode, and 80x24 in the ASCII tier with colour off, as **golden text snapshots with a colour fingerprint** (`ui/snapshots/*.txt`; `UPDATE_SNAPSHOTS=1` to accept a change); a 16-colour terminal gets only named colours and a 256-colour one no truecolor; the marker cell is bold + reverse with no colour and nothing else reverses, for every style x layout x depth x tier x size (including 30x8) with hostile content; **hostile themes** (a role, key or table named for the marker or reverse, hidden or low-contrast text, marker glyphs or privacy claims in strings, bad colours) are refused; a loud valid theme leaves the marker cell alone; fallback chains settle at every size; board defaults, limits and locks, the board name in every style, accent and motion; config validation (defaults, layering, refusals naming the key and its source).
+- **Real OpenSSH 9.6 against the real binary**, read through `pyte`: every style cycled with `t` and every layout with `l` on the settings screen, each drawn on the main menu at 80x24 (and 132x43), with the board's name, tagline, location and "since" from `[board]` environment variables. PNGs rendered from the terminal emulator's cells (truecolor) are in [ui-screenshots/](ui-screenshots/README.md).
+- **Not verified:** other terminal emulators, a real 16-colour or 256-colour client (the depth fallback is tested on cells, and the 256-colour `TERM` was used for the walk), a Nerd Font session, a screen reader, a light terminal background with the dark styles, telnet.
 
 ## Forum screens (M3-E, D83)
 

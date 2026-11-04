@@ -269,6 +269,7 @@ impl Surfaces {
 }
 
 /// The xterm RGB of a named colour (anything else is a neutral grey).
+#[must_use]
 pub fn named_rgb(color: Color) -> (u8, u8, u8) {
     let index = match color {
         Color::Black => 0,

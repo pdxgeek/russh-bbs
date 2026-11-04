@@ -1,3 +1,11 @@
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::type_complexity,
+    clippy::panic,
+    clippy::assert_is_empty
+)]
+
 //! Render snapshots of every style in every layout (UI-2).
 //!
 //! One golden file per layout in `snapshots/`, holding each style at 80x24 and 132x43 (Unicode

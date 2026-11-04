@@ -1,6 +1,6 @@
 # UI refresh and board customization (plan)
 
-Status: **Approved by the owner, 2026-11-04** as its own milestone, **M3.5: Look and feel** ([milestones.md](milestones.md)). The owner asked for it because "ratatui can make that UI look way better" and "there needs to be ways to customize the BBS so it looks cool". Slices UI-1 to UI-7 and the M3.5 QA gate are in [coordination.md](coordination.md). Nothing here is built yet.
+Status: **Approved by the owner, 2026-11-04** as its own milestone, **M3.5: Look and feel** ([milestones.md](milestones.md)). The owner asked for it because "ratatui can make that UI look way better" and "there needs to be ways to customize the BBS so it looks cool". Slices UI-1 to UI-7 and the M3.5 QA gate are in [coordination.md](coordination.md). UI-1 (the frame, D109) and UI-2 (style packs, layouts, board identity; [implementation notes](#ui-2-implementation-notes)) are built; the rest is not.
 
 ## Goals
 
@@ -220,3 +220,14 @@ Under Sysop tools, a **theme preview** renders each installed theme against samp
 10. **M3.5 QA gate.**
 
 The game UI slices (S3, E3, N3, L3 and H3) wait for UI-5. The engine and content slices do not.
+
+## UI-2 implementation notes
+
+Built in `m35/theme-packs-layouts` (D-TBD). The reference is [ui.md](ui.md#styles-layouts-and-board-identity-ui-2-d-tbd); what differs from the plan above:
+
+- **Styles.** The six styles ship as complete packs with their own palette, borders, title treatment and decoration (not recolours), beside `default`, `green` and `contrast`. `amber` is now the full Amber Terminal pack. **Art is UI-3**: the styles draw the board name as text (with decoration) until the large-letter fallback and `.ans` art land. "Scanline shading" (Phosphor), "gradients" (Neon Night, Deep Space), "starfield" (Deep Space) and "block fades" (Classic ANSI) are built as cell colours and glyphs, where the depth allows. **Nothing animates:** the typewriter reveal, fades and wipes are UI-8; the motion setting (member x board x style ceiling) is stored and exposed as `Look::motion()`.
+- **Layouts.** All seven exist and arrange the **menu screen**; other screens take the style but not the panes until UI-4. `Focus` shows its widgets pop-over with `Tab`. `Split` draws the divider but does not drag it (UI-9), and its second pane is a placeholder slot (a live chat or mail pane is UI-9). Minimum sizes and fallbacks: wide 110x22 to dashboard 72x20 to lightbar 44x12 to classic 24x9 to compact; focus 40x10 and split 72x16 to lightbar.
+- **Widget slots** are named (`panes::Slot`) for UI-10. Identity and clock are real; the others say "Nothing to show yet.".
+- **Board identity.** Name, tagline, location, since, accent, default style and layout, allowed styles and layouts (one entry locks), motion. The **menu order, area labels, logoff quotes and the login banner art** from the plan are not in this slice (UI-3, UI-6).
+- **Member choices.** Style, layout, motion, colour-depth ceiling and borders, saved per member (migration `0024`), within the board's limits.
+- **Theme gallery, import and export, and the sysop preview** remain UI-3 and UI-7; the screenshots in [ui-screenshots/](ui-screenshots/README.md) are the owner's preview until then.

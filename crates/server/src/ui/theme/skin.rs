@@ -299,7 +299,7 @@ impl Skin {
                         skin.deco = HeaderDeco::parse(text).ok_or_else(bad)?;
                     }
                     ("backdrop", "kind") => {
-                        skin.backdrop = Backdrop::parse(text).ok_or_else(bad)?
+                        skin.backdrop = Backdrop::parse(text).ok_or_else(bad)?;
                     }
                     _ => {
                         return Err(style_error(format!(
@@ -396,14 +396,16 @@ pub(super) fn named(name: &str) -> Option<ratatui::style::Color> {
 /// The colour `t` (0 to 255) of the way from `from` to `to`, as a truecolor tint. `None` when
 /// either end has no known RGB (the terminal's own colour), so the caller draws it flat.
 #[must_use]
-pub(crate) fn blend(from: Tint, to: Tint, t: u8) -> Option<Tint> {
-    let (a, b) = (from.rgb()?, to.rgb()?);
-    let mix = |x: u8, y: u8| {
-        let (x, y, t) = (i32::from(x), i32::from(y), i32::from(t));
-        u8::try_from((x * (255 - t) + y * t) / 255).unwrap_or(u8::MAX)
+pub(crate) fn blend(from: Tint, to: Tint, step: u8) -> Option<Tint> {
+    let (start, end) = (from.rgb()?, to.rgb()?);
+    let mix = |near: u8, far: u8| {
+        let (near, far, step) = (i32::from(near), i32::from(far), i32::from(step));
+        u8::try_from((near * (255 - step) + far * step) / 255).unwrap_or(u8::MAX)
     };
-    let (r, g, bl) = (mix(a.0, b.0), mix(a.1, b.1), mix(a.2, b.2));
-    Some(Tint::Rgb(r, g, bl, nearest_16(r, g, bl)))
+    let red = mix(start.0, end.0);
+    let green = mix(start.1, end.1);
+    let blue = mix(start.2, end.2);
+    Some(Tint::Rgb(red, green, blue, nearest_16(red, green, blue)))
 }
 
 /// Whether a gradient is drawn at `depth`: the 256-colour and truecolor tiers have enough
@@ -414,6 +416,7 @@ pub(crate) fn gradient_depth(depth: ColorDepth) -> bool {
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::field_reassign_with_default)]
 mod tests {
     use super::*;
 

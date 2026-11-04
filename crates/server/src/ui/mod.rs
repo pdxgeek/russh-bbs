@@ -198,10 +198,8 @@ impl Ui {
         } else {
             board.layouts().to_vec()
         };
-        if let Some(style) = board.style() {
-            if !known(&style, "board.style") {
-                tracing::warn!("board.style is ignored");
-            }
+        if let Some(style) = board.style().filter(|style| !known(style, "board.style")) {
+            tracing::warn!(%style, "board.style is ignored");
         }
         self.board = board;
         self

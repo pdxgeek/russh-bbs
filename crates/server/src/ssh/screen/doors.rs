@@ -153,8 +153,10 @@ impl Screen {
         let Content::Doors(session) = &self.content else {
             return Ok(None);
         };
-        self.terminal
-            .draw(|frame| doors::render(frame, &session.screen, &ctx))?;
+        self.terminal.draw(|frame| {
+            doors::render(frame, &session.screen, &ctx);
+            crate::ui::backdrop::finish(frame, ctx.look);
+        })?;
         Ok(Some(self.finish_frame(tier)))
     }
 }

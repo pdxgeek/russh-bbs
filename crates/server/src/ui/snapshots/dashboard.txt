@@ -1,4 +1,4 @@
-=== phosphor / dashboard / 80x24 / unicode truecolor / colors=8aaa0637f1179bb9
+=== phosphor / dashboard / 80x24 / unicode truecolor / colors=468f1acda9d4b4e9
  russh-bbs │ Main menu                                                UTC 12:00
 ┌[ Main menu ]───────────────────┐┌[ This board ]───────┐┌[ Clock ]────────────┐
 │ Signed in as alice.            ││ russh-bbs           ││ UTC 12:00           │
@@ -24,7 +24,7 @@
 └────────────────────────────────┘└─────────────────────┘└─────────────────────┘
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / dashboard / 132x43 / unicode truecolor / colors=060b319701694bfd
+=== phosphor / dashboard / 132x43 / unicode truecolor / colors=e932a5f6be11eafb
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ┌[ Main menu ]───────────────────┐┌[ This board ]─────────────────────────────────┐┌[ Clock ]──────────────────────────────────────┐
 │ Signed in as alice.            ││ russh-bbs                                     ││ UTC 12:00                                     │

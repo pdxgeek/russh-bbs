@@ -71,7 +71,7 @@ use crate::ui::depth::ColorDepth;
 use crate::ui::editor::{Editor, EditorEffect, EditorRequest, EditorView, Outcome};
 use crate::ui::frame::{FrameSpec, clock_text};
 use crate::ui::strings::StringTable;
-use crate::ui::{Ui, chrome, layout};
+use crate::ui::{Ui, backdrop, chrome, layout};
 use crate::waiting_room::render;
 
 /// The markers a staff screen shows while the board is in low-security mode (D27): the mode's
@@ -497,6 +497,13 @@ impl Content {
     }
 }
 
+/// Whether the focus layout's widget pop-over is showing (UI-2).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Popover {
+    Closed,
+    Open,
+}
+
 /// One session's screen.
 pub(crate) struct Screen {
     terminal: Terminal<SessionBackend>,
@@ -516,7 +523,7 @@ pub(crate) struct Screen {
     dirty: bool,
     /// The focus layout's widget pop-over is open (UI-2). Toggled with Tab; any other key
     /// closes it first.
-    popover: bool,
+    popover: Popover,
     /// The window or the drawn size changed (or the screen must be cleared); the next render
     /// clears the client's screen and repaints everything.
     rebuild: bool,
@@ -605,7 +612,7 @@ impl Screen {
             ui,
             pty: size,
             dirty: false,
-            popover: false,
+            popover: Popover::Closed,
             rebuild: false,
             degrade_on_leave: false,
             editor: None,
@@ -673,16 +680,19 @@ impl Screen {
             for key in keys.iter().copied() {
                 match key {
                     Key::Ctrl('i') => {
-                        self.popover = !self.popover;
+                        self.popover = match self.popover {
+                            Popover::Closed => Popover::Open,
+                            Popover::Open => Popover::Closed,
+                        };
                         self.dirty = true;
                     }
-                    Key::Escape if self.popover => {
-                        self.popover = false;
+                    Key::Escape if self.popover == Popover::Open => {
+                        self.popover = Popover::Closed;
                         self.dirty = true;
                     }
                     other => {
-                        if self.popover {
-                            self.popover = false;
+                        if self.popover == Popover::Open {
+                            self.popover = Popover::Closed;
                             self.dirty = true;
                         }
                         rest.push(other);
@@ -691,8 +701,8 @@ impl Screen {
             }
             return self.apply_keys_inner(&rest);
         }
-        if self.popover {
-            self.popover = false;
+        if self.popover == Popover::Open {
+            self.popover = Popover::Closed;
             self.dirty = true;
         }
         self.apply_keys_inner(keys)
@@ -1443,8 +1453,10 @@ impl Screen {
                 clock: Some(clock.as_str()),
             };
             let tier = ctx.tier;
-            self.terminal
-                .draw(|frame| forums::render(frame, &session.screen, &ctx))?;
+            self.terminal.draw(|frame| {
+                forums::render(frame, &session.screen, &ctx);
+                backdrop::finish(frame, ctx.look);
+            })?;
             return Ok(self.finish_frame(tier));
         }
         if let Content::Mail(session) = &self.content {
@@ -1458,8 +1470,10 @@ impl Screen {
                 tier: settings.icon_tier(),
             };
             let tier = ctx.tier;
-            self.terminal
-                .draw(|frame| mail::render(frame, &session.screen, &ctx))?;
+            self.terminal.draw(|frame| {
+                mail::render(frame, &session.screen, &ctx);
+                backdrop::finish(frame, ctx.look);
+            })?;
             return Ok(self.finish_frame(tier));
         }
         // While the editor is open it is drawn instead of the content (the transport's footer
@@ -1485,109 +1499,114 @@ impl Screen {
         let staff_markers = self.status_markers();
         let clock = Some(clock.as_str());
         if !drew_editor {
-            self.terminal.draw(|frame| match (look, &menu) {
-                // The chat screen (M3-F): the same box and status row, with the room's lines.
-                (Some(look), _) if chat.is_some() => {
-                    if let Some(screen) = chat {
-                        crate::chat::render(frame, screen, strings, look, tier);
+            self.terminal.draw(|frame| {
+                match (look, &menu) {
+                    // The chat screen (M3-F): the same box and status row, with the room's lines.
+                    (Some(look), _) if chat.is_some() => {
+                        if let Some(screen) = chat {
+                            crate::chat::render(frame, screen, strings, look, tier);
+                        }
                     }
-                }
-                // The sysop queue and the vouch screen (M2-E): the same layout and status row. The
-                // requester's text is drawn in the content box only.
-                (Some(look), None) if queue_view.is_some() => {
-                    if let Some(screen) = &queue_view {
-                        let width = usize::from(frame.area().width.min(settings::MAX_WIDTH))
-                            .saturating_sub(2);
-                        classic::render_content(
-                            frame,
-                            ContentScreen {
-                                strings,
-                                lines: sysop::queue::lines(screen, strings, look, width),
-                                look,
-                                tier,
-                                markers: staff_markers,
-                                clock,
-                            },
-                        );
+                    // The sysop queue and the vouch screen (M2-E): the same layout and status row. The
+                    // requester's text is drawn in the content box only.
+                    (Some(look), None) if queue_view.is_some() => {
+                        if let Some(screen) = &queue_view {
+                            let width = usize::from(frame.area().width.min(settings::MAX_WIDTH))
+                                .saturating_sub(2);
+                            classic::render_content(
+                                frame,
+                                ContentScreen {
+                                    strings,
+                                    lines: sysop::queue::lines(screen, strings, look, width),
+                                    look,
+                                    tier,
+                                    markers: staff_markers,
+                                    clock,
+                                },
+                            );
+                        }
                     }
-                }
-                // A members screen: the same classic layout and status row, with its own lines.
-                (Some(look), None) if members_view.as_ref().is_some_and(members::is_list) => {
-                    if let Some(screen) = &members_view {
-                        members::render_list(
-                            frame,
-                            screen,
-                            &members::ListCtx {
-                                strings,
-                                look,
-                                tier,
-                                markers: staff_markers,
-                                clock,
-                            },
-                        );
+                    // A members screen: the same classic layout and status row, with its own lines.
+                    (Some(look), None) if members_view.as_ref().is_some_and(members::is_list) => {
+                        if let Some(screen) = &members_view {
+                            members::render_list(
+                                frame,
+                                screen,
+                                &members::ListCtx {
+                                    strings,
+                                    look,
+                                    tier,
+                                    markers: staff_markers,
+                                    clock,
+                                },
+                            );
+                        }
                     }
-                }
-                (Some(look), None) if members_view.is_some() => {
-                    if let Some(screen) = &members_view {
-                        let width = usize::from(frame.area().width.min(settings::MAX_WIDTH))
-                            .saturating_sub(2);
-                        classic::render_content(
-                            frame,
-                            ContentScreen {
-                                strings,
-                                lines: members::lines(screen, strings, look, width),
-                                look,
-                                tier,
-                                markers: staff_markers,
-                                clock,
-                            },
-                        );
+                    (Some(look), None) if members_view.is_some() => {
+                        if let Some(screen) = &members_view {
+                            let width = usize::from(frame.area().width.min(settings::MAX_WIDTH))
+                                .saturating_sub(2);
+                            classic::render_content(
+                                frame,
+                                ContentScreen {
+                                    strings,
+                                    lines: members::lines(screen, strings, look, width),
+                                    look,
+                                    tier,
+                                    markers: staff_markers,
+                                    clock,
+                                },
+                            );
+                        }
                     }
+                    // The main menu: the classic hotkey layout, with the reserved status row.
+                    (Some(look), Some(page)) => layout::render_menu(
+                        frame,
+                        layout,
+                        &MenuScreen {
+                            strings,
+                            page,
+                            body: &view.body,
+                            notice: view.notice,
+                            look,
+                            tier,
+                            markers: staff_markers,
+                            clock,
+                            mail_over_ssh_only: false,
+                            board: self.ui.board(),
+                            wanted,
+                            popover: self.popover == Popover::Open,
+                        },
+                    ),
+                    // The invite screens (M2-D): the same framed layout, with the reserved status row.
+                    (Some(look), None) if framed => classic::render_content(
+                        frame,
+                        ContentScreen {
+                            strings,
+                            lines: classic::view_lines(strings, &view, look),
+                            look,
+                            tier,
+                            markers: staff_markers,
+                            clock,
+                        },
+                    ),
+                    // Login, glyph test, settings and the password and key screens: the status bar
+                    // (hints and the marker cell) under the box; no header, so the settings screen
+                    // keeps its 22 rows at 80x24.
+                    (Some(look), None) => {
+                        let hints = classic::content_hints(strings);
+                        let body = FrameSpec::new(strings, look, tier)
+                            .markers(staff_markers)
+                            .hints(&hints)
+                            .header(false)
+                            .draw(frame);
+                        settings::render_in(frame, body, &view, look, strings);
+                    }
+                    (None, _) => render(frame, &view),
                 }
-                // The main menu: the classic hotkey layout, with the reserved status row.
-                (Some(look), Some(page)) => layout::render_menu(
-                    frame,
-                    layout,
-                    &MenuScreen {
-                        strings,
-                        page,
-                        body: &view.body,
-                        notice: view.notice,
-                        look,
-                        tier,
-                        markers: staff_markers,
-                        clock,
-                        mail_over_ssh_only: false,
-                        board: self.ui.board(),
-                        wanted,
-                        popover: self.popover,
-                    },
-                ),
-                // The invite screens (M2-D): the same framed layout, with the reserved status row.
-                (Some(look), None) if framed => classic::render_content(
-                    frame,
-                    ContentScreen {
-                        strings,
-                        lines: classic::view_lines(strings, &view, look),
-                        look,
-                        tier,
-                        markers: staff_markers,
-                        clock,
-                    },
-                ),
-                // Login, glyph test, settings and the password and key screens: the status bar
-                // (hints and the marker cell) under the box; no header, so the settings screen
-                // keeps its 22 rows at 80x24.
-                (Some(look), None) => {
-                    let hints = classic::content_hints(strings);
-                    let body = FrameSpec::new(strings, look, tier)
-                        .markers(staff_markers)
-                        .hints(&hints)
-                        .header(false)
-                        .draw(frame);
-                    settings::render_in(frame, body, &view, look, strings);
+                if let Some(look) = look {
+                    backdrop::finish(frame, look);
                 }
-                (None, _) => render(frame, &view),
             })?;
         }
         Ok(self.finish_frame(tier))

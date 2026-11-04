@@ -137,15 +137,11 @@ impl Board {
         let styles = list("board.styles", &config.styles, style_name)?;
         let layouts = list("board.layouts", &config.layouts, layout_name)?;
         // A default the members are not allowed to pick would be an instant contradiction.
-        if let Some(style) = style {
-            if !styles.is_empty() && !styles.contains(&style) {
-                return Err(refuse("board.style", "is not in board.styles"));
-            }
+        if style.is_some_and(|style| !styles.is_empty() && !styles.contains(&style)) {
+            return Err(refuse("board.style", "is not in board.styles"));
         }
-        if let Some(layout) = layout {
-            if !layouts.is_empty() && !layouts.contains(&layout) {
-                return Err(refuse("board.layout", "is not in board.layouts"));
-            }
+        if layout.is_some_and(|layout| !layouts.is_empty() && !layouts.contains(&layout)) {
+            return Err(refuse("board.layout", "is not in board.layouts"));
         }
         Ok(Self {
             name,

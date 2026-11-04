@@ -35,8 +35,6 @@ pub(crate) const MAX_WIDTH: u16 = 76;
 pub(crate) struct Look {
     color: bool,
     ascii_borders: bool,
-    /// The compact layout draws no box (M3-A).
-    borderless: bool,
     /// The layout in force (a fallback for a small terminal, not the member's choice).
     layout: LayoutId,
     palette: Palette,
@@ -64,7 +62,6 @@ impl Look {
         Self {
             color: settings.use_color(),
             ascii_borders: settings.icon_tier() == Tier::Ascii || prefs::ascii_borders(settings),
-            borderless: layout == LayoutId::Compact,
             layout,
             palette,
             skin: Skin::default(),
@@ -117,8 +114,8 @@ impl Look {
     }
 
     /// Whether the layout draws no box (compact).
-    pub(crate) const fn is_borderless(self) -> bool {
-        self.borderless
+    pub(crate) fn is_borderless(self) -> bool {
+        self.layout == LayoutId::Compact
     }
 
     /// The layout in force.
@@ -208,7 +205,7 @@ impl Look {
             self.skin.border(element)
         };
         let mut block = Block::default().style(self.text());
-        if set != BorderSet::None && !self.borderless {
+        if set != BorderSet::None && !self.is_borderless() {
             block = block
                 .borders(Borders::ALL)
                 .border_style(self.accent(Style::new(), self.palette.border));
@@ -218,17 +215,20 @@ impl Look {
                 (None, _) => block,
             };
         }
-        if let (Some(title), false) = (title, self.borderless) {
+        if let (Some(title), false) = (title, self.is_borderless()) {
             let heading = self.accent(
                 Style::new().add_modifier(Modifier::BOLD),
                 self.palette.title,
             );
             let text = self.skin.title.render(title, self.ascii_borders);
-            let align = match self.skin.align {
-                Some(TitleAlign::Left) => Alignment::Left,
-                Some(TitleAlign::Center) => Alignment::Center,
-                None if centered => Alignment::Center,
-                None => Alignment::Left,
+            let centered = match self.skin.align {
+                Some(align) => align == TitleAlign::Center,
+                None => centered,
+            };
+            let align = if centered {
+                Alignment::Center
+            } else {
+                Alignment::Left
             };
             block = block
                 .title(Line::from(Span::styled(text, heading)))
@@ -276,7 +276,13 @@ pub(crate) fn render_in(
     look: Look,
     strings: &StringTable,
 ) {
-    boxed_flush(frame, area, view.title, lines(view, look, strings), look);
+    // The product name every core view carries is the board's name on this board (UI-2).
+    let title = if view.title == crate::ui::board::DEFAULT_NAME {
+        strings.text(crate::ui::keys::TITLE)
+    } else {
+        view.title
+    };
+    boxed_flush(frame, area, title, lines(view, look, strings), look);
 }
 
 /// Draw `lines` in the bordered box, centered in `area`. Shared with the menu framework's

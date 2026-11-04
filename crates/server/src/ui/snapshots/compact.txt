@@ -1,4 +1,4 @@
-=== phosphor / compact / 80x24 / unicode truecolor / colors=3bff4c2fdac3b7e8
+=== phosphor / compact / 80x24 / unicode truecolor / colors=3d171116127096d6
   Main menu
   Signed in as alice.
   f Forums
@@ -24,7 +24,7 @@
 
  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / compact / 132x43 / unicode truecolor / colors=8b01b4f4533c08c4
+=== phosphor / compact / 132x43 / unicode truecolor / colors=5e4310bbe519d2f2
 
                             Main menu
                             Signed in as alice.

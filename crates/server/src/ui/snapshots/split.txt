@@ -1,4 +1,4 @@
-=== phosphor / split / 80x24 / unicode truecolor / colors=cbff94676f7b2b7b
+=== phosphor / split / 80x24 / unicode truecolor / colors=f68e3f528dc8ae5f
  russh-bbs │ Main menu                                                UTC 12:00
 ┌[ Main menu ]───────────────────┐│┌[ Chat ]───────────────────────────────────┐
 │ Signed in as alice.            │││ Nothing to show yet.                      │
@@ -24,7 +24,7 @@
 └────────────────────────────────┘│└───────────────────────────────────────────┘
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / split / 132x43 / unicode truecolor / colors=24f8b5481077a25b
+=== phosphor / split / 132x43 / unicode truecolor / colors=9aae0b3aea591122
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ┌[ Main menu ]───────────────────┐│┌[ Chat ]───────────────────────────────────────────────────────────────────────────────────────┐
 │ Signed in as alice.            │││ Nothing to show yet.                                                                          │
@@ -95,7 +95,7 @@
 +--------------------------------+|+-------------------------------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / split / 80x24 / unicode truecolor / colors=a0c4191dcccb2a41
+=== neon / split / 80x24 / unicode truecolor / colors=82708dfefc5c28dd
  » russh-bbs « │ Main menu                                            UTC 12:00
 ╭« Main menu »───────────────────╮│╭« Chat »───────────────────────────────────╮
 │ Signed in as alice.            │││ Nothing to show yet.                      │
@@ -121,7 +121,7 @@
 ╰────────────────────────────────╯│╰───────────────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / split / 132x43 / unicode truecolor / colors=6d6dbefe82cc74ce
+=== neon / split / 132x43 / unicode truecolor / colors=e7ee95bdc2f825bc
  » russh-bbs « │ Main menu                                                                                                UTC 12:00
 ╭« Main menu »───────────────────╮│╭« Chat »───────────────────────────────────────────────────────────────────────────────────────╮
 │ Signed in as alice.            │││ Nothing to show yet.                                                                          │
@@ -192,7 +192,7 @@
 +--------------------------------+|+-------------------------------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / split / 80x24 / unicode truecolor / colors=07c3eeb6a2f003dc
+=== paper / split / 80x24 / unicode truecolor / colors=70e8f038a9350584
  russh-bbs │ Main menu                                                UTC 12:00
 ╭ Main menu ─────────────────────╮│╭ Chat ─────────────────────────────────────╮
 │ Signed in as alice.            │││ Nothing to show yet.                      │
@@ -218,7 +218,7 @@
 ╰────────────────────────────────╯│╰───────────────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / split / 132x43 / unicode truecolor / colors=9870c7af5c50b2e2
+=== paper / split / 132x43 / unicode truecolor / colors=9665607ba4d0da29
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ╭ Main menu ─────────────────────╮│╭ Chat ─────────────────────────────────────────────────────────────────────────────────────────╮
 │ Signed in as alice.            │││ Nothing to show yet.                                                                          │
@@ -289,7 +289,7 @@
 +--------------------------------+|+-------------------------------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / split / 80x24 / unicode truecolor / colors=8edfb2d9cd991fcd
+=== amber / split / 80x24 / unicode truecolor / colors=e2b4cfc6098aeef1
  russh-bbs │ Main menu                                                UTC 12:00
 ┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━┓│┏ CHAT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ Signed in as alice.            ┃│┃ Nothing to show yet.                      ┃
@@ -315,7 +315,7 @@
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛│┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / split / 132x43 / unicode truecolor / colors=cd4361744833a822
+=== amber / split / 132x43 / unicode truecolor / colors=b9e8789a42256357
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━┓│┏ CHAT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ Signed in as alice.            ┃│┃ Nothing to show yet.                                                                          ┃
@@ -386,7 +386,7 @@
 +--------------------------------+|+-------------------------------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / split / 80x24 / unicode truecolor / colors=6525e07e94b8389e
+=== deepspace / split / 80x24 / unicode truecolor / colors=0acf299576e66db2
  ◆ russh-bbs ◆ │ Main menu                                            UTC 12:00
 ╭────── M A I N   M E N U ───────╮│╭───────────────── C H A T ─────────────────╮
 │ Signed in as alice.            │││ Nothing to show yet.                      │
@@ -412,7 +412,7 @@
 ╰────────────────────────────────╯│╰───────────────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / split / 132x43 / unicode truecolor / colors=7db6911b4320927b
+=== deepspace / split / 132x43 / unicode truecolor / colors=c5a33a6481a59401
  ◆ russh-bbs ◆ │ Main menu                                                                                                UTC 12:00
 ╭────── M A I N   M E N U ───────╮│╭─────────────────────────────────────────── C H A T ───────────────────────────────────────────╮
 │ Signed in as alice.            │││ Nothing to show yet.                                                                          │
@@ -483,7 +483,7 @@
 +--------------------------------+|+-------------------------------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / split / 80x24 / unicode truecolor / colors=067e83a46b9a9c76
+=== ansi / split / 80x24 / unicode truecolor / colors=2bfd51a41d43dcbe
  ░▒▓ russh-bbs ▓▒░ │ Main menu                                        UTC 12:00
 ╔═════════╡ Main menu ╞══════════╗│╔═════════════════╡ Chat ╞══════════════════╗
 ║ Signed in as alice.            ║│║ Nothing to show yet.                      ║
@@ -509,7 +509,7 @@
 ╚════════════════════════════════╝│╚═══════════════════════════════════════════╝
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / split / 132x43 / unicode truecolor / colors=fd044e2dc20b45b6
+=== ansi / split / 132x43 / unicode truecolor / colors=a9700241a42851d6
  ░▒▓ russh-bbs ▓▒░ │ Main menu                                                                                            UTC 12:00
 ╔═════════╡ Main menu ╞══════════╗│╔═══════════════════════════════════════════╡ Chat ╞════════════════════════════════════════════╗
 ║ Signed in as alice.            ║│║ Nothing to show yet.                                                                          ║

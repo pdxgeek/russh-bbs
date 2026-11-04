@@ -1,3 +1,11 @@
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::type_complexity,
+    clippy::panic,
+    clippy::assert_is_empty
+)]
+
 //! How the board's identity and limits meet a member's own choices (UI-2).
 
 use ratatui::layout::Rect;

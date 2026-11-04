@@ -441,6 +441,110 @@ fn feeds_ca_file_must_name_an_existing_file_and_defaults_to_the_platform_store()
     );
 }
 
+// ---- [board] (UI-2) ------------------------------------------------------------------------
+
+#[test]
+fn board_defaults_are_the_old_screens_and_every_key_layers_like_the_rest() {
+    let defaults = Config::default().board;
+    assert_eq!(defaults.name, "russh-bbs");
+    assert!(defaults.accent.is_none() && defaults.style.is_none() && defaults.layout.is_none());
+    assert!(defaults.styles.is_empty() && defaults.layouts.is_empty() && defaults.motion);
+    // File < environment: the environment wins and says where it came from.
+    let file = FileInput {
+        path: Path::new(FILE),
+        text: "[board]\nname = \"From File\"\nstyle = \"paper\"\nlayouts = \"classic,wide\"\nmotion = false\n",
+        loose_permissions: false,
+    };
+    let got = assemble(
+        Some(file),
+        &env(&[("RUSSH_BBS_BOARD_NAME", "From Env")]),
+        &[],
+    )
+    .unwrap();
+    assert_eq!(got.config.board.name, "From Env");
+    assert_eq!(got.config.board.style.as_deref(), Some("paper"));
+    assert_eq!(got.config.board.layouts, "classic,wide");
+    assert!(!got.config.board.motion);
+    assert_eq!(
+        got.sources.get("board.name"),
+        Source::Env("RUSSH_BBS_BOARD_NAME")
+    );
+}
+
+#[test]
+fn a_bad_board_value_is_refused_at_boot_naming_the_key_and_where_it_came_from() {
+    let cases: [(&str, &str, &str); 9] = [
+        ("RUSSH_BBS_BOARD_NAME", "", "board.name"),
+        ("RUSSH_BBS_BOARD_NAME", "Secure Vault", "board.name"),
+        ("RUSSH_BBS_BOARD_NAME", "a\u{1b}[31mb", "board.name"),
+        (
+            "RUSSH_BBS_BOARD_TAGLINE",
+            "\u{27e6}x\u{27e7}",
+            "board.tagline",
+        ),
+        ("RUSSH_BBS_BOARD_ACCENT", "chartreuse", "board.accent"),
+        ("RUSSH_BBS_BOARD_STYLE", "Not A Name", "board.style"),
+        ("RUSSH_BBS_BOARD_LAYOUT", "tiled", "board.layout"),
+        (
+            "RUSSH_BBS_BOARD_LAYOUTS",
+            "classic,classic",
+            "board.layouts",
+        ),
+        ("RUSSH_BBS_BOARD_STYLES", "neon,", "board.styles"),
+    ];
+    for (name, value, key) in cases {
+        let result = assemble(None, &env(&[(name, value)]), &[]);
+        if key == "board.styles" {
+            // A trailing comma is only an empty entry, which is ignored.
+            assert!(result.is_ok(), "{value:?}");
+            continue;
+        }
+        let text = message(result);
+        assert!(text.contains(key), "{name}={value:?}: {text}");
+        assert!(
+            text.contains(name),
+            "{name}={value:?} names its source: {text}"
+        );
+    }
+}
+
+#[test]
+fn a_board_default_that_members_may_not_pick_is_a_contradiction() {
+    let text = message(assemble(
+        None,
+        &env(&[
+            ("RUSSH_BBS_BOARD_STYLE", "neon"),
+            ("RUSSH_BBS_BOARD_STYLES", "paper,ansi"),
+        ]),
+        &[],
+    ));
+    assert!(
+        text.contains("board.style") && text.contains("board.styles"),
+        "{text}"
+    );
+    let text = message(assemble(
+        None,
+        &env(&[
+            ("RUSSH_BBS_BOARD_LAYOUT", "wide"),
+            ("RUSSH_BBS_BOARD_LAYOUTS", "classic"),
+        ]),
+        &[],
+    ));
+    assert!(text.contains("board.layout"), "{text}");
+}
+
+#[test]
+fn a_good_full_board_section_loads_and_builds_the_screens_board() {
+    let got = from_file(
+        "[board]\nname = \"Night Owl BBS\"\ntagline = \"After hours\"\nlocation = \"Portland\"\nsince = \"2026\"\naccent = \"#ff00aa\"\nstyle = \"neon\"\nlayout = \"dashboard\"\nstyles = \"neon,paper\"\nlayouts = \"classic,dashboard\"\nmotion = false\n",
+    )
+    .unwrap();
+    let board = crate::ui::Board::from_config(&got.config.board).unwrap();
+    assert_eq!(board.name(), "Night Owl BBS");
+    assert_eq!(board.styles().len(), 2);
+    assert!(!board.motion());
+}
+
 // ---- redaction -----------------------------------------------------------------------------
 
 const SECRET_URL: &str = "postgres://bbs:hunter2@db.example:5432/bbs?sslmode=require";

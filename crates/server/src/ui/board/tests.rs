@@ -1,3 +1,11 @@
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::type_complexity,
+    clippy::panic,
+    clippy::assert_is_empty
+)]
+
 use super::*;
 
 fn config(edit: impl FnOnce(&mut BoardConfig)) -> Result<Board, BoardError> {

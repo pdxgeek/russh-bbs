@@ -1,4 +1,4 @@
-=== phosphor / lightbar / 80x24 / unicode truecolor / colors=b7bb4b51bac09687
+=== phosphor / lightbar / 80x24 / unicode truecolor / colors=1e712877818d7d8b
  russh-bbs │ Main menu                                                UTC 12:00
   ┌[ Main menu ]─────────────────────────────────────────────────────────────┐
   │ Signed in as alice.                                                      │
@@ -24,7 +24,7 @@
   └──────────────────────────────────────────────────────────────────────────┘
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / lightbar / 132x43 / unicode truecolor / colors=5a65356275bb74f9
+=== phosphor / lightbar / 132x43 / unicode truecolor / colors=36ede574d34a68d7
  russh-bbs │ Main menu                                                                                                    UTC 12:00
                             ┌[ Main menu ]─────────────────────────────────────────────────────────────┐
                             │ Signed in as alice.                                                      │

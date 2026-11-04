@@ -1,3 +1,11 @@
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::type_complexity,
+    clippy::panic,
+    clippy::assert_is_empty
+)]
+
 //! The styles and layouts as a product (UI-2): six complete styles, readable at every depth, in
 //! mono and in the ASCII tier, with the security marker untouched by any of them.
 
@@ -77,6 +85,7 @@ pub(super) fn shot(
                     popover: false,
                 },
             );
+            super::backdrop::finish(frame, look);
         })
         .unwrap();
     terminal.backend().buffer().clone()

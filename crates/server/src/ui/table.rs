@@ -234,8 +234,8 @@ pub(crate) struct TableView {
 
 /// The border block for a framed region: the theme's border colour, plain ASCII in the ASCII
 /// tier, a centred title. Shared by tables, popups and the converted menu screens.
-pub(crate) fn framed(look: Look, title: Option<String>) -> Block<'static> {
-    look.block(title.as_deref(), Element::Frame, false)
+pub(crate) fn framed(look: Look, title: Option<&str>) -> Block<'static> {
+    look.block(title, Element::Frame, false)
 }
 
 /// The terminal columns one character takes.
@@ -373,7 +373,7 @@ pub(crate) fn render(
     spec: &TableSpec<'_>,
 ) -> TableView {
     let block = if spec.bordered {
-        framed(look, spec.title.text())
+        framed(look, spec.title.text().as_deref())
     } else {
         Block::default()
     };

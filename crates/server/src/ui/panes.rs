@@ -374,7 +374,7 @@ fn draw_divider(frame: &mut Frame<'_>, area: Rect, look: Look) {
         })
         .collect();
     frame.render_widget(Clear, area);
-    frame.render_widget(Paragraph::new(lines), area);
+    frame.render_widget(Paragraph::new(lines).style(look.text()), area);
 }
 
 /// The focus layout: the menu as a roomy centred column with no box, a heading and a rule.
@@ -388,6 +388,10 @@ fn draw_focus(frame: &mut Frame<'_>, body: Rect, screen: &MenuScreen<'_>) {
         ..body
     };
     frame.render_widget(Clear, column);
+    frame.render_widget(
+        ratatui::widgets::Block::default().style(look.text()),
+        column,
+    );
     let bold = Style::new().add_modifier(Modifier::BOLD);
     let mut lines: Vec<Line<'static>> = vec![Line::styled(
         strings.text(screen.page.title).to_owned(),

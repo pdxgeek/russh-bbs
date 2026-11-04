@@ -1,4 +1,4 @@
-=== phosphor / wide / 80x24 / unicode truecolor / colors=e51cc2249eb93dc7
+=== phosphor / wide / 80x24 / unicode truecolor / colors=6103d8f6bdb425f1
  russh-bbs │ Main menu                                                UTC 12:00
 ┌[ Main menu ]───────────────────┐┌[ This board ]───────┐┌[ Clock ]────────────┐
 │ Signed in as alice.            ││ russh-bbs           ││ UTC 12:00           │
@@ -24,7 +24,7 @@
 └────────────────────────────────┘└─────────────────────┘└─────────────────────┘
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / wide / 132x43 / unicode truecolor / colors=061d7c6e349cf583
+=== phosphor / wide / 132x43 / unicode truecolor / colors=528b0c868b7e36b5
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ┌[ Main menu ]───────────────────┐┌[ russh-bbs ]───────────────────────────────────────────────┐┌[ This board ]────────────────────┐
 │ > [f] Forums                   ││                                                            ││ russh-bbs                        │
