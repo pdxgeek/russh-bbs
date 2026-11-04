@@ -643,6 +643,20 @@ pub(super) fn compose(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
             .block(ui.panel("A letter")),
         left,
     );
+    if matches!(ui.s.mode, Mode::Line(_)) {
+        f.render_widget(
+            Paragraph::new(vec![
+                Line::styled("Type your line.", p.plain),
+                Line::styled("Enter keeps it.", p.dim),
+                Line::styled("Esc leaves it as it was.", p.dim),
+                Line::styled("An empty line sends none.", p.dim),
+            ])
+            .wrap(Wrap { trim: true })
+            .block(ui.panel("Your line")),
+            right,
+        );
+        return;
+    }
     let items: Vec<_> = ui.entries.iter().enumerate().collect();
     ui.orders(f, right, "Orders", &items);
 }

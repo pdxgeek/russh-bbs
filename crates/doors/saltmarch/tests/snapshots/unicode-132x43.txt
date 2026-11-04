@@ -751,11 +751,11 @@
  ≈ TIDE ████████████░░░░░░░░░░░░░░░░┃░░░░░░░░░░░  30 ↑ high in 5h59 (73)  neap tides                                          calm
  00:00 ▃▃▃▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▅▅▅▅▅▅▄▄▄▄▄▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▅▅▅▅▅▅▄▄▄▄▄▃▃▃▃▃▃▃ 24:00
        ▲      now 00:00
-╭ A letter ─────────────────────────────────────────────────────────────────╮╭ Orders ─────────────────────────────────────────────╮
-│To      Cove                                                               ││Nothing to do here.                                  │
-│Kind    greeting                                                           ││                                                     │
-│                                                                           ││                                                     │
-│ann sends greeting to Cove. The reeds are high on our flats and the salt   ││                                                     │
+╭ A letter ─────────────────────────────────────────────────────────────────╮╭ Your line ──────────────────────────────────────────╮
+│To      Cove                                                               ││Type your line.                                      │
+│Kind    greeting                                                           ││Enter keeps it.                                      │
+│                                                                           ││Esc leaves it as it was.                             │
+│ann sends greeting to Cove. The reeds are high on our flats and the salt   ││An empty line sends none.                            │
 │is good. May the water be kind to you.                                     ││                                                     │
 │                                                                           ││                                                     │
 │Your line: see you at the weir▌                                            ││                                                     │

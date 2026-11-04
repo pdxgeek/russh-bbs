@@ -427,11 +427,11 @@
  ⌂ ann  day 1 of season 1                 turns ██████████ 30/30  ◈ 312 tallies
  ≈ TIDE ████████░░░░░░░░░░░┃░░░░░░░░  30 ↑ high in 5h59 (73)  neap tides  calm
  00:00 ◆▃▃▃▃▄▄▄▅▅▅▅▆▆▆▆▆▆▆▆▆▆▆▅▅▅▄▄▄▃▃▃▃▃▃▃▃▃▃▃▄▄▄▅▅▅▆▆▆▆▆▆▆▆▆▆▅▅▅▄▄▄▃▃▃▃ 24:00
-╭ A letter ──────────────────────────────────╮╭ Orders ────────────────────────╮
-│To      Cove                                ││Nothing to do here.             │
-│Kind    greeting                            ││                                │
-│                                            ││                                │
-│ann sends greeting to Cove. The reeds are   ││                                │
+╭ A letter ──────────────────────────────────╮╭ Your line ─────────────────────╮
+│To      Cove                                ││Type your line.                 │
+│Kind    greeting                            ││Enter keeps it.                 │
+│                                            ││Esc leaves it as it was.        │
+│ann sends greeting to Cove. The reeds are   ││An empty line sends none.       │
 │high on our flats and the salt is good.     ││                                │
 │May the water be kind to you.               ││                                │
 │                                            ││                                │
