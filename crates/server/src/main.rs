@@ -96,6 +96,16 @@ async fn main() -> anyhow::Result<()> {
 
 /// Run the board on `store` until a shutdown signal. Everything past store selection is
 /// backend-independent (core traits only).
+/// The board's name, accent, defaults and limits (UI-2); the same checks the config ran.
+fn board_of(loaded: &Loaded) -> anyhow::Result<russh_bbs_server::ui::Board> {
+    russh_bbs_server::ui::Board::from_config(&loaded.config.board)
+        .context("reading the [board] settings")
+}
+
+#[allow(
+    clippy::too_many_lines,
+    reason = "the boot sequence, in order; splitting it hides the order"
+)]
 async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
     store: S,
     loaded: &Loaded,
@@ -137,6 +147,7 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
         None => Ui::standard(),
     }
     .context("building the screens")?
+    .with_board(board_of(loaded)?)
     .with_mail_keys(Arc::new(mail_keys))
     // The doors built into this board (M4-D0): the example coin toss until a game replaces it.
     .with_doors(

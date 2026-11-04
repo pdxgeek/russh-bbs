@@ -28,7 +28,7 @@ use ratatui::widgets::{Block, Clear, Paragraph, Wrap};
 use russh_bbs_core::sanitize::SingleLine;
 
 use super::frame::{ChromeText, Hint};
-use super::table::framed;
+use super::theme::Element;
 use crate::settings::Look;
 
 /// Narrowest and widest a popup is drawn, in columns.
@@ -161,8 +161,10 @@ pub(crate) fn render(frame: &mut Frame<'_>, body: Rect, look: Look, popup: &Popu
         PopupKind::Confirm => look.palette().heading,
     };
     let title = popup.title.as_str().to_owned();
-    let mut block = framed(look, Some(title)).border_style(look.accent(Style::new(), tone));
-    block = block.style(look.bg(look.surfaces().popup_bg));
+    let block = look
+        .block(Some(&title), Element::Popup, false)
+        .border_style(look.accent(Style::new(), tone))
+        .style(look.text().patch(look.bg(look.surfaces().popup_bg)));
     let inner = block.inner(area);
     frame.render_widget(block, area);
     let key_rows = u16::from(!popup.keys.is_empty()) * 2;

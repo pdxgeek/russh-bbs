@@ -20,6 +20,27 @@
 # admin UI. Uncomment only to pin the mode from config. Decision D38.
 # registration_mode = "invite"
 
+[board]
+# The board's identity and what members may choose (UI-2). Everything is optional; the screens
+# use the same words as before until you set them. Text is plain: it may not claim the board is
+# private, secure or encrypted, and control or invisible characters are refused.
+# name = "russh-bbs"
+# tagline = "A bulletin board in your terminal."
+# location = "Portland, Oregon"
+# since = "2026"
+# An accent colour that replaces the style's: "#rrggbb", a 0-255 index, or a colour name.
+# accent = "#ff2bd6"
+# What new members start with. Styles: default, phosphor, neon, paper, amber, deepspace, ansi,
+# green, contrast (plus any in the themes directory). Layouts: classic, lightbar, compact,
+# dashboard, wide, focus, split.
+# style = "neon"
+# layout = "dashboard"
+# Limit what members can pick (comma-separated). One entry locks the choice for everyone.
+# styles = "neon,paper,ansi"
+# layouts = "classic,dashboard,wide"
+# Set false to turn motion off for every member.
+# motion = true
+
 [mail]
 # The key that seals stored mail (M3-I, D90). Default: mail.key beside the host key (in the
 # data directory). Created with mode 0600 on the first start of a board with no mail; the server

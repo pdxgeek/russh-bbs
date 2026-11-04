@@ -12,6 +12,7 @@ use russh_bbs_core::terminal_settings::strings::fill;
 
 use super::{Editor, EditorView, Mode, strings};
 use crate::settings::Look;
+use crate::ui::depth::Tint;
 use crate::ui::{chrome, classic};
 
 /// Narrowest and shortest box interior the editor draws in. Smaller and it says so in words
@@ -49,7 +50,7 @@ pub(super) fn render(editor: &Editor, frame: &mut Frame<'_>, view: &EditorView<'
     );
     let mut block = Block::default()
         .borders(Borders::ALL)
-        .border_style(look.accent(Style::new(), Color::Cyan))
+        .border_style(look.accent(Style::new(), Tint::Named(Color::Cyan)))
         .title(format!(" {} ", editor.title.as_str()))
         .title_alignment(Alignment::Center)
         .title_bottom(format!(" {counts} "));

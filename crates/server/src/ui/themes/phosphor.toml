@@ -1,0 +1,49 @@
+# Shipped style: Phosphor. A green CRT: near-black glass, one phosphor hue, scanline shading.
+# Every colour is truecolor with the sixteen-colour fallback worked out from it. All art is
+# original. A style can set colours and drawing choices; it can never touch the security markers.
+name = "phosphor"
+
+[colors]
+surface = "#020a04"
+panel = "#04120a"
+popup = "#061a0e"
+stripe = "#05160c"
+head = "#0b2a16"
+bar = "#0a2a14"
+bar_text = "#9dffb0"
+text = "#52f58a"
+muted = "#2fa05c"
+border = "#23a85a"
+heading = "#b6ffc8"
+key = "#e4ffe9"
+accent = "#39ff88"
+accent2 = "#00c060"
+selected = "#021a0b"
+select_bg = "#39ff88"
+info = "#6dffb0"
+success = "#39ff88"
+warning = "#ffd34d"
+error = "#ff7a6b"
+link = "#5fe3ff"
+quote = "#7fbf93"
+timestamp = "#3a9a5e"
+title = "#b6ffc8"
+
+[style.borders]
+frame = "plain"
+pane = "plain"
+popup = "thick"
+
+[style.title]
+treatment = "bracket"
+align = "left"
+
+[style.header]
+decoration = "none"
+gradient = false
+
+[style.backdrop]
+kind = "scanlines"
+
+[style.motion]
+default = true

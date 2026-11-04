@@ -24,7 +24,7 @@ fn look(tier: Tier, color: bool, depth: ColorDepth) -> Look {
     let settings = TerminalSettings::default()
         .with_tier(tier)
         .with_color(color);
-    Look::themed(&settings, LayoutId::Classic, Palette::DEFAULT).at_depth(depth)
+    Look::themed(&settings, LayoutId::Classic, Palette::default()).at_depth(depth)
 }
 
 fn columns() -> Vec<Column<'static>> {

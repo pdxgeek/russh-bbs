@@ -11,6 +11,8 @@
 //! string table holds exactly the keys the tree and the layout use, so a bad table stops the
 //! server with a message naming the key instead of drawing blanks.
 
+pub(crate) mod backdrop;
+pub mod board;
 pub(crate) mod chrome;
 pub(crate) mod classic;
 pub(crate) mod compact;
@@ -21,6 +23,7 @@ pub(crate) mod keys;
 pub(crate) mod layout;
 pub(crate) mod lightbar;
 pub(crate) mod pager;
+pub(crate) mod panes;
 pub(crate) mod popup;
 pub mod strings;
 pub(crate) mod table;
@@ -30,7 +33,9 @@ use std::path::Path;
 use std::sync::Arc;
 
 use russh_bbs_core::menu::{MenuError, main_tree};
-use russh_bbs_core::terminal_settings::ThemeName;
+use russh_bbs_core::terminal_settings::{LayoutId, TerminalSettings, ThemeName};
+
+pub use board::Board;
 
 pub use strings::{StringError, StringTable};
 pub use theme::{Palette, Theme, ThemeError, ThemeSet};
@@ -54,6 +59,11 @@ pub enum UiError {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Ui {
     themes: ThemeSet,
+    board: Board,
+    /// The styles members may pick from (the board's list, or every loaded style).
+    styles: Vec<ThemeName>,
+    /// The layouts members may pick from.
+    layouts: Vec<LayoutId>,
     mail: MailKeysHandle,
     doors: crate::doors::Doors,
 }
@@ -138,6 +148,7 @@ impl Ui {
         let required: Vec<&str> = keys::FRAMEWORK
             .iter()
             .copied()
+            .chain(keys::LAYOUT_KEYS.iter().copied())
             .chain(tree.text_keys())
             .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
             .chain(russh_bbs_core::community::TEXT_KEYS.iter().copied())
@@ -150,10 +161,147 @@ impl Ui {
             .collect();
         let strings = StringTable::parse(toml, &required)?;
         Ok(Self {
+            styles: Vec::new(),
+            layouts: LayoutId::ALL.to_vec(),
+            board: Board::default(),
             themes: ThemeSet::shipped(&strings)?,
             mail: MailKeysHandle::default(),
             doors: crate::doors::Doors::none(),
         })
+    }
+
+    /// The same screens with the board's identity and limits (UI-2). The name replaces the
+    /// string table's title in every style; a style or layout the board names that is not
+    /// loaded is ignored with a warning, never an error (a missing theme file must not stop the
+    /// boot); a list that ends up empty means "everything".
+    #[must_use]
+    pub fn with_board(mut self, board: Board) -> Self {
+        if let Some(title) = board.title_override() {
+            let overrides = std::collections::BTreeMap::from([(keys::TITLE.to_owned(), title)]);
+            self.themes.apply_overrides(&overrides);
+        }
+        let known = |name: &ThemeName, what: &str| {
+            let loaded = self.themes.contains(*name);
+            if !loaded {
+                tracing::warn!(style = %name, "{what} names a style that is not loaded; ignored");
+            }
+            loaded
+        };
+        self.styles = board
+            .styles()
+            .iter()
+            .filter(|name| known(name, "board.styles"))
+            .copied()
+            .collect();
+        self.layouts = if board.layouts().is_empty() {
+            LayoutId::ALL.to_vec()
+        } else {
+            board.layouts().to_vec()
+        };
+        if let Some(style) = board.style().filter(|style| !known(style, "board.style")) {
+            tracing::warn!(%style, "board.style is ignored");
+        }
+        self.board = board;
+        self
+    }
+
+    /// The board's identity.
+    #[must_use]
+    pub fn board(&self) -> &Board {
+        &self.board
+    }
+
+    /// The styles a member may pick from, the default style first when it is allowed.
+    #[must_use]
+    pub fn allowed_styles(&self) -> Vec<ThemeName> {
+        if self.styles.is_empty() {
+            self.themes.names()
+        } else {
+            self.styles.clone()
+        }
+    }
+
+    /// The layouts a member may pick from.
+    #[must_use]
+    pub fn allowed_layouts(&self) -> Vec<LayoutId> {
+        self.layouts.clone()
+    }
+
+    /// The style `settings` draws with: the member's pick, else the board's default, kept inside
+    /// what the board allows (a single allowed style is a lock and wins over what was stored).
+    #[must_use]
+    pub fn style_for(&self, settings: &TerminalSettings) -> ThemeName {
+        let allowed = self.allowed_styles();
+        if let [only] = allowed.as_slice() {
+            return *only;
+        }
+        let board_default = self
+            .board
+            .style()
+            .filter(|name| self.themes.contains(*name))
+            .unwrap_or_else(ThemeName::default_theme);
+        let wanted = settings.theme_choice().unwrap_or(board_default);
+        if allowed.contains(&wanted) {
+            wanted
+        } else if allowed.contains(&board_default) {
+            board_default
+        } else {
+            allowed.first().copied().unwrap_or_default()
+        }
+    }
+
+    /// The layout `settings` chooses, before the terminal's size is considered.
+    #[must_use]
+    pub fn layout_for(&self, settings: &TerminalSettings) -> LayoutId {
+        let allowed = &self.layouts;
+        if let [only] = allowed.as_slice() {
+            return *only;
+        }
+        let board_default = self.board.layout().unwrap_or_default();
+        let wanted = settings.layout_choice().unwrap_or(board_default);
+        if allowed.contains(&wanted) {
+            wanted
+        } else if allowed.contains(&board_default) {
+            board_default
+        } else {
+            allowed.first().copied().unwrap_or_default()
+        }
+    }
+
+    /// The layout a member who never chose follows.
+    #[must_use]
+    pub fn board_default_layout(&self) -> LayoutId {
+        self.board.layout().unwrap_or_default()
+    }
+
+    /// The style a member who never chose follows (the board's, if it is loaded).
+    #[must_use]
+    pub fn board_default_style(&self) -> ThemeName {
+        self.board
+            .style()
+            .filter(|name| self.themes.contains(*name))
+            .unwrap_or_default()
+    }
+
+    /// The theme `settings` draws with.
+    #[must_use]
+    pub fn theme_for(&self, settings: &TerminalSettings) -> &Theme {
+        self.themes.get(self.style_for(settings))
+    }
+
+    /// How to draw for `settings` in `area` at the depth the client can show: the style, the
+    /// layout in force (a smaller one if the terminal is too small), the board's accent and the
+    /// member's own limits.
+    pub(crate) fn look(
+        &self,
+        settings: &TerminalSettings,
+        area: ratatui::layout::Rect,
+        depth: depth::ColorDepth,
+    ) -> crate::settings::Look {
+        let layout = layout::effective(self.layout_for(settings), area);
+        crate::settings::Look::for_theme(settings, layout, self.theme_for(settings))
+            .with_board(self.board.accent(), self.board.motion())
+            .at_depth(depth)
     }
 
     /// The default theme's validated string table.
@@ -177,5 +325,11 @@ impl Ui {
 
 #[cfg(test)]
 mod layout_tests;
+#[cfg(test)]
+mod resolve_tests;
+#[cfg(test)]
+mod snapshots;
+#[cfg(test)]
+mod styles_tests;
 #[cfg(test)]
 mod tests;

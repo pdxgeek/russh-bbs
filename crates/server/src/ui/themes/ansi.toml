@@ -1,0 +1,48 @@
+# Shipped style: Classic ANSI. Sixteen colours only, double borders and block fades: a 1994 board
+# done properly. Every colour is a named terminal colour, so it looks the same at every depth.
+name = "ansi"
+
+[colors]
+surface = "black"
+panel = "black"
+popup = "blue"
+stripe = "black"
+head = "blue"
+bar = "blue"
+bar_text = "white"
+text = "gray"
+muted = "darkgray"
+border = "cyan"
+heading = "lightyellow"
+key = "lightcyan"
+accent = "lightcyan"
+accent2 = "lightmagenta"
+selected = "white"
+select_bg = "blue"
+info = "lightgreen"
+success = "lightgreen"
+warning = "yellow"
+error = "lightred"
+link = "lightblue"
+quote = "gray"
+timestamp = "darkgray"
+title = "lightyellow"
+
+[style.borders]
+frame = "double"
+pane = "double"
+popup = "double"
+
+[style.title]
+treatment = "rule"
+align = "center"
+
+[style.header]
+decoration = "blocks"
+gradient = false
+
+[style.backdrop]
+kind = "none"
+
+[style.motion]
+default = false

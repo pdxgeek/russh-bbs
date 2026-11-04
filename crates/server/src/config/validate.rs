@@ -96,6 +96,10 @@ fn session_limits(c: &Check<'_>, ssh: &SshConfig) -> Result<(), ConfigError> {
 }
 
 /// Validate a merged configuration.
+#[allow(
+    clippy::too_many_lines,
+    reason = "one flat list of range checks, one per setting"
+)]
 pub(crate) fn validate(config: &Config, sources: &Sources) -> Result<(), ConfigError> {
     let c = Check { sources };
     let ssh = &config.ssh;
@@ -197,9 +201,17 @@ pub(crate) fn validate(config: &Config, sources: &Sources) -> Result<(), ConfigE
         ));
     }
 
+    board(&c, config)?;
     feeds(&c, config)?;
     datasource(&c, config)?;
     blobs(&c, config)
+}
+
+/// `[board]` (UI-2): the same checks the screens' `Board` is built with.
+fn board(c: &Check<'_>, config: &Config) -> Result<(), ConfigError> {
+    crate::ui::board::Board::from_config(&config.board)
+        .map(|_| ())
+        .map_err(|error| c.fail(error.key, error.message))
 }
 
 /// `[feeds]` (M3-G): RSS out needs its own port and a public base address.

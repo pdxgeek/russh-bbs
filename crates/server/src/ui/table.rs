@@ -28,30 +28,16 @@
 use ratatui::Frame;
 use ratatui::layout::{Alignment, Constraint, Layout, Margin, Rect};
 use ratatui::style::{Modifier, Style};
-use ratatui::symbols::border;
 use ratatui::text::{Line, Span};
-use ratatui::widgets::{
-    Block, Borders, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState,
-};
+use ratatui::widgets::{Block, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState};
 use russh_bbs_core::sanitize::SingleLine;
 
 use super::frame::ChromeText;
 use crate::settings::Look;
+use crate::ui::theme::Element;
 
 /// Longest cell text kept, in characters, whatever the column.
 const CELL_MAX: usize = 160;
-
-/// Printable-ASCII box for the ASCII tier.
-pub(crate) const ASCII_BORDER: border::Set = border::Set {
-    top_left: "+",
-    top_right: "+",
-    bottom_left: "+",
-    bottom_right: "+",
-    vertical_left: "|",
-    vertical_right: "|",
-    horizontal_top: "-",
-    horizontal_bottom: "-",
-};
 
 /// How wide a column is.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -248,25 +234,8 @@ pub(crate) struct TableView {
 
 /// The border block for a framed region: the theme's border colour, plain ASCII in the ASCII
 /// tier, a centred title. Shared by tables, popups and the converted menu screens.
-pub(crate) fn framed(look: Look, title: Option<String>) -> Block<'static> {
-    let mut block = Block::default()
-        .borders(Borders::ALL)
-        .border_style(look.accent(Style::new(), look.palette().border));
-    // Plain line-drawing characters, like the older boxes (`settings::boxed`), so every screen
-    // reads as one family and the text helpers that strip box characters keep working.
-    if look.ascii() {
-        block = block.border_set(ASCII_BORDER);
-    }
-    if let Some(title) = title {
-        let heading = look.accent(
-            Style::new().add_modifier(Modifier::BOLD),
-            look.palette().heading,
-        );
-        block = block
-            .title(Line::from(Span::styled(format!(" {title} "), heading)))
-            .title_alignment(Alignment::Left);
-    }
-    block
+pub(crate) fn framed(look: Look, title: Option<&str>) -> Block<'static> {
+    look.block(title, Element::Frame, false)
 }
 
 /// The terminal columns one character takes.
@@ -340,7 +309,7 @@ impl Paint {
                 Style::new().add_modifier(Modifier::BOLD),
                 look.palette().key,
             ),
-            dim: Style::new().add_modifier(Modifier::DIM),
+            dim: look.muted(),
         }
     }
 }
@@ -404,11 +373,13 @@ pub(crate) fn render(
     spec: &TableSpec<'_>,
 ) -> TableView {
     let block = if spec.bordered {
-        framed(look, spec.title.text())
+        framed(look, spec.title.text().as_deref())
     } else {
         Block::default()
     };
     let inner = block.inner(area);
+    // A panel hides any backdrop under it.
+    frame.render_widget(ratatui::widgets::Clear, area);
     frame.render_widget(block, area);
     if inner.width == 0 || inner.height == 0 {
         return TableView::default();

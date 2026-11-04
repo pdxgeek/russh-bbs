@@ -47,6 +47,36 @@ pub(crate) const PAGER_END: &str = "ui.pager.end";
 /// Pager prompt, pause off, text longer than the screen (`{hidden}`).
 pub(crate) const PAGER_CLIPPED: &str = "ui.pager.clipped";
 
+/// Status-bar hint for the widget pop-over of the focus layout.
+pub(crate) const HINT_WIDGETS: &str = "ui.hint.widgets";
+/// Note when a layout is replaced by a smaller one (`{shown}`, `{wanted}`).
+pub(crate) const LAYOUT_FALLBACK: &str = "ui.layout.fallback";
+/// A layout's name, by layout.
+pub(crate) const LAYOUT_NAMES: [&str; 7] = [
+    "ui.layout.classic",
+    "ui.layout.lightbar",
+    "ui.layout.compact",
+    "ui.layout.dashboard",
+    "ui.layout.wide",
+    "ui.layout.focus",
+    "ui.layout.split",
+];
+/// The panel title of a widget slot, by slot (the order of `panes::Slot`).
+pub(crate) const SLOT_TITLES: [&str; 8] = [
+    "ui.slot.identity",
+    "ui.slot.clock",
+    "ui.slot.who",
+    "ui.slot.callers",
+    "ui.slot.posts",
+    "ui.slot.mail",
+    "ui.slot.chat",
+    "ui.slot.activity",
+];
+/// What an empty widget slot says.
+pub(crate) const SLOT_EMPTY: &str = "ui.slot.empty";
+/// The pop-over's title.
+pub(crate) const SLOT_POPOVER: &str = "ui.slot.popover";
+
 /// Every key above; the table must hold these plus the menu tree's keys.
 pub(crate) const FRAMEWORK: [&str; 23] = [
     NOTICE_MAIL_SSH_ONLY,
@@ -72,4 +102,27 @@ pub(crate) const FRAMEWORK: [&str; 23] = [
     PAGER_MORE,
     PAGER_END,
     PAGER_CLIPPED,
+];
+
+/// The keys of the layouts and widget slots (UI-2), checked with [`FRAMEWORK`].
+pub(crate) const LAYOUT_KEYS: [&str; 19] = [
+    HINT_WIDGETS,
+    LAYOUT_FALLBACK,
+    LAYOUT_NAMES[0],
+    LAYOUT_NAMES[1],
+    LAYOUT_NAMES[2],
+    LAYOUT_NAMES[3],
+    LAYOUT_NAMES[4],
+    LAYOUT_NAMES[5],
+    LAYOUT_NAMES[6],
+    SLOT_TITLES[0],
+    SLOT_TITLES[1],
+    SLOT_TITLES[2],
+    SLOT_TITLES[3],
+    SLOT_TITLES[4],
+    SLOT_TITLES[5],
+    SLOT_TITLES[6],
+    SLOT_TITLES[7],
+    SLOT_EMPTY,
+    SLOT_POPOVER,
 ];

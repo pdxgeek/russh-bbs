@@ -19,12 +19,14 @@ use ratatui::widgets::{
 };
 use russh_bbs_core::icons::{SecurityMarker, Tier};
 use russh_bbs_core::menu::{MenuPage, PageItem};
+use russh_bbs_core::terminal_settings::LayoutId;
 use russh_bbs_core::waiting_room::{Notice, NoticeKind, View};
 
+use super::board::Board;
 use super::frame::{ChromeText, FrameSpec, Hint};
 use super::keys;
 use super::strings::StringTable;
-use super::table;
+use super::theme::Element;
 use crate::settings::{self, Look};
 
 /// Everything the layout needs to draw one menu screen.
@@ -45,6 +47,43 @@ pub(crate) struct MenuScreen<'a> {
     /// Mail is withheld on this transport (telnet): the help says so (D93 retired the D78
     /// sentence about mail at rest).
     pub(crate) mail_over_ssh_only: bool,
+    /// The board's identity (UI-2): what the identity slot shows.
+    pub(crate) board: &'a Board,
+    /// The layout the member chose, when the terminal is too small for it and a smaller one is
+    /// drawn instead (the screen says so); the layout in force is `look.layout()`.
+    pub(crate) wanted: LayoutId,
+    /// The focus layout's widget pop-over is open.
+    pub(crate) popover: bool,
+}
+
+/// The sentence saying a smaller layout is shown, when one is (UI-2).
+pub(crate) fn fallback_note(screen: &MenuScreen<'_>) -> Option<String> {
+    let shown = screen.look.layout();
+    (shown != screen.wanted).then(|| {
+        let name = |layout: LayoutId| {
+            screen
+                .strings
+                .text(keys::LAYOUT_NAMES[layout_index(layout)])
+                .to_owned()
+        };
+        screen.strings.filled(
+            keys::LAYOUT_FALLBACK,
+            &[("shown", &name(shown)), ("wanted", &name(screen.wanted))],
+        )
+    })
+}
+
+/// A layout's place in [`keys::LAYOUT_NAMES`].
+const fn layout_index(layout: LayoutId) -> usize {
+    match layout {
+        LayoutId::Classic => 0,
+        LayoutId::Lightbar => 1,
+        LayoutId::Compact => 2,
+        LayoutId::Dashboard => 3,
+        LayoutId::Wide => 4,
+        LayoutId::Focus => 5,
+        LayoutId::Split => 6,
+    }
 }
 
 /// The markers a member screen shows over ssh: none (D93). The server-readable status row is
@@ -118,18 +157,42 @@ pub(crate) fn draw_menu(
     screen: &MenuScreen<'_>,
     cursor: Option<usize>,
 ) {
+    draw_menu_in(frame, menu_box(body), screen, cursor, Element::Frame, true);
+}
+
+/// The menu in exactly `outer`, drawn as `element` (a pane of a pane layout, or the main box).
+/// `with_body` puts the signed-in lines and the fallback note above the items; the wide layout
+/// shows them in its centre pane instead.
+pub(crate) fn draw_menu_in(
+    frame: &mut Frame<'_>,
+    outer: Rect,
+    screen: &MenuScreen<'_>,
+    cursor: Option<usize>,
+    element: Element,
+    with_body: bool,
+) {
     let look = screen.look;
     let strings = screen.strings;
     let (bold, dim, _, key) = styles(look);
-    let outer = menu_box(body);
-    let block = table::framed(look, Some(strings.text(screen.page.title).to_owned()));
-    let inner = block.inner(outer);
-    frame.render_widget(block, outer);
-    let mut head: Vec<Line<'static>> = screen
-        .body
-        .iter()
-        .map(|text| Line::styled(text.clone(), dim))
-        .collect();
+    let inner = look.panel(
+        frame,
+        outer,
+        Some(strings.text(screen.page.title)),
+        element,
+        false,
+    );
+    let mut head: Vec<Line<'static>> = Vec::new();
+    if with_body {
+        head.extend(
+            screen
+                .body
+                .iter()
+                .map(|text| Line::styled(text.clone(), dim)),
+        );
+        if let Some(note) = fallback_note(screen) {
+            head.push(Line::styled(note, dim));
+        }
+    }
     if !head.is_empty() {
         head.push(Line::raw(""));
     }
@@ -177,6 +240,7 @@ pub(crate) fn draw_menu(
             look.palette().selected,
         )
         .patch(look.bg(surfaces.select_bg));
+    let _ = surfaces;
     let list = List::new(list_items)
         .highlight_style(selected_style)
         .highlight_symbol(format!("{pointer} "))
@@ -219,12 +283,18 @@ pub(crate) fn draw_help(
     let strings = screen.strings;
     let (_, dim, _, key) = styles(look);
     let outer = menu_box(body);
-    let block = table::framed(look, Some(strings.text(keys::HELP_TITLE).to_owned()));
-    let inner = block.inner(outer).inner(Margin {
-        horizontal: 1,
-        vertical: 0,
-    });
-    frame.render_widget(block, outer);
+    let inner = look
+        .panel(
+            frame,
+            outer,
+            Some(strings.text(keys::HELP_TITLE)),
+            Element::Frame,
+            false,
+        )
+        .inner(Margin {
+            horizontal: 1,
+            vertical: 0,
+        });
     if inner.height == 0 {
         return;
     }

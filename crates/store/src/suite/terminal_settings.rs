@@ -8,7 +8,8 @@ use russh_bbs_core::store::{
     Account, AccountId, AccountState, AccountStore, NewAccount, StoreError,
 };
 use russh_bbs_core::terminal_settings::{
-    LayoutId, MemberSessions, TerminalSettings, TerminalSettingsStore, ThemeName,
+    BorderChoice, DepthCap, LayoutId, MemberSessions, TerminalSettings, TerminalSettingsStore,
+    ThemeName,
 };
 
 use super::{Harness, fingerprint};
@@ -90,6 +91,43 @@ pub(crate) async fn layout_and_theme_round_trip_and_default_for_new_rows<H: Harn
             .unwrap();
         assert_eq!(store.terminal_settings(alice.id).await.unwrap(), wanted);
     }
+}
+
+pub(crate) async fn ui_settings_round_trip_and_none_follows_the_board<H: Harness>() {
+    let h = H::fresh().await;
+    let store = h.store();
+    let alice = account(store, "alice", AccountState::Active).await;
+    // A fresh row follows the board: no layout or theme choice, motion on, depth auto.
+    let fresh = TerminalSettings::default().with_tier(Tier::Unicode);
+    store.set_terminal_settings(alice.id, &fresh).await.unwrap();
+    let read = store.terminal_settings(alice.id).await.unwrap();
+    assert_eq!(read, fresh);
+    assert_eq!(read.layout_choice(), None);
+    assert_eq!(read.theme_choice(), None);
+    assert!(read.motion());
+    assert_eq!(read.depth_cap(), DepthCap::Auto);
+    assert_eq!(read.borders(), BorderChoice::ThemeDefault);
+    // Every value of every new setting survives, and a chosen layout can go back to None.
+    for cap in DepthCap::ALL {
+        for borders in BorderChoice::ALL {
+            for motion in [true, false] {
+                let wanted = fresh
+                    .with_layout(LayoutId::Split)
+                    .with_theme(ThemeName::new("neon-night").unwrap())
+                    .with_motion(motion)
+                    .with_depth_cap(cap)
+                    .with_borders(borders);
+                store
+                    .set_terminal_settings(alice.id, &wanted)
+                    .await
+                    .unwrap();
+                assert_eq!(store.terminal_settings(alice.id).await.unwrap(), wanted);
+            }
+        }
+    }
+    let back = fresh.with_layout(LayoutId::Wide).with_default_layout();
+    store.set_terminal_settings(alice.id, &back).await.unwrap();
+    assert_eq!(store.terminal_settings(alice.id).await.unwrap(), back);
 }
 
 pub(crate) async fn a_later_set_replaces_and_clears_overrides<H: Harness>() {

@@ -6,7 +6,8 @@
 use russh_bbs_core::audit::events;
 use russh_bbs_core::store::{AccountId, StoreError, UnixSeconds};
 use russh_bbs_core::terminal_settings::{
-    TerminalSettings, TerminalSettingsStore, ThemeName, layout_from_stored, layout_to_stored,
+    TerminalSettings, TerminalSettingsStore, ThemeName, borders_from_stored, borders_to_stored,
+    depth_cap_from_stored, depth_cap_to_stored, layout_from_stored, layout_to_stored,
     tier_from_stored, tier_to_stored,
 };
 use sqlx::error::ErrorKind;
@@ -21,8 +22,11 @@ struct SettingsRow {
     color: bool,
     pause: bool,
     icon_tier: Option<String>,
-    layout: String,
-    theme: String,
+    layout: Option<String>,
+    theme: Option<String>,
+    motion: bool,
+    depth_cap: String,
+    borders: String,
 }
 
 impl SettingsRow {
@@ -37,9 +41,19 @@ impl SettingsRow {
             .icon_tier
             .map(|text| tier_from_stored(&text).ok_or_else(|| corrupt("icon_tier is not known")))
             .transpose()?;
-        let layout =
-            layout_from_stored(&self.layout).ok_or_else(|| corrupt("layout is not known"))?;
-        let theme = ThemeName::new(&self.theme).map_err(|_| corrupt("theme is not valid"))?;
+        let layout = self
+            .layout
+            .map(|text| layout_from_stored(&text).ok_or_else(|| corrupt("layout is not known")))
+            .transpose()?;
+        let theme = self
+            .theme
+            .map(|text| ThemeName::new(&text).map_err(|_| corrupt("theme is not valid")))
+            .transpose()?;
+        let depth_cap = depth_cap_from_stored(&self.depth_cap)
+            .ok_or_else(|| corrupt("depth_cap is not known"))?;
+        let borders =
+            borders_from_stored(&self.borders).ok_or_else(|| corrupt("borders is not known"))?;
+        let motion = self.motion;
         let settings = TerminalSettings::new(
             size(self.width_override, "width is not valid")?,
             size(self.height_override, "height is not valid")?,
@@ -48,7 +62,17 @@ impl SettingsRow {
             tier,
         )
         .map_err(|_| corrupt("is out of range"))?;
-        Ok(settings.with_layout(layout).with_theme(theme))
+        let mut settings = settings
+            .with_motion(motion)
+            .with_depth_cap(depth_cap)
+            .with_borders(borders);
+        if let Some(layout) = layout {
+            settings = settings.with_layout(layout);
+        }
+        if let Some(theme) = theme {
+            settings = settings.with_theme(theme);
+        }
+        Ok(settings)
     }
 }
 
@@ -57,7 +81,8 @@ impl TerminalSettingsStore for PostgresStore {
         let id = account.as_raw();
         let row = sqlx::query_as!(
             SettingsRow,
-            "SELECT width_override, height_override, color, pause, icon_tier, layout, theme
+            "SELECT width_override, height_override, color, pause, icon_tier, layout, theme,
+                    motion, depth_cap, borders
              FROM terminal_settings WHERE account_id = $1",
             id,
         )
@@ -81,14 +106,18 @@ impl TerminalSettingsStore for PostgresStore {
         let color = settings.color();
         let pause = settings.pause();
         let tier = settings.chosen_tier().map(tier_to_stored);
-        let layout = layout_to_stored(settings.layout());
-        let theme = settings.theme();
-        let theme = theme.as_str();
+        let layout = settings.layout_choice().map(layout_to_stored);
+        let theme = settings.theme_choice();
+        let theme = theme.as_ref().map(ThemeName::as_str);
+        let motion = settings.motion();
+        let depth_cap = depth_cap_to_stored(settings.depth_cap());
+        let borders = borders_to_stored(settings.borders());
         let mut tx = self.pool().begin().await.map_err(backend)?;
         sqlx::query!(
             "INSERT INTO terminal_settings
-                 (account_id, width_override, height_override, color, pause, icon_tier, layout, theme)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                 (account_id, width_override, height_override, color, pause, icon_tier, layout, theme,
+                  motion, depth_cap, borders)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
              ON CONFLICT (account_id) DO UPDATE SET
                  width_override  = excluded.width_override,
                  height_override = excluded.height_override,
@@ -97,6 +126,9 @@ impl TerminalSettingsStore for PostgresStore {
                  icon_tier       = excluded.icon_tier,
                  layout          = excluded.layout,
                  theme           = excluded.theme,
+                 motion          = excluded.motion,
+                 depth_cap       = excluded.depth_cap,
+                 borders         = excluded.borders,
                  updated_at      = extract(epoch FROM now())::bigint",
             id,
             width,
@@ -106,6 +138,9 @@ impl TerminalSettingsStore for PostgresStore {
             tier,
             layout,
             theme,
+            motion,
+            depth_cap,
+            borders,
         )
         .execute(&mut *tx)
         .await

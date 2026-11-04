@@ -158,6 +158,17 @@ fn makes_claim(value: &str) -> bool {
             .any(|c| matches!(c, '\u{1F510}'..='\u{1F513}' | '\u{26BF}'))
 }
 
+/// The checks a piece of the board's own text (name, tagline, location) passes, the same ones a
+/// theme's strings pass: non-empty, bounded, nothing the sanitizer would change, and no claim of
+/// privacy (UI-2).
+pub(crate) fn check_board_text(key: &str, value: &str) -> Result<(), StringError> {
+    check_value(key, value)?;
+    if makes_claim(value) {
+        return Err(StringError::Claim(key.to_owned()));
+    }
+    Ok(())
+}
+
 /// The checks every value passes: not empty, not too long, nothing the sanitizer would change.
 fn check_value(key: &str, value: &str) -> Result<(), StringError> {
     if value.is_empty() {

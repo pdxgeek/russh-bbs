@@ -1,10 +1,48 @@
-# Shipped theme: amber on dark. Colors only; every string is inherited from the default table.
+# Shipped style: Amber Terminal. Warm amber on black, thick borders, capital titles, the feel of
+# a typewriter-reveal monitor.
 name = "amber"
 
 [colors]
-heading = "yellow"
-key = "white"
-border = "yellow"
-info = "yellow"
-error = "lightred"
-selected = "lightyellow"
+surface = "#0d0800"
+panel = "#140d02"
+popup = "#1c1204"
+stripe = "#1a1103"
+head = "#3a2605"
+bar = "#2a1b04"
+bar_text = "#ffd27a"
+text = "#ffb000"
+muted = "#b07a1c"
+border = "#d98f00"
+heading = "#ffd27a"
+key = "#fff0c0"
+accent = "#ffb000"
+accent2 = "#ff8c00"
+selected = "#140d02"
+select_bg = "#ffb000"
+info = "#ffcc55"
+success = "#c8e65a"
+warning = "#ff9a1f"
+error = "#ff6a4c"
+link = "#ffd27a"
+quote = "#c99a3c"
+timestamp = "#b07a1c"
+title = "#ffd27a"
+
+[style.borders]
+frame = "thick"
+pane = "thick"
+popup = "thick"
+
+[style.title]
+treatment = "caps"
+align = "left"
+
+[style.header]
+decoration = "none"
+gradient = false
+
+[style.backdrop]
+kind = "none"
+
+[style.motion]
+default = true

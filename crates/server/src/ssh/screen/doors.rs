@@ -9,7 +9,6 @@ use russh_bbs_door::{DoorEnv, TransportKind};
 
 use super::{Content, KeyEffects, Screen};
 use crate::doors::{self, DoorEffect, DoorsScreen};
-use crate::settings::Look;
 use crate::ssh::terminal::Key;
 use crate::ui::layout;
 
@@ -138,12 +137,11 @@ impl Screen {
             return Ok(None);
         };
         let settings = *session.flow.settings();
-        let theme = self.ui.theme(settings.theme());
-        let layout = layout::effective(settings.layout(), self.viewport);
+        let theme = self.ui.theme_for(&settings);
         let env = self.door_env(&settings, session.flow.handle());
         let ctx = doors::DrawCtx {
             strings: theme.strings(),
-            look: Look::themed(&settings, layout, theme.palette()).at_depth(self.depth()),
+            look: self.ui.look(&settings, self.viewport, self.depth()),
             tier: settings.icon_tier(),
         };
         let tier = ctx.tier;
@@ -155,8 +153,10 @@ impl Screen {
         let Content::Doors(session) = &self.content else {
             return Ok(None);
         };
-        self.terminal
-            .draw(|frame| doors::render(frame, &session.screen, &ctx))?;
+        self.terminal.draw(|frame| {
+            doors::render(frame, &session.screen, &ctx);
+            crate::ui::backdrop::finish(frame, ctx.look);
+        })?;
         Ok(Some(self.finish_frame(tier)))
     }
 }

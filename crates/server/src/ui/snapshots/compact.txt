@@ -1,0 +1,582 @@
+=== phosphor / compact / 80x24 / unicode truecolor / colors=3d171116127096d6
+  Main menu
+  Signed in as alice.
+  f Forums
+  m Mail
+  a Files (not built yet)
+  c Chat
+  d Doors
+  u Members
+  y Community
+  i Invites
+  s Terminal settings
+  o Sysop tools
+  l Log off
+
+
+
+
+
+
+
+
+
+
+ ? help  Esc back  Ctrl-C log off
+
+=== phosphor / compact / 132x43 / unicode truecolor / colors=5e4310bbe519d2f2
+
+                            Main menu
+                            Signed in as alice.
+                            f Forums
+                            m Mail
+                            a Files (not built yet)
+                            c Chat
+                            d Doors
+                            u Members
+                            y Community
+                            i Invites
+                            s Terminal settings
+                            o Sysop tools
+                            l Log off
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ ? help  Esc back  Ctrl-C log off
+
+=== phosphor / compact / 80x24 / ascii mono / colors=6e1c4d9f303834f1
+  Main menu
+  Signed in as alice.
+  f Forums
+  m Mail
+  a Files (not built yet)
+  c Chat
+  d Doors
+  u Members
+  y Community
+  i Invites
+  s Terminal settings
+  o Sysop tools
+  l Log off
+
+
+
+
+
+
+
+
+
+
+ ? help  Esc back  Ctrl-C log off
+
+=== neon / compact / 80x24 / unicode truecolor / colors=914271af2cffd747
+  Main menu
+  Signed in as alice.
+  f Forums
+  m Mail
+  a Files (not built yet)
+  c Chat
+  d Doors
+  u Members
+  y Community
+  i Invites
+  s Terminal settings
+  o Sysop tools
+  l Log off
+
+
+
+
+
+
+
+
+
+
+ ? help  Esc back  Ctrl-C log off
+
+=== neon / compact / 132x43 / unicode truecolor / colors=c318e85880936175
+
+                            Main menu
+   .     .     .     .     .Signed in as alice.                                                          .     .     .     .     .
+                            f Forums
+                            m Mail
+   .     .     .     .     .a Files (not built yet)                                                      .     .     .     .     .
+                            c Chat
+                            d Doors
+   .     .     .     .     .u Members                                                                    .     .     .     .     .
+                            y Community
+                            i Invites
+   .     .     .     .     .s Terminal settings                                                          .     .     .     .     .
+                            o Sysop tools
+                            l Log off
+   .     .     .     .     .                                                                             .     .     .     .     .
+
+
+   .     .     .     .     .                                                                             .     .     .     .     .
+
+
+   .     .     .     .     .                                                                             .     .     .     .     .
+
+
+   .     .     .     .     .                                                                             .     .     .     .     .
+
+
+   .     .     .     .     .                                                                             .     .     .     .     .
+
+
+   .     .     .     .     .                                                                             .     .     .     .     .
+
+
+   .     .     .     .     .                                                                             .     .     .     .     .
+
+
+   .     .     .     .     .                                                                             .     .     .     .     .
+
+
+   .     .     .     .     .                                                                             .     .     .     .     .
+
+
+   .     .     .     .     .     .     .     .     .     .     .     .     .     .     .     .     .     .     .     .     .     .
+ ? help  Esc back  Ctrl-C log off
+
+=== neon / compact / 80x24 / ascii mono / colors=6e1c4d9f303834f1
+  Main menu
+  Signed in as alice.
+  f Forums
+  m Mail
+  a Files (not built yet)
+  c Chat
+  d Doors
+  u Members
+  y Community
+  i Invites
+  s Terminal settings
+  o Sysop tools
+  l Log off
+
+
+
+
+
+
+
+
+
+
+ ? help  Esc back  Ctrl-C log off
+
+=== paper / compact / 80x24 / unicode truecolor / colors=0870e775830053fb
+  Main menu
+  Signed in as alice.
+  f Forums
+  m Mail
+  a Files (not built yet)
+  c Chat
+  d Doors
+  u Members
+  y Community
+  i Invites
+  s Terminal settings
+  o Sysop tools
+  l Log off
+
+
+
+
+
+
+
+
+
+
+ ? help  Esc back  Ctrl-C log off
+
+=== paper / compact / 132x43 / unicode truecolor / colors=914386b9942f28bf
+
+                            Main menu
+                            Signed in as alice.
+                            f Forums
+                            m Mail
+                            a Files (not built yet)
+                            c Chat
+                            d Doors
+                            u Members
+                            y Community
+                            i Invites
+                            s Terminal settings
+                            o Sysop tools
+                            l Log off
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ ? help  Esc back  Ctrl-C log off
+
+=== paper / compact / 80x24 / ascii mono / colors=6e1c4d9f303834f1
+  Main menu
+  Signed in as alice.
+  f Forums
+  m Mail
+  a Files (not built yet)
+  c Chat
+  d Doors
+  u Members
+  y Community
+  i Invites
+  s Terminal settings
+  o Sysop tools
+  l Log off
+
+
+
+
+
+
+
+
+
+
+ ? help  Esc back  Ctrl-C log off
+
+=== amber / compact / 80x24 / unicode truecolor / colors=c8f817e4f176f8a9
+  Main menu
+  Signed in as alice.
+  f Forums
+  m Mail
+  a Files (not built yet)
+  c Chat
+  d Doors
+  u Members
+  y Community
+  i Invites
+  s Terminal settings
+  o Sysop tools
+  l Log off
+
+
+
+
+
+
+
+
+
+
+ ? help  Esc back  Ctrl-C log off
+
+=== amber / compact / 132x43 / unicode truecolor / colors=c72bd30dfd033af9
+
+                            Main menu
+                            Signed in as alice.
+                            f Forums
+                            m Mail
+                            a Files (not built yet)
+                            c Chat
+                            d Doors
+                            u Members
+                            y Community
+                            i Invites
+                            s Terminal settings
+                            o Sysop tools
+                            l Log off
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ ? help  Esc back  Ctrl-C log off
+
+=== amber / compact / 80x24 / ascii mono / colors=6e1c4d9f303834f1
+  Main menu
+  Signed in as alice.
+  f Forums
+  m Mail
+  a Files (not built yet)
+  c Chat
+  d Doors
+  u Members
+  y Community
+  i Invites
+  s Terminal settings
+  o Sysop tools
+  l Log off
+
+
+
+
+
+
+
+
+
+
+ ? help  Esc back  Ctrl-C log off
+
+=== deepspace / compact / 80x24 / unicode truecolor / colors=f961bc802825e3e2
+* Main menu
+  Signed in as alice.
+  f Forums
+  m Mail
+  a Files (not built yet)
+  c Chat
+  d Doors                                                                      .
+  u Members
+* y Community
+ .i Invites
+  s Terminal settings
+  o Sysop tools
+  l Log off
+.
+
+
+
+                                                                               .
+                                                                              .
+ .
+
+
+                                                                               .
+ ? help  Esc back  Ctrl-C log off
+
+=== deepspace / compact / 132x43 / unicode truecolor / colors=2066039ba0d4b9e0
+*                              .      .                            *                                              *          *
+      .                   . Main menu                                                                                .
+     .      .  .        .   Signed in as alice.                                                             *      .       .
+                            f Forums
+  *     .       .        *  m Mail                                                                           .*
+                          * a Files (not built yet)
+         *               .  c Chat
+          .           .     d Doors
+*      * *                  u Members                                                                            ..
+ .           .          *   y Community
+                            i Invites                                                                                           .
+              .          .  s Terminal settings                                                                .           ..
+    *    *                 .o Sysop tools                                                                         .                .
+.                        .  l Log off                                                                                   .
+   *    .     .*   .
+                                                                                                          *..  .    .  .         .
+                                                                                                           .          *
+  .                       *                                                                                                   .    *
+    .       .    .                                                                                                .        .
+ .                     .                                                                                                         .
+  .       .          .                                                                                  .    .
+             .    .*                                                                                    .     *          .
+          .    .
+    .                                                                                                           .
+                                                                                                             .
+     .                                                                                                  .
+                           *
+
+      .        .
+                                                                                                                .              *
+                   *                                                                                                      .  .
+       .            .*                                                                                   .        . .
+                                                                                                           .
+  *           .                                                                                               . * .   **  .
+                 *                                                                                       *      .        .   .
+                   *   .  .                                                                               .
+                      * .                                                                                .                       .
+                          *                                                                                      .   .  .
+                   *     .
+               .     .                                                                                                            .
+         .            *                                                                                                .        .
+          *           .      *          .                       .   *                      .                 . .              .
+ ? help  Esc back  Ctrl-C log off
+
+=== deepspace / compact / 80x24 / ascii mono / colors=6e1c4d9f303834f1
+  Main menu
+  Signed in as alice.
+  f Forums
+  m Mail
+  a Files (not built yet)
+  c Chat
+  d Doors
+  u Members
+  y Community
+  i Invites
+  s Terminal settings
+  o Sysop tools
+  l Log off
+
+
+
+
+
+
+
+
+
+
+ ? help  Esc back  Ctrl-C log off
+
+=== ansi / compact / 80x24 / unicode truecolor / colors=8c74b52f0ed3f858
+  Main menu
+  Signed in as alice.
+  f Forums
+  m Mail
+  a Files (not built yet)
+  c Chat
+  d Doors
+  u Members
+  y Community
+  i Invites
+  s Terminal settings
+  o Sysop tools
+  l Log off
+
+
+
+
+
+
+
+
+
+
+ ? help  Esc back  Ctrl-C log off
+
+=== ansi / compact / 132x43 / unicode truecolor / colors=46d967060f4acf2c
+
+                            Main menu
+                            Signed in as alice.
+                            f Forums
+                            m Mail
+                            a Files (not built yet)
+                            c Chat
+                            d Doors
+                            u Members
+                            y Community
+                            i Invites
+                            s Terminal settings
+                            o Sysop tools
+                            l Log off
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ ? help  Esc back  Ctrl-C log off
+
+=== ansi / compact / 80x24 / ascii mono / colors=6e1c4d9f303834f1
+  Main menu
+  Signed in as alice.
+  f Forums
+  m Mail
+  a Files (not built yet)
+  c Chat
+  d Doors
+  u Members
+  y Community
+  i Invites
+  s Terminal settings
+  o Sysop tools
+  l Log off
+
+
+
+
+
+
+
+
+
+
+ ? help  Esc back  Ctrl-C log off
+

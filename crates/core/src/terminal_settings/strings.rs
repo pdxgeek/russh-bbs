@@ -130,10 +130,39 @@ pub const SETTINGS_SAVED_NOTE: &str = "member.settings_saved_note";
 /// Layout and theme on one line, to keep the settings screen within 80x24. `{layout}` is one
 /// of the `LAYOUT_*` texts and `{theme}` is the theme's name.
 pub const SETTING_LOOK: &str = "member.setting_look";
-/// Settings menu label: switch to the next layout.
+/// Settings menu label for the layout key; it also names the theme key (`[t]`) so both share one
+/// menu row and the screen stays within 80x24.
 pub const MENU_LAYOUT: &str = "member.menu_layout";
-/// Settings menu label: switch to the next theme.
-pub const MENU_THEME: &str = "member.menu_theme";
+/// Settings menu label for the motion key; it also names the depth (`[d]`) and borders (`[r]`)
+/// keys, on one row for the same reason.
+pub const MENU_DISPLAY: &str = "member.menu_display";
+/// Motion, depth cap and borders on one line. `{motion}` is `ON`/`OFF`, `{depth}` one of the
+/// `DEPTH_*` texts and `{borders}` one of the `BORDERS_*` texts.
+pub const SETTING_DISPLAY: &str = "member.setting_display";
+/// Appended to a layout or theme name the sysop has fixed ("set by the sysop").
+pub const SET_BY_SYSOP: &str = "member.set_by_sysop";
+/// Appended to a layout or theme name that follows the board's default.
+pub const BOARD_DEFAULT: &str = "member.board_default";
+/// Name of the automatic colour depth.
+pub const DEPTH_AUTO: &str = "member.depth_auto";
+/// Name of the 16-colour cap.
+pub const DEPTH_16: &str = "member.depth_16";
+/// Name of the 256-colour cap.
+pub const DEPTH_256: &str = "member.depth_256";
+/// Name of the truecolor cap.
+pub const DEPTH_TRUECOLOR: &str = "member.depth_truecolor";
+/// Name of the style's own borders.
+pub const BORDERS_THEME: &str = "member.borders_theme";
+/// Name of plain ASCII borders.
+pub const BORDERS_ASCII: &str = "member.borders_ascii";
+/// Name of the dashboard layout.
+pub const LAYOUT_DASHBOARD: &str = "member.layout_dashboard";
+/// Name of the wide layout.
+pub const LAYOUT_WIDE: &str = "member.layout_wide";
+/// Name of the focus layout.
+pub const LAYOUT_FOCUS: &str = "member.layout_focus";
+/// Name of the split layout.
+pub const LAYOUT_SPLIT: &str = "member.layout_split";
 /// Name of the classic hotkey layout.
 pub const LAYOUT_CLASSIC: &str = "member.layout_classic";
 /// Name of the lightbar layout.
@@ -142,7 +171,7 @@ pub const LAYOUT_LIGHTBAR: &str = "member.layout_lightbar";
 pub const LAYOUT_COMPACT: &str = "member.layout_compact";
 
 /// Every key above except [`TITLE`]; the string table must hold exactly these in `member.*`.
-pub const TEXT_KEYS: [&str; 57] = [
+pub const TEXT_KEYS: [&str; 70] = [
     MAIL_SSH_ONLY,
     LOGIN_HEADING,
     SIGNED_IN_AS,
@@ -196,7 +225,20 @@ pub const TEXT_KEYS: [&str; 57] = [
     SETTINGS_SAVED_NOTE,
     SETTING_LOOK,
     MENU_LAYOUT,
-    MENU_THEME,
+    MENU_DISPLAY,
+    SETTING_DISPLAY,
+    SET_BY_SYSOP,
+    BOARD_DEFAULT,
+    DEPTH_AUTO,
+    DEPTH_16,
+    DEPTH_256,
+    DEPTH_TRUECOLOR,
+    BORDERS_THEME,
+    BORDERS_ASCII,
+    LAYOUT_DASHBOARD,
+    LAYOUT_WIDE,
+    LAYOUT_FOCUS,
+    LAYOUT_SPLIT,
     LAYOUT_CLASSIC,
     LAYOUT_LIGHTBAR,
     LAYOUT_COMPACT,

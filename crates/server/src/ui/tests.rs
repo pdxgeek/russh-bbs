@@ -10,12 +10,12 @@ use russh_bbs_core::access::{Permission, Slug, Snapshot, Via};
 use russh_bbs_core::icons::{Icon, SecurityMarker, Tier};
 use russh_bbs_core::menu::{MenuKey, MenuPage, MenuSession, main_tree};
 use russh_bbs_core::store::AccountId;
-use russh_bbs_core::terminal_settings::TerminalSettings;
+use russh_bbs_core::terminal_settings::{LayoutId, TerminalSettings};
 use russh_bbs_core::waiting_room::{Notice, NoticeKind};
 
 use super::classic::{MENU_MARKERS, MenuScreen, render};
 use super::strings::{DEFAULT_TOML, MAX_VALUE_CHARS, StringError, StringTable};
-use super::{Ui, UiError, keys};
+use super::{Board, Ui, UiError, keys};
 use crate::settings::Look;
 
 fn ui() -> Ui {
@@ -31,6 +31,7 @@ fn the_shipped_table_and_tree_are_valid() {
     for key in keys::FRAMEWORK
         .iter()
         .copied()
+        .chain(keys::LAYOUT_KEYS.iter().copied())
         .chain(main_tree().text_keys())
         .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
         .chain(russh_bbs_core::community::TEXT_KEYS.iter().copied())
@@ -50,6 +51,7 @@ fn the_table_holds_exactly_the_keys_the_code_uses() {
     let used: std::collections::BTreeSet<&str> = keys::FRAMEWORK
         .iter()
         .copied()
+        .chain(keys::LAYOUT_KEYS.iter().copied())
         .chain(main_tree().text_keys())
         .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
         .chain(russh_bbs_core::community::TEXT_KEYS.iter().copied())
@@ -238,6 +240,9 @@ fn draw_with(
                     markers,
                     clock: Some("UTC 12:00"),
                     mail_over_ssh_only: false,
+                    board: Board::standard(),
+                    wanted: LayoutId::Classic,
+                    popover: false,
                 },
             );
         })
