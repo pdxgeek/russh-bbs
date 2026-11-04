@@ -96,7 +96,7 @@ The core tension: **fuel, time and debt.** Every jump burns fuel and days, the l
 
 ## Implementation notes (M4-L1)
 
-Slice M4-L1, branch `m4/long-haul-engine`, decision [D100](../decisions.md). Everything here is **Implemented and tested** unless it says otherwise; the last section lists what is not built or not verified.
+Slice M4-L1, branch `m4/long-haul-engine`, decision [D103](../decisions.md). Everything here is **Implemented and tested** unless it says otherwise; the last section lists what is not built or not verified.
 
 ### What exists
 
@@ -112,7 +112,7 @@ Slice M4-L1, branch `m4/long-haul-engine`, decision [D100](../decisions.md). Eve
 | Screen | `session.rs` | A minimal playable text screen (bridge, market, lanes, yard, loan, news). Not the L3 UI. It reads the same lines for `look_around`. |
 | Content | `content/*.toml`, `content.rs` | Goods, economies, news, ships, backgrounds and name parts as TOML with a schema test (`tests/content.rs`) and cross-table link checks. |
 
-**Time.** A captain gets **10 drive-days per real day** (the design's default, which settles that open question; D100; the loan shark is kept, which settles the debt-pressure one; piracy is not built). No carry-over of unused days. A jump needs one day left and may overdraw; the debt comes off tomorrow's allowance, capped at nine days. Docking costs one day and covers trading, fuel and the loan office for that visit; repairs, skims and scans cost what they cost.
+**Time.** A captain gets **10 drive-days per real day** (the design's default, which settles that open question; D103; the loan shark is kept, which settles the debt-pressure one; piracy is not built). No carry-over of unused days. A jump needs one day left and may overdraw; the debt comes off tomorrow's allowance, capped at nine days. Docking costs one day and covers trading, fuel and the loan office for that visit; repairs, skims and scans cost what they cost.
 
 **Prices.** A market's price depends only on its stock. The price of the *k*-th ton is the same whether it is being bought or sold, with a spread on each side, so any sequence of buys and sells at one station loses money (property test). A good's multiplier stays between 0.4 and 3.0 of its base. A station that *makes* a good aims to hold 140 % of its depth and one that *needs* it 65 %, which makes producers cheap and consumers dear, and every captain's trade moves the shared stock.
 

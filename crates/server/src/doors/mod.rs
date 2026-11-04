@@ -30,10 +30,13 @@ use std::sync::Arc;
 use russh_bbs_core::doors::DoorStore;
 use russh_bbs_core::limits::{Clock, SystemClock};
 use russh_bbs_core::scheduler::{Scheduler, SchedulerStore};
+use russh_bbs_door::Door;
 use russh_bbs_door::tick::{self, TickPolicy};
-use russh_bbs_door::{Door, InvalidDoorId};
+use russh_bbs_door_emberdeep::Emberdeep;
 use russh_bbs_door_example::CoinToss;
 use russh_bbs_door_long_haul::LongHaul;
+use russh_bbs_door_nullroute::Nullroute;
+use russh_bbs_door_saltmarch::Saltmarch;
 
 pub(crate) use draw::{DrawCtx, render};
 pub(crate) use exec::{Request, Response, run};
@@ -77,13 +80,19 @@ impl Doors {
         &self.clock
     }
 
-    /// The doors that ship with the board: the example coin toss and Long Haul. (Saltmarch,
-    /// Emberdeep and the rest register here when they exist.)
+    /// The doors that ship with the board: the example coin toss, until a game replaces it as
+    /// the first door, and the games (Saltmarch, Emberdeep, Nullroute and Long Haul; the rest register here when they exist).
     ///
     /// # Errors
-    /// Only if a built-in door has an invalid id or a bad content table, which tests rule out.
-    pub fn builtin() -> Result<Self, BuiltinError> {
-        Ok(Self::new(vec![CoinToss::shared()?, LongHaul::shared()?]))
+    /// Only if a built-in door has an invalid id or broken content, which tests rule out.
+    pub fn builtin() -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
+        Ok(Self::new(vec![
+            CoinToss::shared()?,
+            Saltmarch::shared()?,
+            Emberdeep::shared()?,
+            Nullroute::shared()?,
+            LongHaul::shared()?,
+        ]))
     }
 
     /// No doors: the Doors menu item then opens an empty list.
@@ -102,17 +111,6 @@ impl Doors {
     pub fn with_daily_tick(&self) -> impl Iterator<Item = &Arc<dyn Door>> {
         self.entries.iter().filter(|door| door.has_daily_tick())
     }
-}
-
-/// Why a built-in door could not be built. A start-up error that tests rule out.
-#[derive(Debug, thiserror::Error)]
-pub enum BuiltinError {
-    /// A door's id is not valid.
-    #[error("a built-in door has an invalid id: {0}")]
-    Id(#[from] InvalidDoorId),
-    /// Long Haul's embedded content did not load.
-    #[error(transparent)]
-    LongHaul(#[from] russh_bbs_door_long_haul::BuildError),
 }
 
 /// Why the doors' ticks could not be scheduled. A start-up error.

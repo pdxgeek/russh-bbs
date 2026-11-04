@@ -1,0 +1,439 @@
+# Scripts (M4-N1). `num` is stable (saves store it). Families: probe, break, hide, fight, utility.
+# Effects: scan map | crack spoof overflow | mask decoy reroute | jam fork purge |
+#          copy plant shred cutfeed wipelogs.
+# `memory` is deck memory; `noise` is the trace the script adds (before multipliers); `cycles` is its
+# cost in cycles; `charges` is uses per run (0 = unlimited); `price` 0 means not for sale (starter
+# scripts are owned from the first visit). `min_rep` gates the shop; `min_skill` is the skill level in
+# the script's family needed to load it into the deck.
+
+[[script]]
+num = 1
+name = "ping-sweep"
+family = "probe"
+effect = "scan"
+power = 2
+memory = 1
+noise = 2
+cycles = 1
+charges = 0
+price = 0
+min_rep = 0
+min_skill = 0
+starter = true
+blurb = "Lists what the node next door is made of."
+
+[[script]]
+num = 2
+name = "deep-sweep"
+family = "probe"
+effect = "scan"
+power = 4
+memory = 3
+noise = 4
+cycles = 2
+charges = 0
+price = 120
+min_rep = 0
+min_skill = 2
+starter = false
+blurb = "Finds the links the admins forgot to list."
+
+[[script]]
+num = 3
+name = "cartographer"
+family = "probe"
+effect = "map"
+power = 2
+memory = 3
+noise = 3
+cycles = 2
+charges = 1
+price = 90
+min_rep = 0
+min_skill = 0
+starter = false
+blurb = "Sketches the whole floor plan once."
+
+[[script]]
+num = 4
+name = "x-ray"
+family = "probe"
+effect = "map"
+power = 4
+memory = 4
+noise = 6
+cycles = 3
+charges = 1
+price = 260
+min_rep = 10
+min_skill = 1
+starter = false
+blurb = "Maps the floor plan and the hidden links."
+
+[[script]]
+num = 5
+name = "dictionary"
+family = "break"
+effect = "crack"
+power = 2
+memory = 2
+noise = 4
+cycles = 1
+charges = 0
+price = 0
+min_rep = 0
+min_skill = 0
+starter = true
+blurb = "Guesses passwords by the thousand."
+
+[[script]]
+num = 6
+name = "brute-forge"
+family = "break"
+effect = "crack"
+power = 4
+memory = 4
+noise = 8
+cycles = 2
+charges = 0
+price = 140
+min_rep = 5
+min_skill = 0
+starter = false
+blurb = "Loud, slow, and it gets through."
+
+[[script]]
+num = 7
+name = "skeleton-key"
+family = "break"
+effect = "crack"
+power = 6
+memory = 5
+noise = 10
+cycles = 2
+charges = 0
+price = 420
+min_rep = 25
+min_skill = 3
+starter = false
+blurb = "Opens anything that was ever locked with a password."
+
+[[script]]
+num = 8
+name = "badge-clone"
+family = "break"
+effect = "spoof"
+power = 2
+memory = 2
+noise = 3
+cycles = 1
+charges = 0
+price = 0
+min_rep = 0
+min_skill = 0
+starter = true
+blurb = "Passes for a cleaner on the night shift."
+
+[[script]]
+num = 9
+name = "cert-forger"
+family = "break"
+effect = "spoof"
+power = 4
+memory = 4
+noise = 6
+cycles = 2
+charges = 0
+price = 140
+min_rep = 5
+min_skill = 0
+starter = false
+blurb = "Signs its own credentials, convincingly."
+
+[[script]]
+num = 10
+name = "ghost-credential"
+family = "break"
+effect = "spoof"
+power = 6
+memory = 5
+noise = 8
+cycles = 2
+charges = 0
+price = 420
+min_rep = 25
+min_skill = 3
+starter = false
+blurb = "A name nobody remembers hiring."
+
+[[script]]
+num = 11
+name = "stack-smash"
+family = "break"
+effect = "overflow"
+power = 2
+memory = 2
+noise = 6
+cycles = 1
+charges = 0
+price = 0
+min_rep = 0
+min_skill = 0
+starter = true
+blurb = "Overruns a buffer and walks through the gap."
+
+[[script]]
+num = 12
+name = "heap-spray"
+family = "break"
+effect = "overflow"
+power = 4
+memory = 4
+noise = 10
+cycles = 2
+charges = 0
+price = 150
+min_rep = 5
+min_skill = 0
+starter = false
+blurb = "Fills memory with doors."
+
+[[script]]
+num = 13
+name = "root-shell"
+family = "break"
+effect = "overflow"
+power = 6
+memory = 5
+noise = 12
+cycles = 2
+charges = 0
+price = 430
+min_rep = 25
+min_skill = 3
+starter = false
+blurb = "Straight to the top of the machine."
+
+[[script]]
+num = 14
+name = "veil"
+family = "hide"
+effect = "mask"
+power = 1
+memory = 2
+noise = 0
+cycles = 1
+charges = 2
+price = 70
+min_rep = 0
+min_skill = 0
+starter = false
+blurb = "Halves the noise of your next few actions."
+
+[[script]]
+num = 15
+name = "decoy-swarm"
+family = "hide"
+effect = "decoy"
+power = 2
+memory = 3
+noise = 1
+cycles = 1
+charges = 1
+price = 110
+min_rep = 0
+min_skill = 0
+starter = false
+blurb = "A crowd of fake intruders soaks up the trace."
+
+[[script]]
+num = 16
+name = "re-route"
+family = "hide"
+effect = "reroute"
+power = 2
+memory = 2
+noise = 0
+cycles = 2
+charges = 2
+price = 80
+min_rep = 0
+min_skill = 0
+starter = false
+blurb = "Bounces the trace through a few more relays."
+
+[[script]]
+num = 17
+name = "long-way-round"
+family = "hide"
+effect = "reroute"
+power = 4
+memory = 4
+noise = 0
+cycles = 2
+charges = 2
+price = 260
+min_rep = 10
+min_skill = 1
+starter = false
+blurb = "A very long way round. Sheds a great deal of trace."
+
+[[script]]
+num = 18
+name = "jammer"
+family = "fight"
+effect = "jam"
+power = 2
+memory = 2
+noise = 3
+cycles = 1
+charges = 0
+price = 90
+min_rep = 0
+min_skill = 0
+starter = false
+blurb = "Switches off a sentry or a tracer next door."
+
+[[script]]
+num = 19
+name = "hardjam"
+family = "fight"
+effect = "jam"
+power = 4
+memory = 4
+noise = 5
+cycles = 1
+charges = 0
+price = 250
+min_rep = 10
+min_skill = 1
+starter = false
+blurb = "Jams the good ones."
+
+[[script]]
+num = 20
+name = "fork-bomb"
+family = "fight"
+effect = "fork"
+power = 2
+memory = 3
+noise = 4
+cycles = 1
+charges = 1
+price = 120
+min_rep = 0
+min_skill = 0
+starter = false
+blurb = "Two copies of you: the next two alarms hit the wrong one."
+
+[[script]]
+num = 21
+name = "purge-lance"
+family = "fight"
+effect = "purge"
+power = 3
+memory = 4
+noise = 7
+cycles = 2
+charges = 0
+price = 220
+min_rep = 10
+min_skill = 1
+starter = false
+blurb = "Cuts a hole in a black wall."
+
+[[script]]
+num = 22
+name = "purge-hammer"
+family = "fight"
+effect = "purge"
+power = 6
+memory = 5
+noise = 10
+cycles = 2
+charges = 0
+price = 480
+min_rep = 30
+min_skill = 3
+starter = false
+blurb = "Black walls are a suggestion."
+
+[[script]]
+num = 23
+name = "siphon"
+family = "utility"
+effect = "copy"
+power = 1
+memory = 2
+noise = 4
+cycles = 2
+charges = 0
+price = 0
+min_rep = 0
+min_skill = 0
+starter = true
+blurb = "Copies data out of a vault."
+
+[[script]]
+num = 24
+name = "implant"
+family = "utility"
+effect = "plant"
+power = 1
+memory = 2
+noise = 5
+cycles = 2
+charges = 0
+price = 60
+min_rep = 0
+min_skill = 0
+starter = false
+blurb = "Leaves a backdoor behind."
+
+[[script]]
+num = 25
+name = "shredder"
+family = "utility"
+effect = "shred"
+power = 1
+memory = 2
+noise = 5
+cycles = 2
+charges = 0
+price = 60
+min_rep = 0
+min_skill = 0
+starter = false
+blurb = "Makes a record never have existed."
+
+[[script]]
+num = 26
+name = "blind-eye"
+family = "utility"
+effect = "cutfeed"
+power = 1
+memory = 1
+noise = 1
+cycles = 1
+charges = 0
+price = 50
+min_rep = 0
+min_skill = 0
+starter = false
+blurb = "Cuts the camera feed you walked into."
+
+[[script]]
+num = 27
+name = "log-scrub"
+family = "utility"
+effect = "wipelogs"
+power = 2
+memory = 2
+noise = 0
+cycles = 1
+charges = 1
+price = 70
+min_rep = 0
+min_skill = 0
+starter = false
+blurb = "Scrubs the logs, so you leave less heat behind."

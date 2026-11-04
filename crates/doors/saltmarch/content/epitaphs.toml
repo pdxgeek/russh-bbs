@@ -1,0 +1,29 @@
+# Lines for the hall. `{name}` is the crew member, `{trade}` their trade.
+
+[[epitaph]]
+cause = "retired"
+text = "{name}, {trade}. Went up to the hearth and stayed there."
+
+[[epitaph]]
+cause = "retired"
+text = "{name}, {trade}. Read the tide for the last time and set the rake down."
+
+[[epitaph]]
+cause = "retired"
+text = "{name}, {trade}. Long years on the flats, and a dry bed at the end."
+
+[[epitaph]]
+cause = "starved"
+text = "{name}, {trade}. The larder was empty, and the hold did not forgive itself."
+
+[[epitaph]]
+cause = "starved"
+text = "{name}, {trade}. Went thin in the lean nights. Remembered."
+
+[[epitaph]]
+cause = "lost"
+text = "{name}, {trade}. The water came in faster than the light."
+
+[[epitaph]]
+cause = "lost"
+text = "{name}, {trade}. Did not come back with the tide."

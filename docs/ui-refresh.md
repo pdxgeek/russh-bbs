@@ -39,6 +39,71 @@ Status: **Approved by the owner, 2026-11-04** as its own milestone, **M3.5: Look
 - **Fast:** diffed rendering, so only changed cells are sent. Effects are budgeted per session, so hundreds of members can be online with animation on, and a benchmark in CI-local checks frame cost and bytes sent per frame.
 - **Still a BBS:** hotkeys, ANSI art, the sysop's voice. Everything stays usable from a keyboard alone, and accessibility mode stays plain.
 
+## Several styles, several layouts, widgets you switch on and off (owner, 2026-11-04)
+
+Not one cool look: **many, all selectable.** Style, layout and widgets are three independent choices, so any style works with any layout and any set of widgets.
+
+### Styles (theme packs)
+
+The board ships **at least six distinct styles**, each a complete theme pack (palette, borders, art, motion defaults). The names below are working titles, and every piece of art is original:
+
+| Style | Feel |
+|---|---|
+| **Phosphor** | A green CRT: scanline shading, a soft glow, monospace art |
+| **Neon Night** | Synthwave: magenta and cyan gradients, a chrome logo, fades |
+| **Paper** | Calm and light: an ink-on-paper palette, thin rounded borders, no motion |
+| **Amber Terminal** | Warm amber on black, thick borders, a typewriter reveal |
+| **Deep Space** | Starfield backgrounds, cold blues, braille nebula art |
+| **Classic ANSI** | 16-colour, CP437 block art and double borders, like a 1994 board done perfectly |
+
+The existing default, amber, green and contrast themes stay. Sysops can add more styles, import and export them (UI-7), and set the default; members pick one in the theme gallery, live.
+
+### Layouts
+
+**At least five layouts**, each a real arrangement of panes, not a recolour:
+
+| Layout | Arrangement |
+|---|---|
+| **Classic** | A hotkey menu in a centred box, as now |
+| **Lightbar** | A highlighted menu you move with arrows, as now |
+| **Compact** | Dense single-column, for small terminals, as now |
+| **Dashboard** | Menu on the left, a widget grid on the right |
+| **Wide** | Three columns for 120+ columns: navigation, content, widgets |
+| **Focus** | Content full-screen with a slim header, and widgets in a pop-over (`Tab`) |
+| **Split** | Any screen beside a second pane (chat, mail or a widget), with a draggable divider |
+
+Every layout reflows to the terminal's size and still works at 80x24. Below a layout's minimum size it falls back to a smaller layout and says so.
+
+### Widgets
+
+A **widget** is a small live panel the layouts place in their widget areas (the dashboard grid, the wide right column, the focus pop-over and the split pane). Widgets are built in, in core and server code. They are not plug-ins, and each one reads only what its viewer may reach through `core::access`.
+
+- **Launch set:**
+  - who's online;
+  - last callers;
+  - new posts since your last call;
+  - unread mail;
+  - the chat sidebar (a live room);
+  - today's one-liner;
+  - the graffiti wall;
+  - the current poll;
+  - the board activity sparkline;
+  - a clock and calendar (with the event scheduler's next events);
+  - a door standings ticker;
+  - the news ticker (RSS feed headlines);
+  - the sysop's message of the day;
+  - your credits.
+- **Who controls what:**
+  - **the sysop** decides which widgets exist on the board, the default set and order for each layout, and can lock a widget on (for example the message of the day) or off;
+  - **members** switch widgets on or off, reorder them and resize them within what the sysop allows, from a Widgets screen in settings or by dragging with the mouse (UI-9). Their choice is saved per layout.
+- **Rules:**
+  - a widget never covers the marker cell;
+  - a widget that has nothing to show collapses;
+  - each widget has a size class (small, medium, wide) and a refresh budget, so live widgets cannot blow the D49 redraw cap;
+  - in accessibility mode the widgets become a plain list on their own screen;
+  - in the ASCII tier every widget has a text form.
+- **Settings storage:** widget settings are stored per member, in the store on both backends, with a forward migration.
+
 ## What changes on screen
 
 - **Frame:** a top **header bar** (the board name or logo, the area you are in, and a clock) and a bottom **status bar** (hotkeys for this screen, unread counts, who's online). The current status row becomes part of the status bar, and security markers keep their reserved cell at its left.
@@ -61,7 +126,7 @@ Status: **Approved by the owner, 2026-11-04** as its own milestone, **M3.5: Look
   - a blinking cursor in inputs.
 
   Members can turn motion off, and it is always off in accessibility mode.
-- **Doors:** the framework's `Canvas` gains the same widgets, so the game UI slices (S3, E3, N3, L3, H3) use them.
+- **Doors get all of ratatui** (owner, 2026-11-04). A door renders any ratatui widget into its own off-screen buffer, and the framework cleans every cell as it composites it onto the screen: the sanitizer runs on each symbol, the reserved marker style is removed, and everything is clipped to the door's area. Doors can use colours and every widget, but they can never forge a marker or draw outside their box. The game UI slices (S3, E3, N3, L3, H3) build on it.
 
 ## Customization (sysop and member)
 
@@ -133,10 +198,11 @@ Under Sysop tools, a **theme preview** renders each installed theme against samp
 ## Slices
 
 1. **UI-1: frame and widgets.** Header and status bars, popups, tables with scrollbars, and the colour-depth fallback. Shared widgets live in `crates/server/src/ui`. Done when the main menu, the forum lists and the members list use them at every size and tier.
-2. **UI-2: theme packs v2 and board identity.** Palette roles, borders, layout presets (including dashboard and wide), the `[board]` config, and member settings (motion, colour depth, borders). Ships three new themes that look distinct (for example a phosphor green terminal, a neon synth night, and a calm paper light theme).
+2. **UI-2: theme packs v2, layouts and board identity.** Palette roles, borders, the seven layouts above, the `[board]` config, and member settings (motion, colour depth, borders). Ships the six styles above, as complete packs (their art lands in UI-3).
 3. **UI-3: board art.** The `.ans` parser, the `.art.toml` format, art slots, the large-letter fallback, and the sysop theme preview. Ships one original art set per new theme.
-4. **UI-4: screens.** The dashboard home, the reader, three-pane chat, mail and the community screens moved onto the new widgets, plus motion.
-5. **UI-5: door canvas.** The framework `Canvas` gains the widgets, so the game UI slices can use them.
+4. **UI-10: widget system** (runs before UI-4). The widget trait and registry, the launch set of widgets, sysop defaults and locks, the member Widgets screen, per-member storage and refresh budgets.
+5. **UI-4: screens.** The dashboard home, the reader, three-pane chat, mail and the community screens moved onto the new widgets, plus motion.
+5. **UI-5: full ratatui for doors.** An off-screen buffer per door, composited with per-cell cleaning; any widget and any colour; mouse events and effects added as UI-8 and UI-9 land. The game UI slices use it.
 6. **UI-6: sysop menus and pages.** A `menus.toml` reorders, renames, hides and nests the built-in menu items, and adds sysop pages (bulletins and info screens with art). It cannot add actions or bypass access checks.
 7. **UI-7: theme gallery, import and export.** Members preview and pick a theme from a gallery; sysops import and export theme packs (one file, art included).
 8. **UI-8: effects and graphics.**

@@ -1,0 +1,12 @@
+# Crew names are a first name and a byname, picked at random. Players do not type these.
+first = [
+  "Alder", "Brindle", "Cormac", "Dunmow", "Edda", "Fenna", "Garrick", "Hesper", "Isolde",
+  "Jory", "Kestrel", "Lorn", "Maren", "Nettle", "Orrin", "Pell", "Quill", "Rushe", "Sedge",
+  "Tamsin", "Ulla", "Varn", "Wren", "Yarrow", "Bram", "Cress", "Dove", "Ember", "Flint",
+  "Gull", "Hale", "Ivo", "Juno", "Kell", "Linnet", "Moss", "Nan", "Osk", "Peg", "Rook"
+]
+by = [
+  "Mudfoot", "Reedwright", "Saltlip", "Peatcutter", "Tidewatcher", "Gullcall", "Lowwater",
+  "Stakewright", "Eelhand", "Brinecook", "Marshborn", "Drydock", "Silthand", "Wadewell",
+  "Bogtrotter", "Heronshank", "Floodmark", "Nettlesting", "Weirkeeper", "Fogwalker"
+]

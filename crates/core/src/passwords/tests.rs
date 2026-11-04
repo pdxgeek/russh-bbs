@@ -252,7 +252,7 @@ fn typed_text_is_wiped_on_drop() {
     wipes::<zeroize::Zeroizing<String>>();
     // The screen's input buffer and the copies made for hashing jobs are `Zeroizing<String>`;
     // a plain `String` would not satisfy the bound above and would not compile here.
-    let mut screen = PasswordScreen::open(LoginMethod::Key);
+    let mut screen = PasswordScreen::open(LoginMethod::Key, false);
     let _ = screen.take_request();
     let _ = screen.deliver(Response::Status(false));
     screen.press(PasswordKey::Char('s'));
@@ -606,7 +606,7 @@ fn type_text(screen: &mut PasswordScreen, text: &str) {
 }
 
 fn opened(method: LoginMethod, set: bool) -> PasswordScreen {
-    let mut screen = PasswordScreen::open(method);
+    let mut screen = PasswordScreen::open(method, false);
     let request = screen.take_request().unwrap();
     assert!(matches!(request.kind, Kind::Status));
     assert!(screen.take_request().is_none(), "a request is taken once");
@@ -719,7 +719,7 @@ fn a_key_session_confirms_a_clear_and_a_denial_leaves() {
     assert!(none.take_request().is_none());
     assert!(none.view().menu.iter().all(|item| item.key != 'c'));
     // A status that fails leaves the screen.
-    let mut broken = PasswordScreen::open(LoginMethod::Key);
+    let mut broken = PasswordScreen::open(LoginMethod::Key, false);
     let _ = broken.take_request();
     assert_eq!(
         broken.deliver(Response::Refused(Refusal::Failed)),
@@ -864,4 +864,17 @@ mod in_the_session {
         assert!(f.take_password_request().is_none());
         assert!(!lines(&f).contains("Clear password"));
     }
+}
+
+#[test]
+fn the_note_does_not_say_password_login_is_opt_in_and_says_when_it_is_off() {
+    let on = opened(LoginMethod::Key, false).view().body.join("\n");
+    assert!(on.contains(strings::NOTE_USE));
+    assert!(!on.contains("only if the sysop"));
+    let mut screen = PasswordScreen::open(LoginMethod::Key, true);
+    screen.take_request();
+    screen.deliver(Response::Status(false));
+    let off = screen.view().body.join("\n");
+    assert!(off.contains(strings::NOTE_USE_OFF));
+    assert!(off.contains("turned password login off"));
 }
