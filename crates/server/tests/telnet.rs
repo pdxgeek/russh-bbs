@@ -1469,24 +1469,22 @@ fn without_the_marker(words: &str) -> String {
     without_the_login_time(&words)
 }
 
-/// `words` with the wall-clock time after "Last login:" (`YYYY-MM-DD HH:MM UTC`) replaced by a
-/// placeholder. The two servers in the transport comparison start at different moments, so their
-/// minute can differ; the line itself must still be there and the rest must match.
+/// `words` with the wall-clock time after "Last login:" replaced by a placeholder. `words_of`
+/// turns the hyphens of `YYYY-MM-DD HH:MM UTC` into spaces, so the time is the five words up to
+/// and including "UTC". The two servers in the transport comparison start at different moments,
+/// so their minute can differ; the line itself must still be there and the rest must match.
 fn without_the_login_time(words: &str) -> String {
     const LABEL: &str = "Last login:";
     let Some(at) = words.find(LABEL) else {
         return words.to_owned();
     };
     let after = &words[at + LABEL.len()..];
-    let mut rest = after.split_whitespace();
-    let (date, time, zone) = (rest.next(), rest.next(), rest.next());
+    let parts: Vec<&str> = after.split_whitespace().collect();
     assert!(
-        matches!((date, time, zone), (Some(d), Some(t), Some("UTC"))
-            if d.len() == 10 && t.len() == 5),
+        parts.len() >= 5 && parts[4] == "UTC" && parts[3].len() == 5 && parts[3].contains(':'),
         "unexpected login time after {LABEL:?}: {after}"
     );
-    let tail: Vec<&str> = rest.collect();
-    format!("{}{LABEL} <time> {}", &words[..at], tail.join(" "))
+    format!("{}{LABEL} <time> {}", &words[..at], parts[5..].join(" "))
         .trim_end()
         .to_owned()
 }
