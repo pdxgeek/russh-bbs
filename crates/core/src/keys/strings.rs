@@ -6,7 +6,7 @@ pub const MENU_KEYS: &str = "My keys";
 /// Sysop menu label (the key that opens the staff screen is in the menu tree).
 pub const HEADING: &str = "My keys";
 /// What the page is about.
-pub const NOTE_KEYS: &str = "A key signs you in without typing your password. The server keeps only each key's fingerprint.";
+pub const NOTE_KEYS: &str = "Keys sign you in without a password. Only fingerprints are kept.";
 /// No keys.
 pub const NO_KEYS: &str = "No key is saved. You sign in with your password.";
 /// Menu: add.
@@ -30,7 +30,7 @@ pub const FOOTER_LIST: &str = "Esc: back";
 /// Footer: paste entry.
 pub const FOOTER_ENTRY: &str = "Enter: add   Backspace: delete   Esc: cancel";
 /// Footer: pick.
-pub const FOOTER_PICK: &str = "1-9: choose   Esc: cancel";
+pub const FOOTER_PICK: &str = "1-4: choose   Esc: cancel";
 /// Footer: confirm.
 pub const FOOTER_CONFIRM: &str = "y: remove it   n or Esc: keep it";
 /// Footer: waiting.

@@ -477,7 +477,7 @@ fn the_keys_screen_lists_keys_and_removes_by_number() {
     });
     let body = screen.view().body.join("\n");
     assert!(body.contains("1. SHA256:aaaa"));
-    assert!(body.contains("last used never"));
+    assert!(body.contains("added 1970-01-01 00:00 UTC, last used never"));
     assert!(body.contains("last used 1970-01-01 01:00 UTC"));
     screen.press(KeysKey::Char('r'));
     screen.press(KeysKey::Char('2'));

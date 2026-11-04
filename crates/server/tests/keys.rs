@@ -335,7 +335,7 @@ async fn at_menu(rig: &Rig, handle: &str, key: &PrivateKey) -> (Handle<Client>, 
 async fn my_keys(channel: &mut Channel<Msg>) -> String {
     press(channel, "u").await;
     let screen = press(channel, "k").await;
-    assert!(flat(&screen).contains("A key signs you in"), "{screen}");
+    assert!(flat(&screen).contains("Keys sign you in without a password"), "{screen}");
     screen
 }
 
@@ -378,6 +378,8 @@ async fn a_second_machine_is_linked_with_a_code_and_the_old_key_is_removed() {
     let listed = my_keys(&mut first).await;
     assert!(flat(&listed).contains(&fingerprint_of(&key1).to_string()), "{listed}");
     assert!(flat(&listed).contains("last used never"), "{listed}");
+    // The fingerprint is on a line of its own, whole.
+    assert!(listed.lines().any(|l| l.contains(&format!("1. {}", fingerprint_of(&key1)))), "{listed}");
 
     // A device-link code: shown once, 10 minutes, stored only as a hash.
     let shown = press(&mut first, "l").await;

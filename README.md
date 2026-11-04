@@ -23,7 +23,7 @@ docker logs bbs        # shows the one-time founder token on first start
 ssh -p 2222 claim@localhost    # become the sysop: paste the token, choose a password
 ```
 
-Then, from any machine: `ssh -p 2222 new@host` to join (the waiting room; you choose a password; with no key, press Enter at the password prompt) and `ssh -p 2222 <handle>@host` to sign in (a key you added to that handle, or your password). A telnet client can do the same if the sysop turns telnet on: type `new` at `login:` to join.
+Then, from any machine: `ssh -p 2222 new@host` to join (the waiting room; you choose a password; with no key, press Enter at the password prompt) and `ssh -p 2222 <handle>@host` to sign in (a key you added to that handle, or your password). A telnet client can do the same if the sysop turns telnet on: type `new` at `login:` to join. To use a new machine with an existing account, make a code under Members, My keys on a machine you are signed in on, then `ssh -p 2222 new@host` and choose Link this device; if you cannot sign in at all, a staff member can give you a recovery code (see `docs/accounts.md`).
 
 Or `docker compose up -d` with the example [compose.yaml](compose.yaml). All state lives in the `/data` volume. Images are published on version tags only. Full guide, including backups, upgrades and the host key fingerprint: [docs/deploy.md](docs/deploy.md). The container is not a sandbox for door games.
 

@@ -557,6 +557,30 @@ async fn a_sysop_over_telnet_holds_no_staff_permission() {
     assert!(!again.contains("Sysop tools"), "{again}");
 }
 
+#[tokio::test]
+async fn telnet_can_make_a_link_code_but_has_no_key_to_bind_one() {
+    // FIX-M3-11, D97: a member over telnet may make a device-link code (the page says it works
+    // from an ssh connection only), and the telnet waiting room offers no "Link this device".
+    let rig = Rig::start(true).await;
+    rig.account("maker", Slug::MEMBER, Some(SECRET)).await;
+    let mut tn = at_menu(&rig, "maker").await;
+    let members = tn.keys("u").await;
+    assert!(members.contains("[k] My keys"), "{members}");
+    let keys = tn.keys("k").await;
+    assert!(keys.contains("Keys sign you in"), "{keys}");
+    assert!(keys.contains("No key is saved"), "{keys}");
+    let shown = tn.keys("l").await;
+    assert!(shown.contains("Code:"), "{shown}");
+    assert!(shown.contains("used from an ssh connection only"), "{shown}");
+    // The one-time code and the marker are both on the page.
+    assert!(shown.contains("UNENCRYPTED"), "{shown}");
+
+    // The telnet waiting room has no key, so it has no way to use a code.
+    let (_tn, home) = join(&rig).await;
+    assert!(!home.contains("Link this device"), "{home}");
+    assert!(!home.contains("Recovery code"), "{home}");
+}
+
 // ---------------------------------------------------------------- the window
 
 #[tokio::test]

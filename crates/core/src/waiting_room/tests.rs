@@ -937,3 +937,90 @@ fn a_request_form_hands_over_the_password_and_shows_the_telnet_answer() {
         assert!(!answer.contains("fingerprint") && !answer.contains("same key"));
     }
 }
+
+// ---- device-link and recovery codes (FIX-M3-11, D97) ------------------------------------------
+
+fn keyed(mode: RegistrationMode) -> WaitingRoom {
+    room(mode).with_key_link()
+}
+
+#[test]
+fn only_a_room_for_a_visitor_with_a_key_offers_the_code_entries() {
+    for mode in ALL_MODES {
+        let with_key = all_text(&keyed(mode).view());
+        assert!(with_key.contains("Link this device"), "{mode:?}");
+        assert!(with_key.contains("Recovery code"), "{mode:?}");
+        // No key (telnet, or ssh with no key offered) means nothing to bind: no entries, and the
+        // keys do nothing.
+        for plain in [room(mode), room(mode).with_password_signup()] {
+            let mut plain = plain;
+            assert!(!all_text(&plain.view()).contains("Link this device"));
+            for key in ['d', 'y'] {
+                plain.input(RoomInput::Char(key));
+                assert_eq!(plain.page(), Page::Home, "{mode:?} {key}");
+            }
+        }
+    }
+}
+
+#[test]
+fn a_link_code_is_sent_as_typed_and_the_form_is_wiped() {
+    let mut room = keyed(RegistrationMode::Invite);
+    room.input(RoomInput::Char('d'));
+    assert_eq!(room.page(), Page::LinkDevice);
+    type_text(&mut room, "abcde-fghjk");
+    assert!(all_text(&room.view()).contains("abcde-fghjk"));
+    let RoomEffect::LinkDevice(request) = room.input(RoomInput::Enter) else {
+        panic!("a filled form is submitted");
+    };
+    assert_eq!(request.code, "abcde-fghjk");
+    assert!(request.password.is_none());
+    assert!(!all_text(&room.view()).contains("abcde"));
+    // An empty form is a local message, not a request.
+    assert_eq!(room.input(RoomInput::Enter), RoomEffect::Stay);
+    assert!(!format!("{request:?}").contains("abcde"));
+}
+
+#[test]
+fn a_recovery_code_needs_a_matching_good_password_before_anything_is_sent() {
+    let mut room = keyed(RegistrationMode::Open);
+    room.input(RoomInput::Char('y'));
+    assert_eq!(room.page(), Page::Recover);
+    type_text(&mut room, "CODE");
+    room.input(RoomInput::Enter);
+    type_text(&mut room, "short");
+    room.input(RoomInput::Enter);
+    type_text(&mut room, "short");
+    assert_eq!(room.input(RoomInput::Enter), RoomEffect::Stay, "too short");
+    assert!(room.view().notice.is_some_and(|n| n.kind == NoticeKind::Error));
+    // The secrets were wiped; the code was kept for another try.
+    let view = room.view();
+    assert!(view.fields.iter().skip(1).all(|f| f.value.is_empty()));
+    type_text(&mut room, "a long enough passphrase");
+    room.input(RoomInput::Enter);
+    type_text(&mut room, "a different passphrase!!!");
+    assert_eq!(room.input(RoomInput::Enter), RoomEffect::Stay, "mismatch");
+    type_text(&mut room, "a long enough passphrase");
+    room.input(RoomInput::Enter);
+    type_text(&mut room, "a long enough passphrase");
+    let RoomEffect::Recover(request) = room.input(RoomInput::Enter) else {
+        panic!("a good form is submitted");
+    };
+    assert_eq!(request.code, "CODE");
+    assert_eq!(request.password.unwrap().expose(), "a long enough passphrase");
+}
+
+#[test]
+fn a_refused_code_reads_one_sentence_on_both_forms() {
+    let mut link = keyed(RegistrationMode::Invite);
+    link.input(RoomInput::Char('d'));
+    type_text(&mut link, "x");
+    link.input(RoomInput::Enter);
+    link.redeem_refused();
+    let mut recover = keyed(RegistrationMode::Invite);
+    recover.input(RoomInput::Char('y'));
+    recover.redeem_refused();
+    let (a, b) = (link.view().notice.unwrap(), recover.view().notice.unwrap());
+    assert_eq!(a.text, b.text);
+    assert_eq!(a.kind, NoticeKind::Error);
+}

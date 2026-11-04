@@ -38,8 +38,9 @@ pub enum Step {
     Denied,
 }
 
-/// How many keys can be picked by number.
-const PICKABLE: usize = 9;
+/// How many keys are listed and can be picked by number (two lines each, so the page fits
+/// 80x24).
+const PICKABLE: usize = 4;
 
 #[derive(Debug)]
 enum Stage {
@@ -278,14 +279,15 @@ impl KeysScreen {
         if self.keys.is_empty() {
             lines.push(strings::NO_KEYS.to_owned());
         }
+        // The fingerprint has a line to itself (50 characters would wrap in the middle of the
+        // token), then when the key was added and last used.
         for (index, record) in self.keys.iter().take(PICKABLE).enumerate() {
             let last = record
                 .last_used_at
                 .map_or_else(|| "never".to_owned(), format_utc);
+            lines.push(format!("{}. {}", index + 1, record.fingerprint));
             lines.push(format!(
-                "{}. {}  added {}, last used {}",
-                index + 1,
-                record.fingerprint,
+                "   added {}, last used {}",
                 format_utc(record.added_at),
                 last,
             ));

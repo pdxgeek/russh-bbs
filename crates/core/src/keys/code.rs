@@ -64,6 +64,14 @@ impl CodeKind {
         }
     }
 
+    /// Characters per group in the shown text: 5-5 for a link code, 4-4-4-4 for a recovery code.
+    const fn group(self) -> usize {
+        match self {
+            Self::Link => 5,
+            Self::Recovery => 4,
+        }
+    }
+
     const fn domain(self) -> &'static [u8] {
         match self {
             Self::Link => b"russh-bbs device link code v1\0",
@@ -90,9 +98,9 @@ impl LoginCode {
     /// [`CodeKind::chars`] bytes).
     #[must_use]
     pub fn from_bytes(kind: CodeKind, bytes: &[u8]) -> Self {
-        let mut text = String::with_capacity(kind.chars() + kind.chars() / 5);
+        let mut text = String::with_capacity(kind.chars() + kind.chars() / kind.group());
         for index in 0..kind.chars() {
-            if index > 0 && index % 5 == 0 {
+            if index > 0 && index % kind.group() == 0 {
                 text.push('-');
             }
             let pick = bytes.get(index).copied().unwrap_or(0) & 0x1f;
@@ -180,10 +188,11 @@ mod tests {
     fn a_link_code_is_ten_characters_in_two_groups() {
         let code = LoginCode::from_bytes(CodeKind::Link, &[0xAB; 10]);
         assert_eq!(code.reveal().len(), 11);
-        assert_eq!(code.reveal().split('-').count(), 2);
+        assert!(code.reveal().split('-').all(|group| group.len() == 5));
         let long = LoginCode::from_bytes(CodeKind::Recovery, &[0x31; 16]);
+        assert_eq!(long.reveal().len(), 19);
+        assert!(long.reveal().split('-').all(|group| group.len() == 4));
         assert_eq!(long.reveal().split('-').count(), 4);
-        assert_eq!(long.reveal().replace('-', "").len(), 16);
     }
 
     #[test]

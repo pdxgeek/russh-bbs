@@ -280,7 +280,7 @@ impl MemberFlow {
             self.page = Page::Home;
             self.notice = Some(Notice {
                 kind: NoticeKind::Error,
-                text: strings::NOT_PERMITTED,
+                text: strings::MEMBERS_NOT_PERMITTED,
             });
             return MemberEffect::Stay;
         }
@@ -825,7 +825,7 @@ impl MemberFlow {
                 self.page = Page::Home;
                 self.notice = Some(Notice {
                     kind: NoticeKind::Error,
-                    text: strings::NOT_PERMITTED,
+                    text: strings::MEMBERS_NOT_PERMITTED,
                 });
             }
         }
