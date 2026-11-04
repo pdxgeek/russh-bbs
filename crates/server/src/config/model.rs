@@ -202,7 +202,7 @@ pub struct BlobsConfig {
     pub bucket: Option<String>,
     /// Region for `s3`.
     pub region: Option<String>,
-    /// Address the bucket in the URL path (MinIO and most self-hosted servers) instead of the
+    /// Address the bucket in the URL path (`MinIO` and most self-hosted servers) instead of the
     /// host name (AWS).
     pub path_style: bool,
     /// PEM certificates that replace the platform CA store for `s3` (like `feeds.ca_file`, D92).

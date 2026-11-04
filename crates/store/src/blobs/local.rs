@@ -22,7 +22,8 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use russh_bbs_core::blobs::{
-    BlobError, BlobId, BlobKey, BlobMeta, BlobPrefix, BlobRead, BlobStore, ListPage, PutAccounting, PutOptions, TRAILER_LEN, Trailer, VerifyingReader, MAX_LIST_LIMIT,
+    BlobError, BlobId, BlobKey, BlobMeta, BlobPrefix, BlobRead, BlobStore, ListPage,
+    MAX_LIST_LIMIT, PutAccounting, PutOptions, TRAILER_LEN, Trailer, VerifyingReader,
 };
 use russh_bbs_core::store::UnixSeconds;
 use tokio::fs::{self, File};
@@ -233,7 +234,9 @@ impl BlobStore for LocalBlobStore {
             .len();
         let tail = total
             .checked_sub(TRAILER_LEN as u64)
-            .ok_or(BlobError::Corrupt("stored object is shorter than its trailer"))?;
+            .ok_or(BlobError::Corrupt(
+                "stored object is shorter than its trailer",
+            ))?;
         file.seek(io::SeekFrom::Start(tail))
             .await
             .map_err(|e| backend("seeking", &e))?;
@@ -261,7 +264,9 @@ impl BlobStore for LocalBlobStore {
         let limit = limit.clamp(1, MAX_LIST_LIMIT);
         let ns_dir = self.root.join(prefix.namespace.as_str());
         let mut shards = sorted_names(&ns_dir, |n| {
-            n.len() == 2 && n.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+            n.len() == 2
+                && n.bytes()
+                    .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
         })
         .await?;
         if let Some(only) = &prefix.shard {

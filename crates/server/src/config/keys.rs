@@ -241,8 +241,20 @@ pub(crate) static KEYS: &[KeyDef] = &[
         Str,
         "us-east-1",
     ),
-    key("blobs.path_style", "RUSSH_BBS_BLOBS_PATH_STYLE", None, Bool, "true"),
-    key("blobs.ca_file", "RUSSH_BBS_BLOBS_CA_FILE", None, Str, "/tmp/ca.pem"),
+    key(
+        "blobs.path_style",
+        "RUSSH_BBS_BLOBS_PATH_STYLE",
+        None,
+        Bool,
+        "true",
+    ),
+    key(
+        "blobs.ca_file",
+        "RUSSH_BBS_BLOBS_CA_FILE",
+        None,
+        Str,
+        "/tmp/ca.pem",
+    ),
     key(
         "blobs.max_object_bytes",
         "RUSSH_BBS_BLOBS_MAX_OBJECT_BYTES",

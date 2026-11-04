@@ -22,6 +22,14 @@ allow = [
 # Workspace crates are `publish = false` and carry no license on purpose (owner decision Q1).
 # Treat unpublished crates as private so they are not required to declare one.
 private = { ignore = true }
+# One crate under a license that is not on the allow list, by name so nothing else rides along.
+# `webpki-root-certs` (Mozilla root certificate data, CDLA-Permissive-2.0, a permissive data
+# license) is a dependency of `rustls-platform-verifier` for `wasm32` targets only, which this
+# project never builds; `cargo deny` still sees it because it checks every target. It comes in
+# through `reqwest`, which `object_store` uses for the S3 blob backend (M4-F1, D101). Nothing
+# in the shipped binary links it. Owner: confirm or reject this exception (D101).
+exceptions = [{ allow = ["CDLA-Permissive-2.0"], crate = "webpki-root-certs" }]
+
 # The allow list is deliberately ahead of what the dependency tree uses today.
 unused-allowed-license = "allow"
 

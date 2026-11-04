@@ -9,13 +9,16 @@
 //! - `RUSSH_BBS_TEST_S3_BUCKET`: a bucket that already exists
 //! - `RUSSH_BBS_TEST_S3_ACCESS_KEY` and `RUSSH_BBS_TEST_S3_SECRET_KEY`
 //!
-//! The recipe for a MinIO container is in `docs/deploy.md` ("Testing the S3 blob backend").
+//! The recipe for a  container is in `docs/deploy.md` ("Testing the S3 blob backend").
 #![allow(clippy::unwrap_used, clippy::panic)]
 
+use std::os::unix::fs::PermissionsExt as _;
 use std::path::Path;
 
-use russh_bbs_core::blobs::{BlobError, BlobHash, BlobKey, BlobStore, Namespace, PutOptions, TRAILER_LEN};
 use object_store::ObjectStoreExt;
+use russh_bbs_core::blobs::{
+    BlobError, BlobHash, BlobKey, BlobStore, Namespace, PutOptions, TRAILER_LEN,
+};
 use tokio::io::AsyncReadExt;
 
 use super::suite::{Pattern, blob_suite, fresh_namespace};
@@ -25,11 +28,17 @@ use super::{LocalBlobStore, MIN_PART_BYTES, S3BlobStore, S3Credentials, S3Settin
 
 async fn local() -> (LocalBlobStore, tempfile::TempDir) {
     let dir = tempfile::tempdir().unwrap();
-    let store = LocalBlobStore::open(dir.path().join("blobs"), 1 << 30).await.unwrap();
+    let store = LocalBlobStore::open(dir.path().join("blobs"), 1 << 30)
+        .await
+        .unwrap();
     (store, dir)
 }
 
-blob_suite!(local_suite, crate::blobs::tests::local, crate::blobs::MIN_PART_BYTES);
+blob_suite!(
+    local_suite,
+    crate::blobs::tests::local,
+    crate::blobs::MIN_PART_BYTES
+);
 
 fn files_under(root: &Path) -> Vec<std::path::PathBuf> {
     let mut out = Vec::new();
@@ -50,7 +59,10 @@ fn files_under(root: &Path) -> Vec<std::path::PathBuf> {
 async fn drain<S: BlobStore>(store: &S, key: &BlobKey) -> Result<usize, BlobError> {
     let mut r = store.get(key).await?;
     let mut buf = Vec::new();
-    r.reader.read_to_end(&mut buf).await.map_err(|e| BlobError::from_io(&e))?;
+    r.reader
+        .read_to_end(&mut buf)
+        .await
+        .map_err(|e| BlobError::from_io(&e))?;
     Ok(buf.len())
 }
 
@@ -59,16 +71,35 @@ async fn local_objects_land_in_a_sharded_private_layout_with_no_temp_left() {
     let (store, dir) = local().await;
     let root = dir.path().join("blobs");
     let key = BlobKey::generate(Namespace::new("files").unwrap());
-    store.put(&key, Pattern::new(1000, 1), &PutOptions::up_to(5000)).await.unwrap();
+    store
+        .put(&key, Pattern::new(1000, 1), &PutOptions::up_to(5000))
+        .await
+        .unwrap();
 
-    let want = root.join("files").join(key.id().shard().as_str()).join(key.id().as_str());
-    assert_eq!(files_under(&root), vec![want.clone()], "one object file and no temp file");
-    assert_eq!(std::fs::metadata(&want).unwrap().len(), 1000 + TRAILER_LEN as u64);
+    let want = root
+        .join("files")
+        .join(key.id().shard().as_str())
+        .join(key.id().as_str());
+    assert_eq!(
+        files_under(&root),
+        vec![want.clone()],
+        "one object file and no temp file"
+    );
+    assert_eq!(
+        std::fs::metadata(&want).unwrap().len(),
+        1000 + TRAILER_LEN as u64
+    );
 
-    use std::os::unix::fs::PermissionsExt;
-    assert_eq!(std::fs::metadata(&want).unwrap().permissions().mode() & 0o777, 0o600);
+    assert_eq!(
+        std::fs::metadata(&want).unwrap().permissions().mode() & 0o777,
+        0o600
+    );
     for d in [&root, &root.join("files"), want.parent().unwrap()] {
-        assert_eq!(std::fs::metadata(d).unwrap().permissions().mode() & 0o777, 0o700, "{d:?}");
+        assert_eq!(
+            std::fs::metadata(d).unwrap().permissions().mode() & 0o777,
+            0o700,
+            "{d:?}"
+        );
     }
 }
 
@@ -76,11 +107,18 @@ async fn local_objects_land_in_a_sharded_private_layout_with_no_temp_left() {
 async fn local_failed_puts_leave_no_file_behind() {
     let (store, dir) = local().await;
     let key = BlobKey::generate(fresh_namespace());
-    let r = store.put(&key, Pattern::new(9000, 1), &PutOptions::exactly(9001)).await;
+    let r = store
+        .put(&key, Pattern::new(9000, 1), &PutOptions::exactly(9001))
+        .await;
     assert!(matches!(r, Err(BlobError::SizeMismatch { .. })));
-    let r = store.put(&key, Pattern::new(9000, 1), &PutOptions::up_to(10)).await;
+    let r = store
+        .put(&key, Pattern::new(9000, 1), &PutOptions::up_to(10))
+        .await;
     assert!(matches!(r, Err(BlobError::TooLarge { .. })));
-    assert_eq!(files_under(&dir.path().join("blobs")), Vec::<std::path::PathBuf>::new());
+    assert_eq!(
+        files_under(&dir.path().join("blobs")),
+        Vec::<std::path::PathBuf>::new()
+    );
 }
 
 #[tokio::test]
@@ -88,14 +126,21 @@ async fn local_tampering_with_stored_bytes_is_caught_on_read() {
     let (store, dir) = local().await;
     let ns = Namespace::new("files").unwrap();
     let path_of = |k: &BlobKey| {
-        dir.path().join("blobs").join("files").join(k.id().shard().as_str()).join(k.id().as_str())
+        dir.path()
+            .join("blobs")
+            .join("files")
+            .join(k.id().shard().as_str())
+            .join(k.id().as_str())
     };
     let put = |seed| {
         let store = store.clone();
         let ns = ns.clone();
         async move {
             let k = BlobKey::generate(ns);
-            store.put(&k, Pattern::new(200_000, seed), &PutOptions::up_to(1 << 20)).await.unwrap();
+            store
+                .put(&k, Pattern::new(200_000, seed), &PutOptions::up_to(1 << 20))
+                .await
+                .unwrap();
             k
         }
     };
@@ -106,14 +151,20 @@ async fn local_tampering_with_stored_bytes_is_caught_on_read() {
     bytes[150_000] ^= 0x01;
     std::fs::write(path_of(&k), &bytes).unwrap();
     assert!(store.head(&k).await.is_ok());
-    assert!(matches!(drain(&store, &k).await, Err(BlobError::Corrupt(_))));
+    assert!(matches!(
+        drain(&store, &k).await,
+        Err(BlobError::Corrupt(_))
+    ));
 
     // Truncated: both head and get notice.
     let k = put(2).await;
     let bytes = std::fs::read(path_of(&k)).unwrap();
     std::fs::write(path_of(&k), &bytes[..bytes.len() - 100]).unwrap();
     assert!(matches!(store.head(&k).await, Err(BlobError::Corrupt(_))));
-    assert!(matches!(drain(&store, &k).await, Err(BlobError::Corrupt(_))));
+    assert!(matches!(
+        drain(&store, &k).await,
+        Err(BlobError::Corrupt(_))
+    ));
 
     // Extra bytes appended.
     let k = put(3).await;
@@ -138,18 +189,26 @@ async fn local_start_up_removes_old_temp_files_and_never_shows_any() {
     std::fs::write(&old, b"half a write").unwrap();
     std::fs::write(&fresh, b"a write in progress").unwrap();
     let two_hours_ago = std::time::SystemTime::now() - std::time::Duration::from_secs(7200);
-    std::fs::File::options().write(true).open(&old).unwrap().set_modified(two_hours_ago).unwrap();
+    std::fs::File::options()
+        .write(true)
+        .open(&old)
+        .unwrap()
+        .set_modified(two_hours_ago)
+        .unwrap();
     drop(store);
 
     let store = LocalBlobStore::open(&root, 1 << 20).await.unwrap();
     assert!(!old.exists(), "a stale temp file is swept");
-    assert!(fresh.exists(), "a recent temp file may belong to a live write");
+    assert!(
+        fresh.exists(),
+        "a recent temp file may belong to a live write"
+    );
     let ns = fresh_namespace();
     let page = store
         .list(&russh_bbs_core::blobs::BlobPrefix::namespace(ns), None, 10)
         .await
         .unwrap();
-    assert!(page.keys.is_empty());
+    assert_eq!(page.keys, Vec::<BlobKey>::new());
 }
 
 #[tokio::test]
@@ -157,8 +216,15 @@ async fn local_listing_ignores_files_that_are_not_objects() {
     let (store, dir) = local().await;
     let ns = Namespace::new("files").unwrap();
     let key = BlobKey::generate(ns.clone());
-    store.put(&key, Pattern::new(5, 1), &PutOptions::up_to(10)).await.unwrap();
-    let shard = dir.path().join("blobs").join("files").join(key.id().shard().as_str());
+    store
+        .put(&key, Pattern::new(5, 1), &PutOptions::up_to(10))
+        .await
+        .unwrap();
+    let shard = dir
+        .path()
+        .join("blobs")
+        .join("files")
+        .join(key.id().shard().as_str());
     std::fs::write(shard.join("not-an-id"), b"x").unwrap();
     std::fs::write(shard.join("..hidden"), b"x").unwrap();
     std::fs::create_dir_all(dir.path().join("blobs").join("files").join("zz")).unwrap();
@@ -173,26 +239,40 @@ async fn local_listing_ignores_files_that_are_not_objects() {
 #[tokio::test]
 async fn local_backend_cap_applies_even_when_the_caller_asks_for_more() {
     let dir = tempfile::tempdir().unwrap();
-    let store = LocalBlobStore::open(dir.path().join("b"), 100).await.unwrap();
+    let store = LocalBlobStore::open(dir.path().join("b"), 100)
+        .await
+        .unwrap();
     let key = BlobKey::generate(fresh_namespace());
-    let r = store.put(&key, Pattern::new(101, 1), &PutOptions::up_to(u64::MAX)).await;
+    let r = store
+        .put(&key, Pattern::new(101, 1), &PutOptions::up_to(u64::MAX))
+        .await;
     assert_eq!(r, Err(BlobError::TooLarge { max: 100 }));
-    store.put(&key, Pattern::new(100, 1), &PutOptions::up_to(u64::MAX)).await.unwrap();
+    store
+        .put(&key, Pattern::new(100, 1), &PutOptions::up_to(u64::MAX))
+        .await
+        .unwrap();
 }
 
 #[tokio::test]
 async fn local_hash_in_head_is_the_content_hash() {
     let (store, _dir) = local().await;
     let key = BlobKey::generate(fresh_namespace());
-    store.put(&key, Pattern::new(4321, 8), &PutOptions::up_to(1 << 20)).await.unwrap();
-    assert_eq!(store.head(&key).await.unwrap().sha256, Pattern::hash(4321, 8));
+    store
+        .put(&key, Pattern::new(4321, 8), &PutOptions::up_to(1 << 20))
+        .await
+        .unwrap();
+    assert_eq!(
+        store.head(&key).await.unwrap().sha256,
+        Pattern::hash(4321, 8)
+    );
     assert_ne!(store.head(&key).await.unwrap().sha256, BlobHash::of(b""));
 }
 
 // ---- S3 (MinIO) ----------------------------------------------------------------------------
 
 fn env(name: &str) -> String {
-    std::env::var(name).unwrap_or_else(|_| panic!("set {name} to run the S3 blob tests (docs/deploy.md)"))
+    std::env::var(name)
+        .unwrap_or_else(|_| panic!("set {name} to run the S3 blob tests (docs/deploy.md)"))
 }
 
 fn s3_settings() -> S3Settings {
@@ -228,7 +308,10 @@ blob_suite!(
 async fn s3_objects_are_stored_with_the_shared_trailer_and_tampering_is_caught() {
     let (store, ()) = s3().await;
     let key = BlobKey::generate(fresh_namespace());
-    let meta = store.put(&key, Pattern::new(3000, 4), &PutOptions::up_to(1 << 20)).await.unwrap();
+    let meta = store
+        .put(&key, Pattern::new(3000, 4), &PutOptions::up_to(1 << 20))
+        .await
+        .unwrap();
 
     // The raw object is the content then the trailer, at `<ns>/<shard>/<id>`.
     let path = object_store::path::Path::from(format!(
@@ -246,12 +329,22 @@ async fn s3_objects_are_stored_with_the_shared_trailer_and_tampering_is_caught()
     bad[10] ^= 0x01;
     store.raw().put(&path, bad.into()).await.unwrap();
     assert!(store.head(&key).await.is_ok());
-    assert!(matches!(drain(&store, &key).await, Err(BlobError::Corrupt(_))));
+    assert!(matches!(
+        drain(&store, &key).await,
+        Err(BlobError::Corrupt(_))
+    ));
 
     // And truncated.
-    store.raw().put(&path, raw.slice(..raw.len() - 9).into()).await.unwrap();
+    store
+        .raw()
+        .put(&path, raw.slice(..raw.len() - 9).into())
+        .await
+        .unwrap();
     assert!(matches!(store.head(&key).await, Err(BlobError::Corrupt(_))));
-    assert!(matches!(drain(&store, &key).await, Err(BlobError::Corrupt(_))));
+    assert!(matches!(
+        drain(&store, &key).await,
+        Err(BlobError::Corrupt(_))
+    ));
     store.delete(&key).await.unwrap();
 }
 
@@ -264,10 +357,23 @@ async fn s3_errors_never_contain_the_credentials() {
 
     // Wrong credentials: the connection check fails and says nothing about the keys.
     let mut s = good.clone();
-    s.credentials = Some(S3Credentials::new(access.to_owned(), secret.to_owned(), Some("tok-ZZZ".to_owned())));
-    let err = S3BlobStore::connect(s.clone()).await.unwrap_err().to_string();
-    assert!(!err.contains(secret) && !err.contains(access) && !err.contains("tok-ZZZ"), "{err}");
-    assert!(!format!("{s:?}").contains(secret), "Debug of the settings must hide the keys");
+    s.credentials = Some(S3Credentials::new(
+        access.to_owned(),
+        secret.to_owned(),
+        Some("tok-ZZZ".to_owned()),
+    ));
+    let err = S3BlobStore::connect(s.clone())
+        .await
+        .unwrap_err()
+        .to_string();
+    assert!(
+        !err.contains(secret) && !err.contains(access) && !err.contains("tok-ZZZ"),
+        "{err}"
+    );
+    assert!(
+        !format!("{s:?}").contains(secret),
+        "Debug of the settings must hide the keys"
+    );
 
     // A bucket that does not exist.
     let mut s = good.clone();
@@ -278,7 +384,10 @@ async fn s3_errors_never_contain_the_credentials() {
     // An unreachable endpoint.
     let mut s = good.clone();
     s.endpoint = Some("http://127.0.0.1:1".to_owned());
-    assert!(matches!(S3BlobStore::connect(s).await, Err(BlobError::Backend(_))));
+    assert!(matches!(
+        S3BlobStore::connect(s).await,
+        Err(BlobError::Backend(_))
+    ));
 }
 
 #[tokio::test]
@@ -295,11 +404,47 @@ async fn s3_settings_are_validated_before_any_connection() {
     };
     let mut s = base.clone();
     s.multipart_threshold = MIN_PART_BYTES - 1;
-    assert!(matches!(S3BlobStore::connect(s).await, Err(BlobError::Backend(m)) if m.contains("multipart")));
+    assert!(
+        matches!(S3BlobStore::connect(s).await, Err(BlobError::Backend(m)) if m.contains("multipart"))
+    );
     let mut s = base.clone();
     s.max_object_bytes = MIN_PART_BYTES * 10_000;
-    assert!(matches!(S3BlobStore::connect(s).await, Err(BlobError::Backend(m)) if m.contains("10,000")));
+    assert!(
+        matches!(S3BlobStore::connect(s).await, Err(BlobError::Backend(m)) if m.contains("10,000"))
+    );
     let mut s = base;
     s.ca_file = Some("/nonexistent/ca.pem".into());
-    assert!(matches!(S3BlobStore::connect(s).await, Err(BlobError::Backend(m)) if m.contains("ca_file")));
+    assert!(
+        matches!(S3BlobStore::connect(s).await, Err(BlobError::Backend(m)) if m.contains("ca_file"))
+    );
+}
+
+#[tokio::test]
+#[ignore = "needs a TLS S3 server: set RUSSH_BBS_TEST_S3_TLS_ENDPOINT, _CA_FILE, _WRONG_CA_FILE (see docs/deploy.md)"]
+async fn s3_ca_file_replaces_the_platform_store_and_a_wrong_ca_fails_closed() {
+    // The same bucket and keys as the plain server, reached over https with a private CA.
+    let mut tls = s3_settings();
+    tls.endpoint = Some(env("RUSSH_BBS_TEST_S3_TLS_ENDPOINT"));
+    let good = std::path::PathBuf::from(env("RUSSH_BBS_TEST_S3_CA_FILE"));
+    let wrong = std::path::PathBuf::from(env("RUSSH_BBS_TEST_S3_WRONG_CA_FILE"));
+
+    // The platform store does not trust the test CA, so without `ca_file` the connection fails.
+    let mut s = tls.clone();
+    s.ca_file = None;
+    assert!(matches!(S3BlobStore::connect(s).await, Err(BlobError::Backend(_))));
+    // A CA that did not sign the server's certificate fails closed.
+    let mut s = tls.clone();
+    s.ca_file = Some(wrong);
+    assert!(matches!(S3BlobStore::connect(s).await, Err(BlobError::Backend(_))));
+    // The right CA works, and so does a whole round trip over TLS.
+    let mut s = tls;
+    s.ca_file = Some(good);
+    let store = S3BlobStore::connect(s).await.unwrap();
+    let key = BlobKey::generate(fresh_namespace());
+    let meta = store
+        .put(&key, Pattern::new(MIN_PART_BYTES + 5, 5), &PutOptions::up_to(1 << 30))
+        .await
+        .unwrap();
+    assert_eq!(meta.sha256, Pattern::hash(MIN_PART_BYTES + 5, 5));
+    assert_eq!(drain(&store, &key).await.unwrap() as u64, MIN_PART_BYTES + 5);
 }

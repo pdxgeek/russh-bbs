@@ -17,13 +17,13 @@ mod access_rows;
 mod audit_rows;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod binding;
+pub mod blobs;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod chat_rows;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod community_rows;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod credit_rows;
-pub mod blobs;
 mod directory;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod door_rows;

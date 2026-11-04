@@ -131,8 +131,19 @@ impl fmt::Display for Namespace {
     }
 }
 
+/// Lowercase hex of `bytes`.
+fn hex(bytes: &[u8]) -> String {
+    use std::fmt::Write as _;
+    let mut out = String::with_capacity(bytes.len() * 2);
+    for b in bytes {
+        let _ = write!(out, "{b:02x}");
+    }
+    out
+}
+
 fn is_lower_hex(s: &str) -> bool {
-    s.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+    s.bytes()
+        .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
 }
 
 /// A random 128-bit identifier, rendered as 32 lowercase hex characters. Validated hex is what
@@ -146,11 +157,7 @@ impl BlobId {
     pub fn generate() -> Self {
         use rand::RngExt;
         let bytes: [u8; 16] = rand::rng().random();
-        let mut hex = String::with_capacity(ID_HEX_LEN);
-        for b in bytes {
-            hex.push_str(&format!("{b:02x}"));
-        }
-        Self(hex)
+        Self(hex(&bytes))
     }
 
     /// Validate an id read back from storage or from a database row.
@@ -313,11 +320,7 @@ impl BlobHash {
     /// Lowercase hex, 64 characters.
     #[must_use]
     pub fn to_hex(&self) -> String {
-        let mut out = String::with_capacity(64);
-        for b in self.0 {
-            out.push_str(&format!("{b:02x}"));
-        }
-        out
+        hex(&self.0)
     }
 }
 

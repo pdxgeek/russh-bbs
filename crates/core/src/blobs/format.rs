@@ -80,7 +80,9 @@ impl Trailer {
             .checked_add(TRAILER_LEN as u64)
             .ok_or(BlobError::Corrupt("trailer size is impossible"))?;
         if expect != total_len {
-            return Err(BlobError::Corrupt("stored length does not match its trailer"));
+            return Err(BlobError::Corrupt(
+                "stored length does not match its trailer",
+            ));
         }
         Ok(BlobMeta {
             size: self.size,
@@ -125,13 +127,11 @@ impl PutAccounting {
     pub fn accept(&mut self, chunk: &[u8]) -> Result<(), BlobError> {
         let len = chunk.len() as u64;
         let total = self.seen.saturating_add(len);
-        if let Some(declared) = self.declared {
-            if total > declared {
-                return Err(BlobError::SizeMismatch {
-                    declared,
-                    actual: total,
-                });
-            }
+        if let Some(declared) = self.declared.filter(|d| total > *d) {
+            return Err(BlobError::SizeMismatch {
+                declared,
+                actual: total,
+            });
         }
         if total > self.cap {
             return Err(BlobError::TooLarge { max: self.cap });
@@ -150,13 +150,11 @@ impl PutAccounting {
     /// The stream ended: check the declared size and expected hash and produce the trailer to
     /// append. `now` is the creation time to record.
     pub fn finish(self, now: UnixSeconds) -> Result<Trailer, BlobError> {
-        if let Some(declared) = self.declared {
-            if self.seen != declared {
-                return Err(BlobError::SizeMismatch {
-                    declared,
-                    actual: self.seen,
-                });
-            }
+        if let Some(declared) = self.declared.filter(|d| self.seen != *d) {
+            return Err(BlobError::SizeMismatch {
+                declared,
+                actual: self.seen,
+            });
         }
         let sha256 = BlobHash::from_bytes(self.hasher.finalize().into());
         if self.expect.is_some_and(|expected| expected != sha256) {
@@ -191,7 +189,9 @@ impl<R> VerifyingReader<R> {
     pub fn new(inner: R, total_len: u64) -> Result<Self, BlobError> {
         let content_len = total_len
             .checked_sub(TRAILER_LEN as u64)
-            .ok_or(BlobError::Corrupt("stored object is shorter than its trailer"))?;
+            .ok_or(BlobError::Corrupt(
+                "stored object is shorter than its trailer",
+            ))?;
         Ok(Self {
             inner,
             hasher: Sha256::new(),

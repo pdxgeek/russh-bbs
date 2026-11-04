@@ -51,10 +51,12 @@ async fn main() -> anyhow::Result<()> {
 
     // The blob store (D30, M4-F1): built now so a bad directory or bucket is a boot error. Nothing
     // uses it until the file areas land (M4-F2).
-    let _blobs = russh_bbs_server::blobs::open(&loaded.config.blobs, paths.blobs_dir.as_deref())
+    let blobs = russh_bbs_server::blobs::open(&loaded.config.blobs, paths.blobs_dir.as_deref())
         .await
         .context("opening the blob store")?;
-    info!(backend = _blobs.backend_name(), "blob store ready");
+    info!(backend = blobs.backend_name(), "blob store ready");
+    // Held for the life of the process; M4-F2 hands it to the SFTP subsystem.
+    let _blobs = blobs;
 
     // The datasource is chosen by configuration and never falls back (D6, D38): a Postgres
     // that cannot be reached or verified is a boot error, not a SQLite file.

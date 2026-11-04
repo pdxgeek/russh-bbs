@@ -1,5 +1,5 @@
 //! The blob contract, written once and run against every backend (D30, D32): the local
-//! directory always, and an S3-compatible server (MinIO) in the ignored run.
+//! directory always, and an S3-compatible server () in the ignored run.
 //!
 //! Each case takes a store and a fresh namespace, so cases never see each other's objects even
 //! on a shared bucket. A backend's own checks (tampering, path layout, TLS, credentials) live in
@@ -57,7 +57,9 @@ impl Pattern {
     }
 
     fn fill(&mut self, out: &mut [u8]) -> usize {
-        let n = out.len().min(usize::try_from(self.left).unwrap_or(usize::MAX));
+        let n = out
+            .len()
+            .min(usize::try_from(self.left).unwrap_or(usize::MAX));
         for b in &mut out[..n] {
             self.state ^= self.state << 13;
             self.state ^= self.state >> 7;
@@ -100,7 +102,9 @@ impl AsyncRead for FailsAfter {
         }
         let before = buf.filled().len();
         let r = Pin::new(&mut self.inner).poll_read(cx, buf);
-        self.good = self.good.saturating_sub((buf.filled().len() - before) as u64);
+        self.good = self
+            .good
+            .saturating_sub((buf.filled().len() - before) as u64);
         r
     }
 }
@@ -147,7 +151,14 @@ async fn gone<S: BlobStore>(store: &S, key: &BlobKey) {
 }
 
 pub(crate) async fn round_trips_content_of_every_shape<S: BlobStore>(store: &S) {
-    for (len, seed) in [(0_u64, 1_u64), (1, 2), (65_535, 3), (65_536, 4), (65_537, 5), (1 << 20, 6)] {
+    for (len, seed) in [
+        (0_u64, 1_u64),
+        (1, 2),
+        (65_535, 3),
+        (65_536, 4),
+        (65_537, 5),
+        (1 << 20, 6),
+    ] {
         let key = key();
         let want = Pattern::hash(len, seed);
         let meta = store
@@ -197,7 +208,10 @@ pub(crate) async fn missing_object<S: BlobStore>(store: &S) {
 
 pub(crate) async fn delete_removes_and_is_repeatable<S: BlobStore>(store: &S) {
     let key = key();
-    store.put(&key, Pattern::new(10, 1), &PutOptions::up_to(100)).await.unwrap();
+    store
+        .put(&key, Pattern::new(10, 1), &PutOptions::up_to(100))
+        .await
+        .unwrap();
     store.delete(&key).await.unwrap();
     gone(store, &key).await;
     store.delete(&key).await.unwrap();
@@ -214,13 +228,18 @@ pub(crate) async fn an_existing_key_is_never_overwritten<S: BlobStore>(store: &S
         .await;
     assert_eq!(second, Err(BlobError::AlreadyExists));
     assert_eq!(store.head(&key).await.unwrap(), first);
-    assert_eq!(BlobHash::of(&read_back(store, &key).await.unwrap()), first.sha256);
+    assert_eq!(
+        BlobHash::of(&read_back(store, &key).await.unwrap()),
+        first.sha256
+    );
 }
 
 pub(crate) async fn size_limits<S: BlobStore>(store: &S) {
     // Over the caller's max, found while streaming.
     let k = key();
-    let r = store.put(&k, Pattern::new(5000, 1), &PutOptions::up_to(4999)).await;
+    let r = store
+        .put(&k, Pattern::new(5000, 1), &PutOptions::up_to(4999))
+        .await;
     assert_eq!(r, Err(BlobError::TooLarge { max: 4999 }));
     gone(store, &k).await;
     // Declared above the max: refused before reading.
@@ -234,17 +253,33 @@ pub(crate) async fn size_limits<S: BlobStore>(store: &S) {
     gone(store, &k).await;
     // Declared larger than the stream (a truncated upload).
     let k = key();
-    let r = store.put(&k, Pattern::new(90, 1), &PutOptions::exactly(100)).await;
-    assert_eq!(r, Err(BlobError::SizeMismatch { declared: 100, actual: 90 }));
+    let r = store
+        .put(&k, Pattern::new(90, 1), &PutOptions::exactly(100))
+        .await;
+    assert_eq!(
+        r,
+        Err(BlobError::SizeMismatch {
+            declared: 100,
+            actual: 90
+        })
+    );
     gone(store, &k).await;
     // Declared smaller than the stream.
     let k = key();
-    let r = store.put(&k, Pattern::new(300_000, 1), &PutOptions::exactly(100)).await;
-    assert!(matches!(r, Err(BlobError::SizeMismatch { declared: 100, .. })), "{r:?}");
+    let r = store
+        .put(&k, Pattern::new(300_000, 1), &PutOptions::exactly(100))
+        .await;
+    assert!(
+        matches!(r, Err(BlobError::SizeMismatch { declared: 100, .. })),
+        "{r:?}"
+    );
     gone(store, &k).await;
     // Exactly the declared size is fine.
     let k = key();
-    store.put(&k, Pattern::new(100, 1), &PutOptions::exactly(100)).await.unwrap();
+    store
+        .put(&k, Pattern::new(100, 1), &PutOptions::exactly(100))
+        .await
+        .unwrap();
 }
 
 pub(crate) async fn expected_hash_is_checked<S: BlobStore>(store: &S) {
@@ -262,7 +297,10 @@ pub(crate) async fn expected_hash_is_checked<S: BlobStore>(store: &S) {
 
 pub(crate) async fn a_failed_source_leaves_nothing<S: BlobStore>(store: &S, len: u64, good: u64) {
     let k = key();
-    let src = FailsAfter { inner: Pattern::new(len, 7), good };
+    let src = FailsAfter {
+        inner: Pattern::new(len, 7),
+        good,
+    };
     let r = store.put(&k, src, &PutOptions::up_to(len + 1)).await;
     assert!(matches!(r, Err(BlobError::Source(_))), "{r:?}");
     gone(store, &k).await;
@@ -270,7 +308,10 @@ pub(crate) async fn a_failed_source_leaves_nothing<S: BlobStore>(store: &S, len:
 
 pub(crate) async fn a_put_cancelled_mid_write_leaves_nothing<S: BlobStore>(store: &S, first: u64) {
     let k = key();
-    let src = Stalls { inner: Pattern::new(first, 3), sent: false };
+    let src = Stalls {
+        inner: Pattern::new(first, 3),
+        sent: false,
+    };
     // The "crash": the put future is dropped while the stream is stalled.
     let r = tokio::time::timeout(
         Duration::from_millis(400),
@@ -280,7 +321,10 @@ pub(crate) async fn a_put_cancelled_mid_write_leaves_nothing<S: BlobStore>(store
     assert!(r.is_err(), "the stalled put should still be running");
     gone(store, &k).await;
     // The key is usable afterwards.
-    store.put(&k, Pattern::new(10, 1), &PutOptions::up_to(100)).await.unwrap();
+    store
+        .put(&k, Pattern::new(10, 1), &PutOptions::up_to(100))
+        .await
+        .unwrap();
 }
 
 pub(crate) async fn concurrent_puts_of_one_key_have_one_winner<S: BlobStore + Clone + 'static>(
@@ -292,7 +336,9 @@ pub(crate) async fn concurrent_puts_of_one_key_have_one_winner<S: BlobStore + Cl
         let (s, k) = (store.clone(), k.clone());
         tasks.push(tokio::spawn(async move {
             let len = 50_000 + seed;
-            let r = s.put(&k, Pattern::new(len, seed), &PutOptions::up_to(1 << 20)).await;
+            let r = s
+                .put(&k, Pattern::new(len, seed), &PutOptions::up_to(1 << 20))
+                .await;
             (seed, len, r)
         }));
     }
@@ -318,13 +364,19 @@ pub(crate) async fn listing_pages_in_order_without_gaps<S: BlobStore>(store: &S)
     let mut want = Vec::new();
     for i in 0..23_u64 {
         let k = BlobKey::generate(ns.clone());
-        store.put(&k, Pattern::new(i, i), &PutOptions::up_to(100)).await.unwrap();
+        store
+            .put(&k, Pattern::new(i, i), &PutOptions::up_to(100))
+            .await
+            .unwrap();
         want.push(k);
     }
     want.sort();
     for i in 0..3 {
         let k = BlobKey::generate(other.clone());
-        store.put(&k, Pattern::new(i, i), &PutOptions::up_to(100)).await.unwrap();
+        store
+            .put(&k, Pattern::new(i, i), &PutOptions::up_to(100))
+            .await
+            .unwrap();
     }
     let prefix = BlobPrefix::namespace(ns.clone());
 
@@ -356,14 +408,38 @@ pub(crate) async fn listing_pages_in_order_without_gaps<S: BlobStore>(store: &S)
 
     // A shard prefix lists exactly that shard's keys.
     let shard = Shard::new(want[0].id().shard().as_str()).unwrap();
-    let in_shard: Vec<_> = want.iter().filter(|k| k.id().shard() == shard).cloned().collect();
-    let by_shard = BlobPrefix { namespace: ns.clone(), shard: Some(shard) };
-    assert_eq!(store.list(&by_shard, None, 100).await.unwrap().keys, in_shard);
+    let in_shard: Vec<_> = want
+        .iter()
+        .filter(|k| k.id().shard() == shard)
+        .cloned()
+        .collect();
+    let by_shard = BlobPrefix {
+        namespace: ns.clone(),
+        shard: Some(shard),
+    };
+    assert_eq!(
+        store.list(&by_shard, None, 100).await.unwrap().keys,
+        in_shard
+    );
 
     // Another namespace and an empty one do not leak in.
-    assert_eq!(store.list(&BlobPrefix::namespace(other), None, 100).await.unwrap().keys.len(), 3);
+    assert_eq!(
+        store
+            .list(&BlobPrefix::namespace(other), None, 100)
+            .await
+            .unwrap()
+            .keys
+            .len(),
+        3
+    );
     let empty = BlobPrefix::namespace(fresh_namespace());
-    assert_eq!(store.list(&empty, None, 10).await.unwrap(), russh_bbs_core::blobs::ListPage { keys: vec![], next: None });
+    assert_eq!(
+        store.list(&empty, None, 10).await.unwrap(),
+        russh_bbs_core::blobs::ListPage {
+            keys: vec![],
+            next: None
+        }
+    );
 
     // Deleted keys leave the listing.
     store.delete(&want[3]).await.unwrap();
@@ -375,7 +451,7 @@ pub(crate) async fn listing_pages_in_order_without_gaps<S: BlobStore>(store: &S)
 /// Generates one test per case for a backend. `$make` is an async fn returning the store and a
 /// guard that keeps its resources (a temp directory) alive for the test; `$part` is the backend's
 /// multipart part size, so the large-object cases cross it. `ignore = "reason"` marks every case
-/// `#[ignore]` (the MinIO run).
+/// `#[ignore]` (the  run).
 macro_rules! blob_suite {
     ($module:ident, $make:path, $part:expr $(, ignore = $reason:literal)?) => {
         $crate::blobs::suite::blob_suite!(@expand $module, $make, $part, [$(#[ignore = $reason])?]);

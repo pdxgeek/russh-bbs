@@ -46,7 +46,7 @@ The security rules still win: the shared sanitizer is the only place untrusted t
 | Need | Crate | Slice | Notes |
 |---|---|---|---|
 | SFTP server | `russh-sftp` | M4 | Apache-2.0 |
-| Blobs | `object_store` (D30), `blake3` | M4 | |
+| Blobs | `object_store` 0.14 (D30, D101; S3 client only: features `aws-base`, `reqwest`, `ring`), `reqwest` 0.13 with `rustls-no-provider`, `tokio-util` (`io`), `futures-util`, `bytes` | M4-F1 | SHA-256 via `sha2`, not `blake3` (D101). No aws-lc. The local backend is hand-written. |
 | Content type detection | `infer` | M4 | |
 | Archive inspection | `zip`, `tar` | M4 | With our own expansion caps |
 | AV scanning | The clamd socket protocol, via a small client crate if a good one exists | M4 | |

@@ -1,4 +1,4 @@
-//! The S3-compatible backend (D30), over the `object_store` crate: AWS S3, MinIO, R2, B2 and
+//! The S3-compatible backend (D30), over the `object_store` crate: AWS S3, , R2, B2 and
 //! anything else that speaks the S3 API.
 //!
 //! It stores the same bytes the local backend does (content then the 56-byte trailer from
@@ -32,8 +32,8 @@ use object_store::{
     PutOptions as StorePutOptions, PutPayload, WriteMultipart,
 };
 use russh_bbs_core::blobs::{
-    BlobError, BlobId, BlobKey, BlobMeta, BlobPrefix, BlobRead, BlobStore, ListPage, MAX_LIST_LIMIT,
-    Namespace, PutAccounting, PutOptions, TRAILER_LEN, Trailer, VerifyingReader,
+    BlobError, BlobId, BlobKey, BlobMeta, BlobPrefix, BlobRead, BlobStore, ListPage,
+    MAX_LIST_LIMIT, Namespace, PutAccounting, PutOptions, TRAILER_LEN, Trailer, VerifyingReader,
 };
 use russh_bbs_core::store::UnixSeconds;
 use tokio::io::{AsyncRead, AsyncReadExt};
@@ -111,7 +111,7 @@ pub struct S3Settings {
     /// Bucket name.
     pub bucket: String,
     /// Address the bucket in the path (`https://host/bucket/key`) instead of the host name.
-    /// Needed for MinIO and most self-hosted servers.
+    /// Needed for  and most self-hosted servers.
     pub path_style: bool,
     /// PEM certificates that replace the platform CA store.
     pub ca_file: Option<PathBuf>,
@@ -164,7 +164,8 @@ impl std::fmt::Debug for Scrub {
 }
 
 /// The verifying stream of a downloaded object.
-pub type S3Reader = VerifyingReader<StreamReader<BoxStream<'static, io::Result<bytes::Bytes>>, bytes::Bytes>>;
+pub type S3Reader =
+    VerifyingReader<StreamReader<BoxStream<'static, io::Result<bytes::Bytes>>, bytes::Bytes>>;
 
 fn now() -> UnixSeconds {
     let secs = SystemTime::now()
@@ -224,8 +225,9 @@ impl S3BlobStore {
             let pem = std::fs::read(path).map_err(|e| {
                 BlobError::Backend(format!("reading blobs.ca_file: {:?}", e.kind()))
             })?;
-            let cert = object_store::Certificate::from_pem(&pem)
-                .map_err(|_| BlobError::Backend("blobs.ca_file is not a PEM certificate".to_owned()))?;
+            let cert = object_store::Certificate::from_pem(&pem).map_err(|_| {
+                BlobError::Backend("blobs.ca_file is not a PEM certificate".to_owned())
+            })?;
             client = client
                 .with_root_certificate(cert)
                 .with_no_system_certificates(true);
@@ -252,7 +254,8 @@ impl S3BlobStore {
         let this = Self {
             store: Arc::new(store),
             scrub,
-            multipart_threshold: usize::try_from(settings.multipart_threshold).unwrap_or(usize::MAX),
+            multipart_threshold: usize::try_from(settings.multipart_threshold)
+                .unwrap_or(usize::MAX),
             max_object_bytes: settings.max_object_bytes,
         };
         let probe = Namespace::new("probe")
@@ -323,7 +326,11 @@ impl BlobStore for S3BlobStore {
                 mode: PutMode::Create,
                 ..StorePutOptions::default()
             };
-            return match self.store.put_opts(&path, PutPayload::from(buf), opts).await {
+            return match self
+                .store
+                .put_opts(&path, PutPayload::from(buf), opts)
+                .await
+            {
                 Ok(_) => Ok(BlobMeta {
                     size: trailer.size,
                     sha256: trailer.sha256,
