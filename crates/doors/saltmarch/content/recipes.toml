@@ -1,0 +1,81 @@
+# What the workshops can make. `learn` says how a clan comes to know it: "start" and
+# "workshop" recipes are known as soon as their workshop is built; "ruin" plans are found in
+# the drowned towns and "trade" knowledge is bought from other clans (both arrive in later
+# slices; until then they stay locked).
+
+[[recipe]]
+id = "braid-rope"
+name = "Braid rope"
+workshop = "ropewalk"
+inputs = { reed = 3 }
+output = "rope"
+qty = 1
+turns = 1
+skill = "wader"
+learn = "workshop"
+
+[[recipe]]
+id = "cure-food"
+name = "Cure food"
+workshop = "smokehouse"
+inputs = { fish = 3, salt = 1 }
+output = "food"
+qty = 3
+turns = 1
+skill = "raker"
+learn = "workshop"
+
+[[recipe]]
+id = "forge-tools"
+name = "Forge tools"
+workshop = "smithy"
+inputs = { iron = 2, timber = 1 }
+output = "tools"
+qty = 1
+turns = 2
+skill = "smith"
+learn = "workshop"
+
+[[recipe]]
+id = "forge-arms"
+name = "Forge arms"
+workshop = "smithy"
+inputs = { iron = 3, timber = 1, peat = 1 }
+output = "arms"
+qty = 1
+turns = 2
+skill = "smith"
+learn = "workshop"
+
+[[recipe]]
+id = "build-boat"
+name = "Build a boat"
+workshop = "boatyard"
+inputs = { timber = 8, rope = 2, tools = 1 }
+output = "boats"
+qty = 1
+turns = 4
+skill = "boatwright"
+learn = "workshop"
+
+[[recipe]]
+id = "fuse-silt-glass"
+name = "Fuse silt-glass"
+workshop = "smithy"
+inputs = { peat = 4, salt = 2 }
+output = "silt-glass"
+qty = 1
+turns = 2
+skill = "smith"
+learn = "ruin"
+
+[[recipe]]
+id = "weave-net"
+name = "Weave a net"
+workshop = "ropewalk"
+inputs = { reed = 4, rope = 1 }
+output = "tools"
+qty = 1
+turns = 1
+skill = "salvager"
+learn = "trade"

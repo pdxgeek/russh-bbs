@@ -1,0 +1,98 @@
+# Traits change outcomes: every number here is read by the engine. Percentages are relative
+# (`accident_pct = -40` makes accidents 40% less likely). `scar = true` traits cannot be hired
+# with; they are earned from injuries.
+
+[[trait]]
+id = "steady"
+name = "Steady"
+blurb = "Keeps a level head when the water rises."
+accident_pct = -40
+
+[[trait]]
+id = "greedy"
+name = "Greedy"
+blurb = "Works hard for the take, and takes a little extra."
+yield_pct = 5
+pocket_pct = 10
+hire_pct = -15
+
+[[trait]]
+id = "sea-born"
+name = "Sea-born"
+blurb = "Grew up on the flats. The water is a road, not a wall."
+wet_pct = 25
+accident_pct = -20
+
+[[trait]]
+id = "fearful"
+name = "Fearful"
+blurb = "Will not go out when the water is high. Rarely hurt, for it."
+refuses_high = true
+accident_pct = -20
+morale = -1
+
+[[trait]]
+id = "lucky"
+name = "Lucky"
+blurb = "Things turn up where they dig."
+luck_pct = 12
+
+[[trait]]
+id = "drinks"
+name = "Drinks"
+blurb = "Good company, bad mornings. Costs a tally a night."
+upkeep_tallies = 1
+accident_pct = 50
+morale = 1
+
+[[trait]]
+id = "hardy"
+name = "Hardy"
+blurb = "Heals like a reed grows."
+heal_pct = 40
+
+[[trait]]
+id = "clumsy"
+name = "Clumsy"
+blurb = "Finds the one loose plank."
+accident_pct = 60
+hire_pct = -20
+
+[[trait]]
+id = "quick-study"
+name = "Quick study"
+blurb = "Learns by watching."
+learn_pct = 50
+hire_pct = 25
+
+[[trait]]
+id = "limp"
+name = "Limp"
+blurb = "A bad leg from a bad day. Slow in the wet."
+scar = true
+yield_pct = -10
+wet_pct = -20
+
+[[trait]]
+id = "haunted"
+name = "Haunted"
+blurb = "Still hears the water. Will not go out when it is high."
+scar = true
+refuses_high = true
+morale = -2
+
+[[trait]]
+id = "weathered"
+name = "Weathered"
+blurb = "Has been cut before. Mends well, and knows to duck."
+scar = true
+heal_pct = 25
+accident_pct = -10
+
+[[trait]]
+id = "shaky-hands"
+name = "Shaky hands"
+blurb = "The hand never set right."
+scar = true
+yield_pct = -10
+accident_pct = 30
