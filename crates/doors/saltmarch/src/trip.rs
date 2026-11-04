@@ -1597,6 +1597,13 @@ fn must_be_free(trip: &Trip) -> Result<(), ActionError> {
     }
 }
 
+/// The clan that has stood in the Deep is remembered for it (renown, the hall).
+fn remember_ground(clan: &mut Clan, kind: TileKind) {
+    if kind == TileKind::Deep {
+        clan.social.deep = true;
+    }
+}
+
 fn enter(
     env: &Env<'_>,
     clan: &mut Clan,
@@ -1623,6 +1630,9 @@ fn enter(
         }
     }
     clan.chart_around(usize::from(to.0), usize::from(to.1), 1);
+    if let Some(t) = env.map.tile(usize::from(to.0), usize::from(to.1)) {
+        remember_ground(clan, t.kind);
+    }
     trip.ruin = None;
     if to == home(env, clan) {
         return Ok(Stop::End(Ending::Home));

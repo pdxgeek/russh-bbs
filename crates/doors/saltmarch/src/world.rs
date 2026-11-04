@@ -2,14 +2,18 @@
 //! It is changed by sessions (through the framework's compare-and-swap edit) and by the daily
 //! tick, and it never holds anything private to one player.
 //!
-//! Layout (version 2), little-endian: season `u32`, seed `u64`, created `i64`, last tick `i64`,
-//! prices (13 x `u16`), net sold (13 x `i32` as `u32`), clan count `u8`, then name, site and
-//! score (`u32`) per clan, then the price history: a count `u8` and that many rows of 13 x
-//! `u16`, oldest first. Version 1 had no score and no history (see [`World::upgrade_v1`]).
+//! Layout (version 3), little-endian: season `u32`, seed `u64`, created `i64`, last tick `i64`,
+//! prices (13 x `u16`), net sold (13 x `i32` as `u32`), clan count `u8`, then name, site,
+//! renown (`u32`), the clan's posted defence and the world's record of the clan per clan, then
+//! the price history: a count `u8` and that many rows of 13 x `u16`, oldest first, then the
+//! social state ([`Social`]: raid orders, pacts, the exchange, the post, the feed and the
+//! book of past seasons). Version 2 ended after the price history; version 1 also had no score
+//! (see [`World::upgrade_v1`] and [`World::upgrade_v2`]).
 
 use russh_bbs_door::DoorRng;
 
 use crate::codec::{Reader, Writer};
+use crate::social::{ClanIx, Posted, Record, Social, Wire};
 use crate::types::{RESOURCES, Resource};
 
 /// The most holds the registry keeps.
@@ -28,8 +32,12 @@ pub struct ClanEntry {
     pub name: String,
     /// Index into the map's hold sites.
     pub site: u8,
-    /// The clan's score the last time it was saved (`Clan::score`): the league table's order.
+    /// The clan's renown the last time it was saved (`social::renown`): the league table's order.
     pub score: u32,
+    /// What the clan shows the marsh: its home guard, defences and a few figures of stock.
+    pub posted: Posted,
+    /// The world's counters about the clan (standing, betrayals, raid and letter counts).
+    pub record: Record,
 }
 
 /// The world.
@@ -52,6 +60,8 @@ pub struct World {
     /// The prices at the end of each of the last nights, oldest first, for the market's
     /// sparklines. Display only: no rule reads it.
     pub history: Vec<Prices>,
+    /// Raids, pacts, the exchange, letters and the book of past seasons.
+    pub social: Social,
 }
 
 impl World {
@@ -71,6 +81,7 @@ impl World {
             net_sold: [0; RESOURCES],
             clans: Vec::new(),
             history: Vec::new(),
+            social: Social::default(),
         }
     }
 
@@ -80,14 +91,41 @@ impl World {
         *slot = slot.saturating_add(qty);
     }
 
-    /// Register a hold (once per name).
+    /// Register a hold (once per name), founded when the world was made.
     pub fn register(&mut self, name: &str, site: u8) {
+        self.register_founded(name, site, self.created);
+    }
+
+    /// Register a hold (once per name) founded on `founded`.
+    pub fn register_founded(&mut self, name: &str, site: u8, founded: i64) {
         if self.clans.len() < MAX_CLANS && !self.clans.iter().any(|c| c.name == name) {
             self.clans.push(ClanEntry {
                 name: name.to_owned(),
                 site,
                 score: 0,
+                posted: Posted {
+                    seen: founded,
+                    founded,
+                    ..Posted::default()
+                },
+                record: Record::default(),
             });
+        }
+    }
+
+    /// The registry index of a clan by name.
+    #[must_use]
+    pub fn ix(&self, name: &str) -> Option<ClanIx> {
+        self.clans
+            .iter()
+            .position(|c| c.name == name)
+            .and_then(|i| ClanIx::try_from(i).ok())
+    }
+
+    /// Count tallies traded on the exchange against a clan (for the hall's records).
+    pub fn note_traded(&mut self, clan: ClanIx, value: u32) {
+        if let Some(c) = self.clans.get_mut(usize::from(clan)) {
+            c.record.traded = c.record.traded.saturating_add(value);
         }
     }
 
@@ -176,6 +214,8 @@ impl World {
             w.str(&c.name);
             w.u8(c.site);
             w.u32(c.score);
+            c.posted.write(&mut w);
+            c.record.write(&mut w);
         }
         w.count(self.history.len());
         for row in &self.history {
@@ -183,49 +223,55 @@ impl World {
                 w.u16(*p);
             }
         }
+        self.social.write(&mut w);
         w.finish()
+    }
+
+    /// Version 2 bytes brought to version 3: nothing is posted yet and the social state is
+    /// empty. (A clan posts itself the next time it saves.)
+    #[must_use]
+    pub fn upgrade_v2(bytes: &[u8]) -> Option<Vec<u8>> {
+        Self::decode_v2(bytes).map(|w| w.encode())
     }
 
     /// Version 1 bytes brought to version 2: no scores yet and no history.
     #[must_use]
     pub fn upgrade_v1(bytes: &[u8]) -> Option<Vec<u8>> {
         let mut r = Reader::new(bytes);
-        let (season, seed, created, last_tick) = (r.u32()?, r.u64()?, r.i64()?, r.i64()?);
-        let mut prices = [0u16; RESOURCES];
-        for p in &mut prices {
-            *p = r.u16()?;
+        let mut w = Writer::new();
+        w.u32(r.u32()?);
+        w.u64(r.u64()?);
+        w.i64(r.i64()?);
+        w.i64(r.i64()?);
+        for _ in 0..RESOURCES {
+            w.u16(r.u16()?);
         }
-        let mut net_sold = [0i32; RESOURCES];
-        for n in &mut net_sold {
-            *n = i32::from_ne_bytes(r.u32()?.to_ne_bytes());
+        for _ in 0..RESOURCES {
+            w.u32(r.u32()?);
         }
-        let clans = (0..r.u8()?)
-            .map(|_| {
-                Some(ClanEntry {
-                    name: r.str()?,
-                    site: r.u8()?,
-                    score: 0,
-                })
-            })
-            .collect::<Option<Vec<_>>>()?;
-        r.done().then(|| {
-            Self {
-                season,
-                seed,
-                created,
-                last_tick,
-                prices,
-                net_sold,
-                clans,
-                history: Vec::new(),
-            }
-            .encode()
-        })
+        let clans = r.u8()?;
+        w.u8(clans);
+        for _ in 0..clans {
+            w.str(&r.str()?);
+            w.u8(r.u8()?);
+            w.u32(0);
+        }
+        w.u8(0);
+        r.done().then(|| w.finish())
     }
 
     /// Decode, or `None` for bytes that are not a world (an empty blob is "no world yet").
     #[must_use]
     pub fn decode(bytes: &[u8]) -> Option<Self> {
+        Self::decode_layout(bytes, 3)
+    }
+
+    /// Decode the version 2 layout (for the migration).
+    fn decode_v2(bytes: &[u8]) -> Option<Self> {
+        Self::decode_layout(bytes, 2)
+    }
+
+    fn decode_layout(bytes: &[u8], version: u8) -> Option<Self> {
         let mut r = Reader::new(bytes);
         let season = r.u32()?;
         let seed = r.u64()?;
@@ -241,10 +287,27 @@ impl World {
         }
         let clans = (0..r.u8()?)
             .map(|_| {
+                let name = r.str()?;
+                let site = r.u8()?;
+                let score = r.u32()?;
+                let (posted, record) = if version >= 3 {
+                    (Posted::read(&mut r)?, Record::read(&mut r)?)
+                } else {
+                    (
+                        Posted {
+                            seen: last_tick,
+                            founded: created,
+                            ..Posted::default()
+                        },
+                        Record::default(),
+                    )
+                };
                 Some(ClanEntry {
-                    name: r.str()?,
-                    site: r.u8()?,
-                    score: r.u32()?,
+                    name,
+                    site,
+                    score,
+                    posted,
+                    record,
                 })
             })
             .collect::<Option<Vec<_>>>()?;
@@ -257,6 +320,11 @@ impl World {
                 Some(row)
             })
             .collect::<Option<Vec<_>>>()?;
+        let social = if version >= 3 {
+            Social::read(&mut r)?
+        } else {
+            Social::default()
+        };
         r.done().then_some(Self {
             season,
             seed,
@@ -266,13 +334,14 @@ impl World {
             net_sold,
             clans,
             history,
+            social,
         })
     }
 }
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used)]
+    #![allow(clippy::unwrap_used, clippy::assert_is_empty)]
     use super::*;
 
     #[test]
@@ -342,13 +411,62 @@ mod tests {
         w.str("Brindle");
         w.u8(4);
         let v1 = w.finish();
-        assert_eq!(World::decode(&v1), None, "version 1 is not version 2");
-        let up = World::decode(&World::upgrade_v1(&v1).unwrap()).unwrap();
+        assert_eq!(World::decode(&v1), None, "version 1 is not version 3");
+        let v2 = World::upgrade_v1(&v1).unwrap();
+        assert_eq!(World::decode(&v2), None, "version 2 is not version 3");
+        let up = World::decode(&World::upgrade_v2(&v2).unwrap()).unwrap();
         assert_eq!((up.season, up.seed, up.last_tick), (2, 77, 20_003));
         assert_eq!(up.clans[0].name, "Brindle");
         assert_eq!(up.clans[0].score, 0);
         assert_eq!(up.history, [] as [[u16; 13]; 0]);
         assert_eq!(World::upgrade_v1(&v1[..9]), None);
+    }
+
+    #[test]
+    fn a_version_2_world_upgrades_keeping_scores_and_history_and_starting_the_social_state_empty() {
+        // The version 2 bytes, written by hand: a score and a price history, nothing social.
+        let mut w = Writer::new();
+        w.u32(3);
+        w.u64(99);
+        w.i64(20_000);
+        w.i64(20_005);
+        for r in Resource::ALL {
+            w.u16(r.base_price() * 100);
+        }
+        for _ in 0..RESOURCES {
+            w.u32(0);
+        }
+        w.count(2);
+        for (name, site, score) in [("Brindle", 4u8, 41u32), ("Cove", 7, 12)] {
+            w.str(name);
+            w.u8(site);
+            w.u32(score);
+        }
+        w.count(2);
+        for day in 0..2u16 {
+            for r in Resource::ALL {
+                w.u16(r.base_price() * 100 + day);
+            }
+        }
+        let v2 = w.finish();
+        assert_eq!(World::decode(&v2), None, "version 2 is not version 3");
+        let up = World::decode(&World::upgrade_v2(&v2).unwrap()).unwrap();
+        assert_eq!((up.season, up.seed, up.last_tick), (3, 99, 20_005));
+        assert_eq!(up.clans.len(), 2);
+        assert_eq!(
+            (up.clans[0].name.as_str(), up.clans[0].score),
+            ("Brindle", 41)
+        );
+        assert_eq!(up.clans[1].site, 7);
+        assert_eq!(up.history.len(), 2);
+        assert_eq!(up.history[1][0], 400 + 1);
+        // Nothing is posted and the social state is empty; a clan posts itself on its next save.
+        assert_eq!(up.clans[0].record, Record::default());
+        assert!(up.clans[0].posted.guard.is_empty());
+        assert_eq!(up.social, Social::default());
+        // The upgraded world re-encodes to itself.
+        assert_eq!(World::decode(&up.encode()), Some(up));
+        assert_eq!(World::upgrade_v2(&v2[..20]), None);
     }
 
     #[test]

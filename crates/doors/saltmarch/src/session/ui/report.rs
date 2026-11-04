@@ -61,6 +61,19 @@ fn line_for(ui: &Ui<'_>, e: &Event) -> Option<(&'static str, Style, String)> {
         | Event::Died { .. }
         | Event::Grief { .. } => (g("†", "t"), p.rust(), e.to_string()),
         Event::TripEnded { .. } => (g("▶", "!"), p.gold(), e.to_string()),
+        Event::RaidWon { .. } | Event::PactSigned { .. } => (g("▣", "!"), p.gold(), e.to_string()),
+        Event::RaidFailed { .. } | Event::RaidSuffered { .. } | Event::PactBroken { .. } => {
+            (g("▣", "!"), p.rust(), e.to_string())
+        }
+        Event::RaidRepelled { .. } => (g("▣", "!"), p.moss(), e.to_string()),
+        Event::RaidRecalled { .. } | Event::PactDeclined { .. } => {
+            (g("◦", "o"), p.slate(), e.to_string())
+        }
+        Event::LetterArrived { .. } | Event::PactOffered { .. } => {
+            (g("▤", "@"), p.sea(), e.to_string())
+        }
+        Event::Parcel { .. } => (g("◈", "$"), p.gold(), e.to_string()),
+        Event::Refused { .. } | Event::Unsent { .. } => (g("▲", "^"), p.rust(), e.to_string()),
         Event::Retired { .. } | Event::Aged { .. } => (g("◦", "o"), p.slate(), e.to_string()),
         _ => (g("•", "*"), p.plain, e.to_string()),
     })
@@ -134,11 +147,15 @@ pub(super) fn draw(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     let mut lines: Vec<Line<'static>> = Vec::new();
     lines.push(Line::from(vec![
         Span::styled(
-            format!(
-                "{} night{} passed",
-                c.nights,
-                if c.nights == 1 { "" } else { "s" }
-            ),
+            if c.nights == 0 {
+                "News from the Tidecourt".to_owned()
+            } else {
+                format!(
+                    "{} night{} passed",
+                    c.nights,
+                    if c.nights == 1 { "" } else { "s" }
+                )
+            },
             p.sea(),
         ),
         Span::styled(
@@ -176,15 +193,34 @@ pub(super) fn draw(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
             ]));
         }
     }
-    // The things that did not happen are news too, and true: there are no raids and no letters
-    // yet (they come with the social update).
-    lines.push(Line::from(vec![
-        Span::styled(format!("{} ", ui.look.g("▣", "#")), p.slate()),
-        Span::styled("Raids: none. Nobody came for the hold.", p.dim),
-    ]));
+    // The things that did not happen are news too, and true.
+    let raided = events.iter().any(|e| {
+        matches!(
+            e,
+            Event::RaidWon { .. }
+                | Event::RaidFailed { .. }
+                | Event::RaidRecalled { .. }
+                | Event::RaidSuffered { .. }
+                | Event::RaidRepelled { .. }
+        )
+    });
+    if !raided {
+        lines.push(Line::from(vec![
+            Span::styled(format!("{} ", ui.look.g("▣", "#")), p.slate()),
+            Span::styled("Raids: none. Nobody came for the hold.", p.dim),
+        ]));
+    }
+    let unread = ui.clan.social.unread();
     lines.push(Line::from(vec![
         Span::styled(format!("{} ", ui.look.g("▤", "@")), p.slate()),
-        Span::styled("Letters: none waiting at the post.", p.dim),
+        Span::styled(
+            if unread == 0 {
+                "Letters: none waiting at the post.".to_owned()
+            } else {
+                format!("Letters: {unread} waiting at the post.")
+            },
+            if unread == 0 { p.dim } else { p.sea() },
+        ),
     ]));
     // With room, the crew as they stand this morning.
     if roomy {

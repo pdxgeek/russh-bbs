@@ -372,9 +372,12 @@ fn a_hold_action_is_refused_while_the_party_is_out() {
 }
 
 fn v1_bytes(clan: &Clan) -> Vec<u8> {
-    // Version 2 only appended: eleven counters, the marks and the trip flag.
+    // Version 3 appended the (here empty) social state; version 2 appended eleven counters, the
+    // marks and the trip flag.
+    let mut social = russh_bbs_door_saltmarch::codec::Writer::new();
+    russh_bbs_door_saltmarch::social::ledger::ClanSocial::default().write(&mut social);
     let bytes = clan.encode();
-    bytes[..bytes.len() - (11 * 4 + 2)].to_vec()
+    bytes[..bytes.len() - social.finish().len() - (11 * 4 + 2)].to_vec()
 }
 
 #[tokio::test]
@@ -386,7 +389,9 @@ async fn a_version_one_save_migrates_and_plays_on() {
     assert!(clan.trip.is_none() && clan.marks.is_empty());
     let v1 = v1_bytes(&clan);
     // The step itself.
-    let up = door.migrate(BlobKind::Save, 1, &v1).unwrap();
+    let v2 = door.migrate(BlobKind::Save, 1, &v1).unwrap();
+    assert_ne!(v2, clan.encode(), "one step is one version");
+    let up = door.migrate(BlobKind::Save, 2, &v2).unwrap();
     assert_eq!(up, clan.encode());
     assert_eq!(Clan::decode(&up), Some(clan.clone()));
     assert!(

@@ -1,0 +1,43 @@
+
+                            ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+                            │Saltmarch                                                                 │
+                            │                                                                          │
+                            │ ⌂ bob  day 10 of season 1            turns ██████████ 30/30  ◈ 0 tallies │
+                            │ ≈ TIDE ████████░┃░░░  64 ↓ low in 4h36 (27)  neap tides  ▲ HIGH WATER ▲  │
+                            │╭ The post (0 unread) ───────╮╭ Letter ──────────────────────────────────╮│
+                            ││▸   founder                 ││founder to bob: we have seen your name    ││
+                            ││                            ││on the Tidecourt's boards, and we deal    ││
+                            ││                            ││fairly. Come and trade.                   ││
+                            ││                            ││                                          ││
+                            ││                            ││founder says: see you at the weir at low  ││
+                            ││                            ││water                                     ││
+                            ││                            ││                                          ││
+                            ││                            ││Letters are read by the board and by the  ││
+                            ││                            ││clan they are for. Nothing sent here is   ││
+                            ││                            ││private.                                  ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            ││                                          ││
+                            ││                            │╰──────────────────────────────────────────╯│
+                            ││                            │╭ Orders ──────────────────────────────────╮│
+                            ││                            ││ a Write a letter                         ││
+                            ││                            ││ b Reply to founder                       ││
+                            ││                            ││ c Block letters from founder             ││
+                            ││                            ││ d Throw this letter away                 ││
+                            │╰────────────────────────────╯╰──────────────────────────────────────────╯│
+                            │ » Write a letter                             up/down letter  Enter  Esc  │
+                            └──────────────────────────────────────────────────────────────────────────┘
+

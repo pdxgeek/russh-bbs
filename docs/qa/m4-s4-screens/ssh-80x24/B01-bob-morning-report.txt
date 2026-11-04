@@ -1,0 +1,24 @@
+  ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+  │Saltmarch                                                                 │
+  │                                                                          │
+  │ ⌂ bob  day 9 of season 1             turns ██████████ 30/30  ◈ 9 tallies │
+  │ ≈ TIDE ████████┃░░░  69 ↑ high in 0h26 (70)  neap tides  ▲ HIGH WATER ▲  │
+  │╭ While you were away ──────────────────╮╭ Today: neap tides ────────────╮│
+  ││8 nights passed  ◗ the tide ran on     ││100│⡇                          ││
+  ││without you                            ││   │⡇⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀││
+  ││◆ Made:  +40 fish  +30 peat            ││   │⡇ ⠑⢦⡀      ⡠⠚⠁ ⠈⠳⢄      ⢀⠔⠋││
+  ││◈ The exchange sent 5 timber.          ││50 │⡇   ⠙⢦⣀ ⢀⡤⠞      ⠈⠓⢄⡀ ⢀⡴⠉  ││
+  ││▤ A letter from founder waits at the   ││   │⡇     ⠈⠉⠉           ⠉⠉⠁    ││
+  ││post.                                  ││0  │⡇                          ││
+  ││▣ Raids: none. Nobody came for the     ││   └───────────────────────────││
+  ││hold.                                  ││  00       06   12   18      24││
+  ││▤ Letters: 1 waiting at the post.      │╰───────────────────────────────╯│
+  │╰───────────────────────────────────────╯╭ Standings: you are 2nd of 2 ──╮│
+  │╭ Today ────────────────────────────────╮│ 1  founder                 20 ││
+  ││30 tide-turns. neap tides.             ││ 2  bob                     19 ││
+  ││Over the flood line: 00:30-01:10,      ││                               ││
+  ││12:50-13:30                            ││                               ││
+  ││Lows, the best time on the flats: 06:38││                               ││
+  │╰───────────────────────────────────────╯╰───────────────────────────────╯│
+  │ »                                                               any key  │
+  └──────────────────────────────────────────────────────────────────────────┘

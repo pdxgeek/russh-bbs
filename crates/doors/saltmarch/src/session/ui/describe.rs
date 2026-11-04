@@ -217,7 +217,43 @@ pub(in crate::session) fn describe(s: &Session) -> Vec<String> {
                         .join(", ")
                 ));
             }
-            out.push("Raids: none. Letters: none waiting.".to_owned());
+            for e in &s.ledger {
+                use crate::event::Event as E;
+                if matches!(
+                    e,
+                    E::RaidWon { .. }
+                        | E::RaidFailed { .. }
+                        | E::RaidRecalled { .. }
+                        | E::RaidSuffered { .. }
+                        | E::RaidRepelled { .. }
+                        | E::PactSigned { .. }
+                        | E::PactBroken { .. }
+                        | E::PactOffered { .. }
+                        | E::PactDeclined { .. }
+                        | E::Parcel { .. }
+                        | E::Refused { .. }
+                        | E::Unsent { .. }
+                ) {
+                    out.push(e.to_string());
+                }
+            }
+            if !s.ledger.iter().any(|e| {
+                use crate::event::Event as E;
+                matches!(
+                    e,
+                    E::RaidWon { .. }
+                        | E::RaidFailed { .. }
+                        | E::RaidRecalled { .. }
+                        | E::RaidSuffered { .. }
+                        | E::RaidRepelled { .. }
+                )
+            }) {
+                out.push("Raids: none.".to_owned());
+            }
+            out.push(match clan.social.unread() {
+                0 => "Letters: none waiting.".to_owned(),
+                n => format!("Letters: {n} waiting at the post."),
+            });
             let table = s.tide.table(s.today);
             out.push(format!(
                 "Today's tide table, {} tides: {}.",
@@ -533,22 +569,139 @@ pub(in crate::session) fn describe(s: &Session) -> Vec<String> {
             out.push("Water is shown as a colour band over the ground, or as a change of symbol when colour is off.".to_owned());
         }
         Mode::Menu(MenuId::Court) => {
-            out.push("The Tidecourt, a town on stilts above the highest tide. From here: the market, the league table, the Hall of Tides, the post and the quay.".to_owned());
+            out.push("The Tidecourt, a town on stilts above the highest tide. From here: the market, the exchange where clans trade with each other, the gate for raids, pacts, the post, the league table, the Hall of Tides and the quay.".to_owned());
+        }
+        Mode::Menu(MenuId::Exchange) => {
+            let what = s.good();
+            let x = &s.world.social.exchange;
+            let asks = x.asks.iter().filter(|o| o.what == what).count();
+            let bids = x.bids.iter().filter(|o| o.what == what).count();
+            out.push(format!(
+                "The exchange, showing {}: {asks} ask(s) for sale and {bids} bid(s) wanted from other clans. Orders you send settle with the post, the next time you open the door.",
+                what.name()
+            ));
+            if let Some(a) = x.best_ask(what, s.me()) {
+                out.push(format!("Best ask: {} at {} each.", a.qty, a.price));
+            }
+            if let Some(b) = x.best_bid(what, s.me()) {
+                out.push(format!("Best bid: {} at {} each.", b.qty, b.price));
+            }
+            out.push(format!(
+                "The exchange keeps {}% of a sale and {}% of an order's value is the listing fee.",
+                crate::social::caps::LEVY_PCT,
+                crate::social::caps::LISTING_FEE_PCT
+            ));
+        }
+        Mode::Menu(MenuId::Raid) => {
+            let others = s.others();
+            match others.get(s.soc.raid.target % others.len().max(1)) {
+                None => out.push("The gate. No other clan is on the Tidecourt's rolls yet, so there is nobody to raid.".to_owned()),
+                Some((ix, t)) => {
+                    out.push(format!(
+                        "The gate, planning a raid on {}, renown {}. Their guard posts {} fit hand(s) with a defence rating of {}{}.",
+                        t.name,
+                        t.score,
+                        t.posted.guard.len(),
+                        t.posted.rating,
+                        t.posted.sluice.map_or(String::new(), |l| format!(" and a sluice that floods the approach at water {l}"))
+                    ));
+                    out.push(match s.raid_closed(*ix) {
+                        Some(why) => format!("This raid is closed: {}", why.text()),
+                        None => "The way is open.".to_owned(),
+                    });
+                    let party = s.raiders();
+                    out.push(format!(
+                        "Your raiders: {}. Away from the hold until the night's report.",
+                        if party.is_empty() { "nobody is fit to go".to_owned() } else { party.iter().map(|d| d.name.clone()).collect::<Vec<_>>().join(", ") }
+                    ));
+                    for w in s.windows() {
+                        out.push(format!(
+                            "Turn of the water tomorrow at {:02}:{:02}: {} {}{}.",
+                            w.minute / 60,
+                            w.minute % 60,
+                            if w.high { "high water" } else { "low water" },
+                            w.level,
+                            if w.needs_boat { ", needs a boat" } else { ", on foot" }
+                        ));
+                    }
+                }
+            }
+        }
+        Mode::Menu(MenuId::Pacts) => {
+            let n = s.me().map_or(0, |m| s.world.pacts_of(m).count());
+            out.push(format!(
+                "Pacts and diplomacy. You hold {n} pact(s). Terms: a truce is always part of a pact; trade, mutual defence and shared causeways are opened or closed by what your hold has built and what your history says."
+            ));
+            if let Some(r) = s
+                .me()
+                .and_then(|m| s.world.clans.get(usize::from(m)))
+                .map(|c| &c.record)
+            {
+                out.push(format!(
+                    "Your standing with the Tidecourt is {}; {} betrayal(s) on record.",
+                    r.rep, r.betrayals
+                ));
+            }
         }
         Mode::Menu(MenuId::Letters) => {
-            out.push("The post. No letters from other clans yet; the notices pinned here are about tomorrow's tides, the hands at your gate and the market.".to_owned());
+            let n = clan.social.inbox.len();
+            out.push(format!(
+                "The post: {n} letter(s), {} unread. Letters are templates with an optional line from the sender; the board and the clan they are for can read them.",
+                clan.social.unread()
+            ));
+            if let Some(l) = clan.social.inbox.get(s.soc.letter) {
+                out.push(format!(
+                    "Reading the letter from {}{}.",
+                    l.from,
+                    if l.offer.is_some() {
+                        ", which carries a pact offer"
+                    } else {
+                        ""
+                    }
+                ));
+            }
+        }
+        Mode::Menu(MenuId::Compose) | Mode::Line(_) => {
+            let others = s.others();
+            out.push(match others.get(s.soc.compose.to % others.len().max(1)) {
+                Some((_, to)) => format!("Writing a letter to {}. Choose the words, add a line of your own if you like, then send.", to.name),
+                None => "Writing a letter, but no other clan is on the rolls yet.".to_owned(),
+            });
+            if matches!(s.mode, Mode::Line(_)) {
+                out.push("Typing your own line: Enter sets it, Esc leaves it.".to_owned());
+            }
         }
         Mode::Menu(MenuId::League) => {
-            out.push("The league table: clans ranked by score.".to_owned());
+            let rn = s.renown();
+            out.push("The league table: clans ranked by renown, which rewards a big hold, a skilled crew, expeditions, pacts kept and raids won (raids count for little on their own), less any pact broken.".to_owned());
             out.push(standing_line(s, clan));
+            out.push(format!(
+                "Your renown: hold {}, crew {}, deeds {}, the Deep {}, pacts {}, raids {}, wealth {}, betrayals minus {}.",
+                rn.hold, rn.crew, rn.deeds, rn.deep, rn.pacts, rn.raids, rn.wealth, rn.penalty
+            ));
         }
         Mode::Menu(MenuId::Hall) => {
             out.push(format!(
-                "The Hall of Tides: {} epitaph(s) of crew who retired or were lost.",
+                "The Hall of Tides: {} line(s) of crew who retired or were lost, and of seasons played.",
                 clan.hall.len()
             ));
             for h in clan.hall.iter().rev().take(5) {
                 out.push(format!("  Season {}: {}", h.season, h.text));
+            }
+            let now = crate::social::hall::SeasonRecord::of(&s.world, s.today);
+            for h in &now.records {
+                out.push(format!(
+                    "This season, {}: {} ({}).",
+                    h.record.title(),
+                    h.clan,
+                    h.value
+                ));
+            }
+            if let Some(last) = s.world.social.book.last() {
+                out.push(format!(
+                    "Season {} in the book: {}",
+                    last.season, last.ending
+                ));
             }
         }
         _ => {}
@@ -556,9 +709,9 @@ pub(in crate::session) fn describe(s: &Session) -> Vec<String> {
     out
 }
 
-/// "You stand 2nd of 5 clans with a score of 41."
+/// "You stand 2nd of 5 clans with a renown of 41."
 fn standing_line(s: &Session, clan: &Clan) -> String {
-    let mine = clan.score(&s.cat);
+    let mine = s.renown().total();
     let mut rows: Vec<(u32, &str)> = s
         .world
         .clans
@@ -573,7 +726,7 @@ fn standing_line(s: &Session, clan: &Clan) -> String {
         .position(|r| r.1 == clan.name)
         .map_or(1, |i| i + 1);
     format!(
-        "Season standings: you are number {rank} of {} clans with a score of {mine}.",
+        "Season standings: you are number {rank} of {} clans with a renown of {mine}.",
         rows.len()
     )
 }

@@ -1,0 +1,43 @@
+
+                            ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+                            │Saltmarch                                                                 │
+                            │                                                                          │
+                            │ ⌂ founder  day 9 of season 1        turns █████████▎ 28/30  ◈ 69 tallies │
+                            │ ≈ TIDE █████████░░░░░░░┃░░░░░░  43 ↓ low in 2h12 (30)  neap tides  calm  │
+                            │╭ Target: bob ──────────────────────╮╭ Your raiders ─────────────────────╮│
+                            ││renown 21   rating 0               ││Brindle Fl~ fighter    hp 21 atk 6 ││
+                            ││Guard at the gate (3 of 3 crew):   ││Maren Eelh~ wader      hp 22 atk 5 ││
+                            ││Osk Siltha~wader    hp22 a5 d0     ││Odds at this tide: grim            ││
+                            ││Moss Mudfo~raker    hp22 a5 d0     ││Costs 4 turns. The raiders are away││
+                            ││Rushe Loww~smith    hp22 a5 d0     │╰───────────────────────────────────╯│
+                            ││Stores, a scout's guess: peat 30,  │╭ The tide ─────────────────────────╮│
+                            ││reed 10, timber 15, fish 30        ││It lands tomorrow, at a turn of the││
+                            ││The way is open.                   ││water:                             ││
+                            ││                                   ││▸ 04:36 low  water 27  on foot     ││
+                            ││                                   ││10:48 high water 73  needs a boat  ││
+                            ││                                   ││17:00 low  water 27  on foot       ││
+                            ││                                   ││23:12 high water 73  needs a boat  ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            │╰───────────────────────────────────╯│                                   ││
+                            │╭ Orders ───────────────────────────╮│                                   ││
+                            ││ a Next target (now bob)           ││                                   ││
+                            ││ b Previous target                 ││                                   ││
+                            ││ c More raiders (now 2)            ││                                   ││
+                            ││ d Fewer raiders                   ││                                   ││
+                            ││ e Next turn of the water          ││                                   ││
+                            ││ f Send the raid on bob (4 turns)  ││                                   ││
+                            │╰───────────────────────────────────╯╰───────────────────────────────────╯│
+                            │ » Next target (now bob)                   </> page  up/down  Enter  Esc  │
+                            └──────────────────────────────────────────────────────────────────────────┘
+

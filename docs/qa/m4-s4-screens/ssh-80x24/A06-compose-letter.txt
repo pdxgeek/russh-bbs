@@ -1,0 +1,24 @@
+  ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+  │Saltmarch                                                                 │
+  │                                                                          │
+  │ ⌂ founder  day 1 of season 1        turns ██████████ 30/30  ◈ 69 tallies │
+  │ ≈ TIDE ██░░░░░░░░░░░░░┃░░░░░░  10 ↓ low in 0h14 (9)  spring tides  calm  │
+  │╭ A letter ───────────────────────────────╮╭ Orders ─────────────────────╮│
+  ││To      bob                              ││ a Next recipient (now bob)  ││
+  ││Kind    greeting                         ││ b Previous recipient        ││
+  ││                                         ││ c Next words                ││
+  ││founder sends greeting to bob. The       ││ d Add a line of your own    ││
+  ││reeds are high on our flats and the      ││ e Send the letter to bob    ││
+  ││salt is good. May the water be kind to   ││                             ││
+  ││you.                                     ││                             ││
+  ││                                         ││                             ││
+  ││No line of your own.                     ││                             ││
+  ││                                         ││                             ││
+  ││                                         ││                             ││
+  ││                                         ││                             ││
+  ││                                         ││                             ││
+  ││                                         ││                             ││
+  ││                                         ││                             ││
+  │╰─────────────────────────────────────────╯╰─────────────────────────────╯│
+  │ » Next recipient (now bob)                </> page  up/down  Enter  Esc  │
+  └──────────────────────────────────────────────────────────────────────────┘

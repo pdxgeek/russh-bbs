@@ -1,0 +1,43 @@
+
+                            ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+                            │Saltmarch                                                                 │
+                            │                                                                          │
+                            │ ⌂ bob  day 10 of season 1            turns ██████████ 30/30  ◈ 0 tallies │
+                            │ ≈ TIDE ████████░┃░░░  64 ↓ low in 4h36 (27)  neap tides  ▲ HIGH WATER ▲  │
+                            │╭ Pacts ─────────────────────────╮╭ Terms ───────────────────────────────╮│
+                            ││Standing with the Tidecourt +0  ││With founder  renown 20               ││
+                            ││Pacts in force                  ││[✓] truce            closed: the two  ││
+                            ││none                            ││of you raided each other within the   ││
+                            ││                                ││week                                  ││
+                            ││                                ││[ ] trade            closed: the two  ││
+                            ││                                ││of you raided each other within the   ││
+                            ││                                ││week                                  ││
+                            ││                                ││[ ] mutual defence   closed: the two  ││
+                            ││                                ││of you raided each other within the   ││
+                            ││                                ││week                                  ││
+                            ││                                ││[ ] shared causeways closed: the two  ││
+                            ││                                ││of you raided each other within the   ││
+                            ││                                ││week                                  ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                │╰──────────────────────────────────────╯│
+                            ││                                │╭ Orders ──────────────────────────────╮│
+                            ││                                ││ a Next clan (now founder)            ││
+                            ││                                ││ b Previous clan                      ││
+                            │╰────────────────────────────────╯╰──────────────────────────────────────╯│
+                            │ » Next clan (now founder)                 </> page  up/down  Enter  Esc  │
+                            └──────────────────────────────────────────────────────────────────────────┘
+

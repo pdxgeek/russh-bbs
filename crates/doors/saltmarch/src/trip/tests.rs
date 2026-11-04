@@ -1700,3 +1700,18 @@ fn a_scene_the_tables_no_longer_have_passes_and_the_party_goes_on() {
     assert!(super::apply(&env, &mut empty, TripAction::Choose(0)).is_ok());
     assert!(matches!(empty.trip.as_ref().unwrap().phase, Phase::Free));
 }
+
+#[test]
+fn standing_in_the_deep_is_remembered_and_other_ground_is_not() {
+    let f = Fx::quiet();
+    let mut clan = f.clan();
+    for kind in [TileKind::Mudflat, TileKind::Reedbed, TileKind::DrownedTown] {
+        super::remember_ground(&mut clan, kind);
+        assert!(!clan.social.deep, "{kind:?}");
+    }
+    super::remember_ground(&mut clan, TileKind::Deep);
+    assert!(clan.social.deep);
+    // It counts for renown and survives a save.
+    let again = Clan::decode(&clan.encode()).unwrap();
+    assert!(again.social.deep);
+}

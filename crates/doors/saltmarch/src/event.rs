@@ -6,8 +6,38 @@
 use std::fmt;
 
 use crate::combat::Verdict;
+use crate::social::Refusal;
+use crate::social::market::Memo;
+use crate::social::pact::{ALL_TERMS, term_name};
 use crate::trip::Ending;
 use crate::types::{Resource, Trade};
+
+/// Goods as a phrase: "6 salt, 2 iron".
+fn goods_phrase(loot: &[(Resource, u32)], tallies: u32) -> String {
+    let mut parts: Vec<String> = loot
+        .iter()
+        .map(|(r, n)| format!("{n} {}", r.name()))
+        .collect();
+    if tallies > 0 {
+        parts.push(format!("{tallies} tallies"));
+    }
+    if parts.is_empty() {
+        "nothing".to_owned()
+    } else {
+        parts.join(", ")
+    }
+}
+
+/// The terms of a pact as words: "truce, trade".
+#[must_use]
+pub fn terms_phrase(terms: u8) -> String {
+    ALL_TERMS
+        .iter()
+        .filter(|t| terms & **t != 0)
+        .map(|t| term_name(*t))
+        .collect::<Vec<_>>()
+        .join(", ")
+}
 
 /// Something that happened in the hold or at the market.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -135,6 +165,45 @@ pub enum Event {
         value: u32,
         turns: u16,
     },
+    /// The exchange sent goods or tallies.
+    Parcel {
+        memo: Memo,
+        about: Option<(Resource, u32)>,
+        goods: Option<(Resource, u32)>,
+        tallies: u32,
+    },
+    /// Our raid beat a hold's guard.
+    RaidWon {
+        against: String,
+        loot: Vec<(Resource, u32)>,
+        tallies: u32,
+    },
+    /// Our raid was beaten off.
+    RaidFailed { against: String },
+    /// A pact called our raid off.
+    RaidRecalled { against: String },
+    /// A clan raided us and won.
+    RaidSuffered {
+        by: String,
+        loot: Vec<(Resource, u32)>,
+        tallies: u32,
+    },
+    /// A clan raided us and was beaten off.
+    RaidRepelled { by: String },
+    /// A letter arrived.
+    LetterArrived { from: String },
+    /// A clan offered a pact.
+    PactOffered { from: String, terms: u8 },
+    /// A pact we offered was signed.
+    PactSigned { with: String, terms: u8 },
+    /// A pact we offered was declined.
+    PactDeclined { with: String },
+    /// A clan broke its pact with us.
+    PactBroken { by: String },
+    /// The world turned something away.
+    Refused { what: String, why: Refusal },
+    /// Something we sent never reached the world; we have it back.
+    Unsent { what: String },
 }
 
 impl fmt::Display for Event {
@@ -259,6 +328,81 @@ impl fmt::Display for Event {
                 }
                 Ending::Lost => f.write_str("Nobody comes back."),
             },
+            Self::Parcel {
+                memo,
+                about,
+                goods,
+                tallies,
+            } => {
+                let what = about.map_or_else(String::new, |(r, n)| format!("{n} {}", r.name()));
+                let back = goods_phrase(&goods.iter().copied().collect::<Vec<_>>(), *tallies);
+                match memo {
+                    Memo::Sold => write!(
+                        f,
+                        "The exchange paid {tallies} tallies for {what}, less its levy."
+                    ),
+                    Memo::Bought => match goods {
+                        Some((r, n)) => write!(
+                            f,
+                            "The exchange sent {n} {}{}.",
+                            r.name(),
+                            if *tallies > 0 {
+                                format!(" and {tallies} tallies change")
+                            } else {
+                                String::new()
+                            }
+                        ),
+                        None => write!(f, "The exchange sent {tallies} tallies."),
+                    },
+                    Memo::Expired => {
+                        write!(f, "An order of yours lapsed unfilled: {back} came back.")
+                    }
+                    Memo::Cancelled => write!(f, "Your order was taken down: {back} came back."),
+                    Memo::Refused => write!(f, "An order was turned away: {back} came back."),
+                }
+            }
+            Self::RaidWon {
+                against,
+                loot,
+                tallies,
+            } => write!(
+                f,
+                "Your raid on {against} broke the gate and came home with {}.",
+                goods_phrase(loot, *tallies)
+            ),
+            Self::RaidFailed { against } => {
+                write!(f, "Your raid on {against} was beaten off the gate.")
+            }
+            Self::RaidRecalled { against } => write!(
+                f,
+                "Your raid on {against} was called off: a pact stands between you."
+            ),
+            Self::RaidSuffered { by, loot, tallies } => write!(
+                f,
+                "{by} raided the hold in the night and took {}.",
+                goods_phrase(loot, *tallies)
+            ),
+            Self::RaidRepelled { by } => {
+                write!(f, "{by} came for the hold in the night and was beaten off.")
+            }
+            Self::LetterArrived { from } => write!(f, "A letter from {from} waits at the post."),
+            Self::PactOffered { from, terms } => write!(
+                f,
+                "{from} offers a pact ({}). The offer waits at the post.",
+                terms_phrase(*terms)
+            ),
+            Self::PactSigned { with, terms } => {
+                write!(f, "{with} signed the pact ({}).", terms_phrase(*terms))
+            }
+            Self::PactDeclined { with } => write!(f, "{with} declined your pact."),
+            Self::PactBroken { by } => write!(f, "{by} broke the pact. The Tidecourt knows."),
+            Self::Refused { what, why } => {
+                write!(f, "The Tidecourt turned your {what} away: {}", why.text())
+            }
+            Self::Unsent { what } => write!(
+                f,
+                "Your {what} never reached the Tidecourt; what you risked is back."
+            ),
         }
     }
 }

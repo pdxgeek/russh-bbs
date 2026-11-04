@@ -1,0 +1,43 @@
+
+                            ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+                            │Saltmarch                                                                 │
+                            │                                                                          │
+                            │ ⌂ founder  day 1 of season 1        turns ██████████ 30/30  ◈ 69 tallies │
+                            │ ≈ TIDE ████████░░░░░░┃░░░░░  42 ↑ high in 3h36 (91)  spring tides  calm  │
+                            │╭ Pacts ─────────────────────────╮╭ Terms ───────────────────────────────╮│
+                            ││Standing with the Tidecourt +0  ││With bob  renown 19                   ││
+                            ││Pacts in force                  ││[✓] truce            neither clan     ││
+                            ││none                            ││raids the other                       ││
+                            ││                                ││[ ] trade            closed: needs    ││
+                            ││                                ││three buildings finished              ││
+                            ││                                ││[ ] mutual defence   closed: needs a  ││
+                            ││                                ││defence building                      ││
+                            ││                                ││[ ] shared causeways closed: needs a  ││
+                            ││                                ││causeway laid                         ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                ││                                      ││
+                            ││                                │╰──────────────────────────────────────╯│
+                            ││                                │╭ Orders ──────────────────────────────╮│
+                            ││                                ││ a Next clan (now bob)                ││
+                            ││                                ││ b Previous clan                      ││
+                            ││                                ││ c Offer bob a pact                   ││
+                            │╰────────────────────────────────╯╰──────────────────────────────────────╯│
+                            │ » Next clan (now bob)                     </> page  up/down  Enter  Esc  │
+                            └──────────────────────────────────────────────────────────────────────────┘
+

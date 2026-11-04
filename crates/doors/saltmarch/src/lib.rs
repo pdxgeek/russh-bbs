@@ -37,6 +37,7 @@ pub mod hold;
 pub mod lore;
 pub mod map;
 mod session;
+pub mod social;
 pub mod tide;
 pub mod trip;
 pub mod types;
@@ -60,10 +61,10 @@ use crate::world::World;
 pub const DOOR_ID: &str = "saltmarch";
 
 /// The current save format version.
-pub const SAVE_VERSION: u32 = 2;
+pub const SAVE_VERSION: u32 = 3;
 
 /// The current world format version.
-pub const WORLD_VERSION: u32 = 2;
+pub const WORLD_VERSION: u32 = 3;
 
 /// Why the door could not be built.
 #[derive(Debug)]
@@ -152,9 +153,18 @@ impl Door for Saltmarch {
             }
             _ => None,
         };
-        let (world, world_stored) = match stored {
-            Some(w) if w.season == start.season => (w, true),
-            _ => (World::new(start.season, rng.next_u64(), today), false),
+        // A world left over from an earlier season is kept only to write up that season: the
+        // new world carries its book, and each clan writes where it stood in its own hall.
+        let (old_world, current) = match stored {
+            Some(w) if w.season == start.season => (None, Some(w)),
+            other => (other, None),
+        };
+        let (world, world_stored) = match current {
+            Some(w) => (w, true),
+            None => (
+                World::successor(old_world.as_ref(), start.season, rng.next_u64(), today),
+                false,
+            ),
         };
         let clan = match start.save {
             Save::Fresh => None,
@@ -171,9 +181,18 @@ impl Door for Saltmarch {
                 return c;
             }
             rolled = true;
+            let line = social::hall::season_line(&c, old_world.as_ref());
             let map = crate::map::Map::generate(world.seed, &self.cat.pois);
             let site = Clan::site_for(&c.name, map.sites.len());
-            c.next_season(&self.cat, &map, start.season, site, today, rng)
+            let mut next = c.next_season(&self.cat, &map, start.season, site, today, rng);
+            next.hall.push(clan::HallEntry {
+                season: c.season,
+                text: line,
+            });
+            if next.hall.len() > clan::HALL_CAP {
+                next.hall.remove(0);
+            }
+            next
         });
         Box::new(Session::new(Setup {
             cat: Arc::clone(&self.cat),
@@ -193,11 +212,21 @@ impl Door for Saltmarch {
             // Version 2 added the expedition counters, the clan's marks and the trip.
             (BlobKind::Save, 1) => {
                 let upgraded = Clan::upgrade_v1(bytes);
-                Clan::decode(&upgraded).ok_or(MigrateError::Corrupt(1))?;
+                // Version 2 is not readable by this code; check it as it will be once the next
+                // step has run.
+                Clan::decode(&Clan::upgrade_v2(&upgraded)).ok_or(MigrateError::Corrupt(1))?;
+                Ok(upgraded)
+            }
+            // Version 3 added the social state: the clan's pending dispatches, inbox and counters.
+            (BlobKind::Save, 2) => {
+                let upgraded = Clan::upgrade_v2(bytes);
+                Clan::decode(&upgraded).ok_or(MigrateError::Corrupt(2))?;
                 Ok(upgraded)
             }
             // Version 2 added the league scores and the price history.
             (BlobKind::World, 1) => World::upgrade_v1(bytes).ok_or(MigrateError::Corrupt(1)),
+            // Version 3 added the posted defences, the records and the social state.
+            (BlobKind::World, 2) => World::upgrade_v2(bytes).ok_or(MigrateError::Corrupt(2)),
             _ => Err(MigrateError::Unsupported(from)),
         }
     }
@@ -218,6 +247,12 @@ impl Door for Saltmarch {
             return Ok(());
         };
         world.end_day(day, tick.rng());
+        // Raids sent before today are settled against what the holds posted; the exchange's
+        // old orders lapse and its night's prices are kept; kept pacts earn standing.
+        let tide = tide::Tide::new(world.seed);
+        social::raid::resolve_all(&mut world, &self.cat, &tide, day, tick.rng());
+        social::market::tick(&mut world, day);
+        world.pacts_tick(day);
         tick.set_world(world.encode());
         Ok(())
     }

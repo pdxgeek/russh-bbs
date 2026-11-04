@@ -232,6 +232,8 @@ pub enum ActionError {
     NoSluice,
     /// The party is out: the hold waits.
     Away,
+    /// A crew member is away on a raid until its report comes.
+    OnRaid(String),
     /// There is no expedition.
     NoTrip,
     /// A party is already out.
@@ -295,6 +297,7 @@ impl fmt::Display for ActionError {
             Self::NotForSale => f.write_str("The Tidecourt does not sell relics."),
             Self::NoSluice => f.write_str("There is no sluice to set."),
             Self::Away => f.write_str("The party is out on the marsh. Bring it home first."),
+            Self::OnRaid(name) => write!(f, "{name} is away on a raid until the night's report."),
             Self::NoTrip => f.write_str("No party is out."),
             Self::OnTrip => f.write_str("A party is already out."),
             Self::BadKit(why) => write!(f, "That kit will not do: {why}."),
@@ -414,6 +417,23 @@ pub fn apply(
     let mut events = Vec::new();
     if clan.trip.is_some() && !matches!(action, Action::Go(_)) {
         return Err(ActionError::Away);
+    }
+    // Crew sent raiding are not in the hold: they cannot work, train, go out or be posted.
+    let touched: Vec<u16> = match &action {
+        Action::Shift { crew, .. } => crew.clone(),
+        Action::Depart { party, .. } => party.clone(),
+        Action::Train { crew, .. }
+        | Action::Tend { crew }
+        | Action::Retire { crew }
+        | Action::Post { crew, .. } => vec![*crew],
+        _ => Vec::new(),
+    };
+    if let Some(c) = touched
+        .iter()
+        .find(|id| clan.social.is_away(**id))
+        .and_then(|id| clan.crew_by(*id))
+    {
+        return Err(ActionError::OnRaid(c.name.clone()));
     }
     match action {
         Action::Recruit { candidate } => recruit(env, clan, candidate, &mut events)?,
@@ -1041,6 +1061,22 @@ pub fn catch_up(env: &Env<'_>, clan: &mut Clan, today: i64) -> Vec<Event> {
     clan.last_day = today;
     clan.turns_used = 0;
     events
+}
+
+/// [`catch_up`], preceded by folding what the world holds for the clan (parcels, raid
+/// reports, letters, pact notices and the answers to what it sent) into its save. The events
+/// of both come back together, so the morning report shows raids beside the night's work, and
+/// the acknowledgements say what the world may now forget.
+pub fn catch_up_with(
+    env: &Env<'_>,
+    clan: &mut Clan,
+    today: i64,
+    mail: &crate::social::ledger::Mail,
+) -> (Vec<Event>, crate::social::ledger::Acks) {
+    let mut events = Vec::new();
+    let acks = crate::social::ledger::fold(env.cat, clan, mail, today, &mut events);
+    events.extend(catch_up(env, clan, today));
+    (events, acks)
 }
 
 /// Scale `produce` by how well it is worked.

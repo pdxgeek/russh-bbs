@@ -1,0 +1,24 @@
+  ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+  │Saltmarch                                                                 │
+  │                                                                          │
+  │ ⌂ founder  day 1 of season 1        turns ██████████ 30/30  ◈ 39 tallies │
+  │ ≈ TIDE ██░░░░░░░░░░░░░┃░░░░░░  10 ↓ low in 0h14 (9)  spring tides  calm  │
+  │╭ The exchange: timber ────────────────╮╭ Orders ────────────────────────╮│
+  ││Tidecourt pays 5, sells at 7          ││ a Next good (now timber)       ││
+  ││Asks: goods for sale                  ││ b Previous good                ││
+  ││  none standing                       ││ c Post an ask: 5 timber at 6~  ││
+  ││Bids: tallies offered                 ││ d Post an ask: 5 timber at 7~  ││
+  ││  none standing                       ││ e Post an ask: all 7 timber ~  ││
+  ││1 dispatch awaiting the Tidecourt     ││ f Post a bid: 5 timber at 6 ~  ││
+  ││                                      ││ g Post a bid: 5 timber at 5 ~  ││
+  ││                                      ││                                ││
+  ││                                      ││                                ││
+  ││                                      ││                                ││
+  │╰──────────────────────────────────────╯│                                ││
+  │╭ Prices, two weeks ───────────────────╮│                                ││
+  ││Tidecourt              ▄ 6.00         ││                                ││
+  ││Exchange   no trades yet              ││                                ││
+  │╰──────────────────────────────────────╯╰────────────────────────────────╯│
+  │ Sent to the exchange: 5 timber at 6. It settles with the post, the next ~│
+  │ » Post an ask: 5 timber at 6 each         </> page  up/down  Enter  Esc  │
+  └──────────────────────────────────────────────────────────────────────────┘

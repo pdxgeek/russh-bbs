@@ -1,0 +1,43 @@
+
+                            ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+                            │Saltmarch                                                                 │
+                            │                                                                          │
+                            │ ⌂ founder  day 9 of season 1        turns ████████░░ 24/30  ◈ 69 tallies │
+                            │ ≈ TIDE ███████░░░░░░░░┃░░░░░░  32 ↑ high in 5h12 (70)  neap tides  calm  │
+                            │╭ Target: bob ──────────────────────╮╭ Your raiders ─────────────────────╮│
+                            ││renown 21   rating 0               ││Moss Weirk~ raker      hp 20 atk 5 ││
+                            ││Guard at the gate (3 of 3 crew):   ││Odds at this tide: grim            ││
+                            ││Osk Siltha~wader    hp22 a5 d0     ││Costs 4 turns. The raiders are away││
+                            ││Moss Mudfo~raker    hp22 a5 d0     │╰───────────────────────────────────╯│
+                            ││Rushe Loww~smith    hp22 a5 d0     │╭ The tide ─────────────────────────╮│
+                            ││Stores, a scout's guess: peat 30,  ││It lands tomorrow, at a turn of the││
+                            ││reed 10, timber 15, fish 30        ││water:                             ││
+                            ││You and that clan have raided each ││▸ 04:36 low  water 27  on foot     ││
+                            ││other too recently.                ││10:48 high water 73  needs a boat  ││
+                            ││                                   ││17:00 low  water 27  on foot       ││
+                            ││                                   ││23:12 high water 73  needs a boat  ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            ││                                   ││                                   ││
+                            │╰───────────────────────────────────╯│                                   ││
+                            │╭ Orders ───────────────────────────╮│                                   ││
+                            ││ a Next target (now bob)           ││                                   ││
+                            ││ b Previous target                 ││                                   ││
+                            ││ c More raiders (now 2)            ││                                   ││
+                            ││ d Fewer raiders                   ││                                   ││
+                            ││ e Next turn of the water          ││                                   ││
+                            │╰───────────────────────────────────╯╰───────────────────────────────────╯│
+                            │ The raiders slip out toward bob. The Tidecourt settles it overnight; the~│
+                            │ » Next target (now bob)                   </> page  up/down  Enter  Esc  │
+                            └──────────────────────────────────────────────────────────────────────────┘
+

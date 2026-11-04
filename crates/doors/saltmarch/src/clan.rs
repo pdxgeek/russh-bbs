@@ -8,6 +8,7 @@ use crate::crew::{BOND_AT, Bond, Crew};
 use crate::event::Event;
 use crate::hold::{Hold, MAX_CREW};
 use crate::map::{Map, SIZE};
+use crate::social::ledger::ClanSocial;
 use crate::trip::{MARKS_CAP, Trip};
 use crate::types::{RESOURCES, Resource, Stock, Trade};
 
@@ -167,6 +168,8 @@ pub struct Clan {
     pub marks: Vec<String>,
     /// The expedition in progress, if the party is out.
     pub trip: Option<Trip>,
+    /// Raids, letters, pending dispatches and what the clan remembers of other clans.
+    pub social: ClanSocial,
 }
 
 impl Clan {
@@ -210,6 +213,7 @@ impl Clan {
             stats: Stats::default(),
             marks: Vec::new(),
             trip: None,
+            social: ClanSocial::default(),
         };
         for (r, n) in [
             (Resource::Timber, 12),
@@ -557,7 +561,19 @@ impl Clan {
             }
             None => w.bool(false),
         }
+        // Version 3: the social state.
+        self.social.write(&mut w);
         w.finish()
+    }
+
+    /// Bring a version 2 save to version 3: the clan has sent and received nothing yet.
+    #[must_use]
+    pub fn upgrade_v2(bytes: &[u8]) -> Vec<u8> {
+        let mut w = Writer::new();
+        ClanSocial::default().write(&mut w);
+        let mut out = bytes.to_vec();
+        out.extend(w.finish());
+        out
     }
 
     /// Bring a version 1 save to version 2: the new fields start empty.
@@ -636,6 +652,7 @@ impl Clan {
         } else {
             None
         };
+        let social = ClanSocial::read(&mut r)?;
         (r.done() && crew.len() <= MAX_CREW && morale <= 100).then_some(Self {
             name,
             season,
@@ -660,12 +677,13 @@ impl Clan {
             stats,
             marks,
             trip,
+            social,
         })
     }
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     #![allow(clippy::unwrap_used)]
     use super::*;
 
@@ -702,6 +720,21 @@ mod tests {
         let bytes = clan.encode();
         assert!(bytes.len() < 6_000, "{}", bytes.len());
         assert_eq!(Clan::decode(&bytes), Some(clan));
+    }
+
+    #[test]
+    fn a_version_2_save_upgrades_and_keeps_everything_it_had() {
+        let (_, _, clan) = fixture();
+        // The version 2 bytes are the version 3 bytes without the social tail.
+        let mut tail = Writer::new();
+        ClanSocial::default().write(&mut tail);
+        let tail = tail.finish();
+        let v3 = clan.encode();
+        let v2 = &v3[..v3.len() - tail.len()];
+        assert_eq!(Clan::decode(v2), None, "version 2 is not version 3");
+        let up = Clan::decode(&Clan::upgrade_v2(v2)).unwrap();
+        assert_eq!(up, clan);
+        assert_eq!(up.social, ClanSocial::default());
     }
 
     #[test]

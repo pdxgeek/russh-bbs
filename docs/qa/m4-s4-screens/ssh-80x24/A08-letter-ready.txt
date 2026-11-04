@@ -1,0 +1,24 @@
+  ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+  │Saltmarch                                                                 │
+  │                                                                          │
+  │ ⌂ founder  day 1 of season 1        turns ██████████ 30/30  ◈ 69 tallies │
+  │ ≈ TIDE ██░░░░░░░░░░░░░┃░░░░░░  10 ↓ low in 0h14 (9)  spring tides  calm  │
+  │╭ A letter ───────────────────────────────╮╭ Orders ─────────────────────╮│
+  ││To      bob                              ││ a Next recipient (now bob)  ││
+  ││Kind    greeting                         ││ b Previous recipient        ││
+  ││                                         ││ c Next words                ││
+  ││founder to bob: we have seen your name   ││ d Change your own line      ││
+  ││on the Tidecourt's boards, and we deal   ││ e Send the letter to bob    ││
+  ││fairly. Come and trade.                  ││                             ││
+  ││                                         ││                             ││
+  ││Your line: see you at the weir at low    ││                             ││
+  ││water                                    ││                             ││
+  ││                                         ││                             ││
+  ││                                         ││                             ││
+  ││                                         ││                             ││
+  ││                                         ││                             ││
+  ││                                         ││                             ││
+  ││                                         ││                             ││
+  │╰─────────────────────────────────────────╯╰─────────────────────────────╯│
+  │ » Next recipient (now bob)                </> page  up/down  Enter  Esc  │
+  └──────────────────────────────────────────────────────────────────────────┘
