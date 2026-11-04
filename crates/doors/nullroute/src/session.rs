@@ -512,11 +512,14 @@ impl Session {
         use DoorStyle::{Accent, Bad, Dim, Good, Plain};
         let c = &*self.content;
         let mut out = vec![(
-            format!(
-                "WORKBENCH  budget: memory {MEMORY_BUDGET}, noise {NOISE_BUDGET}.  Coding burns the fragments and {CODE_CYCLES} cycles."
-            ),
+            format!("WORKBENCH  budget: memory {MEMORY_BUDGET}, noise {NOISE_BUDGET}"),
             Accent,
         )];
+        push_wrapped(
+            &mut out,
+            &format!("Coding burns the fragments and {CODE_CYCLES} cycles."),
+            Dim,
+        );
         let kind = match d.step {
             CodeStep::Effect | CodeStep::Confirm => FragKind::Effect,
             CodeStep::Target => FragKind::Target,
@@ -545,13 +548,14 @@ impl Session {
                     let tuned = s
                         .target
                         .map_or_else(String::new, |t| format!(", tuned to {}s", t.word()));
-                    out.push((
-                        format!(
+                    push_wrapped(
+                        &mut out,
+                        &format!(
                             "Ready: {}{tuned}. A corporation learns a recipe, so vary it.",
                             s.name
                         ),
                         Plain,
-                    ));
+                    );
                 }
                 Err(why) => out.push((why, Bad)),
             }
@@ -862,13 +866,10 @@ impl Session {
         let Some(e) = run.encounter() else {
             return Vec::new();
         };
-        let net = run.net();
         let mut body: Vec<Line> = Vec::new();
         body.push((
             format!(
-                "{} T{}  TRACE {}  cycles {}  soak {}",
-                self.corp_name(net.corp),
-                net.tier,
+                "TRACE {}  cycles {}  soak {}",
                 bar(run.trace),
                 run.cycles,
                 run.buffer()

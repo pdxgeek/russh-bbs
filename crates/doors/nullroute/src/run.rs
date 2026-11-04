@@ -1334,10 +1334,10 @@ impl Run {
         let mut e = Encounter::new(def, node, from, level, usize::from(node));
         e.stun = stun;
         let line = format!(
-            "{} {} has you. It is about to {}.",
+            "{} {} has you. Its first beat: {}.",
             def.kind.word(),
             def.name,
-            e.intent().gloss()
+            e.intent().word()
         );
         self.fights += 1;
         self.enc = Some(e);

@@ -45,7 +45,8 @@ The framework is the first M4 slice. **It shares plumbing only.** Each game has 
 | Game | Slice | Status |
 |---|---|---|
 | Emberdeep | M4-E1 engine (D101) | **Implemented**: hero, seasonal shared dungeon, combat, torch-turns, death and rescue, nightly tick, saves, minimal text screen. Later slices Planned. See [emberdeep.md](emberdeep.md) |
-| Saltmarch, Nullroute, Long Haul, Hallpass | | Proposed |
+| Nullroute | M4-N1 engine (D102), M4-N2 countermeasures and coding (D105) | **Implemented**: procedural networks, the trace, decks and runs; 20 countermeasures and 3 wardens in turn-based encounters; coding from found fragments; script degradation; saves, nightly tick, minimal text screen. UI, crews and arcs Planned. See [nullroute.md](nullroute.md) |
+| Saltmarch, Long Haul, Hallpass | | Proposed (Saltmarch's engine is in review) |
 
 ### Framework status (M4-D0, D98)
 

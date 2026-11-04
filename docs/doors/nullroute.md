@@ -1,6 +1,6 @@
 # Nullroute: a hacking door (design)
 
-Status: **Engine implemented (M4-N1, in review)**; the rest is **Proposed**. Shared platform rules are in [README.md](README.md). Implementation notes are at the end.
+Status: **Engine implemented (M4-N1, merged); countermeasures, encounters, coding and script degradation implemented (M4-N2, in review)**; the rest is **Proposed**. Shared platform rules are in [README.md](README.md). Implementation notes are at the end.
 
 ## Pitch
 
@@ -153,7 +153,62 @@ OpenSSH 9.6 against the built server on a fresh SQLite board, at 80x24: claim th
 
 ### Seams left for the next slices
 
-- **N2.** `Run::step` resolves a patrol in one step (the `Patrol` enum and `Run::add_trace` are the hook points); replace it with encounters. Script degradation: a per-corporation use count belongs beside `NetState` in the world. The module editor needs the workbench (`Player::workbench`) and fragments (not in the content yet).
-- **N3.** `session.rs` is the only screen code and holds no rules; `Run::view`/`NodeView` is the knowledge-respecting view of a node for a map. `look_around` is the same text.
+- **N2.** Done; see the next section.
+- **N3.** `session.rs` is the only screen code and holds no rules (the fight and workbench screens are in it too); `Run::view`/`NodeView` is the knowledge-respecting view of a node for a map. `look_around` is the same text.
 - **N4.** Crews need a shared run (`Run` is per player today); honeypots at hideouts need a per-player world record; fixer arcs build on `Player::standing` and `Contract`; the autoplay harness reports ends of runs by tier and is the base for the branch-coverage report.
 - **Content still to write (design budget):** 7 more corporations, 21 more node types, 33 scripts, 30 fragments, about 70 more contract templates, 5 fixer arcs, 25 more rig parts and about 12 more hideout upgrades. The tables and the schema tests are in place; the content is data.
+
+
+## Implementation notes (M4-N2: countermeasures, encounters, coding, degradation)
+
+Decision: [D105](../decisions.md). Same crate; saves and world are version 2 (N1 saves and worlds migrate forward). The screen is still minimal: N3 builds on UI-5.
+
+### What is implemented and verified
+
+| Area | Implemented | Verified by |
+|---|---|---|
+| Countermeasures | 20 patrols (7 sentries, 6 tracers, 7 black walls) and 3 wardens as TOML (`countermeasures.toml`): integrity, armor, strike, a weak lock family, tags, a cycle of intents (probe, strike, charge, guard, seal, trace, mend, counter). Which machine patrols a node is a pure function of the corporation, tier and node, so nothing is stored | `tests/content.rs` (schema, counts, a broken edit is refused), `tests/encounters.rs` |
+| Corporation styles | `cm_bias` tags triple the weight of matching machines; each corporation names its warden. Kestrel: armored; Halcyon: trace, swift; Mirrorglass: deceptive, mend; Pennywhistle: watcher, slow; Orrery: mend, armored | `corporation_styles_shape_the_mix_of_countermeasures`, `corporation_styles_point_at_real_tags_and_real_wardens` |
+| Encounters | Entering a sentry or tracer node, or purging a black wall, starts a fight. The machine telegraphs its beat; you play a script (Break, Jam, Purge hurt it; Fork, Mask, Decoy, Reroute defend; Scan and Map read its pattern), brace for a cycle, or break off. Each move costs one cycle; script noise is halved in a fight. A fight is 3 to 8 moves: no hit takes more than a third of the integrity, and on the eighth move the machine throws you out. Breaking off costs trace and returns you to the previous node; the damage and what you saw stay | `tests/encounters.rs` (20 tests, two properties of 300 cases) |
+| Learnable patterns | The current beat is always shown; the next three are shown once you have watched a full cycle or scanned it; the cycle starts on a beat chosen by the node, so a machine behaves the same every time you meet it | `a_pattern_is_learned_by_watching_or_by_scanning`, `the_beats_do_what_the_telegraph_says` |
+| Wardens | Tier 3 runs get one 55 percent of the time (tier 2: 15 percent), decided by the character and the contract. It wakes at trace 55 or on an alarm, arrives three moves later wherever you are, and returns one move after you break off. It is hardened: **only a script tuned to wardens hurts it** | `no_stock_script_hurts_a_warden_and_a_tuned_one_does`, `a_coded_script_gets_past_a_warden_a_stock_deck_cannot` |
+| Coding | The workbench (N1) now works: 30 fragments (10 effects, 8 target types, 12 modifiers) found in vaults (15 percent) and dropped by defeated machines. A build is effect + optional target + optional modifier; its numbers are the sum of its fragments and must fit **6 memory and 10 noise**; coding burns the fragments and 4 cycles. 16 coded scripts at most; scrap frees a slot | `tests/coding.rs` (12), `tests/n2play.rs` (a coding session replayed through the screen) |
+| Script degradation | The world counts, per corporation and script identity, the runs that used it. 10 runs: wary (power -1, noise +50 percent). 20: patched (refused for free, and the brief says so). Counts fall 2 a night; a new season clears them. The starter scripts are exempt; a polymorphic build is learned half as fast. The same coded recipe is the same identity for everyone | `tests/learning.rs` (6) |
+| 60 scripts, 30 fragments | 33 new scripts (nums 28 to 60) including tuned jammers and a tuned purge, pierce, and cheap alternates to the single-copy tools | `tests/content.rs` |
+| Saves | Save v2 appends fragments and 16 coded slots; world v2 appends the season and the learned rows (96 at most). Both migrate from v1, refuse corrupt bytes, and a new season's first session clears the old season's holes and learning | `tests/n2play.rs`, `tests/world.rs` |
+| Replay | A coding session and 60 days of recorded bot visits, with fights in them, replay to the same save | `tests/n2play.rs` |
+
+### The RPG rule, as implemented in N2
+
+- **Stock decks cannot hurt a warden; a coded one can.** `a_coded_script_gets_past_a_warden_a_stock_deck_cannot` runs the same hunted network six times with a shop-bought deck and with a deck holding one coded script (`crack-core` + `warden-lens` + `piercing`): the stock deck never finishes and never downs the warden, the coded one always does and takes the vault.
+- **Degradation forces a different deck.** `a_patched_script_does_nothing_and_a_different_deck_gets_through`: on a level 4 lock, heap-spray opens it fresh, is refused once the corporation has learned it, a deck with root-shell still gets through, and the starter deck never could. A wary corporation turns power 4 into 3 and the lock stays shut.
+- **Families, armor and seals.** Each machine is weak to one lock family, walls take half from a break script and double from a purge, a guard beat adds armor, pierce ignores it, a seal locks the family you just used, skill adds half a point a level, and a tuned script adds 3. All pinned in `tests/encounters.rs`.
+- **Corporations differ in what they field**, so the deck that suits one network does not suit another.
+- **Fairness.** `every_tier_has_a_deck_that_can_win_every_fight_in_it`: the starter breaks win every tier 1 fight, power 4 plus a purge every tier 2 fight, and power 6 every tier 3 fight, from every starting beat, by the plainest play (always the best script), inside eight moves. Content that breaks it fails the test.
+- **Not built:** several endings, the branch-coverage report, and the arcs (N4).
+
+### Numbers: the headless 30-day simulation
+
+`cargo test -p russh-bbs-door-nullroute --test sim -- --nocapture`: 12 bots, three seeds, one shared world. The bot now fights from the fight screen's information (braces on a guard, rerouts when hot, plays the script that does the most, breaks off when nothing works), avoids scripts the corporation has patched, buys the alternates and a workbench, and codes what its fragments allow.
+
+| Seed | Runs | Done | Burned | Empty-handed | Tier 1 done / burned | Tier 2 done / burned | Earned (marks/player/day) | Fights (won) | Fragments | Coded | Decks with a known script |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 645 | 490 (76%) | 21 (3.3%) | 134 | 447 / 19 of 574 | 43 / 2 of 71 | 106 | 569 (564) | 205 | 11 | 196 |
+| 2 | 639 | 492 (77%) | 19 (3.0%) | 128 | 464 / 19 of 604 | 28 / 0 of 35 | 99 | 554 (551) | 187 | 11 | 193 |
+| 3 | 634 | 499 (79%) | 20 (3.2%) | 115 | 462 / 19 of 587 | 37 / 1 of 47 | 103 | 538 (535) | 195 | 14 | 199 |
+
+Against N1 (about 750 runs, 74 percent done, 2 percent burned, 110 to 150 marks a day) fights cost cycles and trace, so there are fewer runs and a little less money, with a slightly higher burn rate at tier 1. Findings for the balance slice (N4), not tuned away here:
+
+- Almost every fight is won, as the fairness test promises; the burns come from the trace they cost, and from the N1 honeypot trap in Mirrorglass tier 2 (a bot that never buys a power 3 sweep walks into it).
+- **Tier 3 is still never played** by the bot (it needs reputation 40 and standing 2), so the bot woke a warden 0 to 7 times a seed (at tier 2) and never downed one: it codes tuned scripts rarely and the lens drops only from tier 2. The warden numbers come from the targeted tests, not the simulation.
+- About a third of decks contain a script a corporation is wary of or has patched by the end of the month; 6 to 7 script identities a seed are patched at the close. The 12 bots are all buying the same few scripts, which a real board would do too; the nightly decay of 2 keeps the world from locking.
+- The damage floor (a hit that lands does at least 1) and integrity growing 1 a level came out of the fairness test: without them, a guard-heavy tier 1 machine could not be beaten by the starter deck inside eight moves.
+
+### What was and was not exercised
+
+Unit, property and replay tests, the framework's sandbox audit, the pinned replay log from N1 (still reproduced), the screens drawn at 72 by 19 (the door area at 80x24) with the key hints in view, and the headless simulation. **Not exercised:** a real `ssh` client. This environment has no OpenSSH or telnet client, so the walk N1 did was not repeated; the same `DoorsScreen` code and `Driver` path are what the replay tests use, and the server's own door tests (a real russh client and a raw telnet client, with Coin Toss) pass unchanged. Postgres, colour and the Nerd Font tiers were not exercised either (the screen uses only the framework's styles and no symbols).
+
+### Seams left for the next slices
+
+- **N3.** `Run::encounter()` gives the whole fight state (`Encounter`: integrity, armor, intent, `forecast`, `seen`, `sealed`, `stun`, `charged`); `Run::preview(slot)` is what a script would do now; `Run::warden()` the hunt; `Run::stage(slot)` how the corporation knows a script. `session.rs` has `fight_lines` and `code_lines` as the text versions; replace them and keep `look_around`.
+- **N4.** A crew run needs a shared `Run`, so a warden and a fight would have to be per-crew; the sim bot is the base for the branch-coverage report; fixer arcs could hand out specific fragments. Content still to write is the rest of the design budget (7 corporations, 21 node types, about 70 contract templates, 25 rig parts, about 12 hideout upgrades).
