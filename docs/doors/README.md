@@ -46,7 +46,7 @@ The framework is the first M4 slice. **It shares plumbing only.** Each game has 
 |---|---|---|
 | Emberdeep | M4-E1 engine (D101) | **Implemented**: hero, seasonal shared dungeon, combat, torch-turns, death and rescue, nightly tick, saves, minimal text screen. Later slices Planned. See [emberdeep.md](emberdeep.md) |
 | Emberdeep | M4-E2 town and crafting (D110) | **Implemented**: Cindermere (market, forge, temple, guild hall, tavern and contract board, library, shared town works), gear with affixes, ember-cores and wear, recipes, save and world format 2. Later slices Planned. See [emberdeep.md](emberdeep.md) |
-| Saltmarch | M4-S1 engine (D100), M4-S2 expeditions and combat (D108), M4-S3 screens (D-TBD) | **Implemented** (in review): the engine, expeditions, events and skirmishes, and all the screens on full ratatui with a look-around for each. Raids, pacts, letters, the league's renown, quests and the content budget are Planned (S4, S5). See [saltmarch.md](saltmarch.md) |
+| Saltmarch | M4-S1 engine (D100), M4-S2 expeditions and combat (D108), M4-S3 screens (D113) | **Implemented** (in review): the engine, expeditions, events and skirmishes, and all the screens on full ratatui with a look-around for each. Raids, pacts, letters, the league's renown, quests and the content budget are Planned (S4, S5). See [saltmarch.md](saltmarch.md) |
 | Nullroute, Long Haul, Hallpass | | Proposed |
 
 ### Framework status (M4-D0, D98)

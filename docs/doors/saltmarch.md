@@ -204,7 +204,7 @@ Same crate (`russh-bbs-door-saltmarch`), save version 2 (version 1 saves migrate
 
 ## Implementation notes (M4-S3)
 
-Same crate, **save version 2, world version 2** (version 1 worlds migrate; saves are unchanged). Decision: D-TBD. All screens are in `src/session/ui/` and draw with ratatui widgets into the door's own buffer (D104); the engine menu in `session.rs` (`Session::entries`) is still the input model, so every key is an entry the simulation bots also press, and `Session::lines` is still the tagged text the bots read. **No game rule is in the UI**: it reads `Clan`, `Tide`, `Map`, `trip::Reach`, `trip::fail_chance`, `Fight` and the catalog.
+Same crate, **save version 2, world version 2** (version 1 worlds migrate; saves are unchanged). Decision: D113. All screens are in `src/session/ui/` and draw with ratatui widgets into the door's own buffer (D104); the engine menu in `session.rs` (`Session::entries`) is still the input model, so every key is an entry the simulation bots also press, and `Session::lines` is still the tagged text the bots read. **No game rule is in the UI**: it reads `Clan`, `Tide`, `Map`, `trip::Reach`, `trip::fail_chance`, `Fight` and the catalog.
 
 **Screens, each wired to the engine and covered by `tests/screens.rs`:**
 
