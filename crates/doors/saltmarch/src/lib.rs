@@ -63,7 +63,7 @@ pub const DOOR_ID: &str = "saltmarch";
 pub const SAVE_VERSION: u32 = 2;
 
 /// The current world format version.
-pub const WORLD_VERSION: u32 = 1;
+pub const WORLD_VERSION: u32 = 2;
 
 /// Why the door could not be built.
 #[derive(Debug)]
@@ -196,6 +196,8 @@ impl Door for Saltmarch {
                 Clan::decode(&upgraded).ok_or(MigrateError::Corrupt(1))?;
                 Ok(upgraded)
             }
+            // Version 2 added the league scores and the price history.
+            (BlobKind::World, 1) => World::upgrade_v1(bytes).ok_or(MigrateError::Corrupt(1)),
             _ => Err(MigrateError::Unsupported(from)),
         }
     }

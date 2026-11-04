@@ -1,0 +1,24 @@
+  ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+  │Saltmarch                                                                 │
+  │                                                                          │
+  │ ⌂ founder  day 1 of season 1        turns ██████████ 30/30  ◈ 40 tallies │
+  │ ≈ TIDE ███████████░░░░┃░░░░░░  52 ↓ low in 3h18 (9)  spring tides  calm  │
+  │╭ The hold of founder ────────────────────╮╭ Upkeep ─────────────────────╮│
+  ││  weir    stack   ·  ·    ·  ·    ·  ·   ││Larder  ██████████▎░ 6 nights││
+  ││    ●       ●     free    free    free   ││Peat    ████████████ 8 nights││
+  ││                                         ││Morale  ████████▍░░░░░ 60/100││
+  ││  ·  ·    ░░░░    ░░░░    ░░░░    ░░░░   ││Crew    █████████████████ 3/3││
+  ││  free   locked  locked  locked  locked  ││Stores: 8 peat, 10 reed, 12  ││
+  ││                                         ││timber, 20 preserved food, 1 ││
+  ││  ░░░░    ░░░░    ░░░░    ░░░░    ░░░░   │╰─────────────────────────────╯│
+  ││ locked  locked  locked  locked  locked  │╭ Build and work ─────────────╮│
+  ││                                         ││ a Build Reed hut (4 reed,~  ││
+  ││  ░░░░    ░░░░    ░░░░    ░░░░    ░░░░   ││ b Build Watchfire (4 peat~  ││
+  ││ locked  locked  locked  locked  locked  ││ c Build Salt pan (6 reed,~  ││
+  ││                                         ││ d Build Peat stack (4 ree~  ││
+  ││                                         ││ e Build Fish weir (8 reed~  ││
+  ││                                         ││ f Build Reed garden (4 ti~  ││
+  ││■ shelter ■ work ■ defence ■ building    ││ g Build Drift rack (6 ree~  ││
+  │╰─────────────────────────────────────────╯╰─────────────────────────1/13╯│
+  │ » Build Reed hut (4 reed, 6 timber; 3 turns of lab~ up/down  Enter  Esc  │
+  └──────────────────────────────────────────────────────────────────────────┘

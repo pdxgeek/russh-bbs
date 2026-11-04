@@ -26,6 +26,14 @@ pub(super) struct Plan {
     pub(super) target: Option<(u8, u8)>,
 }
 
+/// What a scene option shows.
+pub(super) struct OptionInfo {
+    pub(super) label: String,
+    pub(super) risk: Option<u32>,
+    pub(super) fight: &'static str,
+    pub(super) skill: Option<Trade>,
+}
+
 /// What the planner can change.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum Edit {
@@ -126,7 +134,7 @@ fn access_word(a: Access) -> &'static str {
 
 impl Session {
     /// The charted places, nearest the hold first.
-    fn known_places(&self, clan: &Clan) -> Vec<((u8, u8), String)> {
+    pub(super) fn known_places(&self, clan: &Clan) -> Vec<((u8, u8), String)> {
         let env = self.env();
         let (hx, hy) = trip::home(&env, clan);
         let mut out: Vec<((u8, u8), String, u32)> = self
@@ -150,7 +158,7 @@ impl Session {
 
     /// The search of the marsh from where the party stands, redone only when something it
     /// depends on has changed.
-    fn reach_of(&self, clan: &Clan, t: &Trip) -> Arc<Reach> {
+    pub(super) fn reach_of(&self, clan: &Clan, t: &Trip) -> Arc<Reach> {
         let env = self.env();
         let key = Reach::key(&env, clan, t);
         if let Ok(mut cache) = self.reach.lock() {
@@ -219,21 +227,16 @@ impl Session {
         out
     }
 
-    pub(super) fn plan_lines(&self, clan: &Clan) -> Vec<(String, DoorStyle)> {
-        let names: Vec<String> = self
-            .plan
-            .party
-            .iter()
-            .filter_map(|id| clan.crew_by(*id))
-            .map(|c| c.name.clone())
-            .collect();
-        let cap = crate::trip::Trip {
+    /// The trip the plan would make, standing at the hold with nothing in the cargo: for the
+    /// carrying capacity and the cost preview.
+    pub(super) fn plan_trip(&self, clan: &Clan) -> Trip {
+        Trip {
             party: self.plan.party.clone(),
             kit: self.plan.kit,
             loot: crate::types::Stock::default(),
             tallies: 0,
-            at: (0, 0),
-            target: None,
+            at: trip::home(&self.env(), clan),
+            target: self.plan.target,
             turns_out: 0,
             night_turns: 0,
             phase: Phase::Free,
@@ -245,7 +248,17 @@ impl Session {
             fights: 0,
             rng: [1; 4],
         }
-        .capacity(clan, &self.cat);
+    }
+
+    pub(super) fn plan_lines(&self, clan: &Clan) -> Vec<(String, DoorStyle)> {
+        let names: Vec<String> = self
+            .plan
+            .party
+            .iter()
+            .filter_map(|id| clan.crew_by(*id))
+            .map(|c| c.name.clone())
+            .collect();
+        let cap = self.plan_trip(clan).capacity(clan, &self.cat);
         let target = self.plan.target.map_or_else(
             || "none".to_owned(),
             |(x, y)| {
@@ -310,6 +323,40 @@ impl Session {
         }
     }
 
+    /// What the screen says about option `i` of a scene: its words, the chance it goes badly
+    /// (only when there is one) and a warning when it can start a fight.
+    pub(super) fn option_info(
+        &self,
+        clan: &Clan,
+        t: &Trip,
+        s: &trip::Scene,
+        i: u8,
+    ) -> Option<OptionInfo> {
+        let def = self.cat.event(&s.event)?;
+        let o = def.options.get(usize::from(i))?;
+        let risk =
+            trip::fail_chance(&self.cat, clan, t, &s.event, usize::from(i)).filter(|p| *p > 0);
+        // A choice that can end in a fight says so: the player should know.
+        let fights = |out: &crate::lore::Outcome| {
+            out.fx
+                .iter()
+                .any(|e| matches!(e, crate::lore::Effect::Fight(_)))
+        };
+        let fight = if fights(&o.win) {
+            " (starts a fight)"
+        } else if o.lose.as_ref().is_some_and(fights) {
+            " (a bad turn starts a fight)"
+        } else {
+            ""
+        };
+        Some(OptionInfo {
+            label: o.label.clone(),
+            risk,
+            fight,
+            skill: o.skill,
+        })
+    }
+
     fn scene_entries(&self, s: &trip::Scene) -> Vec<Entry> {
         let pass = || {
             vec![entry(
@@ -318,9 +365,9 @@ impl Session {
                 Act::Do(Action::Go(TripAction::Choose(0))),
             )]
         };
-        let Some(def) = self.cat.event(&s.event) else {
+        if self.cat.event(&s.event).is_none() {
             return pass();
-        };
+        }
         let Some(clan) = &self.clan else {
             return Vec::new();
         };
@@ -331,26 +378,13 @@ impl Session {
             .iter()
             .enumerate()
             .filter_map(|(n, &i)| {
-                let o = def.options.get(usize::from(i))?;
-                let risk = trip::fail_chance(&self.cat, clan, t, &s.event, usize::from(i))
-                    .filter(|p| *p > 0)
+                let info = self.option_info(clan, t, s, i)?;
+                let risk = info
+                    .risk
                     .map_or(String::new(), |p| format!(" [{p}% to go badly]"));
-                // A choice that can end in a fight says so: the player should know.
-                let fights = |out: &crate::lore::Outcome| {
-                    out.fx
-                        .iter()
-                        .any(|e| matches!(e, crate::lore::Effect::Fight(_)))
-                };
-                let fight = if fights(&o.win) {
-                    " (starts a fight)"
-                } else if o.lose.as_ref().is_some_and(fights) {
-                    " (a bad turn starts a fight)"
-                } else {
-                    ""
-                };
                 Some(entry(
                     format!("choose:{n}"),
-                    format!("{}{risk}{fight}", o.label),
+                    format!("{}{risk}{}", info.label, info.fight),
                     Act::Do(Action::Go(TripAction::Choose(u8::try_from(n).unwrap_or(0)))),
                 ))
             })

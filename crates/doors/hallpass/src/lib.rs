@@ -1,11 +1,12 @@
-//! Hallpass (M4-H1): the engine of a school-mischief door.
+//! Hallpass (M4-H1, M4-H2): a school-mischief door.
 //!
 //! You transfer mid-year into Greywater Academy and make mischief against the staff, the prefects
 //! and the rival cliques, staying one step ahead of the headmistress's file. This slice is the
 //! deterministic engine: the timetable and the school map, character schedules, stats and traits,
 //! schemes (target, combinable plan, setup, the sneak / act / escape run, heat, the file, legend,
 //! staff who learn, campaigns, and big schemes that change the school for everyone), the term
-//! clock and the day tick, and a minimal text screen. Classes, clubs, conversations, the full UI,
+//! clock and the day tick, and a minimal text screen. M4-H2 adds class minigames ([`lesson`]), clubs
+//! ([`club`]), conversations, friendships and storylines ([`talk`], with [`effect`]s). The full UI,
 //! the social layer and the mystery are later slices; the seams are noted in `docs/doors/hallpass.md`.
 //!
 //! Layout: [`content`] (data tables), [`cond`] (the condition language), [`state`] and [`wire`]
@@ -16,14 +17,19 @@
 // Rules tables and screens read better as long straight-line functions than as many tiny ones.
 #![allow(clippy::too_many_lines)]
 
+mod check;
+pub mod club;
 pub mod cond;
 pub mod content;
+pub mod effect;
 pub mod game;
+pub mod lesson;
 pub mod options;
 pub mod save;
 pub mod scheme;
 mod session;
 pub mod state;
+pub mod talk;
 pub mod wire;
 pub mod world;
 
@@ -42,7 +48,7 @@ use crate::game::Game;
 pub const DOOR_ID: &str = "hallpass";
 
 /// The current save format version.
-pub const SAVE_VERSION: u32 = 1;
+pub const SAVE_VERSION: u32 = 2;
 
 /// The current world format version.
 pub const WORLD_VERSION: u32 = 1;

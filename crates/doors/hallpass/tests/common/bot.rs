@@ -37,6 +37,14 @@ pub struct Policy {
     pub helpers: bool,
     /// Pick any feasible scheme at random, to exercise the content.
     pub variety: bool,
+    /// Percent of puzzles answered right (the bot may read the answer; a pupil would work it out).
+    pub accuracy: u32,
+    /// Percent of free periods spent on clubs and conversations.
+    pub social: u32,
+    /// Clubs to join, in order of preference.
+    pub clubs: &'static [&'static str],
+    /// Whether to give up a helper when the headmistress asks.
+    pub informer: bool,
 }
 
 pub fn cautious() -> Policy {
@@ -52,6 +60,10 @@ pub fn cautious() -> Policy {
         scout_to: 3,
         helpers: true,
         variety: false,
+        accuracy: 75,
+        social: 30,
+        clubs: &["chess", "paper"],
+        informer: false,
     }
 }
 
@@ -68,6 +80,10 @@ pub fn balanced() -> Policy {
         scout_to: 2,
         helpers: true,
         variety: false,
+        accuracy: 70,
+        social: 30,
+        clubs: &["robotics", "paper", "chess"],
+        informer: false,
     }
 }
 
@@ -84,6 +100,10 @@ pub fn reckless() -> Policy {
         scout_to: 0,
         helpers: false,
         variety: false,
+        accuracy: 55,
+        social: 15,
+        clubs: &["rowing"],
+        informer: true,
     }
 }
 
@@ -101,7 +121,163 @@ pub fn variety() -> Policy {
         scout_to: 2,
         helpers: true,
         variety: true,
+        accuracy: 65,
+        social: 40,
+        clubs: &["chess", "drama", "rowing", "paper", "robotics", "candle"],
+        informer: false,
     }
+}
+
+/// A pupil who does no mischief at all: lessons, clubs and conversations.
+pub fn scholar() -> Policy {
+    Policy {
+        name: "scholar",
+        max_heat: 0,
+        max_file: -1,
+        push: 0,
+        big: false,
+        skip_class: false,
+        flashy: false,
+        lead_days: 1,
+        scout_to: 0,
+        helpers: false,
+        variety: false,
+        accuracy: 90,
+        social: 70,
+        clubs: &["chess", "paper", "robotics"],
+        informer: false,
+    }
+}
+
+fn answer_lesson(game: &mut Game, policy: &Policy, rng: &mut DoorRng, events: &mut Vec<Event>) {
+    let Some(view) = game.lesson_view() else {
+        return;
+    };
+    let right = rng.below(100) < policy.accuracy;
+    let wrong: Vec<usize> = (0..view.round.options.len())
+        .filter(|i| *i != view.round.answer && view.open[*i])
+        .collect();
+    let pick = if right || wrong.is_empty() {
+        view.round.answer
+    } else {
+        wrong[usize::try_from(rng.below(u32::try_from(wrong.len()).unwrap())).unwrap()]
+    };
+    if let Ok(e) = game.apply(&Action::Answer(u8::try_from(pick).unwrap()), rng) {
+        events.extend(e);
+    }
+}
+
+fn answer_scene(game: &mut Game, policy: &Policy, rng: &mut DoorRng, events: &mut Vec<Event>) {
+    let Some(view) = game.scene_view() else {
+        return;
+    };
+    let open: Vec<usize> = view
+        .choices
+        .iter()
+        .enumerate()
+        .filter(|(_, c)| c.open && (policy.informer || !c.label.starts_with("Name the")))
+        .map(|(i, _)| i)
+        .collect();
+    let pick = match open.as_slice() {
+        [] => None,
+        [only] => Some(*only),
+        many if rng.below(100) < 35 => {
+            Some(many[usize::try_from(rng.below(u32::try_from(many.len()).unwrap())).unwrap()])
+        }
+        many => Some(many[0]),
+    };
+    let action = pick.map_or(Action::Abandon, |i| {
+        Action::Choose(u8::try_from(i).unwrap())
+    });
+    if let Ok(e) = game.apply(&action, rng) {
+        events.extend(e);
+    } else if let Ok(e) = game.apply(&Action::Abandon, rng) {
+        events.extend(e);
+    }
+}
+
+/// A club meeting, a sign-up or a conversation, whichever is on offer. True if anything happened.
+fn social_step(
+    game: &mut Game,
+    policy: &Policy,
+    rng: &mut DoorRng,
+    events: &mut Vec<Event>,
+) -> bool {
+    let Some(slot) = game.current_slot() else {
+        return false;
+    };
+    let day = game.player.day;
+    let kind = game.kind(day, slot).to_owned();
+    if kind == "class" || kind == "night" {
+        return false;
+    }
+    let weekday = u8::try_from(Game::weekday(day)).unwrap();
+    let meetings: Vec<_> = game
+        .player
+        .life
+        .clubs
+        .iter()
+        .filter_map(|m| game.content.club(&m.club).map(|c| (c.clone(), m.last_meet)))
+        .collect();
+    for (club, last) in meetings {
+        if club.kind == kind
+            && (club.days.is_empty() || club.days.contains(&weekday))
+            && last != day
+            && game.place_open(&club.place, day, slot)
+            && game.player.due == 0
+            && go_then(game, &club.place, rng, events)
+        {
+            if let Ok(e) = game.apply(&Action::Meet, rng) {
+                events.extend(e);
+                return true;
+            }
+        }
+    }
+    if game.player.life.clubs.len() < game.content.rules.max_clubs {
+        for id in policy.clubs {
+            let Some(club) = game.content.club(id).cloned() else {
+                continue;
+            };
+            let sign = club
+                .join_place
+                .clone()
+                .unwrap_or_else(|| club.place.clone());
+            if game.player.life.rank_in(id) == 0
+                && game.all_hold(&club.join)
+                && game.place_open(&sign, day, slot)
+                && go_then(game, &sign, rng, events)
+                && game.join_block(&club).is_none()
+            {
+                if let Ok(e) = game.apply(&Action::Join((*id).to_owned()), rng) {
+                    events.extend(e);
+                    return true;
+                }
+            }
+        }
+    }
+    let talks: Vec<_> = game
+        .content
+        .talks
+        .iter()
+        .filter(|t| game.talk_ready(t))
+        .cloned()
+        .collect();
+    for talk in talks {
+        let Some(npc) = game.content.npc(&talk.npc).cloned() else {
+            continue;
+        };
+        let at = game.npc_place(&npc, day, slot).to_owned();
+        if game.place_open(&at, day, slot)
+            && go_then(game, &at, rng, events)
+            && game.talk_open(&talk)
+        {
+            if let Ok(e) = game.apply(&Action::Talk(talk.id.clone()), rng) {
+                events.extend(e);
+                return true;
+            }
+        }
+    }
+    false
 }
 
 fn go_then(game: &mut Game, place: &str, rng: &mut DoorRng, events: &mut Vec<Event>) -> bool {
@@ -353,6 +529,14 @@ pub fn play_day(game: &mut Game, policy: &Policy, rng: &mut DoorRng) -> Vec<Even
     let mut guard = 0;
     while game.playing() && game.current_slot().is_some() && guard < 80 {
         guard += 1;
+        if game.player.life.lesson.is_some() {
+            answer_lesson(game, policy, rng, &mut events);
+            continue;
+        }
+        if game.player.life.scene.is_some() {
+            answer_scene(game, policy, rng, &mut events);
+            continue;
+        }
         if let Some(run) = game.player.run.clone() {
             let push = policy.push.min(game.player.nerve);
             if let Ok(e) = game.apply(&Action::RunPhase { push }, rng) {
@@ -438,6 +622,13 @@ pub fn play_day(game: &mut Game, policy: &Policy, rng: &mut DoorRng) -> Vec<Even
                     continue;
                 }
             }
+        }
+        // Clubs and conversations, when the period is free for them.
+        if !in_class
+            && rng.below(100) < policy.social
+            && social_step(game, policy, rng, &mut events)
+        {
+            continue;
         }
         // Otherwise be a student.
         if in_class {

@@ -10,6 +10,8 @@
 
 use russh_bbs_door::DoorRng;
 
+use crate::boarding::Drill;
+use crate::combat::Orders;
 use crate::content::{Content, Economy, Faction, Perk, SlotKind};
 use crate::events::{Event, Refusal};
 use crate::frontier::{Frontier, Hazard, System};
@@ -148,6 +150,41 @@ pub enum Action {
     Repay(i64),
     /// Call a tow when the ship cannot jump anywhere.
     CallTow,
+    /// Sign on recruit number `n` of the list at this dock.
+    Hire(u8),
+    /// Let crew member `n` go.
+    Dismiss(u8),
+    /// Stock the galley for a week.
+    Provision,
+    /// Take the offer with this key from the board at this dock (the key, not a position, so
+    /// a board that changed under the captain's eyes cannot hand them a different job).
+    Accept(u64),
+    /// Give up contract `n`.
+    Abandon(u8),
+    /// Pick option `n` of the open transit event.
+    Choose(u8),
+    /// Fight a round of ship combat.
+    Fight(Orders),
+    /// Try to run from a fight.
+    Run,
+    /// After a win: board the wreck (`true`) or leave it.
+    Wreck {
+        /// Whether to board.
+        board: bool,
+    },
+    /// Give the boarding party an order.
+    Skirmish(Drill),
+}
+
+impl Action {
+    /// Whether the action belongs to an open scene (and so is allowed while one is open).
+    #[must_use]
+    pub const fn is_scene(&self) -> bool {
+        matches!(
+            self,
+            Self::Choose(_) | Self::Fight(_) | Self::Run | Self::Wreck { .. } | Self::Skirmish(_)
+        )
+    }
 }
 
 /// Whether a pool of cash can cover `amount`.
@@ -163,11 +200,8 @@ impl Player {
     /// The ship's stats with this captain's skills.
     #[must_use]
     pub fn stats(&self, content: &Content) -> Stats {
-        self.ship.stats(
-            content,
-            self.level(Skill::Pilot),
-            self.level(Skill::Engineer),
-        )
+        self.ship
+            .stats(content, self.eff(Skill::Pilot), self.eff(Skill::Engineer))
     }
 
     /// Add experience, noting a level gained.
@@ -256,6 +290,8 @@ impl Player {
             }
         }
         self.debt.interest_day = today;
+        self.crew_upkeep(today, elapsed, &mut events);
+        self.contract_upkeep(today, elapsed, &mut events);
         let mut periods = 0;
         while self.debt.principal > 0 && self.debt.next_due <= today && periods < 2 {
             self.collect_due(env, &mut events);
@@ -304,6 +340,21 @@ impl Player {
         self.at = env.frontier.station(home).map_or(0, |s| s.system);
         self.shift_standing(Faction::League, -5, events);
         events.push(Event::Repossessed { fee });
+        // The jobs aboard went with the ship; a hand with no berth goes ashore.
+        for c in std::mem::take(&mut self.contracts) {
+            events.push(Event::ContractFailed {
+                kind: c.kind,
+                faction: c.faction,
+                late: false,
+            });
+        }
+        self.scene = None;
+        let berths = self.berths(env.content);
+        while self.crew.len() > berths {
+            if let Some(gone) = self.crew.pop() {
+                events.push(Event::Dismissed { name: gone.name });
+            }
+        }
     }
 
     /// Do `action`, or say why not.
@@ -311,6 +362,15 @@ impl Player {
     /// # Errors
     /// A [`Refusal`]; the captain, world and RNG are then unchanged.
     pub fn apply(&mut self, env: &mut Env<'_>, action: &Action) -> Result<Vec<Event>, Refusal> {
+        if self.scene.is_some() && !action.is_scene() {
+            return Err(Refusal::Busy);
+        }
+        let mut events = self.apply_action(env, action)?;
+        self.check_goals(&mut events);
+        Ok(events)
+    }
+
+    fn apply_action(&mut self, env: &mut Env<'_>, action: &Action) -> Result<Vec<Event>, Refusal> {
         match action {
             Action::Dock(station) => self.dock(env, *station),
             Action::Undock => {
@@ -331,6 +391,16 @@ impl Player {
             Action::Borrow(amount) => self.borrow(env, *amount),
             Action::Repay(amount) => self.repay(*amount),
             Action::CallTow => self.call_tow(env),
+            Action::Hire(slot) => self.hire(env, *slot),
+            Action::Dismiss(i) => self.dismiss(env, usize::from(*i)),
+            Action::Provision => self.provision(env),
+            Action::Accept(key) => self.accept(env, *key),
+            Action::Abandon(i) => self.abandon(usize::from(*i)),
+            Action::Choose(n) => self.choose(env, usize::from(*n)),
+            Action::Fight(orders) => self.fight_round(env, *orders),
+            Action::Run => self.run_away(env),
+            Action::Wreck { board } => self.wreck_choice(env, *board),
+            Action::Skirmish(drill) => self.skirmish(env, *drill),
         }
     }
 
@@ -407,13 +477,18 @@ impl Player {
         self.docked = Some(station);
         events.push(Event::Docked { station, fee });
         self.inspect(env, station, &mut events);
+        if self.intel_at(station).is_none() {
+            self.goal_progress(crate::crew::GoalKind::Docks);
+        }
+        self.crew_unrest(env, &mut events);
+        self.contract_docked(env, station, &mut events);
         self.remember_prices(env, station);
         events
     }
 
     fn inspect(&mut self, env: &mut Env<'_>, station: u16, events: &mut Vec<Event>) {
         let content = env.content;
-        let carried = self.ship.contraband_tons(content);
+        let carried = self.ship.contraband_tons(content) + self.contract_contraband(content);
         let Some(st) = env.frontier.station(station) else {
             return;
         };
@@ -428,7 +503,7 @@ impl Player {
             .world
             .inspection_bonus(content, env.frontier, station, env.today);
         let mut chance = i64::from(eco.law_pm) + bonus + i64::from(carried.min(40)) * 3;
-        chance -= i64::from(self.level(Skill::Stealth)) * 40;
+        chance -= i64::from(self.eff(Skill::Stealth)) * 40;
         if self.perk(content) == Some(Perk::Fence) {
             chance -= 60;
         }
@@ -454,6 +529,29 @@ impl Player {
         });
         let fine = (seized_paid / 4).max(100);
         self.pay_or_owe(Cause::Fine, fine);
+        // Client contraband is found too, and the job with it.
+        if self.contract_contraband(content) > 0 {
+            let mut lost = Vec::new();
+            self.contracts.retain(|c| {
+                let bad = c.kind == crate::contracts::Kind::Delivery
+                    && content
+                        .goods
+                        .get(usize::from(c.good))
+                        .is_some_and(|g| g.class == crate::content::GoodClass::Contraband);
+                if bad {
+                    lost.push((c.kind, c.faction));
+                }
+                !bad
+            });
+            for (kind, faction) in lost {
+                events.push(Event::ContractFailed {
+                    kind,
+                    faction,
+                    late: false,
+                });
+                self.shift_standing_with_rival(faction, -4, events);
+            }
+        }
         self.stats.caught += 1;
         events.push(Event::Seized {
             tons,
@@ -512,7 +610,7 @@ impl Player {
         } else {
             1000 + u32::from(stats.scan - 1) * 150
         };
-        let skill = 1000 + u32::from(self.level(Skill::Survey)) * 80 + stats.lab_pm;
+        let skill = 1000 + u32::from(self.eff(Skill::Survey)) * 80 + stats.lab_pm;
         u32::try_from(u64::from(base) * u64::from(scan) / 1000 * u64::from(skill) / 1000)
             .unwrap_or(u32::MAX)
     }
@@ -530,10 +628,11 @@ impl Player {
         if self.ship.fuel < need {
             return Err(Refusal::NoFuel { need });
         }
-        let eng = self.level(Skill::Engineer);
+        let eng = self.eff(Skill::Engineer);
         let mut events = Vec::new();
         let mut days = Ship::days_for(&stats, dist);
         let mut burned = need;
+        let fresh = !env.world.is_charted(frontier, to);
         let from = self.at;
         self.docked = None;
         let drive_wear = self
@@ -552,6 +651,7 @@ impl Player {
         self.ship.fuel = self.ship.fuel.saturating_sub(burned);
         self.wear_kind(content, SlotKind::Drive, wear_gain(8 * days, eng));
         self.at = to;
+        self.goal_arrived(to);
         self.stats.jumps += 1;
         events.push(Event::Jumped {
             from,
@@ -566,6 +666,7 @@ impl Player {
         self.hazard(env, system, &stats, &mut events);
         self.spend_days(days);
         self.gain(Skill::Pilot, days, &mut events);
+        self.maybe_transit(env, dist, fresh, &mut events);
         Ok(events)
     }
 
@@ -589,6 +690,8 @@ impl Player {
             name: self.captain.clone(),
         });
         self.stats.charted += 1;
+        self.goal_progress(crate::crew::GoalKind::Charts);
+        self.contract_scanned(system.id);
         if self.survey.len() < MAX_SURVEY {
             self.survey.push(SurveyLot {
                 system: system.id,
@@ -613,13 +716,13 @@ impl Player {
         events: &mut Vec<Event>,
     ) {
         let content = env.content;
-        let eng = self.level(Skill::Engineer);
+        let eng = self.eff(Skill::Engineer);
         let open = u32::from(100 - stats.shield_pct);
         let (mut hull_lost, mut days_lost, mut wear) = (0u16, 0u32, 0u16);
         let avoided = match system.hazard {
             Hazard::None => return,
             Hazard::Nebula => {
-                let seen = stats.scan >= 1 || self.level(Skill::Pilot) >= 5;
+                let seen = stats.scan >= 1 || self.eff(Skill::Pilot) >= 5;
                 if !seen {
                     days_lost = 1;
                 }
@@ -668,8 +771,8 @@ impl Player {
             return Err(Refusal::TankFull);
         }
         let mut events = Vec::new();
-        let eng = self.level(Skill::Engineer);
-        let pilot = self.level(Skill::Pilot);
+        let eng = self.eff(Skill::Engineer);
+        let pilot = self.eff(Skill::Pilot);
         self.docked = None;
         let base = 20 + env.rng.range(0, 10);
         let yield_ = u16::try_from(u64::from(base) * u64::from(1000 + stats.refine_pm) / 1000)
@@ -717,9 +820,10 @@ impl Player {
         self.wear_kind(
             content,
             SlotKind::Scanner,
-            wear_gain(20, self.level(Skill::Engineer)),
+            wear_gain(20, self.eff(Skill::Engineer)),
         );
         self.scanned.push(system.id);
+        self.contract_scanned(system.id);
         self.survey.push(SurveyLot {
             system: system.id,
             value,

@@ -1,0 +1,102 @@
+# Clubs. Rank is the lever: any condition can ask for `rank:CLUB>=N`, so a club opens places,
+# shop items, methods, twists, getaways and conversation choices, and rival clubs shut each other out.
+# `ranks` is a list of [name, merit needed]; rank 1 starts at 0 merit. `event_legend` is paid per
+# rank above the first when the term ends.
+
+[[club]]
+id = "chess"
+name = "The Chess Circle"
+blurb = "Quiet, ruthless, and housed among the library's green lamps."
+place = "library"
+kind = "after"
+days = [1, 3]
+advisor = "alder"
+members = ["mags", "bramley"]
+join = ["grade:maths>=60"]
+rivals = ["drama"]
+skill = "bluff"
+ranks = [["Pawn", 0], ["Knight", 4], ["Bishop", 10], ["Rook", 18]]
+event = "The Circle's term-end match is played in the library at dusk, and nobody coughs."
+event_legend = 3
+
+[[club]]
+id = "drama"
+name = "The Players"
+blurb = "The winter play, the green room, and a great deal of weeping."
+place = "main_hall"
+kind = "evening"
+days = [2, 4]
+advisor = "thorne"
+members = ["tilly", "wren"]
+join = ["cool>=45"]
+rivals = ["chess"]
+skill = "bluff"
+ranks = [["Extra", 0], ["Understudy", 4], ["Lead", 10], ["Director", 18]]
+event = "The winter play opens to a full hall; the review in the paper is kind, for once."
+event_legend = 3
+
+[[club]]
+id = "rowing"
+name = "The Rowing Club"
+blurb = "Early mornings, cold hands, and the house match at term's end."
+place = "boathouse"
+kind = "after"
+days = [0, 2, 4]
+advisor = "gale"
+members = ["hollis", "crouch"]
+join = ["standing:rowing_eight>=4"]
+rivals = ["paper", "robotics"]
+skill = "fleet"
+ranks = [["Cox", 0], ["Bow", 4], ["Stroke", 10], ["Captain", 18]]
+event = "The house match is rowed in fog, and the Eight wins by a length no one could see."
+event_legend = 4
+
+[[club]]
+id = "paper"
+name = "The School Paper"
+blurb = "The Ink Society's press: eight pages of rumour in a trench coat."
+place = "paper_office"
+join_place = "old_wing"
+kind = "evening"
+days = [1, 3, 5]
+advisor = "alder"
+members = ["wren", "mags"]
+join = ["standing:ink_society>=6"]
+rivals = ["rowing"]
+skill = "bluff"
+ranks = [["Proofreader", 0], ["Reporter", 4], ["Sub-editor", 10], ["Editor", 18]]
+event = "The end-of-term issue runs your byline above the fold."
+event_legend = 3
+
+[[club]]
+id = "robotics"
+name = "The Robotics Club"
+blurb = "The Workshop's official face: wires, whirrs, and a robot that sort of rolls."
+place = "workshop"
+join_place = "old_wing"
+kind = "evening"
+days = [1, 3, 5]
+advisor = "orrin"
+members = ["pip"]
+join = ["skill:tinker>=1"]
+rivals = ["rowing"]
+skill = "tinker"
+ranks = [["Bench hand", 0], ["Builder", 4], ["Engineer", 10], ["Chief", 18]]
+event = "The robot crosses the quad on its own power, and only then falls over."
+event_legend = 3
+
+[[club]]
+id = "candle"
+name = "The Candle Society"
+blurb = "The secret one. Nobody admits it exists, and everybody knows someone in it."
+place = "candle_den"
+join_place = "cellars"
+kind = "night"
+days = []
+advisor = "fenn"
+members = ["sol", "tilly"]
+join = ["know:candle_sign"]
+skill = "sneak"
+ranks = [["Wick", 0], ["Flame", 5], ["Lamplighter", 12]]
+event = "On the last night the Society lights every candle at once and tells you what it is for."
+event_legend = 6

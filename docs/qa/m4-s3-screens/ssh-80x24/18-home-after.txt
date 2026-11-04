@@ -1,0 +1,24 @@
+  ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+  │Saltmarch                                                                 │
+  │                                                                          │
+  │ ⌂ founder  day 1 of season 1        turns █████░░░░░ 15/30  ◈ 50 tallies │
+  │ ≈ TIDE ███████░┃░░░  63 ↓ low in 3h42 (9)  spring tides  ▲ HIGH WATER ▲  │
+  │╭ The hold of founder ────────────────────╮╭ Upkeep ─────────────────────╮│
+  ││  weir    stack   ·  ·    ·  ·    ·  ·   ││Larder  ████████████ 7 nights││
+  ││    ●       ●     free    free    free   ││Peat    ██████████▎░ 6 nights││
+  ││                                         ││Morale  ████████▍░░░░░ 60/100││
+  ││  ·  ·    ░░░░    ░░░░    ░░░░    ░░░░   ││Crew    █████████████████ 3/3││
+  ││  free   locked  locked  locked  locked  ││Stores: 6 peat, 10 reed, 12  ││
+  ││                                         ││timber, 4 fish, 19 preserved ││
+  ││  ░░░░    ░░░░    ░░░░    ░░░░    ░░░░   │╰─────────────────────────────╯│
+  ││ locked  locked  locked  locked  locked  │╭ Orders ─────────────────────╮│
+  ││                                         ││ a The hold: build, work, ~  ││
+  ││  ░░░░    ░░░░    ░░░░    ░░░░    ░░░░   ││ b The crew and the gate     ││
+  ││ locked  locked  locked  locked  locked  ││ c The Tidecourt market      ││
+  ││                                         ││ d Send a party out on the~  ││
+  ││                                         ││ e Today's tide table        ││
+  ││■ shelter ■ work ■ defence ■ building    ││ f The marsh chart: charte~  ││
+  │╰─────────────────────────────────────────╯╰──────────────────────────1/9╯│
+  │ Home after 11 turns with 18 tallies' worth of cargo.                     │
+  │ » The hold: build, work, craft                      up/down  Enter  Esc  │
+  └──────────────────────────────────────────────────────────────────────────┘

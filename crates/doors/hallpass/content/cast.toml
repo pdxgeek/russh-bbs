@@ -122,6 +122,10 @@ days = [0, 2]
 [[npc.schedule]]
 when = "night"
 place = "staff_quarters"
+[[npc.ally]]
+role = "cover"
+needs = ["grade:maths>=75", "bond:pell>=8"]
+cost = 4
 
 [[npc]]
 id = "orrin"
@@ -188,6 +192,11 @@ place = "library"
 [[npc.schedule]]
 when = "night"
 place = "staff_quarters"
+[[npc.ally]]
+role = "keys"
+needs = ["grade:history>=70", "bond:alder>=6"]
+cost = 3
+grants = ["restricted_key"]
 
 [[npc]]
 id = "ruddock"
@@ -297,6 +306,10 @@ place = "admin_corridor"
 [[npc.schedule]]
 when = "night"
 place = "quad"
+[[npc.ally]]
+role = "cover"
+needs = ["bond:wick>=14", "standing:lamplighters>=10"]
+cost = 6
 
 [[npc]]
 id = "bramley"
@@ -321,6 +334,25 @@ place = "common_room"
 when = "night"
 place = "dorm"
 
+[[npc]]
+id = "gale"
+name = "Mr. Dunstan Gale"
+role = "staff"
+title = "Games master"
+home = "gym"
+watchful = 1
+prankable = false
+blurb = "Blows the whistle at everything, including birds."
+[[npc.schedule]]
+when = "class:games"
+place = "gym"
+[[npc.schedule]]
+when = "free"
+place = "gym"
+[[npc.schedule]]
+when = "night"
+place = "staff_quarters"
+
 # ---- Students ----
 
 [[npc]]
@@ -342,6 +374,10 @@ place = "main_hall"
 [[npc.schedule]]
 when = "night"
 place = "dorm"
+[[npc.ally]]
+role = "distraction"
+needs = ["bond:hollis>=12"]
+cost = 2
 
 [[npc]]
 id = "crouch"

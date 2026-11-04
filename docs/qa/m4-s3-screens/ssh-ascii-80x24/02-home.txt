@@ -1,0 +1,24 @@
+  +------------------------------- russh-bbs --------------------------------+
+  |Saltmarch                                                                 |
+  |                                                                          |
+  | # founder  day 1 of season 1        turns ########## 30/30  $ 40 tallies |
+  | ~ TIDE ########|---  67 v low in 4h04 (9)  spring tides  ^ HIGH WATER ^  |
+  |+ The hold of founder --------------------++ Upkeep ---------------------+|
+  ||  weir    stack    . .     . .     . .   ||Larder  ##########=- 6 nights||
+  ||    o       o     free    free    free   ||Peat    ############ 8 nights||
+  ||                                         ||Morale  ########=----- 60/100||
+  ||   . .    ////    ////    ////    ////   ||Crew    ################# 3/3||
+  ||  free   locked  locked  locked  locked  ||Stores: 8 peat, 10 reed, 12  ||
+  ||                                         ||timber, 20 preserved food, 1 ||
+  ||  ////    ////    ////    ////    ////   |+-----------------------------+|
+  || locked  locked  locked  locked  locked  |+ Orders ---------------------+|
+  ||                                         || a The hold: build, work, ~  ||
+  ||  ////    ////    ////    ////    ////   || b The crew and the gate     ||
+  || locked  locked  locked  locked  locked  || c The Tidecourt market      ||
+  ||                                         || d Send a party out on the~  ||
+  ||                                         || e Today's tide table        ||
+  ||# shelter # work # defence # building    || f The marsh chart: charte~  ||
+  |+-----------------------------------------++--------------------------1/9+|
+  | The founder clan stakes its hold.                                        |
+  | > The hold: build, work, craft                      up/down  Enter  Esc  |
+  +--------------------------------------------------------------------------+
