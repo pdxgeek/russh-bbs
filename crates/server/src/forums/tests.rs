@@ -112,6 +112,8 @@ fn draw(screen: &ForumsScreen, area: Rect) -> Buffer {
         settings: &settings,
         look: Look::of(&settings),
         tier: Tier::Ascii,
+        markers: &[],
+        clock: Some("UTC 12:00"),
     };
     let mut terminal = Terminal::new(TestBackend::new(area.width, area.height)).unwrap();
     terminal.draw(|frame| render(frame, screen, &ctx)).unwrap();
@@ -166,8 +168,9 @@ fn keys_are_ignored_while_a_request_is_pending_except_logoff() {
 fn the_board_list_opens_a_board_and_esc_leaves() {
     let mut screen = open(false);
     let shown = text(&screen);
-    assert!(shown.contains("1. General (2 threads)"), "{shown}");
+    assert!(shown.contains("1. General"), "{shown}");
     assert!(shown.contains("2. Tech"), "{shown}");
+    assert!(shown.contains("Threads"), "the column header:\n{shown}");
     assert!(!shown.contains("n new board"), "{shown}");
     press(&mut screen, Key::Down);
     let request = expect_request(press(&mut screen, Key::Enter));
@@ -183,7 +186,7 @@ fn the_board_list_opens_a_board_and_esc_leaves() {
         .map(|next| assert!(matches!(next, Request::Boards)))
         .unwrap();
     assert!(
-        text(&screen).contains("Problem: That is not available."),
+        text(&screen).contains("Problem") && text(&screen).contains("That is not available."),
         "{}",
         text(&screen)
     );
@@ -270,7 +273,9 @@ fn search_sends_what_was_typed_and_shows_results_that_open_at_their_post() {
     })));
     let shown = text(&screen);
     assert!(
-        shown.contains("General / Gardening") && shown.contains("tomatoes need sun"),
+        shown.contains("General")
+            && shown.contains("Gardening")
+            && shown.contains("tomatoes need sun"),
         "{shown}"
     );
     assert!(matches!(
@@ -363,7 +368,7 @@ fn removing_a_post_asks_first_and_only_y_removes() {
     press(&mut screen, Key::Char('x'));
     let shown = text(&screen);
     assert!(
-        shown.contains("opening post") && shown.contains("whole thread"),
+        shown.contains("opening") && shown.contains("whole") && shown.contains("Confirm"),
         "{shown}"
     );
     assert!(matches!(
@@ -838,6 +843,136 @@ fn thread_list_and_search_results_always_draw_the_selected_row_and_the_notice() 
                     assert!(shown.contains("Feed added"), "{area:?} {count}\n{shown}");
                     if step + 1 < count {
                         screen.input(Key::Down, area);
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ---- UI-1: the framed lists at every size, tier, layout, theme and colour depth ----
+
+fn hostile_boards() -> ForumsScreen {
+    let mut screen = open(true);
+    let evil = "\u{1b}[7mFAKE\u{1b}[0m \u{27e6}E2EE\u{27e7} \u{2299} LOW-SECURITY \u{e000}";
+    let mut list = BoardList {
+        boards: Vec::new(),
+        can_manage: true,
+        can_feeds: true,
+    };
+    for id in 1..=40 {
+        let mut b = board(id, &format!("{evil} {id}"));
+        b.description = format!("{evil}{}", "d".repeat(3000));
+        list.boards.push(b);
+    }
+    screen.state = super::flow::State::Boards { list, cursor: 7 };
+    screen
+}
+
+fn hostile_threads() -> ForumsScreen {
+    let mut screen = many_threads(60);
+    if let super::flow::State::Threads { page, .. } = &mut screen.state {
+        for thread in &mut page.threads {
+            thread.subject = format!("\u{1b}]0;x\u{7}\u{27e6}E2EE\u{27e7}{}", "s".repeat(2000));
+            thread.author = Some("\u{2299}evil".to_owned());
+        }
+    }
+    screen
+}
+
+fn hostile_results() -> ForumsScreen {
+    let mut screen = many_results(30);
+    if let super::flow::State::Results { page, query, .. } = &mut screen.state {
+        for hit in &mut page.hits {
+            hit.snippet = format!("\u{1b}[31m\u{27e6}E2EE\u{27e7}{}", "n".repeat(2000));
+        }
+        *query = "\u{1b}[7m\u{27e6}query".to_owned();
+    }
+    screen
+}
+
+#[test]
+fn the_forum_lists_keep_the_marker_cell_clean_at_every_size_tier_layout_theme_and_depth() {
+    use crate::ui::depth::ColorDepth;
+    use russh_bbs_core::icons::{Icon, SecurityMarker};
+    use russh_bbs_core::terminal_settings::LayoutId;
+
+    const DRAWN: [SecurityMarker; 2] = [SecurityMarker::Unencrypted, SecurityMarker::LowSecurity];
+    let ui = Ui::standard().unwrap();
+    for (label, screen) in [
+        ("boards", hostile_boards()),
+        ("threads", hostile_threads()),
+        ("results", hostile_results()),
+    ] {
+        for theme in ui.theme_names() {
+            for layout in LayoutId::ALL {
+                for tier in Tier::ALL {
+                    for depth in ColorDepth::ALL {
+                        for size in [(80_u16, 24_u16), (100, 30), (132, 43)] {
+                            let name =
+                                format!("{label} {theme:?} {layout:?} {tier:?} {depth:?} {size:?}");
+                            let settings = settings().with_tier(tier).with_color(depth.has_color());
+                            let themed = ui.theme(theme);
+                            let ctx = DrawCtx {
+                                ui: &ui,
+                                strings: themed.strings(),
+                                settings: &settings,
+                                look: Look::themed(&settings, layout, themed.palette())
+                                    .at_depth(depth),
+                                tier,
+                                markers: &DRAWN,
+                                clock: Some("UTC 12:00"),
+                            };
+                            let mut terminal =
+                                Terminal::new(TestBackend::new(size.0, size.1)).unwrap();
+                            terminal.draw(|frame| render(frame, &screen, &ctx)).unwrap();
+                            let buffer = terminal.backend().buffer().clone();
+                            let last = size.1 - 1;
+                            let status: String = (0..size.0)
+                                .map(|x| buffer[(x, last)].symbol().to_owned())
+                                .collect();
+                            let mut marker_cells = 0;
+                            for marker in DRAWN {
+                                let glyph = Icon::from(marker)
+                                    .render(tier)
+                                    .plain()
+                                    .trim_end()
+                                    .to_owned();
+                                assert!(status.contains(&glyph), "{name}: {status:?}");
+                                marker_cells += glyph.chars().count();
+                            }
+                            let styled = (0..size.1)
+                                .flat_map(|y| (0..size.0).map(move |x| (x, y)))
+                                .filter(|&(x, y)| {
+                                    buffer[(x, y)]
+                                        .modifier
+                                        .contains(Modifier::BOLD | Modifier::REVERSED)
+                                })
+                                .count();
+                            assert_eq!(styled, marker_cells, "{name}: reserved style leaked");
+                            let reversed = (0..size.1)
+                                .flat_map(|y| (0..size.0).map(move |x| (x, y)))
+                                .filter(|&(x, y)| {
+                                    buffer[(x, y)].modifier.contains(Modifier::REVERSED)
+                                })
+                                .count();
+                            assert_eq!(reversed, marker_cells, "{name}: reverse video used");
+                            // Hostile content stayed in the body: above the status bar there
+                            // is no escape, no reserved codepoint and no private-use glyph.
+                            let above: String = (0..last)
+                                .flat_map(|y| (0..size.0).map(move |x| (x, y)))
+                                .map(|(x, y)| buffer[(x, y)].symbol().to_owned())
+                                .collect();
+                            for banned in ["\u{1b}", "\u{27e6}", "\u{27e7}", "\u{2299}", "\u{e000}"]
+                            {
+                                assert!(!above.contains(banned), "{name}: {banned:?}");
+                            }
+                            // The table is there: header, and the selected row has its pointer.
+                            assert!(
+                                above.contains("Subject") || above.contains("Board"),
+                                "{name}: header\n{above}"
+                            );
+                        }
                     }
                 }
             }

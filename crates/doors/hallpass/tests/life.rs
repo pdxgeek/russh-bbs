@@ -299,6 +299,12 @@ fn joining_needs_the_place_the_conditions_and_a_free_slot_and_rivals_shut_each_o
     map_set(&mut tinkerer.game.player.grades, "maths", 80);
     let why = tinkerer.try_(Action::Join("chess".into())).unwrap_err();
     assert!(why.0.contains("third club"), "{why}");
+    // Once the day is over nothing can be joined.
+    let mut late = Sandbox::new("tinkerer", 1);
+    late.game.player.slot = 9;
+    let robotics = late.game.content.club("robotics").unwrap().clone();
+    assert!(late.game.join_block(&robotics).is_some());
+    assert!(late.try_(Action::Join("robotics".into())).is_err());
     // Walking out is remembered for the term, and costs standing.
     let before = tinkerer.game.player.standing_with("workshop");
     let _ = before;
@@ -808,4 +814,107 @@ fn a_conversation_takes_the_period_when_it_ends_and_nothing_else_can_be_done_in_
     late.game.sync_day(late.game.player.day + 1);
     assert!(late.game.player.life.scene.is_none());
     let _ = DoorRng::from_seed(0);
+}
+
+#[test]
+fn a_word_with_the_classs_own_teacher_in_their_room_counts_as_the_lesson_and_any_other_does_not() {
+    // Tutoring from Mr. Pell during his own maths lesson is not a skipped class.
+    let (mut sb, _) = scene_for("smooth_talker", "pell_tutoring", |sb| {
+        let (day, slot) = lesson_slot("maths");
+        sb.game.sync_day(day);
+        sb.game.player.slot = u8::try_from(slot).unwrap();
+        sb.game.player.place = "room_maths".into();
+        map_set(&mut sb.game.player.grades, "maths", 50);
+    });
+    let events = sb.ok(Action::Choose(0));
+    assert!(
+        !events.iter().any(|e| e.describe().contains("empty seat") || e.describe().contains("Nobody noticed")),
+        "{events:?}"
+    );
+    assert!(i32::from(map_get(&sb.game.player.grades, "maths").copied().unwrap()) >= 56);
+    // A word with a prefect in the corridor in the middle of a lesson is a skipped class.
+    let mut away = in_class("smooth_talker", "maths", 4);
+    away.game.player.add_standing("lamplighters", 10);
+    meet(&mut away.game, "wick");
+    away.game.player.slot = u8::try_from(lesson_slot("maths").1).unwrap();
+    let wick = away.game.content.npc("wick").unwrap().clone();
+    let day = away.game.player.day;
+    away.game.player.place = away
+        .game
+        .npc_place(&wick, day, usize::from(away.game.player.slot))
+        .to_owned();
+    away.ok(Action::Talk("wick_rounds".into()));
+    let events = away.ok(Action::Choose(2));
+    assert!(
+        events.iter().any(|e| e.describe().contains("empty seat") || e.describe().contains("Nobody noticed")),
+        "{events:?}"
+    );
+}
+
+#[test]
+fn a_conversation_is_a_tree_a_choice_leads_to_the_next_node_and_the_period_is_spent_at_the_end() {
+    // The head prefect's offer has a second beat: a name.
+    let (mut sb, shown) = scene_for("smooth_talker", "wick_rounds", |sb| {
+        sb.game.player.add_standing("lamplighters", 10);
+    });
+    assert!(shown[0].1);
+    let slot = sb.game.player.slot;
+    sb.ok(Action::Choose(0));
+    let second = sb.game.scene_view().unwrap();
+    assert!(
+        second.text.contains("Bench keeps leaving notes"),
+        "{}",
+        second.text
+    );
+    assert_eq!(
+        sb.game.player.slot, slot,
+        "the period is spent when the talk ends, not before"
+    );
+    // A scene saved at the second node comes back at the second node.
+    let back = decode_player(&encode_player(&sb.game.player)).unwrap();
+    assert_eq!(back.life.scene.as_ref().unwrap().node, "notes");
+    // Walking away mid-way costs the period; naming Sol costs a friend.
+    let mut walked = decode_scene_game(&sb);
+    walked.ok(Action::Abandon);
+    assert_eq!(walked.game.player.slot, slot + 1);
+    assert_eq!(walked.game.bond("sol"), 0);
+    sb.ok(Action::Choose(0));
+    assert_eq!(sb.game.player.slot, slot + 1);
+    assert!(sb.game.player.knows("betrayed_sol"));
+    assert_eq!(sb.game.regard("sol"), Regard::Betrayed);
+    assert!(
+        sb.game.bond("wick") >= 9,
+        "and the prefect is pleased: {}",
+        sb.game.bond("wick")
+    );
+    // A second beat can have a choice that is open to one build and shut to another.
+    let stare = |nerve: u8| {
+        let (mut sb, _) = scene_for("fast_runner", "crouch_stand", |sb| {
+            sb.game.player.nerve = 6;
+            sb.game.player.nerve_max = 6;
+        });
+        sb.ok(Action::Choose(0));
+        sb.game.player.nerve = nerve;
+        sb.game.scene_view().unwrap().choices[0].open
+    };
+    assert!(stare(2) && !stare(1));
+    // The stakes, the doubt and the sign each have a second node too.
+    for (talk, node) in [
+        ("hollis_race", "stakes"),
+        ("vane_question", "doubt"),
+        ("sol_candle", "sign"),
+    ] {
+        let spec = content().talk(talk).unwrap().clone();
+        assert!(spec.node.iter().any(|n| n.id == node), "{talk}");
+    }
+}
+
+/// A second copy of the game in the same scene, as a reconnect would give.
+fn decode_scene_game(sb: &Sandbox) -> Sandbox {
+    let player = decode_player(&encode_player(&sb.game.player)).unwrap();
+    let (game, _) = Game::open(&content(), "ann", Some(player), None, sb.game.player.day);
+    Sandbox {
+        game,
+        rng: DoorRng::from_seed(2),
+    }
 }

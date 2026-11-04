@@ -460,11 +460,7 @@ impl Session {
         add('p', "Schemes", Cmd::To(Mode::Plans));
         add('c', "Clubs", Cmd::To(Mode::Clubs));
         add('f', "You: file, grades, standing", Cmd::To(Mode::Stats));
-        add(
-            'j',
-            "Journal: stories, friends, rivals",
-            Cmd::To(Mode::Journal),
-        );
+        add('j', "Journal: stories, friends", Cmd::To(Mode::Journal));
         add('n', "News and rumours", Cmd::To(Mode::News));
         if self.can(&Action::Sleep) {
             add('z', "Lights out", Cmd::Do(Action::Sleep));

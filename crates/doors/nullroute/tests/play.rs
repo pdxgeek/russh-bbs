@@ -348,7 +348,7 @@ async fn a_save_from_another_season_starts_the_new_season() {
             &SaveWrite {
                 expected: Revision::NONE,
                 season: 1,
-                version: 1,
+                version: 2,
                 bytes: &russh_bbs_door_nullroute::save::encode(&old),
             },
         )

@@ -275,8 +275,7 @@ async fn three_members_post_reply_search_and_a_restricted_board_stays_hidden() {
     line(&mut sysop, "Talk about anything").await;
     let screen = press(&mut sysop, "n").await; // open to every member
     assert!(
-        flat(&screen).contains("Board created.")
-            && flat(&screen).contains("1. General (0 threads)"),
+        flat(&screen).contains("Board created.") && flat(&screen).contains("1. General"),
         "{screen}"
     );
     press(&mut sysop, "n").await;
@@ -353,7 +352,7 @@ async fn three_members_post_reply_search_and_a_restricted_board_stays_hidden() {
     press(&mut bob, "f").await;
     press(&mut bob, "s").await;
     let screen = line(&mut bob, "tomatoes").await;
-    assert!(flat(&screen).contains("General / Welcome"), "{screen}");
+    assert!(flat(&screen).contains("General Welcome"), "{screen}");
     press(&mut bob, "s").await;
     let hidden = line(&mut bob, "zebrafish").await;
     let nothing = {
@@ -394,7 +393,7 @@ async fn three_members_post_reply_search_and_a_restricted_board_stays_hidden() {
     assert!(flat(&screen).contains("2. Staff room"), "{screen}");
     press(&mut ann, "s").await;
     let found = line(&mut ann, "zebrafish").await;
-    assert!(flat(&found).contains("Staff room / Rota"), "{found}");
+    assert!(flat(&found).contains("Staff room Rota"), "{found}");
     let bob_list = {
         press(&mut bob, "\u{1b}").await;
         press(&mut bob, "\u{1b}").await;

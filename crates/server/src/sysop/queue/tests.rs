@@ -42,6 +42,7 @@ fn draw(view: &QueueView, tier: Tier, size: (u16, u16)) -> Buffer {
                     look,
                     tier,
                     markers: &QUEUE_MARKERS,
+                    clock: Some("UTC 12:00"),
                 },
             );
         })

@@ -288,7 +288,7 @@ async fn the_sysop_adds_a_feed_a_member_reads_it_read_only_and_the_sysop_removes
     let screen = press(&mut sysop, "n").await;
     let seen = flat(&screen);
     assert!(
-        seen.contains("Feed added.") && seen.contains("1. News [feed] (0 threads)"),
+        seen.contains("Feed added.") && seen.contains("1. News [feed]"),
         "{screen}"
     );
     assert!(!seen.contains("private"), "{screen}");
@@ -314,18 +314,17 @@ async fn the_sysop_adds_a_feed_a_member_reads_it_read_only_and_the_sysop_removes
     // ann sees the board marked as a feed, reads it, and cannot write to it.
     let screen = press(&mut ann, "f").await;
     assert!(
-        flat(&screen).contains("1. News [feed] (1 thread)")
-            && !flat(&screen).contains("n new board"),
+        flat(&screen).contains("1. News [feed]") && !flat(&screen).contains("n new board"),
         "{screen}"
     );
     let screen = press(&mut ann, "1").await;
     let seen = flat(&screen);
     assert!(
-        seen.contains("Quokka sighted") && seen.contains("[feed,"),
+        seen.contains("Quokka sighted") && seen.contains("From") && seen.contains("feed 1"),
         "the author column reads feed: {screen}"
     );
     assert!(
-        seen.contains("a feed: read only") && !seen.contains("w write"),
+        seen.contains("feed read only") && !seen.contains("w write"),
         "{screen}"
     );
     let after_w = press(&mut ann, "w").await;

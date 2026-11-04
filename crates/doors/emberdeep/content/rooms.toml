@@ -297,6 +297,13 @@ ok = [{ kind = "coin", amount = 30 }, { kind = "salvage", amount = 6 }]
 ok_text = "You load up and leave before you have second thoughts."
 fail = [{ kind = "hurt", amount = 6 }]
 fail_text = "A tripwire on the shelf, and a rain of ledger-weights."
+[[room.option]]
+id = "pattern-book"
+label = "Leaf through the guild's pattern book"
+need = [{ kind = "tag", tag = "lore" }]
+cost = 1
+ok = [{ kind = "recipe", id = "found-hearth-core" }, { kind = "xp", amount = 14 }]
+ok_text = "Between the ledgers is a book of ember-work. You copy the leaf for the hearth core."
 
 [[room]]
 id = "ash-pantry"
@@ -373,6 +380,15 @@ need = [{ kind = "tag", tag = "bless" }]
 cost = 1
 ok = [{ kind = "heal", amount = 8 }, { kind = "fatigue", amount = -8 }]
 ok_text = "The iron remembers warmth."
+[[room.option]]
+id = "copy-pattern"
+label = "Copy the pattern chalked on the anvil"
+cost = 1
+check = { attr = "wits", dc = 12 }
+ok = [{ kind = "recipe", id = "found-forge-axe" }, { kind = "xp", amount = 8 }]
+ok_text = "The smith's chalk marks are a recipe: you copy them down, upside down and all."
+fail = [{ kind = "fatigue", amount = 2 }]
+fail_text = "The chalk is smeared past reading."
 
 [[room]]
 id = "hot-forge"
@@ -398,6 +414,13 @@ need = [{ kind = "tag", tag = "warding" }]
 cost = 1
 ok = [{ kind = "salvage", amount = 6 }, { kind = "xp", amount = 10 }]
 ok_text = "The heat parts around you; you take the best of it."
+[[room.option]]
+id = "read-plate"
+label = "Read the forge-master's pattern plate"
+need = [{ kind = "tag", tag = "runecraft" }]
+cost = 1
+ok = [{ kind = "recipe", id = "found-slag-mail" }, { kind = "xp", amount = 10 }]
+ok_text = "The plate is a pattern for slag mail, in the maker's own marks. You commit it to memory."
 
 [[room]]
 id = "ember-anvil"
@@ -423,6 +446,14 @@ fail = [{ kind = "hurt", amount = 6 }]
 fail_text = "A splinter of stone opens your palm."
 
 # ---------------- Flooded halls ----------------
+[[room.option]]
+id = "cinder-recipe"
+label = "Study how the anvil holds its coal"
+need = [{ kind = "tag", tag = "tinker" }]
+cost = 1
+ok = [{ kind = "recipe", id = "found-cinder-core" }, { kind = "xp", amount = 10 }]
+ok_text = "The anvil's coal is held by a ring of runes. You learn the knot."
+
 [[room]]
 id = "drowned-hall"
 kind = "flooded"

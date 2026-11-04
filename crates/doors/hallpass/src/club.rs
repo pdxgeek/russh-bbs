@@ -16,7 +16,9 @@ impl Game {
     #[must_use]
     pub fn join_block(&self, club: &ClubSpec) -> Option<String> {
         let p = &self.player;
-        let slot = self.current_slot()?;
+        let Some(slot) = self.current_slot() else {
+            return Some("The day is over.".into());
+        };
         if p.run.is_some() || p.life.lesson.is_some() || p.life.scene.is_some() {
             return Some("Not now.".into());
         }
@@ -27,17 +29,27 @@ impl Game {
             return Some("They remember you walking out.".into());
         }
         let sign_up = club.join_place.as_deref().unwrap_or(&club.place);
+        let unmet: Vec<String> = club
+            .join
+            .iter()
+            .filter(|c| !self.holds(c))
+            .map(crate::cond::Cond::describe)
+            .collect();
+        let wants = if unmet.is_empty() {
+            String::new()
+        } else {
+            format!(" They want {}.", unmet.join(" and "))
+        };
         if p.place != sign_up {
             return Some(format!(
-                "You sign up at the {}.",
+                "Sign up at {}.{wants}",
                 self.content
                     .place(sign_up)
-                    .map_or("club", |x| x.name.as_str())
-                    .to_lowercase()
+                    .map_or("the club", |x| x.name.as_str())
             ));
         }
         if !self.place_open(sign_up, p.day, slot) {
-            return Some("It is shut.".into());
+            return Some(format!("It is shut.{wants}"));
         }
         if p.life.clubs.len() >= self.content.rules.max_clubs {
             return Some("You cannot give a third club the time.".into());
@@ -49,21 +61,12 @@ impl Game {
             .find(|m| club.rivals.contains(&m.club))
             .and_then(|m| self.content.club(&m.club))
         {
-            return Some(format!(
-                "The {} would never forgive you.",
-                rival.name.to_lowercase()
-            ));
+            return Some(format!("{} would never forgive you.", rival.name));
         }
-        let unmet: Vec<String> = club
-            .join
-            .iter()
-            .filter(|c| !self.holds(c))
-            .map(crate::cond::Cond::describe)
-            .collect();
         if unmet.is_empty() {
             None
         } else {
-            Some(format!("They want {}.", unmet.join(" and ")))
+            Some(wants.trim_start().to_owned())
         }
     }
 
@@ -84,7 +87,7 @@ impl Game {
         });
         // The faces of the club think better of someone who turns up.
         let mut events = vec![Event::Say(format!(
-            "You join the {}: {}.",
+            "You join {}: {}.",
             club.name,
             club.ranks[0].0.to_lowercase()
         ))];
@@ -166,7 +169,7 @@ impl Game {
             return Err(Refused::new("You owe a detention first."));
         }
         let slot = self.current_slot().unwrap_or(0);
-        let mut events = vec![Event::Say(format!("The {} meets.", club.name))];
+        let mut events = vec![Event::Say(format!("{} meets.", club.name))];
         let skill = self.skill_level(&club.skill);
         let merit = 1 + i32::from(skill >= 2);
         if let Some(m) = self
@@ -227,10 +230,7 @@ impl Game {
                 .get(usize::from(rank) - 1)
                 .map_or("a higher rank", |r| r.0.as_str())
                 .to_lowercase();
-            events.push(Event::Say(format!(
-                "The {} promotes you: {name}.",
-                club.name
-            )));
+            events.push(Event::Say(format!("{} promotes you: {name}.", club.name)));
             self.player.cool = to_i16(i32::from(self.player.cool) + 2);
         }
         events

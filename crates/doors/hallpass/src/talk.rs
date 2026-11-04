@@ -256,7 +256,8 @@ impl Game {
             _ => {
                 self.player.life.scene = None;
                 if self.player.status == crate::state::Status::Active {
-                    events.extend(self.end_slot(Spent::Other, rng));
+                    let spent = self.talk_spent(&talk.npc);
+                    events.extend(self.end_slot(spent, rng));
                 }
             }
         }
@@ -275,8 +276,32 @@ impl Game {
             return Ok(vec![Event::Say("You think better of it.".into())]);
         }
         let mut events = vec![Event::Say("You excuse yourself and go.".into())];
-        events.extend(self.end_slot(Spent::Other, rng));
+        let spent = self.talk_spent(
+            self.content
+                .talk(&scene.talk)
+                .map_or("", |t| t.npc.as_str()),
+        );
+        events.extend(self.end_slot(spent, rng));
         Ok(events)
+    }
+
+    /// What a conversation counts as for the period: a word with the class's own teacher, in their
+    /// room, during their lesson is attending it; anything else in class time is a skipped class.
+    fn talk_spent(&self, npc: &str) -> Spent {
+        let Some(slot) = self.current_slot() else {
+            return Spent::Other;
+        };
+        let day = self.player.day;
+        let teacher_here = self
+            .activity(day, slot)
+            .strip_prefix("class:")
+            .and_then(|s| self.content.subject(s))
+            .is_some_and(|s| s.teacher == npc && s.room == self.player.place);
+        if teacher_here {
+            Spent::Attended
+        } else {
+            Spent::Other
+        }
     }
 
     // ------------------------------------------------------------ effects

@@ -13,22 +13,6 @@ pub(super) const NO_RESULTS: &str = "Nothing found.";
 pub(super) const NOT_SEARCHED: &str = "Type at least one word to search for.";
 pub(super) const GONE_MEMBER: &str = "(gone)";
 
-pub(super) const HELP_BOARDS: &str = "Up/Down + Enter open   1-9 jump   s search   Esc back";
-pub(super) const HELP_BOARDS_MANAGE: &str =
-    "Up/Down + Enter open   1-9 jump   s search   n new board   Esc back";
-pub(super) const HELP_THREADS: &str =
-    "Up/Down + Enter read   1-9 jump   w write   n/b next/back page   s search   Esc back";
-pub(super) const HELP_THREADS_MANAGE: &str = "Up/Down + Enter read   1-9 jump   w write   n/b page   s search   a let a member in   Esc back";
-pub(super) const HELP_RESULTS: &str =
-    "Up/Down + Enter read   1-9 jump   n/b next/back page   Esc back";
-pub(super) const HELP_BOARDS_FEEDS: &str =
-    "Up/Down + Enter open   1-9 jump   s search   n new board   f add a feed   Esc back";
-pub(super) const HELP_BOARDS_FEEDS_ONLY: &str =
-    "Up/Down + Enter open   1-9 jump   s search   f add a feed   Esc back";
-pub(super) const HELP_THREADS_FEED: &str =
-    "Up/Down + Enter read   1-9 jump   n/b page   s search   Esc back   (a feed: read only)";
-pub(super) const HELP_THREADS_FEED_STAFF: &str = "Up/Down + Enter read   1-9 jump   n/b page   s search   p public as RSS on/off   x remove the feed   Esc back";
-pub(super) const HELP_THREADS_STAFF: &str = "Up/Down + Enter read   1-9 jump   w write   n/b page   s search   p public as RSS on/off   Esc back";
 pub(super) const HELP_INPUT: &str = "Enter to continue   Esc to cancel";
 pub(super) const HELP_READER_NOTE: &str = "Space next page   b page back   n/p next/previous post   r reply   c reply with quote   Esc back";
 pub(super) const HELP_READER_MODERATE: &str =

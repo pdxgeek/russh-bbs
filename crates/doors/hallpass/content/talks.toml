@@ -201,6 +201,7 @@ text = "Dame Vane looks at you for a long time. 'Somebody helped you. I would ve
 label = "Say nothing at all"
 say = "'Loyalty,' says Dame Vane. 'It is rarely rewarded, but I notice it.'"
 effects = ["bond:vane:+1", "stat:cool:+2"]
+next = "doubt"
 [[talk.node.choice]]
 label = "Name the helper from your last scheme"
 say = "Dame Vane writes a name, briefly warm. The heat falls off you at once, and something else falls away with it."
@@ -209,6 +210,18 @@ effects = ["betray:last_ally", "stat:heat:-15", "stat:notoriety:-4", "bond:vane:
 label = "Say you acted alone"
 say = "'Of course you did,' says Dame Vane, in the voice of someone who has heard it before."
 effects = ["stat:cool:+1"]
+[[talk.node]]
+id = "doubt"
+text = "Dame Vane folds her hands on the file. 'Then perhaps you will tell me what a pupil who says nothing was doing in the Old Wing at that hour.'"
+[[talk.node.choice]]
+label = "Say you were lost, charmingly"
+needs = ["tag:charm"]
+say = "She almost smiles. 'Lost. In a building you have been in for a fortnight.' She lets it go, at a price."
+effects = ["stat:cool:+2", "bond:vane:+1", "stat:heat:-5"]
+[[talk.node.choice]]
+label = "Say nothing again"
+say = "The silence goes on until it becomes the answer. 'You may go,' says Dame Vane, 'and so may your conscience.'"
+effects = ["bond:vane:+2"]
 
 [[talk]]
 id = "marsh_clipboard"
@@ -251,6 +264,7 @@ label = "Agree to walk the rounds with her"
 needs = ["not:trait:known_troublemaker"]
 say = "You walk the rounds. She teaches you which doors squeak and which prefects look the other way."
 effects = ["bond:wick:+5", "stand:lamplighters:+3", "stand:the_bench:-3", "know:prefect_rounds"]
+next = "notes"
 [[talk.node.choice]]
 label = "Keep her talking while you count the patrols"
 needs = ["skill:sneak>=1"]
@@ -259,6 +273,17 @@ effects = ["know:prefect_rounds", "bond:wick:+1", "xp:sneak:2"]
 [[talk.node.choice]]
 label = "Politely decline"
 say = "'Pity,' says Wick. 'The offer will not stay open for ever.'"
+[[talk.node]]
+id = "notes"
+text = "At the library door Wick lowers her voice. 'Somebody on the Bench keeps leaving notes about the prefects in the returns box. I would like a name. Not a punishment, I promise. A name.'"
+[[talk.node.choice]]
+label = "Give her Sol Marchetti's name"
+say = "She writes it down very small. You feel it as soon as you have said it."
+effects = ["bond:wick:+4", "stand:lamplighters:+3", "betray:sol", "stand:the_bench:-4"]
+[[talk.node.choice]]
+label = "Say you did not see who it was"
+say = "'Hm,' says Wick. 'A friend of the Bench, then. Or a very careful liar. I will think better of one of those.'"
+effects = ["bond:wick:+1"]
 
 [[talk]]
 id = "hollis_race"
@@ -274,6 +299,7 @@ label = "Race him"
 needs = ["skill:fleet>=1"]
 say = "You win by a stride and he is a good sport about it, mostly. Word gets round."
 effects = ["bond:hollis:+6", "stand:rowing_eight:+4", "stat:cool:+3"]
+next = "stakes"
 [[talk.node.choice]]
 label = "Race him and lose, on purpose, with style"
 needs = ["tag:charm"]
@@ -283,6 +309,18 @@ effects = ["bond:hollis:+5", "stand:rowing_eight:+2"]
 label = "Tell him you have better things to do"
 say = "'Chicken,' says Rafe, without malice, and not without a little."
 effects = ["bond:hollis:-8"]
+[[talk.node]]
+id = "stakes"
+text = "Rafe, hands on his knees, grins up at you. 'Same time next week. Winner picks the stakes. Unless you are scared.'"
+[[talk.node.choice]]
+label = "Raise the stakes: five coins on it"
+needs = ["cash>=5"]
+say = "He whistles. The Eight will be there to watch, and so will half the lower school."
+effects = ["stat:cash:-5", "bond:hollis:+3", "stand:rowing_eight:+2"]
+[[talk.node.choice]]
+label = "Shake hands and leave it there"
+say = "'Fair play,' says Rafe, and means it."
+effects = ["bond:hollis:+2"]
 
 [[talk]]
 id = "hollis_amends"
@@ -318,6 +356,7 @@ label = "Step in and tell him to put them down"
 needs = ["nerve>=3"]
 say = "He drops the Stray and sneers, but he does not follow you. The Strays do not forget it."
 effects = ["stat:nerve:-3", "stand:strays:+8", "bond:crouch:-4", "stat:cool:+3", "know:stood_up_to_crouch"]
+next = "face"
 [[talk.node.choice]]
 label = "Create a distraction and get the Stray away"
 needs = ["skill:sneak>=1"]
@@ -327,6 +366,18 @@ effects = ["stand:strays:+5", "xp:sneak:2", "know:stood_up_to_crouch"]
 label = "Fetch a teacher"
 say = "Mr. Gale arrives in under a minute, blowing the whistle. Crouch scowls at you from across the gym."
 effects = ["bond:gale:+2", "stand:strays:+3", "bond:crouch:-2"]
+[[talk.node]]
+id = "face"
+text = "Crouch lets go and squares up to you instead. 'Or what?' he says, much too loudly. Half the gym is looking."
+[[talk.node.choice]]
+label = "Stare him down"
+needs = ["nerve>=2"]
+say = "You do not blink. After a long moment he finds something very interesting on the ceiling. The whole gym saw."
+effects = ["stat:nerve:-2", "stat:cool:+4", "stand:strays:+4", "bond:crouch:-2"]
+[[talk.node.choice]]
+label = "Walk the Stray out and say nothing"
+say = "You take their arm and go. The quiet behind you is Crouch's, and for once it is not a happy one."
+effects = ["stand:strays:+3"]
 
 [[talk]]
 id = "wren_column"
@@ -355,6 +406,8 @@ id = "sol_candle"
 npc = "sol"
 title = "Sol Marchetti hums a tune"
 when = ["standing:the_bench>=8"]
+once = false
+cooldown = 3
 first = "open"
 [[talk.node]]
 id = "open"
@@ -362,8 +415,9 @@ text = "Sol Marchetti, back row, is humming something with a rhythm like a knock
 [[talk.node.choice]]
 label = "Say you would love to know"
 needs = ["bond:sol>=4"]
-say = "'Then listen,' Sol says, and taps out three slow beats and two quick on the desk. 'That is the sign. Learn it.'"
-effects = ["know:candle_sign", "bond:sol:+3"]
+say = "'Then listen,' Sol says, and taps out three slow beats and two quick on the desk."
+effects = ["bond:sol:+3"]
+next = "sign"
 [[talk.node.choice]]
 label = "Play dumb"
 say = "'Suit yourself,' says Sol. The tune carries on, a little louder."
@@ -371,6 +425,16 @@ effects = ["bond:sol:+1"]
 [[talk.node.choice]]
 label = "Ask what it will cost"
 say = "'Everything worth having does,' says Sol, and winks."
+[[talk.node]]
+id = "sign"
+text = "'That is the sign,' says Sol. 'Knock it in the cellars and they will let you in. But once you are in, you owe the Society. Still want it?'"
+[[talk.node.choice]]
+label = "Learn the knock"
+say = "You tap it back until Sol nods. Three slow, two quick. You will not forget it."
+effects = ["know:candle_sign"]
+[[talk.node.choice]]
+label = "Think it over"
+say = "'Take your time,' says Sol. 'Ask me again when you are ready.'"
 
 [[talk]]
 id = "sol_amends"

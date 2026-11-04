@@ -1,0 +1,152 @@
+# Crew: name parts, goals and role blurbs. A recruit gets a first and a family name, a role from
+# the station's economy, a skill and one goal from this list. Meeting the goal makes them sworn
+# to the ship; leaving it undone lets their loyalty run down. `{target}` in a visit goal is the
+# system's name; in the others it is the count. `wealth` counts hundreds of credits in the purse.
+
+first = [
+  "Ada", "Brisk", "Cass", "Dov", "Edda", "Fenn", "Gil", "Hana", "Ivo", "Jess",
+  "Kit", "Lio", "Mara", "Nils", "Orla", "Pike", "Quin", "Rue", "Sol", "Tamsin",
+  "Ulla", "Vik", "Wen", "Yara", "Zeb", "Bram", "Cleo", "Dunn", "Ember", "Fitch",
+]
+last = [
+  "Ashdown", "Barrow", "Calloway", "Dray", "Eastmere", "Flint", "Grist", "Harrow",
+  "Ironside", "Jessop", "Kerrow", "Lathe", "Marlow", "Nettle", "Oakes", "Pryor",
+  "Quill", "Rook", "Sable", "Thorne", "Underhill", "Vane", "Wick", "Yates",
+]
+
+[[role]]
+role = "pilot"
+blurb = "Flies the long burns. Saves fuel, shortens jumps, makes a hard target."
+wage = 70
+
+[[role]]
+role = "engineer"
+blurb = "Keeps the drive alive. Slower wear, cheaper repairs, patches the hull mid-fight."
+wage = 70
+
+[[role]]
+role = "gunner"
+blurb = "Works the guns. Hits harder in a fight and leads the boarding party."
+wage = 65
+
+[[role]]
+role = "medic"
+blurb = "Patches the hurt. The crew heals faster and dies less."
+wage = 60
+
+[[role]]
+role = "scientist"
+blurb = "Reads signals and caches. Dearer survey data, and strange finds worth taking."
+wage = 65
+
+[[role]]
+role = "quartermaster"
+blurb = "Counts the stores. Cheaper rations, and a hold that customs find less."
+wage = 55
+
+[[role]]
+role = "face"
+blurb = "Does the talking. Narrower trade spreads and a way through a tense dock."
+wage = 60
+
+[[goal]]
+id = "see_the_sky"
+kind = "visit"
+text = "Wants to see {target} before the lights go out."
+done = "Stood at the viewport in {target} a long while. Says the ship is theirs now."
+leave = "Left to find their own way to the sky they never saw."
+
+[[goal]]
+id = "old_home"
+kind = "visit"
+text = "Has family at {target} and has not written in years."
+done = "Found the old house at {target}. Came back lighter, and sworn."
+leave = "Took a berth on a ship that was going home."
+
+[[goal]]
+id = "last_wish"
+kind = "visit"
+text = "Promised a dying friend to scatter something at {target}."
+done = "The promise is kept at {target}. They would follow this ship anywhere."
+leave = "Stepped off at the dock, the promise still in a pocket."
+
+[[goal]]
+id = "prove_it"
+kind = "fights"
+min = 2
+max = 4
+text = "Wants to win {target} fights on this ship to prove something."
+done = "Won what they came to win. The score is settled, and they stay."
+leave = "Said the ship was all talk and went looking for a real fight."
+
+[[goal]]
+id = "settle_a_score"
+kind = "fights"
+min = 2
+max = 4
+text = "Owes pirates a reckoning: {target} wrecks will do."
+done = "The reckoning is paid. Sworn to the captain who helped pay it."
+leave = "Went to settle the score alone."
+
+[[goal]]
+id = "mapmaker"
+kind = "charts"
+min = 2
+max = 4
+text = "Dreams of putting {target} new systems on the chart."
+done = "Their name is on the chart now, in the margin. Sworn."
+leave = "Left to find a captain who goes where the chart ends."
+
+[[goal]]
+id = "first_light"
+kind = "charts"
+min = 2
+max = 4
+text = "Wants to be aboard when {target} dark systems are first charted."
+done = "First light on a new system, three times over. They will not leave now."
+leave = "Left, restless, for a ship that explores."
+
+[[goal]]
+id = "honest_work"
+kind = "contracts"
+min = 2
+max = 4
+text = "Wants {target} honest contracts done, for the record."
+done = "A clean record of contracts at last. They sign the ship's book for good."
+leave = "Left for a captain with steadier work."
+
+[[goal]]
+id = "reputation"
+kind = "contracts"
+min = 2
+max = 4
+text = "Needs {target} jobs finished to get a reference."
+done = "The reference is written. They tore it up and stayed."
+leave = "Left with no reference and no hard feelings."
+
+[[goal]]
+id = "nest_egg"
+kind = "wealth"
+min = 25
+max = 60
+text = "Will not feel safe until the purse holds {target}00 credits."
+done = "The purse is fat enough. They sleep better, and stay."
+leave = "Left, sure the ship would never be solvent."
+
+[[goal]]
+id = "new_faces"
+kind = "docks"
+min = 3
+max = 6
+text = "Wants to put in at {target} stations they have never seen."
+done = "New ports, new faces, a full notebook. Sworn to the ship."
+leave = "Left at a dock, tired of the same few ports."
+
+[[goal]]
+id = "shore_leave"
+kind = "docks"
+min = 3
+max = 6
+text = "Is owed shore leave in {target} new ports."
+done = "The shore leave is paid in full. They are the ship's own now."
+leave = "Took their shore leave and did not come back."

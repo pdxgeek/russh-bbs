@@ -369,6 +369,26 @@ async fn full(channel: &mut Channel<client::Msg>) -> String {
     words(channel).await
 }
 
+/// Redraw until the screen shows `needle`, bounded by `common::WAIT`; panics with the last
+/// screen seen. Use it instead of sleeping before a read.
+async fn full_until(channel: &mut Channel<client::Msg>, needle: &str) -> String {
+    let mut last = String::new();
+    let reached = timeout(common::WAIT, async {
+        loop {
+            last = full(channel).await;
+            if last.contains(needle) {
+                return;
+            }
+        }
+    })
+    .await;
+    assert!(
+        reached.is_ok(),
+        "no {needle:?} in time; last screen: {last}"
+    );
+    last
+}
+
 /// Claim the board as the founder and answer the icon check; returns the channel at the menu.
 async fn founder_at_menu(rig: &Rig, key: &PrivateKey) -> (Handle<Client>, Channel<client::Msg>) {
     let session = login(rig.addr(), "claim", key).await;
@@ -1435,8 +1455,7 @@ async fn doors_run_gates_the_menu_item_and_an_open_door_stops_saving_when_it_is_
     assert_eq!(revision().await, 1, "the refused toss was not saved");
     // Back at the list, then the menu: the item is gone and its hotkey does nothing.
     send(&mut channel, "\u{1b}").await;
-    tokio::time::sleep(Duration::from_millis(150)).await;
-    let menu = full(&mut channel).await;
+    let menu = full_until(&mut channel, "Main menu").await;
     assert!(
         menu.contains("Main menu") && !menu.contains("[d] Doors"),
         "{menu}"

@@ -150,10 +150,49 @@ fn the_clubs_and_journal_screens_say_why_a_club_is_shut_and_where_a_story_stands
         assert!(clubs.contains(name), "{name}: {clubs}");
     }
     assert!(clubs.contains("[b] Back"), "{clubs}");
+    // A closed club says where to sign up and what it wants, even from across the school.
+    assert!(
+        clubs.contains("Sign up at Library. They want maths at least 60."),
+        "{clubs}"
+    );
+    let flat = clubs.split_whitespace().collect::<Vec<_>>().join(" ");
+    assert!(flat.contains("They want tinker at least 1"), "{clubs}");
+    assert!(!clubs.contains("the the"), "{clubs}");
     let journal = &screens[2];
     assert!(journal.contains("Stories:"), "{journal}");
     assert!(
         journal.contains("Friends:") && journal.contains("Rivals:"),
         "{journal}"
     );
+}
+
+#[test]
+fn the_main_screen_still_shows_where_you_are_and_who_is_here_with_all_the_new_choices() {
+    // Mid-morning on a Wednesday in the Maths room with a teacher present and a lesson just finished:
+    // the fullest main menu the slice makes.
+    let mut sb = Sandbox::new("tinkerer", 4);
+    sb.game.world.term_start = sb.game.player.day - 5;
+    sb.game.sync_day(sb.game.player.day + 2);
+    sb.game.player.slot = 1;
+    sb.game.player.place = "room_maths".into();
+    sb.game.player.life.add_bond("pell", 0);
+    for (_, g) in &mut sb.game.player.grades {
+        *g = 50;
+    }
+    let screens = walk(&sb.game.player, "t");
+    let talk = &screens[0];
+    assert!(talk.contains("Who do you want a word with?"), "{talk}");
+    let screens = walk(&sb.game.player, "b");
+    let main = &screens[0];
+    for needle in [
+        "Maths room",
+        "Here:",
+        "This period:",
+        "[t] Talk to someone",
+        "[c] Clubs",
+        "[j] Journal",
+    ] {
+        assert!(main.contains(needle), "{needle}: {main}");
+    }
+    assert!(!main.contains("\n...\n"), "the body is not cut: {main}");
 }

@@ -3,6 +3,7 @@
 
 [[hull]]
 id = "courier"
+reactor = 5
 name = "Wren-class courier"
 blurb = "Quick and small. Light on cargo, kind to the fuel bill."
 price = 9000
@@ -10,6 +11,7 @@ hull_points = 60
 cargo = 14
 fuel = 70
 speed_pm = 1200
+berths = 1
 slots = { drive = 1, cargo = 1, tank = 1, scanner = 1, weapon = 1, shield = 1, cabin = 1, refinery = 0, lab = 0 }
 
 [[hull]]
@@ -21,6 +23,7 @@ hull_points = 100
 cargo = 30
 fuel = 90
 speed_pm = 1000
+berths = 2
 slots = { drive = 1, cargo = 4, tank = 2, scanner = 1, weapon = 1, shield = 1, cabin = 2, refinery = 1, lab = 0 }
 
 [[hull]]
@@ -32,10 +35,12 @@ hull_points = 80
 cargo = 18
 fuel = 100
 speed_pm = 1000
+berths = 2
 slots = { drive = 1, cargo = 2, tank = 2, scanner = 2, weapon = 1, shield = 1, cabin = 1, refinery = 1, lab = 1 }
 
 [[hull]]
 id = "gunship"
+reactor = 8
 name = "Talon-class gunship"
 blurb = "Armoured and armed, with a hold that is mostly an excuse."
 price = 30000
@@ -43,6 +48,7 @@ hull_points = 140
 cargo = 10
 fuel = 80
 speed_pm = 1100
+berths = 3
 slots = { drive = 1, cargo = 1, tank = 1, scanner = 1, weapon = 3, shield = 2, cabin = 1, refinery = 0, lab = 0 }
 
 [[module]]
@@ -184,3 +190,29 @@ slot = "lab"
 grade = 1
 price = 5500
 lab_pm = 250
+
+[[module]]
+id = "lance2"
+name = "Heavy Pulse Lance"
+slot = "weapon"
+grade = 2
+price = 7400
+power = 7
+
+[[module]]
+id = "rail1"
+name = "Rail Driver"
+slot = "weapon"
+grade = 2
+price = 8800
+power = 6
+reach = "far"
+
+[[module]]
+id = "scatter1"
+name = "Scatter Cannon"
+slot = "weapon"
+grade = 1
+price = 3600
+power = 5
+reach = "close"

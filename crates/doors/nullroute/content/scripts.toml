@@ -437,3 +437,540 @@ min_rep = 0
 min_skill = 0
 starter = false
 blurb = "Scrubs the logs, so you leave less heat behind."
+
+# --- M4-N2: scripts 28 to 60 (33 more, 60 in all). `target` tunes a script to one kind of countermeasure
+# (+3 power against it); `pierce` ignores that much armor in an encounter. A stock script is never tuned
+# to wardens (a schema test): that is what coding is for.
+
+[[script]]
+num = 28
+name = "echo-ping"
+family = "probe"
+effect = "scan"
+power = 3
+memory = 2
+noise = 2
+cycles = 1
+charges = 0
+price = 70
+min_rep = 0
+min_skill = 1
+starter = false
+blurb = "A sweep that listens for its own echo."
+
+[[script]]
+num = 29
+name = "sonar"
+family = "probe"
+effect = "scan"
+power = 5
+memory = 4
+noise = 5
+cycles = 2
+charges = 0
+price = 300
+min_rep = 12
+min_skill = 3
+starter = false
+blurb = "Sees through all but the deepest hiding."
+
+[[script]]
+num = 30
+name = "blueprint"
+family = "probe"
+effect = "map"
+power = 3
+memory = 3
+noise = 3
+cycles = 2
+charges = 1
+price = 150
+min_rep = 5
+min_skill = 0
+starter = false
+blurb = "A floor plan with the stairwells marked."
+
+[[script]]
+num = 31
+name = "survey-suite"
+family = "probe"
+effect = "map"
+power = 5
+memory = 4
+noise = 6
+cycles = 3
+charges = 1
+price = 380
+min_rep = 20
+min_skill = 2
+starter = false
+blurb = "The whole floor, every hidden link."
+
+[[script]]
+num = 32
+name = "pass-the-hash"
+family = "break"
+effect = "crack"
+power = 3
+memory = 3
+noise = 6
+cycles = 1
+charges = 0
+price = 90
+min_rep = 0
+min_skill = 0
+starter = false
+blurb = "Skips the guessing and replays a captured hash."
+
+[[script]]
+num = 33
+name = "rainbow-table"
+family = "break"
+effect = "crack"
+power = 5
+memory = 5
+noise = 9
+cycles = 2
+charges = 0
+price = 300
+min_rep = 15
+min_skill = 2
+starter = false
+blurb = "Eats passwords whole."
+
+[[script]]
+num = 34
+name = "master-badge"
+family = "break"
+effect = "spoof"
+power = 3
+memory = 3
+noise = 5
+cycles = 1
+charges = 0
+price = 90
+min_rep = 0
+min_skill = 0
+starter = false
+blurb = "A badge that opens a few doors too many."
+
+[[script]]
+num = 35
+name = "diplomat"
+family = "break"
+effect = "spoof"
+power = 5
+memory = 5
+noise = 7
+cycles = 2
+charges = 0
+price = 300
+min_rep = 15
+min_skill = 2
+starter = false
+blurb = "Walks in with the right accent."
+
+[[script]]
+num = 36
+name = "off-by-one"
+family = "break"
+effect = "overflow"
+power = 3
+memory = 3
+noise = 7
+cycles = 1
+charges = 0
+price = 100
+min_rep = 0
+min_skill = 0
+starter = false
+blurb = "One byte too many."
+
+[[script]]
+num = 37
+name = "chain-overflow"
+family = "break"
+effect = "overflow"
+power = 5
+memory = 5
+noise = 11
+cycles = 2
+charges = 0
+price = 310
+min_rep = 15
+min_skill = 2
+starter = false
+blurb = "Overruns the buffer and the one behind it."
+
+[[script]]
+num = 38
+name = "side-channel"
+family = "break"
+effect = "crack"
+power = 4
+memory = 3
+noise = 4
+cycles = 2
+charges = 0
+price = 200
+min_rep = 8
+min_skill = 1
+starter = false
+blurb = "Listens to the lock think. Quiet."
+
+[[script]]
+num = 39
+name = "forged-chain"
+family = "break"
+effect = "spoof"
+power = 4
+memory = 3
+noise = 4
+cycles = 2
+charges = 0
+price = 200
+min_rep = 8
+min_skill = 1
+starter = false
+blurb = "A certificate chain that bends to fit."
+
+[[script]]
+num = 40
+name = "format-string"
+family = "break"
+effect = "overflow"
+power = 4
+memory = 3
+noise = 7
+cycles = 2
+charges = 0
+price = 210
+min_rep = 8
+min_skill = 1
+starter = false
+blurb = "Makes the program print its own keys."
+
+[[script]]
+num = 41
+name = "shadow"
+family = "hide"
+effect = "mask"
+power = 2
+memory = 3
+noise = 0
+cycles = 1
+charges = 2
+price = 100
+min_rep = 0
+min_skill = 0
+starter = false
+blurb = "Two long moves of silence."
+
+[[script]]
+num = 42
+name = "static"
+family = "hide"
+effect = "mask"
+power = 3
+memory = 4
+noise = 0
+cycles = 1
+charges = 2
+price = 220
+min_rep = 10
+min_skill = 2
+starter = false
+blurb = "A hum that hides the footsteps."
+
+[[script]]
+num = 43
+name = "chaff"
+family = "hide"
+effect = "decoy"
+power = 3
+memory = 4
+noise = 1
+cycles = 1
+charges = 1
+price = 160
+min_rep = 5
+min_skill = 0
+starter = false
+blurb = "A cloud of false packets."
+
+[[script]]
+num = 44
+name = "flock"
+family = "hide"
+effect = "decoy"
+power = 4
+memory = 5
+noise = 1
+cycles = 1
+charges = 1
+price = 300
+min_rep = 15
+min_skill = 2
+starter = false
+blurb = "A hundred decoys, one real."
+
+[[script]]
+num = 45
+name = "back-channel"
+family = "hide"
+effect = "reroute"
+power = 3
+memory = 3
+noise = 0
+cycles = 2
+charges = 2
+price = 170
+min_rep = 5
+min_skill = 0
+starter = false
+blurb = "Sends your trace through a friend."
+
+[[script]]
+num = 46
+name = "ghost-hop"
+family = "hide"
+effect = "reroute"
+power = 5
+memory = 5
+noise = 0
+cycles = 2
+charges = 2
+price = 380
+min_rep = 20
+min_skill = 3
+starter = false
+blurb = "Hops the trace across the ocean and back."
+
+[[script]]
+num = 47
+name = "dead-drop"
+family = "hide"
+effect = "decoy"
+power = 1
+memory = 1
+noise = 0
+cycles = 1
+charges = 2
+price = 40
+min_rep = 0
+min_skill = 0
+starter = false
+blurb = "A cheap decoy for a cheap deck."
+
+[[script]]
+num = 48
+name = "static-jam"
+family = "fight"
+effect = "jam"
+power = 3
+memory = 3
+noise = 4
+cycles = 1
+charges = 0
+price = 160
+min_rep = 5
+min_skill = 0
+starter = false
+blurb = "A jammer with a wider band."
+
+[[script]]
+num = 49
+name = "sentry-spike"
+family = "fight"
+effect = "jam"
+power = 3
+memory = 3
+noise = 4
+cycles = 1
+charges = 0
+price = 190
+min_rep = 8
+min_skill = 0
+starter = false
+target = "sentry"
+blurb = "A jammer tuned to sentries."
+
+[[script]]
+num = 50
+name = "tracer-trap"
+family = "fight"
+effect = "jam"
+power = 3
+memory = 3
+noise = 4
+cycles = 1
+charges = 0
+price = 190
+min_rep = 8
+min_skill = 0
+starter = false
+target = "tracer"
+blurb = "A jammer tuned to tracers."
+
+[[script]]
+num = 51
+name = "double-fork"
+family = "fight"
+effect = "fork"
+power = 3
+memory = 4
+noise = 4
+cycles = 1
+charges = 1
+price = 200
+min_rep = 8
+min_skill = 0
+starter = false
+blurb = "A fork that takes two hits for you."
+
+[[script]]
+num = 52
+name = "mirror-fork"
+family = "fight"
+effect = "fork"
+power = 4
+memory = 5
+noise = 5
+cycles = 1
+charges = 1
+price = 320
+min_rep = 18
+min_skill = 2
+starter = false
+blurb = "Forks and reflects the first hit."
+
+[[script]]
+num = 53
+name = "wall-breaker"
+family = "fight"
+effect = "purge"
+power = 4
+memory = 5
+noise = 8
+cycles = 2
+charges = 0
+price = 350
+min_rep = 15
+min_skill = 1
+starter = false
+target = "wall"
+blurb = "A purge tuned to black walls."
+
+[[script]]
+num = 54
+name = "purge-spear"
+family = "fight"
+effect = "purge"
+power = 5
+memory = 5
+noise = 8
+cycles = 2
+charges = 0
+price = 390
+min_rep = 20
+min_skill = 2
+starter = false
+blurb = "A thin, hard purge."
+
+[[script]]
+num = 55
+name = "piercer"
+family = "fight"
+effect = "jam"
+power = 4
+memory = 4
+noise = 5
+cycles = 1
+charges = 0
+price = 330
+min_rep = 15
+min_skill = 2
+starter = false
+pierce = 2
+blurb = "A jammer that ignores armor."
+
+[[script]]
+num = 56
+name = "overwatch"
+family = "fight"
+effect = "purge"
+power = 3
+memory = 3
+noise = 6
+cycles = 2
+charges = 0
+price = 240
+min_rep = 10
+min_skill = 1
+starter = false
+pierce = 1
+blurb = "A cheap purge that finds the seams."
+
+[[script]]
+num = 57
+name = "deep-copy"
+family = "utility"
+effect = "copy"
+power = 2
+memory = 2
+noise = 3
+cycles = 2
+charges = 0
+price = 180
+min_rep = 8
+min_skill = 0
+starter = false
+blurb = "A quieter copier."
+
+[[script]]
+num = 58
+name = "backdoor-pro"
+family = "utility"
+effect = "plant"
+power = 2
+memory = 3
+noise = 3
+cycles = 2
+charges = 0
+price = 200
+min_rep = 8
+min_skill = 0
+starter = false
+blurb = "A backdoor that hides itself."
+
+[[script]]
+num = 59
+name = "scorch"
+family = "utility"
+effect = "shred"
+power = 2
+memory = 3
+noise = 3
+cycles = 2
+charges = 0
+price = 200
+min_rep = 8
+min_skill = 0
+starter = false
+blurb = "A shredder with a cleaner burn."
+
+[[script]]
+num = 60
+name = "mute-eye"
+family = "utility"
+effect = "cutfeed"
+power = 2
+memory = 1
+noise = 0
+cycles = 1
+charges = 0
+price = 120
+min_rep = 5
+min_skill = 0
+starter = false
+blurb = "Cuts a camera feed without a sound."
