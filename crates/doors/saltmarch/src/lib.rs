@@ -28,14 +28,17 @@
 
 pub mod clan;
 pub mod codec;
+pub mod combat;
 pub mod content;
 pub mod crew;
 pub mod engine;
 pub mod event;
 pub mod hold;
+pub mod lore;
 pub mod map;
 mod session;
 pub mod tide;
+pub mod trip;
 pub mod types;
 pub mod world;
 
@@ -44,7 +47,9 @@ use std::sync::Arc;
 
 use russh_bbs_door::content::ContentError;
 use russh_bbs_door::tick::{TickCtx, TickError};
-use russh_bbs_door::{Door, DoorInfo, DoorRng, DoorSession, InvalidDoorId, Save, Start};
+use russh_bbs_door::{
+    BlobKind, Door, DoorInfo, DoorRng, DoorSession, InvalidDoorId, MigrateError, Save, Start,
+};
 
 use crate::clan::{Clan, Settings};
 use crate::content::Catalog;
@@ -55,7 +60,7 @@ use crate::world::World;
 pub const DOOR_ID: &str = "saltmarch";
 
 /// The current save format version.
-pub const SAVE_VERSION: u32 = 1;
+pub const SAVE_VERSION: u32 = 2;
 
 /// The current world format version.
 pub const WORLD_VERSION: u32 = 1;
@@ -181,6 +186,18 @@ impl Door for Saltmarch {
             rolled,
             default_name: start.env.handle.clone(),
         }))
+    }
+
+    fn migrate(&self, kind: BlobKind, from: u32, bytes: &[u8]) -> Result<Vec<u8>, MigrateError> {
+        match (kind, from) {
+            // Version 2 added the expedition counters, the clan's marks and the trip.
+            (BlobKind::Save, 1) => {
+                let upgraded = Clan::upgrade_v1(bytes);
+                Clan::decode(&upgraded).ok_or(MigrateError::Corrupt(1))?;
+                Ok(upgraded)
+            }
+            _ => Err(MigrateError::Unsupported(from)),
+        }
     }
 
     fn has_daily_tick(&self) -> bool {

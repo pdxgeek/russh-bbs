@@ -534,6 +534,6 @@ fn the_door_is_registered_under_its_id_and_has_a_tick() {
     assert!(door.has_daily_tick());
     assert_eq!(
         (door.info().save_version, door.info().world_version),
-        (1, 1)
+        (2, 1)
     );
 }

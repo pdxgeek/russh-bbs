@@ -1,0 +1,1774 @@
+# Expedition scenes. A scene is drawn when a party enters a tile (or arrives at a place, or
+# camps) and every filter below fits: `tiles`, `water` (low under 40, mid, high from 65), `day`
+# (night 22-04, dawn 04-07, day 07-18, dusk 18-22), `stage` (early, mid, late third of the
+# season) and `needs` (the party and the clan's history). `draws` makes it likelier. An option
+# is offered only when its `needs` hold, so the same scene shows a different list to a different
+# party. `risk` is the base chance in percent that it goes badly; the best hand at `skill`,
+# luck, steadiness and clumsiness move it. `fx` strings: gain:<res>:<lo>-<hi>, lose:<res>:<n>,
+# tallies:<lo>-<hi>, pay:<n>, hurt:<who>:<cause>, die:<who>, mark:<id>, unmark:<id>, turns:<n>,
+# bond:<n>, xp:<trade>:<n>, morale:<n>, recipe:<id>, chart:<n>, heal:<who>:<days>, fight:<group>
+# (last). <who> is any, all, lead or a trade. Conditions: trade:<t>[:<lvl>], skill:<t>:<lvl>,
+# trait:<id>, scar, bond, mark:<id>, carry:<res>[:<n>], size:<n>, boat, each with a leading !
+# to negate.
+
+# ------------------------------------------------------------------ mudflats
+
+[[event]]
+id = "silt-sledge"
+title = "A sledge in the silt"
+text = "A flat-bottomed sledge lies half sunk in the mud, its runners rotten, its load still lashed under a skin of silt. The tide has not found it yet."
+tiles = ["mudflat"]
+water = ["low", "mid"]
+weight = 9
+[[event.option]]
+label = "Dig it out by hand"
+skill = "wader"
+risk = 35
+[event.option.win]
+text = "The lashings give with the third pull. Under the silt: timber, still sound, and a tin box of tallies."
+fx = ["gain:timber:2-4", "tallies:3-8", "xp:wader:2"]
+[event.option.lose]
+text = "The mud lets go all at once and takes your footing with it. You get the sledge's corner and a bad wrench."
+fx = ["hurt:any:hurt", "gain:timber:1-2"]
+[[event.option]]
+label = "Lay rope and drag it clear"
+needs = ["carry:rope:1"]
+skill = "wader"
+risk = 10
+[event.option.win]
+text = "Rope round the runners, four of you on the line. It comes out of the mud with a sound like a long kiss."
+fx = ["gain:timber:3-5", "tallies:4-9", "xp:wader:2"]
+[event.option.lose]
+text = "The rope parts with a crack. The sledge slides back down and you lose the rope as well."
+fx = ["lose:rope:1"]
+[[event.option]]
+label = "Leave it for the tide"
+[event.option.win]
+text = "You mark the place with a reed stake and walk on. Somebody else will have it by morning."
+
+[[event]]
+id = "sucking-mud"
+title = "Mud that wants you"
+text = "The flat ahead shines too evenly. One of you puts a foot down and does not find the bottom."
+tiles = ["mudflat", "salt-pan"]
+water = ["low", "mid"]
+weight = 9
+[[event.option]]
+label = "Go round, and lose a turn"
+[event.option.win]
+text = "You circle wide on the firm ridges. It costs time, not skin."
+fx = ["turns:1"]
+[[event.option]]
+label = "Cross it quickly, light-footed"
+needs = ["trade:wader"]
+skill = "wader"
+risk = 30
+[event.option.win]
+text = "The wader reads the sheen and sets the line: stone, stone, hard ridge. You cross dry-shod and a little proud."
+fx = ["xp:wader:2", "bond:1"]
+[event.option.lose]
+text = "A step too long. The wader hauls the others out and you all come up grey to the thigh."
+fx = ["hurt:any:hurt", "turns:1"]
+[[event.option]]
+label = "Throw a rope across and haul over"
+needs = ["carry:rope:1", "size:2"]
+[event.option.win]
+text = "One goes first on the line, the rest follow on their own. Nothing is lost but a little dignity."
+fx = ["bond:1"]
+
+[[event]]
+id = "heron-line"
+title = "The heron line"
+text = "A dozen herons stand along the edge of a creek in the first light, each exactly one length from the next. They have found something, and they are not sharing."
+tiles = ["mudflat", "channel"]
+day = ["dawn", "dusk"]
+weight = 7
+[[event.option]]
+label = "Wade in beside them and rake what they leave"
+needs = ["!mark:took-the-eggs"]
+skill = "wader"
+risk = 20
+[event.option.win]
+text = "Eels, and the fat grey cockles the herons were after. The herons give you a long look and fly."
+fx = ["gain:fish:4-8", "xp:wader:1"]
+[event.option.lose]
+text = "The herons rise all together and one of them takes your hat and a strip of your scalp with it."
+fx = ["hurt:any:hurt", "gain:fish:1-2"]
+[[event.option]]
+label = "Watch, and learn the creek"
+[event.option.win]
+text = "You note which way they face, and where the creek runs deep. It will be on the chart tonight."
+fx = ["chart:2"]
+
+[[event]]
+id = "cockle-beds"
+title = "Cockle beds, uncovered"
+text = "The low water has laid bare a bed of cockles as wide as a threshing floor. There is more here than you can carry, and the tide is a patient thing."
+tiles = ["mudflat"]
+water = ["low"]
+day = ["dawn", "day", "dusk"]
+weight = 8
+[[event.option]]
+label = "Fill every sack"
+[event.option.win]
+text = "An hour on your knees. Your backs will tell you about it tomorrow."
+fx = ["gain:fish:5-9", "turns:1"]
+[[event.option]]
+label = "Take a few and keep your feet dry"
+[event.option.win]
+text = "A modest haul and no hurry."
+fx = ["gain:fish:2-4"]
+[[event.option]]
+label = "Show the young ones the trick of the thumb-test"
+needs = ["trade:wader:2"]
+[event.option.win]
+text = "The wader shows how to tell a live shell from a dead one by the sound. Everyone is quicker for it."
+fx = ["gain:fish:4-6", "xp:wader:3"]
+
+# ------------------------------------------------------------------ reedbeds
+
+[[event]]
+id = "reed-whisper"
+title = "The reeds are talking"
+text = "There is no wind, and the reeds are moving. They lean one way together, away from the water, and the sound they make is nearly words."
+tiles = ["reedbed"]
+weight = 9
+draws = ["trade:reed-witch"]
+[[event.option]]
+label = "Hurry on and ignore it"
+[event.option.win]
+text = "You walk faster. Nothing follows, or nothing you see."
+[[event.option]]
+label = "Listen, and read the lean"
+needs = ["trade:reed-witch"]
+skill = "reed-witch"
+risk = 25
+[event.option.win]
+text = "The reed-witch hears the shape of it: where the water will rise first, and where the ground holds. She marks it on your wrists in charcoal."
+fx = ["chart:3", "xp:reed-witch:3"]
+[event.option.lose]
+text = "She hears too much. For a long minute she stares at the water and says nothing, and she is cold when you take her arm."
+fx = ["hurt:reed-witch:water", "morale:-3"]
+[[event.option]]
+label = "Cut a bundle of the whispering reed"
+[event.option.win]
+text = "It is only reed. It cuts clean, and the hold can use it."
+fx = ["gain:reed:3-6"]
+
+[[event]]
+id = "cutters-snare"
+title = "A snare across the path"
+text = "A line of braided reed is stretched knee-high across the only dry track. Beyond it, someone has left a sack where it will be seen."
+tiles = ["reedbed"]
+stage = ["early", "mid"]
+weight = 8
+[[event.option]]
+label = "Cut the line and take the sack"
+skill = "fighter"
+risk = 45
+[event.option.win]
+text = "The line goes slack and nothing follows it. In the sack: salt, a sling, and eleven tallies in a sock."
+fx = ["gain:salt:2-4", "tallies:6-11"]
+[event.option.lose]
+text = "The line was a signal. Two cutters step from the reeds with billhooks."
+fx = ["mark:crossed-the-cutters", "fight:cutters-road"]
+[[event.option]]
+label = "Step over it and leave the sack"
+[event.option.win]
+text = "You step high and walk on. Behind you a bird goes up, and then nothing."
+[[event.option]]
+label = "Read the knots and follow the line back"
+needs = ["skill:wader:3"]
+[event.option.win]
+text = "A wader knows a fowler's knot. You follow the line to the watcher's empty hide, take what is in it and leave before anyone is home."
+fx = ["tallies:5-10", "gain:rope:1-2", "xp:wader:2"]
+[[event.option]]
+label = "Show the cutters' mark and walk through"
+needs = ["mark:friend-of-the-cutters"]
+[event.option.win]
+text = "A cutter steps from the reeds, sees the knot you tie, and nods. 'Not that one. Come on, there's a better road.' He sets you on it."
+fx = ["chart:3", "gain:reed:3-5", "tallies:3-6"]
+
+[[event]]
+id = "egg-island"
+title = "A floating nest-raft"
+text = "A raft of woven reed floats in a pool at the heart of the bed, a heron's nest built on it, the eggs the size of a fist and the colour of sea-glass."
+tiles = ["reedbed"]
+stage = ["early"]
+day = ["dawn", "day"]
+weight = 6
+[[event.option]]
+label = "Take the eggs"
+risk = 30
+skill = "wader"
+[event.option.win]
+text = "Six eggs, warm in the hand. The mother watches from the far reeds and does not forgive you."
+fx = ["gain:food:2-4", "mark:took-the-eggs"]
+[event.option.lose]
+text = "She comes at you out of the sun with a beak like a billhook."
+fx = ["hurt:lead:hurt", "mark:took-the-eggs"]
+[[event.option]]
+label = "Leave the nest alone"
+[event.option.win]
+text = "You back away. A few steps on, a heron lands on the raft and settles, and something in the clan feels lighter for it."
+fx = ["morale:3"]
+
+[[event]]
+id = "reed-cat-stalk"
+title = "Eyes in the reeds"
+text = "Two green points of light low in the reeds, and then none. Something is keeping pace with you, a few paces off, and it is not bothering to hide the sound."
+tiles = ["reedbed", "island"]
+day = ["dusk", "night"]
+weight = 8
+[[event.option]]
+label = "Stand and wait for it"
+[event.option.win]
+text = "It steps out into the open, looks you over, and the reeds shiver where it leaves."
+fx = ["fight:reed-cat-ambush"]
+[[event.option]]
+label = "Show a lantern and walk on"
+needs = ["carry:peat:1"]
+[event.option.win]
+text = "The light makes it think twice. You walk with your backs to each other until the eyes are gone."
+fx = ["bond:1"]
+[[event.option]]
+label = "Leave it a fish"
+needs = ["carry:fish:1"]
+[event.option.win]
+text = "The fish is gone before it hits the mud. The eyes do not come back."
+fx = ["lose:fish:1", "morale:1"]
+
+# ------------------------------------------------------------------ peat bogs
+
+[[event]]
+id = "peat-fire"
+title = "The bog is burning"
+text = "A thread of smoke from the black ground, and under your boots a warmth that does not belong. The bog is smouldering from below."
+tiles = ["peat-bog"]
+water = ["low"]
+weight = 8
+[[event.option]]
+label = "Dig a trench and cut what is dry"
+skill = "raker"
+risk = 30
+[event.option.win]
+text = "You cut the dry blocks free and stack them clear. Half the bog's warmth goes home with you."
+fx = ["gain:peat:5-9", "xp:raker:2"]
+[event.option.lose]
+text = "The crust gives. Smoke and sparks go up your sleeve."
+fx = ["hurt:any:hurt", "gain:peat:1-3"]
+[[event.option]]
+label = "Go round upwind"
+[event.option.win]
+text = "You circle upwind with your sleeves over your faces. It adds a turn and takes nothing from you."
+fx = ["turns:1"]
+[[event.option]]
+label = "Read the burn and cut where the peat is safe"
+needs = ["trade:raker"]
+skill = "raker"
+risk = 10
+[event.option.win]
+text = "The raker walks the edge of the smoke with her head on one side, listening to the ground. She marks four blocks with her heel and you cut them clean."
+fx = ["gain:peat:7-11", "xp:raker:3"]
+[event.option.lose]
+text = "A pocket she did not hear. The crust goes, and she goes with it to the knee."
+fx = ["hurt:raker:hurt", "gain:peat:3-4"]
+
+[[event]]
+id = "drover-ghost"
+title = "The drover who didn't stop"
+text = "A shape with a pole and a pack animal, walking the dyke through the dusk. It neither speaks nor looks. The animal casts no shadow."
+tiles = ["peat-bog", "reedbed"]
+day = ["dusk", "night"]
+weight = 7
+draws = ["trait:haunted", "trade:reed-witch"]
+[[event.option]]
+label = "Step off the track and let it pass"
+[event.option.win]
+text = "It passes close enough to touch. It smells of cold peat and nothing else."
+[[event.option]]
+label = "Fall in behind it a while"
+needs = ["trait:haunted"]
+[event.option.win]
+text = "The haunted one knows the walk. You follow the ghost's dyke a mile to dry ground you would never have found."
+fx = ["chart:3", "morale:-2"]
+[[event.option]]
+label = "Ask it the way, in the old words"
+needs = ["trade:reed-witch"]
+skill = "reed-witch"
+risk = 30
+[event.option.win]
+text = "The drover turns its head and points, once. You walk where it pointed. It is the best road you have had all day."
+fx = ["chart:4", "xp:reed-witch:2", "mark:the-drovers-road"]
+[event.option.lose]
+text = "It does look at her. Whatever it saw, she does not say."
+fx = ["hurt:reed-witch:water", "morale:-2"]
+
+[[event]]
+id = "bog-oak"
+title = "A black oak, upright in the peat"
+text = "The old coast's last oak, tanned the colour of iron by the bog and still standing. A man could sell a beam of it for a year's salt."
+tiles = ["peat-bog"]
+weight = 7
+[[event.option]]
+label = "Fell it and cut a beam"
+needs = ["carry:tools:1"]
+[event.option.win]
+text = "Hard as iron, and it takes the tool's edge. A beam of black oak, though. That will bring a price."
+fx = ["gain:timber:4-7", "lose:tools:1"]
+[[event.option]]
+label = "Cut a few chips with the billhook"
+[event.option.win]
+text = "A pocketful of splinters, good for a fire that smells of the old world."
+fx = ["gain:timber:1-2"]
+[[event.option]]
+label = "Fell it, if the smith knows how"
+needs = ["trade:smith"]
+skill = "smith"
+risk = 15
+[event.option.win]
+text = "The smith finds the grain and drives a wedge where it must go. The tree falls where you wanted it."
+fx = ["gain:timber:5-8", "xp:smith:2"]
+[event.option.lose]
+text = "It falls the other way, and a limb catches the nearest of you."
+fx = ["hurt:any:hurt", "gain:timber:2-3"]
+
+# ------------------------------------------------------------------ salt pans
+
+[[event]]
+id = "salt-crust"
+title = "Salt, laid like a floor"
+text = "The pan has dried to a white crust as clean as a plate. It will not last: the first tide will melt it into the mud."
+tiles = ["salt-pan"]
+water = ["low"]
+day = ["day", "dusk"]
+weight = 9
+[[event.option]]
+label = "Rake it all up, fast"
+skill = "raker"
+risk = 20
+[event.option.win]
+text = "The rakers set a rhythm and the white comes up in drifts. Good salt, and plenty."
+fx = ["gain:salt:6-10", "xp:raker:2"]
+[event.option.lose]
+text = "The crust is thinner than it looks, and the brine under it has been waiting. Salt in every cut."
+fx = ["hurt:any:hurt", "gain:salt:2-3"]
+[[event.option]]
+label = "Take the top crust only"
+[event.option.win]
+text = "Clean, and easy on the back."
+fx = ["gain:salt:3-5"]
+
+[[event]]
+id = "brine-pool"
+title = "A brine pool, red as wine"
+text = "The pool is the colour of old wine, with a skin that stirs when you speak. Something lives in it, and the salt around it is the best you have seen."
+tiles = ["salt-pan"]
+weight = 6
+[[event.option]]
+label = "Draw a skin of the brine"
+[event.option.win]
+text = "It stinks, and it will make the finest cure the smokehouse has had."
+fx = ["gain:salt:3-5", "gain:food:1-2"]
+[[event.option]]
+label = "Taste it"
+needs = ["trade:healer"]
+skill = "healer"
+risk = 20
+[event.option.win]
+text = "The healer rolls it on her tongue and spits. 'Clean,' she says. 'Salt and a little iron. It will keep a wound.' She fills a bottle."
+fx = ["heal:all:2", "xp:healer:2"]
+[event.option.lose]
+text = "It is not clean. She is sick on the path and pale for an hour."
+fx = ["hurt:healer:sickness"]
+
+[[event]]
+id = "crab-bed"
+title = "Shells that are not stones"
+text = "What looks like a field of grey stones sidles, very slowly, toward you. Some of the stones have claws."
+tiles = ["salt-pan", "mudflat"]
+weight = 7
+[[event.option]]
+label = "Fight for the bed"
+[event.option.win]
+text = "The crabs rise in ranks. There is no polite way out of this."
+fx = ["fight:crab-bed"]
+[[event.option]]
+label = "Step lightly along the edge"
+skill = "wader"
+risk = 35
+[event.option.win]
+text = "You find the one lane they have left clear. They watch you go."
+fx = ["xp:wader:1"]
+[event.option.lose]
+text = "A claw takes your boot and your ankle with it."
+fx = ["hurt:any:hurt", "turns:1"]
+
+# ------------------------------------------------------------------ channels
+
+[[event]]
+id = "current-cut"
+title = "The channel is running"
+text = "What was a ditch an hour ago is a brown river, waist-deep and fast, with the sea behind it. The way on is on the far side."
+tiles = ["channel"]
+water = ["mid", "high"]
+weight = 9
+[[event.option]]
+label = "Wait for it to drop"
+[event.option.win]
+text = "You sit on the bank and watch the water think about it. It drops, grudgingly."
+fx = ["turns:3"]
+[[event.option]]
+label = "Ford it on a line"
+needs = ["carry:rope:1"]
+skill = "wader"
+risk = 25
+[event.option.win]
+text = "The wader goes across with the rope and makes it fast. The rest cross hand over hand."
+fx = ["xp:wader:2", "bond:1"]
+[event.option.lose]
+text = "The line snaps, and you chase a sack of salt a quarter-mile down the channel."
+fx = ["hurt:any:water", "lose:rope:1"]
+[[event.option]]
+label = "Cross by boat"
+needs = ["boat"]
+[event.option.win]
+text = "Your boat takes the current with grace. Boatwrights always do know this water."
+fx = ["xp:boatwright:2"]
+[[event.option]]
+label = "Call the ferryman to the ford"
+needs = ["mark:crossed-with-the-ferryman"]
+[event.option.win]
+text = "You name him once, quietly. The long boat is there before you finish, and the ford is dry under it. He asks nothing this time."
+fx = ["morale:3", "bond:1"]
+
+[[event]]
+id = "drifting-boat"
+title = "A boat, adrift"
+text = "A flat-bottomed boat turns slowly in an eddy, oars shipped, a net in the bow. Nobody aboard. No blood, no sign."
+tiles = ["channel", "mere"]
+weight = 7
+[[event.option]]
+label = "Haul it in and take what is aboard"
+skill = "boatwright"
+risk = 25
+[event.option.win]
+text = "Nets, a coil of line and a fish-box half full. The boatwright pats the hull as if it were a horse."
+fx = ["gain:fish:3-6", "gain:rope:1-2"]
+[event.option.lose]
+text = "The eddy turns on you. The boat rides over your foot and goes on without you."
+fx = ["hurt:any:hurt"]
+[[event.option]]
+label = "Take the boat itself"
+needs = ["trade:boatwright:2"]
+[event.option.win]
+text = "The boatwright finds the sprung plank, puts a wedge in it, and calls it sound. You have a boat."
+fx = ["gain:boats:1", "xp:boatwright:3"]
+[[event.option]]
+label = "Leave it. Nobody leaves a boat without a reason"
+[event.option.win]
+text = "The boat turns slowly in its eddy. You do not look back."
+
+[[event]]
+id = "eel-run"
+title = "The eels are running"
+text = "The channel is black and glittering with eels, thick as a rope walk, all going the same way. They bite what they cannot swallow."
+tiles = ["channel"]
+day = ["dusk", "night"]
+stage = ["mid", "late"]
+weight = 7
+[[event.option]]
+label = "Net them as they pass"
+skill = "wader"
+risk = 25
+[event.option.win]
+text = "You net more than you can count. The channel runs shining until you are done."
+fx = ["gain:fish:6-10", "xp:wader:2"]
+[event.option.lose]
+text = "A net-full of angry eel is a lot of eel."
+fx = ["hurt:any:hurt", "gain:fish:2-3"]
+[[event.option]]
+label = "Stay out of the water until they pass"
+[event.option.win]
+text = "An hour goes by. When the last of them has gone you cross dry."
+fx = ["turns:2"]
+[[event.option]]
+label = "Take a stake and fight for the best of them"
+[event.option.win]
+text = "Something in the run is bigger than the rest and it does not mean to be eaten."
+fx = ["fight:eel-pair"]
+
+# ------------------------------------------------------------------ islands
+
+[[event]]
+id = "beacon-stump"
+title = "A beacon, long cold"
+text = "On the crown of the island, a ring of blackened stones and a stack of driftwood under a tarred cloth. Someone has kept this ready for a night when they had to be seen."
+tiles = ["island"]
+weight = 7
+[[event.option]]
+label = "Light it and see who comes"
+needs = ["!mark:lit-the-beacon"]
+[event.option.win]
+text = "The flame goes up straight. By dusk a boat has come, a trader, who sees your light and trades fairly out of relief."
+fx = ["tallies:6-12", "mark:lit-the-beacon"]
+[[event.option]]
+label = "Take the dry driftwood for the hold"
+[event.option.win]
+text = "Good, dry timber, tarred and ready to burn."
+fx = ["gain:timber:2-4"]
+[[event.option]]
+label = "Mend the beacon for whoever needs it next"
+needs = ["trade:smith"]
+[event.option.win]
+text = "The smith resets the stones and wedges a new cloth. It is good to leave a thing better than you found it."
+fx = ["morale:3", "xp:smith:1"]
+
+[[event]]
+id = "castaway"
+title = "A castaway on the high ground"
+text = "A thin figure on a clutch of rocks, wrapped in sailcloth, shivering. She says she has been here since the last spring tide."
+tiles = ["island"]
+water = ["mid", "high"]
+weight = 6
+[[event.option]]
+label = "Share your food"
+needs = ["carry:food:1"]
+[event.option.win]
+text = "She eats like she has forgotten how. Afterward she tells you where the dry ground is, east of here, and which of the fords will hold."
+fx = ["lose:food:1", "chart:3", "morale:2"]
+[[event.option]]
+label = "Tend her fever"
+needs = ["trade:healer"]
+skill = "healer"
+risk = 25
+[event.option.win]
+text = "The healer sits with her an hour. She will live, and she gives you the fisher's knots her mother taught her, which are worth more than any salt."
+fx = ["xp:healer:3", "gain:rope:1-2", "mark:saved-the-castaway"]
+[event.option.lose]
+text = "She is further gone than she looked. She does not wake again."
+fx = ["morale:-3"]
+[[event.option]]
+label = "Pass by. You cannot carry another mouth"
+[event.option.win]
+text = "You do not look at her as you go. The wind carries something that might be a word."
+fx = ["morale:-2"]
+
+# ------------------------------------------------------------------ drowned towns, wrecks
+
+[[event]]
+id = "flooded-cellar"
+title = "A cellar with the lid half off"
+text = "Between the fallen walls, a cellar door gapes at an angle. The water in the stair is clear and still, and something glints at the bottom of it."
+tiles = ["drowned-town"]
+weight = 9
+[[event.option]]
+label = "Go down on a rope"
+needs = ["carry:rope:1"]
+skill = "salvager"
+risk = 25
+[event.option.win]
+text = "Iron fittings, a stack of tin plate and a jar of silt-glass beads. Somebody's careful hoard."
+fx = ["gain:iron:2-4", "gain:silt-glass:1-2", "xp:salvager:2"]
+[event.option.lose]
+text = "The stair gives under the weight of three. The water is colder than the sea."
+fx = ["hurt:any:water", "gain:iron:1-2"]
+[[event.option]]
+label = "Reach in with a boathook"
+skill = "salvager"
+risk = 40
+[event.option.win]
+text = "Something heavy comes up, dripping. A strongbox, rusted but whole."
+fx = ["gain:iron:1-2", "tallies:4-9"]
+[event.option.lose]
+text = "The hook catches and does not come free."
+fx = ["lose:tools:1"]
+[[event.option]]
+label = "Leave it. It looks like a trap"
+[event.option.win]
+text = "You close the door on it, and wedge it. A cellar that keeps its secret is a fair neighbour."
+
+[[event]]
+id = "bell-under-water"
+title = "The bell under the water"
+text = "A low note, from nowhere, felt in the soles of the feet. Down the street a chapel roof breaks the surface, and in the water below it something very large is moving."
+tiles = ["drowned-town"]
+day = ["dusk", "night"]
+weight = 6
+draws = ["trait:haunted", "trade:reed-witch"]
+[[event.option]]
+label = "Walk on, quietly"
+[event.option.win]
+text = "The note stops when you do. You do not discuss it."
+[[event.option]]
+label = "Follow the sound to the chapel"
+needs = ["trait:haunted"]
+[event.option.win]
+text = "The haunted one walks as if sleepwalking. At the chapel door, a niche, and in it the offerings of every drowned parish. They are not counting."
+fx = ["tallies:8-14", "gain:silt-glass:1-2", "morale:-3", "mark:saw-the-bell"]
+[[event.option]]
+label = "Ring it back"
+needs = ["trade:reed-witch"]
+skill = "reed-witch"
+risk = 35
+[event.option.win]
+text = "She strikes a stone against the iron, once. Something listens. Then the note changes, and it is a kind of thanks."
+fx = ["xp:reed-witch:3", "morale:4", "mark:saw-the-bell"]
+[event.option.lose]
+text = "The sound that answers is not thanks."
+fx = ["hurt:all:water", "morale:-4"]
+[[event.option]]
+label = "Let the bell ring for you, as it rang for the wedding"
+needs = ["mark:kept-the-wedding"]
+[event.option.win]
+text = "The note comes up warm, and soft, and glad. It is a very long time since anyone was glad to hear it."
+fx = ["heal:all:3", "morale:5", "gain:silt-glass:1-2"]
+
+[[event]]
+id = "collapsed-floor"
+title = "The street gives way"
+text = "The paving was only silt and habit. Your lead foot goes through to the ankle, and under it there is a room."
+tiles = ["drowned-town"]
+weight = 8
+[[event.option]]
+label = "Pull back and test every step"
+[event.option.win]
+text = "You take it slow, and learn the shape of the room by the holes. There is nothing in it but a shelf of tin plate."
+fx = ["gain:iron:1-2", "turns:1"]
+[[event.option]]
+label = "Open it up with the tools"
+needs = ["carry:tools:1"]
+skill = "salvager"
+risk = 20
+[event.option.win]
+text = "You open the roof and lower someone in. A shop, still shelved: needles, blades and a drawer of buttons that are silt-glass."
+fx = ["gain:iron:2-3", "gain:silt-glass:1-2", "xp:salvager:2"]
+[event.option.lose]
+text = "The roof comes in. Somebody is under it."
+fx = ["hurt:any:hurt", "lose:tools:1"]
+
+[[event]]
+id = "wreck-hull"
+title = "A hull with good bones"
+text = "The ribs of a coaster rise from the sand, the planking mostly gone but the keelson sound. She would never float again, but she could be cut."
+tiles = ["wreck"]
+weight = 9
+[[event.option]]
+label = "Strip what you can by hand"
+[event.option.win]
+text = "Pegs, tar, a length of chain. Plain labour."
+fx = ["gain:timber:2-4", "gain:iron:1-2"]
+[[event.option]]
+label = "Cut the keelson free"
+needs = ["trade:boatwright"]
+skill = "boatwright"
+risk = 20
+[event.option.win]
+text = "The boatwright finds the scarf and saws along it. The keelson alone is a week's timber."
+fx = ["gain:timber:6-9", "xp:boatwright:3"]
+[event.option.lose]
+text = "The cut binds and the saw kicks back."
+fx = ["hurt:boatwright:hurt", "gain:timber:2-3"]
+[[event.option]]
+label = "Search the stern cabin"
+skill = "salvager"
+risk = 35
+[event.option.win]
+text = "A captain's chest, wet through, but the charts inside will dry. And a purse that did not rot."
+fx = ["tallies:6-12", "chart:3"]
+[event.option.lose]
+text = "A rotted deck and a long drop into the bilge."
+fx = ["hurt:any:hurt"]
+
+[[event]]
+id = "wreck-crew"
+title = "They never left the ship"
+text = "Five hammocks in a row below decks, and in each, a man. The sea has been kind: they look asleep. A clasp-knife and a locket lie on each chest."
+tiles = ["wreck"]
+weight = 5
+[[event.option]]
+label = "Take the knives and lockets"
+[event.option.win]
+text = "Twelve tallies' worth of brass, and a knife for every belt. Nobody speaks until the ship is out of sight."
+fx = ["tallies:8-14", "gain:iron:1-2", "morale:-3", "mark:robbed-the-dead"]
+[[event.option]]
+label = "Say the tide-words and leave them be"
+[event.option.win]
+text = "You say them over each man, as your mother taught you. It takes the better part of an hour. It is the right thing to do."
+fx = ["turns:1", "morale:3", "bond:2"]
+[[event.option]]
+label = "Bury them above the tideline"
+needs = ["size:3", "carry:tools:1"]
+[event.option.win]
+text = "Five graves in the dune, in a row. When you are done someone puts the lockets on the cairn. The sea does not seem to mind."
+fx = ["turns:2", "morale:4", "bond:2", "mark:buried-the-dead"]
+
+# ------------------------------------------------------------------ meres, the Deep, anywhere
+
+[[event]]
+id = "mere-lights"
+title = "Lights on the mere"
+text = "Pale lights drift across the water, a hand's breadth above it, never quite still. They keep the same distance however you walk."
+tiles = ["mere"]
+day = ["dusk", "night"]
+weight = 8
+[[event.option]]
+label = "Follow them a little way"
+skill = "wader"
+risk = 40
+[event.option.win]
+text = "They lead you along a firm spit of ground you could never have found alone, to a dry island with a cache of salvage."
+fx = ["gain:iron:1-3", "gain:salt:2-4", "chart:2"]
+[event.option.lose]
+text = "The lights go out. The water does not."
+fx = ["hurt:any:water", "turns:2"]
+[[event.option]]
+label = "Hold position until they go"
+[event.option.win]
+text = "They drift off toward the Deep and the dark comes back, ordinary."
+fx = ["turns:1"]
+[[event.option]]
+label = "Walk after the lights as someone they know"
+needs = ["mark:followed-the-lantern"]
+[event.option.win]
+text = "They gather round you like cats round a hearth and lead you, unhurried, to the dry island. There is a cache. There is also, set aside, a little cairn for you."
+fx = ["gain:iron:2-4", "gain:salt:3-5", "chart:3", "xp:reed-witch:2"]
+
+[[event]]
+id = "deep-glass"
+title = "Glass, standing in the Deep"
+text = "A forest of silt-glass spars rises from the flat, fused by some old fire into shapes like trees. They ring when the wind touches them. Under the ringing, you can hear them growing."
+tiles = ["deep"]
+weight = 10
+[[event.option]]
+label = "Break off the best of the spars"
+skill = "salvager"
+risk = 35
+[event.option.win]
+text = "The spars come away clean and glitter in the sack. Worth more than a month of salt."
+fx = ["gain:silt-glass:4-8", "xp:salvager:3"]
+[event.option.lose]
+text = "A spar splinters and bites like a blade."
+fx = ["hurt:any:hurt", "gain:silt-glass:1-2"]
+[[event.option]]
+label = "Just listen for a while"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "The reed-witch lays her hand on a spar and shuts her eyes. 'It is only the sea remembering,' she says. When she opens them they are wet."
+fx = ["xp:reed-witch:3", "morale:2", "chart:3"]
+[[event.option]]
+label = "Do not touch anything"
+[event.option.win]
+text = "You pick your way between the spars with your hands tucked in. Nothing grows toward you."
+
+[[event]]
+id = "deep-hum"
+title = "A hum in the teeth"
+text = "A note too low to hear and too strong to ignore. The water in your boots trembles with it, and the scars on your arms ache. It comes from below."
+tiles = ["deep"]
+weight = 8
+draws = ["scar"]
+[[event.option]]
+label = "Walk through it fast"
+skill = "wader"
+risk = 30
+[event.option.win]
+text = "It stops as you cross the ridge. You feel it in your fillings for an hour."
+[event.option.lose]
+text = "Your knees give. The hum has a long memory for the places you have been hurt."
+fx = ["hurt:any:hurt", "turns:1"]
+[[event.option]]
+label = "Follow it down, where the scarred can hear"
+needs = ["scar"]
+[event.option.win]
+text = "The scarred hear a voice in it, and it is not unkind. At the bottom of the slope a cache of old iron, left for those who came this far."
+fx = ["gain:iron:3-5", "gain:silt-glass:1-2", "morale:-2"]
+
+[[event]]
+id = "fog-bank"
+title = "Fog off the sea"
+text = "The fog comes in as a wall, all at once, so thick that you can put a hand out and lose the fingers. Sounds come strangely."
+day = ["dawn", "dusk", "night"]
+weight = 8
+[[event.option]]
+label = "Stop and wait it out"
+[event.option.win]
+text = "You sit in a ring with the lantern low. When the fog thins, the day has gone on without you."
+fx = ["turns:3"]
+[[event.option]]
+label = "Walk by the sound of the water"
+skill = "wader"
+risk = 30
+[event.option.win]
+text = "The wader walks by the slap of the tide, and finds your way home by the ear."
+fx = ["xp:wader:2", "turns:1"]
+[event.option.lose]
+text = "The sound of the water lies. You walk a half-mile of arc before the fog lifts."
+fx = ["turns:3", "hurt:any:hurt"]
+[[event.option]]
+label = "Take the drovers' road you were shown"
+needs = ["mark:the-drovers-road"]
+[event.option.win]
+text = "The fog is nothing on a road you have walked once with a ghost. You are home early, and nobody in the party can say how."
+fx = ["chart:3", "morale:2"]
+[[event.option]]
+label = "Follow the old causeway under the mud"
+needs = ["mark:found-the-old-causeway"]
+[event.option.win]
+text = "The dressed stones run true in the fog. You walk them as on a rail, and the white parts around you like a curtain."
+fx = ["chart:4", "xp:wader:2"]
+
+[[event]]
+id = "rival-tracks"
+title = "Another clan's tracks"
+text = "Boot-prints in the mud, many of them, running the same way as you, deep from loads. Whoever it was came through since the last tide, and carried well."
+water = ["low", "mid"]
+weight = 7
+[[event.option]]
+label = "Follow them to see what they found"
+[event.option.win]
+text = "You find where they stopped to rest and they have left a ring of ash, and a mess of salvage-ends not worth carrying. Still, they showed you the way."
+fx = ["chart:3", "gain:iron:0-2"]
+[[event.option]]
+label = "Hide your own and go round"
+needs = ["trade:wader"]
+[event.option.win]
+text = "The wader walks on the firm ridges where a boot leaves nothing. You are not followed."
+fx = ["xp:wader:1"]
+[[event.option]]
+label = "Look them over and decide"
+needs = ["mark:crossed-the-cutters"]
+[event.option.win]
+text = "These are the cutters' prints, with the same worn left heel. They have not forgotten you. You find where they will wait, and you go round."
+fx = ["chart:2", "xp:wader:1"]
+
+[[event]]
+id = "storm-warning"
+title = "A stormy sky, and the glass falling"
+text = "The sky to seaward has gone the green of old bruises, and the water at the edge of the flat has begun to creep in with a sound like breathing. This is no ordinary tide."
+water = ["high"]
+weight = 7
+[[event.option]]
+label = "Turn back at once"
+[event.option.win]
+text = "You turn and walk. It costs you the day, but it does not cost you a life."
+fx = ["turns:2"]
+[[event.option]]
+label = "Press on and take your chances"
+risk = 40
+[event.option.win]
+text = "The sky is all bluff. You walk through the edge of it with your heads down."
+fx = ["bond:2"]
+[event.option.lose]
+text = "It is not bluff. The water is on you before the sound is."
+fx = ["hurt:all:water", "turns:2"]
+[[event.option]]
+label = "Run for the high ground while there is time"
+needs = ["!trait:limp"]
+skill = "wader"
+risk = 25
+[event.option.win]
+text = "You run, all of you, and reach the dyke with the first wave at your heels. Nobody is hurt, and everyone laughs, a little wildly."
+fx = ["bond:2", "xp:wader:2"]
+[event.option.lose]
+text = "The ground is softer than it looks, and the wave is faster than you."
+fx = ["hurt:any:water"]
+[[event.option]]
+label = "Read the sky and decide"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "The reed-witch watches the green sky an unfashionably long time. 'It will pass inside the hour,' she says, and it does."
+fx = ["xp:reed-witch:2", "turns:1"]
+
+[[event]]
+id = "water-remembers"
+title = "The water remembers"
+text = "A line of cold goes through the party, the sort that comes when someone has said your name behind your back. The water at your feet is still, and has a face in it that is not yours."
+weight = 5
+needs = ["mark:robbed-the-dead"]
+[[event.option]]
+label = "Look away and keep walking"
+[event.option.win]
+text = "You do not look. The cold goes with you for a while, and then it lets you go."
+fx = ["morale:-3"]
+[[event.option]]
+label = "Put back what you took"
+needs = ["carry:tools:1"]
+[event.option.win]
+text = "You leave a tool and a handful of tallies on the flat where the water can find it. It is enough, this time."
+fx = ["lose:tools:1", "pay:6", "unmark:robbed-the-dead", "morale:3"]
+
+[[event]]
+id = "cold-snap"
+title = "A cold that bites"
+text = "The night turns raw and clear, and the wet on your clothes starts to stiffen. You can see your breath, and your fingers are not entirely yours."
+day = ["night", "dawn"]
+weight = 8
+[[event.option]]
+label = "Burn a lantern's peat for warmth"
+needs = ["carry:peat:1"]
+[event.option.win]
+text = "A small fire in the lee of a dyke. It is not much, but it is enough."
+fx = ["lose:peat:1", "bond:1"]
+[[event.option]]
+label = "Keep moving"
+risk = 35
+[event.option.win]
+text = "Walking keeps the blood going. You are cold, and you are not hurt."
+[event.option.lose]
+text = "A toe goes white. Then a finger."
+fx = ["hurt:any:cold"]
+[[event.option]]
+label = "Huddle close until dawn"
+needs = ["size:2"]
+[event.option.win]
+text = "You sit in a heap in the lee of a mound and share the warmth. Whatever else this day was, it is behind you."
+fx = ["turns:2", "bond:2"]
+[[event.option]]
+label = "Light the hearth-coal you carried out of the drowned house"
+needs = ["mark:carried-the-hearth"]
+[event.option.win]
+text = "A single red coal in the lantern. The whole party warms by it, and the frost lets go of the reeds in a circle round you."
+fx = ["heal:all:2", "morale:3", "bond:1"]
+
+[[event]]
+id = "gull-cloud"
+title = "The gulls rise all at once"
+text = "The wreck is white with gulls, thousands of them, and every head turns as you come over the dune. One steps forward on the planking. It is the size of a child, and not frightened."
+tiles = ["wreck", "island"]
+day = ["dawn", "day"]
+weight = 6
+[[event.option]]
+label = "Stand your ground"
+[event.option.win]
+text = "They come off the hull in a roar of white, and the air is all beak."
+fx = ["fight:gull-storm"]
+[[event.option]]
+label = "Throw down a fish and back away"
+needs = ["carry:fish:1"]
+[event.option.win]
+text = "The fish goes into the air and the whole cloud goes after it. You have the wreck to yourselves for the length of a held breath."
+fx = ["lose:fish:1", "gain:timber:1-3", "turns:1"]
+[[event.option]]
+label = "Walk through them slowly, hands low"
+skill = "wader"
+risk = 35
+[event.option.win]
+text = "They part for you like a shoal. The wader has done this with geese. You are through, and unharmed."
+fx = ["xp:wader:2"]
+[event.option.lose]
+text = "A gull the size of a child takes the lead man's hat and the skin under it."
+fx = ["hurt:lead:hurt"]
+
+[[event]]
+id = "lead-shot"
+title = "Lead shot in the reeds"
+text = "Something hums past your ear, and a reed stem beside you snaps in half. A second, closer. Nobody can see the sling."
+tiles = ["reedbed", "peat-bog"]
+stage = ["early", "mid"]
+weight = 7
+[[event.option]]
+label = "Charge the place the shot came from"
+[event.option.win]
+text = "A man rises out of a hide ahead, another behind him, and both of them have heard you coming."
+fx = ["fight:slinger-nest"]
+[[event.option]]
+label = "Drop flat and crawl out of range"
+risk = 30
+skill = "wader"
+[event.option.win]
+text = "On your bellies in the black wet, an hour. The shot loses interest. So, finally, do you."
+fx = ["turns:2", "xp:wader:1"]
+[event.option.lose]
+text = "You crawl straight into the line of the second sling."
+fx = ["hurt:any:hurt", "turns:2"]
+[[event.option]]
+label = "Call out that you are friends of the cutters"
+needs = ["mark:friend-of-the-cutters"]
+[event.option.win]
+text = "A pause, a shout, a laugh. 'Sorry, friends. We thought you were the other lot.' They send you off with a handful of reed-withies."
+fx = ["gain:reed:2-4", "morale:1"]
+
+[[event]]
+id = "rival-crew"
+title = "Another crew on the causeway"
+text = "A party in the colours of another hold stands across the causeway from you, packs full, weapons in the open. The track is only wide enough for one crew. They look as tired as you."
+tiles = ["mudflat", "salt-pan", "reedbed"]
+stage = ["mid", "late"]
+weight = 6
+[[event.option]]
+label = "Pay their toll and pass"
+[event.option.win]
+text = "They take the tallies without a word and stand aside. It is cheaper than the alternative, and you tell yourselves so."
+fx = ["pay:10", "turns:1"]
+[[event.option]]
+label = "Hold the causeway"
+needs = ["size:3"]
+[event.option.win]
+text = "You close ranks. They have counted you and are now counting what they will lose. Nobody moves for a long minute."
+fx = ["fight:rival-crew"]
+[[event.option]]
+label = "Offer to share the track, a crew at a time"
+skill = "reed-witch"
+risk = 40
+[event.option.win]
+text = "Somebody has to be first to put a weapon down. This time it is them. You trade news, and a little salt."
+fx = ["gain:salt:2-4", "chart:3", "bond:1"]
+[event.option.lose]
+text = "The word comes out wrong. The one with the billhook hears an insult in it."
+fx = ["fight:rival-crew"]
+
+[[event]]
+id = "wight-walk"
+title = "A stump that walks"
+text = "A shape in the bog that you took for a blackened stump takes a step. Then another. It is dragging something, and what it drags leaves a trench in the peat full of black water."
+tiles = ["peat-bog"]
+day = ["dusk", "night"]
+weight = 5
+draws = ["trade:reed-witch", "trait:haunted"]
+[[event.option]]
+label = "Back away and go round"
+[event.option.win]
+text = "It does not follow. It does not need to. You give it a wide berth and your skin crawls the whole way."
+fx = ["turns:2"]
+[[event.option]]
+label = "Fight it"
+[event.option.win]
+text = "It turns, slowly, as if it had been waiting for someone to ask."
+fx = ["fight:wight-walk"]
+[[event.option]]
+label = "Hold the lantern up and call it by its old name"
+needs = ["trade:reed-witch", "carry:peat:1"]
+skill = "reed-witch"
+risk = 35
+[event.option.win]
+text = "She says a name no one has used in sixty years. The thing stops, stands a long time, and then lies down in its trench. The black water closes over it."
+fx = ["lose:peat:1", "xp:reed-witch:4", "gain:iron:1-2", "morale:2"]
+[event.option.lose]
+text = "She has the wrong name. It knows it."
+fx = ["fight:wight-walk"]
+
+[[event]]
+id = "drovers-hounds"
+title = "Hounds without a drover"
+text = "A pack of long grey dogs lopes out of the dusk along the dyke, collars still on them, and stops in a ring. They have the look of a thing that has been waiting for its master a very long time."
+tiles = ["peat-bog", "reedbed", "island"]
+day = ["dusk", "night"]
+weight = 5
+[[event.option]]
+label = "Stand and let them come"
+[event.option.win]
+text = "They do not wait to be asked. A black shape behind them lifts its head from the peat."
+fx = ["fight:wight-and-hounds"]
+[[event.option]]
+label = "Offer food and speak low"
+needs = ["carry:food:2"]
+[event.option.win]
+text = "The biggest hound takes the offered ration, gently, and sits. The others do. They fall in behind you for a mile and then, at a dyke-end, are simply gone."
+fx = ["lose:food:2", "morale:3", "bond:1"]
+[[event.option]]
+label = "Slip away along the water"
+skill = "wader"
+risk = 35
+[event.option.win]
+text = "Dogs hate cold water. You keep to the creek-bed, up to the knee, and they stay on the bank and watch you out of sight."
+fx = ["xp:wader:2", "turns:1"]
+[event.option.lose]
+text = "The creek is deeper than it looks, and loud. They come down the bank at a run."
+fx = ["hurt:any:water", "fight:hound-pack"]
+
+# ------------------------------------------------------------------ camp scenes
+
+[[event]]
+id = "night-watch"
+title = "Something at the edge of the firelight"
+text = "A small noise, then another. A pale shape has come into the ring of the fire, on four legs, and stopped. The nearest of you is awake."
+camp = true
+weight = 9
+[[event.option]]
+label = "Throw a stone"
+[event.option.win]
+text = "It was a fox. It goes, and your heart takes an hour to come down."
+[[event.option]]
+label = "Hold the light high and speak to it"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "She speaks in the reed tongue, and the shape bows its head and goes. 'A tide-fox,' she says. 'It wished us well.'"
+fx = ["xp:reed-witch:2", "morale:2"]
+[[event.option]]
+label = "Wake the others and make ready"
+needs = ["trade:fighter"]
+[event.option.win]
+text = "The fighter rolls up out of the blankets with a stake. It turns out to be a bog-hound, and it is not alone."
+fx = ["fight:hound-pack"]
+[[event.option]]
+label = "Sit easy: the dead you buried keep the watch"
+needs = ["mark:buried-the-dead"]
+[event.option.win]
+text = "Five shapes stand at the edge of the light with their backs to you, facing out. The pale thing thinks better of it. In the morning your boots are dry."
+fx = ["morale:3", "heal:all:1"]
+
+[[event]]
+id = "camp-song"
+title = "A song, round the fire"
+text = "Somebody starts a verse of the old tide-song, softly, and somebody else knows the next. The lantern flickers and the marsh listens."
+camp = true
+weight = 8
+[[event.option]]
+label = "Join in"
+[event.option.win]
+text = "Nobody can really sing. It is the best part of the day."
+fx = ["bond:2", "morale:2"]
+[[event.option]]
+label = "Keep watch while the others sing"
+[event.option.win]
+text = "You watch the dark and hear them behind you, and feel oddly out of it. The watch is quiet."
+fx = ["xp:fighter:1"]
+
+[[event]]
+id = "tide-wake"
+title = "A bad dream, shared"
+text = "Near the turn of the tide, three of you wake at once. Each had the same dream: the water standing very high, and a door in it."
+camp = true
+weight = 6
+draws = ["trait:haunted", "trade:reed-witch"]
+[[event.option]]
+label = "Say nothing and go back to sleep"
+[event.option.win]
+text = "In the morning nobody mentions it. You are all a little quiet."
+fx = ["morale:-1"]
+[[event.option]]
+label = "Talk it out"
+needs = ["size:2"]
+[event.option.win]
+text = "It takes an hour, and a cup of something hot. By the end you have each found you were not alone in it."
+fx = ["bond:2"]
+[[event.option]]
+label = "Give back the wedding silver at the water's edge"
+needs = ["mark:took-the-wedding-silver"]
+[event.option.win]
+text = "You carry it down to the wet and lay it in the shallows, piece by piece. Nobody says a word. The dream does not come back."
+fx = ["pay:20", "unmark:took-the-wedding-silver", "morale:5"]
+
+# ------------------------------------------------------------------ places: camps
+
+[[event]]
+id = "reed-camp-barter"
+title = "Cutters at their fire"
+text = "The camp is a ring of lean-tos round a smoking fire. The cutters look up from their reed-bundles and size you up. One holds out a hand: salt, for reed?"
+poi = ["camp"]
+weight = 10
+[[event.option]]
+label = "Trade salt for good reed"
+needs = ["carry:salt:2"]
+[event.option.win]
+text = "A fair swap. They throw in a bundle of withies as a courtesy."
+fx = ["lose:salt:2", "gain:reed:6-10", "mark:friend-of-the-cutters"]
+[[event.option]]
+label = "Trade tallies for rope"
+[event.option.win]
+text = "They sell you two coils of rope. You pay what they ask, which is more than you would at home."
+fx = ["pay:8", "gain:rope:2-3"]
+[[event.option]]
+label = "Offer a day's work"
+skill = "raker"
+risk = 20
+[event.option.win]
+text = "You work an afternoon with the cutters and are paid in kind."
+fx = ["turns:2", "gain:reed:5-8", "tallies:3-6", "xp:raker:2", "mark:friend-of-the-cutters"]
+[event.option.lose]
+text = "A bad day. They pay you half and say so."
+fx = ["turns:2", "gain:reed:2-3"]
+[[event.option]]
+label = "Tell them the castaway sent you"
+needs = ["mark:saved-the-castaway"]
+[event.option.win]
+text = "A cutter lifts her head. 'The one from the rocks? She's my sister's girl.' Nobody takes a tally from you all afternoon."
+fx = ["gain:reed:6-9", "gain:food:2-4", "morale:3"]
+
+[[event]]
+id = "drovers-fire"
+title = "Drovers on the dyke"
+text = "The drovers rest here between the tides, a dozen of them, with their pack-ponies hobbled on the grass. They have news, and a sick man."
+poi = ["camp"]
+weight = 8
+[[event.option]]
+label = "Trade news for news"
+[event.option.win]
+text = "You swap what you have seen for what they know. The map in your head gets a little wider."
+fx = ["chart:4", "morale:1"]
+[[event.option]]
+label = "Look at the sick man"
+needs = ["trade:healer"]
+skill = "healer"
+risk = 20
+[event.option.win]
+text = "A poultice and a day's rest; he is on his feet by night. The drovers do not forget it. They press food and a tally-purse on you."
+fx = ["xp:healer:3", "gain:food:2-4", "tallies:5-10", "mark:friend-of-the-drovers"]
+[event.option.lose]
+text = "The fever is the bog-fever and it has a hold. You do what you can, and he does not rally."
+fx = ["hurt:healer:sickness"]
+[[event.option]]
+label = "Buy a pony's load of peat"
+needs = ["mark:friend-of-the-drovers"]
+[event.option.win]
+text = "Friends sell at friends' prices. A heavy load, and it burns slow."
+fx = ["pay:6", "gain:peat:8-12"]
+[[event.option]]
+label = "Tell them of the beacon you lit"
+needs = ["mark:lit-the-beacon"]
+[event.option.win]
+text = "'That was you? Our lead pony saw it from the far dyke and would not turn from it.' They press food and a pack of peat on you, and will not be thanked."
+fx = ["gain:food:3-5", "gain:peat:3-5", "morale:2"]
+
+# ------------------------------------------------------------------ shrines, hermits, traders
+
+[[event]]
+id = "shrine-offering"
+title = "A stone with a high-water line"
+text = "A leaning stone, scored with generations of tide-marks, and at its foot a hollow where travellers leave a coin. Today it holds a good many."
+poi = ["shrine"]
+weight = 10
+[[event.option]]
+label = "Leave a coin and a word"
+[event.option.win]
+text = "You leave a tally and say the words. The stone is old and does not care, but it is a good habit."
+fx = ["pay:1", "morale:2"]
+[[event.option]]
+label = "Take the offerings"
+[event.option.win]
+text = "A purse of old coin. The stone does not complain. You feel the weight of it, all the way home."
+fx = ["tallies:10-18", "morale:-2", "mark:robbed-the-shrine"]
+[[event.option]]
+label = "Sit with the stone a while"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "She sits with her back against it, and the others see her face go still. When she stands the old tides have told her where the new ones will run."
+fx = ["chart:4", "xp:reed-witch:3", "heal:all:1"]
+[[event.option]]
+label = "Put back what you took from the stone"
+needs = ["mark:robbed-the-shrine", "carry:salt:1"]
+[event.option.win]
+text = "You lay a pinch of salt and a handful of tallies in the hollow. The stone does not forgive, quite, but the ache in the party's shoulders eases."
+fx = ["lose:salt:1", "pay:10", "unmark:robbed-the-shrine", "morale:3"]
+
+[[event]]
+id = "chapel-bell"
+title = "The drowned chapel"
+text = "A roofless chapel. The bell hangs in the tower, still, and the clapper is tied with a faded ribbon. Someone has left candles on the sill, newly, and they have burned low."
+poi = ["shrine"]
+weight = 8
+[[event.option]]
+label = "Untie the ribbon and ring it"
+risk = 25
+[event.option.win]
+text = "The note goes out over the marsh a long way. It feels like a promise being kept."
+fx = ["morale:3", "mark:rang-the-bell"]
+[event.option.lose]
+text = "The note is wrong: flat, wet. Something answers from the water, much too close."
+fx = ["fight:tide-hag-lair"]
+[[event.option]]
+label = "Light the candles again"
+needs = ["carry:peat:1"]
+[event.option.win]
+text = "A small light in a ruined house. It is enough to see the way."
+fx = ["lose:peat:1", "heal:all:2", "morale:2"]
+[[event.option]]
+label = "Leave things as they are"
+[event.option.win]
+text = "You pull the door to behind you. The candles are still burning as you go."
+[[event.option]]
+label = "Answer the bell you heard under the water"
+needs = ["mark:saw-the-bell"]
+[event.option.win]
+text = "You strike the iron three times, as the drowned parish did. Something below sets down a weight it has carried a long while."
+fx = ["heal:all:3", "morale:4"]
+
+[[event]]
+id = "hermit-visit"
+title = "The hermit of the reeds"
+text = "A one-room hut on stilts, a hundred nets drying on the rail, and a figure in the doorway so grey with weather that you took it for a post. 'You,' says the hermit. 'Have you any salt?'"
+poi = ["hermit"]
+weight = 10
+[[event.option]]
+label = "Give salt"
+needs = ["carry:salt:1"]
+[event.option.win]
+text = "She weighs it in her palm and nods. In return: a net, a fish, and a name for the marsh that you did not know."
+fx = ["lose:salt:1", "gain:fish:2-4", "gain:rope:1", "mark:fed-the-hermit"]
+[[event.option]]
+label = "Ask about the water"
+[event.option.win]
+text = "She tells you in a few dry words where the channels run in spring tides. It is worth remembering."
+fx = ["chart:3"]
+[[event.option]]
+label = "Treat her bad hands"
+needs = ["trade:healer"]
+[event.option.win]
+text = "She holds her swollen hands out as if they belonged to someone else. In an hour they are bound and she is almost smiling."
+fx = ["xp:healer:3", "mark:fed-the-hermit", "morale:2"]
+[[event.option]]
+label = "Show her the clerk's drawings"
+needs = ["mark:has-the-drawings"]
+[event.option.win]
+text = "She holds them to the light in a hand like a root and says one word: 'Glass.' Then she shows you which line the clerk got wrong."
+fx = ["recipe:fuse-silt-glass", "mark:fed-the-hermit", "morale:2"]
+
+[[event]]
+id = "hermit-gift"
+title = "The hermit has been waiting"
+text = "The hermit is on the rail with a bundle in her arms. She sets it down as you come. 'I knew you would come back. Here. It is for the hold.'"
+poi = ["hermit"]
+weight = 8
+needs = ["mark:fed-the-hermit"]
+[[event.option]]
+label = "Accept the bundle with thanks"
+[event.option.win]
+text = "Inside: a ring of drift-glass, a rope of fine-twisted line, and a small iron knife that has been well loved. 'Take care of it,' she says."
+fx = ["gain:rope:2-3", "gain:silt-glass:1-2", "gain:iron:1", "morale:3"]
+[[event.option]]
+label = "Ask her for the old plan she mentioned"
+needs = ["skill:smith:2"]
+[event.option.win]
+text = "She goes into the hut for a long time and comes out with a scrap of oilskin covered in fine hand. 'My father's. He fused glass in the Deep.' The smith reads it twice."
+fx = ["recipe:fuse-silt-glass", "xp:smith:3"]
+
+[[event]]
+id = "ferry-trader"
+title = "The ferryman's stall"
+text = "A flat barge moored to a drowned lamp-post, with a plank deck and a hand-lettered sign. The ferryman is a round man with a round hat and a way of looking at your hands."
+poi = ["trader"]
+weight = 10
+[[event.option]]
+label = "Buy rope and food"
+[event.option.win]
+text = "He sells at a price that makes you feel you ought to say thank you, and does."
+fx = ["pay:10", "gain:rope:2-3", "gain:food:3-5"]
+[[event.option]]
+label = "Haggle, and press the point"
+skill = "salvager"
+risk = 35
+[event.option.win]
+text = "You find the one thing on his barge he cannot bear to lose, and name a price that includes it. He sighs and shakes."
+fx = ["pay:6", "gain:rope:2-3", "gain:food:4-6", "gain:tools:1", "mark:ferry-friend"]
+[event.option.lose]
+text = "He folds his arms and will not sell you anything today."
+fx = ["morale:-1"]
+[[event.option]]
+label = "Sell a piece of salvage"
+needs = ["carry:iron:2"]
+[event.option.win]
+text = "He weighs it, grunts, and counts out tallies. Not the best price, but the honest one."
+fx = ["lose:iron:2", "tallies:14-22"]
+[[event.option]]
+label = "Ask for the friends' price"
+needs = ["mark:ferry-friend"]
+[event.option.win]
+text = "He looks at you a long moment. 'Ah. You.' He takes down the good rope from the rafter and sets it on the plank. 'Half.'"
+fx = ["pay:5", "gain:rope:3-4", "gain:food:4-6", "gain:tools:1"]
+
+# ------------------------------------------------------------------ places: salvage and lairs
+
+[[event]]
+id = "sunk-street-dive"
+title = "The street under the water"
+text = "A paved street, running into the marsh like a pier, the shops on either side still standing to the first floor. Their windows are dark and their doors open."
+poi = ["salvage"]
+weight = 10
+[[event.option]]
+label = "Work the shops by hand"
+skill = "salvager"
+risk = 30
+[event.option.win]
+text = "You work shop to shop, and fill the sacks with the plainest things: hinges, ladles, cut-glass."
+fx = ["gain:iron:2-4", "gain:timber:2-3", "gain:silt-glass:0-2", "xp:salvager:2"]
+[event.option.lose]
+text = "A wall you were counting on gives way."
+fx = ["hurt:any:hurt", "gain:iron:1-2"]
+[[event.option]]
+label = "Work it in earnest, with a rope team"
+needs = ["carry:rope:2", "size:3"]
+skill = "salvager"
+risk = 15
+[event.option.win]
+text = "A line on every doorway and a watcher on the roof. Methodical and slow, and you leave with everything you came for."
+fx = ["gain:iron:4-6", "gain:timber:3-5", "gain:silt-glass:1-3", "xp:salvager:3", "bond:1"]
+[event.option.lose]
+text = "The roof-watcher shouts too late."
+fx = ["hurt:any:hurt", "gain:iron:2-3"]
+[[event.option]]
+label = "Take only what is lying on the street"
+[event.option.win]
+text = "It is thin pickings, but it is safe."
+fx = ["gain:iron:1-2", "tallies:2-5"]
+
+[[event]]
+id = "barge-cutting"
+title = "The grounded barge"
+text = "The barge sits on the flat like a fallen cathedral, her flanks streaked red. She has good iron in her, and timber, if you can cut them out."
+poi = ["salvage"]
+weight = 9
+[[event.option]]
+label = "Cut what you can reach"
+[event.option.win]
+text = "Hours of labour and a sack of scrap."
+fx = ["gain:iron:2-4", "gain:timber:3-5", "turns:1"]
+[[event.option]]
+label = "Strip her properly, with a smith's eye"
+needs = ["trade:smith"]
+skill = "smith"
+risk = 20
+[event.option.win]
+text = "The smith knows where the barge was riveted and where she was only hoped. The plates come away in sheets."
+fx = ["gain:iron:5-8", "gain:timber:3-5", "xp:smith:3", "turns:2"]
+[event.option.lose]
+text = "A seam lets go and the plate comes down on a hand."
+fx = ["hurt:smith:hurt", "gain:iron:2-3"]
+[[event.option]]
+label = "Look for what the crew left"
+needs = ["trade:salvager"]
+[event.option.win]
+text = "The salvager sniffs about the galley and finds what no one else would: a tin box in the flour bin, with a tin mug and a purse inside."
+fx = ["tallies:8-14", "gain:food:2-3", "xp:salvager:2"]
+
+[[event]]
+id = "heron-hide"
+title = "A watcher's hide"
+text = "A reed hut on stilts, far from anywhere, with a slit for looking and a shelf of notes. Someone has spent years watching the herons here, and has kept careful records."
+poi = ["salvage"]
+weight = 8
+[[event.option]]
+label = "Read the notes"
+[event.option.win]
+text = "Dates and tide-heights and the heron's moods. A decade of them. It will be on the chart before you reach the hold."
+fx = ["chart:4", "morale:1"]
+[[event.option]]
+label = "Take the fish-traps and the net"
+[event.option.win]
+text = "A pair of good eel-traps, a coil of net. The watcher is not here to object."
+fx = ["gain:fish:3-5", "gain:rope:1-2"]
+
+[[event]]
+id = "eel-lair"
+title = "The eels' den"
+text = "A stream-mouth under an overhang, the mud heaped like the nest of some enormous bird. The air smells of fish and slow death. A dozen long bodies lie in it, and none of them is quite asleep."
+poi = ["lair"]
+weight = 10
+[[event.option]]
+label = "Fight the eels"
+[event.option.win]
+text = "They come up out of the mud as one, and the den is awake."
+fx = ["fight:eel-pair"]
+[[event.option]]
+label = "Creep past the nest and take the hoard"
+needs = ["trade:wader:2"]
+skill = "wader"
+risk = 35
+[event.option.win]
+text = "On your belly, in the mud, as slow as thought. In the nest: a tangle of old rope, and silt-glass beads, and a purse some drowned man lost."
+fx = ["gain:rope:2-3", "gain:silt-glass:1-2", "tallies:6-10", "xp:wader:3"]
+[event.option.lose]
+text = "The first eel you disturb is the one that bites."
+fx = ["hurt:any:hurt", "fight:eel-pair"]
+[[event.option]]
+label = "Leave the eels to their den"
+[event.option.win]
+text = "You give them their quiet. They have a right to it."
+[[event.option]]
+label = "Lay the hag's comb on the mud"
+needs = ["mark:took-the-hags-comb"]
+[event.option.win]
+text = "The eels lift their heads together, as at a name. They draw back into the stream-mouth and leave the hoard in the open. You do not know what you have bought."
+fx = ["gain:rope:2-3", "gain:silt-glass:2-3", "tallies:8-14", "morale:-2"]
+
+[[event]]
+id = "hag-lair"
+title = "Where the tide-hag sleeps"
+text = "A reed-roofed hut, half sunk, with a black pool at its door that has no business being so deep. The water is perfectly still. A bone comb lies on the step."
+poi = ["lair"]
+weight = 9
+needs = ["mark:rang-the-bell"]
+draws = ["trade:reed-witch"]
+[[event.option]]
+label = "Take the comb"
+risk = 40
+[event.option.win]
+text = "You lift the comb without a ripple. It is carved from something that was once a bone, and it is worth a good deal."
+fx = ["tallies:12-20", "gain:silt-glass:1-2", "mark:took-the-hags-comb"]
+[event.option.lose]
+text = "The pool does not stay still."
+fx = ["fight:tide-hag-lair"]
+[[event.option]]
+label = "Leave an offering, and ask leave to pass"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "She sets a pinch of salt on the step and speaks. The black water ripples once in what might be assent, and you pass without harm."
+fx = ["lose:salt:1", "chart:3", "xp:reed-witch:3"]
+[[event.option]]
+label = "Back away quietly"
+[event.option.win]
+text = "You back off the way you came. The pool is perfectly still."
+
+# ------------------------------------------------------------------ places: ruins (a room each)
+
+[[event]]
+id = "counting-house-vault"
+title = "The vault under the counting house"
+text = "A flight of stairs, ironbound doors, a long room with a row of drawers. The old coast kept its money here. Some of the drawers are still locked."
+poi = ["ruin"]
+weight = 10
+[[event.option]]
+label = "Force the drawers"
+needs = ["carry:tools:1"]
+skill = "smith"
+risk = 30
+[event.option.win]
+text = "The first three yield nothing. The fourth gives up a roll of coin, green with age."
+fx = ["tallies:10-20", "gain:iron:1-2", "xp:smith:2"]
+[event.option.lose]
+text = "The lock holds, and the tool does not."
+fx = ["lose:tools:1", "hurt:any:hurt"]
+[[event.option]]
+label = "Try the drawers that are already open"
+[event.option.win]
+text = "Dust and a few coins, the rest of it long gone."
+fx = ["tallies:3-8"]
+[[event.option]]
+label = "Pick them with a patient hand"
+needs = ["trade:salvager:2"]
+[event.option.win]
+text = "The salvager sits down and takes her time. Click, click. The drawers come out one by one."
+fx = ["tallies:12-22", "gain:silt-glass:1-2", "xp:salvager:3", "turns:1"]
+
+[[event]]
+id = "counting-house-ledgers"
+title = "The ledger room"
+text = "A long room of shelves, rotted to pulp. Only one thing on them is whole: a leather portfolio, tied with tape, and in it a set of working drawings in a clerk's neat hand."
+poi = ["ruin"]
+weight = 7
+[[event.option]]
+label = "Take the drawings"
+[event.option.win]
+text = "You wrap them in oilskin. Nobody here can read what they are, but the smith will know."
+fx = ["gain:silt-glass:0-1", "mark:has-the-drawings"]
+[[event.option]]
+label = "Study them where you stand"
+needs = ["trade:smith"]
+[event.option.win]
+text = "The smith reads in silence for a long time. 'Silt-glass,' he says at last. 'This is how to fuse it.' He copies out the steps by lantern-light."
+fx = ["recipe:fuse-silt-glass", "xp:smith:3", "turns:1"]
+[[event.option]]
+label = "Read the clerk's notes"
+needs = ["skill:healer:2"]
+[event.option.win]
+text = "Between the drawings are a hundred marginal notes, in the clerk's tidy hand, about the dosage of the cough-bark. The healer reads it all."
+fx = ["xp:healer:3", "heal:all:2"]
+
+[[event]]
+id = "spire-stair"
+title = "The stair that climbs into the Deep"
+text = "A stair of silt-glass spirals up the inside of the spire, each step ringing under your boots. At the turn of every flight a window, and in every window a different weather."
+poi = ["ruin"]
+weight = 10
+[[event.option]]
+label = "Climb, and see what is at the top"
+skill = "fighter"
+risk = 40
+[event.option.win]
+text = "At the top a ring of glass chairs, and on each a small, bright thing. You take as many as you can carry."
+fx = ["gain:silt-glass:4-8", "gain:iron:2-4", "xp:fighter:3"]
+[event.option.lose]
+text = "The warden stands at the top of the stair, and it has been waiting for company."
+fx = ["fight:warden"]
+[[event.option]]
+label = "Take only what is in the first room"
+[event.option.win]
+text = "A few spars from the door-frame. It is safe, and it is little."
+fx = ["gain:silt-glass:1-3"]
+[[event.option]]
+label = "Sound out the steps for the one that is false"
+needs = ["trade:reed-witch:2"]
+[event.option.win]
+text = "She knocks on each step with her staff and listens. The seventh is hollow. Below it, a cache left for whoever was clever."
+fx = ["gain:silt-glass:3-5", "gain:iron:2-3", "xp:reed-witch:3"]
+
+# ------------------------------------------------------------------ rare scenes
+
+[[event]]
+id = "lantern-on-the-water"
+title = "A lantern, walking on the water"
+text = "A lantern, carried by no hand, goes slowly across the flat a foot above the water. It stops. It turns toward you, and waits."
+rare = true
+weight = 2
+day = ["night"]
+[[event.option]]
+label = "Follow it"
+risk = 30
+skill = "reed-witch"
+[event.option.win]
+text = "It leads you by a road you could never have found, across the flats on firm ground, to a place the water cannot reach. In the lee of a stone you find an old strongbox, and a note: 'For whoever follows.'"
+fx = ["tallies:30-50", "gain:silt-glass:2-4", "chart:5", "xp:reed-witch:5", "mark:followed-the-lantern"]
+[event.option.lose]
+text = "It leads you by a road that ends in the sea. The water takes one of you, and gives the rest back."
+fx = ["hurt:all:water", "die:any", "turns:3", "morale:-4"]
+[[event.option]]
+label = "Put out your own light and wait"
+[event.option.win]
+text = "You stand in the dark. After a while the lantern goes on, and so do you."
+fx = ["morale:2"]
+
+[[event]]
+id = "the-sunk-wedding"
+title = "The wedding in the drowned hall"
+text = "A great hall, roofless, and in it a long table laid for a feast, as if the sea had come between the courses. The cloth is white, the silver bright. At the head, two chairs, empty. The air smells of orange blossom."
+rare = true
+weight = 2
+tiles = ["drowned-town"]
+[[event.option]]
+label = "Take the silver"
+[event.option.win]
+text = "You gather it up cloth and all. Behind you the hall is very quiet, and the candles, which were not lit, are lit."
+fx = ["tallies:40-60", "gain:silt-glass:2-3", "morale:-5", "mark:took-the-wedding-silver"]
+[[event.option]]
+label = "Sit at the table and keep them company"
+needs = ["size:2"]
+[event.option.win]
+text = "You sit, all of you, in the empty chairs. Nothing is said. When you rise, the hall is dry for a moment and the candles are out, and there is a gift at every place."
+fx = ["gain:relic:1", "bond:4", "morale:6", "mark:kept-the-wedding"]
+[[event.option]]
+label = "Leave quietly with a bow"
+[event.option.win]
+text = "You back out through the great door. Somewhere inside a woman laughs, softly, as at a good joke."
+fx = ["morale:2"]
+
+[[event]]
+id = "silt-whale"
+title = "The whale in the silt"
+text = "A shape on the horizon, the length of a hall, the colour of a mudbank. Ribs, as high as a roof, curving up through the silt. The sea laid a whale on the flat a century ago, and the flat kept it."
+rare = true
+weight = 2
+tiles = ["mudflat", "salt-pan"]
+water = ["low"]
+[[event.option]]
+label = "Strip what is saleable from the skeleton"
+risk = 30
+skill = "salvager"
+[event.option.win]
+text = "Ambergris and old oil in the hollows of the skull, and bone worth a tally an ounce. The marsh gave the sea back to you."
+fx = ["tallies:30-45", "gain:relic:1", "xp:salvager:4", "turns:2"]
+[event.option.lose]
+text = "A rib gives with a crack like a gun."
+fx = ["hurt:any:hurt", "tallies:8-12"]
+[[event.option]]
+label = "Sit in the rib-cage and rest a while"
+[event.option.win]
+text = "The ribs make a roof against the sun. It is, for an hour, the most restful place in the marsh."
+fx = ["heal:all:3", "morale:3", "turns:2"]
+
+[[event]]
+id = "the-old-ferryman"
+title = "The old ferryman at the ford"
+text = "A tall figure in a hooded cloak, poling a long boat across a ford that was dry a minute ago. He looks at you, and the boat stops. 'Passage?' he says. 'Pay what you have.'"
+rare = true
+weight = 2
+tiles = ["channel", "mere"]
+day = ["dusk", "night"]
+[[event.option]]
+label = "Pay him a handful of tallies"
+[event.option.win]
+text = "He weighs it, nods, and poles you across. At the far bank he says 'You owe nothing. You will remember me.' And then he is not there."
+fx = ["pay:5", "chart:4", "morale:3", "mark:crossed-with-the-ferryman"]
+[[event.option]]
+label = "Pay him in kind: a bond between you"
+needs = ["bond"]
+[event.option.win]
+text = "He looks long at the two of you. 'That is a fair coin.' He poles you across and tells you, on the way, where the water will be tomorrow."
+fx = ["bond:3", "chart:6", "gain:relic:1"]
+[[event.option]]
+label = "Refuse, and wade"
+risk = 50
+skill = "wader"
+[event.option.win]
+text = "You wade the ford and the water stays at your thigh, as if he were holding it. He watches you all the way."
+fx = ["xp:wader:3"]
+[event.option.lose]
+text = "The ford is deeper than it looked, and colder."
+fx = ["hurt:all:water", "turns:2"]
+
+[[event]]
+id = "causeway-under-the-silt"
+title = "Paving, under the mud"
+text = "A line of dressed stones runs straight out of the marsh, so regular it might have been poured, as wide as a cart and dry on top. It was a causeway, once. It goes a long way into the Deep."
+rare = true
+weight = 3
+tiles = ["mudflat", "reedbed", "peat-bog"]
+[[event.option]]
+label = "Follow it as far as you can"
+risk = 25
+skill = "wader"
+[event.option.win]
+text = "It runs for a mile and then it ends in a pier. From the pier, on a clear day, you can see the whole of the marsh. You chart what you see."
+fx = ["chart:6", "xp:wader:4", "turns:2", "mark:found-the-old-causeway"]
+[event.option.lose]
+text = "It runs for a mile, and then the tide arrives."
+fx = ["hurt:any:water", "turns:3", "chart:3"]
+[[event.option]]
+label = "Take a few stones, and note the place"
+needs = ["carry:tools:1"]
+[event.option.win]
+text = "Good dressed stone, enough for the foot of a wall."
+fx = ["gain:timber:0-1", "gain:iron:2-3", "chart:3"]
+
+[[event]]
+id = "glass-orchard"
+title = "The orchard of glass fruit"
+text = "In a hollow in the Deep, a ring of trees made of silt-glass, and on them, pendant, in the thousands, little spheres of clear glass with something burning in each. They chime softly in no wind."
+rare = true
+weight = 1
+tiles = ["deep"]
+[[event.option]]
+label = "Pick the fruit"
+risk = 45
+skill = "salvager"
+[event.option.win]
+text = "They come away warm, each a single bright thing. Whatever they are, they are worth a king's ransom."
+fx = ["gain:relic:2", "gain:silt-glass:3-6", "xp:salvager:5"]
+[event.option.lose]
+text = "The fruit burns where you touch it."
+fx = ["hurt:all:hurt", "gain:silt-glass:1-2"]
+[[event.option]]
+label = "Hear what the trees say"
+needs = ["trade:reed-witch:3"]
+[event.option.win]
+text = "They tell her, in a language of chimes, which of the tides is coming. She tells you. It is the best thing anyone has given you."
+fx = ["xp:reed-witch:5", "chart:6", "morale:5"]
+[[event.option]]
+label = "Leave them undisturbed"
+[event.option.win]
+text = "You walk out of the orchard backwards. As the last tree falls out of sight, you hear it chime."
+fx = ["morale:3"]
+
+[[event]]
+id = "the-hearth-unbroken"
+title = "A hearth still lit"
+text = "In the shell of a drowned house a hearth is warm, the ashes red. Someone's supper is on the hob. A chair is drawn up, and the chair is the shape of a person you know."
+rare = true
+weight = 2
+tiles = ["drowned-town", "island"]
+needs = ["trait:haunted"]
+draws = ["scar"]
+[[event.option]]
+label = "Sit in the chair"
+[event.option.win]
+text = "For the length of a breath you are at home, whole, unhurt, in a time before. Then the house is a wreck and the hearth is a stone. You are lighter."
+fx = ["heal:all:4", "morale:4"]
+[[event.option]]
+label = "Carry a coal home in the lantern"
+needs = ["carry:peat:1"]
+[event.option.win]
+text = "You lift a coal in the tongs and set it in the peat. It does not go out. It will not cool in your hold's hearth for a year."
+fx = ["lose:peat:1", "morale:6", "mark:carried-the-hearth"]
+[[event.option]]
+label = "Back out, and shut the door"
+[event.option.win]
+text = "You do not sit, and the chair stays empty. You are grateful, and it hurts."
