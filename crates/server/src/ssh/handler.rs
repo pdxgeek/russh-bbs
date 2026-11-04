@@ -19,10 +19,11 @@ use std::time::Instant;
 
 use russh::server::{Auth, Handler, Msg, PublicKeyOffer, Session, VerifiedPublicKey};
 use russh::{Channel, ChannelId, ChannelOpenFailure, MethodKind, MethodSet, Pty};
-use russh_bbs_core::access::{Access, Fingerprint, decide_access};
+use russh_bbs_core::access::{Access, Fingerprint};
 use russh_bbs_core::founder::{ClaimForm, MAX_ATTEMPTS_PER_SESSION};
 use russh_bbs_core::limits::{LimitError, MemberMeter, SystemClock, begin_member_session};
 use russh_bbs_core::passwords::{Login, authenticate};
+use russh_bbs_core::signin::{Route, names_the_handle, route};
 use russh_bbs_core::store::{Account, AccountId};
 use russh_bbs_core::terminal_settings::{MemberFlow, MemberStart};
 use russh_bbs_core::waiting_room::{Verdict, WaitingRoom};
@@ -43,7 +44,7 @@ use super::screen::{Content, Screen};
 use super::shell::{Inbox, MEMBER_START_TIMEOUT, Output, Shell, ShellParts};
 use super::terminal::PtySize;
 use crate::chat::Hub;
-use crate::founder::{CLAIM_USER, Founder};
+use crate::founder::Founder;
 use crate::ui::Ui;
 use crate::waiting_room::Throttle;
 
@@ -171,12 +172,20 @@ impl<D> ClientHandler<D> {
     where
         D: Backend,
     {
-        build_room(
+        // Every join form asks for a password, with a key or without one (D94 (6)); a visitor
+        // with a key can also bind it to an account they already have (D94 (8)).
+        let room = build_room(
             &*self.directory,
             self.limits.max_form_submissions,
             &self.guard.id(),
         )
         .await
+        .with_password_signup();
+        if self.fingerprint.is_some() {
+            room.with_key_link()
+        } else {
+            room
+        }
     }
 
     /// Whether the waiting room may be shown (see [`room_allowed`]).
@@ -339,6 +348,12 @@ impl<D: Backend> Handler for ClientHandler<D> {
         if !self.passwords.enabled() {
             return Ok(Auth::reject());
         }
+        // `new` and `claim` are not accounts: a password offered under them is refused like any
+        // other wrong password, with the limits counted the same (no oracle either way).
+        if route(user) != Route::SignIn {
+            self.passwords.admit(self.peer.map(|peer| peer.ip()), user);
+            return Ok(retry_methods(self.passwords.enabled()));
+        }
         // Limits first, for every handle alike (known or not), so a limited reply is the same
         // plain refusal and says nothing about members. Nothing typed is logged.
         if let Verdict::Limited { retry_after } =
@@ -350,7 +365,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
                 ?retry_after,
                 "password rate limit; rejecting"
             );
-            return Ok(retry_password());
+            return Ok(retry_methods(self.passwords.enabled()));
         }
         let checked = timeout(
             PASSWORD_CHECK_TIMEOUT,
@@ -373,15 +388,15 @@ impl<D: Backend> Handler for ClientHandler<D> {
             }
             Ok(Ok(Login::Denied)) => {
                 info!(session = ?self.guard.id(), peer = ?self.peer, "password rejected");
-                Ok(retry_password())
+                Ok(retry_methods(self.passwords.enabled()))
             }
             Ok(Err(error)) => {
                 warn!(session = ?self.guard.id(), %error, "password check failed in the store; rejecting");
-                Ok(retry_password())
+                Ok(retry_methods(self.passwords.enabled()))
             }
             Err(_) => {
                 warn!(session = ?self.guard.id(), "password check timed out; rejecting");
-                Ok(retry_password())
+                Ok(retry_methods(self.passwords.enabled()))
             }
         }
     }
@@ -417,23 +432,54 @@ impl<D: Backend> Handler for ClientHandler<D> {
             );
             return Ok(Auth::reject());
         }
-        let access = decide_access(&*self.directory, &fingerprint).await;
-        info!(
-            session = ?self.guard.id(),
-            peer = ?self.peer,
-            fingerprint = %fingerprint,
-            access = ?access,
-            "public key authenticated"
-        );
-        // The user name only selects the claim prompt. It is never rendered or logged.
-        self.claim_requested = user == CLAIM_USER;
-        self.member = access == Access::Member;
-        self.guard.set_authenticated(fingerprint.clone(), access);
-        self.fingerprint = Some(fingerprint);
-        // Both levels authenticate. `Restricted` limits the session to the waiting room;
-        // `Member` gets the signed-in placeholder (the member UI is later work).
-        match access {
-            Access::Restricted | Access::Member => Ok(Auth::Accept),
+        // The user name picks the path (D94 (10)); it is never rendered or logged.
+        match route(user) {
+            Route::Join | Route::Claim => {
+                // The waiting room, with any key: a member's key too (it can join nothing
+                // new, and the room treats every visitor alike).
+                self.claim_requested = route(user) == Route::Claim;
+                self.member = false;
+                info!(session = ?self.guard.id(), peer = ?self.peer, fingerprint = %fingerprint, "public key authenticated for the waiting room");
+                self.guard
+                    .set_authenticated(fingerprint.clone(), Access::Restricted);
+                self.fingerprint = Some(fingerprint);
+                Ok(Auth::Accept)
+            }
+            Route::SignIn => {
+                // Only a key bound to the account with this very handle signs in. Every other
+                // key is refused the same way, so the client falls back to a password and the
+                // answer is the same whether or not the handle exists.
+                let bound = self
+                    .member_start(&fingerprint)
+                    .await
+                    .is_some_and(|start| names_the_handle(user, start.handle.as_str()));
+                if !bound {
+                    info!(session = ?self.guard.id(), peer = ?self.peer, "public key not bound to that handle; refusing");
+                    return Ok(retry_methods(self.passwords.enabled()));
+                }
+                info!(session = ?self.guard.id(), peer = ?self.peer, fingerprint = %fingerprint, "public key authenticated");
+                self.claim_requested = false;
+                self.member = true;
+                self.guard
+                    .set_authenticated(fingerprint.clone(), Access::Member);
+                self.fingerprint = Some(fingerprint);
+                Ok(Auth::Accept)
+            }
+        }
+    }
+
+    async fn auth_none(&mut self, user: &str) -> Result<Auth, Self::Error> {
+        // A client with no key reaches the waiting room only under the visitor names; anyone
+        // else is asked for a key or a password (D94 (7), (10)).
+        match route(user) {
+            Route::Join | Route::Claim => {
+                self.claim_requested = route(user) == Route::Claim;
+                self.member = false;
+                self.fingerprint = None;
+                self.guard.set_visitor();
+                Ok(Auth::Accept)
+            }
+            Route::SignIn => Ok(retry_methods(self.passwords.enabled())),
         }
     }
 
@@ -569,7 +615,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
         let content = if self.claim_requested {
             // The same prompt for every key on every board, claimed or not (D41). The setup
             // token is its gate; there is no account yet to hold a permission.
-            Content::Claim(ClaimForm::new(MAX_ATTEMPTS_PER_SESSION))
+            Content::Claim(ClaimForm::new(MAX_ATTEMPTS_PER_SESSION).with_password())
         } else if let Some((content, metered)) = self.member_content().await {
             meter = metered;
             content
@@ -798,11 +844,19 @@ impl<D: Backend> Handler for ClientHandler<D> {
 /// the methods the client is told remain, so the client gives up after one try (QA M3 L9). This
 /// keeps both methods on offer; russh's `max_auth_attempts` still ends the connection, and the
 /// per-account and per-IP limits (D81) are checked before every try.
-fn retry_password() -> Auth {
+fn retry_methods(password: bool) -> Auth {
     Auth::Reject {
-        proceed_with_methods: Some(MethodSet::from(
-            &[MethodKind::PublicKey, MethodKind::Password][..],
-        )),
+        proceed_with_methods: Some(if password {
+            MethodSet::from(
+                &[
+                    MethodKind::None,
+                    MethodKind::PublicKey,
+                    MethodKind::Password,
+                ][..],
+            )
+        } else {
+            MethodSet::from(&[MethodKind::None, MethodKind::PublicKey][..])
+        }),
         partial_success: false,
     }
 }

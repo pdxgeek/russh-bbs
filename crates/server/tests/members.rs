@@ -98,6 +98,7 @@ impl Rig {
             .attach_fingerprint(account.id, &fp)
             .await
             .unwrap();
+        common::remember(fp, account.username.as_str());
         let settings = TerminalSettings::new(None, None, true, true, Some(Tier::Ascii)).unwrap();
         self.store
             .set_terminal_settings(account.id, &settings)
@@ -156,7 +157,21 @@ async fn login(addr: SocketAddr, key: &PrivateKey) -> Handle<Client> {
     let mut session = common::connect(addr).await;
     let result = session
         .authenticate_publickey(
-            "anyone",
+            &common::user_for(&key, "anyone"),
+            PrivateKeyWithHashAlg::new(Arc::new(key.clone()), None),
+        )
+        .await
+        .unwrap();
+    assert!(matches!(result, AuthResult::Success), "{result:?}");
+    session
+}
+
+/// Sign in as a visitor to the waiting room (`new`), whatever the key is bound to.
+async fn visitor(addr: SocketAddr, key: &PrivateKey) -> Handle<Client> {
+    let mut session = common::connect(addr).await;
+    let result = session
+        .authenticate_publickey(
+            "new",
             PrivateKeyWithHashAlg::new(Arc::new(key.clone()), None),
         )
         .await
@@ -611,7 +626,7 @@ async fn a_key_that_is_not_a_member_learns_nothing_about_members() {
     // press: no members menu, no list, no profile.
     let stranger = new_client_key();
     for key in [&stranger, &suspended_key] {
-        let session = login(rig.addr(), key).await;
+        let session = visitor(rig.addr(), key).await;
         let mut channel = common::open_shell(&session, 80, 24).await;
         let mut seen = words(&mut channel).await;
         for typed in ["u", "l", "1", "p", "e", "/", "b", "\r", "\u{1b}"] {

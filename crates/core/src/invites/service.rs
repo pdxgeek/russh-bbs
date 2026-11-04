@@ -161,9 +161,10 @@ pub async fn redeem_invite<S: InviteStore>(
     }
 }
 
-/// [`redeem_invite`] for a person with no SSH key (telnet, D94): the account is bound to the
-/// password whose argon2id hash `password_hash` is (made by [`crate::passwords::hash_new`]).
-/// The same permission, the same single refusal, the same atomic transaction.
+/// [`redeem_invite`] with a password (D94): the account is bound to the password whose argon2id
+/// hash `password_hash` is (made by [`crate::passwords::hash_new`]) and, when the visitor has an
+/// SSH key, to `fingerprint` too. The same permission, the same single refusal, the same atomic
+/// transaction.
 ///
 /// # Errors
 /// As [`redeem_invite`].
@@ -173,13 +174,14 @@ pub async fn redeem_invite_with_password<S: InviteStore>(
     typed_code: &str,
     username: Username,
     password_hash: &str,
+    fingerprint: Option<&Fingerprint>,
 ) -> Result<Redeemed, RedeemError> {
     if access.require(Permission::InviteRedeem, None).is_err() {
         return Err(RedeemError::Rejected(RejectReason::Code));
     }
     let hash = CodeHash::of(typed_code);
     match store
-        .redeem_invite_password(&hash, username, password_hash)
+        .redeem_invite_password(&hash, username, password_hash, fingerprint)
         .await
     {
         Ok(redeemed) => {

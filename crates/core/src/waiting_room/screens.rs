@@ -28,6 +28,9 @@ pub enum Page {
     Apply,
     /// Create an account at once (`open` mode).
     CreateAccount,
+    /// "I already have an account": a handle and password that bind this key to it (a room
+    /// built [`WaitingRoom::with_key_link`](super::WaitingRoom::with_key_link), D94 (8)).
+    LinkKey,
 }
 
 impl Page {
@@ -41,6 +44,7 @@ impl Page {
             Self::RedeemInvite => strings::REDEEM_INVITE_HEADING,
             Self::Apply => strings::APPLY_HEADING,
             Self::CreateAccount => strings::CREATE_ACCOUNT_HEADING,
+            Self::LinkKey => strings::LINK_KEY_HEADING,
         }
     }
 
@@ -109,6 +113,9 @@ pub const fn menu(mode: RegistrationMode) -> &'static [MenuEntry] {
         RegistrationMode::Open => OPEN_MENU,
     }
 }
+
+/// The key of the "I already have an account" entry, on rooms that offer it.
+pub const LINK_KEY: char = 'e';
 
 /// The key that disconnects from the home page.
 pub const QUIT_KEY: char = 'q';

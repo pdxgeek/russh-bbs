@@ -42,7 +42,7 @@ async fn password_auth_fails() {
 }
 
 #[tokio::test]
-async fn none_auth_fails_and_only_publickey_is_offered() {
+async fn none_auth_fails_for_a_sign_in_name_and_the_methods_are_none_publickey_password() {
     let t = start_server(fast_limits()).await;
     let mut session = connect(t.addr()).await;
     let result = session.authenticate_none("anyone").await.unwrap();
@@ -50,10 +50,37 @@ async fn none_auth_fails_and_only_publickey_is_offered() {
         remaining_methods, ..
     } = result
     else {
-        panic!("none auth must not succeed");
+        panic!("none auth must not succeed for a sign-in name");
     };
     let offered: Vec<_> = remaining_methods.iter().copied().collect();
-    assert_eq!(offered, vec![MethodKind::PublicKey]);
+    assert_eq!(
+        offered,
+        vec![
+            MethodKind::None,
+            MethodKind::PublicKey,
+            MethodKind::Password
+        ]
+    );
+}
+
+#[tokio::test]
+async fn none_auth_reaches_the_waiting_room_only_under_the_visitor_names() {
+    // D94 (7), (10): `new` and `claim` accept a client with no key; every other name does not,
+    // and the refusal is the same for every other name.
+    let t = start_server(fast_limits()).await;
+    for name in ["new", "claim", "NEW"] {
+        let mut session = connect(t.addr()).await;
+        let result = session.authenticate_none(name).await.unwrap();
+        assert!(matches!(result, AuthResult::Success), "{name}: {result:?}");
+    }
+    let mut refusals = Vec::new();
+    for name in ["alice", "bob", "nobody-at-all", ""] {
+        let mut session = connect(t.addr()).await;
+        let result = session.authenticate_none(name).await.unwrap();
+        refusals.push(format!("{result:?}"));
+        assert!(matches!(result, AuthResult::Failure { .. }), "{name}");
+    }
+    assert!(refusals.iter().all(|r| r == &refusals[0]), "{refusals:?}");
 }
 
 #[tokio::test]

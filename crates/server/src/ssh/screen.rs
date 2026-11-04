@@ -55,7 +55,9 @@ use russh_bbs_core::terminal_settings::strings::TITLE;
 use russh_bbs_core::terminal_settings::{
     LayoutId, MemberEffect, MemberFlow, MemberInput, TerminalSettings,
 };
-use russh_bbs_core::waiting_room::{Page, RedeemRequest, RoomEffect, RoomInput, View, WaitingRoom};
+use russh_bbs_core::waiting_room::{
+    LinkRequest, Page, RedeemRequest, RoomEffect, RoomInput, View, WaitingRoom,
+};
 
 use super::terminal::{Key, PtySize, RenderCap};
 use crate::forums::{self, DrawCtx, ForumEffect, ForumsScreen};
@@ -202,12 +204,18 @@ pub(crate) struct KeyEffects {
     /// A token the person submitted at the claim prompt. The session checks it (it needs the
     /// store) and reports back through [`Screen::claim_rejected`] or [`Screen::claim_accepted`].
     pub(crate) claim_token: Option<String>,
+    /// The founder's chosen password, with the token, when the prompt asked for one (D94 (6)).
+    pub(crate) claim_password: Option<russh_bbs_core::passwords::Secret>,
     /// Terminal settings the member changed. The session stores them.
     pub(crate) save_settings: Option<TerminalSettings>,
     /// An invite the visitor asked to redeem in the waiting room (M2-D). The session redeems it
     /// (it needs the store) and reports back through [`Screen::redeem_refused`] or
     /// [`Screen::redeemed`].
     pub(crate) redeem: Option<RedeemRequest>,
+    /// A handle and password the visitor gave to bind this key to an account they have
+    /// (D94 (8)). The session checks them and reports through [`Screen::redeem_refused`] or
+    /// [`Screen::redeemed`].
+    pub(crate) link: Option<LinkRequest>,
     /// A request for an invite the visitor made in the waiting room (M2-E). The session offers
     /// it to the queue (it needs the store and the peer address). It never reports back: the
     /// room has already shown its one fixed answer.
@@ -256,8 +264,10 @@ impl KeyEffects {
     pub(crate) fn absorb(&mut self, later: Self) {
         self.disconnect |= later.disconnect;
         self.claim_token = later.claim_token.or(self.claim_token.take());
+        self.claim_password = later.claim_password.or(self.claim_password.take());
         self.save_settings = later.save_settings.or(self.save_settings.take());
         self.redeem = later.redeem.or(self.redeem.take());
+        self.link = later.link.or(self.link.take());
         self.invite = later.invite.or(self.invite.take());
         self.request_invite = later.request_invite.or(self.request_invite.take());
         self.members_request = later.members_request;
@@ -582,6 +592,9 @@ impl Screen {
                             effects.disconnect = true;
                             break;
                         }
+                        RoomEffect::LinkKey(request) => {
+                            effects.link = Some(request);
+                        }
                         RoomEffect::Redeem(request) => {
                             effects.redeem = Some(request);
                             break;
@@ -609,6 +622,11 @@ impl Screen {
                         }
                         ClaimEffect::Submit(token) => {
                             effects.claim_token = Some(token);
+                            break;
+                        }
+                        ClaimEffect::SubmitWithPassword { token, password } => {
+                            effects.claim_token = Some(token);
+                            effects.claim_password = Some(password);
                             break;
                         }
                     }

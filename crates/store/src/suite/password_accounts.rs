@@ -95,7 +95,7 @@ pub(crate) async fn redeeming_with_a_password_makes_a_keyless_member_with_the_ke
     let code = code_for(store, &alice, 1).await;
     let phc = a_hash("a long password nobody guesses");
     let got = store
-        .redeem_invite_password(&code.hash(), name("newbie"), &phc)
+        .redeem_invite_password(&code.hash(), name("newbie"), &phc, None)
         .await
         .unwrap();
     assert_eq!(got.account.state, AccountState::Active);
@@ -115,7 +115,7 @@ pub(crate) async fn redeeming_with_a_password_makes_a_keyless_member_with_the_ke
     assert_eq!(node.invited_by, Some(alice.id));
     // The code works once.
     let again = store
-        .redeem_invite_password(&code.hash(), name("second"), &phc)
+        .redeem_invite_password(&code.hash(), name("second"), &phc, None)
         .await;
     assert!(matches!(
         again,
@@ -138,7 +138,7 @@ pub(crate) async fn a_refused_password_redemption_leaves_no_password_and_consume
             continue;
         };
         let refused = store
-            .redeem_invite_password(&code.hash(), username, &phc)
+            .redeem_invite_password(&code.hash(), username, &phc, None)
             .await;
         assert!(
             matches!(refused, Err(RedeemError::Rejected(RejectReason::Handle))),
@@ -148,7 +148,7 @@ pub(crate) async fn a_refused_password_redemption_leaves_no_password_and_consume
     assert_eq!(count(&h, "account_password").await, "0");
     // The code was not consumed by the refusals.
     let made = store
-        .redeem_invite_password(&code.hash(), name("fresh"), &phc)
+        .redeem_invite_password(&code.hash(), name("fresh"), &phc, None)
         .await
         .unwrap();
     assert_password_account(&h, &made.account, &phc).await;
@@ -161,7 +161,7 @@ pub(crate) async fn open_with_a_password_makes_a_keyless_account_and_counts_agai
     let store = h.store();
     let phc = a_hash("open registration password");
     let made = store
-        .open_account_password(name("walkin"), &phc, DailyCap::Limited(1))
+        .open_account_password(name("walkin"), &phc, None, DailyCap::Limited(1))
         .await
         .unwrap();
     assert_eq!(made.account.state, AccountState::Active);
@@ -177,7 +177,7 @@ pub(crate) async fn open_with_a_password_makes_a_keyless_account_and_counts_agai
     );
     // The day was full after one: the next is the cap, and writes nothing.
     let capped = store
-        .open_account_password(name("second"), &phc, DailyCap::Limited(1))
+        .open_account_password(name("second"), &phc, None, DailyCap::Limited(1))
         .await;
     assert!(matches!(capped, Err(OpenError::CapReached)));
     assert_eq!(count(&h, "account_password").await, "1");
@@ -189,7 +189,7 @@ pub(crate) async fn open_with_a_taken_handle_rolls_back_the_count_and_the_passwo
     member(store, "taken").await;
     let phc = a_hash("open registration password");
     let refused = store
-        .open_account_password(name("taken"), &phc, DailyCap::Limited(5))
+        .open_account_password(name("taken"), &phc, None, DailyCap::Limited(5))
         .await;
     assert!(matches!(
         refused,
@@ -207,6 +207,7 @@ fn password_request(handle: &str, kind: RequestKind, phc: &str) -> NewRequest {
         message: Message::new("hello from a telnet client"),
         kind,
         password_hash: Some(phc.to_owned()),
+        key_bound: false,
     }
 }
 
@@ -346,7 +347,7 @@ pub(crate) async fn the_database_refuses_a_password_hash_that_is_not_argon2id<H:
     let code = code_for(store, &alice, 3).await;
     // The CHECK on `account_password` stops the whole redemption, so the code is not spent.
     let refused = store
-        .redeem_invite_password(&code.hash(), name("newbie"), "plain-text-not-a-hash")
+        .redeem_invite_password(&code.hash(), name("newbie"), "plain-text-not-a-hash", None)
         .await;
     assert!(matches!(refused, Err(RedeemError::Store(_))), "{refused:?}");
     assert_eq!(count(&h, "accounts WHERE username = 'newbie'").await, "0");
@@ -355,6 +356,7 @@ pub(crate) async fn the_database_refuses_a_password_hash_that_is_not_argon2id<H:
             &code.hash(),
             name("newbie"),
             &a_hash("a long enough password"),
+            None,
         )
         .await;
     assert!(ok.is_ok());
@@ -366,4 +368,79 @@ pub(crate) async fn the_database_refuses_a_password_hash_that_is_not_argon2id<H:
         )
         .await;
     assert!(bad.is_err());
+}
+
+pub(crate) async fn a_visitor_with_a_key_gets_the_key_and_the_password_on_every_path<H: Harness>() {
+    let h = H::fresh().await;
+    let store = h.store();
+    let alice = member(store, "alice").await;
+    let phc = a_hash("both credentials here");
+
+    // Redeem.
+    let code = code_for(store, &alice, 9).await;
+    let made = store
+        .redeem_invite_password(&code.hash(), name("keyed"), &phc, Some(&fingerprint(1)))
+        .await
+        .unwrap();
+    assert_eq!(
+        store.stored_hash(made.account.id).await.unwrap().as_deref(),
+        Some(phc.as_str())
+    );
+    assert!(store.has_key(made.account.id).await.unwrap());
+    let bound = store
+        .account_by_fingerprint(&fingerprint(1))
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(bound.id, made.account.id);
+    // The same key cannot make a second account, and nothing is left behind.
+    let code = code_for(store, &alice, 10).await;
+    let again = store
+        .redeem_invite_password(&code.hash(), name("second"), &phc, Some(&fingerprint(1)))
+        .await;
+    assert!(matches!(
+        again,
+        Err(RedeemError::Rejected(RejectReason::Key))
+    ));
+    assert_eq!(count(&h, "accounts WHERE username = 'second'").await, "0");
+
+    // Open.
+    let opened = store
+        .open_account_password(
+            name("walkin"),
+            &phc,
+            Some(&fingerprint(2)),
+            DailyCap::Limited(5),
+        )
+        .await
+        .unwrap();
+    assert!(store.has_key(opened.account.id).await.unwrap());
+    assert!(
+        store
+            .stored_hash(opened.account.id)
+            .await
+            .unwrap()
+            .is_some()
+    );
+
+    // A request with a real key and a password binds both on approval.
+    let sysop = member(store, "the-sysop").await;
+    let handle = name("hopeful");
+    let request = NewRequest {
+        fingerprint: fingerprint(3),
+        handle,
+        message: Message::new("hi"),
+        kind: RequestKind::Application,
+        password_hash: Some(phc.clone()),
+        key_bound: true,
+    };
+    let Submitted::Stored(id) = store.submit_request(&request, terms()).await.unwrap() else {
+        panic!("expected the request to be stored");
+    };
+    let account = store.approve_request(id, sysop.id).await.unwrap();
+    assert!(store.has_key(account.id).await.unwrap());
+    assert_eq!(
+        store.stored_hash(account.id).await.unwrap().as_deref(),
+        Some(phc.as_str())
+    );
 }

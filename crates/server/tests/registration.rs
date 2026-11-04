@@ -123,7 +123,7 @@ async fn login(addr: SocketAddr, user: &str, key: &PrivateKey) -> Handle<Client>
     let mut session = common::connect(addr).await;
     let result = session
         .authenticate_publickey(
-            user,
+            &common::user_for(key, user),
             PrivateKeyWithHashAlg::new(Arc::new(key.clone()), None),
         )
         .await
@@ -215,6 +215,13 @@ async fn press(channel: &mut Channel<Msg>, input: &str) -> String {
     strip_ansi(&drain(channel).await)
 }
 
+/// The create-account form (`open`): the handle, then a password and its repeat (D94 (6)).
+async fn create(channel: &mut Channel<Msg>, handle: &str) -> String {
+    line(channel, handle).await;
+    line(channel, "a long join password").await;
+    line(channel, "a long join password").await
+}
+
 /// Type `text` and press Enter.
 async fn line(channel: &mut Channel<Msg>, text: &str) -> String {
     press(channel, &format!("{text}\r")).await
@@ -238,6 +245,8 @@ async fn founder_at_menu(rig: &Rig) -> (Handle<Client>, Channel<Msg>, PrivateKey
     let mut channel = common::open_shell(&session, 80, 24).await;
     drain(&mut channel).await;
     line(&mut channel, &rig.token).await;
+    line(&mut channel, "founder password one").await;
+    line(&mut channel, "founder password one").await;
     press(&mut channel, "x").await;
     press(&mut channel, "n").await;
     let menu = press(&mut channel, "y").await;
@@ -263,7 +272,9 @@ async fn texts(rig: &Rig, sql: &str) -> Vec<String> {
 /// On the request form: type a handle and a message and press Enter; returns the screen.
 async fn ask(channel: &mut Channel<Msg>, handle: &str, message: &str) -> String {
     line(channel, handle).await;
-    line(channel, message).await
+    line(channel, message).await;
+    line(channel, "a long join password").await;
+    line(channel, "a long join password").await
 }
 
 /// Make an account holding `role` with a fresh key, as the board would after a decision.
@@ -282,6 +293,7 @@ async fn member_with(rig: &Rig, name: &str, role: Slug, state: AccountState) -> 
         .attach_fingerprint(account.id, &fingerprint_of(&key))
         .await
         .unwrap();
+    common::remember(fingerprint_of(&key), account.username.as_str());
     key
 }
 
@@ -427,6 +439,10 @@ async fn an_applicant_lands_in_the_queue_and_stays_outside_until_the_sysop_appro
         .await,
         ["1"]
     );
+    common::remember(
+        key.public_key().fingerprint(russh::keys::HashAlg::Sha256),
+        "hopeful",
+    );
     let session = login(rig.addr(), "anyone", &key).await;
     let mut channel = common::open_shell(&session, 80, 24).await;
     drain(&mut channel).await;
@@ -489,7 +505,7 @@ async fn an_applicant_reads_the_same_words_whatever_the_queue_does_with_the_appl
     // A key that already has an account that is not active.
     let suspended = member_with(&rig, "suspended-one", Slug::MEMBER, AccountState::Suspended).await;
     {
-        let session = login(rig.addr(), "anyone", &suspended).await;
+        let session = login(rig.addr(), "new", &suspended).await;
         let mut channel = common::open_shell(&session, 80, 24).await;
         drain(&mut channel).await;
         press(&mut channel, "a").await;
@@ -551,7 +567,7 @@ async fn an_open_visitor_gets_an_active_account_at_once() {
     set_mode(&rig, RegistrationMode::Open).await;
 
     let (_s, mut form, key) = at_open_form(&rig).await;
-    let screen = line(&mut form, "newcomer").await;
+    let screen = create(&mut form, "newcomer").await;
     // The visitor is a member now: the member's login screen, then the menu.
     assert!(flat(&screen).contains("Signed in as newcomer"), "{screen}");
     assert!(is_a_member(&rig, &key).await);
@@ -561,7 +577,11 @@ async fn an_open_visitor_gets_an_active_account_at_once() {
         "active, and nobody vouched"
     );
     assert_eq!(count(&rig, "invite_request").await, 0, "no queue involved");
-    // The same key reconnects as a member.
+    // The same key reconnects as a member, under its new handle.
+    common::remember(
+        key.public_key().fingerprint(russh::keys::HashAlg::Sha256),
+        "newcomer",
+    );
     let session = login(rig.addr(), "anyone", &key).await;
     let mut channel = common::open_shell(&session, 80, 24).await;
     drain(&mut channel).await;
@@ -594,7 +614,7 @@ async fn an_open_refusal_reads_the_same_whatever_the_cause() {
 
     // The baseline refusal: a handle that is taken.
     let (_s1, mut taken, _k1) = at_open_form(&rig).await;
-    let baseline = line(&mut taken, "alice").await;
+    let baseline = create(&mut taken, "alice").await;
     assert!(flat(&baseline).contains(NOT_CREATED), "{baseline}");
     assert!(
         !baseline.contains("alice"),
@@ -603,18 +623,18 @@ async fn an_open_refusal_reads_the_same_whatever_the_cause() {
 
     // A lookalike of a taken handle.
     let (_s2, mut lookalike, _k2) = at_open_form(&rig).await;
-    assert_eq!(line(&mut lookalike, "a1ice").await, baseline, "lookalike");
+    assert_eq!(create(&mut lookalike, "a1ice").await, baseline, "lookalike");
 
     // A key that already has a pending account (it still reaches the room).
     let pending = member_with(&rig, "pending-one", Slug::MEMBER, AccountState::Pending).await;
     let accounts_before = count(&rig, "accounts").await;
     {
-        let session = login(rig.addr(), "anyone", &pending).await;
+        let session = login(rig.addr(), "new", &pending).await;
         let mut channel = common::open_shell(&session, 80, 24).await;
         drain(&mut channel).await;
         press(&mut channel, "n").await;
         assert_eq!(
-            line(&mut channel, "brand-new").await,
+            create(&mut channel, "brand-new").await,
             baseline,
             "key has an account"
         );
@@ -623,10 +643,10 @@ async fn an_open_refusal_reads_the_same_whatever_the_cause() {
     // The per-key gate: a burst of two attempts, then none for an hour, however good the
     // handle. The key makes two failed attempts, then a third with a free handle.
     let (_s3, mut limited, key3) = at_open_form(&rig).await;
-    assert_eq!(line(&mut limited, "alice").await, baseline);
-    assert_eq!(line(&mut limited, "alice").await, baseline);
+    assert_eq!(create(&mut limited, "alice").await, baseline);
+    assert_eq!(create(&mut limited, "alice").await, baseline);
     assert_eq!(
-        line(&mut limited, "free-handle").await,
+        create(&mut limited, "free-handle").await,
         baseline,
         "rate limited"
     );
@@ -639,7 +659,7 @@ async fn an_open_refusal_reads_the_same_whatever_the_cause() {
     .await;
     let (_s4, mut gone, key4) = at_open_form(&rig).await;
     assert_eq!(
-        line(&mut gone, "free-handle").await,
+        create(&mut gone, "free-handle").await,
         baseline,
         "permission not held"
     );
@@ -651,7 +671,7 @@ async fn an_open_refusal_reads_the_same_whatever_the_cause() {
     let (_s5, mut stale, key5) = at_open_form(&rig).await;
     set_mode(&rig, RegistrationMode::Invite).await;
     assert_eq!(
-        line(&mut stale, "free-handle").await,
+        create(&mut stale, "free-handle").await,
         baseline,
         "mode changed"
     );
@@ -682,7 +702,7 @@ async fn the_network_gate_limits_a_flood_of_new_keys_from_one_address() {
         .await;
     for n in 1..=5 {
         let (_s, mut form, key) = at_open_form(&rig).await;
-        let screen = line(&mut form, &format!("person{n}")).await;
+        let screen = create(&mut form, &format!("person{n}")).await;
         assert!(
             flat(&screen).contains(&format!("Signed in as person{n}")),
             "{n}: {screen}"
@@ -690,7 +710,7 @@ async fn the_network_gate_limits_a_flood_of_new_keys_from_one_address() {
         assert!(is_a_member(&rig, &key).await);
     }
     let (_s, mut form, key) = at_open_form(&rig).await;
-    let screen = line(&mut form, "person6").await;
+    let screen = create(&mut form, "person6").await;
     assert!(flat(&screen).contains(NOT_CREATED), "{screen}");
     assert!(!is_a_member(&rig, &key).await);
     assert_eq!(count(&rig, "accounts").await, 5);
@@ -711,14 +731,14 @@ async fn the_daily_cap_degrades_open_to_apply_for_the_rest_of_the_utc_day() {
     // ...two others take the day's places...
     for n in 1..=2 {
         let (_s, mut form, _) = at_open_form(&rig).await;
-        let screen = line(&mut form, &format!("person{n}")).await;
+        let screen = create(&mut form, &format!("person{n}")).await;
         assert!(
             flat(&screen).contains(&format!("Signed in as person{n}")),
             "{screen}"
         );
     }
     // ...and theirs is refused with the one sentence, and nothing is made.
-    let refused = line(&mut late, "latecomer").await;
+    let refused = create(&mut late, "latecomer").await;
     assert!(flat(&refused).contains(NOT_CREATED), "{refused}");
     assert!(!is_a_member(&rig, &late_key).await);
     assert_eq!(count(&rig, "accounts").await, 2);
@@ -772,7 +792,7 @@ async fn the_daily_cap_degrades_open_to_apply_for_the_rest_of_the_utc_day() {
     assert!(words.contains("[n] Create an account"), "{home}");
     let screen = {
         press(&mut fresh, "n").await;
-        line(&mut fresh, "nextday").await
+        create(&mut fresh, "nextday").await
     };
     assert!(flat(&screen).contains("Signed in as nextday"), "{screen}");
     assert!(is_a_member(&rig, &fresh_key).await);

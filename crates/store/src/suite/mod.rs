@@ -319,6 +319,7 @@ macro_rules! shared_suite {
                 password_accounts::approving_a_password_request_for_a_taken_handle_keeps_the_request,
                 password_accounts::has_key_is_true_for_a_key_account_and_false_for_a_password_account,
                 password_accounts::the_database_refuses_a_password_hash_that_is_not_argon2id,
+                password_accounts::a_visitor_with_a_key_gets_the_key_and_the_password_on_every_path,
                 invites::a_created_invite_is_stored_hashed_bound_to_the_inviter_and_audited,
                 invites::redeeming_makes_an_active_member_with_the_inviter_recorded,
                 invites::a_code_works_once,

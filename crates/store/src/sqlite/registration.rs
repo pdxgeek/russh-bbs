@@ -171,9 +171,13 @@ impl RegistrationStore for SqliteStore {
         &self,
         username: Username,
         password_hash: &str,
+        fingerprint: Option<&Fingerprint>,
         cap: DailyCap,
     ) -> Result<Opened, OpenError> {
-        self.open_bound(username, Binding::Password(password_hash), cap)
-            .await
+        let binding = match fingerprint {
+            Some(fingerprint) => Binding::KeyAndPassword(fingerprint.as_str(), password_hash),
+            None => Binding::Password(password_hash),
+        };
+        self.open_bound(username, binding, cap).await
     }
 }

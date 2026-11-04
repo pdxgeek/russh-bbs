@@ -84,14 +84,15 @@ pub trait RegistrationStore: Send + Sync {
         cap: DailyCap,
     ) -> impl Future<Output = Result<Opened, OpenError>> + Send;
 
-    /// [`RegistrationStore::open_account`] for a person with no SSH key (telnet, D94): the
-    /// account is bound to the password whose argon2id hash is `password_hash`
-    /// ([`crate::passwords::hash_new`]) instead of a key. The cap, the account and its audit row
-    /// are the same single transaction.
+    /// [`RegistrationStore::open_account`] with a password (D94): the account is bound to the
+    /// password whose argon2id hash is `password_hash` ([`crate::passwords::hash_new`]) and to
+    /// `fingerprint` when the visitor has an SSH key. The cap, the account and its audit row are
+    /// the same single transaction.
     fn open_account_password(
         &self,
         username: Username,
         password_hash: &str,
+        fingerprint: Option<&Fingerprint>,
         cap: DailyCap,
     ) -> impl Future<Output = Result<Opened, OpenError>> + Send;
 }
@@ -128,6 +129,7 @@ impl RegistrationStore for NoMembers {
         &self,
         _username: Username,
         _password_hash: &str,
+        _fingerprint: Option<&Fingerprint>,
         _cap: DailyCap,
     ) -> impl Future<Output = Result<Opened, OpenError>> + Send {
         std::future::ready(Err(OpenError::Rejected(OpenRefusal::NotOpen)))

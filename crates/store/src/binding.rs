@@ -11,4 +11,7 @@ pub(crate) enum Binding<'a> {
     /// key. The account can sign in with the password only (over telnet, and over ssh when the
     /// sysop has opted in).
     Password(&'a str),
+    /// Both: a visitor with an SSH key who also chose a password (D94 (6)). The key is the
+    /// everyday login, the password the way back in.
+    KeyAndPassword(&'a str, &'a str),
 }

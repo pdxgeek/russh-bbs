@@ -115,6 +115,7 @@ impl RegistrationStore for Fake {
         &self,
         username: Username,
         password_hash: &str,
+        _fingerprint: Option<&Fingerprint>,
         cap: DailyCap,
     ) -> Result<Opened, OpenError> {
         self.password_hashes
@@ -426,6 +427,7 @@ async fn an_application_needs_membership_apply_not_invite_request() {
             &self,
             _: Username,
             _: &str,
+            _: Option<&Fingerprint>,
             _: DailyCap,
         ) -> Result<Opened, OpenError> {
             Err(OpenError::CapReached)

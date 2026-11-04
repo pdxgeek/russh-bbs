@@ -3,7 +3,7 @@
 
 use super::event::{Action, Actor, AuditEvent, Target};
 use crate::access::{
-    Child, Granting, GroupChange, GroupId, NewGrant, ResourceRef, Scope, Slug, Subject,
+    Child, Fingerprint, Granting, GroupChange, GroupId, NewGrant, ResourceRef, Scope, Slug, Subject,
 };
 use crate::invites::InviteId;
 use crate::limits::{Limit, LimitKind};
@@ -63,6 +63,18 @@ pub fn password_cleared(account: AccountId, note: &str) -> AuditEvent {
         Target::Account(account),
     )
     .detail(note)
+}
+
+/// `account` added `fingerprint` to itself by giving its handle and password in the waiting
+/// room (D94 (8)). The fingerprint is public; no password or hash is passed here.
+#[must_use]
+pub fn key_linked(account: AccountId, fingerprint: &Fingerprint) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(account),
+        Action::KeyLinked,
+        Target::Key(fingerprint.clone()),
+    )
+    .detail("handle and password")
 }
 
 /// A custom group was created.

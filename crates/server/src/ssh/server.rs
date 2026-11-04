@@ -123,9 +123,9 @@ impl SshServer {
         };
         let task = tokio::spawn(accept.run(stopped));
         let limits = &config.limits;
-        if limits.allow_password_login {
+        if !limits.allow_password_login {
             warn!(
-                "SSH password login is ON (ssh.allow_password_login, D28): members who set a password can sign in with it"
+                "SSH password login is OFF (ssh.allow_password_login = false): only a key bound to a handle signs in, and a new member who chose a password cannot use it over ssh"
             );
         }
         info!(
@@ -186,12 +186,19 @@ impl SshServer {
 fn russh_config(host_key: &HostKey, limits: &Limits) -> RusshConfig {
     RusshConfig {
         server_id: SshId::Standard(SERVER_ID.into()),
-        // Public key only, unless the sysop opted in to passwords (D28): then `password` is
-        // offered too. Nothing else is ever offered (`none` is answered, never accepted).
+        // `none` is accepted only under the visitor names `new` and `claim` (the waiting room,
+        // D94 (7)); `publickey` signs in a key bound to the handle; `password` is offered
+        // unless the sysop turned it off (D94 (10)). Nothing else is ever offered.
         methods: if limits.allow_password_login {
-            MethodSet::from(&[MethodKind::PublicKey, MethodKind::Password][..])
+            MethodSet::from(
+                &[
+                    MethodKind::None,
+                    MethodKind::PublicKey,
+                    MethodKind::Password,
+                ][..],
+            )
         } else {
-            MethodSet::from(&[MethodKind::PublicKey][..])
+            MethodSet::from(&[MethodKind::None, MethodKind::PublicKey][..])
         },
         auth_rejection_time: limits.auth_rejection_time,
         // OpenSSH probes with "none" first; answering that instantly keeps logins fast while

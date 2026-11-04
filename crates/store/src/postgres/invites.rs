@@ -183,9 +183,13 @@ impl InviteStore for PostgresStore {
         hash: &CodeHash,
         username: Username,
         password_hash: &str,
+        fingerprint: Option<&Fingerprint>,
     ) -> Result<Redeemed, RedeemError> {
-        self.redeem_bound(hash, username, Binding::Password(password_hash))
-            .await
+        let binding = match fingerprint {
+            Some(fingerprint) => Binding::KeyAndPassword(fingerprint.as_str(), password_hash),
+            None => Binding::Password(password_hash),
+        };
+        self.redeem_bound(hash, username, binding).await
     }
 
     async fn invites_by(

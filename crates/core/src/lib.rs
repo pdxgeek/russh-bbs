@@ -21,6 +21,7 @@ pub mod queue;
 pub mod registration;
 pub mod sanitize;
 pub mod scheduler;
+pub mod signin;
 pub mod store;
 pub mod terminal_settings;
 pub mod waiting_room;

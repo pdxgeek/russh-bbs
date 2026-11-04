@@ -138,6 +138,15 @@ impl FounderStore for FakeStore {
             created_at: UnixSeconds::from_raw(0),
         }))
     }
+
+    async fn claim_founder_password(
+        &self,
+        username: Username,
+        _password_hash: &str,
+        _fingerprint: Option<&Fingerprint>,
+    ) -> Result<Option<Account>, StoreError> {
+        self.claim_founder(username, &fingerprint(0)).await
+    }
 }
 
 #[tokio::test]

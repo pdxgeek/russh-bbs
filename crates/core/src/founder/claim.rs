@@ -29,6 +29,16 @@ pub trait FounderStore: Send + Sync {
         username: Username,
         fingerprint: &Fingerprint,
     ) -> impl Future<Output = Result<Option<Account>, StoreError>> + Send;
+
+    /// [`FounderStore::claim_founder`] with the founder's password (D94 (6)): the same single
+    /// transaction also stores `password_hash` ([`crate::passwords::hash_new`]) and binds
+    /// `fingerprint` when the claimant came with an SSH key (`None`: a password-only founder).
+    fn claim_founder_password(
+        &self,
+        username: Username,
+        password_hash: &str,
+        fingerprint: Option<&Fingerprint>,
+    ) -> impl Future<Output = Result<Option<Account>, StoreError>> + Send;
 }
 
 /// The result of one claim attempt. There is deliberately one failure: a wrong token, a token
@@ -81,6 +91,47 @@ pub async fn claim_founder<S: FounderStore>(
     }
 }
 
+/// [`claim_founder`] with the founder's password (D94 (6)): the same token check and the same
+/// single failure, then the one transaction that makes the sysop also stores the password's hash
+/// (`password_hash`, from [`crate::passwords::hash_new`]) and binds `fingerprint` when there is
+/// one. `identity` names the attempt in the log (the key, or a stand-in when there is none).
+pub async fn claim_founder_with_password<S: FounderStore>(
+    gate: &FounderGate,
+    store: &S,
+    candidate: &str,
+    password_hash: &str,
+    fingerprint: Option<&Fingerprint>,
+    identity: &Fingerprint,
+) -> ClaimOutcome {
+    if !gate.accepts(candidate) {
+        info!(fingerprint = %identity, "founder claim rejected");
+        return ClaimOutcome::Rejected;
+    }
+    let Ok(username) = sanitize_username(FOUNDER_USERNAME) else {
+        warn!("built-in founder username is invalid; claim refused");
+        return ClaimOutcome::Rejected;
+    };
+    match store
+        .claim_founder_password(username, password_hash, fingerprint)
+        .await
+    {
+        Ok(Some(account)) => {
+            gate.close();
+            info!(fingerprint = %identity, "founder claimed");
+            ClaimOutcome::Claimed(account)
+        }
+        Ok(None) => {
+            gate.close();
+            info!(fingerprint = %identity, "founder claim lost: already claimed");
+            ClaimOutcome::Rejected
+        }
+        Err(error) => {
+            warn!(fingerprint = %identity, %error, "founder claim failed in the store");
+            ClaimOutcome::Rejected
+        }
+    }
+}
+
 /// The empty directory has no store to claim in: the board counts as claimed and every attempt
 /// is rejected. Used by tests and by servers started without a store.
 impl FounderStore for crate::access::NoMembers {
@@ -92,6 +143,15 @@ impl FounderStore for crate::access::NoMembers {
         &self,
         _username: Username,
         _fingerprint: &Fingerprint,
+    ) -> impl Future<Output = Result<Option<Account>, StoreError>> + Send {
+        std::future::ready(Ok(None))
+    }
+
+    fn claim_founder_password(
+        &self,
+        _username: Username,
+        _password_hash: &str,
+        _fingerprint: Option<&Fingerprint>,
     ) -> impl Future<Output = Result<Option<Account>, StoreError>> + Send {
         std::future::ready(Ok(None))
     }

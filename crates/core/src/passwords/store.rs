@@ -7,6 +7,7 @@
 
 use std::future::Future;
 
+use crate::access::Fingerprint;
 use crate::audit::AuditEvent;
 use crate::store::{Account, AccountId, StoreError};
 
@@ -38,6 +39,16 @@ pub trait PasswordStore: Send + Sync {
     /// Whether an SSH key is bound to the account. An account made over telnet has none
     /// (D94), and then its password is its only way in.
     fn has_key(&self, account: AccountId) -> impl Future<Output = Result<bool, StoreError>> + Send;
+
+    /// Bind `fingerprint` to the account and write `audit` in the same transaction (D94 (8)).
+    /// [`StoreError::FingerprintTaken`] if the key belongs to an account already (nothing is
+    /// written), [`StoreError::AccountNotFound`] for an id with no account.
+    fn link_key(
+        &self,
+        account: AccountId,
+        fingerprint: &Fingerprint,
+        audit: &AuditEvent,
+    ) -> impl Future<Output = Result<(), StoreError>> + Send;
 
     /// Store `hash` for the account, or remove its password with `None`, and write `audit` in
     /// the same transaction. Removing a password the account does not have changes nothing and
@@ -80,6 +91,15 @@ impl PasswordStore for crate::access::NoMembers {
         &self,
         _account: AccountId,
     ) -> impl Future<Output = Result<bool, StoreError>> + Send {
+        std::future::ready(Err(StoreError::AccountNotFound))
+    }
+
+    fn link_key(
+        &self,
+        _account: AccountId,
+        _fingerprint: &Fingerprint,
+        _audit: &AuditEvent,
+    ) -> impl Future<Output = Result<(), StoreError>> + Send {
         std::future::ready(Err(StoreError::AccountNotFound))
     }
 

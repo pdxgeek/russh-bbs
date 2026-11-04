@@ -730,10 +730,15 @@ async fn ssh_in(rig: &Rig, id: AccountId) -> (Handle<Client>, russh::Channel<rus
     let fp =
         Fingerprint::parse(&key.public_key().fingerprint(HashAlg::Sha256).to_string()).unwrap();
     rig.store.attach_fingerprint(id, &fp).await.unwrap();
+    let handle = rig
+        .rows(&format!("SELECT username FROM accounts WHERE id = {id}"))
+        .await
+        .remove(0);
+    common::remember(&fp, &handle);
     let mut session = common::connect(rig.ssh.local_addr()).await;
     let result = session
         .authenticate_publickey(
-            "anyone",
+            &common::user_for(&key, "anyone"),
             PrivateKeyWithHashAlg::new(Arc::new(key.clone()), None),
         )
         .await

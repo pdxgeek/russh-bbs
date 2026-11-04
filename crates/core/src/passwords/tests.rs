@@ -108,6 +108,15 @@ impl PasswordStore for Fake {
             .ok_or(StoreError::AccountNotFound)
     }
 
+    async fn link_key(
+        &self,
+        _account: AccountId,
+        _fingerprint: &crate::access::Fingerprint,
+        _audit: &AuditEvent,
+    ) -> Result<(), StoreError> {
+        Ok(())
+    }
+
     async fn has_key(&self, _account: AccountId) -> Result<bool, StoreError> {
         Ok(!*self.keyless.lock().unwrap())
     }

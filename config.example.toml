@@ -55,11 +55,11 @@ input_bytes_per_second = 8192
 flood_strikes = 1000
 # A peer that does not read for this long, with output waiting, is disconnected.
 write_stall_secs = 10
-# Opt-in password login over SSH (D28, D81). Off by default: the server offers public key only.
-# When true the SSH `password` method is offered too. A member signs in with a password only if
-# they set one (Terminal settings, Password); the board then logs a warning at start. Members
-# whose key the board knows normally never need it. Not keyboard-interactive.
-allow_password_login = false
+# Password login over SSH (D81, D94 (10)). On by default: ssh is the transport and the account is
+# handle plus password; a key bound to the handle is the everyday extra. Every account has a
+# password (it is asked for when joining). `ssh new@host` joins, `ssh <handle>@host` signs in.
+# Set false for a key-only board: the board then logs a warning at start. Not keyboard-interactive.
+allow_password_login = true
 
 [datasource]
 # "sqlite" (default) or "postgres". There is no fallback from one to the other.

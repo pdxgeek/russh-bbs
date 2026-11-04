@@ -100,7 +100,7 @@ async fn login(addr: SocketAddr, user: &str, key: &PrivateKey) -> Handle<Client>
     let mut session = common::connect(addr).await;
     let result = session
         .authenticate_publickey(
-            user,
+            &common::user_for(key, user),
             PrivateKeyWithHashAlg::new(Arc::new(key.clone()), None),
         )
         .await
@@ -156,7 +156,13 @@ async fn claim(rig: &Rig, key: &PrivateKey) -> (Handle<Client>, Channel<client::
     let session = login(rig.addr(), "claim", key).await;
     let mut channel = common::open_shell(&session, 80, 24).await;
     words(&mut channel).await;
-    let (screen, _) = send(&mut channel, &format!("{}\r", rig.token)).await;
+    send(&mut channel, &format!("{}\r", rig.token)).await;
+    send(&mut channel, &format!("{}\r", "founder password one")).await;
+    let (screen, _) = send(&mut channel, &format!("{}\r", "founder password one")).await;
+    common::remember(
+        key.public_key().fingerprint(russh::keys::HashAlg::Sha256),
+        "founder",
+    );
     (session, channel, screen)
 }
 

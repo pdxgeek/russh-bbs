@@ -66,8 +66,9 @@ pub struct Limits {
     /// How long a peer may leave the server unable to hand it output (its window or socket
     /// full) before the connection is dropped instead of queueing without bound.
     pub write_stall: Duration,
-    /// Whether the SSH `password` method is offered (D28). Off by default: the server then
-    /// advertises public key only and never reads a password.
+    /// Whether the SSH `password` method is offered (D94 (10)). On by default: ssh is the
+    /// transport, the account is handle plus password. Off, only a key bound to a handle signs
+    /// in and the server never reads a password over ssh.
     pub allow_password_login: bool,
     /// Password attempts per handle, whether or not the handle exists (D81).
     pub password_account_rate: RatePolicy,
@@ -98,7 +99,7 @@ impl Default for Limits {
             input_bytes_per_second: 8192,
             flood_strikes: 1000,
             write_stall: Duration::from_secs(10),
-            allow_password_login: false,
+            allow_password_login: true,
             password_account_rate: DEFAULT_PASSWORD_ACCOUNT_RATE,
             password_network_rate: DEFAULT_PASSWORD_NETWORK_RATE,
             low_security: false,

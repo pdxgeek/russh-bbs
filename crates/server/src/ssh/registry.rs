@@ -160,6 +160,12 @@ impl SessionRef {
         self.registry.update(self.id, |s| s.access = Some(access));
     }
 
+    /// Record a visitor who offered no key (the waiting room only).
+    pub fn set_visitor(&self) {
+        self.registry
+            .update(self.id, |s| s.access = Some(Access::Restricted));
+    }
+
     /// Record the terminal size (initial or after a window change).
     pub fn set_size(&self, size: PtySize) {
         self.registry.update(self.id, |s| s.pty_size = Some(size));

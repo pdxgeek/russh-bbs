@@ -99,6 +99,10 @@ pub enum Action {
     /// A member removed their own password (M3-D, D81). Written only when there was one.
     #[strum(serialize = "password.cleared")]
     PasswordCleared,
+    /// A key was added to an account by proving its handle and password in the waiting room
+    /// (D94 (8), D96). The actor is the account, the target the key's fingerprint.
+    #[strum(serialize = "key.linked")]
+    KeyLinked,
     /// Staff removed a one-liner or a graffiti wall line (M3-J, D86). The target is the author.
     #[strum(serialize = "community.entry_removed")]
     CommunityEntryRemoved,
