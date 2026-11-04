@@ -825,7 +825,9 @@ async fn queue_screen_over_ssh(low_security: bool) -> String {
         // Only the redraw after the window change starts with a clear.
         if let Some((_, redraw)) = seen.rsplit_once("\u{1b}[2J") {
             let words = words_of(redraw);
-            if words.contains("can read what you do here") {
+            // The queue's footer is the last thing drawn inside the box; the low-security
+            // marker (D93: the only status row left) is drawn with it.
+            if words.contains("Esc: back") && (!low_security || words.contains("telnet is on")) {
                 return words;
             }
         }

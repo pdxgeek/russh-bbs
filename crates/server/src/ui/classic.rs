@@ -34,17 +34,19 @@ pub(crate) struct MenuScreen<'a> {
     pub(crate) tier: Tier,
     /// Markers for the status row.
     pub(crate) markers: &'a [SecurityMarker],
-    /// Mail is withheld on this transport (telnet): the help says so instead of giving the D78
-    /// sentence about mail at rest.
+    /// Mail is withheld on this transport (telnet): the help says so (D93 retired the D78
+    /// sentence about mail at rest).
     pub(crate) mail_over_ssh_only: bool,
 }
 
-/// The markers a menu screen shows: the whole signed-in session is server-readable (MVP).
-pub(crate) const MENU_MARKERS: [SecurityMarker; 1] = [SecurityMarker::ServerReadable];
+/// The markers a member screen shows over ssh: none (D93). The server-readable status row is
+/// retired, so no row is reserved and content gets the space back. Telnet's `UNENCRYPTED` is a
+/// transport footer outside every layout, and staff screens add `LOW-SECURITY` themselves.
+pub(crate) const MENU_MARKERS: [SecurityMarker; 0] = [];
 
 /// Draw the screen: content box above, status row below.
 pub(crate) fn render(frame: &mut Frame<'_>, screen: &MenuScreen<'_>) {
-    let (content, status) = chrome::split_status(frame.area());
+    let (content, status) = chrome::split_status(frame.area(), screen.markers);
     let lines = if screen.page.help {
         help_lines(screen, None)
     } else {
@@ -75,7 +77,7 @@ pub(crate) struct ContentScreen<'a> {
 
 /// Draw a content screen: content box above, status row below.
 pub(crate) fn render_content(frame: &mut Frame<'_>, screen: ContentScreen<'_>) {
-    let (content, status) = chrome::split_status(frame.area());
+    let (content, status) = chrome::split_status(frame.area(), screen.markers);
     settings::boxed(
         frame,
         content,
@@ -207,8 +209,7 @@ pub(crate) fn notice_line(
 pub(crate) fn help_lines(screen: &MenuScreen<'_>, extra: Option<&str>) -> Vec<Line<'static>> {
     let (_, dim, heading, key) = styles(screen.look);
     let strings = screen.strings;
-    // No blank lines at all: the D78 mail explanation (two lines at 80 columns) goes right after the
-    // keys, and with the sysop's ten items the lightbar's help is exactly 21 rows, which is what an
+    // No blank lines at all: with the sysop's ten items the lightbar's help is exactly 21 rows, which is what an
     // 80x24 screen has inside its box. A test draws it in every layout and checks the footer is
     // there; the next menu item will have to page this screen (D65) or that test fails.
     let mut out = vec![
@@ -222,12 +223,11 @@ pub(crate) fn help_lines(screen: &MenuScreen<'_>, extra: Option<&str>) -> Vec<Li
     ] {
         out.push(Line::styled(format!("  {}", strings.text(line)), key));
     }
-    let mail = if screen.mail_over_ssh_only {
-        keys::NOTICE_MAIL_SSH_ONLY
-    } else {
-        keys::HELP_MAIL
-    };
-    out.push(Line::raw(strings.text(mail).to_owned()));
+    if screen.mail_over_ssh_only {
+        out.push(Line::raw(
+            strings.text(keys::NOTICE_MAIL_SSH_ONLY).to_owned(),
+        ));
+    }
     out.push(Line::raw(strings.text(keys::HELP_MENU).to_owned()));
     if let Some(extra) = extra {
         out.push(Line::raw(strings.text(extra).to_owned()));

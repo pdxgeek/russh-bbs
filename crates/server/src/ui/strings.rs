@@ -66,7 +66,7 @@ pub enum StringError {
 
 /// Keys no theme may replace: the captions next to the security markers, and the text shown when
 /// markers cannot be drawn. A theme that could reword them could make a marker say the opposite.
-pub(crate) const RESERVED: [&str; 2] = [keys::STATUS_SERVER_READABLE, keys::STATUS_UNAVAILABLE];
+pub(crate) const RESERVED: [&str; 1] = [keys::STATUS_UNAVAILABLE];
 
 /// Words a themed string may not contain (case-insensitive), because the server can read
 /// everything except PGP-encrypted mail and files members encrypt themselves (AGENTS.md). Best

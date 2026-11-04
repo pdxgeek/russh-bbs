@@ -27,10 +27,11 @@ use russh_bbs_core::icons::{ChromeStyle, Icon, Rendered, SecurityMarker, Tier};
 use super::keys;
 use super::strings::StringTable;
 
-/// Split `area` into the content area and the reserved status row (the last row). A one-row
-/// area has no room for a status row; markers are then not drawn at all.
-pub(crate) fn split_status(area: Rect) -> (Rect, Option<Rect>) {
-    if area.height < 2 {
+/// Split `area` into the content area and the reserved status row (the last row). With no
+/// `markers` to show (D93: member screens on ssh) nothing is reserved and content gets the
+/// whole area. A one-row area has no room for a status row; markers are then not drawn at all.
+pub(crate) fn split_status(area: Rect, markers: &[SecurityMarker]) -> (Rect, Option<Rect>) {
+    if area.height < 2 || markers.is_empty() {
         return (area, None);
     }
     let content = Rect {
@@ -64,13 +65,14 @@ pub(crate) fn style_of(rendered: &Rendered) -> Style {
 }
 
 /// The text that explains a marker, from the string table where one is defined.
-fn caption(marker: SecurityMarker, strings: &StringTable) -> &str {
+fn caption(marker: SecurityMarker) -> &'static str {
     match marker {
-        SecurityMarker::ServerReadable => strings.text(keys::STATUS_SERVER_READABLE),
-        // Not drawn by any screen yet; their honest ASCII label is the caption until they are.
-        SecurityMarker::E2eeLock | SecurityMarker::Signature | SecurityMarker::KeyChanged => {
-            marker.label()
-        }
+        // Not drawn by any screen (D93 retired the server-readable row); their honest ASCII
+        // label is the caption until they are.
+        SecurityMarker::ServerReadable
+        | SecurityMarker::E2eeLock
+        | SecurityMarker::Signature
+        | SecurityMarker::KeyChanged => marker.label(),
         // Fixed words for the transport markers, like the footer's (a theme cannot reword them).
         SecurityMarker::Unencrypted | SecurityMarker::LowSecurity => footer_note(marker),
     }
@@ -89,6 +91,14 @@ pub(crate) fn render_status(
     if markers.is_empty() {
         return;
     }
+    // With several markers a long caption would push a later marker off the row, so when the
+    // captions do not all fit the row shows the markers alone (a marker is never clipped).
+    let full: usize = markers
+        .iter()
+        .map(|m| Icon::from(*m).render(tier).width() + 1 + caption(*m).chars().count())
+        .sum::<usize>()
+        + 2 * (markers.len() - 1);
+    let captions = markers.len() == 1 || full <= usize::from(area.width);
     let mut spans: Vec<Span<'static>> = Vec::new();
     for marker in markers {
         let rendered = Icon::from(*marker).render(tier);
@@ -99,7 +109,9 @@ pub(crate) fn render_status(
             rendered.plain().trim_end().to_owned(),
             style_of(&rendered),
         ));
-        spans.push(Span::raw(format!(" {}", caption(*marker, strings))));
+        if captions {
+            spans.push(Span::raw(format!(" {}", caption(*marker))));
+        }
     }
     let line = Line::from(spans);
     // Every marker itself must fit; only a caption may be clipped. A marker that would be cut

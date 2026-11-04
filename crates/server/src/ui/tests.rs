@@ -189,7 +189,33 @@ fn page_for(role: Role, keys_pressed: &[char]) -> MenuPage {
     session.page(&access)
 }
 
+/// What a member screen shows over ssh (D93): no markers, so no status row.
 fn draw(
+    page: &MenuPage,
+    body: &[String],
+    notice: Option<Notice>,
+    tier: Tier,
+    size: (u16, u16),
+) -> Buffer {
+    draw_with(&MENU_MARKERS, page, body, notice, tier, size)
+}
+
+/// The markers that are still drawn in a status row (D93): telnet's and the low-security mode's.
+/// The marker-machinery tests use these so reserved style and position stay proven.
+const DRAWN: [SecurityMarker; 2] = [SecurityMarker::Unencrypted, SecurityMarker::LowSecurity];
+
+fn draw_marked(
+    page: &MenuPage,
+    body: &[String],
+    notice: Option<Notice>,
+    tier: Tier,
+    size: (u16, u16),
+) -> Buffer {
+    draw_with(&DRAWN, page, body, notice, tier, size)
+}
+
+fn draw_with(
+    markers: &[SecurityMarker],
     page: &MenuPage,
     body: &[String],
     notice: Option<Notice>,
@@ -209,7 +235,7 @@ fn draw(
                     notice,
                     look: Look::of(&TerminalSettings::default().with_tier(tier)),
                     tier,
-                    markers: &MENU_MARKERS,
+                    markers,
                     mail_over_ssh_only: false,
                 },
             );
@@ -338,33 +364,57 @@ fn a_submenu_is_drawn_by_the_same_layout() {
 }
 
 #[test]
-fn the_status_row_shows_the_marker_in_the_reserved_style_in_every_tier() {
+fn the_status_row_shows_the_markers_in_the_reserved_style_in_every_tier() {
     for tier in Tier::ALL {
-        let buffer = draw(&page_for(Role::Member, &[]), &[], None, tier, (80, 24));
+        let buffer = draw_marked(&page_for(Role::Member, &[]), &[], None, tier, (100, 24));
         let status = row(&buffer, 23);
-        let rendered = Icon::from(SecurityMarker::ServerReadable).render(tier);
-        let marker = rendered.plain().trim_end();
-        assert!(status.contains(marker), "{tier:?}: {status:?}");
-        assert!(
-            status.contains("The server can read what you do here."),
-            "{status:?}"
-        );
-        let start = status.chars().position(|c| marker.starts_with(c)).unwrap();
-        let cells = (0..marker.chars().count()).map(|i| u16::try_from(start + i).unwrap());
-        assert!(
-            cells.clone().all(|x| is_chrome_cell(&buffer, x, 23)),
-            "{tier:?}: the marker has the reserved style"
-        );
+        let mut marker_cells = 0;
+        for marker in DRAWN {
+            let rendered = Icon::from(marker).render(tier);
+            let text = rendered.plain().trim_end();
+            assert!(status.contains(text), "{tier:?}: {status:?}");
+            let start = status.chars().position(|c| text.starts_with(c)).unwrap();
+            let cells = (0..text.chars().count()).map(|i| u16::try_from(start + i).unwrap());
+            assert!(
+                cells.clone().all(|x| is_chrome_cell(&buffer, x, 23)),
+                "{tier:?}: {marker:?} has the reserved style"
+            );
+            marker_cells += text.chars().count();
+        }
+        assert!(status.contains("anyone on the network"), "{status:?}");
         // And the style is on nothing else on the screen.
         let styled = (0..24)
-            .flat_map(|y| (0..80).map(move |x| (x, y)))
+            .flat_map(|y| (0..100).map(move |x| (x, y)))
             .filter(|&(x, y)| is_chrome_cell(&buffer, x, y))
             .count();
         assert_eq!(
-            styled,
-            marker.chars().count(),
-            "{tier:?}: chrome style only on the marker"
+            styled, marker_cells,
+            "{tier:?}: chrome style only on markers"
         );
+    }
+}
+
+/// D93: a member screen over ssh draws no `SERVER-READABLE` row and reserves none, so content
+/// gets the last row back.
+#[test]
+fn a_member_screen_has_no_status_row_and_no_server_readable() {
+    for tier in Tier::ALL {
+        for size in [(80, 24), (132, 43), (40, 10)] {
+            let body: Vec<String> = (0..200).map(|i| format!("line {i}")).collect();
+            let buffer = draw(&page_for(Role::Member, &[]), &body, None, tier, size);
+            let all = text(&buffer);
+            assert!(!all.contains("SERVER-READABLE"), "{tier:?} {size:?}\n{all}");
+            assert!(!all.contains("can read what you do"), "{all}");
+            if size == (80, 24) {
+                // The box reaches the last row: nothing is reserved under it.
+                let last = row(&buffer, size.1 - 1);
+                assert!(last.trim_start().starts_with(['└', '+']), "{last:?}");
+            }
+            assert!(
+                (0..size.0).all(|x| (0..size.1).all(|y| !is_chrome_cell(&buffer, x, y))),
+                "no marker style on a member screen"
+            );
+        }
     }
 }
 
@@ -386,8 +436,8 @@ fn content_can_never_be_drawn_into_the_status_row() {
     let sizes = [(80, 24), (132, 43), (40, 10), (200, 60), (20, 4)];
     for tier in Tier::ALL {
         for size in sizes {
-            let clean = draw(&page_for(Role::Member, &[]), &[], None, tier, size);
-            let hostile = draw(
+            let clean = draw_marked(&page_for(Role::Member, &[]), &[], None, tier, size);
+            let hostile = draw_marked(
                 &page_for(Role::Member, &[]),
                 &hostile_body(),
                 None,
@@ -424,7 +474,7 @@ fn content_can_never_be_drawn_into_the_status_row() {
 
 #[test]
 fn a_row_too_narrow_for_the_marker_says_markers_are_unavailable() {
-    let buffer = draw(
+    let buffer = draw_marked(
         &page_for(Role::Member, &[]),
         &[],
         None,
@@ -433,13 +483,13 @@ fn a_row_too_narrow_for_the_marker_says_markers_are_unavailable() {
     );
     let status = row(&buffer, 11);
     assert!(status.starts_with("security m"), "{status:?}");
-    assert!(!status.contains("SERVER"), "no half marker: {status:?}");
+    assert!(!status.contains("UNENC"), "no half marker: {status:?}");
     assert!((0..10).all(|x| !is_chrome_cell(&buffer, x, 11)));
 }
 
 #[test]
 fn a_one_row_terminal_draws_no_marker_at_all() {
-    let buffer = draw(
+    let buffer = draw_marked(
         &page_for(Role::Member, &[]),
         &["hello".into()],
         None,
@@ -459,17 +509,14 @@ fn nothing_on_the_menu_screen_claims_privacy() {
         Tier::Unicode,
         (100, 30),
     ));
-    // The one D78 (7) explanation is on the help screen, once, and is the only place these words
-    // may appear on a menu screen; everything else must stay clear of them.
-    let explanation = "No one, the sysop included, can read your mail through the board. Mail is \
-                       encrypted at rest. It is not end-to-end encrypted.";
     let flat = out
         .replace(['│', '┌', '┐', '└', '┘', '─'], " ")
         .split_whitespace()
         .collect::<Vec<_>>()
         .join(" ");
-    assert_eq!(flat.matches(explanation).count(), 1, "{out}");
-    let lower = flat.replace(explanation, "").to_lowercase();
+    // D93: no explanation of mail at rest on the help screen; privacy lives in the docs.
+    assert!(!flat.contains("can read your mail"), "{out}");
+    let lower = flat.to_lowercase();
     assert!(!lower.contains("private"), "{out}");
     assert!(
         !lower.contains("encrypted") || lower.contains("pgp"),
@@ -524,7 +571,7 @@ mod pager {
             "one page only"
         );
         assert!(first.contains("-- More (1 of "), "{first}");
-        assert!(first.contains("server can read"), "status row survives");
+        assert!(!first.contains("server can read"), "no status row (D93)");
         assert_eq!(pager.input(PagerKey::Next, rows), PagerEffect::Stay);
         let second = frame_text(&pager, (80, 24));
         assert!(

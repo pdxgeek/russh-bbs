@@ -667,13 +667,15 @@ fn the_pause_line_does_not_overstate_what_it_does() {
     );
 }
 
-/// QA M3 L7: where mail is withheld (telnet) the welcome does not describe mail at rest; over ssh
-/// it is unchanged (D78).
+/// D93: the welcome carries no sentence about mail at rest over ssh or telnet; where mail is
+/// withheld (telnet) it says so.
 #[test]
-fn the_welcome_over_telnet_says_mail_is_ssh_only_instead_of_the_d78_sentence() {
-    let sentence = "No one, the sysop included, can read your mail through the board.";
+fn the_welcome_has_no_d78_sentence_over_ssh_or_telnet() {
     let ssh = text(&flow(TerminalSettings::default(), None).view(words()));
-    assert!(ssh.contains(sentence), "{ssh}");
+    assert!(
+        !ssh.contains("can read your mail") && !ssh.contains("encrypted at rest"),
+        "{ssh}"
+    );
     assert!(!ssh.contains("Mail is available over ssh."), "{ssh}");
     let telnet = text(
         &flow(TerminalSettings::default(), None)

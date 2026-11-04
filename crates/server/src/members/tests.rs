@@ -168,12 +168,8 @@ fn the_fullest_screens_fit_80x24_with_their_footer_in_every_tier() {
                 out.contains(footer),
                 "{tier:?} {name}: footer clipped\n{out}"
             );
-            // The status row still shows the server-readable marker.
-            let status = row(&draw(&view, tier, (80, 24)), 23);
-            assert!(
-                status.contains("The server can read"),
-                "{tier:?} {name}: {status:?}"
-            );
+            // D93: no status row, no server-readable marker.
+            assert!(!out.contains("SERVER-READABLE"), "{tier:?} {name}\n{out}");
         }
     }
 }

@@ -69,10 +69,9 @@ use crate::ui::strings::StringTable;
 use crate::ui::{Ui, chrome, layout};
 use crate::waiting_room::render;
 
-/// The markers a staff screen shows while the board is in low-security mode (D27): the usual
-/// one, and the mode's own.
-const STAFF_MARKERS_LOW_SECURITY: [SecurityMarker; 2] =
-    [SecurityMarker::ServerReadable, SecurityMarker::LowSecurity];
+/// The markers a staff screen shows while the board is in low-security mode (D27): the mode's
+/// own. Outside that mode staff screens show none (D93).
+const STAFF_MARKERS_LOW_SECURITY: [SecurityMarker; 1] = [SecurityMarker::LowSecurity];
 
 /// The heading of the screen a refused session sees.
 const LIMIT_HEADING: &str = "Limit reached";
