@@ -1,0 +1,81 @@
+# The numbers the engine uses. Change them here; the schema test keeps them sane.
+[rules]
+term_days = 42              # six weeks
+start_place = "dorm"
+start_cash = 12
+allowance = 6               # per school day, halved by a letter home, nothing while privileges are lost
+start_cool = 40
+start_nerve_max = 6
+start_grade = 55
+max_schemes = 3
+max_twists = 2
+moves_per_slot = 3          # hops through open places per period
+file_full = 10              # a full file at term end is expulsion; one more entry on a full file is too
+clean_days = 7              # a week of good conduct strikes one point off the file
+clean_days_pet = 5
+catch_up_days = 42          # days of decay applied after an absence (a whole term at most)
+heat_decay = 3
+heat_decay_low = 6          # when lying low
+notoriety_decay_every = 3   # days per point
+wary_decay_days = 7
+campaign_window_days = 10
+ally_cooldown_days = 3
+schedule_horizon_days = 6
+base_chance = 60
+flub_margin = 20
+nerve_push_bonus = 8
+slip_out_base = 55
+skip_notice_base = 15
+patrol_threshold = 3        # place heat that posts a patrol
+legend_clean_pct = 100
+legend_messy_pct = 70
+campaign_step_pct = 25
+campaign_max_links = 4
+skill_levels = [0, 3, 8, 15, 25, 40]
+honour_roll = 75
+pinned_legend_pct = 100
+
+# File: consequences when the points first reach a level.
+[[tier]]
+at = 2
+effect = "detention"
+amount = 2
+text = "Mr. Marsh writes you up. Two detentions."
+
+[[tier]]
+at = 4
+effect = "privileges"
+amount = 5
+text = "Privileges lost for five days: no tuck shop, no allowance."
+
+[[tier]]
+at = 6
+effect = "letter"
+amount = 1
+text = "A letter goes home. Your allowance is halved and your cool takes a dent."
+
+[[tier]]
+at = 8
+effect = "summons"
+amount = 1
+text = "You are to report to the headmistress first thing tomorrow."
+
+[[file_kind]]
+id = "caught"
+text = "caught red-handed"
+
+[[file_kind]]
+id = "pinned"
+text = "traced back to you"
+
+[[file_kind]]
+id = "skipped_detention"
+text = "missed detention"
+
+[[file_kind]]
+id = "out_of_bounds"
+text = "out of bounds after lights-out"
+
+[[file_kind]]
+id = "summons_skipped"
+text = "ignored a summons"
