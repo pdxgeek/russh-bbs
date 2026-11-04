@@ -1075,8 +1075,12 @@ impl Session {
         {
             let at = self.soc.letter.min(c.social.inbox.len().saturating_sub(1));
             self.soc.letter = at;
-            if let Some(l) = c.social.inbox.get_mut(at) {
+            if let Some(l) = c.social.inbox.get_mut(at)
+                && !l.read
+            {
                 l.read = true;
+                // Read is remembered: the next key saves, even if nothing else changed.
+                self.dirty = true;
             }
         }
     }

@@ -860,7 +860,11 @@ async fn letters_are_templates_with_a_clean_limited_line_and_a_clan_can_block_a_
     b.past_report().await;
     b.go(&["go:court", "go:letters"]).await;
     assert!(b.said("ann says: hi"), "{}", b.screen());
+    // Leaving is a key, and a letter on the highlight is a letter read: it is saved as read.
+    b.key(DoorKey::Escape).await;
     let read = b.finish().await;
+    assert_eq!(board.clan(2).await.social.unread(), 0);
+    assert_eq!(board.clan(2).await.social.inbox.len(), 1);
     // The post is limited: seven lines in a minute are too many for the session...
     let mut a = board.visit(1, "ann", 5).await;
     a.go(&["go:court", "go:letters", "compose"]).await;

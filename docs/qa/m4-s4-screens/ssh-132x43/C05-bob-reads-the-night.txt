@@ -3,25 +3,25 @@
                             │Saltmarch                                                                 │
                             │                                                                          │
                             │ ⌂ bob  day 10 of season 1            turns ██████████ 30/30  ◈ 0 tallies │
-                            │ ≈ TIDE ███████░░░░░░░░┃░░░░░░  35 ↑ high in 4h46 (73)  neap tides  calm  │
+                            │ ≈ TIDE ████████░┃░░░  64 ↓ low in 4h36 (27)  neap tides  ▲ HIGH WATER ▲  │
                             │╭ While you were away ──────────────────╮╭ Today: neap tides ────────────╮│
                             ││1 night passed  ◗ the tide kept its    ││100│⡇                   ┌─────┐││
                             ││hours                                  ││   │⡇                   │water│││
-                            ││◆ Made:  +4 fish  +4 peat              ││   │⡇                   │flood│││
+                            ││◆ Made:  +6 fish  +4 peat              ││   │⡇                   │flood│││
                             ││▣ founder came for the hold in the     ││   │⡇                   │now  │││
                             ││night and was beaten off.              ││   │⡇                   └─────┘││
-                            ││× Juno Heronshank suffers cracked ribs.││   │⡇                          ││
-                            ││▤ Letters: none waiting at the post.   ││   │⡇⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀││
-                            ││                                       ││   │⡇  ⢠⠃ ⠈⡆         ⢸  ⠱⡀     ││
-                            ││                                       ││   │⡇  ⡜   ⢱        ⢀⠇   ⢇     ││
-                            ││                                       ││   │⡇ ⢠⠃   ⠘⡄       ⢸    ⢸     ││
-                            ││                                       ││   │⡇ ⡎     ⢱       ⡇     ⡇    ││
-                            ││                                       ││50 │⡇⢠⠃     ⠘⡄     ⢰⠁     ⢸    ││
-                            ││                                       ││   │⡇⡸       ⡇     ⡜      ⠈⡆   ││
-                            ││                                       ││   │⡇⠃       ⠸⡀   ⢠⠃       ⢇   ││
-                            ││                                       ││   │⡇         ⢇   ⡜        ⠘⡄  ││
-                            ││                                       ││   │⡇         ⠸⡀ ⢠⠃         ⢱  ││
-                            ││                                       ││   │⡇          ⠳⠤⠎           ⠧⠤││
+                            ││× Rushe Lowwater suffers a split brow  ││   │⡇                          ││
+                            ││and a ringing head.                    ││   │⡇⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀││
+                            ││▤ Letters: none waiting at the post.   ││   │⡇         ⢸  ⢸          ⡜  ││
+                            ││                                       ││   │⡇         ⡇   ⣇        ⢰⠁  ││
+                            ││                                       ││   │⡇        ⡸    ⢸        ⡇   ││
+                            ││                                       ││   │⡇⢇       ⡇    ⠈⡆      ⢠⠃   ││
+                            ││                                       ││50 │⡇⢸      ⢰⠁     ⢱      ⡸    ││
+                            ││                                       ││   │⡇ ⡇     ⡜      ⠘⡄    ⢀⠇    ││
+                            ││                                       ││   │⡇ ⢱    ⢰⠁       ⢇    ⢸     ││
+                            ││                                       ││   │⡇  ⡇   ⡜        ⠸⡀   ⡇     ││
+                            ││                                       ││   │⡇  ⠸⡀ ⢠⠃         ⢱  ⡜      ││
+                            ││                                       ││   │⡇   ⠳⠤⠎          ⠈⠧⠴⠃      ││
                             ││                                       ││   │⡇                          ││
                             ││                                       ││   │⡇                          ││
                             ││                                       ││   │⡇                          ││
@@ -33,10 +33,10 @@
                             ││                                       │╰───────────────────────────────╯│
                             │╰───────────────────────────────────────╯╭ Standings: you are 1st of 2 ──╮│
                             │╭ Today ────────────────────────────────╮│ 1  bob                     21 ││
-                            ││30 tide-turns. neap tides.             ││ 2  founder                 19 ││
-                            ││Over the flood line: 03:50-06:00,      ││                               ││
-                            ││16:10-18:30                            ││                               ││
-                            ││Lows, the best time on the flats: 10:58││                               ││
+                            ││30 tide-turns. neap tides.             ││ 2  founder                 20 ││
+                            ││Over the flood line: 09:50-12:00,      ││                               ││
+                            ││22:20-00:00                            ││                               ││
+                            ││Lows, the best time on the flats: 04:36││                               ││
                             │╰───────────────────────────────────────╯╰───────────────────────────────╯│
                             │ »                                                               any key  │
                             └──────────────────────────────────────────────────────────────────────────┘

@@ -112,7 +112,7 @@ def phase_a(port, fkey, bkey, out, cols, rows):
 
 def walkable_window(term):
     for _ in range(5):
-        m = re.search(r">\s*(\d\d:\d\d) +(?:low|high)[^\n]*?(needs a boat|on foot)", term.text())
+        m = re.search(r"[▸>]\s*(\d\d:\d\d) +(?:low|high)[^\n]*?(needs a boat|on foot)", term.text())
         if m and "boat" not in m.group(2):
             return True
         if not term.press("Next turn of the water"):
@@ -129,7 +129,7 @@ def phase_b(port, fkey, bkey, out, cols, rows):
     room(b, "The post")
     b.save(out, "B02-bob-reads-the-letter")
     back_home(b)
-    b.press("Chart the marsh around")  # a save, so the clan posts its guard again
+    b.send("h", quiet=0.8)  # "Chart the marsh around the hold": a save, so the clan posts its guard again
     b.close()
 
     f = Term(port, fkey, cols, rows, user="founder")
@@ -137,7 +137,7 @@ def phase_b(port, fkey, bkey, out, cols, rows):
     f.save(out, "B03-founder-morning-report")
     dismiss_report(f)
     back_home(f)
-    f.press("Chart the marsh around")
+    f.send("h", quiet=0.8)  # the same: survey, so the founder's post is today's
     court(f)
     room(f, "The gate")
     f.save(out, "B04-the-gate")

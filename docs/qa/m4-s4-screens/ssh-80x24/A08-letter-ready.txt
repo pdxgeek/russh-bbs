@@ -2,7 +2,7 @@
   │Saltmarch                                                                 │
   │                                                                          │
   │ ⌂ founder  day 1 of season 1        turns ██████████ 30/30  ◈ 69 tallies │
-  │ ≈ TIDE ███████░┃░░░  60 ↓ low in 3h42 (9)  spring tides  ▲ HIGH WATER ▲  │
+  │ ≈ TIDE ██░░░░░░░░░░░░░┃░░░░░░  10 ↓ low in 0h14 (9)  spring tides  calm  │
   │╭ A letter ───────────────────────────────╮╭ Orders ─────────────────────╮│
   ││To      bob                              ││ a Next recipient (now bob)  ││
   ││Kind    greeting                         ││ b Previous recipient        ││

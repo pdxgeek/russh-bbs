@@ -2,23 +2,23 @@
   │Saltmarch                                                                 │
   │                                                                          │
   │ ⌂ bob  day 10 of season 1            turns ██████████ 30/30  ◈ 9 tallies │
-  │ ≈ TIDE ███████░░░░░░░░┃░░░░░░  35 ↑ high in 4h42 (73)  neap tides  calm  │
+  │ ≈ TIDE ████████┃░░░  68 ↑ high in 1h14 (73)  neap tides  ▲ HIGH WATER ▲  │
   │╭ While you were away ──────────────────╮╭ Today: neap tides ────────────╮│
   ││1 night passed  ◗ the tide kept its    ││100│⡇                          ││
   ││hours                                  ││   │⡇⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀││
-  ││◆ Made:  +5 fish  +4 peat              ││   │⡇ ⡴⠋   ⠑⢄      ⢀⡔⠉  ⠈⠳⣄    ││
-  ││▣ founder came for the hold in the     ││50 │⡇⠊      ⠈⠳⣄   ⡴⠋      ⠈⠦⡀  ││
-  ││night and was beaten off.              ││   │⡇         ⠈⠙⠒⠋          ⠈⠓⠒││
-  ││× Garrick Wadewell suffers a split brow││0  │⡇                          ││
+  ││◆ Made:  +5 fish  +3 peat              ││   │⡇  ⠙⢆       ⡴⠊  ⠈⠑⣄      ⢀⠞││
+  ││▣ founder came for the hold in the     ││50 │⡇    ⠱⢄   ⣠⠊      ⠈⠳⣄  ⢀⠴⠁ ││
+  ││night and was beaten off.              ││   │⡇      ⠙⠒⠋⠁         ⠈⠑⠒⠉   ││
+  ││× Jory Brinecook suffers a split brow  ││0  │⡇                          ││
   ││and a ringing head.                    ││   └───────────────────────────││
-  ││▤ Letters: 1 waiting at the post.      ││  00       06   12   18      24││
+  ││▤ Letters: none waiting at the post.   ││  00       06   12   18      24││
   ││                                       │╰───────────────────────────────╯│
   │╰───────────────────────────────────────╯╭ Standings: you are 2nd of 2 ──╮│
   │╭ Today ────────────────────────────────╮│ 1  founder                 22 ││
-  ││30 tide-turns. neap tides.             ││ 2  bob                     21 ││
-  ││Over the flood line: 03:40-06:00,      ││                               ││
-  ││16:10-18:20                            ││                               ││
-  ││Lows, the best time on the flats: 10:54││                               ││
+  ││30 tide-turns. neap tides.             ││ 2  bob                     20 ││
+  ││Over the flood line: 00:20-02:30,      ││                               ││
+  ││12:40-14:50                            ││                               ││
+  ││Lows, the best time on the flats: 07:26││                               ││
   │╰───────────────────────────────────────╯╰───────────────────────────────╯│
   │ »                                                               any key  │
   └──────────────────────────────────────────────────────────────────────────┘

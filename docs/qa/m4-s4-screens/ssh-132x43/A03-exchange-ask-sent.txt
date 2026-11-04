@@ -3,7 +3,7 @@
                             │Saltmarch                                                                 │
                             │                                                                          │
                             │ ⌂ founder  day 1 of season 1        turns ██████████ 30/30  ◈ 39 tallies │
-                            │ ≈ TIDE ███████░┃░░░  61 ↓ low in 3h46 (9)  spring tides  ▲ HIGH WATER ▲  │
+                            │ ≈ TIDE ████████░░░░░░┃░░░░░  42 ↑ high in 3h36 (91)  spring tides  calm  │
                             │╭ The exchange: timber ────────────────╮╭ Orders ────────────────────────╮│
                             ││Tidecourt pays 5, sells at 7          ││ a Next good (now timber)       ││
                             ││Asks: goods for sale                  ││ b Previous good                ││

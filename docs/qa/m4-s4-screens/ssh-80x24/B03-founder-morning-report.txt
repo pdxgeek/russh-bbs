@@ -2,23 +2,23 @@
   │Saltmarch                                                                 │
   │                                                                          │
   │ ⌂ founder  day 9 of season 1        turns ██████████ 30/30  ◈ 69 tallies │
-  │ ≈ TIDE ████████░░░░░░░┃░░░░░░  40 ↑ high in 3h54 (70)  neap tides  calm  │
+  │ ≈ TIDE ████████┃░░░  69 ↑ high in 0h26 (70)  neap tides  ▲ HIGH WATER ▲  │
   │╭ While you were away ──────────────────╮╭ Today: neap tides ────────────╮│
   ││8 nights passed  ◗ the tide ran on     ││100│⡇                          ││
   ││without you                            ││   │⡇⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀││
-  ││◆ Made:  +43 fish  +31 peat            ││   │⡇⢠⠖⠉ ⠈⠑⢆      ⢀⡰⠊⠁ ⠈⠲⣄     ││
-  ││▣ Raids: none. Nobody came for the     ││50 │⡇⠁     ⠈⠑⢤⡀ ⢀⡤⠋      ⠈⠳⣄  ⣀││
-  ││hold.                                  ││   │⡇         ⠈⠉⠉           ⠉⠉⠁││
+  ││◆ Made:  +41 fish  +25 peat            ││   │⡇ ⠑⢦⡀      ⡠⠚⠁ ⠈⠳⢄      ⢀⠔⠋││
+  ││▣ Raids: none. Nobody came for the     ││50 │⡇   ⠙⢦⣀ ⢀⡤⠞      ⠈⠓⢄⡀ ⢀⡴⠉  ││
+  ││hold.                                  ││   │⡇     ⠈⠉⠉           ⠉⠉⠁    ││
   ││▤ Letters: none waiting at the post.   ││0  │⡇                          ││
   ││                                       ││   └───────────────────────────││
   ││                                       ││  00       06   12   18      24││
   ││                                       │╰───────────────────────────────╯│
   │╰───────────────────────────────────────╯╭ Standings: you are 1st of 2 ──╮│
-  │╭ Today ────────────────────────────────╮│ 1  founder                 22 ││
-  ││30 tide-turns. neap tides.             ││ 2  bob                     21 ││
-  ││Over the flood line: 04:00-04:30,      ││                               ││
-  ││16:20-17:00                            ││                               ││
-  ││Lows, the best time on the flats: 10:06││                               ││
+  │╭ Today ────────────────────────────────╮│ 1  founder                 21 ││
+  ││30 tide-turns. neap tides.             ││ 2  bob                     19 ││
+  ││Over the flood line: 00:30-01:10,      ││                               ││
+  ││12:50-13:30                            ││                               ││
+  ││Lows, the best time on the flats: 06:38││                               ││
   │╰───────────────────────────────────────╯╰───────────────────────────────╯│
   │ »                                                               any key  │
   └──────────────────────────────────────────────────────────────────────────┘

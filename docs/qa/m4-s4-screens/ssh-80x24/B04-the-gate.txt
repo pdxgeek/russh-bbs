@@ -1,21 +1,21 @@
   ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
   │Saltmarch                                                                 │
   │                                                                          │
-  │ ⌂ founder  day 9 of season 1        turns ██████████ 30/30  ◈ 69 tallies │
-  │ ≈ TIDE ████████░░░░░░░┃░░░░░░  40 ↑ high in 3h54 (70)  neap tides  calm  │
+  │ ⌂ founder  day 9 of season 1        turns █████████▎ 28/30  ◈ 69 tallies │
+  │ ≈ TIDE ████████░┃░░░  67 ↓ low in 5h02 (30)  neap tides  ▲ HIGH WATER ▲  │
   │╭ Target: bob ──────────────────────╮╭ Your raiders ─────────────────────╮│
-  ││renown 21   rating 0               ││Kell Peatc~ wader      hp 24 atk 6 ││
-  ││Guard at the gate (3 of 3 crew):   ││Edda Fogwa~ raker      hp 22 atk 4 ││
-  ││  Garrick Wa~fighter  hp21 a6 d1   ││Odds at this tide: grim            ││
-  ││  Ivo Marshb~wader    hp20 a5 d0   ││Costs 4 turns. The raiders are away││
-  ││Stores, a scout's guess: peat 30, r│╰───────────────────────────────────╯│
-  ││The way is open.                   │╭ The tide ─────────────────────────╮│
-  ││                                   ││It lands tomorrow, at a turn of the││
+  ││renown 19   rating 0               ││Ulla Silth~ wader      hp 22 atk 4 ││
+  ││Guard at the gate (3 of 3 crew):   ││Quill Brin~ raker      hp 18 atk 4 ││
+  ││Isolde Fog~raker    hp23 a5 d0     ││Odds at this tide: grim            ││
+  ││Nan Peatcu~wader    hp22 a5 d0     ││Costs 4 turns. The raiders are away││
+  ││Stores, a scout's guess: peat 30,  │╰───────────────────────────────────╯│
+  ││reed 10, timber 15, fish 30        │╭ The tide ─────────────────────────╮│
+  ││The way is open.                   ││It lands tomorrow, at a turn of the││
   │╰───────────────────────────────────╯│water:                             ││
-  │╭ Orders ───────────────────────────╮│▸ 04:42 high water 73  needs a boat││
-  ││ a Next target (now bob)           ││10:54 low  water 27  on foot       ││
-  ││ b Previous target                 ││17:06 high water 73  needs a boat  ││
-  ││ c More raiders (now 2)            ││23:18 low  water 27  on foot       ││
+  │╭ Orders ───────────────────────────╮│▸ 01:14 high water 73  needs a boat││
+  ││ a Next target (now bob)           ││07:26 low  water 27  on foot       ││
+  ││ b Previous target                 ││13:38 high water 73  needs a boat  ││
+  ││ c More raiders (now 2)            ││19:50 low  water 27  on foot       ││
   ││ d Fewer raiders                   ││                                   ││
   ││ e Next turn of the water          ││                                   ││
   ││ f Send the raid on bob (4 turns)  ││                                   ││
