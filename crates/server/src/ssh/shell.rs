@@ -59,7 +59,7 @@ use super::Backend;
 use super::abort::Abort;
 use super::password::PasswordLogin;
 use super::registry::{Revocation, SessionRef};
-use super::screen::Screen;
+use super::screen::{REVOKED_LINE, Screen};
 use super::terminal::{KeyParser, PtySize};
 use crate::chat::{ChatSession, Hub};
 use crate::founder::Founder;
@@ -70,10 +70,6 @@ pub(crate) const MEMBER_START_TIMEOUT: Duration = Duration::from_secs(2);
 
 /// How long one password screen request may take: hashing a new password and writing it. Longer
 /// than a store call because argon2id is slow on purpose and waits its turn on the pool.
-/// What a session whose credential was revoked reads before it closes (FIX-M3-14, D99). Fixed
-/// text: it says nothing about who or what changed.
-pub(crate) const REVOKED_LINE: &str = "Your sign-in was revoked. Please sign in again.";
-
 const PASSWORD_REQUEST_TIMEOUT: Duration = Duration::from_secs(10);
 
 /// Most input bytes the inbox holds between two cycles. The input budget is far below this; it
