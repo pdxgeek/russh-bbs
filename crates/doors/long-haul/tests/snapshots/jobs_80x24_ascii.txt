@@ -1,0 +1,19 @@
+* LONG HAUL  Tester0  18,450 cr  debt 20,000  days ********** 10
++ JOB BOARD -------------------------------++ DETAIL --------------------+
+|Client   Kind     To     Pay              ||wreck a Claim jumper        |
+|League   Delivery Brazen     726          ||to Narrow Forge - due in 8 d|
+|League   Bounty   Narrow     826          ||                            |
+|League   Delivery Quiet    1,458          ||The navy pays for pirate    |
+|                                          ||wrecks. Bring one down near |
+|                                          ||here, then report back.     |
+|                                          ||                            |
+|                                          ||                            |
+|                                          ||                            |
+|                                          ||                            |
+|                                          ||                            |
+|                                          ||                            |
+|                                          ||                            |
+|                                          ||                            |
+|                                          ||                            |
++------------------------------------------++----------------------------+
+[Enter] take  [a] give up first  [Esc] back

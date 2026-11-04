@@ -1,0 +1,19 @@
+* LONG HAUL  Tester0  18,450 cr  debt 20,000  days ********** 10
++ CREW 4/2 berths - 240 cr/wk -------++ DETAIL --------------------------+
+| Pilot Test    Pilot     50 sworn   ||Ember Kerrow - Quartermaster -    |
+| Engineer Test Engineer  50         ||skill 5                           |
+| Gunner Test   Gunner    50 hurt    ||Wage 115 cr/wk, signing fee 230   |
+| Medic Test    Medic      9 RESTLESS||Wants: Needs 3 jobs finished to   |
+|For hire at this dock:              ||get a reference.                  |
+|>Ember Kerrow  Quarter~ sk5 115 cr/~||Meet their goal and they swear to |
+| Jess Harrow   Quarter~ sk5 115 cr/~||the ship.                         |
+| Mara Pryor    Gunner   sk2 89 cr/wk||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
+|                                    ||                                  |
++------------------------------------++----------------------------------+
+[Enter] hire  [x] pay off  [p] stock galley  [Esc] back

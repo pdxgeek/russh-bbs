@@ -19,7 +19,7 @@ fn plain(text: impl Into<String>) -> Line {
     (text.into(), DoorStyle::Plain)
 }
 
-fn band(range: Range) -> String {
+pub(super) fn band(range: Range) -> String {
     let mark = |r: Range| {
         if r == range {
             format!("[{}]", r.name().to_uppercase())
@@ -36,7 +36,7 @@ fn band(range: Range) -> String {
 }
 
 /// The reactor split for a preset, as weapons, shields, engines.
-fn preset(budget: u8, which: usize) -> (u8, u8, u8) {
+pub(super) fn preset(budget: u8, which: usize) -> (u8, u8, u8) {
     let b = budget;
     match which {
         0 => (b, 0, 0),
@@ -275,6 +275,9 @@ impl Session {
     }
 
     pub(super) fn scene_key(&mut self, key: DoorKey, ctx: &mut Ctx<'_>) -> Flow {
+        if self.combat_key(key, ctx) {
+            return Flow::Stay;
+        }
         let DoorKey::Char(c) = key else {
             return Flow::Stay;
         };
@@ -534,7 +537,7 @@ impl Session {
         out
     }
 
-    fn offers(&self, p: &Player) -> Vec<crate::contracts::Offer> {
+    pub(super) fn offers(&self, p: &Player) -> Vec<crate::contracts::Offer> {
         let Some(station) = p.docked else {
             return Vec::new();
         };
