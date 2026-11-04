@@ -176,7 +176,7 @@ Net worth is purse, cargo at cost, modules and hull at resale and unsold survey 
 
 ## Implementation notes (M4-L2)
 
-Slice M4-L2, branch `m4/long-haul-crew`, decision D-TBD (the number is assigned at merge). Everything here is **Implemented and tested** unless it says otherwise; the last section lists what is not built or not verified. The screens are still the minimal text screens of L1 (L3 builds the real UI).
+Slice M4-L2, branch `m4/long-haul-crew`, decision D112 (the number is assigned at merge). Everything here is **Implemented and tested** unless it says otherwise; the last section lists what is not built or not verified. The screens are still the minimal text screens of L1 (L3 builds the real UI).
 
 ### What exists
 
