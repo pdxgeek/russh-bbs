@@ -55,7 +55,7 @@ The QA pass never fixes code. It reports. Low findings go into the coordination 
 - `BlobStore` trait with object-store semantics and the local backend (D30); S3-compatible backend tested against MinIO in CI, same test suite.
 - File areas over SFTP (virtual filesystem by ID), quarantine and scanning hook, tagging and batch download, metadata and search. Everything streams through `BlobStore`; no module touches a blob path.
 - Global new-scan across posts, files, and feeds.
-- Door framework and one or two Rust-native games (a small daily-turn RPG as the flagship).
+- Door framework and five original Rust-native games (owner, 2026-11-04; designs in [doors/](doors/README.md)): Saltmarch (the flagship), Emberdeep, Nullroute, Long Haul and Hallpass.
 - **Done when:** upload, scan, approve, and download work over `sftp` on both the local and the S3-compatible blob backend with the same tests; a door runs in a session with no filesystem or network access.
 
 ## M5: Sysop tooling and API
