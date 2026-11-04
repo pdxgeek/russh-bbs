@@ -260,6 +260,7 @@ impl<D: Backend> Connection<D> {
             }
         };
         link.session.set_authenticated_by_password(Access::Member);
+        link.session.set_account(start.account);
         Some(Started {
             account: Some(start.account),
             content,

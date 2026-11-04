@@ -6,19 +6,30 @@
 
 use std::collections::HashMap;
 use std::net::SocketAddr;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
+
+use tokio::sync::Notify;
 
 use russh_bbs_core::access::{Access, Fingerprint};
 use russh_bbs_core::limits::SessionCounter;
 use russh_bbs_core::queue::RequestGate;
 use russh_bbs_core::registration::OpenGate;
+use russh_bbs_core::store::AccountId;
 
 use super::terminal::PtySize;
 
 /// Identifies one SSH connection for the life of the process.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct SessionId(u64);
+
+impl SessionId {
+    /// The number, for logs and audit notes.
+    #[must_use]
+    pub fn as_raw(self) -> u64 {
+        self.0
+    }
+}
 
 /// A point-in-time copy of one session's state.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -44,13 +55,94 @@ pub struct SessionSnapshot {
     pub bytes_sent: u64,
     /// Input bytes dropped because the session was over its input budget.
     pub input_dropped: u64,
+    /// The account this session is signed in as, once it is (FIX-M3-14).
+    pub account: Option<AccountId>,
+    /// Whether the session proved itself with the account's password (a password login, a join,
+    /// a key linked by password, a recovery code's new password). The key it signed in with is
+    /// `fingerprint`. Together they say which credential revoking ends this session (D99).
+    pub by_password: bool,
+}
+
+/// What was revoked, for [`SessionRef::revoke_others`] (FIX-M3-14, D99).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Revocation {
+    /// The account removed this key: ends the sessions that signed in with it.
+    Key(Fingerprint),
+    /// The password was set, changed or cleared: ends the sessions that used the password.
+    Password,
+    /// A recovery code was redeemed and bound this key and a new password: ends the sessions
+    /// that used the password and every session on any other key.
+    Recovery(Fingerprint),
+}
+
+impl Revocation {
+    fn hits(&self, session: &SessionSnapshot) -> bool {
+        match self {
+            Self::Key(key) => session.fingerprint.as_ref() == Some(key),
+            Self::Password => session.by_password,
+            Self::Recovery(new_key) => {
+                session.by_password
+                    || session
+                        .fingerprint
+                        .as_ref()
+                        .is_some_and(|key| key != new_key)
+            }
+        }
+    }
+
+    /// The short tag the audit row carries.
+    #[must_use]
+    pub fn tag(&self) -> &'static str {
+        match self {
+            Self::Key(_) => "key removed",
+            Self::Password => "password changed",
+            Self::Recovery(_) => "recovery code",
+        }
+    }
+}
+
+/// The signal that ends a session whose credential was revoked. Remembered if it fires before
+/// the session waits on it.
+#[derive(Debug, Default)]
+pub struct RevokeSignal {
+    revoked: AtomicBool,
+    wake: Notify,
+}
+
+impl RevokeSignal {
+    fn fire(&self) {
+        self.revoked.store(true, Ordering::Release);
+        self.wake.notify_one();
+    }
+
+    /// Whether the session was revoked.
+    #[must_use]
+    pub fn is_revoked(&self) -> bool {
+        self.revoked.load(Ordering::Acquire)
+    }
+
+    /// Resolves once the session is revoked.
+    pub async fn revoked(&self) {
+        loop {
+            if self.is_revoked() {
+                return;
+            }
+            self.wake.notified().await;
+        }
+    }
+}
+
+#[derive(Debug)]
+struct Entry {
+    snapshot: SessionSnapshot,
+    signal: Arc<RevokeSignal>,
 }
 
 /// Shared registry of live sessions.
 #[derive(Debug, Default)]
 pub struct SessionRegistry {
     next_id: AtomicU64,
-    sessions: Mutex<HashMap<SessionId, SessionSnapshot>>,
+    sessions: Mutex<HashMap<SessionId, Entry>>,
     /// Signed-in sessions per account, for the concurrent-session limit (M2-H). In this
     /// process only: a second process has its own count.
     member_sessions: SessionCounter,
@@ -73,41 +165,69 @@ impl SessionRegistry {
     /// Register a new connection. The returned guard removes it when dropped.
     pub fn register(self: &Arc<Self>, peer: Option<SocketAddr>) -> SessionGuard {
         let id = SessionId(self.next_id.fetch_add(1, Ordering::Relaxed));
+        let signal = Arc::new(RevokeSignal::default());
         self.lock().insert(
             id,
-            SessionSnapshot {
-                id,
-                peer,
-                fingerprint: None,
-                access: None,
-                pty_size: None,
-                shell_open: false,
-                frames_sent: 0,
-                bytes_sent: 0,
-                input_dropped: 0,
+            Entry {
+                snapshot: SessionSnapshot {
+                    id,
+                    peer,
+                    fingerprint: None,
+                    access: None,
+                    pty_size: None,
+                    shell_open: false,
+                    frames_sent: 0,
+                    bytes_sent: 0,
+                    input_dropped: 0,
+                    account: None,
+                    by_password: false,
+                },
+                signal: Arc::clone(&signal),
             },
         );
         SessionGuard(SessionRef {
             id,
             registry: Arc::clone(self),
+            signal,
         })
     }
 
     /// Copies of every live session, ordered by id.
     #[must_use]
     pub fn snapshots(&self) -> Vec<SessionSnapshot> {
-        let mut all: Vec<_> = self.lock().values().cloned().collect();
+        let mut all: Vec<_> = self.lock().values().map(|e| e.snapshot.clone()).collect();
         all.sort_by_key(|s| s.id);
         all
     }
 
     fn update(&self, id: SessionId, change: impl FnOnce(&mut SessionSnapshot)) {
         if let Some(entry) = self.lock().get_mut(&id) {
-            change(entry);
+            change(&mut entry.snapshot);
         }
     }
 
-    fn lock(&self) -> MutexGuard<'_, HashMap<SessionId, SessionSnapshot>> {
+    /// Fire the revoke signal of every session of `account` that `what` hits, except `keep`.
+    /// Returns the ids it ended, in order. This process's sessions only (see `docs/access.md`).
+    fn revoke(&self, account: AccountId, what: &Revocation, keep: SessionId) -> Vec<SessionId> {
+        let mut ended: Vec<SessionId> = self
+            .lock()
+            .values()
+            .filter(|e| {
+                e.snapshot.id != keep
+                    && !e.signal.is_revoked()
+                    && e.snapshot.account == Some(account)
+                    && what.hits(&e.snapshot)
+            })
+            .map(|e| {
+                e.signal.fire();
+                e.snapshot.id
+            })
+            .collect();
+        ended.sort();
+        ended
+    }
+
+    fn lock(&self) -> MutexGuard<'_, HashMap<SessionId, Entry>> {
         // A poisoned lock only means another thread panicked mid-update of plain data; the map
         // is still usable and refusing to serve would turn one bug into an outage.
         self.sessions.lock().unwrap_or_else(PoisonError::into_inner)
@@ -120,6 +240,7 @@ impl SessionRegistry {
 pub struct SessionRef {
     id: SessionId,
     registry: Arc<SessionRegistry>,
+    signal: Arc<RevokeSignal>,
 }
 
 impl SessionRef {
@@ -157,7 +278,36 @@ impl SessionRef {
 
     /// Record a password login: an account with no key to name, and the access it was given.
     pub fn set_authenticated_by_password(&self, access: Access) {
-        self.registry.update(self.id, |s| s.access = Some(access));
+        self.registry.update(self.id, |s| {
+            s.access = Some(access);
+            s.by_password = true;
+        });
+    }
+
+    /// Record that this session also proved the account's password (a key linked by password,
+    /// a recovery code's new password, a join that set one), so a later password change ends it.
+    pub fn mark_password(&self) {
+        self.registry.update(self.id, |s| s.by_password = true);
+    }
+
+    /// Record the account this session is signed in as (FIX-M3-14), so revoking one of its
+    /// credentials can find the session.
+    pub fn set_account(&self, account: AccountId) {
+        self.registry.update(self.id, |s| s.account = Some(account));
+    }
+
+    /// End every other live session of `account` that `what` hits (FIX-M3-14, D99): each one
+    /// shows the fixed revoked line and closes at its next checkpoint. This session stays open.
+    /// Returns the sessions it ended.
+    #[must_use]
+    pub fn revoke_others(&self, account: AccountId, what: &Revocation) -> Vec<SessionId> {
+        self.registry.revoke(account, what, self.id)
+    }
+
+    /// The signal that this session's credential was revoked.
+    #[must_use]
+    pub fn revoke_signal(&self) -> &RevokeSignal {
+        &self.signal
     }
 
     /// Record a visitor who offered no key (the waiting room only).
