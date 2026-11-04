@@ -26,7 +26,7 @@ A strict rule applies to the environment: a `RUSSH_BBS_*` variable that no setti
 - **Bad values** (wrong type, out of range, bad path, inconsistent with another key) name the key and where the value came from: the file, the environment variable or the flag.
 - **Something that is parsed but not built is a boot error, not ignored.** `datasource.iam_auth = true` fails with "IAM token authentication is not built yet" (D31, D44). The server never falls back to SQLite from Postgres, or to another kind of authentication, on its own.
 - **Postgres failures stop the boot.** A bad URL, an unreachable server, a TLS check that fails, a server that does not offer TLS, or a refused login is a boot error that names the cause and never contains the password.
-- **Settings that parse but do nothing yet** log a warning when turned on (S3 blobs), so the sysop is not misled. Settings that lower the board's security log a warning at start: password login (M3-D) says it is on, and telnet (M3-H) says the board is in low-security mode.
+- **Settings that parse but do nothing yet** log a warning when turned on so the sysop is not misled. Settings that lower the board's security log a warning at start: password login (M3-D) says it is on, and telnet (M3-H) says the board is in low-security mode.
 - **Secrets are redacted.** `datasource.url` may contain a password. It has no command-line flag (argv is visible in `ps`), it is masked in `Debug`, `Display` and logs (`postgres://user:***@host/db`), and no error message quotes it or the line it was on. If a config file sets it and is readable by group or others the server warns; use `chmod 600`. Object-store credentials are never read from this file: they come from the environment (D30).
 
 ## Environment variable names
@@ -79,17 +79,24 @@ A key's environment variable is listed below. Names that existed before this fil
 
 Setting a key that belongs to the other backend (for example `datasource.url` with `kind = "sqlite"`) is an error, not something silently ignored. MySQL is not a choice.
 
-### `[blobs]` (D30)
+### `[blobs]` (D30, M4-F1)
 
-All parsed, not yet used: no blob store exists yet. Object-store credentials come from the environment, never from this file.
+Where member-uploaded bytes will live. The store is built at start so a bad directory or bucket stops the boot (no fallback to the other backend); nothing reads or writes it until file areas land (M4-F2). The access keys for `s3` come from the environment, never from this file, the database or the logs:
+
+- `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` (and `AWS_SESSION_TOKEN` for temporary keys). If they are not both set, the platform's own credential sources are used (an instance or container role, a web-identity token), which is the right choice on AWS.
+- Error text and logs never contain them; the start-up log line names only the backend.
 
 | Key | Type | Default | Environment | Flag | Used by |
 |---|---|---|---|---|---|
-| `blobs.backend` | `"local"`, `"s3"` | `"local"` | `RUSSH_BBS_BLOBS_BACKEND` | none | Parsed, not yet used; warns when `s3` |
-| `blobs.dir` | path (only with `local`) | unset (a directory under the default data directory) | `RUSSH_BBS_BLOBS_DIR` | none | Parsed, not yet used |
-| `blobs.endpoint` | `http(s)://` URL without credentials (only with `s3`) | unset (AWS) | `RUSSH_BBS_BLOBS_ENDPOINT` | none | Parsed, not yet used |
-| `blobs.bucket` | string, required with `s3` | unset | `RUSSH_BBS_BLOBS_BUCKET` | none | Parsed, not yet used |
-| `blobs.region` | string (only with `s3`) | unset | `RUSSH_BBS_BLOBS_REGION` | none | Parsed, not yet used |
+| `blobs.backend` | `"local"`, `"s3"` | `"local"` | `RUSSH_BBS_BLOBS_BACKEND` | none | Picks the backend at start |
+| `blobs.dir` | path (only with `local`) | unset (`blobs/` in the default data directory: `/data/blobs` in the container) | `RUSSH_BBS_BLOBS_DIR` | none | The local backend's root; created with mode 0700 |
+| `blobs.endpoint` | `http(s)://` URL without credentials (only with `s3`) | unset (AWS) | `RUSSH_BBS_BLOBS_ENDPOINT` | none | The S3 server. Plain `http://` works but warns at start: the keys and uploads cross the network unencrypted |
+| `blobs.bucket` | string, required with `s3` | unset | `RUSSH_BBS_BLOBS_BUCKET` | none | The bucket; it must already exist. Checked at start |
+| `blobs.region` | string (only with `s3`) | unset (`us-east-1`) | `RUSSH_BBS_BLOBS_REGION` | none | Request signing |
+| `blobs.path_style` | boolean (only with `s3`) | `false` | `RUSSH_BBS_BLOBS_PATH_STYLE` | none | `true` addresses the bucket as `https://host/bucket/key`; MinIO and most self-hosted servers need it, AWS does not |
+| `blobs.ca_file` | path to a PEM file (only with `s3`) | unset (the platform CA store) | `RUSSH_BBS_BLOBS_CA_FILE` | none | Replaces the platform CA store for the S3 connection, like `feeds.ca_file` (D92). Must exist and hold a PEM certificate |
+| `blobs.max_object_bytes` | integer, 1 to 2^40 | `268435456` (256 MiB) | `RUSSH_BBS_BLOBS_MAX_OBJECT_BYTES` | none | The largest object either backend stores; a put over it fails and stores nothing. The per-file and per-day upload limits (M2-H) apply below this at M4-F2 |
+| `blobs.multipart_threshold_bytes` | integer, 5 MiB to 5 GiB (only with `s3`) | `16777216` (16 MiB) | `RUSSH_BBS_BLOBS_MULTIPART_THRESHOLD_BYTES` | none | Uploads larger than this go up in parts of this size. A put holds about three parts in memory, whatever the object size. `max_object_bytes` divided by this must stay under 10,000 (the S3 part limit) |
 
 ### `[board]` (UI-2)
 
@@ -192,5 +199,6 @@ Usage counters (`limit_usage`) are per account per UTC day and survive a restart
 - **Implemented and tested (M3-H):** the `[telnet]` section is used. Off binds nothing; on starts the listener, warns, and sets `Limits::low_security`. Config tests cover the defaults, the warning and the limits flag; the transport is covered in `tests/telnet.rs` (see D85 and [features.md](features.md)).
 - **Implemented and tested (FIX-M3-5, D92):** `feeds.ca_file` (existence check at boot; the fetcher loads it and fails closed on a missing, empty, malformed or wrong CA). Tests: `feeds::tests::ca_file_replaces_the_platform_store_and_a_wrong_ca_fails_closed`, `a_ca_file_that_is_missing_empty_or_not_pem_is_an_error`, `config::tests::feeds_ca_file_must_name_an_existing_file_and_defaults_to_the_platform_store`. Not verified: a live https feed from the container (this environment reaches the internet only through a proxy the fetcher refuses to use).
 - **Implemented and tested (M3-G):** the `[feeds]` section is used (D89). Config tests cover the defaults, the base-URL rule and port clashes; the fetcher and the listener are covered by the feed tests in `crates/server/src/feeds` (see D89 and [features.md](features.md)).
-- **Planned:** IAM token authentication, a blob store reading `[blobs]`.
+- **Implemented and tested (M4-F1, D106):** the `[blobs]` section is used: the server builds the local or S3 store at start. Tests: `config::tests::blob_limits_and_s3_only_settings_are_checked`, `s3_needs_a_bucket_and_no_credentials`; the stores themselves in `russh-bbs-store` (see [deploy.md](deploy.md#testing-the-s3-blob-backend)).
+- **Planned:** IAM token authentication.
 - **Verified end to end:** see the M1-H pull request for the `ssh` session against a file and against environment overrides.

@@ -25,6 +25,8 @@ mod hero;
 mod rules;
 mod save;
 mod session;
+#[doc(hidden)]
+pub mod showcase;
 mod town;
 mod world;
 

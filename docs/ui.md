@@ -2,7 +2,7 @@
 
 A UI refresh and board customization plan (owner approved, 2026-11-04) is in [ui-refresh.md](ui-refresh.md).
 
-Status: **Partly implemented.** UI-2 (style packs, seven layouts, board identity, member choices; [below](#styles-layouts-and-board-identity-ui-2-d-tbd)) is built on UI-1. UI-1 (the frame, tables, popups and colour depth, [below](#frame-tables-popups-and-colour-depth-ui-1-d109)) is the foundation the rest of M3.5 builds on. The forum screens (M3-E, below) are the first long-text screens. The menu tree, universal keys and string table (M2-A) and the **classic, lightbar and compact layouts with theme packs and live switching** (M3-A, D82) exist; two-pane, tabs, dashboard and command line, declarative layout files and art blocks do not.
+Status: **Partly implemented.** UI-2 (style packs, seven layouts, board identity, member choices; [below](#styles-layouts-and-board-identity-ui-2-d117)) is built on UI-1. UI-1 (the frame, tables, popups and colour depth, [below](#frame-tables-popups-and-colour-depth-ui-1-d109)) is the foundation the rest of M3.5 builds on. The forum screens (M3-E, below) are the first long-text screens. The menu tree, universal keys and string table (M2-A) and the **classic, lightbar and compact layouts with theme packs and live switching** (M3-A, D82) exist; two-pane, tabs, dashboard and command line, declarative layout files and art blocks do not.
 
 ## Four separate layers
 

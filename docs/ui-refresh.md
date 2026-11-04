@@ -223,7 +223,7 @@ The game UI slices (S3, E3, N3, L3 and H3) wait for UI-5. The engine and content
 
 ## UI-2 implementation notes
 
-Built in `m35/theme-packs-layouts` (D117). The reference is [ui.md](ui.md#styles-layouts-and-board-identity-ui-2-d-tbd); what differs from the plan above:
+Built in `m35/theme-packs-layouts` (D117). The reference is [ui.md](ui.md#styles-layouts-and-board-identity-ui-2-d117); what differs from the plan above:
 
 - **Styles.** The six styles ship as complete packs with their own palette, borders, title treatment and decoration (not recolours), beside `default`, `green` and `contrast`. `amber` is now the full Amber Terminal pack. **Art is UI-3**: the styles draw the board name as text (with decoration) until the large-letter fallback and `.ans` art land. "Scanline shading" (Phosphor), "gradients" (Neon Night, Deep Space), "starfield" (Deep Space) and "block fades" (Classic ANSI) are built as cell colours and glyphs, where the depth allows. **Nothing animates:** the typewriter reveal, fades and wipes are UI-8; the motion setting (member x board x style ceiling) is stored and exposed as `Look::motion()`.
 - **Layouts.** All seven exist and arrange the **menu screen**; other screens take the style but not the panes until UI-4. `Focus` shows its widgets pop-over with `Tab`. `Split` draws the divider but does not drag it (UI-9), and its second pane is a placeholder slot (a live chat or mail pane is UI-9). Minimum sizes and fallbacks: wide 110x22 to dashboard 72x20 to lightbar 44x12 to classic 24x9 to compact; focus 40x10 and split 72x16 to lightbar.

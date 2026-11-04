@@ -72,6 +72,8 @@ pub struct ResolvedPaths {
     pub mail_key: PathBuf,
     /// The database to open.
     pub datasource: ResolvedDatasource,
+    /// The blob directory, for `blobs.backend = "local"`; `None` for `s3` (M4-F1).
+    pub blobs_dir: Option<PathBuf>,
 }
 
 impl Loaded {
@@ -178,10 +180,20 @@ impl Loaded {
                 ))
             }
         };
+        let blobs_dir = match (self.config.blobs.backend, &self.config.blobs.dir) {
+            (BlobBackend::S3, _) => None,
+            (BlobBackend::Local, Some(p)) => Some(p.clone()),
+            (BlobBackend::Local, None) => Some(
+                self.dirs
+                    .data_path(paths::BLOBS_DIR)
+                    .ok_or(ConfigError::NoDataDir { key: "blobs.dir" })?,
+            ),
+        };
         Ok(ResolvedPaths {
             host_key,
             mail_key,
             datasource,
+            blobs_dir,
         })
     }
 
@@ -240,8 +252,7 @@ fn is_loose(path: &Path) -> bool {
     std::fs::metadata(path).is_ok_and(|m| m.permissions().mode() & 0o044 != 0)
 }
 
-/// Settings that are turned on but do nothing yet, or that lower the board's security, so the
-/// sysop is not misled.
+/// Settings that lower the board's security, so the sysop is not misled.
 fn unused_warnings(config: &Config) -> Vec<String> {
     let mut out = Vec::new();
     if config.telnet.enabled {
@@ -251,9 +262,16 @@ fn unused_warnings(config: &Config) -> Vec<String> {
                 .to_owned(),
         );
     }
-    if config.blobs.backend == BlobBackend::S3 {
+    if config.blobs.backend == BlobBackend::S3
+        && config
+            .blobs
+            .endpoint
+            .as_deref()
+            .is_some_and(|e| e.starts_with("http://"))
+    {
         out.push(
-            "blobs.backend = \"s3\" is parsed but no blob store exists yet; it has no effect (D30)"
+            "blobs.endpoint is plain http: uploads and the access keys cross the network \
+             unencrypted; use https unless the store is on this host (D30)"
                 .to_owned(),
         );
     }

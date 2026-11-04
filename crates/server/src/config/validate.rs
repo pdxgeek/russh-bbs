@@ -318,6 +318,9 @@ fn blobs(c: &Check<'_>, config: &Config) -> Result<(), ConfigError> {
             c.only_with("blobs.endpoint", need)?;
             c.only_with("blobs.bucket", need)?;
             c.only_with("blobs.region", need)?;
+            c.only_with("blobs.path_style", need)?;
+            c.only_with("blobs.ca_file", need)?;
+            c.only_with("blobs.multipart_threshold_bytes", need)?;
             if let Some(dir) = &b.dir {
                 c.path("blobs.dir", dir, true)?;
             }
@@ -348,8 +351,28 @@ fn blobs(c: &Check<'_>, config: &Config) -> Result<(), ConfigError> {
             if b.region.as_deref().is_some_and(str::is_empty) {
                 return Err(c.fail("blobs.region", "must not be empty"));
             }
+            if let Some(path) = &b.ca_file {
+                c.path("blobs.ca_file", path, false)?;
+                if !path.is_file() {
+                    return Err(c.fail("blobs.ca_file", "the file does not exist"));
+                }
+            }
+            // S3 refuses parts under 5 MiB, and an upload has at most 10,000 parts.
+            c.range(
+                "blobs.multipart_threshold_bytes",
+                b.multipart_threshold_bytes,
+                5 * 1024 * 1024,
+                5 * 1024 * 1024 * 1024,
+            )?;
+            if b.max_object_bytes / b.multipart_threshold_bytes >= 10_000 {
+                return Err(c.fail(
+                    "blobs.max_object_bytes",
+                    "needs more than 10,000 upload parts at this blobs.multipart_threshold_bytes",
+                ));
+            }
         }
     }
+    c.range("blobs.max_object_bytes", b.max_object_bytes, 1, 1 << 40)?;
     Ok(())
 }
 
