@@ -23,6 +23,19 @@ tracing = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 
+# S3-compatible blob backend (D30): the maintained object-store client the owner chose. Only the
+# `aws-base` and `reqwest` features: no aws-lc, and no GCP/Azure/HTTP clients.
+object_store = { version = "0.14", default-features = false, features = ["aws-base", "reqwest", "ring"] }
+# The HTTP client object_store uses, with rustls and no bundled crypto provider (D44: ring only).
+reqwest = { version = "0.13", default-features = false, features = ["rustls-no-provider", "http2"] }
+# The ring crypto provider reqwest's rustls needs installed (already in the tree through sqlx).
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+# Turns the download byte stream into an AsyncRead; futures-util for the stream combinators.
+tokio-util = { version = "0.7", default-features = false, features = ["io"] }
+futures-util = { version = "0.3", default-features = false, features = ["std"] }
+bytes = "1"
+
 [dev-dependencies]
 tempfile = { workspace = true }
+sha2 = { workspace = true }
 tokio = { workspace = true }
