@@ -5,6 +5,10 @@
 use russh_bbs_door::content::{self, ContentError, Table, plain_text};
 use serde::Deserialize;
 
+use crate::lore::{
+    EVENTS_TOML, Effect, EventDef, Events, FOES_TOML, FoeDef, Foes, GATHER_TOML, GatherDef,
+    Gathers, GroupDef, Req,
+};
 use crate::map::{Band, PoiKind, TileKind};
 use crate::types::{Bundle, Resource, Track, Trade};
 
@@ -203,6 +207,18 @@ pub struct TraitDef {
     /// Change to the asking price.
     #[serde(default)]
     pub hire_pct: i32,
+    /// Change to attack in a skirmish.
+    #[serde(default)]
+    pub fight_atk: i32,
+    /// Change to armour in a skirmish.
+    #[serde(default)]
+    pub fight_def: i32,
+    /// Change to speed in a skirmish.
+    #[serde(default)]
+    pub fight_spd: i32,
+    /// Change to hit points in a skirmish.
+    #[serde(default)]
+    pub fight_hp: i32,
 }
 
 /// The traits table.
@@ -226,6 +242,8 @@ pub enum Cause {
     Sickness,
     /// A hold short of fuel.
     Cold,
+    /// A fight on an expedition.
+    Fight,
 }
 
 /// One injury.
@@ -515,7 +533,13 @@ impl Table for Injuries {
                 ));
             }
         }
-        for cause in [Cause::Hurt, Cause::Water, Cause::Sickness, Cause::Cold] {
+        for cause in [
+            Cause::Hurt,
+            Cause::Water,
+            Cause::Sickness,
+            Cause::Cold,
+            Cause::Fight,
+        ] {
             if !self.entries.iter().any(|i| i.cause == cause) {
                 p.push(format!("[injury] no injury has cause {cause:?}"));
             }
@@ -623,6 +647,58 @@ pub struct Catalog {
     pub names: Names,
     /// Epitaph lines.
     pub epitaphs: Vec<EpitaphDef>,
+    /// Expedition scenes.
+    pub events: Vec<EventDef>,
+    /// Creatures and bandits.
+    pub foes: Vec<FoeDef>,
+    /// Fights, as sets of foes.
+    pub groups: Vec<GroupDef>,
+    /// What each kind of tile yields.
+    pub gathers: Vec<GatherDef>,
+}
+
+/// The text of every table, so tests can swap one and prove a bad edit is caught.
+#[derive(Debug, Clone, Copy)]
+pub struct Texts<'a> {
+    /// Buildings.
+    pub buildings: &'a str,
+    /// Recipes.
+    pub recipes: &'a str,
+    /// Traits.
+    pub traits: &'a str,
+    /// Injuries.
+    pub injuries: &'a str,
+    /// Points of interest.
+    pub pois: &'a str,
+    /// Names.
+    pub names: &'a str,
+    /// Epitaphs.
+    pub epitaphs: &'a str,
+    /// Events.
+    pub events: &'a str,
+    /// Foes and groups.
+    pub foes: &'a str,
+    /// Gathering.
+    pub gather: &'a str,
+}
+
+impl Texts<'static> {
+    /// The embedded tables.
+    #[must_use]
+    pub const fn embedded() -> Self {
+        Self {
+            buildings: BUILDINGS_TOML,
+            recipes: RECIPES_TOML,
+            traits: TRAITS_TOML,
+            injuries: INJURIES_TOML,
+            pois: POIS_TOML,
+            names: NAMES_TOML,
+            epitaphs: EPITAPHS_TOML,
+            events: EVENTS_TOML,
+            foes: FOES_TOML,
+            gather: GATHER_TOML,
+        }
+    }
 }
 
 impl Catalog {
@@ -632,38 +708,27 @@ impl Catalog {
     /// The first table that does not parse or validate, or a cross-table problem (a recipe whose
     /// workshop is not a building, a scar that is not a trait).
     pub fn embedded() -> Result<Self, ContentError> {
-        Self::from_texts(
-            BUILDINGS_TOML,
-            RECIPES_TOML,
-            TRAITS_TOML,
-            INJURIES_TOML,
-            POIS_TOML,
-            NAMES_TOML,
-            EPITAPHS_TOML,
-        )
+        Self::from_texts(&Texts::embedded())
     }
 
     /// Load tables from text (tests use this to prove a bad edit is caught).
     ///
     /// # Errors
     /// See [`Catalog::embedded`].
-    pub fn from_texts(
-        buildings: &str,
-        recipes: &str,
-        traits: &str,
-        injuries: &str,
-        pois: &str,
-        names: &str,
-        epitaphs: &str,
-    ) -> Result<Self, ContentError> {
+    pub fn from_texts(t: &Texts<'_>) -> Result<Self, ContentError> {
+        let foes = content::load::<Foes>("foes", t.foes)?;
         let catalog = Self {
-            buildings: content::load::<Buildings>("buildings", buildings)?.entries,
-            recipes: content::load::<Recipes>("recipes", recipes)?.entries,
-            traits: content::load::<Traits>("traits", traits)?.entries,
-            injuries: content::load::<Injuries>("injuries", injuries)?.entries,
-            pois: content::load::<Pois>("pois", pois)?.entries,
-            names: content::load::<Names>("names", names)?,
-            epitaphs: content::load::<Epitaphs>("epitaphs", epitaphs)?.entries,
+            buildings: content::load::<Buildings>("buildings", t.buildings)?.entries,
+            recipes: content::load::<Recipes>("recipes", t.recipes)?.entries,
+            traits: content::load::<Traits>("traits", t.traits)?.entries,
+            injuries: content::load::<Injuries>("injuries", t.injuries)?.entries,
+            pois: content::load::<Pois>("pois", t.pois)?.entries,
+            names: content::load::<Names>("names", t.names)?,
+            epitaphs: content::load::<Epitaphs>("epitaphs", t.epitaphs)?.entries,
+            events: content::load::<Events>("events", t.events)?.entries,
+            foes: foes.foes,
+            groups: foes.groups,
+            gathers: content::load::<Gathers>("gather", t.gather)?.entries,
         };
         let problems = catalog.cross_check();
         if problems.is_empty() {
@@ -712,7 +777,48 @@ impl Catalog {
         if !self.buildings.iter().any(BuildingDef::is_sluice) {
             p.push("no building is a sluice".to_owned());
         }
+        self.cross_check_lore(&mut p);
         p
+    }
+
+    fn cross_check_lore(&self, p: &mut Vec<String>) {
+        for g in &self.groups {
+            if g.foes.is_empty() {
+                p.push(format!("group `{}` has no foes", g.id));
+            }
+        }
+        for e in &self.events {
+            let conds = e
+                .needs
+                .iter()
+                .chain(&e.draws)
+                .chain(e.options.iter().flat_map(|o| &o.needs));
+            for c in conds {
+                if let Req::Trait(t) = &c.req
+                    && self.trait_def(t).is_none()
+                {
+                    p.push(format!("event `{}`: unknown trait `{t}`", e.id));
+                }
+            }
+            let outcomes = e
+                .options
+                .iter()
+                .flat_map(|o| std::iter::once(&o.win).chain(o.lose.as_ref()));
+            for fx in outcomes.flat_map(|o| &o.fx) {
+                match fx {
+                    Effect::Fight(g) if self.group(g).is_none() => {
+                        p.push(format!("event `{}`: unknown fight group `{g}`", e.id));
+                    }
+                    Effect::Recipe(r) if self.recipe(r).is_none_or(|d| d.learn != Learn::Ruin) => {
+                        p.push(format!(
+                            "event `{}`: `{r}` is not a recipe learned from a ruin",
+                            e.id
+                        ));
+                    }
+                    _ => {}
+                }
+            }
+        }
     }
 
     /// A building by id.
@@ -731,6 +837,30 @@ impl Catalog {
     #[must_use]
     pub fn trait_def(&self, id: &str) -> Option<&TraitDef> {
         self.traits.iter().find(|t| t.id == id)
+    }
+
+    /// A foe by id.
+    #[must_use]
+    pub fn foe(&self, id: &str) -> Option<&FoeDef> {
+        self.foes.iter().find(|f| f.id == id)
+    }
+
+    /// A fight group by id.
+    #[must_use]
+    pub fn group(&self, id: &str) -> Option<&GroupDef> {
+        self.groups.iter().find(|g| g.id == id)
+    }
+
+    /// An event by id.
+    #[must_use]
+    pub fn event(&self, id: &str) -> Option<&EventDef> {
+        self.events.iter().find(|e| e.id == id)
+    }
+
+    /// What working this kind of tile gives.
+    #[must_use]
+    pub fn gather(&self, kind: TileKind) -> Option<&GatherDef> {
+        self.gathers.iter().find(|g| g.tile == kind)
     }
 
     /// An injury by id.

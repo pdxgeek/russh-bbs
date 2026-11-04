@@ -30,6 +30,7 @@ use russh_bbs_core::audit::{Action, AuditQuery, AuditStore, known_events};
 use russh_bbs_core::doors::{self, DoorId, DoorStore, Revision};
 use russh_bbs_core::icons::Tier;
 use russh_bbs_core::limits::{Clock, Day, ManualClock};
+use russh_bbs_core::passwords::Backoff;
 use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::{AccountId, AccountState, AccountStore, NewAccount};
 use russh_bbs_core::terminal_settings::{TerminalSettings, TerminalSettingsStore};
@@ -65,8 +66,8 @@ fn lenient(limits: Limits) -> Limits {
     Limits {
         ip_rate: loose,
         key_rate: loose,
-        password_account_rate: loose,
-        password_network_rate: loose,
+        password_handle_backoff: Backoff::UNLIMITED,
+        password_network_backoff: Backoff::UNLIMITED,
         max_auth_attempts: 3,
         ..limits
     }

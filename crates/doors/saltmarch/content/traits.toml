@@ -7,6 +7,7 @@ id = "steady"
 name = "Steady"
 blurb = "Keeps a level head when the water rises."
 accident_pct = -40
+fight_def = 1
 
 [[trait]]
 id = "greedy"
@@ -22,6 +23,7 @@ name = "Sea-born"
 blurb = "Grew up on the flats. The water is a road, not a wall."
 wet_pct = 25
 accident_pct = -20
+fight_spd = 1
 
 [[trait]]
 id = "fearful"
@@ -30,6 +32,7 @@ blurb = "Will not go out when the water is high. Rarely hurt, for it."
 refuses_high = true
 accident_pct = -20
 morale = -1
+fight_atk = -1
 
 [[trait]]
 id = "lucky"
@@ -50,6 +53,7 @@ id = "hardy"
 name = "Hardy"
 blurb = "Heals like a reed grows."
 heal_pct = 40
+fight_hp = 3
 
 [[trait]]
 id = "clumsy"
@@ -57,6 +61,7 @@ name = "Clumsy"
 blurb = "Finds the one loose plank."
 accident_pct = 60
 hire_pct = -20
+fight_def = -1
 
 [[trait]]
 id = "quick-study"
@@ -72,6 +77,7 @@ blurb = "A bad leg from a bad day. Slow in the wet."
 scar = true
 yield_pct = -10
 wet_pct = -20
+fight_spd = -2
 
 [[trait]]
 id = "haunted"
@@ -80,6 +86,7 @@ blurb = "Still hears the water. Will not go out when it is high."
 scar = true
 refuses_high = true
 morale = -2
+fight_spd = -1
 
 [[trait]]
 id = "weathered"
@@ -88,6 +95,7 @@ blurb = "Has been cut before. Mends well, and knows to duck."
 scar = true
 heal_pct = 25
 accident_pct = -10
+fight_def = 1
 
 [[trait]]
 id = "shaky-hands"
@@ -96,3 +104,22 @@ blurb = "The hand never set right."
 scar = true
 yield_pct = -10
 accident_pct = 30
+
+fight_atk = -1
+
+[[trait]]
+id = "toughened"
+name = "Toughened"
+blurb = "Has been mauled and walked home. Hard to put down."
+scar = true
+accident_pct = -15
+fight_hp = 4
+fight_def = 1
+
+[[trait]]
+id = "one-eyed"
+name = "One-eyed"
+blurb = "Lost the sight of an eye. Misjudges the gap, and the swing."
+scar = true
+accident_pct = 15
+fight_atk = -1

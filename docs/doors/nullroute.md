@@ -161,7 +161,7 @@ OpenSSH 9.6 against the built server on a fresh SQLite board, at 80x24: claim th
 
 ## Implementation notes (M4-N2: countermeasures, encounters, coding, degradation)
 
-Decision: [D105](../decisions.md). Same crate; saves and world are version 2 (N1 saves and worlds migrate forward). The screen is still minimal: N3 builds on UI-5.
+Decision: [D111](../decisions.md). Same crate; saves and world are version 2 (N1 saves and worlds migrate forward). The screen is still minimal: N3 builds on UI-5.
 
 ### What is implemented and verified
 

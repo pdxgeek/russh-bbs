@@ -18,6 +18,7 @@
 //! They are never logged, audited, stored or put in an error.
 
 mod exec;
+mod gate;
 pub mod hash;
 mod offload;
 mod screen;
@@ -27,6 +28,7 @@ mod store;
 pub mod strings;
 
 pub use exec::{Done, Kind, Refusal, Request, Response, execute};
+pub use gate::{AttemptGate, Backoff, DEFAULT_HANDLE_BACKOFF, DEFAULT_NETWORK_BACKOFF};
 pub use offload::{Inline, Offload, Unavailable};
 pub use screen::{PasswordKey, PasswordScreen, Step};
 pub use secret::{MAX_ATTEMPT_BYTES, MAX_CHARS, MIN_CHARS, PolicyError, Secret, check_new};
@@ -38,3 +40,6 @@ pub use store::{LoginRecord, PasswordStore};
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod gate_tests;
