@@ -241,7 +241,8 @@ impl Player {
                     c.hurt_days = c.hurt_days.saturating_sub(1 + help);
                 }
                 let score = c.mood_score();
-                let delta = i16::try_from(((score + 3 * score.signum()) / 6).clamp(-3, 2)).unwrap_or(0);
+                let delta =
+                    i16::try_from(((score + 3 * score.signum()) / 6).clamp(-3, 2)).unwrap_or(0);
                 c.shift_loyalty(delta);
             }
             if day >= self.wages_due {
@@ -330,10 +331,7 @@ impl Player {
     /// The ship reached a system.
     pub(crate) fn goal_arrived(&mut self, system: u16) {
         for c in &mut self.crew {
-            if c.goal.kind == GoalKind::Visit
-                && !c.sworn
-                && c.goal.target == u32::from(system)
-            {
+            if c.goal.kind == GoalKind::Visit && !c.sworn && c.goal.target == u32::from(system) {
                 c.goal.progress = 1;
             }
         }
@@ -374,6 +372,8 @@ impl Player {
         self.injure(i, rng, min, max, events);
     }
 
+    /// Hurt crew member `index` for `min..=max` days (a medic shortens it; without one it may
+    /// scar).
     pub fn injure(
         &mut self,
         index: usize,
@@ -412,6 +412,7 @@ impl Player {
         self.lose_crew(i, events);
     }
 
+    /// Lose crew member `index` for good; the rest are shaken.
     pub fn lose_crew(&mut self, index: usize, events: &mut Vec<Event>) {
         if index >= self.crew.len() {
             return;
@@ -432,7 +433,9 @@ impl Player {
     pub(crate) fn strip_cargo(&mut self, pct: u32) -> u32 {
         let mut lost = 0u32;
         for lot in &mut self.ship.cargo {
-            let take = (u32::from(lot.tons) * pct).div_ceil(100).min(u32::from(lot.tons));
+            let take = (u32::from(lot.tons) * pct)
+                .div_ceil(100)
+                .min(u32::from(lot.tons));
             let take16 = u16::try_from(take).unwrap_or(lot.tons);
             let paid_off = if lot.tons == 0 {
                 0
@@ -463,7 +466,7 @@ impl Player {
         tons
     }
 
-    /// A deed with `faction`: it moves, and its rival moves a third as far the other way.
+    /// A deed with `faction`: it moves, and its rival moves about a third as far the other way.
     pub fn shift_standing_with_rival(
         &mut self,
         faction: Faction,
@@ -472,7 +475,8 @@ impl Player {
     ) {
         self.shift_standing(faction, change, events);
         if let Some(rival) = faction.rival() {
-            let echo = -change / 3;
+            // A third as far the other way, rounded away from zero so a small deed still counts.
+            let echo = -(change + change.signum() * 2) / 3;
             if echo != 0 {
                 self.shift_standing(rival, echo, events);
             }

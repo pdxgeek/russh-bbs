@@ -1,5 +1,8 @@
 //! Boarding: sealed doors, caches, the party, and getting out with the haul.
 #![allow(
+    clippy::assert_is_empty,
+    clippy::single_match_else,
+    unused_mut,
     clippy::unwrap_used,
     clippy::panic,
     clippy::too_many_lines,
@@ -143,7 +146,10 @@ fn a_cache_is_read_by_a_scientist_or_a_practised_surveyor_and_by_nobody_else() {
     );
     let (mut sci, _) = open_cutter(&mut h, Some(Role::Scientist), 0);
     let ev = step(&mut h, &mut sci, Drill::Search).unwrap();
-    assert!(ev.iter().any(|e| matches!(e, Event::CacheRead { value: 520 })));
+    assert!(
+        ev.iter()
+            .any(|e| matches!(e, Event::CacheRead { value: 520 }))
+    );
     assert_eq!(boarding_of(&sci).haul.survey, 520);
     // Once read, it is read.
     assert_eq!(
@@ -203,10 +209,16 @@ fn withdrawing_keeps_the_haul_and_a_wipe_out_loses_it() {
     let cash = p.cash;
     let ev = step(&mut h, &mut p, Drill::Withdraw).unwrap();
     assert!(p.scene.is_none());
-    assert!(ev.iter().any(|e| matches!(e, Event::BoardEnd { clean: true, .. })));
+    assert!(
+        ev.iter()
+            .any(|e| matches!(e, Event::BoardEnd { clean: true, .. }))
+    );
     assert_eq!(p.cash, cash + i64::from(taken));
     assert_eq!(p.ledger.income[Cause::Salvage.index()], i64::from(taken));
-    assert!(p.ship.hull_hp > 50, "plating from the wreck patches the hull");
+    assert!(
+        p.ship.hull_hp > 50,
+        "plating from the wreck patches the hull"
+    );
     assert_eq!(p.stats.boardings, 1);
     // A wipe-out: a captain alone against a bay of boarders.
     let mut lost = 0;
@@ -267,7 +279,10 @@ fn the_downed_are_hurt_and_sometimes_lost_and_a_medic_saves_them() {
     let (alone_lost, alone_hurt) = outcomes(false);
     let (med_lost, _) = outcomes(true);
     assert!(alone_lost > 0 && alone_hurt > 0);
-    assert!(med_lost <= alone_lost + 30, "a medic never makes it much worse");
+    assert!(
+        med_lost <= alone_lost + 30,
+        "a medic never makes it much worse"
+    );
 }
 
 #[test]

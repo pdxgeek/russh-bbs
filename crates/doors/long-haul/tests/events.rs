@@ -1,6 +1,9 @@
 //! Transit events: the tables, the weights, the options, and the RPG rule (a crew mix opens
 //! options, a standing closes them, a lost hand changes what comes later).
 #![allow(
+    clippy::assert_is_empty,
+    clippy::single_match_else,
+    unused_mut,
     clippy::unwrap_used,
     clippy::panic,
     clippy::too_many_lines,
@@ -43,7 +46,8 @@ fn system_with(h: &Harness, hazard: &str, economy: Option<&str>) -> u16 {
             s.hazard.id() == hazard
                 && economy.is_none_or(|e| {
                     s.stations.iter().any(|&st| {
-                        h.content.economies[usize::from(h.frontier.station(st).unwrap().economy)].id == e
+                        h.content.economies[usize::from(h.frontier.station(st).unwrap().economy)].id
+                            == e
                     })
                 })
         })
@@ -97,7 +101,7 @@ fn every_option_of_every_event_plays_out_for_a_loaded_captain_without_breaking_a
                 h.reseed(seed * 977 + ix as u64);
                 let mut p = h.captain("runner");
                 p.cash = 5_000;
-                p.ledger = Default::default();
+                p.ledger = russh_bbs_door_long_haul::player::Ledger::default();
                 p.ledger.income[0] = 5_000;
                 h.fit(&mut p, "lance1");
                 h.fit(&mut p, "scan2");
@@ -264,7 +268,10 @@ fn a_lost_hand_changes_what_comes_later() {
     h.sign(&mut p, Role::Face, 2);
     h.open_event(&mut p, "medical_beacon");
     let mut with = p.clone();
-    assert!(h.go_strict(&mut with, &Action::Choose(0)).is_ok(), "the medic goes across");
+    assert!(
+        h.go_strict(&mut with, &Action::Choose(0)).is_ok(),
+        "the medic goes across"
+    );
     // Lose the medic and the same scene closes that option.
     let mut ev = Vec::new();
     p.lose_crew(0, &mut ev);
@@ -369,21 +376,23 @@ fn the_system_the_cargo_and_the_standing_shift_what_turns_up() {
         .iter()
         .position(|d| d.id == "pilgrim")
         .unwrap();
-    pilgrims.contracts.push(russh_bbs_door_long_haul::contracts::Contract {
-        kind: russh_bbs_door_long_haul::contracts::Kind::Passenger,
-        faction: Faction::Church,
-        from: h.frontier.home_station,
-        to: h.frontier.home_station,
-        good: 0,
-        tons: 0,
-        pax: u8::try_from(pax).unwrap(),
-        count: 2,
-        target: 0,
-        reward: 400,
-        due: 99_999,
-        progress: 0,
-        mood: 7,
-    });
+    pilgrims
+        .contracts
+        .push(russh_bbs_door_long_haul::contracts::Contract {
+            kind: russh_bbs_door_long_haul::contracts::Kind::Passenger,
+            faction: Faction::Church,
+            from: h.frontier.home_station,
+            to: h.frontier.home_station,
+            good: 0,
+            tons: 0,
+            pax: u8::try_from(pax).unwrap(),
+            count: 2,
+            target: 0,
+            reward: 400,
+            due: 99_999,
+            progress: 0,
+            mood: 7,
+        });
     assert!(weight_of(&h, &pilgrims, clear, false, "pilgrim_hymn") > 0);
     // A freshly charted system has beacons.
     assert_eq!(weight_of(&h, &plain, clear, false, "dark_beacon"), 0);
@@ -411,7 +420,10 @@ fn skill_and_crew_tilt_the_odds_of_an_outcome() {
         away
     };
     let (alone, piloted) = (run(&mut h, false), run(&mut h, true));
-    assert!(piloted > alone + 30, "away {piloted} with a pilot, {alone} without");
+    assert!(
+        piloted > alone + 30,
+        "away {piloted} with a pilot, {alone} without"
+    );
 }
 
 #[test]

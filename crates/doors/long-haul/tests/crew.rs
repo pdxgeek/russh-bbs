@@ -1,5 +1,8 @@
 //! Crew: hiring, upkeep, goals, unrest, injury, and what each role changes (the RPG rule).
 #![allow(
+    clippy::assert_is_empty,
+    clippy::single_match_else,
+    unused_mut,
     clippy::unwrap_used,
     clippy::panic,
     clippy::too_many_lines,
@@ -226,7 +229,10 @@ fn a_quartermaster_hides_the_hold_and_a_scientist_sells_the_survey() {
         caught
     };
     let (alone, with_qm) = (rate(false), rate(true));
-    assert!(with_qm + 40 < alone, "caught {with_qm} with, {alone} without");
+    assert!(
+        with_qm + 40 < alone,
+        "caught {with_qm} with, {alone} without"
+    );
     // Surveying.
     let system = h.frontier.systems.iter().find(|s| s.richness > 5).unwrap();
     let solo = h.captain("dropout");
@@ -245,7 +251,10 @@ fn wages_come_due_each_week_and_unpaid_wages_sour_the_crew() {
     let cash = p.cash;
     h.today = DAY0 + 7;
     let ev = h.settle(&mut p);
-    assert!(ev.iter().any(|e| matches!(e, Event::WagesPaid { amount: 60 })));
+    assert!(
+        ev.iter()
+            .any(|e| matches!(e, Event::WagesPaid { amount: 60 }))
+    );
     let _ = cash;
     assert_eq!(
         p.ledger.spend[russh_bbs_door_long_haul::player::Cause::Crew.index()],
@@ -255,7 +264,7 @@ fn wages_come_due_each_week_and_unpaid_wages_sour_the_crew() {
     assert_eq!(p.wages_due, DAY0 + 14);
     // Unpaid: a missed week, a bitter hand.
     p.cash = 0;
-    p.ledger = Default::default();
+    p.ledger = russh_bbs_door_long_haul::player::Ledger::default();
     h.today = DAY0 + 14;
     let ev = h.settle(&mut p);
     assert!(ev.iter().any(|e| matches!(e, Event::WagesMissed { .. })));
@@ -292,7 +301,10 @@ fn rations_decide_the_food_mood_and_a_quartermaster_buys_them_cheaper() {
     h.settle(&mut hungry);
     assert!(fed.crew[i].mood[FOOD] > 0);
     assert!(hungry.crew[i].mood[FOOD] < 0);
-    assert!(hungry.crew[i].loyalty < fed.crew[i].loyalty, "and so does loyalty");
+    assert!(
+        hungry.crew[i].loyalty < fed.crew[i].loyalty,
+        "and so does loyalty"
+    );
 }
 
 #[test]
@@ -330,7 +342,10 @@ fn meeting_a_goal_makes_a_hand_sworn_and_neglect_does_not() {
     assert!(p.crew[w].sworn, "the purse is fat enough");
     assert!(!p.crew[d].sworn);
     assert!(
-        ev.iter().filter(|e| matches!(e, Event::GoalMet { .. })).count() >= 2,
+        ev.iter()
+            .filter(|e| matches!(e, Event::GoalMet { .. }))
+            .count()
+            >= 2,
         "{ev:?}"
     );
     assert!(p.crew[v].loyalty >= 70, "sworn means loyal");
@@ -362,7 +377,11 @@ fn a_won_fight_counts_toward_a_fighting_goal() {
     }
     assert!(p.stats.fights_won + p.stats.fights_lost + p.stats.fled <= 1);
     if p.stats.fights_won == 1 {
-        assert!(p.crew.first().is_none_or(|c| c.sworn || c.goal.progress >= 1));
+        assert!(
+            p.crew
+                .first()
+                .is_none_or(|c| c.sworn || c.goal.progress >= 1)
+        );
     }
 }
 
@@ -373,9 +392,7 @@ fn a_sworn_hand_cannot_fall_below_the_floor_and_never_walks() {
     let i = h.sign(&mut p, Role::Medic, 3);
     p.crew[i].sworn = true;
     p.crew[i].loyalty = 90;
-    for m in &mut p.crew[i].mood {
-        *m = -10;
-    }
+    p.crew[i].mood.fill(-10);
     p.rations_until = 0;
     h.today += 25;
     h.settle(&mut p);
@@ -425,7 +442,7 @@ fn neglect_ends_in_desertion_or_mutiny_at_a_dock() {
         p.crew[happy].sworn = true;
         p.crew[happy].loyalty = 90;
         p.cash = 1000;
-        p.ledger = Default::default();
+        p.ledger = russh_bbs_door_long_haul::player::Ledger::default();
         p.ledger.income[0] = 1000;
         h.orbit(&mut p, st);
         let ev = h.go(&mut p, &Action::Dock(st)).unwrap();
@@ -490,7 +507,11 @@ fn a_hand_trains_by_use_and_dismissing_a_sworn_hand_sours_the_rest() {
     for _ in 0..40 {
         ups += u32::from(p.crew[a].train());
     }
-    assert!(p.crew[a].skill >= 3 && ups >= 2, "skill {}", p.crew[a].skill);
+    assert!(
+        p.crew[a].skill >= 3 && ups >= 2,
+        "skill {}",
+        p.crew[a].skill
+    );
     p.crew[b].sworn = true;
     p.crew[b].loyalty = 80;
     let st = docked(&h, &mut p, "mining");
@@ -513,7 +534,13 @@ fn a_lost_hand_stays_lost_and_the_ship_remembers() {
     h.sign(&mut p, Role::Face, 3);
     let mut ev = Vec::new();
     p.lose_crew(0, &mut ev);
-    assert!(matches!(ev[0], Event::CrewLost { role: Role::Medic, .. }));
+    assert!(matches!(
+        ev[0],
+        Event::CrewLost {
+            role: Role::Medic,
+            ..
+        }
+    ));
     assert_eq!(p.stats.crew_lost, 1);
     assert!(!p.has_role(Role::Medic, 1));
     assert!(p.crew[0].mood[2] < 0, "danger mood fell for the rest");

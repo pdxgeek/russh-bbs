@@ -1,5 +1,10 @@
 //! Ship combat: invariants on random play, and what each part of a build changes.
 #![allow(
+    clippy::assert_is_empty,
+    clippy::single_match_else,
+    unused_mut,
+    clippy::match_wild_err_arm,
+    clippy::single_match,
     clippy::unwrap_used,
     clippy::panic,
     clippy::too_many_lines,
@@ -128,7 +133,9 @@ fn weapons_like_a_band_and_the_band_decides_their_damage() {
     let mut lance = h.captain("dockhand");
     h.fit(&mut lance, "lance1");
     assert!(rail.firepower(&h.content, Range::Far) > rail.firepower(&h.content, Range::Close));
-    assert!(scatter.firepower(&h.content, Range::Close) > scatter.firepower(&h.content, Range::Far));
+    assert!(
+        scatter.firepower(&h.content, Range::Close) > scatter.firepower(&h.content, Range::Far)
+    );
     assert!(lance.firepower(&h.content, Range::Mid) > lance.firepower(&h.content, Range::Far));
     assert_eq!(reach_pct(Range::Far, Range::Far), 100);
     assert_eq!(reach_pct(Range::Far, Range::Close), 25);
@@ -175,7 +182,11 @@ fn power_is_a_budget_and_a_bad_order_changes_nothing() {
     assert!(gunship.gear(&h.content).budget > h.captain("dockhand").gear(&h.content).budget);
     let mut with_engineer = h.captain("dockhand");
     h.sign(&mut with_engineer, Role::Engineer, 9);
-    h.set_level(&mut with_engineer, russh_bbs_door_long_haul::skills::Skill::Engineer, 4);
+    h.set_level(
+        &mut with_engineer,
+        russh_bbs_door_long_haul::skills::Skill::Engineer,
+        4,
+    );
     assert!(with_engineer.gear(&h.content).budget > h.captain("dockhand").gear(&h.content).budget);
 }
 
@@ -271,7 +282,10 @@ fn a_gunner_hits_harder() {
         "raider",
         300,
     );
-    assert!(with_gunner > alone * 12 / 10, "{with_gunner} against {alone}");
+    assert!(
+        with_gunner > alone * 12 / 10,
+        "{with_gunner} against {alone}"
+    );
 }
 
 #[test]
@@ -307,12 +321,16 @@ fn an_engineer_patches_the_hull_between_exchanges() {
     h.sign(&mut p, Role::Engineer, 6);
     p.ship.hull_hp = 60;
     h.fight(&mut p, "skiff");
-    let events = h.go_strict(&mut p, &Action::Fight(orders(3, 2, 1))).unwrap();
+    let events = h
+        .go_strict(&mut p, &Action::Fight(orders(3, 2, 1)))
+        .unwrap();
     assert!(events.iter().any(|e| matches!(e, Event::Patched { .. })));
     let mut alone = armed(&h, "dockhand");
     alone.ship.hull_hp = 60;
     h.fight(&mut alone, "skiff");
-    let events = h.go_strict(&mut alone, &Action::Fight(orders(3, 2, 1))).unwrap();
+    let events = h
+        .go_strict(&mut alone, &Action::Fight(orders(3, 2, 1)))
+        .unwrap();
     assert!(!events.iter().any(|e| matches!(e, Event::Patched { .. })));
 }
 
@@ -329,10 +347,23 @@ fn running_is_always_allowed_and_a_good_pilot_far_away_gets_clear() {
     let alone = h.captain("dockhand");
     let mut piloted = alone.clone();
     h.sign(&mut piloted, Role::Pilot, 10);
-    h.set_level(&mut piloted, russh_bbs_door_long_haul::skills::Skill::Pilot, 6);
-    assert!(alone.run_chance(&h.content, &skiff, Range::Far) > alone.run_chance(&h.content, &skiff, Range::Close));
-    assert!(piloted.run_chance(&h.content, &skiff, Range::Mid) > alone.run_chance(&h.content, &skiff, Range::Mid));
-    assert!(alone.run_chance(&h.content, &slow, Range::Mid) > alone.run_chance(&h.content, &skiff, Range::Mid));
+    h.set_level(
+        &mut piloted,
+        russh_bbs_door_long_haul::skills::Skill::Pilot,
+        6,
+    );
+    assert!(
+        alone.run_chance(&h.content, &skiff, Range::Far)
+            > alone.run_chance(&h.content, &skiff, Range::Close)
+    );
+    assert!(
+        piloted.run_chance(&h.content, &skiff, Range::Mid)
+            > alone.run_chance(&h.content, &skiff, Range::Mid)
+    );
+    assert!(
+        alone.run_chance(&h.content, &slow, Range::Mid)
+            > alone.run_chance(&h.content, &skiff, Range::Mid)
+    );
     // And it shows in what happens.
     let escapes = |p: &Player| {
         let mut n = 0;
@@ -375,7 +406,10 @@ fn a_win_pays_salvage_costs_standing_and_may_offer_the_wreck() {
             break;
         }
     }
-    assert!(events.iter().any(|e| matches!(e, Event::Wrecked { .. })), "{events:?}");
+    assert!(
+        events.iter().any(|e| matches!(e, Event::Wrecked { .. })),
+        "{events:?}"
+    );
     assert!(p.cash > cash);
     assert_eq!(p.ledger.income[Cause::Salvage.index()], p.cash - cash);
     assert_eq!(p.ledger.net(), p.cash);
@@ -396,7 +430,8 @@ fn a_win_pays_salvage_costs_standing_and_may_offer_the_wreck() {
     }
     for _ in 0..20 {
         let _ = h.go_strict(&mut q, &Action::Fight(orders(6, 0, 0)));
-        if matches!(&q.scene, Some(Scene::Combat(c)) if c.phase == Phase::Won) || q.scene.is_none() {
+        if matches!(&q.scene, Some(Scene::Combat(c)) if c.phase == Phase::Won) || q.scene.is_none()
+        {
             break;
         }
     }
@@ -495,28 +530,32 @@ fn boarders_are_turned_back_by_a_crew_and_strip_a_lone_captains_hold() {
         stripped
     };
     let (alone, crewed) = (strip(false), strip(true));
-    assert!(crewed * 2 < alone, "stripped {crewed} with a crew, {alone} alone");
+    assert!(
+        crewed * 2 < alone,
+        "stripped {crewed} with a crew, {alone} alone"
+    );
 }
 
 #[test]
 fn an_escorted_ship_takes_some_of_the_fire() {
     let mut h = Harness::new(1, 9);
     let mut p = armed(&h, "dockhand");
-    p.contracts.push(russh_bbs_door_long_haul::contracts::Contract {
-        kind: russh_bbs_door_long_haul::contracts::Kind::Escort,
-        faction: Faction::League,
-        from: h.frontier.home_station,
-        to: h.frontier.home_station,
-        good: 0,
-        tons: 0,
-        pax: 0,
-        count: 0,
-        target: 0,
-        reward: 500,
-        due: 99_999,
-        progress: 100,
-        mood: 7,
-    });
+    p.contracts
+        .push(russh_bbs_door_long_haul::contracts::Contract {
+            kind: russh_bbs_door_long_haul::contracts::Kind::Escort,
+            faction: Faction::League,
+            from: h.frontier.home_station,
+            to: h.frontier.home_station,
+            good: 0,
+            tons: 0,
+            pax: 0,
+            count: 0,
+            target: 0,
+            reward: 500,
+            due: 99_999,
+            progress: 100,
+            mood: 7,
+        });
     let mut hit = false;
     for seed in 0..60u64 {
         h.reseed(seed);

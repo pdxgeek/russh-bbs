@@ -1,6 +1,7 @@
 //! Shared setup for the engine tests: a frontier, a world, a seeded RNG and a day, and a few
 //! ways to put a captain where a test needs one.
 #![allow(
+    clippy::single_match_else,
     dead_code,
     unreachable_pub,
     clippy::unwrap_used,
@@ -13,11 +14,11 @@ use russh_bbs_door::DoorRng;
 use russh_bbs_door_long_haul::combat::{Maneuver, Orders};
 use russh_bbs_door_long_haul::content::Content;
 use russh_bbs_door_long_haul::crew::{CrewMember, Goal, GoalKind, Role};
-use russh_bbs_door_long_haul::scene::Scene;
 use russh_bbs_door_long_haul::engine::{Action, Env};
 use russh_bbs_door_long_haul::events::{Event, Refusal};
 use russh_bbs_door_long_haul::frontier::Frontier;
 use russh_bbs_door_long_haul::player::Player;
+use russh_bbs_door_long_haul::scene::Scene;
 use russh_bbs_door_long_haul::world::{Delta, World};
 
 pub const DAY0: i64 = 20_000;
@@ -257,10 +258,12 @@ impl Harness {
 
     /// Fit a module by id (no slot check; a test sets up what it needs).
     pub fn fit(&self, p: &mut Player, module: &str) {
-        p.ship.modules.push(russh_bbs_door_long_haul::ship::Installed {
-            module: self.module(module),
-            wear: 0,
-        });
+        p.ship
+            .modules
+            .push(russh_bbs_door_long_haul::ship::Installed {
+                module: self.module(module),
+                wear: 0,
+            });
     }
 
     /// Put a crew member of `role` aboard, at the front of nothing in particular.
@@ -307,7 +310,9 @@ impl Harness {
                 }
                 Scene::Combat(c) => {
                     if c.phase == Phase::Won {
-                        Action::Wreck { board: step % 2 == 0 }
+                        Action::Wreck {
+                            board: step % 2 == 0,
+                        }
                     } else if c.round >= 8 {
                         Action::Run
                     } else {
@@ -321,13 +326,16 @@ impl Harness {
                     let bit = |r: u8| 1u16 << u32::from(r);
                     if foes > 0 {
                         Action::Skirmish(Drill::Fight)
-                    } else if b.looted & bit(b.at) == 0 && (room.credits[1] > 0 || room.tons > 0 || room.parts > 0) {
+                    } else if b.looted & bit(b.at) == 0
+                        && (room.credits[1] > 0 || room.tons > 0 || room.parts > 0)
+                    {
                         Action::Skirmish(Drill::Take)
                     } else if room.cache > 0 && b.read & bit(b.at) == 0 {
                         Action::Skirmish(Drill::Search)
                     } else if let Some(&to) = room.exits.iter().find(|&&e| {
                         let t = &def.rooms[usize::from(e)];
-                        b.looted & bit(e) == 0 && (t.lock == 0 || b.opened & bit(e) != 0)
+                        b.looted & bit(e) == 0
+                            && (t.lock == 0 || b.opened & bit(e) != 0)
                             && (t.credits[1] > 0 || t.tons > 0 || t.parts > 0)
                     }) {
                         Action::Skirmish(Drill::Move(to))

@@ -18,14 +18,14 @@ mod common;
 use common::Harness;
 use proptest::prelude::*;
 use russh_bbs_door::DoorRng;
-use russh_bbs_door_long_haul::content::GoodClass;
 use russh_bbs_door_long_haul::boarding::Drill;
 use russh_bbs_door_long_haul::combat::{Maneuver, Orders};
+use russh_bbs_door_long_haul::content::GoodClass;
 use russh_bbs_door_long_haul::engine::{Action, RepairTarget};
-use russh_bbs_door_long_haul::scene::Scene;
 use russh_bbs_door_long_haul::events::Event;
 use russh_bbs_door_long_haul::market::{FULL_STOCK_DEPTHS, MULT_MAX, MULT_MIN, depth_at, step_mid};
 use russh_bbs_door_long_haul::player::{Cause, Player};
+use russh_bbs_door_long_haul::scene::Scene;
 use russh_bbs_door_long_haul::ship::WEAR_MAX;
 
 /// Random play inside an open scene: mostly scene actions, now and then a stray one.

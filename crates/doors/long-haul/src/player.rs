@@ -716,6 +716,10 @@ impl Player {
             stats.transits = r.u32()?;
             rations_until = r.i64()?;
             wages_due = r.i64()?;
+            if wages_due == 0 {
+                // A migrated save has no wage day yet: the first is a week from the last day.
+                wages_due = last_day + 7;
+            }
             flags = r.u32()?;
             let n = r.len(crate::crew::MAX_CREW, 20)?;
             for _ in 0..n {

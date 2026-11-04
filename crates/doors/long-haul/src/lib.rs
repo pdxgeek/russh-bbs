@@ -171,9 +171,7 @@ impl Door for LongHaul {
         // Save version 1 (the L1 engine's) becomes version 2 by appending empty crew, contract
         // and scene sections (D98 (3): saves are forward-only, and these steps stay for good).
         match (kind, from) {
-            (BlobKind::Save, 1) => {
-                Player::migrate_v1(bytes).ok_or(MigrateError::Unsupported(from))
-            }
+            (BlobKind::Save, 1) => Player::migrate_v1(bytes).ok_or(MigrateError::Unsupported(from)),
             _ => Err(MigrateError::Unsupported(from)),
         }
     }

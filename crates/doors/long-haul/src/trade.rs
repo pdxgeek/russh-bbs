@@ -413,11 +413,7 @@ impl Player {
         let price = Ship::module_resale(&inst, content);
         let mut without = self.ship.clone();
         without.modules.remove(index);
-        let stats = without.stats(
-            content,
-            self.eff(Skill::Pilot),
-            self.eff(Skill::Engineer),
-        );
+        let stats = without.stats(content, self.eff(Skill::Pilot), self.eff(Skill::Engineer));
         if self.hold_used() > u32::from(stats.cargo_cap) {
             return Err(Refusal::HoldWouldOverflow);
         }

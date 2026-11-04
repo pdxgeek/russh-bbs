@@ -621,6 +621,7 @@ impl Session {
 
     /// The bridge: the menu, the hold and what the station deals in, then whatever else fits in
     /// `budget` rows (most useful first).
+    #[allow(clippy::too_many_lines, reason = "one list of bridge lines")]
     fn bridge_lines(&self, player: &Player, budget: usize) -> Vec<(String, DoorStyle)> {
         let mut out = vec![(String::new(), DoorStyle::Plain)];
         let docked = player.docked.is_some();
@@ -713,7 +714,7 @@ impl Session {
         }
         let standing: Vec<String> = Faction::ALL
             .iter()
-            .map(|f| format!("{} {:+}", f.name(), player.standing[f.index()]))
+            .map(|f| format!("{} {:+}", f.short(), player.standing[f.index()]))
             .collect();
         optional.push((format!("Standing: {}", standing.join(", ")), DoorStyle::Dim));
         let skills: Vec<String> = crate::skills::Skill::ALL
@@ -1026,7 +1027,7 @@ impl Session {
             for (text, style) in &self.log {
                 out.push((text.clone(), *style));
             }
-            return out;
+            return fit_width(out);
         }
         match &self.mode {
             Mode::Bridge | Mode::Pick(_) | Mode::Unreadable => {
@@ -1079,8 +1080,25 @@ impl Session {
         for (text, style) in &self.log {
             out.push((text.clone(), *style));
         }
-        out
+        fit_width(out)
     }
+}
+
+/// Wrap any line wider than the board's box at a space, keeping its style.
+fn fit_width(lines: Vec<(String, DoorStyle)>) -> Vec<(String, DoorStyle)> {
+    lines
+        .into_iter()
+        .flat_map(|(text, style)| {
+            if text.chars().count() <= WRAP + 2 {
+                vec![(text, style)]
+            } else {
+                wrap(&text, WRAP + 2)
+                    .into_iter()
+                    .map(|l| (l, style))
+                    .collect()
+            }
+        })
+        .collect()
 }
 
 impl DoorSession for Session {
@@ -1135,7 +1153,10 @@ impl DoorSession for Session {
         let lines = self.lines(height);
         // Keep the newest log lines visible when the screen is short.
         let skip = lines.len().saturating_sub(height);
-        let skip = if matches!(self.mode, Mode::Market(_) | Mode::Yard(_) | Mode::Crew(_) | Mode::Jobs(_)) {
+        let skip = if matches!(
+            self.mode,
+            Mode::Market(_) | Mode::Yard(_) | Mode::Crew(_) | Mode::Jobs(_)
+        ) {
             0
         } else {
             skip

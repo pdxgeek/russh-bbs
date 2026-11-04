@@ -419,7 +419,9 @@ impl Table for CrewTable {
         }
         for n in self.first.iter().chain(&self.last) {
             if !crate::content::text_ok(n, 12) {
-                p.push(format!("crew name part `{n}` must be 1 to 12 plain characters"));
+                p.push(format!(
+                    "crew name part `{n}` must be 1 to 12 plain characters"
+                ));
             }
         }
         if self.goal.len() < 8 || self.goal.len() > 64 {
@@ -431,7 +433,10 @@ impl Table for CrewTable {
                 || !crate::content::text_ok(&g.done, 100)
                 || !crate::content::text_ok(&g.leave, 100)
             {
-                p.push(format!("goal `{}`: text <= 80, done and leave <= 100", g.id));
+                p.push(format!(
+                    "goal `{}`: text <= 80, done and leave <= 100",
+                    g.id
+                ));
             }
             if g.kind != GoalKind::Visit && (g.min == 0 || g.max < g.min || g.max > 100) {
                 p.push(format!("goal `{}`: needs 1 <= min <= max <= 100", g.id));
@@ -480,8 +485,9 @@ pub const RECRUITS: usize = 3;
 #[must_use]
 pub fn recruit_key(station: u16, epoch: i64, slot: u8) -> u64 {
     let mut h: u64 = 0xCBF2_9CE4_8422_2325;
-    for b in [b'c', b'r']
-        .into_iter()
+    for b in b"cr"
+        .iter()
+        .copied()
         .chain(station.to_le_bytes())
         .chain(epoch.to_le_bytes())
         .chain([slot])
@@ -513,10 +519,7 @@ pub fn recruits(
     };
     let eco = &content.economies[usize::from(st.economy)];
     let epoch = epoch_of(day);
-    let mut rng = DoorRng::from_label(
-        &format!("lh-recruits-{}-{station}", frontier.season),
-        epoch,
-    );
+    let mut rng = DoorRng::from_label(&format!("lh-recruits-{}-{station}", frontier.season), epoch);
     let like = favoured(&eco.id);
     (0..RECRUITS)
         .map(|_| {
@@ -525,14 +528,14 @@ pub fn recruits(
                 .map(|r| if like.contains(r) { 3 } else { 1 })
                 .collect();
             let total: u32 = weights.iter().sum();
-            let mut roll = rng.below(total);
+            let mut pick = rng.below(total);
             let mut role = Role::Pilot;
             for (r, w) in Role::ALL.iter().zip(&weights) {
-                if roll < *w {
+                if pick < *w {
                     role = *r;
                     break;
                 }
-                roll -= w;
+                pick -= w;
             }
             let mut skill = 1 + rng.below(4) + u32::from(st.size > 2);
             if standing >= 25 {
@@ -608,7 +611,11 @@ impl CrewMember {
     pub fn goal_progress(&self) -> String {
         match self.goal.kind {
             GoalKind::Visit => format!("{}/1", self.goal.progress.min(1)),
-            _ => format!("{}/{}", self.goal.progress.min(self.goal.target), self.goal.target),
+            _ => format!(
+                "{}/{}",
+                self.goal.progress.min(self.goal.target),
+                self.goal.target
+            ),
         }
     }
 }
@@ -619,14 +626,19 @@ pub const RECRUIT_REFUSAL: i16 = -25;
 /// Which faction's recruits a station offers.
 #[must_use]
 pub fn recruit_faction(content: &Content, frontier: &Frontier, station: u16) -> Faction {
-    frontier
-        .station(station)
-        .map_or(Faction::League, |s| content.economies[usize::from(s.economy)].faction)
+    frontier.station(station).map_or(Faction::League, |s| {
+        content.economies[usize::from(s.economy)].faction
+    })
 }
 
 /// A stowaway or a rescued survivor who signs on: green, cheap and not yet sure of the ship.
 #[must_use]
-pub fn stowaway(content: &Content, frontier: &Frontier, role: Role, rng: &mut DoorRng) -> CrewMember {
+pub fn stowaway(
+    content: &Content,
+    frontier: &Frontier,
+    role: Role,
+    rng: &mut DoorRng,
+) -> CrewMember {
     let first = &content.crew.first[rng.below(len32(content.crew.first.len())) as usize];
     let last = &content.crew.last[rng.below(len32(content.crew.last.len())) as usize];
     let goal_ix = rng.below(len32(content.crew.goal.len())) as usize;

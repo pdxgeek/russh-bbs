@@ -46,7 +46,11 @@ pub(crate) fn text_ok(text: &str, max: usize) -> bool {
     !text.trim().is_empty() && text.chars().count() <= max && plain_text(text)
 }
 
-pub(crate) fn duplicates<'a>(ids: impl Iterator<Item = &'a str>, what: &str, problems: &mut Vec<String>) {
+pub(crate) fn duplicates<'a>(
+    ids: impl Iterator<Item = &'a str>,
+    what: &str,
+    problems: &mut Vec<String>,
+) {
     let mut seen = HashSet::new();
     for id in ids {
         if !ident_ok(id) {
@@ -178,6 +182,18 @@ impl Faction {
             Self::Free => "Free Captains",
             Self::Guild => "Cartographers' Guild",
             Self::Church => "Quiet Church",
+        }
+    }
+
+    /// A short name for narrow screens.
+    #[must_use]
+    pub const fn short(self) -> &'static str {
+        match self {
+            Self::League => "League",
+            Self::Miners => "Union",
+            Self::Free => "Captains",
+            Self::Guild => "Guild",
+            Self::Church => "Church",
         }
     }
 
@@ -992,7 +1008,10 @@ impl Content {
         for d in &self.derelicts.derelict {
             for r in &d.rooms {
                 if !r.good.is_empty() && self.good_ix(&r.good).is_none() {
-                    problems.push(format!("derelict `{}` holds unknown good `{}`", d.id, r.good));
+                    problems.push(format!(
+                        "derelict `{}` holds unknown good `{}`",
+                        d.id, r.good
+                    ));
                 }
             }
         }

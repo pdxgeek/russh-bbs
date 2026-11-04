@@ -549,12 +549,7 @@ impl Player {
     }
 
     /// Start a fight. The captain's hull and crew are what they are.
-    pub fn start_combat(
-        &mut self,
-        env: &mut Env<'_>,
-        enemy: u8,
-        events: &mut Vec<Event>,
-    ) {
+    pub fn start_combat(&mut self, env: &mut Env<'_>, enemy: u8, events: &mut Vec<Event>) {
         let ward = self
             .contracts
             .iter()
@@ -578,11 +573,14 @@ impl Player {
     }
 
     /// Check an order against the reactor.
-    fn check_orders(&self, content: &Content, orders: &Orders) -> Result<(), Refusal> {
+    fn check_orders(&self, content: &Content, orders: Orders) -> Result<(), Refusal> {
         let gear = self.gear(content);
-        let total = u32::from(orders.weapons) + u32::from(orders.shields) + u32::from(orders.engines);
+        let total =
+            u32::from(orders.weapons) + u32::from(orders.shields) + u32::from(orders.engines);
         if total > u32::from(gear.budget) {
-            return Err(Refusal::OverPower { budget: gear.budget });
+            return Err(Refusal::OverPower {
+                budget: gear.budget,
+            });
         }
         if orders.maneuver != Maneuver::Hold && orders.engines == 0 {
             return Err(Refusal::NoEnginePower);
@@ -594,7 +592,7 @@ impl Player {
     pub(crate) fn fight_round(
         &mut self,
         env: &mut Env<'_>,
-        orders: &Orders,
+        orders: Orders,
     ) -> Result<Vec<Event>, Refusal> {
         if !matches!(&self.scene, Some(Scene::Combat(c)) if c.phase == Phase::Fight) {
             return Err(Refusal::NoFight);
@@ -622,10 +620,7 @@ impl Player {
             Range::Mid => 5,
             Range::Close => -20,
         };
-        let chance = (30
-            + i32::from(gear.budget) * 7
-            + i32::from(pilot) * 3
-            + band
+        let chance = (30 + i32::from(gear.budget) * 7 + i32::from(pilot) * 3 + band
             - i32::from(def.speed) * 6)
             .clamp(5, 95);
         let mut events = Vec::new();
@@ -647,7 +642,7 @@ impl Player {
             engines: gear.budget,
             maneuver: Maneuver::Hold,
         };
-        self.enemy_turn(env, &mut fight, &orders, &mut events);
+        self.enemy_turn(env, &mut fight, orders, &mut events);
         self.settle_fight(env, fight, &mut events);
         Ok(events)
     }
@@ -656,7 +651,7 @@ impl Player {
         &mut self,
         env: &mut Env<'_>,
         fight: &mut Combat,
-        orders: &Orders,
+        orders: Orders,
         events: &mut Vec<Event>,
     ) {
         let content = env.content;
@@ -736,7 +731,7 @@ impl Player {
         &mut self,
         env: &mut Env<'_>,
         fight: &mut Combat,
-        orders: &Orders,
+        orders: Orders,
         events: &mut Vec<Event>,
     ) {
         let content = env.content;
@@ -763,7 +758,7 @@ impl Player {
                 let dmg = raw.saturating_sub(soak);
                 // The shot may have been meant for the ward.
                 if fight.ward > 0 && env.rng.chance(30, 100) {
-                    let loss = u8::try_from((raw.min(30)).max(1)).unwrap_or(5);
+                    let loss = u8::try_from(raw.clamp(1, 30)).unwrap_or(5);
                     fight.ward = fight.ward.saturating_sub(loss).max(1);
                     for c in &mut self.contracts {
                         if c.kind == crate::contracts::Kind::Escort {
@@ -789,7 +784,7 @@ impl Player {
             let hit = (i32::from(def.accuracy) + 10
                 - i32::from(orders.engines) * 5
                 - i32::from(pilot) * 2)
-            .clamp(10, 95);
+                .clamp(10, 95);
             if env.rng.chance(u32::try_from(hit).unwrap_or(10), 100) {
                 self.repel_boarders(env, fight, events);
             } else {
@@ -913,7 +908,13 @@ impl Player {
         }
     }
 
-    fn lose_fight(&mut self, env: &mut Env<'_>, fight: &Combat, def: &EnemyDef, events: &mut Vec<Event>) {
+    fn lose_fight(
+        &mut self,
+        env: &mut Env<'_>,
+        fight: &Combat,
+        def: &EnemyDef,
+        events: &mut Vec<Event>,
+    ) {
         self.stats.fights_lost = self.stats.fights_lost.saturating_add(1);
         let tons = if def.faction == Faction::League {
             0
@@ -978,7 +979,13 @@ impl Player {
     }
 
     /// Hurt a random fit hand when a volley lands hard; sometimes lose one.
-    fn hurt_in_fight(&mut self, rng: &mut DoorRng, dmg: u16, max_hull: u16, events: &mut Vec<Event>) {
+    fn hurt_in_fight(
+        &mut self,
+        rng: &mut DoorRng,
+        dmg: u16,
+        max_hull: u16,
+        events: &mut Vec<Event>,
+    ) {
         if self.crew.is_empty() {
             return;
         }

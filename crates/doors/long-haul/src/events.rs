@@ -656,7 +656,12 @@ impl Event {
             }
             Self::FightBegins { enemy } => {
                 let e = &content.enemies.enemy[usize::from(*enemy)];
-                format!("{} ({}) closes on you. {}", e.name, e.faction.name(), e.blurb)
+                format!(
+                    "{} ({}) closes on you. {}",
+                    e.name,
+                    e.faction.name(),
+                    e.blurb
+                )
             }
             Self::Ran { fuel } => format!("You broke away and burned {fuel} fuel getting clear."),
             Self::RunFailed => "The getaway failed; they are still on you.".to_owned(),
@@ -665,9 +670,9 @@ impl Event {
                 to.name(),
                 if *by_you { " (your move)" } else { " (theirs)" }
             ),
-            Self::YouHit { shield, hull } => format!(
-                "Your guns hit: {shield} to their shields, {hull} to the hull."
-            ),
+            Self::YouHit { shield, hull } => {
+                format!("Your guns hit: {shield} to their shields, {hull} to the hull.")
+            }
             Self::YouMissed => "Your guns miss.".to_owned(),
             Self::WardHit { ward } => format!("The ship you escort is hit; it is at {ward} %."),
             Self::Shielded => "The shields soak the volley.".to_owned(),
@@ -689,9 +694,9 @@ impl Event {
                 "That was the bounty: {} taken. Collect at the posting station.",
                 content.enemies.enemy[usize::from(*enemy)].name
             ),
-            Self::Beaten { tons, cash, fine } => format!(
-                "You are beaten. {tons} t taken, {cash} cr taken, fine {fine} cr."
-            ),
+            Self::Beaten { tons, cash, fine } => {
+                format!("You are beaten. {tons} t taken, {cash} cr taken, fine {fine} cr.")
+            }
             Self::Hired { name, role, fee } => {
                 format!("{name} signs on as {} (signing fee {fee} cr).", role.name())
             }
@@ -705,24 +710,43 @@ impl Event {
             }
             Self::GoalMet { name, goal } => format!(
                 "{name}: {}",
-                content.crew.goal.get(usize::from(*goal)).map_or("It is done.", |g| g.done.as_str())
+                content
+                    .crew
+                    .goal
+                    .get(usize::from(*goal))
+                    .map_or("It is done.", |g| g.done.as_str())
             ),
             Self::Deserted { name, goal } => format!(
                 "{name} left the ship. {}",
-                content.crew.goal.get(usize::from(*goal)).map_or("", |g| g.leave.as_str())
+                content
+                    .crew
+                    .goal
+                    .get(usize::from(*goal))
+                    .map_or("", |g| g.leave.as_str())
             ),
             Self::Mutiny { left, stolen } => format!(
                 "Mutiny: {left} hands walk off together and take {stolen} cr from the strongbox."
             ),
-            Self::CrewHurt { name, days, scarred } => format!(
+            Self::CrewHurt {
+                name,
+                days,
+                scarred,
+            } => format!(
                 "{name} is hurt and off duty for {days} days{}.",
-                if *scarred { "; it will leave a scar" } else { "" }
+                if *scarred {
+                    "; it will leave a scar"
+                } else {
+                    ""
+                }
             ),
             Self::CrewLost { name, role } => {
                 format!("{name}, your {}, is lost.", role.name().to_lowercase())
             }
             Self::CrewSkill { name, role, skill } => {
-                format!("{name} is now a {} of skill {skill}.", role.name().to_lowercase())
+                format!(
+                    "{name} is now a {} of skill {skill}.",
+                    role.name().to_lowercase()
+                )
             }
             Self::BoardStart { layout } => format!(
                 "You go aboard: {}.",
@@ -739,14 +763,24 @@ impl Event {
             Self::Downed { name } => format!("{name} goes down."),
             Self::CaptainDown => "The captain goes down.".to_owned(),
             Self::PartyHit { hp } => format!("The party takes {hp} points of hurt."),
-            Self::Looted { credits, parts, tons } => {
+            Self::Looted {
+                credits,
+                parts,
+                tons,
+            } => {
                 format!("Taken: {credits} cr, {parts} hull points of parts, {tons} t of cargo.")
             }
             Self::CacheRead { value } => {
                 format!("A data cache is read: survey data worth {value} cr.")
             }
             Self::Patched2 { hp } => format!("A wound is patched: {hp} hit points."),
-            Self::BoardEnd { credits, parts, tons, survey, clean } => {
+            Self::BoardEnd {
+                credits,
+                parts,
+                tons,
+                survey,
+                clean,
+            } => {
                 if *clean {
                     format!(
                         "Back aboard with {credits} cr, {parts} hull points of parts, {tons} t of cargo and {survey} cr of survey data."
@@ -759,29 +793,47 @@ impl Event {
                 let e = &content.transit.event[usize::from(*event)];
                 format!("{}. {}", e.title, e.text)
             }
-            Self::Outcome { event, option, outcome } => content.transit.event[usize::from(*event)]
-                .options[usize::from(*option)]
-                .outcomes[usize::from(*outcome)]
-                .text
-                .clone(),
+            Self::Outcome {
+                event,
+                option,
+                outcome,
+            } => content.transit.event[usize::from(*event)].options[usize::from(*option)].outcomes
+                [usize::from(*outcome)]
+            .text
+            .clone(),
             Self::CargoFound { good: g, tons } => format!("{tons} t of {} comes aboard.", good(g)),
             Self::CargoLost { good: g, tons } => format!("{tons} t of {} is gone.", good(g)),
             Self::CargoDumped { tons } => format!("{tons} t of cargo is lost."),
             Self::Accepted { kind, to } => {
-                format!("{} contract taken: bring it to {}.", kind.name(), station(to))
+                format!(
+                    "{} contract taken: bring it to {}.",
+                    kind.name(),
+                    station(to)
+                )
             }
-            Self::ContractDone { kind, faction, reward } => format!(
+            Self::ContractDone {
+                kind,
+                faction,
+                reward,
+            } => format!(
                 "{} done for the {}: {reward} cr.",
                 kind.name(),
                 faction.name()
             ),
-            Self::ContractFailed { kind, faction, late } => format!(
+            Self::ContractFailed {
+                kind,
+                faction,
+                late,
+            } => format!(
                 "{} for the {} {}.",
                 kind.name(),
                 faction.name(),
-                if *late { "ran out of time" } else { "was given up" }
+                if *late {
+                    "ran out of time"
+                } else {
+                    "was given up"
+                }
             ),
-
         }
     }
 }
@@ -955,7 +1007,9 @@ impl Refusal {
             Self::OverPower { budget } => {
                 format!("The reactor gives {budget} points; the order asks for more.")
             }
-            Self::NoEnginePower => "A manoeuvre needs at least one point of engine power.".to_owned(),
+            Self::NoEnginePower => {
+                "A manoeuvre needs at least one point of engine power.".to_owned()
+            }
             Self::Needs(what) => format!("Closed to you: {what}."),
             Self::Unwelcome(f) => format!(
                 "Recruits here will not sign with you: the {} have a bad word for your name.",
@@ -972,8 +1026,10 @@ impl Refusal {
             Self::Sealed { lock } => format!(
                 "The door is sealed (lock {lock}); the party's engineering is not up to it."
             ),
-            Self::NoReader => "Nobody aboard can read that cache: it needs a scientist or a practised surveyor.".to_owned(),
-
+            Self::NoReader => {
+                "Nobody aboard can read that cache: it needs a scientist or a practised surveyor."
+                    .to_owned()
+            }
         }
     }
 }

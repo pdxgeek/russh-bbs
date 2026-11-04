@@ -10,8 +10,8 @@
 
 use russh_bbs_door::DoorRng;
 
-use crate::combat::Orders;
 use crate::boarding::Drill;
+use crate::combat::Orders;
 use crate::content::{Content, Economy, Faction, Perk, SlotKind};
 use crate::events::{Event, Refusal};
 use crate::frontier::{Frontier, Hazard, System};
@@ -199,11 +199,8 @@ impl Player {
     /// The ship's stats with this captain's skills.
     #[must_use]
     pub fn stats(&self, content: &Content) -> Stats {
-        self.ship.stats(
-            content,
-            self.eff(Skill::Pilot),
-            self.eff(Skill::Engineer),
-        )
+        self.ship
+            .stats(content, self.eff(Skill::Pilot), self.eff(Skill::Engineer))
     }
 
     /// Add experience, noting a level gained.
@@ -399,7 +396,7 @@ impl Player {
             Action::Accept(i) => self.accept(env, usize::from(*i)),
             Action::Abandon(i) => self.abandon(usize::from(*i)),
             Action::Choose(n) => self.choose(env, usize::from(*n)),
-            Action::Fight(orders) => self.fight_round(env, orders),
+            Action::Fight(orders) => self.fight_round(env, *orders),
             Action::Run => self.run_away(env),
             Action::Wreck { board } => self.wreck_choice(env, *board),
             Action::Skirmish(drill) => self.skirmish(env, *drill),

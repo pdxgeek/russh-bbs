@@ -7,7 +7,7 @@ use russh_bbs_door::{Ctx, DoorKey, DoorStyle, Flow};
 
 use super::{Mode, Session, WRAP, cr, wrap};
 use crate::boarding::Drill;
-use crate::combat::{Intent, Maneuver, Orders, Phase, Range};
+use crate::combat::{Maneuver, Orders, Phase, Range};
 use crate::engine::Action;
 use crate::player::Player;
 use crate::scene::Scene;
@@ -61,46 +61,54 @@ const PRESETS: [&str; 4] = [
 
 impl Session {
     /// The numbered choices of an open scene: label, action, and why it is closed (if it is).
-    pub(super) fn scene_menu(&self, p: &Player) -> Vec<(String, Action, Option<String>)> {
+    #[allow(
+        clippy::too_many_lines,
+        reason = "one flat match over the three scenes"
+    )]
+    pub(super) fn scene_menu(&self, player: &Player) -> Vec<(String, Action, Option<String>)> {
         let content = &self.content;
         let mut out = Vec::new();
-        match &p.scene {
+        match &player.scene {
             None => {}
             Some(Scene::Event(ix)) => {
                 let def = &content.transit.event[usize::from(*ix)];
-                let w = Where {
+                let at = Where {
                     content,
                     frontier: &self.frontier,
-                    system: p.at,
+                    system: player.at,
                     fresh: false,
                 };
                 for (i, o) in def.options.iter().enumerate() {
                     out.push((
                         o.label.clone(),
                         Action::Choose(u8::try_from(i).unwrap_or(0)),
-                        p.option_closed(&w, o),
+                        player.option_closed(&at, o),
                     ));
                 }
             }
-            Some(Scene::Combat(c)) => {
-                if c.phase == Phase::Won {
-                    out.push(("Board the wreck".to_owned(), Action::Wreck { board: true }, None));
+            Some(Scene::Combat(fight)) => {
+                if fight.phase == Phase::Won {
+                    out.push((
+                        "Board the wreck".to_owned(),
+                        Action::Wreck { board: true },
+                        None,
+                    ));
                     out.push(("Leave it".to_owned(), Action::Wreck { board: false }, None));
                 } else {
-                    let budget = p.gear(content).budget;
-                    let armed = p.firepower(content, Range::Mid) + p.firepower(content, Range::Close)
-                        + p.firepower(content, Range::Far)
-                        > 0;
+                    let budget = player.gear(content).budget;
+                    let armed = [Range::Far, Range::Mid, Range::Close]
+                        .iter()
+                        .any(|r| player.firepower(content, *r) > 0);
                     for (i, name) in PRESETS.iter().enumerate() {
-                        let (w, s, e) = preset(budget, i);
-                        let closed = (!armed && w > 0 && i == 0)
-                            .then(|| "no weapons aboard".to_owned());
+                        let (guns, shields, engines) = preset(budget, i);
+                        let closed =
+                            (!armed && guns > 0 && i == 0).then(|| "no weapons aboard".to_owned());
                         out.push((
-                            format!("{name} (guns {w}, shields {s}, engines {e})"),
+                            format!("{name} (guns {guns}, shields {shields}, engines {engines})"),
                             Action::Fight(Orders {
-                                weapons: w,
-                                shields: s,
-                                engines: e,
+                                weapons: guns,
+                                shields,
+                                engines,
                                 maneuver: self.maneuver,
                             }),
                             closed,
@@ -109,17 +117,21 @@ impl Session {
                     out.push(("Run".to_owned(), Action::Run, None));
                 }
             }
-            Some(Scene::Boarding(b)) => {
-                let room = b.room(content);
-                let def = b.def(content);
-                let foes = b.foes_here(content);
+            Some(Scene::Boarding(party)) => {
+                let room = party.room(content);
+                let def = party.def(content);
+                let foes = party.foes_here(content);
                 if foes > 0 {
                     out.push(("Fight".to_owned(), Action::Skirmish(Drill::Fight), None));
-                    out.push(("Patch the most hurt".to_owned(), Action::Skirmish(Drill::Patch), None));
+                    out.push((
+                        "Patch the most hurt".to_owned(),
+                        Action::Skirmish(Drill::Patch),
+                        None,
+                    ));
                 } else {
                     for &to in &room.exits {
                         let target = &def.rooms[usize::from(to)];
-                        let open = target.lock == 0 || b.opened & (1u16 << u32::from(to)) != 0;
+                        let open = target.lock == 0 || party.opened & (1u16 << u32::from(to)) != 0;
                         if open {
                             out.push((
                                 format!("Go to {}", target.name),
@@ -128,25 +140,44 @@ impl Session {
                             ));
                         } else {
                             out.push((
-                                format!("Cut open the door to {} (lock {})", target.name, target.lock),
+                                format!(
+                                    "Cut open the door to {} (lock {})",
+                                    target.name, target.lock
+                                ),
                                 Action::Skirmish(Drill::Breach(to)),
                                 None,
                             ));
                         }
                     }
-                    if room.cache > 0 && b.read & (1u16 << u32::from(b.at)) == 0 {
-                        out.push(("Search for a data cache".to_owned(), Action::Skirmish(Drill::Search), None));
+                    if room.cache > 0 && party.read & (1u16 << u32::from(party.at)) == 0 {
+                        out.push((
+                            "Search for a data cache".to_owned(),
+                            Action::Skirmish(Drill::Search),
+                            None,
+                        ));
                     }
-                    if b.looted & (1u16 << u32::from(b.at)) == 0
+                    if party.looted & (1u16 << u32::from(party.at)) == 0
                         && (room.credits[1] > 0 || room.tons > 0 || room.parts > 0)
                     {
-                        out.push(("Take what is here".to_owned(), Action::Skirmish(Drill::Take), None));
+                        out.push((
+                            "Take what is here".to_owned(),
+                            Action::Skirmish(Drill::Take),
+                            None,
+                        ));
                     }
-                    if b.party.iter().any(|m| m.up() && m.hp < m.max) {
-                        out.push(("Patch the most hurt".to_owned(), Action::Skirmish(Drill::Patch), None));
+                    if party.party.iter().any(|m| m.up() && m.hp < m.max) {
+                        out.push((
+                            "Patch the most hurt".to_owned(),
+                            Action::Skirmish(Drill::Patch),
+                            None,
+                        ));
                     }
                 }
-                out.push(("Pull out with what you have".to_owned(), Action::Skirmish(Drill::Withdraw), None));
+                out.push((
+                    "Pull out with what you have".to_owned(),
+                    Action::Skirmish(Drill::Withdraw),
+                    None,
+                ));
             }
         }
         out
@@ -169,7 +200,12 @@ impl Session {
                     .get(usize::from(p.ship.hull))
                     .map_or(1, |h| h.hull_points);
                 out.push((
-                    format!("COMBAT: {} ({})   round {}", def.name, def.faction.name(), c.round),
+                    format!(
+                        "COMBAT: {} ({})   round {}",
+                        def.name,
+                        def.faction.name(),
+                        c.round
+                    ),
                     DoorStyle::Accent,
                 ));
                 out.push(plain(format!(
@@ -184,11 +220,7 @@ impl Session {
                 if c.phase == Phase::Won {
                     out.push(("The enemy is a wreck, venting.".to_owned(), DoorStyle::Good));
                 } else {
-                    let shown = if c.shown == Intent::Flee { c.shown } else { c.shown };
-                    out.push((
-                        format!("It is {}.", shown.telegraph()),
-                        DoorStyle::Strong,
-                    ));
+                    out.push((format!("It is {}.", c.shown.telegraph()), DoorStyle::Strong));
                     let gear = p.gear(content);
                     out.push(plain(format!(
                         "Reactor {} points.  Manoeuvre: {}  ([c]lose [o]pen [h]old)",
@@ -204,18 +236,12 @@ impl Session {
             Some(Scene::Boarding(b)) => {
                 let def = b.def(content);
                 let room = b.room(content);
-                out.push((
-                    format!("BOARDING: {}", def.name),
-                    DoorStyle::Accent,
-                ));
+                out.push((format!("BOARDING: {}", def.name), DoorStyle::Accent));
                 out.push(("Room: ".to_owned() + &room.name, DoorStyle::Strong));
                 out.extend(wrap(&room.text, WRAP).into_iter().map(plain));
                 let foes = b.foes_here(content);
                 if foes > 0 {
-                    out.push((
-                        format!("{} {} here.", foes, def.foe_name),
-                        DoorStyle::Bad,
-                    ));
+                    out.push((format!("{} {} here.", foes, def.foe_name), DoorStyle::Bad));
                 }
                 let party: Vec<String> = b
                     .party
@@ -267,7 +293,10 @@ impl Session {
                 }
             }
             'r' => {
-                if matches!(self.player.as_ref().and_then(|p| p.scene.as_ref()), Some(Scene::Combat(_))) {
+                if matches!(
+                    self.player.as_ref().and_then(|p| p.scene.as_ref()),
+                    Some(Scene::Combat(_))
+                ) {
                     self.act(ctx, &Action::Run);
                 }
             }
@@ -278,6 +307,7 @@ impl Session {
 
     // ------------------------------------------------------------------ crew
 
+    #[allow(clippy::too_many_lines, reason = "one list of crew lines")]
     pub(super) fn crew_lines(&self, p: &Player, cursor: usize) -> Vec<Line> {
         let content = &self.content;
         let mut out = vec![plain("")];
@@ -450,24 +480,23 @@ impl Session {
             let c = &o.contract;
             let to = self.frontier.station(c.to).map_or("?", |s| s.name.as_str());
             let what = match c.kind {
-                crate::contracts::Kind::Delivery => format!(
-                    "{} t {}",
-                    c.tons,
-                    content.goods[usize::from(c.good)].name
-                ),
+                crate::contracts::Kind::Delivery => {
+                    format!("{} t {}", c.tons, content.goods[usize::from(c.good)].name)
+                }
                 crate::contracts::Kind::Passenger => format!(
                     "{} {}",
                     c.count,
                     content.jobs.passenger[usize::from(c.pax)].name
                 ),
-                crate::contracts::Kind::Bounty => format!(
-                    "wreck a {}",
-                    content.enemies.enemy[usize::from(c.pax)].name
-                ),
+                crate::contracts::Kind::Bounty => {
+                    format!("wreck a {}", content.enemies.enemy[usize::from(c.pax)].name)
+                }
                 crate::contracts::Kind::Escort => "escort".to_owned(),
                 crate::contracts::Kind::Survey => format!(
                     "survey {}",
-                    self.frontier.system(c.target).map_or("?", |s| s.name.as_str())
+                    self.frontier
+                        .system(c.target)
+                        .map_or("?", |s| s.name.as_str())
                 ),
             };
             let lock = o

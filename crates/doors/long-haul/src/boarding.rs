@@ -109,7 +109,10 @@ impl Table for DerelictTable {
                 || d.foe_dmg == 0
                 || d.foe_dmg > 12
             {
-                p.push(format!("derelict `{}`: a stat or text is out of range", d.id));
+                p.push(format!(
+                    "derelict `{}`: a stat or text is out of range",
+                    d.id
+                ));
             }
             if d.rooms.len() < 3 || d.rooms.len() > MAX_ROOMS {
                 p.push(format!("derelict `{}`: 3 to {MAX_ROOMS} rooms", d.id));
@@ -117,22 +120,34 @@ impl Table for DerelictTable {
             let n = d.rooms.len();
             for (i, r) in d.rooms.iter().enumerate() {
                 if !crate::content::text_ok(&r.name, 28) || !crate::content::text_ok(&r.text, 160) {
-                    p.push(format!("derelict `{}` room {i}: name <= 28, text <= 160", d.id));
+                    p.push(format!(
+                        "derelict `{}` room {i}: name <= 28, text <= 160",
+                        d.id
+                    ));
                 }
                 if r.exits.is_empty() || r.exits.iter().any(|&e| usize::from(e) >= n) {
                     p.push(format!("derelict `{}` room {i}: bad exits", d.id));
                 }
                 if r.lock > 9 || r.foes > 6 || r.credits[0] > r.credits[1] {
-                    p.push(format!("derelict `{}` room {i}: lock, foes or credits out of range", d.id));
+                    p.push(format!(
+                        "derelict `{}` room {i}: lock, foes or credits out of range",
+                        d.id
+                    ));
                 }
                 if r.good.is_empty() != (r.tons == 0) {
-                    p.push(format!("derelict `{}` room {i}: good and tons go together", d.id));
+                    p.push(format!(
+                        "derelict `{}` room {i}: good and tons go together",
+                        d.id
+                    ));
                 }
             }
             if let Some(first) = d.rooms.first()
                 && (first.foes != 0 || first.lock != 0)
             {
-                p.push(format!("derelict `{}`: the airlock must be open and empty", d.id));
+                p.push(format!(
+                    "derelict `{}`: the airlock must be open and empty",
+                    d.id
+                ));
             }
             // Every room must be reachable from the airlock by exits.
             let mut seen = vec![false; n];
@@ -267,7 +282,7 @@ impl Boarding {
         }
         w.len(self.party.len());
         for m in &self.party {
-            w.u8(m.crew.map_or(255, |c| c));
+            w.u8(m.crew.unwrap_or(255));
             w.i32(i32::from(m.hp));
             w.i32(i32::from(m.max));
         }
@@ -313,7 +328,7 @@ impl Boarding {
         let foe_hp = i16::try_from(r.i32()?).ok()?;
         let orders = r.u8()?;
         let credits = r.u32()?;
-        let parts = r.u16()?;
+        let plating = r.u16()?;
         let survey = r.u32()?;
         let k = r.len(8, 3)?;
         let mut goods = Vec::with_capacity(k);
@@ -336,7 +351,7 @@ impl Boarding {
             orders,
             haul: Haul {
                 credits,
-                parts,
+                parts: plating,
                 goods,
                 survey,
             },
@@ -347,7 +362,13 @@ impl Boarding {
 impl Player {
     /// Put together a party and start a boarding.
     pub fn start_boarding(&mut self, env: &mut Env<'_>, id: &str, events: &mut Vec<Event>) {
-        let Some(layout) = env.content.derelicts.derelict.iter().position(|d| d.id == id) else {
+        let Some(layout) = env
+            .content
+            .derelicts
+            .derelict
+            .iter()
+            .position(|d| d.id == id)
+        else {
             return;
         };
         let mut party = vec![Member {
@@ -395,7 +416,7 @@ impl Player {
     }
 
     /// One member's punch in a round.
-    fn punch(&self, m: &Member) -> i32 {
+    fn punch(&self, m: Member) -> i32 {
         if !m.up() {
             return 0;
         }
@@ -410,8 +431,11 @@ impl Player {
     }
 
     /// Give the party an order.
-    #[allow(clippy::too_many_lines)]
-    pub(crate) fn skirmish(&mut self, env: &mut Env<'_>, order: Drill) -> Result<Vec<Event>, Refusal> {
+    pub(crate) fn skirmish(
+        &mut self,
+        env: &mut Env<'_>,
+        order: Drill,
+    ) -> Result<Vec<Event>, Refusal> {
         let content = env.content;
         let mut b = self.take_boarding()?;
         let result = self.run_drill(env, &mut b, order);
@@ -422,7 +446,8 @@ impl Player {
             }
             Ok(mut events) => {
                 b.orders = b.orders.saturating_add(1);
-                let wiped = !b.party.iter().any(Member::up) || !b.party.first().is_some_and(Member::up);
+                let wiped =
+                    !b.party.iter().any(Member::up) || !b.party.first().is_some_and(Member::up);
                 let leaving = matches!(order, Drill::Withdraw) || b.orders >= MAX_ORDERS;
                 if wiped {
                     self.end_boarding(env, &b, false, &mut events);
@@ -437,6 +462,7 @@ impl Player {
         }
     }
 
+    #[allow(clippy::too_many_lines, reason = "one arm per order")]
     fn run_drill(
         &mut self,
         env: &mut Env<'_>,
@@ -509,7 +535,7 @@ impl Player {
                 if foes == 0 {
                     return Err(Refusal::NothingToDo);
                 }
-                let punch: i32 = b.party.iter().map(|m| self.punch(m)).sum();
+                let punch: i32 = b.party.iter().map(|m| self.punch(*m)).sum();
                 let before = foes;
                 b.foe_hp = i16::try_from((i32::from(b.foe_hp) - punch.max(1)).max(0)).unwrap_or(0);
                 if b.foe_hp == 0 {
@@ -631,7 +657,9 @@ impl Player {
             return;
         }
         // Each hostile (about one per foe_hp) swings at someone. The count comes from the room.
-        let swings = u32::try_from((content_foes + 7) / 8).unwrap_or(1).clamp(1, 6);
+        let swings = u32::try_from((content_foes + 7) / 8)
+            .unwrap_or(1)
+            .clamp(1, 6);
         let mut total = 0i16;
         for _ in 0..swings {
             if rng.chance(60, 100) {
@@ -653,11 +681,19 @@ impl Player {
                 }
             }
         }
-        events.push(Event::PartyHit { hp: total.unsigned_abs() });
+        events.push(Event::PartyHit {
+            hp: total.unsigned_abs(),
+        });
     }
 
     /// Bring the party out. A wiped-out party loses the haul and comes back hurt.
-    fn end_boarding(&mut self, env: &mut Env<'_>, b: &Boarding, clean: bool, events: &mut Vec<Event>) {
+    fn end_boarding(
+        &mut self,
+        env: &mut Env<'_>,
+        b: &Boarding,
+        clean: bool,
+        events: &mut Vec<Event>,
+    ) {
         self.scene = None;
         let rng = &mut *env.rng;
         // Downed hands: hurt, or lost.

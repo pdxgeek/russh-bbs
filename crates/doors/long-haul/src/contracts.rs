@@ -143,7 +143,10 @@ impl Table for JobTable {
                 || d.count[0] > d.count[1]
                 || d.count[1] > 6
             {
-                p.push(format!("passenger `{}`: name <= 28, blurb <= 100, count 1 to 6", d.id));
+                p.push(format!(
+                    "passenger `{}`: name <= 28, blurb <= 100, count 1 to 6",
+                    d.id
+                ));
             }
         }
         for l in &self.line {
@@ -154,7 +157,10 @@ impl Table for JobTable {
         for faction in Faction::ALL {
             for kind in Kind::ALL {
                 if offers_of(faction, kind)
-                    && !self.line.iter().any(|l| l.faction == faction && l.kind == kind)
+                    && !self
+                        .line
+                        .iter()
+                        .any(|l| l.faction == faction && l.kind == kind)
                 {
                     p.push(format!(
                         "no client line for {} {}",
@@ -303,11 +309,15 @@ pub struct Offer {
 
 fn offer_key(station: u16, epoch: i64, faction: Faction, slot: usize) -> u64 {
     let mut h: u64 = 0xCBF2_9CE4_8422_2325;
-    for b in [b'c', b'o']
-        .into_iter()
+    for b in b"co"
+        .iter()
+        .copied()
         .chain(station.to_le_bytes())
         .chain(epoch.to_le_bytes())
-        .chain([u8::try_from(faction.index()).unwrap_or(0), u8::try_from(slot).unwrap_or(0)])
+        .chain([
+            u8::try_from(faction.index()).unwrap_or(0),
+            u8::try_from(slot).unwrap_or(0),
+        ])
     {
         h = (h ^ u64::from(b)).wrapping_mul(0x0000_0100_0000_01B3);
     }
@@ -326,7 +336,7 @@ pub fn offices(content: &Content, frontier: &Frontier, station: u16) -> Vec<Fact
     if eco.id == "research" {
         out.push(Faction::Guild);
     }
-    if station % 3 == 0 {
+    if station.is_multiple_of(3) {
         out.push(Faction::Church);
     }
     out
@@ -382,9 +392,9 @@ pub fn board(
                 ),
                 epoch,
             );
-            if let Some(offer) =
-                make_offer(content, frontier, station, today, faction, slot, rep, &hops, &mut rng)
-            {
+            if let Some(offer) = make_offer(
+                content, frontier, station, today, faction, slot, rep, &hops, &mut rng,
+            ) {
                 out.push(offer);
             }
         }
@@ -423,7 +433,9 @@ fn make_offer(
         .iter()
         .filter(|s| {
             let h = hops.get(usize::from(s.system)).copied().unwrap_or(u8::MAX);
-            s.id != station && (1..=4).contains(&h) && !frontier.systems[usize::from(s.system)].uncharted
+            s.id != station
+                && (1..=4).contains(&h)
+                && !frontier.systems[usize::from(s.system)].uncharted
         })
         .map(|s| s.id)
         .collect();
@@ -468,7 +480,8 @@ fn make_offer(
             c.tons = tons;
             let base = i64::from(content.goods[gi].base);
             c.reward = u32::try_from(
-                200 + i64::from(spans32) * i64::from(tons) * 2 / 5 + base * i64::from(tons) / 8
+                200 + i64::from(spans32) * i64::from(tons) * 2 / 5
+                    + base * i64::from(tons) / 8
                     + if contraband { 350 } else { 0 },
             )
             .unwrap_or(u32::MAX);
@@ -490,7 +503,8 @@ fn make_offer(
             let pi = opts[rng.below(u32::try_from(opts.len()).unwrap_or(1)) as usize];
             let def = &content.jobs.passenger[pi];
             c.pax = u8::try_from(pi).unwrap_or(0);
-            c.count = u8::try_from(rng.range(u32::from(def.count[0]), u32::from(def.count[1]))).unwrap_or(1);
+            c.count = u8::try_from(rng.range(u32::from(def.count[0]), u32::from(def.count[1])))
+                .unwrap_or(1);
             c.reward = 150 + spans32 * u32::from(c.count) * 5;
         }
         Kind::Bounty => {
@@ -541,6 +555,8 @@ fn make_offer(
             c.reward = 500 + u32::from(frontier.systems[usize::from(target)].richness) * 110;
         }
     }
+    // Jobs carry no purchase risk, so they pay a little under what a trader clears.
+    c.reward = c.reward * 80 / 100;
     if premium {
         c.reward = c.reward * 135 / 100;
     }
@@ -619,10 +635,16 @@ impl Player {
         let Some(station) = self.docked else {
             return Vec::new();
         };
-        board(env.content, env.frontier, station, env.today, &self.standing)
-            .into_iter()
-            .filter(|o| !self.taken.contains(&o.key))
-            .collect()
+        board(
+            env.content,
+            env.frontier,
+            station,
+            env.today,
+            &self.standing,
+        )
+        .into_iter()
+        .filter(|o| !self.taken.contains(&o.key))
+        .collect()
     }
 
     /// Take offer number `index` of the board here.
@@ -728,8 +750,7 @@ impl Player {
                 && c.due >= today
                 && match c.kind {
                     Kind::Delivery | Kind::Passenger => true,
-                    Kind::Bounty | Kind::Survey => c.progress >= 1,
-                    Kind::Escort => c.progress >= 1,
+                    Kind::Bounty | Kind::Survey | Kind::Escort => c.progress >= 1,
                 };
             if !done {
                 i += 1;
@@ -750,7 +771,7 @@ impl Player {
                 faction: c.faction,
                 reward,
             });
-            self.shift_standing_with_rival(c.faction, 4, events);
+            self.shift_standing_with_rival(c.faction, 2, events);
             self.goal_progress(GoalKind::Contracts);
             self.gain(Skill::Trade, 8, events);
         }

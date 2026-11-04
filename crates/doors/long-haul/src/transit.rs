@@ -430,7 +430,9 @@ impl Table for TransitTable {
                 p.push(format!("event `{id}`: unknown family `{}`", e.family));
             }
             if !crate::content::text_ok(&e.title, 40) || !crate::content::text_ok(&e.text, 360) {
-                p.push(format!("event `{id}`: title <= 40, text <= 360 plain characters"));
+                p.push(format!(
+                    "event `{id}`: title <= 40, text <= 360 plain characters"
+                ));
             }
             if e.weight == 0 || e.weight > 100 {
                 p.push(format!("event `{id}`: weight 1 to 100"));
@@ -456,7 +458,7 @@ impl Table for TransitTable {
                 if !crate::content::text_ok(&o.label, 44) {
                     p.push(format!("event `{id}`: option label <= 44"));
                 }
-                if o.req.is_empty() == !o.needs.is_empty() {
+                if o.req.is_empty() != o.needs.is_empty() {
                     p.push(format!(
                         "event `{id}` option `{}`: a requirement and its `needs` words go together",
                         o.label
@@ -469,7 +471,10 @@ impl Table for TransitTable {
                     self.check_req(id, r, &mut p);
                 }
                 if o.outcomes.is_empty() || o.outcomes.iter().map(|x| x.weight).sum::<u32>() == 0 {
-                    p.push(format!("event `{id}` option `{}`: needs weighted outcomes", o.label));
+                    p.push(format!(
+                        "event `{id}` option `{}`: needs weighted outcomes",
+                        o.label
+                    ));
                 }
                 for out in &o.outcomes {
                     if !crate::content::text_ok(&out.text, 300) {
@@ -602,10 +607,15 @@ impl Player {
             Req::Weapons { min } => self.stats(content).power >= *min,
             Req::Scanner { min } => self.stats(content).scan >= *min,
             Req::Contract { contract } => self.contracts.iter().any(|c| c.kind == *contract),
-            Req::Battered { below } => content
-                .hulls
-                .get(usize::from(self.ship.hull))
-                .is_some_and(|h| u32::from(self.ship.hull_hp) * 100 < u32::from(h.hull_points) * u32::from(*below)),
+            Req::Battered { below } => {
+                content
+                    .hulls
+                    .get(usize::from(self.ship.hull))
+                    .is_some_and(|h| {
+                        u32::from(self.ship.hull_hp) * 100
+                            < u32::from(h.hull_points) * u32::from(*below)
+                    })
+            }
             Req::Thirsty { below } => {
                 let cap = u32::from(self.stats(content).fuel_cap.max(1));
                 u32::from(self.ship.fuel) * 100 < cap * u32::from(*below)
@@ -641,7 +651,11 @@ impl Player {
         {
             pm += 60;
         }
-        if self.contracts.iter().any(|c| c.kind == crate::contracts::Kind::Escort) {
+        if self
+            .contracts
+            .iter()
+            .any(|c| c.kind == crate::contracts::Kind::Escort)
+        {
             pm += 80;
         }
         if self.passenger_count() > 0 {
@@ -709,16 +723,15 @@ impl Player {
         events: &mut Vec<Event>,
     ) {
         let system = self.at;
-        let (chance, event) = {
+        let chance = {
             let w = Where {
                 content: env.content,
                 frontier: env.frontier,
                 system,
                 fresh,
             };
-            (self.transit_chance(&w, dist), ())
+            self.transit_chance(&w, dist)
         };
-        let _ = event;
         if !env.rng.chance(chance, 1000) {
             return;
         }
@@ -856,7 +869,10 @@ impl Player {
                         } else {
                             let lost = self.unload(g, tons.unsigned_abs());
                             if lost > 0 {
-                                events.push(Event::CargoLost { good: g, tons: lost });
+                                events.push(Event::CargoLost {
+                                    good: g,
+                                    tons: lost,
+                                });
                             }
                         }
                     }
@@ -952,7 +968,11 @@ impl Player {
                     })
                     .flatten();
                 let ix = quarry.or_else(|| {
-                    let id = if enemy == "@bounty" { "skiff" } else { enemy.as_str() };
+                    let id = if enemy == "@bounty" {
+                        "skiff"
+                    } else {
+                        enemy.as_str()
+                    };
                     content
                         .enemies
                         .enemy
@@ -1031,7 +1051,9 @@ impl Player {
                 .get(usize::from(lot.good))
                 .is_some_and(|g| g.class == crate::content::GoodClass::Contraband);
             if is_bad == contraband {
-                let take = (u32::from(lot.tons) * pct).div_ceil(100).min(u32::from(lot.tons));
+                let take = (u32::from(lot.tons) * pct)
+                    .div_ceil(100)
+                    .min(u32::from(lot.tons));
                 let take16 = u16::try_from(take).unwrap_or(lot.tons);
                 if lot.tons > 0 {
                     lot.paid -= lot.paid * i64::from(take16) / i64::from(lot.tons);
@@ -1080,7 +1102,9 @@ impl TransitTable {
                     {
                         p.push(format!("event `{id}`: unknown passenger kind `{pax}`"));
                     }
-                    Req::Background { id: bg } if !content.backgrounds.iter().any(|b| b.id == *bg) => {
+                    Req::Background { id: bg }
+                        if !content.backgrounds.iter().any(|b| b.id == *bg) =>
+                    {
                         p.push(format!("event `{id}`: unknown background `{bg}`"));
                     }
                     _ => {}
@@ -1100,7 +1124,11 @@ impl TransitTable {
                                 p.push(format!("event `{id}`: unknown enemy `{enemy}`"));
                             }
                             Effect::Board { derelict }
-                                if !content.derelicts.derelict.iter().any(|x| x.id == *derelict) =>
+                                if !content
+                                    .derelicts
+                                    .derelict
+                                    .iter()
+                                    .any(|x| x.id == *derelict) =>
                             {
                                 p.push(format!("event `{id}`: unknown derelict `{derelict}`"));
                             }
