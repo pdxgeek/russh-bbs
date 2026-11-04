@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE login_code SET redeemed_at = $1\n             WHERE code_hash = $2 AND kind = $3 AND redeemed_at IS NULL AND voided_at IS NULL\n               AND expires_at > $1\n               AND EXISTS (SELECT 1 FROM accounts a\n                           WHERE a.id = login_code.account_id AND a.state = 'active')\n             RETURNING account_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "account_id",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "72ce581e619bde0641d0c5056a3ada21d06f8265ea15b6710d2673b84cbb73a7"
+}

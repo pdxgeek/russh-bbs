@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE account_keys SET last_used_at = $1 WHERE fingerprint = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "5197105c9d732e4ee010cf56201253b1cefc4ea3c28255d628f2938eef5e20c1"
+}

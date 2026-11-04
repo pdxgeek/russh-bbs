@@ -176,6 +176,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         21,
         "928c70ad8ac5dde06ff14683495213a9b1f4064b3301bbbb41425bedd666593dd3cd6f9d07b1d87eb920f71a3974ab9d",
     ),
+    (
+        22,
+        "b19e4413f20e3e4c41f7d4e1071697638d0b79b33d5fa16f8884639ccca5d06d46fe5c93efa47a5953673e91563f582a",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {
@@ -246,8 +250,10 @@ async fn a_fresh_database_gets_every_migration() {
             "invite",
             "invite_request",
             "invite_request_vouch",
+            "key_notice",
             "last_caller",
             "limit_usage",
+            "login_code",
             "mail_message",
             "mail_report",
             "member_group",

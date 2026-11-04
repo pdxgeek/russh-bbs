@@ -18,6 +18,7 @@ mod feeds;
 mod forums;
 mod founder;
 mod invites;
+mod keys;
 mod limits;
 mod mail;
 mod passwords;

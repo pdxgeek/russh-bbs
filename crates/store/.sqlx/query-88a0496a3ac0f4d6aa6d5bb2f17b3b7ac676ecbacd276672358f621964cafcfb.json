@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM account_keys\n               WHERE fingerprint = ?1 AND account_id = ?2\n                 AND (EXISTS (SELECT 1 FROM account_password p WHERE p.account_id = ?2)\n                      OR EXISTS (SELECT 1 FROM account_keys k\n                                 WHERE k.account_id = ?2 AND k.fingerprint <> ?1))",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "88a0496a3ac0f4d6aa6d5bb2f17b3b7ac676ecbacd276672358f621964cafcfb"
+}

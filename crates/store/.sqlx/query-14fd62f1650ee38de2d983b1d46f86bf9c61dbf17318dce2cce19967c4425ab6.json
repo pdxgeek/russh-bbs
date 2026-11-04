@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM account_keys\n             WHERE fingerprint = $1 AND account_id = $2\n               AND (EXISTS (SELECT 1 FROM account_password p WHERE p.account_id = $2)\n                    OR EXISTS (SELECT 1 FROM account_keys k\n                               WHERE k.account_id = $2 AND k.fingerprint <> $1))",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "14fd62f1650ee38de2d983b1d46f86bf9c61dbf17318dce2cce19967c4425ab6"
+}
