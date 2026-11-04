@@ -14,7 +14,7 @@ use russh_bbs_door_nullroute::player::Player;
 use russh_bbs_door_nullroute::run::{RunResult, Status};
 use russh_bbs_door_nullroute::save::{decode, decode_world, encode, encode_world};
 use russh_bbs_door_nullroute::world::{
-    ALERT_MAX, BOARD_MAX, CONTRACT_DAYS, Contract, NIGHTLY_CONTRACTS, NetState, World,
+    ALERT_MAX, BOARD_MAX, CONTRACT_DAYS, Contract, Learned, NIGHTLY_CONTRACTS, NetState, World,
     gen_contracts,
 };
 
@@ -30,6 +30,13 @@ fn broke(corp: u8, objective: bool, planted: bool, holes: &[u8]) -> RunResult {
         broken: holes.to_vec(),
         planted,
         xp: [0; 5],
+        used: Vec::new(),
+        fragments: Vec::new(),
+        defeated: 0,
+        warden_down: false,
+        fights: 0,
+        broke_off: 0,
+        warden_woke: false,
     }
 }
 
@@ -240,6 +247,12 @@ fn the_world_format_is_pinned_and_round_trips() {
             expires: 20_003,
         }],
         breaches: 7,
+        season: 3,
+        learned: vec![Learned {
+            corp: 2,
+            sig: 1031,
+            uses: 9,
+        }],
     };
     let bytes = encode_world(&w);
     assert_eq!(
@@ -252,7 +265,9 @@ fn the_world_format_is_pinned_and_round_trips() {
             2, 3, 1, 1, 2, 1, // corp, tier, alert, backdoor, breaches u16
             2, 4, 9, // holes
             1, // board
-            0x10, 0xe2, 0x04, 0, 5, 1, 2, 2, 150, 0, 0, 0, 0x23, 0x4e, 0, 0, 0, 0, 0, 0,
+            0x10, 0xe2, 0x04, 0, 5, 1, 2, 2, 150, 0, 0, 0, 0x23, 0x4e, 0, 0, 0, 0, 0, 0, 3, 0, 0,
+            0, // season (version 2)
+            1, 2, 0x07, 0x04, 9, // learned: count, corp, sig u16, uses (version 2)
         ]
     );
     assert_eq!(decode_world(&bytes), Some(w));
@@ -329,7 +344,7 @@ fn a_save_stays_far_under_the_framework_cap() {
     let mut p = Player::new(&c, 1, &"x".repeat(40), 1, 20_000);
     p.owned = (1..=27).collect();
     p.done = (0..48).collect();
-    assert!(encode(&p).len() < 400);
+    assert!(encode(&p).len() < 512, "{}", encode(&p).len());
     let mut w = World::default();
     for d in 0..30 {
         night(&mut w, d);

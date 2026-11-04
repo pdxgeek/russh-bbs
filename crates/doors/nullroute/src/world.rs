@@ -12,6 +12,7 @@
 use russh_bbs_door::DoorRng;
 
 use crate::content::Content;
+use crate::learn::{DECAY_PER_NIGHT, ROWS_MAX};
 use crate::net::NodeId;
 use crate::run::RunResult;
 
@@ -49,6 +50,18 @@ pub struct Contract {
     pub expires: i64,
 }
 
+/// How many runs against one corporation used one script identity: what the corporation has
+/// learned (see [`crate::learn`]).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Learned {
+    /// The corporation's number.
+    pub corp: u8,
+    /// The script identity (a stock script's number, or a coded script's signature).
+    pub sig: u16,
+    /// Runs that used it.
+    pub uses: u8,
+}
+
 /// What the season remembers about one network.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NetState {
@@ -79,6 +92,10 @@ pub struct World {
     pub board: Vec<Contract>,
     /// Objectives completed on the whole board this season.
     pub breaches: u32,
+    /// The season the world was last played in (0 before the first session).
+    pub season: u32,
+    /// What the corporations have learned of the scripts used against them.
+    pub learned: Vec<Learned>,
 }
 
 impl Default for World {
@@ -89,6 +106,8 @@ impl Default for World {
             nets: Vec::new(),
             board: Vec::new(),
             breaches: 0,
+            season: 0,
+            learned: Vec::new(),
         }
     }
 }
@@ -98,6 +117,51 @@ impl World {
     #[must_use]
     pub fn net(&self, corp: u8, tier: u8) -> Option<&NetState> {
         self.nets.iter().find(|n| n.corp == corp && n.tier == tier)
+    }
+
+    /// A new season starts the corporations from nothing: the networks are regenerated, so what
+    /// was open and what was learned no longer applies. The board and the market carry on.
+    pub fn sync_season(&mut self, season: u32) {
+        if self.season != season {
+            if self.season != 0 {
+                self.nets.clear();
+                self.learned.clear();
+                self.breaches = 0;
+            }
+            self.season = season;
+        }
+    }
+
+    /// What `corp` has learned, as (script identity, runs) pairs.
+    #[must_use]
+    pub fn learned_by(&self, corp: u8) -> Vec<(u16, u32)> {
+        self.learned
+            .iter()
+            .filter(|l| l.corp == corp)
+            .map(|l| (l.sig, u32::from(l.uses)))
+            .collect()
+    }
+
+    fn learn(&mut self, corp: u8, sig: u16) {
+        if let Some(row) = self
+            .learned
+            .iter_mut()
+            .find(|l| l.corp == corp && l.sig == sig)
+        {
+            row.uses = row.uses.saturating_add(1);
+            return;
+        }
+        if self.learned.len() >= ROWS_MAX
+            && let Some(at) = self
+                .learned
+                .iter()
+                .enumerate()
+                .min_by_key(|(_, l)| l.uses)
+                .map(|(i, _)| i)
+        {
+            self.learned.remove(at);
+        }
+        self.learned.push(Learned { corp, sig, uses: 1 });
     }
 
     fn net_mut(&mut self, corp: u8, tier: u8) -> &mut NetState {
@@ -124,6 +188,9 @@ impl World {
     /// finished the objective, a breach, a higher alert and a backdoor if one was planted.
     pub fn apply_run(&mut self, corp: u8, tier: u8, result: &RunResult) {
         let done = result.objective;
+        for sig in &result.used {
+            self.learn(corp, *sig);
+        }
         let net = self.net_mut(corp, tier);
         for hole in &result.broken {
             if !net.holes.contains(hole) && net.holes.len() < HOLES_MAX {
@@ -156,6 +223,11 @@ impl World {
             }
             net.alert = net.alert.saturating_sub(1);
         }
+        let decay = u8::try_from(DECAY_PER_NIGHT).unwrap_or(1);
+        for row in &mut self.learned {
+            row.uses = row.uses.saturating_sub(decay);
+        }
+        self.learned.retain(|l| l.uses > 0);
         self.nets
             .retain(|n| !n.holes.is_empty() || n.alert > 0 || n.backdoor || n.breaches > 0);
         self.board.retain(|c| c.expires >= day);

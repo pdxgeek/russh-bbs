@@ -7,10 +7,12 @@
 
 use russh_bbs_door::DoorRng;
 
+use crate::code::{self, CODE_CYCLES};
 use crate::content::{Content, Effect, Lock};
+use crate::learn::{self, Stage};
 use crate::net::Patrol;
 use crate::player::{JACK_IN_CYCLES, Player, part};
-use crate::run::{Act, Run, Status};
+use crate::run::{Act, Refused, Run, Status};
 use crate::world::{Contract, World};
 
 /// What to simulate.
@@ -72,6 +74,24 @@ pub struct Report {
     pub idle_days: u32,
     /// The highest trace of every run.
     pub peaks: Vec<u32>,
+    /// Fights begun.
+    pub fights: u32,
+    /// Countermeasures put down.
+    pub defeated: u32,
+    /// Times a fight was broken off or the machine threw the player out.
+    pub broke_off: u32,
+    /// Runs in which a warden woke.
+    pub wardens_woke: u32,
+    /// Runs in which a warden was put down.
+    pub wardens_down: u32,
+    /// Fragments brought out of runs.
+    pub fragments: u32,
+    /// Scripts coded at workbenches.
+    pub coded: u32,
+    /// Script identities a corporation had patched at the end (rows at or over the patch line).
+    pub patched_rows: u32,
+    /// Runs that began with at least one loaded script the corporation had patched or was wary of.
+    pub degraded_decks: u32,
 }
 
 impl Report {
@@ -98,6 +118,7 @@ enum Want {
     Script(u8),
     Rig(usize),
     Bot,
+    Workbench,
 }
 
 /// What the bot buys, in order.
@@ -107,9 +128,16 @@ const WANTS: &[Want] = &[
     Want::Rig(part::CPU),
     Want::Bot,
     Want::Script(25),
+    Want::Script(58),
+    Want::Script(59),
     Want::Script(6),
     Want::Script(9),
     Want::Script(12),
+    Want::Script(2),
+    Want::Script(32),
+    Want::Script(34),
+    Want::Script(36),
+    Want::Workbench,
     Want::Rig(part::SHIELD),
     Want::Rig(part::COOLING),
     Want::Bot,
@@ -121,6 +149,9 @@ const WANTS: &[Want] = &[
     Want::Rig(part::CPU),
     Want::Script(7),
     Want::Script(10),
+    Want::Script(38),
+    Want::Script(39),
+    Want::Script(40),
     Want::Script(21),
     Want::Bot,
     Want::Script(16),
@@ -131,6 +162,7 @@ fn wanted(content: &Content, p: &Player, want: &Want) -> bool {
         Want::Script(n) => !p.owned.contains(n) && content.script(*n).is_some(),
         Want::Rig(i) => p.upgrade_cost(content, *i).is_some(),
         Want::Bot => p.bots < content.rig.hideout.bot_max.min(3),
+        Want::Workbench => !p.workbench,
     }
 }
 
@@ -150,43 +182,88 @@ fn shop(content: &Content, p: &mut Player, market: u32) -> bool {
             Want::Script(n) => p.buy_script(content, *n, market).is_ok(),
             Want::Rig(i) => p.upgrade(content, *i).is_ok(),
             Want::Bot => p.buy_bot(content).is_ok(),
+            Want::Workbench => p.buy_workbench(content).is_ok(),
         };
     }
     false
 }
 
-fn best_owned(content: &Content, p: &Player, pick: impl Fn(Effect) -> bool) -> Option<u8> {
+/// What the bot knows when it plans a deck: whom it is hitting and what they have learned. A
+/// careful player reads the briefing's "they know" line, so the bot does too.
+#[derive(Clone, Copy)]
+struct Target<'a> {
+    world: &'a World,
+    corp: u8,
+}
+
+impl Target<'_> {
+    fn stage(&self, script: &crate::content::ScriptDef) -> Stage {
+        let uses = self
+            .world
+            .learned_by(self.corp)
+            .iter()
+            .find(|(sig, _)| *sig == script.sig)
+            .map_or(0, |(_, n)| *n);
+        learn::stage(script, uses)
+    }
+}
+
+fn best_owned(
+    content: &Content,
+    p: &Player,
+    target: Option<Target<'_>>,
+    pick: impl Fn(Effect) -> bool,
+) -> Option<u8> {
     p.owned
         .iter()
-        .filter_map(|n| content.script(*n))
+        .filter_map(|n| p.script(content, *n))
         .filter(|s| pick(s.effect))
+        .filter(|s| target.is_none_or(|t| t.stage(s) != Stage::Patched))
         .max_by_key(|s| (s.power, std::cmp::Reverse(s.memory)))
         .map(|s| s.num)
 }
 
-fn best_break(content: &Content, p: &Player, lock: Lock) -> Option<u8> {
-    best_owned(content, p, |e| e.lock() == Some(lock))
+fn best_break(content: &Content, p: &Player, target: Option<Target<'_>>, lock: Lock) -> Option<u8> {
+    best_owned(content, p, target, |e| e.lock() == Some(lock))
+}
+
+/// Code every build the fragments allow, best first, while there are cycles to spare.
+fn code_all(content: &Content, p: &mut Player, coded: &mut u32) {
+    while p.workbench && p.cycles >= CODE_CYCLES + 20 {
+        let Some(build) = code::best_build(content, &p.fragments) else {
+            return;
+        };
+        if p.code(content, build).is_err() {
+            return;
+        }
+        *coded += 1;
+    }
 }
 
 /// Whether the bot thinks it can take a contract with what it owns.
-fn feasible(content: &Content, p: &Player, c: &Contract) -> bool {
+fn feasible(content: &Content, p: &Player, c: &Contract, world: &World) -> bool {
     let Some(tmpl) = content.contract(c.tmpl) else {
         return false;
     };
     if p.closed(content, c).is_some() {
         return false;
     }
+    let target = Target {
+        world,
+        corp: c.corp,
+    };
     if !p
         .owned
         .iter()
         .filter_map(|n| content.script(*n))
+        .filter(|s| target.stage(s) != Stage::Patched)
         .any(|s| s.effect == tmpl.effect)
     {
         return false;
     }
     let power = Lock::ALL
         .iter()
-        .filter_map(|l| best_break(content, p, *l))
+        .filter_map(|l| best_break(content, p, None, *l))
         .filter_map(|n| content.script(n))
         .map(|s| s.power)
         .max()
@@ -200,22 +277,27 @@ fn feasible(content: &Content, p: &Player, c: &Contract) -> bool {
 
 /// Load the deck for a contract: the tool the job needs, a scan, then the breaks the corporation
 /// leans on first, then helpers while memory lasts.
-fn plan_deck(content: &Content, p: &mut Player, c: &Contract) {
+fn plan_deck(content: &Content, p: &mut Player, c: &Contract, world: &World) {
     p.deck.clear();
+    let target = Some(Target {
+        world,
+        corp: c.corp,
+    });
     let Some(tmpl) = content.contract(c.tmpl) else {
         return;
     };
     let Some(corp) = content.corp(c.corp) else {
         return;
     };
-    if let Some(n) = best_owned(content, p, |e| e == tmpl.effect) {
+    if let Some(n) = best_owned(content, p, target, |e| e == tmpl.effect) {
         let _ = p.load(content, n);
     }
     let scan = p
         .owned
         .iter()
-        .filter_map(|n| content.script(*n))
+        .filter_map(|n| p.script(content, *n))
         .filter(|s| s.effect == Effect::Scan && (s.memory <= 1 || p.memory() >= 12))
+        .filter(|s| target.is_none_or(|t| t.stage(s) != Stage::Patched))
         .max_by_key(|s| s.power)
         .map(|s| s.num);
     if let Some(n) = scan {
@@ -224,7 +306,7 @@ fn plan_deck(content: &Content, p: &mut Player, c: &Contract) {
     let mut locks = vec![corp.favoured];
     locks.extend(Lock::ALL.into_iter().filter(|l| *l != corp.favoured));
     for lock in locks {
-        if let Some(n) = best_break(content, p, lock) {
+        if let Some(n) = best_break(content, p, target, lock) {
             let _ = p.load(content, n);
         }
     }
@@ -239,19 +321,70 @@ fn plan_deck(content: &Content, p: &mut Player, c: &Contract) {
         if effect == Effect::Purge && c.tier < 2 {
             continue;
         }
-        if let Some(n) = best_owned(content, p, |e| e == effect) {
+        if let Some(n) = best_owned(content, p, target, |e| e == effect) {
             let _ = p.load(content, n);
+        }
+    }
+    // A coded script tuned to wardens is worth a slot on a deep network.
+    if c.tier >= 2 {
+        let coded: Vec<u8> = p
+            .owned
+            .iter()
+            .copied()
+            .filter(|n| *n >= crate::code::CODED_BASE)
+            .collect();
+        for n in coded {
+            let tuned = p
+                .script(content, n)
+                .is_some_and(|s| s.target == Some(crate::content::CmKind::Warden));
+            if tuned {
+                let _ = p.load(content, n);
+            }
         }
     }
 }
 
 fn slot_of(run: &Run, content: &Content, pick: impl Fn(Effect, u32) -> bool) -> Option<usize> {
-    run.deck.iter().position(|slot| {
+    run.deck.iter().enumerate().position(|(i, slot)| {
         slot.left > 0
-            && content
-                .script(slot.script)
+            && run.stage(content, i) != Stage::Patched
+            && run
+                .script(content, slot.script)
                 .is_some_and(|s| pick(s.effect, s.power))
     })
+}
+
+/// One move of a fight, with the information a person has on the fight screen: brace on a guard,
+/// reroute when the trace is high, play the script that would hurt the most, and break off when
+/// nothing does anything. Returns whether a move was made.
+fn fight(content: &Content, run: &mut Run, rng: &mut DoorRng) -> bool {
+    if run.encounter().is_none() {
+        return false;
+    }
+    if run.intent() == Some(crate::content::Intent::Guard) && run.cycles > 0 {
+        return run.act(content, Act::Brace, rng).is_ok();
+    }
+    if run.trace >= 55
+        && let Some(slot) = slot_of(run, content, |e, _| e == Effect::Reroute)
+        && run
+            .act(content, Act::Use { slot, target: None }, rng)
+            .is_ok()
+    {
+        return true;
+    }
+    let mut ranked: Vec<(u32, usize)> = (0..run.deck.len())
+        .filter_map(|i| run.preview(content, i).map(|d| (d, i)))
+        .filter(|(d, _)| *d > 0)
+        .collect();
+    ranked.sort_by_key(|r| std::cmp::Reverse(*r));
+    for (_, slot) in ranked {
+        match run.act(content, Act::Use { slot, target: None }, rng) {
+            Ok(()) => return true,
+            Err(Refused::Over) => return false,
+            Err(_) => {}
+        }
+    }
+    run.act(content, Act::BreakOff, rng).is_ok()
 }
 
 fn bit(id: u8) -> u32 {
@@ -269,6 +402,12 @@ fn play(content: &Content, run: &mut Run, rng: &mut DoorRng, bail_at: u32) {
     for _ in 0..300 {
         if run.status != Status::Active {
             return;
+        }
+        if run.encounter().is_some() {
+            if !fight(content, run, rng) {
+                let _ = run.act(content, Act::BreakOff, rng);
+            }
+            continue;
         }
         if run.objective_done() || run.trace >= bail_at || run.cycles <= 2 {
             let _ = run.act(content, Act::JackOut, rng);
@@ -459,16 +598,28 @@ pub fn simulate(content: &Content, cfg: Config) -> Report {
                     .board
                     .iter()
                     .copied()
-                    .filter(|c| feasible(content, p, c))
+                    .filter(|c| feasible(content, p, c, &world))
                     .collect();
                 offers.sort_by_key(|c| std::cmp::Reverse(c.reward));
                 let Some(contract) = offers.first().copied() else {
                     break;
                 };
-                plan_deck(content, p, &contract);
+                code_all(content, p, &mut report.coded);
+                plan_deck(content, p, &contract, &world);
                 let Ok(mut run) = p.begin_run(content, cfg.season, &world, &contract) else {
                     break;
                 };
+                let target = Target {
+                    world: &world,
+                    corp: contract.corp,
+                };
+                if p.deck
+                    .iter()
+                    .filter_map(|n| p.script(content, *n))
+                    .any(|s| target.stage(&s) != Stage::Fresh)
+                {
+                    report.degraded_decks += 1;
+                }
                 took += 1;
                 play(
                     content,
@@ -478,6 +629,12 @@ pub fn simulate(content: &Content, cfg: Config) -> Report {
                 );
                 report.peaks.push(run.result().peak);
                 let result = run.result();
+                report.fights += result.fights;
+                report.defeated += result.defeated;
+                report.broke_off += result.broke_off;
+                report.fragments += u32::try_from(result.fragments.len()).unwrap_or(0);
+                report.wardens_woke += u32::from(result.warden_woke);
+                report.wardens_down += u32::from(result.warden_down);
                 let tier = usize::from(contract.tier.clamp(1, 3) - 1);
                 report.tiers[tier].runs += 1;
                 match result.status {
@@ -510,6 +667,14 @@ pub fn simulate(content: &Content, cfg: Config) -> Report {
         .map(|p| u32::try_from(p.owned.len()).unwrap_or(0))
         .collect();
     report.breaches = world.breaches;
+    report.patched_rows = u32::try_from(
+        world
+            .learned
+            .iter()
+            .filter(|l| u32::from(l.uses) >= learn::LEARNED_AT)
+            .count(),
+    )
+    .unwrap_or(0);
     report.board = world.board.len();
     report
 }

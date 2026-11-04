@@ -1,0 +1,456 @@
+# Fragments (M4-N2): bits of code found on runs and combined at the workbench into scripts. `num` is stable.
+# Every fragment adds to the build's power, memory and noise (negative values subtract). An `effect`
+# fragment gives the script's effect; a `target` fragment tunes it to a kind of countermeasure (+3 power
+# against that kind, and the only way to hurt a warden); a `modifier` changes the numbers. `rank` (1 to 3)
+# is the lowest tier of network it can be found in. `weight` is the drop weight.
+
+[[fragment]]
+num = 1
+name = "crack-core"
+kind = "effect"
+effect = "crack"
+power = 3
+memory = 2
+noise = 4
+cycles = 0
+pierce = 0
+charges = 0
+rank = 1
+weight = 12
+blurb = "A password-breaker's heart."
+
+[[fragment]]
+num = 2
+name = "spoof-core"
+kind = "effect"
+effect = "spoof"
+power = 3
+memory = 2
+noise = 3
+cycles = 0
+pierce = 0
+charges = 0
+rank = 1
+weight = 12
+blurb = "A forged badge, unfinished."
+
+[[fragment]]
+num = 3
+name = "overflow-core"
+kind = "effect"
+effect = "overflow"
+power = 3
+memory = 2
+noise = 5
+cycles = 0
+pierce = 0
+charges = 0
+rank = 1
+weight = 12
+blurb = "A buffer waiting to burst."
+
+[[fragment]]
+num = 4
+name = "jam-core"
+kind = "effect"
+effect = "jam"
+power = 3
+memory = 2
+noise = 3
+cycles = 0
+pierce = 0
+charges = 0
+rank = 1
+weight = 12
+blurb = "A signal scrambler."
+
+[[fragment]]
+num = 5
+name = "fork-core"
+kind = "effect"
+effect = "fork"
+power = 2
+memory = 2
+noise = 3
+cycles = 0
+pierce = 0
+charges = 0
+rank = 2
+weight = 12
+blurb = "A copy of you that is not you."
+
+[[fragment]]
+num = 6
+name = "purge-core"
+kind = "effect"
+effect = "purge"
+power = 3
+memory = 3
+noise = 6
+cycles = 0
+pierce = 0
+charges = 0
+rank = 2
+weight = 12
+blurb = "Cuts through a wall."
+
+[[fragment]]
+num = 7
+name = "mask-core"
+kind = "effect"
+effect = "mask"
+power = 2
+memory = 1
+noise = 0
+cycles = 0
+pierce = 0
+charges = 0
+rank = 1
+weight = 12
+blurb = "Quiet, mostly."
+
+[[fragment]]
+num = 8
+name = "decoy-core"
+kind = "effect"
+effect = "decoy"
+power = 2
+memory = 2
+noise = 1
+cycles = 0
+pierce = 0
+charges = 0
+rank = 2
+weight = 12
+blurb = "A flock of false signals."
+
+[[fragment]]
+num = 9
+name = "reroute-core"
+kind = "effect"
+effect = "reroute"
+power = 2
+memory = 2
+noise = 0
+cycles = 0
+pierce = 0
+charges = 0
+rank = 2
+weight = 12
+blurb = "Sends the trace the long way round."
+
+[[fragment]]
+num = 10
+name = "scan-core"
+kind = "effect"
+effect = "scan"
+power = 3
+memory = 1
+noise = 2
+cycles = 0
+pierce = 0
+charges = 0
+rank = 1
+weight = 12
+blurb = "Eyes, a few at a time."
+
+[[fragment]]
+num = 11
+name = "sentry-lens"
+kind = "target"
+target = "sentry"
+power = 0
+memory = 1
+noise = 1
+cycles = 0
+pierce = 0
+charges = 0
+rank = 1
+weight = 8
+blurb = "Tunes a script to sentries."
+
+[[fragment]]
+num = 12
+name = "tracer-lens"
+kind = "target"
+target = "tracer"
+power = 0
+memory = 1
+noise = 1
+cycles = 0
+pierce = 0
+charges = 0
+rank = 1
+weight = 8
+blurb = "Tunes a script to tracers."
+
+[[fragment]]
+num = 13
+name = "wall-lens"
+kind = "target"
+target = "wall"
+power = 0
+memory = 2
+noise = 1
+cycles = 0
+pierce = 0
+charges = 0
+rank = 2
+weight = 8
+blurb = "Tunes a script to black walls."
+
+[[fragment]]
+num = 14
+name = "warden-lens"
+kind = "target"
+target = "warden"
+power = 0
+memory = 2
+noise = 2
+cycles = 0
+pierce = 0
+charges = 0
+rank = 2
+weight = 5
+blurb = "Tunes a script to wardens."
+
+[[fragment]]
+num = 15
+name = "sentry-prism"
+kind = "target"
+target = "sentry"
+power = 1
+memory = 2
+noise = 2
+cycles = 0
+pierce = 0
+charges = 0
+rank = 2
+weight = 8
+blurb = "A sharper sentry tuning."
+
+[[fragment]]
+num = 16
+name = "tracer-prism"
+kind = "target"
+target = "tracer"
+power = 1
+memory = 2
+noise = 2
+cycles = 0
+pierce = 0
+charges = 0
+rank = 2
+weight = 8
+blurb = "A sharper tracer tuning."
+
+[[fragment]]
+num = 17
+name = "wall-prism"
+kind = "target"
+target = "wall"
+power = 1
+memory = 3
+noise = 2
+cycles = 0
+pierce = 0
+charges = 0
+rank = 2
+weight = 8
+blurb = "A sharper wall tuning."
+
+[[fragment]]
+num = 18
+name = "warden-prism"
+kind = "target"
+target = "warden"
+power = 1
+memory = 3
+noise = 3
+cycles = 0
+pierce = 0
+charges = 0
+rank = 3
+weight = 5
+blurb = "A sharper warden tuning."
+
+[[fragment]]
+num = 19
+name = "overclock"
+kind = "modifier"
+modifier = "overclock"
+power = 2
+memory = 1
+noise = 3
+cycles = 0
+pierce = 0
+charges = 0
+rank = 1
+weight = 10
+blurb = "Faster, hotter, louder."
+
+[[fragment]]
+num = 20
+name = "quiet"
+kind = "modifier"
+modifier = "quiet"
+power = 0
+memory = 1
+noise = -3
+cycles = 0
+pierce = 0
+charges = 0
+rank = 1
+weight = 10
+blurb = "Costs memory to buy silence."
+
+[[fragment]]
+num = 21
+name = "lean"
+kind = "modifier"
+modifier = "lean"
+power = -1
+memory = -1
+noise = 0
+cycles = 0
+pierce = 0
+charges = 0
+rank = 1
+weight = 10
+blurb = "Smaller and weaker."
+
+[[fragment]]
+num = 22
+name = "volatile"
+kind = "modifier"
+modifier = "volatile"
+power = 3
+memory = 0
+noise = 2
+cycles = 0
+pierce = 0
+charges = 1
+rank = 2
+weight = 10
+blurb = "One use per run, and it counts."
+
+[[fragment]]
+num = 23
+name = "piercing"
+kind = "modifier"
+modifier = "piercing"
+power = 0
+memory = 1
+noise = 1
+cycles = 0
+pierce = 2
+charges = 0
+rank = 2
+weight = 10
+blurb = "Ignores two points of armor."
+
+[[fragment]]
+num = 24
+name = "swift"
+kind = "modifier"
+modifier = "swift"
+power = 0
+memory = 1
+noise = 2
+cycles = -1
+pierce = 0
+charges = 0
+rank = 2
+weight = 10
+blurb = "One cycle faster."
+
+[[fragment]]
+num = 25
+name = "hardened"
+kind = "modifier"
+modifier = "hardened"
+power = 1
+memory = 2
+noise = 0
+cycles = 0
+pierce = 0
+charges = 0
+rank = 1
+weight = 10
+blurb = "A tougher build."
+
+[[fragment]]
+num = 26
+name = "polymorphic"
+kind = "modifier"
+modifier = "polymorphic"
+power = -1
+memory = 2
+noise = 1
+cycles = 0
+pierce = 0
+charges = 0
+slow = true
+rank = 3
+weight = 10
+blurb = "A corporation learns it half as fast."
+
+[[fragment]]
+num = 27
+name = "stripped"
+kind = "modifier"
+modifier = "stripped"
+power = -2
+memory = -2
+noise = -2
+cycles = 0
+pierce = 0
+charges = 0
+rank = 1
+weight = 10
+blurb = "Almost nothing left. Almost."
+
+[[fragment]]
+num = 28
+name = "stable"
+kind = "modifier"
+modifier = "stable"
+power = 1
+memory = 2
+noise = -1
+cycles = 0
+pierce = 0
+charges = 0
+rank = 2
+weight = 10
+blurb = "Steady and clean."
+
+[[fragment]]
+num = 29
+name = "greedy"
+kind = "modifier"
+modifier = "greedy"
+power = 4
+memory = 3
+noise = 4
+cycles = 0
+pierce = 0
+charges = 0
+rank = 3
+weight = 10
+blurb = "Power at any price."
+
+[[fragment]]
+num = 30
+name = "scrap-bolt"
+kind = "modifier"
+modifier = "scrap-bolt"
+power = -1
+memory = -2
+noise = 0
+cycles = 0
+pierce = 0
+charges = 0
+rank = 1
+weight = 10
+blurb = "Salvage that fits anywhere."
