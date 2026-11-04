@@ -78,6 +78,11 @@ const STAFF_MARKERS_LOW_SECURITY: [SecurityMarker; 1] = [SecurityMarker::LowSecu
 
 /// The heading of the screen a refused session sees.
 const LIMIT_HEADING: &str = "Limit reached";
+/// The heading when a revoked credential ended the session (FIX-M3-14, D99).
+const REVOKED_HEADING: &str = "Signed out";
+/// What a session whose credential was revoked reads before it closes. Fixed text: it says
+/// nothing about who or what changed.
+pub(crate) const REVOKED_LINE: &str = "Your sign-in was revoked. Please sign in again.";
 
 /// Bytes the backend has written and the handler has not yet sent. The backend owns one handle
 /// and the screen keeps another to drain it, because ratatui does not expose its writer.
@@ -372,7 +377,11 @@ impl Content {
                 .view(ui.theme(session.flow.settings().theme()).strings()),
             Self::Limited(lines) => View {
                 title: TITLE,
-                heading: LIMIT_HEADING,
+                heading: if lines.iter().any(|line| line == REVOKED_LINE) {
+                    REVOKED_HEADING
+                } else {
+                    LIMIT_HEADING
+                },
                 banner: Vec::new(),
                 body: lines.clone(),
                 note: None,

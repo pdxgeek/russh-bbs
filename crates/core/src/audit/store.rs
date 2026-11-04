@@ -239,3 +239,22 @@ pub trait AuditStore: Send + Sync {
         query: &AuditQuery,
     ) -> impl Future<Output = Result<Vec<LogEntry>, StoreError>> + Send;
 }
+
+/// The empty directory has no log: nothing is ever appended, and nothing is ever read. A
+/// test double for the front end, like its other store impls (`NoMembers` has no accounts to
+/// act, so no event can be real).
+impl AuditStore for crate::access::NoMembers {
+    fn append(
+        &self,
+        _event: &AuditEvent,
+    ) -> impl Future<Output = Result<AuditId, StoreError>> + Send {
+        std::future::ready(Err(StoreError::AccountNotFound))
+    }
+
+    fn page(
+        &self,
+        _query: &AuditQuery,
+    ) -> impl Future<Output = Result<Vec<LogEntry>, StoreError>> + Send {
+        std::future::ready(Ok(Vec::new()))
+    }
+}
