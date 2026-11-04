@@ -1,6 +1,6 @@
 # Emberdeep: a fantasy delving door (design)
 
-Status: **Engine implemented (M4-E1, D101); town and crafting implemented (M4-E2, D110)**; the full UI, social play and the content pass are still **Proposed**. The design below is the target; [Implementation notes (M4-E1)](#implementation-notes-m4-e1) and [Implementation notes (M4-E2)](#implementation-notes-m4-e2) say what exists, how it behaves and what was not built. Shared platform rules are in [README.md](README.md). This is the "small daily-turn RPG" that M4 plans as a first game, and the smallest engine of the set.
+Status: **Engine implemented (M4-E1, D101); town and crafting implemented (M4-E2, D110); the full UI implemented (M4-E3, D115)**; social play and the content pass are still **Proposed**. The design below is the target; [Implementation notes (M4-E1)](#implementation-notes-m4-e1) and [Implementation notes (M4-E2)](#implementation-notes-m4-e2) and [Implementation notes (M4-E3)](#implementation-notes-m4-e3) say what exists, how it behaves and what was not built. Shared platform rules are in [README.md](README.md). This is the "small daily-turn RPG" that M4 plans as a first game, and the smallest engine of the set.
 
 ## Pitch
 
@@ -223,4 +223,48 @@ The core tension: **how deep do you go today?** Each level down is richer and mo
 
 - **UI (E3).** `session/places.rs` draws every place: `spot_view` returns a head and a menu (`Entry { key, label, action }`), so a richer layout replaces drawing and keeps the actions. Menu keys are numbered `1` to `9` then `a` to `z` in order, and some numbers shift when an item leaves the list (repair gone after a repair); a layout may want stable keys. The bots in `tests/sim.rs` read `[k] label`.
 - **Social, content and balance (E4).** The works already take gifts from every hero and the hall of donors is `World::pledges`; parties, duels, a donors' roll screen and the content budget build on them. Prices, costs and rates are in `rules.rs`, `town.rs` and the tables; the 30-day run (12 bots) is the harness. The descent-tuning handoff from E1 still stands.
+
+## Implementation notes (M4-E3)
+
+**Status.** Every screen is drawn with ratatui into the door's own buffer (D104), over the same engine and the same keys (D115). **Implemented:** the dungeon view and its map, the combat panel, the hero sheet and the skill tree, the town hub and each of its eight places, event scenes, the hall, hero creation, the death screen, and a look-around for all of them. **Verified:** by render tests of every screen at 80x24, 100x30 and 132x43 in each icon tier and each colour depth (shape, ASCII-only in the ASCII tier, no marker style), pinned text snapshots, a look-around test for every screen, an interaction test of one whole day, the framework's sandbox audit, and a walk over a real OpenSSH client with a screenshot of each screen (attached to the pull request). **Not built:** mouse (UI-9), effects and motion (UI-8), and the social slice.
+
+### What is built, and where
+
+| Part | Module | Notes |
+|---|---|---|
+| Entry point, layout choice, header, gauges, log | `session/ui/mod.rs` | `ui::draw` picks a layout by area: below 64x16 the old text screen, the compact layouts at the board's 74x19, a third column at 100 columns, taller art at 28 rows |
+| Palette, meters, panels, key chips | `session/ui/kit.rs` | theme roles for text, Emberdeep accents (ember, cold stone, deep blue, blood, moss, bone) for art; every meter prints its numbers |
+| The lit map | `session/ui/map.rs` | fog over unseen rooms, a light radius that shrinks with the torch, remembered rooms in blue; two scales; `describe` is the same map in words |
+| Dungeon view and event scenes | `session/ui/delve.rs` | the room's vignette, features, options with cost and roll, the options this build cannot take with the reason, exits |
+| Combat panel | `session/ui/fight.rs` | enemy cards with health, row, marks and the announced action; the order of the round; focus, ward, stance and row; actions with costs |
+| Hero sheet, skill tree | `session/ui/sheet.rs` | list-and-detail with tabs; the skill tree shows what a node needs, what it closes for good and why it is locked |
+| Town hub, death screen | `session/ui/town.rs` | skyline, tavern board, the places with a line of today's state, the way down |
+| The eight places | `session/ui/places.rs` | a table (stalls, gear, recipes, postings, projects) beside a preview that shows the cost and what is left; the menu is still `Session::spot_view` |
+| Hall | `session/ui/hall.rs` | standings (a bar chart of the deepest, the five guardians), the dead (a memorial), the world (shortcuts, finished works, news) |
+| Hero creation | `session/ui/create.rs` | a card for the calling under the cursor, a three-column trait list, attribute bars |
+| Scenery | `session/ui/art.rs` | room vignettes (sparks over a forge, candles, eyes in the dark), the skyline, the temple flame |
+| Fixtures for tests and pictures | `showcase.rs` | saves in known states (hidden from the docs); the tests open the door on them and press keys |
+
+### How it behaves
+
+- **Keys are the old keys.** Every command still works as before (the bots in `tests/sim.rs` and the replay logs pass unchanged). New: `Up`/`Down` move a cursor on every list and in the town's list of places, `Enter` takes the row under it (a skill, a menu entry) or opens the place, `Left`/`Right` change the tab on the sheet and the hall, `Space` toggles a trait while making a hero. The cursor and the tab are session-only: they are never saved and never reach the engine.
+- **The light is a picture.** How far the torch reaches (0 to 3 rooms) and how warm it burns come from the turns left; they change how the map is drawn and nothing else. The fog is drawn over the whole grid, so it never shows where an unseen room is.
+- **Two builds, one room.** A room option the build cannot take is listed under the ones it can, with the first condition it fails (`needs runecraft`, `needs Might 12`, `a runesmith only`). The look-around says the same ("Closed to you: ..."), so a screen reader hears what a sighted player sees. A `◆` marks an option that exists only because of the build.
+- **Prices that move.** The market shows the average ask of the shelf over the last fourteen days as a sparkline; it asks the engine for each day (the market is a pure function of the day), it does not invent a curve.
+- **Colour.** Text uses the theme's roles; art uses Emberdeep's own colours. The board composites a door at the client's depth (D109), so the ramps are made of saturated stops that degrade to black, red, yellow and white and not to grey at 16 colours, and are smooth gradients at 256 colours and truecolor (both were walked over ssh). Nothing relies on colour alone: every meter prints its numbers, every threat has a word, the stance and the cursor have a mark.
+- **ASCII tier.** The framework maps box drawing, blocks and arrows; a last pass maps the few icons it does not (ellipsis, the dagger, the lock-and-key marks). The ASCII tier is pure ASCII at every size (tested).
+- **Size.** At the board's 74 by 19 every screen fits (the map and the scene side by side, two rows of gauges, three rows of log, two rows of keys). More height gives a bigger map with boxed rooms, a longer log and room vignettes; at 100 columns and more the dungeon view adds the hero's card. The board's box is capped at 76 columns, so the wide layouts show only where the window is wider than that box can be today; they are tested at full window size.
+
+### Differences from the design above
+
+- **"Skills growing by use"** is as the engine has it: experience comes from kills and from options, and levels give points to spend on the tree. The sheet shows the experience bar and the tree; there is no per-skill use counter, because the engine has none.
+- **Event scenes** are the room's options (the design's "100 dungeon events" are still content for M4-E4); the scene is the same screen as the room, with a vignette at taller sizes.
+- **The detail pane** is on the sheet, the skill tree and every place; the dungeon view has no detail pane, the room's text is the detail.
+
+### Seams for the later slices
+
+- **Mouse (UI-9)** is a new default-bodied method on `DoorSession`; the lists are `ratatui` `List`s with a cursor in `UiState`, which is where a click would set it.
+- **Effects (UI-8)** run on the surface after `draw`; the screens draw from the state alone (no clock), so a fade between screens needs nothing from them.
+- **A stored colour cap** (UI-2) changes nothing here: the ramps already degrade at every depth the board composites.
+- **Social (E4).** The hall already has a tab for the dead and for the world; parties and duels add rows to the same list-and-detail widget (`sheet::list_detail`).
 

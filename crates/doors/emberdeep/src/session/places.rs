@@ -86,7 +86,7 @@ fn clip(text: &str, width: usize) -> String {
 }
 
 impl Session {
-    fn kit_note(&self, kit: &Kit) -> String {
+    pub(super) fn kit_note(&self, kit: &Kit) -> String {
         let core = kit
             .core
             .as_ref()
@@ -95,7 +95,7 @@ impl Session {
         format!("wear {}%, {core}", kit.wear)
     }
 
-    fn base_stats(&self, base: &str) -> String {
+    pub(super) fn base_stats(&self, base: &str) -> String {
         if let Some(w) = self.content.weapon(base) {
             format!(
                 "{}-{} {} {}",
@@ -302,7 +302,7 @@ impl Session {
         (lines, menu.0)
     }
 
-    fn effect_text(&self, effects: &[crate::content::Effect]) -> String {
+    pub(super) fn effect_text(&self, effects: &[crate::content::Effect]) -> String {
         super::effect_summary(&self.content, effects)
     }
 
