@@ -20,6 +20,7 @@ struct Fake {
     created: Mutex<Vec<NewInvite>>,
     used: Mutex<u32>,
     redeem_with: Mutex<Option<RedeemError>>,
+    password_hashes: Mutex<Vec<String>>,
     broken: bool,
 }
 
@@ -66,6 +67,19 @@ impl InviteStore for Fake {
             invite: InviteId::from_raw(1),
             inviter: AccountId::from_raw(2),
         })
+    }
+
+    async fn redeem_invite_password(
+        &self,
+        hash: &CodeHash,
+        username: Username,
+        password_hash: &str,
+    ) -> Result<Redeemed, RedeemError> {
+        self.password_hashes
+            .lock()
+            .unwrap()
+            .push(password_hash.to_owned());
+        self.redeem_invite(hash, username, &key()).await
     }
 
     async fn invites_by(

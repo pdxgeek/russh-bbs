@@ -161,6 +161,47 @@ pub async fn redeem_invite<S: InviteStore>(
     }
 }
 
+/// [`redeem_invite`] for a person with no SSH key (telnet, D94): the account is bound to the
+/// password whose argon2id hash `password_hash` is (made by [`crate::passwords::hash_new`]).
+/// The same permission, the same single refusal, the same atomic transaction.
+///
+/// # Errors
+/// As [`redeem_invite`].
+pub async fn redeem_invite_with_password<S: InviteStore>(
+    store: &S,
+    access: &Snapshot,
+    typed_code: &str,
+    username: Username,
+    password_hash: &str,
+) -> Result<Redeemed, RedeemError> {
+    if access.require(Permission::InviteRedeem, None).is_err() {
+        return Err(RedeemError::Rejected(RejectReason::Code));
+    }
+    let hash = CodeHash::of(typed_code);
+    match store
+        .redeem_invite_password(&hash, username, password_hash)
+        .await
+    {
+        Ok(redeemed) => {
+            info!(
+                account = %redeemed.account.id,
+                inviter = %redeemed.inviter,
+                invite = %redeemed.invite,
+                "invite redeemed with a password"
+            );
+            Ok(redeemed)
+        }
+        Err(RedeemError::Rejected(reason)) => {
+            info!(?reason, "invite redemption (password) refused");
+            Err(RedeemError::Rejected(reason))
+        }
+        Err(RedeemError::Store(error)) => {
+            warn!(%error, "invite redemption (password) failed in the store");
+            Err(RedeemError::Store(error))
+        }
+    }
+}
+
 /// The caller's own recent codes with where each stands. Needs `invites.create`; reads only the
 /// caller's own rows (the store is asked for the account the permission was granted to).
 ///

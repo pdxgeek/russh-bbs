@@ -20,6 +20,7 @@ pub(crate) mod founder;
 pub(crate) mod invites;
 pub(crate) mod limits;
 pub(crate) mod mail;
+pub(crate) mod password_accounts;
 pub(crate) mod passwords;
 pub(crate) mod profiles;
 pub(crate) mod queue;
@@ -175,7 +176,7 @@ macro_rules! shared_suite {
             use super::*;
             use $crate::suite::{
                 access, access_edit, accounts, audit, chat, community, credits, drafts, feeds, forums, founder, invites, limits,
-                mail, passwords, profiles,
+                mail, password_accounts, passwords, profiles,
                 queue, registration, scheduler, terminal_settings,
             };
 
@@ -309,6 +310,15 @@ macro_rules! shared_suite {
                 founder::a_failed_claim_rolls_back_and_leaves_the_board_unclaimed,
                 founder::the_claim_survives_reopening_the_database,
                 founder::role_lookup_is_only_for_active_accounts,
+                password_accounts::redeeming_with_a_password_makes_a_keyless_member_with_the_key_paths_audit_rows,
+                password_accounts::a_refused_password_redemption_leaves_no_password_and_consumes_nothing,
+                password_accounts::open_with_a_password_makes_a_keyless_account_and_counts_against_the_cap,
+                password_accounts::open_with_a_taken_handle_rolls_back_the_count_and_the_password,
+                password_accounts::an_approved_password_request_makes_a_keyless_member_and_the_hash_moves,
+                password_accounts::a_password_request_is_one_per_handle_and_a_denial_removes_the_hash,
+                password_accounts::approving_a_password_request_for_a_taken_handle_keeps_the_request,
+                password_accounts::has_key_is_true_for_a_key_account_and_false_for_a_password_account,
+                password_accounts::the_database_refuses_a_password_hash_that_is_not_argon2id,
                 invites::a_created_invite_is_stored_hashed_bound_to_the_inviter_and_audited,
                 invites::redeeming_makes_an_active_member_with_the_inviter_recorded,
                 invites::a_code_works_once,

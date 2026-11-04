@@ -19,9 +19,93 @@ use russh_bbs_core::store::{AccountId, StoreError, UnixSeconds};
 use sqlx::error::ErrorKind;
 
 use super::SqliteStore;
+use super::binding::{BindFailure, bind};
+use crate::binding::Binding;
 use crate::error::{backend, kind};
 use crate::invite_rows::{InviteRow, TreeRow};
 use crate::rows::AccountRow;
+
+impl SqliteStore {
+    /// Redeem the code, binding the new account to `binding` (a key or a password, D94).
+    async fn redeem_bound(
+        &self,
+        hash: &CodeHash,
+        username: Username,
+        binding: Binding<'_>,
+    ) -> Result<Redeemed, RedeemError> {
+        let now = self.clock().now().as_raw();
+        let hash = hash.to_hex();
+        let skeleton = username.skeleton();
+        let name = username.as_str();
+        let state = REDEEMED_STATE.as_str();
+
+        let mut tx = self.pool().begin().await.map_err(backend)?;
+        let claimed = sqlx::query!(
+            r#"UPDATE invite SET redeemed_at = ?1
+               WHERE code_hash = ?2 AND redeemed_at IS NULL AND expires_at > ?1
+                 AND EXISTS (SELECT 1 FROM accounts a
+                             WHERE a.id = invite.inviter_id AND a.state = 'active')
+               RETURNING id AS "id!", inviter_id"#,
+            now,
+            hash,
+        )
+        .fetch_optional(&mut *tx)
+        .await
+        .map_err(backend)?;
+        let Some(claimed) = claimed else {
+            return Err(RedeemError::Rejected(RejectReason::Code));
+        };
+        let row = sqlx::query_as!(
+            AccountRow,
+            r#"INSERT INTO accounts (username, username_skeleton, state, invited_by)
+               VALUES (?, ?, ?, ?)
+               RETURNING id AS "id!", username, state, created_at"#,
+            name,
+            skeleton,
+            state,
+            claimed.inviter_id,
+        )
+        .fetch_one(&mut *tx)
+        .await
+        .map_err(|error| match kind(&error) {
+            Some(ErrorKind::UniqueViolation) => RedeemError::Rejected(RejectReason::Handle),
+            _ => RedeemError::Store(backend(error)),
+        })?;
+        sqlx::query!(
+            "UPDATE invite SET redeemed_by = ? WHERE id = ?",
+            row.id,
+            claimed.id,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(backend)?;
+        bind(&mut tx, row.id, binding)
+            .await
+            .map_err(|failure| match failure {
+                BindFailure::KeyTaken => RedeemError::Rejected(RejectReason::Key),
+                BindFailure::Store(error) => RedeemError::Store(error),
+            })?;
+        let account = row.into_account()?;
+        let invite = InviteId::from_raw(claimed.id);
+        let inviter = AccountId::from_raw(claimed.inviter_id);
+        self.audit_in(
+            &mut tx,
+            &events::account_created_via_invite(account.id, invite, inviter, account.state),
+        )
+        .await?;
+        self.audit_in(
+            &mut tx,
+            &events::invite_redeemed(account.id, invite, inviter),
+        )
+        .await?;
+        tx.commit().await.map_err(backend)?;
+        Ok(Redeemed {
+            account,
+            invite,
+            inviter,
+        })
+    }
+}
 
 impl InviteStore for SqliteStore {
     async fn create_invite(&self, new: &NewInvite) -> Result<InviteRecord, CreateError> {
@@ -100,83 +184,18 @@ impl InviteStore for SqliteStore {
         username: Username,
         fingerprint: &Fingerprint,
     ) -> Result<Redeemed, RedeemError> {
-        let now = self.clock().now().as_raw();
-        let hash = hash.to_hex();
-        let skeleton = username.skeleton();
-        let name = username.as_str();
-        let state = REDEEMED_STATE.as_str();
-        let fingerprint = fingerprint.as_str();
+        self.redeem_bound(hash, username, Binding::Key(fingerprint.as_str()))
+            .await
+    }
 
-        let mut tx = self.pool().begin().await.map_err(backend)?;
-        let claimed = sqlx::query!(
-            r#"UPDATE invite SET redeemed_at = ?1
-               WHERE code_hash = ?2 AND redeemed_at IS NULL AND expires_at > ?1
-                 AND EXISTS (SELECT 1 FROM accounts a
-                             WHERE a.id = invite.inviter_id AND a.state = 'active')
-               RETURNING id AS "id!", inviter_id"#,
-            now,
-            hash,
-        )
-        .fetch_optional(&mut *tx)
-        .await
-        .map_err(backend)?;
-        let Some(claimed) = claimed else {
-            return Err(RedeemError::Rejected(RejectReason::Code));
-        };
-        let row = sqlx::query_as!(
-            AccountRow,
-            r#"INSERT INTO accounts (username, username_skeleton, state, invited_by)
-               VALUES (?, ?, ?, ?)
-               RETURNING id AS "id!", username, state, created_at"#,
-            name,
-            skeleton,
-            state,
-            claimed.inviter_id,
-        )
-        .fetch_one(&mut *tx)
-        .await
-        .map_err(|error| match kind(&error) {
-            Some(ErrorKind::UniqueViolation) => RedeemError::Rejected(RejectReason::Handle),
-            _ => RedeemError::Store(backend(error)),
-        })?;
-        sqlx::query!(
-            "UPDATE invite SET redeemed_by = ? WHERE id = ?",
-            row.id,
-            claimed.id,
-        )
-        .execute(&mut *tx)
-        .await
-        .map_err(backend)?;
-        sqlx::query!(
-            "INSERT INTO account_keys (fingerprint, account_id) VALUES (?, ?)",
-            fingerprint,
-            row.id,
-        )
-        .execute(&mut *tx)
-        .await
-        .map_err(|error| match kind(&error) {
-            Some(ErrorKind::UniqueViolation) => RedeemError::Rejected(RejectReason::Key),
-            _ => RedeemError::Store(backend(error)),
-        })?;
-        let account = row.into_account()?;
-        let invite = InviteId::from_raw(claimed.id);
-        let inviter = AccountId::from_raw(claimed.inviter_id);
-        self.audit_in(
-            &mut tx,
-            &events::account_created_via_invite(account.id, invite, inviter, account.state),
-        )
-        .await?;
-        self.audit_in(
-            &mut tx,
-            &events::invite_redeemed(account.id, invite, inviter),
-        )
-        .await?;
-        tx.commit().await.map_err(backend)?;
-        Ok(Redeemed {
-            account,
-            invite,
-            inviter,
-        })
+    async fn redeem_invite_password(
+        &self,
+        hash: &CodeHash,
+        username: Username,
+        password_hash: &str,
+    ) -> Result<Redeemed, RedeemError> {
+        self.redeem_bound(hash, username, Binding::Password(password_hash))
+            .await
     }
 
     async fn invites_by(

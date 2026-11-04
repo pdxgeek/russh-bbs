@@ -35,6 +35,10 @@ pub trait PasswordStore: Send + Sync {
         account: AccountId,
     ) -> impl Future<Output = Result<Option<String>, StoreError>> + Send;
 
+    /// Whether an SSH key is bound to the account. An account made over telnet has none
+    /// (D94), and then its password is its only way in.
+    fn has_key(&self, account: AccountId) -> impl Future<Output = Result<bool, StoreError>> + Send;
+
     /// Store `hash` for the account, or remove its password with `None`, and write `audit` in
     /// the same transaction. Removing a password the account does not have changes nothing and
     /// writes no audit row. [`StoreError::AccountNotFound`] for an id with no account.
@@ -69,6 +73,13 @@ impl PasswordStore for crate::access::NoMembers {
         &self,
         _account: AccountId,
     ) -> impl Future<Output = Result<Option<String>, StoreError>> + Send {
+        std::future::ready(Err(StoreError::AccountNotFound))
+    }
+
+    fn has_key(
+        &self,
+        _account: AccountId,
+    ) -> impl Future<Output = Result<bool, StoreError>> + Send {
         std::future::ready(Err(StoreError::AccountNotFound))
     }
 

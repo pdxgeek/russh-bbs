@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "DELETE FROM invite_request WHERE id = ?1 AND expires_at > ?2\n               RETURNING fingerprint, handle",
+  "query": "DELETE FROM invite_request WHERE id = ?1 AND expires_at > ?2\n               RETURNING fingerprint, handle, password_hash",
   "describe": {
     "columns": [
       {
@@ -12,6 +12,11 @@
         "name": "handle",
         "ordinal": 1,
         "type_info": "Text"
+      },
+      {
+        "name": "password_hash",
+        "ordinal": 2,
+        "type_info": "Text"
       }
     ],
     "parameters": {
@@ -19,8 +24,9 @@
     },
     "nullable": [
       false,
-      false
+      false,
+      true
     ]
   },
-  "hash": "f04816c8ee666b6c994fc4ffd6049d881baec0d1b5380c3de13bd2761de04a85"
+  "hash": "78e1b1c5bd28f0147923a8e048ada539b9358ccbcfc38a1639baaa76e54d29e7"
 }

@@ -143,6 +143,9 @@ pub enum PasswordError {
     /// The current password given is not the account's.
     #[error("the current password is wrong")]
     WrongCurrent,
+    /// The account has no SSH key, so its password is its only way in and is not cleared (D94).
+    #[error("the password is the account's only way in")]
+    LastCredential,
     /// Hashing could not run.
     #[error(transparent)]
     Unavailable(#[from] Unavailable),
@@ -218,6 +221,20 @@ pub async fn set_password<S: PasswordStore, O: Offload>(
     Ok(())
 }
 
+/// Hash a new password for an account that does not exist yet (D94: sign-up over telnet). Checks
+/// the rules for a new password ([`check_new`]) and hashes on `offload`, so the hashing never
+/// runs on the session's own task. The result is the argon2id PHC string the account store
+/// keeps; the plain text is not kept or logged.
+///
+/// # Errors
+/// [`PasswordError::Policy`] when the password breaks the rules, [`PasswordError::Unavailable`]
+/// or [`PasswordError::Hash`] when hashing could not run.
+pub async fn hash_new<O: Offload>(offload: &O, password: &Secret) -> Result<String, PasswordError> {
+    check_new(password.expose())?;
+    let text = password.copy();
+    Ok(offload.run(move || hash::hash(&text)).await??)
+}
+
 /// Remove the session's own password, so only keys log in. Same rules as [`set_password`];
 /// audited as `password.cleared`.
 ///
@@ -234,6 +251,10 @@ pub async fn clear_password<S: PasswordStore, O: Offload>(
     let account = granted.account().ok_or(StoreError::AccountNotFound)?;
     if method == LoginMethod::Password {
         prove_current(store, offload, account, current).await?;
+    }
+    // A password account has no key (D94): clearing its only credential would lock it out.
+    if !store.has_key(account).await? {
+        return Err(PasswordError::LastCredential);
     }
     store
         .set_hash(

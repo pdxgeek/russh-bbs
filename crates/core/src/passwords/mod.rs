@@ -31,8 +31,8 @@ pub use offload::{Inline, Offload, Unavailable};
 pub use screen::{PasswordKey, PasswordScreen, Step};
 pub use secret::{MAX_ATTEMPT_BYTES, MAX_CHARS, MIN_CHARS, PolicyError, Secret, check_new};
 pub use service::{
-    Login, LoginMethod, PasswordError, authenticate, clear_password, has_password, login_handle,
-    set_password,
+    Login, LoginMethod, PasswordError, authenticate, clear_password, has_password, hash_new,
+    login_handle, set_password,
 };
 pub use store::{LoginRecord, PasswordStore};
 

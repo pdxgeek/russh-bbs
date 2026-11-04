@@ -42,6 +42,18 @@ impl PasswordStore for SqliteStore {
             .ok_or(StoreError::AccountNotFound)
     }
 
+    async fn has_key(&self, account: AccountId) -> Result<bool, StoreError> {
+        let id = account.as_raw();
+        let keys = sqlx::query_scalar!(
+            r#"SELECT count(*) AS "n!: i64" FROM account_keys WHERE account_id = ?"#,
+            id,
+        )
+        .fetch_one(self.pool())
+        .await
+        .map_err(backend)?;
+        Ok(keys > 0)
+    }
+
     async fn set_hash(
         &self,
         account: AccountId,

@@ -29,7 +29,8 @@ mod store;
 pub use cap::{DEFAULT_OPEN_DAILY_CAP, DailyCap, MAX_OPEN_DAILY_CAP};
 pub use service::{
     DEFAULT_OPEN_KEY_RATE, DEFAULT_OPEN_NETWORK_RATE, OpenGate, daily_cap, open_account,
-    open_cap_reached, submit_application,
+    open_account_with_password, open_cap_reached, submit_application,
+    submit_application_with_password,
 };
 pub use store::{OpenError, OpenRefusal, Opened, RegistrationStore};
 

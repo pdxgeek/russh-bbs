@@ -55,6 +55,8 @@ pub enum Refusal {
     WrongCurrent,
     /// The new password breaks the rules.
     Policy(PolicyError),
+    /// The account has no SSH key, so its password is its only way in (D94) and stays.
+    LastCredential,
     /// The store or the hasher failed, or took too long.
     Failed,
 }
@@ -106,6 +108,7 @@ fn refusal(error: &PasswordError) -> Refusal {
         PasswordError::Denied(_) => Refusal::Denied,
         PasswordError::Policy(policy) => Refusal::Policy(*policy),
         PasswordError::NeedsCurrent | PasswordError::WrongCurrent => Refusal::WrongCurrent,
+        PasswordError::LastCredential => Refusal::LastCredential,
         PasswordError::Unavailable(_) | PasswordError::Hash(_) | PasswordError::Store(_) => {
             // The error text names no secret; the cause of a store failure is logged here.
             warn!(%error, "password request failed");

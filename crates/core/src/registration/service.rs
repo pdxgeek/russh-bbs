@@ -10,7 +10,7 @@ use super::store::{OpenError, OpenRefusal, Opened, RegistrationStore};
 use crate::access::{Fingerprint, Permission, Snapshot};
 use crate::queue::{
     DEFAULT_TRACKED, DropReason, InviteAsk, QueueStore, RequestGate, RequestKind, Submission,
-    SubmitLimited, submit_request,
+    SubmitLimited, password_identity, submit_request, submit_request_with_password,
 };
 use crate::sanitize::Username;
 use crate::store::RegistrationMode;
@@ -113,6 +113,52 @@ pub async fn open_account<S: RegistrationStore, C: Clock>(
     fingerprint: &Fingerprint,
     peer: Option<IpAddr>,
 ) -> Result<Opened, OpenError> {
+    open(store, gate, access, username, fingerprint, Bound::Key, peer).await
+}
+
+/// [`open_account`] for a person with no SSH key (telnet, D94). The account is bound to the
+/// password whose argon2id hash is `password_hash` ([`crate::passwords::hash_new`]); the gate
+/// counts the attempt per [`password_identity`] of the handle and per network. Every other rule
+/// and every refusal is the key path's.
+///
+/// # Errors
+/// As [`open_account`].
+pub async fn open_account_with_password<S: RegistrationStore, C: Clock>(
+    store: &S,
+    gate: &OpenGate<C>,
+    access: &Snapshot,
+    username: Username,
+    password_hash: &str,
+    peer: Option<IpAddr>,
+) -> Result<Opened, OpenError> {
+    let identity = password_identity(&username);
+    open(
+        store,
+        gate,
+        access,
+        username,
+        &identity,
+        Bound::Password(password_hash),
+        peer,
+    )
+    .await
+}
+
+/// What the new account is bound to.
+enum Bound<'a> {
+    Key,
+    Password(&'a str),
+}
+
+async fn open<S: RegistrationStore, C: Clock>(
+    store: &S,
+    gate: &OpenGate<C>,
+    access: &Snapshot,
+    username: Username,
+    fingerprint: &Fingerprint,
+    bound: Bound<'_>,
+    peer: Option<IpAddr>,
+) -> Result<Opened, OpenError> {
     let refuse = |reason: OpenRefusal| {
         info!(fingerprint = %fingerprint, ?reason, "open registration refused");
         Err(OpenError::Rejected(reason))
@@ -132,7 +178,11 @@ pub async fn open_account<S: RegistrationStore, C: Clock>(
         });
     }
     let cap = daily_cap(store).await;
-    match store.open_account(username, fingerprint, cap).await {
+    let made = match bound {
+        Bound::Key => store.open_account(username, fingerprint, cap).await,
+        Bound::Password(hash) => store.open_account_password(username, hash, cap).await,
+    };
+    match made {
         Ok(opened) => {
             info!(account = %opened.account.id, fingerprint = %fingerprint, "account opened");
             Ok(opened)
@@ -181,4 +231,33 @@ where
         }
     }
     submit_request(store, gate, access, ask, fingerprint, peer).await
+}
+
+/// [`submit_application`] for a person with no SSH key (telnet, D94): the request carries the
+/// hash of the password they chose and approval makes a password account.
+pub async fn submit_application_with_password<S, C>(
+    store: &S,
+    gate: &RequestGate<C>,
+    access: &Snapshot,
+    mut ask: InviteAsk,
+    password_hash: String,
+    peer: Option<IpAddr>,
+) -> Submission
+where
+    S: QueueStore + RegistrationStore,
+    C: Clock,
+{
+    ask.kind = RequestKind::Application;
+    match store.registration_mode().await {
+        Ok(RegistrationMode::Apply | RegistrationMode::Open) => {}
+        Ok(_) => {
+            info!("application dropped: the board is not taking applications");
+            return Submission::Dropped(DropReason::WrongMode);
+        }
+        Err(error) => {
+            warn!(%error, "application dropped: the mode could not be read");
+            return Submission::Dropped(DropReason::Store);
+        }
+    }
+    submit_request_with_password(store, gate, access, ask, password_hash, peer).await
 }

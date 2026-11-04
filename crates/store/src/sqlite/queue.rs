@@ -21,6 +21,8 @@ use sqlx::SqliteConnection;
 use sqlx::error::ErrorKind;
 
 use super::SqliteStore;
+use super::binding::{BindFailure, bind};
+use crate::binding::Binding;
 use crate::error::{backend, kind};
 use crate::queue_rows::{QueueRow, group};
 use crate::rows::AccountRow;
@@ -105,8 +107,9 @@ impl QueueStore for SqliteStore {
             return Ok(Submitted::Refused(refusal));
         }
         let id = sqlx::query_scalar!(
-            r#"INSERT INTO invite_request (fingerprint, handle, message, created_at, expires_at, kind)
-               VALUES (?, ?, ?, ?, ?, ?)
+            r#"INSERT INTO invite_request
+                   (fingerprint, handle, message, created_at, expires_at, kind, password_hash)
+               VALUES (?, ?, ?, ?, ?, ?, ?)
                RETURNING id AS "id!""#,
             fingerprint,
             handle,
@@ -114,6 +117,7 @@ impl QueueStore for SqliteStore {
             now,
             expires,
             kind_text,
+            new.password_hash,
         )
         .fetch_one(&mut *tx)
         .await;
@@ -177,7 +181,7 @@ impl QueueStore for SqliteStore {
         let mut tx = self.pool().begin().await.map_err(backend)?;
         let claimed = sqlx::query!(
             r#"DELETE FROM invite_request WHERE id = ?1 AND expires_at > ?2
-               RETURNING fingerprint, handle"#,
+               RETURNING fingerprint, handle, password_hash"#,
             id,
             now,
         )
@@ -208,17 +212,17 @@ impl QueueStore for SqliteStore {
             Some(ErrorKind::UniqueViolation) => ApproveError::HandleTaken,
             _ => ApproveError::Store(backend(error)),
         })?;
-        sqlx::query!(
-            "INSERT INTO account_keys (fingerprint, account_id) VALUES (?, ?)",
-            claimed.fingerprint,
-            row.id,
-        )
-        .execute(&mut *tx)
-        .await
-        .map_err(|error| match kind(&error) {
-            Some(ErrorKind::UniqueViolation) => ApproveError::KeyHasAccount,
-            _ => ApproveError::Store(backend(error)),
-        })?;
+        // A request made with a password (telnet, D94) binds the hash it carried and no key.
+        let binding = match claimed.password_hash.as_deref() {
+            Some(hash) => Binding::Password(hash),
+            None => Binding::Key(claimed.fingerprint.as_str()),
+        };
+        bind(&mut tx, row.id, binding)
+            .await
+            .map_err(|failure| match failure {
+                BindFailure::KeyTaken => ApproveError::KeyHasAccount,
+                BindFailure::Store(error) => ApproveError::Store(error),
+            })?;
         let account = row.into_account()?;
         let request = RequestId::from_raw(id);
         self.audit_in(

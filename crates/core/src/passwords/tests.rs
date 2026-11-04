@@ -61,6 +61,8 @@ fn weak_hash(password: &str) -> String {
 struct Fake {
     rows: Mutex<Vec<(Account, Option<String>)>>,
     audits: Mutex<Vec<AuditEvent>>,
+    /// Whether the accounts have no SSH key (a password account, D94).
+    keyless: Mutex<bool>,
 }
 
 impl Fake {
@@ -68,6 +70,7 @@ impl Fake {
         Self {
             rows: Mutex::new(rows),
             audits: Mutex::default(),
+            keyless: Mutex::new(false),
         }
     }
 
@@ -103,6 +106,10 @@ impl PasswordStore for Fake {
             .find(|(a, _)| a.id == account)
             .map(|(_, h)| h.clone())
             .ok_or(StoreError::AccountNotFound)
+    }
+
+    async fn has_key(&self, _account: AccountId) -> Result<bool, StoreError> {
+        Ok(!*self.keyless.lock().unwrap())
     }
 
     async fn set_hash(

@@ -9,6 +9,7 @@
 
 mod access;
 mod audit;
+mod binding;
 mod chat;
 mod community;
 mod credits;

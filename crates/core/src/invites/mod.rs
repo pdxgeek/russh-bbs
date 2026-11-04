@@ -26,7 +26,7 @@ pub use quota::{INVITE_TTL_SECS, Quota, month_start, next_month_start};
 pub use screens::{InviteOutcome, InviteRequest, InviteScreen, TREE_PAGE_LINES};
 pub use service::{
     CreatedInvite, InviteError, LIST_LIMIT, TREE_LIMIT, create_invite, create_invite_within,
-    invite_tree, my_invites, redeem_invite,
+    invite_tree, my_invites, redeem_invite, redeem_invite_with_password,
 };
 pub use store::{
     CreateError, InviteId, InviteRecord, InviteStatus, InviteStore, InviteSummary, NewInvite,

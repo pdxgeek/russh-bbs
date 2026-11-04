@@ -22,7 +22,7 @@ use tracing::{info, warn};
 use super::gate::{RequestGate, SubmitLimited};
 use super::request::{
     DEFAULT_MAX_PENDING, DENIAL_COOLDOWN_SECS, InviteAsk, MAX_MAX_PENDING, Message, NewRequest,
-    PENDING_TTL_SECS, RequestId, RequestKind,
+    PENDING_TTL_SECS, RequestId, RequestKind, password_identity,
 };
 use super::store::{
     ApproveError, DecideError, Purged, Queue, QueueStore, Refusal, SubmitTerms, Submitted,
@@ -101,6 +101,51 @@ where
     S: QueueStore,
     C: Clock,
 {
+    submit(store, gate, access, ask, fingerprint, None, peer).await
+}
+
+/// [`submit_request`] for a person with no SSH key (telnet, D94). `password_hash` is the
+/// argon2id hash of the password they chose ([`crate::passwords::hash_new`]); the queue keys the
+/// request by [`password_identity`] of the handle, and approval makes a password account. The
+/// same permission, limits, caps and one fixed answer on screen.
+pub async fn submit_request_with_password<S, C>(
+    store: &S,
+    gate: &RequestGate<C>,
+    access: &Snapshot,
+    ask: InviteAsk,
+    password_hash: String,
+    peer: Option<IpAddr>,
+) -> Submission
+where
+    S: QueueStore,
+    C: Clock,
+{
+    let identity = password_identity(&ask.handle);
+    submit(
+        store,
+        gate,
+        access,
+        ask,
+        &identity,
+        Some(password_hash),
+        peer,
+    )
+    .await
+}
+
+async fn submit<S, C>(
+    store: &S,
+    gate: &RequestGate<C>,
+    access: &Snapshot,
+    ask: InviteAsk,
+    fingerprint: &Fingerprint,
+    password_hash: Option<String>,
+    peer: Option<IpAddr>,
+) -> Submission
+where
+    S: QueueStore,
+    C: Clock,
+{
     let needed = match ask.kind {
         RequestKind::Invite => Permission::InviteRequest,
         RequestKind::Application => Permission::MembershipApply,
@@ -125,6 +170,7 @@ where
         message: Message::new(&ask.message),
         fingerprint: fingerprint.clone(),
         kind: ask.kind,
+        password_hash,
     };
     match store.submit_request(&new, terms).await {
         Ok(Submitted::Stored(id)) => {

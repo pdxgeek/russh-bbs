@@ -19,6 +19,8 @@ use russh_bbs_core::store::{
 use sqlx::error::ErrorKind;
 
 use super::PostgresStore;
+use super::binding::{BindFailure, bind};
+use crate::binding::Binding;
 use crate::error::{backend, kind};
 use crate::rows::AccountRow;
 
@@ -52,34 +54,11 @@ impl PostgresStore {
         }
         Ok(())
     }
-}
 
-impl RegistrationStore for PostgresStore {
-    async fn registration_mode(&self) -> Result<RegistrationMode, StoreError> {
-        registration_mode(self).await
-    }
-
-    async fn open_cap_setting(&self) -> Result<Option<String>, StoreError> {
-        self.get_setting(SettingKey::OpenDailyCap).await
-    }
-
-    async fn open_cap_reached(&self, cap: DailyCap) -> Result<bool, StoreError> {
-        let Some(limit) = cap.limit() else {
-            return Ok(false);
-        };
-        let day = Day::of(self.clock().now()).as_raw();
-        let opened =
-            sqlx::query_scalar!("SELECT opened FROM registration_day WHERE day = $1", day,)
-                .fetch_optional(self.pool())
-                .await
-                .map_err(backend)?;
-        Ok(opened.is_some_and(|n| n >= i64::from(limit)))
-    }
-
-    async fn open_account(
+    async fn open_bound(
         &self,
         username: Username,
-        fingerprint: &Fingerprint,
+        binding: Binding<'_>,
         cap: DailyCap,
     ) -> Result<Opened, OpenError> {
         let now = self.clock().now();
@@ -90,7 +69,6 @@ impl RegistrationStore for PostgresStore {
         let name = username.as_str();
         let state = AccountState::Active;
         let state_text = state.as_str();
-        let fingerprint = fingerprint.as_str();
 
         let mut tx = self.pool().begin().await.map_err(backend)?;
         sqlx::query!("DELETE FROM registration_day WHERE day < $1", oldest)
@@ -132,17 +110,12 @@ impl RegistrationStore for PostgresStore {
             Some(ErrorKind::UniqueViolation) => OpenError::Rejected(OpenRefusal::Handle),
             _ => OpenError::Store(backend(error)),
         })?;
-        sqlx::query!(
-            "INSERT INTO account_keys (fingerprint, account_id) VALUES ($1, $2)",
-            fingerprint,
-            row.id,
-        )
-        .execute(&mut *tx)
-        .await
-        .map_err(|error| match kind(&error) {
-            Some(ErrorKind::UniqueViolation) => OpenError::Rejected(OpenRefusal::Key),
-            _ => OpenError::Store(backend(error)),
-        })?;
+        bind(&mut tx, row.id, binding)
+            .await
+            .map_err(|failure| match failure {
+                BindFailure::KeyTaken => OpenError::Rejected(OpenRefusal::Key),
+                BindFailure::Store(error) => OpenError::Store(error),
+            })?;
         let account = row.into_account()?;
         self.audit_in(
             &mut tx,
@@ -157,5 +130,48 @@ impl RegistrationStore for PostgresStore {
         }
         tx.commit().await.map_err(backend)?;
         Ok(Opened { account })
+    }
+}
+
+impl RegistrationStore for PostgresStore {
+    async fn registration_mode(&self) -> Result<RegistrationMode, StoreError> {
+        registration_mode(self).await
+    }
+
+    async fn open_cap_setting(&self) -> Result<Option<String>, StoreError> {
+        self.get_setting(SettingKey::OpenDailyCap).await
+    }
+
+    async fn open_cap_reached(&self, cap: DailyCap) -> Result<bool, StoreError> {
+        let Some(limit) = cap.limit() else {
+            return Ok(false);
+        };
+        let day = Day::of(self.clock().now()).as_raw();
+        let opened =
+            sqlx::query_scalar!("SELECT opened FROM registration_day WHERE day = $1", day,)
+                .fetch_optional(self.pool())
+                .await
+                .map_err(backend)?;
+        Ok(opened.is_some_and(|n| n >= i64::from(limit)))
+    }
+
+    async fn open_account(
+        &self,
+        username: Username,
+        fingerprint: &Fingerprint,
+        cap: DailyCap,
+    ) -> Result<Opened, OpenError> {
+        self.open_bound(username, Binding::Key(fingerprint.as_str()), cap)
+            .await
+    }
+
+    async fn open_account_password(
+        &self,
+        username: Username,
+        password_hash: &str,
+        cap: DailyCap,
+    ) -> Result<Opened, OpenError> {
+        self.open_bound(username, Binding::Password(password_hash), cap)
+            .await
     }
 }

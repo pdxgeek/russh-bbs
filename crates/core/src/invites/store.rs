@@ -177,6 +177,17 @@ pub trait InviteStore: Send + Sync {
         fingerprint: &Fingerprint,
     ) -> impl Future<Output = Result<Redeemed, RedeemError>> + Send;
 
+    /// [`InviteStore::redeem_invite`] for a person with no SSH key (telnet, D94): the new
+    /// account is bound to a password instead. `password_hash` is an argon2id PHC string made by
+    /// [`crate::passwords::hash_new`]; the store keeps it in `account_password` in the same
+    /// transaction and binds no key. Every rule and audit row is the key path's.
+    fn redeem_invite_password(
+        &self,
+        hash: &CodeHash,
+        username: Username,
+        password_hash: &str,
+    ) -> impl Future<Output = Result<Redeemed, RedeemError>> + Send;
+
     /// The most recent `limit` codes `inviter` created, newest first.
     fn invites_by(
         &self,
@@ -205,6 +216,15 @@ impl InviteStore for NoMembers {
         _hash: &CodeHash,
         _username: Username,
         _fingerprint: &Fingerprint,
+    ) -> impl Future<Output = Result<Redeemed, RedeemError>> + Send {
+        std::future::ready(Err(RedeemError::Rejected(RejectReason::Code)))
+    }
+
+    fn redeem_invite_password(
+        &self,
+        _hash: &CodeHash,
+        _username: Username,
+        _password_hash: &str,
     ) -> impl Future<Output = Result<Redeemed, RedeemError>> + Send {
         std::future::ready(Err(RedeemError::Rejected(RejectReason::Code)))
     }
