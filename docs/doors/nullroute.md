@@ -216,7 +216,7 @@ Unit, property and replay tests, the framework's sandbox audit, the pinned repla
 
 ## Implementation notes (M4-N3: the UI)
 
-Decision: [D-TBD](../decisions.md). Same crate; no save or world change. Screenshots: [nullroute-ui/](nullroute-ui/README.md). The screens are `crates/doors/nullroute/src/session/ui/`; `session.rs` still holds the state, the keys and the look-around text, and the engine is untouched apart from two read-only seams (`Run::link_known` is public, and the heat thresholds are `player::HEAT_*` constants).
+Decision: [D116](../decisions.md). Same crate; no save or world change. Screenshots: [nullroute-ui/](nullroute-ui/README.md). The screens are `crates/doors/nullroute/src/session/ui/`; `session.rs` still holds the state, the keys and the look-around text, and the engine is untouched apart from two read-only seams (`Run::link_known` is public, and the heat thresholds are `player::HEAT_*` constants).
 
 ### The screens
 
