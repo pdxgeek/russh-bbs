@@ -188,7 +188,7 @@ pub enum BlobBackend {
     S3,
 }
 
-/// `[blobs]`. Parsed only: no blob store exists yet.
+/// `[blobs]` (D30, M4-F1).
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct BlobsConfig {
@@ -202,6 +202,15 @@ pub struct BlobsConfig {
     pub bucket: Option<String>,
     /// Region for `s3`.
     pub region: Option<String>,
+    /// Address the bucket in the URL path (MinIO and most self-hosted servers) instead of the
+    /// host name (AWS).
+    pub path_style: bool,
+    /// PEM certificates that replace the platform CA store for `s3` (like `feeds.ca_file`, D92).
+    pub ca_file: Option<PathBuf>,
+    /// The most bytes one object may hold, for either backend.
+    pub max_object_bytes: u64,
+    /// `s3` uploads larger than this go up in parts of this size.
+    pub multipart_threshold_bytes: u64,
 }
 
 impl Default for BlobsConfig {
@@ -212,6 +221,10 @@ impl Default for BlobsConfig {
             endpoint: None,
             bucket: None,
             region: None,
+            path_style: false,
+            ca_file: None,
+            max_object_bytes: 256 * 1024 * 1024,
+            multipart_threshold_bytes: 16 * 1024 * 1024,
         }
     }
 }

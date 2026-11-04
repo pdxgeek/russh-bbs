@@ -23,6 +23,7 @@ mod chat_rows;
 mod community_rows;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod credit_rows;
+pub mod blobs;
 mod directory;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod door_rows;

@@ -330,9 +330,42 @@ fn s3_needs_a_bucket_and_no_credentials() {
     );
     let ok = from_file("[blobs]\nbackend = \"s3\"\nbucket = \"b\"\nregion = \"eu-west-1\"\n")
         .expect("ok");
-    assert!(ok.warnings.iter().any(|w| w.contains("blobs.backend")));
+    assert!(!ok.warnings.iter().any(|w| w.contains("blobs")), "https needs no warning");
+    let plain = from_file(
+        "[blobs]\nbackend = \"s3\"\nbucket = \"b\"\nendpoint = \"http://127.0.0.1:9000\"\n",
+    )
+    .expect("ok");
+    assert!(plain.warnings.iter().any(|w| w.contains("blobs.endpoint is plain http")));
     let msg = message(from_file("[blobs]\nbucket = \"b\"\n"));
     assert!(msg.contains("blobs.bucket"), "{msg}");
+}
+
+#[test]
+fn blob_limits_and_s3_only_settings_are_checked() {
+    let d = Config::default().blobs;
+    assert_eq!((d.max_object_bytes, d.multipart_threshold_bytes), (268_435_456, 16_777_216));
+    assert!(!d.path_style && d.ca_file.is_none());
+    // The S3-only settings are refused with the local backend.
+    for line in ["path_style = true", "ca_file = \"/etc/hostname\"", "multipart_threshold_bytes = 8388608"] {
+        let msg = message(from_file(&format!("[blobs]\n{line}\n")));
+        assert!(msg.contains("only used when"), "{line}: {msg}");
+    }
+    let s3 = "[blobs]\nbackend = \"s3\"\nbucket = \"b\"\n";
+    let msg = message(from_file(&format!("{s3}multipart_threshold_bytes = 1048576\n")));
+    assert!(msg.contains("blobs.multipart_threshold_bytes"), "{msg}");
+    let msg = message(from_file(&format!("{s3}max_object_bytes = 0\n")));
+    assert!(msg.contains("blobs.max_object_bytes"), "{msg}");
+    let msg = message(from_file(&format!(
+        "{s3}max_object_bytes = 1099511627776\nmultipart_threshold_bytes = 8388608\n"
+    )));
+    assert!(msg.contains("blobs.max_object_bytes") && msg.contains("10,000"), "{msg}");
+    let msg = message(from_file(&format!("{s3}ca_file = \"/nonexistent/ca.pem\"\n")));
+    assert!(msg.contains("blobs.ca_file"), "{msg}");
+    let ok = from_file(&format!(
+        "{s3}path_style = true\nca_file = \"/etc/hostname\"\nmax_object_bytes = 1048576\n"
+    ))
+    .expect("ok");
+    assert!(ok.config.blobs.path_style);
 }
 
 // ---- postgres ------------------------------------------------------------------------------

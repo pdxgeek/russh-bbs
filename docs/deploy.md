@@ -53,7 +53,7 @@ The `prebuilt` stage copies `russh-bbs-server` into the same `scratch` final sta
 | `/data/russh-bbs.db` (+ `-wal`, `-shm`) | SQLite database: members, keys, settings | first start, mode 0600 |
 | `/data/host_ed25519_key` | SSH host key (D20), mode 0600 | first start |
 | `/data/config.toml` | Optional config (default location; see [config.md](config.md)) | you |
-| `/data/` blobs directory | Member-uploaded bytes (D30), later | when files land |
+| `/data/blobs/` | Member-uploaded bytes (D30), with `blobs.backend = "local"`: `<namespace>/<xx>/<id>` objects and a `tmp/` for writes in progress, directories 0700 and files 0600. Created empty at start; nothing is written until file areas land (M4-F2). Include it in backups; it holds the only copy of uploaded files | first start |
 
 The image sets only `RUSSH_BBS_LISTEN=0.0.0.0:2222`. It has no `HOME`, so the server's default data directory is `/data` itself (D46): the host key and the SQLite database land there with no further setting. The image deliberately does **not** set `RUSSH_BBS_DB`: that variable is a boot error with `datasource.kind = "postgres"`, and a variable baked into an image cannot be unset by `docker run`. A `/data/config.toml` is picked up automatically; the environment overrides the file and flags override both (D38). Only set `RUSSH_BBS_*` names listed in [config.md](config.md): an unknown one stops the server at start, except the Kubernetes service-link names listed in [config.md](config.md#kubernetes-service-links), which are ignored with a warning. If the service is named `russh-bbs`, you can also set `enableServiceLinks: false` on the pod so they are never injected. Logs go to stdout (`docker logs`); set `RUST_LOG` (e.g. `debug`) to change the level.
 
@@ -186,3 +186,31 @@ Publishing is manual: pushing a tag no longer starts any workflow (all workflows
 ## Not covered here
 
 TLS termination or reverse proxies (SSH is not HTTP; publish port 2222 or map another host port), and door sandboxing.
+
+## Testing the S3 blob backend
+
+The blob suite (`crates/store/src/blobs`, M4-F1) runs against the local backend in a plain `cargo test --workspace` and against an S3-compatible server in the ignored run, the same way the Postgres suites do. The ignored tests **fail** (they do not skip) when the variables are missing. Use a container named `russh-bbs-minio-*` on a non-default port, and remove only that one:
+
+```bash
+# MinIO. The official minio/minio image is no longer published on Docker Hub; bitnamilegacy/minio
+# is a build of the same server and works for the suite (quay.io/minio/minio is the upstream source).
+docker run -d --name russh-bbs-minio-blobs -p 127.0.0.1:19000:9000 \
+  -e MINIO_ROOT_USER=bbsminio -e MINIO_ROOT_PASSWORD=bbsminio-secret-test \
+  bitnamilegacy/minio:latest
+# A bucket is a directory in a single-drive MinIO; make one without installing a client.
+docker exec russh-bbs-minio-blobs mkdir -p /bitnami/minio/data/russh-bbs-blobs
+
+export RUSSH_BBS_TEST_S3_ENDPOINT=http://127.0.0.1:19000 \
+       RUSSH_BBS_TEST_S3_BUCKET=russh-bbs-blobs \
+       RUSSH_BBS_TEST_S3_ACCESS_KEY=bbsminio \
+       RUSSH_BBS_TEST_S3_SECRET_KEY=bbsminio-secret-test
+cargo test -p russh-bbs-store blobs -- --ignored
+
+docker rm -f russh-bbs-minio-blobs      # when you are done
+```
+
+The tests write under a fresh namespace each and leave their objects in the bucket; use a throwaway bucket. The keys above are test values for a throwaway container, not credentials to reuse.
+
+## Running with an S3 bucket
+
+Set `blobs.backend = "s3"` and the bucket, plus the keys in the environment (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`), or give the host an instance or container role. For MinIO and other self-hosted servers set `blobs.path_style = true` and the endpoint; for a private CA set `blobs.ca_file` (it replaces the platform store for this connection only). The server checks the bucket at start and refuses to boot if it cannot list it. Objects are `<namespace>/<xx>/<id>` with the content followed by a 56-byte trailer (SHA-256, size, time), the same bytes the local backend writes, so you can move between a directory and a bucket by copying objects. Give the bucket a lifecycle rule that aborts incomplete multipart uploads after a day or two, so an upload cut off by a crash does not keep costing storage. The bucket itself is private; the server is the only reader (D30).
