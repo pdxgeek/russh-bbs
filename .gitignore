@@ -30,3 +30,7 @@ ssh_host_*
 *_ed25519_key
 *.pem
 *.whl
+
+# Python bytecode from the screenshot and walk tools
+__pycache__/
+*.pyc
