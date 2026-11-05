@@ -1,4 +1,4 @@
- » Night Owl BBS « │ Theme preview                                    UTC 05:51
+ » Night Owl BBS « │ Theme preview                                    UTC 13:08
 Style neon   layout Classic   80x24   unicode   colour   main menu   art on
 Art in use: neon. russh-bbs project (original art)
 Your terminal shows the top-left 80x22 of this 80x24 preview.

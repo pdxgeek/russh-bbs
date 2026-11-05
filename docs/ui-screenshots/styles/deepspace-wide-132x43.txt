@@ -1,40 +1,40 @@
- ◆ Night Owl BBS ◆ │ Main menu                                                                                            UTC 15:49
+ ◆ Night Owl BBS ◆ │ Main menu                                                                                            UTC 13:07
+      .                   .   .     .                          ███▓▓▓          .      .   +                          .
+     .      .  .        .                          *   * *────────────────  .                               *      .       .
+                              *                                ▓▓▒▒▒▒      .                       .
+  *     .       .        *                               .          . .  *                                   .*
 ╭────── M A I N   M E N U ───────╮╭──────────────── N I G H T   O W L   B B S ─────────────────╮╭────── T H I S   B O A R D ───────╮
 │   [f] Forums                   ││                                                            ││ Night Owl BBS                    │
-│   [m] Mail                     ││  Signed in as founder.                                     ││ After hours, all hours.          │
-│   [a] Files  (not built yet)   ││                                                            ││ Portland, OR · since 2026        │
+│   [m] Mail                     ││  Signed in as founder.                                     ││ Calm, late-night talk.           │
+│   [a] Files  (not built yet)   ││                                                            ││ Portland, Oregon · since 1994    │
 │   [c] Chat                     ││  > [s] Terminal settings                                   ││                                  │
-│   [d] Doors                    ││                                                            │╰──────────────────────────────────╯
-│   [u] Members                  ││                                                            │╭─────────── C L O C K ────────────╮
-│   [y] Community                ││                                                            ││ UTC 15:49                        │
-│   [i] Invites                  ││                                                            │╰──────────────────────────────────╯
-│ > [s] Terminal settings        ││                                                            │╭─── W H O   I S   O N L I N E ────╮
-│   [o] Sysop tools              ││                                                            ││ Nothing to show yet.             │
-│   [l] Log off                  ││                                                            ││                                  │
+│   [d] Doors                    ││                                                            ││                                  │
+│   [u] Members                  ││                                                            │╰──────────────────────────────────╯
+│   [y] Community                ││                                                            │╭─────────── C L O C K ────────────╮
+│   [i] Invites                  ││                                                            ││      ━     ━   ━                 │
+│ > [s] Terminal settings        ││                                                            ││   ┃  ━┃ • ┃ ┃   ┃                │
+│   [o] Sysop tools              ││                                                            ││   ┃  ━┃ • ┃━┃   ┃                │
+│   [l] Log off                  ││                                                            ││ Thu 5 Nov 2026 UTC               │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            │╰──────────────────────────────────╯
+│                                ││                                                            │╭─── W H O   I S   O N L I N E ────╮
+│                                ││                                                            ││ ● 1 online                       │
+│                                ││                                                            ││ ▸ founder                        │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
+│                                ││                                                            │╰──────────────────────────────────╯
+│                                ││                                                            │╭──────────── M A I L ─────────────╮
+│                                ││                                                            ││ No unread mail.                  │
+│                                ││                                                            ││ 0 in your inbox                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            │╰──────────────────────────────────╯
-│                                ││                                                            │╭─────── N E W   P O S T S ────────╮
-│                                ││                                                            ││ Nothing to show yet.             │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            │╰──────────────────────────────────╯
-│                                ││                                                            │╭──────── A C T I V I T Y ─────────╮
-│                                ││                                                            ││ Nothing to show yet.             │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
+│                                ││                                                            │╭──── L A S T   C A L L E R S ─────╮
+│                                ││                                                            ││ founder                       1m │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │

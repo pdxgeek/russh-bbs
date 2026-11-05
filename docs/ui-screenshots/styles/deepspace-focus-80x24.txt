@@ -1,23 +1,23 @@
- ◆ Night Owl BBS ◆ │ Main menu                                        UTC 15:47
-      .    Main menu
-     .     ────────────────────────────────────────
+ ◆ Night Owl BBS ◆ │ Main menu                                        UTC 13:05
+    .     .                          ███▓▓▓          .      .   +
+                         *   * *────────────────  .
+    *                                ▓▓▒▒▒▒      .                       .
+  *     .       .        *                               .          . .  *
+           Main menu                                                        .
+         * ────────────────────────────────────────                    .       .
            Signed in as founder.
-  *     .                                                             .  *
-             [f] Forums                                                     .
-         *   [m] Mail                                                  .       .
+*      * *                                                             .
+ .           [f] Forums
+             [m] Mail
              [a] Files  (not built yet)
-*      * *   [c] Chat                                                  .
- .           [d] Doors
-             [u] Members
+    *    *   [c] Chat
+.            [d] Doors                                                   .
+   *    .    [u] Members
              [y] Community
-    *    *   [i] Invites
-.          > [s] Terminal settings                                       .
-   *    .    [o] Sysop tools
-             [l] Log off
-
-  .                                                                            .
-    .                                                                    .   ..
- .
+             [i] Invites
+  .        > [s] Terminal settings                                             .
+    .        [o] Sysop tools                                             .   ..
+ .           [l] Log off
   .                                                                    .
 
                                                                                .
