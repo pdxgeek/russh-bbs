@@ -24,6 +24,7 @@ use russh_bbs_core::profiles::{Line, ScreenView, keys};
 
 use super::{clean, line_of};
 use crate::settings::Look;
+use crate::ui::charts::{ChartTheme, Tone};
 use crate::ui::classic;
 use crate::ui::frame::{ChromeText, FrameSpec};
 use crate::ui::screens::nick;
@@ -31,7 +32,7 @@ use crate::ui::strings::StringTable;
 use crate::ui::table::{self, Cell, CellStyle, Column, TableRow, TableSpec, Title, Width, clip};
 use crate::ui::theme::Element;
 use crate::ui::widgets::Pen;
-use crate::ui::widgets::gfx::bar;
+use crate::ui::widgets::draw::meter;
 
 /// Widest the pane is drawn.
 const MAX_WIDTH: u16 = 100;
@@ -342,7 +343,6 @@ fn poll(frame: &mut Frame<'_>, area: Rect, view: &ScreenView, ctx: &ViewCtx<'_>)
                 let count: u64 = value(values, "count").parse().unwrap_or(0);
                 let percent: u64 = value(values, "percent").parse().unwrap_or(0);
                 let mine = *key == ck::POLL_OPTION_COUNT_MINE;
-                let (filled, rest) = bar(percent, 100, bar_width, look.ascii());
                 lines.push(TextLine::from(vec![
                     Span::styled(format!("[{}] ", value(values, "key")), pen.key()),
                     Span::styled(
@@ -358,12 +358,16 @@ fn poll(frame: &mut Frame<'_>, area: Rect, view: &ScreenView, ctx: &ViewCtx<'_>)
                         pen.muted(),
                     ),
                 ]));
-                lines.push(TextLine::from(vec![
-                    Span::raw("    "),
-                    Span::styled(filled, pen.accent()),
-                    Span::styled(rest, pen.muted()),
-                    Span::styled(format!(" {count} ({percent}%)"), pen.text()),
-                ]));
+                let mut bar_line = vec![Span::raw("    ")];
+                bar_line.extend(meter(
+                    ChartTheme::of(look),
+                    percent,
+                    100,
+                    bar_width,
+                    Tone::Plain,
+                ));
+                bar_line.push(Span::styled(format!(" {count} ({percent}%)"), pen.text()));
+                lines.push(TextLine::from(bar_line));
             }
             Line::Filled { key, values } if *key == ck::POLL_BY => {
                 lines.push(TextLine::from(vec![
