@@ -31,6 +31,31 @@ focus = "Focus"
 split = "Split"
 fallback = "Showing {shown}: this terminal is too small for {wanted}."
 
+[ui.preview]
+title = "Theme preview"
+state = "Style {style}   layout {layout}   {cols}x{rows}   {tier}   {colour}   {sample}   art {art}"
+clipped = "Your terminal shows the top-left {cols}x{rows} of this {want_cols}x{want_rows} preview."
+art = "Art in use: {set}. {credit}"
+art_none = "Art in use: none fits, so the board name is drawn in large letters."
+problems = "Art files refused ({count}): {first}"
+tier_unicode = "unicode"
+tier_ascii = "ascii"
+colour = "colour"
+mono = "mono"
+sample_menu = "main menu"
+sample_login = "login"
+on = "on"
+off = "off"
+hint_style = "style"
+hint_layout = "layout"
+hint_size = "size"
+hint_tier = "icons"
+hint_colour = "colour"
+hint_sample = "screen"
+hint_art = "art"
+hint_back = "back"
+sample_body = "Sample screen: nothing on it is real."
+
 [ui.slot]
 popover = "Widgets"
 
@@ -160,6 +185,7 @@ title = "Sysop tools"
 [menu.sysop.item]
 queue = "Invite requests"
 recovery = "Recovery code"
+preview = "Theme preview"
 
 [menu.members]
 title = "Members"

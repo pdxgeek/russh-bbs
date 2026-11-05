@@ -108,6 +108,12 @@ pub struct BoardConfig {
     pub layouts: String,
     /// Whether members may have motion at all. Off turns it off for everyone.
     pub motion: bool,
+    /// Whether the banner and header art is drawn (UI-3). Off draws the board name in large
+    /// letters only, whatever art is installed.
+    pub art: bool,
+    /// The logoff quotes, separated by `|` (UI-3). One is shown on the logoff screen; empty
+    /// shows none.
+    pub quotes: String,
 }
 
 impl Default for BoardConfig {
@@ -123,6 +129,8 @@ impl Default for BoardConfig {
             styles: String::new(),
             layouts: String::new(),
             motion: true,
+            art: true,
+            quotes: String::new(),
         }
     }
 }

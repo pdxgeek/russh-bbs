@@ -90,6 +90,7 @@ pub(super) fn shot(
                     board: &board,
                     wanted: chosen,
                     popover: false,
+                    art: None,
                     widgets: crate::ui::widgets::WidgetView {
                         shown: &shown,
                         data: &widget_data,

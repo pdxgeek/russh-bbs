@@ -38,6 +38,11 @@
 # Limit what members can pick (comma-separated). One entry locks the choice for everyone.
 # styles = "neon,paper,ansi"
 # layouts = "classic,dashboard,wide"
+# Banner and header art (UI-3). Bundled art is on by default; put your own files in `art/` beside
+# the host key (see docs/ui.md, "Board art"). false draws the board name in large letters only.
+# art = true
+# Logoff quotes, separated by "|". One is shown on the logoff screen.
+# quotes = "Keep the line open.|See you in the morning."
 # Set false to turn motion off for every member.
 # motion = true
 

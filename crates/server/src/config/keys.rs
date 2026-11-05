@@ -132,6 +132,14 @@ pub(crate) static KEYS: &[KeyDef] = &[
         Bool,
         "false",
     ),
+    key("board.art", "RUSSH_BBS_BOARD_ART", None, Bool, "false"),
+    key(
+        "board.quotes",
+        "RUSSH_BBS_BOARD_QUOTES",
+        None,
+        Str,
+        "See you in the morning.|Keep the line open.",
+    ),
     key(
         "widgets.hidden",
         "RUSSH_BBS_WIDGETS_HIDDEN",

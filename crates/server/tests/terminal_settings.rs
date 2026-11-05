@@ -151,6 +151,16 @@ async fn send(channel: &mut Channel<client::Msg>, bytes: &str) -> (String, bool)
     words(channel).await
 }
 
+/// Send `bytes`, then repaint the whole screen with a same-size window change, so the words of
+/// the new screen are whole: a diff redraw leaves out cells the previous screen already had in
+/// the same place (UI-3: the login screen now has art or large letters, which moves those).
+async fn send_repainted(channel: &mut Channel<client::Msg>, bytes: &str) -> (String, bool) {
+    channel.data_bytes(bytes.as_bytes().to_vec()).await.unwrap();
+    let _ = words(channel).await;
+    channel.window_change(80, 24, 0, 0).await.unwrap();
+    words(channel).await
+}
+
 /// Claim the board as the founder with `key`; returns the open channel and the login screen.
 async fn claim(rig: &Rig, key: &PrivateKey) -> (Handle<Client>, Channel<client::Msg>, String) {
     let session = login(rig.addr(), "claim", key).await;
@@ -204,7 +214,7 @@ async fn first_login_runs_the_glyph_test_and_the_answer_is_stored() {
     assert!(rig.stored(&key).await.needs_glyph_test());
 
     // Any key moves on to the glyph test, which draws the registry's Nerd Font glyphs.
-    let (test_screen, _) = send(&mut channel, "\r").await;
+    let (test_screen, _) = send_repainted(&mut channel, "\r").await;
     assert!(test_screen.contains(QUESTION), "{test_screen}");
     assert!(test_screen.contains("Style: Nerd Font"), "{test_screen}");
     let board = Icon::from(ContentIcon::Board).glyph(Tier::NerdFont);
@@ -341,7 +351,7 @@ async fn leaving_before_the_glyph_test_is_answered_asks_again_next_time() {
     assert!(rig.stored(&key).await.needs_glyph_test());
 
     let (_s2, mut again, _) = reconnect(&rig, &key).await;
-    let (screen, _) = send(&mut again, "x").await;
+    let (screen, _) = send_repainted(&mut again, "x").await;
     assert!(screen.contains(QUESTION), "{screen}");
     rig.server.shutdown().await;
 }

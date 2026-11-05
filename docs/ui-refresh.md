@@ -1,6 +1,6 @@
 # UI refresh and board customization (plan)
 
-Status: **Approved by the owner, 2026-11-04** as its own milestone, **M3.5: Look and feel** ([milestones.md](milestones.md)). The owner asked for it because "ratatui can make that UI look way better" and "there needs to be ways to customize the BBS so it looks cool". Slices UI-1 to UI-7 and the M3.5 QA gate are in [coordination.md](coordination.md). UI-1 (the frame, D109), UI-2 (style packs, layouts, board identity; [implementation notes](#ui-2-implementation-notes)) and UI-10 (widgets; [implementation notes](#ui-10-implementation-notes)) are built; the rest is not.
+Status: **Approved by the owner, 2026-11-04** as its own milestone, **M3.5: Look and feel** ([milestones.md](milestones.md)). The owner asked for it because "ratatui can make that UI look way better" and "there needs to be ways to customize the BBS so it looks cool". Slices UI-1 to UI-7 and the M3.5 QA gate are in [coordination.md](coordination.md). UI-1 (the frame, D109), UI-2 (style packs, layouts, board identity; [implementation notes](#ui-2-implementation-notes)) and UI-3 (board art; [implementation notes](#ui-3-implementation-notes)), UI-10 (widgets; [implementation notes](#ui-10-implementation-notes)) are built; the rest is not.
 
 ## Goals
 
@@ -232,6 +232,17 @@ Built in `m35/theme-packs-layouts` (D117). The reference is [ui.md](ui.md#styles
 - **Member choices.** Style, layout, motion, colour-depth ceiling and borders, saved per member (migration `0024`), within the board's limits.
 - **Theme gallery, import and export, and the sysop preview** remain UI-3 and UI-7; the screenshots in [ui-screenshots/](ui-screenshots/README.md) are the owner's preview until then.
 
+## UI-3 implementation notes
+
+Built in `m35/board-art` (D123). The reference is [ui.md](ui.md#board-art-ui-3-d123); what differs from the plan above:
+
+- **Formats.** `.ans` and `.art.toml` as planned. The `.art.toml` colours are one character per cell in the VGA palette (`k b g c r m y w`, capitals bright), not hex; there is no 256-colour or truecolor art, so art looks the same at every depth that has colour.
+- **Slots.** `login`, `menu` and `logoff` are drawn. `area` is in the format and the loader and no screen draws it yet (UI-4). The **door menu** slot from the plan is not built (door screens are full ratatui buffers, UI-5).
+- **Board identity.** Of the art parts of `[board]` only `art` (on/off) and `quotes` (the logoff list) are keys; the banner and header are files in `art/`. Menu order and area labels remain UI-6.
+- **Large letters** are not drawn in the menu header at 80x24 (the header bar names the board and the menu needs its rows); they are drawn wherever there is room, and on the login and logoff screens.
+- **Preview.** Under Sysop tools, for `members.approve`. It previews the main menu and the login screen; reader, chat and popup samples wait for those screens to move onto the new frame (UI-4). Theme-file refusals are logged, not shown.
+- **Gallery, import and export** remain UI-7; sysop art is not part of a theme pack yet.
+
 ## UI-10 implementation notes
 
 Built in `m35/widgets` (D122). The reference is [ui.md](ui.md#widgets-ui-10); what differs from the plan above:
@@ -250,5 +261,5 @@ Built in `m35/effects-graphics` (D-TBD). The reference is [ui.md](ui.md#effects-
 - **Dashboard charts** exist as widgets (`ui/charts`) but no screen shows one: the dashboard is UI-4's, and UI-10's widgets still use their own `widgets/gfx.rs` (see coordination).
 - **No effects crate.** `tachyonfx` was considered and not taken (D47 reason in the decision).
 - **Budgets the plan did not name:** a byte budget per effect and a slow-link switch-off, both found necessary by measuring (truecolor first cost about 5 times the bytes).
-- **Not done:** an animated intro over UI-3's art (UI-3 has not merged; the intro draws the board name in its own font instead, as the plan's fallback says); the sysop logo upload and avatars (no screen or setting exists, so `ui/image` has no caller).
+- **Not done:** an animated intro over UI-3's art (UI-3 merged while this slice was in review; the intro still draws the board name in its own font, and moving the login-banner art into it is a follow-up); the sysop logo upload and avatars (no screen or setting exists, so `ui/image` has no caller).
 
