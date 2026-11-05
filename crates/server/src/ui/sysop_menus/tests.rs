@@ -1,5 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::panic, clippy::items_after_statements)]
 
+use std::fmt::Write as _;
 use std::fs;
 use std::path::Path;
 
@@ -246,6 +247,7 @@ fn a_changed_file_gives_a_different_tree_and_the_same_file_the_same_one() {
 
 /// Every hostile `menus.toml` below must leave the built-in menu and a logged reason.
 #[test]
+#[allow(clippy::too_many_lines)] // a table of hostile files
 fn hostile_menu_files_are_refused_and_the_default_menu_stays() {
     let long_line = format!("version = 1 # {}", "x".repeat(300));
     let many_lines = "# c\n".repeat(700);
@@ -255,12 +257,14 @@ fn hostile_menu_files_are_refused_and_the_default_menu_stays() {
             "version = 1\n[[menu]]\nid = \"main\"\n[[menu.item]]\ntarget = \"group:g0\"\nkey = \"a\"\nlabel = \"G\"\n",
         );
         for n in 0..8 {
-            s += &format!("[[menu]]\nid = \"g{n}\"\n[[menu.item]]\n");
+            write!(s, "[[menu]]\nid = \"g{n}\"\n[[menu.item]]\n").unwrap();
             if n < 7 {
-                s += &format!(
+                write!(
+                    s,
                     "target = \"group:g{}\"\nkey = \"a\"\nlabel = \"G\"\n",
                     n + 1
-                );
+                )
+                .unwrap();
             } else {
                 s += "target = \"main.mail\"\n";
             }
@@ -270,7 +274,7 @@ fn hostile_menu_files_are_refused_and_the_default_menu_stays() {
     let many_menus: String = {
         let mut s = String::from("version = 1\n");
         for n in 0..20 {
-            s += &format!("[[menu]]\nid = \"g{n}\"\n");
+            write!(s, "[[menu]]\nid = \"g{n}\"\n").unwrap();
         }
         s
     };

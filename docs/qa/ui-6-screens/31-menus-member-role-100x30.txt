@@ -1,0 +1,30 @@
+ » Night Owl BBS « │ Menus and pages                                                      UTC 10:49
+Using menus.toml
+Menu for the member role
+  [r] House rules *
+  [x] Messages
+  [t] Talk and play >
+    [c] Chat
+    [d] Doors
+    [h] A short history *
+  [f] Forums
+  [u] Members >
+    [l] Member list
+    [p] My profile
+    [e] Edit my profile
+    [k] My keys
+  [y] Community >
+    [o] One-liners
+    [g] Graffiti wall
+    [l] Last callers
+    [p] Polls
+  [i] Invites >
+    [c] Create an invite
+    [y] Your invites
+  [s] Terminal settings
+  [l] Log off
+
+
+
+
+ r next role  t menu or pages  ↑↓ move  l reload files  b back

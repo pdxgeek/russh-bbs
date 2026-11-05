@@ -1447,7 +1447,7 @@ fn a_sysop_page_opens_scrolls_to_its_end_and_returns_to_the_same_menu() {
     )
     .with_menu_tree(tree);
     press(&mut f, "x");
-    assert_eq!(f.menu_tree() as *const _, tree as *const _);
+    assert!(std::ptr::eq(f.menu_tree(), tree));
     press(&mut f, "r");
     assert_eq!(f.bulletin().unwrap().id(), "rules");
     // The draw reports how far the page can scroll; the keys stop there.

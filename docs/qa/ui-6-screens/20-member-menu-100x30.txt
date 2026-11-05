@@ -1,0 +1,30 @@
+ » Night Owl BBS « │ Night Owl Hall                                                       UTC 10:49
+                                                █████
+   .     .    ──────────────────────────────────────────────────────────────────────── .     .     .
+              /     /     /     /     /     /     │     \     \     \     \     \
+
+╭« Night Owl Hall »──────────────╮╭« This board »─────────────────╮╭« Clock »──────────────────────╮
+│ Signed in as marlowe.          ││ Night Owl BBS                 ││      ━         ━              │
+│                                ││ A bulletin board in your ter… ││   ┃ ┃ ┃ • ┃━┃ ┃━┃             │
+│ > [r] House rules              ││                               ││   ┃ ┃━┃ •   ┃  ━┃             │
+│   [x] Messages                 ││                               ││ Thu 5 Nov 2026 UTC            │
+│   [t] Talk and play            ││                               ││                               │
+│   [f] Forums                   ││                               ││                               │
+│   [u] Members                  │╰───────────────────────────────╯╰───────────────────────────────╯
+│   [y] Community                │╭« Who is online »──────────────╮╭« Last callers »───────────────╮
+│   [i] Invites                  ││ ● 1 online                    ││ marlowe                   now │
+│   [s] Terminal settings        ││ ▸ marlowe                     ││                               │
+│   [l] Log off                  ││                               ││                               │
+│                                ││                               ││                               │
+│                                ││                               ││                               │
+│                                ││                               ││                               │
+│                                │╰───────────────────────────────╯╰───────────────────────────────╯
+│                                │╭« Mail »───────────────────────╮╭« Your credits »───────────────╮
+│                                ││ No unread mail.               ││ 0 credits                     │
+│                                ││ 0 in your inbox               ││ 0 in 14 days                  │
+│                                ││                               ││                               │
+│                                ││                               ││                               │
+│                                ││                               ││                               │
+│ Notice: Icons set to Unicode.  ││                               ││                               │
+╰────────────────────────────────╯╰───────────────────────────────╯╰───────────────────────────────╯
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off

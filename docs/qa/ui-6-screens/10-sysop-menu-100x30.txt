@@ -1,0 +1,30 @@
+ » Night Owl BBS « │ Night Owl Hall                                                       UTC 10:48
+                                                █████
+   .     .    ──────────────────────────────────────────────────────────────────────── .     .     .
+              /     /     /     /     /     /     │     \     \     \     \     \
+
+╭« Night Owl Hall »──────────────╮╭« This board »─────────────────╮╭« Clock »──────────────────────╮
+│ Signed in as founder.          ││ Night Owl BBS                 ││      ━         ━              │
+│                                ││ A bulletin board in your ter… ││   ┃ ┃ ┃ • ┃━┃ ┃━┃             │
+│ > [r] House rules              ││                               ││   ┃ ┃━┃ •   ┃ ┃━┃             │
+│   [x] Messages                 ││                               ││ Thu 5 Nov 2026 UTC            │
+│   [t] Talk and play            ││                               ││                               │
+│   [f] Forums                   ││                               ││                               │
+│   [u] Members                  │╰───────────────────────────────╯╰───────────────────────────────╯
+│   [y] Community                │╭« Who is online »──────────────╮╭« Mail »───────────────────────╮
+│   [i] Invites                  ││ ● 1 online                    ││ No unread mail.               │
+│   [s] Terminal settings        ││ ▸ founder                     ││ 0 in your inbox               │
+│   [o] Sysop tools              ││                               ││                               │
+│   [l] Log off                  ││                               ││                               │
+│                                ││                               ││                               │
+│                                ││                               ││                               │
+│                                │╰───────────────────────────────╯╰───────────────────────────────╯
+│                                │╭« Your credits »───────────────╮
+│                                ││ 0 credits                     │
+│                                ││ 0 in 14 days                  │  .     .     .     .     .     .
+│                                ││                               │
+│                                ││                               │
+│                                ││                               │  .     .     .     .     .     .
+│ Notice: Icons set to Unicode.  ││                               │
+╰────────────────────────────────╯╰───────────────────────────────╯
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
