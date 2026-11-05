@@ -202,6 +202,9 @@ pub(crate) struct TableSpec<'a> {
     pub(crate) numbered: bool,
     /// A line under the table inside the border, such as a page number (chrome).
     pub(crate) footer: Option<String>,
+    /// The column the list is sorted by (an index into `columns`) and whether it is
+    /// descending; the header marks it with `^` or `v` (an arrow outside the ASCII tier).
+    pub(crate) sorted: Option<(usize, bool)>,
 }
 
 /// A table or popup title.
@@ -388,6 +391,12 @@ pub(crate) fn render(
     let paint = Paint::of(look);
     let columns: Vec<&Column<'_>> = plan.shown_at.iter().map(|at| &spec.columns[*at]).collect();
     if plan.header_rows == 1 {
+        let marked = spec.sorted.and_then(|(column, descending)| {
+            plan.shown_at
+                .iter()
+                .position(|at| *at == column)
+                .map(|at| (at, descending))
+        });
         draw_header(
             frame,
             inner,
@@ -396,6 +405,7 @@ pub(crate) fn render(
             spec.numbered,
             paint.head,
             look.ascii(),
+            marked,
         );
     }
     if spec.rows.is_empty() {
@@ -409,9 +419,29 @@ pub(crate) fn render(
             ..data
         };
         frame.render_widget(message, middle);
+        draw_footer(frame, spec, &plan, inner, &paint, look);
         return TableView::default();
     }
     draw_rows(frame, spec, &plan, &columns, &paint, look);
+    draw_footer(frame, spec, &plan, inner, &paint, look);
+    if spec.rows.len() > plan.shown {
+        draw_scrollbar(frame, area, spec, &plan, look);
+    }
+    TableView {
+        top: plan.top,
+        shown: plan.shown,
+    }
+}
+
+/// The line under the rows inside the border, such as a count and a page number.
+fn draw_footer(
+    frame: &mut Frame<'_>,
+    spec: &TableSpec<'_>,
+    plan: &Plan,
+    inner: Rect,
+    paint: &Paint,
+    look: Look,
+) {
     if plan.footer_rows == 1
         && let Some(footer) = &spec.footer
     {
@@ -427,13 +457,6 @@ pub(crate) fn render(
             )),
             footer_area,
         );
-    }
-    if spec.rows.len() > plan.shown {
-        draw_scrollbar(frame, area, spec, &plan, look);
-    }
-    TableView {
-        top: plan.top,
-        shown: plan.shown,
     }
 }
 
@@ -591,6 +614,10 @@ fn draw_scrollbar(
     frame.render_stateful_widget(bar, track, &mut state);
 }
 
+#[allow(
+    clippy::too_many_arguments,
+    reason = "one header, drawn from the plan's pieces"
+)]
 fn draw_header(
     frame: &mut Frame<'_>,
     inner: Rect,
@@ -599,6 +626,7 @@ fn draw_header(
     numbered: bool,
     head_style: Style,
     ascii: bool,
+    marked: Option<(usize, bool)>,
 ) {
     let area = Rect { height: 1, ..inner };
     frame.render_widget(Block::default().style(head_style), area);
@@ -616,12 +644,20 @@ fn draw_header(
     let cells: Vec<Line<'static>> = columns
         .iter()
         .zip(widths)
-        .map(|(column, width)| {
-            let line = Line::from(Span::raw(clip(
-                column.title.as_str(),
-                usize::from(*width),
-                ascii,
-            )));
+        .enumerate()
+        .map(|(at, (column, width))| {
+            let mut title = column.title.as_str().to_owned();
+            if let Some((_, descending)) = marked.filter(|(m, _)| *m == at) {
+                // Words and a mark, readable without colour: `^` ascending, `v` descending.
+                title.push(' ');
+                title.push(match (descending, ascii) {
+                    (false, true) => '^',
+                    (true, true) => 'v',
+                    (false, false) => '\u{25b2}',
+                    (true, false) => '\u{25bc}',
+                });
+            }
+            let line = Line::from(Span::raw(clip(&title, usize::from(*width), ascii)));
             if column.align_right {
                 line.alignment(Alignment::Right)
             } else {

@@ -95,6 +95,7 @@ fn buffer(screen: &MailScreen, area: Rect) -> Buffer {
         tier: Tier::Ascii,
         markers: &crate::ui::classic::MENU_MARKERS,
         clock: Some("UTC 12:00"),
+        art: None,
     };
     let mut terminal = Terminal::new(TestBackend::new(area.width, area.height)).unwrap();
     terminal.draw(|frame| render(frame, screen, &ctx)).unwrap();
@@ -151,7 +152,11 @@ fn the_inbox_marks_unread_and_shows_an_unreadable_message_as_an_error_entry() {
     let shown = text(&screen);
     assert!(shown.contains("3 messages, 2 unread"), "{shown}");
     assert!(shown.contains("* 1.") || shown.contains("1. * "), "{shown}");
-    assert!(shown.contains("ann - Hello"), "{shown}");
+    // The inbox is a table now (UI-4): who from and the subject are separate columns.
+    assert!(
+        shown.contains("ann") && shown.contains("Hello") && shown.contains("Subject"),
+        "{shown}"
+    );
     assert!(shown.contains("(this message cannot be opened)"), "{shown}");
     // An empty mailbox is a plain line.
     let empty = open(Vec::new());

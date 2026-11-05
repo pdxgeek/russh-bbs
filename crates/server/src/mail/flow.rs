@@ -6,9 +6,7 @@ use std::sync::{Mutex, PoisonError};
 use ratatui::layout::Rect;
 use russh_bbs_core::drafts::Body;
 use russh_bbs_core::mail::{InboxPage, MessageId, MessageView, body_limits, prepare_subject};
-use russh_bbs_core::terminal_settings::{
-    Pager, PagerEffect, PagerKey, TerminalSettings,
-};
+use russh_bbs_core::terminal_settings::{Pager, PagerEffect, PagerKey, TerminalSettings};
 use russh_bbs_core::waiting_room::NoticeKind;
 
 use super::exec::{Fail, Purpose, Request, Response};
@@ -16,6 +14,7 @@ use super::strings;
 use crate::ssh::terminal::Key;
 use crate::ui::editor::{DraftSave, Editor, EditorEffect, Outcome};
 use crate::ui::pager;
+use crate::ui::screens::list::{Pick, SORT_KEY, Sort, ViewCell, pick, text_key};
 
 /// What the session does after a key.
 #[derive(Debug)]
@@ -141,41 +140,30 @@ pub(crate) struct MailScreen {
     unsent: Option<(Purpose, String)>,
     /// What the editor last submitted, until the answer says whether it was sent.
     submitted: Option<(Purpose, String)>,
+    /// Which inbox rows the last draw showed, for the paging and jump keys (FIX-M3-1).
+    pub(super) view: ViewCell,
+    /// How the inbox page is sorted (`o` cycles it).
+    pub(super) sort: Sort,
 }
+
+/// Sortable inbox columns: from, subject, date.
+const SORT_COLUMNS: usize = 3;
 
 fn info(text: &str) -> (NoticeKind, String) {
     (NoticeKind::Info, text.to_owned())
 }
 
-fn digit(key: Key) -> Option<usize> {
-    match key {
-        Key::Char(c @ '1'..='9') => c.to_digit(10).map(|d| d as usize - 1),
-        _ => None,
-    }
-}
-
-/// The row a list key lands on, if it moves or picks one.
-enum Pick {
-    Move(usize),
-    Open(usize),
-    None,
-}
-
-fn pick(key: Key, cursor: usize, len: usize) -> Pick {
-    if len == 0 {
-        return Pick::None;
-    }
-    match key {
-        Key::Up => Pick::Move(cursor.saturating_sub(1)),
-        Key::Down => Pick::Move((cursor + 1).min(len - 1)),
-        Key::Enter => Pick::Open(cursor.min(len - 1)),
-        key => digit(key)
-            .filter(|n| *n < len)
-            .map_or(Pick::None, Pick::Open),
-    }
-}
-
 impl MailScreen {
+    /// Reorder the inbox page by its sort; the rows move, so the keys follow the order drawn.
+    fn sort_inbox(&self, page: &mut InboxPage) {
+        self.sort
+            .apply(&mut page.entries, |entry, column| match column {
+                0 => (text_key(entry.from.as_deref().unwrap_or("")), 0),
+                1 => (text_key(entry.subject.as_deref().unwrap_or("")), 0),
+                _ => (String::new(), entry.at.as_raw()),
+            });
+    }
+
     /// Open mail; the first request loads the first page of the inbox.
     pub(crate) fn open(settings: TerminalSettings) -> (Self, Request) {
         (
@@ -186,6 +174,8 @@ impl MailScreen {
                 settings,
                 unsent: None,
                 submitted: None,
+                view: ViewCell::default(),
+                sort: Sort::default(),
             },
             Request::Inbox { page: 0 },
         )
@@ -249,7 +239,7 @@ impl MailScreen {
     fn inbox_key(
         &mut self,
         key: Key,
-        page: InboxPage,
+        mut page: InboxPage,
         mut cursor: usize,
         confirm: Option<MessageId>,
     ) -> MailEffect {
@@ -266,7 +256,7 @@ impl MailScreen {
             };
         }
         let here = page.page;
-        match pick(key, cursor, page.entries.len()) {
+        match pick(key, cursor, page.entries.len(), self.view.get()) {
             Pick::Move(to) => cursor = to,
             Pick::Open(at) => {
                 let id = page.entries[at].id;
@@ -285,6 +275,11 @@ impl MailScreen {
                         confirm: None,
                     };
                     return MailEffect::Exit;
+                }
+                Key::Char(SORT_KEY) => {
+                    self.sort = self.sort.next(SORT_COLUMNS);
+                    self.sort_inbox(&mut page);
+                    cursor = 0;
                 }
                 Key::Char('c' | 'C') if page.can_send => {
                     return self.start_input(
@@ -595,6 +590,8 @@ impl MailScreen {
                 if page.entries.is_empty() && page.page > 0 {
                     return Some(self.restart_inbox(page.page - 1));
                 }
+                let mut page = page;
+                self.sort_inbox(&mut page);
                 self.state = State::Inbox {
                     page,
                     cursor: 0,

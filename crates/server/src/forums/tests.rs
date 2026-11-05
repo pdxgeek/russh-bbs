@@ -309,7 +309,10 @@ fn the_reader_pages_a_long_post_and_every_line_is_reachable() {
     let first = text(&screen);
     assert!(first.contains("More (1 of "), "{first}");
     assert!(first.contains("Post 1 of 1"), "{first}");
-    assert!(first.contains("General"), "the board names the box: {first}");
+    assert!(
+        first.contains("General"),
+        "the board names the box: {first}"
+    );
     assert!(first.contains("From ann"), "{first}");
     assert!(first.contains("line 0"), "{first}");
     let mut seen = first;

@@ -1740,6 +1740,10 @@ impl Screen {
                 .map_or(0, |elapsed| elapsed.as_secs()),
         );
         let (wipe_step, cursor_dark) = self.motion_frame();
+        let area_art = self
+            .content
+            .style(&self.ui)
+            .map(|style| self.ui.art_ctx(style));
         if let Content::Forums(session) = &self.content {
             let settings = session.flow.settings();
             let theme = self.ui.theme_for(settings);
@@ -1779,6 +1783,7 @@ impl Screen {
                 tier: settings.icon_tier(),
                 markers: self.status_markers(),
                 clock: Some(clock.as_str()),
+                art: area_art.as_ref(),
             };
             let tier = ctx.tier;
             self.terminal.draw(|frame| {

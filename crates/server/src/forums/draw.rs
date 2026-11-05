@@ -15,13 +15,17 @@ use russh_bbs_core::waiting_room::NoticeKind;
 use russh_bbs_core::forums::{SearchPage, ThreadPage};
 
 use super::exec::BoardList;
-use super::flow::{ForumsScreen, Input, InputKind, ListView, State, confirm_text, reader_title};
+use super::flow::{
+    ForumsScreen, Input, InputKind, SORT_BOARDS, SORT_RESULTS, SORT_THREADS, State, confirm_text,
+    reader_title,
+};
 use super::strings;
 use crate::settings::{self, Look};
 use crate::ui::classic::{self, MENU_MARKERS};
 use crate::ui::editor::EditorView;
 use crate::ui::frame::{ChromeText, FrameSpec, Hint};
 use crate::ui::popup::{self, Popup, PopupKind, PopupLine};
+use crate::ui::screens::list::ListView;
 use crate::ui::screens::reader as reader_ui;
 use crate::ui::strings::StringTable;
 use crate::ui::table::{self, Cell, CellStyle, Column, TableRow, TableSpec, Title, Width};
@@ -123,6 +127,7 @@ fn state_hints(state: &State) -> Vec<Hint<'static>> {
                 hint("Enter", "open"),
                 hint("1-9", "jump"),
                 hint("s", "search"),
+                hint("o", "sort"),
             ];
             if list.can_manage {
                 hints.push(hint("n", "new board"));
@@ -142,6 +147,7 @@ fn state_hints(state: &State) -> Vec<Hint<'static>> {
             }
             hints.push(hint("n/b", "page"));
             hints.push(hint("s", "search"));
+            hints.push(hint("o", "sort"));
             if page.can_feeds && (!page.board.restricted || page.board.feed) {
                 hints.push(hint("p", "public RSS"));
             }
@@ -158,6 +164,7 @@ fn state_hints(state: &State) -> Vec<Hint<'static>> {
             hint("Enter", "read"),
             hint("1-9", "jump"),
             hint("n/b", "page"),
+            hint("o", "sort"),
             hint("Esc", "back"),
         ],
         State::Input(_) => vec![hint("Enter", "continue"), hint("Esc", "cancel")],
@@ -341,6 +348,7 @@ fn board_table(
             empty: strings::NO_BOARDS,
             numbered: true,
             footer: None,
+            sorted: screen.sorts[SORT_BOARDS].mark(),
         },
     );
     remember(screen, drawn);
@@ -391,6 +399,7 @@ fn thread_table(
             empty: strings::NO_THREADS,
             numbered: true,
             footer: None,
+            sorted: screen.sorts[SORT_THREADS].mark(),
         },
     );
     remember(screen, drawn);
@@ -454,6 +463,7 @@ fn result_table(
             empty,
             numbered: true,
             footer: None,
+            sorted: screen.sorts[SORT_RESULTS].mark(),
         },
     );
     remember(screen, drawn);

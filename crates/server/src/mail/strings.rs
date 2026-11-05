@@ -10,8 +10,6 @@ pub(super) const NO_MAIL: &str = "Your mailbox is empty.";
 pub(super) const CANNOT_OPEN: &str = "(this message cannot be opened)";
 pub(super) const GONE_MEMBER: &str = "(gone)";
 
-pub(super) const HELP_INBOX: &str =
-    "Up/Down + Enter read   1-9 jump   c write   d delete   n/b next/back page   Esc back";
 pub(super) const HELP_INPUT: &str = "Enter to continue   Esc to cancel";
 pub(super) const CONFIRM_DELETE: &str =
     "Delete this message? y to delete, any other key to keep it.";

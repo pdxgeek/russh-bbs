@@ -8,9 +8,7 @@ use russh_bbs_core::forums::{
     BoardId, SearchPage, ThreadPage, ThreadView, prepare_description, prepare_name, prepare_subject,
 };
 
-use russh_bbs_core::terminal_settings::{
-    Pager, PagerEffect, PagerKey, TerminalSettings,
-};
+use russh_bbs_core::terminal_settings::{Pager, PagerEffect, PagerKey, TerminalSettings};
 use russh_bbs_core::waiting_room::NoticeKind;
 
 use super::exec::{BoardList, Fail, Purpose, Request, Response};
@@ -18,6 +16,7 @@ use super::strings;
 use crate::ssh::terminal::Key;
 use crate::ui::editor::{DraftSave, Editor, EditorEffect, Outcome};
 use crate::ui::pager;
+use crate::ui::screens::list::{Pick, SORT_KEY, Sort, ViewCell, pick, text_key};
 
 /// Longest text a one-line prompt accepts while typing.
 const INPUT_MAX: usize = 200;
@@ -134,32 +133,6 @@ enum Pending {
     Feed,
 }
 
-/// Which rows of the current list the last draw showed. Drawing is the only thing that knows
-/// how many rows fit, so it records the window here and the keys read it back (FIX-M3-4):
-/// a digit picks among the drawn rows, and Page Up / Page Down move by one drawn page.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-pub(super) struct ListView {
-    /// Index of the first drawn item.
-    pub(super) top: usize,
-    /// How many items were drawn (0 before the first draw).
-    pub(super) shown: usize,
-}
-
-/// A [`ListView`] shared between drawing (`&self`) and keys. A mutex because the screen is held
-/// across awaits and so must be `Sync`; the value is `Copy` and never held across a call.
-#[derive(Debug, Default)]
-pub(super) struct ViewCell(Mutex<ListView>);
-
-impl ViewCell {
-    pub(super) fn get(&self) -> ListView {
-        *self.0.lock().unwrap_or_else(PoisonError::into_inner)
-    }
-
-    pub(super) fn set(&self, view: ListView) {
-        *self.0.lock().unwrap_or_else(PoisonError::into_inner) = view;
-    }
-}
-
 /// The forum screens.
 #[derive(Debug)]
 pub(crate) struct ForumsScreen {
@@ -167,9 +140,19 @@ pub(crate) struct ForumsScreen {
     pub(super) notice: Option<(NoticeKind, String)>,
     /// Set by drawing; see [`ListView`].
     pub(super) view: ViewCell,
+    /// The sort of the board list, the thread list and the search results (`o` cycles it).
+    pub(super) sorts: [Sort; 3],
     pending: Option<Pending>,
     settings: TerminalSettings,
 }
+
+/// Which list a [`Sort`] belongs to: an index into [`ForumsScreen::sorts`].
+pub(super) const SORT_BOARDS: usize = 0;
+pub(super) const SORT_THREADS: usize = 1;
+pub(super) const SORT_RESULTS: usize = 2;
+/// Sortable columns of each list: boards (name, threads), threads (subject, from, posts, last
+/// post), results (board, subject).
+pub(super) const SORT_COLUMNS: [usize; 3] = [2, 4, 2];
 
 impl ForumsScreen {
     /// Which screen of the forums this is, for the motion wipe: a change starts one (UI-4).
@@ -199,46 +182,6 @@ fn problem(text: &str) -> (NoticeKind, String) {
     (NoticeKind::Error, text.to_owned())
 }
 
-/// The row a list key lands on, if it moves or picks one.
-enum Pick {
-    Move(usize),
-    Open(usize),
-    None,
-}
-
-/// What a list key does. `view` is what the last draw showed: digits count the drawn rows, so
-/// `Enter` and a digit can only ever open a row that is on screen.
-fn pick(key: Key, cursor: usize, len: usize, view: ListView) -> Pick {
-    if len == 0 {
-        return Pick::None;
-    }
-    // Before the first draw nothing is windowed.
-    let view = if view.shown == 0 {
-        ListView { top: 0, shown: len }
-    } else {
-        view
-    };
-    let page = view.shown.max(1);
-    let cursor = cursor.min(len - 1);
-    match key {
-        Key::Up => Pick::Move(cursor.saturating_sub(1)),
-        Key::Down => Pick::Move((cursor + 1).min(len - 1)),
-        Key::PageUp => Pick::Move(cursor.saturating_sub(page)),
-        Key::PageDown => Pick::Move((cursor + page).min(len - 1)),
-        Key::Home => Pick::Move(0),
-        Key::End => Pick::Move(len - 1),
-        Key::Enter => Pick::Open(cursor),
-        Key::Char(c @ '1'..='9') => c
-            .to_digit(10)
-            .and_then(|d| usize::try_from(d - 1).ok())
-            .filter(|n| *n < view.shown)
-            .map(|n| view.top + n)
-            .filter(|at| *at < len)
-            .map_or(Pick::None, Pick::Open),
-        _ => Pick::None,
-    }
-}
-
 impl ForumsScreen {
     /// Open the forums; the first request loads the board list.
     pub(crate) fn open(settings: TerminalSettings) -> (Self, Request) {
@@ -247,11 +190,43 @@ impl ForumsScreen {
                 state: State::Start,
                 notice: None,
                 view: ViewCell::default(),
+                sorts: [Sort::default(); 3],
                 pending: Some(Pending::Boards),
                 settings,
             },
             Request::Boards,
         )
+    }
+
+    /// Reorder the board list by its sort. The rows themselves move, so the cursor, the digits
+    /// and Enter follow the order drawn.
+    fn sort_boards(&self, list: &mut BoardList) {
+        self.sorts[SORT_BOARDS].apply(&mut list.boards, |board, column| match column {
+            0 => (text_key(&board.name), 0),
+            _ => (
+                String::new(),
+                i64::try_from(board.threads).unwrap_or(i64::MAX),
+            ),
+        });
+    }
+
+    fn sort_threads(&self, page: &mut ThreadPage) {
+        self.sorts[SORT_THREADS].apply(&mut page.threads, |thread, column| match column {
+            0 => (text_key(&thread.subject), 0),
+            1 => (text_key(thread.author.as_deref().unwrap_or("")), 0),
+            2 => (
+                String::new(),
+                i64::try_from(thread.posts).unwrap_or(i64::MAX),
+            ),
+            _ => (String::new(), thread.last_post_at.as_raw()),
+        });
+    }
+
+    fn sort_results(&self, page: &mut SearchPage) {
+        self.sorts[SORT_RESULTS].apply(&mut page.hits, |hit, column| match column {
+            0 => text_key(&hit.board_name),
+            _ => text_key(&hit.subject),
+        });
     }
 
     /// The editor, while one is open.
@@ -311,7 +286,7 @@ impl ForumsScreen {
         }
     }
 
-    fn boards_key(&mut self, key: Key, list: BoardList, mut cursor: usize) -> ForumEffect {
+    fn boards_key(&mut self, key: Key, mut list: BoardList, mut cursor: usize) -> ForumEffect {
         match pick(key, cursor, list.boards.len(), self.view.get()) {
             Pick::Move(to) => cursor = to,
             Pick::Open(at) => {
@@ -323,6 +298,12 @@ impl ForumsScreen {
                 Key::Escape => {
                     self.state = State::Boards { list, cursor };
                     return ForumEffect::Exit;
+                }
+                Key::Char(SORT_KEY) => {
+                    self.sorts[SORT_BOARDS] =
+                        self.sorts[SORT_BOARDS].next(SORT_COLUMNS[SORT_BOARDS]);
+                    self.sort_boards(&mut list);
+                    cursor = 0;
                 }
                 Key::Char('s' | 'S') => {
                     return self.start_input(InputKind::Search, State::Boards { list, cursor });
@@ -349,7 +330,7 @@ impl ForumsScreen {
         ForumEffect::Stay
     }
 
-    fn threads_key(&mut self, key: Key, page: ThreadPage, mut cursor: usize) -> ForumEffect {
+    fn threads_key(&mut self, key: Key, mut page: ThreadPage, mut cursor: usize) -> ForumEffect {
         let board = page.board.id;
         match pick(key, cursor, page.threads.len(), self.view.get()) {
             Pick::Move(to) => cursor = to,
@@ -404,6 +385,12 @@ impl ForumsScreen {
                     return self
                         .start_input(InputKind::Allow { board }, State::Threads { page, cursor });
                 }
+                Key::Char(SORT_KEY) => {
+                    self.sorts[SORT_THREADS] =
+                        self.sorts[SORT_THREADS].next(SORT_COLUMNS[SORT_THREADS]);
+                    self.sort_threads(&mut page);
+                    cursor = 0;
+                }
                 Key::Char('s' | 'S') => {
                     return self.start_input(InputKind::Search, State::Threads { page, cursor });
                 }
@@ -417,7 +404,7 @@ impl ForumsScreen {
     fn results_key(
         &mut self,
         key: Key,
-        page: SearchPage,
+        mut page: SearchPage,
         query: String,
         mut cursor: usize,
     ) -> ForumEffect {
@@ -471,6 +458,12 @@ impl ForumsScreen {
                         cursor,
                     };
                     return self.request(Pending::Search, request);
+                }
+                Key::Char(SORT_KEY) => {
+                    self.sorts[SORT_RESULTS] =
+                        self.sorts[SORT_RESULTS].next(SORT_COLUMNS[SORT_RESULTS]);
+                    self.sort_results(&mut page);
+                    cursor = 0;
                 }
                 Key::Char('s' | 'S') => {
                     return self.start_input(
@@ -859,7 +852,8 @@ impl ForumsScreen {
 
     fn got_boards(&mut self, result: Result<BoardList, Fail>) -> Option<Request> {
         match result {
-            Ok(list) => {
+            Ok(mut list) => {
+                self.sort_boards(&mut list);
                 self.state = State::Boards { list, cursor: 0 };
                 None
             }
@@ -882,7 +876,8 @@ impl ForumsScreen {
 
     fn got_threads(&mut self, result: Result<ThreadPage, Fail>) -> Option<Request> {
         match result {
-            Ok(page) => {
+            Ok(mut page) => {
+                self.sort_threads(&mut page);
                 self.state = State::Threads { page, cursor: 0 };
                 None
             }
@@ -911,7 +906,8 @@ impl ForumsScreen {
 
     fn got_search(&mut self, result: Result<SearchPage, Fail>) -> Option<Request> {
         match result {
-            Ok(page) => {
+            Ok(mut page) => {
+                self.sort_results(&mut page);
                 let query = match &self.state {
                     State::Input(input) if input.kind == InputKind::Search => input.text.clone(),
                     State::Results { query, .. } => query.clone(),

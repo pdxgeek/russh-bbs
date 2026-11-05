@@ -400,23 +400,6 @@ pub(crate) fn content_hints(strings: &StringTable) -> Vec<Hint<'_>> {
     menu_hints(strings, false)
 }
 
-/// Draw a content screen on the older geometry: the box fills the screen and a status row is
-/// reserved only when a marker applies (the chat, mail and door screens, which size their own
-/// content to the box and move onto the frame in UI-4/UI-5). The row is the same marker row.
-pub(crate) fn render_content_bare(frame: &mut Frame<'_>, screen: ContentScreen<'_>) {
-    let (content, status) = super::chrome::split_status(frame.area(), screen.markers);
-    settings::boxed(
-        frame,
-        content,
-        screen.strings.text(keys::TITLE),
-        screen.lines,
-        screen.look,
-    );
-    if let Some(row) = status {
-        super::chrome::render_status(frame, row, screen.markers, screen.tier, screen.strings);
-    }
-}
-
 /// Draw a content screen: the frame's bars, and the box with the caller's lines in the body.
 pub(crate) fn render_content(frame: &mut Frame<'_>, screen: ContentScreen<'_>) {
     let hints = content_hints(screen.strings);

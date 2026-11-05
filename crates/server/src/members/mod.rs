@@ -252,6 +252,7 @@ pub(crate) fn render_list(frame: &mut ratatui::Frame<'_>, view: &ScreenView, ctx
             empty: ctx.strings.text(keys::LIST_EMPTY),
             numbered: true,
             footer: None,
+            sorted: None,
         },
     );
     frame.render_widget(Paragraph::new(after), bottom);

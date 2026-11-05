@@ -227,16 +227,13 @@ fn render_list(
             empty: strings::NO_ROOMS,
             numbered: false,
             footer: None,
+            sorted: None,
         },
     );
     if let Some(area) = help_area {
-        let inner = ctx.look.panel(
-            frame,
-            area,
-            Some("Commands"),
-            Element::Pane,
-            false,
-        );
+        let inner = ctx
+            .look
+            .panel(frame, area, Some("Commands"), Element::Pane, false);
         let pen = pen(ctx.look);
         let mut lines = vec![TextLine::styled(
             "Inside a room, type to talk.".to_owned(),
@@ -335,9 +332,13 @@ fn render_room(
 }
 
 fn draw_rooms(frame: &mut Frame<'_>, area: Rect, room: &RoomPage, ctx: &ChatCtx<'_>) {
-    let inner = ctx
-        .look
-        .panel(frame, area, Some(strings::HEADING_ROOMS), Element::Pane, false);
+    let inner = ctx.look.panel(
+        frame,
+        area,
+        Some(strings::HEADING_ROOMS),
+        Element::Pane,
+        false,
+    );
     let pen = pen(ctx.look);
     let width = usize::from(inner.width);
     let lines: Vec<TextLine<'static>> = room
@@ -376,7 +377,11 @@ fn draw_who(frame: &mut Frame<'_>, area: Rect, room: &RoomPage, ctx: &ChatCtx<'_
     let pen = pen(ctx.look);
     let mut lines: Vec<TextLine<'static>> = Vec::new();
     let overflow = room.roster.len() > rows;
-    let shown = if overflow { rows.saturating_sub(1) } else { rows };
+    let shown = if overflow {
+        rows.saturating_sub(1)
+    } else {
+        rows
+    };
     for who in room.roster.iter().take(shown) {
         let name = clean(who.as_str());
         let dot = if ctx.look.ascii() { "*" } else { "\u{25cf}" };

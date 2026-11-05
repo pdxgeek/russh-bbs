@@ -752,7 +752,10 @@ mod drawing {
         let screen = in_room();
         let wide = rows(&draw(&screen, Tier::Ascii, (80, 24))).join("\n");
         assert!(wide.contains("Chat rooms"), "{wide}");
-        assert!(wide.contains("> #lobby") && wide.contains("#retro"), "{wide}");
+        assert!(
+            wide.contains("> #lobby") && wide.contains("#retro"),
+            "{wide}"
+        );
         assert!(wide.contains("Online (2)"), "{wide}");
         assert!(wide.contains("* ann") && wide.contains("* bob"), "{wide}");
         let narrow = rows(&draw(&screen, Tier::Ascii, (60, 24))).join("\n");
@@ -766,7 +769,10 @@ mod drawing {
     #[test]
     fn the_who_pane_follows_joins_and_leaves() {
         let mut screen = in_room();
-        screen.receive(vec![Event::Joined(handle("carol")), Event::Left(handle("bob"))]);
+        screen.receive(vec![
+            Event::Joined(handle("carol")),
+            Event::Left(handle("bob")),
+        ]);
         let text = rows(&draw(&screen, Tier::Ascii, (80, 24))).join("\n");
         assert!(text.contains("Online (2)"), "{text}");
         assert!(text.contains("* carol"), "{text}");
@@ -830,7 +836,10 @@ mod drawing {
         }
         screen.deliver(ChatResponse::Refused(ChatNotice::Failed));
         let text = rows(&draw(&screen, Tier::Ascii, (80, 24))).join("\n");
-        assert!(text.contains("#room32"), "the selected last room is on screen\n{text}");
+        assert!(
+            text.contains("#room32"),
+            "the selected last room is on screen\n{text}"
+        );
         assert!(!text.contains("#room01"), "the list scrolled\n{text}");
         assert!(text.contains("Problem"), "{text}");
         assert!(text.contains("That did not work."), "{text}");

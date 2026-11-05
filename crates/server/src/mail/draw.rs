@@ -5,22 +5,26 @@
 
 use ratatui::Frame;
 use ratatui::layout::Rect;
-use ratatui::style::{Modifier, Style};
-use ratatui::text::{Line, Span};
+use ratatui::style::Style;
+use ratatui::text::Line;
 use russh_bbs_core::icons::Tier;
 use russh_bbs_core::mail::InboxPage;
 use russh_bbs_core::sanitize::SingleLine;
 use russh_bbs_core::terminal_settings::{TerminalSettings, format_utc};
+use russh_bbs_core::waiting_room::NoticeKind;
 
 use super::flow::{Input, InputKind, MailScreen, State, confirm_text, reader_title};
 use super::strings;
 use crate::settings::{self, Look};
-use crate::ui::classic::{self, ContentScreen, MENU_MARKERS};
+use crate::ui::art::Slot as ArtSlot;
+use crate::ui::classic::{self, MENU_MARKERS};
 use crate::ui::editor::EditorView;
-use crate::ui::frame::{ChromeText, Hint};
+use crate::ui::frame::{ArtRequest, ChromeText, FrameSpec, Hint};
 use crate::ui::popup::{self, Popup, PopupKind, PopupLine};
+use crate::ui::screens::list::ListView;
 use crate::ui::screens::reader as reader_ui;
 use crate::ui::strings::StringTable;
+use crate::ui::table::{self, Cell, CellStyle, Column, TableRow, TableSpec, Title, Width};
 use crate::ui::{Ui, pager};
 
 /// What drawing needs besides the screen.
@@ -34,52 +38,13 @@ pub(crate) struct DrawCtx<'a> {
     pub(crate) markers: &'a [russh_bbs_core::icons::SecurityMarker],
     /// The header bar's clock text.
     pub(crate) clock: Option<&'a str>,
+    /// The board's art, for the area header above the inbox (UI-3's `area` slot).
+    pub(crate) art: Option<&'a crate::ui::art::draw::ArtCtx<'a>>,
 }
 
 /// Member text, cleaned once more on its way to the terminal.
 fn clean(text: &str, max: usize) -> String {
     SingleLine::new(max).sanitize(text).into_string()
-}
-
-/// Cut `text` to at most `width` terminal columns so a row never wraps.
-fn fit(text: &str, width: usize) -> String {
-    let mut out = String::new();
-    for c in text.chars() {
-        out.push(c);
-        if Span::raw(out.as_str()).width() > width {
-            out.pop();
-            break;
-        }
-    }
-    out
-}
-
-fn row(
-    selected: bool,
-    number: usize,
-    unread: bool,
-    text: &str,
-    width: usize,
-    bold: Style,
-) -> Line<'static> {
-    let lead = if selected { "> " } else { "  " };
-    let n = if number < 9 {
-        format!("{}. ", number + 1)
-    } else {
-        "   ".to_owned()
-    };
-    // A plain asterisk marks an unread message. It is ordinary text, never a security marker.
-    let mark = if unread { "* " } else { "  " };
-    let text = fit(
-        text,
-        width.saturating_sub(lead.len() + n.len() + mark.len()),
-    );
-    let style = if selected {
-        bold.add_modifier(Modifier::UNDERLINED)
-    } else {
-        Style::new()
-    };
-    Line::styled(format!("{lead}{n}{mark}{text}"), style)
 }
 
 /// Draw whatever the mail screen is showing into `frame`.
@@ -102,18 +67,180 @@ pub(crate) fn render(frame: &mut Frame<'_>, screen: &MailScreen, ctx: &DrawCtx<'
         render_reader(frame, area, screen, reader, stored, width, ctx);
         return;
     }
-    let width = usize::from(area.width.min(settings::MAX_WIDTH)).saturating_sub(2);
-    classic::render_content_bare(
+    let hints = state_hints(&screen.state);
+    let body = FrameSpec::new(ctx.strings, ctx.look, ctx.tier)
+        .markers(ctx.markers)
+        .place(ChromeText::fixed(strings::TITLE_INBOX))
+        .clock(ctx.clock)
+        .hints(&hints)
+        .art(ctx.art.map(|art| ArtRequest {
+            ctx: art,
+            slot: ArtSlot::Area,
+            keep: 14,
+        }))
+        .draw(frame);
+    match &screen.state {
+        State::Inbox {
+            page,
+            cursor,
+            confirm,
+        } => {
+            inbox_table(frame, body, screen, ctx, page, *cursor);
+            if confirm.is_some() {
+                let keys = [
+                    Hint::new(ChromeText::fixed("y"), ChromeText::fixed("delete")),
+                    Hint::new(
+                        ChromeText::fixed("any other key"),
+                        ChromeText::fixed("keep"),
+                    ),
+                ];
+                popup::render(
+                    frame,
+                    body,
+                    ctx.look,
+                    &Popup {
+                        kind: PopupKind::Confirm,
+                        title: ChromeText::fixed("Confirm"),
+                        lines: vec![PopupLine::plain(strings::CONFIRM_DELETE)],
+                        keys: &keys,
+                    },
+                );
+            }
+            // A problem is a modal over the list; the key that dismisses it also acts.
+            if let Some((NoticeKind::Error, text)) = &screen.notice {
+                let keys = [Hint::new(
+                    ChromeText::fixed("any key"),
+                    ChromeText::fixed("close"),
+                )];
+                popup::render(
+                    frame,
+                    body,
+                    ctx.look,
+                    &Popup {
+                        kind: PopupKind::Error,
+                        title: ChromeText::table(ctx.strings, crate::ui::keys::NOTICE_ERROR),
+                        lines: vec![PopupLine::content(text)],
+                        keys: &keys,
+                    },
+                );
+            }
+        }
+        State::Start | State::Reader(_) | State::Editor(_) | State::Input(_) => {
+            settings::boxed(
+                frame,
+                body,
+                ctx.strings.text(crate::ui::keys::TITLE),
+                lines(screen, ctx),
+                ctx.look,
+            );
+        }
+    }
+}
+
+/// The status-bar hints for a mail screen: fixed words.
+fn state_hints(state: &State) -> Vec<Hint<'static>> {
+    let hint = |key: &'static str, label: &'static str| {
+        Hint::new(ChromeText::fixed(key), ChromeText::fixed(label))
+    };
+    match state {
+        State::Inbox { page, .. } => {
+            let mut hints = vec![hint("Enter", "read"), hint("1-9", "jump")];
+            if page.can_send {
+                hints.push(hint("c", "write"));
+            }
+            hints.push(hint("d", "delete"));
+            hints.push(hint("n/b", "page"));
+            hints.push(hint("o", "sort"));
+            hints.push(hint("Esc", "back"));
+            hints
+        }
+        State::Input(_) => vec![hint("Enter", "continue"), hint("Esc", "cancel")],
+        State::Start | State::Reader(_) | State::Editor(_) => vec![hint("Esc", "back")],
+    }
+}
+
+/// The inbox as a table: an unread mark, who from, the subject and when, with the sort marked
+/// in the header and the window remembered for the paging and jump keys.
+fn inbox_table(
+    frame: &mut Frame<'_>,
+    body: Rect,
+    screen: &MailScreen,
+    ctx: &DrawCtx<'_>,
+    page: &InboxPage,
+    cursor: usize,
+) {
+    let columns = vec![
+        Column::new(ChromeText::fixed("From"), Width::Fixed(14)),
+        Column::new(ChromeText::fixed("Subject"), Width::Fill(1)),
+        Column::new(ChromeText::fixed("Sent (UTC)"), Width::Fixed(16)).hide_below(70),
+    ];
+    let rows: Vec<TableRow> = page
+        .entries
+        .iter()
+        .map(|entry| {
+            let from = entry.from.as_deref().unwrap_or(strings::GONE_MEMBER);
+            let subject = entry
+                .subject
+                .as_deref()
+                .map_or_else(|| strings::CANNOT_OPEN.to_owned(), |s| clean(s, 120));
+            // A plain asterisk marks an unread message. It is ordinary text, never a marker.
+            let mark = if entry.unread { "* " } else { "  " };
+            let style = if entry.unread {
+                CellStyle::Bold
+            } else {
+                CellStyle::Plain
+            };
+            TableRow::new(vec![
+                Cell::content(&format!("{mark}{}", clean(from, 64))).styled(CellStyle::Key),
+                Cell::content(&subject).styled(style),
+                Cell::plain(format_utc(entry.at).chars().take(16).collect::<String>())
+                    .styled(CellStyle::Dim),
+            ])
+        })
+        .collect();
+    let info = match &screen.notice {
+        Some((NoticeKind::Info, text)) => Some(format!(
+            "{}: {text}",
+            ctx.strings.text(crate::ui::keys::NOTICE_INFO)
+        )),
+        _ => None,
+    };
+    let counts = format!(
+        "{} {}, {} unread  -  Page {}",
+        page.total,
+        if page.total == 1 {
+            "message"
+        } else {
+            "messages"
+        },
+        page.unread,
+        page.page + 1
+    );
+    let previous = screen.view.get();
+    let drawn = table::render(
         frame,
-        ContentScreen {
-            strings: ctx.strings,
-            lines: lines(screen, width, ctx),
-            look: ctx.look,
-            tier: ctx.tier,
-            markers: &MENU_MARKERS,
-            clock: None,
+        body,
+        ctx.look,
+        &TableSpec {
+            title: Title::Chrome(ChromeText::fixed(strings::TITLE_INBOX)),
+            columns,
+            rows,
+            selected: Some(cursor),
+            bordered: true,
+            top: previous.top,
+            empty: strings::NO_MAIL,
+            numbered: true,
+            footer: Some(match info {
+                Some(info) => format!("{info}  -  {counts}"),
+                None => counts,
+            }),
+            sorted: screen.sort.mark(),
         },
     );
+    screen.view.set(ListView {
+        top: drawn.top,
+        shown: drawn.shown,
+    });
 }
 
 fn render_reader(
@@ -210,8 +337,8 @@ fn notice(screen: &MailScreen, ctx: &DrawCtx<'_>, out: &mut Vec<Line<'static>>) 
     }
 }
 
-fn lines(screen: &MailScreen, width: usize, ctx: &DrawCtx<'_>) -> Vec<Line<'static>> {
-    let (bold, dim, heading, _) = classic::styles(ctx.look);
+fn lines(screen: &MailScreen, ctx: &DrawCtx<'_>) -> Vec<Line<'static>> {
+    let (_, dim, heading, _) = classic::styles(ctx.look);
     let mut out = Vec::new();
     match &screen.state {
         State::Start | State::Reader(_) | State::Editor(_) => {
@@ -219,68 +346,10 @@ fn lines(screen: &MailScreen, width: usize, ctx: &DrawCtx<'_>) -> Vec<Line<'stat
             out.push(Line::raw(""));
             notice(screen, ctx, &mut out);
         }
-        State::Inbox {
-            page,
-            cursor,
-            confirm,
-        } => {
-            inbox_lines(page, *cursor, width, bold, heading, dim, &mut out);
-            if confirm.is_some() {
-                out.push(Line::raw(""));
-                out.push(Line::raw(strings::CONFIRM_DELETE.to_owned()));
-            }
-            notice(screen, ctx, &mut out);
-            out.push(Line::raw(""));
-            out.push(Line::styled(strings::HELP_INBOX.to_owned(), dim));
-        }
+        State::Inbox { .. } => {}
         State::Input(input) => input_lines(screen, input, heading, dim, ctx, &mut out),
     }
     out
-}
-
-fn inbox_lines(
-    page: &InboxPage,
-    cursor: usize,
-    width: usize,
-    bold: Style,
-    heading: Style,
-    dim: Style,
-    out: &mut Vec<Line<'static>>,
-) {
-    out.push(Line::styled(strings::TITLE_INBOX.to_owned(), heading));
-    out.push(Line::styled(
-        format!(
-            "{} {}, {} unread",
-            page.total,
-            if page.total == 1 {
-                "message"
-            } else {
-                "messages"
-            },
-            page.unread
-        ),
-        dim,
-    ));
-    out.push(Line::raw(""));
-    if page.entries.is_empty() {
-        out.push(Line::raw(strings::NO_MAIL.to_owned()));
-    }
-    for (at, entry) in page.entries.iter().enumerate() {
-        let from = entry.from.as_deref().unwrap_or(strings::GONE_MEMBER);
-        let subject = entry
-            .subject
-            .as_deref()
-            .map_or_else(|| strings::CANNOT_OPEN.to_owned(), |s| clean(s, 120));
-        let text = format!(
-            "{} - {}  [{}]",
-            clean(from, 64),
-            subject,
-            format_utc(entry.at)
-        );
-        out.push(row(at == cursor, at, entry.unread, &text, width, bold));
-    }
-    out.push(Line::raw(""));
-    out.push(Line::styled(format!("Page {}", page.page + 1), dim));
 }
 
 fn input_lines(

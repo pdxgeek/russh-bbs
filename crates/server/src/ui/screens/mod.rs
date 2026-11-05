@@ -10,6 +10,7 @@
 //! - [`chat`]: the three-pane chat layout;
 //! - [`mailbox`], [`community`]: tables and panes for mail and the community screens.
 
+pub(crate) mod list;
 pub(crate) mod nick;
 
 pub(crate) mod motion;

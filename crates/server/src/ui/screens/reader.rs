@@ -259,7 +259,10 @@ fn quote_of(line: &str) -> Option<(usize, &str)> {
 
 fn text_line(text: &str, look: Look, width: usize) -> Line<'static> {
     let Some((depth, rest)) = quote_of(text) else {
-        return Line::styled(clip(text, width, look.ascii()), look.fg(look.palette().text));
+        return Line::styled(
+            clip(text, width, look.ascii()),
+            look.fg(look.palette().text),
+        );
     };
     let bar = if look.ascii() { "| " } else { "\u{2502} " };
     let style = look.accent(
