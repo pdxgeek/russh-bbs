@@ -216,6 +216,69 @@ pub struct KeyParser {
     mouse: Vec<Mouse>,
     /// Bytes skipped so far in a mouse report that was invalid or too long (0: not skipping).
     discard: usize,
+    /// Cursor-position replies read since the last [`KeyParser::take_acks`] (FIX-M35-3). Each
+    /// answers a probe the shell sent after an effect frame; none is ever a key.
+    acks: u32,
+}
+
+/// Longest `ESC [ row ; col R` accepted, bytes after `ESC [`. A longer run is not a reply.
+const MAX_REPLY_BODY: usize = 12;
+
+/// What the bytes held since an `Esc` are, as a cursor-position reply.
+enum Reply {
+    /// Not a reply (or not one we accept): hand the bytes on as usual.
+    No,
+    /// Could still become one; keep holding.
+    Prefix,
+    /// A whole reply.
+    Done,
+}
+
+/// `ESC [ row ; col R`, both numbers decimal. A row of 1 is refused: `ESC [ 1 ; 2 R` is also the
+/// modified F3 key (xterm), so only rows from 2 on are taken as replies; the probe parks the
+/// cursor on the last row so a real reply never has row 1.
+fn classify_reply(held: &[u8]) -> Reply {
+    let [ESC, b'[', body @ ..] = held else {
+        return Reply::No;
+    };
+    let Some((last, digits)) = body.split_last() else {
+        return Reply::No;
+    };
+    if body.len() > MAX_REPLY_BODY {
+        return Reply::No;
+    }
+    match *last {
+        b'0'..=b'9' | b';' => {
+            if body.iter().all(|b| b.is_ascii_digit() || *b == b';')
+                && body.split(|b| *b == b';').count() <= 2
+            {
+                Reply::Prefix
+            } else {
+                Reply::No
+            }
+        }
+        b'R' => {
+            let mut parts = digits.split(|b| *b == b';');
+            let row = parts.next().and_then(number);
+            let col = parts.next().and_then(number);
+            if parts.next().is_none() && row.is_some_and(|row| row >= 2) && col.is_some() {
+                Reply::Done
+            } else {
+                Reply::No
+            }
+        }
+        _ => Reply::No,
+    }
+}
+
+/// A short run of decimal digits as a number.
+fn number(digits: &[u8]) -> Option<u32> {
+    if digits.is_empty() || digits.len() > 5 || !digits.iter().all(u8::is_ascii_digit) {
+        return None;
+    }
+    digits.iter().try_fold(0_u32, |n, d| {
+        n.checked_mul(10)?.checked_add(u32::from(d - b'0'))
+    })
 }
 
 /// Most mouse reports kept between two cycles. A client cannot make the queue grow past this;
@@ -250,7 +313,15 @@ impl KeyParser {
             last_input: None,
             mouse: Vec::new(),
             discard: 0,
+            acks: 0,
         }
+    }
+
+    /// The cursor-position replies read since the last call (FIX-M35-3). The shell sends one
+    /// request after each effect frame and counts the answers, so it knows how much the client
+    /// has taken. A reply is never a key.
+    pub(crate) fn take_acks(&mut self) -> u32 {
+        std::mem::take(&mut self.acks)
     }
 
     /// The mouse reports read since the last call (UI-9), oldest first. They are never keys: a
@@ -300,6 +371,10 @@ impl KeyParser {
         match self.held.as_slice() {
             [] => {}
             [ESC] => keys.push(Key::Escape),
+            // A CSI stub held only in case it became a cursor report (FIX-M35-3) settles as it
+            // always did: dropped without a key. Paste-marker prefixes are still one `Other`.
+            held if !PASTE_START.starts_with(held)
+                && matches!(classify_reply(held), Reply::Prefix) => {}
             _ => keys.push(Key::Other),
         }
         self.held.clear();
@@ -363,6 +438,17 @@ impl KeyParser {
                 } else if !matches!(byte, b'M' | b'm') {
                     self.discard = 1;
                 }
+                return;
+            }
+        }
+        match classify_reply(&candidate) {
+            Reply::No => {}
+            Reply::Prefix => {
+                self.held = candidate;
+                return;
+            }
+            Reply::Done => {
+                self.acks = self.acks.saturating_add(1);
                 return;
             }
         }

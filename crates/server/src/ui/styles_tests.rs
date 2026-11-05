@@ -15,7 +15,7 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier};
 use russh_bbs_core::icons::{SecurityMarker, Tier};
-use russh_bbs_core::terminal_settings::{LayoutId, TerminalSettings, ThemeName};
+use russh_bbs_core::terminal_settings::{BorderChoice, LayoutId, TerminalSettings, ThemeName};
 
 use super::classic::MenuScreen;
 use super::depth::{ColorDepth, Tint, named_rgb};
@@ -55,10 +55,37 @@ pub(super) fn shot(
     depth: ColorDepth,
     size: (u16, u16),
 ) -> Buffer {
+    shot_borders(
+        markers,
+        chosen,
+        theme,
+        body,
+        tier,
+        color,
+        depth,
+        size,
+        BorderChoice::ThemeDefault,
+    )
+}
+
+/// [`shot`] with the member's border choice.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn shot_borders(
+    markers: &[SecurityMarker],
+    chosen: LayoutId,
+    theme: &Theme,
+    body: &[String],
+    tier: Tier,
+    color: bool,
+    depth: ColorDepth,
+    size: (u16, u16),
+    borders: BorderChoice,
+) -> Buffer {
     let settings = TerminalSettings::default()
         .with_tier(tier)
         .with_color(color)
-        .with_layout(chosen);
+        .with_layout(chosen)
+        .with_borders(borders);
     let area = Rect::new(0, 0, size.0, size.1);
     let layout = layout::effective(chosen, area);
     let look = Look::for_theme(&settings, layout, theme).at_depth(depth);

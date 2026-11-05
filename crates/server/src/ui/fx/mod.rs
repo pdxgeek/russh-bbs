@@ -208,6 +208,11 @@ impl Fx {
         self.running.take().is_some()
     }
 
+    /// Whether an effect is running, so the frame about to be drawn belongs to it.
+    pub(crate) fn is_running(&self) -> bool {
+        self.running.is_some()
+    }
+
     /// Which effect is running (tests read this).
     #[cfg(test)]
     pub(crate) fn running_kind(&self) -> Option<Kind> {
@@ -221,7 +226,15 @@ impl Fx {
 
     /// Advance the clock to `now`. Returns whether a redraw is due: a frame of the running
     /// effect, or the final static frame when it has just ended.
+    #[cfg(test)]
     pub(crate) fn tick(&mut self, now: Instant) -> bool {
+        self.tick_gated(now, true)
+    }
+
+    /// Like [`Fx::tick`], with the link's say (FIX-M35-3): when `open` is false a frame that is
+    /// due is dropped (the clock still moves on, so the effect is not stretched), and no redraw
+    /// is asked for. The end of the effect, which draws the static screen, is never held back.
+    pub(crate) fn tick_gated(&mut self, now: Instant, open: bool) -> bool {
         let Some(running) = &mut self.running else {
             return false;
         };
@@ -234,7 +247,7 @@ impl Fx {
         }
         // Frames are keyed on time, so a late tick skips ahead rather than catching up.
         running.due = now + self.budget.interval;
-        true
+        open
     }
 
     /// Count `bytes` just sent for the running effect. Returns `true` when that used up its
