@@ -165,6 +165,23 @@ fn a_hand_edited_pack_imports() {
     assert!(pack.art_files() > 0);
 }
 
+#[test]
+fn a_pack_that_names_the_blocks_border_validates() {
+    let w = world();
+    let text = pack_text("").replace(
+        "[colors]\nborder = \"cyan\"\n",
+        "[colors]\nborder = \"cyan\"\n[style.borders]\nframe = \"blocks\"\npane = \"blocks\"\npopup = \"blocks\"\n",
+    );
+    let pack = parse(&text, &w.base).unwrap();
+    assert_eq!(
+        pack.theme().skin().border(crate::ui::theme::Element::Frame),
+        crate::ui::theme::BorderSet::Blocks
+    );
+    // A name that is not a border set is still refused.
+    let bad = text.replace("frame = \"blocks\"", "frame = \"bricks\"");
+    assert!(parse(&bad, &w.base).is_err());
+}
+
 // ---- hostile packs -------------------------------------------------------------------------
 
 fn refused(text: &str) -> PackError {

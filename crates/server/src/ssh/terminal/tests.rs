@@ -487,3 +487,89 @@ mod mouse {
         }
     }
 }
+
+mod replies {
+    use std::time::Instant;
+
+    use super::super::{Key, KeyParser};
+
+    #[test]
+    fn a_cursor_report_is_an_acknowledgement_and_no_key() {
+        let mut parser = KeyParser::new();
+        let keys = parser.feed(b"\x1b[24;1R", Instant::now());
+        assert!(keys.is_empty(), "{keys:?}");
+        assert_eq!(parser.take_acks(), 1);
+        assert_eq!(parser.take_acks(), 0, "taken once");
+    }
+
+    #[test]
+    fn a_report_split_at_every_byte_is_one_acknowledgement_and_keys_around_it_survive() {
+        let stream = b"a\x1b[40;120Rb\x1b[A";
+        for cut in 0..=stream.len() {
+            let mut parser = KeyParser::new();
+            let (head, tail) = stream.split_at(cut);
+            let mut keys = parser.feed(head, Instant::now());
+            keys.extend(parser.feed(tail, Instant::now()));
+            assert_eq!(
+                keys,
+                vec![Key::Char('a'), Key::Char('b'), Key::Up],
+                "cut at {cut}"
+            );
+            assert_eq!(parser.take_acks(), 1, "cut at {cut}");
+        }
+    }
+
+    #[test]
+    fn modified_f3_and_other_csi_keys_are_still_keys() {
+        // `ESC [ 1 ; 2 R` is Shift+F3: row 1 is never taken as a reply.
+        let mut parser = KeyParser::new();
+        let keys = parser.feed(b"\x1b[1;2R", Instant::now());
+        assert_eq!(parser.take_acks(), 0);
+        assert!(!keys.is_empty(), "still a key: {keys:?}");
+        // Arrows with modifiers, Home/End/PageUp/Delete in their numeric forms.
+        for bytes in [&b"\x1b[1;5A"[..], b"\x1b[3~", b"\x1b[5~", b"\x1b[1~"] {
+            let mut parser = KeyParser::new();
+            let keys = parser.feed(bytes, Instant::now());
+            assert_eq!(keys.len(), 1, "{bytes:?}: {keys:?}");
+            assert_eq!(parser.take_acks(), 0);
+        }
+    }
+
+    #[test]
+    fn malformed_or_oversized_reports_are_never_acknowledgements() {
+        for bytes in [
+            &b"\x1b[R"[..],
+            b"\x1b[;R",
+            b"\x1b[24R",
+            b"\x1b[24;1;3R",
+            b"\x1b[99999999;1R",
+            b"\x1b[1234567890123;1R",
+        ] {
+            let mut parser = KeyParser::new();
+            parser.feed(bytes, Instant::now());
+            assert_eq!(parser.take_acks(), 0, "{bytes:?}");
+        }
+    }
+
+    #[test]
+    fn a_truncated_report_times_out_and_does_not_swallow_the_session() {
+        let mut parser = KeyParser::new();
+        assert_eq!(parser.feed(b"\x1b[24;", Instant::now()), Vec::<Key>::new());
+        assert!(parser.deadline().is_some(), "held bytes have a deadline");
+        assert_eq!(
+            parser.expire(),
+            Vec::<Key>::new(),
+            "dropped, as a CSI stub is"
+        );
+        assert_eq!(parser.feed(b"q", Instant::now()), vec![Key::Char('q')]);
+    }
+
+    #[test]
+    fn an_endless_stream_of_replies_never_grows_anything() {
+        let mut parser = KeyParser::new();
+        for _ in 0..10_000 {
+            parser.feed(b"\x1b[24;80R", Instant::now());
+        }
+        assert_eq!(parser.take_acks(), 10_000);
+    }
+}

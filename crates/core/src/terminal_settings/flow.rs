@@ -1470,6 +1470,8 @@ fn glyph_view(view: &mut View, test: GlyphTest, words: &dyn TextSource) {
         test.samples(),
         words.text(strings::GLYPH_LEGEND).to_owned(),
         String::new(),
+        words.text(strings::GLYPH_SPACING_HINT).to_owned(),
+        String::new(),
         words.text(strings::GLYPH_QUESTION).to_owned(),
     ];
     view.footer = if test.is_first_run() {

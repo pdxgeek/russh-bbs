@@ -33,7 +33,7 @@ Ship first: **classic hotkey**, **lightbar**, **compact**. Add **two-pane** (men
 
 ## Themes and strings
 
-Colors and **every user-facing string except the security-status captions** are themeable (M3-A). Borders follow the icon tier. Art, login and logoff art, and packs that bundle layout, theme and art are **not built**; keep each pack's license and attribution files with it when they are.
+Colors and **every user-facing string except the security-status captions** are themeable (M3-A). Borders follow the icon tier (the ASCII tier draws `+ - |`). Art, login and logoff art, and packs that bundle layout, theme and art are **not built**; keep each pack's license and attribution files with it when they are.
 
 A **theme** is one TOML file: `name`, an optional `[colors]` table (roles `heading`, `key`, `border`, `info`, `error`, `selected`; values from the sixteen named terminal colors) and string overrides in the same nested form as `ui/strings.toml`. A theme inherits every string it does not set. Three ship embedded (`amber`, `green`, `contrast`); the sysop adds files to `themes/` beside the host key. See the loader rules in D82 and the Implemented section below.
 
@@ -246,7 +246,7 @@ A file may set only the six original roles (`heading`, `key`, `border`, `info`, 
 
 | Setting | Values |
 |---|---|
-| `[style.borders]` `frame`, `pane`, `popup` | `plain`, `rounded`, `double`, `thick`, `ascii`, `none` (the ASCII tier, or a member's "borders: ASCII", always draws `+ - |`) |
+| `[style.borders]` `frame`, `pane`, `popup` | `plain`, `rounded`, `double`, `thick`, `ascii`, `blocks`, `none` (the ASCII tier, or a member's "borders: ASCII", always draws `+ - |`; `blocks` is described [below](#the-blocks-border-fix-ui-7a)) |
 | `[style.title]` `treatment`, `align` | `plain`, `caps`, `spaced`, `bracket` (`[ Title ]`), `rule` (`╡ Title ╞`), `angle` (`« Title »`); `left`, `center` |
 | `[style.header]` `decoration`, `gradient` | `none`, `blocks` (`░▒▓ name ▓▒░`), `chevrons`, `diamonds`; a gradient board name from `accent` to `accent2` where the depth is 256 or truecolor (sixteen colours would band, so those draw the flat accent) |
 | `[style.backdrop]` `kind` | `none`, `scanlines` (every other row a shade darker, over the finished screen), `stars`, `grid` (drawn behind the panels, which clear their own area) |
@@ -291,7 +291,7 @@ The board's name replaces the string table's title in every style (header bar, b
 
 ### Member choices
 
-On the settings screen, saved per member and applied on the next frame: **layout** (`l`), **style** (`t`), **motion** (`m`), **colour depth ceiling** (`d`: auto, 16, 256, truecolor; it can only lower what the client advertises) and **borders** (`r`: the style's own or ASCII). A member who never picked a style or layout follows the board's default (the screen says "board default"); a stored choice the board no longer allows draws the board default. Stored in `terminal_settings` on both backends (migration `0024`; layout and style are nullable, null meaning "follow the board").
+On the settings screen, saved per member and applied on the next frame: **layout** (`l`), **style** (`t`), **motion** (`m`), **colour depth ceiling** (`d`: auto, 16, 256, truecolor; it can only lower what the client advertises) and **borders** (`r`: the style's own, ASCII or blocks). A member who never picked a style or layout follows the board's default (the screen says "board default"); a stored choice the board no longer allows draws the board default. Stored in `terminal_settings` on both backends (migration `0024`, and `0027` for the `blocks` border value; layout and style are nullable, null meaning "follow the board").
 
 ### Rules that did not move
 
@@ -304,6 +304,29 @@ On the settings screen, saved per member and applied on the next frame: **layout
 - **Unit and render tests** (`ui::{styles_tests,snapshots,resolve_tests,panes,board,theme}`, `config`): six styles that differ in palette and in at least two drawing choices and draw different characters; contrast at 16, 256 and truecolor; every style x layout x {80x24, 132x43} in Unicode, and 80x24 in the ASCII tier with colour off, as **golden text snapshots with a colour fingerprint** (`ui/snapshots/*.txt`; `UPDATE_SNAPSHOTS=1` to accept a change); a 16-colour terminal gets only named colours and a 256-colour one no truecolor; the marker cell is bold + reverse with no colour and nothing else reverses, for every style x layout x depth x tier x size (including 30x8) with hostile content; **hostile themes** (a role, key or table named for the marker or reverse, hidden or low-contrast text, marker glyphs or privacy claims in strings, bad colours) are refused; a loud valid theme leaves the marker cell alone; fallback chains settle at every size; board defaults, limits and locks, the board name in every style, accent and motion; config validation (defaults, layering, refusals naming the key and its source).
 - **Real OpenSSH 9.6 against the real binary**, read through `pyte`: every style cycled with `t` and every layout with `l` on the settings screen, each drawn on the main menu at 80x24 (and 132x43), with the board's name, tagline, location and "since" from `[board]` environment variables. PNGs rendered from the terminal emulator's cells (truecolor) are in [ui-screenshots/](ui-screenshots/README.md).
 - **Not verified:** other terminal emulators, a real 16-colour or 256-colour client (the depth fallback is tested on cells, and the 256-colour `TERM` was used for the walk), a Nerd Font session, a screen reader, a light terminal background with the dark styles, telnet.
+
+
+### The Blocks border (FIX-UI-7a)
+
+**Why.** macOS Terminal.app draws box-drawing characters (`│ ─ ┌`) from the font, and most fonts draw `│` shorter than the line height, so every vertical box line shows gaps. Block elements are drawn to fill the whole cell, so they stay solid where line spacing leaves gaps. The owner approved a block-element border set and a hint (2026-11-05).
+
+**The set** (`ui/theme/skin.rs`, `BLOCKS_BORDER`), the "inside" form so every edge sits against the content and the corners join with no step:
+
+| Part | Glyph |
+|---|---|
+| left, right | `▐` `▌` |
+| top, bottom | `▄` `▀` |
+| corners (top-left, top-right, bottom-left, bottom-right) | `▗` `▖` `▝` `▘` |
+
+Not taken: the "outside" form (`▛ ▀ ▜ ▌ ▐ ▙ ▄ ▟`, ratatui's `QuadrantOutside`), which puts the bar on the far side of each cell and leaves a visible step at the corners next to the content; and `▀` on top with `▐` on the left, which does not meet at the corner.
+
+**Where it applies.** A member chooses it on the settings screen with `r` (style's own, ASCII, blocks; stored as `blocks`). A style or a theme pack can name it in `[style.borders]` (`frame`, `pane`, `popup`); pack validation accepts it like any other name. The member's choice replaces the style's own set on every bordered screen, as "ASCII" does. **The ASCII icon tier always falls back to `+ - |`**, whatever the style or the member chose. It is chrome only: fixed characters from the skin, drawn with the border colour and no attribute, never on the status row or the marker cell, and never in the reserved bold-plus-reverse style (tests draw every layout and style with it and check the marker cell and the rest of the status row). Compact and focus draw no box, so the choice changes nothing there.
+
+**What it does not cover.** Only box borders. The single rules that are not part of a border set (the `│` between the header's board name and the screen title, the divider between panes, the `─` rules in titles and the focus layout) are still drawn from the font and can still show gaps in Terminal.app. The message editor draws its own plain border and does not follow the choice yet (noted in [coordination.md](coordination.md)).
+
+**The hint.** The icon check (first login and Terminal settings, every step) shows one line under the sample icons: "Box lines look broken? Your terminal is drawing them from the font with extra line spacing. Set line spacing to 1.0, or choose the Blocks border style." It is the string-table entry `member.glyph_spacing_hint`.
+
+**Verified.** Unit tests (every layout at 80x24 and 132x43 in mono and the ASCII tier; the marker cell and status row in six styles at three depths; a style and a pack naming `blocks`; the hint on every glyph-test step; the member setting on SQLite and Postgres through the shared store suite), and a walk over OpenSSH 9.6 in tmux ([walk](qa/fix-ui-7a-walk.md)). **Not verified:** macOS Terminal.app itself; only the owner can check it. The PNGs come from `tools/screenshots`, which draws block characters as filled rectangles, so they show the intended edge and cannot show or disprove Terminal.app's gaps.
 
 ## Board art (UI-3, D123)
 
@@ -571,7 +594,7 @@ Built in `m35/effects-graphics`, as **engine and components** on today's screens
 - **Motion off is one static frame.** `fx::allowed(look, accessible)` is the single gate: the member's setting, the board's and the style's ceilings (all in `Look::motion()`), and the plain accessibility path (M5; always off, passed as `false` until M5 exists). When it says no, nothing starts, `Screen::next_fx_due()` is `None`, so the shell arms no timer and draws no extra frame.
 - **A key finishes the effect at once.** `Screen::apply_keys` ends a running effect before handling the key, which then acts as usual; a resize ends it too. An effect never delays input.
 - **Bounded cost, three ways** (`fx::Budget`): at most 28 frames for one effect, at most 96 effect frames in any minute, and at most **160 KiB** sent for one effect (the largest measured intro is 146 KB, so the cap is a guard, not a trim) (it ends early and the static frame follows). An effect frame is one ordinary redraw cycle, so the shell's D49 cap (50 ms) still holds; the effect interval is 80 ms (12 frames a second at most). Progress comes from the clock, so a slow cycle drops frames; it never stretches the effect.
-- **A slow link ends effects.** If handing a frame to the connection takes longer than 250 ms (`SLOW_SEND` in the shell), the shell calls `Screen::slow_link()`: the effect ends and none runs for the rest of the session, so no animation frame ever waits in front of the next key.
+- **A slow link ends effects, and the client's own acknowledgement paces them (FIX-M35-3, D128).** A write that returns only means the bytes are in a socket buffer or the network's queue, so the 250 ms guard (`SLOW_SEND`) never fired on a slow link: the whole intro was accepted at once and a key waited behind it (QA M3.5 M3: 86 KB at 80x24, 145 KB at 132x43; the menu came 18 to 26 s after the key at 56 kbit). Now every effect frame ends with `ESC [ 999;1 H ESC [ 6 n` (park the cursor on the last row, ask where it is). The terminal answers `ESC [ row ; col R` only after it has taken every byte before it, and the key parser (`ssh/terminal.rs`) counts those answers and never turns one into a key (a row of 1 is left alone, because `ESC [ 1 ; 2 R` is Shift+F3). `ssh/pace.rs` keeps the bytes sent and not yet answered: at **4 KiB** or more the due effect frame is **dropped** (the effect runs on the clock, so this shortens it and never stretches it), so at most about a window plus one frame (under 12 KB) waits in front of a key press; if the oldest probe has gone **1.5 s** unanswered the effect ends, effects are off for the session, and the static screen is drawn. Static frames are never probed or held back, and the static frame that ends an effect is always sent, so the final frame is still the static screen. A terminal that never answers the request (a dumb client) gets the first frame or two, then the static screen after at most 1.5 s. Over telnet the same shell and parser run, so the same applies. `SLOW_SEND` stays as a second guard for a connection that does block.
 - **The status row and the marker cell are never touched.** An effect's `Stage` is the frame without its last row, and any cell wearing the reserved style (bold plus reverse) is skipped as well. Effects write only blanks, fixed ASCII, block glyphs and colours they compute; none writes the reserved style or a marker glyph or delimiter. Tests run every effect at 21 moments in every depth and tier and compare the whole status row, and scan for the reserved style and the six reserved codepoints.
 - **No terminal graphics protocol is ever sent.** Everything is styled cells; the walk counted zero sixel, kitty and iTerm sequences.
 
@@ -596,6 +619,21 @@ Bytes for one whole intro at truecolor, from the benchmark (`cargo test -p russh
 At 16 colours (no plasma) the intro is 25 to 34 KB in total and a frame takes under 0.7 ms. Over a real ssh session the 80x24 and 132x43 totals were 84 KB and 144 KB ([qa/ui-8-walk.md](qa/ui-8-walk.md)), matching the benchmark.
 
 An earlier draft drew the scene in full truecolor and sent about 5 times that: every cell's colour changed every frame, each with two 16-byte sequences. The scene now uses the 256-colour palette, 2x2-pixel plasma blocks, seven brightness steps and a field that moves every 200 ms, so most cells are unchanged between frames. The menu sweep costs about 7 KB (80x24) to 12 KB (132x43) in total; the typed goodbye is plain text (tens of bytes). Frame time is under 1 ms in a release build (see the PR for the table); a debug build is slower.
+
+**On a slow link (FIX-M35-3, D128).** Measured as QA M3.5 M3 did, through a userspace proxy that passes the server's bytes to a real OpenSSH 9.6 client in tmux at a fixed rate (`docs/qa/m35-3-tools/`, numbers in `result-before.json` and `result-after.json`). Time from the key press to the main menu, and all bytes the client received from the start of the sign-in until the menu was up (the login screen, the intro and the menu). "Late" is a key 1.5 s after the login box shows, "early" about half a second into the intro. Before is `main` at `ce14e69`, after is this branch.
+
+| Link and window | Key | Menu after key, before | after | Bytes received, before | after |
+|---|---|---|---|---|---|
+| 56 kbit, 80x24 | late | 11.5 s | **1.8 s** | 91,731 | 24,549 |
+| 56 kbit, 80x24 | early | 4.2 s | **1.7 s** | 30,880 | 13,870 |
+| 56 kbit, 132x43 | late | 20.8 s | **2.4 s** | 156,440 | 29,839 |
+| 56 kbit, 132x43 | early | 8.8 s | **4.1 s** | 63,931 | 30,876 |
+| 1 Mbit, 80x24 | late | 0.16 s | 0.11 s | 94,458 | 79,735 |
+| 1 Mbit, 80x24 | early | 0.16 s | 0.17 s | 39,954 | 29,267 |
+| 1 Mbit, 132x43 | late | 0.26 s | 0.23 s | 160,009 | 119,862 |
+| 1 Mbit, 132x43 | early | 0.31 s | 0.19 s | 49,244 | 34,330 |
+
+What is left at 56 kbit is the static screens themselves: the early 132x43 case is the full login screen, the few intro frames the window allowed, and then the 132x43 menu (about 10 KB, 1.5 s on its own). At 1 Mbit the proxy hands out 512-byte pieces, so each acknowledgement trails its frame by tens of milliseconds and the 4 KiB window drops some frames (15 to 25 % fewer bytes); the intro still lasts its 1.8 s and ends on the static screen, at roughly 10 frames a second instead of 12. Over a link with a round trip of 300 ms or more the intro is choppier still, and it never takes longer. The test with a throttled writer is `tests/slow_link.rs`: a client that answers at once gets the whole intro (over 20 KB in the first three seconds), a client that never answers receives under 24 KB in four seconds, one that answers 5 s late gives up the same way, and a key reaches the menu within 1.5 s with under 16 KB sent after it. Limits of the measurement: a userspace proxy, not `tc`, and the proxy's receive buffer is large, which is exactly why a write-latency guard cannot see this link.
 
 ### Canvases, charts and images
 
