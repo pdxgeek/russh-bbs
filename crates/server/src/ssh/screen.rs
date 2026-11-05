@@ -24,6 +24,7 @@
 
 use std::io::{self, Write};
 use std::sync::{Arc, Mutex, PoisonError};
+use std::time::Instant;
 
 use ratatui::backend::{Backend, ClearType as RegionType, CrosstermBackend, WindowSize};
 use ratatui::buffer::Cell;
@@ -52,7 +53,7 @@ use russh_bbs_core::queue::{
     InviteAsk, QueueView, Request as QueueRequest, Response as QueueResponse,
 };
 use russh_bbs_core::sanitize::{MultiLine, SingleLine};
-use russh_bbs_core::terminal_settings::strings::TITLE;
+use russh_bbs_core::terminal_settings::strings::{LOGIN_HEADING, TITLE};
 use russh_bbs_core::terminal_settings::{
     LayoutId, MemberEffect, MemberFlow, MemberInput, TerminalSettings,
 };
@@ -70,6 +71,7 @@ use crate::ui::classic::{self, ContentScreen, MENU_MARKERS, MenuScreen};
 use crate::ui::depth::ColorDepth;
 use crate::ui::editor::{Editor, EditorEffect, EditorRequest, EditorView, Outcome};
 use crate::ui::frame::{FrameSpec, clock_text};
+use crate::ui::fx;
 use crate::ui::strings::StringTable;
 use crate::ui::{Ui, backdrop, chrome, layout};
 use crate::waiting_room::render;
@@ -521,6 +523,13 @@ pub(crate) struct Screen {
     pty: PtySize,
     /// The content changed since the last frame; the next [`Screen::render`] draws it.
     dirty: bool,
+    /// The effect engine (UI-8): the login intro, the menu wipe and the logoff reveal.
+    fx: fx::Fx,
+    /// The screen last drawn, so a change of screen starts an effect.
+    fx_seen: Option<ScreenKey>,
+    /// The time effects are drawn at. `None` is the real clock; tests set it so a frame is drawn
+    /// for an exact moment instead of whenever the test happens to run.
+    fx_clock: Option<Instant>,
     /// The focus layout's widget pop-over is open (UI-2). Toggled with Tab; any other key
     /// closes it first.
     popover: Popover,
@@ -612,6 +621,9 @@ impl Screen {
             ui,
             pty: size,
             dirty: false,
+            fx: fx::Fx::default(),
+            fx_seen: None,
+            fx_clock: None,
             popover: Popover::Closed,
             rebuild: false,
             degrade_on_leave: false,
@@ -669,6 +681,11 @@ impl Screen {
     /// submits a token; keys after it are ignored. Nothing is drawn: call [`Screen::render`]
     /// once for the whole batch, so a flood of keys costs one redraw, not one per key.
     pub(crate) fn apply_keys(&mut self, keys: &[Key]) -> KeyEffects {
+        // Any key finishes a running effect at once (UI-8): the key is then handled as usual, and
+        // the next frame is the static screen.
+        if !keys.is_empty() && self.fx.finish() {
+            self.dirty = true;
+        }
         if self.focus_menu_showing() {
             // Tab opens the widget pop-over of the focus layout and closes it again; Esc and any
             // other key close it and are then handled as usual, so nothing is swallowed twice.
@@ -1369,7 +1386,64 @@ impl Screen {
         };
         self.pty = size;
         tell_flow_the_terminal(&mut self.content, size);
+        // A resize repaints everything; an effect drawn for the old size ends (UI-8).
+        self.fx.finish();
         self.rebuild = true;
+    }
+
+    /// When the next effect frame is due, if one is running. The shell sleeps until then; with
+    /// no effect running this is `None` and no timer is armed (motion off costs nothing).
+    pub(crate) fn next_fx_due(&self) -> Option<Instant> {
+        self.fx.next_due()
+    }
+
+    /// The client is slow to read (a frame took too long to hand over): end any effect and run
+    /// no more this session, so no animation frame waits in front of the next key (UI-8).
+    pub(crate) fn slow_link(&mut self) {
+        self.fx.disable();
+        self.dirty = true;
+    }
+
+    /// Advance the effects to `now`; a frame of the running effect (or the static frame after it
+    /// ended) is then drawn by the next [`Screen::render`].
+    pub(crate) fn tick_fx(&mut self, now: Instant) {
+        if self.fx.tick(now) {
+            self.dirty = true;
+        }
+    }
+
+    /// Start the effect a change of screen calls for (UI-8). The login screen gets the intro, a
+    /// menu entered from anywhere gets a short wipe; every other screen is static (the logoff
+    /// goodbye is typed out by [`Screen::leave_typed`] instead, on the main screen). Nothing starts when motion is off, the terminal is too small for
+    /// the intro, or the session's frame budget is spent.
+    fn start_fx(&mut self, view: &View, menu: Option<&MenuPage>, look: Option<Look>, now: Instant) {
+        let key = match (&self.content, menu) {
+            (Content::Member(_), Some(page)) => ScreenKey::Menu(page.title, page.depth),
+            (Content::Member(_), None) if view.heading == LOGIN_HEADING => ScreenKey::Login,
+            _ => ScreenKey::Other,
+        };
+        if self.fx_seen == Some(key) {
+            return;
+        }
+        self.fx_seen = Some(key);
+        let kind = match key {
+            ScreenKey::Login => Some(fx::Kind::Intro),
+            ScreenKey::Menu(..) => Some(fx::Kind::Wipe),
+            ScreenKey::Other => None,
+        };
+        let size_ok = kind != Some(fx::Kind::Intro)
+            || (self.viewport.width >= fx::intro::MIN_SIZE.0
+                && self.viewport.height >= fx::intro::MIN_SIZE.1);
+        // `accessible` is the M5 plain path; it does not exist yet, so it is always false here.
+        let allowed = look.is_some_and(|look| fx::allowed(look, false)) && size_ok;
+        match kind {
+            Some(kind) => {
+                self.fx.start(kind, now, allowed);
+            }
+            None => {
+                self.fx.finish();
+            }
+        }
     }
 
     /// Draw whatever changed since the last frame, once. `None` when nothing did.
@@ -1381,7 +1455,12 @@ impl Screen {
         }
         if self.dirty {
             self.dirty = false;
-            return self.draw().map(Some);
+            let frame = self.draw()?;
+            // An effect that has sent its byte budget ends; the next frame is the static one.
+            if self.fx.charge(frame.len()) {
+                self.dirty = true;
+            }
+            return Ok(Some(frame));
         }
         Ok(None)
     }
@@ -1411,6 +1490,12 @@ impl Screen {
     pub(crate) fn leave(&mut self) -> io::Result<Vec<u8>> {
         queue!(self.terminal.backend_mut(), Show, LeaveAlternateScreen)?;
         let mut bytes = self.take_output();
+        bytes.extend_from_slice(self.farewell_text().as_bytes());
+        Ok(bytes)
+    }
+
+    /// The goodbye printed on the main screen after the screen is left, one `\r\n` per line.
+    fn farewell_text(&self) -> String {
         let farewell = match &self.content {
             Content::Member(flow) => flow.farewell(self.content.strings(&self.ui)),
             Content::Limited(lines) => Some(lines.clone()),
@@ -1420,11 +1505,54 @@ impl Screen {
             | Content::Mail(_)
             | Content::Doors(_) => None,
         };
+        let mut text = String::new();
         for line in farewell.into_iter().flatten() {
-            bytes.extend_from_slice(line.as_bytes());
-            bytes.extend_from_slice(b"\r\n");
+            text.push_str(&line);
+            text.push_str("\r\n");
         }
-        Ok(bytes)
+        text
+    }
+
+    /// Like [`Screen::leave`], but the goodbye of a member who logged off is cut into a few
+    /// chunks the shell prints one tick apart, so it types itself out (UI-8). `None` when motion
+    /// is off, effects are off for the session, the goodbye is short of words or the budget is
+    /// spent: the caller then uses [`Screen::leave`]. The chunks put together are exactly the
+    /// text `leave` would print, so the last state is the static one, and the caller prints the
+    /// rest at once the moment a key arrives.
+    pub(crate) fn leave_typed(&mut self) -> io::Result<Option<Farewell>> {
+        let Content::Member(_) = &self.content else {
+            return Ok(None);
+        };
+        let text = self.farewell_text();
+        let look = self.content.look(&self.ui, self.viewport, self.depth());
+        let allowed = look.is_some_and(|look| fx::allowed(look, false));
+        if text.is_empty() || !allowed {
+            return Ok(None);
+        }
+        let now = self.fx_clock.unwrap_or_else(Instant::now);
+        if !self.fx.reserve(FAREWELL_CHUNKS, now, allowed) {
+            return Ok(None);
+        }
+        queue!(self.terminal.backend_mut(), Show, LeaveAlternateScreen)?;
+        let restore = self.take_output();
+        // Cut on character boundaries, never inside a line break.
+        let chars: Vec<char> = text.chars().collect();
+        let size = chars.len().div_ceil(usize::from(FAREWELL_CHUNKS)).max(1);
+        let mut chunks: Vec<Vec<u8>> = Vec::new();
+        let mut at = 0;
+        while at < chars.len() {
+            let mut end = (at + size).min(chars.len());
+            if end < chars.len() && chars[end - 1] == '\r' && chars[end] == '\n' {
+                end += 1;
+            }
+            chunks.push(chars[at..end].iter().collect::<String>().into_bytes());
+            at = end;
+        }
+        Ok(Some(Farewell {
+            restore,
+            chunks,
+            interval: self.fx.interval(),
+        }))
     }
 
     #[allow(
@@ -1491,6 +1619,16 @@ impl Screen {
             .or_else(|| self.content.community_view());
         let queue_view = self.content.queue_view();
         let tier = self.content.tier();
+        let now = self.fx_clock.unwrap_or_else(Instant::now);
+        self.start_fx(&view, menu.as_ref(), look, now);
+        let overlay = look.and_then(|look| {
+            self.fx.frame(now).map(|(kind, t)| fx::Overlay {
+                kind,
+                t,
+                look,
+                title: self.ui.board().name(),
+            })
+        });
         let strings = self.content.strings(&self.ui);
         let framed = self.content.is_framed_screen();
         let chat = self.chat.as_ref();
@@ -1607,6 +1745,11 @@ impl Screen {
                 if let Some(look) = look {
                     backdrop::finish(frame, look);
                 }
+                // Last: an effect rewrites the finished frame; with none running the frame is
+                // exactly the static screen (UI-8).
+                if let Some(overlay) = overlay {
+                    overlay.apply(frame);
+                }
             })?;
         }
         Ok(self.finish_frame(tier))
@@ -1693,6 +1836,29 @@ fn viewport(drawn: PtySize, cap: RenderCap) -> Rect {
         cols,
         rows,
     )
+}
+
+/// How many pieces a typed goodbye is cut into (about a second at the effect interval).
+const FAREWELL_CHUNKS: u16 = 12;
+
+/// A goodbye to type out: restore the terminal, then print the chunks one `interval` apart.
+#[derive(Debug)]
+pub(crate) struct Farewell {
+    /// Leave the alternate screen and show the cursor.
+    pub(crate) restore: Vec<u8>,
+    /// The goodbye, in order; together exactly what [`Screen::leave`] prints.
+    pub(crate) chunks: Vec<Vec<u8>>,
+    /// The time between chunks.
+    pub(crate) interval: std::time::Duration,
+}
+
+/// Which screen was last drawn, for starting an effect when it changes (UI-8).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ScreenKey {
+    Login,
+    /// A menu: its title key and depth (the cursor is not part of it).
+    Menu(&'static str, usize),
+    Other,
 }
 
 /// What a batch of keys did to the forum screens' place in the session (M3-E).
@@ -1863,5 +2029,7 @@ fn member_input(key: Key) -> Option<MemberInput> {
 mod doors;
 use doors::{DoorMove, DoorsContent};
 
+#[cfg(test)]
+mod fx_tests;
 #[cfg(test)]
 mod tests;
