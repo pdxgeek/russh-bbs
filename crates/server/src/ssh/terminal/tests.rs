@@ -419,6 +419,54 @@ mod mouse {
         assert_eq!(tail, vec![Key::Char('x'), Key::Char('y'), Key::Char('z')]);
     }
 
+    fn chars(keys: &[Key]) -> String {
+        keys.iter()
+            .map(|k| match k {
+                Key::Char(c) => *c,
+                _ => '?',
+            })
+            .collect()
+    }
+
+    /// QA's N2 repro: `ESC [ < 0 ; 1 ;`, 400 nines, `M` opened Mail.
+    #[test]
+    fn an_oversized_report_leaks_no_tail_as_keys() {
+        let mut parser = KeyParser::new();
+        let mut bytes = b"\x1b[<0;1;".to_vec();
+        bytes.extend(std::iter::repeat_n(b'9', 400));
+        bytes.push(b'M');
+        bytes.extend_from_slice(b"mq");
+        let keys = parser.feed(&bytes, Instant::now());
+        assert_eq!(chars(&keys), "mq", "{keys:?}");
+        assert!(parser.take_mouse().is_empty());
+    }
+
+    #[test]
+    fn an_oversized_report_split_across_packets_leaks_nothing() {
+        let mut parser = KeyParser::new();
+        let mut bytes = b"\x1b[<0;1;".to_vec();
+        bytes.extend(std::iter::repeat_n(b'9', 400));
+        bytes.extend_from_slice(b"Mm");
+        let mut keys = Vec::new();
+        for chunk in bytes.chunks(7) {
+            keys.extend(parser.feed(chunk, Instant::now()));
+        }
+        assert_eq!(chars(&keys), "m", "{keys:?}");
+    }
+
+    #[test]
+    fn a_run_past_the_resync_bound_ends_and_typing_resumes() {
+        let mut parser = KeyParser::new();
+        let mut bytes = b"\x1b[<".to_vec();
+        bytes.extend(std::iter::repeat_n(
+            b'9',
+            super::super::mouse::MAX_RESYNC + 10,
+        ));
+        let _ = parser.feed(&bytes, Instant::now());
+        let keys = parser.feed(b"ab", Instant::now());
+        assert_eq!(chars(&keys), "ab");
+    }
+
     #[test]
     fn the_event_queue_is_bounded() {
         let mut parser = KeyParser::new();
@@ -471,6 +519,34 @@ mod mouse {
                     prop_assert!(parser.held.len() <= 32);
                 }
                 let _ = parser.expire();
+            }
+
+            /// No byte of an over-cap report reaches the key stream, however it is cut into
+            /// packets, and the keys typed after it still work.
+            #[test]
+            fn an_over_cap_report_never_reaches_the_key_stream(
+                body in proptest::collection::vec(
+                    prop_oneof![Just(b'9'), Just(b'0'), Just(b';'), Just(b'-'), Just(b'<')],
+                    65..3000,
+                ),
+                end in prop_oneof![Just(b'M'), Just(b'm')],
+                cut in 1_usize..200,
+                tail in "[a-z ]{0,12}",
+            ) {
+                let mut bytes = b"\x1b[<0;1;".to_vec();
+                bytes.extend(&body);
+                bytes.push(end);
+                bytes.extend(tail.bytes());
+                let mut parser = KeyParser::new();
+                let mut keys = Vec::new();
+                for chunk in bytes.chunks(cut) {
+                    keys.extend(parser.feed(chunk, Instant::now()));
+                }
+                let text: String = keys
+                    .iter()
+                    .map(|k| match k { super::super::super::Key::Char(c) => *c, _ => '?' })
+                    .collect();
+                prop_assert_eq!(text, tail);
             }
 
             #[test]

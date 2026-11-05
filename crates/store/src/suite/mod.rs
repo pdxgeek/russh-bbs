@@ -445,7 +445,7 @@ macro_rules! shared_suite {
                 chat::an_unknown_actor_is_refused_and_nothing_is_written,
                 chat::room_writes_never_land_without_their_audit_row,
                 chat::the_database_refuses_names_the_code_would_never_write,
-                chat::a_stored_name_the_code_could_not_have_written_is_corrupt_not_shown,
+                chat::a_stored_name_the_code_could_not_have_written_is_skipped_not_listed,
                 chat::nothing_a_member_says_has_a_table_to_land_in,
                 chat::rooms_survive_a_reopen,
                 chat::a_broken_store_errors_instead_of_listing_no_rooms,

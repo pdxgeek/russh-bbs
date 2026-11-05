@@ -383,16 +383,26 @@ impl KeyParser {
         keys
     }
 
-    /// Skip the rest of a mouse report that was invalid or too long, up to its `M` or `m`. A
-    /// new `Esc` starts a new sequence; a run longer than [`mouse::MAX_DISCARD`] ends the skip.
+    /// Skip the rest of a mouse report that was invalid or too long, up to its `M` or `m`.
+    /// A new `Esc` starts a new sequence. The first [`mouse::MAX_DISCARD`] bytes are skipped
+    /// whatever they are; past that, only report-body bytes (digits, `;`, `<`, `:`, `-`) keep
+    /// being skipped, up to [`mouse::MAX_RESYNC`] in all, so the tail of a long report never
+    /// becomes keys (FIX-M35-5) and a stuck run still cannot swallow the session: the first
+    /// other byte, or the end of the bound, is read as an ordinary key. Only a counter grows;
+    /// nothing is buffered.
     fn discard_byte(&mut self, byte: u8, keys: &mut Vec<Key>) {
         if byte == ESC {
             self.discard = 0;
             self.plain_byte(byte, keys);
-        } else if matches!(byte, b'M' | b'm') || self.discard >= mouse::MAX_DISCARD {
+        } else if matches!(byte, b'M' | b'm') {
             self.discard = 0;
-        } else {
+        } else if self.discard < mouse::MAX_DISCARD
+            || (self.discard < mouse::MAX_RESYNC && mouse::is_report_body(byte))
+        {
             self.discard += 1;
+        } else {
+            self.discard = 0;
+            self.plain_byte(byte, keys);
         }
     }
 

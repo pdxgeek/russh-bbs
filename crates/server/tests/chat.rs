@@ -537,3 +537,56 @@ async fn only_room_managers_open_and_close_rooms_and_each_is_audited() {
     );
     assert!(rows[1].starts_with("chat.room_closed|room|"), "{rows:?}");
 }
+
+/// N3: one stored room whose name fails the name rule is skipped; the rest still list, the
+/// room can be joined, and staff can still open a room (it was a store error before, and the
+/// member saw "There are no rooms you can join").
+#[tokio::test]
+async fn one_bad_stored_room_name_does_not_hide_the_other_rooms() {
+    let rig = Rig::start().await;
+    let (_, member_key) = rig.member("mia").await;
+    let (_, sysop_key) = rig.account("sam", Slug::SYSOP, AccountState::Active).await;
+    for name in ["Bad Name", "lounge"] {
+        sqlx::query("INSERT INTO chat_room (name, created_at) VALUES (?, 1)")
+            .bind(name)
+            .execute(&rig.db)
+            .await
+            .unwrap();
+    }
+
+    let (_m, mut mia) = at_menu(&rig, &member_key).await;
+    send(&mut mia, "c").await;
+    let list = full(&mut mia).await;
+    assert!(
+        list.contains("lobby") && list.contains("lounge") && !list.contains("There are no rooms"),
+        "{list}"
+    );
+    assert!(
+        !list.contains("Bad Name") && !list.contains("bad name"),
+        "{list}"
+    );
+
+    // The three-pane chat screen: join the lobby on a wide terminal.
+    mia.window_change(132, 43, 0, 0).await.unwrap();
+    words(&mut mia).await;
+    send(&mut mia, "\r").await;
+    mia.window_change(132, 43, 0, 0).await.unwrap();
+    let room = words(&mut mia).await;
+    assert!(
+        room.contains("#lobby") && room.contains("You are in #lobby."),
+        "{room}"
+    );
+
+    // Staff still open a room beside the bad row.
+    let (_s, mut sam) = at_menu(&rig, &sysop_key).await;
+    send(&mut sam, "c").await;
+    full(&mut sam).await;
+    send(&mut sam, "n").await;
+    assert!(full(&mut sam).await.contains("New room name"));
+    send(&mut sam, "games\r").await;
+    let list = full(&mut sam).await;
+    assert!(
+        list.contains("Room opened.") && list.contains("games"),
+        "{list}"
+    );
+}

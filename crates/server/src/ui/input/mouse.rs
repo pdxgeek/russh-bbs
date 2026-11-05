@@ -29,6 +29,16 @@ pub(crate) const MAX_COORD: u32 = 4096;
 /// goes back to reading keys, so a stuck run cannot swallow the session's input.
 pub(crate) const MAX_DISCARD: usize = 64;
 
+/// The most bytes of one dropped report skipped in all (FIX-M35-5). Past [`MAX_DISCARD`] only
+/// report-body bytes ([`is_report_body`]) are skipped, so a long run of digits is consumed to
+/// its `M` or `m` and its tail never becomes keys, while a letter ends the skip at once.
+pub(crate) const MAX_RESYNC: usize = 64 * 1024;
+
+/// A byte that can belong to the body of a mouse report: a digit or a separator.
+pub(crate) const fn is_report_body(byte: u8) -> bool {
+    matches!(byte, b'0'..=b'9' | b';' | b'<' | b':' | b'-')
+}
+
 const ESC: u8 = 0x1b;
 
 /// A mouse button.

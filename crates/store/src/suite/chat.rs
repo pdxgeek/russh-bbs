@@ -205,17 +205,20 @@ pub(crate) async fn the_database_refuses_names_the_code_would_never_write<H: Har
     );
 }
 
-pub(crate) async fn a_stored_name_the_code_could_not_have_written_is_corrupt_not_shown<
+pub(crate) async fn a_stored_name_the_code_could_not_have_written_is_skipped_not_listed<
     H: Harness,
 >() {
     let h = H::fresh().await;
-    h.raw("INSERT INTO chat_room (name, created_at) VALUES ('Bad Name', 1)")
+    // One bad row among good ones (N3): it is skipped and the rest still list.
+    for name in ["Bad Name", "lounge", "UPPER", "den"] {
+        h.raw(&format!(
+            "INSERT INTO chat_room (name, created_at) VALUES ('{name}', 1)"
+        ))
         .await
         .unwrap();
-    assert!(matches!(
-        h.store().open_rooms().await,
-        Err(StoreError::Corrupt(_))
-    ));
+    }
+    let rooms = h.store().open_rooms().await.unwrap();
+    assert_eq!(names(&rooms), ["den", "lobby", "lounge"]);
 }
 
 pub(crate) async fn nothing_a_member_says_has_a_table_to_land_in<H: Harness>() {
