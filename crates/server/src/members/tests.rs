@@ -11,10 +11,10 @@ use russh_bbs_core::icons::Tier;
 use russh_bbs_core::profiles::{Line, ScreenView, keys};
 use russh_bbs_core::terminal_settings::TerminalSettings;
 
-use super::{ListCtx, is_list, lines, render_list};
+use super::{ListCtx, is_list, panes, render_list};
 use crate::settings::Look;
 use crate::ui::Ui;
-use crate::ui::classic::{ContentScreen, MENU_MARKERS, render_content};
+use crate::ui::classic::MENU_MARKERS;
 
 fn draw(view: &ScreenView, tier: Tier, size: (u16, u16)) -> Buffer {
     let ui = Ui::standard().unwrap();
@@ -22,7 +22,6 @@ fn draw(view: &ScreenView, tier: Tier, size: (u16, u16)) -> Buffer {
     let mut terminal = Terminal::new(TestBackend::new(size.0, size.1)).unwrap();
     terminal
         .draw(|frame| {
-            let width = usize::from(frame.area().width.min(crate::settings::MAX_WIDTH)) - 2;
             if is_list(view) {
                 render_list(
                     frame,
@@ -38,11 +37,11 @@ fn draw(view: &ScreenView, tier: Tier, size: (u16, u16)) -> Buffer {
                 );
                 return;
             }
-            render_content(
+            panes::render(
                 frame,
-                ContentScreen {
+                view,
+                &panes::ViewCtx {
                     strings: ui.strings(),
-                    lines: lines(view, ui.strings(), look, width),
                     look,
                     tier,
                     markers: &MENU_MARKERS,

@@ -47,6 +47,8 @@ pub(crate) async fn run<S: ProfileStore>(
     }
 }
 
+pub(crate) mod panes;
+
 /// Content text, sanitized once more on its way to the terminal.
 fn clean(text: &str) -> String {
     SingleLine::new(ABOUT_MAX).sanitize(text).into_string()
@@ -130,26 +132,6 @@ fn line_of(line: &Line, strings: &StringTable, look: Look, width: usize) -> Text
             bold,
         ),
     }
-}
-
-/// The lines of `view`, ready for [`classic::render_content`]. `width` is the room inside the
-/// box, used only to keep list rows on one line.
-pub(crate) fn lines(
-    view: &ScreenView,
-    strings: &StringTable,
-    look: Look,
-    width: usize,
-) -> Vec<TextLine<'static>> {
-    let (_, dim, _, _) = classic::styles(look);
-    let mut out = Vec::with_capacity(view.lines.len() + 2);
-    out.extend(
-        view.lines
-            .iter()
-            .map(|line| line_of(line, strings, look, width)),
-    );
-    out.push(TextLine::raw(""));
-    out.push(TextLine::styled(strings.text(view.footer).to_owned(), dim));
-    out
 }
 
 /// Whether `view` is the members list (it has rows to show as a table).

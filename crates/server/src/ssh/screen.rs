@@ -1964,13 +1964,11 @@ impl Screen {
                     }
                     (Some(look), None) if members_view.is_some() => {
                         if let Some(screen) = &members_view {
-                            let width = usize::from(frame.area().width.min(settings::MAX_WIDTH))
-                                .saturating_sub(2);
-                            classic::render_content(
+                            members::panes::render(
                                 frame,
-                                ContentScreen {
+                                screen,
+                                &members::panes::ViewCtx {
                                     strings,
-                                    lines: members::lines(screen, strings, look, width),
                                     look,
                                     tier,
                                     markers: staff_markers,
