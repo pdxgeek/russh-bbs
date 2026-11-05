@@ -57,6 +57,7 @@ use tracing::{debug, info, warn};
 
 use super::Backend;
 use super::abort::Abort;
+use super::live;
 use super::password::PasswordLogin;
 use super::registry::{Revocation, SessionRef};
 use super::screen::{REVOKED_LINE, Screen};
@@ -204,6 +205,8 @@ pub(crate) struct ShellParts<D> {
     /// minutes it has used. `None` for the waiting room, the founder claim and a refused start.
     pub(crate) meter: Option<MemberMeter>,
     pub(crate) redraw_interval: Duration,
+    /// The most connections the board takes (the status widget's gauge, UI-10).
+    pub(crate) max_connections: usize,
     pub(crate) write_stall: Duration,
     /// Applied to every permission snapshot the shell loads, after the store answers (M3-H,
     /// D27): the telnet transport uses it to drop what a staff role holds. `None` for SSH.
@@ -249,6 +252,7 @@ impl<D: Backend> Shell<D> {
     }
 
     async fn run_loop(&mut self) {
+        self.refresh_widgets().await;
         let first = self.parts.screen.enter();
         let Ok(first) = first else {
             warn!(session = ?self.parts.session.id(), "first frame could not be drawn");
@@ -302,6 +306,9 @@ impl<D: Backend> Shell<D> {
             if let Some(settings) = &effects.save_settings {
                 self.persist_settings(settings).await;
             }
+            if let Some((layout, list)) = effects.widget_save.take() {
+                self.persist_widgets(layout, list.as_deref()).await;
+            }
             self.apply_chat_effects(&effects);
             self.answer_requests(&mut effects).await;
             if let Some(request) = effects.invite.take() {
@@ -325,6 +332,9 @@ impl<D: Backend> Shell<D> {
                 && self.try_claim(&token, effects.claim_password.take()).await
             {
                 leaving = true;
+            }
+            if !batch.finish {
+                self.refresh_widgets().await;
             }
             if !batch.finish && !self.draw_frame().await {
                 return;
@@ -462,9 +472,18 @@ impl<D: Backend> Shell<D> {
                     None => std::future::pending().await,
                 }
             };
+            // A widget on screen wants fresher data at its budget (never sooner than five
+            // seconds apart, far under the D49 redraw cap); none on screen, no timer.
+            let widgets = async {
+                match self.parts.screen.widgets_deadline() {
+                    Some(at) => sleep_until(tokio::time::Instant::from_std(at)).await,
+                    None => std::future::pending().await,
+                }
+            };
             tokio::select! {
                 () = inbox => {}
                 () = room => {}
+                () = widgets => {}
                 () = self.parts.session.revoke_signal().revoked() => {}
             }
         };
@@ -606,7 +625,7 @@ impl<D: Backend> Shell<D> {
         for ended in self.parts.session.revoke_others(account, what) {
             let event =
                 russh_bbs_core::audit::events::session_revoked(account, ended.as_raw(), what.tag());
-            if let Err(error) = self.parts.directory.append(&event).await {
+            if let Err(error) = russh_bbs_core::audit::AuditStore::append(&*self.parts.directory, &event).await {
                 warn!(session = ?self.parts.session.id(), %error, "session.revoked could not be audited");
             }
         }
@@ -1044,6 +1063,89 @@ impl<D: Backend> Shell<D> {
     /// Reload the signed-in account's permissions for the action about to run. If the store
     /// fails or is slow the session holds nothing for this action (menus show only what needs no
     /// permission): access fails closed.
+    /// Read the member's widget lists once, and fetch widget data when the screen shows widgets
+    /// whose budget has run out (UI-10). Everything goes through `core::widgets::fetch` and the
+    /// live pieces in [`live`], each gated by what the session holds right now. A slow or failed
+    /// read gives the screen what could be read, and the next attempt waits a full budget.
+    async fn refresh_widgets(&mut self) {
+        if let Some(account) = self.parts.screen.access().and_then(Snapshot::account)
+            && !self.parts.screen.widget_choice_loaded()
+        {
+            let loaded = timeout(
+                MEMBER_START_TIMEOUT,
+                russh_bbs_core::widgets::WidgetStore::widget_choice(&*self.parts.directory, account),
+            )
+            .await;
+            match loaded {
+                Ok(Ok(choice)) => self.parts.screen.set_widget_choice(choice),
+                Ok(Err(error)) => {
+                    warn!(session = ?self.parts.session.id(), %error, "widget lists could not be loaded; using the defaults");
+                    self.parts.screen.set_widget_choice(russh_bbs_core::widgets::Choice::new());
+                }
+                Err(_) => {
+                    warn!(session = ?self.parts.session.id(), "widget lists timed out; using the defaults");
+                    self.parts.screen.set_widget_choice(russh_bbs_core::widgets::Choice::new());
+                }
+            }
+        }
+        let Some(wanted) = self.parts.screen.widgets_due(Instant::now()) else {
+            return;
+        };
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let now = russh_bbs_core::limits::Clock::now(&SystemClock);
+        let since = self.parts.screen.last_login();
+        let fetched = timeout(
+            MEMBER_START_TIMEOUT,
+            russh_bbs_core::widgets::fetch(&*self.parts.directory, &access, &wanted, now, since),
+        )
+        .await;
+        let mut data = fetched.unwrap_or_else(|_| {
+            warn!(session = ?self.parts.session.id(), "widget data timed out");
+            russh_bbs_core::widgets::WidgetData::default()
+        });
+        let live_part = live::fill(
+            &mut data,
+            &wanted,
+            &access,
+            &*self.parts.directory,
+            &self.parts.session,
+            &self.parts.chat,
+            self.parts.screen.doors(),
+            self.parts.max_connections,
+        );
+        if timeout(MEMBER_START_TIMEOUT, live_part).await.is_err() {
+            warn!(session = ?self.parts.session.id(), "live widget data timed out");
+        }
+        self.parts.screen.deliver_widgets(data, wanted);
+    }
+
+    /// Store the member's widget list for `layout` (`None`: follow the default again).
+    async fn persist_widgets(
+        &self,
+        layout: russh_bbs_core::terminal_settings::LayoutId,
+        list: Option<&[russh_bbs_core::widgets::WidgetId]>,
+    ) {
+        let Some(access) = self.parts.screen.access() else {
+            return;
+        };
+        let saved = timeout(
+            MEMBER_START_TIMEOUT,
+            russh_bbs_core::widgets::save(&*self.parts.directory, access, layout, list),
+        )
+        .await;
+        match saved {
+            Ok(Ok(())) => {}
+            Ok(Err(error)) => {
+                warn!(session = ?self.parts.session.id(), %error, "widget list could not be saved");
+            }
+            Err(_) => {
+                warn!(session = ?self.parts.session.id(), "saving the widget list timed out");
+            }
+        }
+    }
+
     async fn refresh_access(&mut self) {
         let Some(account) = self.parts.account else {
             return;

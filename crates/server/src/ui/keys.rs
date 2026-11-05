@@ -61,19 +61,6 @@ pub(crate) const LAYOUT_NAMES: [&str; 7] = [
     "ui.layout.focus",
     "ui.layout.split",
 ];
-/// The panel title of a widget slot, by slot (the order of `panes::Slot`).
-pub(crate) const SLOT_TITLES: [&str; 8] = [
-    "ui.slot.identity",
-    "ui.slot.clock",
-    "ui.slot.who",
-    "ui.slot.callers",
-    "ui.slot.posts",
-    "ui.slot.mail",
-    "ui.slot.chat",
-    "ui.slot.activity",
-];
-/// What an empty widget slot says.
-pub(crate) const SLOT_EMPTY: &str = "ui.slot.empty";
 /// The pop-over's title.
 pub(crate) const SLOT_POPOVER: &str = "ui.slot.popover";
 
@@ -105,7 +92,7 @@ pub(crate) const FRAMEWORK: [&str; 23] = [
 ];
 
 /// The keys of the layouts and widget slots (UI-2), checked with [`FRAMEWORK`].
-pub(crate) const LAYOUT_KEYS: [&str; 19] = [
+pub(crate) const LAYOUT_KEYS: [&str; 10] = [
     HINT_WIDGETS,
     LAYOUT_FALLBACK,
     LAYOUT_NAMES[0],
@@ -115,14 +102,5 @@ pub(crate) const LAYOUT_KEYS: [&str; 19] = [
     LAYOUT_NAMES[4],
     LAYOUT_NAMES[5],
     LAYOUT_NAMES[6],
-    SLOT_TITLES[0],
-    SLOT_TITLES[1],
-    SLOT_TITLES[2],
-    SLOT_TITLES[3],
-    SLOT_TITLES[4],
-    SLOT_TITLES[5],
-    SLOT_TITLES[6],
-    SLOT_TITLES[7],
-    SLOT_EMPTY,
     SLOT_POPOVER,
 ];

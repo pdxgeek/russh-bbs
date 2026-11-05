@@ -5,53 +5,27 @@
 //! without drawing: panes never overlap and never leave the body, and the body never contains the
 //! status bar, so no pane can reach the marker cell.
 //!
-//! **Slots.** A layout places named slots ([`Slot`]) that UI-10's widgets will fill. Today a slot
-//! shows what the server really has: the board's identity and the clock. Every other slot says in
-//! plain words that there is nothing to show yet; **no pane shows made-up numbers.**
+//! **Cells.** A layout lays out generic widget cells (`Plan::cells`), in reading order. The
+//! member's widgets for the layout (UI-10, [`super::widgets`]) are assigned to them in order: a
+//! widget takes the first cell it fits, and a widget with nothing to show takes none. A cell no
+//! widget fills is left blank, so **no pane shows made-up numbers.**
 //!
 //! **Chrome only.** Pane titles, the placeholder and the identity text come from the string
 //! table or the board's checked text. Nothing here draws member content except the sanitized
 //! signed-in line the caller already built, in the wide layout's centre pane.
 
 use ratatui::Frame;
-use ratatui::layout::{Alignment, Constraint, Layout, Margin, Rect};
+use ratatui::layout::{Constraint, Layout, Margin, Rect};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Clear, Paragraph, Wrap};
-use russh_bbs_core::icons::Tier;
 use russh_bbs_core::terminal_settings::LayoutId;
 
 use super::classic::{self, MenuScreen};
 use super::keys;
 use super::theme::Element;
+use super::widgets;
 use crate::settings::Look;
-
-/// A named place a widget will fill (UI-10).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum Slot {
-    /// The board's name, tagline, location and age.
-    Identity,
-    /// The time.
-    Clock,
-    /// Who is online.
-    WhoOnline,
-    /// The last callers.
-    LastCallers,
-    /// New posts since the last call.
-    NewPosts,
-    /// Unread mail.
-    UnreadMail,
-    /// A live chat room.
-    Chat,
-    /// Board activity.
-    Activity,
-}
-
-impl Slot {
-    const fn title_key(self) -> &'static str {
-        keys::SLOT_TITLES[self as usize]
-    }
-}
 
 /// Where a layout puts things inside the body.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
@@ -60,8 +34,8 @@ pub(crate) struct Plan {
     pub(crate) nav: Rect,
     /// The wide layout's centre pane.
     pub(crate) content: Option<Rect>,
-    /// The widget slots, in reading order.
-    pub(crate) slots: Vec<(Slot, Rect)>,
+    /// The widget cells, in reading order.
+    pub(crate) cells: Vec<Rect>,
     /// The split layout's divider column.
     pub(crate) divider: Option<Rect>,
 }
@@ -85,37 +59,25 @@ fn dashboard(body: Rect) -> Plan {
     let nav_width = 34.min(body.width / 2);
     let [nav, grid] =
         Layout::horizontal([Constraint::Length(nav_width), Constraint::Fill(1)]).areas(body);
-    let rows: &[Constraint] = if grid.height >= 20 {
-        &[
-            Constraint::Length(6),
-            Constraint::Fill(1),
-            Constraint::Fill(1),
-        ]
-    } else if grid.height >= 12 {
-        &[Constraint::Length(5), Constraint::Fill(1)]
-    } else {
-        &[Constraint::Fill(1)]
+    // More of the grid as the terminal grows: two columns of up to three rows at 80x24, three
+    // columns of four rows at 132x43.
+    let rows = match grid.height {
+        34.. => 4,
+        20.. => 3,
+        12.. => 2,
+        _ => 1,
     };
-    let order = [
-        [Slot::Identity, Slot::Clock],
-        [Slot::WhoOnline, Slot::LastCallers],
-        [Slot::NewPosts, Slot::UnreadMail],
-    ];
-    let mut slots = Vec::new();
-    for (at, row) in Layout::vertical(rows.to_vec())
-        .split(grid)
-        .iter()
-        .enumerate()
-    {
-        let cols = Layout::horizontal([Constraint::Fill(1), Constraint::Fill(1)]).split(*row);
-        for (slot, col) in order[at].into_iter().zip(cols.iter()) {
-            slots.push((slot, *col));
+    let cols = if grid.width >= 90 { 3 } else { 2 };
+    let mut cells = Vec::new();
+    for row in Layout::vertical(vec![Constraint::Fill(1); rows]).split(grid).iter() {
+        for col in Layout::horizontal(vec![Constraint::Fill(1); cols]).split(*row).iter() {
+            cells.push(*col);
         }
     }
     Plan {
         nav,
         content: None,
-        slots,
+        cells,
         divider: None,
     }
 }
@@ -127,37 +89,21 @@ fn wide(body: Rect) -> Plan {
         Constraint::Length(36.min(body.width / 3)),
     ])
     .areas(body);
-    let wanted = [
-        Slot::Identity,
-        Slot::Clock,
-        Slot::WhoOnline,
-        Slot::NewPosts,
-        Slot::Activity,
-    ];
-    // Identity and clock have fixed heights; the rest share what is left, at least six rows each.
-    let fixed = 6 + 3;
-    let flexible = usize::from(rail.height.saturating_sub(fixed) / 6).min(3);
-    let count = if rail.height >= fixed + 6 {
-        2 + flexible
-    } else {
-        1
-    };
-    let mut constraints = Vec::new();
-    for slot in wanted.iter().take(count) {
-        constraints.push(match slot {
-            Slot::Identity => Constraint::Length(6),
-            Slot::Clock => Constraint::Length(3),
-            _ => Constraint::Fill(1),
-        });
-    }
-    let cells = Layout::vertical(constraints).split(rail);
-    let slots = wanted.iter().copied().zip(cells.iter().copied()).collect();
     Plan {
         nav,
         content: Some(content),
-        slots,
+        cells: stack(rail),
         divider: None,
     }
+}
+
+/// A column of cells, each at least seven rows tall (a panel with five rows inside), at most
+/// five of them.
+fn stack(column: Rect) -> Vec<Rect> {
+    let count = usize::from((column.height / 7).clamp(1, 5));
+    Layout::vertical(vec![Constraint::Fill(1); count])
+        .split(column)
+        .to_vec()
 }
 
 fn split(body: Rect) -> Plan {
@@ -171,7 +117,7 @@ fn split(body: Rect) -> Plan {
     Plan {
         nav,
         content: None,
-        slots: vec![(Slot::Chat, side)],
+        cells: stack(side),
         divider: Some(divider),
     }
 }
@@ -218,91 +164,12 @@ pub(crate) fn render(frame: &mut Frame<'_>, layout: LayoutId, screen: &MenuScree
             if let Some(divider) = plan.divider {
                 draw_divider(frame, divider, screen.look);
             }
-            for (slot, area) in &plan.slots {
-                draw_slot(frame, *area, *slot, screen);
-            }
+            let cx = screen.widget_cx();
+            let placed = widgets::assign(&plan.cells, screen.widgets.shown, &cx);
+            widgets::draw_cells(frame, &placed, &cx);
         }
         LayoutId::Classic | LayoutId::Lightbar | LayoutId::Compact => {}
     }
-}
-
-/// One widget slot as a titled panel.
-fn draw_slot(frame: &mut Frame<'_>, area: Rect, slot: Slot, screen: &MenuScreen<'_>) {
-    let look = screen.look;
-    let strings = screen.strings;
-    if area.width < 4 || area.height < 3 {
-        return;
-    }
-    let title = strings.text(slot.title_key());
-    let inner = look
-        .panel(frame, area, Some(title), Element::Pane, false)
-        .inner(Margin {
-            horizontal: 1,
-            vertical: 0,
-        });
-    let lines: Vec<Line<'static>> = match slot {
-        Slot::Identity => identity_lines(screen, usize::from(inner.width)),
-        Slot::Clock => vec![Line::styled(
-            screen.clock.unwrap_or("--:--").to_owned(),
-            look.accent(
-                Style::new().add_modifier(Modifier::BOLD),
-                look.palette().accent,
-            ),
-        )],
-        Slot::WhoOnline
-        | Slot::LastCallers
-        | Slot::NewPosts
-        | Slot::UnreadMail
-        | Slot::Chat
-        | Slot::Activity => vec![Line::styled(
-            strings.text(keys::SLOT_EMPTY).to_owned(),
-            look.muted(),
-        )],
-    };
-    frame.render_widget(Paragraph::new(lines).wrap(Wrap { trim: false }), inner);
-}
-
-/// The board's name, tagline, location and age: the sysop's own checked words.
-fn identity_lines(screen: &MenuScreen<'_>, width: usize) -> Vec<Line<'static>> {
-    let look = screen.look;
-    let board = screen.board;
-    let mut lines = vec![Line::styled(
-        screen.strings.text(keys::TITLE).to_owned(),
-        look.accent(
-            Style::new().add_modifier(Modifier::BOLD),
-            look.palette().accent,
-        ),
-    )];
-    if !board.tagline().is_empty() {
-        lines.push(Line::raw(board.tagline().as_str().to_owned()));
-    }
-    // Location and age share a line when they fit, so the panel stays short.
-    let dot = if screen.tier == Tier::Ascii {
-        "-"
-    } else {
-        "\u{b7}"
-    };
-    let place = match (board.location().is_empty(), board.since().is_empty()) {
-        (false, false) => {
-            let both = format!(
-                "{} {dot} since {}",
-                board.location().as_str(),
-                board.since().as_str()
-            );
-            Some(if both.chars().count() <= width {
-                both
-            } else {
-                board.location().as_str().to_owned()
-            })
-        }
-        (false, true) => Some(board.location().as_str().to_owned()),
-        (true, false) => Some(format!("since {}", board.since().as_str())),
-        (true, true) => None,
-    };
-    if let Some(place) = place {
-        lines.push(Line::styled(place, look.muted()));
-    }
-    lines
 }
 
 /// The wide layout's centre pane: where the member is, the sanitized signed-in lines and the
@@ -487,34 +354,9 @@ fn draw_popover(frame: &mut Frame<'_>, body: Rect, screen: &MenuScreen<'_>) {
             horizontal: 2,
             vertical: 1,
         });
-    let mut lines: Vec<Line<'static>> = Vec::new();
-    let heading = look.accent(
-        Style::new().add_modifier(Modifier::BOLD),
-        look.palette().heading,
-    );
-    for slot in [Slot::Identity, Slot::Clock, Slot::WhoOnline, Slot::NewPosts] {
-        lines.push(Line::styled(
-            strings.text(slot.title_key()).to_owned(),
-            heading,
-        ));
-        lines.extend(match slot {
-            Slot::Identity => identity_lines(screen, usize::from(inner.width))
-                .into_iter()
-                .skip(1)
-                .collect(),
-            Slot::Clock => vec![Line::raw(screen.clock.unwrap_or("--:--").to_owned())],
-            _ => vec![Line::styled(
-                strings.text(keys::SLOT_EMPTY).to_owned(),
-                look.muted(),
-            )],
-        });
-    }
-    frame.render_widget(
-        Paragraph::new(lines)
-            .alignment(Alignment::Left)
-            .wrap(Wrap { trim: false }),
-        inner,
-    );
+    let cx = screen.widget_cx();
+    let lines = widgets::popover_lines(screen.widgets.shown, &cx, inner.width, inner.height);
+    widgets::draw_lines(frame, inner, lines, look);
 }
 
 #[cfg(test)]

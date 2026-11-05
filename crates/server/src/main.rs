@@ -102,6 +102,12 @@ fn board_of(loaded: &Loaded) -> anyhow::Result<russh_bbs_server::ui::Board> {
         .context("reading the [board] settings")
 }
 
+/// The sysop's widget settings (UI-10); the same checks the config ran.
+fn widgets_of(loaded: &Loaded) -> anyhow::Result<russh_bbs_server::ui::widgets::WidgetSettings> {
+    russh_bbs_server::ui::widgets::WidgetSettings::from_config(&loaded.config.widgets)
+        .context("reading the [widgets] settings")
+}
+
 #[allow(
     clippy::too_many_lines,
     reason = "the boot sequence, in order; splitting it hides the order"
@@ -148,6 +154,7 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
     }
     .context("building the screens")?
     .with_board(board_of(loaded)?)
+    .with_widgets(widgets_of(loaded)?)
     .with_mail_keys(Arc::new(mail_keys))
     // The doors built into this board (M4-D0): the example coin toss until a game replaces it.
     .with_doors(

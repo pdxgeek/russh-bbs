@@ -119,7 +119,7 @@ impl WidgetId {
             }
             Self::Mail => global(Permission::MailRead),
             Self::Chat => some(Permission::ChatJoin, ResourceKind::Room),
-            Self::Doors => some(Permission::DoorsRun, ResourceKind::Door),
+            Self::Doors => global(Permission::DoorsRun),
             Self::Status => global(Permission::SessionsView),
         }
     }

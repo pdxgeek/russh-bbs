@@ -81,6 +81,9 @@ pub enum MemberEffect {
     /// The member chose Doors: the front end hands the session to the door framework (M4-D0)
     /// and gives the flow back when they leave, like [`MemberEffect::Forums`].
     Doors,
+    /// The member opened the Widgets screen from the settings (UI-10). The front end owns that
+    /// screen (it draws live widgets); the flow stays on the settings page underneath.
+    Widgets,
     /// Redraw (the logoff screen is showing) and close the session.
     Disconnect,
 }
@@ -403,6 +406,18 @@ impl MemberFlow {
     /// Whether a page that changes the account's terminal settings is showing. The first-run
     /// glyph test is not one: it runs before the menu, and what it picks is kept for the session
     /// (the store refuses to save it without the permission).
+    /// Whether the member is at the settings screen itself (not a sub-page of it).
+    #[must_use]
+    pub const fn at_settings(&self) -> bool {
+        matches!(self.page, Page::Settings)
+    }
+
+    /// When the account signed in before this session, if it had.
+    #[must_use]
+    pub const fn last_login(&self) -> Option<UnixSeconds> {
+        self.last_login
+    }
+
     const fn settings_page_open(&self) -> bool {
         match &self.page {
             Page::Settings | Page::EditWidth(_) | Page::EditHeight(_) => true,
@@ -806,6 +821,7 @@ impl MemberFlow {
             MemberInput::Char('r' | 'R') => {
                 self.save(self.settings.with_borders(self.settings.borders().next()))
             }
+            MemberInput::Char('g' | 'G') => MemberEffect::Widgets,
             MemberInput::Char('i' | 'I') => {
                 self.page = Page::GlyphTest(GlyphTest::new(self.settings.needs_glyph_test()));
                 MemberEffect::Stay

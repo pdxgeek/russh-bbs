@@ -678,6 +678,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
             chat: Arc::clone(&self.chat),
             meter,
             redraw_interval: self.limits.redraw_interval,
+            max_connections: self.limits.max_connections,
             write_stall: self.limits.write_stall,
             access_filter: None,
         });
