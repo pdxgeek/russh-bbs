@@ -1,0 +1,54 @@
+{
+ "80x24-nerd-xterm-256color-ctTrue": {
+  "frames": 14,
+  "rev_off_marker": 0,
+  "marker": [],
+  "nonascii_bytes": null,
+  "truecolor": 1165,
+  "max_idx": 15,
+  "has_new_style": false,
+  "last": [
+   "\u2039  Neon Night  Paper  Amber Terminal  Deep Space  Classic ANSI  Green  \u203a",
+   "Amber Terminal \u00b7 russh-bbs project \u00b7 Enter to use it"
+  ]
+ },
+ "132x43-unicode-xterm-256color-ctTrue": {
+  "frames": 14,
+  "rev_off_marker": 0,
+  "marker": [],
+  "nonascii_bytes": null,
+  "truecolor": 2731,
+  "max_idx": 15,
+  "has_new_style": false,
+  "last": [
+   "   default  Phosphor  Neon Night  Paper  Amber Terminal  Deep Space  Classic ANSI  Green  High Contrast  QA renamed",
+   "Amber Terminal \u00b7 russh-bbs project \u00b7 Enter to use it"
+  ]
+ },
+ "80x24-ascii-xterm-256color-ctTrue": {
+  "frames": 14,
+  "rev_off_marker": 0,
+  "marker": [],
+  "nonascii_bytes": 0,
+  "truecolor": 0,
+  "max_idx": null,
+  "has_new_style": false,
+  "last": [
+   "<  Neon Night  Paper  Amber Terminal  Deep Space  Classic ANSI  Green  >",
+   "Amber Terminal - russh-bbs project - Enter to use it"
+  ]
+ },
+ "80x24-nerd-xterm-ctFalse": {
+  "frames": 14,
+  "rev_off_marker": 0,
+  "marker": [],
+  "nonascii_bytes": null,
+  "truecolor": 0,
+  "max_idx": 15,
+  "has_new_style": false,
+  "last": [
+   "\u2039  Neon Night  Paper  Amber Terminal  Deep Space  Classic ANSI  Green  \u203a",
+   "Amber Terminal \u00b7 russh-bbs project \u00b7 Enter to use it"
+  ]
+ }
+}
