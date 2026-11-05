@@ -85,6 +85,7 @@ use crate::ui::widgets::screen::{self as widgets_screen, WidgetsScreen};
 use crate::ui::widgets::{self, WidgetView};
 use crate::ui::{Ui, backdrop, chrome, layout};
 use crate::waiting_room::render;
+use dock::{DockState, Pane as DockPane};
 
 /// The markers a staff screen shows while the board is in low-security mode (D27): the mode's
 /// own. Outside that mode staff screens show none (D93).
@@ -601,6 +602,9 @@ pub(crate) struct Screen {
     /// The chat screen, while the member is in chat (M3-F). It sits over the member's main
     /// menu: while it is `Some` every key goes to it, and the menu comes back when it is left.
     chat: Option<ChatScreen>,
+    /// Chat beside the screen, when the member opened it (UI-W). While `open`, `chat` is the
+    /// pane's chat rather than the whole screen.
+    dock: DockState,
     /// What the transport adds to the screens (M3-H).
     transport: Transport,
     /// The mouse, the command palette, toasts and the header ticker (UI-9).
@@ -709,6 +713,7 @@ impl Screen {
             degrade_on_leave: false,
             editor: None,
             chat: None,
+            dock: DockState::default(),
             transport: Transport {
                 footer,
                 low_security: false,
@@ -810,7 +815,8 @@ impl Screen {
     /// submenus, not in chat, not in the editor, with the help overlay down. The waiting room,
     /// the founder claim and every other screen have none.
     fn palette_available(&self) -> bool {
-        self.chat.is_none()
+        !self.chat_fullscreen()
+            && !self.dock_has_keys()
             && self.editor.is_none()
             && self.content.menu_page().is_some_and(|page| !page.help)
     }
@@ -873,6 +879,11 @@ impl Screen {
     /// same batch (`typing`: there were some, so the reports are dropped). Empty when the member
     /// has not turned the mouse on.
     pub(crate) fn mouse_keys(&mut self, events: &[Mouse], typing: bool) -> Vec<Key> {
+        // A press on the dock's divider and motion with the button held set the pane's width
+        // through the same resize the `<` and `>` keys make; everything else is a click.
+        if let Some((column, body)) = self.interact.drag(events, typing) {
+            self.dock_drag(column, body);
+        }
         self.interact.mouse_keys(events, typing)
     }
 
@@ -917,7 +928,7 @@ impl Screen {
     /// Whether motion is allowed for this member now (their choice, the board's, the style's).
     fn motion_now(&self) -> bool {
         self.content
-            .look(&self.ui, self.viewport, self.depth())
+            .look(&self.ui, self.layout_area(), self.depth())
             .is_some_and(Look::motion)
     }
 
@@ -935,6 +946,17 @@ impl Screen {
     }
 
     fn apply_keys_plain(&mut self, keys: &[Key]) -> KeyEffects {
+        let mut effects = if self.dock_keys_in(keys) || self.dock_has_keys() {
+            self.apply_keys_docked(keys)
+        } else {
+            self.apply_keys_main(keys)
+        };
+        self.close_dock_if_stranded(&mut effects);
+        effects
+    }
+
+    /// Keys for the screen itself (not the dock pane).
+    fn apply_keys_main(&mut self, keys: &[Key]) -> KeyEffects {
         // Any key finishes a running effect at once (UI-8): the key is then handled as usual, and
         // the next frame is the static screen.
         if !keys.is_empty() && self.fx.finish() {
@@ -977,10 +999,10 @@ impl Screen {
 
     /// Whether the member is at a menu drawn in the focus layout, where Tab means something.
     fn focus_menu_showing(&self) -> bool {
-        self.chat.is_none()
+        !self.chat_fullscreen()
             && self.editor.is_none()
             && self.content.menu_page().is_some()
-            && self.content.layout(&self.ui, self.viewport) == LayoutId::Focus
+            && self.menu_layout() == LayoutId::Focus
     }
 
     #[allow(
@@ -988,7 +1010,7 @@ impl Screen {
         reason = "one match over every screen the session can show; splitting it hides the flow"
     )]
     fn apply_keys_inner(&mut self, keys: &[Key]) -> KeyEffects {
-        if self.chat.is_some() {
+        if self.chat_fullscreen() {
             return self.apply_chat_keys(keys);
         }
         let mut effects = KeyEffects::default();
@@ -1001,6 +1023,7 @@ impl Screen {
             self.dirty = true;
             return effects;
         }
+        let area = self.layout_area();
         let mut open_editor_at = None;
         // Set when the keys moved the session into or out of the forum screens (M3-E).
         let mut moved = ForumMove::Stay;
@@ -1067,10 +1090,10 @@ impl Screen {
             }
             Content::Limited(_) => effects.disconnect = true,
             Content::Forums(session) => {
-                moved = forum_keys(&mut session.screen, keys, self.viewport, &mut effects);
+                moved = forum_keys(&mut session.screen, keys, area, &mut effects);
             }
             Content::Mail(session) => {
-                mail_moved = mail_keys(&mut session.screen, keys, self.viewport, &mut effects);
+                mail_moved = mail_keys(&mut session.screen, keys, area, &mut effects);
             }
             Content::Doors(session) => {
                 door_moved = doors::keys(&mut session.screen, keys, &mut effects);
@@ -1103,6 +1126,7 @@ impl Screen {
                             chat.set_manage(
                                 flow.access_snapshot().allows(Permission::ChatManageRooms),
                             );
+                            self.dock.open = false;
                             self.chat = Some(chat);
                             effects.chat_open = true;
                             effects.chat_request = Some(ChatRequest::List);
@@ -1210,7 +1234,7 @@ impl Screen {
             let outcome = match key {
                 Key::Ctrl('c' | 'd') => {
                     // Log off from here: leave chat, let the menu handle the quit.
-                    self.chat = None;
+                    self.drop_chat();
                     effects.chat_exit = true;
                     let later = self.apply_keys(keys.get(index..).unwrap_or_default());
                     effects.absorb(later);
@@ -1224,7 +1248,7 @@ impl Screen {
             match outcome {
                 ChatEffect::Stay => {}
                 ChatEffect::Exit => {
-                    self.chat = None;
+                    self.drop_chat();
                     effects.chat_exit = true;
                     let later = self.apply_keys(rest);
                     effects.absorb(later);
@@ -1359,7 +1383,7 @@ impl Screen {
 
     /// The widgets whose data the screen in front of the member draws.
     fn widgets_wanted(&self) -> Vec<WidgetId> {
-        if self.chat.is_some() || self.editor.is_some() {
+        if self.chat_fullscreen() || self.editor.is_some() {
             return Vec::new();
         }
         if self.widgets_page.is_some() {
@@ -1392,14 +1416,21 @@ impl Screen {
     /// Whether a text input line is on screen, so its cursor blinks.
     fn has_input(&self) -> bool {
         if let Some(chat) = &self.chat {
-            return match chat.page() {
+            let chat_input = match chat.page() {
                 russh_bbs_core::chat::ChatPage::Room(_) => true,
                 russh_bbs_core::chat::ChatPage::List(list) => list.naming.is_some(),
             };
+            // Beside a screen, either side may have a text field.
+            return chat_input || (self.dock.open && self.main_has_input());
         }
+        self.main_has_input()
+    }
+
+    /// The member's own screen has a text field open (the part of [`Screen::has_input`] that
+    /// is not the chat).
+    fn main_member_input(&self) -> bool {
         match &self.content {
-            Content::Forums(session) => session.screen.has_input(),
-            Content::Mail(session) => session.screen.has_input(),
+            Content::Forums(_) | Content::Mail(_) => false,
             Content::Member(_) => self
                 .content
                 .members_view()
@@ -1419,7 +1450,9 @@ impl Screen {
     /// When the shell should next wake for motion (a wipe frame or a cursor blink), if
     /// anything is moving. `None` with motion off, which is the common case.
     pub(crate) fn motion_deadline(&self) -> Option<std::time::Instant> {
-        let look = self.content.look(&self.ui, self.viewport, self.depth())?;
+        let look = self
+            .content
+            .look(&self.ui, self.layout_area(), self.depth())?;
         self.motion.deadline(look, std::time::Instant::now())
     }
 
@@ -1427,7 +1460,7 @@ impl Screen {
     pub(crate) fn motion_tick(&mut self, now: std::time::Instant) {
         let due = self
             .content
-            .look(&self.ui, self.viewport, self.depth())
+            .look(&self.ui, self.layout_area(), self.depth())
             .and_then(|look| self.motion.deadline(look, now))
             .is_some_and(|at| at <= now);
         if due {
@@ -1438,7 +1471,10 @@ impl Screen {
     /// Note whether an input is on screen for the blink, and say whether the cursor is in its
     /// dark half now. (The wipe between menus is UI-8's effect engine.)
     fn motion_frame(&mut self) -> bool {
-        let Some(look) = self.content.look(&self.ui, self.viewport, self.depth()) else {
+        let Some(look) = self
+            .content
+            .look(&self.ui, self.layout_area(), self.depth())
+        else {
             return false;
         };
         let now = std::time::Instant::now();
@@ -1450,9 +1486,10 @@ impl Screen {
     /// Whether the screen in front of the member draws the split layout's chat and mail panes,
     /// which need the newest messages as well as the widgets' data.
     pub(crate) fn wants_side_panes(&self) -> bool {
-        self.chat.is_none()
+        !self.dock_active()
+            && !self.chat_fullscreen()
             && self.content.menu_page().is_some()
-            && self.content.layout(&self.ui, self.viewport) == LayoutId::Split
+            && self.menu_layout() == LayoutId::Split
     }
 
     /// The previous sign-in time, the "since your last call" mark.
@@ -2043,7 +2080,9 @@ impl Screen {
             return Ok(None);
         };
         let text = self.farewell_text();
-        let look = self.content.look(&self.ui, self.viewport, self.depth());
+        let look = self
+            .content
+            .look(&self.ui, self.layout_area(), self.depth());
         let accessible = self.motion.accessible();
         let allowed = look.is_some_and(|look| fx::allowed(look, accessible));
         if text.is_empty() || !allowed {
@@ -2158,7 +2197,7 @@ impl Screen {
                 settings,
                 look: self
                     .ui
-                    .look(settings, self.viewport, self.depth())
+                    .look(settings, self.layout_area(), self.depth())
                     .with_cursor_dark(cursor_dark),
                 tier: settings.icon_tier(),
                 markers: self.status_markers(),
@@ -2167,11 +2206,36 @@ impl Screen {
             };
             let tier = ctx.tier;
             let interact = &self.interact;
-            self.terminal.draw(|frame| {
-                forums::render(frame, &session.screen, &ctx);
-                interact.overlay(frame, ctx.look, ctx.strings);
-                backdrop::finish(frame, ctx.look);
-            })?;
+            let pane = self
+                .chat
+                .as_ref()
+                .filter(|_| self.dock_active())
+                .map(|chat| {
+                    DockPane::new(
+                        chat,
+                        crate::chat::ChatCtx {
+                            strings: ctx.strings,
+                            look: ctx.look,
+                            tier: ctx.tier,
+                            markers: ctx.markers,
+                            clock: ctx.clock,
+                            art: None,
+                        },
+                        self.dock_has_keys(),
+                    )
+                });
+            let request = self.dock_request();
+            let (drawn, _) = crate::ui::dock::with(request, || {
+                self.terminal.draw(|frame| {
+                    forums::render(frame, &session.screen, &ctx);
+                    if let Some(pane) = &pane {
+                        pane.draw(frame, crate::ui::dock::reserved());
+                    }
+                    interact.overlay(frame, ctx.look, ctx.strings);
+                    backdrop::finish(frame, ctx.look);
+                })
+            });
+            drawn?;
             return Ok(self.finish_frame(tier));
         }
         if let Content::Mail(session) = &self.content {
@@ -2183,7 +2247,7 @@ impl Screen {
                 settings,
                 look: self
                     .ui
-                    .look(settings, self.viewport, self.depth())
+                    .look(settings, self.layout_area(), self.depth())
                     .with_cursor_dark(cursor_dark),
                 tier: settings.icon_tier(),
                 markers: self.status_markers(),
@@ -2192,11 +2256,36 @@ impl Screen {
             };
             let tier = ctx.tier;
             let interact = &self.interact;
-            self.terminal.draw(|frame| {
-                mail::render(frame, &session.screen, &ctx);
-                interact.overlay(frame, ctx.look, ctx.strings);
-                backdrop::finish(frame, ctx.look);
-            })?;
+            let pane = self
+                .chat
+                .as_ref()
+                .filter(|_| self.dock_active())
+                .map(|chat| {
+                    DockPane::new(
+                        chat,
+                        crate::chat::ChatCtx {
+                            strings: ctx.strings,
+                            look: ctx.look,
+                            tier: ctx.tier,
+                            markers: ctx.markers,
+                            clock: ctx.clock,
+                            art: None,
+                        },
+                        self.dock_has_keys(),
+                    )
+                });
+            let request = self.dock_request();
+            let (drawn, _) = crate::ui::dock::with(request, || {
+                self.terminal.draw(|frame| {
+                    mail::render(frame, &session.screen, &ctx);
+                    if let Some(pane) = &pane {
+                        pane.draw(frame, crate::ui::dock::reserved());
+                    }
+                    interact.overlay(frame, ctx.look, ctx.strings);
+                    backdrop::finish(frame, ctx.look);
+                })
+            });
+            drawn?;
             return Ok(self.finish_frame(tier));
         }
         // While the editor is open it is drawn instead of the content (the transport's footer
@@ -2207,7 +2296,7 @@ impl Screen {
         // last in the draw closure. Done before anything borrows the UI for the frame.
         let look = self
             .content
-            .look(&self.ui, self.viewport, self.depth())
+            .look(&self.ui, self.layout_area(), self.depth())
             .map(|look| look.with_cursor_dark(cursor_dark));
         let menu = self.content.menu_page();
         let now = self.fx_clock.unwrap_or_else(Instant::now);
@@ -2235,7 +2324,7 @@ impl Screen {
                 view.body.push(quote.as_str().to_owned());
             }
         }
-        let layout = self.content.layout(&self.ui, self.viewport);
+        let layout = self.menu_layout();
         let wanted = self.content.wanted_layout(&self.ui);
         // The community screens (M3-J) produce the members screens' view and are drawn the same.
         let members_view = self
@@ -2250,7 +2339,10 @@ impl Screen {
         let tier = self.content.tier();
         let strings = self.content.strings(&self.ui);
         let framed = self.content.is_framed_screen();
-        let chat = self.chat.as_ref();
+        let chat = self.chat.as_ref().filter(|_| self.chat_fullscreen());
+        let side_chat = self.chat.as_ref().filter(|_| self.dock_active());
+        let dock_focused = self.dock_has_keys();
+        let dock_request = self.dock_request();
         let interact = &self.interact;
         // Staff sessions add the low-security marker to every screen while the board is in that
         // mode (D27, FIX-M3-6); the status bar's marker cell draws it.
@@ -2274,203 +2366,227 @@ impl Screen {
         let widget_access = self.content.flow().map(MemberFlow::access_snapshot);
         let widget_choice = &self.widgets.choice;
         if !drew_editor {
-            self.terminal.draw(|frame| {
-                match (look, &menu) {
-                    // The Widgets screen (UI-10), over the settings.
-                    (Some(look), _)
-                        if widgets_screen_state.is_some() && widget_access.is_some() =>
-                    {
-                        if let (Some(screen), Some(access)) = (widgets_screen_state, widget_access)
+            let (drawn, _) = crate::ui::dock::with(dock_request, || {
+                self.terminal.draw(|frame| {
+                    match (look, &menu) {
+                        // The Widgets screen (UI-10), over the settings.
+                        (Some(look), _)
+                            if widgets_screen_state.is_some() && widget_access.is_some() =>
                         {
-                            widgets_screen::render(
-                                frame,
-                                screen,
-                                &widgets_screen::DrawIn {
-                                    strings,
-                                    look,
-                                    tier,
-                                    markers: staff_markers,
-                                    clock,
-                                    ctx: widgets_screen::Ctx {
-                                        rules: self.ui.widgets().rules(),
-                                        choice: widget_choice,
-                                        access,
+                            if let (Some(screen), Some(access)) =
+                                (widgets_screen_state, widget_access)
+                            {
+                                widgets_screen::render(
+                                    frame,
+                                    screen,
+                                    &widgets_screen::DrawIn {
+                                        strings,
+                                        look,
+                                        tier,
+                                        markers: staff_markers,
+                                        clock,
+                                        ctx: widgets_screen::Ctx {
+                                            rules: self.ui.widgets().rules(),
+                                            choice: widget_choice,
+                                            access,
+                                        },
+                                        data: &self.widgets.data,
+                                        board: self.ui.board(),
+                                        settings: self.ui.widgets(),
+                                        now: now_secs,
                                     },
-                                    data: &self.widgets.data,
-                                    board: self.ui.board(),
-                                    settings: self.ui.widgets(),
-                                    now: now_secs,
-                                },
-                            );
-                        }
-                    }
-                    // The chat screen (M3-F): the same box and status row, with the room's lines.
-                    (Some(look), _) if chat.is_some() => {
-                        if let Some(screen) = chat {
-                            crate::chat::render(
-                                frame,
-                                screen,
-                                &crate::chat::ChatCtx {
-                                    strings,
-                                    look,
-                                    tier,
-                                    markers: staff_markers,
-                                    clock,
-                                    art: art_ctx.as_ref(),
-                                },
-                            );
-                        }
-                    }
-                    // The member's style gallery and the sysop's Theme packs screen (UI-7).
-                    (Some(look), None) if gallery.is_some() || packs.is_some() => {
-                        if let Some(settings) = &member_settings {
-                            let ctx = crate::ui::style_gallery::GalleryCtx {
-                                ui: &self.ui,
-                                strings,
-                                look,
-                                tier,
-                                markers: staff_markers,
-                                clock,
-                                settings,
-                            };
-                            if let Some(gallery) = &gallery {
-                                crate::ui::style_gallery::render(frame, gallery, &ctx);
-                            } else if let Some(packs) = &packs {
-                                crate::ui::style_gallery::render_packs(frame, packs, &ctx);
+                                );
                             }
                         }
-                    }
-                    // The sysop's theme preview (UI-3): a sample screen in a chosen style and size.
-                    (Some(look), None) if preview.is_some() => {
-                        if let Some(preview) = &preview {
-                            crate::ui::art::preview::render(
-                                frame,
-                                preview,
-                                &crate::ui::art::preview::PreviewCtx {
+                        // The chat screen (M3-F): the same box and status row, with the room's lines.
+                        (Some(look), _) if chat.is_some() => {
+                            if let Some(screen) = chat {
+                                crate::chat::render(
+                                    frame,
+                                    screen,
+                                    &crate::chat::ChatCtx {
+                                        strings,
+                                        look,
+                                        tier,
+                                        markers: staff_markers,
+                                        clock,
+                                        art: art_ctx.as_ref(),
+                                    },
+                                );
+                            }
+                        }
+                        // The member's style gallery and the sysop's Theme packs screen (UI-7).
+                        (Some(look), None) if gallery.is_some() || packs.is_some() => {
+                            if let Some(settings) = &member_settings {
+                                let ctx = crate::ui::style_gallery::GalleryCtx {
                                     ui: &self.ui,
                                     strings,
                                     look,
                                     tier,
                                     markers: staff_markers,
                                     clock,
-                                },
-                            );
+                                    settings,
+                                };
+                                if let Some(gallery) = &gallery {
+                                    crate::ui::style_gallery::render(frame, gallery, &ctx);
+                                } else if let Some(packs) = &packs {
+                                    crate::ui::style_gallery::render_packs(frame, packs, &ctx);
+                                }
+                            }
                         }
-                    }
-                    // The sysop queue and the vouch screen (M2-E): the same layout and status row. The
-                    // requester's text is drawn in the content box only.
-                    (Some(look), None) if queue_view.is_some() => {
-                        if let Some(screen) = &queue_view {
-                            let width = usize::from(frame.area().width.min(settings::MAX_WIDTH))
-                                .saturating_sub(2);
-                            classic::render_content(
-                                frame,
-                                ContentScreen {
-                                    strings,
-                                    lines: sysop::queue::lines(screen, strings, look, width),
-                                    look,
-                                    tier,
-                                    markers: staff_markers,
-                                    clock,
-                                },
-                            );
+                        // The sysop's theme preview (UI-3): a sample screen in a chosen style and size.
+                        (Some(look), None) if preview.is_some() => {
+                            if let Some(preview) = &preview {
+                                crate::ui::art::preview::render(
+                                    frame,
+                                    preview,
+                                    &crate::ui::art::preview::PreviewCtx {
+                                        ui: &self.ui,
+                                        strings,
+                                        look,
+                                        tier,
+                                        markers: staff_markers,
+                                        clock,
+                                    },
+                                );
+                            }
                         }
-                    }
-                    // A members screen: the same classic layout and status row, with its own lines.
-                    (Some(look), None) if members_view.as_ref().is_some_and(members::is_list) => {
-                        if let Some(screen) = &members_view {
-                            members::render_list(
-                                frame,
-                                screen,
-                                &members::ListCtx {
-                                    strings,
-                                    look,
-                                    tier,
-                                    markers: staff_markers,
-                                    clock,
-                                    nav: members_nav,
-                                },
-                            );
+                        // The sysop queue and the vouch screen (M2-E): the same layout and status row. The
+                        // requester's text is drawn in the content box only.
+                        (Some(look), None) if queue_view.is_some() => {
+                            if let Some(screen) = &queue_view {
+                                let width =
+                                    usize::from(frame.area().width.min(settings::MAX_WIDTH))
+                                        .saturating_sub(2);
+                                classic::render_content(
+                                    frame,
+                                    ContentScreen {
+                                        strings,
+                                        lines: sysop::queue::lines(screen, strings, look, width),
+                                        look,
+                                        tier,
+                                        markers: staff_markers,
+                                        clock,
+                                    },
+                                );
+                            }
                         }
-                    }
-                    (Some(look), None) if members_view.is_some() => {
-                        if let Some(screen) = &members_view {
-                            members::panes::render(
-                                frame,
-                                screen,
-                                &members::panes::ViewCtx {
-                                    strings,
-                                    look,
-                                    tier,
-                                    markers: staff_markers,
-                                    clock,
-                                },
-                            );
+                        // A members screen: the same classic layout and status row, with its own lines.
+                        (Some(look), None)
+                            if members_view.as_ref().is_some_and(members::is_list) =>
+                        {
+                            if let Some(screen) = &members_view {
+                                members::render_list(
+                                    frame,
+                                    screen,
+                                    &members::ListCtx {
+                                        strings,
+                                        look,
+                                        tier,
+                                        markers: staff_markers,
+                                        clock,
+                                        nav: members_nav,
+                                    },
+                                );
+                            }
                         }
-                    }
-                    // The main menu: the classic hotkey layout, with the reserved status row.
-                    (Some(look), Some(page)) => layout::render_menu(
-                        frame,
-                        layout,
-                        &MenuScreen {
-                            strings,
-                            page,
-                            body: &view.body,
-                            notice: view.notice,
-                            look,
-                            tier,
-                            markers: staff_markers,
-                            clock,
-                            mail_over_ssh_only: false,
-                            board: self.ui.board(),
-                            wanted,
-                            popover: self.popover == Popover::Open,
-                            art: art_ctx.as_ref(),
-                            widgets: widget_view,
-                        },
-                    ),
-                    // The invite screens (M2-D): the same framed layout, with the reserved status row.
-                    (Some(look), None) if framed => classic::render_content(
-                        frame,
-                        ContentScreen {
-                            strings,
-                            lines: classic::view_lines(strings, &view, look),
-                            look,
-                            tier,
-                            markers: staff_markers,
-                            clock,
-                        },
-                    ),
-                    // Login, glyph test, settings and the password and key screens: the status bar
-                    // (hints and the marker cell) under the box; no header, so the settings screen
-                    // keeps its 22 rows at 80x24.
-                    (Some(look), None) => {
-                        let hints = classic::content_hints(strings);
-                        settings::render_framed(
+                        (Some(look), None) if members_view.is_some() => {
+                            if let Some(screen) = &members_view {
+                                members::panes::render(
+                                    frame,
+                                    screen,
+                                    &members::panes::ViewCtx {
+                                        strings,
+                                        look,
+                                        tier,
+                                        markers: staff_markers,
+                                        clock,
+                                    },
+                                );
+                            }
+                        }
+                        // The main menu: the classic hotkey layout, with the reserved status row.
+                        (Some(look), Some(page)) => layout::render_menu(
                             frame,
-                            &view,
-                            &settings::Framed {
+                            layout,
+                            &MenuScreen {
+                                strings,
+                                page,
+                                body: &view.body,
+                                notice: view.notice,
+                                look,
+                                tier,
+                                markers: staff_markers,
+                                clock,
+                                mail_over_ssh_only: false,
+                                board: self.ui.board(),
+                                wanted,
+                                popover: self.popover == Popover::Open,
+                                art: art_ctx.as_ref(),
+                                widgets: widget_view,
+                            },
+                        ),
+                        // The invite screens (M2-D): the same framed layout, with the reserved status row.
+                        (Some(look), None) if framed => classic::render_content(
+                            frame,
+                            ContentScreen {
+                                strings,
+                                lines: classic::view_lines(strings, &view, look),
+                                look,
+                                tier,
+                                markers: staff_markers,
+                                clock,
+                            },
+                        ),
+                        // Login, glyph test, settings and the password and key screens: the status bar
+                        // (hints and the marker cell) under the box; no header, so the settings screen
+                        // keeps its 22 rows at 80x24.
+                        (Some(look), None) => {
+                            let hints = classic::content_hints(strings);
+                            settings::render_framed(
+                                frame,
+                                &view,
+                                &settings::Framed {
+                                    strings,
+                                    look,
+                                    tier,
+                                    markers: staff_markers,
+                                    hints: &hints,
+                                    art: art_ctx.as_ref().zip(art_slot),
+                                },
+                            );
+                        }
+                        (None, _) => render(frame, &view),
+                    }
+                    if let (Some(look), Some(chat)) = (look, side_chat) {
+                        // Chat beside the screen (UI-W): into what the frame reserved, below the
+                        // bars, so the status bar and its marker cell are never touched.
+                        DockPane::new(
+                            chat,
+                            crate::chat::ChatCtx {
                                 strings,
                                 look,
                                 tier,
                                 markers: staff_markers,
-                                hints: &hints,
-                                art: art_ctx.as_ref().zip(art_slot),
+                                clock,
+                                art: None,
                             },
-                        );
+                            dock_focused,
+                        )
+                        .draw(frame, crate::ui::dock::reserved());
                     }
-                    (None, _) => render(frame, &view),
-                }
-                if let Some(look) = look {
-                    interact.overlay(frame, look, strings);
-                    backdrop::finish(frame, look);
-                }
-                // Last: an effect rewrites the finished frame; with none running the frame is
-                // exactly the static screen (UI-8).
-                if let Some(overlay) = overlay {
-                    overlay.apply(frame);
-                }
-            })?;
+                    if let Some(look) = look {
+                        interact.overlay(frame, look, strings);
+                        backdrop::finish(frame, look);
+                    }
+                    // Last: an effect rewrites the finished frame; with none running the frame is
+                    // exactly the static screen (UI-8).
+                    if let Some(overlay) = overlay {
+                        overlay.apply(frame);
+                    }
+                })
+            });
+            drawn?;
         }
         Ok(self.finish_frame(tier))
     }
@@ -2746,6 +2862,7 @@ fn member_input(key: Key) -> Option<MemberInput> {
     }
 }
 
+mod dock;
 mod doors;
 use doors::{DoorMove, DoorsContent};
 

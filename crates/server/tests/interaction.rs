@@ -173,8 +173,8 @@ async fn at_main_menu(rig: &Rig, key: &PrivateKey) -> (Handle<Client>, Channel<c
     (session, channel)
 }
 
-const ON: &str = "\x1b[?1000h\x1b[?1006h";
-const OFF: &str = "\x1b[?1006l\x1b[?1000l";
+const ON: &str = "\x1b[?1000h\x1b[?1002h\x1b[?1006h";
+const OFF: &str = "\x1b[?1006l\x1b[?1002l\x1b[?1000l";
 
 #[tokio::test]
 async fn the_mouse_is_the_members_choice_reports_are_bounded_and_the_terminal_is_put_back() {

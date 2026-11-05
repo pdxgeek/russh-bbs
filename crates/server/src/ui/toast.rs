@@ -75,7 +75,7 @@ impl Kind {
 }
 
 /// The string-table keys toasts use.
-pub(crate) const TEXT_KEYS: [&str; 7] = [
+pub(crate) const TEXT_KEYS: [&str; 9] = [
     "toast.notice",
     "toast.mail",
     "toast.page",
@@ -83,6 +83,8 @@ pub(crate) const TEXT_KEYS: [&str; 7] = [
     "toast.mouse_on",
     "toast.mouse_off",
     "toast.new_mail",
+    "toast.dock_open",
+    "toast.dock_narrow",
 ];
 
 /// The words of a toast. A toast cannot be made from a bare `String`.

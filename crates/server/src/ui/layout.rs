@@ -63,3 +63,15 @@ pub(crate) fn render_menu(frame: &mut Frame<'_>, layout: LayoutId, screen: &Menu
         }
     }
 }
+
+/// Like [`effective`], for a screen that has a dock beside it (UI-W): the split layout's second
+/// column is the dock, so it is not drawn a second time in the screen's share.
+#[must_use]
+pub(crate) fn effective_docked(chosen: LayoutId, area: Rect) -> LayoutId {
+    let chosen = if chosen == LayoutId::Split {
+        LayoutId::Lightbar
+    } else {
+        chosen
+    };
+    effective(chosen, area)
+}

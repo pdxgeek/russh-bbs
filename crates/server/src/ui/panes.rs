@@ -277,7 +277,7 @@ fn draw_content(frame: &mut Frame<'_>, area: Rect, screen: &MenuScreen<'_>) {
 }
 
 /// The split layout's divider: a rule with a grip in the middle. (Dragging it is UI-9.)
-fn draw_divider(frame: &mut Frame<'_>, area: Rect, look: Look) {
+pub(crate) fn draw_divider(frame: &mut Frame<'_>, area: Rect, look: Look) {
     if area.height == 0 || area.width == 0 {
         return;
     }

@@ -339,7 +339,24 @@ fn render_room(
     if let Some(area) = layout.who {
         draw_who(frame, area, room, ctx);
     }
-    draw_talk(frame, layout.talk, screen, room, ctx);
+    draw_talk(frame, layout.talk, screen, room, ctx, true);
+}
+
+/// Draw the chat into one pane of another screen (the dock, UI-W): the room list while the
+/// member has not joined a room, then the conversation and its input line. Everything stays
+/// inside `area`, which the dock keeps clear of the header, the status bar and its marker cell.
+/// An unfocused pane shows no blinking cursor, so it is plain which side takes the keys.
+pub(crate) fn render_pane(
+    frame: &mut Frame<'_>,
+    area: Rect,
+    screen: &ChatScreen,
+    ctx: &ChatCtx<'_>,
+    focused: bool,
+) {
+    match screen.page() {
+        ChatPage::List(list) => render_list(frame, area, screen, list, ctx),
+        ChatPage::Room(room) => draw_talk(frame, area, screen, room, ctx, focused),
+    }
 }
 
 fn draw_rooms(frame: &mut Frame<'_>, area: Rect, room: &RoomPage, ctx: &ChatCtx<'_>) {
@@ -540,6 +557,7 @@ fn draw_talk(
     screen: &ChatScreen,
     room: &RoomPage,
     ctx: &ChatCtx<'_>,
+    focused: bool,
 ) {
     let look = ctx.look;
     let pen = pen(look);
@@ -624,7 +642,10 @@ fn draw_talk(
     frame.render_widget(
         Paragraph::new(TextLine::from(vec![
             Span::styled("> ".to_owned(), pen.key()),
-            Span::styled(format!("{shown}{}", look.cursor()), pen.text()),
+            Span::styled(
+                format!("{shown}{}", if focused { look.cursor() } else { " " }),
+                pen.text(),
+            ),
         ])),
         input_inner,
     );
