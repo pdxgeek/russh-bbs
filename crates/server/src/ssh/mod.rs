@@ -15,6 +15,7 @@ pub mod host_key;
 pub(crate) mod interact;
 pub mod limits;
 mod live;
+pub(crate) mod pace;
 pub(crate) mod password;
 pub mod registry;
 pub(crate) mod room;

@@ -1817,10 +1817,24 @@ impl Screen {
 
     /// Advance the effects to `now`; a frame of the running effect (or the static frame after it
     /// ended) is then drawn by the next [`Screen::render`].
+    #[cfg(test)]
     pub(crate) fn tick_fx(&mut self, now: Instant) {
-        if self.fx.tick(now) {
+        self.tick_fx_gated(now, true);
+    }
+
+    /// [`Screen::tick_fx`] with the link's say (FIX-M35-3): with `open` false the effect frame
+    /// that is due is dropped instead of drawn, because the client has not yet taken the last
+    /// ones. The static frame that ends an effect is drawn whatever `open` says.
+    pub(crate) fn tick_fx_gated(&mut self, now: Instant, open: bool) {
+        if self.fx.tick_gated(now, open) {
             self.dirty = true;
         }
+    }
+
+    /// Whether an effect is running, so the next frame drawn is one of its frames. The shell
+    /// uses this to probe the client for an acknowledgement (FIX-M35-3).
+    pub(crate) fn fx_running(&self) -> bool {
+        self.fx.is_running()
     }
 
     /// Start the effect a change of screen calls for (UI-8). The login screen gets the intro, a
