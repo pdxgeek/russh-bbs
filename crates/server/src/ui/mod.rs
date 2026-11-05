@@ -32,6 +32,7 @@ pub(crate) mod pager;
 pub(crate) mod palette;
 pub(crate) mod panes;
 pub(crate) mod popup;
+pub(crate) mod screens;
 pub mod strings;
 pub(crate) mod style_gallery;
 pub(crate) mod table;

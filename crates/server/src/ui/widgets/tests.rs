@@ -646,6 +646,7 @@ fn member_text_in_widgets_is_cleaned_in_every_tier() {
             .map(|s| russh_bbs_core::widgets::RoomCount {
                 name: (*s).to_owned(),
                 members: 2,
+                here: vec![(*s).to_owned()],
             })
             .collect(),
     );

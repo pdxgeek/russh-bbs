@@ -459,7 +459,7 @@ async fn every_chat_permission_is_enforced_on_the_next_action() {
     let join = rig.revoke(Permission::ChatJoin, &["member"]).await;
     ann.data_bytes(b"afterrevoke\r".to_vec()).await.unwrap();
     let list = full(&mut ann).await;
-    assert!(list.contains("There are no rooms you can join."), "{list}");
+    assert!(list.contains("There are no rooms"), "{list}");
     assert!(!words(&mut bob).await.contains("afterrevoke"));
     send(&mut ann, "\x1b").await;
     let menu = full(&mut ann).await;
@@ -495,7 +495,11 @@ async fn only_room_managers_open_and_close_rooms_and_each_is_audited() {
     // Staff open "games" and close it again.
     let (_s, mut sam) = at_menu(&rig, &sysop_key).await;
     send(&mut sam, "c").await;
-    assert!(full(&mut sam).await.contains("n new room, x close room"));
+    let hints = full(&mut sam).await;
+    assert!(
+        hints.contains("n new room") && hints.contains("x close room"),
+        "{hints}"
+    );
     send(&mut sam, "n").await;
     assert!(full(&mut sam).await.contains("New room name"));
     send(&mut sam, "Games2\r").await;

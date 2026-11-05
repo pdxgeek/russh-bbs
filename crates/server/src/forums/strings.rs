@@ -14,9 +14,6 @@ pub(super) const NOT_SEARCHED: &str = "Type at least one word to search for.";
 pub(super) const GONE_MEMBER: &str = "(gone)";
 
 pub(super) const HELP_INPUT: &str = "Enter to continue   Esc to cancel";
-pub(super) const HELP_READER_NOTE: &str = "Space next page   b page back   n/p next/previous post   r reply   c reply with quote   Esc back";
-pub(super) const HELP_READER_MODERATE: &str =
-    "Space next page   b back   n/p post   r reply   c quote   x remove   Esc back";
 pub(super) const CONFIRM_REMOVE: &str =
     "Remove this post for everyone? y to remove, any other key to keep it.";
 pub(super) const CONFIRM_REMOVE_FIRST: &str = "This is the opening post: removing it removes the whole thread. y to remove, any other key to keep it.";

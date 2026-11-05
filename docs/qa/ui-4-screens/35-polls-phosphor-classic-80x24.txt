@@ -1,0 +1,24 @@
+ Night Owl BBS │ Polls                                                UTC 07:53
+┌[ Polls ]─────────────────────────────────────────────────────────────────────┐
+│  Key  Question                                                Votes  State   │
+│  1    Best colour for a terminal?                                 1  open    │
+│  2    Best colour for a terminal?                                 1  open    │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+c: make a poll
+Esc: back
+ ? help  Esc back  Ctrl-C log off

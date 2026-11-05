@@ -1,0 +1,30 @@
+ Night Owl BBS │ Chat                                                                     UTC 07:53
+           █   █ █████  ████ █   █ █████        ███  █   █ █           ████  ████   ████
+           ██  █   █   █     █   █   █         █   █ █   █ █           █   █ █   █ █
+           █ █ █   █   █  ██ █████   █         █   █ █ █ █ █           ████  ████   ███
+           █  ██   █   █   █ █   █   █         █   █ ██ ██ █           █   █ █   █     █
+           █   █ █████  ███  █   █   █          ███  █   █ █████       ████  ████  ████
+
+╭ Chat rooms ────────╮╭ #lobby ──────────────────────────────────────────────╮╭ Online (1) ────────╮
+│> #lobby            ││<bob> hello founder! is anyone up for a retro night?  ││● founder           │
+│                    ││<founder> nice, three panes now: rooms, talk and who  ││                    │
+│                    ││  is here                                             ││                    │
+│                    ││<bob> hello founder! is anyone up for a retro night?  ││                    │
+│                    ││<founder> nice, three panes now: rooms, talk and who  ││                    │
+│                    ││  is here                                             ││                    │
+│                    ││You are in #lobby.                                    ││                    │
+│                    ││Here: founder                                         ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    │╰──────────────────────────────────────────────────────╯│                    │
+│                    │╭ Say something ───────────────────────────────────────╮│                    │
+│                    ││> _                                                   ││                    │
+╰────────────────────╯╰──────────────────────────────────────────────────────╯╰────────────────────╯
+ Enter send  /w whisper  /who who  Esc leave

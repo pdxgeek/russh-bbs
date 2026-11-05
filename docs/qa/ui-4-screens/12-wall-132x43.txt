@@ -1,0 +1,43 @@
+ » Night Owl BBS « │ Graffiti wall                                                                                        UTC 07:49
+                ╭« Graffiti wall »─────────────────────────────────────────────────────────────────────────────────╮
+   .     .     .│Short lines on a shared wall. The newest 12 stay; older ones roll off.                            │ .     .     .
+                │1. carol: bob too                                                                                 │
+                │2. carol: carol was here                                                                          │
+   .     .     .│3. carol: bob too                                                                                 │ .     .     .
+                │4. carol: carol was here                                                                          │
+                │p: add a line                                                                                     │
+   .     .     .│d: remove a line (staff)                                                                          │ .     .     .
+                │                                                                                                  │
+                │Esc: back                                                                                         │
+   .     .     .│                                                                                                  │ .     .     .
+                │                                                                                                  │
+                │                                                                                                  │
+   .     .     .│                                                                                                  │ .     .     .
+                │                                                                                                  │
+                │                                                                                                  │
+   .     .     .│                                                                                                  │ .     .     .
+                │                                                                                                  │
+                │                                                                                                  │
+   .     .     .│                                                                                                  │ .     .     .
+                │                                                                                                  │
+                │                                                                                                  │
+   .     .     .│                                                                                                  │ .     .     .
+                │                                                                                                  │
+                │                                                                                                  │
+   .     .     .│                                                                                                  │ .     .     .
+                │                                                                                                  │
+                │                                                                                                  │
+   .     .     .│                                                                                                  │ .     .     .
+                │                                                                                                  │
+                │                                                                                                  │
+   .     .     .│                                                                                                  │ .     .     .
+                │                                                                                                  │
+                │                                                                                                  │
+   .     .     .│                                                                                                  │ .     .     .
+                │                                                                                                  │
+                │                                                                                                  │
+   .     .     .│                                                                                                  │ .     .     .
+                │                                                                                                  │
+                │                                                                                                  │
+   .     .     .╰──────────────────────────────────────────────────────────────────────────────────────────────────╯ .     .     .
+ ? help  Esc back  Ctrl-C log off

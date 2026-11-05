@@ -19,8 +19,8 @@ mod place;
 mod store;
 
 pub use data::{
-    Caller, Credits, DoorLine, Headline, LIST_ROWS, Line, MailCount, NewPosts, PollView, RoomCount,
-    SERIES_DAYS, Status, WidgetData, balance_series, fetch,
+    Caller, Credits, DoorLine, Headline, LIST_ROWS, Line, MailCount, NewPosts, PollView,
+    RecentMail, RoomCount, SERIES_DAYS, Status, WidgetData, balance_series, fetch,
 };
 pub use id::WidgetId;
 pub use place::{Choice, EditError, Lock, MAX_PER_LAYOUT, Rules, RulesError, builtin_default};

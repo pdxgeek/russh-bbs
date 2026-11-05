@@ -1,0 +1,30 @@
+ Night Owl BBS │ Main menu                                                                UTC 07:53
+                                  ╭──────────────────────────────╮
+              ╌╌╌╌╌╌╌╌╌───────────│  ◇   ◇   ◇   ◇   ◇   ◇   ◇   │───────────╌╌╌╌╌╌╌╌╌
+                                  ╰──────────────────────────────╯
+
+╭ Main menu ─────────────────────╮╭ This board ───────────────────╮╭ Clock ────────────────────────╮
+│ Signed in as founder.          ││ Night Owl BBS                 ││  ━   ━     ━   ━              │
+│ Showing Dashboard: this        ││ A bulletin board in your ter… ││ ┃ ┃   ┃ • ┃━   ━┃             │
+│ terminal is too small for      ││ Portland, OR · since 2026     ││ ┃━┃   ┃ •  ━┃  ━┃             │
+│   [f] Forums                   ││                               ││ Thu 5 Nov 2026 UTC            │
+│   [m] Mail                     ││                               ││                               │
+│   [a] Files  (not built yet)   ││                               ││                               │
+│   [c] Chat                     │╰───────────────────────────────╯╰───────────────────────────────╯
+│   [d] Doors                    │╭ Who is online ────────────────╮╭ Last callers ─────────────────╮
+│   [u] Members                  ││ ● 1 online                    ││ founder                   now │
+│   [y] Community                ││ ▸ founder                     ││ carol                      6m │
+│   [i] Invites                  ││                               ││ bob                        6m │
+│ > [s] Terminal settings        ││                               ││                               │
+│   [o] Sysop tools              ││                               ││                               │
+│   [l] Log off                  ││                               ││                               │
+│                                │╰───────────────────────────────╯╰───────────────────────────────╯
+│                                │╭ New posts ────────────────────╮╭ Mail ─────────────────────────╮
+│                                ││ All caught up.                ││ No unread mail.               │
+│                                ││                               ││ 2 in your inbox               │
+│                                ││                               ││                               │
+│                                ││                               ││                               │
+│                                ││                               ││                               │
+│                                ││                               ││                               │
+╰────────────────────────────────╯╰───────────────────────────────╯╰───────────────────────────────╯
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off

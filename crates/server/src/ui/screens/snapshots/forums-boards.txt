@@ -1,0 +1,502 @@
+=== classic / 80x24 / unicode mono
+ russh-bbs │ Forums                                                   UTC 12:00
+┌ Forums ──────────────────────────────────────────────────────────────────────┐
+│  #  Board                     Threads  About                                 │
+│> 1. Board001                        2  About                                 │
+│  2. Board002                        2  About                                 │
+│  3. Board003                        2  About                                 │
+│  4. Board004                        2  About                                 │
+│  5. Board005                        2  About                                 │
+│  6. Board006                        2  About                                 │
+│  7. Board007                        2  About                                 │
+│  8. Board008                        2  About                                 │
+│  9. Board009                        2  About                                 │
+│     Board010                        2  About                                 │
+│     Board011                        2  About                                 │
+│     Board012                        2  About                                 │
+│     Board013                        2  About                                 │
+│     Board014                        2  About                                 │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter open
+
+=== lightbar / 80x24 / unicode mono
+= same as classic
+
+=== compact / 80x24 / unicode mono
+  #  Board                      Threads  About
+> 1. Board001                         2  About
+  2. Board002                         2  About
+  3. Board003                         2  About
+  4. Board004                         2  About
+  5. Board005                         2  About
+  6. Board006                         2  About
+  7. Board007                         2  About
+  8. Board008                         2  About
+  9. Board009                         2  About
+     Board010                         2  About
+     Board011                         2  About
+     Board012                         2  About
+     Board013                         2  About
+     Board014                         2  About
+
+
+
+
+
+
+
+
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter open
+
+=== dashboard / 80x24 / unicode mono
+= same as classic
+
+=== wide / 80x24 / unicode mono
+= same as classic
+
+=== focus / 80x24 / unicode mono
+= same as classic
+
+=== split / 80x24 / unicode mono
+= same as classic
+
+=== classic / 80x24 / ascii mono
+ russh-bbs | Forums                                                   UTC 12:00
++ Forums ----------------------------------------------------------------------+
+|  #  Board                     Threads  About                                 |
+|> 1. Board001                        2  About                                 |
+|  2. Board002                        2  About                                 |
+|  3. Board003                        2  About                                 |
+|  4. Board004                        2  About                                 |
+|  5. Board005                        2  About                                 |
+|  6. Board006                        2  About                                 |
+|  7. Board007                        2  About                                 |
+|  8. Board008                        2  About                                 |
+|  9. Board009                        2  About                                 |
+|     Board010                        2  About                                 |
+|     Board011                        2  About                                 |
+|     Board012                        2  About                                 |
+|     Board013                        2  About                                 |
+|     Board014                        2  About                                 |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
++------------------------------------------------------------------------------+
+UNENCRYPTED  LOW-SECURITY   Enter open  1-9 jump  s search  o sort
+
+=== lightbar / 80x24 / ascii mono
+= same as classic
+
+=== compact / 80x24 / ascii mono
+  #  Board                      Threads  About
+> 1. Board001                         2  About
+  2. Board002                         2  About
+  3. Board003                         2  About
+  4. Board004                         2  About
+  5. Board005                         2  About
+  6. Board006                         2  About
+  7. Board007                         2  About
+  8. Board008                         2  About
+  9. Board009                         2  About
+     Board010                         2  About
+     Board011                         2  About
+     Board012                         2  About
+     Board013                         2  About
+     Board014                         2  About
+
+
+
+
+
+
+
+
+UNENCRYPTED  LOW-SECURITY   Enter open  1-9 jump  s search  o sort
+
+=== dashboard / 80x24 / ascii mono
+= same as classic
+
+=== wide / 80x24 / ascii mono
+= same as classic
+
+=== focus / 80x24 / ascii mono
+= same as classic
+
+=== split / 80x24 / ascii mono
+= same as classic
+
+=== classic / 100x30 / unicode mono
+ russh-bbs │ Forums                                                                       UTC 12:00
+┌ Forums ──────────────────────────────────────────────────────────────────────────────────────────┐
+│  #  Board                             Threads  About                                             │
+│> 1. Board001                                2  About                                             │
+│  2. Board002                                2  About                                             │
+│  3. Board003                                2  About                                             │
+│  4. Board004                                2  About                                             │
+│  5. Board005                                2  About                                             │
+│  6. Board006                                2  About                                             │
+│  7. Board007                                2  About                                             │
+│  8. Board008                                2  About                                             │
+│  9. Board009                                2  About                                             │
+│     Board010                                2  About                                             │
+│     Board011                                2  About                                             │
+│     Board012                                2  About                                             │
+│     Board013                                2  About                                             │
+│     Board014                                2  About                                             │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter open  1-9 jump  s search
+
+=== lightbar / 100x30 / unicode mono
+= same as classic
+
+=== compact / 100x30 / unicode mono
+  #  Board                              Threads  About
+> 1. Board001                                 2  About
+  2. Board002                                 2  About
+  3. Board003                                 2  About
+  4. Board004                                 2  About
+  5. Board005                                 2  About
+  6. Board006                                 2  About
+  7. Board007                                 2  About
+  8. Board008                                 2  About
+  9. Board009                                 2  About
+     Board010                                 2  About
+     Board011                                 2  About
+     Board012                                 2  About
+     Board013                                 2  About
+     Board014                                 2  About
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter open  1-9 jump  s search
+
+=== dashboard / 100x30 / unicode mono
+= same as classic
+
+=== wide / 100x30 / unicode mono
+= same as classic
+
+=== focus / 100x30 / unicode mono
+= same as classic
+
+=== split / 100x30 / unicode mono
+= same as classic
+
+=== classic / 100x30 / ascii mono
+ russh-bbs | Forums                                                                       UTC 12:00
++ Forums ------------------------------------------------------------------------------------------+
+|  #  Board                             Threads  About                                             |
+|> 1. Board001                                2  About                                             |
+|  2. Board002                                2  About                                             |
+|  3. Board003                                2  About                                             |
+|  4. Board004                                2  About                                             |
+|  5. Board005                                2  About                                             |
+|  6. Board006                                2  About                                             |
+|  7. Board007                                2  About                                             |
+|  8. Board008                                2  About                                             |
+|  9. Board009                                2  About                                             |
+|     Board010                                2  About                                             |
+|     Board011                                2  About                                             |
+|     Board012                                2  About                                             |
+|     Board013                                2  About                                             |
+|     Board014                                2  About                                             |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
++--------------------------------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Enter open
+
+=== lightbar / 100x30 / ascii mono
+= same as classic
+
+=== compact / 100x30 / ascii mono
+  #  Board                              Threads  About
+> 1. Board001                                 2  About
+  2. Board002                                 2  About
+  3. Board003                                 2  About
+  4. Board004                                 2  About
+  5. Board005                                 2  About
+  6. Board006                                 2  About
+  7. Board007                                 2  About
+  8. Board008                                 2  About
+  9. Board009                                 2  About
+     Board010                                 2  About
+     Board011                                 2  About
+     Board012                                 2  About
+     Board013                                 2  About
+     Board014                                 2  About
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Enter open
+
+=== dashboard / 100x30 / ascii mono
+= same as classic
+
+=== wide / 100x30 / ascii mono
+= same as classic
+
+=== focus / 100x30 / ascii mono
+= same as classic
+
+=== split / 100x30 / ascii mono
+= same as classic
+
+=== classic / 132x43 / unicode mono
+ russh-bbs │ Forums                                                                                                       UTC 12:00
+┌ Forums ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  #  Board                                          Threads  About                                                                │
+│> 1. Board001                                             2  About                                                                │
+│  2. Board002                                             2  About                                                                │
+│  3. Board003                                             2  About                                                                │
+│  4. Board004                                             2  About                                                                │
+│  5. Board005                                             2  About                                                                │
+│  6. Board006                                             2  About                                                                │
+│  7. Board007                                             2  About                                                                │
+│  8. Board008                                             2  About                                                                │
+│  9. Board009                                             2  About                                                                │
+│     Board010                                             2  About                                                                │
+│     Board011                                             2  About                                                                │
+│     Board012                                             2  About                                                                │
+│     Board013                                             2  About                                                                │
+│     Board014                                             2  About                                                                │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter open  1-9 jump  s search  o sort  n new board
+
+=== lightbar / 132x43 / unicode mono
+= same as classic
+
+=== compact / 132x43 / unicode mono
+  #  Board                                           Threads  About
+> 1. Board001                                              2  About
+  2. Board002                                              2  About
+  3. Board003                                              2  About
+  4. Board004                                              2  About
+  5. Board005                                              2  About
+  6. Board006                                              2  About
+  7. Board007                                              2  About
+  8. Board008                                              2  About
+  9. Board009                                              2  About
+     Board010                                              2  About
+     Board011                                              2  About
+     Board012                                              2  About
+     Board013                                              2  About
+     Board014                                              2  About
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter open  1-9 jump  s search  o sort  n new board
+
+=== dashboard / 132x43 / unicode mono
+= same as classic
+
+=== wide / 132x43 / unicode mono
+= same as classic
+
+=== focus / 132x43 / unicode mono
+= same as classic
+
+=== split / 132x43 / unicode mono
+= same as classic
+
+=== classic / 132x43 / ascii mono
+ russh-bbs | Forums                                                                                                       UTC 12:00
++ Forums --------------------------------------------------------------------------------------------------------------------------+
+|  #  Board                                          Threads  About                                                                |
+|> 1. Board001                                             2  About                                                                |
+|  2. Board002                                             2  About                                                                |
+|  3. Board003                                             2  About                                                                |
+|  4. Board004                                             2  About                                                                |
+|  5. Board005                                             2  About                                                                |
+|  6. Board006                                             2  About                                                                |
+|  7. Board007                                             2  About                                                                |
+|  8. Board008                                             2  About                                                                |
+|  9. Board009                                             2  About                                                                |
+|     Board010                                             2  About                                                                |
+|     Board011                                             2  About                                                                |
+|     Board012                                             2  About                                                                |
+|     Board013                                             2  About                                                                |
+|     Board014                                             2  About                                                                |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
++----------------------------------------------------------------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Enter open  1-9 jump  s search  o sort
+
+=== lightbar / 132x43 / ascii mono
+= same as classic
+
+=== compact / 132x43 / ascii mono
+  #  Board                                           Threads  About
+> 1. Board001                                              2  About
+  2. Board002                                              2  About
+  3. Board003                                              2  About
+  4. Board004                                              2  About
+  5. Board005                                              2  About
+  6. Board006                                              2  About
+  7. Board007                                              2  About
+  8. Board008                                              2  About
+  9. Board009                                              2  About
+     Board010                                              2  About
+     Board011                                              2  About
+     Board012                                              2  About
+     Board013                                              2  About
+     Board014                                              2  About
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Enter open  1-9 jump  s search  o sort
+
+=== dashboard / 132x43 / ascii mono
+= same as classic
+
+=== wide / 132x43 / ascii mono
+= same as classic
+
+=== focus / 132x43 / ascii mono
+= same as classic
+
+=== split / 132x43 / ascii mono
+= same as classic
+
