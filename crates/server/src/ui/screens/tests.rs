@@ -388,3 +388,43 @@ mod panes {
         }
     }
 }
+
+/// FIX-M35-7: the shell's tick runs when the deadline has passed, and `deadline` is then already
+/// the *next* beat. A redraw is due when the half drawn is not the half now, not when the next
+/// deadline has passed (which it never has).
+#[test]
+fn a_tick_after_the_deadline_finds_the_blink_due_once() {
+    let look = look_with_motion(true);
+    let mut state = Motion::default();
+    let start = Instant::now();
+    state.set_input(true, start);
+    state.shown(state.cursor_dark(look, start));
+    assert!(!state.blink_due(look, start + Duration::from_millis(100)));
+    let woken = start + motion::BLINK;
+    assert!(
+        state.deadline(look, woken).unwrap() > woken,
+        "the deadline is never due"
+    );
+    assert!(state.blink_due(look, woken), "the dark half is due");
+    state.shown(state.cursor_dark(look, woken));
+    assert!(!state.blink_due(look, woken), "drawn: nothing more is due");
+    assert!(
+        state.blink_due(look, start + motion::BLINK * 2),
+        "lit again"
+    );
+}
+
+#[test]
+fn no_blink_is_due_with_motion_off_or_no_input() {
+    let off = look_with_motion(false);
+    let on = look_with_motion(true);
+    let start = Instant::now();
+    let mut state = Motion::default();
+    state.set_input(true, start);
+    assert!(!state.blink_due(off, start + motion::BLINK));
+    state.set_input(false, start);
+    assert!(!state.blink_due(on, start + motion::BLINK));
+    state.set_input(true, start);
+    state.set_accessible(true);
+    assert!(!state.blink_due(on, start + motion::BLINK));
+}

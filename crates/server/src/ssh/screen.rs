@@ -1474,8 +1474,7 @@ impl Screen {
         let due = self
             .content
             .look(&self.ui, self.layout_area(), self.depth())
-            .and_then(|look| self.motion.deadline(look, now))
-            .is_some_and(|at| at <= now);
+            .is_some_and(|look| self.motion.blink_due(look, now));
         if due {
             self.dirty = true;
         }
@@ -1493,7 +1492,9 @@ impl Screen {
         let now = std::time::Instant::now();
         let input = self.has_input();
         self.motion.set_input(input, now);
-        self.motion.cursor_dark(look, now)
+        let dark = self.motion.cursor_dark(look, now);
+        self.motion.shown(dark);
+        dark
     }
 
     /// Whether the screen in front of the member draws the split layout's chat and mail panes,

@@ -36,6 +36,8 @@ pub(crate) struct Motion {
     input: bool,
     /// The blink's zero.
     epoch: Option<Instant>,
+    /// Whether the last frame drawn showed the cursor dark, so a tick knows the phase moved.
+    shown_dark: bool,
 }
 
 impl Motion {
@@ -55,6 +57,18 @@ impl Motion {
             self.epoch = Some(now);
         }
         self.input = input;
+    }
+
+    /// Note which half of the blink the frame just drawn showed.
+    pub(crate) fn shown(&mut self, dark: bool) {
+        self.shown_dark = dark;
+    }
+
+    /// Whether the blink has moved to the other half since the last frame drawn, so the screen
+    /// needs a redraw. [`Motion::deadline`] cannot answer this: it is always the *next* beat,
+    /// later than `now` (the FIX-M35-7 bug: the tick never found it due).
+    pub(crate) fn blink_due(&self, look: Look, now: Instant) -> bool {
+        self.input && self.cursor_dark(look, now) != self.shown_dark
     }
 
     /// Whether the cursor is in the dark half of its blink at `now`.
