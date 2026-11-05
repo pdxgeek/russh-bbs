@@ -1,33 +1,33 @@
- » Night Owl BBS « │ Main menu                                                                                            UTC 15:48
-                                     Main menu
-   .     .     .     .     .     .   ────────────────────────────────────────                      .     .     .     .     .     .
+ » Night Owl BBS « │ Main menu                                                                                            UTC 13:06
+                                                                █████
+   .     .     .     .     .  ────────────────────────────────────────────────────────────────────────   .     .     .     .     .
+                              /     /     /     /     /     /     │     \     \     \     \     \
+
+   .     .     .     .     .     .   Main menu                                                     .     .     .     .     .     .
+                                     ────────────────────────────────────────
                                      Signed in as founder.
-
-   .     .     .     .     .     .     [f] Forums                                                  .     .     .     .     .     .
-
-                                       [m] Mail
    .     .     .     .     .     .                                                                 .     .     .     .     .     .
+                                       [f] Forums
+
+   .     .     .     .     .     .     [m] Mail                                                    .     .     .     .     .     .
+
                                        [a] Files  (not built yet)
-
-   .     .     .     .     .     .     [c] Chat                                                    .     .     .     .     .     .
-
-                                       [d] Doors
    .     .     .     .     .     .                                                                 .     .     .     .     .     .
+                                       [c] Chat
+
+   .     .     .     .     .     .     [d] Doors                                                   .     .     .     .     .     .
+
                                        [u] Members
-
-   .     .     .     .     .     .     [y] Community                                               .     .     .     .     .     .
-
-                                       [i] Invites
    .     .     .     .     .     .                                                                 .     .     .     .     .     .
+                                       [y] Community
+
+   .     .     .     .     .     .     [i] Invites                                                 .     .     .     .     .     .
+
                                      > [s] Terminal settings
-
-   .     .     .     .     .     .     [o] Sysop tools                                             .     .     .     .     .     .
-
-                                       [l] Log off
    .     .     .     .     .     .                                                                 .     .     .     .     .     .
+                                       [o] Sysop tools
 
-
-   .     .     .     .     .     .                                                                 .     .     .     .     .     .
+   .     .     .     .     .     .     [l] Log off                                                 .     .     .     .     .     .
 
 
    .     .     .     .     .     .                                                                 .     .     .     .     .     .

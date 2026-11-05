@@ -1,0 +1,322 @@
+{
+ "40x12/menu": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "40x12/forums": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "40x12/board": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "40x12/reader": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "40x12/doors": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "40x12/coin": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "40x12/saltmarch": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "40x12/settings": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "40x12/widgets": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "40x12/chat": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "40x12/mail": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "40x12/members": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "40x12/community": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "40x12/oneliners": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "40x12/polls": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "40x12/help": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "60x16/menu": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "60x16/forums": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "60x16/board": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "60x16/reader": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "60x16/doors": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "60x16/coin": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "60x16/saltmarch": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "60x16/settings": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "60x16/widgets": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "60x16/chat": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "60x16/mail": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "60x16/members": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "60x16/community": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "60x16/oneliners": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "60x16/polls": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "60x16/help": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x14/menu": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x14/forums": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x14/board": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x14/reader": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x14/doors": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x14/coin": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x14/saltmarch": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x14/settings": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x14/widgets": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x14/chat": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x14/mail": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x14/members": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x14/community": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x14/oneliners": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x14/polls": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x14/help": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "100x30/menu": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "100x30/forums": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "100x30/board": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "100x30/reader": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "100x30/doors": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "100x30/coin": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "100x30/saltmarch": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "100x30/settings": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "100x30/widgets": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "100x30/chat": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "100x30/mail": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "100x30/members": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "100x30/community": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "100x30/oneliners": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "100x30/polls": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "100x30/help": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x24/menu": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x24/forums": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x24/board": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x24/reader": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x24/doors": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x24/coin": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x24/saltmarch": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x24/settings": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x24/widgets": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x24/chat": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x24/mail": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x24/members": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x24/community": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x24/oneliners": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x24/polls": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ },
+ "80x24/help": {
+  "nonascii_screen": "",
+  "nonascii_wire_bytes": 0
+ }
+}

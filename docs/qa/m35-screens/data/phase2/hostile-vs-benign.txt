@@ -1,0 +1,9 @@
+hostile-bob-132x43-unicode-full-wide-neon                      screens=46 rev-violations=0 issues=0 banner-art-shimmer=0 canary-hits=0
+hostile-bob-80x24-ascii-full-dashboard-default                 screens=46 rev-violations=0 issues=0 banner-art-shimmer=0 canary-hits=0
+hostile-bob-80x24-nerd-full-classic-ansi                       screens=46 rev-violations=0 issues=1 banner-art-shimmer=0 canary-hits=0
+      ('board2', 'silhouette rows [7]')
+hostile-bob-80x24-nerd-full-dashboard-default                  screens=46 rev-violations=0 issues=0 banner-art-shimmer=0 canary-hits=0
+hostile-founder-132x43-ascii-full-focus-default                screens=46 rev-violations=0 issues=0 banner-art-shimmer=0 canary-hits=30
+hostile-founder-80x24-nerd-full-split-phosphor                 screens=46 rev-violations=0 issues=0 banner-art-shimmer=0 canary-hits=30
+hostile-founder-telnet-80x24-nerd-full-dashboard-default       screens=46 rev-violations=0 issues=0 banner-art-shimmer=0 canary-hits=0
+TOTAL runs 7 screens 322 issues 1 violations 0

@@ -1,0 +1,362 @@
+[
+ {
+  "run": "m2-ssh-132x43-ascii-colour",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((42, 0, 11),)"
+  ],
+  "truecolor": 35699,
+  "c256": 10724,
+  "gfx": 0,
+  "max_idx": 246,
+  "mono_colour_sgr": null,
+  "nonascii": 0
+ },
+ {
+  "run": "m2-ssh-132x43-nerd-colour",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((42, 0, 0),)"
+  ],
+  "truecolor": 47358,
+  "c256": 8241,
+  "gfx": 0,
+  "max_idx": 15,
+  "mono_colour_sgr": null,
+  "nonascii": null
+ },
+ {
+  "run": "m2-ssh-132x43-nerd-mono",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((42, 0, 0),)"
+  ],
+  "truecolor": 244,
+  "c256": 209,
+  "gfx": 0,
+  "max_idx": 6,
+  "mono_colour_sgr": 0,
+  "nonascii": null
+ },
+ {
+  "run": "m2-ssh-132x43-unicode-colour",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((42, 0, 2),)"
+  ],
+  "truecolor": 47541,
+  "c256": 10642,
+  "gfx": 0,
+  "max_idx": 246,
+  "mono_colour_sgr": null,
+  "nonascii": null
+ },
+ {
+  "run": "m2-ssh-80x24-ascii-colour",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((23, 0, 11),)"
+  ],
+  "truecolor": 21937,
+  "c256": 7927,
+  "gfx": 0,
+  "max_idx": 246,
+  "mono_colour_sgr": null,
+  "nonascii": 0
+ },
+ {
+  "run": "m2-ssh-80x24-nerd-colour-noct",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((23, 0, 0),)"
+  ],
+  "truecolor": 0,
+  "c256": 25348,
+  "gfx": 0,
+  "max_idx": 255,
+  "mono_colour_sgr": null,
+  "nonascii": null
+ },
+ {
+  "run": "m2-ssh-80x24-nerd-colour",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((23, 0, 0),)"
+  ],
+  "truecolor": 22810,
+  "c256": 6022,
+  "gfx": 0,
+  "max_idx": 15,
+  "mono_colour_sgr": null,
+  "nonascii": null
+ },
+ {
+  "run": "m2-ssh-80x24-nerd-mono",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((23, 0, 0),)"
+  ],
+  "truecolor": 136,
+  "c256": 155,
+  "gfx": 0,
+  "max_idx": 6,
+  "mono_colour_sgr": 0,
+  "nonascii": null
+ },
+ {
+  "run": "m2-ssh-80x24-unicode-colour-term-xterm-noct",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((23, 0, 2),)"
+  ],
+  "truecolor": 0,
+  "c256": 18688,
+  "gfx": 0,
+  "max_idx": 15,
+  "mono_colour_sgr": null,
+  "nonascii": null
+ },
+ {
+  "run": "m2-ssh-80x24-unicode-colour",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((23, 0, 2),)"
+  ],
+  "truecolor": 22743,
+  "c256": 7926,
+  "gfx": 0,
+  "max_idx": 246,
+  "mono_colour_sgr": null,
+  "nonascii": null
+ },
+ {
+  "run": "m2-telnet-132x43-ascii-colour",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((42, 0, 10),)"
+  ],
+  "truecolor": 0,
+  "c256": 40101,
+  "gfx": 0,
+  "max_idx": 255,
+  "mono_colour_sgr": null,
+  "nonascii": 0
+ },
+ {
+  "run": "m2-telnet-132x43-nerd-colour",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((42, 0, 1),)"
+  ],
+  "truecolor": 0,
+  "c256": 46051,
+  "gfx": 0,
+  "max_idx": 255,
+  "mono_colour_sgr": null,
+  "nonascii": null
+ },
+ {
+  "run": "m2-telnet-132x43-nerd-mono",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((42, 0, 1),)"
+  ],
+  "truecolor": 0,
+  "c256": 362,
+  "gfx": 0,
+  "max_idx": 255,
+  "mono_colour_sgr": 0,
+  "nonascii": null
+ },
+ {
+  "run": "m2-telnet-132x43-unicode-colour",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((42, 0, 2),)"
+  ],
+  "truecolor": 0,
+  "c256": 48760,
+  "gfx": 0,
+  "max_idx": 255,
+  "mono_colour_sgr": null,
+  "nonascii": null
+ },
+ {
+  "run": "m2-telnet-80x24-ascii-colour",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((23, 0, 10),)"
+  ],
+  "truecolor": 0,
+  "c256": 25755,
+  "gfx": 0,
+  "max_idx": 255,
+  "mono_colour_sgr": null,
+  "nonascii": 0
+ },
+ {
+  "run": "m2-telnet-80x24-nerd-colour-noct",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((23, 0, 1),)"
+  ],
+  "truecolor": 0,
+  "c256": 24585,
+  "gfx": 0,
+  "max_idx": 255,
+  "mono_colour_sgr": null,
+  "nonascii": null
+ },
+ {
+  "run": "m2-telnet-80x24-nerd-colour",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((23, 0, 1),)"
+  ],
+  "truecolor": 0,
+  "c256": 24738,
+  "gfx": 0,
+  "max_idx": 255,
+  "mono_colour_sgr": null,
+  "nonascii": null
+ },
+ {
+  "run": "m2-telnet-80x24-nerd-mono",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((23, 0, 1),)"
+  ],
+  "truecolor": 0,
+  "c256": 276,
+  "gfx": 0,
+  "max_idx": 255,
+  "mono_colour_sgr": 0,
+  "nonascii": null
+ },
+ {
+  "run": "m2-telnet-80x24-unicode-colour-term-xterm-noct",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((23, 0, 2),)"
+  ],
+  "truecolor": 0,
+  "c256": 26562,
+  "gfx": 0,
+  "max_idx": 255,
+  "mono_colour_sgr": null,
+  "nonascii": null
+ },
+ {
+  "run": "m2-telnet-80x24-unicode-colour",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((23, 0, 2),)"
+  ],
+  "truecolor": 0,
+  "c256": 26541,
+  "gfx": 0,
+  "max_idx": 255,
+  "mono_colour_sgr": null,
+  "nonascii": null
+ },
+ {
+  "run": "blocks-ssh-132x43-nerd-colour",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((42, 0, 0),)"
+  ],
+  "truecolor": 47981,
+  "c256": 10919,
+  "gfx": 0,
+  "max_idx": 246,
+  "mono_colour_sgr": null,
+  "nonascii": null
+ },
+ {
+  "run": "blocks-ssh-80x24-ascii-colour",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((23, 0, 11),)"
+  ],
+  "truecolor": 22092,
+  "c256": 7956,
+  "gfx": 0,
+  "max_idx": 246,
+  "mono_colour_sgr": null,
+  "nonascii": 0
+ },
+ {
+  "run": "blocks-ssh-80x24-nerd-colour",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((23, 0, 0),)"
+  ],
+  "truecolor": 23032,
+  "c256": 6153,
+  "gfx": 0,
+  "max_idx": 15,
+  "mono_colour_sgr": null,
+  "nonascii": null
+ },
+ {
+  "run": "blocks-ssh-80x24-unicode-colour",
+  "combos": 63,
+  "violations": 0,
+  "no_marker": 0,
+  "sig": [
+   "((23, 0, 2),)"
+  ],
+  "truecolor": 22896,
+  "c256": 6066,
+  "gfx": 0,
+  "max_idx": 15,
+  "mono_colour_sgr": null,
+  "nonascii": null
+ }
+]

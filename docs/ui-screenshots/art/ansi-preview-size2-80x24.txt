@@ -1,4 +1,4 @@
- ░▒▓ Night Owl BBS ▓▒░ │ Theme preview                                UTC 05:51
+ ░▒▓ Night Owl BBS ▓▒░ │ Theme preview                                UTC 13:10
 Style ansi   layout Classic   100x30   unicode   colour   main menu   art on
 Art in use: ansi. russh-bbs project (original art)
 Your terminal shows the top-left 80x22 of this 100x30 preview.

@@ -1,33 +1,33 @@
- ◆ Night Owl BBS ◆ │ Main menu                                                                                            UTC 15:49
-      .                   .          Main menu                                                     *                 .
-     .      .  .        .         .  ────────────────────────────────────────                               *      .       .
-                                     Signed in as founder.
-  *     .       .        *                                                                                   .*
-                          *            [f] Forums                                                     .
-         *               .
-          .           .            *   [m] Mail                                                      .
+ ◆ Night Owl BBS ◆ │ Main menu                                                                                            UTC 13:07
+      .                   .   .     .                          ███▓▓▓          .      .   +                          .
+     .      .  .        .                          *   * *────────────────  .                               *      .       .
+                              *                                ▓▓▒▒▒▒      .                       .
+  *     .       .        *                               .          . .  *                                   .*
+                          *          Main menu                                                        .
+         *               .           ────────────────────────────────────────
+          .           .            * Signed in as founder.                                           .
 *      * *                                                                                       .               ..
- .           .          *              [a] Files  (not built yet)
+ .           .          *              [f] Forums
                                    .                                                                                            .
-              .          .             [c] Chat                                                                .           ..
+              .          .             [m] Mail                                                                .           ..
     *    *                 .     .                                                                 .              .                .
-.                        .             [d] Doors                                                                        .
+.                        .             [a] Files  (not built yet)                                                       .
    *    .     .*   .         .*                                                                     .
-                                   *   [u] Members                                                        *..  .    .  .         .
+                                   *   [c] Chat                                                           *..  .    .  .         .
                                                                                                     ..     .          *
-  .                       *            [y] Community                                                                          .    *
+  .                       *            [d] Doors                                                                              .    *
     .       .    .             .                                                                  .               .        .
- .                     .               [i] Invites                                                  *                            .
+ .                     .               [u] Members                                                  *                            .
   .       .          .                                                                                . .    .
-             .    .*              ** > [s] Terminal settings                                        .   .     *          .
+             .    .*              **   [y] Community                                                .   .     *          .
           .    .
-    .                                  [o] Sysop tools                                                          .
+    .                                  [i] Invites                                                              .
                                                                                                    ...       .
-     .                                 [l] Log off                                                      .
+     .                               > [s] Terminal settings                                            .
                            *                                                                       *
-
+                                       [o] Sysop tools
       .        .                                                                                       *
-                                                                                                 .              .              *
+                                       [l] Log off                                               .              .              *
                    *          *                                                                                           .  .
        .            .*                                                                               ..  .        . .
                              *     .                                                                       .

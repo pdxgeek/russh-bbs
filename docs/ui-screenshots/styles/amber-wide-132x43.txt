@@ -1,40 +1,40 @@
- Night Owl BBS │ Main menu                                                                                                UTC 15:49
+ Night Owl BBS │ Main menu                                                                                                UTC 13:07
+                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                              █· ● · · ● · ● ● · ● · ● · ● ● ● · · ● · ● ● ● · · ● · ● · · · ● · · ● █
+                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
 ┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━┓┏ NIGHT OWL BBS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓┏ THIS BOARD ━━━━━━━━━━━━━━━━━━━━━━┓
 ┃   [f] Forums                   ┃┃                                                            ┃┃ Night Owl BBS                    ┃
-┃   [m] Mail                     ┃┃  Signed in as founder.                                     ┃┃ After hours, all hours.          ┃
-┃   [a] Files  (not built yet)   ┃┃                                                            ┃┃ Portland, OR · since 2026        ┃
+┃   [m] Mail                     ┃┃  Signed in as founder.                                     ┃┃ Calm, late-night talk.           ┃
+┃   [a] Files  (not built yet)   ┃┃                                                            ┃┃ Portland, Oregon · since 1994    ┃
 ┃   [c] Chat                     ┃┃  > [s] Terminal settings                                   ┃┃                                  ┃
-┃   [d] Doors                    ┃┃                                                            ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-┃   [u] Members                  ┃┃                                                            ┃┏ CLOCK ━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃   [y] Community                ┃┃                                                            ┃┃ UTC 15:49                        ┃
-┃   [i] Invites                  ┃┃                                                            ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-┃ > [s] Terminal settings        ┃┃                                                            ┃┏ WHO IS ONLINE ━━━━━━━━━━━━━━━━━━━┓
-┃   [o] Sysop tools              ┃┃                                                            ┃┃ Nothing to show yet.             ┃
-┃   [l] Log off                  ┃┃                                                            ┃┃                                  ┃
+┃   [d] Doors                    ┃┃                                                            ┃┃                                  ┃
+┃   [u] Members                  ┃┃                                                            ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┃   [y] Community                ┃┃                                                            ┃┏ CLOCK ━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃   [i] Invites                  ┃┃                                                            ┃┃      ━     ━   ━                 ┃
+┃ > [s] Terminal settings        ┃┃                                                            ┃┃   ┃  ━┃ • ┃ ┃   ┃                ┃
+┃   [o] Sysop tools              ┃┃                                                            ┃┃   ┃  ━┃ • ┃━┃   ┃                ┃
+┃   [l] Log off                  ┃┃                                                            ┃┃ Thu 5 Nov 2026 UTC               ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┃                                ┃┃                                                            ┃┏ WHO IS ONLINE ━━━━━━━━━━━━━━━━━━━┓
+┃                                ┃┃                                                            ┃┃ ● 1 online                       ┃
+┃                                ┃┃                                                            ┃┃ ▸ founder                        ┃
 ┃                                ┃┃                                                            ┃┃                                  ┃
 ┃                                ┃┃                                                            ┃┃                                  ┃
 ┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┃                                ┃┃                                                            ┃┏ MAIL ━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                ┃┃                                                            ┃┃ No unread mail.                  ┃
+┃                                ┃┃                                                            ┃┃ 0 in your inbox                  ┃
 ┃                                ┃┃                                                            ┃┃                                  ┃
 ┃                                ┃┃                                                            ┃┃                                  ┃
 ┃                                ┃┃                                                            ┃┃                                  ┃
 ┃                                ┃┃                                                            ┃┃                                  ┃
 ┃                                ┃┃                                                            ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-┃                                ┃┃                                                            ┃┏ NEW POSTS ━━━━━━━━━━━━━━━━━━━━━━━┓
-┃                                ┃┃                                                            ┃┃ Nothing to show yet.             ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-┃                                ┃┃                                                            ┃┏ ACTIVITY ━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃                                ┃┃                                                            ┃┃ Nothing to show yet.             ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┏ LAST CALLERS ━━━━━━━━━━━━━━━━━━━━┓
+┃                                ┃┃                                                            ┃┃ founder                       1m ┃
 ┃                                ┃┃                                                            ┃┃                                  ┃
 ┃                                ┃┃                                                            ┃┃                                  ┃
 ┃                                ┃┃                                                            ┃┃                                  ┃

@@ -8,9 +8,9 @@
                             ┃Signed in                                                                 ┃
                             ┃                                                                          ┃
                             ┃Signed in as founder.                                                     ┃
-                            ┃Last login: 2026-11-05 05:51 UTC                                          ┃
+                            ┃Last login: 2026-11-05 13:11 UTC                                          ┃
                             ┃                                                                          ┃
-                            ┃Terminal: Unicode icons, color on, pause on                               ┃
+                            ┃Terminal: Nerd Font icons, color on, pause on                             ┃
                             ┃                                                                          ┃
                             ┃Any key: continue   Ctrl-C: log off                                       ┃
                             ┃                                                                          ┃

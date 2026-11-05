@@ -1,0 +1,38 @@
+{
+ "mouse off: click on '[m] Mail' ignored (still on main menu)": [
+  true,
+  "(12, 7)"
+ ],
+ "mouse on: click on '[m] Mail' opens Mail": [
+  true,
+  "(12, 7)"
+ ],
+ "wheel in forum board list does not crash": [
+  true,
+  ""
+ ],
+ "hostile mouse reports: session alive, menu intact": [
+  false,
+  ""
+ ],
+ "junk reports typed nothing into a text field": [
+  true,
+  ""
+ ],
+ "reverse only on marker cell during all mouse use": [
+  true,
+  "[]"
+ ],
+ "palette as bob: restricted boards/sysop entries": [
+  true,
+  "{'Backroom': False, 'SecretFeed': False, 'Sysop': False, 'Queue': False, 'Hello': False, 'Doors': True, 'Gen': False}"
+ ],
+ "palette as founder: restricted boards/sysop entries": [
+  false,
+  "{'Backroom': False, 'SecretFeed': False, 'Sysop': False, 'Queue': False, 'Hello': False, 'Doors': False, 'Gen': False}"
+ ],
+ "toast visible and marker cell intact": [
+  true,
+  "[(23, 0)]"
+ ]
+}

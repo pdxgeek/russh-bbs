@@ -1,22 +1,22 @@
- » Night Owl BBS « │ Main menu                                        UTC 15:46
+ » Night Owl BBS « │ Main menu                                        UTC 13:05
+                                      █████
+   .────────────────────────────────────────────────────────────────────────
+    /     /     /     /     /     /     │     \     \     \     \     \
+
 ╭« Main menu »───────────────────╮│╭« Chat »───────────────────────────────────╮
-│ Signed in as founder.          │││ Nothing to show yet.                      │
-│                                │││                                           │
+│ Signed in as founder.          │││#lobby  0                                  │
+│                                │││  nobody here                              │
 │   [f] Forums                   │││                                           │
 │   [m] Mail                     │││                                           │
 │   [a] Files  (not built yet)   │││                                           │
 │   [c] Chat                     │││                                           │
 │   [d] Doors                    │││                                           │
-│   [u] Members                  │││                                           │
-│   [y] Community                │││                                           │
-│   [i] Invites                  │││                                           │
-│ > [s] Terminal settings        │┃│                                           │
+│   [u] Members                  ││╰───────────────────────────────────────────╯
+│   [y] Community                │┃╭« Mail »───────────────────────────────────╮
+│   [i] Invites                  │││0 unread of 0                              │
+│ > [s] Terminal settings        │││Your mailbox is empty.                     │
 │   [o] Sysop tools              │││                                           │
 │   [l] Log off                  │││                                           │
-│                                │││                                           │
-│                                │││                                           │
-│                                │││                                           │
-│                                │││                                           │
 │                                │││                                           │
 │                                │││                                           │
 │                                │││                                           │

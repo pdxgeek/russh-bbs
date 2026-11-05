@@ -12,12 +12,12 @@
   │Goodbye, founder.                                                         │
   │Your terminal settings are saved.                                         │
   │                                                                          │
-  │See you in the morning.Goodbye, founder.                                  │
+  │Go outside, then come back.                                               │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │              Goodbye, founder.                                           │
 Your terminal settings are saved.                                            │
-  │                                                                          │
-  │                                                                          │
-  │                                                                          │
-  │                                                                          │
   │                                                                          │
   │                                                                          │
   ╰──────────────────────────────────────────────────────────────────────────╯
