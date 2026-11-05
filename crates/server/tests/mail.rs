@@ -330,7 +330,7 @@ async fn two_members_send_reply_with_a_quote_delete_and_report_and_the_file_hold
     let screen = press(&mut bob, "m").await;
     let inbox = flat(&screen);
     assert!(
-        inbox.contains("1 message, 1 unread") && inbox.contains(&format!("ann - {SUBJECT}")),
+        inbox.contains("1 message, 1 unread") && inbox.contains("ann") && inbox.contains(SUBJECT),
         "{screen}"
     );
     seen.push_str(&inbox);

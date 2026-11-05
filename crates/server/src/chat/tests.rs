@@ -688,7 +688,7 @@ mod drawing {
             .collect()
     }
 
-    pub(super) fn in_room() -> ChatScreen {
+    pub(in crate::chat) fn in_room() -> ChatScreen {
         let mut screen = ChatScreen::open();
         screen.deliver(ChatResponse::Rooms {
             rooms: vec![room(1, "lobby"), room(2, "retro")],
@@ -870,4 +870,72 @@ fn coming_into_a_room_says_which_room_you_are_in() {
     let shown = drawing::rows(&drawing::draw(&screen, Tier::Ascii, (80, 24))).join("\n");
     assert!(shown.contains("You are in #lobby."), "{shown}");
     assert!(shown.contains("Here: ann"), "{shown}");
+}
+
+// ---- UI-4: the chat screens in every layout, size and mode ----
+
+fn matrix(name: &str, screen: &russh_bbs_core::chat::ChatScreen) {
+    crate::ui::screens::matrix::golden(name, &|frame, d| {
+        super::render(
+            frame,
+            screen,
+            &super::ChatCtx {
+                strings: d.strings,
+                look: d.look,
+                tier: d.tier,
+                markers: d.markers,
+                clock: d.clock,
+                art: None,
+            },
+        );
+    });
+}
+
+#[test]
+fn the_room_in_three_panes_in_every_layout_size_and_mode() {
+    use russh_bbs_core::chat::{ChatKey, Event, Line, clean_line};
+    let mut screen = drawing::in_room();
+    let said = |who: &str, text: &str| {
+        Event::Line(Line {
+            from: handle(who),
+            text: clean_line(text).unwrap(),
+        })
+    };
+    screen.receive(vec![
+        said("ann", "morning all"),
+        said("bob", "hi ann. did the invite code work?"),
+        Event::Joined(handle("carol")),
+        said(
+            "carol",
+            "just got in. this looks great on a narrow terminal",
+        ),
+        Event::Whisper {
+            from: handle("bob"),
+            text: clean_line("psst, over here").unwrap(),
+        },
+    ]);
+    for c in "see you later".chars() {
+        screen.input(ChatKey::Char(c));
+    }
+    matrix("chat-room", &screen);
+}
+
+#[test]
+fn the_room_list_in_every_layout_size_and_mode() {
+    use russh_bbs_core::chat::{ChatResponse, ChatScreen};
+    let mut screen = ChatScreen::open();
+    let rooms = ["lobby", "retro", "dev", "music"]
+        .iter()
+        .enumerate()
+        .map(|(n, name)| russh_bbs_core::chat::Room {
+            id: russh_bbs_core::chat::RoomId::from_raw(i64::try_from(n).unwrap() + 1),
+            name: Slug::parse(name).unwrap(),
+            created_at: russh_bbs_core::store::UnixSeconds::from_raw(0),
+        })
+        .collect();
+    screen.deliver(ChatResponse::Rooms {
+        rooms,
+        notice: None,
+    });
+    matrix("chat-rooms", &screen);
 }

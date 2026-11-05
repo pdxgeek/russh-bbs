@@ -575,7 +575,7 @@ fn draw_talk(
     }
     frame.render_widget(Paragraph::new(lines), inner);
     // A scrollbar shows where the newest lines sit in the 200 kept.
-    if inner.width > 2 && inner.height > 2 {
+    if inner.width > 2 && inner.height > 2 && room.rows.len() > usize::from(inner.height) {
         let total = room.rows.len().max(1);
         let mut state = ScrollbarState::new(total).position(total.saturating_sub(1));
         frame.render_stateful_widget(

@@ -1,0 +1,502 @@
+=== classic / 80x24 / unicode mono
+ russh-bbs │ Mail                                                     UTC 12:00
+┌ Mail ────────────────────────────────────────────────────────────────────────┐
+│  #  From            Subject                                 Sent (UTC)       │
+│> 1.   bob           Subject number 1                        2023-11-14 22:13 │
+│  2.   ann           Subject number 2                        2023-11-14 22:13 │
+│  3. * bob           Subject number 3                        2023-11-14 22:13 │
+│  4.   ann           Subject number 4                        2023-11-14 22:13 │
+│  5.   bob           Subject number 5                        2023-11-14 22:13 │
+│  6. * ann           Subject number 6                        2023-11-14 22:13 │
+│  7.   bob           Subject number 7                        2023-11-14 22:13 │
+│  8.   ann           Subject number 8                        2023-11-14 22:13 │
+│  9. * bob           Subject number 9                        2023-11-14 22:13 │
+│       ann           Subject number 10                       2023-11-14 22:13 │
+│       bob           Subject number 11                       2023-11-14 22:13 │
+│     * ann           Subject number 12                       2023-11-14 22:13 │
+│       bob           Subject number 13                       2023-11-14 22:13 │
+│       ann           Subject number 14                       2023-11-14 22:13 │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│14 messages, 4 unread  -  Page 1                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter read
+
+=== lightbar / 80x24 / unicode mono
+= same as classic
+
+=== compact / 80x24 / unicode mono
+  #  From            Subject                                   Sent (UTC)
+> 1.   bob           Subject number 1                          2023-11-14 22:13
+  2.   ann           Subject number 2                          2023-11-14 22:13
+  3. * bob           Subject number 3                          2023-11-14 22:13
+  4.   ann           Subject number 4                          2023-11-14 22:13
+  5.   bob           Subject number 5                          2023-11-14 22:13
+  6. * ann           Subject number 6                          2023-11-14 22:13
+  7.   bob           Subject number 7                          2023-11-14 22:13
+  8.   ann           Subject number 8                          2023-11-14 22:13
+  9. * bob           Subject number 9                          2023-11-14 22:13
+       ann           Subject number 10                         2023-11-14 22:13
+       bob           Subject number 11                         2023-11-14 22:13
+     * ann           Subject number 12                         2023-11-14 22:13
+       bob           Subject number 13                         2023-11-14 22:13
+       ann           Subject number 14                         2023-11-14 22:13
+
+
+
+
+
+
+
+14 messages, 4 unread  -  Page 1
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter read
+
+=== dashboard / 80x24 / unicode mono
+= same as classic
+
+=== wide / 80x24 / unicode mono
+= same as classic
+
+=== focus / 80x24 / unicode mono
+= same as classic
+
+=== split / 80x24 / unicode mono
+= same as classic
+
+=== classic / 80x24 / ascii mono
+ russh-bbs | Mail                                                     UTC 12:00
++ Mail ------------------------------------------------------------------------+
+|  #  From            Subject                                 Sent (UTC)       |
+|> 1.   bob           Subject number 1                        2023-11-14 22:13 |
+|  2.   ann           Subject number 2                        2023-11-14 22:13 |
+|  3. * bob           Subject number 3                        2023-11-14 22:13 |
+|  4.   ann           Subject number 4                        2023-11-14 22:13 |
+|  5.   bob           Subject number 5                        2023-11-14 22:13 |
+|  6. * ann           Subject number 6                        2023-11-14 22:13 |
+|  7.   bob           Subject number 7                        2023-11-14 22:13 |
+|  8.   ann           Subject number 8                        2023-11-14 22:13 |
+|  9. * bob           Subject number 9                        2023-11-14 22:13 |
+|       ann           Subject number 10                       2023-11-14 22:13 |
+|       bob           Subject number 11                       2023-11-14 22:13 |
+|     * ann           Subject number 12                       2023-11-14 22:13 |
+|       bob           Subject number 13                       2023-11-14 22:13 |
+|       ann           Subject number 14                       2023-11-14 22:13 |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|14 messages, 4 unread  -  Page 1                                              |
++------------------------------------------------------------------------------+
+UNENCRYPTED  LOW-SECURITY   Enter read  1-9 jump  c write  d delete  n/b page
+
+=== lightbar / 80x24 / ascii mono
+= same as classic
+
+=== compact / 80x24 / ascii mono
+  #  From            Subject                                   Sent (UTC)
+> 1.   bob           Subject number 1                          2023-11-14 22:13
+  2.   ann           Subject number 2                          2023-11-14 22:13
+  3. * bob           Subject number 3                          2023-11-14 22:13
+  4.   ann           Subject number 4                          2023-11-14 22:13
+  5.   bob           Subject number 5                          2023-11-14 22:13
+  6. * ann           Subject number 6                          2023-11-14 22:13
+  7.   bob           Subject number 7                          2023-11-14 22:13
+  8.   ann           Subject number 8                          2023-11-14 22:13
+  9. * bob           Subject number 9                          2023-11-14 22:13
+       ann           Subject number 10                         2023-11-14 22:13
+       bob           Subject number 11                         2023-11-14 22:13
+     * ann           Subject number 12                         2023-11-14 22:13
+       bob           Subject number 13                         2023-11-14 22:13
+       ann           Subject number 14                         2023-11-14 22:13
+
+
+
+
+
+
+
+14 messages, 4 unread  -  Page 1
+UNENCRYPTED  LOW-SECURITY   Enter read  1-9 jump  c write  d delete  n/b page
+
+=== dashboard / 80x24 / ascii mono
+= same as classic
+
+=== wide / 80x24 / ascii mono
+= same as classic
+
+=== focus / 80x24 / ascii mono
+= same as classic
+
+=== split / 80x24 / ascii mono
+= same as classic
+
+=== classic / 100x30 / unicode mono
+ russh-bbs │ Mail                                                                         UTC 12:00
+┌ Mail ────────────────────────────────────────────────────────────────────────────────────────────┐
+│  #  From            Subject                                                     Sent (UTC)       │
+│> 1.   bob           Subject number 1                                            2023-11-14 22:13 │
+│  2.   ann           Subject number 2                                            2023-11-14 22:13 │
+│  3. * bob           Subject number 3                                            2023-11-14 22:13 │
+│  4.   ann           Subject number 4                                            2023-11-14 22:13 │
+│  5.   bob           Subject number 5                                            2023-11-14 22:13 │
+│  6. * ann           Subject number 6                                            2023-11-14 22:13 │
+│  7.   bob           Subject number 7                                            2023-11-14 22:13 │
+│  8.   ann           Subject number 8                                            2023-11-14 22:13 │
+│  9. * bob           Subject number 9                                            2023-11-14 22:13 │
+│       ann           Subject number 10                                           2023-11-14 22:13 │
+│       bob           Subject number 11                                           2023-11-14 22:13 │
+│     * ann           Subject number 12                                           2023-11-14 22:13 │
+│       bob           Subject number 13                                           2023-11-14 22:13 │
+│       ann           Subject number 14                                           2023-11-14 22:13 │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│14 messages, 4 unread  -  Page 1                                                                  │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter read  1-9 jump  c write
+
+=== lightbar / 100x30 / unicode mono
+= same as classic
+
+=== compact / 100x30 / unicode mono
+  #  From            Subject                                                       Sent (UTC)
+> 1.   bob           Subject number 1                                              2023-11-14 22:13
+  2.   ann           Subject number 2                                              2023-11-14 22:13
+  3. * bob           Subject number 3                                              2023-11-14 22:13
+  4.   ann           Subject number 4                                              2023-11-14 22:13
+  5.   bob           Subject number 5                                              2023-11-14 22:13
+  6. * ann           Subject number 6                                              2023-11-14 22:13
+  7.   bob           Subject number 7                                              2023-11-14 22:13
+  8.   ann           Subject number 8                                              2023-11-14 22:13
+  9. * bob           Subject number 9                                              2023-11-14 22:13
+       ann           Subject number 10                                             2023-11-14 22:13
+       bob           Subject number 11                                             2023-11-14 22:13
+     * ann           Subject number 12                                             2023-11-14 22:13
+       bob           Subject number 13                                             2023-11-14 22:13
+       ann           Subject number 14                                             2023-11-14 22:13
+
+
+
+
+
+
+
+
+
+
+
+
+
+14 messages, 4 unread  -  Page 1
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter read  1-9 jump  c write
+
+=== dashboard / 100x30 / unicode mono
+= same as classic
+
+=== wide / 100x30 / unicode mono
+= same as classic
+
+=== focus / 100x30 / unicode mono
+= same as classic
+
+=== split / 100x30 / unicode mono
+= same as classic
+
+=== classic / 100x30 / ascii mono
+ russh-bbs | Mail                                                                         UTC 12:00
++ Mail --------------------------------------------------------------------------------------------+
+|  #  From            Subject                                                     Sent (UTC)       |
+|> 1.   bob           Subject number 1                                            2023-11-14 22:13 |
+|  2.   ann           Subject number 2                                            2023-11-14 22:13 |
+|  3. * bob           Subject number 3                                            2023-11-14 22:13 |
+|  4.   ann           Subject number 4                                            2023-11-14 22:13 |
+|  5.   bob           Subject number 5                                            2023-11-14 22:13 |
+|  6. * ann           Subject number 6                                            2023-11-14 22:13 |
+|  7.   bob           Subject number 7                                            2023-11-14 22:13 |
+|  8.   ann           Subject number 8                                            2023-11-14 22:13 |
+|  9. * bob           Subject number 9                                            2023-11-14 22:13 |
+|       ann           Subject number 10                                           2023-11-14 22:13 |
+|       bob           Subject number 11                                           2023-11-14 22:13 |
+|     * ann           Subject number 12                                           2023-11-14 22:13 |
+|       bob           Subject number 13                                           2023-11-14 22:13 |
+|       ann           Subject number 14                                           2023-11-14 22:13 |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|14 messages, 4 unread  -  Page 1                                                                  |
++--------------------------------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Enter read
+
+=== lightbar / 100x30 / ascii mono
+= same as classic
+
+=== compact / 100x30 / ascii mono
+  #  From            Subject                                                       Sent (UTC)
+> 1.   bob           Subject number 1                                              2023-11-14 22:13
+  2.   ann           Subject number 2                                              2023-11-14 22:13
+  3. * bob           Subject number 3                                              2023-11-14 22:13
+  4.   ann           Subject number 4                                              2023-11-14 22:13
+  5.   bob           Subject number 5                                              2023-11-14 22:13
+  6. * ann           Subject number 6                                              2023-11-14 22:13
+  7.   bob           Subject number 7                                              2023-11-14 22:13
+  8.   ann           Subject number 8                                              2023-11-14 22:13
+  9. * bob           Subject number 9                                              2023-11-14 22:13
+       ann           Subject number 10                                             2023-11-14 22:13
+       bob           Subject number 11                                             2023-11-14 22:13
+     * ann           Subject number 12                                             2023-11-14 22:13
+       bob           Subject number 13                                             2023-11-14 22:13
+       ann           Subject number 14                                             2023-11-14 22:13
+
+
+
+
+
+
+
+
+
+
+
+
+
+14 messages, 4 unread  -  Page 1
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Enter read
+
+=== dashboard / 100x30 / ascii mono
+= same as classic
+
+=== wide / 100x30 / ascii mono
+= same as classic
+
+=== focus / 100x30 / ascii mono
+= same as classic
+
+=== split / 100x30 / ascii mono
+= same as classic
+
+=== classic / 132x43 / unicode mono
+ russh-bbs │ Mail                                                                                                         UTC 12:00
+┌ Mail ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  #  From            Subject                                                                                     Sent (UTC)       │
+│> 1.   bob           Subject number 1                                                                            2023-11-14 22:13 │
+│  2.   ann           Subject number 2                                                                            2023-11-14 22:13 │
+│  3. * bob           Subject number 3                                                                            2023-11-14 22:13 │
+│  4.   ann           Subject number 4                                                                            2023-11-14 22:13 │
+│  5.   bob           Subject number 5                                                                            2023-11-14 22:13 │
+│  6. * ann           Subject number 6                                                                            2023-11-14 22:13 │
+│  7.   bob           Subject number 7                                                                            2023-11-14 22:13 │
+│  8.   ann           Subject number 8                                                                            2023-11-14 22:13 │
+│  9. * bob           Subject number 9                                                                            2023-11-14 22:13 │
+│       ann           Subject number 10                                                                           2023-11-14 22:13 │
+│       bob           Subject number 11                                                                           2023-11-14 22:13 │
+│     * ann           Subject number 12                                                                           2023-11-14 22:13 │
+│       bob           Subject number 13                                                                           2023-11-14 22:13 │
+│       ann           Subject number 14                                                                           2023-11-14 22:13 │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│14 messages, 4 unread  -  Page 1                                                                                                  │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter read  1-9 jump  c write  d delete  n/b page  o sort
+
+=== lightbar / 132x43 / unicode mono
+= same as classic
+
+=== compact / 132x43 / unicode mono
+  #  From            Subject                                                                                       Sent (UTC)
+> 1.   bob           Subject number 1                                                                              2023-11-14 22:13
+  2.   ann           Subject number 2                                                                              2023-11-14 22:13
+  3. * bob           Subject number 3                                                                              2023-11-14 22:13
+  4.   ann           Subject number 4                                                                              2023-11-14 22:13
+  5.   bob           Subject number 5                                                                              2023-11-14 22:13
+  6. * ann           Subject number 6                                                                              2023-11-14 22:13
+  7.   bob           Subject number 7                                                                              2023-11-14 22:13
+  8.   ann           Subject number 8                                                                              2023-11-14 22:13
+  9. * bob           Subject number 9                                                                              2023-11-14 22:13
+       ann           Subject number 10                                                                             2023-11-14 22:13
+       bob           Subject number 11                                                                             2023-11-14 22:13
+     * ann           Subject number 12                                                                             2023-11-14 22:13
+       bob           Subject number 13                                                                             2023-11-14 22:13
+       ann           Subject number 14                                                                             2023-11-14 22:13
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+14 messages, 4 unread  -  Page 1
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter read  1-9 jump  c write  d delete  n/b page  o sort
+
+=== dashboard / 132x43 / unicode mono
+= same as classic
+
+=== wide / 132x43 / unicode mono
+= same as classic
+
+=== focus / 132x43 / unicode mono
+= same as classic
+
+=== split / 132x43 / unicode mono
+= same as classic
+
+=== classic / 132x43 / ascii mono
+ russh-bbs | Mail                                                                                                         UTC 12:00
++ Mail ----------------------------------------------------------------------------------------------------------------------------+
+|  #  From            Subject                                                                                     Sent (UTC)       |
+|> 1.   bob           Subject number 1                                                                            2023-11-14 22:13 |
+|  2.   ann           Subject number 2                                                                            2023-11-14 22:13 |
+|  3. * bob           Subject number 3                                                                            2023-11-14 22:13 |
+|  4.   ann           Subject number 4                                                                            2023-11-14 22:13 |
+|  5.   bob           Subject number 5                                                                            2023-11-14 22:13 |
+|  6. * ann           Subject number 6                                                                            2023-11-14 22:13 |
+|  7.   bob           Subject number 7                                                                            2023-11-14 22:13 |
+|  8.   ann           Subject number 8                                                                            2023-11-14 22:13 |
+|  9. * bob           Subject number 9                                                                            2023-11-14 22:13 |
+|       ann           Subject number 10                                                                           2023-11-14 22:13 |
+|       bob           Subject number 11                                                                           2023-11-14 22:13 |
+|     * ann           Subject number 12                                                                           2023-11-14 22:13 |
+|       bob           Subject number 13                                                                           2023-11-14 22:13 |
+|       ann           Subject number 14                                                                           2023-11-14 22:13 |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|14 messages, 4 unread  -  Page 1                                                                                                  |
++----------------------------------------------------------------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Enter read  1-9 jump  c write  d delete
+
+=== lightbar / 132x43 / ascii mono
+= same as classic
+
+=== compact / 132x43 / ascii mono
+  #  From            Subject                                                                                       Sent (UTC)
+> 1.   bob           Subject number 1                                                                              2023-11-14 22:13
+  2.   ann           Subject number 2                                                                              2023-11-14 22:13
+  3. * bob           Subject number 3                                                                              2023-11-14 22:13
+  4.   ann           Subject number 4                                                                              2023-11-14 22:13
+  5.   bob           Subject number 5                                                                              2023-11-14 22:13
+  6. * ann           Subject number 6                                                                              2023-11-14 22:13
+  7.   bob           Subject number 7                                                                              2023-11-14 22:13
+  8.   ann           Subject number 8                                                                              2023-11-14 22:13
+  9. * bob           Subject number 9                                                                              2023-11-14 22:13
+       ann           Subject number 10                                                                             2023-11-14 22:13
+       bob           Subject number 11                                                                             2023-11-14 22:13
+     * ann           Subject number 12                                                                             2023-11-14 22:13
+       bob           Subject number 13                                                                             2023-11-14 22:13
+       ann           Subject number 14                                                                             2023-11-14 22:13
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+14 messages, 4 unread  -  Page 1
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Enter read  1-9 jump  c write  d delete
+
+=== dashboard / 132x43 / ascii mono
+= same as classic
+
+=== wide / 132x43 / ascii mono
+= same as classic
+
+=== focus / 132x43 / ascii mono
+= same as classic
+
+=== split / 132x43 / ascii mono
+= same as classic
+

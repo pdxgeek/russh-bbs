@@ -23,6 +23,7 @@ use russh_bbs_core::terminal_settings::LayoutId;
 
 use super::classic::{self, MenuScreen};
 use super::keys;
+use super::screens::side;
 use super::theme::Element;
 use super::widgets;
 use crate::settings::Look;
@@ -38,6 +39,11 @@ pub(crate) struct Plan {
     pub(crate) cells: Vec<Rect>,
     /// The split layout's divider column.
     pub(crate) divider: Option<Rect>,
+    /// The split layout's chat pane (above), when the side column is tall enough for two panes
+    /// (UI-4). UI-9 moves these rectangles when the divider is dragged.
+    pub(crate) chat: Option<Rect>,
+    /// The split layout's mail pane (below the chat pane).
+    pub(crate) mail: Option<Rect>,
 }
 
 /// The arrangement `layout` makes of `body`. Only the pane layouts have a plan; the others
@@ -85,6 +91,8 @@ fn dashboard(body: Rect) -> Plan {
         content: None,
         cells,
         divider: None,
+        chat: None,
+        mail: None,
     }
 }
 
@@ -100,6 +108,8 @@ fn wide(body: Rect) -> Plan {
         content: Some(content),
         cells: stack(rail),
         divider: None,
+        chat: None,
+        mail: None,
     }
 }
 
@@ -120,11 +130,22 @@ fn split(body: Rect) -> Plan {
         Constraint::Fill(1),
     ])
     .areas(body);
+    // Two real panes when the column has the rows for both (a pane needs a border and a few
+    // lines); the widget cells otherwise, and whenever the data for the panes is missing.
+    let (chat, mail) = if side.height >= 16 {
+        let [chat, mail] =
+            Layout::vertical([Constraint::Percentage(50), Constraint::Fill(1)]).areas(side);
+        (Some(chat), Some(mail))
+    } else {
+        (None, None)
+    };
     Plan {
         nav,
         content: None,
         cells: stack(side),
         divider: Some(divider),
+        chat,
+        mail,
     }
 }
 
@@ -170,9 +191,35 @@ pub(crate) fn render(frame: &mut Frame<'_>, layout: LayoutId, screen: &MenuScree
             if let Some(divider) = plan.divider {
                 draw_divider(frame, divider, screen.look);
             }
-            let cx = screen.widget_cx();
-            let placed = widgets::assign(&plan.cells, screen.widgets.shown, &cx);
-            widgets::draw_cells(frame, &placed, &cx);
+            let data = screen.widgets.data;
+            let panes = match (layout, plan.chat, plan.mail) {
+                (LayoutId::Split, Some(chat), Some(mail))
+                    if side::has_chat(data) || side::has_mail(data) =>
+                {
+                    Some((chat, mail))
+                }
+                _ => None,
+            };
+            if let Some((chat, mail)) = panes {
+                // The second pane is a real chat pane and a real mail pane; one that has no
+                // data (the member cannot reach it) gives its room to the other.
+                let whole = Rect {
+                    height: chat.height + mail.height,
+                    ..chat
+                };
+                match (side::has_chat(data), side::has_mail(data)) {
+                    (true, true) => {
+                        side::chat_pane(frame, chat, screen.look, data);
+                        side::mail_pane(frame, mail, screen.look, data, screen.widgets.now);
+                    }
+                    (true, false) => side::chat_pane(frame, whole, screen.look, data),
+                    _ => side::mail_pane(frame, whole, screen.look, data, screen.widgets.now),
+                }
+            } else {
+                let cx = screen.widget_cx();
+                let placed = widgets::assign(&plan.cells, screen.widgets.shown, &cx);
+                widgets::draw_cells(frame, &placed, &cx);
+            }
         }
         LayoutId::Classic | LayoutId::Lightbar | LayoutId::Compact => {}
     }

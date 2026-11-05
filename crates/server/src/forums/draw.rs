@@ -21,9 +21,9 @@ use super::flow::{
 };
 use super::strings;
 use crate::settings::{self, Look};
+use crate::ui::art::Slot as ArtSlot;
 use crate::ui::classic::{self, MENU_MARKERS};
 use crate::ui::editor::EditorView;
-use crate::ui::art::Slot as ArtSlot;
 use crate::ui::frame::{ArtRequest, ChromeText, FrameSpec, Hint};
 use crate::ui::popup::{self, Popup, PopupKind, PopupLine};
 use crate::ui::screens::list::ListView;

@@ -1,0 +1,502 @@
+=== classic / 80x24 / unicode mono
+ russh-bbs │ Polls                                                    UTC 12:00
+┌ Polls ───────────────────────────────────────────────────────────────────────┐
+│  Key  Question                                                Votes  State   │
+│  1    Best colour?                                               12  open    │
+│  2    Tabs or spaces?                                            30  open    │
+│  3    Old question                                                5  closed  │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+1-9: open a poll
+Esc: back
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help
+
+=== lightbar / 80x24 / unicode mono
+= same as classic
+
+=== compact / 80x24 / unicode mono
+  Key  Question                                                  Votes  State
+  1    Best colour?                                                 12  open
+  2    Tabs or spaces?                                              30  open
+  3    Old question                                                  5  closed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1-9: open a poll
+Esc: back
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help
+
+=== dashboard / 80x24 / unicode mono
+= same as classic
+
+=== wide / 80x24 / unicode mono
+= same as classic
+
+=== focus / 80x24 / unicode mono
+= same as classic
+
+=== split / 80x24 / unicode mono
+= same as classic
+
+=== classic / 80x24 / ascii mono
+ russh-bbs | Polls                                                    UTC 12:00
++ Polls -----------------------------------------------------------------------+
+|  Key  Question                                                Votes  State   |
+|  1    Best colour?                                               12  open    |
+|  2    Tabs or spaces?                                            30  open    |
+|  3    Old question                                                5  closed  |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
++------------------------------------------------------------------------------+
+1-9: open a poll
+Esc: back
+UNENCRYPTED  LOW-SECURITY   ? help  Esc back  Ctrl-C log off
+
+=== lightbar / 80x24 / ascii mono
+= same as classic
+
+=== compact / 80x24 / ascii mono
+  Key  Question                                                  Votes  State
+  1    Best colour?                                                 12  open
+  2    Tabs or spaces?                                              30  open
+  3    Old question                                                  5  closed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1-9: open a poll
+Esc: back
+UNENCRYPTED  LOW-SECURITY   ? help  Esc back  Ctrl-C log off
+
+=== dashboard / 80x24 / ascii mono
+= same as classic
+
+=== wide / 80x24 / ascii mono
+= same as classic
+
+=== focus / 80x24 / ascii mono
+= same as classic
+
+=== split / 80x24 / ascii mono
+= same as classic
+
+=== classic / 100x30 / unicode mono
+ russh-bbs │ Polls                                                                        UTC 12:00
+┌ Polls ───────────────────────────────────────────────────────────────────────────────────────────┐
+│  Key  Question                                                                    Votes  State   │
+│  1    Best colour?                                                                   12  open    │
+│  2    Tabs or spaces?                                                                30  open    │
+│  3    Old question                                                                    5  closed  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+1-9: open a poll
+Esc: back
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help  Esc back
+
+=== lightbar / 100x30 / unicode mono
+= same as classic
+
+=== compact / 100x30 / unicode mono
+  Key  Question                                                                      Votes  State
+  1    Best colour?                                                                     12  open
+  2    Tabs or spaces?                                                                  30  open
+  3    Old question                                                                      5  closed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1-9: open a poll
+Esc: back
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help  Esc back
+
+=== dashboard / 100x30 / unicode mono
+= same as classic
+
+=== wide / 100x30 / unicode mono
+= same as classic
+
+=== focus / 100x30 / unicode mono
+= same as classic
+
+=== split / 100x30 / unicode mono
+= same as classic
+
+=== classic / 100x30 / ascii mono
+ russh-bbs | Polls                                                                        UTC 12:00
++ Polls -------------------------------------------------------------------------------------------+
+|  Key  Question                                                                    Votes  State   |
+|  1    Best colour?                                                                   12  open    |
+|  2    Tabs or spaces?                                                                30  open    |
+|  3    Old question                                                                    5  closed  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
++--------------------------------------------------------------------------------------------------+
+1-9: open a poll
+Esc: back
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   ? help
+
+=== lightbar / 100x30 / ascii mono
+= same as classic
+
+=== compact / 100x30 / ascii mono
+  Key  Question                                                                      Votes  State
+  1    Best colour?                                                                     12  open
+  2    Tabs or spaces?                                                                  30  open
+  3    Old question                                                                      5  closed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1-9: open a poll
+Esc: back
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   ? help
+
+=== dashboard / 100x30 / ascii mono
+= same as classic
+
+=== wide / 100x30 / ascii mono
+= same as classic
+
+=== focus / 100x30 / ascii mono
+= same as classic
+
+=== split / 100x30 / ascii mono
+= same as classic
+
+=== classic / 132x43 / unicode mono
+ russh-bbs │ Polls                                                                                                        UTC 12:00
+                ┌ Polls ───────────────────────────────────────────────────────────────────────────────────────────┐
+                │  Key  Question                                                                    Votes  State   │
+                │  1    Best colour?                                                                   12  open    │
+                │  2    Tabs or spaces?                                                                30  open    │
+                │  3    Old question                                                                    5  closed  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                └──────────────────────────────────────────────────────────────────────────────────────────────────┘
+                1-9: open a poll
+                Esc: back
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help  Esc back  Ctrl-C log off
+
+=== lightbar / 132x43 / unicode mono
+= same as classic
+
+=== compact / 132x43 / unicode mono
+                  Key  Question                                                                      Votes  State
+                  1    Best colour?                                                                     12  open
+                  2    Tabs or spaces?                                                                  30  open
+                  3    Old question                                                                      5  closed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                1-9: open a poll
+                Esc: back
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help  Esc back  Ctrl-C log off
+
+=== dashboard / 132x43 / unicode mono
+= same as classic
+
+=== wide / 132x43 / unicode mono
+= same as classic
+
+=== focus / 132x43 / unicode mono
+= same as classic
+
+=== split / 132x43 / unicode mono
+= same as classic
+
+=== classic / 132x43 / ascii mono
+ russh-bbs | Polls                                                                                                        UTC 12:00
+                + Polls -------------------------------------------------------------------------------------------+
+                |  Key  Question                                                                    Votes  State   |
+                |  1    Best colour?                                                                   12  open    |
+                |  2    Tabs or spaces?                                                                30  open    |
+                |  3    Old question                                                                    5  closed  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                +--------------------------------------------------------------------------------------------------+
+                1-9: open a poll
+                Esc: back
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   ? help  Esc back  Ctrl-C log off
+
+=== lightbar / 132x43 / ascii mono
+= same as classic
+
+=== compact / 132x43 / ascii mono
+                  Key  Question                                                                      Votes  State
+                  1    Best colour?                                                                     12  open
+                  2    Tabs or spaces?                                                                  30  open
+                  3    Old question                                                                      5  closed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                1-9: open a poll
+                Esc: back
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   ? help  Esc back  Ctrl-C log off
+
+=== dashboard / 132x43 / ascii mono
+= same as classic
+
+=== wide / 132x43 / ascii mono
+= same as classic
+
+=== focus / 132x43 / ascii mono
+= same as classic
+
+=== split / 132x43 / ascii mono
+= same as classic
+

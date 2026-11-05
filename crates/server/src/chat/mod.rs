@@ -131,6 +131,11 @@ impl Hub {
         self.lock().chat.member_count(room)
     }
 
+    /// Who is in `room` now, by name (the split layout's chat pane).
+    pub(crate) fn roster_of(&self, room: RoomId) -> Vec<Username> {
+        self.lock().chat.room_roster(room)
+    }
+
     /// Staff closed `room`: put its members out and wake them.
     pub(crate) fn room_closed(&self, room: RoomId) {
         let mut inner = self.lock();

@@ -539,6 +539,47 @@ mod frame {
         TerminalSettings::default().with_tier(Tier::Ascii)
     }
 
+    /// UI-4: a change of screen starts a short sweep and a typed input starts a blinking cursor,
+    /// but only with motion on. Motion off, and accessibility mode with motion on, wake nothing:
+    /// no timer-driven redraws at all.
+    #[test]
+    fn motion_wakes_the_shell_only_when_it_is_allowed() {
+        let size = PtySize::from_request(80, 24);
+        let settings = |motion| {
+            TerminalSettings::default()
+                .with_tier(Tier::Unicode)
+                .with_color(true)
+                .with_motion(motion)
+        };
+        // On: opening the Community menu is a change of screen.
+        let mut on = member_screen(&Slug::SYSOP, 100, settings(true), size);
+        on.enter().unwrap();
+        on.apply_keys(&[Key::Char('x'), Key::Char('n'), Key::Char('y')]);
+        on.render().unwrap();
+        on.apply_keys(&[Key::Char('y')]);
+        on.render().unwrap();
+        assert!(on.motion_deadline().is_some(), "a screen change sweeps");
+        // Off: the same keys wake nothing.
+        let mut off = member_screen(&Slug::SYSOP, 100, settings(false), size);
+        off.enter().unwrap();
+        off.apply_keys(&[Key::Char('x'), Key::Char('n'), Key::Char('y')]);
+        off.render().unwrap();
+        off.apply_keys(&[Key::Char('y')]);
+        off.render().unwrap();
+        assert!(off.motion_deadline().is_none(), "motion off: no timer");
+        // Accessibility mode: always plain, even with motion on.
+        let mut plain = member_screen(&Slug::SYSOP, 100, settings(true), size);
+        plain.set_accessible(true);
+        plain.enter().unwrap();
+        plain.apply_keys(&[Key::Char('x'), Key::Char('n'), Key::Char('y')]);
+        plain.render().unwrap();
+        plain.apply_keys(&[Key::Char('y')]);
+        plain.render().unwrap();
+        assert!(plain.motion_deadline().is_none(), "accessibility: no timer");
+        // And the frames it draws carry no sweep: a second render has nothing to draw.
+        assert!(plain.render().unwrap().is_none());
+    }
+
     /// FIX-M3-6: while the board is in low-security mode every screen of a staff session shows
     /// `LOW-SECURITY` in the status bar's marker cell: login, menu, settings, members,
     /// community and the sysop menu. A plain member never does, and nobody does outside the mode.

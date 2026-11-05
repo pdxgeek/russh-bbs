@@ -4,8 +4,8 @@
 
 use russh_bbs_core::store::UnixSeconds;
 use russh_bbs_core::widgets::{
-    Caller, Credits, DoorLine, Headline, Line, MailCount, NewPosts, PollView, RoomCount, Status,
-    WidgetData,
+    Caller, Credits, DoorLine, Headline, Line, MailCount, NewPosts, PollView, RecentMail,
+    RoomCount, Status, WidgetData,
 };
 
 use super::WidgetSettings;
@@ -61,14 +61,36 @@ pub(crate) fn data() -> WidgetData {
             total: 12,
             unread: 3,
         }),
+        recent_mail: Some(vec![
+            RecentMail {
+                from: Some("ann".into()),
+                subject: Some("Welcome aboard".into()),
+                unread: true,
+                at: UnixSeconds::from_raw(NOW - 3_600),
+            },
+            RecentMail {
+                from: Some("bob".into()),
+                subject: Some("Re: the retro room".into()),
+                unread: false,
+                at: UnixSeconds::from_raw(NOW - 86_400),
+            },
+            RecentMail {
+                from: None,
+                subject: None,
+                unread: true,
+                at: UnixSeconds::from_raw(NOW - 200_000),
+            },
+        ]),
         chat: Some(vec![
             RoomCount {
                 name: "lobby".into(),
                 members: 3,
+                here: vec!["ann".into(), "bob".into(), "carol".into()],
             },
             RoomCount {
                 name: "tech".into(),
                 members: 1,
+                here: vec!["dave".into()],
             },
         ]),
         activity: Some(vec![1, 3, 2, 5, 4, 0, 2, 6, 8, 5, 3, 4, 7, 9]),

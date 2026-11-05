@@ -472,3 +472,52 @@ fn hostile_member_text_stays_in_the_content_box_and_never_gets_the_marker_style(
         }
     }
 }
+
+// ---- UI-4: the inbox and the reader in every layout, size and mode ----
+
+fn matrix(name: &str, screen: &MailScreen) {
+    let settings = settings();
+    crate::ui::screens::matrix::golden(name, &|frame, d| {
+        render(
+            frame,
+            screen,
+            &DrawCtx {
+                ui: d.ui,
+                strings: d.strings,
+                settings: &settings,
+                look: d.look,
+                tier: d.tier,
+                markers: d.markers,
+                clock: d.clock,
+                art: None,
+            },
+        );
+    });
+}
+
+#[test]
+fn the_inbox_in_every_layout_size_and_mode() {
+    let entries = (1..=14)
+        .map(|n| {
+            entry(
+                n,
+                if n % 2 == 0 { "ann" } else { "bob" },
+                Some(&format!("Subject number {n}")),
+                n % 3 == 0,
+            )
+        })
+        .collect();
+    matrix("mail-inbox", &open(entries));
+}
+
+#[test]
+fn a_message_in_every_layout_size_and_mode() {
+    let mut screen = open(vec![entry(2, "ann", Some("Two"), true)]);
+    let _ = press(&mut screen, Key::Enter);
+    screen.deliver(Response::Message(Ok(message(
+        2,
+        "Two",
+        "Hello there.\n> an earlier line that is quoted\nA second line that is long enough to wrap onto another row when the terminal is narrow, at least a little.\n",
+    ))));
+    matrix("mail-reader", &screen);
+}

@@ -1135,6 +1135,31 @@ impl<D: Backend> Shell<D> {
         if timeout(MEMBER_START_TIMEOUT, live_part).await.is_err() {
             warn!(session = ?self.parts.session.id(), "live widget data timed out");
         }
+        // The split layout's mail pane lists the newest messages. The inbox call checks
+        // `mail.read` itself and opens subjects with the board's mail key.
+        if self.parts.screen.wants_side_panes()
+            && let Some(keys) = self.parts.screen.mail_keys()
+        {
+            let page = timeout(
+                MEMBER_START_TIMEOUT,
+                russh_bbs_core::mail::inbox(&*self.parts.directory, &keys, &access, 0),
+            )
+            .await;
+            if let Ok(Ok(page)) = page {
+                data.recent_mail = Some(
+                    page.entries
+                        .into_iter()
+                        .take(8)
+                        .map(|entry| russh_bbs_core::widgets::RecentMail {
+                            from: entry.from,
+                            subject: entry.subject,
+                            unread: entry.unread,
+                            at: entry.at,
+                        })
+                        .collect(),
+                );
+            }
+        }
         self.parts.screen.deliver_widgets(data, wanted);
     }
 

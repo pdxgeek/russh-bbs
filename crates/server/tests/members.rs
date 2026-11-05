@@ -293,8 +293,8 @@ async fn a_member_browses_the_list_searches_and_opens_a_profile() {
     // The list: active members only, in handle order, with display names.
     send(&mut channel, "l").await;
     let list = full(&mut channel).await;
-    assert!(list.contains("1. alice Alice A."), "{list}");
-    assert!(list.contains("2. bob Bob B."), "{list}");
+    assert!(list.contains("1 alice Alice A."), "{list}");
+    assert!(list.contains("2 bob Bob B."), "{list}");
     assert!(list.contains("Page 1"), "{list}");
     for hidden in ["pending_pat", "approved_ann", "suspended_sam", "Hidden"] {
         assert!(!list.contains(hidden), "{hidden} leaked: {list}");
@@ -318,7 +318,7 @@ async fn a_member_browses_the_list_searches_and_opens_a_profile() {
     // Esc returns to the same list; the plain member has no edit key on someone else's profile.
     assert!(!profile.contains("e: edit"), "{profile}");
     send(&mut channel, "\u{1b}").await;
-    assert!(full(&mut channel).await.contains("2. bob"));
+    assert!(full(&mut channel).await.contains("2 bob"));
 
     // Search by the start of a handle.
     send(&mut channel, "/b").await;
@@ -359,7 +359,8 @@ async fn a_long_list_pages_forward_and_back_without_skipping() {
     send(&mut channel, "ul").await;
     let first = full(&mut channel).await;
     assert!(
-        first.contains("1. user00") && first.contains("9. user08"),
+        // The list is a table (UI-4): the key is its own column.
+        first.contains("1 user00") && first.contains("9 user08"),
         "{first}"
     );
     assert!(!first.contains("user09"));

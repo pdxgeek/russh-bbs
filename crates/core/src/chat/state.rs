@@ -357,6 +357,13 @@ impl<C: Clock> Chat<C> {
         Ok(vec![target, id])
     }
 
+    /// Who is in `room` right now, one name per account, by name (the split layout's chat pane
+    /// lists them for a member who may join the room).
+    #[must_use]
+    pub fn room_roster(&self, room: RoomId) -> Vec<Username> {
+        self.names(room)
+    }
+
     /// Who is in the session's room, one name per account, by name. Empty outside a room.
     #[must_use]
     pub fn roster(&self, id: SessionId) -> Vec<Username> {

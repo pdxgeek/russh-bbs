@@ -297,7 +297,9 @@ async fn three_members_post_reply_search_and_a_restricted_board_stays_hidden() {
     let screen = press(&mut sysop, SEND).await;
     let reading = flat(&screen);
     assert!(
-        reading.contains("Note: Posted.") && reading.contains("Post 1 of 1 in General"),
+        reading.contains("Note: Posted.")
+            && reading.contains("Post 1 of 1")
+            && reading.contains("General"),
         "{screen}"
     );
     assert!(

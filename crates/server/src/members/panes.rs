@@ -17,7 +17,7 @@ use ratatui::Frame;
 use ratatui::layout::{Constraint, Layout, Rect};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line as TextLine, Span};
-use ratatui::widgets::Paragraph;
+use ratatui::widgets::{Paragraph, Wrap};
 use russh_bbs_core::community::keys as ck;
 use russh_bbs_core::icons::{SecurityMarker, Tier};
 use russh_bbs_core::profiles::{Line, ScreenView, keys};
@@ -131,9 +131,13 @@ fn title_of(view: &ScreenView, ctx: &ViewCtx<'_>) -> String {
 }
 
 fn generic(frame: &mut Frame<'_>, area: Rect, view: &ScreenView, ctx: &ViewCtx<'_>) {
-    let inner = ctx
-        .look
-        .panel(frame, area, Some(&title_of(view, ctx)), Element::Pane, false);
+    let inner = ctx.look.panel(
+        frame,
+        area,
+        Some(&title_of(view, ctx)),
+        Element::Pane,
+        false,
+    );
     let width = usize::from(inner.width).saturating_sub(2);
     let mut lines: Vec<TextLine<'static>> = view
         .lines
@@ -142,7 +146,7 @@ fn generic(frame: &mut Frame<'_>, area: Rect, view: &ScreenView, ctx: &ViewCtx<'
         .map(|line| line_of(line, ctx.strings, ctx.look, width))
         .collect();
     tail(view, ctx, &mut lines, true);
-    frame.render_widget(Paragraph::new(lines), inner);
+    frame.render_widget(Paragraph::new(lines).wrap(Wrap { trim: false }), inner);
 }
 
 fn callers(frame: &mut Frame<'_>, area: Rect, view: &ScreenView, ctx: &ViewCtx<'_>) {
@@ -180,7 +184,7 @@ fn callers(frame: &mut Frame<'_>, area: Rect, view: &ScreenView, ctx: &ViewCtx<'
     );
     let mut lines = Vec::new();
     tail(view, ctx, &mut lines, false);
-    frame.render_widget(Paragraph::new(lines), tail_area);
+    frame.render_widget(Paragraph::new(lines).wrap(Wrap { trim: false }), tail_area);
 }
 
 /// Split off the bottom rows for the footer and notices.
@@ -256,7 +260,13 @@ fn polls(frame: &mut Frame<'_>, area: Rect, view: &ScreenView, ctx: &ViewCtx<'_>
 fn entries(frame: &mut Frame<'_>, area: Rect, view: &ScreenView, ctx: &ViewCtx<'_>) {
     let look = ctx.look;
     let pen = Pen(look);
-    let inner = look.panel(frame, area, Some(&title_of(view, ctx)), Element::Pane, false);
+    let inner = look.panel(
+        frame,
+        area,
+        Some(&title_of(view, ctx)),
+        Element::Pane,
+        false,
+    );
     let width = usize::from(inner.width).saturating_sub(2);
     let template = ctx.strings.text(ck::ENTRY).to_owned();
     let mut lines: Vec<TextLine<'static>> = Vec::new();
@@ -300,7 +310,7 @@ fn entries(frame: &mut Frame<'_>, area: Rect, view: &ScreenView, ctx: &ViewCtx<'
         }
     }
     tail(view, ctx, &mut lines, true);
-    frame.render_widget(Paragraph::new(lines), inner);
+    frame.render_widget(Paragraph::new(lines).wrap(Wrap { trim: false }), inner);
 }
 
 /// An open poll: the question, who asked, the options with their counts as bars.
@@ -336,7 +346,11 @@ fn poll(frame: &mut Frame<'_>, area: Rect, view: &ScreenView, ctx: &ViewCtx<'_>)
                 lines.push(TextLine::from(vec![
                     Span::styled(format!("[{}] ", value(values, "key")), pen.key()),
                     Span::styled(
-                        clip(&clean(value(values, "text")), width.saturating_sub(6), look.ascii()),
+                        clip(
+                            &clean(value(values, "text")),
+                            width.saturating_sub(6),
+                            look.ascii(),
+                        ),
                         pen.text(),
                     ),
                     Span::styled(
@@ -366,7 +380,9 @@ fn poll(frame: &mut Frame<'_>, area: Rect, view: &ScreenView, ctx: &ViewCtx<'_>)
     }
     tail(view, ctx, &mut lines, true);
     frame.render_widget(
-        Paragraph::new(lines).style(Style::new().remove_modifier(Modifier::REVERSED)),
+        Paragraph::new(lines)
+            .style(Style::new().remove_modifier(Modifier::REVERSED))
+            .wrap(Wrap { trim: false }),
         inner,
     );
 }

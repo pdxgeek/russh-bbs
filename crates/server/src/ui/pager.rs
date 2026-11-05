@@ -23,19 +23,42 @@ pub(crate) fn text_width(area: Rect) -> usize {
     crate::ui::screens::reader::text_width(area)
 }
 
-/// Break `text` into rows of at most `width` characters, one input line at a time. A blank
-/// input line stays a blank row. Sanitized text only: it has no control characters to split.
+/// Break `text` into rows of at most `width` characters, one input line at a time, at spaces
+/// where it can (a word longer than a row is cut). A blank input line stays a blank row.
+/// Sanitized text only: it has no control characters to split.
 pub(crate) fn wrap(text: &[String], width: usize) -> Vec<String> {
     let width = width.max(1);
     let mut out = Vec::new();
     for line in text {
-        let mut chars = line.chars().peekable();
-        if chars.peek().is_none() {
+        if line.is_empty() {
             out.push(String::new());
+            continue;
         }
-        while chars.peek().is_some() {
-            out.push(chars.by_ref().take(width).collect());
+        let mut row = String::new();
+        let mut used = 0_usize;
+        for word in line.split_inclusive(' ') {
+            let len = word.chars().count();
+            let trimmed = word.trim_end_matches(' ').chars().count();
+            if used > 0 && used + trimmed > width {
+                out.push(std::mem::take(&mut row));
+                used = 0;
+            }
+            if len <= width || used > 0 {
+                row.push_str(word);
+                used += len;
+                continue;
+            }
+            // A word wider than a row: cut it where the columns run out.
+            for c in word.chars() {
+                if used == width {
+                    out.push(std::mem::take(&mut row));
+                    used = 0;
+                }
+                row.push(c);
+                used += 1;
+            }
         }
+        out.push(row);
     }
     out
 }

@@ -1155,7 +1155,9 @@ impl Screen {
         if self.content.menu_page().is_none() {
             return Vec::new();
         }
-        self.widgets_shown(self.content.layout(&self.ui, self.viewport))
+        // The layout the member chose, not the one the terminal fits: a dashboard too big for
+        // the window collapses into a line of figures, and the figures need the data.
+        self.widgets_shown(self.content.wanted_layout(&self.ui))
     }
 
     /// Turn accessibility mode on or off (M5 sets this): motion is always off in it.
@@ -1259,6 +1261,14 @@ impl Screen {
             self.motion.wipe_step(now),
             self.motion.cursor_dark(look, now),
         )
+    }
+
+    /// Whether the screen in front of the member draws the split layout's chat and mail panes,
+    /// which need the newest messages as well as the widgets' data.
+    pub(crate) fn wants_side_panes(&self) -> bool {
+        self.chat.is_none()
+            && self.content.menu_page().is_some()
+            && self.content.layout(&self.ui, self.viewport) == LayoutId::Split
     }
 
     /// The previous sign-in time, the "since your last call" mark.
@@ -1695,6 +1705,9 @@ impl Screen {
     /// Clear the client's screen and draw everything. The buffers are resized in place when the
     /// rectangle to draw into changed (a shrink keeps the allocation); otherwise they are reset.
     fn rebuild_now(&mut self) -> io::Result<Vec<u8>> {
+        // A whole repaint is never a partial one: no wipe over a resize or a repaint request.
+        let identity = self.screen_identity();
+        self.motion.settle(identity);
         queue!(self.terminal.backend_mut(), Clear(ClearType::All))?;
         let drawn = drawn_size(self.pty, &self.content);
         self.terminal.backend_mut().size = window_size(drawn);

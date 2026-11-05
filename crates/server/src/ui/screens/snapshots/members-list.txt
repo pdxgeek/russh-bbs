@@ -1,0 +1,502 @@
+=== classic / 80x24 / unicode mono
+ russh-bbs │ Members                                                  UTC 12:00
+┌ Members ─────────────────────────────────────────────────────────────────────┐
+│ Showing everyone. Press / to search by the start of a handle.                │
+│   Key  Handle                    Name                                        │
+│ > 1    member1                   Member Number 1                             │
+│   2    member2                   Member Number 2                             │
+│   3    member3                   Member Number 3                             │
+│   4    member4                   Member Number 4                             │
+│   5    member5                   Member Number 5                             │
+│   6    member6                   Member Number 6                             │
+│   7    member7                   Member Number 7                             │
+│   8    member8                   Member Number 8                             │
+│   9    member9                   Member Number 9                             │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│ Page 1                                                                       │
+│ 1-9: open   n: next   p: previous   /: search   c: clear   Esc: back         │
+└──────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help
+
+=== lightbar / 80x24 / unicode mono
+= same as classic
+
+=== compact / 80x24 / unicode mono
+ Showing everyone. Press / to search by the start of a handle.
+   Key  Handle                    Name
+ > 1    member1                   Member Number 1
+   2    member2                   Member Number 2
+   3    member3                   Member Number 3
+   4    member4                   Member Number 4
+   5    member5                   Member Number 5
+   6    member6                   Member Number 6
+   7    member7                   Member Number 7
+   8    member8                   Member Number 8
+   9    member9                   Member Number 9
+
+
+
+
+
+
+
+
+
+
+ Page 1
+ 1-9: open   n: next   p: previous   /: search   c: clear   Esc: back
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help
+
+=== dashboard / 80x24 / unicode mono
+= same as classic
+
+=== wide / 80x24 / unicode mono
+= same as classic
+
+=== focus / 80x24 / unicode mono
+= same as classic
+
+=== split / 80x24 / unicode mono
+= same as classic
+
+=== classic / 80x24 / ascii mono
+ russh-bbs | Members                                                  UTC 12:00
++ Members ---------------------------------------------------------------------+
+| Showing everyone. Press / to search by the start of a handle.                |
+|   Key  Handle                    Name                                        |
+| > 1    member1                   Member Number 1                             |
+|   2    member2                   Member Number 2                             |
+|   3    member3                   Member Number 3                             |
+|   4    member4                   Member Number 4                             |
+|   5    member5                   Member Number 5                             |
+|   6    member6                   Member Number 6                             |
+|   7    member7                   Member Number 7                             |
+|   8    member8                   Member Number 8                             |
+|   9    member9                   Member Number 9                             |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+| Page 1                                                                       |
+| 1-9: open   n: next   p: previous   /: search   c: clear   Esc: back         |
++------------------------------------------------------------------------------+
+UNENCRYPTED  LOW-SECURITY   ? help  Esc back  Ctrl-C log off
+
+=== lightbar / 80x24 / ascii mono
+= same as classic
+
+=== compact / 80x24 / ascii mono
+ Showing everyone. Press / to search by the start of a handle.
+   Key  Handle                    Name
+ > 1    member1                   Member Number 1
+   2    member2                   Member Number 2
+   3    member3                   Member Number 3
+   4    member4                   Member Number 4
+   5    member5                   Member Number 5
+   6    member6                   Member Number 6
+   7    member7                   Member Number 7
+   8    member8                   Member Number 8
+   9    member9                   Member Number 9
+
+
+
+
+
+
+
+
+
+
+ Page 1
+ 1-9: open   n: next   p: previous   /: search   c: clear   Esc: back
+UNENCRYPTED  LOW-SECURITY   ? help  Esc back  Ctrl-C log off
+
+=== dashboard / 80x24 / ascii mono
+= same as classic
+
+=== wide / 80x24 / ascii mono
+= same as classic
+
+=== focus / 80x24 / ascii mono
+= same as classic
+
+=== split / 80x24 / ascii mono
+= same as classic
+
+=== classic / 100x30 / unicode mono
+ russh-bbs │ Members                                                                      UTC 12:00
+┌ Members ─────────────────────────────────────────────────────────────────────────────────────────┐
+│ Showing everyone. Press / to search by the start of a handle.                                    │
+│   Key  Handle                    Name                                                            │
+│ > 1    member1                   Member Number 1                                                 │
+│   2    member2                   Member Number 2                                                 │
+│   3    member3                   Member Number 3                                                 │
+│   4    member4                   Member Number 4                                                 │
+│   5    member5                   Member Number 5                                                 │
+│   6    member6                   Member Number 6                                                 │
+│   7    member7                   Member Number 7                                                 │
+│   8    member8                   Member Number 8                                                 │
+│   9    member9                   Member Number 9                                                 │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│ Page 1                                                                                           │
+│ 1-9: open   n: next   p: previous   /: search   c: clear   Esc: back                             │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help  Esc back
+
+=== lightbar / 100x30 / unicode mono
+= same as classic
+
+=== compact / 100x30 / unicode mono
+ Showing everyone. Press / to search by the start of a handle.
+   Key  Handle                    Name
+ > 1    member1                   Member Number 1
+   2    member2                   Member Number 2
+   3    member3                   Member Number 3
+   4    member4                   Member Number 4
+   5    member5                   Member Number 5
+   6    member6                   Member Number 6
+   7    member7                   Member Number 7
+   8    member8                   Member Number 8
+   9    member9                   Member Number 9
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Page 1
+ 1-9: open   n: next   p: previous   /: search   c: clear   Esc: back
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help  Esc back
+
+=== dashboard / 100x30 / unicode mono
+= same as classic
+
+=== wide / 100x30 / unicode mono
+= same as classic
+
+=== focus / 100x30 / unicode mono
+= same as classic
+
+=== split / 100x30 / unicode mono
+= same as classic
+
+=== classic / 100x30 / ascii mono
+ russh-bbs | Members                                                                      UTC 12:00
++ Members -----------------------------------------------------------------------------------------+
+| Showing everyone. Press / to search by the start of a handle.                                    |
+|   Key  Handle                    Name                                                            |
+| > 1    member1                   Member Number 1                                                 |
+|   2    member2                   Member Number 2                                                 |
+|   3    member3                   Member Number 3                                                 |
+|   4    member4                   Member Number 4                                                 |
+|   5    member5                   Member Number 5                                                 |
+|   6    member6                   Member Number 6                                                 |
+|   7    member7                   Member Number 7                                                 |
+|   8    member8                   Member Number 8                                                 |
+|   9    member9                   Member Number 9                                                 |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+| Page 1                                                                                           |
+| 1-9: open   n: next   p: previous   /: search   c: clear   Esc: back                             |
++--------------------------------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   ? help
+
+=== lightbar / 100x30 / ascii mono
+= same as classic
+
+=== compact / 100x30 / ascii mono
+ Showing everyone. Press / to search by the start of a handle.
+   Key  Handle                    Name
+ > 1    member1                   Member Number 1
+   2    member2                   Member Number 2
+   3    member3                   Member Number 3
+   4    member4                   Member Number 4
+   5    member5                   Member Number 5
+   6    member6                   Member Number 6
+   7    member7                   Member Number 7
+   8    member8                   Member Number 8
+   9    member9                   Member Number 9
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Page 1
+ 1-9: open   n: next   p: previous   /: search   c: clear   Esc: back
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   ? help
+
+=== dashboard / 100x30 / ascii mono
+= same as classic
+
+=== wide / 100x30 / ascii mono
+= same as classic
+
+=== focus / 100x30 / ascii mono
+= same as classic
+
+=== split / 100x30 / ascii mono
+= same as classic
+
+=== classic / 132x43 / unicode mono
+ russh-bbs │ Members                                                                                                      UTC 12:00
+┌ Members ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ Showing everyone. Press / to search by the start of a handle.                                                                    │
+│   Key  Handle                    Name                                                                                            │
+│ > 1    member1                   Member Number 1                                                                                 │
+│   2    member2                   Member Number 2                                                                                 │
+│   3    member3                   Member Number 3                                                                                 │
+│   4    member4                   Member Number 4                                                                                 │
+│   5    member5                   Member Number 5                                                                                 │
+│   6    member6                   Member Number 6                                                                                 │
+│   7    member7                   Member Number 7                                                                                 │
+│   8    member8                   Member Number 8                                                                                 │
+│   9    member9                   Member Number 9                                                                                 │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│ Page 1                                                                                                                           │
+│ 1-9: open   n: next   p: previous   /: search   c: clear   Esc: back                                                             │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help  Esc back  Ctrl-C log off
+
+=== lightbar / 132x43 / unicode mono
+= same as classic
+
+=== compact / 132x43 / unicode mono
+ Showing everyone. Press / to search by the start of a handle.
+   Key  Handle                    Name
+ > 1    member1                   Member Number 1
+   2    member2                   Member Number 2
+   3    member3                   Member Number 3
+   4    member4                   Member Number 4
+   5    member5                   Member Number 5
+   6    member6                   Member Number 6
+   7    member7                   Member Number 7
+   8    member8                   Member Number 8
+   9    member9                   Member Number 9
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Page 1
+ 1-9: open   n: next   p: previous   /: search   c: clear   Esc: back
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help  Esc back  Ctrl-C log off
+
+=== dashboard / 132x43 / unicode mono
+= same as classic
+
+=== wide / 132x43 / unicode mono
+= same as classic
+
+=== focus / 132x43 / unicode mono
+= same as classic
+
+=== split / 132x43 / unicode mono
+= same as classic
+
+=== classic / 132x43 / ascii mono
+ russh-bbs | Members                                                                                                      UTC 12:00
++ Members -------------------------------------------------------------------------------------------------------------------------+
+| Showing everyone. Press / to search by the start of a handle.                                                                    |
+|   Key  Handle                    Name                                                                                            |
+| > 1    member1                   Member Number 1                                                                                 |
+|   2    member2                   Member Number 2                                                                                 |
+|   3    member3                   Member Number 3                                                                                 |
+|   4    member4                   Member Number 4                                                                                 |
+|   5    member5                   Member Number 5                                                                                 |
+|   6    member6                   Member Number 6                                                                                 |
+|   7    member7                   Member Number 7                                                                                 |
+|   8    member8                   Member Number 8                                                                                 |
+|   9    member9                   Member Number 9                                                                                 |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+| Page 1                                                                                                                           |
+| 1-9: open   n: next   p: previous   /: search   c: clear   Esc: back                                                             |
++----------------------------------------------------------------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   ? help  Esc back  Ctrl-C log off
+
+=== lightbar / 132x43 / ascii mono
+= same as classic
+
+=== compact / 132x43 / ascii mono
+ Showing everyone. Press / to search by the start of a handle.
+   Key  Handle                    Name
+ > 1    member1                   Member Number 1
+   2    member2                   Member Number 2
+   3    member3                   Member Number 3
+   4    member4                   Member Number 4
+   5    member5                   Member Number 5
+   6    member6                   Member Number 6
+   7    member7                   Member Number 7
+   8    member8                   Member Number 8
+   9    member9                   Member Number 9
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Page 1
+ 1-9: open   n: next   p: previous   /: search   c: clear   Esc: back
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   ? help  Esc back  Ctrl-C log off
+
+=== dashboard / 132x43 / ascii mono
+= same as classic
+
+=== wide / 132x43 / ascii mono
+= same as classic
+
+=== focus / 132x43 / ascii mono
+= same as classic
+
+=== split / 132x43 / ascii mono
+= same as classic
+

@@ -1,0 +1,502 @@
+=== classic / 80x24 / unicode mono
+ russh-bbs │ Polls                                                    UTC 12:00
+┌ Poll ────────────────────────────────────────────────────────────────────────┐
+│Best colour?                                                                  │
+│Asked by ann                                                                  │
+│[1] Green                                                                     │
+│    ████████████████████░░░░░░░░░░░░░░░░░░░░ 6 (50%)                          │
+│[2] Amber  (your vote)                                                        │
+│    █████████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░ 4 (33%)                          │
+│[3] Blue                                                                      │
+│    ██████▊░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 2 (17%)                          │
+│Votes in all: 12                                                              │
+│                                                                              │
+│Esc: back                                                                     │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help
+
+=== lightbar / 80x24 / unicode mono
+= same as classic
+
+=== compact / 80x24 / unicode mono
+Best colour?
+Asked by ann
+[1] Green
+    ████████████████████░░░░░░░░░░░░░░░░░░░░ 6 (50%)
+[2] Amber  (your vote)
+    █████████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░ 4 (33%)
+[3] Blue
+    ██████▊░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 2 (17%)
+Votes in all: 12
+
+Esc: back
+
+
+
+
+
+
+
+
+
+
+
+
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help
+
+=== dashboard / 80x24 / unicode mono
+= same as classic
+
+=== wide / 80x24 / unicode mono
+= same as classic
+
+=== focus / 80x24 / unicode mono
+= same as classic
+
+=== split / 80x24 / unicode mono
+= same as classic
+
+=== classic / 80x24 / ascii mono
+ russh-bbs | Polls                                                    UTC 12:00
++ Poll ------------------------------------------------------------------------+
+|Best colour?                                                                  |
+|Asked by ann                                                                  |
+|[1] Green                                                                     |
+|    ####################-------------------- 6 (50%)                          |
+|[2] Amber  (your vote)                                                        |
+|    #############--------------------------- 4 (33%)                          |
+|[3] Blue                                                                      |
+|    #######--------------------------------- 2 (17%)                          |
+|Votes in all: 12                                                              |
+|                                                                              |
+|Esc: back                                                                     |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
++------------------------------------------------------------------------------+
+UNENCRYPTED  LOW-SECURITY   ? help  Esc back  Ctrl-C log off
+
+=== lightbar / 80x24 / ascii mono
+= same as classic
+
+=== compact / 80x24 / ascii mono
+Best colour?
+Asked by ann
+[1] Green
+    ####################-------------------- 6 (50%)
+[2] Amber  (your vote)
+    #############--------------------------- 4 (33%)
+[3] Blue
+    #######--------------------------------- 2 (17%)
+Votes in all: 12
+
+Esc: back
+
+
+
+
+
+
+
+
+
+
+
+
+UNENCRYPTED  LOW-SECURITY   ? help  Esc back  Ctrl-C log off
+
+=== dashboard / 80x24 / ascii mono
+= same as classic
+
+=== wide / 80x24 / ascii mono
+= same as classic
+
+=== focus / 80x24 / ascii mono
+= same as classic
+
+=== split / 80x24 / ascii mono
+= same as classic
+
+=== classic / 100x30 / unicode mono
+ russh-bbs │ Polls                                                                        UTC 12:00
+┌ Poll ────────────────────────────────────────────────────────────────────────────────────────────┐
+│Best colour?                                                                                      │
+│Asked by ann                                                                                      │
+│[1] Green                                                                                         │
+│    ████████████████████░░░░░░░░░░░░░░░░░░░░ 6 (50%)                                              │
+│[2] Amber  (your vote)                                                                            │
+│    █████████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░ 4 (33%)                                              │
+│[3] Blue                                                                                          │
+│    ██████▊░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 2 (17%)                                              │
+│Votes in all: 12                                                                                  │
+│                                                                                                  │
+│Esc: back                                                                                         │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help  Esc back
+
+=== lightbar / 100x30 / unicode mono
+= same as classic
+
+=== compact / 100x30 / unicode mono
+Best colour?
+Asked by ann
+[1] Green
+    ████████████████████░░░░░░░░░░░░░░░░░░░░ 6 (50%)
+[2] Amber  (your vote)
+    █████████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░ 4 (33%)
+[3] Blue
+    ██████▊░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 2 (17%)
+Votes in all: 12
+
+Esc: back
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help  Esc back
+
+=== dashboard / 100x30 / unicode mono
+= same as classic
+
+=== wide / 100x30 / unicode mono
+= same as classic
+
+=== focus / 100x30 / unicode mono
+= same as classic
+
+=== split / 100x30 / unicode mono
+= same as classic
+
+=== classic / 100x30 / ascii mono
+ russh-bbs | Polls                                                                        UTC 12:00
++ Poll --------------------------------------------------------------------------------------------+
+|Best colour?                                                                                      |
+|Asked by ann                                                                                      |
+|[1] Green                                                                                         |
+|    ####################-------------------- 6 (50%)                                              |
+|[2] Amber  (your vote)                                                                            |
+|    #############--------------------------- 4 (33%)                                              |
+|[3] Blue                                                                                          |
+|    #######--------------------------------- 2 (17%)                                              |
+|Votes in all: 12                                                                                  |
+|                                                                                                  |
+|Esc: back                                                                                         |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
++--------------------------------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   ? help
+
+=== lightbar / 100x30 / ascii mono
+= same as classic
+
+=== compact / 100x30 / ascii mono
+Best colour?
+Asked by ann
+[1] Green
+    ####################-------------------- 6 (50%)
+[2] Amber  (your vote)
+    #############--------------------------- 4 (33%)
+[3] Blue
+    #######--------------------------------- 2 (17%)
+Votes in all: 12
+
+Esc: back
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   ? help
+
+=== dashboard / 100x30 / ascii mono
+= same as classic
+
+=== wide / 100x30 / ascii mono
+= same as classic
+
+=== focus / 100x30 / ascii mono
+= same as classic
+
+=== split / 100x30 / ascii mono
+= same as classic
+
+=== classic / 132x43 / unicode mono
+ russh-bbs │ Polls                                                                                                        UTC 12:00
+                ┌ Poll ────────────────────────────────────────────────────────────────────────────────────────────┐
+                │Best colour?                                                                                      │
+                │Asked by ann                                                                                      │
+                │[1] Green                                                                                         │
+                │    ████████████████████░░░░░░░░░░░░░░░░░░░░ 6 (50%)                                              │
+                │[2] Amber  (your vote)                                                                            │
+                │    █████████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░ 4 (33%)                                              │
+                │[3] Blue                                                                                          │
+                │    ██████▊░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 2 (17%)                                              │
+                │Votes in all: 12                                                                                  │
+                │                                                                                                  │
+                │Esc: back                                                                                         │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                └──────────────────────────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help  Esc back  Ctrl-C log off
+
+=== lightbar / 132x43 / unicode mono
+= same as classic
+
+=== compact / 132x43 / unicode mono
+                Best colour?
+                Asked by ann
+                [1] Green
+                    ████████████████████░░░░░░░░░░░░░░░░░░░░ 6 (50%)
+                [2] Amber  (your vote)
+                    █████████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░ 4 (33%)
+                [3] Blue
+                    ██████▊░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 2 (17%)
+                Votes in all: 12
+
+                Esc: back
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help  Esc back  Ctrl-C log off
+
+=== dashboard / 132x43 / unicode mono
+= same as classic
+
+=== wide / 132x43 / unicode mono
+= same as classic
+
+=== focus / 132x43 / unicode mono
+= same as classic
+
+=== split / 132x43 / unicode mono
+= same as classic
+
+=== classic / 132x43 / ascii mono
+ russh-bbs | Polls                                                                                                        UTC 12:00
+                + Poll --------------------------------------------------------------------------------------------+
+                |Best colour?                                                                                      |
+                |Asked by ann                                                                                      |
+                |[1] Green                                                                                         |
+                |    ####################-------------------- 6 (50%)                                              |
+                |[2] Amber  (your vote)                                                                            |
+                |    #############--------------------------- 4 (33%)                                              |
+                |[3] Blue                                                                                          |
+                |    #######--------------------------------- 2 (17%)                                              |
+                |Votes in all: 12                                                                                  |
+                |                                                                                                  |
+                |Esc: back                                                                                         |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                +--------------------------------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   ? help  Esc back  Ctrl-C log off
+
+=== lightbar / 132x43 / ascii mono
+= same as classic
+
+=== compact / 132x43 / ascii mono
+                Best colour?
+                Asked by ann
+                [1] Green
+                    ####################-------------------- 6 (50%)
+                [2] Amber  (your vote)
+                    #############--------------------------- 4 (33%)
+                [3] Blue
+                    #######--------------------------------- 2 (17%)
+                Votes in all: 12
+
+                Esc: back
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   ? help  Esc back  Ctrl-C log off
+
+=== dashboard / 132x43 / ascii mono
+= same as classic
+
+=== wide / 132x43 / ascii mono
+= same as classic
+
+=== focus / 132x43 / ascii mono
+= same as classic
+
+=== split / 132x43 / ascii mono
+= same as classic
+

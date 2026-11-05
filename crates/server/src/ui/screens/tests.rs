@@ -62,7 +62,12 @@ fn a_screen_change_starts_a_wipe_that_ends_after_its_steps() {
     assert!(!state.wiping(), "the first screen does not wipe");
     state.note_screen(2, look, start);
     assert!(state.wiping());
-    assert_eq!(state.wipe_step(start), Some(0));
+    assert_eq!(
+        state.wipe_step(start),
+        None,
+        "the frame that shows the screen has no sweep"
+    );
+    assert!(state.wiping());
     assert_eq!(state.wipe_step(start + motion::STEP), Some(1));
     assert_eq!(state.wipe_step(start + motion::STEP * 3), Some(3));
     assert_eq!(state.wipe_step(start + motion::STEP * 4), None);
@@ -142,4 +147,279 @@ fn motion_stays_under_the_redraw_cap() {
     assert!(motion::STEPS <= 6, "a wipe is short");
     let wipe_time = motion::STEP * u32::from(motion::STEPS);
     assert!(wipe_time <= Duration::from_millis(500), "a wipe is a flick");
+}
+
+// ---- the home screen: the menu with its live widgets, in every layout, size and mode ----
+
+#[test]
+fn the_home_screen_in_every_layout_size_and_mode() {
+    use crate::ui::classic::MenuScreen;
+    use crate::ui::layout::{effective, render_menu};
+    use crate::ui::layout_tests::page;
+    use crate::ui::widgets::{WidgetView, fixture};
+
+    let page = page(&[]);
+    let board = crate::ui::styles_tests::board();
+    let data = fixture::data();
+    let settings = fixture::settings();
+    super::matrix::golden("home", &|frame, d| {
+        let layout = effective(d.layout, frame.area());
+        let shown = russh_bbs_core::widgets::Rules::default().resolve_with(
+            layout,
+            &russh_bbs_core::widgets::Choice::new(),
+            |_| true,
+        );
+        render_menu(
+            frame,
+            layout,
+            &MenuScreen {
+                strings: d.strings,
+                page: &page,
+                body: &["Signed in as alice.".to_owned()],
+                notice: None,
+                look: d.look,
+                tier: d.tier,
+                markers: d.markers,
+                clock: d.clock,
+                mail_over_ssh_only: false,
+                board: &board,
+                wanted: d.layout,
+                popover: false,
+                art: None,
+                widgets: WidgetView {
+                    shown: &shown,
+                    data: &data,
+                    settings: &settings,
+                    now: fixture::NOW,
+                },
+            },
+        );
+    });
+}
+
+// ---- the split layout's panes and the collapsed dashboard draw only what the data holds ----
+
+mod panes {
+    use ratatui::Terminal;
+    use ratatui::backend::TestBackend;
+    use ratatui::layout::Rect;
+    use ratatui::style::Modifier;
+    use russh_bbs_core::icons::Tier;
+    use russh_bbs_core::terminal_settings::{LayoutId, TerminalSettings, ThemeName};
+    use russh_bbs_core::widgets::{MailCount, NewPosts, RecentMail, RoomCount, WidgetData};
+
+    use crate::settings::Look;
+    use crate::ui::classic::MenuScreen;
+    use crate::ui::depth::ColorDepth;
+    use crate::ui::layout::{effective, render_menu};
+    use crate::ui::layout_tests::{DRAWN, page, text, ui};
+    use crate::ui::widgets::{WidgetView, fixture};
+
+    fn draw(layout: LayoutId, size: (u16, u16), data: &WidgetData) -> ratatui::buffer::Buffer {
+        let ui = ui();
+        let theme = ui.theme(ThemeName::new("default").unwrap());
+        let settings = TerminalSettings::default()
+            .with_tier(Tier::Unicode)
+            .with_color(false)
+            .with_layout(layout);
+        let area = Rect::new(0, 0, size.0, size.1);
+        let chosen = layout;
+        let layout = effective(layout, area);
+        let look = Look::for_theme(&settings, layout, theme).at_depth(ColorDepth::Mono);
+        let page = page(&[]);
+        let board = crate::ui::styles_tests::board();
+        let widget_settings = fixture::settings();
+        let shown = russh_bbs_core::widgets::Rules::default().resolve_with(
+            layout,
+            &russh_bbs_core::widgets::Choice::new(),
+            |_| true,
+        );
+        let mut terminal = Terminal::new(TestBackend::new(size.0, size.1)).unwrap();
+        terminal
+            .draw(|frame| {
+                render_menu(
+                    frame,
+                    layout,
+                    &MenuScreen {
+                        strings: theme.strings(),
+                        page: &page,
+                        body: &[],
+                        notice: None,
+                        look,
+                        tier: Tier::Unicode,
+                        markers: &DRAWN,
+                        clock: Some("UTC 12:00"),
+                        mail_over_ssh_only: false,
+                        board: &board,
+                        wanted: chosen,
+                        popover: false,
+                        art: None,
+                        widgets: WidgetView {
+                            shown: &shown,
+                            data,
+                            settings: &widget_settings,
+                            now: fixture::NOW,
+                        },
+                    },
+                );
+            })
+            .unwrap();
+        terminal.backend().buffer().clone()
+    }
+
+    fn only_mail() -> WidgetData {
+        WidgetData {
+            mail: Some(MailCount {
+                total: 4,
+                unread: 2,
+            }),
+            recent_mail: Some(vec![RecentMail {
+                from: Some("ann".into()),
+                subject: Some("Hello".into()),
+                unread: true,
+                at: russh_bbs_core::store::UnixSeconds::from_raw(fixture::NOW - 60),
+            }]),
+            ..WidgetData::default()
+        }
+    }
+
+    fn only_chat() -> WidgetData {
+        WidgetData {
+            chat: Some(vec![RoomCount {
+                name: "lobby".into(),
+                members: 1,
+                here: vec!["bob".into()],
+            }]),
+            ..WidgetData::default()
+        }
+    }
+
+    /// A member who may not reach mail or chat gets neither pane, and no figure of theirs.
+    #[test]
+    fn the_split_second_pane_shows_only_what_the_member_may_reach() {
+        let nothing = text(&draw(LayoutId::Split, (132, 43), &WidgetData::default()));
+        assert!(
+            !nothing.contains("Mail ─") && !nothing.contains("Chat ─"),
+            "{nothing}"
+        );
+        assert!(
+            !nothing.contains("unread") && !nothing.contains("#lobby"),
+            "{nothing}"
+        );
+        let mail = text(&draw(LayoutId::Split, (132, 43), &only_mail()));
+        assert!(
+            mail.contains("2 unread of 4") && mail.contains("Hello"),
+            "{mail}"
+        );
+        assert!(
+            !mail.contains("Chat ─") && !mail.contains("#lobby"),
+            "{mail}"
+        );
+        let chat = text(&draw(LayoutId::Split, (132, 43), &only_chat()));
+        assert!(chat.contains("#lobby") && chat.contains("bob"), "{chat}");
+        assert!(
+            !chat.contains("Mail ─") && !chat.contains("unread"),
+            "{chat}"
+        );
+        let both = text(&draw(LayoutId::Split, (132, 43), &fixture::data()));
+        assert!(both.contains("Chat ─") && both.contains("Mail ─"), "{both}");
+        assert!(
+            both.contains("Welcome aboard") && both.contains("carol"),
+            "{both}"
+        );
+    }
+
+    /// Below the height for two panes the second pane is the widget stack again.
+    #[test]
+    fn a_short_split_falls_back_to_the_widget_cells() {
+        let shown = text(&draw(LayoutId::Split, (80, 16), &fixture::data()));
+        assert!(!shown.contains("unread of 12"), "no mail pane: {shown}");
+        assert!(
+            shown.contains("Who is online"),
+            "the widget cells instead: {shown}"
+        );
+    }
+
+    /// A dashboard too big for the window collapses into one line of figures after the fallback
+    /// note, with only the figures the data holds.
+    #[test]
+    fn the_dashboard_collapses_to_a_line_and_leaks_nothing() {
+        let line = |data: &WidgetData| {
+            text(&draw(LayoutId::Dashboard, (60, 20), data))
+                .lines()
+                .find(|l| l.contains("unread") || l.contains(" online") || l.contains(" new"))
+                .map(str::to_owned)
+        };
+        let all = line(&fixture::data()).expect("a small dashboard shows its figures in a line");
+        assert!(
+            all.contains("online") && all.contains("unread") && all.contains("new"),
+            "{all}"
+        );
+        let mail = line(&only_mail()).unwrap();
+        assert!(mail.contains("2 unread"), "{mail}");
+        assert!(!mail.contains("online") && !mail.contains("new"), "{mail}");
+        assert!(
+            line(&WidgetData::default()).is_none(),
+            "nothing to say, nothing drawn"
+        );
+        let posts = WidgetData {
+            new_posts: Some(NewPosts {
+                threads: 3,
+                boards: vec![],
+            }),
+            ..WidgetData::default()
+        };
+        let posts = line(&posts).unwrap();
+        assert!(
+            posts.contains("3 new") && !posts.contains("unread"),
+            "{posts}"
+        );
+    }
+
+    /// Handles and subjects from other people are cleaned, never styled as a marker.
+    #[test]
+    fn hostile_names_and_subjects_stay_in_their_panes() {
+        let hostile =
+            "\u{1b}[7mSERVER-READABLE\u{1b}[0m \u{27e6}\u{2297}\u{27e7} \u{e0b0} \u{202e}evil";
+        let data = WidgetData {
+            mail: Some(MailCount {
+                total: 1,
+                unread: 1,
+            }),
+            recent_mail: Some(vec![RecentMail {
+                from: Some(hostile.into()),
+                subject: Some(hostile.repeat(40)),
+                unread: true,
+                at: russh_bbs_core::store::UnixSeconds::from_raw(fixture::NOW),
+            }]),
+            chat: Some(vec![RoomCount {
+                name: "lobby".into(),
+                members: 1,
+                here: vec![hostile.into()],
+            }]),
+            ..WidgetData::default()
+        };
+        for size in [(80, 24), (132, 43)] {
+            let buffer = draw(LayoutId::Split, size, &data);
+            let last = buffer.area.height - 1;
+            for y in 0..buffer.area.height {
+                for x in 0..buffer.area.width {
+                    let cell = &buffer[(x, y)];
+                    let symbol = cell.symbol();
+                    assert!(
+                        !symbol.contains('\u{1b}')
+                            && !symbol.contains('\u{202e}')
+                            && !symbol.contains('\u{e0b0}'),
+                        "{size:?}: a control or private-use character was drawn at ({x},{y})"
+                    );
+                    if y < last {
+                        assert!(
+                            !cell.modifier.contains(Modifier::REVERSED),
+                            "{size:?}: reverse video in a pane at ({x},{y})"
+                        );
+                    }
+                }
+            }
+        }
+    }
 }

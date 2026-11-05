@@ -17,5 +17,10 @@ pub(crate) mod motion;
 
 pub(crate) mod reader;
 
+pub(crate) mod side;
+
+#[cfg(test)]
+pub(crate) mod matrix;
+
 #[cfg(test)]
 mod tests;

@@ -1,0 +1,502 @@
+=== classic / 80x24 / unicode mono
+ russh-bbs │ Chat                                                     UTC 12:00
+┌ Chat rooms ────┐┌ #lobby ────────────────────────────────────┐┌ Online (3) ──┐
+│> #lobby        ││You are in #lobby.                          ││● ann         │
+│  #retro        ││Here: ann, bob                              ││● bob         │
+│                ││<ann> morning all                           ││● carol       │
+│                ││<bob> hi ann. did the invite code work?     ││              │
+│                ││* carol joined                              ││              │
+│                ││<carol> just got in. this looks great on a  ││              │
+│                ││  narrow terminal                           ││              │
+│                ││* bob whispers: psst, over here             ││              │
+│                ││                                            ││              │
+│                ││                                            ││              │
+│                ││                                            ││              │
+│                ││                                            ││              │
+│                ││                                            ││              │
+│                ││                                            ││              │
+│                ││                                            ││              │
+│                ││                                            ││              │
+│                ││                                            ││              │
+│                │└────────────────────────────────────────────┘│              │
+│                │┌ Say something ─────────────────────────────┐│              │
+│                ││> see you later_                            ││              │
+└────────────────┘└────────────────────────────────────────────┘└──────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter send
+
+=== lightbar / 80x24 / unicode mono
+= same as classic
+
+=== compact / 80x24 / unicode mono
+You are in #lobby.
+Here: ann, bob
+<ann> morning all
+<bob> hi ann. did the invite code work?
+* carol joined
+<carol> just got in. this looks great on a narrow terminal
+* bob whispers: psst, over here
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+> see you later_
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter send
+
+=== dashboard / 80x24 / unicode mono
+= same as classic
+
+=== wide / 80x24 / unicode mono
+= same as classic
+
+=== focus / 80x24 / unicode mono
+= same as classic
+
+=== split / 80x24 / unicode mono
+= same as classic
+
+=== classic / 80x24 / ascii mono
+ russh-bbs | Chat                                                     UTC 12:00
++ Chat rooms ----++ #lobby ------------------------------------++ Online (3) --+
+|> #lobby        ||You are in #lobby.                          ||* ann         |
+|  #retro        ||Here: ann, bob                              ||* bob         |
+|                ||<ann> morning all                           ||* carol       |
+|                ||<bob> hi ann. did the invite code work?     ||              |
+|                ||* carol joined                              ||              |
+|                ||<carol> just got in. this looks great on a  ||              |
+|                ||  narrow terminal                           ||              |
+|                ||* bob whispers: psst, over here             ||              |
+|                ||                                            ||              |
+|                ||                                            ||              |
+|                ||                                            ||              |
+|                ||                                            ||              |
+|                ||                                            ||              |
+|                ||                                            ||              |
+|                ||                                            ||              |
+|                ||                                            ||              |
+|                ||                                            ||              |
+|                |+--------------------------------------------+|              |
+|                |+ Say something -----------------------------+|              |
+|                ||> see you later_                            ||              |
++----------------++--------------------------------------------++--------------+
+UNENCRYPTED  LOW-SECURITY   Enter send  /w whisper  /who who  Esc leave
+
+=== lightbar / 80x24 / ascii mono
+= same as classic
+
+=== compact / 80x24 / ascii mono
+You are in #lobby.
+Here: ann, bob
+<ann> morning all
+<bob> hi ann. did the invite code work?
+* carol joined
+<carol> just got in. this looks great on a narrow terminal
+* bob whispers: psst, over here
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+> see you later_
+UNENCRYPTED  LOW-SECURITY   Enter send  /w whisper  /who who  Esc leave
+
+=== dashboard / 80x24 / ascii mono
+= same as classic
+
+=== wide / 80x24 / ascii mono
+= same as classic
+
+=== focus / 80x24 / ascii mono
+= same as classic
+
+=== split / 80x24 / ascii mono
+= same as classic
+
+=== classic / 100x30 / unicode mono
+ russh-bbs │ Chat                                                                         UTC 12:00
+┌ Chat rooms ────────┐┌ #lobby ──────────────────────────────────────────────┐┌ Online (3) ────────┐
+│> #lobby            ││You are in #lobby.                                    ││● ann               │
+│  #retro            ││Here: ann, bob                                        ││● bob               │
+│                    ││<ann> morning all                                     ││● carol             │
+│                    ││<bob> hi ann. did the invite code work?               ││                    │
+│                    ││* carol joined                                        ││                    │
+│                    ││<carol> just got in. this looks great on a narrow     ││                    │
+│                    ││  terminal                                            ││                    │
+│                    ││* bob whispers: psst, over here                       ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    ││                                                      ││                    │
+│                    │└──────────────────────────────────────────────────────┘│                    │
+│                    │┌ Say something ───────────────────────────────────────┐│                    │
+│                    ││> see you later_                                      ││                    │
+└────────────────────┘└──────────────────────────────────────────────────────┘└────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter send  /w whisper
+
+=== lightbar / 100x30 / unicode mono
+= same as classic
+
+=== compact / 100x30 / unicode mono
+You are in #lobby.
+Here: ann, bob
+<ann> morning all
+<bob> hi ann. did the invite code work?
+* carol joined
+<carol> just got in. this looks great on a narrow terminal
+* bob whispers: psst, over here
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+> see you later_
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter send  /w whisper
+
+=== dashboard / 100x30 / unicode mono
+= same as classic
+
+=== wide / 100x30 / unicode mono
+= same as classic
+
+=== focus / 100x30 / unicode mono
+= same as classic
+
+=== split / 100x30 / unicode mono
+= same as classic
+
+=== classic / 100x30 / ascii mono
+ russh-bbs | Chat                                                                         UTC 12:00
++ Chat rooms --------++ #lobby ----------------------------------------------++ Online (3) --------+
+|> #lobby            ||You are in #lobby.                                    ||* ann               |
+|  #retro            ||Here: ann, bob                                        ||* bob               |
+|                    ||<ann> morning all                                     ||* carol             |
+|                    ||<bob> hi ann. did the invite code work?               ||                    |
+|                    ||* carol joined                                        ||                    |
+|                    ||<carol> just got in. this looks great on a narrow     ||                    |
+|                    ||  terminal                                            ||                    |
+|                    ||* bob whispers: psst, over here                       ||                    |
+|                    ||                                                      ||                    |
+|                    ||                                                      ||                    |
+|                    ||                                                      ||                    |
+|                    ||                                                      ||                    |
+|                    ||                                                      ||                    |
+|                    ||                                                      ||                    |
+|                    ||                                                      ||                    |
+|                    ||                                                      ||                    |
+|                    ||                                                      ||                    |
+|                    ||                                                      ||                    |
+|                    ||                                                      ||                    |
+|                    ||                                                      ||                    |
+|                    ||                                                      ||                    |
+|                    ||                                                      ||                    |
+|                    ||                                                      ||                    |
+|                    |+------------------------------------------------------+|                    |
+|                    |+ Say something ---------------------------------------+|                    |
+|                    ||> see you later_                                      ||                    |
++--------------------++------------------------------------------------------++--------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Enter send
+
+=== lightbar / 100x30 / ascii mono
+= same as classic
+
+=== compact / 100x30 / ascii mono
+You are in #lobby.
+Here: ann, bob
+<ann> morning all
+<bob> hi ann. did the invite code work?
+* carol joined
+<carol> just got in. this looks great on a narrow terminal
+* bob whispers: psst, over here
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+> see you later_
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Enter send
+
+=== dashboard / 100x30 / ascii mono
+= same as classic
+
+=== wide / 100x30 / ascii mono
+= same as classic
+
+=== focus / 100x30 / ascii mono
+= same as classic
+
+=== split / 100x30 / ascii mono
+= same as classic
+
+=== classic / 132x43 / unicode mono
+ russh-bbs │ Chat                                                                                                         UTC 12:00
+┌ Chat rooms ────────┐┌ #lobby ──────────────────────────────────────────────────────────────────────────────┐┌ Online (3) ────────┐
+│> #lobby            ││You are in #lobby.                                                                    ││● ann               │
+│  #retro            ││Here: ann, bob                                                                        ││● bob               │
+│                    ││<ann> morning all                                                                     ││● carol             │
+│                    ││<bob> hi ann. did the invite code work?                                               ││                    │
+│                    ││* carol joined                                                                        ││                    │
+│                    ││<carol> just got in. this looks great on a narrow terminal                            ││                    │
+│                    ││* bob whispers: psst, over here                                                       ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    ││                                                                                      ││                    │
+│                    │└──────────────────────────────────────────────────────────────────────────────────────┘│                    │
+│                    │┌ Say something ───────────────────────────────────────────────────────────────────────┐│                    │
+│                    ││> see you later_                                                                      ││                    │
+└────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘└────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter send  /w whisper  /who who  Esc leave
+
+=== lightbar / 132x43 / unicode mono
+= same as classic
+
+=== compact / 132x43 / unicode mono
+You are in #lobby.
+Here: ann, bob
+<ann> morning all
+<bob> hi ann. did the invite code work?
+* carol joined
+<carol> just got in. this looks great on a narrow terminal
+* bob whispers: psst, over here
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+> see you later_
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter send  /w whisper  /who who  Esc leave
+
+=== dashboard / 132x43 / unicode mono
+= same as classic
+
+=== wide / 132x43 / unicode mono
+= same as classic
+
+=== focus / 132x43 / unicode mono
+= same as classic
+
+=== split / 132x43 / unicode mono
+= same as classic
+
+=== classic / 132x43 / ascii mono
+ russh-bbs | Chat                                                                                                         UTC 12:00
++ Chat rooms --------++ #lobby ------------------------------------------------------------------------------++ Online (3) --------+
+|> #lobby            ||You are in #lobby.                                                                    ||* ann               |
+|  #retro            ||Here: ann, bob                                                                        ||* bob               |
+|                    ||<ann> morning all                                                                     ||* carol             |
+|                    ||<bob> hi ann. did the invite code work?                                               ||                    |
+|                    ||* carol joined                                                                        ||                    |
+|                    ||<carol> just got in. this looks great on a narrow terminal                            ||                    |
+|                    ||* bob whispers: psst, over here                                                       ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    ||                                                                                      ||                    |
+|                    |+--------------------------------------------------------------------------------------+|                    |
+|                    |+ Say something -----------------------------------------------------------------------+|                    |
+|                    ||> see you later_                                                                      ||                    |
++--------------------++--------------------------------------------------------------------------------------++--------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Enter send  /w whisper  /who who  Esc leave
+
+=== lightbar / 132x43 / ascii mono
+= same as classic
+
+=== compact / 132x43 / ascii mono
+You are in #lobby.
+Here: ann, bob
+<ann> morning all
+<bob> hi ann. did the invite code work?
+* carol joined
+<carol> just got in. this looks great on a narrow terminal
+* bob whispers: psst, over here
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+> see you later_
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Enter send  /w whisper  /who who  Esc leave
+
+=== dashboard / 132x43 / ascii mono
+= same as classic
+
+=== wide / 132x43 / ascii mono
+= same as classic
+
+=== focus / 132x43 / ascii mono
+= same as classic
+
+=== split / 132x43 / ascii mono
+= same as classic
+
