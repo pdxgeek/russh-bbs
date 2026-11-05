@@ -234,7 +234,7 @@ Built in `m35/theme-packs-layouts` (D117). The reference is [ui.md](ui.md#styles
 
 ## UI-3 implementation notes
 
-Built in `m35/board-art` (D121). The reference is [ui.md](ui.md#board-art-ui-3-d121); what differs from the plan above:
+Built in `m35/board-art` (D-TBD). The reference is [ui.md](ui.md#board-art-ui-3-d-tbd); what differs from the plan above:
 
 - **Formats.** `.ans` and `.art.toml` as planned. The `.art.toml` colours are one character per cell in the VGA palette (`k b g c r m y w`, capitals bright), not hex; there is no 256-colour or truecolor art, so art looks the same at every depth that has colour.
 - **Slots.** `login`, `menu` and `logoff` are drawn. `area` is in the format and the loader and no screen draws it yet (UI-4). The **door menu** slot from the plan is not built (door screens are full ratatui buffers, UI-5).

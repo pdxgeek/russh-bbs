@@ -262,7 +262,7 @@ Every decoration has an ASCII form, and backdrops are dropped on a mono terminal
 | `deepspace` | Cold blues | deep blue glass, gold hotkeys | rounded panes, double popups, centred `S P A C E D` titles, `◆ name ◆`, a starfield, a blue-to-violet gradient name |
 | `ansi` | A 1994 board | sixteen named colours only (identical at every depth), blue bars, cyan double borders | double borders everywhere, `╡ rule ╡` titles, `░▒▓ name ▓▒░` |
 
-`default`, `green` and `contrast` (colour-only themes, D82) stay. The board ships them all; a sysop adds more as `*.toml` files in `themes/` beside the host key (same loader and limits as D82: 32 files, 32 KiB each, schema-checked, refused with a logged reason, never fatal). Art for each style is in [Board art](#board-art-ui-3-d121).
+`default`, `green` and `contrast` (colour-only themes, D82) stay. The board ships them all; a sysop adds more as `*.toml` files in `themes/` beside the host key (same loader and limits as D82: 32 files, 32 KiB each, schema-checked, refused with a logged reason, never fatal). Art for each style is in [Board art](#board-art-ui-3-d-tbd).
 
 ### The seven layouts
 
@@ -302,7 +302,7 @@ On the settings screen, saved per member and applied on the next frame: **layout
 - **Real OpenSSH 9.6 against the real binary**, read through `pyte`: every style cycled with `t` and every layout with `l` on the settings screen, each drawn on the main menu at 80x24 (and 132x43), with the board's name, tagline, location and "since" from `[board]` environment variables. PNGs rendered from the terminal emulator's cells (truecolor) are in [ui-screenshots/](ui-screenshots/README.md).
 - **Not verified:** other terminal emulators, a real 16-colour or 256-colour client (the depth fallback is tested on cells, and the 256-colour `TERM` was used for the walk), a Nerd Font session, a screen reader, a light terminal background with the dark styles, telnet.
 
-## Board art (UI-3, D121)
+## Board art (UI-3, D-TBD)
 
 Status: **Implemented and tested; walked over real OpenSSH** (see Verified). Code: `crates/server/src/ui/art/` (`ans`, `file`, `font`, `cp437`, `grid`, `piece`, `set`, `draw`, `preview`, and the bundled art in `bundled/*.art.toml`); the flow page in `crates/core/src/terminal_settings/preview.rs`; the `[board]` keys in [config.md](config.md#board-ui-2).
 
