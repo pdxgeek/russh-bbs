@@ -105,7 +105,11 @@ fn line_of(line: &Line, strings: &StringTable, look: Look, width: usize) -> Text
             active,
         } => {
             // The cursor is `>` and `_`, words and marks, so it shows without color.
-            let (lead, tail) = if *active { ("> ", "_") } else { ("  ", "") };
+            let (lead, tail) = if *active {
+                ("> ", look.cursor())
+            } else {
+                ("  ", "")
+            };
             let label_style = if *active { heading } else { bold };
             TextLine::from(vec![
                 Span::styled(format!("{lead}{}: ", strings.text(label)), label_style),

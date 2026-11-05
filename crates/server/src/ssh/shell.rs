@@ -335,6 +335,7 @@ impl<D: Backend> Shell<D> {
             }
             if !batch.finish {
                 self.refresh_widgets().await;
+                self.parts.screen.motion_tick(Instant::now());
             }
             if !batch.finish && !self.draw_frame().await {
                 return;
@@ -480,10 +481,19 @@ impl<D: Backend> Shell<D> {
                     None => std::future::pending().await,
                 }
             };
+            // A screen change is wiping in, or an input's cursor is blinking (UI-4): wake for
+            // the next frame. Under the redraw cap by construction; none with motion off.
+            let motion = async {
+                match self.parts.screen.motion_deadline() {
+                    Some(at) => sleep_until(tokio::time::Instant::from_std(at)).await,
+                    None => std::future::pending().await,
+                }
+            };
             tokio::select! {
                 () = inbox => {}
                 () = room => {}
                 () = widgets => {}
+                () = motion => {}
                 () = self.parts.session.revoke_signal().revoked() => {}
             }
         };

@@ -99,6 +99,24 @@ pub(super) enum State {
 }
 
 /// What the screen is waiting for. Keys are ignored meanwhile.
+impl MailScreen {
+    /// Which screen of mail this is, for the motion wipe: a change starts one (UI-4).
+    pub(crate) fn screen_id(&self) -> u8 {
+        match &self.state {
+            State::Start => 0,
+            State::Inbox { .. } => 1,
+            State::Reader(_) => 2,
+            State::Input(_) => 3,
+            State::Editor(_) => 4,
+        }
+    }
+
+    /// Whether a one-line input is open (the cursor blinks).
+    pub(crate) fn has_input(&self) -> bool {
+        matches!(self.state, State::Input(_))
+    }
+}
+
 #[derive(Debug)]
 enum Pending {
     Inbox,

@@ -26,6 +26,7 @@ pub(crate) mod lightbar;
 pub(crate) mod pager;
 pub(crate) mod panes;
 pub(crate) mod popup;
+pub(crate) mod screens;
 pub mod strings;
 pub(crate) mod table;
 pub mod theme;

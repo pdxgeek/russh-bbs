@@ -515,7 +515,11 @@ fn input_lines(
             | InputKind::FeedHttp { .. }
             | InputKind::FeedRemove { .. }
     ) {
-        out.push(Line::raw(format!("> {}_", clean(&input.text, 200))));
+        out.push(Line::raw(format!(
+            "> {}{}",
+            clean(&input.text, 200),
+            ctx.look.cursor()
+        )));
     }
     out.push(Line::raw(""));
     notice(screen, ctx, out);

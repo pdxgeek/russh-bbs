@@ -171,6 +171,26 @@ pub(crate) struct ForumsScreen {
     settings: TerminalSettings,
 }
 
+impl ForumsScreen {
+    /// Which screen of the forums this is, for the motion wipe: a change starts one (UI-4).
+    pub(crate) fn screen_id(&self) -> u8 {
+        match &self.state {
+            State::Start => 0,
+            State::Boards { .. } => 1,
+            State::Threads { .. } => 2,
+            State::Reader(_) => 3,
+            State::Results { .. } => 4,
+            State::Input(_) => 5,
+            State::Editor(_) => 6,
+        }
+    }
+
+    /// Whether a one-line input is open (the cursor blinks).
+    pub(crate) fn has_input(&self) -> bool {
+        matches!(self.state, State::Input(_))
+    }
+}
+
 fn info(text: &str) -> (NoticeKind, String) {
     (NoticeKind::Info, text.to_owned())
 }

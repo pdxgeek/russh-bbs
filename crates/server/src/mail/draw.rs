@@ -256,7 +256,11 @@ fn input_lines(
     out.push(Line::styled(title.to_owned(), heading));
     out.push(Line::raw(""));
     out.push(Line::raw(prompt.to_owned()));
-    out.push(Line::raw(format!("> {}_", clean(&input.text, 200))));
+    out.push(Line::raw(format!(
+        "> {}{}",
+        clean(&input.text, 200),
+        ctx.look.cursor()
+    )));
     out.push(Line::raw(""));
     notice(screen, ctx, out);
     out.push(Line::styled(strings::HELP_INPUT.to_owned(), dim));

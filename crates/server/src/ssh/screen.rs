@@ -73,6 +73,7 @@ use crate::ui::classic::{self, ContentScreen, MENU_MARKERS, MenuScreen};
 use crate::ui::depth::ColorDepth;
 use crate::ui::editor::{Editor, EditorEffect, EditorRequest, EditorView, Outcome};
 use crate::ui::frame::clock_text;
+use crate::ui::screens::motion::{self, Motion};
 use crate::ui::strings::StringTable;
 use crate::ui::widgets::screen::{self as widgets_screen, WidgetsScreen};
 use crate::ui::widgets::{self, WidgetView};
@@ -573,6 +574,8 @@ pub(crate) struct Screen {
     widgets: WidgetState,
     /// The Widgets screen, while the member has it open over the settings (UI-10).
     widgets_page: Option<WidgetsScreen>,
+    /// The wipe between screens and the blinking cursor (UI-4).
+    motion: Motion,
 }
 
 /// What the widget panels show and how the member arranged them (UI-10).
@@ -672,6 +675,7 @@ impl Screen {
             },
             widgets: WidgetState::default(),
             widgets_page: None,
+            motion: Motion::default(),
         })
     }
 
@@ -1145,6 +1149,109 @@ impl Screen {
             return Vec::new();
         }
         self.widgets_shown(self.content.layout(&self.ui, self.viewport))
+    }
+
+    /// Turn accessibility mode on or off (M5 sets this): motion is always off in it.
+    #[allow(
+        dead_code,
+        reason = "M5 builds accessibility mode; tests drive it today"
+    )]
+    pub(crate) fn set_accessible(&mut self, on: bool) {
+        self.motion.set_accessible(on);
+        self.dirty = true;
+    }
+
+    /// A number that differs whenever the member is looking at a different screen (the menu
+    /// they are in, the forum list or reader, chat's room list or a room, ...). A change starts
+    /// the short wipe between screens.
+    fn screen_identity(&self) -> u64 {
+        use std::hash::{Hash, Hasher};
+        let mut hasher = std::collections::hash_map::DefaultHasher::new();
+        match &self.content {
+            Content::Room(_) => 0_u8.hash(&mut hasher),
+            Content::Claim(_) => 1_u8.hash(&mut hasher),
+            Content::Limited(_) => 2_u8.hash(&mut hasher),
+            Content::Doors(_) => 3_u8.hash(&mut hasher),
+            Content::Forums(session) => (4_u8, session.screen.screen_id()).hash(&mut hasher),
+            Content::Mail(session) => (5_u8, session.screen.screen_id()).hash(&mut hasher),
+            Content::Member(_) => {
+                6_u8.hash(&mut hasher);
+                if let Some(page) = self.content.menu_page() {
+                    (page.title, page.depth).hash(&mut hasher);
+                }
+            }
+        }
+        if let Some(chat) = &self.chat {
+            (7_u8, chat.in_room()).hash(&mut hasher);
+        }
+        if self.editor.is_some() {
+            8_u8.hash(&mut hasher);
+        }
+        self.widgets_page.is_some().hash(&mut hasher);
+        hasher.finish()
+    }
+
+    /// Whether a text input line is on screen, so its cursor blinks.
+    fn has_input(&self) -> bool {
+        if let Some(chat) = &self.chat {
+            return match chat.page() {
+                russh_bbs_core::chat::ChatPage::Room(_) => true,
+                russh_bbs_core::chat::ChatPage::List(list) => list.naming.is_some(),
+            };
+        }
+        match &self.content {
+            Content::Forums(session) => session.screen.has_input(),
+            Content::Mail(session) => session.screen.has_input(),
+            Content::Member(_) => self
+                .content
+                .members_view()
+                .or_else(|| self.content.community_view())
+                .is_some_and(|view| {
+                    view.lines.iter().any(|line| {
+                        matches!(
+                            line,
+                            russh_bbs_core::profiles::Line::Field { active: true, .. }
+                        )
+                    })
+                }),
+            Content::Room(_) | Content::Claim(_) | Content::Doors(_) | Content::Limited(_) => false,
+        }
+    }
+
+    /// When the shell should next wake for motion (a wipe frame or a cursor blink), if
+    /// anything is moving. `None` with motion off, which is the common case.
+    pub(crate) fn motion_deadline(&self) -> Option<std::time::Instant> {
+        let look = self.content.look(&self.ui, self.viewport, self.depth())?;
+        self.motion.deadline(look, std::time::Instant::now())
+    }
+
+    /// If a motion deadline has passed, ask for a redraw.
+    pub(crate) fn motion_tick(&mut self, now: std::time::Instant) {
+        let due = self
+            .content
+            .look(&self.ui, self.viewport, self.depth())
+            .and_then(|look| self.motion.deadline(look, now))
+            .is_some_and(|at| at <= now);
+        if due {
+            self.dirty = true;
+        }
+    }
+
+    /// Note the screen about to be drawn for the motion state, and give back the wipe step to
+    /// draw (if a wipe is running) and whether the input cursor is in its dark half.
+    fn motion_frame(&mut self) -> (Option<u8>, bool) {
+        let Some(look) = self.content.look(&self.ui, self.viewport, self.depth()) else {
+            return (None, false);
+        };
+        let now = std::time::Instant::now();
+        let identity = self.screen_identity();
+        let input = self.has_input();
+        self.motion.note_screen(identity, look, now);
+        self.motion.set_input(input, now);
+        (
+            self.motion.wipe_step(now),
+            self.motion.cursor_dark(look, now),
+        )
     }
 
     /// The previous sign-in time, the "since your last call" mark.
@@ -1632,6 +1739,7 @@ impl Screen {
                 .duration_since(std::time::UNIX_EPOCH)
                 .map_or(0, |elapsed| elapsed.as_secs()),
         );
+        let (wipe_step, cursor_dark) = self.motion_frame();
         if let Content::Forums(session) = &self.content {
             let settings = session.flow.settings();
             let theme = self.ui.theme_for(settings);
@@ -1639,7 +1747,10 @@ impl Screen {
                 ui: &self.ui,
                 strings: theme.strings(),
                 settings,
-                look: self.ui.look(settings, self.viewport, self.depth()),
+                look: self
+                    .ui
+                    .look(settings, self.viewport, self.depth())
+                    .with_cursor_dark(cursor_dark),
                 tier: settings.icon_tier(),
                 markers: self.status_markers(),
                 clock: Some(clock.as_str()),
@@ -1648,6 +1759,9 @@ impl Screen {
             self.terminal.draw(|frame| {
                 forums::render(frame, &session.screen, &ctx);
                 backdrop::finish(frame, ctx.look);
+                if let Some(step) = wipe_step {
+                    motion::wipe(frame, ctx.look, step);
+                }
             })?;
             return Ok(self.finish_frame(tier));
         }
@@ -1658,13 +1772,19 @@ impl Screen {
                 ui: &self.ui,
                 strings: theme.strings(),
                 settings,
-                look: self.ui.look(settings, self.viewport, self.depth()),
+                look: self
+                    .ui
+                    .look(settings, self.viewport, self.depth())
+                    .with_cursor_dark(cursor_dark),
                 tier: settings.icon_tier(),
             };
             let tier = ctx.tier;
             self.terminal.draw(|frame| {
                 mail::render(frame, &session.screen, &ctx);
                 backdrop::finish(frame, ctx.look);
+                if let Some(step) = wipe_step {
+                    motion::wipe(frame, ctx.look, step);
+                }
             })?;
             return Ok(self.finish_frame(tier));
         }
@@ -1687,7 +1807,10 @@ impl Screen {
                 view.body.push(quote.as_str().to_owned());
             }
         }
-        let look = self.content.look(&self.ui, self.viewport, self.depth());
+        let look = self
+            .content
+            .look(&self.ui, self.viewport, self.depth())
+            .map(|look| look.with_cursor_dark(cursor_dark));
         let layout = self.content.layout(&self.ui, self.viewport);
         let wanted = self.content.wanted_layout(&self.ui);
         let menu = self.content.menu_page();
@@ -1883,6 +2006,9 @@ impl Screen {
                 }
                 if let Some(look) = look {
                     backdrop::finish(frame, look);
+                    if let Some(step) = wipe_step {
+                        motion::wipe(frame, look, step);
+                    }
                 }
             })?;
         }

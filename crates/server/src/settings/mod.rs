@@ -46,6 +46,9 @@ pub(crate) struct Look {
     /// Whether motion is allowed: the member wants it, the board allows it and the style has it.
     motion: bool,
     surfaces: Surfaces,
+    /// The input cursor is in the dark half of its blink (UI-4). Always false when motion is
+    /// off, so a steady cursor is the plain path.
+    cursor_dark: bool,
 }
 
 impl Look {
@@ -71,6 +74,7 @@ impl Look {
             cap,
             motion: prefs::motion(settings),
             surfaces: palette.surfaces(),
+            cursor_dark: false,
         }
     }
 
@@ -128,11 +132,24 @@ impl Look {
         self.skin
     }
 
-    /// Whether motion is allowed on this screen. Nothing animates yet (UI-4 and UI-8 will); the
-    /// flag is here so they read one place.
-    #[allow(dead_code, reason = "read by UI-4 and UI-8 when motion lands")]
+    /// Whether motion is allowed on this screen: the member wants it, the board allows it and
+    /// the style has it. The session adds its own gate (accessibility mode, `ui::motion`).
     pub(crate) const fn motion(self) -> bool {
         self.motion
+    }
+
+    /// This look with the input cursor in the dark half of its blink or the lit half. Only a
+    /// look that allows motion ever goes dark.
+    #[must_use]
+    pub(crate) const fn with_cursor_dark(mut self, dark: bool) -> Self {
+        self.cursor_dark = dark && self.motion;
+        self
+    }
+
+    /// The text cursor in an input line: `_`, which blinks to a space when motion is on. A
+    /// plain character in the content, never a marker (it has no style of its own).
+    pub(crate) const fn cursor(self) -> &'static str {
+        if self.cursor_dark { " " } else { "_" }
     }
 
     /// The frame's surface colours for this theme.
