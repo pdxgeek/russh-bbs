@@ -34,7 +34,7 @@ struct Rig {
     server: SshServer,
     store: SqliteStore,
     token: String,
-    _dir: TempDir,
+    dir: TempDir,
 }
 
 impl Rig {
@@ -74,7 +74,7 @@ impl Rig {
             server,
             store,
             token,
-            _dir: dir,
+            dir,
         }
     }
 
@@ -266,7 +266,7 @@ async fn one_ssh_sign_in_records_exactly_one_login() {
     send(&mut channel, "ny").await;
     send(&mut channel, "l").await;
     let pool = sqlx::SqlitePool::connect_with(
-        sqlx::sqlite::SqliteConnectOptions::new().filename(rig._dir.path().join("bbs.db")),
+        sqlx::sqlite::SqliteConnectOptions::new().filename(rig.dir.path().join("bbs.db")),
     )
     .await
     .unwrap();
