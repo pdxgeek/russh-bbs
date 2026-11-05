@@ -2,6 +2,10 @@
 # a typewriter-reveal monitor.
 name = "amber"
 
+[meta]
+title = "Amber Terminal"
+credit = "russh-bbs project"
+
 [colors]
 surface = "#0d0800"
 panel = "#140d02"

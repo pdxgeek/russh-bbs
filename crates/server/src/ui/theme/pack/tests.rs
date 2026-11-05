@@ -10,7 +10,15 @@ use crate::ui::Ui;
 use crate::ui::strings::StringTable;
 
 const STYLES: [&str; 9] = [
-    "phosphor", "neon", "paper", "amber", "deepspace", "ansi", "green", "contrast", "amber",
+    "phosphor",
+    "neon",
+    "paper",
+    "amber",
+    "deepspace",
+    "ansi",
+    "green",
+    "contrast",
+    "amber",
 ];
 
 struct World {
@@ -41,14 +49,16 @@ fn name(text: &str) -> ThemeName {
 }
 
 fn hex(bytes: &[u8]) -> String {
-    bytes.iter().map(|b| format!("{b:02x}")).collect()
+    use std::fmt::Write as _;
+    bytes.iter().fold(String::new(), |mut out, b| {
+        let _ = write!(out, "{b:02x}");
+        out
+    })
 }
 
 /// A minimal valid pack for a style called `harbour`.
 fn pack_text(extra: &str) -> String {
-    format!(
-        "pack = 1\ntheme = '''\nname = \"harbour\"\n[colors]\nborder = \"cyan\"\n'''\n{extra}"
-    )
+    format!("pack = 1\ntheme = '''\nname = \"harbour\"\n[colors]\nborder = \"cyan\"\n'''\n{extra}")
 }
 
 #[test]
@@ -117,19 +127,28 @@ fn an_export_holds_only_the_styles_own_files() {
     let w = world();
     let text = export(&w.themes, &w.art, name("neon")).unwrap();
     // No board setting, path, address or secret-shaped word comes from the style.
-    for word in ["password", "token", "secret", "/home", "/etc", "ssh-ed25519", "BEGIN"] {
-        assert!(!text.to_lowercase().contains(&word.to_lowercase()), "{word}");
+    for word in [
+        "password",
+        "token",
+        "secret",
+        "/home",
+        "/etc",
+        "ssh-ed25519",
+        "BEGIN",
+    ] {
+        assert!(
+            !text.to_lowercase().contains(&word.to_lowercase()),
+            "{word}"
+        );
     }
     // The board name override is applied to loaded tables, never to the authored file.
-    let ui = Ui::standard()
-        .unwrap()
-        .with_board(
-            crate::ui::Board::from_config(&crate::config::BoardConfig {
-                name: "Zebra Harbour BBS".into(),
-                ..crate::config::BoardConfig::default()
-            })
-            .unwrap(),
-        );
+    let ui = Ui::standard().unwrap().with_board(
+        crate::ui::Board::from_config(&crate::config::BoardConfig {
+            name: "Zebra Harbour BBS".into(),
+            ..crate::config::BoardConfig::default()
+        })
+        .unwrap(),
+    );
     let ui_text = export(&ui.themes, ui.art(), name("neon")).unwrap();
     assert!(!ui_text.contains("Zebra"));
 }
@@ -164,10 +183,7 @@ fn a_wrong_version_is_refused() {
         let text = pack_text("").replace("pack = 1", &format!("pack = {version}"));
         assert!(matches!(refused(&text), PackError::Version(_)), "{version}");
     }
-    assert!(matches!(
-        refused("theme = ''\n"),
-        PackError::Syntax(_)
-    ));
+    assert!(matches!(refused("theme = ''\n"), PackError::Syntax(_)));
 }
 
 #[test]
@@ -229,12 +245,20 @@ fn marker_glyphs_control_characters_and_private_use_in_strings_are_refused() {
 #[test]
 fn a_string_cannot_claim_privacy() {
     let w = world();
-    let key = w.base.keys().find(|k| k.ends_with("title")).unwrap().to_owned();
+    let key = w
+        .base
+        .keys()
+        .find(|k| k.ends_with("title"))
+        .unwrap()
+        .to_owned();
     let (section, leaf) = key.rsplit_once('.').unwrap();
     let text = format!(
         "pack = 1\ntheme = '''\nname = \"x\"\n[{section}]\n{leaf} = \"A private board\"\n'''\n"
     );
-    assert!(matches!(refused(&text), PackError::Theme(ThemeError::Strings(_))));
+    assert!(matches!(
+        refused(&text),
+        PackError::Theme(ThemeError::Strings(_))
+    ));
 }
 
 #[test]
@@ -242,13 +266,27 @@ fn art_must_belong_to_the_pack_style() {
     // A generic piece (no style) would replace the board's art for every style.
     let generic = "format = 1\nname = \"harbour\"\n[[piece]]\nslot = \"menu\"\nrows = [\"hi\"]\n";
     let entry = format!("[[art]]\nkind = \"art.toml\"\ntext = '''\n{generic}'''\n");
-    assert!(matches!(refused(&pack_text(&entry)), PackError::Art { entry: 1, .. }));
+    assert!(matches!(
+        refused(&pack_text(&entry)),
+        PackError::Art { entry: 1, .. }
+    ));
     let other = generic.replace("name = \"harbour\"", "name = \"harbour\"\nstyle = \"neon\"");
     let entry = format!("[[art]]\nkind = \"art.toml\"\ntext = '''\n{other}'''\n");
-    assert!(matches!(refused(&pack_text(&entry)), PackError::Art { entry: 1, .. }));
-    let mine = generic.replace("name = \"harbour\"", "name = \"harbour\"\nstyle = \"harbour\"");
+    assert!(matches!(
+        refused(&pack_text(&entry)),
+        PackError::Art { entry: 1, .. }
+    ));
+    let mine = generic.replace(
+        "name = \"harbour\"",
+        "name = \"harbour\"\nstyle = \"harbour\"",
+    );
     let entry = format!("[[art]]\nkind = \"art.toml\"\ntext = '''\n{mine}'''\n");
-    assert_eq!(parse(&pack_text(&entry), &world().base).unwrap().art_files(), 1);
+    assert_eq!(
+        parse(&pack_text(&entry), &world().base)
+            .unwrap()
+            .art_files(),
+        1
+    );
 }
 
 #[test]
@@ -259,7 +297,13 @@ fn art_marker_glyphs_become_replacement_characters() {
     let w = world();
     let pack = parse(&pack_text(&entry), &w.base).unwrap();
     let dir = tempfile::tempdir().unwrap();
-    install(&pack, &empty_board(&w.base), &dir.path().join("t"), &dir.path().join("a")).unwrap();
+    install(
+        &pack,
+        &empty_board(&w.base),
+        &dir.path().join("t"),
+        &dir.path().join("a"),
+    )
+    .unwrap();
     let mut set = ArtSet::default();
     set.add_dir(&dir.path().join("a"));
     let row = set.pieces()[0].grid().row_text(0, false);
@@ -274,19 +318,29 @@ fn an_ans_bomb_is_refused() {
     // More hex than the cap: refused before it is decoded.
     let huge = "ff".repeat(ANS_MAX_BYTES + 1);
     let entry = format!("[[art]]\nkind = \"ans\"\nslot = \"menu\"\nhex = \"{huge}\"\n");
-    assert!(matches!(refused(&pack_text(&entry)), PackError::Art { entry: 1, .. }));
+    assert!(matches!(
+        refused(&pack_text(&entry)),
+        PackError::Art { entry: 1, .. }
+    ));
     // Within the byte cap but a screen of cursor-down: the picture is over the row cap.
     let tall = "\x1b[100B".repeat(40) + "x";
-    let entry = format!("[[art]]\nkind = \"ans\"\nslot = \"menu\"\nhex = \"{}\"\n", hex(tall.as_bytes()));
+    let entry = format!(
+        "[[art]]\nkind = \"ans\"\nslot = \"menu\"\nhex = \"{}\"\n",
+        hex(tall.as_bytes())
+    );
     let err = refused(&pack_text(&entry));
     assert!(matches!(err, PackError::Art { entry: 1, .. }), "{err}");
     // Odd or non-hex digits.
     for bad in ["abc", "zz", "12 3"] {
         let entry = format!("[[art]]\nkind = \"ans\"\nslot = \"menu\"\nhex = \"{bad}\"\n");
-        assert!(matches!(refused(&pack_text(&entry)), PackError::Art { .. }), "{bad}");
+        assert!(
+            matches!(refused(&pack_text(&entry)), PackError::Art { .. }),
+            "{bad}"
+        );
     }
     // Too many entries.
-    let many = "[[art]]\nkind = \"ans\"\nslot = \"menu\"\nhex = \"41\"\n".repeat(MAX_ART_ENTRIES + 1);
+    let many =
+        "[[art]]\nkind = \"ans\"\nslot = \"menu\"\nhex = \"41\"\n".repeat(MAX_ART_ENTRIES + 1);
     assert_eq!(refused(&pack_text(&many)), PackError::TooManyArt);
 }
 
@@ -295,7 +349,10 @@ fn a_valid_ans_is_cleaned_and_installed_under_the_style() {
     let w = world();
     // Colour, a cursor move, and an escape that must never reach a terminal.
     let ans = b"\x1b[1;36mHARBOUR\x1b[0m\r\n\x1b]0;title\x07done";
-    let entry = format!("[[art]]\nkind = \"ans\"\nslot = \"menu\"\nhex = \"{}\"\n", hex(ans));
+    let entry = format!(
+        "[[art]]\nkind = \"ans\"\nslot = \"menu\"\nhex = \"{}\"\n",
+        hex(ans)
+    );
     let pack = parse(&pack_text(&entry), &w.base).unwrap();
     let dir = tempfile::tempdir().unwrap();
     let (t, a) = (dir.path().join("t"), dir.path().join("a"));
@@ -308,15 +365,24 @@ fn a_valid_ans_is_cleaned_and_installed_under_the_style() {
     let text: String = (0..set.pieces()[0].grid().height())
         .map(|y| set.pieces()[0].grid().row_text(y, false))
         .collect();
-    assert!(!text.contains('\x1b') && !text.contains("title"), "{text:?}");
+    assert!(
+        !text.contains('\x1b') && !text.contains("title"),
+        "{text:?}"
+    );
 }
 
 #[test]
 fn a_second_ans_for_a_slot_and_a_bad_kind_are_refused() {
     let one = "[[art]]\nkind = \"ans\"\nslot = \"menu\"\nhex = \"41\"\n";
-    assert!(matches!(refused(&pack_text(&one.repeat(2))), PackError::Art { entry: 2, .. }));
+    assert!(matches!(
+        refused(&pack_text(&one.repeat(2))),
+        PackError::Art { entry: 2, .. }
+    ));
     let bad = "[[art]]\nkind = \"script\"\ntext = \"x\"\n";
-    assert!(matches!(refused(&pack_text(bad)), PackError::Art { entry: 1, .. }));
+    assert!(matches!(
+        refused(&pack_text(bad)),
+        PackError::Art { entry: 1, .. }
+    ));
 }
 
 // ---- versions ------------------------------------------------------------------------------
@@ -379,13 +445,19 @@ fn meta_is_checked_like_any_sysop_string() {
         "[meta]\ncredit = 5\n",
     ] {
         let text = format!("name = \"m\"\n{meta}");
-        assert!(matches!(
-            Theme::parse(&text, &w.base).unwrap_err(),
-            ThemeError::Meta(_)
-        ), "{meta}");
+        assert!(
+            matches!(
+                Theme::parse(&text, &w.base).unwrap_err(),
+                ThemeError::Meta(_)
+            ),
+            "{meta}"
+        );
     }
     let long = format!("name = \"m\"\n[meta]\ntitle = \"{}\"\n", "x".repeat(41));
-    assert!(matches!(Theme::parse(&long, &w.base).unwrap_err(), ThemeError::Meta(_)));
+    assert!(matches!(
+        Theme::parse(&long, &w.base).unwrap_err(),
+        ThemeError::Meta(_)
+    ));
 }
 
 // ---- install -------------------------------------------------------------------------------
@@ -410,7 +482,10 @@ fn install_never_overwrites_and_is_all_or_nothing() {
         install(&pack, &empty_board(&w.base), &t, &a),
         Err(PackError::Exists("harbour".to_owned()))
     );
-    assert_eq!(fs::read_to_string(t.join("harbour.toml")).unwrap(), "keep me");
+    assert_eq!(
+        fs::read_to_string(t.join("harbour.toml")).unwrap(),
+        "keep me"
+    );
     // A failure after the art is written removes the art again.
     fs::remove_file(t.join("harbour.toml")).unwrap();
     let art = "format = 1\nname = \"harbour\"\nstyle = \"harbour\"\n[[piece]]\nslot = \"menu\"\nrows = [\"hi\"]\n";
@@ -418,7 +493,11 @@ fn install_never_overwrites_and_is_all_or_nothing() {
     let with_art = parse(&pack_text(&entry), &w.base).unwrap();
     fs::create_dir_all(t.join("harbour.toml")).unwrap(); // a directory in the way
     assert!(install(&with_art, &empty_board(&w.base), &t, &a).is_err());
-    assert_eq!(fs::read_dir(&a).map_or(0, Iterator::count), 0, "art was left behind");
+    assert_eq!(
+        fs::read_dir(&a).map_or(0, Iterator::count),
+        0,
+        "art was left behind"
+    );
 }
 
 #[test]

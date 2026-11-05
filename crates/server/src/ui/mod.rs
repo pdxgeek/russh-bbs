@@ -20,6 +20,7 @@ pub(crate) mod compact;
 pub mod depth;
 pub mod editor;
 pub(crate) mod frame;
+pub(crate) mod gallery;
 pub(crate) mod keys;
 pub(crate) mod layout;
 pub(crate) mod lightbar;
@@ -185,6 +186,7 @@ impl Ui {
             .copied()
             .chain(keys::LAYOUT_KEYS.iter().copied())
             .chain(keys::PREVIEW_KEYS.iter().copied())
+            .chain(keys::GALLERY_KEYS.iter().copied())
             .chain(tree.text_keys())
             .chain(widgets::TEXT_KEYS.iter().copied())
             .chain(widgets::screen::TEXT_KEYS.iter().copied())
@@ -408,6 +410,8 @@ impl Ui {
     }
 }
 
+#[cfg(test)]
+mod gallery_tests;
 #[cfg(test)]
 mod layout_tests;
 #[cfg(test)]

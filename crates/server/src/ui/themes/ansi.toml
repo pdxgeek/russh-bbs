@@ -2,6 +2,10 @@
 # done properly. Every colour is a named terminal colour, so it looks the same at every depth.
 name = "ansi"
 
+[meta]
+title = "Classic ANSI"
+credit = "russh-bbs project"
+
 [colors]
 surface = "black"
 panel = "black"

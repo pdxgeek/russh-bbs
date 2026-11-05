@@ -74,7 +74,7 @@ static MAIN_ITEMS: [Item; 11] = [
     item('l', "menu.main.item.logoff", Target::Action(Action::LogOff)),
 ];
 
-static SYSOP_ITEMS: [Item; 3] = [
+static SYSOP_ITEMS: [Item; 4] = [
     item(
         'q',
         "menu.sysop.item.queue",
@@ -89,6 +89,11 @@ static SYSOP_ITEMS: [Item; 3] = [
         't',
         "menu.sysop.item.preview",
         Target::Action(Action::ThemePreview),
+    ),
+    item(
+        'p',
+        "menu.sysop.item.packs",
+        Target::Action(Action::ThemePacks),
     ),
 ];
 

@@ -37,6 +37,7 @@
 //! any file the sysop drops there. **Export** writes only the style's own text and art: no
 //! secret, no member data and no board setting is in either source.
 
+use std::fmt::Write as _;
 use std::fs;
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
@@ -192,7 +193,9 @@ pub fn parse(text: &str, base: &StringTable) -> Result<Pack, PackError> {
                     .as_deref()
                     .ok_or_else(|| fail("an art.toml entry needs `text`".to_owned()))?;
                 if body.len() > ART_TOML_MAX_BYTES {
-                    return Err(fail(ArtError::TooManyBytes(body.len(), ART_TOML_MAX_BYTES).to_string()));
+                    return Err(fail(
+                        ArtError::TooManyBytes(body.len(), ART_TOML_MAX_BYTES).to_string(),
+                    ));
                 }
                 let parsed = art::parse_art_toml(body, true).map_err(|e| fail(e.to_string()))?;
                 if parsed.pieces.iter().any(|p| p.style() != Some(style)) {
@@ -207,7 +210,9 @@ pub fn parse(text: &str, base: &StringTable) -> Result<Pack, PackError> {
             }
             "ans" => {
                 if entry.text.is_some() {
-                    return Err(fail("an ans entry has `slot` and `hex`, not `text`".to_owned()));
+                    return Err(fail(
+                        "an ans entry has `slot` and `hex`, not `text`".to_owned(),
+                    ));
                 }
                 let slot = entry
                     .slot
@@ -246,7 +251,7 @@ fn decode_hex(hex: &str, cap: usize) -> Result<Vec<u8>, String> {
     if digits.len() > cap * 2 {
         return Err(format!("the picture is more than the {cap}-byte cap"));
     }
-    if digits.len() % 2 != 0 || !digits.iter().all(u8::is_ascii_hexdigit) {
+    if !digits.len().is_multiple_of(2) || !digits.iter().all(u8::is_ascii_hexdigit) {
         return Err("`hex` must be an even number of hex digits".to_owned());
     }
     digits
@@ -263,7 +268,9 @@ fn decode_hex(hex: &str, cap: usize) -> Result<Vec<u8>, String> {
 fn block(text: &str) -> String {
     let plain = !text.contains("'''")
         && !text.ends_with('\'')
-        && text.chars().all(|c| c == '\n' || c == '\t' || !c.is_control());
+        && text
+            .chars()
+            .all(|c| c == '\n' || c == '\t' || !c.is_control());
     if plain {
         format!("'''\n{text}'''")
     } else {
@@ -302,7 +309,11 @@ pub fn export(themes: &ThemeSet, art_set: &ArtSet, name: ThemeName) -> Result<St
         let mine: Vec<&art::ArtPiece> = pieces.iter().copied().filter(|p| p.set() == set).collect();
         let credit = mine.first().map(|p| p.credit()).unwrap_or_default();
         let body = art::write_art_toml(name.as_str(), name, credit, &mine);
-        out.push_str(&format!("\n[[art]]\nkind = \"art.toml\"\ntext = {}\n", block(&body)));
+        let _ = write!(
+            out,
+            "\n[[art]]\nkind = \"art.toml\"\ntext = {}\n",
+            block(&body)
+        );
     }
     Ok(out)
 }
@@ -421,7 +432,9 @@ pub const MAX_PACK_FILES: usize = 32;
 pub fn read_file(path: &Path) -> Result<String, PackError> {
     let meta = fs::symlink_metadata(path).map_err(|e| write_error(path, &e))?;
     if !meta.file_type().is_file() {
-        return Err(PackError::Syntax("not a regular file (links are not followed)".to_owned()));
+        return Err(PackError::Syntax(
+            "not a regular file (links are not followed)".to_owned(),
+        ));
     }
     let mut bytes = Vec::new();
     fs::File::open(path)

@@ -32,6 +32,7 @@ use super::strings::{StringError, StringTable};
 
 pub mod pack;
 mod palette;
+pub mod service;
 pub(crate) mod skin;
 mod version;
 

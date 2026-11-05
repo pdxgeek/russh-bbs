@@ -2,6 +2,10 @@
 # name, rounded boxes and a faint grid.
 name = "neon"
 
+[meta]
+title = "Neon Night"
+credit = "russh-bbs project"
+
 [colors]
 surface = "#0b0618"
 panel = "#120a26"

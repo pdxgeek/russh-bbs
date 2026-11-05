@@ -3,6 +3,10 @@
 # original. A style can set colours and drawing choices; it can never touch the security markers.
 name = "phosphor"
 
+[meta]
+title = "Phosphor"
+credit = "russh-bbs project"
+
 [colors]
 surface = "#020a04"
 panel = "#04120a"

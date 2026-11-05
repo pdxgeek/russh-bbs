@@ -46,13 +46,11 @@ pub(super) fn migrate(root: &mut toml::Table) -> Result<u32, ThemeError> {
 }
 
 /// One migration step: the table as version `from` to the table as version `from + 1`.
-fn step(_root: &mut toml::Table, from: u32) {
-    match from {
-        // 1 to 2: `[meta]` is new and optional; a version-1 table is already valid.
-        // Later versions add their step here; `migrate` never asks for one at or above CURRENT.
-        _ => {}
-    }
-}
+///
+/// 1 to 2 changes nothing in the table: `[meta]` is new and optional, so a version-1 table is
+/// already a valid version-2 table and the step only moves the version on. A later version adds
+/// its rewrite here, keyed on `from`; `migrate` never asks for a step at or above [`CURRENT`].
+fn step(_root: &mut toml::Table, _from: u32) {}
 
 /// Read `[meta]`: a title and a credit, both optional, both checked like any sysop string.
 pub(super) fn meta(table: Option<toml::Value>) -> Result<(String, String), ThemeError> {
@@ -71,13 +69,16 @@ pub(super) fn meta(table: Option<toml::Value>) -> Result<(String, String), Theme
         let (max, slot) = match key.as_str() {
             "title" => (TITLE_MAX, &mut title),
             "credit" => (CREDIT_MAX, &mut credit),
-            _ => return Err(bad(format!("`meta.{key}` is not a meta key (title, credit)"))),
+            _ => {
+                return Err(bad(format!(
+                    "`meta.{key}` is not a meta key (title, credit)"
+                )));
+            }
         };
         if text.chars().count() > max {
             return Err(bad(format!("`meta.{key}` is longer than {max} characters")));
         }
-        check_board_text(&format!("meta.{key}"), text)
-            .map_err(|error| bad(error.to_string()))?;
+        check_board_text(&format!("meta.{key}"), text).map_err(|error| bad(error.to_string()))?;
         text.clone_into(slot);
     }
     Ok((title, credit))

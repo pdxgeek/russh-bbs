@@ -82,6 +82,8 @@ pub enum Action {
     /// would draw, before a default is set. It changes nothing, so it needs only what Sysop
     /// tools itself needs (`members.approve`).
     ThemePreview,
+    /// Open the theme packs screen under Sysop tools (UI-7): export and import.
+    ThemePacks,
     /// Open the vouch screen: pending requests a member can speak for (`members.vouch`, M2-E).
     VouchQueue,
     /// Open the one-liners (`community.view`, M3-J).
@@ -115,6 +117,7 @@ impl Action {
             Self::MemberList | Self::OwnProfile => Some(Permission::MembersView),
             Self::EditOwnProfile => Some(Permission::AccountEditProfile),
             Self::SysopQueue | Self::ThemePreview => Some(Permission::MembersApprove),
+            Self::ThemePacks => Some(Permission::ThemesManage),
             Self::RecoveryCode => Some(Permission::KeysRecover),
             Self::MyKeys => Some(Permission::KeysManage),
             Self::VouchQueue => Some(Permission::MembersVouch),

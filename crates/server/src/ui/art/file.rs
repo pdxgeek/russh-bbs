@@ -29,6 +29,8 @@
 //! character goes through the shared sanitizer (controls become blanks, marker glyphs and
 //! private-use characters become U+FFFD), and a piece over its slot's cap is refused.
 
+use std::fmt::Write as _;
+
 use russh_bbs_core::terminal_settings::ThemeName;
 use serde::Deserialize;
 
@@ -125,15 +127,19 @@ pub fn parse(text: &str, sysop: bool) -> Result<ArtFile, ArtError> {
 /// [`quote`], so a character that needs escaping is escaped and nothing can end the string early.
 #[must_use]
 pub fn write(name: &str, style: ThemeName, credit: &str, pieces: &[&ArtPiece]) -> String {
-    let mut out = format!("format = {FORMAT}\nname = {}\nstyle = {}\n", quote(name), quote(style.as_str()));
+    let mut out = format!(
+        "format = {FORMAT}\nname = {}\nstyle = {}\n",
+        quote(name),
+        quote(style.as_str())
+    );
     if !credit.is_empty() {
-        out.push_str(&format!("credit = {}\n", quote(credit)));
+        let _ = writeln!(out, "credit = {}", quote(credit));
     }
     for piece in pieces {
         out.push_str("\n[[piece]]\n");
-        out.push_str(&format!("slot = {}\n", quote(piece.slot.name())));
+        let _ = writeln!(out, "slot = {}", quote(piece.slot.name()));
         if let Some(fallback) = piece.fallback() {
-            out.push_str(&format!("fallback = {}\n", quote(fallback)));
+            let _ = writeln!(out, "fallback = {}", quote(fallback));
         }
         let grid = &piece.grid;
         let rows = |f: &dyn Fn(ArtCell) -> char| -> Vec<String> {
@@ -156,9 +162,9 @@ pub fn write(name: &str, style: ThemeName, credit: &str, pieces: &[&ArtPiece]) -
 }
 
 fn push_list(out: &mut String, key: &str, rows: &[String]) {
-    out.push_str(&format!("{key} = [\n"));
+    let _ = writeln!(out, "{key} = [");
     for row in rows {
-        out.push_str(&format!("  {},\n", quote(row)));
+        let _ = writeln!(out, "  {},", quote(row));
     }
     out.push_str("]\n");
 }
@@ -184,7 +190,9 @@ pub(crate) fn quote(text: &str) -> String {
             '\\' => out.push_str("\\\\"),
             '\n' => out.push_str("\\n"),
             '\t' => out.push_str("\\t"),
-            c if c.is_control() => out.push_str(&format!("\\u{:04X}", u32::from(c))),
+            c if c.is_control() => {
+                let _ = write!(out, "\\u{:04X}", u32::from(c));
+            }
             c => out.push(c),
         }
     }
