@@ -149,8 +149,9 @@ pub(crate) fn entries(sources: &Sources<'_>) -> Vec<Entry> {
                 Target::Action(Action::Forums) => forums_path = Some(keys.clone()),
                 _ => {}
             }
-            // Menus are reached through their own items; a placeholder does nothing yet.
-            if matches!(target, Target::Action(_)) {
+            // Menus are reached through their own items; a placeholder does nothing yet. A sysop
+            // page (UI-6) is listed like an area: it is in the tree this member can see.
+            if matches!(target, Target::Action(_) | Target::Page(_)) {
                 out.push(Entry {
                     label: clean(label),
                     group: Group::Area,
@@ -227,7 +228,7 @@ fn walk(
         return;
     }
     for item in menu.items {
-        if !item.visible(sources.access) {
+        if !sources.tree.item_visible(item, sources.access) {
             continue;
         }
         path.push(item.hotkey);

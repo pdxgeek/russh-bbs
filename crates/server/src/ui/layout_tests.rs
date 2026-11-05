@@ -476,6 +476,47 @@ fn every_layout_theme_and_tier_draws_at_tiny_sizes_without_panicking() {
     }
 }
 
+/// QA M3.5 M2: the ASCII tier draws only ASCII, including the menu's scrollbar, which appears
+/// when the list is taller than the window (under about 16 rows).
+#[test]
+fn the_ascii_tier_menu_draws_only_ascii_in_every_layout_at_every_height() {
+    let ui = ui();
+    let body = vec!["Welcome to the board.".to_owned(); 6];
+    let pages = [
+        page(&[]),
+        page(&[MenuKey::Char(russh_bbs_core::menu::HELP_KEY)]),
+    ];
+    for theme in themes(&ui) {
+        for chosen in LayoutId::ALL {
+            for page in &pages {
+                for height in 8..=24u16 {
+                    for width in [40u16, 80, 132] {
+                        let buffer = draw(
+                            chosen,
+                            theme,
+                            page,
+                            &body,
+                            Tier::Ascii,
+                            true,
+                            (width, height),
+                        );
+                        for y in 0..height {
+                            for x in 0..width {
+                                let symbol = buffer[(x, y)].symbol();
+                                assert!(
+                                    symbol.is_ascii(),
+                                    "{chosen:?} {width}x{height} ({x},{y}) {symbol:?}\n{}",
+                                    text(&buffer)
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 // ---- security markers: every layout x every shipped theme ----
 
 #[test]

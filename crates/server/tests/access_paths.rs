@@ -221,6 +221,7 @@ impl Rig {
                 themes: dir.path().join("themes"),
                 art: dir.path().join("art"),
             })
+            .with_menu_dir(dir.path())
             .with_mail_keys(Arc::new(keys))
             .with_doors(russh_bbs_server::doors::Doors::builtin().unwrap());
         let server = SshServer::start_with_ui(
@@ -1556,6 +1557,91 @@ async fn theme_packs_need_themes_manage_and_export_and_import_are_audited() {
     assert_eq!(audit_rows(&rig, "theme.imported").await, 1);
     send(&mut channel, "o").await;
     assert!(!full(&mut channel).await.contains("[p] Theme packs"));
+    rig.restore(&taken, Permission::ThemesManage).await;
+    rig.server.shutdown().await;
+}
+
+#[tokio::test]
+async fn menus_and_pages_reload_is_gated_audited_and_reaches_only_new_sessions() {
+    let rig = Rig::start().await;
+    let key = new_client_key();
+    let (_session, mut channel) = founder_at_menu(&rig, &key).await;
+
+    // The built-in menu to begin with; the screen says so.
+    send(&mut channel, "o").await;
+    assert!(full(&mut channel).await.contains("[m] Menus and pages"));
+    send(&mut channel, "m").await;
+    let screen = full(&mut channel).await;
+    assert!(screen.contains("Using the built"), "{screen}");
+    assert!(screen.contains("Menu for the member role"), "{screen}");
+    // The pages are one `t` away.
+    send(&mut channel, "t").await;
+    assert!(full(&mut channel).await.contains("No pages are linked"));
+
+    // The sysop drops a file and a page in the data directory and reloads.
+    std::fs::create_dir_all(rig.dir.path().join("pages")).unwrap();
+    std::fs::write(
+        rig.dir.path().join("pages/rules.toml"),
+        "version = 1\ntitle = \"House rules\"\ntext = \"# Be kind\\nNo spam.\\n- be brief\"\n",
+    )
+    .unwrap();
+    std::fs::write(
+        rig.dir.path().join("menus.toml"),
+        "version = 1\n[[menu]]\nid = \"main\"\ntitle = \"Main Hall\"\n\
+         [[menu.item]]\ntarget = \"page:rules\"\nkey = \"r\"\n\
+         [[menu.item]]\ntarget = \"main.doors\"\nhidden = true\n",
+    )
+    .unwrap();
+    assert_eq!(audit_rows(&rig, "menus.reloaded").await, 0);
+    send(&mut channel, "l").await;
+    let screen = full(&mut channel).await;
+    assert!(screen.contains("Reloaded. New sessions get it"), "{screen}");
+    assert!(screen.contains("House rules"), "{screen}");
+    assert!(screen.contains("rules"), "{screen}");
+    assert_eq!(audit_rows(&rig, "menus.reloaded").await, 1);
+    // Reloading again changes nothing and writes nothing.
+    send(&mut channel, "l").await;
+    assert!(full(&mut channel).await.contains("nothing changed"));
+    assert_eq!(audit_rows(&rig, "menus.reloaded").await, 1);
+    // View the page as a member would; Esc comes back.
+    send(&mut channel, "\r").await;
+    let screen = full(&mut channel).await;
+    assert!(
+        screen.contains("Be kind") && screen.contains("be brief"),
+        "{screen}"
+    );
+    send(&mut channel, "\u{1b}").await;
+    assert!(full(&mut channel).await.contains("Pages (Enter"));
+
+    // A new session gets the new menu: Main Hall, the page first, doors gone.
+    // (`t` shows the member's menu again, and it already has the page first.)
+    send(&mut channel, "t").await;
+    let screen = full(&mut channel).await;
+    assert!(screen.contains("[r] House rules *"), "{screen}");
+    assert!(!screen.contains("[d] Doors"), "{screen}");
+    send(&mut channel, "b").await;
+    let second = login(rig.addr(), "founder", &key).await;
+    let mut fresh = common::open_shell(&second, 80, 24).await;
+    words(&mut fresh).await;
+    send(&mut fresh, "x").await;
+    let menu = full(&mut fresh).await;
+    assert!(menu.contains("Main Hall"), "{menu}");
+    assert!(menu.contains("[r] House rules"), "{menu}");
+    assert!(!menu.contains("[d] Doors"), "{menu}");
+    send(&mut fresh, "d").await;
+    assert!(!full(&mut fresh).await.contains("Pick a door"));
+    send(&mut fresh, "r").await;
+    let page = full(&mut fresh).await;
+    assert!(page.contains("No spam."), "{page}");
+
+    // Taken away while the screen is open: the next key closes it and nothing is audited.
+    send(&mut channel, "m").await;
+    full(&mut channel).await;
+    let taken = rig.revoke(Permission::ThemesManage).await;
+    let first = send(&mut channel, "l").await;
+    let screen = format!("{first} {}", full(&mut channel).await);
+    assert!(screen.contains("You are not allowed"), "{screen}");
+    assert_eq!(audit_rows(&rig, "menus.reloaded").await, 1);
     rig.restore(&taken, Permission::ThemesManage).await;
     rig.server.shutdown().await;
 }

@@ -163,6 +163,11 @@ pub enum Action {
     /// came with it.
     #[strum(serialize = "theme.imported")]
     ThemeImported,
+    /// Staff reloaded `menus.toml` and the pages and the result differs from what was loaded
+    /// (UI-6). The note says whether a menu file is in force, whether it was refused, and how
+    /// many pages loaded. No target; the file's text is never written.
+    #[strum(serialize = "menus.reloaded")]
+    MenusReloaded,
     /// Staff opened a chat room (M3-F). The resource is the room; the note is its name.
     #[strum(serialize = "chat.room_created")]
     ChatRoomCreated,

@@ -54,6 +54,7 @@ const fn leaf(hotkey: char) -> Item {
         label: "label",
         target: Target::Placeholder("note"),
         requires: None,
+        also: None,
     }
 }
 
@@ -112,6 +113,7 @@ fn a_dangling_target_is_rejected() {
         label: "l",
         target: Target::Menu("nowhere"),
         requires: None,
+        also: None,
     }];
     static MENUS: [Menu; 1] = [Menu {
         id: "m",
@@ -187,6 +189,7 @@ fn an_action_item_may_not_carry_its_own_permission() {
         label: "l",
         target: Target::Action(Action::LogOff),
         requires: Some(Permission::MailRead),
+        also: None,
     }];
     static MENUS: [Menu; 1] = [Menu {
         id: "m",
@@ -317,7 +320,7 @@ fn paths_to_every_menu(access: &dyn PermissionCheck) -> Vec<(&'static str, Vec<c
     while let Some((id, path)) = found.get(next).cloned() {
         next += 1;
         let menu = main_tree().menu(id).unwrap();
-        for item in MenuTree::visible_items(menu, access) {
+        for item in main_tree().visible_items(menu, access) {
             if let Target::Menu(target) = item.target
                 && !found.iter().any(|(seen, _)| *seen == target)
             {
@@ -371,12 +374,18 @@ fn universal_keys_work_identically_in_every_menu() {
 
 #[test]
 fn the_stack_is_bounded_even_if_a_tree_loops() {
-    static ITEMS: [Item; 1] = [Item {
-        hotkey: 'a',
-        label: "l",
-        target: Target::Menu("m"),
-        requires: None,
-    }];
+    // A link with no permission of its own shows only when something inside it does (UI-6), so
+    // the looping menu also holds a leaf.
+    static ITEMS: [Item; 2] = [
+        Item {
+            hotkey: 'a',
+            label: "l",
+            target: Target::Menu("m"),
+            requires: None,
+            also: None,
+        },
+        leaf('b'),
+    ];
     static MENUS: [Menu; 1] = [Menu {
         id: "m",
         title: "t",

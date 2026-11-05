@@ -313,3 +313,41 @@ fn the_marker_cell_is_never_inside_a_doors_area() {
         }
     }
 }
+
+/// QA M3.5 L1: a door's selection bar is never reverse video, so it cannot look like the
+/// marker's bold+reverse to a member who cannot see bold. It still differs from plain and strong
+/// text in every colour setting.
+#[test]
+fn a_doors_selection_bar_is_not_reverse_video_and_still_stands_out() {
+    use russh_bbs_door::DoorStyle;
+
+    let ui = Ui::standard().unwrap();
+    for tier in [Tier::Ascii, Tier::Unicode, Tier::NerdFont] {
+        for color in [false, true] {
+            let settings = TerminalSettings::default()
+                .with_tier(tier)
+                .with_color(color);
+            let ctx = DrawCtx {
+                strings: ui.strings(),
+                look: Look::of(&settings),
+                tier,
+                markers: &[],
+            };
+            let lines = door_lines(10, 3, &ctx, |canvas| {
+                canvas.text(0, 0, "plain", DoorStyle::Plain);
+                canvas.text(0, 1, "strong", DoorStyle::Strong);
+                canvas.text(0, 2, "chosen", DoorStyle::Plain);
+                canvas.style_row(2, DoorStyle::Selected);
+            });
+            let style_of = |row: usize| lines[row].spans[0].style;
+            for row in 0..3 {
+                assert!(
+                    !style_of(row).add_modifier.contains(Modifier::REVERSED),
+                    "{tier:?} color={color}: reverse video on row {row}"
+                );
+            }
+            assert_ne!(style_of(2), style_of(0), "{tier:?} color={color}");
+            assert_ne!(style_of(2), style_of(1), "{tier:?} color={color}");
+        }
+    }
+}

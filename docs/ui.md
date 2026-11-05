@@ -209,6 +209,12 @@ Status: **Implemented and tested; walked over real OpenSSH 9.6 and a raw telnet 
 - **The clock** is drawn with the screen, not by a timer (D49).
 - **Words, not only colour.** Popups carry `Notice`/`Problem`/`Confirm` in the title; the pointer and the header row read in mono and in the ASCII tier (plain `+ - |`, `#` scrollbar, `...` ellipsis).
 
+### ASCII tier and locked choices (FIX-M35-2, FIX-M35-4)
+
+- The menu list's scrollbar uses `#` and `|` in the ASCII tier, as tables do (QA M3.5 M2: ratatui's default `█` and `║` appeared whenever the list overflowed, in windows under about 16 rows). Tests scan every cell for non-ASCII at every height from 8 to 24 and widths 40, 80 and 132: the menu and help in every layout and every shipped style (`ui::layout_tests`), the table (`ui::table::tests`) and the forum board list and reader (`forums::tests`). After merging UI-4 (D127), `ui::screens::matrix::golden` also scans the home, forum, mail, chat and members screens in every layout at the same heights and widths in the ASCII tier. The reader and chat scrollbars already used `#` and `|`. Not verified: a real `ssh` walk of this fix.
+- A door's selection bar is not reverse video (D130, QA M3.5 L1): it is the theme's selection colours with bold and underline.
+- Pressing `l` or `t` on the settings screen when the sysop has fixed the layout or style shows "The sysop has fixed the layout (style) on this board." (L3).
+
 ### Converted screens
 
 The main menu in the classic, lightbar and compact layouts (the menu is a ratatui `List` with a highlight and a scrollbar; help is two panes when the box is 64 columns wide); the forum board list, thread list and search results (tables; `1`-`9` jumps and paging use the table's window); forum errors and the remove confirmation (popups); the members list (a table of the page's members); the login, glyph test, settings, password and key screens (status bar only); the invite, community and queue screens (header and status bar). **Not converted in UI-1:** the forum reader, mail, chat, door and editor screens. The reader, mail, chat and community screens moved onto the frame in UI-4 ([below](#screens-ui-4-d127)); the door screens are UI-5's ratatui buffers and the editor keeps its own full-screen view.
@@ -475,6 +481,72 @@ One shared renderer for every walk: `shot.py` turns a `.cells` dump, a pyte scre
 ### Verified
 
 Unit tests: each of the nine shipped styles exports, imports and loads back to the same palette, skin, strings, title and art, and a second export is byte-identical; hostile packs (oversized, wrong version, unknown fields, the reserved style and marker keys, marker glyphs, control characters and private-use characters in strings, a privacy claim, generic or foreign-style art, `.ans` bombs and bad hex, too many entries); an old version-1 file migrating forward and an unreadable version refused; install never overwrites and is all-or-nothing; the gallery draws every style at 80x24, 100x30 and 132x43, at every depth and tier, differs per style, follows the viewer's depth, respects locks and the allowed list, never covers the marker cell. A real in-process ssh session (`crates/server/tests/access_paths.rs`) exports, imports and loses `themes.manage` with the screen open. See [qa/ui-7-walk.md](qa/ui-7-walk.md) for the walk over OpenSSH.
+
+## Sysop menus and pages (UI-6, D131)
+
+The board's menu is still core data (D54). A `menus.toml` beside the host key (the data directory, like `themes/` and `art/`) can **reorder, rename, re-key, hide and group** the built-in items and **add links to pages**. It cannot add an action, a target or a permission.
+
+### `menus.toml`
+
+```toml
+version = 1
+
+[[menu]]                    # a built-in menu: main, sysop, invites, members, community
+id = "main"
+title = "Main Hall"         # optional text
+
+  [[menu.item]]
+  target = "page:rules"     # a built-in item id, "group:<id>" or "page:<id>"
+  key = "r"                 # required for pages and groups, optional for built-in items
+  label = "House rules"     # optional text; a page defaults to its title
+
+  [[menu.item]]
+  target = "main.mail"      # built-in ids are the label key without "menu." and ".item":
+  key = "x"                 #   main.forums, main.mail, sysop.queue, members.list, ...
+  label = "Messages"
+
+  [[menu.item]]
+  target = "main.doors"
+  hidden = true             # not in the tree at all, for everyone; its hotkey does nothing
+
+[[menu]]                    # a new group, linked above with target = "group:talk"
+id = "talk"
+title = "Talk Hall"
+  [[menu.item]]
+  target = "main.chat"
+```
+
+- Items you do not list keep their place at the end of their own menu, with their default key. A clash is a refusal (it names the menu and key), so a later release that adds an item cannot silently change your menu.
+- Each item is placed once. A built-in item moved to another menu **keeps the permission of the menu it came from** as well as its own (`Item::also`), and a group shows only when something in it is visible, so a file can only narrow who reaches an item (property test over every single permission).
+- Hiding a built-in submenu link (`main.sysop`) removes that submenu too. A group nothing links, a cycle, an empty menu, a duplicate or invalid key (`?` is always help), nesting deeper than 4, more than 8 groups, 24 items per menu, 16 pages and labels over 32 characters are refused. Labels and titles must be unchanged by the shared sanitizer, make no privacy claim (the same words as themed strings), and not be a string-table key.
+- Caps on the file: 32 KiB, 600 lines, 200 characters a line, no symbolic link, `deny_unknown_fields`. The built tree is run through `MenuTree::validate` as well.
+- **A bad file** (or any bad linked page) is refused whole with one logged reason, no file text echoed, and the built-in menu stays. The board boots.
+- A built tree is `'static` data, so it is leaked once: strings are interned (2048 at most), an identical tree is reused, and at most 64 different trees are built per process (then the sysop is told to restart).
+
+### Pages (`pages/<id>.toml`)
+
+```toml
+version = 1
+title = "House rules"            # up to 32 characters, plain, no privacy claim
+art = "rules.art.toml"           # optional: a file in pages/, .art.toml (first `area` piece) or .ans
+text = """
+# Heading
+Plain lines wrap to 72 columns.
+- bullet
+> quotation
+---
+"""
+```
+
+16 KiB, 200 lines of text, 160 characters a line. The art goes through the board-art loaders and caps (80x25, 64 KiB, no link). Page text is **content**: every line passes the shared sanitizer (control characters, escapes, invisible and private-use characters, the reserved marker codepoints), and is drawn in the body in palette colours (a heading is bold, never reverse), so a page cannot produce the reserved style, a marker glyph or a Nerd Font glyph, and it never covers the status row or the marker cell. A page is visible to whoever can see the menu item that links it; there is no per-role restriction (a page in the Sysop group is as hidden as the group). Pages scroll with the arrow keys or `j`/`k`/space, `b` or Esc leaves. The palette (`Ctrl-K`) lists pages the member's tree reaches.
+
+### Loading, reload and preview
+
+Files load at start. Sysop tools, `m` **Menus and pages** (`themes.manage`, checked in `sysop_menus::service` and by the screen on every key) shows the effective menu for a chosen role (`r`, built from that role's stored permissions through the same `item_visible`), the pages (`t` switches; Enter shows one as a member sees it), and `l` reloads. A reload swaps one shared setup: sessions already signed in keep their menu, new sessions get the new one, and a page removed under an open session says so. A reload that changes what members get writes `menus.reloaded` (the note holds a fixed word and a page count, never file text); a refusal or a no-change reload writes nothing.
+
+### Verified
+
+Unit tests: the builder (reorder, rename, re-key, hide, group, pages, every refusal, caps, cycles, depth, text, error messages), the no-widening property, hidden hotkeys, the loader on 22 hostile menu files, hostile pages and art (caps, traversal, bombs, controls, marker and private-use glyphs), pages drawn in 7 layouts x 3 sizes x Unicode and ASCII with the marker cell checked, the service (permission, audit only on change), flow tests. An in-process ssh test (`access_paths.rs`) reloads with the screen open, audits, and signs a second session into the new menu. See [qa/ui-6-walk.md](qa/ui-6-walk.md) for the OpenSSH walk.
 
 ## Widgets (UI-10)
 

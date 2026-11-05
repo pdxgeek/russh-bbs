@@ -17,12 +17,24 @@
 //! Esc back, Ctrl-C / Ctrl-D quit ([`UniversalKey`]). Quit is a session-wide rule (it logs off
 //! from any screen), so the session handles it, not the menu.
 
+mod custom;
 mod nav;
+mod outline;
+mod tools;
 mod tree;
 
 use crate::access::{Permission, PermissionCheck};
 
+pub use custom::{
+    Built, CustomError, ItemSpec, MAX_GROUPS, MAX_ITEMS, MAX_LABEL_CHARS, MAX_LOADS, MAX_NESTING,
+    MAX_PAGES, MenuSpec, Spec, build, builtin_ids, builtin_menus, valid_page_id,
+};
 pub use nav::{MenuKey, MenuOutcome, MenuPage, MenuSession, PageItem};
+pub use outline::{Outline, OutlineKind, OutlineLine, outline};
+pub use tools::{
+    Bulletin, BulletinKey, MenuToolsKey, MenuToolsListing, MenuToolsRequest, MenuToolsScreen,
+    MenuToolsStep, MenuToolsView, PageRow, RoleRow,
+};
 pub use tree::main_tree;
 
 /// The key that opens help in every menu.
@@ -84,6 +96,10 @@ pub enum Action {
     ThemePreview,
     /// Open the theme packs screen under Sysop tools (UI-7): export and import.
     ThemePacks,
+    /// Open the menus and pages screen under Sysop tools (UI-6): the effective menu for a role,
+    /// the pages, and the reload. Board look and feel, so it needs `themes.manage` like the
+    /// theme packs (D131).
+    MenuTools,
     /// Open the vouch screen: pending requests a member can speak for (`members.vouch`, M2-E).
     VouchQueue,
     /// Open the one-liners (`community.view`, M3-J).
@@ -117,7 +133,7 @@ impl Action {
             Self::MemberList | Self::OwnProfile => Some(Permission::MembersView),
             Self::EditOwnProfile => Some(Permission::AccountEditProfile),
             Self::SysopQueue | Self::ThemePreview => Some(Permission::MembersApprove),
-            Self::ThemePacks => Some(Permission::ThemesManage),
+            Self::ThemePacks | Self::MenuTools => Some(Permission::ThemesManage),
             Self::RecoveryCode => Some(Permission::KeysRecover),
             Self::MyKeys => Some(Permission::KeysManage),
             Self::VouchQueue => Some(Permission::MembersVouch),
@@ -141,6 +157,10 @@ pub enum Target {
     /// An area that does not exist yet. Picking it shows the string-table text `key`, which
     /// must say honestly that it is not built.
     Placeholder(&'static str),
+    /// A sysop page (UI-6): a bulletin or info screen the sysop wrote, by id. Only a menu file
+    /// can add one. It grants nothing and leads nowhere else: picking it shows the page's text,
+    /// and the item is visible to whoever can see the menu that holds it (plus `requires`).
+    Page(&'static str),
 }
 
 /// One entry of a menu.
@@ -155,6 +175,10 @@ pub struct Item {
     /// For a menu or placeholder target, the permission needed to see it. An action target
     /// uses [`Action::permission`] instead and this stays `None`.
     pub requires: Option<Permission>,
+    /// A second permission that must also be held: the gate of the menu this item came from, when
+    /// a sysop's menu file moved it to another menu (UI-6). Moving an item can therefore only
+    /// narrow who reaches it. Always `None` in the built-in tree.
+    pub also: Option<Permission>,
 }
 
 impl Item {
@@ -163,14 +187,17 @@ impl Item {
     pub const fn permission(&self) -> Option<Permission> {
         match self.target {
             Target::Action(action) => action.permission(),
-            Target::Menu(_) | Target::Placeholder(_) => self.requires,
+            Target::Menu(_) | Target::Placeholder(_) | Target::Page(_) => self.requires,
         }
     }
 
-    /// Whether a session with `access` sees (and may pick) this item.
+    /// Whether `access` holds the permission that gates this item. A menu item without a
+    /// permission of its own (a sysop group, UI-6) is also gated by what it leads to: see
+    /// [`MenuTree::item_visible`], which is what menus use.
     #[must_use]
-    pub fn visible(&self, access: &dyn PermissionCheck) -> bool {
+    pub fn permitted(&self, access: &dyn PermissionCheck) -> bool {
         self.permission().is_none_or(|p| access.allows(p))
+            && self.also.is_none_or(|p| access.allows(p))
     }
 }
 
@@ -304,7 +331,7 @@ impl MenuTree {
                         hotkey: item.hotkey,
                     });
                 }
-                Target::Menu(_) | Target::Action(_) | Target::Placeholder(_) => {}
+                Target::Menu(_) | Target::Action(_) | Target::Placeholder(_) | Target::Page(_) => {}
             }
         }
         Ok(())
@@ -330,12 +357,42 @@ impl MenuTree {
         }
     }
 
+    /// Whether a session with `access` sees (and may pick) `item`. The item's own permission
+    /// must be held. A link to a submenu with no permission of its own (a group a sysop made,
+    /// UI-6) is shown only when something inside it is visible too, so an empty group never
+    /// appears and its name leaks nothing. This one function is the visible set and the
+    /// activatable set (D54).
+    #[must_use]
+    pub fn item_visible(&self, item: &Item, access: &dyn PermissionCheck) -> bool {
+        self.item_visible_at(item, access, 0)
+    }
+
+    fn item_visible_at(&self, item: &Item, access: &dyn PermissionCheck, depth: usize) -> bool {
+        if !item.permitted(access) {
+            return false;
+        }
+        match item.target {
+            Target::Menu(id) if item.requires.is_none() => {
+                depth < MAX_DEPTH
+                    && self.menu(id).is_some_and(|menu| {
+                        menu.items
+                            .iter()
+                            .any(|inner| self.item_visible_at(inner, access, depth + 1))
+                    })
+            }
+            Target::Menu(_) | Target::Action(_) | Target::Placeholder(_) | Target::Page(_) => true,
+        }
+    }
+
     /// The items of `menu` that a session with `access` sees, in order.
     pub fn visible_items<'a>(
+        &'a self,
         menu: &'a Menu,
         access: &'a dyn PermissionCheck,
     ) -> impl Iterator<Item = &'a Item> {
-        menu.items.iter().filter(move |item| item.visible(access))
+        menu.items
+            .iter()
+            .filter(move |item| self.item_visible(item, access))
     }
 
     /// Every string-table key the tree uses (titles, labels, placeholder texts), so the table
@@ -345,7 +402,7 @@ impl MenuTree {
             std::iter::once(menu.title).chain(menu.items.iter().flat_map(|item| {
                 let note = match item.target {
                     Target::Placeholder(key) => Some(key),
-                    Target::Menu(_) | Target::Action(_) => None,
+                    Target::Menu(_) | Target::Action(_) | Target::Page(_) => None,
                 };
                 std::iter::once(item.label).chain(note)
             }))
@@ -355,3 +412,6 @@ impl MenuTree {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod custom_tests;

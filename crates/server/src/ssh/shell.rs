@@ -1001,7 +1001,8 @@ impl<D: Backend> Shell<D> {
             Some(filter) => filter(&start.access),
             None => start.access,
         };
-        let flow = MemberFlow::new(&start.handle, access, start.previous_login, start.settings);
+        let flow = MemberFlow::new(&start.handle, access, start.previous_login, start.settings)
+            .with_menu_tree(self.parts.screen.ui_handle().menus().tree());
         // The telnet transport is the one with an access filter (D27): it has no key to bind.
         let flow = if self.parts.access_filter.is_some() {
             flow.over_telnet()
@@ -1152,6 +1153,9 @@ impl<D: Backend> Shell<D> {
         if let Some(request) = effects.packs.take() {
             self.run_packs(request).await;
         }
+        if let Some(request) = effects.menu_tools.take() {
+            self.run_menu_tools(request).await;
+        }
     }
 
     /// Carry out a theme-pack request (UI-7): the files on a blocking thread, then the audit row
@@ -1178,6 +1182,35 @@ impl<D: Backend> Shell<D> {
         self.parts
             .screen
             .packs_done(outcome.listing, Some(&outcome.message));
+    }
+
+    /// Carry out a menus-and-pages request (UI-6): the roles from the store, the files on a
+    /// blocking thread, then the audit row for a change. The permission is checked again where
+    /// the work is done.
+    async fn run_menu_tools(&mut self, request: russh_bbs_core::menu::MenuToolsRequest) {
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let roles = russh_bbs_core::access::AccessStore::roles(&*self.parts.directory)
+            .await
+            .unwrap_or_default();
+        let ui = self.parts.screen.ui_handle();
+        let job = tokio::task::spawn_blocking(move || {
+            crate::ui::sysop_menus::service::run(&ui, &access, &roles, request)
+        });
+        let Ok(Ok(outcome)) = timeout(MEMBER_START_TIMEOUT, job).await else {
+            warn!(session = ?self.parts.session.id(), "menus request failed or timed out");
+            return;
+        };
+        if let Some(event) = &outcome.event
+            && let Err(error) =
+                russh_bbs_core::audit::AuditStore::append(&*self.parts.directory, event).await
+        {
+            warn!(session = ?self.parts.session.id(), %error, "menu reload could not be audited");
+        }
+        self.parts
+            .screen
+            .menu_tools_done(outcome.listing, Some(&outcome.message));
     }
 
     async fn run_invite(&mut self, request: InviteRequest) {
