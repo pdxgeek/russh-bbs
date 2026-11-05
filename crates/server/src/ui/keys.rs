@@ -77,6 +77,58 @@ pub(crate) const SLOT_EMPTY: &str = "ui.slot.empty";
 /// The pop-over's title.
 pub(crate) const SLOT_POPOVER: &str = "ui.slot.popover";
 
+/// The sysop theme preview's words (UI-3).
+pub(crate) const PREVIEW_TITLE: &str = "ui.preview.title";
+pub(crate) const PREVIEW_STATE: &str = "ui.preview.state";
+pub(crate) const PREVIEW_CLIPPED: &str = "ui.preview.clipped";
+pub(crate) const PREVIEW_ART: &str = "ui.preview.art";
+pub(crate) const PREVIEW_ART_NONE: &str = "ui.preview.art_none";
+pub(crate) const PREVIEW_PROBLEMS: &str = "ui.preview.problems";
+pub(crate) const PREVIEW_TIER_UNICODE: &str = "ui.preview.tier_unicode";
+pub(crate) const PREVIEW_TIER_ASCII: &str = "ui.preview.tier_ascii";
+pub(crate) const PREVIEW_COLOUR: &str = "ui.preview.colour";
+pub(crate) const PREVIEW_MONO: &str = "ui.preview.mono";
+pub(crate) const PREVIEW_SAMPLE_MENU: &str = "ui.preview.sample_menu";
+pub(crate) const PREVIEW_SAMPLE_LOGIN: &str = "ui.preview.sample_login";
+pub(crate) const PREVIEW_ON: &str = "ui.preview.on";
+pub(crate) const PREVIEW_OFF: &str = "ui.preview.off";
+pub(crate) const PREVIEW_HINT_STYLE: &str = "ui.preview.hint_style";
+pub(crate) const PREVIEW_HINT_LAYOUT: &str = "ui.preview.hint_layout";
+pub(crate) const PREVIEW_HINT_SIZE: &str = "ui.preview.hint_size";
+pub(crate) const PREVIEW_HINT_TIER: &str = "ui.preview.hint_tier";
+pub(crate) const PREVIEW_HINT_COLOUR: &str = "ui.preview.hint_colour";
+pub(crate) const PREVIEW_HINT_SAMPLE: &str = "ui.preview.hint_sample";
+pub(crate) const PREVIEW_HINT_ART: &str = "ui.preview.hint_art";
+pub(crate) const PREVIEW_HINT_BACK: &str = "ui.preview.hint_back";
+pub(crate) const PREVIEW_SAMPLE_BODY: &str = "ui.preview.sample_body";
+
+/// Every preview key, checked with [`FRAMEWORK`].
+pub(crate) const PREVIEW_KEYS: [&str; 23] = [
+    PREVIEW_TITLE,
+    PREVIEW_STATE,
+    PREVIEW_CLIPPED,
+    PREVIEW_ART,
+    PREVIEW_ART_NONE,
+    PREVIEW_PROBLEMS,
+    PREVIEW_TIER_UNICODE,
+    PREVIEW_TIER_ASCII,
+    PREVIEW_COLOUR,
+    PREVIEW_MONO,
+    PREVIEW_SAMPLE_MENU,
+    PREVIEW_SAMPLE_LOGIN,
+    PREVIEW_ON,
+    PREVIEW_OFF,
+    PREVIEW_HINT_STYLE,
+    PREVIEW_HINT_LAYOUT,
+    PREVIEW_HINT_SIZE,
+    PREVIEW_HINT_TIER,
+    PREVIEW_HINT_COLOUR,
+    PREVIEW_HINT_SAMPLE,
+    PREVIEW_HINT_ART,
+    PREVIEW_HINT_BACK,
+    PREVIEW_SAMPLE_BODY,
+];
+
 /// Every key above; the table must hold these plus the menu tree's keys.
 pub(crate) const FRAMEWORK: [&str; 23] = [
     NOTICE_MAIL_SSH_ONLY,

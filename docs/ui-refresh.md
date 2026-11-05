@@ -1,6 +1,6 @@
 # UI refresh and board customization (plan)
 
-Status: **Approved by the owner, 2026-11-04** as its own milestone, **M3.5: Look and feel** ([milestones.md](milestones.md)). The owner asked for it because "ratatui can make that UI look way better" and "there needs to be ways to customize the BBS so it looks cool". Slices UI-1 to UI-7 and the M3.5 QA gate are in [coordination.md](coordination.md). UI-1 (the frame, D109) and UI-2 (style packs, layouts, board identity; [implementation notes](#ui-2-implementation-notes)) are built; the rest is not.
+Status: **Approved by the owner, 2026-11-04** as its own milestone, **M3.5: Look and feel** ([milestones.md](milestones.md)). The owner asked for it because "ratatui can make that UI look way better" and "there needs to be ways to customize the BBS so it looks cool". Slices UI-1 to UI-7 and the M3.5 QA gate are in [coordination.md](coordination.md). UI-1 (the frame, D109), UI-2 (style packs, layouts, board identity; [implementation notes](#ui-2-implementation-notes)) and UI-3 (board art; [implementation notes](#ui-3-implementation-notes)) are built; the rest is not.
 
 ## Goals
 
@@ -231,3 +231,14 @@ Built in `m35/theme-packs-layouts` (D117). The reference is [ui.md](ui.md#styles
 - **Board identity.** Name, tagline, location, since, accent, default style and layout, allowed styles and layouts (one entry locks), motion. The **menu order, area labels, logoff quotes and the login banner art** from the plan are not in this slice (UI-3, UI-6).
 - **Member choices.** Style, layout, motion, colour-depth ceiling and borders, saved per member (migration `0024`), within the board's limits.
 - **Theme gallery, import and export, and the sysop preview** remain UI-3 and UI-7; the screenshots in [ui-screenshots/](ui-screenshots/README.md) are the owner's preview until then.
+
+## UI-3 implementation notes
+
+Built in `m35/board-art` (D121). The reference is [ui.md](ui.md#board-art-ui-3-d121); what differs from the plan above:
+
+- **Formats.** `.ans` and `.art.toml` as planned. The `.art.toml` colours are one character per cell in the VGA palette (`k b g c r m y w`, capitals bright), not hex; there is no 256-colour or truecolor art, so art looks the same at every depth that has colour.
+- **Slots.** `login`, `menu` and `logoff` are drawn. `area` is in the format and the loader and no screen draws it yet (UI-4). The **door menu** slot from the plan is not built (door screens are full ratatui buffers, UI-5).
+- **Board identity.** Of the art parts of `[board]` only `art` (on/off) and `quotes` (the logoff list) are keys; the banner and header are files in `art/`. Menu order and area labels remain UI-6.
+- **Large letters** are not drawn in the menu header at 80x24 (the header bar names the board and the menu needs its rows); they are drawn wherever there is room, and on the login and logoff screens.
+- **Preview.** Under Sysop tools, for `members.approve`. It previews the main menu and the login screen; reader, chat and popup samples wait for those screens to move onto the new frame (UI-4). Theme-file refusals are logged, not shown.
+- **Gallery, import and export** remain UI-7; sysop art is not part of a theme pack yet.

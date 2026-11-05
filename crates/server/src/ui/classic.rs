@@ -22,8 +22,10 @@ use russh_bbs_core::menu::{MenuPage, PageItem};
 use russh_bbs_core::terminal_settings::LayoutId;
 use russh_bbs_core::waiting_room::{Notice, NoticeKind, View};
 
+use super::art::Slot;
+use super::art::draw::ArtCtx;
 use super::board::Board;
-use super::frame::{ChromeText, FrameSpec, Hint};
+use super::frame::{ArtRequest, ChromeText, FrameSpec, Hint};
 use super::keys;
 use super::strings::StringTable;
 use super::theme::Element;
@@ -54,6 +56,8 @@ pub(crate) struct MenuScreen<'a> {
     pub(crate) wanted: LayoutId,
     /// The focus layout's widget pop-over is open.
     pub(crate) popover: bool,
+    /// What to ask for the main-menu header art with (UI-3); `None` draws none.
+    pub(crate) art: Option<&'a ArtCtx<'a>>,
 }
 
 /// The sentence saying a smaller layout is shown, when one is (UI-2).
@@ -126,6 +130,26 @@ pub(crate) fn frame_spec<'a>(screen: &'a MenuScreen<'a>, hints: &'a [Hint<'a>]) 
         .place(ChromeText::table(screen.strings, screen.page.title))
         .clock(screen.clock)
         .hints(hints)
+        // The compact layout is a bare list: no header, so no header art.
+        .art(
+            screen
+                .art
+                .filter(|_| !screen.look.is_borderless())
+                .map(|ctx| ArtRequest {
+                    ctx,
+                    slot: Slot::Menu,
+                    keep: menu_keep(screen),
+                }),
+        )
+}
+
+/// Rows of the body the menu keeps for itself: its box (the signed-in lines, the fallback note
+/// and a blank, the items and the border) or the layout's own minimum, whichever is taller.
+/// Art gets only the rows beyond this, so it never squeezes the menu.
+fn menu_keep(screen: &MenuScreen<'_>) -> u16 {
+    let rows = |n: usize| u16::try_from(n).unwrap_or(u16::MAX);
+    let own = rows(screen.page.items.len() + screen.body.len() + 4);
+    own.max(super::layout::min_body_rows(screen.look.layout()))
 }
 
 /// Draw the screen: the frame's bars, and the menu box in the body between them.

@@ -262,7 +262,7 @@ Every decoration has an ASCII form, and backdrops are dropped on a mono terminal
 | `deepspace` | Cold blues | deep blue glass, gold hotkeys | rounded panes, double popups, centred `S P A C E D` titles, `◆ name ◆`, a starfield, a blue-to-violet gradient name |
 | `ansi` | A 1994 board | sixteen named colours only (identical at every depth), blue bars, cyan double borders | double borders everywhere, `╡ rule ╡` titles, `░▒▓ name ▓▒░` |
 
-`default`, `green` and `contrast` (colour-only themes, D82) stay. The board ships them all; a sysop adds more as `*.toml` files in `themes/` beside the host key (same loader and limits as D82: 32 files, 32 KiB each, schema-checked, refused with a logged reason, never fatal). Art for each style is UI-3.
+`default`, `green` and `contrast` (colour-only themes, D82) stay. The board ships them all; a sysop adds more as `*.toml` files in `themes/` beside the host key (same loader and limits as D82: 32 files, 32 KiB each, schema-checked, refused with a logged reason, never fatal). Art for each style is in [Board art](#board-art-ui-3-d121).
 
 ### The seven layouts
 
@@ -301,6 +301,109 @@ On the settings screen, saved per member and applied on the next frame: **layout
 - **Unit and render tests** (`ui::{styles_tests,snapshots,resolve_tests,panes,board,theme}`, `config`): six styles that differ in palette and in at least two drawing choices and draw different characters; contrast at 16, 256 and truecolor; every style x layout x {80x24, 132x43} in Unicode, and 80x24 in the ASCII tier with colour off, as **golden text snapshots with a colour fingerprint** (`ui/snapshots/*.txt`; `UPDATE_SNAPSHOTS=1` to accept a change); a 16-colour terminal gets only named colours and a 256-colour one no truecolor; the marker cell is bold + reverse with no colour and nothing else reverses, for every style x layout x depth x tier x size (including 30x8) with hostile content; **hostile themes** (a role, key or table named for the marker or reverse, hidden or low-contrast text, marker glyphs or privacy claims in strings, bad colours) are refused; a loud valid theme leaves the marker cell alone; fallback chains settle at every size; board defaults, limits and locks, the board name in every style, accent and motion; config validation (defaults, layering, refusals naming the key and its source).
 - **Real OpenSSH 9.6 against the real binary**, read through `pyte`: every style cycled with `t` and every layout with `l` on the settings screen, each drawn on the main menu at 80x24 (and 132x43), with the board's name, tagline, location and "since" from `[board]` environment variables. PNGs rendered from the terminal emulator's cells (truecolor) are in [ui-screenshots/](ui-screenshots/README.md).
 - **Not verified:** other terminal emulators, a real 16-colour or 256-colour client (the depth fallback is tested on cells, and the 256-colour `TERM` was used for the walk), a Nerd Font session, a screen reader, a light terminal background with the dark styles, telnet.
+
+## Board art (UI-3, D121)
+
+Status: **Implemented and tested; walked over real OpenSSH** (see Verified). Code: `crates/server/src/ui/art/` (`ans`, `file`, `font`, `cp437`, `grid`, `piece`, `set`, `draw`, `preview`, and the bundled art in `bundled/*.art.toml`); the flow page in `crates/core/src/terminal_settings/preview.rs`; the `[board]` keys in [config.md](config.md#board-ui-2).
+
+Art is a **sysop asset, not member content**, but it is parsed as untrusted input. It becomes a grid of cells and is drawn as styled cells; nothing from an art file is ever written to a terminal as text, so a file cannot send an escape sequence, a clipboard write or a title change.
+
+### Slots
+
+| Slot | Where | Size cap | Room it is given |
+|---|---|---|---|
+| `login` | above the signed-in login box | 132x50 | the rows the box does not need |
+| `menu` | above the main menu, in every layout except compact (which has no header) | 80x25 | the rows the menu and the layout's minimum do not need |
+| `logoff` | above the logoff screen (a board with no `logoff` piece shows the style's `login` banner) | 132x50 | like login |
+| `area` | the header of a top-level area | 80x25 | **defined and accepted in files; no screen draws it yet** (the area screens move onto the new frame in UI-4) |
+
+A piece is drawn only inside the rectangle its slot gives it, centred, from the top, and **never on the last row of the screen** (the status bar and its marker cell): `art::draw::draw` clips to the frame without that row whatever rectangle it is handed. Art takes only spare rows. At 80x24 the classic menu keeps its 11 items and its box, and art above it gets what is left (up to 6 rows); on a tighter screen there is no art and the screen is exactly what it was.
+
+### What fills a slot
+
+1. The best piece that fits: the sysop's before the bundled, a piece made for the member's style before a generic one, then the largest. In the ASCII tier a piece that has no faithful ASCII form (its file gave none and a character has no plain stand-in) is skipped.
+2. Else the best-matching piece's own `fallback` text (`{board}` is the board's name), one centred line.
+3. Else **the board name in large letters** (an original five-row block font in `art/font.rs`: A-Z, 0-9 and a few marks; `#` instead of blocks in the ASCII tier), when the slot has room for it (the menu header needs seven spare rows, so it appears at 132x43 and not at 80x24, where the header bar already names the board; the login and logoff screens use it whenever it fits).
+4. Else nothing.
+
+`board.art = false` skips step 1 and 2 for the whole board.
+
+### Files: `art/` beside the host key
+
+No config key: sysop art lives in an `art/` directory next to the host key, like `themes/`. At most 64 files are read; a symbolic link is never followed; a bad file is skipped with a logged reason, **listed on the preview screen**, and never stops the boot.
+
+| File | Holds |
+|---|---|
+| `<slot>.ans`, `<style>.<slot>.ans` | one CP437 ANSI picture for a slot (`login.ans`, `neon.menu.ans`); the style form wins for that style |
+| `*.art.toml` | a set of pieces in our own text format |
+
+**`.art.toml`** (size cap 64 KiB; unknown keys refused):
+
+```toml
+format = 1                  # required
+name = "harbour"            # the set: a-z, 0-9, - and _
+style = "paper"             # optional: made for this style; omit for any
+credit = "Jo Sysop"         # optional, up to 80 characters
+
+[[piece]]
+slot = "login"              # login, menu, area or logoff
+fallback = "{board}"        # optional text for when it does not fit
+rows = ["  ~~~~  ", "~ HOME ~"]       # the picture
+fg   = ["  YYYY  ", "Y CCCC Y"]       # optional colour per cell
+bg   = []                             # optional, same shape
+ascii = ["  ....  ", ". HOME ."]      # optional ASCII-tier version
+```
+
+Colour characters are `.` (the style's own) and `k b g c r m y w` for black, blue, green, cyan, red, magenta, brown and grey, with the capital for the bright form (the VGA palette ANSI art is drawn in). Credit and fallback go through the same checks as `[board]` text: no control, invisible or reserved characters, no claim of privacy. A piece over its slot's cap is refused with the cap named.
+
+### The `.ans` parser
+
+CP437 bytes in, cells out (`art::ans::parse`).
+
+| Input | Result |
+|---|---|
+| SGR `0 1 22 5 25 7 27 30-37 39 40-47 49 90-97 100-107` | the pen's colours. Bold is the bright colour, reverse swaps foreground and background, blink is the bright background only when the SAUCE flag asks for iCE colours and is ignored otherwise. `38`/`48` extended colours are skipped whole |
+| `A B C D E F G H f s u`, CR, LF, TAB, BS | move the cursor **inside the grid**, clamped to its width and to 50 rows |
+| clears, erases, scrolling, modes, device reports and every other CSI | dropped |
+| OSC, DCS, SOS, PM, APC (to `BEL` or `ESC \`, capped), two-byte escapes | dropped whole, payload included |
+| other control bytes, DEL | dropped |
+| `Ctrl-Z` | ends the picture |
+| a SAUCE record and its `COMNT` block | read (width, iCE flag, title, author, group, sanitized) and stripped |
+
+**Caps:** 64 KiB in; at most 132 columns (a SAUCE width over that is refused) and 50 rows (more content is refused, not silently cut); a CSI reads at most 16 numbers of at most 4 digits and is abandoned after 256 bytes. Every character goes through the shared sanitizer one cell at a time (controls and invisibles become blanks, the reserved marker delimiters and glyphs and private-use characters become U+FFFD, anything not one column wide becomes a blank). CP437 maps to Unicode, and to a plain ASCII stand-in for the ASCII tier (`░▒▓█` to `.:##`, box lines to `-|+`, accented letters to their base letter, the rest `?`).
+
+### Safety
+
+- **No attribute in a cell.** A cell is a character, an ASCII character and two optional palette colours (0 to 15). There is no bold, reverse or underline in it, so art cannot produce the reserved style (bold plus reverse). Bold and reverse in a file become colours.
+- **No marker glyphs.** The exact reserved delimiter and marker codepoints and the Nerd Font private-use range cannot come out of art. Lookalikes can, as in any text; the reserved style and the chrome-only position are the cue (D39, D45).
+- **Art never covers the marker cell.** It is clipped to the frame without its last row, and a test compares the status row with and without art for every style x layout x size x tier.
+- **Depth.** Art colours go through the member's colour depth (named colours at 16, the same at 256 and truecolor, none in mono).
+
+### The six bundled sets
+
+Original art, drawn for this project, one login banner and one menu header per style (`bundled/<style>.art.toml`; credit "russh-bbs project (original art)"). Nothing is taken from another board or pack.
+
+| Style | Login banner / menu header |
+|---|---|
+| `phosphor` | an oscilloscope trace on a graticule, in two greens |
+| `neon` | a striped synthwave sun over a perspective grid |
+| `paper` | a cartouche of diamonds on a fading rule, in ink blue |
+| `amber` | a strip of punched paper tape (it encodes the project name in 7-bit ASCII) |
+| `deepspace` | a ringed planet in a starfield |
+| `ansi` | a diagonal-shaded banner in CP437 blocks between double rules |
+
+### Theme preview (Sysop tools, `t`)
+
+A sysop with `members.approve` (what Sysop tools itself needs) opens **Sysop tools, Theme preview**. It draws a sample screen (the main menu with its header art, or the login screen with its banner; `s` switches) in any installed style (`t`), layout (`l`), size (`z`: 80x24, 100x30, 132x43), icon tier (`i`), colour or mono (`c`) and with art or without it (`a`), by the code members' screens use, before a default is set. It says which art piece is in use, lists the art files that were refused with their reasons, and, when the sysop's own terminal is smaller than the size chosen, shows the top-left part and says so. Nothing is stored. The sample is drawn with no security markers and the copy strips the reverse attribute, so the preview cannot show or forge a marker; the real marker cell is the preview's own status bar. Theme files refused at load are only logged (their reasons are not kept for the screen).
+
+### Verified
+
+- **Parser** (`ui::art::tests`): goldens for text, colours, bold, reverse, iCE, CP437 to Unicode and ASCII, cursor movement and save/restore, wrapping, SAUCE (read, stripped, comment block, sanitized); a table of fifteen hostile sequences each dropped without a trace (OSC title and clipboard, DCS, APC graphics, private modes, device reports, charset, reset, truecolor, absurd numbers); truncated and unterminated sequences; the caps (bytes, columns, rows, empty); and property tests (512 cases each) that arbitrary bytes, escape-heavy bytes, bytes with a SAUCE record and arbitrary colour codes never panic, never exceed the caps and never produce a control character, a marker glyph, a private-use character, an out-of-palette colour or a character wider than a column.
+- **`.art.toml`**: a good file parses into the expected cells; every refusal named (format, name, style, slot, colour character, row width, ASCII, privacy claim, unknown key, no pieces, caps per slot, 64 KiB); hostile characters (ESC, BEL, bidi override, private use, every reserved glyph) become blanks or U+FFFD.
+- **Sysop files**: seven hostile files in a directory (oversized, empty, misnamed, unknown key, invalid UTF-8, too tall, a symlink to `/etc/passwd`) are refused with reasons and the bundled art stays; a crowded directory is read to the cap.
+- **On screens:** every style's menu header at 80x24 and 132x43 in Unicode and ASCII, colour and mono; its login banner likewise; the status row identical with art on and off for every style x layout x size x tier; the reserved style only in the marker cell; no cell above the status row reversed; art cells carry no attribute; a 16-colour terminal gets no truecolor or 256 colours; the menu keeps every item in every layout with art; art gives way on a tight screen and the screen is then exactly what it was; large letters appear only where there is room, and in `#` in the ASCII tier; hostile sysop art (25 rows, bold, reverse, `ESC [2J`, OSC, a marker glyph) cannot reach the status row or wear the reserved style.
+- **Preview**: reached from Sysop tools by a sysop and not by a member; every key; every style x tier x colour x size x sample draws without a marker outside the real marker cell; the clipped note; refused art files listed; losing `members.approve` closes it.
+- **Not verified:** art in a real 16-colour or 256-colour client (the depth fallback is tested on cells), a Nerd Font session, other terminal emulators, telnet, a screen reader (accessibility mode, M5, will bypass art), art drawn by a third party's ANSI editor (the goldens are hand-written bytes), and the `area` slot on any screen.
 
 ## Forum screens (M3-E, D83)
 

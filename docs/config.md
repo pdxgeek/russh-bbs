@@ -114,6 +114,8 @@ The board's identity, and what members may choose. Every key is optional and the
 | `board.styles` | comma-separated style names | empty (every loaded style) | `RUSSH_BBS_BOARD_STYLES` | none | The styles members can pick. **One entry locks the style for everyone**, whatever they stored. A name that is not loaded is ignored with a warning at start |
 | `board.layouts` | comma-separated layout names | empty (all seven) | `RUSSH_BBS_BOARD_LAYOUTS` | none | The layouts members can pick. One entry locks the layout |
 | `board.motion` | boolean | `true` | `RUSSH_BBS_BOARD_MOTION` | none | `false` turns motion off for every member (the setting is stored; nothing animates yet, UI-4 and UI-8 will read it) |
+| `board.art` | boolean | `true` | `RUSSH_BBS_BOARD_ART` | none | `false` ignores all banner and header art, bundled and the sysop's, and draws the board name in large letters only (where the screen has room). Art itself is files, not keys: see [ui.md](ui.md#board-art-ui-3-d121) |
+| `board.quotes` | text, `\|`-separated, each 1 to 120 characters, up to 32 | empty | `RUSSH_BBS_BOARD_QUOTES` | none | The logoff quotes. The logoff screen shows one (picked by the clock); empty shows none. Checked like every board text: no control, invisible or reserved characters, no claim of privacy |
 
 A member's own choices (style, layout, motion, colour depth ceiling, border set) are stored per member and apply at once; they can only narrow what the board allows and what the client's terminal can show (see [ui.md](ui.md#styles-layouts-and-board-identity-ui-2)).
 

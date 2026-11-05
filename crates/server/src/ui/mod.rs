@@ -11,6 +11,7 @@
 //! string table holds exactly the keys the tree and the layout use, so a bad table stops the
 //! server with a message naming the key instead of drawing blanks.
 
+pub mod art;
 pub(crate) mod backdrop;
 pub mod board;
 pub(crate) mod chrome;
@@ -53,6 +54,9 @@ pub enum UiError {
     /// skipped with a warning).
     #[error("shipped theme: {0}")]
     Theme(#[from] ThemeError),
+    /// Bundled art is invalid (a build bug).
+    #[error("bundled art: {0}")]
+    Art(String),
 }
 
 /// What every screen on the framework draws with.
@@ -66,6 +70,8 @@ pub struct Ui {
     layouts: Vec<LayoutId>,
     mail: MailKeysHandle,
     doors: crate::doors::Doors,
+    /// The banner and header art (UI-3): bundled, plus the sysop's `art/` directory.
+    art: art::ArtSet,
 }
 
 /// The keys mail is sealed with (M3-I), carried to the sessions beside the screens' words because
@@ -149,6 +155,7 @@ impl Ui {
             .iter()
             .copied()
             .chain(keys::LAYOUT_KEYS.iter().copied())
+            .chain(keys::PREVIEW_KEYS.iter().copied())
             .chain(tree.text_keys())
             .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
             .chain(russh_bbs_core::community::TEXT_KEYS.iter().copied())
@@ -167,7 +174,32 @@ impl Ui {
             themes: ThemeSet::shipped(&strings)?,
             mail: MailKeysHandle::default(),
             doors: crate::doors::Doors::none(),
+            art: art::ArtSet::bundled().map_err(|error| UiError::Art(error.to_string()))?,
         })
+    }
+
+    /// The same screens with the sysop's art files from `dir` added (UI-3). A bad file is
+    /// skipped with a logged reason and never fails this.
+    #[must_use]
+    pub fn with_art_dir(mut self, dir: &Path) -> Self {
+        self.art.add_dir(dir);
+        self
+    }
+
+    /// The art the board has.
+    #[must_use]
+    pub fn art(&self) -> &art::ArtSet {
+        &self.art
+    }
+
+    /// What screens ask for art with, for `style`.
+    pub(crate) fn art_ctx(&self, style: ThemeName) -> art::draw::ArtCtx<'_> {
+        art::draw::ArtCtx {
+            set: &self.art,
+            style,
+            board: self.board.name(),
+            enabled: self.board.art(),
+        }
     }
 
     /// The same screens with the board's identity and limits (UI-2). The name replaces the

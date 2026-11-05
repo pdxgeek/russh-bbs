@@ -74,7 +74,7 @@ static MAIN_ITEMS: [Item; 11] = [
     item('l', "menu.main.item.logoff", Target::Action(Action::LogOff)),
 ];
 
-static SYSOP_ITEMS: [Item; 2] = [
+static SYSOP_ITEMS: [Item; 3] = [
     item(
         'q',
         "menu.sysop.item.queue",
@@ -84,6 +84,11 @@ static SYSOP_ITEMS: [Item; 2] = [
         'r',
         "menu.sysop.item.recovery",
         Target::Action(Action::RecoveryCode),
+    ),
+    item(
+        't',
+        "menu.sysop.item.preview",
+        Target::Action(Action::ThemePreview),
     ),
 ];
 

@@ -32,6 +32,12 @@ const fn requirement(layout: LayoutId) -> Option<((u16, u16), LayoutId)> {
     }
 }
 
+/// The rows of body `layout` needs (its minimum area less the header and status bars).
+#[must_use]
+pub(crate) fn min_body_rows(layout: LayoutId) -> u16 {
+    requirement(layout).map_or(0, |((_, rows), _)| rows.saturating_sub(2))
+}
+
 /// The layout actually drawn for `chosen` in `area`: `chosen` if it fits, else its fallback,
 /// repeating until one fits. Terminates at the compact layout.
 #[must_use]

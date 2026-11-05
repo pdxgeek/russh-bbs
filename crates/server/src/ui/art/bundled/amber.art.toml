@@ -1,0 +1,47 @@
+# Original art for the "amber" style, drawn for russh-bbs. Warm amber: a strip of punched paper tape.
+format = 1
+name = "amber"
+style = "amber"
+credit = "russh-bbs project (original art)"
+
+[[piece]]
+slot = "login"
+rows = [
+  "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄",
+  "█· · ● ● · ● ● ● · ● · · · · · · ● · · ● ● · · · · █",
+  "█● ● ● · ● · · ● ● · ● ● · ● ● · · · ● · · · · · · █",
+  "█· · · ● ● · ● · · · · · · · · · ● · ● · ● · ● · · █",
+  "▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀",
+]
+fg = [
+  "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+  "yy.y.Y.Y.y.Y.Y.Y.y.Y.y.y.y.y.y.y.Y.y.y.Y.Y.y.y.y.y.y",
+  "yY.Y.Y.y.Y.y.y.Y.Y.y.Y.Y.y.Y.Y.y.y.y.Y.y.y.y.y.y.y.y",
+  "yy.y.y.Y.Y.y.Y.y.y.y.y.y.y.y.y.y.Y.y.Y.y.Y.y.Y.y.y.y",
+  "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+]
+ascii = [
+  "                                                    ",
+  " . . O O . O O O . O . . . . . . O . . O O . . . .  ",
+  " O O O . O . . O O . O O . O O . . . O . . . . . .  ",
+  " . . . O O . O . . . . . . . . . O . O . O . O . .  ",
+  "                                                    ",
+]
+
+[[piece]]
+slot = "menu"
+rows = [
+  "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄",
+  "█· ● · · ● · ● ● · ● · ● · ● ● ● · · ● · ● ● ● · · ● · ● · · · ● · · ● █",
+  "▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀",
+]
+fg = [
+  "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+  "yy.Y.y.y.Y.y.Y.Y.y.Y.y.Y.y.Y.Y.Y.y.y.Y.y.Y.Y.Y.y.y.Y.y.Y.y.y.y.Y.y.y.Y.y",
+  "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+]
+ascii = [
+  "                                                                        ",
+  " . O . . O . O O . O . O . O O O . . O . O O O . . O . O . . . O . . O  ",
+  "                                                                        ",
+]

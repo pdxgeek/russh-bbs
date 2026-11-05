@@ -362,6 +362,41 @@ fn fit(area: Rect) -> Rect {
     }
 }
 
+/// What a plain member screen (login, settings, logoff, ...) is drawn with, beside its view: the
+/// frame's words, look, tier, marker cell and hints, and the art for its slot if it has one.
+pub(crate) struct Framed<'a> {
+    pub(crate) strings: &'a StringTable,
+    pub(crate) look: Look,
+    pub(crate) tier: Tier,
+    pub(crate) markers: &'a [russh_bbs_core::icons::SecurityMarker],
+    pub(crate) hints: &'a [crate::ui::frame::Hint<'a>],
+    /// The art context and the slot this screen has, if any (UI-3): the login banner or the
+    /// logoff screen.
+    pub(crate) art: Option<(&'a crate::ui::art::draw::ArtCtx<'a>, crate::ui::art::Slot)>,
+}
+
+/// Draw `view` in the status-bar frame with no header, art above the box in the rows the box does
+/// not need. This is the one place the login and logoff screens are drawn.
+pub(crate) fn render_framed(frame: &mut Frame<'_>, view: &View, framed: &Framed<'_>) {
+    let request = framed.art.map(|(ctx, slot)| crate::ui::frame::ArtRequest {
+        ctx,
+        slot,
+        keep: rows_needed(view, framed.look, framed.strings),
+    });
+    let body = crate::ui::frame::FrameSpec::new(framed.strings, framed.look, framed.tier)
+        .markers(framed.markers)
+        .hints(framed.hints)
+        .header(false)
+        .art(request)
+        .draw(frame);
+    render_in(frame, body, view, framed.look, framed.strings);
+}
+
+/// Rows the box for `view` needs: its lines and the border. Art above it gets the rest.
+pub(crate) fn rows_needed(view: &View, look: Look, strings: &StringTable) -> u16 {
+    u16::try_from(lines(view, look, strings).len() + 2).unwrap_or(u16::MAX)
+}
+
 fn lines(view: &View, look: Look, strings: &StringTable) -> Vec<Line<'static>> {
     let bold = Style::new().add_modifier(Modifier::BOLD);
     let dim = Style::new().add_modifier(Modifier::DIM);

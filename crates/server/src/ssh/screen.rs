@@ -66,10 +66,11 @@ use crate::mail::{self, MailEffect, MailScreen};
 use crate::members;
 use crate::settings::{self, Look};
 use crate::sysop;
+use crate::ui::art::Slot as ArtSlot;
 use crate::ui::classic::{self, ContentScreen, MENU_MARKERS, MenuScreen};
 use crate::ui::depth::ColorDepth;
 use crate::ui::editor::{Editor, EditorEffect, EditorRequest, EditorView, Outcome};
-use crate::ui::frame::{FrameSpec, clock_text};
+use crate::ui::frame::clock_text;
 use crate::ui::strings::StringTable;
 use crate::ui::{Ui, backdrop, chrome, layout};
 use crate::waiting_room::render;
@@ -488,12 +489,32 @@ impl Content {
             .map_or(LayoutId::Classic, |flow| ui.layout_for(flow.settings()))
     }
 
+    /// The style the member draws with, for choosing art (UI-3).
+    fn style(&self, ui: &Ui) -> Option<russh_bbs_core::terminal_settings::ThemeName> {
+        self.flow().map(|flow| ui.style_for(flow.settings()))
+    }
+
     /// The strings to draw with: the member's theme, or the default for everyone else.
     fn strings<'a>(&self, ui: &'a Ui) -> &'a StringTable {
         self.flow().map_or_else(
             || ui.strings(),
             |flow| ui.theme_for(flow.settings()).strings(),
         )
+    }
+}
+
+/// Which art slot a plain member screen has: the login banner or the logoff screen.
+fn art_slot_of(
+    view: &russh_bbs_core::waiting_room::View,
+    flow: Option<&MemberFlow>,
+) -> Option<ArtSlot> {
+    use russh_bbs_core::terminal_settings::strings::LOGIN_HEADING;
+    if flow.is_some_and(MemberFlow::is_logged_off) {
+        Some(ArtSlot::Logoff)
+    } else if view.heading == LOGIN_HEADING {
+        Some(ArtSlot::Login)
+    } else {
+        None
     }
 }
 
@@ -1479,7 +1500,22 @@ impl Screen {
         // While the editor is open it is drawn instead of the content (the transport's footer
         // row below still follows it).
         let drew_editor = self.draw_editor()?;
-        let view = self.content.view(&self.ui);
+        let mut view = self.content.view(&self.ui);
+        let art_ctx = self
+            .content
+            .style(&self.ui)
+            .map(|style| self.ui.art_ctx(style));
+        let art_slot = art_slot_of(&view, self.content.flow());
+        if art_slot == Some(ArtSlot::Logoff) {
+            // The board's own parting words, when the sysop wrote some (the clock picks one).
+            let seed = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map_or(0, |d| d.as_secs() / 60);
+            if let Some(quote) = self.ui.board().quote_for(seed) {
+                view.body.push(String::new());
+                view.body.push(quote.as_str().to_owned());
+            }
+        }
         let look = self.content.look(&self.ui, self.viewport, self.depth());
         let layout = self.content.layout(&self.ui, self.viewport);
         let wanted = self.content.wanted_layout(&self.ui);
@@ -1490,6 +1526,7 @@ impl Screen {
             .members_view()
             .or_else(|| self.content.community_view());
         let queue_view = self.content.queue_view();
+        let preview = self.content.flow().and_then(|flow| flow.preview().cloned());
         let tier = self.content.tier();
         let strings = self.content.strings(&self.ui);
         let framed = self.content.is_framed_screen();
@@ -1505,6 +1542,23 @@ impl Screen {
                     (Some(look), _) if chat.is_some() => {
                         if let Some(screen) = chat {
                             crate::chat::render(frame, screen, strings, look, tier);
+                        }
+                    }
+                    // The sysop's theme preview (UI-3): a sample screen in a chosen style and size.
+                    (Some(look), None) if preview.is_some() => {
+                        if let Some(preview) = &preview {
+                            crate::ui::art::preview::render(
+                                frame,
+                                preview,
+                                &crate::ui::art::preview::PreviewCtx {
+                                    ui: &self.ui,
+                                    strings,
+                                    look,
+                                    tier,
+                                    markers: staff_markers,
+                                    clock,
+                                },
+                            );
                         }
                     }
                     // The sysop queue and the vouch screen (M2-E): the same layout and status row. The
@@ -1576,6 +1630,7 @@ impl Screen {
                             board: self.ui.board(),
                             wanted,
                             popover: self.popover == Popover::Open,
+                            art: art_ctx.as_ref(),
                         },
                     ),
                     // The invite screens (M2-D): the same framed layout, with the reserved status row.
@@ -1595,12 +1650,18 @@ impl Screen {
                     // keeps its 22 rows at 80x24.
                     (Some(look), None) => {
                         let hints = classic::content_hints(strings);
-                        let body = FrameSpec::new(strings, look, tier)
-                            .markers(staff_markers)
-                            .hints(&hints)
-                            .header(false)
-                            .draw(frame);
-                        settings::render_in(frame, body, &view, look, strings);
+                        settings::render_framed(
+                            frame,
+                            &view,
+                            &settings::Framed {
+                                strings,
+                                look,
+                                tier,
+                                markers: staff_markers,
+                                hints: &hints,
+                                art: art_ctx.as_ref().zip(art_slot),
+                            },
+                        );
                     }
                     (None, _) => render(frame, &view),
                 }

@@ -83,6 +83,7 @@ pub(super) fn shot(
                     board: &board,
                     wanted: chosen,
                     popover: false,
+                    art: None,
                 },
             );
             super::backdrop::finish(frame, look);
