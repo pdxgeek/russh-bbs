@@ -2867,6 +2867,8 @@ mod doors;
 use doors::{DoorMove, DoorsContent};
 
 #[cfg(test)]
+mod dock_tests;
+#[cfg(test)]
 mod fx_tests;
 #[cfg(test)]
 mod tests;
