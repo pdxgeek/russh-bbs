@@ -68,7 +68,14 @@ fn palette(look: Look) -> DoorPalette {
         look.accent(Style::new().add_modifier(Modifier::BOLD), colors.heading),
         look.accent(Style::new(), colors.info),
         look.accent(Style::new().add_modifier(Modifier::BOLD), colors.error),
-        Style::new().add_modifier(Modifier::REVERSED),
+        // The selection bar: the theme's selection colours and underline, never reverse video
+        // (QA M3.5 L1). A member who cannot see bold must not be able to take a door's bar for
+        // the marker's bold+reverse.
+        look.accent(
+            Style::new().add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
+            colors.selected,
+        )
+        .patch(look.bg(look.surfaces().select_bg)),
     ])
 }
 

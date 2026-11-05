@@ -143,6 +143,10 @@ pub const MENU_DISPLAY: &str = "member.menu_display";
 pub const SETTING_DISPLAY: &str = "member.setting_display";
 /// Appended to a layout or theme name the sysop has fixed ("set by the sysop").
 pub const SET_BY_SYSOP: &str = "member.set_by_sysop";
+/// Notice when `l` is pressed and the sysop has fixed the layout (QA M3.5 L3).
+pub const LAYOUT_LOCKED: &str = "member.layout_locked";
+/// Notice when `t` is pressed and the sysop has fixed the style (QA M3.5 L3).
+pub const THEME_LOCKED: &str = "member.theme_locked";
 /// Appended to a layout or theme name that follows the board's default.
 pub const BOARD_DEFAULT: &str = "member.board_default";
 /// Name of the automatic colour depth.
@@ -173,7 +177,7 @@ pub const LAYOUT_LIGHTBAR: &str = "member.layout_lightbar";
 pub const LAYOUT_COMPACT: &str = "member.layout_compact";
 
 /// Every key above except [`TITLE`]; the string table must hold exactly these in `member.*`.
-pub const TEXT_KEYS: [&str; 71] = [
+pub const TEXT_KEYS: [&str; 73] = [
     MAIL_SSH_ONLY,
     LOGIN_HEADING,
     SIGNED_IN_AS,
@@ -231,6 +235,8 @@ pub const TEXT_KEYS: [&str; 71] = [
     MENU_DISPLAY,
     SETTING_DISPLAY,
     SET_BY_SYSOP,
+    LAYOUT_LOCKED,
+    THEME_LOCKED,
     BOARD_DEFAULT,
     DEPTH_AUTO,
     DEPTH_16,

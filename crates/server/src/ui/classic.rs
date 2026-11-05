@@ -315,10 +315,15 @@ pub(crate) fn draw_menu_in(
                 .saturating_sub(usize::from(list_area.height)),
         )
         .position(state.offset());
+        let mut bar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
+            .begin_symbol(None)
+            .end_symbol(None);
+        if look.ascii() {
+            // The ASCII tier draws ASCII only (QA M3.5 M2); ratatui's default is `█` and `║`.
+            bar = bar.track_symbol(Some("|")).thumb_symbol("#");
+        }
         frame.render_stateful_widget(
-            Scrollbar::new(ScrollbarOrientation::VerticalRight)
-                .begin_symbol(None)
-                .end_symbol(None),
+            bar,
             outer.inner(Margin {
                 horizontal: 0,
                 vertical: 1,

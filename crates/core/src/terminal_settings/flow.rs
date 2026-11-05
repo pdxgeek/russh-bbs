@@ -890,6 +890,7 @@ impl MemberFlow {
     /// layout is a lock: nothing changes.
     fn next_layout(&mut self) -> MemberEffect {
         if self.layouts.len() == 1 {
+            self.notice = Some(info(strings::LAYOUT_LOCKED));
             return MemberEffect::Stay;
         }
         let current = self
@@ -914,6 +915,10 @@ impl MemberFlow {
     /// fixed the theme (a list of one).
     fn next_theme(&mut self) -> MemberEffect {
         if self.themes.len() < 2 {
+            // A list of one is the sysop's lock; an empty list means no themes are loaded yet.
+            if self.themes.len() == 1 {
+                self.notice = Some(info(strings::THEME_LOCKED));
+            }
             return MemberEffect::Stay;
         }
         let current = self

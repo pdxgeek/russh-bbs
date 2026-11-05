@@ -224,6 +224,26 @@ fn a_scrollbar_shows_only_when_rows_are_hidden_and_follows_the_tier() {
 }
 
 #[test]
+fn the_ascii_tier_table_draws_only_ascii_at_every_height() {
+    for count in [3, 50] {
+        for height in 8..=24u16 {
+            for width in [40u16, 80, 132] {
+                let (buffer, _) = draw(
+                    look(Tier::Ascii, true, ColorDepth::Mono),
+                    (width, height),
+                    &spec(rows(count), Some(1), 0),
+                );
+                assert!(
+                    text(&buffer).is_ascii(),
+                    "{width}x{height}\n{}",
+                    text(&buffer)
+                );
+            }
+        }
+    }
+}
+
+#[test]
 fn a_narrow_table_drops_a_column_with_its_cells() {
     let wide = draw(
         look(Tier::Ascii, false, ColorDepth::Mono),
