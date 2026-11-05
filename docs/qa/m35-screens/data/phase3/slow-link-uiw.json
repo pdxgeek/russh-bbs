@@ -1,0 +1,42 @@
+{
+ "56kbit 80x24 key at 0.5s": {
+  "login_box_after_s": null,
+  "bytes_before_key": 0,
+  "menu_after_key_s": 1.8
+ },
+ "56kbit 80x24 key at login box": {
+  "login_box_after_s": 0.6,
+  "bytes_before_key": 8488,
+  "menu_after_key_s": 2.2
+ },
+ "56kbit 132x43 key at 0.5s": {
+  "login_box_after_s": null,
+  "bytes_before_key": 0,
+  "menu_after_key_s": 4.3
+ },
+ "56kbit 132x43 key at login box": {
+  "login_box_after_s": 0.8,
+  "bytes_before_key": 2557,
+  "menu_after_key_s": 2.7
+ },
+ "1Mbit 80x24 key at 0.5s": {
+  "login_box_after_s": null,
+  "bytes_before_key": 20212,
+  "menu_after_key_s": 0.2
+ },
+ "1Mbit 80x24 key at login box": {
+  "login_box_after_s": 0.2,
+  "bytes_before_key": 45178,
+  "menu_after_key_s": 0.2
+ },
+ "1Mbit 132x43 key at 0.5s": {
+  "login_box_after_s": null,
+  "bytes_before_key": 37046,
+  "menu_after_key_s": 0.2
+ },
+ "1Mbit 132x43 key at login box": {
+  "login_box_after_s": 0.2,
+  "bytes_before_key": 70712,
+  "menu_after_key_s": 0.3
+ }
+}

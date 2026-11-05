@@ -1,0 +1,34 @@
+{
+ "mouse drag moves the divider left by ~14": [
+  true,
+  "(59, 45)"
+ ],
+ "drag past both edges clamps, session intact": [
+  true,
+  "41"
+ ],
+ "a drag that did not start on the divider moves nothing": [
+  true,
+  "(41, 41)"
+ ],
+ "typing into the pane: line appears, no hostile token, no reverse off marker": [
+  true,
+  "['ane                                    \u2502']"
+ ],
+ "Ctrl-T closes the pane and leaves the room": [
+  true,
+  "    \u2588\u2588\u2588\u2588  \u2588\u2588\u2588\u2588   \u2588\u2588\u2588\u2588"
+ ],
+ "chat beside mail: both sides drawn, marker intact": [
+  true,
+  ""
+ ],
+ "chat beside members: both sides drawn, marker intact": [
+  true,
+  ""
+ ],
+ "telnet: Ctrl-T pane draws, footer and reverse only on last row": [
+  false,
+  "[29]"
+ ]
+}

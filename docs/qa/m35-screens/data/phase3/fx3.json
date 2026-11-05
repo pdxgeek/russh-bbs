@@ -1,0 +1,114 @@
+{
+ "intro 80x24 on": {
+  "bytes": 82117,
+  "distinct_frames": 17,
+  "gfx": 0,
+  "rev": {
+   "row23+bold": [
+    0,
+    0,
+    1
+   ]
+  }
+ },
+ "login 80x24 motion off": {
+  "bytes": 2060,
+  "distinct_frames": 2,
+  "equals_intro_final": true
+ },
+ "skip 80x24": {
+  "menu_then_settings": true
+ },
+ "intro 132x43 on": {
+  "bytes": 141293,
+  "distinct_frames": 16,
+  "gfx": 0,
+  "rev": {
+   "row42+bold": [
+    0,
+    0,
+    1
+   ]
+  }
+ },
+ "login 132x43 motion off": {
+  "bytes": 2582,
+  "distinct_frames": 2,
+  "equals_intro_final": true
+ },
+ "skip 132x43": {
+  "menu_then_settings": true
+ },
+ "forums motion on": {
+  "bytes": 32653,
+  "distinct_frames": 4,
+  "gfx": 0
+ },
+ "thread list motion on": {
+  "bytes": 32347,
+  "distinct_frames": 4,
+  "gfx": 0
+ },
+ "reader motion on": {
+  "bytes": 19068,
+  "distinct_frames": 4,
+  "gfx": 0
+ },
+ "mail motion on": {
+  "bytes": 31770,
+  "distinct_frames": 4,
+  "gfx": 0
+ },
+ "chat motion on": {
+  "bytes": 12494,
+  "distinct_frames": 1,
+  "gfx": 0
+ },
+ "community motion on": {
+  "bytes": 26929,
+  "distinct_frames": 4,
+  "gfx": 0
+ },
+ "members motion on": {
+  "bytes": 27083,
+  "distinct_frames": 4,
+  "gfx": 0
+ },
+ "UI-4 rev motion on": [],
+ "forums motion off": {
+  "bytes": 13802,
+  "distinct_frames": 1,
+  "gfx": 0
+ },
+ "thread list motion off": {
+  "bytes": 13664,
+  "distinct_frames": 1,
+  "gfx": 0
+ },
+ "reader motion off": {
+  "bytes": 6816,
+  "distinct_frames": 1,
+  "gfx": 0
+ },
+ "mail motion off": {
+  "bytes": 13321,
+  "distinct_frames": 1,
+  "gfx": 0
+ },
+ "chat motion off": {
+  "bytes": 12486,
+  "distinct_frames": 1,
+  "gfx": 0
+ },
+ "community motion off": {
+  "bytes": 759,
+  "distinct_frames": 1,
+  "gfx": 0
+ },
+ "members motion off": {
+  "bytes": 910,
+  "distinct_frames": 1,
+  "gfx": 0
+ },
+ "UI-4 rev motion off": []
+}
