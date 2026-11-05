@@ -7,7 +7,7 @@ use russh_bbs_core::store::{AccountId, StoreError};
 use sqlx::error::ErrorKind;
 
 use super::PostgresStore;
-use crate::chat_rows::{cap, room};
+use crate::chat_rows::{cap, listed_room, room};
 use crate::error::{backend, kind};
 
 impl RoomStore for PostgresStore {
@@ -95,7 +95,8 @@ impl RoomStore for PostgresStore {
         .await
         .map_err(backend)?
         .into_iter()
-        .map(|row| room(row.id, &row.name, row.created_at))
-        .collect()
+        .map(|row| listed_room(row.id, &row.name, row.created_at))
+        .collect::<Result<Vec<_>, _>>()
+        .map(|rooms| rooms.into_iter().flatten().collect())
     }
 }
