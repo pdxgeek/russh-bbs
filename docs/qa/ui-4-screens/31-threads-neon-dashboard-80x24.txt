@@ -1,0 +1,24 @@
+ » Night Owl BBS « │ Forums                                           UTC 07:52
+ █   █ █████  ████ █   █ █████        ███  █   █ █           ████  ████   ████
+ ██  █   █   █     █   █   █         █   █ █   █ █           █   █ █   █ █
+ █ █ █   █   █  ██ █████   █         █   █ █ █ █ █           ████  ████   ███
+ █  ██   █   █   █ █   █   █         █   █ ██ ██ █           █   █ █   █     █
+ █   █ █████  ███  █   █   █          ███  █   █ █████       ████  ████  ████
+
+╭« General »───────────────────────────────────────────────────────────────────╮
+│  #  Subject                      From            Posts  Last post            │
+│> 1. What terminal do you use?    founder             9  2026-11-05 07:48 UTC │
+│  2. Weekend plans                founder             1  2026-11-05 07:35 UTC │
+│  3. Door games when?             founder             1  2026-11-05 07:35 UTC │
+│  4. Rust and ratatui             founder             1  2026-11-05 07:35 UTC │
+│  5. Gardening in small spaces    founder             1  2026-11-05 07:35 UTC │
+│  6. Welcome to the board         founder             1  2026-11-05 07:35 UTC │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+╰─ Page 1  -  Talk about anything ─────────────────────────────────────────────╯
+ Enter read  1-9 jump  w write  n/b page  s search  o sort  p public RSS

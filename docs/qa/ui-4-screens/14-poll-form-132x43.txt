@@ -1,0 +1,43 @@
+ » Night Owl BBS « │ New poll                                                                                             UTC 07:49
+                ╭« New poll »──────────────────────────────────────────────────────────────────────────────────────╮
+   .     .     .│  Question: Best colour for a terminal?                                                           │ .     .     .
+                │  Option 1: Green                                                                                 │
+                │  Option 2: Amber                                                                                 │
+   .     .     .│  Option 3: Blue                                                                                  │ .     .     .
+                │No description.                                                                                   │
+                │Counts: shown after a member has voted, and to everyone once closed.                              │
+   .     .     .│Enter: make the poll   d: description   r: who sees the counts   Backspace: edit options          │ .     .     .
+                │                                                                                                  │
+                │Enter: next   Backspace: erase   Esc: cancel the poll                                             │
+   .     .     .│                                                                                                  │ .     .     .
+                │                                                                                                  │
+                │                                                                                                  │
+   .     .     .│                                                                                                  │ .     .     .
+                │                                                                                                  │
+                │                                                                                                  │
+   .     .     .│                                                                                                  │ .     .     .
+                │                                                                                                  │
+                │                                                                                                  │
+   .     .     .│                                                                                                  │ .     .     .
+                │                                                                                                  │
+                │                                                                                                  │
+   .     .     .│                                                                                                  │ .     .     .
+                │                                                                                                  │
+                │                                                                                                  │
+   .     .     .│                                                                                                  │ .     .     .
+                │                                                                                                  │
+                │                                                                                                  │
+   .     .     .│                                                                                                  │ .     .     .
+                │                                                                                                  │
+                │                                                                                                  │
+   .     .     .│                                                                                                  │ .     .     .
+                │                                                                                                  │
+                │                                                                                                  │
+   .     .     .│                                                                                                  │ .     .     .
+                │                                                                                                  │
+                │                                                                                                  │
+   .     .     .│                                                                                                  │ .     .     .
+                │                                                                                                  │
+                │                                                                                                  │
+   .     .     .╰──────────────────────────────────────────────────────────────────────────────────────────────────╯ .     .     .
+ ? help  Esc back  Ctrl-C log off
