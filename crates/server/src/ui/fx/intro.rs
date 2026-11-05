@@ -6,7 +6,8 @@
 //! The scene draws only pixels from a canvas, so it is cells and colours and nothing else. The
 //! board name is turned into pixels through the fixed font in [`super::font`], which has no
 //! marker glyph or delimiter, so the name cannot put anything unexpected on the screen. The
-//! scene covers everything above the status row and never touches the status row itself.
+//! When the member's style has a login banner (UI-3 art), the scene reveals that art, cells and
+//! colours as the art file gave them, in place of the big letters. The scene covers everything above the status row and never touches the status row itself.
 
 #![allow(
     clippy::many_single_char_names,
@@ -22,10 +23,16 @@
 
 use ratatui::buffer::Buffer;
 
+use ratatui::style::{Color, Style};
+
 use super::effects::{Stage, is_reserved, unit};
 use super::font;
+use crate::settings::Look;
+use crate::ui::art::Grid;
+use crate::ui::art::draw::cell_style;
 use crate::ui::canvas::{HalfBlock, Paint, Rgb, mix, scale};
 use crate::ui::depth::ColorDepth;
+use crate::ui::depth::Tint;
 
 /// How long the scene runs, in seconds (the engine's duration for the intro).
 pub(crate) const SECONDS: f32 = 1.8;
@@ -42,6 +49,15 @@ pub(crate) struct Colors {
     pub accent: Rgb,
     /// The style's second accent.
     pub accent2: Rgb,
+}
+
+/// The style's login banner and how to colour it.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct Banner<'a> {
+    /// The art, cells only (D123).
+    pub grid: &'a Grid,
+    /// The member's look, for the art's palette colours at their colour depth.
+    pub look: Look,
 }
 
 const WHITE: Rgb = (255, 255, 255);
@@ -65,7 +81,14 @@ pub(crate) fn cover(t: f32) -> f32 {
 }
 
 /// Draw the scene at `t` into `buf`, inside `stage.area`.
-pub(crate) fn paint(buf: &mut Buffer, stage: &Stage, t: f32, title: &str, colors: Colors) {
+pub(crate) fn paint(
+    buf: &mut Buffer,
+    stage: &Stage,
+    t: f32,
+    title: &str,
+    colors: Colors,
+    banner: Option<Banner<'_>>,
+) {
     // The stage is at most 120x36 cells, centred: a bigger terminal does not get a bigger scene
     // (the cost would grow with the screen), and the login box is centred anyway.
     let full = stage.area;
@@ -103,15 +126,76 @@ pub(crate) fn paint(buf: &mut Buffer, stage: &Stage, t: f32, title: &str, colors
         );
     }
     stars(&mut canvas, s, colors);
-    let plain = stage.ascii || depth == ColorDepth::Mono;
-    if !plain {
+    // The banner is revealed in every tier that has colour (its ASCII stand-in cells in the ASCII
+    // tier); a mono terminal keeps the plain spaced title, as before.
+    let banner = banner.filter(|_| depth != ColorDepth::Mono && !banner_empty(banner));
+    let plain = (stage.ascii || depth == ColorDepth::Mono) && banner.is_none();
+    if !plain && banner.is_none() {
         big_title(&mut canvas, t, title, colors);
     }
     canvas.render_masked(buf, area, Paint::new(depth, stage.ascii), |x, y, cell| {
         !is_reserved(cell) && unit(x, y) < cover
     });
+    if let Some(banner) = banner {
+        reveal_banner(buf, area, t, cover, banner, stage.ascii);
+    }
     if plain {
         plain_title(buf, area, t, title, cover);
+    }
+}
+
+fn banner_empty(banner: Option<Banner<'_>>) -> bool {
+    banner.is_none_or(|b| b.grid.is_empty())
+}
+
+/// Reveal the login banner row by row from the top, a bright leading row and a shine sweeping
+/// across, over a backing panel in the style's background so it reads over the field. The art
+/// is clipped and centred in `area`. Cells get the art's own colours and never a modifier (art
+/// has no attributes, so it cannot wear the reserved style); only cells the scene may cover
+/// are written, so the status row (outside `area`) and any marker cell are never touched.
+fn reveal_banner(
+    buf: &mut Buffer,
+    area: ratatui::layout::Rect,
+    t: f32,
+    cover: f32,
+    banner: Banner<'_>,
+    ascii: bool,
+) {
+    let (gw, gh) = (banner.grid.width(), banner.grid.height());
+    let w = gw.min(usize::from(area.width));
+    let h = gh.min(usize::from(area.height));
+    if w == 0 || h == 0 {
+        return;
+    }
+    // The part of the art that shows (centred crop) and where it lands (centred in the scene).
+    let (gx0, gy0) = ((gw - w) / 2, (gh - h) / 2);
+    let x0 = area.x + u16::try_from((usize::from(area.width) - w) / 2).unwrap_or(0);
+    let y0 = area.y + u16::try_from((usize::from(area.height) - h) / 2).unwrap_or(0);
+    let look = banner.look;
+    let palette = look.palette();
+    let backing = look.bg(palette.surface);
+    let flash = look.fg(Tint::Named(Color::White));
+    let shown = (((t - 0.10) / 0.36).clamp(0.0, 1.0) * h as f32).ceil() as usize;
+    let shine = (t - 0.40) / 0.25 * (w as f32 + 20.0) - 10.0;
+    for dy in 0..shown.min(h) {
+        let leading = dy + 1 == shown && t < 0.46;
+        for dx in 0..w {
+            let (x, y) = (x0 + dx as u16, y0 + dy as u16);
+            let cell = &mut buf[(x, y)];
+            if is_reserved(cell) || unit(x - area.x, y - area.y) >= cover {
+                continue;
+            }
+            let art = banner.grid.get(gx0 + dx, gy0 + dy);
+            let symbol = if ascii { art.ascii } else { art.ch };
+            let mut style = backing.patch(cell_style(art, look, palette.text));
+            if symbol != ' ' && (leading || (dx as f32 - shine).abs() < 1.5) {
+                style = style.patch(flash);
+            }
+            let mut utf8 = [0_u8; 4];
+            cell.reset();
+            cell.set_symbol(symbol.encode_utf8(&mut utf8))
+                .set_style(Style::new().patch(style));
+        }
     }
 }
 

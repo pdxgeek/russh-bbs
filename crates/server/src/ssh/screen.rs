@@ -2224,6 +2224,9 @@ impl Screen {
             .content
             .style(&self.ui)
             .map(|style| self.ui.art_ctx(style));
+        let intro_banner = art_ctx
+            .as_ref()
+            .and_then(|ctx| ctx.login_banner(look.is_some_and(Look::ascii)));
         let art_slot = art_slot_of(&view, self.content.flow());
         if art_slot == Some(ArtSlot::Logoff) {
             // The board's own parting words, when the sysop wrote some (the clock picks one).
@@ -2468,7 +2471,7 @@ impl Screen {
                 // Last: an effect rewrites the finished frame; with none running the frame is
                 // exactly the static screen (UI-8).
                 if let Some(overlay) = overlay {
-                    overlay.apply(frame);
+                    overlay.apply_with(frame, intro_banner);
                 }
             })?;
         }

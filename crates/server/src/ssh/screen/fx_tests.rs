@@ -22,16 +22,32 @@ use russh_bbs_core::access::{Permission, Slug, Snapshot, Via};
 use russh_bbs_core::icons::Tier;
 use russh_bbs_core::sanitize::sanitize_username;
 use russh_bbs_core::store::AccountId;
-use russh_bbs_core::terminal_settings::{MemberFlow, TerminalSettings};
+use russh_bbs_core::terminal_settings::{MemberFlow, TerminalSettings, ThemeName};
 
 use super::super::terminal::{Key, PtySize, RenderCap};
 use super::{Content, Screen};
 use crate::ui::fx::Kind;
 
 fn member(motion: bool, size: PtySize, depth: Option<(&str, &str)>) -> Screen {
-    let settings = TerminalSettings::default()
-        .with_tier(Tier::Unicode)
-        .with_motion(motion);
+    member_styled(motion, size, depth, None, Tier::Unicode, true)
+}
+
+/// A member screen in `theme` (the default style when `None`), at `tier`, with colour `color`.
+fn member_styled(
+    motion: bool,
+    size: PtySize,
+    depth: Option<(&str, &str)>,
+    theme: Option<&str>,
+    tier: Tier,
+    color: bool,
+) -> Screen {
+    let mut settings = TerminalSettings::default()
+        .with_tier(tier)
+        .with_motion(motion)
+        .with_color(color);
+    if let Some(theme) = theme {
+        settings = settings.with_theme(ThemeName::new(theme).unwrap());
+    }
     let flow = MemberFlow::new(
         &sanitize_username("alice").unwrap(),
         Snapshot::from_role(
@@ -463,4 +479,150 @@ fn transitions_benchmark() {
             typed.interval
         );
     }
+}
+
+// The intro with the style's login banner (UI-W 4).
+
+/// The cases: two styles with a login banner in colour, then the same in mono and in the ASCII
+/// tier.
+type BannerCase = (
+    &'static str,
+    Tier,
+    bool,
+    Option<(&'static str, &'static str)>,
+);
+
+fn banner_cases() -> Vec<BannerCase> {
+    vec![
+        ("neon", Tier::Unicode, true, TRUECOLOR),
+        ("deepspace", Tier::Unicode, true, TRUECOLOR),
+        ("neon", Tier::Unicode, true, Some(("xterm-256color", ""))),
+        ("neon", Tier::Unicode, false, TRUECOLOR),
+        ("deepspace", Tier::Unicode, false, TRUECOLOR),
+        ("neon", Tier::Ascii, true, TRUECOLOR),
+        ("deepspace", Tier::Ascii, true, Some(("xterm-256color", ""))),
+    ]
+}
+
+fn styled(motion: bool, (w, h): (u32, u32), case: &BannerCase) -> Screen {
+    let (theme, tier, color, depth) = case;
+    member_styled(
+        motion,
+        PtySize::from_request(w, h),
+        *depth,
+        Some(theme),
+        *tier,
+        *color,
+    )
+}
+
+#[test]
+fn the_intro_with_a_login_banner_keeps_the_byte_and_frame_budgets() {
+    let budget = crate::ui::fx::Budget::default();
+    for case in banner_cases() {
+        for dims in [(80, 24), (132, 43)] {
+            let mut screen = styled(true, dims, &case);
+            let start = Instant::now();
+            screen.fx_clock = Some(start);
+            enter(&mut screen);
+            let (mut frames, mut bytes, mut biggest) = (0_u32, 0_usize, 0_usize);
+            for i in 1..=30_u64 {
+                if let Some(frame) = frame_at(&mut screen, start + Duration::from_millis(80 * i)) {
+                    frames += 1;
+                    bytes += frame.len();
+                    biggest = biggest.max(frame.len());
+                }
+            }
+            assert!(
+                frames <= u32::from(budget.frames_per_effect) + 2,
+                "{case:?} {dims:?}: {frames} frames"
+            );
+            assert!(
+                bytes <= budget.bytes_per_effect + biggest,
+                "{case:?} {dims:?}: {bytes} bytes"
+            );
+        }
+    }
+}
+
+#[test]
+fn the_intro_with_a_login_banner_ends_on_exactly_the_static_login_screen() {
+    for case in banner_cases() {
+        for dims in [(80, 24), (132, 43)] {
+            let mut still = styled(false, dims, &case);
+            still.enter().unwrap();
+            let want = repaint(&mut still);
+
+            let mut moving = styled(true, dims, &case);
+            moving.enter().unwrap();
+            moving.tick_fx(clock_of(&moving) + Duration::from_secs(5));
+            assert_eq!(moving.next_fx_due(), None);
+            let got = repaint(&mut moving);
+            assert_eq!(
+                got, want,
+                "{case:?} {dims:?}: the last frame is the static one"
+            );
+        }
+    }
+}
+
+#[test]
+fn a_key_skips_the_intro_with_a_login_banner() {
+    for case in banner_cases() {
+        let mut still = styled(false, (80, 24), &case);
+        still.enter().unwrap();
+        still.apply_keys(&[Key::Enter]);
+        still.render().unwrap();
+        let want = repaint(&mut still);
+
+        let mut moving = styled(true, (80, 24), &case);
+        moving.enter().unwrap();
+        // Draw a frame mid-intro first, so a banner is on screen when the key arrives.
+        let mid = clock_of(&moving) + Duration::from_millis(900);
+        frame_at(&mut moving, mid);
+        moving.apply_keys(&[Key::Enter]);
+        moving.render().unwrap();
+        moving.apply_keys(&[Key::Char('?')]);
+        moving.apply_keys(&[Key::Char('?')]);
+        assert_eq!(
+            moving.next_fx_due(),
+            None,
+            "{case:?}: no effect left running"
+        );
+        moving.render().unwrap();
+        let got = repaint(&mut moving);
+        let strip = |bytes: Vec<u8>| {
+            String::from_utf8_lossy(&bytes)
+                .chars()
+                .filter(|c| !c.is_ascii_digit())
+                .collect::<String>()
+        };
+        assert_eq!(strip(got), strip(want), "{case:?}");
+    }
+}
+
+#[test]
+fn the_intro_frames_carry_the_banner_in_colour_and_only_ascii_in_the_ascii_tier() {
+    let mut neon = styled(true, (80, 24), &banner_cases()[0]);
+    let start = clock_of(&neon);
+    enter(&mut neon);
+    let frame = frame_at(&mut neon, start + Kind::Intro.duration() / 2).unwrap();
+    let text = String::from_utf8_lossy(&frame);
+    assert!(text.contains('\u{2502}'), "the art's own cells are drawn");
+
+    let ascii_case = banner_cases()[5];
+    let mut ascii = styled(true, (80, 24), &ascii_case);
+    let start = clock_of(&ascii);
+    enter(&mut ascii);
+    let mut all = Vec::new();
+    for i in 1..=20_u64 {
+        if let Some(f) = frame_at(&mut ascii, start + Duration::from_millis(80 * i)) {
+            all.extend(f);
+        }
+    }
+    let text = String::from_utf8_lossy(&all);
+    assert!(
+        !text.contains(['\u{2588}', '\u{2580}', '\u{2584}', '\u{2502}']),
+        "no block or box glyphs in the ASCII tier"
+    );
 }
