@@ -14,5 +14,7 @@ pub(crate) mod nick;
 
 pub(crate) mod motion;
 
+pub(crate) mod reader;
+
 #[cfg(test)]
 mod tests;

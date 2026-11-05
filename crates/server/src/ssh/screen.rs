@@ -1777,6 +1777,8 @@ impl Screen {
                     .look(settings, self.viewport, self.depth())
                     .with_cursor_dark(cursor_dark),
                 tier: settings.icon_tier(),
+                markers: self.status_markers(),
+                clock: Some(clock.as_str()),
             };
             let tier = ctx.tier;
             self.terminal.draw(|frame| {

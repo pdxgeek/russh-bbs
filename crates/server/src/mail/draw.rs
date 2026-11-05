@@ -17,8 +17,11 @@ use super::strings;
 use crate::settings::{self, Look};
 use crate::ui::classic::{self, ContentScreen, MENU_MARKERS};
 use crate::ui::editor::EditorView;
+use crate::ui::frame::{ChromeText, Hint};
+use crate::ui::popup::{self, Popup, PopupKind, PopupLine};
+use crate::ui::screens::reader as reader_ui;
 use crate::ui::strings::StringTable;
-use crate::ui::{Ui, chrome, pager};
+use crate::ui::{Ui, pager};
 
 /// What drawing needs besides the screen.
 pub(crate) struct DrawCtx<'a> {
@@ -27,6 +30,10 @@ pub(crate) struct DrawCtx<'a> {
     pub(crate) settings: &'a TerminalSettings,
     pub(crate) look: Look,
     pub(crate) tier: Tier,
+    /// The markers the status bar's marker cell shows (FIX-M3-6).
+    pub(crate) markers: &'a [russh_bbs_core::icons::SecurityMarker],
+    /// The header bar's clock text.
+    pub(crate) clock: Option<&'a str>,
 }
 
 /// Member text, cleaned once more on its way to the terminal.
@@ -126,33 +133,68 @@ fn render_reader(
         rebuilt = screen.pager_for(reader, width);
         &rebuilt
     };
-    // The confirmation takes the place of the prompt row.
-    if let Some(text) = confirm_text(reader) {
-        let (content, status) = chrome::split_status(area, &MENU_MARKERS);
-        let (bold, _, _, _) = classic::styles(ctx.look);
-        let mut lines = vec![
-            Line::styled(clean(&reader_title(reader), 120), bold),
-            Line::raw(""),
-        ];
-        for wrapped in wrap_words(text, width) {
-            lines.push(Line::raw(wrapped));
-        }
-        settings::boxed(frame, content, strings::TITLE_INBOX, lines, ctx.look);
-        if let Some(row) = status {
-            chrome::render_status(frame, row, &MENU_MARKERS, ctx.tier, ctx.strings);
-        }
-        return;
+    let view = &reader.view;
+    let hint = |key: &'static str, label: &'static str| {
+        Hint::new(ChromeText::fixed(key), ChromeText::fixed(label))
+    };
+    let mut hints = vec![hint("Space", "more"), hint("b", "back")];
+    if view.can_reply {
+        hints.push(hint("r", "reply"));
+        hints.push(hint("c", "quote"));
     }
-    let title = fit(&clean(&reader_title(reader), 120), width.saturating_sub(4));
-    pager::render(
+    hints.push(hint("d", "delete"));
+    if view.can_report {
+        hints.push(hint("x", "report"));
+    }
+    hints.push(hint("Esc", "back"));
+    let from = view.from.as_deref().unwrap_or(strings::GONE_MEMBER);
+    let at = format_utc(view.at);
+    let body = reader_ui::render(
         frame,
-        pager_ref,
-        &title,
-        ctx.strings,
-        ctx.look,
-        ctx.tier,
-        &MENU_MARKERS,
+        &reader_ui::ReaderView {
+            place: ChromeText::fixed(strings::TITLE_INBOX),
+            head: reader_ui::Head {
+                subject: &view.subject,
+                from,
+                at: &at,
+                context: strings::TITLE_INBOX,
+            },
+            strip: reader_ui::Strip::Label(ChromeText::fixed(strings::TITLE_INBOX)),
+            pager: pager_ref,
+            hints: &hints,
+        },
+        &reader_ui::ReaderCtx {
+            strings: ctx.strings,
+            look: ctx.look,
+            tier: ctx.tier,
+            markers: ctx.markers,
+            clock: ctx.clock,
+        },
     );
+    // The confirmation is a modal over the message.
+    if let Some(text) = confirm_text(reader) {
+        let keys = [
+            Hint::new(ChromeText::fixed("y"), ChromeText::fixed("yes")),
+            Hint::new(
+                ChromeText::fixed("any other key"),
+                ChromeText::fixed("cancel"),
+            ),
+        ];
+        popup::render(
+            frame,
+            body,
+            ctx.look,
+            &Popup {
+                kind: PopupKind::Confirm,
+                title: ChromeText::fixed("Confirm"),
+                lines: vec![
+                    PopupLine::content(&clean(&reader_title(reader), 120)),
+                    PopupLine::plain(text),
+                ],
+                keys: &keys,
+            },
+        );
+    }
 }
 
 fn notice(screen: &MailScreen, ctx: &DrawCtx<'_>, out: &mut Vec<Line<'static>>) {
@@ -264,27 +306,4 @@ fn input_lines(
     out.push(Line::raw(""));
     notice(screen, ctx, out);
     out.push(Line::styled(strings::HELP_INPUT.to_owned(), dim));
-}
-
-/// Break fixed chrome text into rows of at most `width` characters at spaces, so a word is never
-/// split (QA M3 L6). A word longer than a row is cut, which the confirmation texts never need.
-fn wrap_words(text: &str, width: usize) -> Vec<String> {
-    let width = width.max(1);
-    let mut rows = Vec::new();
-    let mut row = String::new();
-    for word in text.split_whitespace() {
-        let word_len = word.chars().count();
-        let row_len = row.chars().count();
-        if !row.is_empty() && row_len + 1 + word_len > width {
-            rows.push(std::mem::take(&mut row));
-        }
-        if !row.is_empty() {
-            row.push(' ');
-        }
-        row.push_str(word);
-    }
-    if !row.is_empty() {
-        rows.push(row);
-    }
-    rows
 }

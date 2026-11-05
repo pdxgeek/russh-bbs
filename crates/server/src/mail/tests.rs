@@ -93,6 +93,8 @@ fn buffer(screen: &MailScreen, area: Rect) -> Buffer {
         settings: &settings,
         look: Look::of(&settings),
         tier: Tier::Ascii,
+        markers: &crate::ui::classic::MENU_MARKERS,
+        clock: Some("UTC 12:00"),
     };
     let mut terminal = Terminal::new(TestBackend::new(area.width, area.height)).unwrap();
     terminal.draw(|frame| render(frame, screen, &ctx)).unwrap();
@@ -169,7 +171,7 @@ fn enter_and_digits_open_a_message_and_esc_leaves_mail() {
     screen.deliver(Response::Message(Ok(message(2, "Two", "the body"))));
     let shown = text(&screen);
     assert!(
-        shown.contains("From ann at") && shown.contains("the body"),
+        shown.contains("From ann") && shown.contains("the body"),
         "{shown}"
     );
     // Esc goes back to the inbox page it came from; Esc there leaves.

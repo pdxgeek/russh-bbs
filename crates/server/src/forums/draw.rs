@@ -6,7 +6,7 @@
 use ratatui::Frame;
 use ratatui::layout::Rect;
 use ratatui::style::{Modifier, Style};
-use ratatui::text::{Line, Span};
+use ratatui::text::Line;
 use russh_bbs_core::icons::Tier;
 use russh_bbs_core::sanitize::SingleLine;
 use russh_bbs_core::terminal_settings::{TerminalSettings, format_utc};
@@ -22,6 +22,7 @@ use crate::ui::classic::{self, MENU_MARKERS};
 use crate::ui::editor::EditorView;
 use crate::ui::frame::{ChromeText, FrameSpec, Hint};
 use crate::ui::popup::{self, Popup, PopupKind, PopupLine};
+use crate::ui::screens::reader as reader_ui;
 use crate::ui::strings::StringTable;
 use crate::ui::table::{self, Cell, CellStyle, Column, TableRow, TableSpec, Title, Width};
 use crate::ui::{Ui, pager};
@@ -42,19 +43,6 @@ pub(crate) struct DrawCtx<'a> {
 /// Member text, cleaned once more on its way to the terminal.
 fn clean(text: &str, max: usize) -> String {
     SingleLine::new(max).sanitize(text).into_string()
-}
-
-/// Cut `text` to at most `width` terminal columns so a row never wraps.
-fn fit(text: &str, width: usize) -> String {
-    let mut out = String::new();
-    for c in text.chars() {
-        out.push(c);
-        if Span::raw(out.as_str()).width() > width {
-            out.pop();
-            break;
-        }
-    }
-    out
 }
 
 /// Draw whatever the forum screen is showing into `frame`.
@@ -194,15 +182,48 @@ fn render_reader(
         rebuilt = screen.pager_for(reader, width);
         &rebuilt
     };
-    let title = fit(&clean(&reader_title(reader), 120), width.saturating_sub(4));
-    pager::render(
+    let view = &reader.view;
+    let hint = |key: &'static str, label: &'static str| {
+        Hint::new(ChromeText::fixed(key), ChromeText::fixed(label))
+    };
+    let mut hints = vec![hint("Space", "more"), hint("b", "back")];
+    if view.total > 1 {
+        hints.push(hint("n/p", "post"));
+    }
+    if view.can_reply {
+        hints.push(hint("r", "reply"));
+        hints.push(hint("c", "quote"));
+    }
+    if view.can_moderate {
+        hints.push(hint("x", "remove"));
+    }
+    hints.push(hint("Esc", "back"));
+    let from = view.post.author.as_deref().unwrap_or(strings::GONE_MEMBER);
+    let at = format_utc(view.post.at);
+    let body = reader_ui::render(
         frame,
-        pager_ref,
-        &title,
-        ctx.strings,
-        ctx.look,
-        ctx.tier,
-        &MENU_MARKERS,
+        &reader_ui::ReaderView {
+            place: ChromeText::fixed(strings::TITLE_BOARDS),
+            head: reader_ui::Head {
+                subject: &view.thread.subject,
+                from,
+                at: &at,
+                context: &view.thread.board_name,
+            },
+            strip: reader_ui::Strip::Posts {
+                index: view.index,
+                total: view.total,
+            },
+            pager: pager_ref,
+            hints: &hints,
+        },
+        &reader_ui::ReaderCtx {
+            strings: ctx.strings,
+            look: ctx.look,
+            tier: ctx.tier,
+            markers: ctx.markers,
+            clock: ctx.clock,
+        },
     );
     // The remove confirmation is a modal over the page.
     if let Some(text) = confirm_text(reader) {
@@ -215,7 +236,7 @@ fn render_reader(
         ];
         popup::render(
             frame,
-            area,
+            body,
             ctx.look,
             &Popup {
                 kind: PopupKind::Confirm,

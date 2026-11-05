@@ -7,7 +7,7 @@ use ratatui::layout::Rect;
 use russh_bbs_core::drafts::Body;
 use russh_bbs_core::mail::{InboxPage, MessageId, MessageView, body_limits, prepare_subject};
 use russh_bbs_core::terminal_settings::{
-    Pager, PagerEffect, PagerKey, TerminalSettings, format_utc,
+    Pager, PagerEffect, PagerKey, TerminalSettings,
 };
 use russh_bbs_core::waiting_room::NoticeKind;
 
@@ -755,14 +755,14 @@ impl MailScreen {
     }
 }
 
-/// The reader's text: a header, then the message wrapped to `width`. The notice (a result of
-/// the last action) is shown as the first line.
+/// The reader's text: the message wrapped to `width`, quote marks kept on every wrapped row.
+/// The header block and the keys are drawn by the reader (`ui::screens::reader`); the notice (a
+/// result of the last action) is the first line.
 fn reader_lines(
     view: &MessageView,
     width: usize,
     notice: Option<&(NoticeKind, String)>,
 ) -> Vec<String> {
-    let from = view.from.as_deref().unwrap_or(strings::GONE_MEMBER);
     let mut out = Vec::new();
     if let Some((kind, text)) = notice {
         let label = match kind {
@@ -770,19 +770,10 @@ fn reader_lines(
             NoticeKind::Error => "Problem",
         };
         out.extend(pager::wrap(&[format!("{label}: {text}")], width));
+        out.push(String::new());
     }
-    out.push(format!("From {from} at {}", format_utc(view.at)));
-    out.extend(pager::wrap(
-        &[if view.can_reply {
-            strings::HELP_READER.to_owned()
-        } else {
-            strings::HELP_READER_NO_REPLY.to_owned()
-        }],
-        width,
-    ));
-    out.push(String::new());
     let body: Vec<String> = view.body.as_str().split('\n').map(str::to_owned).collect();
-    out.extend(pager::wrap(&body, width));
+    out.extend(pager::wrap_quoted(&body, width));
     out
 }
 

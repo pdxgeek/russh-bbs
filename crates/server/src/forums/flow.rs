@@ -9,7 +9,7 @@ use russh_bbs_core::forums::{
 };
 
 use russh_bbs_core::terminal_settings::{
-    Pager, PagerEffect, PagerKey, TerminalSettings, format_utc,
+    Pager, PagerEffect, PagerKey, TerminalSettings,
 };
 use russh_bbs_core::waiting_room::NoticeKind;
 
@@ -1123,14 +1123,14 @@ impl ForumsScreen {
     }
 }
 
-/// The reader's text: a header, then the post wrapped to `width`. The notice (a result of the
-/// last action) is shown as the first line.
+/// The reader's text: the post wrapped to `width`, quote marks kept on every wrapped row. The
+/// header block, the post's position and the keys are drawn by the reader around the text
+/// (`ui::screens::reader`); the notice (a result of the last action) is the first line.
 fn reader_lines(
     view: &ThreadView,
     width: usize,
     notice: Option<&(NoticeKind, String)>,
 ) -> Vec<String> {
-    let author = view.post.author.as_deref().unwrap_or(strings::GONE_MEMBER);
     let mut out = Vec::new();
     if let Some((kind, text)) = notice {
         let label = match kind {
@@ -1138,23 +1138,8 @@ fn reader_lines(
             NoticeKind::Error => "Problem",
         };
         out.extend(pager::wrap(&[format!("{label}: {text}")], width));
+        out.push(String::new());
     }
-    out.push(format!(
-        "Post {} of {} in {}",
-        view.index + 1,
-        view.total,
-        view.thread.board_name
-    ));
-    out.push(format!("From {author} at {}", format_utc(view.post.at)));
-    out.extend(pager::wrap(
-        &[if view.can_moderate {
-            strings::HELP_READER_MODERATE.to_owned()
-        } else {
-            strings::HELP_READER_NOTE.to_owned()
-        }],
-        width,
-    ));
-    out.push(String::new());
     let body: Vec<String> = view
         .post
         .body
@@ -1162,7 +1147,7 @@ fn reader_lines(
         .split('\n')
         .map(str::to_owned)
         .collect();
-    out.extend(pager::wrap(&body, width));
+    out.extend(pager::wrap_quoted(&body, width));
     out
 }
 
