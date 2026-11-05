@@ -22,7 +22,7 @@ use russh_bbs_core::waiting_room::View;
 use crate::ui::classic::notice_line;
 use crate::ui::depth::{ColorDepth, Surfaces, Tint};
 use crate::ui::strings::StringTable;
-use crate::ui::theme::skin::ASCII_BORDER;
+use crate::ui::theme::skin::{ASCII_BORDER, BLOCKS_BORDER};
 use crate::ui::theme::{BorderSet, Element, Palette, Skin, Theme, TitleAlign};
 
 mod prefs;
@@ -35,6 +35,8 @@ pub(crate) const MAX_WIDTH: u16 = 76;
 pub(crate) struct Look {
     color: bool,
     ascii_borders: bool,
+    /// The member chose the Blocks border (FIX-UI-7a); the ASCII tier still wins.
+    blocks_borders: bool,
     /// The layout in force (a fallback for a small terminal, not the member's choice).
     layout: LayoutId,
     palette: Palette,
@@ -62,6 +64,7 @@ impl Look {
         Self {
             color: settings.use_color(),
             ascii_borders: settings.icon_tier() == Tier::Ascii || prefs::ascii_borders(settings),
+            blocks_borders: prefs::blocks_borders(settings),
             layout,
             palette,
             skin: Skin::default(),
@@ -201,6 +204,8 @@ impl Look {
     ) -> Block<'static> {
         let set = if self.ascii_borders {
             BorderSet::Ascii
+        } else if self.blocks_borders {
+            BorderSet::Blocks
         } else {
             self.skin.border(element)
         };
@@ -212,6 +217,7 @@ impl Look {
             block = match (set.border_type(), set) {
                 (Some(kind), _) => block.border_type(kind),
                 (None, BorderSet::Ascii) => block.border_set(ASCII_BORDER),
+                (None, BorderSet::Blocks) => block.border_set(BLOCKS_BORDER),
                 (None, _) => block,
             };
         }

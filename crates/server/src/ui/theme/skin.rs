@@ -24,6 +24,23 @@ pub(crate) const ASCII_BORDER: border::Set = border::Set {
     horizontal_bottom: "-",
 };
 
+/// Block-element box (FIX-UI-7a): half blocks on the sides and top and bottom, quadrants in the
+/// corners. A font draws block elements to fill the whole cell, so the edges stay solid where a
+/// terminal that draws `│ ─ ┌` from the font (macOS Terminal.app) leaves gaps with extra line
+/// spacing. It is the "inside" form: every edge sits against the content (`▐` on the left, `▌`
+/// on the right, `▄` along the top, `▀` along the bottom), so the corners (`▗ ▖ ▝ ▘`) join the
+/// edges with no step. Fixed characters, chrome only.
+pub(crate) const BLOCKS_BORDER: border::Set = border::Set {
+    top_left: "\u{2597}",
+    top_right: "\u{2596}",
+    bottom_left: "\u{259d}",
+    bottom_right: "\u{2598}",
+    vertical_left: "\u{2590}",
+    vertical_right: "\u{258c}",
+    horizontal_top: "\u{2584}",
+    horizontal_bottom: "\u{2580}",
+};
+
 /// A border drawing.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BorderSet {
@@ -37,6 +54,8 @@ pub enum BorderSet {
     Thick,
     /// `+ - |`.
     Ascii,
+    /// Block elements that fill the cell ([`BLOCKS_BORDER`]).
+    Blocks,
     /// No border: the panel is told apart by its background and its title.
     None,
 }
@@ -49,19 +68,20 @@ impl BorderSet {
             "double" => Self::Double,
             "thick" => Self::Thick,
             "ascii" => Self::Ascii,
+            "blocks" => Self::Blocks,
             "none" => Self::None,
             _ => return None,
         })
     }
 
-    /// The ratatui border type, or `None` for the ASCII set and for no border.
+    /// The ratatui border type, or `None` for the custom sets (ASCII, blocks) and for no border.
     pub(crate) const fn border_type(self) -> Option<BorderType> {
         match self {
             Self::Plain => Some(BorderType::Plain),
             Self::Rounded => Some(BorderType::Rounded),
             Self::Double => Some(BorderType::Double),
             Self::Thick => Some(BorderType::Thick),
-            Self::Ascii | Self::None => None,
+            Self::Ascii | Self::Blocks | Self::None => None,
         }
     }
 }

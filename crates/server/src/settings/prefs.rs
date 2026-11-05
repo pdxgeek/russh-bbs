@@ -20,6 +20,11 @@ pub(super) fn ascii_borders(settings: &TerminalSettings) -> bool {
     settings.borders() == BorderChoice::Ascii
 }
 
+/// Whether the member chose the Blocks border.
+pub(super) fn blocks_borders(settings: &TerminalSettings) -> bool {
+    settings.borders() == BorderChoice::Blocks
+}
+
 /// Whether the member wants motion.
 pub(super) fn motion(settings: &TerminalSettings) -> bool {
     settings.motion()

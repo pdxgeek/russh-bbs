@@ -40,6 +40,9 @@ pub const GLYPH_WHY: &str = "member.glyph_why";
 pub const GLYPH_STYLE: &str = "member.glyph_style";
 /// Names the icons in the sample row, in order.
 pub const GLYPH_LEGEND: &str = "member.glyph_legend";
+/// Line-spacing hint under the sample row (FIX-UI-7a): a terminal that draws box lines from the
+/// font with extra line spacing shows gaps in them.
+pub const GLYPH_SPACING_HINT: &str = "member.glyph_spacing_hint";
 /// The question.
 pub const GLYPH_QUESTION: &str = "member.glyph_question";
 /// Footer on the first run.
@@ -157,6 +160,8 @@ pub const DEPTH_TRUECOLOR: &str = "member.depth_truecolor";
 pub const BORDERS_THEME: &str = "member.borders_theme";
 /// Name of plain ASCII borders.
 pub const BORDERS_ASCII: &str = "member.borders_ascii";
+/// Border choice name (FIX-UI-7a).
+pub const BORDERS_BLOCKS: &str = "member.borders_blocks";
 /// Name of the dashboard layout.
 pub const LAYOUT_DASHBOARD: &str = "member.layout_dashboard";
 /// Name of the wide layout.
@@ -173,7 +178,7 @@ pub const LAYOUT_LIGHTBAR: &str = "member.layout_lightbar";
 pub const LAYOUT_COMPACT: &str = "member.layout_compact";
 
 /// Every key above except [`TITLE`]; the string table must hold exactly these in `member.*`.
-pub const TEXT_KEYS: [&str; 71] = [
+pub const TEXT_KEYS: [&str; 73] = [
     MAIL_SSH_ONLY,
     LOGIN_HEADING,
     SIGNED_IN_AS,
@@ -186,6 +191,7 @@ pub const TEXT_KEYS: [&str; 71] = [
     GLYPH_WHY,
     GLYPH_STYLE,
     GLYPH_LEGEND,
+    GLYPH_SPACING_HINT,
     GLYPH_QUESTION,
     GLYPH_FOOTER_FIRST,
     GLYPH_FOOTER_AGAIN,
@@ -238,6 +244,7 @@ pub const TEXT_KEYS: [&str; 71] = [
     DEPTH_TRUECOLOR,
     BORDERS_THEME,
     BORDERS_ASCII,
+    BORDERS_BLOCKS,
     LAYOUT_DASHBOARD,
     LAYOUT_WIDE,
     LAYOUT_FOCUS,

@@ -421,6 +421,8 @@ impl Ui {
 }
 
 #[cfg(test)]
+mod blocks_tests;
+#[cfg(test)]
 mod gallery_tests;
 #[cfg(test)]
 mod layout_tests;
