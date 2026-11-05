@@ -17,7 +17,7 @@ use super::flow::{Input, InputKind, MailScreen, State, confirm_text, reader_titl
 use super::strings;
 use crate::settings::{self, Look};
 use crate::ui::art::Slot as ArtSlot;
-use crate::ui::classic::{self, MENU_MARKERS};
+use crate::ui::classic;
 use crate::ui::editor::EditorView;
 use crate::ui::frame::{ArtRequest, ChromeText, FrameSpec, Hint};
 use crate::ui::popup::{self, Popup, PopupKind, PopupLine};
@@ -57,7 +57,7 @@ pub(crate) fn render(frame: &mut Frame<'_>, screen: &MailScreen, ctx: &DrawCtx<'
                 &EditorView {
                     ui: ctx.ui,
                     settings: ctx.settings,
-                    markers: &MENU_MARKERS,
+                    markers: ctx.markers,
                 },
             );
         });
