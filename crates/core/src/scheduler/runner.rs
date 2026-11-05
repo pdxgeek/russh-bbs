@@ -111,11 +111,38 @@ impl<S: SchedulerStore> Scheduler<S> {
     /// Run every job that is due now, all at once, and return when they have finished and their
     /// outcomes are recorded. A job that is still running from an overlapping call is skipped.
     pub async fn tick(&self) -> Vec<RunReport> {
-        let now = self.clock.now();
-        // A task yields `None` when its run passed the timeout.
+        let mut never = std::pin::pin!(std::future::pending::<()>());
+        self.tick_until(&mut never).await.unwrap_or_default()
+    }
+
+    /// [`Scheduler::tick`], but give up when `stop` resolves: every job task still running is
+    /// aborted **and awaited**, so none is left running (and writing) when this returns `None`.
+    /// Dropping a `JoinSet` only requests the abort, and a task that is mid-poll on another
+    /// worker keeps going until it yields, which let a job write after the store had closed.
+    async fn tick_until<F: Future<Output = ()>>(
+        &self,
+        stop: &mut std::pin::Pin<&mut F>,
+    ) -> Option<Vec<RunReport>> {
         let mut tasks: JoinSet<Option<Result<(), JobFailure>>> = JoinSet::new();
         // task id -> (job, guard); the guard lives until the outcome is recorded.
         let mut started: HashMap<tokio::task::Id, (Arc<Entry>, RunningGuard)> = HashMap::new();
+        let finished = tokio::select! {
+            () = &mut *stop => None,
+            reports = self.drive(&mut tasks, &mut started) => Some(reports),
+        };
+        if finished.is_none() {
+            tasks.shutdown().await;
+        }
+        finished
+    }
+
+    async fn drive(
+        &self,
+        tasks: &mut JoinSet<Option<Result<(), JobFailure>>>,
+        started: &mut HashMap<tokio::task::Id, (Arc<Entry>, RunningGuard)>,
+    ) -> Vec<RunReport> {
+        let now = self.clock.now();
+        // A task yields `None` when its run passed the timeout.
         for entry in &self.entries {
             // Take the flag first: two overlapping ticks cannot both pass this.
             let Some(guard) = RunningGuard::take(entry) else {
@@ -176,9 +203,8 @@ impl<S: SchedulerStore> Scheduler<S> {
         tokio::pin!(shutdown);
         info!(jobs = self.entries.len(), "scheduler started");
         loop {
-            tokio::select! {
-                () = &mut shutdown => break,
-                _ = self.tick() => {}
+            if self.tick_until(&mut shutdown).await.is_none() {
+                break;
             }
             tokio::select! {
                 () = &mut shutdown => break,

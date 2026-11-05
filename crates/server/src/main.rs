@@ -113,6 +113,9 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
     mail_key_path: &std::path::Path,
     themes_dir: Option<&std::path::Path>,
 ) -> anyhow::Result<()> {
+    // Before anything listens, so a stop signal at any point after "listening" is handled.
+    let mut signals = shutdown::Signals::install().context("installing the signal handlers")?;
+
     // A registration mode set in the file, environment or flags wins over the stored value
     // (decision D38); when none is set the stored value stands.
     if let Some(mode) = loaded.registration_mode_override() {
@@ -221,11 +224,15 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
             .await;
     });
 
-    shutdown::wait_for_signal()
+    signals
+        .wait()
         .await
         .context("waiting for shutdown signal")?;
     info!("shutting down");
+    // `abort` only requests the stop: wait until the task is really gone, or it can still be
+    // writing when the store's final checkpoint runs (FIX-M4-1).
     purge.abort();
+    let _ = purge.await;
     // Stop the scheduler before the store closes, so no job is left writing to a closed pool.
     // `run` returns at once (it drops a tick in progress), so this wait is short.
     let _ = stop_scheduler.send(());
