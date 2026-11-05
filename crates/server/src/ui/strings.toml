@@ -268,8 +268,8 @@ goodbye = "Goodbye, {handle}."
 settings_saved_note = "Your terminal settings are saved."
 setting_look = "Layout: {layout}   Theme: {theme}"
 menu_layout = "Next layout   [t] Next theme"
-menu_display = "Toggle motion   [d] Next depth   [r] Next borders"
-setting_display = "Motion: {motion}   Depth: {depth}   Borders: {borders}"
+menu_display = "Toggle motion  [d] Depth  [r] Borders  [o] Mouse"
+setting_display = "Motion: {motion}  Depth: {depth}  Borders: {borders}  Mouse: {mouse}"
 set_by_sysop = " (set by the sysop)"
 board_default = " (board default)"
 depth_auto = "auto"
@@ -387,3 +387,36 @@ poll_option_long = "An option is too long."
 poll_duplicate = "Two options are the same."
 poll_description = "The description is too long."
 failed = "That did not work. Nothing was changed. Try again."
+
+# The command palette (UI-9). Ctrl-K at the main menu.
+[palette]
+title = "Go to"
+prompt = ">"
+empty = "Nothing matches."
+hint = "Type to search   Up/Down choose   Enter go   Esc close"
+recent = "(recent)"
+
+[palette.group]
+area = "area"
+settings = "settings"
+door = "door"
+board = "board"
+
+[palette.settings]
+width = "Settings: width"
+height = "Settings: height"
+mouse = "Settings: mouse on or off"
+motion = "Settings: motion on or off"
+layout = "Settings: next layout"
+theme = "Settings: next theme"
+
+# Toasts (UI-9): short notices over the body. The kind word comes first so the text reads the
+# same with no colour and to a screen reader.
+[toast]
+notice = "Notice"
+mail = "Mail"
+page = "Page"
+door = "Door"
+mouse_on = "Mouse is on. Click rows to open them, turn the wheel to scroll."
+mouse_off = "Mouse is off."
+new_mail = "You have {count} unread mail."

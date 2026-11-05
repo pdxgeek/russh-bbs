@@ -654,3 +654,516 @@ mod frame {
         assert!(colour_sgr.is_empty(), "{colour_sgr:?}");
     }
 }
+
+// ---- UI-9: the mouse, the command palette, toasts and the ticker on a real screen ----
+
+mod interaction {
+    #![allow(clippy::panic, clippy::assert_is_empty)]
+
+    use std::time::{Duration, Instant};
+
+    use russh_bbs_core::access::{Permission, Slug, Snapshot, Via};
+    use russh_bbs_core::icons::Tier;
+    use russh_bbs_core::sanitize::sanitize_username;
+    use russh_bbs_core::store::AccountId;
+    use russh_bbs_core::terminal_settings::{LayoutId, MemberFlow, TerminalSettings};
+
+    use super::{Key, PtySize, RenderCap, Screen, text};
+    use crate::config::BoardConfig;
+    use crate::ssh::screen::{KeyEffects, PaletteAsk};
+    use crate::ui::Ui;
+    use crate::ui::board::Board;
+    use crate::ui::input::mouse::{Button, Kind, Mouse};
+    use crate::ui::input::{Click, Region};
+    use crate::ui::toast::{Kind as ToastKind, Text};
+
+    const ON: &str = "\x1b[?1000h\x1b[?1006h";
+    const OFF: &str = "\x1b[?1006l\x1b[?1000l";
+
+    fn settings(mouse: bool) -> TerminalSettings {
+        TerminalSettings::default()
+            .with_tier(Tier::Unicode)
+            .with_mouse(mouse)
+    }
+
+    fn screen_with(ui: Ui, permissions: &[Permission], settings: TerminalSettings) -> Screen {
+        let flow = MemberFlow::new(
+            &sanitize_username("alice").unwrap(),
+            Snapshot::from_role(
+                Some(AccountId::from_raw(1)),
+                &Slug::MEMBER,
+                10,
+                &Via::Account,
+                permissions.iter().copied(),
+            ),
+            None,
+            settings,
+        );
+        let mut screen = Screen::new(
+            PtySize::from_request(100, 30),
+            RenderCap::default(),
+            super::super::Content::Member(Box::new(flow)),
+            std::sync::Arc::new(ui),
+        )
+        .unwrap();
+        screen.set_client_terminal(Some("xterm-256color"), Some("truecolor"));
+        screen
+    }
+
+    fn member(permissions: &[Permission], settings: TerminalSettings) -> Screen {
+        screen_with(Ui::standard().unwrap(), permissions, settings)
+    }
+
+    /// Enter, then press a key past the sign-in page so the main menu is up and drawn.
+    fn at_menu(screen: &mut Screen) {
+        screen.enter().unwrap();
+        screen.apply_keys(&[Key::Char('x')]);
+        screen.render().unwrap();
+    }
+
+    fn all() -> Vec<Permission> {
+        Permission::ALL.to_vec()
+    }
+
+    fn click(col: u16, row: u16) -> Mouse {
+        Mouse {
+            kind: Kind::Down(Button::Left),
+            col,
+            row,
+        }
+    }
+
+    /// Where the last frame drew the menu row whose hotkey is `hotkey`.
+    fn row_of(screen: &Screen, hotkey: char) -> (u16, u16) {
+        for region in screen.interact.hits().regions() {
+            if let Region::List {
+                rect,
+                offset,
+                click: Click::Hotkeys(keys),
+                ..
+            } = region
+                && let Some(at) = keys.iter().position(|k| *k == hotkey)
+            {
+                let row = u16::try_from(at - offset).unwrap();
+                return (rect.x + 2, rect.y + row);
+            }
+        }
+        panic!("no menu row for {hotkey:?}");
+    }
+
+    fn redraw(screen: &mut Screen) -> String {
+        let size = screen.pty;
+        screen.set_size(size);
+        text(&screen.render().unwrap().unwrap_or_default())
+    }
+
+    #[test]
+    fn the_mouse_is_off_by_default_and_the_client_is_never_told_to_report_it() {
+        let mut screen = member(&all(), settings(false));
+        let first = text(&screen.enter().unwrap());
+        assert!(
+            !first.contains("1000h") && !first.contains("1006h"),
+            "{first:?}"
+        );
+        let last = text(&screen.leave().unwrap());
+        assert!(!last.contains("1000") && !last.contains("1006"), "{last:?}");
+    }
+
+    #[test]
+    fn mouse_reporting_turns_on_with_the_first_frame_and_off_before_the_screen_is_left() {
+        let mut screen = member(&all(), settings(true));
+        let first = text(&screen.enter().unwrap());
+        assert!(first.contains(ON), "{first:?}");
+        let last = text(&screen.leave().unwrap());
+        assert!(last.contains(OFF), "{last:?}");
+        // Off while the alternate screen is still up, so the person's own terminal is left as
+        // it was.
+        assert!(
+            last.find(OFF).unwrap() < last.find("\x1b[?1049l").unwrap(),
+            "{last:?}"
+        );
+        // And never twice.
+        assert!(!text(&screen.leave().unwrap()).contains(OFF));
+    }
+
+    #[test]
+    fn turning_the_setting_off_mid_session_turns_reporting_off_and_says_so() {
+        let mut screen = member(&all(), settings(true));
+        at_menu(&mut screen);
+        // The settings screen: `s` opens it, `o` flips the mouse and saves.
+        let effects = screen.apply_keys(&[Key::Char('s'), Key::Char('o')]);
+        assert!(effects.save_settings.is_some_and(|s| !s.mouse()));
+        let frame = text(&screen.render().unwrap().unwrap());
+        assert!(frame.contains(OFF), "{frame:?}");
+        // The toast is the next frame.
+        let toast = redraw(&mut screen);
+        assert!(toast.contains("Mouse") && toast.contains("off"), "{toast}");
+    }
+
+    #[test]
+    fn reports_do_nothing_while_the_mouse_is_off() {
+        let mut screen = member(&all(), settings(false));
+        at_menu(&mut screen);
+        // No regions are acted on: a click where Forums is draws nothing and presses nothing.
+        let (col, row) = row_of(&screen, 'f');
+        assert!(screen.mouse_keys(&[click(col, row)], false).is_empty());
+    }
+
+    /// Keyboard parity: a click on a row presses exactly the key the row names, so it can do
+    /// nothing a typed key cannot, and every row is also reachable without the mouse.
+    #[test]
+    fn a_click_on_a_menu_row_does_exactly_what_its_hotkey_does() {
+        for layout in [
+            LayoutId::Classic,
+            LayoutId::Lightbar,
+            LayoutId::Dashboard,
+            LayoutId::Wide,
+        ] {
+            let make = |_mouse| member(&all(), settings(true).with_layout(layout));
+            for hotkey in ['f', 'm', 'c', 'd', 'u', 'y', 'i', 's', 'o', 'l'] {
+                let mut clicked = make(true);
+                at_menu(&mut clicked);
+                let (col, row) = row_of(&clicked, hotkey);
+                let keys = clicked.mouse_keys(&[click(col, row)], false);
+                assert_eq!(keys, vec![Key::Char(hotkey)], "{layout:?} {hotkey}");
+                let by_mouse = clicked.apply_keys(&keys);
+                let mut typed = make(false);
+                at_menu(&mut typed);
+                let by_key = typed.apply_keys(&[Key::Char(hotkey)]);
+                assert_eq!(
+                    format!("{by_mouse:?}"),
+                    format!("{by_key:?}"),
+                    "{layout:?} {hotkey}"
+                );
+                assert_eq!(
+                    redraw(&mut clicked),
+                    redraw(&mut typed),
+                    "{layout:?} {hotkey}"
+                );
+            }
+        }
+    }
+
+    /// The compact layout is for tiny terminals and screen readers: it has no mouse targets, so a
+    /// click or the wheel does nothing there and the keys do everything.
+    #[test]
+    fn the_compact_layout_has_no_mouse_targets_and_stays_keyboard_only() {
+        let mut screen = member(&all(), settings(true).with_layout(LayoutId::Compact));
+        at_menu(&mut screen);
+        assert!(screen.interact.hits().regions().is_empty());
+        let wheel = Mouse {
+            kind: Kind::ScrollDown,
+            col: 5,
+            row: 5,
+        };
+        assert!(screen.mouse_keys(&[click(5, 5), wheel], false).is_empty());
+        let effects = screen.apply_keys(&[Key::Char('f')]);
+        assert!(effects.forum_request.is_some());
+    }
+
+    #[test]
+    fn a_click_that_hits_nothing_changes_nothing() {
+        let mut screen = member(&all(), settings(true));
+        at_menu(&mut screen);
+        for (col, row) in [(0, 0), (99, 29), (50, 0), (50, 29), (200, 200)] {
+            assert!(
+                screen.mouse_keys(&[click(col, row)], false).is_empty(),
+                "{col},{row}"
+            );
+        }
+    }
+
+    #[test]
+    fn the_wheel_moves_the_lightbar_like_the_arrow_keys() {
+        let make = || member(&all(), settings(true).with_layout(LayoutId::Lightbar));
+        let mut wheeled = make();
+        at_menu(&mut wheeled);
+        let (col, row) = row_of(&wheeled, 'f');
+        let wheel = Mouse {
+            kind: Kind::ScrollDown,
+            col,
+            row,
+        };
+        let keys = wheeled.mouse_keys(&[wheel, wheel], false);
+        assert_eq!(keys, vec![Key::Down, Key::Down]);
+        wheeled.apply_keys(&keys);
+        let mut typed = make();
+        at_menu(&mut typed);
+        typed.apply_keys(&[Key::Down, Key::Down]);
+        assert_eq!(redraw(&mut wheeled), redraw(&mut typed));
+    }
+
+    #[test]
+    fn a_click_in_the_same_batch_as_typing_is_dropped() {
+        let mut screen = member(&all(), settings(true));
+        at_menu(&mut screen);
+        let (col, row) = row_of(&screen, 'f');
+        assert!(screen.mouse_keys(&[click(col, row)], true).is_empty());
+    }
+
+    // ---- the palette ----
+
+    fn open_palette(screen: &mut Screen) -> (KeyEffects, String) {
+        let effects = screen.apply_keys(&[Key::Ctrl('k')]);
+        let frame = redraw(screen);
+        (effects, frame)
+    }
+
+    #[test]
+    fn ctrl_k_opens_the_palette_and_a_chosen_area_runs_through_the_normal_path() {
+        let mut screen = member(&all(), settings(false));
+        at_menu(&mut screen);
+        let (effects, frame) = open_palette(&mut screen);
+        assert_eq!(
+            effects.palette,
+            PaletteAsk::Boards,
+            "the session is asked for the board names"
+        );
+        assert!(frame.contains("Go to"), "{frame}");
+        // Type, and see only the match; Enter runs it as the Forums hotkey would.
+        let effects =
+            screen.apply_keys(&[Key::Char('f'), Key::Char('o'), Key::Char('r'), Key::Enter]);
+        assert!(effects.forum_request.is_some(), "{effects:?}");
+        let after = redraw(&mut screen);
+        assert!(!after.contains("Go to"), "the palette closed");
+    }
+
+    #[test]
+    fn the_palette_runs_a_setting_page_and_a_door_by_their_key_paths() {
+        let mut screen = member(&all(), settings(true));
+        at_menu(&mut screen);
+        screen.apply_keys(&[Key::Ctrl('k')]);
+        let effects = screen.apply_keys(&[
+            Key::Char('m'),
+            Key::Char('o'),
+            Key::Char('u'),
+            Key::Char('s'),
+            Key::Char('e'),
+            Key::Enter,
+        ]);
+        // "mouse" matches "Settings: mouse on or off" best: Settings, then `o`.
+        assert!(
+            effects.save_settings.is_some_and(|s| !s.mouse()),
+            "{effects:?}"
+        );
+    }
+
+    #[test]
+    fn a_member_without_a_permission_never_sees_what_it_guards_in_the_palette() {
+        let without_forums: Vec<Permission> = Permission::ALL
+            .iter()
+            .copied()
+            .filter(|p| *p != Permission::ForumList && *p != Permission::DoorsRun)
+            .collect();
+        let mut screen = member(&without_forums, settings(false));
+        at_menu(&mut screen);
+        open_palette(&mut screen);
+        screen.set_palette_boards(vec!["Secret Board".to_owned()]);
+        let frame = redraw(&mut screen);
+        assert!(
+            !frame.contains("Forums") && !frame.contains("Secret"),
+            "{frame}"
+        );
+        // Typing the hidden name finds nothing, and Enter on nothing runs nothing.
+        let effects = screen.apply_keys(&[
+            Key::Char('f'),
+            Key::Char('o'),
+            Key::Char('r'),
+            Key::Char('u'),
+            Key::Char('m'),
+            Key::Enter,
+        ]);
+        assert!(effects.forum_request.is_none(), "{effects:?}");
+        let frame = redraw(&mut screen);
+        assert!(frame.contains("Nothing matches"), "{frame}");
+    }
+
+    #[test]
+    fn boards_the_service_returns_become_entries_and_hostile_names_are_cleaned() {
+        let mut screen = member(&all(), settings(false));
+        at_menu(&mut screen);
+        open_palette(&mut screen);
+        screen.set_palette_boards(vec![
+            "General".to_owned(),
+            "Evil\u{1b}[31m\u{27e6}board".to_owned(),
+        ]);
+        // Only eight rows show at once; typing narrows to the boards.
+        screen.apply_keys(&[Key::Char('g'), Key::Char('e'), Key::Char('n')]);
+        let frame = redraw(&mut screen);
+        assert!(frame.contains("General"), "{frame}");
+        let at = frame.find('\u{27e6}');
+        assert!(
+            at.is_none(),
+            "reserved delimiter drawn: {:?}",
+            at.map(|i| &frame[i.saturating_sub(80)..(i + 40).min(frame.len())])
+        );
+        // Pick the second board: Forums, down once, Enter.
+        screen.apply_keys(&[Key::Backspace, Key::Backspace, Key::Backspace]);
+        let effects =
+            screen.apply_keys(&[Key::Char('e'), Key::Char('v'), Key::Char('i'), Key::Enter]);
+        assert!(effects.forum_request.is_some(), "{effects:?}");
+    }
+
+    #[test]
+    fn the_palette_is_offered_on_the_menu_only_and_the_waiting_room_has_none() {
+        // The waiting room.
+        let mut room = super::screen(PtySize::from_request(80, 24));
+        room.enter().unwrap();
+        let effects = room.apply_keys(&[Key::Ctrl('k')]);
+        assert_eq!(effects.palette, PaletteAsk::Nothing);
+        let frame = redraw(&mut room);
+        assert!(!frame.contains("Go to"), "{frame}");
+        // Ctrl-K inside the settings screen does nothing either.
+        let mut screen = member(&all(), settings(false));
+        at_menu(&mut screen);
+        screen.apply_keys(&[Key::Char('s')]);
+        let effects = screen.apply_keys(&[Key::Ctrl('k')]);
+        assert_eq!(effects.palette, PaletteAsk::Nothing);
+        assert!(!redraw(&mut screen).contains("Go to"));
+    }
+
+    /// Where there is no palette, `Ctrl-K` is the key it always was: the screen gets it, so a
+    /// screen that gives it a meaning keeps it.
+    #[test]
+    fn ctrl_k_outside_the_menu_reaches_the_screen_as_it_always_did() {
+        let mut with = member(&all(), settings(false));
+        let mut without = member(&all(), settings(false));
+        for screen in [&mut with, &mut without] {
+            at_menu(screen);
+            screen.apply_keys(&[Key::Char('s')]);
+        }
+        let by_keys = with.apply_keys(&[Key::Ctrl('k')]);
+        let plain = without.apply_keys_plain(&[Key::Ctrl('k')]);
+        assert_eq!(format!("{by_keys:?}"), format!("{plain:?}"));
+        assert_eq!(redraw(&mut with), redraw(&mut without));
+    }
+
+    #[test]
+    fn escape_closes_the_palette_and_ctrl_c_still_logs_off() {
+        let mut screen = member(&all(), settings(false));
+        at_menu(&mut screen);
+        open_palette(&mut screen);
+        screen.apply_keys(&[Key::Escape]);
+        assert!(!redraw(&mut screen).contains("Go to"));
+        open_palette(&mut screen);
+        let effects = screen.apply_keys(&[Key::Ctrl('c')]);
+        assert!(effects.disconnect, "{effects:?}");
+    }
+
+    #[test]
+    fn a_click_on_a_palette_row_runs_it_and_the_screen_under_it_does_not_answer() {
+        let mut screen = member(&all(), settings(true));
+        at_menu(&mut screen);
+        open_palette(&mut screen);
+        let rows: Vec<_> = screen
+            .interact
+            .hits()
+            .regions()
+            .iter()
+            .filter_map(|r| match r {
+                Region::List {
+                    rect,
+                    click: Click::Open,
+                    ..
+                } => Some(*rect),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(rows.len(), 1, "only the palette answers the mouse");
+        assert_eq!(screen.interact.hits().regions().len(), 1);
+        // The first row is the best match for an empty query: the first area, Forums. A click
+        // there is Enter.
+        let keys = screen.mouse_keys(&[click(rows[0].x + 1, rows[0].y)], false);
+        let effects = screen.apply_keys(&keys);
+        assert!(effects.forum_request.is_some(), "{keys:?} {effects:?}");
+    }
+
+    // ---- toasts ----
+
+    #[test]
+    fn a_toast_appears_over_the_body_and_goes_away_by_itself() {
+        let mut screen = member(&all(), settings(false));
+        at_menu(&mut screen);
+        screen.toast(
+            ToastKind::Page,
+            Text::Member("hello \u{1b}[31mthere\nfriend"),
+        );
+        let frame = redraw(&mut screen);
+        assert!(
+            frame.contains("Page:") && frame.contains("hello"),
+            "{frame}"
+        );
+        assert!(
+            !frame.contains("\u{1b}[31mthere"),
+            "controls are stripped: {frame:?}"
+        );
+        let wake = screen.next_wake(Instant::now()).unwrap();
+        screen.tick(wake + Duration::from_secs(10));
+        let gone = text(&screen.render().unwrap().unwrap());
+        assert!(!gone.contains("hello"), "{gone}");
+        assert!(
+            screen.next_wake(Instant::now()).is_none(),
+            "no timer once nothing is pending"
+        );
+    }
+
+    // ---- the ticker and the redraw budget ----
+
+    fn ticker_ui(text: &str) -> Ui {
+        Ui::standard().unwrap().with_board(
+            Board::from_config(&BoardConfig {
+                ticker: text.to_owned(),
+                ..BoardConfig::default()
+            })
+            .unwrap(),
+        )
+    }
+
+    #[test]
+    fn the_header_shows_the_sysop_ticker_and_motion_off_makes_it_static() {
+        let line = "Tonight: the Saltmarch tournament starts at nine";
+        let mut moving = screen_with(ticker_ui(line), &all(), settings(false).with_motion(true));
+        at_menu(&mut moving);
+        let first = redraw(&mut moving);
+        assert!(first.contains("Tonight"), "{first}");
+        // Static: with motion off nothing is ever pending, so no timer-driven frame is asked for.
+        let mut still = screen_with(ticker_ui(line), &all(), settings(false).with_motion(false));
+        at_menu(&mut still);
+        let frame = redraw(&mut still);
+        assert!(frame.contains("Tonight"), "{frame}");
+        assert!(still.next_wake(Instant::now()).is_none());
+        let now = Instant::now();
+        for secs in 0..30 {
+            still.tick(now + Duration::from_secs(secs));
+        }
+        assert!(still.render().unwrap().is_none(), "static means no redraws");
+    }
+
+    /// The redraw budget: with motion on, the ticker costs at most one frame a second, and each
+    /// frame sends only the header row, not the screen.
+    #[test]
+    fn the_moving_ticker_stays_inside_the_redraw_budget() {
+        let mut screen = screen_with(
+            ticker_ui("A fairly long ticker line that has to scroll to be read in full by anyone"),
+            &all(),
+            settings(false).with_motion(true),
+        );
+        let full = screen.enter().unwrap().len();
+        let start = Instant::now();
+        let mut frames = 0;
+        let mut biggest = 0;
+        for ms in (0..10_000).step_by(50) {
+            screen.tick(start + Duration::from_millis(ms));
+            if let Some(bytes) = screen.render().unwrap() {
+                frames += 1;
+                biggest = biggest.max(bytes.len());
+            }
+        }
+        // One step a second; the clock reads the real time so allow the boundary either side.
+        assert!((1..=12).contains(&frames), "{frames} frames in ten seconds");
+        assert!(
+            biggest < full / 2,
+            "a step sends the header, not the screen: {biggest} of {full}"
+        );
+    }
+}

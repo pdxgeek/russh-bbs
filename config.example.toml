@@ -40,6 +40,10 @@
 # layouts = "classic,dashboard,wide"
 # Set false to turn motion off for every member.
 # motion = true
+# The live line in the header bar (UI-9): up to 8 lines separated by `|`, and optionally the
+# newest headlines of the feed boards each member may read. Motion off makes it static.
+# ticker = "Welcome | Tournament night is Friday"
+# ticker_feeds = false
 
 [mail]
 # The key that seals stored mail (M3-I, D90). Default: mail.key beside the host key (in the

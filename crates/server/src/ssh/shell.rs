@@ -27,7 +27,7 @@ use rand::TryRng as _;
 use rand::rngs::SysRng;
 use russh::ChannelId;
 use russh::server::Handle;
-use russh_bbs_core::access::{Access, Fingerprint, Permission, Snapshot};
+use russh_bbs_core::access::{Access, Fingerprint, Permission, PermissionCheck as _, Snapshot};
 use russh_bbs_core::chat::{ChatNotice, ChatRequest, ChatResponse};
 use russh_bbs_core::founder::{
     ClaimOutcome, FOUNDER_USERNAME, claim_founder, claim_founder_with_password,
@@ -263,6 +263,7 @@ impl<D: Backend> Shell<D> {
             self.finish().await;
             return;
         }
+        self.announce_unread_mail().await;
         let mut next_cycle = tokio::time::Instant::now() + self.parts.redraw_interval;
         loop {
             self.wait_for_work().await;
@@ -289,6 +290,11 @@ impl<D: Backend> Shell<D> {
             if let Some(size) = batch.resize {
                 self.parts.screen.set_size(size);
             }
+            // The mouse (UI-9): reports become the keys they stand for and join the batch, so
+            // they take the ordinary path. Reports that arrive with typed keys are dropped.
+            let mouse = self.keys.take_mouse();
+            let clicks = self.parts.screen.mouse_keys(&mouse, !keys.is_empty());
+            keys.extend(clicks);
             let mut effects = if keys.is_empty() {
                 super::screen::KeyEffects::default()
             } else {
@@ -326,6 +332,14 @@ impl<D: Backend> Shell<D> {
             {
                 leaving = true;
             }
+            if effects.palette == super::screen::PaletteAsk::Boards {
+                self.load_palette_boards().await;
+            }
+            let now = Instant::now();
+            if self.parts.screen.ticker_headlines_due(now) {
+                self.load_ticker_headlines(now).await;
+            }
+            self.parts.screen.tick(now);
             if !batch.finish && !self.draw_frame().await {
                 return;
             }
@@ -468,9 +482,19 @@ impl<D: Backend> Shell<D> {
                 () = self.parts.session.revoke_signal().revoked() => {}
             }
         };
-        match self.keys.deadline() {
+        // The earliest of the parser's deadline (a held `Esc`) and the screen's own (a toast
+        // expiring, the ticker moving). Neither is a timer by itself: each only wakes the loop
+        // the one time it is due, and the loop's redraw cap still applies.
+        let wake = [
+            self.keys.deadline(),
+            self.parts.screen.next_wake(Instant::now()),
+        ]
+        .into_iter()
+        .flatten()
+        .min();
+        match wake {
             Some(deadline) => {
-                // Elapsing is the point: the cycle then expires the held `Esc`.
+                // Elapsing is the point: the cycle then expires the held `Esc` or the toast.
                 let _ = timeout_at(tokio::time::Instant::from_std(deadline), woken).await;
             }
             None => woken.await,
@@ -1163,6 +1187,90 @@ impl<D: Backend> Shell<D> {
             match self.parts.screen.deliver_forum(response) {
                 Some(next) => request = next,
                 None => break,
+            }
+        }
+    }
+
+    /// Tell a member who signs in with unread mail so, with a toast (UI-9). Only when they may
+    /// read mail on this transport (telnet withholds it, D90) and the board can open it; a slow
+    /// or failing store just means no toast.
+    async fn announce_unread_mail(&mut self) {
+        let Some(account) = self.parts.account else {
+            return;
+        };
+        let may_read = self
+            .parts
+            .screen
+            .access()
+            .is_some_and(|access| access.allows(Permission::MailRead));
+        if !may_read || self.parts.screen.mail_keys().is_none() {
+            return;
+        }
+        let counts = timeout(
+            MEMBER_START_TIMEOUT,
+            russh_bbs_core::mail::MailStore::inbox_counts(&*self.parts.directory, account),
+        )
+        .await;
+        if let Ok(Ok((_, unread))) = counts
+            && unread > 0
+        {
+            self.parts.screen.toast(
+                crate::ui::toast::Kind::Mail,
+                crate::ui::toast::Text::Count("toast.new_mail", unread),
+            );
+        }
+    }
+
+    /// The palette opened: ask the forum service which boards this member may list (it filters
+    /// through `core::access`) and hand the names to the palette. A slow or failing store leaves
+    /// the palette without boards; nothing else changes.
+    async fn load_palette_boards(&mut self) {
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let listed = timeout(
+            MEMBER_START_TIMEOUT,
+            russh_bbs_core::forums::boards(&*self.parts.directory, &access),
+        )
+        .await;
+        if let Ok(Ok(boards)) = listed {
+            self.parts
+                .screen
+                .set_palette_boards(boards.into_iter().map(|board| board.name).collect());
+        }
+    }
+
+    /// Fetch the newest headlines of the feed boards this member may read, for the header
+    /// ticker. Only when the sysop turned feed headlines on; a failure keeps the old ones and
+    /// asks again after the usual interval.
+    async fn load_ticker_headlines(&mut self, now: Instant) {
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let store = &*self.parts.directory;
+        let gather = async {
+            let mut subjects = Vec::new();
+            for board in russh_bbs_core::forums::boards(store, &access).await? {
+                if !board.feed {
+                    continue;
+                }
+                let page = russh_bbs_core::forums::threads(store, &access, board.id, 0).await?;
+                subjects.extend(page.threads.into_iter().map(|thread| thread.subject));
+                if subjects.len() >= crate::ui::ticker::MAX_HEADLINES {
+                    break;
+                }
+            }
+            Ok::<_, russh_bbs_core::forums::ForumError>(subjects)
+        };
+        match timeout(MEMBER_START_TIMEOUT, gather).await {
+            Ok(Ok(subjects)) => self.parts.screen.set_ticker_headlines(&subjects, now),
+            Ok(Err(error)) => {
+                warn!(session = ?self.parts.session.id(), %error, "ticker headlines could not be read");
+                self.parts.screen.set_ticker_headlines(&[], now);
+            }
+            Err(_) => {
+                warn!(session = ?self.parts.session.id(), "ticker headlines timed out");
+                self.parts.screen.set_ticker_headlines(&[], now);
             }
         }
     }

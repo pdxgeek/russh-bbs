@@ -107,6 +107,19 @@ pub(crate) async fn ui_settings_round_trip_and_none_follows_the_board<H: Harness
     assert!(read.motion());
     assert_eq!(read.depth_cap(), DepthCap::Auto);
     assert_eq!(read.borders(), BorderChoice::ThemeDefault);
+    // Mouse reporting is the member's choice and starts off (UI-9, migration 0026).
+    assert!(!read.mouse());
+    for mouse in [true, false, true] {
+        let wanted = fresh.with_mouse(mouse);
+        store
+            .set_terminal_settings(alice.id, &wanted)
+            .await
+            .unwrap();
+        let read = store.terminal_settings(alice.id).await.unwrap();
+        assert_eq!(read.mouse(), mouse);
+        assert_eq!(read, wanted);
+    }
+    store.set_terminal_settings(alice.id, &fresh).await.unwrap();
     // Every value of every new setting survives, and a chosen layout can go back to None.
     for cap in DepthCap::ALL {
         for borders in BorderChoice::ALL {

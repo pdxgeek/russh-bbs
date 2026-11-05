@@ -114,6 +114,8 @@ The board's identity, and what members may choose. Every key is optional and the
 | `board.styles` | comma-separated style names | empty (every loaded style) | `RUSSH_BBS_BOARD_STYLES` | none | The styles members can pick. **One entry locks the style for everyone**, whatever they stored. A name that is not loaded is ignored with a warning at start |
 | `board.layouts` | comma-separated layout names | empty (all seven) | `RUSSH_BBS_BOARD_LAYOUTS` | none | The layouts members can pick. One entry locks the layout |
 | `board.motion` | boolean | `true` | `RUSSH_BBS_BOARD_MOTION` | none | `false` turns motion off for every member (the setting is stored; nothing animates yet, UI-4 and UI-8 will read it) |
+| `board.ticker` | up to 8 lines of up to 80 characters, separated by `\|` | empty (clock only) | `RUSSH_BBS_BOARD_TICKER` | none | The live line in the header bar between the board name and the clock (UI-9). Each line is checked like the tagline (no control, invisible or reserved characters, no claim of privacy). With motion on it scrolls one cell a second; with motion off, or on a terminal that has turned it off, it shows the first line, still |
+| `board.ticker_feeds` | boolean | `false` | `RUSSH_BBS_BOARD_TICKER_FEEDS` | none | Also show the newest headlines of the feed boards each member may read (read through `core::access`, sanitized, refreshed every five minutes) |
 
 A member's own choices (style, layout, motion, colour depth ceiling, border set) are stored per member and apply at once; they can only narrow what the board allows and what the client's terminal can show (see [ui.md](ui.md#styles-layouts-and-board-identity-ui-2)).
 

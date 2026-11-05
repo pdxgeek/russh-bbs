@@ -160,6 +160,19 @@ pub(crate) fn draw_menu(
     draw_menu_in(frame, menu_box(body), screen, cursor, Element::Frame, true);
 }
 
+/// The menu rows answer the mouse (UI-9): a click presses the row's own hotkey, the same key
+/// the keyboard uses, in every layout.
+fn record_rows(screen: &MenuScreen<'_>, area: Rect, offset: usize, cursor: Option<usize>) {
+    super::input::list(
+        area,
+        1,
+        offset,
+        screen.page.items.len(),
+        cursor,
+        super::input::Click::Hotkeys(screen.page.items.iter().map(|item| item.hotkey).collect()),
+    );
+}
+
 /// The menu in exactly `outer`, drawn as `element` (a pane of a pane layout, or the main box).
 /// `with_body` puts the signed-in lines and the fallback note above the items; the wide layout
 /// shows them in its centre pane instead.
@@ -248,6 +261,9 @@ pub(crate) fn draw_menu_in(
     let mut state = ListState::default();
     state.select(cursor);
     frame.render_stateful_widget(list, list_area, &mut state);
+    if !screen.page.help {
+        record_rows(screen, list_area, state.offset(), cursor);
+    }
     if usize::from(list_area.height) < screen.page.items.len() {
         let mut bar_state = ScrollbarState::new(
             screen

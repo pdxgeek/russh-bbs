@@ -12,6 +12,7 @@ pub(crate) mod budget;
 mod error;
 mod handler;
 pub mod host_key;
+pub(crate) mod interact;
 pub mod limits;
 pub(crate) mod password;
 pub mod registry;

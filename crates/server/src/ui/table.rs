@@ -412,6 +412,21 @@ pub(crate) fn render(
         return TableView::default();
     }
     draw_rows(frame, spec, &plan, &columns, &paint, look);
+    // The rows answer the mouse (UI-9): a click moves the cursor to the row; a second click on
+    // the same row opens it, as Enter does.
+    super::input::list(
+        plan.data_area,
+        plan.row_height,
+        plan.top,
+        spec.rows.len(),
+        plan.selected,
+        // A numbered table with no cursor is picked by its digits, as the keyboard does.
+        if spec.selected.is_none() && spec.numbered {
+            super::input::Click::Digits
+        } else {
+            super::input::Click::Cursor
+        },
+    );
     if plan.footer_rows == 1
         && let Some(footer) = &spec.footer
     {

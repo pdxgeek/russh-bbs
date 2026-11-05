@@ -231,3 +231,14 @@ Built in `m35/theme-packs-layouts` (D117). The reference is [ui.md](ui.md#styles
 - **Board identity.** Name, tagline, location, since, accent, default style and layout, allowed styles and layouts (one entry locks), motion. The **menu order, area labels, logoff quotes and the login banner art** from the plan are not in this slice (UI-3, UI-6).
 - **Member choices.** Style, layout, motion, colour-depth ceiling and borders, saved per member (migration `0024`), within the board's limits.
 - **Theme gallery, import and export, and the sysop preview** remain UI-3 and UI-7; the screenshots in [ui-screenshots/](ui-screenshots/README.md) are the owner's preview until then.
+
+## UI-9 implementation notes
+
+Built in `m35/interaction` (D-TBD) on today's screens because UI-4 has not started; the reference is [ui.md](ui.md#interaction-mouse-command-palette-toasts-ticker-ui-9-d-tbd). What differs from the plan above:
+
+- **Done now:** the bounded mouse parser (ssh and telnet), click and scroll on menus, tables and the reader, the `Ctrl-K` palette, toasts, and the live header ticker.
+- **Waits for UI-4:** dragging pane dividers, and split-screen chat beside any screen. The divider rectangle (`panes::Plan::divider`) and the hit-region list (`ui::input`) are where they hook in; mouse reporting is requested without drag (`1000` and `1006`), and drag adds `1002`.
+- **Palette scope:** areas, settings pages, doors and boards. Members are not in it: a member has no direct-open request yet, and guessing a list position would open the wrong person.
+- **Mouse is the member's choice and off by default**, because reporting takes over the terminal's own selection and paste.
+- **Toasts have two real sources** (the mouse setting, unread mail at sign-in). Pages and door events are hooks with tests but no source: chat events reach the shell only while the chat screen is up, and doors have no event channel.
+

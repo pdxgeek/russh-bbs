@@ -19,15 +19,19 @@ pub(crate) mod compact;
 pub mod depth;
 pub mod editor;
 pub(crate) mod frame;
+pub(crate) mod input;
 pub(crate) mod keys;
 pub(crate) mod layout;
 pub(crate) mod lightbar;
 pub(crate) mod pager;
+pub(crate) mod palette;
 pub(crate) mod panes;
 pub(crate) mod popup;
 pub mod strings;
 pub(crate) mod table;
 pub mod theme;
+pub(crate) mod ticker;
+pub(crate) mod toast;
 
 use std::path::Path;
 use std::sync::Arc;
@@ -149,6 +153,8 @@ impl Ui {
             .iter()
             .copied()
             .chain(keys::LAYOUT_KEYS.iter().copied())
+            .chain(palette::TEXT_KEYS.iter().copied())
+            .chain(toast::TEXT_KEYS.iter().copied())
             .chain(tree.text_keys())
             .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
             .chain(russh_bbs_core::community::TEXT_KEYS.iter().copied())

@@ -44,6 +44,8 @@ use crate::settings::Look;
 pub(crate) const HEADER_MIN_ROWS: u16 = 12;
 /// Fewest columns for the header bar to appear.
 pub(crate) const HEADER_MIN_COLS: u16 = 40;
+/// Fewest free header columns for the ticker to appear.
+const TICKER_MIN: u16 = 12;
 
 /// Text that is allowed in a bar: words from the string table, or fixed words in the code.
 /// It cannot be made from an arbitrary `&str`, which keeps member text out of the bars.
@@ -247,11 +249,35 @@ impl<'a> FrameSpec<'a> {
         let right_width = u16::try_from(Line::from(right.clone()).width()).unwrap_or(0);
         // The clock goes first: if the area is narrow, the place name is what gives way.
         let right_width = right_width.min(area.width / 2);
+        let left_width = u16::try_from(Line::from(left.clone()).width()).unwrap_or(area.width);
         let left_area = Rect {
             width: area.width - right_width,
             ..area
         };
         frame.render_widget(Paragraph::new(Line::from(left)), left_area);
+        // The live ticker (UI-9) takes the room between the name and the clock, if there is
+        // at least a short line's worth. It is chrome in the header only, never the status bar.
+        if let Some(view) = super::ticker::current() {
+            let room = area
+                .width
+                .saturating_sub(left_width)
+                .saturating_sub(right_width)
+                .saturating_sub(4);
+            if room >= TICKER_MIN {
+                let text = view.window(usize::from(room));
+                frame.render_widget(
+                    Paragraph::new(Line::styled(
+                        text.as_str().to_owned(),
+                        bar.patch(self.look.muted()),
+                    )),
+                    Rect {
+                        x: area.x + left_width + 2,
+                        width: room,
+                        ..area
+                    },
+                );
+            }
+        }
         if right_width > 0 {
             let right_area = Rect {
                 x: area.x + area.width - right_width,
