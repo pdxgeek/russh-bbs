@@ -1,0 +1,527 @@
+[
+ {
+  "run": "m-ssh-132x43-ascii-c",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((42, 0, 11),)": 63
+  },
+  "bytes": 2310965,
+  "truecolor_sgr": 35335,
+  "c256_sgr": 8136,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": 0,
+  "max_palette_index": null
+ },
+ {
+  "run": "m-ssh-132x43-ascii",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((42, 0, 11),)": 63
+  },
+  "bytes": 1042092,
+  "truecolor_sgr": 0,
+  "c256_sgr": 0,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": 0,
+  "max_palette_index": null
+ },
+ {
+  "run": "m-ssh-132x43-nerd",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((42, 0, 0),)": 63
+  },
+  "bytes": 1190876,
+  "truecolor_sgr": 211,
+  "c256_sgr": 185,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m-ssh-132x43-unicode",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((42, 0, 2),)": 63
+  },
+  "bytes": 1190823,
+  "truecolor_sgr": 0,
+  "c256_sgr": 0,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m-ssh-80x24-ascii-c",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((23, 0, 11),)": 63
+  },
+  "bytes": 1272828,
+  "truecolor_sgr": 21748,
+  "c256_sgr": 5864,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": 0,
+  "max_palette_index": null
+ },
+ {
+  "run": "m-ssh-80x24-ascii",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((23, 0, 11),)": 63
+  },
+  "bytes": 534418,
+  "truecolor_sgr": 0,
+  "c256_sgr": 0,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": 0,
+  "max_palette_index": null
+ },
+ {
+  "run": "m-ssh-80x24-nerd",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((23, 0, 0),)": 63
+  },
+  "bytes": 634440,
+  "truecolor_sgr": 0,
+  "c256_sgr": 0,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m-ssh-80x24-unicode",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((23, 0, 2),)": 63
+  },
+  "bytes": 630696,
+  "truecolor_sgr": 0,
+  "c256_sgr": 0,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m-telnet-132x43-nerd",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((42, 0, 1),)": 63
+  },
+  "bytes": 1187775,
+  "truecolor_sgr": 0,
+  "c256_sgr": 368,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m-telnet-80x24-ascii-c",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((23, 0, 10),)": 63
+  },
+  "bytes": 988931,
+  "truecolor_sgr": 0,
+  "c256_sgr": 23566,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": 0,
+  "max_palette_index": null
+ },
+ {
+  "run": "m-telnet-80x24-ascii",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((23, 0, 10),)": 63
+  },
+  "bytes": 542776,
+  "truecolor_sgr": 0,
+  "c256_sgr": 0,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": 0,
+  "max_palette_index": null
+ },
+ {
+  "run": "m-telnet-80x24-nerd",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((23, 0, 1),)": 63
+  },
+  "bytes": 641017,
+  "truecolor_sgr": 0,
+  "c256_sgr": 221,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m-telnet-80x24-unicode",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((23, 0, 2),)": 63
+  },
+  "bytes": 637218,
+  "truecolor_sgr": 0,
+  "c256_sgr": 0,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m2-ssh-132x43-nerd-colour-term-xterm-noct",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((42, 0, 0),)": 63
+  },
+  "bytes": 1865634,
+  "truecolor_sgr": 0,
+  "c256_sgr": 27395,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": 15
+ },
+ {
+  "run": "m2-ssh-132x43-nerd-colour",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((42, 0, 0),)": 63
+  },
+  "bytes": 2823667,
+  "truecolor_sgr": 47566,
+  "c256_sgr": 8027,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m2-ssh-132x43-nerd-mono",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((42, 0, 0),)": 63
+  },
+  "bytes": 1326646,
+  "truecolor_sgr": 211,
+  "c256_sgr": 2672,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": 0,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m2-ssh-132x43-unicode-colour",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((42, 0, 2),)": 63
+  },
+  "bytes": 2958494,
+  "truecolor_sgr": 47892,
+  "c256_sgr": 10705,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m2-ssh-132x43-unicode-mono",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((42, 0, 2),)": 63
+  },
+  "bytes": 1190507,
+  "truecolor_sgr": 0,
+  "c256_sgr": 0,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": 0,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m2-ssh-80x24-nerd-colour-noct",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((23, 0, 0),)": 63
+  },
+  "bytes": 1111588,
+  "truecolor_sgr": 0,
+  "c256_sgr": 25199,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": 255
+ },
+ {
+  "run": "m2-ssh-80x24-nerd-colour-term-vt100-noct",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((23, 0, 0),)": 63
+  },
+  "bytes": 634629,
+  "truecolor_sgr": 0,
+  "c256_sgr": 0,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m2-ssh-80x24-nerd-colour",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((23, 0, 0),)": 63
+  },
+  "bytes": 1402423,
+  "truecolor_sgr": 22820,
+  "c256_sgr": 6042,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m2-ssh-80x24-nerd-mono",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((23, 0, 0),)": 63
+  },
+  "bytes": 715881,
+  "truecolor_sgr": 136,
+  "c256_sgr": 2182,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": 0,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m2-ssh-80x24-unicode-colour-term-xterm-noct",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((23, 0, 2),)": 63
+  },
+  "bytes": 970008,
+  "truecolor_sgr": 0,
+  "c256_sgr": 18405,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": 15
+ },
+ {
+  "run": "m2-ssh-80x24-unicode-colour",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((23, 0, 2),)": 63
+  },
+  "bytes": 1473994,
+  "truecolor_sgr": 22753,
+  "c256_sgr": 8066,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m2-ssh-80x24-unicode-mono",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((23, 0, 2),)": 63
+  },
+  "bytes": 631345,
+  "truecolor_sgr": 0,
+  "c256_sgr": 0,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": 0,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m2-telnet-132x43-ascii-colour",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((42, 0, 10),)": 63
+  },
+  "bytes": 1804876,
+  "truecolor_sgr": 0,
+  "c256_sgr": 36949,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": 0,
+  "max_palette_index": 255
+ },
+ {
+  "run": "m2-telnet-132x43-ascii-mono",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((42, 0, 10),)": 63
+  },
+  "bytes": 1039647,
+  "truecolor_sgr": 0,
+  "c256_sgr": 339,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": 0,
+  "nonascii_wire_bytes_ascii_tier": 0,
+  "max_palette_index": 255
+ },
+ {
+  "run": "m2-telnet-132x43-nerd-colour",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((42, 0, 1),)": 63
+  },
+  "bytes": 2138854,
+  "truecolor_sgr": 0,
+  "c256_sgr": 45991,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m2-telnet-132x43-nerd-mono",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((42, 0, 1),)": 63
+  },
+  "bytes": 1323660,
+  "truecolor_sgr": 0,
+  "c256_sgr": 2866,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": 0,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m2-telnet-132x43-unicode-colour",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((42, 0, 2),)": 63
+  },
+  "bytes": 2268925,
+  "truecolor_sgr": 0,
+  "c256_sgr": 48838,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m2-telnet-132x43-unicode-mono",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((42, 0, 2),)": 63
+  },
+  "bytes": 1190360,
+  "truecolor_sgr": 0,
+  "c256_sgr": 0,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": 0,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m2-telnet-80x24-nerd-colour",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((23, 0, 1),)": 63
+  },
+  "bytes": 1098320,
+  "truecolor_sgr": 0,
+  "c256_sgr": 24339,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m2-telnet-80x24-nerd-mono",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((23, 0, 1),)": 63
+  },
+  "bytes": 709799,
+  "truecolor_sgr": 0,
+  "c256_sgr": 2060,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": 0,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m2-telnet-80x24-unicode-colour",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((23, 0, 2),)": 63
+  },
+  "bytes": 1168754,
+  "truecolor_sgr": 0,
+  "c256_sgr": 26395,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": null,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ },
+ {
+  "run": "m2-telnet-80x24-unicode-mono",
+  "combos": 63,
+  "violations": 0,
+  "marker_signature": {
+   "((23, 0, 2),)": 63
+  },
+  "bytes": 637441,
+  "truecolor_sgr": 0,
+  "c256_sgr": 0,
+  "gfx_sequences": 0,
+  "colour_sgr_in_mono_windows": 0,
+  "nonascii_wire_bytes_ascii_tier": null,
+  "max_palette_index": null
+ }
+]

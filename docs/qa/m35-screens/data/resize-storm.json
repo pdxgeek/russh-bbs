@@ -1,0 +1,115 @@
+{
+ "menu": {
+  "alive": true,
+  "equals_fresh_screen": true,
+  "marker_after": [
+   [
+    23,
+    0
+   ]
+  ],
+  "marker_fresh": [
+   [
+    23,
+    0
+   ]
+  ],
+  "seconds": 15.6
+ },
+ "forums": {
+  "alive": true,
+  "equals_fresh_screen": true,
+  "marker_after": [
+   [
+    23,
+    0
+   ]
+  ],
+  "marker_fresh": [
+   [
+    23,
+    0
+   ]
+  ],
+  "seconds": 16.1
+ },
+ "reader": {
+  "alive": true,
+  "equals_fresh_screen": true,
+  "marker_after": [],
+  "marker_fresh": [],
+  "seconds": 17.6
+ },
+ "saltmarch": {
+  "alive": true,
+  "equals_fresh_screen": true,
+  "marker_after": [],
+  "marker_fresh": [],
+  "seconds": 16.9
+ },
+ "settings": {
+  "alive": true,
+  "equals_fresh_screen": true,
+  "marker_after": [
+   [
+    23,
+    0
+   ]
+  ],
+  "marker_fresh": [
+   [
+    23,
+    0
+   ]
+  ],
+  "seconds": 16.2
+ },
+ "widgets": {
+  "alive": true,
+  "equals_fresh_screen": true,
+  "marker_after": [
+   [
+    23,
+    0
+   ]
+  ],
+  "marker_fresh": [
+   [
+    23,
+    0
+   ]
+  ],
+  "seconds": 17.1
+ },
+ "chat": {
+  "alive": true,
+  "equals_fresh_screen": true,
+  "marker_after": [],
+  "marker_fresh": [],
+  "seconds": 16.0
+ },
+ "mail": {
+  "alive": true,
+  "equals_fresh_screen": true,
+  "marker_after": [],
+  "marker_fresh": [],
+  "seconds": 16.0
+ },
+ "editor": {
+  "alive": true,
+  "equals_fresh_screen": true,
+  "marker_after": [
+   [
+    23,
+    0
+   ]
+  ],
+  "marker_fresh": [
+   [
+    23,
+    0
+   ]
+  ],
+  "seconds": 17.8
+ }
+}
