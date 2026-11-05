@@ -1149,6 +1149,9 @@ mod interaction {
             settings(false).with_motion(true),
         );
         let full = screen.enter().unwrap().len();
+        // Any key ends the entrance effect (UI-8, its own budget), leaving the ticker's steps.
+        screen.apply_keys(&[Key::Other]);
+        screen.render().unwrap();
         let start = Instant::now();
         let mut frames = 0;
         let mut biggest = 0;
