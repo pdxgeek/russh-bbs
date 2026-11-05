@@ -460,7 +460,7 @@ Every figure comes from a service the screens already use: last callers, one-lin
 - **Real OpenSSH 9.6** against the real binary (dashboard, wide, focus and split layouts, the Widgets screen with locks, edits that persist across a reconnect, the ASCII tier in mono, and the marker cell with the `LOW-SECURITY` marker on): [qa/ui-10-walk.md](qa/ui-10-walk.md), with PNGs in [qa/ui-10-screens/](qa/ui-10-screens/). The walk found a defect older than this slice and fixed it here: one ssh key sign-in recorded **two** logins (`auth_publickey` started the whole member session to check the handle and the shell started it again), so "last login" and the "since your last call" mark were always the current sign-in; `MemberSessions::handle_for_key` now checks the key without recording a login, with a regression test that fails on the old code.
 - **Not built / not verified:** drag-to-resize and mouse (UI-9); widgets in accessibility mode as their own screen (M5); the other screens inside the panes (UI-4); real door standings (the doors widget shows seasons: the door framework has no standings call, noted in coordination); live updates of chat lines in a widget (the chat widget shows room counts); other terminal emulators, telnet, a screen reader.
 
-## Effects and graphics (UI-8, D-TBD)
+## Effects and graphics (UI-8, D124)
 
 Built in `m35/effects-graphics`, as **engine and components** on today's screens (UI-4 has not started, so the reader, chat, mail and community screens were not touched). Effects are wired into three places only: the login, the menu transition and the logoff. Everything else is an API in `crates/server/src/ui` for UI-4 and UI-10 to use. Walked over OpenSSH 9.6 in [qa/ui-8-walk.md](qa/ui-8-walk.md).
 

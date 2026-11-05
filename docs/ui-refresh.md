@@ -253,7 +253,7 @@ Built in `m35/widgets` (D122). The reference is [ui.md](ui.md#widgets-ui-10); wh
 
 ## UI-8 implementation notes
 
-Built in `m35/effects-graphics` (D-TBD). The reference is [ui.md](ui.md#effects-and-graphics-ui-8-d-tbd); what differs from the plan above:
+Built in `m35/effects-graphics` (D124). The reference is [ui.md](ui.md#effects-and-graphics-ui-8-d124); what differs from the plan above:
 
 - **Built as engine and components.** UI-4 had not started, so effects are wired into the login, the menu transition and the logoff only. The canvases, charts, image-to-cells and the other effects (fade, glow, gradient, typewriter on a screen) are API for UI-4 and UI-10.
 - **"A typewriter reveal for the login banner"** became the **animated intro** (plasma, starfield and big letters, about 1.8 s) on the login screen, and the typewriter became the **typed goodbye** on the main screen after `Log off`, because that session ends in the same cycle.

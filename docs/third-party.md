@@ -18,8 +18,8 @@ The security rules still win: the shared sanitizer is the only place untrusted t
 | Markdown display | `tui-markdown` | M3 | It must never produce the reserved marker style (bold+reverse); disable `highlight-code`/syntect unless needed |
 | Wrapping and width | `textwrap`, `unicode-width`, `unicode-segmentation` | any | |
 | Fuzzy search | `nucleo` | any | |
-| Image to cells (sysop logos, avatars) | `png` (image-rs; pure Rust, MIT or Apache-2.0) | UI-8 | Adopted: PNG only, decoded under byte, side, pixel, memory and time caps (D-TBD). The `image` crate was not taken (JPEG, GIF and colour management are not needed) |
-| Effects (fades, wipes, typewriter) | none (`tachyonfx` considered) | UI-8 | Hand-written (D47 reason in D-TBD): effects must know the depth model, leave the status row and reserved-style cells alone, and end on exactly the static frame |
+| Image to cells (sysop logos, avatars) | `png` (image-rs; pure Rust, MIT or Apache-2.0) | UI-8 | Adopted: PNG only, decoded under byte, side, pixel, memory and time caps (D124). The `image` crate was not taken (JPEG, GIF and colour management are not needed) |
+| Effects (fades, wipes, typewriter) | none (`tachyonfx` considered) | UI-8 | Hand-written (D47 reason in D124): effects must know the depth model, leave the status row and reserved-style cells alone, and end on exactly the static frame |
 
 ## Email
 
