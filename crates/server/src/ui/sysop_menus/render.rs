@@ -13,7 +13,7 @@ use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Clear, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState};
 use russh_bbs_core::icons::{SecurityMarker, Tier};
-use russh_bbs_core::menu::{MenuToolsScreen, OutlineKind};
+use russh_bbs_core::menu::{MenuToolsScreen, MenuToolsView, OutlineKind};
 
 use super::{Block, MenuSetup, Page};
 use crate::settings::Look;
@@ -255,8 +255,9 @@ pub(crate) fn render_bulletin(
     0
 }
 
-/// Draw the sysop's Menus and pages screen. Returns how far a viewed page can scroll.
-#[allow(clippy::too_many_lines)] // one screen top to bottom: status, the role's menu, the pages
+/// Draw the sysop's Menus and pages screen. Returns how far the open page, or else the role's
+/// menu, can scroll.
+#[allow(clippy::too_many_lines)] // one screen top to bottom: status, then the menu or the pages
 pub(crate) fn render_tools(
     frame: &mut Frame<'_>,
     screen: &MenuToolsScreen,
@@ -272,13 +273,16 @@ pub(crate) fn render_tools(
     }
     let key = ChromeText::fixed;
     let word = |k: &'static str| ChromeText::table(strings, k);
-    let hints = [
+    let mut hints = vec![
         Hint::new(key("r"), word(keys::MENUS_HINT_ROLE)),
+        Hint::new(key("t"), word(keys::MENUS_HINT_TOGGLE)),
         Hint::new(key(arrows(ctx.tier)), word(keys::MENUS_HINT_PAGE)),
-        Hint::new(key("Enter"), word(keys::MENUS_HINT_VIEW)),
-        Hint::new(key("l"), word(keys::MENUS_HINT_RELOAD)),
-        Hint::new(key("b"), word(keys::MENUS_HINT_BACK)),
     ];
+    if screen.view() == MenuToolsView::Pages {
+        hints.push(Hint::new(key("Enter"), word(keys::MENUS_HINT_VIEW)));
+    }
+    hints.push(Hint::new(key("l"), word(keys::MENUS_HINT_RELOAD)));
+    hints.push(Hint::new(key("b"), word(keys::MENUS_HINT_BACK)));
     let body = FrameSpec::new(strings, ctx.look, ctx.tier)
         .markers(ctx.markers)
         .place(word(keys::MENUS_TITLE))
@@ -293,14 +297,17 @@ pub(crate) fn render_tools(
             .sanitize(text)
             .into_string()
     };
-    let mut lines: Vec<Line<'static>> = Vec::new();
+    // The status lines stay on top; the list under them scrolls.
+    let mut top: Vec<Line<'static>> = Vec::new();
+    let mut list: Vec<Line<'static>> = Vec::new();
     let mut cursor_line = 0;
+    let mut scroll = 0;
     match screen.listing() {
-        None => lines.push(Line::styled(
+        None => top.push(Line::styled(
             strings.text(keys::MENUS_LOADING).to_owned(),
             look.muted(),
         )),
-        Some(listing) if listing.unavailable => lines.push(Line::styled(
+        Some(listing) if listing.unavailable => top.push(Line::styled(
             strings.text(keys::MENUS_UNAVAILABLE).to_owned(),
             look.fg(palette.warning),
         )),
@@ -310,85 +317,109 @@ pub(crate) fn render_tools(
             } else {
                 keys::MENUS_USING_DEFAULT
             };
-            lines.push(Line::styled(
+            top.push(Line::styled(
                 strings.text(state).to_owned(),
                 look.fg(palette.key),
             ));
             if let Some(reason) = &listing.problem {
-                lines.push(Line::styled(
+                top.push(Line::styled(
                     strings.filled(keys::MENUS_REFUSED, &[("reason", &clean(reason))]),
                     look.fg(palette.warning),
                 ));
             }
-            lines.push(Line::raw(""));
-            if let Some(role) = listing.roles.get(screen.role()) {
-                lines.push(Line::styled(
-                    strings.filled(keys::MENUS_MENU_FOR, &[("role", &clean(&role.name))]),
-                    heading,
-                ));
-                if role.lines.is_empty() {
-                    lines.push(Line::styled(
-                        strings.text(keys::MENUS_EMPTY).to_owned(),
-                        look.muted(),
+            match screen.view() {
+                MenuToolsView::Menu => {
+                    scroll = screen.outline_scroll();
+                    if let Some(role) = listing.roles.get(screen.role()) {
+                        top.push(Line::styled(
+                            strings.filled(keys::MENUS_MENU_FOR, &[("role", &clean(&role.name))]),
+                            heading,
+                        ));
+                        if role.lines.is_empty() {
+                            list.push(Line::styled(
+                                strings.text(keys::MENUS_EMPTY).to_owned(),
+                                look.muted(),
+                            ));
+                        }
+                        for line in &role.lines {
+                            let indent = "  ".repeat(line.depth + 1);
+                            let tag = match line.kind {
+                                OutlineKind::Menu => " >",
+                                OutlineKind::Page => " *",
+                                OutlineKind::Action | OutlineKind::Placeholder => "",
+                            };
+                            list.push(Line::from(vec![
+                                Span::raw(indent),
+                                Span::styled(format!("[{}] ", line.hotkey), look.fg(palette.key)),
+                                Span::styled(
+                                    format!("{}{tag}", clean(strings.text(line.label))),
+                                    look.text(),
+                                ),
+                            ]));
+                        }
+                    }
+                }
+                MenuToolsView::Pages => {
+                    top.push(Line::styled(
+                        strings.text(keys::MENUS_PAGES).to_owned(),
+                        heading,
                     ));
+                    if listing.pages.is_empty() {
+                        list.push(Line::styled(
+                            strings.text(keys::MENUS_NO_PAGES).to_owned(),
+                            look.muted(),
+                        ));
+                    }
+                    for (at, page) in listing.pages.iter().enumerate() {
+                        let current = at == screen.row();
+                        if current {
+                            cursor_line = list.len();
+                        }
+                        let style = if current {
+                            look.fg(palette.selected)
+                                .patch(look.bg(palette.select_bg))
+                                .add_modifier(Modifier::BOLD)
+                        } else {
+                            look.text()
+                        };
+                        list.push(Line::styled(
+                            format!(
+                                "{}{:<24} {}",
+                                if current { "> " } else { "  " },
+                                page.id,
+                                clean(&page.title)
+                            ),
+                            style,
+                        ));
+                    }
                 }
-                for line in &role.lines {
-                    let indent = "  ".repeat(line.depth + 1);
-                    let tag = match line.kind {
-                        OutlineKind::Menu => " >",
-                        OutlineKind::Page => " *",
-                        OutlineKind::Action | OutlineKind::Placeholder => "",
-                    };
-                    lines.push(Line::from(vec![
-                        Span::raw(indent),
-                        Span::styled(format!("[{}] ", line.hotkey), look.fg(palette.key)),
-                        Span::styled(
-                            format!("{}{tag}", clean(strings.text(line.label))),
-                            look.text(),
-                        ),
-                    ]));
-                }
-            }
-            lines.push(Line::raw(""));
-            lines.push(Line::styled(
-                strings.text(keys::MENUS_PAGES).to_owned(),
-                heading,
-            ));
-            if listing.pages.is_empty() {
-                lines.push(Line::styled(
-                    strings.text(keys::MENUS_NO_PAGES).to_owned(),
-                    look.muted(),
-                ));
-            }
-            for (at, page) in listing.pages.iter().enumerate() {
-                let current = at == screen.row();
-                if current {
-                    cursor_line = lines.len();
-                }
-                let style = if current {
-                    look.fg(palette.selected)
-                        .patch(look.bg(palette.select_bg))
-                        .add_modifier(Modifier::BOLD)
-                } else {
-                    look.text()
-                };
-                lines.push(Line::styled(
-                    format!(
-                        "{}{:<24} {}",
-                        if current { "> " } else { "  " },
-                        page.id,
-                        clean(&page.title)
-                    ),
-                    style,
-                ));
             }
         }
     }
-    let list_rows = usize::from(body.height).saturating_sub(2);
-    let skip = (cursor_line + 1).saturating_sub(list_rows);
-    let shown: Vec<Line<'static>> = lines.into_iter().skip(skip).take(list_rows).collect();
     frame.render_widget(Clear, body);
-    frame.render_widget(Paragraph::new(shown), body);
+    let head = u16::try_from(top.len())
+        .unwrap_or(0)
+        .min(body.height.saturating_sub(2));
+    let head_area = Rect {
+        height: head,
+        ..body
+    };
+    frame.render_widget(Paragraph::new(top), head_area);
+    // One row at the bottom for the last outcome; the list gets the rows between.
+    let list_rows = usize::from(body.height.saturating_sub(head + 1));
+    let max = list.len().saturating_sub(list_rows);
+    let first = if screen.view() == MenuToolsView::Pages {
+        (cursor_line + 1).saturating_sub(list_rows).min(max)
+    } else {
+        scroll.min(max)
+    };
+    let shown: Vec<Line<'static>> = list.into_iter().skip(first).take(list_rows).collect();
+    let list_area = Rect {
+        y: body.y + head,
+        height: u16::try_from(list_rows).unwrap_or(0),
+        ..body
+    };
+    frame.render_widget(Paragraph::new(shown), list_area);
     if body.height >= 2 {
         let row = Rect {
             y: body.y + body.height - 1,
@@ -403,5 +434,9 @@ pub(crate) fn render_tools(
             row,
         );
     }
-    0
+    if screen.view() == MenuToolsView::Menu {
+        max
+    } else {
+        0
+    }
 }

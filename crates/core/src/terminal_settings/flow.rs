@@ -1068,13 +1068,15 @@ impl MemberFlow {
         }
     }
 
-    /// Keys on the menus and pages screen: `r` the next role, Up/Down (or `k`/`j`) the page, Enter
-    /// or `v` opens it as a member would see it, `l` reads the files again, `b` or Esc leaves.
+    /// Keys on the menus and pages screen: `r` the next role, `t` switches between the menu and
+    /// the pages, Up/Down (or `k`/`j`) scroll the menu or move to a page, Enter or `v` opens the
+    /// page as a member would see it, `l` reads the files again, `b` or Esc leaves.
     fn menu_tools_input(&mut self, input: MemberInput) -> MemberEffect {
         let key = match input {
             MemberInput::Up | MemberInput::Char('k' | 'K') => MenuToolsKey::Up,
             MemberInput::Down | MemberInput::Char('j' | 'J') => MenuToolsKey::Down,
             MemberInput::Char('r' | 'R') => MenuToolsKey::Role,
+            MemberInput::Char('t' | 'T') => MenuToolsKey::Toggle,
             MemberInput::Enter | MemberInput::Char('v' | 'V') => MenuToolsKey::View,
             MemberInput::Char('l' | 'L') => MenuToolsKey::Reload,
             MemberInput::Char('b' | 'B') | MemberInput::Escape => MenuToolsKey::Back,

@@ -116,6 +116,7 @@ pub(crate) const PACKS_BUILT_IN: &str = "ui.packs.built_in";
 pub(crate) const MENUS_TITLE: &str = "ui.menus.title";
 pub(crate) const MENUS_HINT_ROLE: &str = "ui.menus.hint_role";
 pub(crate) const MENUS_HINT_PAGE: &str = "ui.menus.hint_page";
+pub(crate) const MENUS_HINT_TOGGLE: &str = "ui.menus.hint_toggle";
 pub(crate) const MENUS_HINT_VIEW: &str = "ui.menus.hint_view";
 pub(crate) const MENUS_HINT_RELOAD: &str = "ui.menus.hint_reload";
 pub(crate) const MENUS_HINT_BACK: &str = "ui.menus.hint_back";
@@ -133,10 +134,11 @@ pub(crate) const MENUS_POSITION: &str = "ui.menus.page_position";
 pub(crate) const MENUS_PAGE_GONE: &str = "ui.menus.page_gone";
 
 /// Every menus-and-pages key, checked with [`FRAMEWORK`].
-pub(crate) const MENUS_KEYS: [&str; 18] = [
+pub(crate) const MENUS_KEYS: [&str; 19] = [
     MENUS_TITLE,
     MENUS_HINT_ROLE,
     MENUS_HINT_PAGE,
+    MENUS_HINT_TOGGLE,
     MENUS_HINT_VIEW,
     MENUS_HINT_RELOAD,
     MENUS_HINT_BACK,

@@ -65,10 +65,22 @@ pub enum MenuToolsKey {
     Role,
     /// Open the page under the cursor as a member would see it.
     View,
+    /// Switch between the role's menu and the list of pages.
+    Toggle,
     /// Read the files again.
     Reload,
     /// Back (out of a page, then out of the screen).
     Back,
+}
+
+/// What the screen is showing under the status lines.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum MenuToolsView {
+    /// The effective menu for the chosen role.
+    #[default]
+    Menu,
+    /// The pages the board has.
+    Pages,
 }
 
 /// What a key asks of the flow.
@@ -90,7 +102,10 @@ pub struct MenuToolsScreen {
     row: usize,
     /// The page being viewed, by id.
     viewing: Option<String>,
+    view: MenuToolsView,
+    /// How far the open page, or else the role's menu, is scrolled.
     scroll: usize,
+    outline_scroll: usize,
     max_scroll: usize,
     message: Option<String>,
 }
@@ -132,20 +147,42 @@ impl MenuToolsScreen {
         self.scroll
     }
 
+    /// Which list is showing.
+    #[must_use]
+    pub const fn view(&self) -> MenuToolsView {
+        self.view
+    }
+
+    /// How far the role's menu is scrolled.
+    #[must_use]
+    pub const fn outline_scroll(&self) -> usize {
+        self.outline_scroll
+    }
+
     /// The last outcome, as one sanitized line.
     #[must_use]
     pub fn message(&self) -> Option<&str> {
         self.message.as_deref()
     }
 
-    /// Tell the screen how far a viewed page can scroll, so Up never has to undo overshoot.
+    /// Tell the screen how far what it shows can scroll (a viewed page, else the role's menu), so
+    /// Up never has to undo overshoot.
     pub fn set_extent(&mut self, max_scroll: usize) {
         self.max_scroll = max_scroll;
         self.scroll = self.scroll.min(max_scroll);
+        self.outline_scroll = self.outline_scroll.min(max_scroll);
     }
 
     /// The server's answer: the listing, and a line saying what happened.
     pub fn listed(&mut self, listing: MenuToolsListing, message: Option<&str>) {
+        if self.listing.is_none() {
+            // Open on the plainest member: the sysop built the menu for them.
+            self.role = listing
+                .roles
+                .iter()
+                .position(|role| role.name == "member")
+                .unwrap_or(0);
+        }
         self.role = self.role.min(listing.roles.len().saturating_sub(1));
         self.row = self.row.min(listing.pages.len().saturating_sub(1));
         if let Some(id) = &self.viewing
@@ -168,7 +205,7 @@ impl MenuToolsScreen {
                     self.viewing = None;
                     self.scroll = 0;
                 }
-                MenuToolsKey::Role | MenuToolsKey::Reload => {}
+                MenuToolsKey::Role | MenuToolsKey::Toggle | MenuToolsKey::Reload => {}
             }
             return MenuToolsStep::Stay;
         }
@@ -180,22 +217,39 @@ impl MenuToolsScreen {
         };
         match key {
             MenuToolsKey::Back => return MenuToolsStep::Leave,
-            MenuToolsKey::Up => self.row = self.row.saturating_sub(1),
-            MenuToolsKey::Down => {
-                self.row = (self.row + 1).min(listing.pages.len().saturating_sub(1));
-            }
+            MenuToolsKey::Up => match self.view {
+                MenuToolsView::Pages => self.row = self.row.saturating_sub(1),
+                MenuToolsView::Menu => self.outline_scroll = self.outline_scroll.saturating_sub(1),
+            },
+            MenuToolsKey::Down => match self.view {
+                MenuToolsView::Pages => {
+                    self.row = (self.row + 1).min(listing.pages.len().saturating_sub(1));
+                }
+                MenuToolsView::Menu => {
+                    self.outline_scroll = (self.outline_scroll + 1).min(self.max_scroll);
+                }
+            },
             MenuToolsKey::Role => {
                 if !listing.roles.is_empty() {
                     self.role = (self.role + 1) % listing.roles.len();
+                    self.outline_scroll = 0;
                 }
             }
-            MenuToolsKey::View => {
+            MenuToolsKey::Toggle => {
+                self.view = match self.view {
+                    MenuToolsView::Menu => MenuToolsView::Pages,
+                    MenuToolsView::Pages => MenuToolsView::Menu,
+                };
+                self.max_scroll = 0;
+            }
+            MenuToolsKey::View if self.view == MenuToolsView::Pages => {
                 if let Some(page) = listing.pages.get(self.row) {
                     self.viewing = Some(page.id.clone());
                     self.scroll = 0;
                     self.max_scroll = 0;
                 }
             }
+            MenuToolsKey::View => {}
             MenuToolsKey::Reload => return MenuToolsStep::Ask(MenuToolsRequest::Reload),
         }
         MenuToolsStep::Stay

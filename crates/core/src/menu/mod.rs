@@ -33,7 +33,7 @@ pub use nav::{MenuKey, MenuOutcome, MenuPage, MenuSession, PageItem};
 pub use outline::{Outline, OutlineKind, OutlineLine, outline};
 pub use tools::{
     Bulletin, BulletinKey, MenuToolsKey, MenuToolsListing, MenuToolsRequest, MenuToolsScreen,
-    MenuToolsStep, PageRow, RoleRow,
+    MenuToolsStep, MenuToolsView, PageRow, RoleRow,
 };
 pub use tree::main_tree;
 
