@@ -57,6 +57,12 @@ impl DoorsScreen {
         }
     }
 
+    /// Whether a door is open (not the list, not waiting for the store).
+    #[cfg(test)]
+    pub(crate) const fn is_playing(&self) -> bool {
+        matches!(self.state, State::Playing(_))
+    }
+
     /// The terminal the doors see changed (a window change, a theme or a layout switch).
     pub(crate) fn set_env(&mut self, env: DoorEnv) {
         self.env = env;

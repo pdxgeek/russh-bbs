@@ -143,6 +143,7 @@ impl Screen {
             strings: theme.strings(),
             look: self.ui.look(&settings, self.viewport, self.depth()),
             tier: settings.icon_tier(),
+            markers: self.status_markers(),
         };
         let tier = ctx.tier;
         // The door sees the terminal as it is now (a resize or a theme switch), not as it was
