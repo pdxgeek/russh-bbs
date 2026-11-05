@@ -61,6 +61,7 @@ fn a_hostile_door_shows_nothing_forbidden_in_any_tier_or_color_setting() {
                 strings: ui.strings(),
                 look: Look::of(&settings),
                 tier,
+                markers: &[],
             };
             let lines = door_lines(40, 8, &ctx, |canvas| {
                 let mut frame = canvas.frame();
@@ -112,6 +113,7 @@ fn the_ascii_tier_gets_ascii_icons_and_the_other_tiers_keep_theirs() {
             strings: ui.strings(),
             look: Look::of(&settings),
             tier,
+            markers: &[],
         };
         door_lines(30, 6, &ctx, |canvas| {
             let mut frame = canvas.frame();
@@ -159,6 +161,7 @@ fn colours_at(depth: ColorDepth) -> Vec<(Option<Color>, Option<Color>)> {
         strings: ui.strings(),
         look: Look::of(&settings).at_depth(depth),
         tier: Tier::Unicode,
+        markers: &[],
     };
     let lines = door_lines(12, 2, &ctx, |canvas| {
         canvas
@@ -219,6 +222,7 @@ fn the_ascii_tier_keeps_the_depth_the_client_has() {
         strings: ui.strings(),
         look: Look::of(&settings).at_depth(ColorDepth::TrueColor),
         tier: Tier::Ascii,
+        markers: &[],
     };
     let lines = door_lines(12, 2, &ctx, |canvas| {
         canvas
@@ -245,6 +249,7 @@ fn a_member_cap_lowers_the_depth_a_door_is_composited_at() {
         strings: ui.strings(),
         look: ui.look(settings, area, ColorDepth::TrueColor),
         tier: Tier::Unicode,
+        markers: &[],
     };
     let door = |ctx: &DrawCtx<'_>| {
         door_lines(12, 2, ctx, |canvas| {

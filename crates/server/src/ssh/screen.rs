@@ -1756,6 +1756,7 @@ impl Screen {
 
     /// Draw the open editor, if there is one. `true` when it was drawn.
     fn draw_editor(&mut self) -> io::Result<bool> {
+        let markers = self.status_markers();
         let (Some(editor), Content::Member(flow)) = (&mut self.editor, &self.content) else {
             return Ok(false);
         };
@@ -1763,7 +1764,7 @@ impl Screen {
         let view = EditorView {
             ui: &self.ui,
             settings: flow.settings(),
-            markers: &MENU_MARKERS,
+            markers,
         };
         self.terminal.draw(|frame| editor.render(frame, &view))?;
         Ok(true)
@@ -2737,5 +2738,7 @@ use doors::{DoorMove, DoorsContent};
 
 #[cfg(test)]
 mod fx_tests;
+#[cfg(test)]
+mod marker_tests;
 #[cfg(test)]
 mod tests;
