@@ -154,6 +154,18 @@ pub struct SessionRegistry {
     open_gate: OpenGate,
     /// The chat hub (M3-F), shared by every transport.
     chat: crate::chat::SharedHub,
+    /// When this registry (the server) started, for the status widget's uptime (UI-10).
+    started: StartedAt,
+}
+
+/// The time the registry was made.
+#[derive(Debug, Clone, Copy)]
+struct StartedAt(std::time::Instant);
+
+impl Default for StartedAt {
+    fn default() -> Self {
+        Self(std::time::Instant::now())
+    }
 }
 
 impl SessionRegistry {
@@ -248,6 +260,18 @@ impl SessionRef {
     #[must_use]
     pub fn id(&self) -> SessionId {
         self.id
+    }
+
+    /// Copies of every live session (the who's-online and status widgets, UI-10).
+    #[must_use]
+    pub(crate) fn live_sessions(&self) -> Vec<SessionSnapshot> {
+        self.registry.snapshots()
+    }
+
+    /// Seconds since the server started.
+    #[must_use]
+    pub(crate) fn uptime_secs(&self) -> u64 {
+        self.registry.started.0.elapsed().as_secs()
     }
 
     /// The count of signed-in sessions per account, shared by every session of this server.

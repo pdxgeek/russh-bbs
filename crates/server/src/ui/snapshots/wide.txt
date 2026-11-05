@@ -1,581 +1,581 @@
-=== phosphor / wide / 80x24 / unicode truecolor / colors=6103d8f6bdb425f1
+=== phosphor / wide / 80x24 / unicode truecolor / colors=da4f4de99a24b3df
  russh-bbs │ Main menu                                                UTC 12:00
 ┌[ Main menu ]───────────────────┐┌[ This board ]───────┐┌[ Clock ]────────────┐
-│ Signed in as alice.            ││ russh-bbs           ││ UTC 12:00           │
-│ Showing Dashboard: this        ││ A bulletin board in ││                     │
-│ terminal is too small for      ││ your terminal.      ││                     │
-│ > [f] Forums                   ││ Portland, OR        ││                     │
-│   [m] Mail                     │└─────────────────────┘└─────────────────────┘
-│   [a] Files  (not built yet)   │┌[ Who is online ]────┐┌[ Last callers ]─────┐
-│   [c] Chat                     ││ Nothing to show     ││ Nothing to show     │
-│   [d] Doors                    ││ yet.                ││ yet.                │
-│   [u] Members                  ││                     ││                     │
-│   [y] Community                ││                     ││                     │
-│   [i] Invites                  ││                     ││                     │
-│   [s] Terminal settings        ││                     ││                     │
-│   [o] Sysop tools              │└─────────────────────┘└─────────────────────┘
-│   [l] Log off                  │┌[ New posts ]────────┐┌[ Unread mail ]──────┐
-│                                ││ Nothing to show     ││ Nothing to show     │
-│                                ││ yet.                ││ yet.                │
-│                                ││                     ││                     │
-│                                ││                     ││                     │
-│                                ││                     ││                     │
+│ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
+│ Showing Dashboard: this        ││ A bulletin board i… ││   ┃  ━┃ • ┃ ┃ ┃ ┃   │
+│ terminal is too small for      ││ Portland, OR        ││   ┃ ┃━  • ┃━┃ ┃━┃   │
+│ > [f] Forums                   ││                     ││ Thu 5 Nov 2026 UTC  │
+│   [m] Mail                     ││                     ││                     │
+│   [a] Files  (not built yet)   │└─────────────────────┘└─────────────────────┘
+│   [c] Chat                     │┌[ Who is online ]────┐┌[ Last callers ]─────┐
+│   [d] Doors                    ││ ● 5 online          ││ bob              2m │
+│   [u] Members                  ││ ▸ alice             ││ carol            1h │
+│   [y] Community                ││ ▸ bob               ││ dave             1d │
+│   [i] Invites                  ││ ▸ carol             ││ erin             2d │
+│   [s] Terminal settings        ││ ▸ dave              ││                     │
+│   [o] Sysop tools              ││ ▸ erin              ││                     │
+│   [l] Log off                  │└─────────────────────┘└─────────────────────┘
+│                                │┌[ New posts ]────────┐┌[ Mail ]─────────────┐
+│                                ││ Active threads: 7   ││ 3 unread            │
+│                                ││ Gener… ███████   4  ││ ████▊░░░░░░░░░░░░░░ │
+│                                ││ Tech   ███▌░░░   2  ││ 12 in your inbox    │
+│                                ││ Chat   █▊░░░░░   1  ││                     │
 │                                ││                     ││                     │
 └────────────────────────────────┘└─────────────────────┘└─────────────────────┘
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / wide / 132x43 / unicode truecolor / colors=528b0c868b7e36b5
+=== phosphor / wide / 132x43 / unicode truecolor / colors=26920b9f9b3fef77
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ┌[ Main menu ]───────────────────┐┌[ russh-bbs ]───────────────────────────────────────────────┐┌[ This board ]────────────────────┐
 │ > [f] Forums                   ││                                                            ││ russh-bbs                        │
-│   [m] Mail                     ││  Signed in as alice.                                       ││ A bulletin board in your         │
-│   [a] Files  (not built yet)   ││                                                            ││ terminal.                        │
-│   [c] Chat                     ││  > [f] Forums                                              ││ Portland, OR · since 2026        │
-│   [d] Doors                    ││                                                            │└──────────────────────────────────┘
-│   [u] Members                  ││                                                            │┌[ Clock ]─────────────────────────┐
-│   [y] Community                ││                                                            ││ UTC 12:00                        │
-│   [i] Invites                  ││                                                            │└──────────────────────────────────┘
-│   [s] Terminal settings        ││                                                            │┌[ Who is online ]─────────────────┐
-│   [o] Sysop tools              ││                                                            ││ Nothing to show yet.             │
-│   [l] Log off                  ││                                                            ││                                  │
+│   [m] Mail                     ││  Signed in as alice.                                       ││ A bulletin board in your termin… │
+│   [a] Files  (not built yet)   ││                                                            ││ Portland, OR · since 2026        │
+│   [c] Chat                     ││  > [f] Forums                                              ││                                  │
+│   [d] Doors                    ││                                                            ││                                  │
+│   [u] Members                  ││                                                            ││                                  │
+│   [y] Community                ││                                                            │└──────────────────────────────────┘
+│   [i] Invites                  ││                                                            │┌[ Clock ]─────────────────────────┐
+│   [s] Terminal settings        ││                                                            ││      ━     ━   ━                 │
+│   [o] Sysop tools              ││                                                            ││   ┃  ━┃ • ┃ ┃ ┃ ┃                │
+│   [l] Log off                  ││                                                            ││   ┃ ┃━  • ┃━┃ ┃━┃                │
+│                                ││                                                            ││ Thu 5 Nov 2026 UTC               │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
+│                                ││                                                            │└──────────────────────────────────┘
+│                                ││                                                            │┌[ Who is online ]─────────────────┐
+│                                ││                                                            ││ ● 5 online                       │
+│                                ││                                                            ││ ▸ alice         ▸ bob            │
+│                                ││                                                            ││ ▸ carol         ▸ dave           │
+│                                ││                                                            ││ ▸ erin                           │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            │└──────────────────────────────────┘
 │                                ││                                                            │┌[ New posts ]─────────────────────┐
-│                                ││                                                            ││ Nothing to show yet.             │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
+│                                ││                                                            ││ Active threads: 7                │
+│                                ││                                                            ││ General    ████████████████   4  │
+│                                ││                                                            ││ Tech       ████████░░░░░░░░   2  │
+│                                ││                                                            ││ Chat       ████░░░░░░░░░░░░   1  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            │└──────────────────────────────────┘
 │                                ││                                                            │┌[ Activity ]──────────────────────┐
-│                                ││                                                            ││ Nothing to show yet.             │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
+│                                ││                                                            ││ 59 threads active in 14 days     │
+│                                ││                                                            ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣶⣶⠀⠀⠀⠀⠀⠀⢀⣀⣀⣿⣿ │
+│                                ││                                                            ││ ⠀⠀⠀⠀⠀⠀⠀⣀⣀⡀⠀⠀⠀⠀⠀⠀⣶⣶⣾⣿⣿⣀⣀⠀⠀⠀⠀⢸⣿⣿⣿⣿ │
+│                                ││                                                            ││ ⠀⠀⢠⣤⣤⠀⠀⣿⣿⣿⣿⡇⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣤⣤⣼⣿⣿⣿⣿⣿⣿ │
+│                                ││                                                            ││ ⣤⣤⣼⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
+│                                ││                                                            ││ 14 days ago                today │
 └────────────────────────────────┘└────────────────────────────────────────────────────────────┘└──────────────────────────────────┘
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / wide / 80x24 / ascii mono / colors=a64cd0c8cdc5580b
+=== phosphor / wide / 80x24 / ascii mono / colors=b38fa5d8be08b7ad
  russh-bbs | Main menu                                                UTC 12:00
 +[ Main menu ]-------------------++[ This board ]-------++[ Clock ]------------+
-| Signed in as alice.            || russh-bbs           || UTC 12:00           |
-| Showing Dashboard: this        || A bulletin board in ||                     |
-| terminal is too small for      || your terminal.      ||                     |
-| > [f] Forums                   || Portland, OR        ||                     |
-|   [m] Mail                     |+---------------------++---------------------+
-|   [a] Files  (not built yet)   |+[ Who is online ]----++[ Last callers ]-----+
-|   [c] Chat                     || Nothing to show     || Nothing to show     |
-|   [d] Doors                    || yet.                || yet.                |
-|   [u] Members                  ||                     ||                     |
-|   [y] Community                ||                     ||                     |
-|   [i] Invites                  ||                     ||                     |
-|   [s] Terminal settings        ||                     ||                     |
-|   [o] Sysop tools              |+---------------------++---------------------+
-|   [l] Log off                  |+[ New posts ]--------++[ Unread mail ]------+
-|                                || Nothing to show     || Nothing to show     |
-|                                || yet.                || yet.                |
-|                                ||                     ||                     |
-|                                ||                     ||                     |
-|                                ||                     ||                     |
+| Signed in as alice.            || russh-bbs           ||      _     _   _    |
+| Showing Dashboard: this        || A bulletin board i~ ||   |  _| . | | | |   |
+| terminal is too small for      || Portland, OR        ||   | |_  . |_| |_|   |
+| > [f] Forums                   ||                     || Thu 5 Nov 2026 UTC  |
+|   [m] Mail                     ||                     ||                     |
+|   [a] Files  (not built yet)   |+---------------------++---------------------+
+|   [c] Chat                     |+[ Who is online ]----++[ Last callers ]-----+
+|   [d] Doors                    || * 5 online          || bob              2m |
+|   [u] Members                  || > alice             || carol            1h |
+|   [y] Community                || > bob               || dave             1d |
+|   [i] Invites                  || > carol             || erin             2d |
+|   [s] Terminal settings        || > dave              ||                     |
+|   [o] Sysop tools              || > erin              ||                     |
+|   [l] Log off                  |+---------------------++---------------------+
+|                                |+[ New posts ]--------++[ Mail ]-------------+
+|                                || Active threads: 7   || 3 unread            |
+|                                || Gener~ #######   4  || #####-------------- |
+|                                || Tech   ####---   2  || 12 in your inbox    |
+|                                || Chat   ##-----   1  ||                     |
 |                                ||                     ||                     |
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / wide / 80x24 / unicode truecolor / colors=8f25e74c182ecbdb
+=== neon / wide / 80x24 / unicode truecolor / colors=08126b195a574e17
  » russh-bbs « │ Main menu                                            UTC 12:00
 ╭« Main menu »───────────────────╮╭« This board »───────╮╭« Clock »────────────╮
-│ Signed in as alice.            ││ russh-bbs           ││ UTC 12:00           │
-│ Showing Dashboard: this        ││ A bulletin board in ││                     │
-│ terminal is too small for      ││ your terminal.      ││                     │
-│ > [f] Forums                   ││ Portland, OR        ││                     │
-│   [m] Mail                     │╰─────────────────────╯╰─────────────────────╯
-│   [a] Files  (not built yet)   │╭« Who is online »────╮╭« Last callers »─────╮
-│   [c] Chat                     ││ Nothing to show     ││ Nothing to show     │
-│   [d] Doors                    ││ yet.                ││ yet.                │
-│   [u] Members                  ││                     ││                     │
-│   [y] Community                ││                     ││                     │
-│   [i] Invites                  ││                     ││                     │
-│   [s] Terminal settings        ││                     ││                     │
-│   [o] Sysop tools              │╰─────────────────────╯╰─────────────────────╯
-│   [l] Log off                  │╭« New posts »────────╮╭« Unread mail »──────╮
-│                                ││ Nothing to show     ││ Nothing to show     │
-│                                ││ yet.                ││ yet.                │
-│                                ││                     ││                     │
-│                                ││                     ││                     │
-│                                ││                     ││                     │
+│ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
+│ Showing Dashboard: this        ││ A bulletin board i… ││   ┃  ━┃ • ┃ ┃ ┃ ┃   │
+│ terminal is too small for      ││ Portland, OR        ││   ┃ ┃━  • ┃━┃ ┃━┃   │
+│ > [f] Forums                   ││                     ││ Thu 5 Nov 2026 UTC  │
+│   [m] Mail                     ││                     ││                     │
+│   [a] Files  (not built yet)   │╰─────────────────────╯╰─────────────────────╯
+│   [c] Chat                     │╭« Who is online »────╮╭« Last callers »─────╮
+│   [d] Doors                    ││ ● 5 online          ││ bob              2m │
+│   [u] Members                  ││ ▸ alice             ││ carol            1h │
+│   [y] Community                ││ ▸ bob               ││ dave             1d │
+│   [i] Invites                  ││ ▸ carol             ││ erin             2d │
+│   [s] Terminal settings        ││ ▸ dave              ││                     │
+│   [o] Sysop tools              ││ ▸ erin              ││                     │
+│   [l] Log off                  │╰─────────────────────╯╰─────────────────────╯
+│                                │╭« New posts »────────╮╭« Mail »─────────────╮
+│                                ││ Active threads: 7   ││ 3 unread            │
+│                                ││ Gener… ███████   4  ││ ████▊░░░░░░░░░░░░░░ │
+│                                ││ Tech   ███▌░░░   2  ││ 12 in your inbox    │
+│                                ││ Chat   █▊░░░░░   1  ││                     │
 │                                ││                     ││                     │
 ╰────────────────────────────────╯╰─────────────────────╯╰─────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / wide / 132x43 / unicode truecolor / colors=c8e9375cad04bcd1
+=== neon / wide / 132x43 / unicode truecolor / colors=db87c52b79fd3764
  » russh-bbs « │ Main menu                                                                                                UTC 12:00
 ╭« Main menu »───────────────────╮╭« russh-bbs »───────────────────────────────────────────────╮╭« This board »────────────────────╮
 │ > [f] Forums                   ││                                                            ││ russh-bbs                        │
-│   [m] Mail                     ││  Signed in as alice.                                       ││ A bulletin board in your         │
-│   [a] Files  (not built yet)   ││                                                            ││ terminal.                        │
-│   [c] Chat                     ││  > [f] Forums                                              ││ Portland, OR · since 2026        │
-│   [d] Doors                    ││                                                            │╰──────────────────────────────────╯
-│   [u] Members                  ││                                                            │╭« Clock »─────────────────────────╮
-│   [y] Community                ││                                                            ││ UTC 12:00                        │
-│   [i] Invites                  ││                                                            │╰──────────────────────────────────╯
-│   [s] Terminal settings        ││                                                            │╭« Who is online »─────────────────╮
-│   [o] Sysop tools              ││                                                            ││ Nothing to show yet.             │
-│   [l] Log off                  ││                                                            ││                                  │
+│   [m] Mail                     ││  Signed in as alice.                                       ││ A bulletin board in your termin… │
+│   [a] Files  (not built yet)   ││                                                            ││ Portland, OR · since 2026        │
+│   [c] Chat                     ││  > [f] Forums                                              ││                                  │
+│   [d] Doors                    ││                                                            ││                                  │
+│   [u] Members                  ││                                                            ││                                  │
+│   [y] Community                ││                                                            │╰──────────────────────────────────╯
+│   [i] Invites                  ││                                                            │╭« Clock »─────────────────────────╮
+│   [s] Terminal settings        ││                                                            ││      ━     ━   ━                 │
+│   [o] Sysop tools              ││                                                            ││   ┃  ━┃ • ┃ ┃ ┃ ┃                │
+│   [l] Log off                  ││                                                            ││   ┃ ┃━  • ┃━┃ ┃━┃                │
+│                                ││                                                            ││ Thu 5 Nov 2026 UTC               │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
+│                                ││                                                            │╰──────────────────────────────────╯
+│                                ││                                                            │╭« Who is online »─────────────────╮
+│                                ││                                                            ││ ● 5 online                       │
+│                                ││                                                            ││ ▸ alice         ▸ bob            │
+│                                ││                                                            ││ ▸ carol         ▸ dave           │
+│                                ││                                                            ││ ▸ erin                           │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            │╰──────────────────────────────────╯
 │                                ││                                                            │╭« New posts »─────────────────────╮
-│                                ││                                                            ││ Nothing to show yet.             │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
+│                                ││                                                            ││ Active threads: 7                │
+│                                ││                                                            ││ General    ████████████████   4  │
+│                                ││                                                            ││ Tech       ████████░░░░░░░░   2  │
+│                                ││                                                            ││ Chat       ████░░░░░░░░░░░░   1  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            │╰──────────────────────────────────╯
 │                                ││                                                            │╭« Activity »──────────────────────╮
-│                                ││                                                            ││ Nothing to show yet.             │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
+│                                ││                                                            ││ 59 threads active in 14 days     │
+│                                ││                                                            ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣶⣶⠀⠀⠀⠀⠀⠀⢀⣀⣀⣿⣿ │
+│                                ││                                                            ││ ⠀⠀⠀⠀⠀⠀⠀⣀⣀⡀⠀⠀⠀⠀⠀⠀⣶⣶⣾⣿⣿⣀⣀⠀⠀⠀⠀⢸⣿⣿⣿⣿ │
+│                                ││                                                            ││ ⠀⠀⢠⣤⣤⠀⠀⣿⣿⣿⣿⡇⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣤⣤⣼⣿⣿⣿⣿⣿⣿ │
+│                                ││                                                            ││ ⣤⣤⣼⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
+│                                ││                                                            ││ 14 days ago                today │
 ╰────────────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / wide / 80x24 / ascii mono / colors=7f3f338b4947c609
+=== neon / wide / 80x24 / ascii mono / colors=714e5896ca516c6b
  >> russh-bbs << | Main menu                                          UTC 12:00
 +<< Main menu >>-----------------++<< This board >>-----++<< Clock >>----------+
-| Signed in as alice.            || russh-bbs           || UTC 12:00           |
-| Showing Dashboard: this        || A bulletin board in ||                     |
-| terminal is too small for      || your terminal.      ||                     |
-| > [f] Forums                   || Portland, OR        ||                     |
-|   [m] Mail                     |+---------------------++---------------------+
-|   [a] Files  (not built yet)   |+<< Who is online >>--++<< Last callers >>---+
-|   [c] Chat                     || Nothing to show     || Nothing to show     |
-|   [d] Doors                    || yet.                || yet.                |
-|   [u] Members                  ||                     ||                     |
-|   [y] Community                ||                     ||                     |
-|   [i] Invites                  ||                     ||                     |
-|   [s] Terminal settings        ||                     ||                     |
-|   [o] Sysop tools              |+---------------------++---------------------+
-|   [l] Log off                  |+<< New posts >>------++<< Unread mail >>----+
-|                                || Nothing to show     || Nothing to show     |
-|                                || yet.                || yet.                |
-|                                ||                     ||                     |
-|                                ||                     ||                     |
-|                                ||                     ||                     |
+| Signed in as alice.            || russh-bbs           ||      _     _   _    |
+| Showing Dashboard: this        || A bulletin board i~ ||   |  _| . | | | |   |
+| terminal is too small for      || Portland, OR        ||   | |_  . |_| |_|   |
+| > [f] Forums                   ||                     || Thu 5 Nov 2026 UTC  |
+|   [m] Mail                     ||                     ||                     |
+|   [a] Files  (not built yet)   |+---------------------++---------------------+
+|   [c] Chat                     |+<< Who is online >>--++<< Last callers >>---+
+|   [d] Doors                    || * 5 online          || bob              2m |
+|   [u] Members                  || > alice             || carol            1h |
+|   [y] Community                || > bob               || dave             1d |
+|   [i] Invites                  || > carol             || erin             2d |
+|   [s] Terminal settings        || > dave              ||                     |
+|   [o] Sysop tools              || > erin              ||                     |
+|   [l] Log off                  |+---------------------++---------------------+
+|                                |+<< New posts >>------++<< Mail >>-----------+
+|                                || Active threads: 7   || 3 unread            |
+|                                || Gener~ #######   4  || #####-------------- |
+|                                || Tech   ####---   2  || 12 in your inbox    |
+|                                || Chat   ##-----   1  ||                     |
 |                                ||                     ||                     |
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / wide / 80x24 / unicode truecolor / colors=4ae16305c297a9aa
+=== paper / wide / 80x24 / unicode truecolor / colors=b677520917c11939
  russh-bbs │ Main menu                                                UTC 12:00
 ╭ Main menu ─────────────────────╮╭ This board ─────────╮╭ Clock ──────────────╮
-│ Signed in as alice.            ││ russh-bbs           ││ UTC 12:00           │
-│ Showing Dashboard: this        ││ A bulletin board in ││                     │
-│ terminal is too small for      ││ your terminal.      ││                     │
-│ > [f] Forums                   ││ Portland, OR        ││                     │
-│   [m] Mail                     │╰─────────────────────╯╰─────────────────────╯
-│   [a] Files  (not built yet)   │╭ Who is online ──────╮╭ Last callers ───────╮
-│   [c] Chat                     ││ Nothing to show     ││ Nothing to show     │
-│   [d] Doors                    ││ yet.                ││ yet.                │
-│   [u] Members                  ││                     ││                     │
-│   [y] Community                ││                     ││                     │
-│   [i] Invites                  ││                     ││                     │
-│   [s] Terminal settings        ││                     ││                     │
-│   [o] Sysop tools              │╰─────────────────────╯╰─────────────────────╯
-│   [l] Log off                  │╭ New posts ──────────╮╭ Unread mail ────────╮
-│                                ││ Nothing to show     ││ Nothing to show     │
-│                                ││ yet.                ││ yet.                │
-│                                ││                     ││                     │
-│                                ││                     ││                     │
-│                                ││                     ││                     │
+│ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
+│ Showing Dashboard: this        ││ A bulletin board i… ││   ┃  ━┃ • ┃ ┃ ┃ ┃   │
+│ terminal is too small for      ││ Portland, OR        ││   ┃ ┃━  • ┃━┃ ┃━┃   │
+│ > [f] Forums                   ││                     ││ Thu 5 Nov 2026 UTC  │
+│   [m] Mail                     ││                     ││                     │
+│   [a] Files  (not built yet)   │╰─────────────────────╯╰─────────────────────╯
+│   [c] Chat                     │╭ Who is online ──────╮╭ Last callers ───────╮
+│   [d] Doors                    ││ ● 5 online          ││ bob              2m │
+│   [u] Members                  ││ ▸ alice             ││ carol            1h │
+│   [y] Community                ││ ▸ bob               ││ dave             1d │
+│   [i] Invites                  ││ ▸ carol             ││ erin             2d │
+│   [s] Terminal settings        ││ ▸ dave              ││                     │
+│   [o] Sysop tools              ││ ▸ erin              ││                     │
+│   [l] Log off                  │╰─────────────────────╯╰─────────────────────╯
+│                                │╭ New posts ──────────╮╭ Mail ───────────────╮
+│                                ││ Active threads: 7   ││ 3 unread            │
+│                                ││ Gener… ███████   4  ││ ████▊░░░░░░░░░░░░░░ │
+│                                ││ Tech   ███▌░░░   2  ││ 12 in your inbox    │
+│                                ││ Chat   █▊░░░░░   1  ││                     │
 │                                ││                     ││                     │
 ╰────────────────────────────────╯╰─────────────────────╯╰─────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / wide / 132x43 / unicode truecolor / colors=59d7da779749aca2
+=== paper / wide / 132x43 / unicode truecolor / colors=cde43f664ef008d7
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ╭ Main menu ─────────────────────╮╭ russh-bbs ─────────────────────────────────────────────────╮╭ This board ──────────────────────╮
 │ > [f] Forums                   ││                                                            ││ russh-bbs                        │
-│   [m] Mail                     ││  Signed in as alice.                                       ││ A bulletin board in your         │
-│   [a] Files  (not built yet)   ││                                                            ││ terminal.                        │
-│   [c] Chat                     ││  > [f] Forums                                              ││ Portland, OR · since 2026        │
-│   [d] Doors                    ││                                                            │╰──────────────────────────────────╯
-│   [u] Members                  ││                                                            │╭ Clock ───────────────────────────╮
-│   [y] Community                ││                                                            ││ UTC 12:00                        │
-│   [i] Invites                  ││                                                            │╰──────────────────────────────────╯
-│   [s] Terminal settings        ││                                                            │╭ Who is online ───────────────────╮
-│   [o] Sysop tools              ││                                                            ││ Nothing to show yet.             │
-│   [l] Log off                  ││                                                            ││                                  │
+│   [m] Mail                     ││  Signed in as alice.                                       ││ A bulletin board in your termin… │
+│   [a] Files  (not built yet)   ││                                                            ││ Portland, OR · since 2026        │
+│   [c] Chat                     ││  > [f] Forums                                              ││                                  │
+│   [d] Doors                    ││                                                            ││                                  │
+│   [u] Members                  ││                                                            ││                                  │
+│   [y] Community                ││                                                            │╰──────────────────────────────────╯
+│   [i] Invites                  ││                                                            │╭ Clock ───────────────────────────╮
+│   [s] Terminal settings        ││                                                            ││      ━     ━   ━                 │
+│   [o] Sysop tools              ││                                                            ││   ┃  ━┃ • ┃ ┃ ┃ ┃                │
+│   [l] Log off                  ││                                                            ││   ┃ ┃━  • ┃━┃ ┃━┃                │
+│                                ││                                                            ││ Thu 5 Nov 2026 UTC               │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
+│                                ││                                                            │╰──────────────────────────────────╯
+│                                ││                                                            │╭ Who is online ───────────────────╮
+│                                ││                                                            ││ ● 5 online                       │
+│                                ││                                                            ││ ▸ alice         ▸ bob            │
+│                                ││                                                            ││ ▸ carol         ▸ dave           │
+│                                ││                                                            ││ ▸ erin                           │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            │╰──────────────────────────────────╯
 │                                ││                                                            │╭ New posts ───────────────────────╮
-│                                ││                                                            ││ Nothing to show yet.             │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
+│                                ││                                                            ││ Active threads: 7                │
+│                                ││                                                            ││ General    ████████████████   4  │
+│                                ││                                                            ││ Tech       ████████░░░░░░░░   2  │
+│                                ││                                                            ││ Chat       ████░░░░░░░░░░░░   1  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            │╰──────────────────────────────────╯
 │                                ││                                                            │╭ Activity ────────────────────────╮
-│                                ││                                                            ││ Nothing to show yet.             │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
+│                                ││                                                            ││ 59 threads active in 14 days     │
+│                                ││                                                            ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣶⣶⠀⠀⠀⠀⠀⠀⢀⣀⣀⣿⣿ │
+│                                ││                                                            ││ ⠀⠀⠀⠀⠀⠀⠀⣀⣀⡀⠀⠀⠀⠀⠀⠀⣶⣶⣾⣿⣿⣀⣀⠀⠀⠀⠀⢸⣿⣿⣿⣿ │
+│                                ││                                                            ││ ⠀⠀⢠⣤⣤⠀⠀⣿⣿⣿⣿⡇⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣤⣤⣼⣿⣿⣿⣿⣿⣿ │
+│                                ││                                                            ││ ⣤⣤⣼⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
+│                                ││                                                            ││ 14 days ago                today │
 ╰────────────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / wide / 80x24 / ascii mono / colors=123b0b71e998959f
+=== paper / wide / 80x24 / ascii mono / colors=e951d0185562c3e1
  russh-bbs | Main menu                                                UTC 12:00
 + Main menu ---------------------++ This board ---------++ Clock --------------+
-| Signed in as alice.            || russh-bbs           || UTC 12:00           |
-| Showing Dashboard: this        || A bulletin board in ||                     |
-| terminal is too small for      || your terminal.      ||                     |
-| > [f] Forums                   || Portland, OR        ||                     |
-|   [m] Mail                     |+---------------------++---------------------+
-|   [a] Files  (not built yet)   |+ Who is online ------++ Last callers -------+
-|   [c] Chat                     || Nothing to show     || Nothing to show     |
-|   [d] Doors                    || yet.                || yet.                |
-|   [u] Members                  ||                     ||                     |
-|   [y] Community                ||                     ||                     |
-|   [i] Invites                  ||                     ||                     |
-|   [s] Terminal settings        ||                     ||                     |
-|   [o] Sysop tools              |+---------------------++---------------------+
-|   [l] Log off                  |+ New posts ----------++ Unread mail --------+
-|                                || Nothing to show     || Nothing to show     |
-|                                || yet.                || yet.                |
-|                                ||                     ||                     |
-|                                ||                     ||                     |
-|                                ||                     ||                     |
+| Signed in as alice.            || russh-bbs           ||      _     _   _    |
+| Showing Dashboard: this        || A bulletin board i~ ||   |  _| . | | | |   |
+| terminal is too small for      || Portland, OR        ||   | |_  . |_| |_|   |
+| > [f] Forums                   ||                     || Thu 5 Nov 2026 UTC  |
+|   [m] Mail                     ||                     ||                     |
+|   [a] Files  (not built yet)   |+---------------------++---------------------+
+|   [c] Chat                     |+ Who is online ------++ Last callers -------+
+|   [d] Doors                    || * 5 online          || bob              2m |
+|   [u] Members                  || > alice             || carol            1h |
+|   [y] Community                || > bob               || dave             1d |
+|   [i] Invites                  || > carol             || erin             2d |
+|   [s] Terminal settings        || > dave              ||                     |
+|   [o] Sysop tools              || > erin              ||                     |
+|   [l] Log off                  |+---------------------++---------------------+
+|                                |+ New posts ----------++ Mail ---------------+
+|                                || Active threads: 7   || 3 unread            |
+|                                || Gener~ #######   4  || #####-------------- |
+|                                || Tech   ####---   2  || 12 in your inbox    |
+|                                || Chat   ##-----   1  ||                     |
 |                                ||                     ||                     |
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / wide / 80x24 / unicode truecolor / colors=879516fa54947021
+=== amber / wide / 80x24 / unicode truecolor / colors=f7b61e31f3228d9c
  russh-bbs │ Main menu                                                UTC 12:00
 ┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━┓┏ THIS BOARD ━━━━━━━━━┓┏ CLOCK ━━━━━━━━━━━━━━┓
-┃ Signed in as alice.            ┃┃ russh-bbs           ┃┃ UTC 12:00           ┃
-┃ Showing Dashboard: this        ┃┃ A bulletin board in ┃┃                     ┃
-┃ terminal is too small for      ┃┃ your terminal.      ┃┃                     ┃
-┃ > [f] Forums                   ┃┃ Portland, OR        ┃┃                     ┃
-┃   [m] Mail                     ┃┗━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛
-┃   [a] Files  (not built yet)   ┃┏ WHO IS ONLINE ━━━━━━┓┏ LAST CALLERS ━━━━━━━┓
-┃   [c] Chat                     ┃┃ Nothing to show     ┃┃ Nothing to show     ┃
-┃   [d] Doors                    ┃┃ yet.                ┃┃ yet.                ┃
-┃   [u] Members                  ┃┃                     ┃┃                     ┃
-┃   [y] Community                ┃┃                     ┃┃                     ┃
-┃   [i] Invites                  ┃┃                     ┃┃                     ┃
-┃   [s] Terminal settings        ┃┃                     ┃┃                     ┃
-┃   [o] Sysop tools              ┃┗━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛
-┃   [l] Log off                  ┃┏ NEW POSTS ━━━━━━━━━━┓┏ UNREAD MAIL ━━━━━━━━┓
-┃                                ┃┃ Nothing to show     ┃┃ Nothing to show     ┃
-┃                                ┃┃ yet.                ┃┃ yet.                ┃
-┃                                ┃┃                     ┃┃                     ┃
-┃                                ┃┃                     ┃┃                     ┃
-┃                                ┃┃                     ┃┃                     ┃
+┃ Signed in as alice.            ┃┃ russh-bbs           ┃┃      ━     ━   ━    ┃
+┃ Showing Dashboard: this        ┃┃ A bulletin board i… ┃┃   ┃  ━┃ • ┃ ┃ ┃ ┃   ┃
+┃ terminal is too small for      ┃┃ Portland, OR        ┃┃   ┃ ┃━  • ┃━┃ ┃━┃   ┃
+┃ > [f] Forums                   ┃┃                     ┃┃ Thu 5 Nov 2026 UTC  ┃
+┃   [m] Mail                     ┃┃                     ┃┃                     ┃
+┃   [a] Files  (not built yet)   ┃┗━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛
+┃   [c] Chat                     ┃┏ WHO IS ONLINE ━━━━━━┓┏ LAST CALLERS ━━━━━━━┓
+┃   [d] Doors                    ┃┃ ● 5 online          ┃┃ bob              2m ┃
+┃   [u] Members                  ┃┃ ▸ alice             ┃┃ carol            1h ┃
+┃   [y] Community                ┃┃ ▸ bob               ┃┃ dave             1d ┃
+┃   [i] Invites                  ┃┃ ▸ carol             ┃┃ erin             2d ┃
+┃   [s] Terminal settings        ┃┃ ▸ dave              ┃┃                     ┃
+┃   [o] Sysop tools              ┃┃ ▸ erin              ┃┃                     ┃
+┃   [l] Log off                  ┃┗━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛
+┃                                ┃┏ NEW POSTS ━━━━━━━━━━┓┏ MAIL ━━━━━━━━━━━━━━━┓
+┃                                ┃┃ Active threads: 7   ┃┃ 3 unread            ┃
+┃                                ┃┃ Gener… ███████   4  ┃┃ ████▊░░░░░░░░░░░░░░ ┃
+┃                                ┃┃ Tech   ███▌░░░   2  ┃┃ 12 in your inbox    ┃
+┃                                ┃┃ Chat   █▊░░░░░   1  ┃┃                     ┃
 ┃                                ┃┃                     ┃┃                     ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / wide / 132x43 / unicode truecolor / colors=8cbad0cbcf0009d6
+=== amber / wide / 132x43 / unicode truecolor / colors=9df932ea5a968d12
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━┓┏ RUSSH-BBS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓┏ THIS BOARD ━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ > [f] Forums                   ┃┃                                                            ┃┃ russh-bbs                        ┃
-┃   [m] Mail                     ┃┃  Signed in as alice.                                       ┃┃ A bulletin board in your         ┃
-┃   [a] Files  (not built yet)   ┃┃                                                            ┃┃ terminal.                        ┃
-┃   [c] Chat                     ┃┃  > [f] Forums                                              ┃┃ Portland, OR · since 2026        ┃
-┃   [d] Doors                    ┃┃                                                            ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-┃   [u] Members                  ┃┃                                                            ┃┏ CLOCK ━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃   [y] Community                ┃┃                                                            ┃┃ UTC 12:00                        ┃
-┃   [i] Invites                  ┃┃                                                            ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-┃   [s] Terminal settings        ┃┃                                                            ┃┏ WHO IS ONLINE ━━━━━━━━━━━━━━━━━━━┓
-┃   [o] Sysop tools              ┃┃                                                            ┃┃ Nothing to show yet.             ┃
-┃   [l] Log off                  ┃┃                                                            ┃┃                                  ┃
+┃   [m] Mail                     ┃┃  Signed in as alice.                                       ┃┃ A bulletin board in your termin… ┃
+┃   [a] Files  (not built yet)   ┃┃                                                            ┃┃ Portland, OR · since 2026        ┃
+┃   [c] Chat                     ┃┃  > [f] Forums                                              ┃┃                                  ┃
+┃   [d] Doors                    ┃┃                                                            ┃┃                                  ┃
+┃   [u] Members                  ┃┃                                                            ┃┃                                  ┃
+┃   [y] Community                ┃┃                                                            ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┃   [i] Invites                  ┃┃                                                            ┃┏ CLOCK ━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃   [s] Terminal settings        ┃┃                                                            ┃┃      ━     ━   ━                 ┃
+┃   [o] Sysop tools              ┃┃                                                            ┃┃   ┃  ━┃ • ┃ ┃ ┃ ┃                ┃
+┃   [l] Log off                  ┃┃                                                            ┃┃   ┃ ┃━  • ┃━┃ ┃━┃                ┃
+┃                                ┃┃                                                            ┃┃ Thu 5 Nov 2026 UTC               ┃
 ┃                                ┃┃                                                            ┃┃                                  ┃
 ┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┃                                ┃┃                                                            ┃┏ WHO IS ONLINE ━━━━━━━━━━━━━━━━━━━┓
+┃                                ┃┃                                                            ┃┃ ● 5 online                       ┃
+┃                                ┃┃                                                            ┃┃ ▸ alice         ▸ bob            ┃
+┃                                ┃┃                                                            ┃┃ ▸ carol         ▸ dave           ┃
+┃                                ┃┃                                                            ┃┃ ▸ erin                           ┃
 ┃                                ┃┃                                                            ┃┃                                  ┃
 ┃                                ┃┃                                                            ┃┃                                  ┃
 ┃                                ┃┃                                                            ┃┃                                  ┃
 ┃                                ┃┃                                                            ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 ┃                                ┃┃                                                            ┃┏ NEW POSTS ━━━━━━━━━━━━━━━━━━━━━━━┓
-┃                                ┃┃                                                            ┃┃ Nothing to show yet.             ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃ Active threads: 7                ┃
+┃                                ┃┃                                                            ┃┃ General    ████████████████   4  ┃
+┃                                ┃┃                                                            ┃┃ Tech       ████████░░░░░░░░   2  ┃
+┃                                ┃┃                                                            ┃┃ Chat       ████░░░░░░░░░░░░   1  ┃
 ┃                                ┃┃                                                            ┃┃                                  ┃
 ┃                                ┃┃                                                            ┃┃                                  ┃
 ┃                                ┃┃                                                            ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 ┃                                ┃┃                                                            ┃┏ ACTIVITY ━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃                                ┃┃                                                            ┃┃ Nothing to show yet.             ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
-┃                                ┃┃                                                            ┃┃                                  ┃
+┃                                ┃┃                                                            ┃┃ 59 threads active in 14 days     ┃
+┃                                ┃┃                                                            ┃┃ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣶⣶⠀⠀⠀⠀⠀⠀⢀⣀⣀⣿⣿ ┃
+┃                                ┃┃                                                            ┃┃ ⠀⠀⠀⠀⠀⠀⠀⣀⣀⡀⠀⠀⠀⠀⠀⠀⣶⣶⣾⣿⣿⣀⣀⠀⠀⠀⠀⢸⣿⣿⣿⣿ ┃
+┃                                ┃┃                                                            ┃┃ ⠀⠀⢠⣤⣤⠀⠀⣿⣿⣿⣿⡇⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣤⣤⣼⣿⣿⣿⣿⣿⣿ ┃
+┃                                ┃┃                                                            ┃┃ ⣤⣤⣼⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ┃
+┃                                ┃┃                                                            ┃┃ 14 days ago                today ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / wide / 80x24 / ascii mono / colors=123b0b71e998959f
+=== amber / wide / 80x24 / ascii mono / colors=e951d0185562c3e1
  russh-bbs | Main menu                                                UTC 12:00
 + MAIN MENU ---------------------++ THIS BOARD ---------++ CLOCK --------------+
-| Signed in as alice.            || russh-bbs           || UTC 12:00           |
-| Showing Dashboard: this        || A bulletin board in ||                     |
-| terminal is too small for      || your terminal.      ||                     |
-| > [f] Forums                   || Portland, OR        ||                     |
-|   [m] Mail                     |+---------------------++---------------------+
-|   [a] Files  (not built yet)   |+ WHO IS ONLINE ------++ LAST CALLERS -------+
-|   [c] Chat                     || Nothing to show     || Nothing to show     |
-|   [d] Doors                    || yet.                || yet.                |
-|   [u] Members                  ||                     ||                     |
-|   [y] Community                ||                     ||                     |
-|   [i] Invites                  ||                     ||                     |
-|   [s] Terminal settings        ||                     ||                     |
-|   [o] Sysop tools              |+---------------------++---------------------+
-|   [l] Log off                  |+ NEW POSTS ----------++ UNREAD MAIL --------+
-|                                || Nothing to show     || Nothing to show     |
-|                                || yet.                || yet.                |
-|                                ||                     ||                     |
-|                                ||                     ||                     |
-|                                ||                     ||                     |
+| Signed in as alice.            || russh-bbs           ||      _     _   _    |
+| Showing Dashboard: this        || A bulletin board i~ ||   |  _| . | | | |   |
+| terminal is too small for      || Portland, OR        ||   | |_  . |_| |_|   |
+| > [f] Forums                   ||                     || Thu 5 Nov 2026 UTC  |
+|   [m] Mail                     ||                     ||                     |
+|   [a] Files  (not built yet)   |+---------------------++---------------------+
+|   [c] Chat                     |+ WHO IS ONLINE ------++ LAST CALLERS -------+
+|   [d] Doors                    || * 5 online          || bob              2m |
+|   [u] Members                  || > alice             || carol            1h |
+|   [y] Community                || > bob               || dave             1d |
+|   [i] Invites                  || > carol             || erin             2d |
+|   [s] Terminal settings        || > dave              ||                     |
+|   [o] Sysop tools              || > erin              ||                     |
+|   [l] Log off                  |+---------------------++---------------------+
+|                                |+ NEW POSTS ----------++ MAIL ---------------+
+|                                || Active threads: 7   || 3 unread            |
+|                                || Gener~ #######   4  || #####-------------- |
+|                                || Tech   ####---   2  || 12 in your inbox    |
+|                                || Chat   ##-----   1  ||                     |
 |                                ||                     ||                     |
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / wide / 80x24 / unicode truecolor / colors=66e22414f96af81f
+=== deepspace / wide / 80x24 / unicode truecolor / colors=401f40ab2fe4e541
  ◆ russh-bbs ◆ │ Main menu                                            UTC 12:00
 ╭────── M A I N   M E N U ───────╮╭ T H I S   B O A R D ╮╭───── C L O C K ─────╮
-│ Signed in as alice.            ││ russh-bbs           ││ UTC 12:00           │
-│ Showing Dashboard: this        ││ A bulletin board in ││                     │
-│ terminal is too small for      ││ your terminal.      ││                     │
-│ > [f] Forums                   ││ Portland, OR        ││                     │
-│   [m] Mail                     │╰─────────────────────╯╰─────────────────────╯
-│   [a] Files  (not built yet)   │╭I S   O N L I N E ───╮╭ T   C A L L E R S ──╮
-│   [c] Chat                     ││ Nothing to show     ││ Nothing to show     │
-│   [d] Doors                    ││ yet.                ││ yet.                │
-│   [u] Members                  ││                     ││                     │
-│   [y] Community                ││                     ││                     │
-│   [i] Invites                  ││                     ││                     │
-│   [s] Terminal settings        ││                     ││                     │
-│   [o] Sysop tools              │╰─────────────────────╯╰─────────────────────╯
-│   [l] Log off                  │╭─ N E W   P O S T S ─╮╭N R E A D   M A I L ─╮
-│                                ││ Nothing to show     ││ Nothing to show     │
-│                                ││ yet.                ││ yet.                │
-│                                ││                     ││                     │
-│                                ││                     ││                     │
-│                                ││                     ││                     │
+│ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
+│ Showing Dashboard: this        ││ A bulletin board i… ││   ┃  ━┃ • ┃ ┃ ┃ ┃   │
+│ terminal is too small for      ││ Portland, OR        ││   ┃ ┃━  • ┃━┃ ┃━┃   │
+│ > [f] Forums                   ││                     ││ Thu 5 Nov 2026 UTC  │
+│   [m] Mail                     ││                     ││                     │
+│   [a] Files  (not built yet)   │╰─────────────────────╯╰─────────────────────╯
+│   [c] Chat                     │╭I S   O N L I N E ───╮╭ T   C A L L E R S ──╮
+│   [d] Doors                    ││ ● 5 online          ││ bob              2m │
+│   [u] Members                  ││ ▸ alice             ││ carol            1h │
+│   [y] Community                ││ ▸ bob               ││ dave             1d │
+│   [i] Invites                  ││ ▸ carol             ││ erin             2d │
+│   [s] Terminal settings        ││ ▸ dave              ││                     │
+│   [o] Sysop tools              ││ ▸ erin              ││                     │
+│   [l] Log off                  │╰─────────────────────╯╰─────────────────────╯
+│                                │╭─ N E W   P O S T S ─╮╭────── M A I L ──────╮
+│                                ││ Active threads: 7   ││ 3 unread            │
+│                                ││ Gener… ███████   4  ││ ████▊░░░░░░░░░░░░░░ │
+│                                ││ Tech   ███▌░░░   2  ││ 12 in your inbox    │
+│                                ││ Chat   █▊░░░░░   1  ││                     │
 │                                ││                     ││                     │
 ╰────────────────────────────────╯╰─────────────────────╯╰─────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / wide / 132x43 / unicode truecolor / colors=c92c94c94564fb44
+=== deepspace / wide / 132x43 / unicode truecolor / colors=10192b50678aec6f
  ◆ russh-bbs ◆ │ Main menu                                                                                                UTC 12:00
 ╭────── M A I N   M E N U ───────╮╭──────────────────── R U S S H - B B S ─────────────────────╮╭────── T H I S   B O A R D ───────╮
 │ > [f] Forums                   ││                                                            ││ russh-bbs                        │
-│   [m] Mail                     ││  Signed in as alice.                                       ││ A bulletin board in your         │
-│   [a] Files  (not built yet)   ││                                                            ││ terminal.                        │
-│   [c] Chat                     ││  > [f] Forums                                              ││ Portland, OR · since 2026        │
-│   [d] Doors                    ││                                                            │╰──────────────────────────────────╯
-│   [u] Members                  ││                                                            │╭─────────── C L O C K ────────────╮
-│   [y] Community                ││                                                            ││ UTC 12:00                        │
-│   [i] Invites                  ││                                                            │╰──────────────────────────────────╯
-│   [s] Terminal settings        ││                                                            │╭─── W H O   I S   O N L I N E ────╮
-│   [o] Sysop tools              ││                                                            ││ Nothing to show yet.             │
-│   [l] Log off                  ││                                                            ││                                  │
+│   [m] Mail                     ││  Signed in as alice.                                       ││ A bulletin board in your termin… │
+│   [a] Files  (not built yet)   ││                                                            ││ Portland, OR · since 2026        │
+│   [c] Chat                     ││  > [f] Forums                                              ││                                  │
+│   [d] Doors                    ││                                                            ││                                  │
+│   [u] Members                  ││                                                            ││                                  │
+│   [y] Community                ││                                                            │╰──────────────────────────────────╯
+│   [i] Invites                  ││                                                            │╭─────────── C L O C K ────────────╮
+│   [s] Terminal settings        ││                                                            ││      ━     ━   ━                 │
+│   [o] Sysop tools              ││                                                            ││   ┃  ━┃ • ┃ ┃ ┃ ┃                │
+│   [l] Log off                  ││                                                            ││   ┃ ┃━  • ┃━┃ ┃━┃                │
+│                                ││                                                            ││ Thu 5 Nov 2026 UTC               │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
+│                                ││                                                            │╰──────────────────────────────────╯
+│                                ││                                                            │╭─── W H O   I S   O N L I N E ────╮
+│                                ││                                                            ││ ● 5 online                       │
+│                                ││                                                            ││ ▸ alice         ▸ bob            │
+│                                ││                                                            ││ ▸ carol         ▸ dave           │
+│                                ││                                                            ││ ▸ erin                           │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            │╰──────────────────────────────────╯
 │                                ││                                                            │╭─────── N E W   P O S T S ────────╮
-│                                ││                                                            ││ Nothing to show yet.             │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
+│                                ││                                                            ││ Active threads: 7                │
+│                                ││                                                            ││ General    ████████████████   4  │
+│                                ││                                                            ││ Tech       ████████░░░░░░░░   2  │
+│                                ││                                                            ││ Chat       ████░░░░░░░░░░░░   1  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            │╰──────────────────────────────────╯
 │                                ││                                                            │╭──────── A C T I V I T Y ─────────╮
-│                                ││                                                            ││ Nothing to show yet.             │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
+│                                ││                                                            ││ 59 threads active in 14 days     │
+│                                ││                                                            ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣶⣶⠀⠀⠀⠀⠀⠀⢀⣀⣀⣿⣿ │
+│                                ││                                                            ││ ⠀⠀⠀⠀⠀⠀⠀⣀⣀⡀⠀⠀⠀⠀⠀⠀⣶⣶⣾⣿⣿⣀⣀⠀⠀⠀⠀⢸⣿⣿⣿⣿ │
+│                                ││                                                            ││ ⠀⠀⢠⣤⣤⠀⠀⣿⣿⣿⣿⡇⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣤⣤⣼⣿⣿⣿⣿⣿⣿ │
+│                                ││                                                            ││ ⣤⣤⣼⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
+│                                ││                                                            ││ 14 days ago                today │
 ╰────────────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / wide / 80x24 / ascii mono / colors=9adf536a7c8a72df
+=== deepspace / wide / 80x24 / ascii mono / colors=6f46658026d03c4d
  * russh-bbs * | Main menu                                            UTC 12:00
 +------ M A I N   M E N U -------++ T H I S   B O A R D ++----- C L O C K -----+
-| Signed in as alice.            || russh-bbs           || UTC 12:00           |
-| Showing Dashboard: this        || A bulletin board in ||                     |
-| terminal is too small for      || your terminal.      ||                     |
-| > [f] Forums                   || Portland, OR        ||                     |
-|   [m] Mail                     |+---------------------++---------------------+
-|   [a] Files  (not built yet)   |+I S   O N L I N E ---++ T   C A L L E R S --+
-|   [c] Chat                     || Nothing to show     || Nothing to show     |
-|   [d] Doors                    || yet.                || yet.                |
-|   [u] Members                  ||                     ||                     |
-|   [y] Community                ||                     ||                     |
-|   [i] Invites                  ||                     ||                     |
-|   [s] Terminal settings        ||                     ||                     |
-|   [o] Sysop tools              |+---------------------++---------------------+
-|   [l] Log off                  |+- N E W   P O S T S -++N R E A D   M A I L -+
-|                                || Nothing to show     || Nothing to show     |
-|                                || yet.                || yet.                |
-|                                ||                     ||                     |
-|                                ||                     ||                     |
-|                                ||                     ||                     |
+| Signed in as alice.            || russh-bbs           ||      _     _   _    |
+| Showing Dashboard: this        || A bulletin board i~ ||   |  _| . | | | |   |
+| terminal is too small for      || Portland, OR        ||   | |_  . |_| |_|   |
+| > [f] Forums                   ||                     || Thu 5 Nov 2026 UTC  |
+|   [m] Mail                     ||                     ||                     |
+|   [a] Files  (not built yet)   |+---------------------++---------------------+
+|   [c] Chat                     |+I S   O N L I N E ---++ T   C A L L E R S --+
+|   [d] Doors                    || * 5 online          || bob              2m |
+|   [u] Members                  || > alice             || carol            1h |
+|   [y] Community                || > bob               || dave             1d |
+|   [i] Invites                  || > carol             || erin             2d |
+|   [s] Terminal settings        || > dave              ||                     |
+|   [o] Sysop tools              || > erin              ||                     |
+|   [l] Log off                  |+---------------------++---------------------+
+|                                |+- N E W   P O S T S -++------ M A I L ------+
+|                                || Active threads: 7   || 3 unread            |
+|                                || Gener~ #######   4  || #####-------------- |
+|                                || Tech   ####---   2  || 12 in your inbox    |
+|                                || Chat   ##-----   1  ||                     |
 |                                ||                     ||                     |
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / wide / 80x24 / unicode truecolor / colors=1cf4ff9bdb0ae39a
+=== ansi / wide / 80x24 / unicode truecolor / colors=6e4cae94d3b6fe51
  ░▒▓ russh-bbs ▓▒░ │ Main menu                                        UTC 12:00
 ╔═════════╡ Main menu ╞══════════╗╔═══╡ This board ╞════╗╔══════╡ Clock ╞══════╗
-║ Signed in as alice.            ║║ russh-bbs           ║║ UTC 12:00           ║
-║ Showing Dashboard: this        ║║ A bulletin board in ║║                     ║
-║ terminal is too small for      ║║ your terminal.      ║║                     ║
-║ > [f] Forums                   ║║ Portland, OR        ║║                     ║
-║   [m] Mail                     ║╚═════════════════════╝╚═════════════════════╝
-║   [a] Files  (not built yet)   ║╔══╡ Who is online ╞══╗╔══╡ Last callers ╞═══╗
-║   [c] Chat                     ║║ Nothing to show     ║║ Nothing to show     ║
-║   [d] Doors                    ║║ yet.                ║║ yet.                ║
-║   [u] Members                  ║║                     ║║                     ║
-║   [y] Community                ║║                     ║║                     ║
-║   [i] Invites                  ║║                     ║║                     ║
-║   [s] Terminal settings        ║║                     ║║                     ║
-║   [o] Sysop tools              ║╚═════════════════════╝╚═════════════════════╝
-║   [l] Log off                  ║╔════╡ New posts ╞════╗╔═══╡ Unread mail ╞═══╗
-║                                ║║ Nothing to show     ║║ Nothing to show     ║
-║                                ║║ yet.                ║║ yet.                ║
-║                                ║║                     ║║                     ║
-║                                ║║                     ║║                     ║
-║                                ║║                     ║║                     ║
+║ Signed in as alice.            ║║ russh-bbs           ║║      ━     ━   ━    ║
+║ Showing Dashboard: this        ║║ A bulletin board i… ║║   ┃  ━┃ • ┃ ┃ ┃ ┃   ║
+║ terminal is too small for      ║║ Portland, OR        ║║   ┃ ┃━  • ┃━┃ ┃━┃   ║
+║ > [f] Forums                   ║║                     ║║ Thu 5 Nov 2026 UTC  ║
+║   [m] Mail                     ║║                     ║║                     ║
+║   [a] Files  (not built yet)   ║╚═════════════════════╝╚═════════════════════╝
+║   [c] Chat                     ║╔══╡ Who is online ╞══╗╔══╡ Last callers ╞═══╗
+║   [d] Doors                    ║║ ● 5 online          ║║ bob              2m ║
+║   [u] Members                  ║║ ▸ alice             ║║ carol            1h ║
+║   [y] Community                ║║ ▸ bob               ║║ dave             1d ║
+║   [i] Invites                  ║║ ▸ carol             ║║ erin             2d ║
+║   [s] Terminal settings        ║║ ▸ dave              ║║                     ║
+║   [o] Sysop tools              ║║ ▸ erin              ║║                     ║
+║   [l] Log off                  ║╚═════════════════════╝╚═════════════════════╝
+║                                ║╔════╡ New posts ╞════╗╔══════╡ Mail ╞═══════╗
+║                                ║║ Active threads: 7   ║║ 3 unread            ║
+║                                ║║ Gener… ███████   4  ║║ ████▊░░░░░░░░░░░░░░ ║
+║                                ║║ Tech   ███▌░░░   2  ║║ 12 in your inbox    ║
+║                                ║║ Chat   █▊░░░░░   1  ║║                     ║
 ║                                ║║                     ║║                     ║
 ╚════════════════════════════════╝╚═════════════════════╝╚═════════════════════╝
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / wide / 132x43 / unicode truecolor / colors=eae15494f69d3f6e
+=== ansi / wide / 132x43 / unicode truecolor / colors=2aa011bc9b7bc196
  ░▒▓ russh-bbs ▓▒░ │ Main menu                                                                                            UTC 12:00
 ╔═════════╡ Main menu ╞══════════╗╔═══════════════════════╡ russh-bbs ╞════════════════════════╗╔══════════╡ This board ╞══════════╗
 ║ > [f] Forums                   ║║                                                            ║║ russh-bbs                        ║
-║   [m] Mail                     ║║  Signed in as alice.                                       ║║ A bulletin board in your         ║
-║   [a] Files  (not built yet)   ║║                                                            ║║ terminal.                        ║
-║   [c] Chat                     ║║  > [f] Forums                                              ║║ Portland, OR · since 2026        ║
-║   [d] Doors                    ║║                                                            ║╚══════════════════════════════════╝
-║   [u] Members                  ║║                                                            ║╔════════════╡ Clock ╞═════════════╗
-║   [y] Community                ║║                                                            ║║ UTC 12:00                        ║
-║   [i] Invites                  ║║                                                            ║╚══════════════════════════════════╝
-║   [s] Terminal settings        ║║                                                            ║╔════════╡ Who is online ╞═════════╗
-║   [o] Sysop tools              ║║                                                            ║║ Nothing to show yet.             ║
-║   [l] Log off                  ║║                                                            ║║                                  ║
+║   [m] Mail                     ║║  Signed in as alice.                                       ║║ A bulletin board in your termin… ║
+║   [a] Files  (not built yet)   ║║                                                            ║║ Portland, OR · since 2026        ║
+║   [c] Chat                     ║║  > [f] Forums                                              ║║                                  ║
+║   [d] Doors                    ║║                                                            ║║                                  ║
+║   [u] Members                  ║║                                                            ║║                                  ║
+║   [y] Community                ║║                                                            ║╚══════════════════════════════════╝
+║   [i] Invites                  ║║                                                            ║╔════════════╡ Clock ╞═════════════╗
+║   [s] Terminal settings        ║║                                                            ║║      ━     ━   ━                 ║
+║   [o] Sysop tools              ║║                                                            ║║   ┃  ━┃ • ┃ ┃ ┃ ┃                ║
+║   [l] Log off                  ║║                                                            ║║   ┃ ┃━  • ┃━┃ ┃━┃                ║
+║                                ║║                                                            ║║ Thu 5 Nov 2026 UTC               ║
 ║                                ║║                                                            ║║                                  ║
 ║                                ║║                                                            ║║                                  ║
-║                                ║║                                                            ║║                                  ║
-║                                ║║                                                            ║║                                  ║
+║                                ║║                                                            ║╚══════════════════════════════════╝
+║                                ║║                                                            ║╔════════╡ Who is online ╞═════════╗
+║                                ║║                                                            ║║ ● 5 online                       ║
+║                                ║║                                                            ║║ ▸ alice         ▸ bob            ║
+║                                ║║                                                            ║║ ▸ carol         ▸ dave           ║
+║                                ║║                                                            ║║ ▸ erin                           ║
 ║                                ║║                                                            ║║                                  ║
 ║                                ║║                                                            ║║                                  ║
 ║                                ║║                                                            ║║                                  ║
 ║                                ║║                                                            ║╚══════════════════════════════════╝
 ║                                ║║                                                            ║╔══════════╡ New posts ╞═══════════╗
-║                                ║║                                                            ║║ Nothing to show yet.             ║
-║                                ║║                                                            ║║                                  ║
-║                                ║║                                                            ║║                                  ║
-║                                ║║                                                            ║║                                  ║
-║                                ║║                                                            ║║                                  ║
-║                                ║║                                                            ║║                                  ║
+║                                ║║                                                            ║║ Active threads: 7                ║
+║                                ║║                                                            ║║ General    ████████████████   4  ║
+║                                ║║                                                            ║║ Tech       ████████░░░░░░░░   2  ║
+║                                ║║                                                            ║║ Chat       ████░░░░░░░░░░░░   1  ║
 ║                                ║║                                                            ║║                                  ║
 ║                                ║║                                                            ║║                                  ║
 ║                                ║║                                                            ║╚══════════════════════════════════╝
 ║                                ║║                                                            ║╔═══════════╡ Activity ╞═══════════╗
-║                                ║║                                                            ║║ Nothing to show yet.             ║
-║                                ║║                                                            ║║                                  ║
-║                                ║║                                                            ║║                                  ║
-║                                ║║                                                            ║║                                  ║
-║                                ║║                                                            ║║                                  ║
-║                                ║║                                                            ║║                                  ║
-║                                ║║                                                            ║║                                  ║
-║                                ║║                                                            ║║                                  ║
-║                                ║║                                                            ║║                                  ║
+║                                ║║                                                            ║║ 59 threads active in 14 days     ║
+║                                ║║                                                            ║║ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣶⣶⠀⠀⠀⠀⠀⠀⢀⣀⣀⣿⣿ ║
+║                                ║║                                                            ║║ ⠀⠀⠀⠀⠀⠀⠀⣀⣀⡀⠀⠀⠀⠀⠀⠀⣶⣶⣾⣿⣿⣀⣀⠀⠀⠀⠀⢸⣿⣿⣿⣿ ║
+║                                ║║                                                            ║║ ⠀⠀⢠⣤⣤⠀⠀⣿⣿⣿⣿⡇⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣤⣤⣼⣿⣿⣿⣿⣿⣿ ║
+║                                ║║                                                            ║║ ⣤⣤⣼⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ║
+║                                ║║                                                            ║║ 14 days ago                today ║
 ╚════════════════════════════════╝╚════════════════════════════════════════════════════════════╝╚══════════════════════════════════╝
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / wide / 80x24 / ascii mono / colors=5f1029aa43d86e8d
+=== ansi / wide / 80x24 / ascii mono / colors=2cd19f631171904f
  ## russh-bbs ## | Main menu                                          UTC 12:00
 +---------| Main menu |----------++---| This board |----++------| Clock |------+
-| Signed in as alice.            || russh-bbs           || UTC 12:00           |
-| Showing Dashboard: this        || A bulletin board in ||                     |
-| terminal is too small for      || your terminal.      ||                     |
-| > [f] Forums                   || Portland, OR        ||                     |
-|   [m] Mail                     |+---------------------++---------------------+
-|   [a] Files  (not built yet)   |+--| Who is online |--++--| Last callers |---+
-|   [c] Chat                     || Nothing to show     || Nothing to show     |
-|   [d] Doors                    || yet.                || yet.                |
-|   [u] Members                  ||                     ||                     |
-|   [y] Community                ||                     ||                     |
-|   [i] Invites                  ||                     ||                     |
-|   [s] Terminal settings        ||                     ||                     |
-|   [o] Sysop tools              |+---------------------++---------------------+
-|   [l] Log off                  |+----| New posts |----++---| Unread mail |---+
-|                                || Nothing to show     || Nothing to show     |
-|                                || yet.                || yet.                |
-|                                ||                     ||                     |
-|                                ||                     ||                     |
-|                                ||                     ||                     |
+| Signed in as alice.            || russh-bbs           ||      _     _   _    |
+| Showing Dashboard: this        || A bulletin board i~ ||   |  _| . | | | |   |
+| terminal is too small for      || Portland, OR        ||   | |_  . |_| |_|   |
+| > [f] Forums                   ||                     || Thu 5 Nov 2026 UTC  |
+|   [m] Mail                     ||                     ||                     |
+|   [a] Files  (not built yet)   |+---------------------++---------------------+
+|   [c] Chat                     |+--| Who is online |--++--| Last callers |---+
+|   [d] Doors                    || * 5 online          || bob              2m |
+|   [u] Members                  || > alice             || carol            1h |
+|   [y] Community                || > bob               || dave             1d |
+|   [i] Invites                  || > carol             || erin             2d |
+|   [s] Terminal settings        || > dave              ||                     |
+|   [o] Sysop tools              || > erin              ||                     |
+|   [l] Log off                  |+---------------------++---------------------+
+|                                |+----| New posts |----++------| Mail |-------+
+|                                || Active threads: 7   || 3 unread            |
+|                                || Gener~ #######   4  || #####-------------- |
+|                                || Tech   ####---   2  || 12 in your inbox    |
+|                                || Chat   ##-----   1  ||                     |
 |                                ||                     ||                     |
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off

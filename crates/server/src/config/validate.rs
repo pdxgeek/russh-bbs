@@ -202,6 +202,7 @@ pub(crate) fn validate(config: &Config, sources: &Sources) -> Result<(), ConfigE
     }
 
     board(&c, config)?;
+    widgets(&c, config)?;
     feeds(&c, config)?;
     datasource(&c, config)?;
     blobs(&c, config)
@@ -210,6 +211,13 @@ pub(crate) fn validate(config: &Config, sources: &Sources) -> Result<(), ConfigE
 /// `[board]` (UI-2): the same checks the screens' `Board` is built with.
 fn board(c: &Check<'_>, config: &Config) -> Result<(), ConfigError> {
     crate::ui::board::Board::from_config(&config.board)
+        .map(|_| ())
+        .map_err(|error| c.fail(error.key, error.message))
+}
+
+/// `[widgets]` (UI-10): the same checks the screens' widget settings are built with.
+fn widgets(c: &Check<'_>, config: &Config) -> Result<(), ConfigError> {
+    crate::ui::widgets::WidgetSettings::from_config(&config.widgets)
         .map(|_| ())
         .map_err(|error| c.fail(error.key, error.message))
 }

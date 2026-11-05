@@ -27,6 +27,7 @@ use super::frame::{ChromeText, FrameSpec, Hint};
 use super::keys;
 use super::strings::StringTable;
 use super::theme::Element;
+use super::widgets::{self, WidgetView};
 use crate::settings::{self, Look};
 
 /// Everything the layout needs to draw one menu screen.
@@ -54,6 +55,23 @@ pub(crate) struct MenuScreen<'a> {
     pub(crate) wanted: LayoutId,
     /// The focus layout's widget pop-over is open.
     pub(crate) popover: bool,
+    /// The widgets this layout shows the member, and what they show (UI-10).
+    pub(crate) widgets: WidgetView<'a>,
+}
+
+impl MenuScreen<'_> {
+    /// The context the widgets draw with.
+    pub(crate) fn widget_cx(&self) -> widgets::Cx<'_> {
+        widgets::Cx::new(
+            self.look,
+            self.tier,
+            self.strings,
+            self.widgets.data,
+            self.board,
+            self.widgets.settings,
+            self.widgets.now,
+        )
+    }
 }
 
 /// The sentence saying a smaller layout is shown, when one is (UI-2).
@@ -74,7 +92,7 @@ pub(crate) fn fallback_note(screen: &MenuScreen<'_>) -> Option<String> {
 }
 
 /// A layout's place in [`keys::LAYOUT_NAMES`].
-const fn layout_index(layout: LayoutId) -> usize {
+pub(crate) const fn layout_index(layout: LayoutId) -> usize {
     match layout {
         LayoutId::Classic => 0,
         LayoutId::Lightbar => 1,

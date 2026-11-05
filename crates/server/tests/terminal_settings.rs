@@ -34,7 +34,7 @@ struct Rig {
     server: SshServer,
     store: SqliteStore,
     token: String,
-    _dir: TempDir,
+    dir: TempDir,
 }
 
 impl Rig {
@@ -74,7 +74,7 @@ impl Rig {
             server,
             store,
             token,
-            _dir: dir,
+            dir,
         }
     }
 
@@ -251,6 +251,44 @@ async fn a_reconnect_skips_the_glyph_test_and_shows_the_stored_tier() {
     );
     assert!(next.contains("Main menu"), "{next}");
     assert!(next.contains("not built yet"), "{next}");
+    rig.server.shutdown().await;
+}
+
+/// A sign-in records one login. The key check in `auth_publickey` used to start the session as
+/// well (and the shell started it again), so "last login" and the widgets' "since your last
+/// call" mark were always this very sign-in.
+#[tokio::test]
+async fn one_ssh_sign_in_records_exactly_one_login() {
+    let rig = Rig::start().await;
+    let key = new_client_key();
+    let (_s, mut channel, _) = claim(&rig, &key).await;
+    send(&mut channel, "\r").await;
+    send(&mut channel, "ny").await;
+    send(&mut channel, "l").await;
+    let pool = sqlx::SqlitePool::connect_with(
+        sqlx::sqlite::SqliteConnectOptions::new().filename(rig.dir.path().join("bbs.db")),
+    )
+    .await
+    .unwrap();
+    let pool = &pool;
+    sqlx::query("CREATE TABLE login_updates (n INTEGER PRIMARY KEY AUTOINCREMENT)")
+        .execute(pool)
+        .await
+        .unwrap();
+    sqlx::query(
+        "CREATE TRIGGER login_updates_count AFTER UPDATE ON account_logins
+         BEGIN INSERT INTO login_updates (n) VALUES (NULL); END",
+    )
+    .execute(pool)
+    .await
+    .unwrap();
+    let (_s2, _again, screen) = reconnect(&rig, &key).await;
+    assert!(screen.contains("Signed in as founder."), "{screen}");
+    let updates: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM login_updates")
+        .fetch_one(pool)
+        .await
+        .unwrap();
+    assert_eq!(updates, 1, "one sign-in, one recorded login");
     rig.server.shutdown().await;
 }
 
