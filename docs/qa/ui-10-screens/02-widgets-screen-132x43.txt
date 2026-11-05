@@ -1,0 +1,43 @@
+ » Night Owl BBS « │ Widgets                                                                                              UTC 04:33
+╭« Widgets »───────────────────────────╮╭« Preview »───────────────────────────────────────────────────────────────────────────────╮
+│ Layout: Dashboard                    ││ ╭« Menu »────────────╮╭« This board »──────╮╭« Clock »──────────╮ ╭« Who is online »───╮ │
+│ (board default)                      ││ │                    ││ Night Owl BBS      ││  ━         ━   ━  │ │ ● 2 online         │ │
+│ >  1 [✓] This board                  ││ │                    ││ After hours in th… ││ ┃ ┃ ┃━┃ •  ━┃  ━┃ │ │ ▸ bob              │ │
+│    2 [✓] Clock                       ││ │                    ││ Portland, OR       ││ ┃━┃   ┃ •  ━┃  ━┃ │ │ ▸ founder          │ │
+│    3 [✓] Who is online               ││ │                    ││                    ││ Thu 5 Nov 2026 UT │ │                    │ │
+│    4 [✓] Last callers                ││ │                    ││                    ││                   │ │                    │ │
+│    5 [✓] New posts                   ││ │                    ││                    ││                   │ │                    │ │
+│    6 [✓] Mail                        ││ │                    ││                    ││                   │ │                    │ │
+│    7 [✓] Activity                    ││ │                    │╰────────────────────╯╰───────────────────╯ ╰────────────────────╯ │
+│    8 [✓] One-liners                  ││ │                    │╭« Last callers »────╮╭« New posts »──────╮ ╭« Mail »────────────╮ │
+│    9 [✓] Poll                        ││ │                    ││ founder        now ││ Active threads: 4 │ │ No unread mail.    │ │
+│   10 [✓] Your credits                ││ │                    ││ bob            now ││ Gene… ██████   2  │ │ 0 in your inbox    │ │
+│   11 [✓] Message of the d… locked on ││ │                    ││                    ││ Rust… ███░░░   1  │ │                    │ │
+│      [ ] Chat                        ││ │                    ││                    ││ Tech  ███░░░   1  │ │                    │ │
+│      [-] Graffiti         locked off ││ │                    ││                    ││                   │ │                    │ │
+│      [ ] News                        ││ │                    ││                    ││                   │ │                    │ │
+│      [-] Doors            locked off ││ │                    ││                    ││                   │ │                    │ │
+│      [ ] Status                      ││ │                    │╰────────────────────╯╰───────────────────╯ ╰────────────────────╯ │
+│                                      ││ │                    │                                                                   │
+│                                      ││ │                    │╭« Activity »────────╮╭« One-liners »─────╮ ╭« Poll »────────────╮ │
+│                                      ││ │                    ││ 31 threads active… ││ bob: anyone up    │ │ Best terminal      │ │
+│                                      ││ │                    ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡇⠀⠀⠀ ││      for a door…  │ │ font?              │ │
+│                                      ││ │                    ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⠀⣿⡇⠀⠀⠀ ││ founder: welcome, │ │  Mono   ░░░░   0%  │ │
+│                                      ││ │                    ││ ⠀⠀⠀⠀⠀⠀⢸⣿⠀⣿⣿⣿⠀⣿⣿⣿⣿⠀ ││         everyone  │ │  Nerd   ████ 100%  │ │
+│                                      ││ │                    ││ ⣿⡇⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀ ││ bob: the board    │ │  Bitmap ░░░░   0%  │ │
+│                                      ││ │                    ││ ⣿⡇⠀⣿⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││      looks great… │ │                    │ │
+│                                      ││ │                    ││ 14 days ago  today ││                   │ │                    │ │
+│                                      ││ │                    │╰────────────────────╯╰───────────────────╯ ╰────────────────────╯ │
+│                                      ││ │                    │                                                                   │
+│                                      ││ │                    │╭« Your credits »────╮╭« Message of the da╮                        │
+│                                      ││ │                    ││ 280 credits        ││ ▌ Maintenance     │                        │
+│                                      ││ │                    ││ +180 in 14 days    ││ ▌ Sunday 02:00    │                        │
+│                                      ││ │                    ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣿ ││ ▌ UTC. Be kind.   │                        │
+│                                      ││ │                    ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣤⣿⣷⣾⣿⣿ ││                   │                        │
+│                                      ││ │                    ││ ⠀⠀⠀⣀⣀⣰⡆⠀⠀⣤⣤⣤⣿⣿⣿⣿⣿⣿ ││                   │                        │
+│                                      ││ │                    ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││                   │                        │
+│                                      ││ │                    ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││                   │                        │
+│                                      ││ │                    │╰────────────────────╯╰───────────────────╯                        │
+│                                      ││ ╰────────────────────╯                                                                   │
+╰──────────────────────────────────────╯╰──────────────────────────────────────────────────────────────────────────────────────────╯
+ Up/Down choose  Space on/off  u/d move  Tab layout  r default  Esc back

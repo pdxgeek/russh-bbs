@@ -529,7 +529,10 @@ impl Widget for Activity {
             pen.heading(),
         )];
         let chart_rows = usize::from(height).saturating_sub(2);
-        if chart_rows >= 3 {
+        if total == 0 {
+            // A quiet fortnight draws no empty chart: it says so with a flat line.
+            lines.push(line(gfx::spark(series, w, cx.ascii), pen.muted()));
+        } else if chart_rows >= 3 {
             for chart in gfx::area_chart(series, w, chart_rows, cx.ascii) {
                 lines.push(line(chart, pen.accent2()));
             }
@@ -585,7 +588,8 @@ impl Widget for Credits {
             style,
         ));
         let chart_rows = usize::from(height).saturating_sub(2);
-        if chart_rows >= 2 {
+        let moved = credits.series.iter().any(|v| *v != 0);
+        if chart_rows >= 2 && moved {
             for chart in gfx::area_chart(&credits.series, w, chart_rows, cx.ascii) {
                 lines.push(line(chart, pen.accent2()));
             }
