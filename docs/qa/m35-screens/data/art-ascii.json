@@ -1,0 +1,604 @@
+{
+ "80x24-ascii-phosphor": {
+  "art_shown_login": true,
+  "art_shown_menu": false,
+  "toks": {
+   "hostile_sgr_7_53": 0,
+   "hostile_sgr_7_31_44": 0,
+   "tc_1_2_3": 0,
+   "bg196": 0,
+   "osc": 0,
+   "bel": 0,
+   "c1_9b": 0,
+   "dcs": 0,
+   "apc": 0,
+   "1049": 1,
+   "mouse": 0,
+   "DSR": 0,
+   "QA": 0,
+   "QADCS": 0,
+   "nul": 0,
+   "del": 0,
+   "clip": 0
+  },
+  "rev_outside_status": 0,
+  "rev_screen": [
+   [
+    23,
+    0
+   ],
+   [
+    23,
+    1
+   ],
+   [
+    23,
+    2
+   ],
+   [
+    23,
+    3
+   ]
+  ],
+  "bytes": 122856
+ },
+ "80x24-ascii-neon": {
+  "art_shown_login": false,
+  "art_shown_menu": false,
+  "toks": {
+   "hostile_sgr_7_53": 0,
+   "hostile_sgr_7_31_44": 0,
+   "tc_1_2_3": 0,
+   "bg196": 0,
+   "osc": 0,
+   "bel": 0,
+   "c1_9b": 0,
+   "dcs": 0,
+   "apc": 0,
+   "1049": 1,
+   "mouse": 0,
+   "DSR": 0,
+   "QA": 0,
+   "QADCS": 0,
+   "nul": 0,
+   "del": 0,
+   "clip": 0
+  },
+  "rev_outside_status": 0,
+  "rev_screen": [
+   [
+    23,
+    0
+   ],
+   [
+    23,
+    1
+   ],
+   [
+    23,
+    2
+   ],
+   [
+    23,
+    3
+   ]
+  ],
+  "bytes": 68953
+ },
+ "80x24-ascii-paper": {
+  "art_shown_login": false,
+  "art_shown_menu": false,
+  "toks": {
+   "hostile_sgr_7_53": 0,
+   "hostile_sgr_7_31_44": 0,
+   "tc_1_2_3": 0,
+   "bg196": 0,
+   "osc": 0,
+   "bel": 0,
+   "c1_9b": 0,
+   "dcs": 0,
+   "apc": 0,
+   "1049": 1,
+   "mouse": 0,
+   "DSR": 0,
+   "QA": 0,
+   "QADCS": 0,
+   "nul": 0,
+   "del": 0,
+   "clip": 0
+  },
+  "rev_outside_status": 0,
+  "rev_screen": [
+   [
+    23,
+    0
+   ],
+   [
+    23,
+    1
+   ],
+   [
+    23,
+    2
+   ],
+   [
+    23,
+    3
+   ]
+  ],
+  "bytes": 55197
+ },
+ "80x24-ascii-amber": {
+  "art_shown_login": false,
+  "art_shown_menu": false,
+  "toks": {
+   "hostile_sgr_7_53": 0,
+   "hostile_sgr_7_31_44": 0,
+   "tc_1_2_3": 0,
+   "bg196": 0,
+   "osc": 0,
+   "bel": 0,
+   "c1_9b": 0,
+   "dcs": 0,
+   "apc": 0,
+   "1049": 1,
+   "mouse": 0,
+   "DSR": 0,
+   "QA": 0,
+   "QADCS": 0,
+   "nul": 0,
+   "del": 0,
+   "clip": 0
+  },
+  "rev_outside_status": 0,
+  "rev_screen": [
+   [
+    23,
+    0
+   ],
+   [
+    23,
+    1
+   ],
+   [
+    23,
+    2
+   ],
+   [
+    23,
+    3
+   ]
+  ],
+  "bytes": 43541
+ },
+ "80x24-ascii-deepspace": {
+  "art_shown_login": false,
+  "art_shown_menu": false,
+  "toks": {
+   "hostile_sgr_7_53": 0,
+   "hostile_sgr_7_31_44": 0,
+   "tc_1_2_3": 0,
+   "bg196": 0,
+   "osc": 0,
+   "bel": 0,
+   "c1_9b": 0,
+   "dcs": 0,
+   "apc": 0,
+   "1049": 1,
+   "mouse": 0,
+   "DSR": 0,
+   "QA": 0,
+   "QADCS": 0,
+   "nul": 0,
+   "del": 0,
+   "clip": 0
+  },
+  "rev_outside_status": 0,
+  "rev_screen": [
+   [
+    23,
+    0
+   ],
+   [
+    23,
+    1
+   ],
+   [
+    23,
+    2
+   ],
+   [
+    23,
+    3
+   ]
+  ],
+  "bytes": 70451
+ },
+ "80x24-ascii-ansi": {
+  "art_shown_login": false,
+  "art_shown_menu": false,
+  "toks": {
+   "hostile_sgr_7_53": 0,
+   "hostile_sgr_7_31_44": 0,
+   "tc_1_2_3": 0,
+   "bg196": 0,
+   "osc": 0,
+   "bel": 0,
+   "c1_9b": 0,
+   "dcs": 0,
+   "apc": 0,
+   "1049": 1,
+   "mouse": 0,
+   "DSR": 0,
+   "QA": 0,
+   "QADCS": 0,
+   "nul": 0,
+   "del": 0,
+   "clip": 0
+  },
+  "rev_outside_status": 0,
+  "rev_screen": [
+   [
+    23,
+    0
+   ],
+   [
+    23,
+    1
+   ],
+   [
+    23,
+    2
+   ],
+   [
+    23,
+    3
+   ]
+  ],
+  "bytes": 52224
+ },
+ "80x24-ascii-default": {
+  "art_shown_login": false,
+  "art_shown_menu": false,
+  "toks": {
+   "hostile_sgr_7_53": 0,
+   "hostile_sgr_7_31_44": 0,
+   "tc_1_2_3": 0,
+   "bg196": 0,
+   "osc": 0,
+   "bel": 0,
+   "c1_9b": 0,
+   "dcs": 0,
+   "apc": 0,
+   "1049": 1,
+   "mouse": 0,
+   "DSR": 0,
+   "QA": 0,
+   "QADCS": 0,
+   "nul": 0,
+   "del": 0,
+   "clip": 0
+  },
+  "rev_outside_status": 0,
+  "rev_screen": [
+   [
+    23,
+    0
+   ],
+   [
+    23,
+    1
+   ],
+   [
+    23,
+    2
+   ],
+   [
+    23,
+    3
+   ]
+  ],
+  "bytes": 28583
+ },
+ "132x43-ascii-phosphor": {
+  "art_shown_login": false,
+  "art_shown_menu": false,
+  "toks": {
+   "hostile_sgr_7_53": 0,
+   "hostile_sgr_7_31_44": 0,
+   "tc_1_2_3": 0,
+   "bg196": 0,
+   "osc": 0,
+   "bel": 0,
+   "c1_9b": 0,
+   "dcs": 0,
+   "apc": 0,
+   "1049": 1,
+   "mouse": 0,
+   "DSR": 0,
+   "QA": 0,
+   "QADCS": 0,
+   "nul": 0,
+   "del": 0,
+   "clip": 0
+  },
+  "rev_outside_status": 0,
+  "rev_screen": [
+   [
+    42,
+    0
+   ],
+   [
+    42,
+    1
+   ],
+   [
+    42,
+    2
+   ],
+   [
+    42,
+    3
+   ]
+  ],
+  "bytes": 75539
+ },
+ "132x43-ascii-neon": {
+  "art_shown_login": false,
+  "art_shown_menu": false,
+  "toks": {
+   "hostile_sgr_7_53": 0,
+   "hostile_sgr_7_31_44": 0,
+   "tc_1_2_3": 0,
+   "bg196": 0,
+   "osc": 0,
+   "bel": 0,
+   "c1_9b": 0,
+   "dcs": 0,
+   "apc": 0,
+   "1049": 1,
+   "mouse": 0,
+   "DSR": 0,
+   "QA": 0,
+   "QADCS": 0,
+   "nul": 0,
+   "del": 0,
+   "clip": 0
+  },
+  "rev_outside_status": 0,
+  "rev_screen": [
+   [
+    42,
+    0
+   ],
+   [
+    42,
+    1
+   ],
+   [
+    42,
+    2
+   ],
+   [
+    42,
+    3
+   ]
+  ],
+  "bytes": 125341
+ },
+ "132x43-ascii-paper": {
+  "art_shown_login": false,
+  "art_shown_menu": false,
+  "toks": {
+   "hostile_sgr_7_53": 0,
+   "hostile_sgr_7_31_44": 0,
+   "tc_1_2_3": 0,
+   "bg196": 0,
+   "osc": 0,
+   "bel": 0,
+   "c1_9b": 0,
+   "dcs": 0,
+   "apc": 0,
+   "1049": 1,
+   "mouse": 0,
+   "DSR": 0,
+   "QA": 0,
+   "QADCS": 0,
+   "nul": 0,
+   "del": 0,
+   "clip": 0
+  },
+  "rev_outside_status": 0,
+  "rev_screen": [
+   [
+    42,
+    0
+   ],
+   [
+    42,
+    1
+   ],
+   [
+    42,
+    2
+   ],
+   [
+    42,
+    3
+   ]
+  ],
+  "bytes": 95455
+ },
+ "132x43-ascii-amber": {
+  "art_shown_login": false,
+  "art_shown_menu": false,
+  "toks": {
+   "hostile_sgr_7_53": 0,
+   "hostile_sgr_7_31_44": 0,
+   "tc_1_2_3": 0,
+   "bg196": 0,
+   "osc": 0,
+   "bel": 0,
+   "c1_9b": 0,
+   "dcs": 0,
+   "apc": 0,
+   "1049": 1,
+   "mouse": 0,
+   "DSR": 0,
+   "QA": 0,
+   "QADCS": 0,
+   "nul": 0,
+   "del": 0,
+   "clip": 0
+  },
+  "rev_outside_status": 0,
+  "rev_screen": [
+   [
+    42,
+    0
+   ],
+   [
+    42,
+    1
+   ],
+   [
+    42,
+    2
+   ],
+   [
+    42,
+    3
+   ]
+  ],
+  "bytes": 79788
+ },
+ "132x43-ascii-deepspace": {
+  "art_shown_login": false,
+  "art_shown_menu": false,
+  "toks": {
+   "hostile_sgr_7_53": 0,
+   "hostile_sgr_7_31_44": 0,
+   "tc_1_2_3": 0,
+   "bg196": 0,
+   "osc": 0,
+   "bel": 0,
+   "c1_9b": 0,
+   "dcs": 0,
+   "apc": 0,
+   "1049": 1,
+   "mouse": 0,
+   "DSR": 0,
+   "QA": 0,
+   "QADCS": 0,
+   "nul": 0,
+   "del": 0,
+   "clip": 0
+  },
+  "rev_outside_status": 0,
+  "rev_screen": [
+   [
+    42,
+    0
+   ],
+   [
+    42,
+    1
+   ],
+   [
+    42,
+    2
+   ],
+   [
+    42,
+    3
+   ]
+  ],
+  "bytes": 126082
+ },
+ "132x43-ascii-ansi": {
+  "art_shown_login": false,
+  "art_shown_menu": false,
+  "toks": {
+   "hostile_sgr_7_53": 0,
+   "hostile_sgr_7_31_44": 0,
+   "tc_1_2_3": 0,
+   "bg196": 0,
+   "osc": 0,
+   "bel": 0,
+   "c1_9b": 0,
+   "dcs": 0,
+   "apc": 0,
+   "1049": 1,
+   "mouse": 0,
+   "DSR": 0,
+   "QA": 0,
+   "QADCS": 0,
+   "nul": 0,
+   "del": 0,
+   "clip": 0
+  },
+  "rev_outside_status": 0,
+  "rev_screen": [
+   [
+    42,
+    0
+   ],
+   [
+    42,
+    1
+   ],
+   [
+    42,
+    2
+   ],
+   [
+    42,
+    3
+   ]
+  ],
+  "bytes": 91036
+ },
+ "132x43-ascii-default": {
+  "art_shown_login": false,
+  "art_shown_menu": false,
+  "toks": {
+   "hostile_sgr_7_53": 0,
+   "hostile_sgr_7_31_44": 0,
+   "tc_1_2_3": 0,
+   "bg196": 0,
+   "osc": 0,
+   "bel": 0,
+   "c1_9b": 0,
+   "dcs": 0,
+   "apc": 0,
+   "1049": 1,
+   "mouse": 0,
+   "DSR": 0,
+   "QA": 0,
+   "QADCS": 0,
+   "nul": 0,
+   "del": 0,
+   "clip": 0
+  },
+  "rev_outside_status": 0,
+  "rev_screen": [
+   [
+    42,
+    0
+   ],
+   [
+    42,
+    1
+   ],
+   [
+    42,
+    2
+   ],
+   [
+    42,
+    3
+   ]
+  ],
+  "bytes": 45417
+ }
+}

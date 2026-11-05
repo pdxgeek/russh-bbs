@@ -1,0 +1,1730 @@
+[
+ {
+  "depth": "truecolor",
+  "game": "Coin Toss",
+  "layout": "classic",
+  "size": "80x24",
+  "bytes": 10224,
+  "truecolor": 1,
+  "c256": 129,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Saltmarch",
+  "layout": "classic",
+  "size": "80x24",
+  "bytes": 7105,
+  "truecolor": 26,
+  "c256": 62,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 139,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Emberdeep",
+  "layout": "classic",
+  "size": "80x24",
+  "bytes": 15299,
+  "truecolor": 94,
+  "c256": 168,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Nullroute",
+  "layout": "classic",
+  "size": "80x24",
+  "bytes": 9953,
+  "truecolor": 1,
+  "c256": 128,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Long Haul",
+  "layout": "classic",
+  "size": "80x24",
+  "bytes": 10406,
+  "truecolor": 1,
+  "c256": 129,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Hallpass",
+  "layout": "classic",
+  "size": "80x24",
+  "bytes": 13580,
+  "truecolor": 198,
+  "c256": 51,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Coin Toss",
+  "layout": "classic",
+  "size": "80x24",
+  "bytes": 10217,
+  "truecolor": 0,
+  "c256": 130,
+  "max_idx": 179,
+  "n_idx_over15": 1,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Saltmarch",
+  "layout": "classic",
+  "size": "80x24",
+  "bytes": 6901,
+  "truecolor": 0,
+  "c256": 88,
+  "max_idx": 255,
+  "n_idx_over15": 26,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 139,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Emberdeep",
+  "layout": "classic",
+  "size": "80x24",
+  "bytes": 14353,
+  "truecolor": 0,
+  "c256": 243,
+  "max_idx": 238,
+  "n_idx_over15": 75,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Nullroute",
+  "layout": "classic",
+  "size": "80x24",
+  "bytes": 9946,
+  "truecolor": 0,
+  "c256": 129,
+  "max_idx": 179,
+  "n_idx_over15": 1,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Long Haul",
+  "layout": "classic",
+  "size": "80x24",
+  "bytes": 10399,
+  "truecolor": 0,
+  "c256": 130,
+  "max_idx": 179,
+  "n_idx_over15": 1,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Hallpass",
+  "layout": "classic",
+  "size": "80x24",
+  "bytes": 12058,
+  "truecolor": 0,
+  "c256": 249,
+  "max_idx": 254,
+  "n_idx_over15": 198,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Coin Toss",
+  "layout": "classic",
+  "size": "80x24",
+  "bytes": 10215,
+  "truecolor": 0,
+  "c256": 130,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Saltmarch",
+  "layout": "classic",
+  "size": "80x24",
+  "bytes": 6863,
+  "truecolor": 0,
+  "c256": 88,
+  "max_idx": 11,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 139,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Emberdeep",
+  "layout": "classic",
+  "size": "80x24",
+  "bytes": 14139,
+  "truecolor": 0,
+  "c256": 240,
+  "max_idx": 8,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Nullroute",
+  "layout": "classic",
+  "size": "80x24",
+  "bytes": 9944,
+  "truecolor": 0,
+  "c256": 129,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Long Haul",
+  "layout": "classic",
+  "size": "80x24",
+  "bytes": 10397,
+  "truecolor": 0,
+  "c256": 130,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Hallpass",
+  "layout": "classic",
+  "size": "80x24",
+  "bytes": 11817,
+  "truecolor": 0,
+  "c256": 249,
+  "max_idx": 12,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Coin Toss",
+  "layout": "focus",
+  "size": "80x24",
+  "bytes": 10224,
+  "truecolor": 1,
+  "c256": 129,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Saltmarch",
+  "layout": "focus",
+  "size": "80x24",
+  "bytes": 7105,
+  "truecolor": 26,
+  "c256": 62,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 139,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Emberdeep",
+  "layout": "focus",
+  "size": "80x24",
+  "bytes": 15299,
+  "truecolor": 94,
+  "c256": 168,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Nullroute",
+  "layout": "focus",
+  "size": "80x24",
+  "bytes": 9953,
+  "truecolor": 1,
+  "c256": 128,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Long Haul",
+  "layout": "focus",
+  "size": "80x24",
+  "bytes": 10406,
+  "truecolor": 1,
+  "c256": 129,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Hallpass",
+  "layout": "focus",
+  "size": "80x24",
+  "bytes": 13580,
+  "truecolor": 198,
+  "c256": 51,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Coin Toss",
+  "layout": "focus",
+  "size": "80x24",
+  "bytes": 10217,
+  "truecolor": 0,
+  "c256": 130,
+  "max_idx": 179,
+  "n_idx_over15": 1,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Saltmarch",
+  "layout": "focus",
+  "size": "80x24",
+  "bytes": 6901,
+  "truecolor": 0,
+  "c256": 88,
+  "max_idx": 255,
+  "n_idx_over15": 26,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 139,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Emberdeep",
+  "layout": "focus",
+  "size": "80x24",
+  "bytes": 14353,
+  "truecolor": 0,
+  "c256": 243,
+  "max_idx": 238,
+  "n_idx_over15": 75,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Nullroute",
+  "layout": "focus",
+  "size": "80x24",
+  "bytes": 9946,
+  "truecolor": 0,
+  "c256": 129,
+  "max_idx": 179,
+  "n_idx_over15": 1,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Long Haul",
+  "layout": "focus",
+  "size": "80x24",
+  "bytes": 10399,
+  "truecolor": 0,
+  "c256": 130,
+  "max_idx": 179,
+  "n_idx_over15": 1,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Hallpass",
+  "layout": "focus",
+  "size": "80x24",
+  "bytes": 12058,
+  "truecolor": 0,
+  "c256": 249,
+  "max_idx": 254,
+  "n_idx_over15": 198,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Coin Toss",
+  "layout": "focus",
+  "size": "80x24",
+  "bytes": 10215,
+  "truecolor": 0,
+  "c256": 130,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Saltmarch",
+  "layout": "focus",
+  "size": "80x24",
+  "bytes": 6863,
+  "truecolor": 0,
+  "c256": 88,
+  "max_idx": 11,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 139,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Emberdeep",
+  "layout": "focus",
+  "size": "80x24",
+  "bytes": 14139,
+  "truecolor": 0,
+  "c256": 240,
+  "max_idx": 8,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Nullroute",
+  "layout": "focus",
+  "size": "80x24",
+  "bytes": 9944,
+  "truecolor": 0,
+  "c256": 129,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Long Haul",
+  "layout": "focus",
+  "size": "80x24",
+  "bytes": 10397,
+  "truecolor": 0,
+  "c256": 130,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Hallpass",
+  "layout": "focus",
+  "size": "80x24",
+  "bytes": 11817,
+  "truecolor": 0,
+  "c256": 249,
+  "max_idx": 12,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   23
+  ],
+  "box_cols": [
+   0,
+   79
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Coin Toss",
+  "layout": "classic",
+  "size": "132x43",
+  "bytes": 23563,
+  "truecolor": 1,
+  "c256": 212,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   1,
+   41
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Saltmarch",
+  "layout": "classic",
+  "size": "132x43",
+  "bytes": 12712,
+  "truecolor": 25,
+  "c256": 93,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 267,
+  "box_rows": [
+   1,
+   41
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Emberdeep",
+  "layout": "classic",
+  "size": "132x43",
+  "bytes": 28085,
+  "truecolor": 128,
+  "c256": 235,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   1,
+   41
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Nullroute",
+  "layout": "classic",
+  "size": "132x43",
+  "bytes": 22441,
+  "truecolor": 1,
+  "c256": 210,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   1,
+   41
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Long Haul",
+  "layout": "classic",
+  "size": "132x43",
+  "bytes": 23970,
+  "truecolor": 1,
+  "c256": 212,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   1,
+   41
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Hallpass",
+  "layout": "classic",
+  "size": "132x43",
+  "bytes": 22606,
+  "truecolor": 312,
+  "c256": 83,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   1,
+   41
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Coin Toss",
+  "layout": "classic",
+  "size": "132x43",
+  "bytes": 23556,
+  "truecolor": 0,
+  "c256": 213,
+  "max_idx": 179,
+  "n_idx_over15": 1,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   1,
+   41
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Saltmarch",
+  "layout": "classic",
+  "size": "132x43",
+  "bytes": 12517,
+  "truecolor": 0,
+  "c256": 118,
+  "max_idx": 255,
+  "n_idx_over15": 25,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 267,
+  "box_rows": [
+   1,
+   41
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Emberdeep",
+  "layout": "classic",
+  "size": "132x43",
+  "bytes": 26289,
+  "truecolor": 0,
+  "c256": 310,
+  "max_idx": 238,
+  "n_idx_over15": 75,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   1,
+   41
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Nullroute",
+  "layout": "classic",
+  "size": "132x43",
+  "bytes": 22434,
+  "truecolor": 0,
+  "c256": 211,
+  "max_idx": 179,
+  "n_idx_over15": 1,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   1,
+   41
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Long Haul",
+  "layout": "classic",
+  "size": "132x43",
+  "bytes": 23963,
+  "truecolor": 0,
+  "c256": 213,
+  "max_idx": 179,
+  "n_idx_over15": 1,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   1,
+   41
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Hallpass",
+  "layout": "classic",
+  "size": "132x43",
+  "bytes": 20184,
+  "truecolor": 0,
+  "c256": 395,
+  "max_idx": 254,
+  "n_idx_over15": 312,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   1,
+   41
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Coin Toss",
+  "layout": "classic",
+  "size": "132x43",
+  "bytes": 23554,
+  "truecolor": 0,
+  "c256": 213,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   1,
+   41
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Saltmarch",
+  "layout": "classic",
+  "size": "132x43",
+  "bytes": 12480,
+  "truecolor": 0,
+  "c256": 118,
+  "max_idx": 11,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 267,
+  "box_rows": [
+   1,
+   41
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Emberdeep",
+  "layout": "classic",
+  "size": "132x43",
+  "bytes": 26118,
+  "truecolor": 0,
+  "c256": 309,
+  "max_idx": 8,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   1,
+   41
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Nullroute",
+  "layout": "classic",
+  "size": "132x43",
+  "bytes": 22432,
+  "truecolor": 0,
+  "c256": 211,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   1,
+   41
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Long Haul",
+  "layout": "classic",
+  "size": "132x43",
+  "bytes": 23961,
+  "truecolor": 0,
+  "c256": 213,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   1,
+   41
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Hallpass",
+  "layout": "classic",
+  "size": "132x43",
+  "bytes": 19854,
+  "truecolor": 0,
+  "c256": 395,
+  "max_idx": 12,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   1,
+   41
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Coin Toss",
+  "layout": "focus",
+  "size": "132x43",
+  "bytes": 26084,
+  "truecolor": 1,
+  "c256": 216,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   42
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Saltmarch",
+  "layout": "focus",
+  "size": "132x43",
+  "bytes": 13251,
+  "truecolor": 25,
+  "c256": 94,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 267,
+  "box_rows": [
+   0,
+   42
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Emberdeep",
+  "layout": "focus",
+  "size": "132x43",
+  "bytes": 30370,
+  "truecolor": 128,
+  "c256": 238,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   42
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Nullroute",
+  "layout": "focus",
+  "size": "132x43",
+  "bytes": 24806,
+  "truecolor": 1,
+  "c256": 214,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   42
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Long Haul",
+  "layout": "focus",
+  "size": "132x43",
+  "bytes": 26445,
+  "truecolor": 1,
+  "c256": 216,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   42
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "truecolor",
+  "game": "Hallpass",
+  "layout": "focus",
+  "size": "132x43",
+  "bytes": 23539,
+  "truecolor": 316,
+  "c256": 85,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   42
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Coin Toss",
+  "layout": "focus",
+  "size": "132x43",
+  "bytes": 26077,
+  "truecolor": 0,
+  "c256": 217,
+  "max_idx": 179,
+  "n_idx_over15": 1,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   42
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Saltmarch",
+  "layout": "focus",
+  "size": "132x43",
+  "bytes": 13056,
+  "truecolor": 0,
+  "c256": 119,
+  "max_idx": 255,
+  "n_idx_over15": 25,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 267,
+  "box_rows": [
+   0,
+   42
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Emberdeep",
+  "layout": "focus",
+  "size": "132x43",
+  "bytes": 28574,
+  "truecolor": 0,
+  "c256": 313,
+  "max_idx": 238,
+  "n_idx_over15": 75,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   42
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Nullroute",
+  "layout": "focus",
+  "size": "132x43",
+  "bytes": 24799,
+  "truecolor": 0,
+  "c256": 215,
+  "max_idx": 179,
+  "n_idx_over15": 1,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   42
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Long Haul",
+  "layout": "focus",
+  "size": "132x43",
+  "bytes": 26438,
+  "truecolor": 0,
+  "c256": 217,
+  "max_idx": 179,
+  "n_idx_over15": 1,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   42
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "256",
+  "game": "Hallpass",
+  "layout": "focus",
+  "size": "132x43",
+  "bytes": 21085,
+  "truecolor": 0,
+  "c256": 401,
+  "max_idx": 254,
+  "n_idx_over15": 316,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   42
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Coin Toss",
+  "layout": "focus",
+  "size": "132x43",
+  "bytes": 26075,
+  "truecolor": 0,
+  "c256": 217,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   42
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Saltmarch",
+  "layout": "focus",
+  "size": "132x43",
+  "bytes": 13019,
+  "truecolor": 0,
+  "c256": 119,
+  "max_idx": 11,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 267,
+  "box_rows": [
+   0,
+   42
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Emberdeep",
+  "layout": "focus",
+  "size": "132x43",
+  "bytes": 28403,
+  "truecolor": 0,
+  "c256": 312,
+  "max_idx": 8,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   42
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Nullroute",
+  "layout": "focus",
+  "size": "132x43",
+  "bytes": 24797,
+  "truecolor": 0,
+  "c256": 215,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   42
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Long Haul",
+  "layout": "focus",
+  "size": "132x43",
+  "bytes": 26436,
+  "truecolor": 0,
+  "c256": 217,
+  "max_idx": 6,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   42
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ },
+ {
+  "depth": "16",
+  "game": "Hallpass",
+  "layout": "focus",
+  "size": "132x43",
+  "bytes": 20755,
+  "truecolor": 0,
+  "c256": 401,
+  "max_idx": 12,
+  "n_idx_over15": 0,
+  "bold_reverse_drawn": 0,
+  "bold_reverse_off_status": 0,
+  "rev_only": 0,
+  "box_rows": [
+   0,
+   42
+  ],
+  "box_cols": [
+   0,
+   131
+  ],
+  "marker_in_door": [],
+  "title_ok": true
+ }
+]
