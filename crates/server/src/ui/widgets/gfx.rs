@@ -43,26 +43,26 @@ fn level(v: u64, max: u64, levels: &[char; 8]) -> char {
     levels[usize::try_from(step).unwrap_or(7)]
 }
 
-/// A horizontal bar `width` cells wide filled to `fraction` (0.0 to 1.0): `(filled, rest)`, so
-/// the caller can colour the two parts differently. The filled part may end in a partial block.
+/// A horizontal bar `width` cells wide filled to `part` of `whole`: `(filled, rest)`, so the
+/// caller can colour the two parts differently. The filled part may end in a partial block.
+/// `part` beyond `whole` is full; a `whole` of zero is empty.
 #[must_use]
-pub(crate) fn bar(fraction: f64, width: usize, ascii: bool) -> (String, String) {
-    let fraction = if fraction.is_finite() {
-        fraction.clamp(0.0, 1.0)
-    } else {
-        0.0
-    };
+pub(crate) fn bar(part: u64, whole: u64, width: usize, ascii: bool) -> (String, String) {
+    let part = u128::from(part.min(whole));
+    let whole = u128::from(whole.max(1));
+    let cells = width as u128;
     if ascii {
-        let full = ((fraction * width as f64).round() as usize).min(width);
+        let full = usize::try_from((part * cells * 2 + whole) / (whole * 2)).unwrap_or(width);
+        let full = full.min(width);
         return ("#".repeat(full), "-".repeat(width - full));
     }
-    let eighths = (fraction * width as f64 * 8.0).round() as usize;
+    let eighths = usize::try_from((part * cells * 8 + whole / 2) / whole).unwrap_or(width * 8);
     let full = (eighths / 8).min(width);
-    let part = eighths % 8;
+    let partial = eighths % 8;
     let mut filled = "\u{2588}".repeat(full);
     let mut used = full;
-    if part > 0 && full < width {
-        filled.push(PARTIAL[part - 1]);
+    if partial > 0 && full < width {
+        filled.push(PARTIAL[partial - 1]);
         used += 1;
     }
     (filled, "\u{2591}".repeat(width - used))
@@ -102,11 +102,13 @@ pub(crate) fn area_chart(values: &[u64], cols: usize, rows: usize, ascii: bool) 
         for col in 0..cols {
             if ascii {
                 // Row 0 is the top; a column is filled in this row when its height reaches it.
-                line.push(if heights[col] > rows - 1 - row { '#' } else { ' ' });
+                line.push(if heights[col] > rows - 1 - row {
+                    '#'
+                } else {
+                    ' '
+                });
                 continue;
             }
-            // Bit values of the braille dot at (column in cell, row in cell).
-            const BITS: [[u32; 4]; 2] = [[0x01, 0x02, 0x04, 0x40], [0x08, 0x10, 0x20, 0x80]];
             let mut bits = 0_u32;
             for (dx, column_bits) in BITS.iter().enumerate() {
                 let height = heights[col * 2 + dx];
@@ -124,6 +126,9 @@ pub(crate) fn area_chart(values: &[u64], cols: usize, rows: usize, ascii: bool) 
     }
     out
 }
+
+/// Bit values of the braille dot at (column in cell, row in cell).
+const BITS: [[u32; 4]; 2] = [[0x01, 0x02, 0x04, 0x40], [0x08, 0x10, 0x20, 0x80]];
 
 /// Which of the seven segments (a top, b upper right, c lower right, d bottom, e lower left,
 /// f upper left, g middle) each digit lights.
@@ -144,7 +149,11 @@ const SEGMENTS: [[bool; 7]; 10] = [
 /// box-drawing strokes, ASCII uses `_` and `|`. Anything else becomes a blank column.
 #[must_use]
 pub(crate) fn big_digits(text: &str, ascii: bool) -> [String; 3] {
-    let (h, v) = if ascii { ('_', '|') } else { ('\u{2501}', '\u{2503}') };
+    let (h, v) = if ascii {
+        ('_', '|')
+    } else {
+        ('\u{2501}', '\u{2503}')
+    };
     let mut rows = [String::new(), String::new(), String::new()];
     for ch in text.chars() {
         if ch == ':' {
@@ -314,19 +323,19 @@ pub(crate) enum Unit {
 /// Bytes as a short figure: `812B`, `3.4K`, `12M`.
 #[must_use]
 pub(crate) fn bytes(n: u64) -> String {
-    const UNITS: [&str; 4] = ["B", "K", "M", "G"];
-    let mut value = n as f64;
-    let mut unit = 0;
-    while value >= 1024.0 && unit < UNITS.len() - 1 {
-        value /= 1024.0;
+    const UNITS: [char; 3] = ['K', 'M', 'G'];
+    let (mut value, mut rest, mut unit) = (n, 0, 0);
+    while value >= 1024 && unit < UNITS.len() {
+        rest = value % 1024;
+        value /= 1024;
         unit += 1;
     }
     if unit == 0 {
         format!("{n}B")
-    } else if value < 10.0 {
-        format!("{value:.1}{}", UNITS[unit])
+    } else if value < 10 {
+        format!("{value}.{}{}", rest * 10 / 1024, UNITS[unit - 1])
     } else {
-        format!("{value:.0}{}", UNITS[unit])
+        format!("{value}{}", UNITS[unit - 1])
     }
 }
 

@@ -61,7 +61,11 @@ fn panes_stay_inside_the_body_and_never_overlap() {
 fn the_pane_layouts_are_real_arrangements() {
     let body = Rect::new(0, 1, 132, 41);
     let dashboard = plan(LayoutId::Dashboard, body);
-    assert_eq!(dashboard.cells.len(), 12, "three columns of four rows at this size");
+    assert_eq!(
+        dashboard.cells.len(),
+        12,
+        "three columns of four rows at this size"
+    );
     let wide = plan(LayoutId::Wide, body);
     assert!(wide.content.is_some(), "three columns");
     assert!(wide.nav.x < wide.content.unwrap().x && wide.content.unwrap().x < wide.cells[0].x);
@@ -83,11 +87,20 @@ fn the_pane_layouts_are_real_arrangements() {
 
 #[test]
 fn a_short_dashboard_drops_rows_instead_of_squashing_them() {
-    let cells = |h| plan(LayoutId::Dashboard, Rect::new(0, 1, 80, h)).cells.len();
+    let cells = |h| {
+        plan(LayoutId::Dashboard, Rect::new(0, 1, 80, h))
+            .cells
+            .len()
+    };
     // Two columns at 80 wide; rows grow with the height.
     assert_eq!((cells(22), cells(14), cells(8)), (6, 4, 2));
     // Three columns once the grid is 90 wide.
-    assert_eq!(plan(LayoutId::Dashboard, Rect::new(0, 1, 132, 22)).cells.len(), 9);
+    assert_eq!(
+        plan(LayoutId::Dashboard, Rect::new(0, 1, 132, 22))
+            .cells
+            .len(),
+        9
+    );
 }
 
 #[test]

@@ -654,7 +654,10 @@ fn the_pane_layouts_really_have_panes() {
         dashboard.contains("UTC 12:00"),
         "the header clock shows the real time"
     );
-    assert!(dashboard.contains("Thu 5 Nov 2026"), "the clock widget shows the date");
+    assert!(
+        dashboard.contains("Thu 5 Nov 2026"),
+        "the clock widget shows the date"
+    );
     let wide = draw(LayoutId::Wide, (132, 43));
     assert!(wide.contains("Activity") && wide.contains("This board"));
     let split = draw(LayoutId::Split, (100, 30));

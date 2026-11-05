@@ -122,6 +122,7 @@ pub(crate) struct WidgetView<'a> {
     pub(crate) now: i64,
 }
 
+#[cfg(test)]
 impl WidgetView<'static> {
     /// No widgets and no data: the layouts draw their cells empty.
     pub(crate) fn none() -> Self {
@@ -148,19 +149,31 @@ impl Pen {
         self.0.muted()
     }
     pub(crate) fn heading(self) -> Style {
-        self.0.accent(Style::new().add_modifier(Modifier::BOLD), self.0.palette().heading)
+        self.0.accent(
+            Style::new().add_modifier(Modifier::BOLD),
+            self.0.palette().heading,
+        )
     }
     pub(crate) fn accent(self) -> Style {
-        self.0.accent(Style::new().add_modifier(Modifier::BOLD), self.0.palette().accent)
+        self.0.accent(
+            Style::new().add_modifier(Modifier::BOLD),
+            self.0.palette().accent,
+        )
     }
     pub(crate) fn accent2(self) -> Style {
         self.0.accent(Style::new(), self.0.palette().accent2)
     }
     pub(crate) fn key(self) -> Style {
-        self.0.accent(Style::new().add_modifier(Modifier::BOLD), self.0.palette().key)
+        self.0.accent(
+            Style::new().add_modifier(Modifier::BOLD),
+            self.0.palette().key,
+        )
     }
     pub(crate) fn good(self) -> Style {
-        self.0.accent(Style::new().add_modifier(Modifier::BOLD), self.0.palette().success)
+        self.0.accent(
+            Style::new().add_modifier(Modifier::BOLD),
+            self.0.palette().success,
+        )
     }
     pub(crate) fn warn(self) -> Style {
         self.0.accent(Style::new(), self.0.palette().warning)
@@ -168,17 +181,14 @@ impl Pen {
     pub(crate) fn bad(self) -> Style {
         self.0.accent(Style::new(), self.0.palette().error)
     }
-    pub(crate) fn info(self) -> Style {
-        self.0.accent(Style::new(), self.0.palette().info)
-    }
     pub(crate) fn stamp(self) -> Style {
         self.0.accent(Style::new(), self.0.palette().timestamp)
     }
     pub(crate) fn quote(self) -> Style {
-        self.0.accent(Style::new().add_modifier(Modifier::ITALIC), self.0.palette().quote)
-    }
-    pub(crate) fn rule(self) -> Style {
-        self.0.accent(Style::new(), self.0.palette().border)
+        self.0.accent(
+            Style::new().add_modifier(Modifier::ITALIC),
+            self.0.palette().quote,
+        )
     }
     /// Today in a calendar: bold and underlined, which survives mono.
     pub(crate) fn today(self) -> Style {
@@ -192,12 +202,23 @@ impl Pen {
 /// One built-in widget.
 pub(crate) trait Widget: Sync {
     /// The widget's id, which never changes.
+    #[cfg_attr(
+        not(test),
+        expect(
+            dead_code,
+            reason = "the registry is keyed by id; tests check the two agree"
+        )
+    )]
     fn id(&self) -> WidgetId;
     /// The string-table key of the panel title.
     fn title_key(&self) -> &'static str;
     /// The smallest inside (columns, rows) it draws sensibly in. A smaller cell skips it.
     fn min_size(&self) -> (u16, u16);
     /// The inside it looks best in.
+    #[cfg_attr(
+        not(test),
+        expect(dead_code, reason = "a size hint for the Widgets screen and tests")
+    )]
     fn preferred(&self) -> (u16, u16);
     /// How often its data may be refreshed. Never below [`MIN_REFRESH`]; static widgets say an
     /// hour.
@@ -211,10 +232,7 @@ pub(crate) trait Widget: Sync {
     /// Draw into `area` (the inside of the panel).
     fn draw(&self, frame: &mut Frame<'_>, area: Rect, cx: &Cx<'_>) {
         let lines = self.lines(cx, area.width, area.height);
-        frame.render_widget(
-            Paragraph::new(lines).style(cx.look.text()),
-            area,
-        );
+        frame.render_widget(Paragraph::new(lines).style(cx.look.text()), area);
     }
 
     /// The ASCII text form: the same lines, seven-bit characters, no styling.
@@ -261,11 +279,7 @@ pub(crate) fn inside(look: Look, cell: Rect) -> Rect {
 /// fits, skipping widgets with nothing to show. A widget too big for every remaining cell is
 /// left out (it does not squeeze).
 #[must_use]
-pub(crate) fn assign(
-    cells: &[Rect],
-    shown: &[WidgetId],
-    cx: &Cx<'_>,
-) -> Vec<(WidgetId, Rect)> {
+pub(crate) fn assign(cells: &[Rect], shown: &[WidgetId], cx: &Cx<'_>) -> Vec<(WidgetId, Rect)> {
     let mut waiting: Vec<WidgetId> = shown
         .iter()
         .copied()
@@ -323,7 +337,17 @@ pub(crate) fn popover_lines(
         if !widget.has_content(cx) {
             continue;
         }
-        let body = widget.lines(cx, width, 3);
+        // The ASCII tier shows the plain text form of each widget.
+        let body: Vec<Line<'static>> = if cx.ascii {
+            widget
+                .text(cx, width)
+                .into_iter()
+                .take(3)
+                .map(|text| Line::styled(text, pen.text()))
+                .collect()
+        } else {
+            widget.lines(cx, width, 3)
+        };
         let need = 1 + body.len();
         if out.len() + need > usize::from(height) {
             break;

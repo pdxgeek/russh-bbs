@@ -36,17 +36,26 @@ pub(crate) fn data() -> WidgetData {
                 .to_vec(),
         ),
         callers: Some(
-            [("bob", 120), ("carol", 3_700), ("dave", 90_000), ("erin", 200_000)]
-                .into_iter()
-                .map(|(handle, ago)| Caller {
-                    handle: handle.to_owned(),
-                    at: at(ago),
-                })
-                .collect(),
+            [
+                ("bob", 120),
+                ("carol", 3_700),
+                ("dave", 90_000),
+                ("erin", 200_000),
+            ]
+            .into_iter()
+            .map(|(handle, ago)| Caller {
+                handle: handle.to_owned(),
+                at: at(ago),
+            })
+            .collect(),
         ),
         new_posts: Some(NewPosts {
             threads: 7,
-            boards: vec![("General".into(), 4), ("Tech".into(), 2), ("Chat".into(), 1)],
+            boards: vec![
+                ("General".into(), 4),
+                ("Tech".into(), 2),
+                ("Chat".into(), 1),
+            ],
         }),
         mail: Some(MailCount {
             total: 12,
@@ -65,7 +74,10 @@ pub(crate) fn data() -> WidgetData {
         activity: Some(vec![1, 3, 2, 5, 4, 0, 2, 6, 8, 5, 3, 4, 7, 9]),
         credits: Some(Credits {
             balance: 1_234,
-            series: vec![900, 900, 950, 950, 1_000, 1_000, 1_050, 1_100, 1_100, 1_150, 1_150, 1_200, 1_200, 1_234],
+            series: vec![
+                900, 900, 950, 950, 1_000, 1_000, 1_050, 1_100, 1_100, 1_150, 1_150, 1_200, 1_200,
+                1_234,
+            ],
         }),
         oneliners: Some(vec![
             line("bob", "the board looks great tonight", 300),

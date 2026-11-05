@@ -95,7 +95,12 @@ impl WidgetSettings {
         })?;
         let motd = text("widgets.motd", &config.motd, MOTD_MAX)?;
         let mut quotes = Vec::new();
-        for part in config.quotes.split('|').map(str::trim).filter(|p| !p.is_empty()) {
+        for part in config
+            .quotes
+            .split('|')
+            .map(str::trim)
+            .filter(|p| !p.is_empty())
+        {
             if quotes.len() >= QUOTES_MAX {
                 return Err(refuse(
                     "widgets.quotes",

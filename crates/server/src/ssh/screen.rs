@@ -551,7 +551,7 @@ pub(crate) struct Screen {
     /// The widgets' data and the member's saved lists (UI-10).
     widgets: WidgetState,
     /// The Widgets screen, while the member has it open over the settings (UI-10).
-    widgets_screen: Option<WidgetsScreen>,
+    widgets_page: Option<WidgetsScreen>,
 }
 
 /// What the widget panels show and how the member arranged them (UI-10).
@@ -650,7 +650,7 @@ impl Screen {
                 depth: None,
             },
             widgets: WidgetState::default(),
-            widgets_screen: None,
+            widgets_page: None,
         })
     }
 
@@ -750,7 +750,7 @@ impl Screen {
             return self.apply_chat_keys(keys);
         }
         let mut effects = KeyEffects::default();
-        if self.widgets_screen.is_some() {
+        if self.widgets_page.is_some() {
             self.widget_keys(keys, &mut effects);
             return effects;
         }
@@ -872,7 +872,7 @@ impl Screen {
                         }
                         MemberEffect::Widgets => {
                             let start = self.ui.layout_for(flow.settings());
-                            self.widgets_screen = Some(WidgetsScreen::open(start));
+                            self.widgets_page = Some(WidgetsScreen::open(start));
                             self.widgets.fetched = None;
                             self.dirty = true;
                             // Keys typed after it belong to the new screen.
@@ -1024,7 +1024,7 @@ impl Screen {
                 return;
             }
             let Some(access) = self.content.flow().map(MemberFlow::access_snapshot) else {
-                self.widgets_screen = None;
+                self.widgets_page = None;
                 return;
             };
             let ctx = widgets_screen::Ctx {
@@ -1032,13 +1032,13 @@ impl Screen {
                 choice: &self.widgets.choice,
                 access,
             };
-            let Some(screen) = self.widgets_screen.as_mut() else {
+            let Some(screen) = self.widgets_page.as_mut() else {
                 return;
             };
             match screen.press(key, &ctx) {
                 widgets_screen::Outcome::Stay => {}
                 widgets_screen::Outcome::Back => {
-                    self.widgets_screen = None;
+                    self.widgets_page = None;
                     // The rest of the batch is for the settings screen again.
                     effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
                     return;
@@ -1091,8 +1091,7 @@ impl Screen {
         }
         let stale = match (self.widgets.fetched, widgets::refresh_interval(&wanted)) {
             (Some(at), Some(every)) => {
-                now.saturating_duration_since(at) >= every
-                    || self.widgets.fetched_for != wanted
+                now.saturating_duration_since(at) >= every || self.widgets.fetched_for != wanted
             }
             _ => true,
         };
@@ -1112,7 +1111,7 @@ impl Screen {
         if self.chat.is_some() || self.editor.is_some() {
             return Vec::new();
         }
-        if self.widgets_screen.is_some() {
+        if self.widgets_page.is_some() {
             return self
                 .access()
                 .map(|access| self.ui.widgets().rules().offered(access))
@@ -1683,7 +1682,7 @@ impl Screen {
             settings: self.ui.widgets(),
             now: now_secs,
         };
-        let widgets_screen_state = self.widgets_screen.as_ref();
+        let widgets_screen_state = self.widgets_page.as_ref();
         let widget_access = self.content.flow().map(MemberFlow::access_snapshot);
         let widget_choice = &self.widgets.choice;
         if !drew_editor {

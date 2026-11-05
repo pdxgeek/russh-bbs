@@ -625,7 +625,9 @@ impl<D: Backend> Shell<D> {
         for ended in self.parts.session.revoke_others(account, what) {
             let event =
                 russh_bbs_core::audit::events::session_revoked(account, ended.as_raw(), what.tag());
-            if let Err(error) = russh_bbs_core::audit::AuditStore::append(&*self.parts.directory, &event).await {
+            if let Err(error) =
+                russh_bbs_core::audit::AuditStore::append(&*self.parts.directory, &event).await
+            {
                 warn!(session = ?self.parts.session.id(), %error, "session.revoked could not be audited");
             }
         }
@@ -1073,18 +1075,25 @@ impl<D: Backend> Shell<D> {
         {
             let loaded = timeout(
                 MEMBER_START_TIMEOUT,
-                russh_bbs_core::widgets::WidgetStore::widget_choice(&*self.parts.directory, account),
+                russh_bbs_core::widgets::WidgetStore::widget_choice(
+                    &*self.parts.directory,
+                    account,
+                ),
             )
             .await;
             match loaded {
                 Ok(Ok(choice)) => self.parts.screen.set_widget_choice(choice),
                 Ok(Err(error)) => {
                     warn!(session = ?self.parts.session.id(), %error, "widget lists could not be loaded; using the defaults");
-                    self.parts.screen.set_widget_choice(russh_bbs_core::widgets::Choice::new());
+                    self.parts
+                        .screen
+                        .set_widget_choice(russh_bbs_core::widgets::Choice::new());
                 }
                 Err(_) => {
                     warn!(session = ?self.parts.session.id(), "widget lists timed out; using the defaults");
-                    self.parts.screen.set_widget_choice(russh_bbs_core::widgets::Choice::new());
+                    self.parts
+                        .screen
+                        .set_widget_choice(russh_bbs_core::widgets::Choice::new());
                 }
             }
         }
@@ -1105,16 +1114,14 @@ impl<D: Backend> Shell<D> {
             warn!(session = ?self.parts.session.id(), "widget data timed out");
             russh_bbs_core::widgets::WidgetData::default()
         });
-        let live_part = live::fill(
-            &mut data,
-            &wanted,
-            &access,
-            &*self.parts.directory,
-            &self.parts.session,
-            &self.parts.chat,
-            self.parts.screen.doors(),
-            self.parts.max_connections,
-        );
+        let sources = live::Sources {
+            directory: &*self.parts.directory,
+            session: &self.parts.session,
+            hub: &self.parts.chat,
+            doors: self.parts.screen.doors(),
+            capacity: self.parts.max_connections,
+        };
+        let live_part = live::fill(&mut data, &wanted, &access, &sources);
         if timeout(MEMBER_START_TIMEOUT, live_part).await.is_err() {
             warn!(session = ?self.parts.session.id(), "live widget data timed out");
         }

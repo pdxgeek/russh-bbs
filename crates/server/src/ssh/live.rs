@@ -20,17 +20,30 @@ use crate::doors::Doors;
 /// Most names the who's-online widget keeps.
 const ONLINE_KEPT: usize = 24;
 
+/// What the live widgets read: the running server's own state.
+pub(super) struct Sources<'a, D> {
+    pub(super) directory: &'a D,
+    pub(super) session: &'a SessionRef,
+    pub(super) hub: &'a Hub,
+    pub(super) doors: &'a Doors,
+    /// The most connections the board takes (the status gauge's top).
+    pub(super) capacity: usize,
+}
+
 /// Fill the live widgets in `wanted` that `access` may see.
 pub(super) async fn fill<D: Backend>(
     data: &mut WidgetData,
     wanted: &[WidgetId],
     access: &Snapshot,
-    directory: &D,
-    session: &SessionRef,
-    hub: &Hub,
-    doors: &Doors,
-    capacity: usize,
+    sources: &Sources<'_, D>,
 ) {
+    let Sources {
+        directory,
+        session,
+        hub,
+        doors,
+        capacity,
+    } = *sources;
     let want = |id: WidgetId| wanted.contains(&id) && id.reachable_by(access);
     if want(WidgetId::Online) {
         data.online = online(directory, session).await;

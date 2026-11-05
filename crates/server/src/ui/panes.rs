@@ -69,8 +69,14 @@ fn dashboard(body: Rect) -> Plan {
     };
     let cols = if grid.width >= 90 { 3 } else { 2 };
     let mut cells = Vec::new();
-    for row in Layout::vertical(vec![Constraint::Fill(1); rows]).split(grid).iter() {
-        for col in Layout::horizontal(vec![Constraint::Fill(1); cols]).split(*row).iter() {
+    for row in Layout::vertical(vec![Constraint::Fill(1); rows])
+        .split(grid)
+        .iter()
+    {
+        for col in Layout::horizontal(vec![Constraint::Fill(1); cols])
+            .split(*row)
+            .iter()
+        {
             cells.push(*col);
         }
     }

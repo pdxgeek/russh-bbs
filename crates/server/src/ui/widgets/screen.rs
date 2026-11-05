@@ -159,12 +159,14 @@ impl WidgetsScreen {
 
     /// The layout being edited.
     #[must_use]
+    #[cfg_attr(not(test), expect(dead_code, reason = "read by tests"))]
     pub(crate) const fn layout(&self) -> LayoutId {
         self.layout
     }
 
     /// The row under the cursor.
     #[must_use]
+    #[cfg_attr(not(test), expect(dead_code, reason = "read by tests"))]
     pub(crate) const fn cursor(&self) -> usize {
         self.cursor
     }
@@ -185,7 +187,7 @@ impl WidgetsScreen {
             }
             Key::Left | Key::Char('h') => self.next_layout(-1),
             Key::Right | Key::Char('l' | 'L') | Key::Ctrl('i') => self.next_layout(1),
-            Key::Enter | Key::Char(' ') | Key::Char('x' | 'X') => self.toggle(&rows, ctx),
+            Key::Enter | Key::Char(' ' | 'x' | 'X') => self.toggle(&rows, ctx),
             Key::Char('u' | 'U') => self.shift(&rows, ctx, -1),
             Key::Char('d' | 'D') => self.shift(&rows, ctx, 1),
             Key::Char('r' | 'R') => {
@@ -203,10 +205,7 @@ impl WidgetsScreen {
     }
 
     fn next_layout(&mut self, by: i8) -> Outcome {
-        let at = EDITABLE
-            .iter()
-            .position(|l| *l == self.layout)
-            .unwrap_or(0);
+        let at = EDITABLE.iter().position(|l| *l == self.layout).unwrap_or(0);
         let next = if by < 0 {
             (at + EDITABLE.len() - 1) % EDITABLE.len()
         } else {
@@ -330,7 +329,11 @@ pub(crate) fn render(frame: &mut Frame<'_>, screen: &WidgetsScreen, input: &Draw
     if body.width < 30 || body.height < 6 {
         return;
     }
-    let list_width = if body.width >= 90 { 40 } else { 32.min(body.width / 2) };
+    let list_width = if body.width >= 90 {
+        40
+    } else {
+        32.min(body.width / 2)
+    };
     let [left, right] =
         Layout::horizontal([Constraint::Length(list_width), Constraint::Fill(1)]).areas(body);
     draw_list(frame, left, screen, input);
@@ -361,12 +364,10 @@ fn draw_list(frame: &mut Frame<'_>, area: Rect, screen: &WidgetsScreen, input: &
         });
     let rows = rows(screen.layout, &input.ctx);
     let mut lines: Vec<Line<'static>> = vec![
-        Line::from(vec![
-            Span::styled(
-                strings.filled("ui.widgets.showing", &[("layout", layout_name)]),
-                pen.heading(),
-            ),
-        ]),
+        Line::from(vec![Span::styled(
+            strings.filled("ui.widgets.showing", &[("layout", layout_name)]),
+            pen.heading(),
+        )]),
         Line::styled(format!("({})", strings.text(source)), pen.muted()),
     ];
     let room = usize::from(inner.height).saturating_sub(lines.len());
@@ -376,10 +377,22 @@ fn draw_list(frame: &mut Frame<'_>, area: Rect, screen: &WidgetsScreen, input: &
     for (at, row) in rows.iter().enumerate().skip(top).take(room) {
         let title = strings.text(widget(row.id).title_key());
         let (mark, note, base) = match row.state {
-            State::On => (if input.tier == Tier::Ascii { "[x]" } else { "[\u{2713}]" }, "", pen.text()),
+            State::On => (
+                if input.tier == Tier::Ascii {
+                    "[x]"
+                } else {
+                    "[\u{2713}]"
+                },
+                "",
+                pen.text(),
+            ),
             State::Off => ("[ ]", "", pen.muted()),
             State::LockedOn => (
-                if input.tier == Tier::Ascii { "[x]" } else { "[\u{2713}]" },
+                if input.tier == Tier::Ascii {
+                    "[x]"
+                } else {
+                    "[\u{2713}]"
+                },
                 strings.text("ui.widgets.locked_on"),
                 pen.text(),
             ),
@@ -422,8 +435,14 @@ fn draw_list(frame: &mut Frame<'_>, area: Rect, screen: &WidgetsScreen, input: &
 fn scaled(rect: Rect, from: Rect, into: Rect) -> Rect {
     let sx = |v: u16| u32::from(v) * u32::from(into.width) / u32::from(from.width.max(1));
     let sy = |v: u16| u32::from(v) * u32::from(into.height) / u32::from(from.height.max(1));
-    let x = into.x + u16::try_from(sx(rect.x - from.x)).unwrap_or(0).min(into.width.saturating_sub(1));
-    let y = into.y + u16::try_from(sy(rect.y - from.y)).unwrap_or(0).min(into.height.saturating_sub(1));
+    let x = into.x
+        + u16::try_from(sx(rect.x - from.x))
+            .unwrap_or(0)
+            .min(into.width.saturating_sub(1));
+    let y = into.y
+        + u16::try_from(sy(rect.y - from.y))
+            .unwrap_or(0)
+            .min(into.height.saturating_sub(1));
     let w = u16::try_from(sx(rect.width)).unwrap_or(1).max(1);
     let h = u16::try_from(sy(rect.height)).unwrap_or(1).max(1);
     Rect {
@@ -461,7 +480,10 @@ fn draw_preview(frame: &mut Frame<'_>, area: Rect, screen: &WidgetsScreen, input
         frame.render_widget(
             Paragraph::new(strings.filled(
                 "ui.widgets.none_layout",
-                &[("layout", strings.text(keys::LAYOUT_NAMES[classic::layout_index(screen.layout)]))],
+                &[(
+                    "layout",
+                    strings.text(keys::LAYOUT_NAMES[classic::layout_index(screen.layout)]),
+                )],
             ))
             .style(pen.muted()),
             inner,

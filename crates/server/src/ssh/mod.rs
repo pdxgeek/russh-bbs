@@ -8,12 +8,12 @@
 //! rate limits) live in `russh-bbs-core`; this module is transport and rendering only.
 
 pub(crate) mod abort;
-mod live;
 pub(crate) mod budget;
 mod error;
 mod handler;
 pub mod host_key;
 pub mod limits;
+mod live;
 pub(crate) mod password;
 pub mod registry;
 pub(crate) mod room;

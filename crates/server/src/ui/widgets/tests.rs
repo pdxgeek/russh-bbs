@@ -3,7 +3,8 @@
     clippy::expect_used,
     clippy::panic,
     clippy::assert_is_empty,
-    clippy::too_many_lines
+    clippy::too_many_lines,
+    clippy::type_complexity
 )]
 
 //! The widget system without a store: the sysop's settings, the drawing helpers, every widget in
@@ -21,9 +22,7 @@ use russh_bbs_core::access::{Permission, Slug, Snapshot, Via};
 use russh_bbs_core::icons::Tier;
 use russh_bbs_core::store::{AccountId, UnixSeconds};
 use russh_bbs_core::terminal_settings::{LayoutId, TerminalSettings};
-use russh_bbs_core::widgets::{
-    Caller, Choice, Headline, Line, Lock, Rules, WidgetData, WidgetId,
-};
+use russh_bbs_core::widgets::{Caller, Choice, Headline, Line, Lock, Rules, WidgetData, WidgetId};
 
 use super::fixture::{self, NOW};
 use super::screen::{self, Ctx, Outcome, State, WidgetsScreen};
@@ -81,24 +80,50 @@ fn bad_settings_are_refused_naming_the_key() {
     let cases: Vec<(&str, Box<dyn FnOnce(&mut WidgetsConfig)>)> = vec![
         ("widgets.hidden", Box::new(|c| c.hidden = "nope".into())),
         ("widgets.on", Box::new(|c| c.on = "clock,clock".into())),
-        ("widgets.on", Box::new(|c| {
-            c.on = "clock".into();
-            c.off = "clock".into();
-        })),
-        ("widgets.wide", Box::new(|c| {
-            c.wide = WidgetId::ALL
-                .iter()
-                .map(|w| w.as_str())
-                .collect::<Vec<_>>()
-                .join(",");
-        })),
+        (
+            "widgets.on",
+            Box::new(|c| {
+                c.on = "clock".into();
+                c.off = "clock".into();
+            }),
+        ),
+        (
+            "widgets.wide",
+            Box::new(|c| {
+                c.wide = WidgetId::ALL
+                    .iter()
+                    .map(|w| w.as_str())
+                    .collect::<Vec<_>>()
+                    .join(",");
+            }),
+        ),
         ("widgets.motd", Box::new(|c| c.motd = "x".repeat(241))),
-        ("widgets.motd", Box::new(|c| c.motd = "\u{1b}[31mred".into())),
-        ("widgets.motd", Box::new(|c| c.motd = "a \u{27e6}\u{2299}\u{27e7} b".into())),
+        (
+            "widgets.motd",
+            Box::new(|c| c.motd = "\u{1b}[31mred".into()),
+        ),
+        (
+            "widgets.motd",
+            Box::new(|c| c.motd = "a \u{27e6}\u{2299}\u{27e7} b".into()),
+        ),
         ("widgets.motd", Box::new(|c| c.motd = "tab\tbed".into())),
-        ("widgets.motd", Box::new(|c| c.motd = "A private, encrypted board".into())),
-        ("widgets.quotes", Box::new(|c| c.quotes = "ok|\u{e0b0}".into())),
-        ("widgets.quotes", Box::new(|c| c.quotes = (0..65).map(|n| format!("q{n}")).collect::<Vec<_>>().join("|"))),
+        (
+            "widgets.motd",
+            Box::new(|c| c.motd = "A private, encrypted board".into()),
+        ),
+        (
+            "widgets.quotes",
+            Box::new(|c| c.quotes = "ok|\u{e0b0}".into()),
+        ),
+        (
+            "widgets.quotes",
+            Box::new(|c| {
+                c.quotes = (0..65)
+                    .map(|n| format!("q{n}"))
+                    .collect::<Vec<_>>()
+                    .join("|");
+            }),
+        ),
     ];
     for (key, edit) in cases {
         let error = config(edit).unwrap_err();
@@ -113,9 +138,15 @@ fn dates_are_right() {
     let d = gfx::date_of(NOW);
     assert_eq!((d.year, d.month, d.day, d.weekday), (2026, 11, 5, 3));
     let epoch = gfx::date_of(0);
-    assert_eq!((epoch.year, epoch.month, epoch.day, epoch.weekday), (1970, 1, 1, 3));
+    assert_eq!(
+        (epoch.year, epoch.month, epoch.day, epoch.weekday),
+        (1970, 1, 1, 3)
+    );
     let leap = gfx::date_of(1_709_164_800); // 2024-02-29 00:00 UTC, a Thursday
-    assert_eq!((leap.year, leap.month, leap.day, leap.weekday), (2024, 2, 29, 3));
+    assert_eq!(
+        (leap.year, leap.month, leap.day, leap.weekday),
+        (2024, 2, 29, 3)
+    );
     let before = gfx::date_of(-1);
     assert_eq!((before.year, before.month, before.day), (1969, 12, 31));
     assert_eq!(gfx::days_in_month(2024, 2), 29);
@@ -135,12 +166,30 @@ fn sparklines_bars_and_charts_have_exact_widths_and_ascii_forms() {
         assert_eq!(s.chars().count(), 6);
         assert_eq!(s.is_ascii(), ascii);
         assert_eq!(gfx::spark(&[], 4, ascii).chars().count(), 4);
-        assert_eq!(gfx::spark(&[5; 20], 4, ascii).chars().count(), 4, "newest values only");
-        for fraction in [0.0, 0.33, 1.0, 7.0, -1.0, f64::NAN] {
-            let (a, b) = gfx::bar(fraction, 10, ascii);
-            assert_eq!(a.chars().count() + b.chars().count(), 10, "{fraction}");
+        assert_eq!(
+            gfx::spark(&[5; 20], 4, ascii).chars().count(),
+            4,
+            "newest values only"
+        );
+        for (part, whole) in [
+            (0, 10),
+            (1, 3),
+            (10, 10),
+            (70, 10),
+            (5, 0),
+            (u64::MAX, u64::MAX),
+            (0, 0),
+        ] {
+            let (a, b) = gfx::bar(part, whole, 10, ascii);
+            assert_eq!(a.chars().count() + b.chars().count(), 10, "{part}/{whole}");
             assert_eq!((a + &b).is_ascii(), ascii);
         }
+        assert_eq!(
+            gfx::bar(5, 10, 10, true),
+            ("#####".to_owned(), "-----".to_owned())
+        );
+        assert_eq!(gfx::bar(0, 0, 4, true).0, "");
+        assert_eq!(gfx::bar(1, 1, 4, false).0.chars().count(), 4);
         let chart = gfx::area_chart(&[1, 4, 9, 2], 8, 3, ascii);
         assert_eq!(chart.len(), 3);
         assert!(chart.iter().all(|l| l.chars().count() == 8));
@@ -158,9 +207,15 @@ fn sparklines_bars_and_charts_have_exact_widths_and_ascii_forms() {
         assert!(line.chars().all(|c| ('\u{2800}'..='\u{28ff}').contains(&c)));
     }
     // A full-height column lights every dot.
-    assert_eq!(gfx::area_chart(&[8], 1, 2, false), vec!["\u{28ff}", "\u{28ff}"]);
+    assert_eq!(
+        gfx::area_chart(&[8], 1, 2, false),
+        vec!["\u{28ff}", "\u{28ff}"]
+    );
     // Flat zero draws blank cells.
-    assert_eq!(gfx::area_chart(&[0, 0], 2, 1, false), vec!["\u{2800}\u{2800}"]);
+    assert_eq!(
+        gfx::area_chart(&[0, 0], 2, 1, false),
+        vec!["\u{2800}\u{2800}"]
+    );
 }
 
 #[test]
@@ -302,7 +357,11 @@ const SIZES: [(u16, u16); 2] = [(80, 24), (132, 43)];
 const PANE_LAYOUTS: [LayoutId; 3] = [LayoutId::Dashboard, LayoutId::Wide, LayoutId::Split];
 
 fn symbols(buffer: &Buffer) -> String {
-    buffer.content.iter().map(|c| c.symbol()).collect()
+    buffer
+        .content
+        .iter()
+        .map(ratatui::buffer::Cell::symbol)
+        .collect()
 }
 
 #[test]
@@ -321,7 +380,11 @@ fn every_widget_in_every_layout_slot_at_both_sizes_in_every_tier() {
                     // cell the layout offers by listing it first.
                     let (buffer, placed, body) =
                         draw(layout, size, tier, color, depth, &setup, &[id]);
-                    assert_eq!(placed.len(), 1, "{id:?} {layout:?} {size:?}: it has content and a cell it fits");
+                    assert_eq!(
+                        placed.len(),
+                        1,
+                        "{id:?} {layout:?} {size:?}: it has content and a cell it fits"
+                    );
                     let cell = placed[0].1;
                     // The widget is inside the body: never in the header row, the status bar or
                     // the marker cell (its row is the last one).
@@ -340,7 +403,11 @@ fn every_widget_in_every_layout_slot_at_both_sizes_in_every_tier() {
                                 && y >= cell.y
                                 && y < cell.y + cell.height;
                             if !inside {
-                                assert_eq!(c.symbol(), " ", "{id:?} {layout:?} {size:?} wrote outside its cell at {x},{y}");
+                                assert_eq!(
+                                    c.symbol(),
+                                    " ",
+                                    "{id:?} {layout:?} {size:?} wrote outside its cell at {x},{y}"
+                                );
                             }
                             assert!(
                                 !c.modifier.contains(Modifier::REVERSED),
@@ -378,16 +445,32 @@ fn the_widgets_show_their_data() {
         true,
         ColorDepth::TrueColor,
         &setup,
-        &[WidgetId::Online, WidgetId::Callers, WidgetId::Mail, WidgetId::Poll],
+        &[
+            WidgetId::Online,
+            WidgetId::Callers,
+            WidgetId::Mail,
+            WidgetId::Poll,
+        ],
     );
     assert_eq!(placed.len(), 4);
     let text = symbols(&buffer);
-    for want in ["5 online", "alice", "bob", "3 unread", "12 in your inbox", "Best terminal font?", "Mono"] {
+    for want in [
+        "5 online",
+        "alice",
+        "bob",
+        "3 unread",
+        "12 in your inbox",
+        "Best terminal font?",
+        "Mono",
+    ] {
         assert!(text.contains(want), "missing {want:?}");
     }
     // The vote is marked, and the percentages add up.
     assert!(text.contains('\u{25b8}'));
-    assert!(text.contains("54%") || text.contains("55%"), "12 of 22 votes");
+    assert!(
+        text.contains("54%") || text.contains("55%"),
+        "12 of 22 votes"
+    );
 }
 
 #[test]
@@ -398,7 +481,12 @@ fn a_widget_with_nothing_to_show_collapses() {
     let cx = |setup: &Setup| {
         let ui: &'static crate::ui::Ui = Box::leak(Box::new(ui()));
         Cx::new(
-            look(Tier::Unicode, true, ColorDepth::TrueColor, LayoutId::Dashboard),
+            look(
+                Tier::Unicode,
+                true,
+                ColorDepth::TrueColor,
+                LayoutId::Dashboard,
+            ),
             Tier::Unicode,
             ui.theme(settings_theme()).strings(),
             // Leaked for the test's sake: the context borrows for its whole life.
@@ -414,7 +502,12 @@ fn a_widget_with_nothing_to_show_collapses() {
         .collect();
     assert_eq!(
         with,
-        vec![WidgetId::Identity, WidgetId::Clock, WidgetId::Motd, WidgetId::Quote]
+        vec![
+            WidgetId::Identity,
+            WidgetId::Clock,
+            WidgetId::Motd,
+            WidgetId::Quote
+        ]
     );
     // Without the sysop's text those two collapse as well.
     let bare = Setup {
@@ -435,7 +528,10 @@ fn a_widget_with_nothing_to_show_collapses() {
     );
     assert_eq!(placed.len(), 1);
     assert_eq!(placed[0].0, WidgetId::Clock);
-    assert_eq!(placed[0].1, panes::plan(LayoutId::Dashboard, Rect::new(0, 1, 80, 21)).cells[0]);
+    assert_eq!(
+        placed[0].1,
+        panes::plan(LayoutId::Dashboard, Rect::new(0, 1, 80, 21)).cells[0]
+    );
 }
 
 #[test]
@@ -444,8 +540,21 @@ fn a_widget_too_big_for_a_cell_is_left_out_not_squeezed() {
     // A very short dashboard: cells of two rows cannot hold a panel with the poll's three.
     let ui = ui();
     let theme = ui.theme(settings_theme());
-    let look = look(Tier::Unicode, true, ColorDepth::TrueColor, LayoutId::Dashboard);
-    let cx = Cx::new(look, Tier::Unicode, theme.strings(), &setup.data, &setup.board, &setup.settings, NOW);
+    let look = look(
+        Tier::Unicode,
+        true,
+        ColorDepth::TrueColor,
+        LayoutId::Dashboard,
+    );
+    let cx = Cx::new(
+        look,
+        Tier::Unicode,
+        theme.strings(),
+        &setup.data,
+        &setup.board,
+        &setup.settings,
+        NOW,
+    );
     let tiny = [Rect::new(0, 0, 20, 3), Rect::new(0, 3, 20, 3)];
     assert!(assign(&tiny, &[WidgetId::Poll, WidgetId::Status], &cx).is_empty());
     let roomy = [Rect::new(0, 0, 30, 9)];
@@ -455,7 +564,12 @@ fn a_widget_too_big_for_a_cell_is_left_out_not_squeezed() {
 #[test]
 fn widgets_fill_cells_in_the_members_order() {
     let setup = Setup::full();
-    let order = [WidgetId::Mail, WidgetId::Online, WidgetId::Clock, WidgetId::Callers];
+    let order = [
+        WidgetId::Mail,
+        WidgetId::Online,
+        WidgetId::Clock,
+        WidgetId::Callers,
+    ];
     let (_, placed, _) = draw(
         LayoutId::Dashboard,
         (132, 43),
@@ -468,7 +582,11 @@ fn widgets_fill_cells_in_the_members_order() {
     assert_eq!(placed.iter().map(|(id, _)| *id).collect::<Vec<_>>(), order);
     // Reading order: each cell comes after the one before it.
     let cells: Vec<Rect> = placed.iter().map(|(_, r)| *r).collect();
-    assert!(cells.windows(2).all(|w| (w[0].y, w[0].x) < (w[1].y, w[1].x)));
+    assert!(
+        cells
+            .windows(2)
+            .all(|w| (w[0].y, w[0].x) < (w[1].y, w[1].x))
+    );
 }
 
 // ---- hostile data ---------------------------------------------------------------------------
@@ -483,8 +601,10 @@ fn member_text_in_widgets_is_cleaned_in_every_tier() {
         "zero\u{200b}width\u{202e}rtl",
         "wide \u{ff21}\u{ff22} and \u{1f600}",
     ];
-    let mut data = WidgetData::default();
-    data.online = Some(hostile.iter().map(|s| (*s).to_owned()).collect());
+    let mut data = WidgetData {
+        online: Some(hostile.iter().map(|s| (*s).to_owned()).collect()),
+        ..WidgetData::default()
+    };
     data.callers = Some(
         hostile
             .iter()
@@ -564,7 +684,11 @@ fn member_text_in_widgets_is_cleaned_in_every_tier() {
                             assert!(
                                 !ch.is_control()
                                     && !('\u{e000}'..='\u{f8ff}').contains(&ch)
-                                    && !['\u{27e6}', '\u{27e7}', '\u{2299}', '\u{229b}', '\u{270e}', '\u{26a0}'].contains(&ch)
+                                    && ![
+                                        '\u{27e6}', '\u{27e7}', '\u{2299}', '\u{229b}', '\u{270e}',
+                                        '\u{26a0}'
+                                    ]
+                                    .contains(&ch)
                                     && !['\u{200b}', '\u{202e}'].contains(&ch),
                                 "{id:?} {layout:?} {tier:?} drew {ch:?}"
                             );
@@ -584,11 +708,14 @@ fn member_text_in_widgets_is_cleaned_in_every_tier() {
 fn enormous_data_stays_inside_its_cell() {
     let mut data = fixture::data();
     let long = "w".repeat(5_000);
-    data.oneliners = Some(vec![Line {
-        author: long.clone(),
-        text: long.clone(),
-        at: UnixSeconds::from_raw(NOW),
-    }; 8]);
+    data.oneliners = Some(vec![
+        Line {
+            author: long.clone(),
+            text: long.clone(),
+            at: UnixSeconds::from_raw(NOW),
+        };
+        8
+    ]);
     data.online = Some(vec![long.clone(); 500]);
     data.activity = Some(vec![u64::MAX; 500]);
     data.credits = Some(russh_bbs_core::widgets::Credits {
@@ -596,7 +723,12 @@ fn enormous_data_stays_inside_its_cell() {
         series: vec![u64::MAX; 500],
     });
     let setup = Setup::with(data);
-    for id in [WidgetId::Oneliner, WidgetId::Online, WidgetId::Activity, WidgetId::Credits] {
+    for id in [
+        WidgetId::Oneliner,
+        WidgetId::Online,
+        WidgetId::Activity,
+        WidgetId::Credits,
+    ] {
         for size in SIZES {
             let (buffer, placed, _) = draw(
                 LayoutId::Wide,
@@ -611,7 +743,10 @@ fn enormous_data_stays_inside_its_cell() {
             let cell = placed[0].1;
             for y in 0..size.1 {
                 for x in 0..size.0 {
-                    let outside = x < cell.x || x >= cell.x + cell.width || y < cell.y || y >= cell.y + cell.height;
+                    let outside = x < cell.x
+                        || x >= cell.x + cell.width
+                        || y < cell.y
+                        || y >= cell.y + cell.height;
                     if outside {
                         assert_eq!(buffer[(x, y)].symbol(), " ", "{id:?} at {x},{y}");
                     }
@@ -646,13 +781,18 @@ fn refresh_budgets_stay_far_under_the_redraw_cap() {
     let all = refresh_interval(&WidgetId::ALL).unwrap();
     assert_eq!(all, MIN_REFRESH, "status asks for five seconds");
     assert_eq!(
-        refresh_interval(&[WidgetId::Clock, WidgetId::Motd]).unwrap().as_secs(),
+        refresh_interval(&[WidgetId::Clock, WidgetId::Motd])
+            .unwrap()
+            .as_secs(),
         60
     );
     // No widgets, no timer.
     assert_eq!(refresh_interval(&[]), None);
     let per_second = 1.0 / all.as_secs_f64();
-    assert!(per_second <= 20.0 / 100.0, "{per_second} redraws a second from widgets");
+    assert!(
+        per_second <= 20.0 / 100.0,
+        "{per_second} redraws a second from widgets"
+    );
 }
 
 #[test]
@@ -675,8 +815,21 @@ fn every_widget_title_and_label_is_in_the_table() {
 fn the_text_form_is_ascii_and_matches_the_content() {
     let setup = Setup::full();
     let ui = ui();
-    let look = look(Tier::Unicode, true, ColorDepth::TrueColor, LayoutId::Dashboard);
-    let cx = Cx::new(look, Tier::Unicode, ui.strings(), &setup.data, &setup.board, &setup.settings, NOW);
+    let look = look(
+        Tier::Unicode,
+        true,
+        ColorDepth::TrueColor,
+        LayoutId::Dashboard,
+    );
+    let cx = Cx::new(
+        look,
+        Tier::Unicode,
+        ui.strings(),
+        &setup.data,
+        &setup.board,
+        &setup.settings,
+        NOW,
+    );
     for id in WidgetId::ALL {
         let text = widget(id).text(&cx, 30);
         assert!(!text.is_empty(), "{id:?} has a text form");
@@ -747,33 +900,73 @@ fn the_screen_toggles_moves_and_resets_within_the_sysops_locks() {
     let rules = rules.rules();
     let mut choice = Choice::new();
     let mut s = WidgetsScreen::open(LayoutId::Dashboard);
-    let rows = screen::rows(LayoutId::Dashboard, &Ctx { rules, choice: &choice, access: &access });
+    let rows = screen::rows(
+        LayoutId::Dashboard,
+        &Ctx {
+            rules,
+            choice: &choice,
+            access: &access,
+        },
+    );
     // The hidden widget is not listed; the locked ones show their lock; the member cannot reach
     // chat, status, doors or news.
     let ids: Vec<WidgetId> = rows.iter().map(|r| r.id).collect();
-    assert!(!ids.contains(&WidgetId::Quote) && !ids.contains(&WidgetId::Status) && !ids.contains(&WidgetId::Chat));
-    assert!(rows.iter().any(|r| r.id == WidgetId::Motd && r.state == State::LockedOn));
-    assert!(rows.iter().any(|r| r.id == WidgetId::Wall && r.state == State::LockedOff));
+    assert!(
+        !ids.contains(&WidgetId::Quote)
+            && !ids.contains(&WidgetId::Status)
+            && !ids.contains(&WidgetId::Chat)
+    );
+    assert!(
+        rows.iter()
+            .any(|r| r.id == WidgetId::Motd && r.state == State::LockedOn)
+    );
+    assert!(
+        rows.iter()
+            .any(|r| r.id == WidgetId::Wall && r.state == State::LockedOff)
+    );
     // Shown widgets come first, in order, then the rest.
-    let first_off = rows.iter().position(|r| matches!(r.state, State::Off | State::LockedOff)).unwrap();
-    assert!(rows[..first_off].iter().all(|r| matches!(r.state, State::On | State::LockedOn)));
+    let first_off = rows
+        .iter()
+        .position(|r| matches!(r.state, State::Off | State::LockedOff))
+        .unwrap();
+    assert!(
+        rows[..first_off]
+            .iter()
+            .all(|r| matches!(r.state, State::On | State::LockedOn))
+    );
 
     // Switch the first widget off with Space: the list is saved as shown, less that widget.
     let before = rules.resolve(LayoutId::Dashboard, &choice, &access);
     let saved = press(&mut s, &[Key::Char(' ')], rules, &mut choice, &access);
     assert_eq!(saved.len(), 1);
     let after = rules.resolve(LayoutId::Dashboard, &choice, &access);
-    assert!(!after.contains(&before[0]) && after.len() == before.len() - 1 + usize::from(!before.contains(&WidgetId::Motd)));
+    assert!(
+        !after.contains(&before[0])
+            && after.len() == before.len() - 1 + usize::from(!before.contains(&WidgetId::Motd))
+    );
     assert_eq!(saved[0].1.as_deref(), choice.get(LayoutId::Dashboard));
     // And back on: it goes to the end of the list (the locked-on widget is in it too).
-    let rows = screen::rows(LayoutId::Dashboard, &Ctx { rules, choice: &choice, access: &access });
+    let rows = screen::rows(
+        LayoutId::Dashboard,
+        &Ctx {
+            rules,
+            choice: &choice,
+            access: &access,
+        },
+    );
     let at = rows.iter().position(|r| r.id == before[0]).unwrap();
-    assert!(matches!(rows[at].state, State::Off), "it is listed as off now");
+    assert!(
+        matches!(rows[at].state, State::Off),
+        "it is listed as off now"
+    );
     let mut to_it = vec![Key::Up; 40];
     to_it.extend(vec![Key::Down; at]);
     to_it.push(Key::Char(' '));
     press(&mut s, &to_it, rules, &mut choice, &access);
-    assert_eq!(rules.resolve(LayoutId::Dashboard, &choice, &access).last(), Some(&before[0]));
+    assert_eq!(
+        rules.resolve(LayoutId::Dashboard, &choice, &access).last(),
+        Some(&before[0])
+    );
 
     // Reorder: move the first down once and up again.
     let mut s = WidgetsScreen::open(LayoutId::Dashboard);
@@ -787,22 +980,42 @@ fn the_screen_toggles_moves_and_resets_within_the_sysops_locks() {
 
     // A locked widget cannot be switched, a locked-on one can be moved.
     let mut s = WidgetsScreen::open(LayoutId::Dashboard);
-    let rows = screen::rows(LayoutId::Dashboard, &Ctx { rules, choice: &choice, access: &access });
+    let rows = screen::rows(
+        LayoutId::Dashboard,
+        &Ctx {
+            rules,
+            choice: &choice,
+            access: &access,
+        },
+    );
     let motd_at = rows.iter().position(|r| r.id == WidgetId::Motd).unwrap();
     let wall_at = rows.iter().position(|r| r.id == WidgetId::Wall).unwrap();
     let down = |n: usize| vec![Key::Down; n];
     let mut keys = down(motd_at);
     keys.push(Key::Char(' '));
-    assert!(press(&mut s, &keys, rules, &mut choice, &access).is_empty(), "locked on: no change");
-    assert!(rules.resolve(LayoutId::Dashboard, &choice, &access).contains(&WidgetId::Motd));
+    assert!(
+        press(&mut s, &keys, rules, &mut choice, &access).is_empty(),
+        "locked on: no change"
+    );
+    assert!(
+        rules
+            .resolve(LayoutId::Dashboard, &choice, &access)
+            .contains(&WidgetId::Motd)
+    );
     let mut keys = vec![Key::Char('d')];
-    assert_eq!(press(&mut s, &keys, rules, &mut choice, &access).len(), 1, "locked on can move");
+    assert_eq!(
+        press(&mut s, &keys, rules, &mut choice, &access).len(),
+        1,
+        "locked on can move"
+    );
     keys = down(wall_at.saturating_sub(motd_at + 1));
     keys.push(Key::Char(' '));
     let before = choice.clone();
     press(&mut s, &keys, rules, &mut choice, &access);
     assert!(
-        !rules.resolve(LayoutId::Dashboard, &choice, &access).contains(&WidgetId::Wall),
+        !rules
+            .resolve(LayoutId::Dashboard, &choice, &access)
+            .contains(&WidgetId::Wall),
         "locked off stays off"
     );
     let _ = before;
@@ -811,7 +1024,10 @@ fn the_screen_toggles_moves_and_resets_within_the_sysops_locks() {
     let saved = press(&mut s, &[Key::Char('r')], rules, &mut choice, &access);
     assert_eq!(saved, vec![(LayoutId::Dashboard, None)]);
     assert!(choice.get(LayoutId::Dashboard).is_none());
-    assert!(press(&mut s, &[Key::Char('r')], rules, &mut choice, &access).is_empty(), "nothing to reset");
+    assert!(
+        press(&mut s, &[Key::Char('r')], rules, &mut choice, &access).is_empty(),
+        "nothing to reset"
+    );
 
     // Tab and the arrows cycle only the layouts that draw widgets; the classic family is never
     // offered, and Esc leaves.
@@ -822,10 +1038,22 @@ fn the_screen_toggles_moves_and_resets_within_the_sysops_locks() {
         press(&mut s, &[Key::Ctrl('i')], rules, &mut choice, &access);
         seen.push(s.layout());
     }
-    assert_eq!(seen, [LayoutId::Wide, LayoutId::Focus, LayoutId::Split, LayoutId::Dashboard]);
+    assert_eq!(
+        seen,
+        [
+            LayoutId::Wide,
+            LayoutId::Focus,
+            LayoutId::Split,
+            LayoutId::Dashboard
+        ]
+    );
     press(&mut s, &[Key::Left], rules, &mut choice, &access);
     assert_eq!(s.layout(), LayoutId::Split);
-    let ctx = Ctx { rules, choice: &choice, access: &access };
+    let ctx = Ctx {
+        rules,
+        choice: &choice,
+        access: &access,
+    };
     assert_eq!(s.press(Key::Escape, &ctx), Outcome::Back);
 }
 
@@ -836,19 +1064,35 @@ fn a_lock_the_sysop_adds_later_wins_over_a_saved_list() {
     let free = Rules::default();
     let mut s = WidgetsScreen::open(LayoutId::Dashboard);
     // The member switches the clock off while nothing is locked.
-    let rows = screen::rows(LayoutId::Dashboard, &Ctx { rules: &free, choice: &choice, access: &access });
+    let rows = screen::rows(
+        LayoutId::Dashboard,
+        &Ctx {
+            rules: &free,
+            choice: &choice,
+            access: &access,
+        },
+    );
     let clock = rows.iter().position(|r| r.id == WidgetId::Clock).unwrap();
     let mut keys = vec![Key::Down; clock];
     keys.push(Key::Char(' '));
     press(&mut s, &keys, &free, &mut choice, &access);
-    assert!(!free.resolve(LayoutId::Dashboard, &choice, &access).contains(&WidgetId::Clock));
+    assert!(
+        !free
+            .resolve(LayoutId::Dashboard, &choice, &access)
+            .contains(&WidgetId::Clock)
+    );
     // The sysop then locks it on: the saved list loses.
     let locked = WidgetSettings::from_config(&WidgetsConfig {
         on: "clock".into(),
         ..WidgetsConfig::default()
     })
     .unwrap();
-    assert!(locked.rules().resolve(LayoutId::Dashboard, &choice, &access).contains(&WidgetId::Clock));
+    assert!(
+        locked
+            .rules()
+            .resolve(LayoutId::Dashboard, &choice, &access)
+            .contains(&WidgetId::Clock)
+    );
 }
 
 fn render_screen(
@@ -900,7 +1144,12 @@ fn render_screen(
 
 #[test]
 fn the_widgets_screen_previews_the_layout_at_every_size_and_tier() {
-    for layout in [LayoutId::Dashboard, LayoutId::Wide, LayoutId::Focus, LayoutId::Split] {
+    for layout in [
+        LayoutId::Dashboard,
+        LayoutId::Wide,
+        LayoutId::Focus,
+        LayoutId::Split,
+    ] {
         for size in SIZES {
             for (tier, color, depth) in [
                 (Tier::Unicode, true, ColorDepth::TrueColor),
@@ -909,9 +1158,15 @@ fn the_widgets_screen_previews_the_layout_at_every_size_and_tier() {
             ] {
                 let buffer = render_screen(size, tier, color, depth, layout, &[]);
                 let text = symbols(&buffer);
-                assert!(text.contains("Widgets") && text.contains("Preview"), "{layout:?} {size:?}");
+                assert!(
+                    text.contains("Widgets") && text.contains("Preview"),
+                    "{layout:?} {size:?}"
+                );
                 // The list names the widgets on offer.
-                assert!(text.contains("Clock") && text.contains("Who is online"), "{layout:?}:\n{text}");
+                assert!(
+                    text.contains("Clock") && text.contains("Who is online"),
+                    "{layout:?}:\n{text}"
+                );
                 if layout == LayoutId::Focus {
                     assert!(text.contains("draws no widgets") || text.contains("Clock"));
                 }
@@ -920,7 +1175,11 @@ fn the_widgets_screen_previews_the_layout_at_every_size_and_tier() {
                 for y in 0..size.1 {
                     for x in 0..size.0 {
                         let reversed = buffer[(x, y)].modifier.contains(Modifier::REVERSED);
-                        assert_eq!(reversed, y == last && x < marker_width(&buffer, last), "{layout:?} {size:?} at {x},{y}");
+                        assert_eq!(
+                            reversed,
+                            y == last && x < marker_width(&buffer, last),
+                            "{layout:?} {size:?} at {x},{y}"
+                        );
                     }
                 }
                 if tier == Tier::Ascii {
@@ -970,7 +1229,11 @@ fn the_preview_changes_when_the_member_changes_the_list() {
 fn a_waiting_room_key_is_shown_no_widget_and_nothing_is_fetched() {
     let nobody = Snapshot::empty();
     for layout in LayoutId::ALL {
-        assert!(Rules::default().resolve(layout, &Choice::new(), &nobody).is_empty());
+        assert!(
+            Rules::default()
+                .resolve(layout, &Choice::new(), &nobody)
+                .is_empty()
+        );
     }
     assert!(Rules::default().offered(&nobody).is_empty());
 }

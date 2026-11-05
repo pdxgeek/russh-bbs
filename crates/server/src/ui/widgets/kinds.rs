@@ -166,7 +166,7 @@ fn grouped(n: u64) -> String {
     let digits = n.to_string();
     let mut out = String::new();
     for (i, c) in digits.chars().enumerate() {
-        if i > 0 && (digits.len() - i) % 3 == 0 {
+        if i > 0 && (digits.len() - i).is_multiple_of(3) {
             out.push(',');
         }
         out.push(c);
@@ -199,8 +199,10 @@ impl Widget for Identity {
                 pen.text(),
             ));
         }
-        let since = (!board.since().is_empty())
-            .then(|| cx.strings.filled("ui.widget.since", &[("n", board.since().as_str())]));
+        let since = (!board.since().is_empty()).then(|| {
+            cx.strings
+                .filled("ui.widget.since", &[("n", board.since().as_str())])
+        });
         let dot = if cx.ascii { "-" } else { "\u{b7}" };
         let place = match (board.location().is_empty(), since) {
             (false, Some(since)) => {
@@ -264,15 +266,7 @@ impl Widget for Clock {
         // A month calendar when the cell is tall enough: heads, then up to six weeks.
         let weeks = gfx::month_weeks(date);
         if width >= 21 && usize::from(height) >= lines.len() + 1 + weeks.len() {
-            lines.push(line(
-                gfx::WEEKDAYS
-                    .iter()
-                    .map(|d| format!("{d} "))
-                    .collect::<String>()
-                    .trim_end()
-                    .to_owned(),
-                pen.heading(),
-            ));
+            lines.push(line(gfx::WEEKDAYS.join(" "), pen.heading()));
             for week in weeks {
                 let mut spans = Vec::new();
                 for day in week {
@@ -311,7 +305,10 @@ impl Widget for Online {
         let width = usize::from(width);
         let mut lines = vec![Line::from(vec![
             Span::styled(format!("{} ", dot(cx)), pen.good()),
-            Span::styled(cx.said("ui.widget.online_count", names.len()), pen.heading()),
+            Span::styled(
+                cx.said("ui.widget.online_count", names.len()),
+                pen.heading(),
+            ),
         ])];
         // Two columns when the cell is wide enough, so a busy board still shows many names.
         let columns = if width >= 26 { 2 } else { 1 };
@@ -391,7 +388,11 @@ impl Widget for Chat {
                     ],
                     Some((
                         format!("{people} {}", room.members),
-                        if room.members > 0 { pen.good() } else { pen.muted() },
+                        if room.members > 0 {
+                            pen.good()
+                        } else {
+                            pen.muted()
+                        },
                     )),
                     usize::from(width),
                 )
@@ -425,16 +426,26 @@ impl Widget for NewPosts {
             );
         }
         let mut lines = vec![line(
-            gfx::clip(&cx.said("ui.widget.posts_some", posts.threads), width, cx.ascii),
+            gfx::clip(
+                &cx.said("ui.widget.posts_some", posts.threads),
+                width,
+                cx.ascii,
+            ),
             pen.good(),
         )];
-        let most = posts.boards.iter().map(|(_, n)| *n).max().unwrap_or(1).max(1);
+        let most = posts
+            .boards
+            .iter()
+            .map(|(_, n)| *n)
+            .max()
+            .unwrap_or(1)
+            .max(1);
         let name_w = (width / 3).clamp(4, 14);
         let count_w = 4;
         let bar_w = width.saturating_sub(name_w + count_w + 2);
         for (name, n) in &posts.boards {
             let name = gfx::clip(&cx.member(name, 40), name_w, cx.ascii);
-            let (filled, rest) = gfx::bar(*n as f64 / most as f64, bar_w, cx.ascii);
+            let (filled, rest) = gfx::bar(*n, most, bar_w, cx.ascii);
             lines.push(Line::from(vec![
                 Span::styled(format!("{name:<name_w$} "), pen.text()),
                 Span::styled(filled, pen.accent2()),
@@ -472,21 +483,25 @@ impl Widget for Mail {
                 }
             }
             lines.push(line(
-                gfx::clip(&cx.said("ui.widget.mail_unread", mail.unread), width, cx.ascii),
+                gfx::clip(
+                    &cx.said("ui.widget.mail_unread", mail.unread),
+                    width,
+                    cx.ascii,
+                ),
                 pen.good(),
             ));
-            let (filled, rest) = gfx::bar(
-                mail.unread as f64 / mail.total.max(1) as f64,
-                width,
-                cx.ascii,
-            );
+            let (filled, rest) = gfx::bar(mail.unread, mail.total, width, cx.ascii);
             lines.push(Line::from(vec![
                 Span::styled(filled, pen.good()),
                 Span::styled(rest, pen.muted()),
             ]));
         }
         lines.push(line(
-            gfx::clip(&cx.said("ui.widget.mail_total", mail.total), width, cx.ascii),
+            gfx::clip(
+                &cx.said("ui.widget.mail_total", mail.total),
+                width,
+                cx.ascii,
+            ),
             pen.muted(),
         ));
         fit(lines, height)
@@ -617,12 +632,8 @@ impl Widget for Poll {
                 if mine { pen.key() } else { pen.text() },
             )];
             if let Some(votes) = votes {
-                let (filled, rest) = gfx::bar(
-                    *votes as f64 / total.max(1) as f64,
-                    bar_w,
-                    cx.ascii,
-                );
-                let pct = if total == 0 { 0 } else { votes * 100 / total };
+                let (filled, rest) = gfx::bar(*votes, total, bar_w, cx.ascii);
+                let pct = (votes * 100).checked_div(total).unwrap_or(0);
                 spans.push(Span::styled(filled, pen.accent2()));
                 spans.push(Span::styled(rest, pen.muted()));
                 spans.push(Span::styled(format!(" {pct:>3}%"), pen.heading()));
@@ -642,7 +653,12 @@ impl Widget for Poll {
 // ---- text lists -------------------------------------------------------------------------
 
 /// A list of "author: text" lines (one-liners, the wall), newest first.
-fn said_lines(cx: &Cx<'_>, entries: &[russh_bbs_core::widgets::Line], width: u16, height: u16) -> Vec<Line<'static>> {
+fn said_lines(
+    cx: &Cx<'_>,
+    entries: &[russh_bbs_core::widgets::Line],
+    width: u16,
+    height: u16,
+) -> Vec<Line<'static>> {
     let pen = Pen(cx.look);
     let w = usize::from(width);
     let mut lines = Vec::new();
@@ -658,7 +674,10 @@ fn said_lines(cx: &Cx<'_>, entries: &[russh_bbs_core::widgets::Line], width: u16
             Span::styled(first, pen.text()),
         ]));
         for rest in parts {
-            lines.push(line(format!("{}{rest}", " ".repeat(head_w.min(w / 2))), pen.text()));
+            lines.push(line(
+                format!("{}{rest}", " ".repeat(head_w.min(w / 2))),
+                pen.text(),
+            ));
         }
         if lines.len() >= usize::from(height) {
             break;
@@ -731,7 +750,10 @@ impl Widget for News {
             ));
             if usize::from(height) > lines.len() + 1 && height >= 8 {
                 lines.push(line(
-                    format!("  {}", gfx::clip(&cx.member(&item.board, 40), w.saturating_sub(2), cx.ascii)),
+                    format!(
+                        "  {}",
+                        gfx::clip(&cx.member(&item.board, 40), w.saturating_sub(2), cx.ascii)
+                    ),
                     pen.muted(),
                 ));
             }
@@ -753,15 +775,20 @@ impl Widget for Motd {
         let pen = Pen(cx.look);
         let bar = if cx.ascii { "|" } else { "\u{258c}" };
         let w = usize::from(width).saturating_sub(2);
-        let lines = gfx::wrap(cx.settings.motd().as_str(), w, usize::from(height), cx.ascii)
-            .into_iter()
-            .map(|text| {
-                Line::from(vec![
-                    Span::styled(format!("{bar} "), pen.accent()),
-                    Span::styled(text, pen.text()),
-                ])
-            })
-            .collect();
+        let lines = gfx::wrap(
+            cx.settings.motd().as_str(),
+            w,
+            usize::from(height),
+            cx.ascii,
+        )
+        .into_iter()
+        .map(|text| {
+            Line::from(vec![
+                Span::styled(format!("{bar} "), pen.accent()),
+                Span::styled(text, pen.text()),
+            ])
+        })
+        .collect();
         fit(lines, height)
     }
 }
@@ -780,13 +807,21 @@ impl Widget for Quote {
         let Some(quote) = cx.settings.quote(cx.now.div_euclid(86_400)) else {
             return Vec::new();
         };
-        let (open, close) = if cx.ascii { ("\"", "\"") } else { ("\u{201c}", "\u{201d}") };
+        let (open, close) = if cx.ascii {
+            ("\"", "\"")
+        } else {
+            ("\u{201c}", "\u{201d}")
+        };
         let w = usize::from(width);
-        let mut lines: Vec<Line<'static>> =
-            gfx::wrap(quote.as_str(), w.saturating_sub(2), usize::from(height), cx.ascii)
-                .into_iter()
-                .map(|text| line(text, pen.quote()))
-                .collect();
+        let mut lines: Vec<Line<'static>> = gfx::wrap(
+            quote.as_str(),
+            w.saturating_sub(2),
+            usize::from(height),
+            cx.ascii,
+        )
+        .into_iter()
+        .map(|text| line(text, pen.quote()))
+        .collect();
         if let Some(first) = lines.first_mut() {
             first.spans.insert(0, Span::styled(open, pen.accent()));
         }
@@ -854,11 +889,12 @@ impl Widget for Status {
             Some((figures, pen.text())),
             w,
         )];
-        let load = f64::from(status.sessions) / f64::from(status.capacity.max(1));
-        let (filled, rest) = gfx::bar(load, w, cx.ascii);
-        let style = if load > 0.9 {
+        let capacity = u64::from(status.capacity.max(1));
+        let load = u64::from(status.sessions) * 100 / capacity;
+        let (filled, rest) = gfx::bar(u64::from(status.sessions), capacity, w, cx.ascii);
+        let style = if load > 90 {
             pen.bad()
-        } else if load > 0.7 {
+        } else if load > 70 {
             pen.warn()
         } else {
             pen.good()
