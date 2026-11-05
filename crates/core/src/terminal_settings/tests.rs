@@ -1052,7 +1052,7 @@ fn motion_depth_and_borders_keys_save_at_once_and_show_in_words() {
     let mut f = at_settings();
     let out = text(&f.view(words()));
     assert!(
-        out.contains("Motion: on   Depth: auto   Borders: style's own"),
+        out.contains("Motion: on  Depth: auto  Borders: style's own  Mouse: off"),
         "{out}"
     );
     let effects = press(&mut f, "m");
@@ -1067,11 +1067,25 @@ fn motion_depth_and_borders_keys_save_at_once_and_show_in_words() {
     );
     let out = text(&f.view(words()));
     assert!(
-        out.contains("Motion: off   Depth: 16 colors   Borders: ascii"),
+        out.contains("Motion: off  Depth: 16 colors  Borders: ascii  Mouse: off"),
         "{out}"
     );
     press(&mut f, "ddd");
     assert_eq!(f.settings().depth_cap(), DepthCap::Auto);
+}
+
+/// UI-9: mouse reporting is the member's choice. It starts off, `o` toggles it and saves at
+/// once, and the settings screen says which it is in words.
+#[test]
+fn mouse_key_toggles_the_choice_and_shows_it_in_words() {
+    let mut f = at_settings();
+    assert!(!f.settings().mouse());
+    assert!(text(&f.view(words())).contains("Mouse: off"));
+    let effects = press(&mut f, "o");
+    assert!(matches!(effects.last(), Some(MemberEffect::Save(s)) if s.mouse()));
+    assert!(text(&f.view(words())).contains("Mouse: on"));
+    let effects = press(&mut f, "o");
+    assert!(matches!(effects.last(), Some(MemberEffect::Save(s)) if !s.mouse()));
 }
 
 #[test]

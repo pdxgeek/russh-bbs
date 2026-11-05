@@ -252,6 +252,8 @@ fn render_reader(
     stored_width: usize,
     ctx: &DrawCtx<'_>,
 ) {
+    // The page answers the wheel (UI-9): it turns the reader's pages, like PageUp and PageDown.
+    crate::ui::input::page(area);
     let width = pager::text_width(area);
     let rebuilt;
     let pager_ref = if width == stored_width {

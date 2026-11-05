@@ -182,3 +182,27 @@ mod footer {
         assert!(!frame.contains("UNENCRYPTED"), "{frame:?}");
     }
 }
+
+/// UI-9: mouse reports arrive over telnet through the same decoder and key parser as keys, and
+/// come out as events, never as typed characters; a report cut across two packets is still
+/// one. (The board asks for the SGR encoding, which is plain ASCII on the wire, so no telnet
+/// escaping is involved.)
+#[test]
+fn a_mouse_report_over_telnet_is_an_event_and_never_typed_text() {
+    use std::time::Instant;
+
+    use super::protocol::{Decoded, Decoder};
+    use crate::ssh::terminal::{Key, KeyParser};
+
+    let mut decoder = Decoder::new();
+    let mut parser = KeyParser::new();
+    let mut keys = Vec::new();
+    for packet in [&b"a\x1b[<0;1"[..], b"2;7Mb\x1b[<65;3;3M", b"\x1b[<x;1;1Mc"] {
+        let mut out = Decoded::default();
+        decoder.feed(packet, &mut out);
+        keys.extend(parser.feed(&out.data, Instant::now()));
+    }
+    assert_eq!(keys, vec![Key::Char('a'), Key::Char('b'), Key::Char('c')]);
+    let events = parser.take_mouse();
+    assert_eq!(events.len(), 2, "{events:?}");
+}

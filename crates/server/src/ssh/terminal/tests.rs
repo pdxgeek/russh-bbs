@@ -346,3 +346,144 @@ fn hostile_streams_never_panic_or_grow_without_bound() {
     assert!(keys.len() <= escapes.len());
     assert!(parser.expire().len() <= 1);
 }
+
+// ---- UI-9: mouse reports are read, bounded, and never become keys ----
+
+mod mouse {
+    #![allow(clippy::assert_is_empty)]
+
+    use std::time::Instant;
+
+    use super::{Key, KeyParser};
+    use crate::ui::input::mouse::{Button, Kind};
+
+    #[test]
+    fn an_sgr_report_is_a_mouse_event_and_no_key() {
+        let mut parser = KeyParser::new();
+        let keys = parser.feed(b"\x1b[<0;12;7M", Instant::now());
+        assert!(keys.is_empty(), "{keys:?}");
+        let events = parser.take_mouse();
+        assert_eq!(events.len(), 1);
+        assert_eq!(events[0].kind, Kind::Down(Button::Left));
+        assert_eq!((events[0].col, events[0].row), (11, 6));
+        assert!(parser.take_mouse().is_empty(), "taken once");
+    }
+
+    #[test]
+    fn a_report_split_across_packets_is_one_event_and_keys_around_it_survive() {
+        let mut parser = KeyParser::new();
+        let mut keys = parser.feed(b"a\x1b[<6", Instant::now());
+        keys.extend(parser.feed(b"4;3;4Mb", Instant::now()));
+        assert_eq!(keys, vec![Key::Char('a'), Key::Char('b')]);
+        assert_eq!(parser.take_mouse().len(), 1);
+    }
+
+    #[test]
+    fn an_invalid_or_oversized_report_is_dropped_and_never_echoed_as_keys() {
+        let mut parser = KeyParser::new();
+        // Invalid fields, then an oversized run of digits, each followed by a real key.
+        let mut bytes = b"\x1b[<x;1;1Mq".to_vec();
+        bytes.extend_from_slice(b"\x1b[<");
+        // Longer than a report may be, but short enough that the skip reaches its `M`.
+        bytes.extend(std::iter::repeat_n(b'7', 40));
+        bytes.extend_from_slice(b"Mz");
+        let keys = parser.feed(&bytes, Instant::now());
+        assert!(parser.take_mouse().is_empty());
+        // Only the real keys after each dropped report survive; no digit, `;` or `<` leaked.
+        assert!(
+            keys.iter().all(|k| matches!(k, Key::Char('q' | 'z'))),
+            "{keys:?}"
+        );
+        assert!(
+            keys.contains(&Key::Char('q')) && keys.contains(&Key::Char('z')),
+            "{keys:?}"
+        );
+    }
+
+    #[test]
+    fn a_stuck_discard_ends_so_it_cannot_swallow_the_session() {
+        let mut parser = KeyParser::new();
+        // An oversized report with no final byte, then more digits, then text.
+        let mut bytes = b"\x1b[<".to_vec();
+        bytes.extend(std::iter::repeat_n(b'1', 100));
+        bytes.extend_from_slice(b"hello");
+        let keys = parser.feed(&bytes, Instant::now());
+        // The report and the 64 bytes after it are skipped; then typing resumes, text intact.
+        let text: String = keys
+            .iter()
+            .filter_map(|k| if let Key::Char(c) = k { Some(*c) } else { None })
+            .collect();
+        assert!(text.ends_with("hello"), "{text:?}");
+        assert!(text.len() < 100, "the skipped bytes are gone: {text:?}");
+        let tail = parser.feed(b"xyz", Instant::now());
+        assert_eq!(tail, vec![Key::Char('x'), Key::Char('y'), Key::Char('z')]);
+    }
+
+    #[test]
+    fn the_event_queue_is_bounded() {
+        let mut parser = KeyParser::new();
+        let mut bytes = Vec::new();
+        for _ in 0..1000 {
+            bytes.extend_from_slice(b"\x1b[<0;1;1M");
+        }
+        parser.feed(&bytes, Instant::now());
+        assert!(parser.take_mouse().len() <= super::super::MAX_MOUSE_QUEUE);
+    }
+
+    #[test]
+    fn arrows_pastes_and_escape_still_work_beside_the_mouse_parser() {
+        let mut parser = KeyParser::new();
+        let keys = parser.feed(
+            b"\x1b[A\x1b[B\x1b[200~hi\x1b[201~\x1b[<0;1;1M\x1b[C",
+            Instant::now(),
+        );
+        assert_eq!(
+            keys,
+            vec![
+                Key::Up,
+                Key::Down,
+                Key::Char('h'),
+                Key::Char('i'),
+                Key::Right
+            ]
+        );
+        let lone = parser.feed(b"\x1b", Instant::now());
+        assert!(lone.is_empty());
+        assert_eq!(parser.expire(), vec![Key::Escape]);
+    }
+
+    mod props {
+        use proptest::prelude::*;
+
+        use super::{Instant, KeyParser};
+
+        proptest! {
+            /// Arbitrary bytes, cut anywhere, never panic; the queue never exceeds its cap; and
+            /// no printable ASCII that sits inside a mouse report comes out as a key.
+            #[test]
+            fn arbitrary_bytes_never_panic_or_exceed_caps(
+                chunks in proptest::collection::vec(proptest::collection::vec(any::<u8>(), 0..40), 0..12),
+            ) {
+                let mut parser = KeyParser::new();
+                for chunk in &chunks {
+                    let _ = parser.feed(chunk, Instant::now());
+                    prop_assert!(parser.mouse.len() <= super::super::super::MAX_MOUSE_QUEUE);
+                    prop_assert!(parser.held.len() <= 32);
+                }
+                let _ = parser.expire();
+            }
+
+            #[test]
+            fn well_formed_reports_never_leak_keys(
+                code in 0_u32..3, x in 1_u32..500, y in 1_u32..200, n in 1_usize..20,
+            ) {
+                let mut parser = KeyParser::new();
+                let report = format!("\x1b[<{code};{x};{y}M");
+                let bytes = report.repeat(n);
+                let keys = parser.feed(bytes.as_bytes(), Instant::now());
+                prop_assert!(keys.is_empty());
+                prop_assert_eq!(parser.take_mouse().len(), n);
+            }
+        }
+    }
+}

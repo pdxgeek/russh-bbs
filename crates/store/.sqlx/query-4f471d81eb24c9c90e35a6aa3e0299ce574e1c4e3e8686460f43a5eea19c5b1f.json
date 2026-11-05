@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT width_override, height_override, color, pause, icon_tier, layout, theme,\n                    motion, depth_cap, borders\n             FROM terminal_settings WHERE account_id = $1",
+  "query": "SELECT width_override, height_override, color, pause, icon_tier, layout, theme,\n                    motion, depth_cap, borders, mouse\n             FROM terminal_settings WHERE account_id = $1",
   "describe": {
     "columns": [
       {
@@ -52,6 +52,11 @@
         "ordinal": 9,
         "name": "borders",
         "type_info": "Text"
+      },
+      {
+        "ordinal": 10,
+        "name": "mouse",
+        "type_info": "Bool"
       }
     ],
     "parameters": {
@@ -69,8 +74,9 @@
       true,
       false,
       false,
+      false,
       false
     ]
   },
-  "hash": "6040f8b2dc4083598a023d144ad6b8d079ca6facf41c5509d6ff1623dab69880"
+  "hash": "4f471d81eb24c9c90e35a6aa3e0299ce574e1c4e3e8686460f43a5eea19c5b1f"
 }

@@ -80,6 +80,8 @@ pub struct Board {
     styles: Vec<ThemeName>,
     layouts: Vec<LayoutId>,
     motion: bool,
+    ticker: Vec<BoardText>,
+    ticker_feeds: bool,
     art: bool,
     quotes: Vec<BoardText>,
 }
@@ -100,6 +102,8 @@ impl Default for Board {
             styles: Vec::new(),
             layouts: Vec::new(),
             motion: true,
+            ticker: Vec::new(),
+            ticker_feeds: false,
             art: true,
             quotes: Vec::new(),
         })
@@ -151,6 +155,7 @@ impl Board {
         if layout.is_some_and(|layout| !layouts.is_empty() && !layouts.contains(&layout)) {
             return Err(refuse("board.layout", "is not in board.layouts"));
         }
+        let ticker = ticker_lines(&config.ticker)?;
         let quotes = quotes(&config.quotes)?;
         Ok(Self {
             name,
@@ -163,6 +168,8 @@ impl Board {
             styles,
             layouts,
             motion: config.motion,
+            ticker,
+            ticker_feeds: config.ticker_feeds,
             art: config.art,
             quotes,
         })
@@ -220,6 +227,18 @@ impl Board {
     #[must_use]
     pub fn layouts(&self) -> &[LayoutId] {
         &self.layouts
+    }
+
+    /// The sysop's ticker lines (UI-9), each checked like the tagline.
+    #[must_use]
+    pub fn ticker(&self) -> &[BoardText] {
+        &self.ticker
+    }
+
+    /// Whether the ticker also shows feed headlines.
+    #[must_use]
+    pub const fn ticker_feeds(&self) -> bool {
+        self.ticker_feeds
     }
 
     /// Whether the board lets members have motion at all.
@@ -312,6 +331,27 @@ fn layout_name(key: &'static str, text: &str) -> Result<LayoutId, BoardError> {
 }
 
 /// A comma-separated list, each entry checked, no repeats.
+/// Most ticker lines, and the longest one, in characters.
+pub const TICKER_MAX_LINES: usize = 8;
+/// See [`TICKER_MAX_LINES`].
+pub const TICKER_LINE_MAX: usize = 80;
+
+/// The `|`-separated ticker lines, each checked like the tagline (no control, invisible or
+/// reserved characters, no claim of privacy).
+fn ticker_lines(raw: &str) -> Result<Vec<BoardText>, BoardError> {
+    let mut lines = Vec::new();
+    for part in raw.split('|').map(str::trim).filter(|p| !p.is_empty()) {
+        lines.push(text("board.ticker", part, TICKER_LINE_MAX, false)?);
+        if lines.len() > TICKER_MAX_LINES {
+            return Err(refuse(
+                "board.ticker",
+                format!("has more than {TICKER_MAX_LINES} lines"),
+            ));
+        }
+    }
+    Ok(lines)
+}
+
 fn list<T: PartialEq + Copy>(
     key: &'static str,
     raw: &str,

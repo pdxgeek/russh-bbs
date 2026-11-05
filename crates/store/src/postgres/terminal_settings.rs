@@ -16,6 +16,10 @@ use super::PostgresStore;
 use crate::error::{backend, kind};
 
 /// A `terminal_settings` row as read by the checked query.
+#[allow(
+    clippy::struct_excessive_bools,
+    reason = "one field per BOOLEAN column: the shape `query_as!` decodes into; it is turned into the enums of `TerminalSettings` at once"
+)]
 struct SettingsRow {
     width_override: Option<i32>,
     height_override: Option<i32>,
@@ -27,6 +31,7 @@ struct SettingsRow {
     motion: bool,
     depth_cap: String,
     borders: String,
+    mouse: bool,
 }
 
 impl SettingsRow {
@@ -65,7 +70,8 @@ impl SettingsRow {
         let mut settings = settings
             .with_motion(motion)
             .with_depth_cap(depth_cap)
-            .with_borders(borders);
+            .with_borders(borders)
+            .with_mouse(self.mouse);
         if let Some(layout) = layout {
             settings = settings.with_layout(layout);
         }
@@ -82,7 +88,7 @@ impl TerminalSettingsStore for PostgresStore {
         let row = sqlx::query_as!(
             SettingsRow,
             "SELECT width_override, height_override, color, pause, icon_tier, layout, theme,
-                    motion, depth_cap, borders
+                    motion, depth_cap, borders, mouse
              FROM terminal_settings WHERE account_id = $1",
             id,
         )
@@ -112,12 +118,13 @@ impl TerminalSettingsStore for PostgresStore {
         let motion = settings.motion();
         let depth_cap = depth_cap_to_stored(settings.depth_cap());
         let borders = borders_to_stored(settings.borders());
+        let mouse = settings.mouse();
         let mut tx = self.pool().begin().await.map_err(backend)?;
         sqlx::query!(
             "INSERT INTO terminal_settings
                  (account_id, width_override, height_override, color, pause, icon_tier, layout, theme,
-                  motion, depth_cap, borders)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                  motion, depth_cap, borders, mouse)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
              ON CONFLICT (account_id) DO UPDATE SET
                  width_override  = excluded.width_override,
                  height_override = excluded.height_override,
@@ -129,6 +136,7 @@ impl TerminalSettingsStore for PostgresStore {
                  motion          = excluded.motion,
                  depth_cap       = excluded.depth_cap,
                  borders         = excluded.borders,
+                 mouse           = excluded.mouse,
                  updated_at      = extract(epoch FROM now())::bigint",
             id,
             width,
@@ -141,6 +149,7 @@ impl TerminalSettingsStore for PostgresStore {
             motion,
             depth_cap,
             borders,
+            mouse,
         )
         .execute(&mut *tx)
         .await

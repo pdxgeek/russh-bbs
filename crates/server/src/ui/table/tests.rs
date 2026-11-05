@@ -401,3 +401,44 @@ fn chrome_cells_are_shown_as_they_are() {
     // Content is cleaned when shown; chrome is not touched.
     assert_eq!(Cell::content("a\u{1b}[31mb").shown(), "ab");
 }
+
+// ---- UI-9: the rows answer the mouse ----
+
+/// The table records where its rows are, so a click on the row drawn at a given terminal row is
+/// the key path to that row: the cursor moves there and a second click opens it.
+#[test]
+#[allow(clippy::panic, clippy::assert_is_empty)]
+fn rows_record_their_place_for_the_mouse_and_map_to_the_cursor_keys() {
+    use crate::ssh::terminal::Key;
+    use crate::ui::input::{self, Region};
+    let look = look(Tier::Unicode, true, ColorDepth::TrueColor);
+    let table = spec(rows(30), Some(7), 5);
+    let mut terminal = Terminal::new(TestBackend::new(70, 12)).unwrap();
+    let mut view = TableView::default();
+    let ((), hits) = input::capture(|| {
+        terminal
+            .draw(|frame| view = render(frame, frame.area(), look, &table))
+            .unwrap();
+    });
+    let [
+        Region::List {
+            rect,
+            offset,
+            len,
+            selected,
+            ..
+        },
+    ] = hits.regions()
+    else {
+        panic!("{:?}", hits.regions());
+    };
+    assert_eq!((*offset, *len, *selected), (view.top, 30, Some(7)));
+    assert!(rect.height as usize >= view.shown);
+    // The row under the cursor opens; the rows around it move the cursor one step.
+    let cursor_row = rect.y + u16::try_from(7 - view.top).unwrap();
+    assert_eq!(hits.click(rect.x + 1, cursor_row), vec![Key::Enter]);
+    assert_eq!(hits.click(rect.x + 1, cursor_row + 1), vec![Key::Down]);
+    assert_eq!(hits.click(rect.x + 1, cursor_row - 1), vec![Key::Up]);
+    // The header row and the border are not rows.
+    assert!(hits.click(rect.x + 1, rect.y.saturating_sub(1)).is_empty());
+}

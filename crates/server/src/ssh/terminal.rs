@@ -9,6 +9,8 @@
 
 use std::time::{Duration, Instant};
 
+use crate::ui::input::mouse::{self, Mouse};
+
 /// Size used when the client reports 0 (unknown) for a dimension.
 const DEFAULT_COLS: u16 = 80;
 const DEFAULT_ROWS: u16 = 24;
@@ -210,7 +212,15 @@ pub struct KeyParser {
     paste_cr: bool,
     /// When the last input arrived, to time out `held` and an open paste.
     last_input: Option<Instant>,
+    /// Mouse reports read since the last [`KeyParser::take_mouse`] (UI-9). Bounded.
+    mouse: Vec<Mouse>,
+    /// Bytes skipped so far in a mouse report that was invalid or too long (0: not skipping).
+    discard: usize,
 }
+
+/// Most mouse reports kept between two cycles. A client cannot make the queue grow past this;
+/// the rest are dropped (the keys they would stand for are rate-limited the same way).
+const MAX_MOUSE_QUEUE: usize = 64;
 
 impl Default for KeyParser {
     fn default() -> Self {
@@ -238,7 +248,15 @@ impl KeyParser {
             paste_len: 0,
             paste_cr: false,
             last_input: None,
+            mouse: Vec::new(),
+            discard: 0,
         }
+    }
+
+    /// The mouse reports read since the last call (UI-9), oldest first. They are never keys: a
+    /// report that is invalid or too long is dropped by the parser and never appears here.
+    pub(crate) fn take_mouse(&mut self) -> Vec<Mouse> {
+        std::mem::take(&mut self.mouse)
     }
 
     /// Feed one packet of input received at `now`. Returns the keys it completed; a trailing
@@ -285,11 +303,29 @@ impl KeyParser {
             _ => keys.push(Key::Other),
         }
         self.held.clear();
+        self.discard = 0;
         self.parser = anes::parser::Parser::default();
         keys
     }
 
+    /// Skip the rest of a mouse report that was invalid or too long, up to its `M` or `m`. A
+    /// new `Esc` starts a new sequence; a run longer than [`mouse::MAX_DISCARD`] ends the skip.
+    fn discard_byte(&mut self, byte: u8, keys: &mut Vec<Key>) {
+        if byte == ESC {
+            self.discard = 0;
+            self.plain_byte(byte, keys);
+        } else if matches!(byte, b'M' | b'm') || self.discard >= mouse::MAX_DISCARD {
+            self.discard = 0;
+        } else {
+            self.discard += 1;
+        }
+    }
+
     fn plain_byte(&mut self, byte: u8, keys: &mut Vec<Key>) {
+        if self.discard > 0 {
+            self.discard_byte(byte, keys);
+            return;
+        }
         let mut candidate = std::mem::take(&mut self.held);
         candidate.push(byte);
         if PASTE_START.starts_with(&candidate) {
@@ -305,6 +341,30 @@ impl KeyParser {
         if candidate == SS3 {
             self.held = candidate;
             return;
+        }
+        match mouse::classify(&candidate) {
+            mouse::Class::NotMouse => {}
+            mouse::Class::Prefix => {
+                self.held = candidate;
+                return;
+            }
+            mouse::Class::Done(event) => {
+                if let Some(event) = event
+                    && self.mouse.len() < MAX_MOUSE_QUEUE
+                {
+                    self.mouse.push(event);
+                }
+                return;
+            }
+            mouse::Class::Invalid => {
+                // Dropped, never echoed: nothing of the report becomes a key.
+                if byte == ESC {
+                    self.held.push(ESC);
+                } else if !matches!(byte, b'M' | b'm') {
+                    self.discard = 1;
+                }
+                return;
+            }
         }
         if let [ESC, b'O', final_byte] = candidate.as_slice()
             && let Some(key) = ss3_key(*final_byte)
