@@ -1443,6 +1443,18 @@ async fn ssh_keys(
     channel.data_bytes(keys.as_bytes().to_vec()).await.unwrap();
     *rows = if *rows == 24 { 25 } else { 24 };
     channel.window_change(80, *rows, 0, 0).await.unwrap();
+    let mut seen = read_quiet(channel).await;
+    // The login screen plays a short intro (UI-8) that can start after the resize above was
+    // handled. Another resize ends any running effect and repaints the whole static screen, so
+    // what this returns is the settled screen, which is what the script compares.
+    *rows = if *rows == 24 { 25 } else { 24 };
+    channel.window_change(80, *rows, 0, 0).await.unwrap();
+    seen.push_str(&read_quiet(channel).await);
+    words_of(&seen)
+}
+
+/// Everything the channel sends until it has been quiet for 700 ms.
+async fn read_quiet(channel: &mut russh::Channel<russh::client::Msg>) -> String {
     let mut seen = String::new();
     while let Ok(msg) = timeout(Duration::from_millis(700), channel.wait()).await {
         match msg {
@@ -1453,7 +1465,7 @@ async fn ssh_keys(
             None => break,
         }
     }
-    words_of(&seen)
+    seen
 }
 
 /// The last frame in `words` (a redraw repeats the whole screen) without the telnet marker,

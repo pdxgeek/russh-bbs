@@ -79,6 +79,8 @@ chacha20poly1305 = { version = "0.10", default-features = false, features = ["al
 # Terminal input parser (D50): escape sequences, UTF-8 and the Esc-vs-sequence decision, with the parser
 # state kept across SSH data packets. Only the `parser` feature; its one dependency (`bitflags`) is already in the tree.
 anes = { version = "0.2", default-features = false, features = ["parser"] }
+# Decodes sysop-uploaded PNG logos and avatars into cells (UI-8): pure Rust (image-rs), MIT OR Apache-2.0; shares flate2 and miniz_oxide with the rest of the tree.
+png = "0.18"
 # Permission names, parsing and variant list from one enum definition (D47, access.md plan section 5); already in the tree.
 strum = { version = "0.28", features = ["derive"] }
 # Terminal rendering over the PTY (decision D7, Q5/D19).
