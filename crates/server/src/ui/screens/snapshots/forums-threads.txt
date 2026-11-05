@@ -1,0 +1,502 @@
+=== classic / 80x24 / unicode mono
+ russh-bbs │ Forums                                                   UTC 12:00
+┌ General ─────────────────────────────────────────────────────────────────────┐
+│  #  Subject                      From            Posts  Last post            │
+│> 1. Subject001                   ann                 3  2023-11-14 22:13 UTC │
+│  2. Subject002                   ann                 3  2023-11-14 22:13 UTC │
+│  3. Subject003                   ann                 3  2023-11-14 22:13 UTC │
+│  4. Subject004                   ann                 3  2023-11-14 22:13 UTC │
+│  5. Subject005                   ann                 3  2023-11-14 22:13 UTC │
+│  6. Subject006                   ann                 3  2023-11-14 22:13 UTC │
+│  7. Subject007                   ann                 3  2023-11-14 22:13 UTC │
+│  8. Subject008                   ann                 3  2023-11-14 22:13 UTC │
+│  9. Subject009                   ann                 3  2023-11-14 22:13 UTC │
+│     Subject010                   ann                 3  2023-11-14 22:13 UTC │
+│     Subject011                   ann                 3  2023-11-14 22:13 UTC │
+│     Subject012                   ann                 3  2023-11-14 22:13 UTC │
+│     Subject013                   ann                 3  2023-11-14 22:13 UTC │
+│     Subject014                   ann                 3  2023-11-14 22:13 UTC │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└─ Page 1  -  About ───────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter read
+
+=== lightbar / 80x24 / unicode mono
+= same as classic
+
+=== compact / 80x24 / unicode mono
+  #  Subject                        From            Posts  Last post
+> 1. Subject001                     ann                 3  2023-11-14 22:13 UTC
+  2. Subject002                     ann                 3  2023-11-14 22:13 UTC
+  3. Subject003                     ann                 3  2023-11-14 22:13 UTC
+  4. Subject004                     ann                 3  2023-11-14 22:13 UTC
+  5. Subject005                     ann                 3  2023-11-14 22:13 UTC
+  6. Subject006                     ann                 3  2023-11-14 22:13 UTC
+  7. Subject007                     ann                 3  2023-11-14 22:13 UTC
+  8. Subject008                     ann                 3  2023-11-14 22:13 UTC
+  9. Subject009                     ann                 3  2023-11-14 22:13 UTC
+     Subject010                     ann                 3  2023-11-14 22:13 UTC
+     Subject011                     ann                 3  2023-11-14 22:13 UTC
+     Subject012                     ann                 3  2023-11-14 22:13 UTC
+     Subject013                     ann                 3  2023-11-14 22:13 UTC
+     Subject014                     ann                 3  2023-11-14 22:13 UTC
+
+
+
+
+
+
+
+   Page 1  -  About
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter read
+
+=== dashboard / 80x24 / unicode mono
+= same as classic
+
+=== wide / 80x24 / unicode mono
+= same as classic
+
+=== focus / 80x24 / unicode mono
+= same as classic
+
+=== split / 80x24 / unicode mono
+= same as classic
+
+=== classic / 80x24 / ascii mono
+ russh-bbs | Forums                                                   UTC 12:00
++ General ---------------------------------------------------------------------+
+|  #  Subject                      From            Posts  Last post            |
+|> 1. Subject001                   ann                 3  2023-11-14 22:13 UTC |
+|  2. Subject002                   ann                 3  2023-11-14 22:13 UTC |
+|  3. Subject003                   ann                 3  2023-11-14 22:13 UTC |
+|  4. Subject004                   ann                 3  2023-11-14 22:13 UTC |
+|  5. Subject005                   ann                 3  2023-11-14 22:13 UTC |
+|  6. Subject006                   ann                 3  2023-11-14 22:13 UTC |
+|  7. Subject007                   ann                 3  2023-11-14 22:13 UTC |
+|  8. Subject008                   ann                 3  2023-11-14 22:13 UTC |
+|  9. Subject009                   ann                 3  2023-11-14 22:13 UTC |
+|     Subject010                   ann                 3  2023-11-14 22:13 UTC |
+|     Subject011                   ann                 3  2023-11-14 22:13 UTC |
+|     Subject012                   ann                 3  2023-11-14 22:13 UTC |
+|     Subject013                   ann                 3  2023-11-14 22:13 UTC |
+|     Subject014                   ann                 3  2023-11-14 22:13 UTC |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
++- Page 1  -  About -----------------------------------------------------------+
+UNENCRYPTED  LOW-SECURITY   Enter read  1-9 jump  w write  n/b page  s search
+
+=== lightbar / 80x24 / ascii mono
+= same as classic
+
+=== compact / 80x24 / ascii mono
+  #  Subject                        From            Posts  Last post
+> 1. Subject001                     ann                 3  2023-11-14 22:13 UTC
+  2. Subject002                     ann                 3  2023-11-14 22:13 UTC
+  3. Subject003                     ann                 3  2023-11-14 22:13 UTC
+  4. Subject004                     ann                 3  2023-11-14 22:13 UTC
+  5. Subject005                     ann                 3  2023-11-14 22:13 UTC
+  6. Subject006                     ann                 3  2023-11-14 22:13 UTC
+  7. Subject007                     ann                 3  2023-11-14 22:13 UTC
+  8. Subject008                     ann                 3  2023-11-14 22:13 UTC
+  9. Subject009                     ann                 3  2023-11-14 22:13 UTC
+     Subject010                     ann                 3  2023-11-14 22:13 UTC
+     Subject011                     ann                 3  2023-11-14 22:13 UTC
+     Subject012                     ann                 3  2023-11-14 22:13 UTC
+     Subject013                     ann                 3  2023-11-14 22:13 UTC
+     Subject014                     ann                 3  2023-11-14 22:13 UTC
+
+
+
+
+
+
+
+   Page 1  -  About
+UNENCRYPTED  LOW-SECURITY   Enter read  1-9 jump  w write  n/b page  s search
+
+=== dashboard / 80x24 / ascii mono
+= same as classic
+
+=== wide / 80x24 / ascii mono
+= same as classic
+
+=== focus / 80x24 / ascii mono
+= same as classic
+
+=== split / 80x24 / ascii mono
+= same as classic
+
+=== classic / 100x30 / unicode mono
+ russh-bbs │ Forums                                                                       UTC 12:00
+┌ General ─────────────────────────────────────────────────────────────────────────────────────────┐
+│  #  Subject                                          From            Posts  Last post            │
+│> 1. Subject001                                       ann                 3  2023-11-14 22:13 UTC │
+│  2. Subject002                                       ann                 3  2023-11-14 22:13 UTC │
+│  3. Subject003                                       ann                 3  2023-11-14 22:13 UTC │
+│  4. Subject004                                       ann                 3  2023-11-14 22:13 UTC │
+│  5. Subject005                                       ann                 3  2023-11-14 22:13 UTC │
+│  6. Subject006                                       ann                 3  2023-11-14 22:13 UTC │
+│  7. Subject007                                       ann                 3  2023-11-14 22:13 UTC │
+│  8. Subject008                                       ann                 3  2023-11-14 22:13 UTC │
+│  9. Subject009                                       ann                 3  2023-11-14 22:13 UTC │
+│     Subject010                                       ann                 3  2023-11-14 22:13 UTC │
+│     Subject011                                       ann                 3  2023-11-14 22:13 UTC │
+│     Subject012                                       ann                 3  2023-11-14 22:13 UTC │
+│     Subject013                                       ann                 3  2023-11-14 22:13 UTC │
+│     Subject014                                       ann                 3  2023-11-14 22:13 UTC │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+└─ Page 1  -  About ───────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter read  1-9 jump  w write
+
+=== lightbar / 100x30 / unicode mono
+= same as classic
+
+=== compact / 100x30 / unicode mono
+  #  Subject                                            From            Posts  Last post
+> 1. Subject001                                         ann                 3  2023-11-14 22:13 UTC
+  2. Subject002                                         ann                 3  2023-11-14 22:13 UTC
+  3. Subject003                                         ann                 3  2023-11-14 22:13 UTC
+  4. Subject004                                         ann                 3  2023-11-14 22:13 UTC
+  5. Subject005                                         ann                 3  2023-11-14 22:13 UTC
+  6. Subject006                                         ann                 3  2023-11-14 22:13 UTC
+  7. Subject007                                         ann                 3  2023-11-14 22:13 UTC
+  8. Subject008                                         ann                 3  2023-11-14 22:13 UTC
+  9. Subject009                                         ann                 3  2023-11-14 22:13 UTC
+     Subject010                                         ann                 3  2023-11-14 22:13 UTC
+     Subject011                                         ann                 3  2023-11-14 22:13 UTC
+     Subject012                                         ann                 3  2023-11-14 22:13 UTC
+     Subject013                                         ann                 3  2023-11-14 22:13 UTC
+     Subject014                                         ann                 3  2023-11-14 22:13 UTC
+
+
+
+
+
+
+
+
+
+
+
+
+
+   Page 1  -  About
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter read  1-9 jump  w write
+
+=== dashboard / 100x30 / unicode mono
+= same as classic
+
+=== wide / 100x30 / unicode mono
+= same as classic
+
+=== focus / 100x30 / unicode mono
+= same as classic
+
+=== split / 100x30 / unicode mono
+= same as classic
+
+=== classic / 100x30 / ascii mono
+ russh-bbs | Forums                                                                       UTC 12:00
++ General -----------------------------------------------------------------------------------------+
+|  #  Subject                                          From            Posts  Last post            |
+|> 1. Subject001                                       ann                 3  2023-11-14 22:13 UTC |
+|  2. Subject002                                       ann                 3  2023-11-14 22:13 UTC |
+|  3. Subject003                                       ann                 3  2023-11-14 22:13 UTC |
+|  4. Subject004                                       ann                 3  2023-11-14 22:13 UTC |
+|  5. Subject005                                       ann                 3  2023-11-14 22:13 UTC |
+|  6. Subject006                                       ann                 3  2023-11-14 22:13 UTC |
+|  7. Subject007                                       ann                 3  2023-11-14 22:13 UTC |
+|  8. Subject008                                       ann                 3  2023-11-14 22:13 UTC |
+|  9. Subject009                                       ann                 3  2023-11-14 22:13 UTC |
+|     Subject010                                       ann                 3  2023-11-14 22:13 UTC |
+|     Subject011                                       ann                 3  2023-11-14 22:13 UTC |
+|     Subject012                                       ann                 3  2023-11-14 22:13 UTC |
+|     Subject013                                       ann                 3  2023-11-14 22:13 UTC |
+|     Subject014                                       ann                 3  2023-11-14 22:13 UTC |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
++- Page 1  -  About -------------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Enter read
+
+=== lightbar / 100x30 / ascii mono
+= same as classic
+
+=== compact / 100x30 / ascii mono
+  #  Subject                                            From            Posts  Last post
+> 1. Subject001                                         ann                 3  2023-11-14 22:13 UTC
+  2. Subject002                                         ann                 3  2023-11-14 22:13 UTC
+  3. Subject003                                         ann                 3  2023-11-14 22:13 UTC
+  4. Subject004                                         ann                 3  2023-11-14 22:13 UTC
+  5. Subject005                                         ann                 3  2023-11-14 22:13 UTC
+  6. Subject006                                         ann                 3  2023-11-14 22:13 UTC
+  7. Subject007                                         ann                 3  2023-11-14 22:13 UTC
+  8. Subject008                                         ann                 3  2023-11-14 22:13 UTC
+  9. Subject009                                         ann                 3  2023-11-14 22:13 UTC
+     Subject010                                         ann                 3  2023-11-14 22:13 UTC
+     Subject011                                         ann                 3  2023-11-14 22:13 UTC
+     Subject012                                         ann                 3  2023-11-14 22:13 UTC
+     Subject013                                         ann                 3  2023-11-14 22:13 UTC
+     Subject014                                         ann                 3  2023-11-14 22:13 UTC
+
+
+
+
+
+
+
+
+
+
+
+
+
+   Page 1  -  About
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Enter read
+
+=== dashboard / 100x30 / ascii mono
+= same as classic
+
+=== wide / 100x30 / ascii mono
+= same as classic
+
+=== focus / 100x30 / ascii mono
+= same as classic
+
+=== split / 100x30 / ascii mono
+= same as classic
+
+=== classic / 132x43 / unicode mono
+ russh-bbs │ Forums                                                                                                       UTC 12:00
+┌ General ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  #  Subject                                                                          From            Posts  Last post            │
+│> 1. Subject001                                                                       ann                 3  2023-11-14 22:13 UTC │
+│  2. Subject002                                                                       ann                 3  2023-11-14 22:13 UTC │
+│  3. Subject003                                                                       ann                 3  2023-11-14 22:13 UTC │
+│  4. Subject004                                                                       ann                 3  2023-11-14 22:13 UTC │
+│  5. Subject005                                                                       ann                 3  2023-11-14 22:13 UTC │
+│  6. Subject006                                                                       ann                 3  2023-11-14 22:13 UTC │
+│  7. Subject007                                                                       ann                 3  2023-11-14 22:13 UTC │
+│  8. Subject008                                                                       ann                 3  2023-11-14 22:13 UTC │
+│  9. Subject009                                                                       ann                 3  2023-11-14 22:13 UTC │
+│     Subject010                                                                       ann                 3  2023-11-14 22:13 UTC │
+│     Subject011                                                                       ann                 3  2023-11-14 22:13 UTC │
+│     Subject012                                                                       ann                 3  2023-11-14 22:13 UTC │
+│     Subject013                                                                       ann                 3  2023-11-14 22:13 UTC │
+│     Subject014                                                                       ann                 3  2023-11-14 22:13 UTC │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+└─ Page 1  -  About ───────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter read  1-9 jump  w write  n/b page  s search  o sort
+
+=== lightbar / 132x43 / unicode mono
+= same as classic
+
+=== compact / 132x43 / unicode mono
+  #  Subject                                                                            From            Posts  Last post
+> 1. Subject001                                                                         ann                 3  2023-11-14 22:13 UTC
+  2. Subject002                                                                         ann                 3  2023-11-14 22:13 UTC
+  3. Subject003                                                                         ann                 3  2023-11-14 22:13 UTC
+  4. Subject004                                                                         ann                 3  2023-11-14 22:13 UTC
+  5. Subject005                                                                         ann                 3  2023-11-14 22:13 UTC
+  6. Subject006                                                                         ann                 3  2023-11-14 22:13 UTC
+  7. Subject007                                                                         ann                 3  2023-11-14 22:13 UTC
+  8. Subject008                                                                         ann                 3  2023-11-14 22:13 UTC
+  9. Subject009                                                                         ann                 3  2023-11-14 22:13 UTC
+     Subject010                                                                         ann                 3  2023-11-14 22:13 UTC
+     Subject011                                                                         ann                 3  2023-11-14 22:13 UTC
+     Subject012                                                                         ann                 3  2023-11-14 22:13 UTC
+     Subject013                                                                         ann                 3  2023-11-14 22:13 UTC
+     Subject014                                                                         ann                 3  2023-11-14 22:13 UTC
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   Page 1  -  About
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter read  1-9 jump  w write  n/b page  s search  o sort
+
+=== dashboard / 132x43 / unicode mono
+= same as classic
+
+=== wide / 132x43 / unicode mono
+= same as classic
+
+=== focus / 132x43 / unicode mono
+= same as classic
+
+=== split / 132x43 / unicode mono
+= same as classic
+
+=== classic / 132x43 / ascii mono
+ russh-bbs | Forums                                                                                                       UTC 12:00
++ General -------------------------------------------------------------------------------------------------------------------------+
+|  #  Subject                                                                          From            Posts  Last post            |
+|> 1. Subject001                                                                       ann                 3  2023-11-14 22:13 UTC |
+|  2. Subject002                                                                       ann                 3  2023-11-14 22:13 UTC |
+|  3. Subject003                                                                       ann                 3  2023-11-14 22:13 UTC |
+|  4. Subject004                                                                       ann                 3  2023-11-14 22:13 UTC |
+|  5. Subject005                                                                       ann                 3  2023-11-14 22:13 UTC |
+|  6. Subject006                                                                       ann                 3  2023-11-14 22:13 UTC |
+|  7. Subject007                                                                       ann                 3  2023-11-14 22:13 UTC |
+|  8. Subject008                                                                       ann                 3  2023-11-14 22:13 UTC |
+|  9. Subject009                                                                       ann                 3  2023-11-14 22:13 UTC |
+|     Subject010                                                                       ann                 3  2023-11-14 22:13 UTC |
+|     Subject011                                                                       ann                 3  2023-11-14 22:13 UTC |
+|     Subject012                                                                       ann                 3  2023-11-14 22:13 UTC |
+|     Subject013                                                                       ann                 3  2023-11-14 22:13 UTC |
+|     Subject014                                                                       ann                 3  2023-11-14 22:13 UTC |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
++- Page 1  -  About ---------------------------------------------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Enter read  1-9 jump  w write  n/b page
+
+=== lightbar / 132x43 / ascii mono
+= same as classic
+
+=== compact / 132x43 / ascii mono
+  #  Subject                                                                            From            Posts  Last post
+> 1. Subject001                                                                         ann                 3  2023-11-14 22:13 UTC
+  2. Subject002                                                                         ann                 3  2023-11-14 22:13 UTC
+  3. Subject003                                                                         ann                 3  2023-11-14 22:13 UTC
+  4. Subject004                                                                         ann                 3  2023-11-14 22:13 UTC
+  5. Subject005                                                                         ann                 3  2023-11-14 22:13 UTC
+  6. Subject006                                                                         ann                 3  2023-11-14 22:13 UTC
+  7. Subject007                                                                         ann                 3  2023-11-14 22:13 UTC
+  8. Subject008                                                                         ann                 3  2023-11-14 22:13 UTC
+  9. Subject009                                                                         ann                 3  2023-11-14 22:13 UTC
+     Subject010                                                                         ann                 3  2023-11-14 22:13 UTC
+     Subject011                                                                         ann                 3  2023-11-14 22:13 UTC
+     Subject012                                                                         ann                 3  2023-11-14 22:13 UTC
+     Subject013                                                                         ann                 3  2023-11-14 22:13 UTC
+     Subject014                                                                         ann                 3  2023-11-14 22:13 UTC
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   Page 1  -  About
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Enter read  1-9 jump  w write  n/b page
+
+=== dashboard / 132x43 / ascii mono
+= same as classic
+
+=== wide / 132x43 / ascii mono
+= same as classic
+
+=== focus / 132x43 / ascii mono
+= same as classic
+
+=== split / 132x43 / ascii mono
+= same as classic
+

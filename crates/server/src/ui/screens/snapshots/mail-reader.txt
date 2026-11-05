@@ -1,0 +1,502 @@
+=== classic / 80x24 / unicode mono
+ russh-bbs │ Mail                                                     UTC 12:00
+ Mail
+ Two
+ From ann   2023-11-14 22:13 UTC
+┌ Mail ────────────────────────────────────────────────────────────────────────┐
+│ Hello there.                                                                 │
+│ │ an earlier line that is quoted                                             │
+│ A second line that is long enough to wrap onto another row when the termina… │
+│ is narrow, at least a little.                                                │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Space more
+
+=== lightbar / 80x24 / unicode mono
+= same as classic
+
+=== compact / 80x24 / unicode mono
+ Mail
+ Two
+ From ann   2023-11-14 22:13 UTC
+ Hello there.
+ │ an earlier line that is quoted
+ A second line that is long enough to wrap onto another row when the terminal
+ is narrow, at least a little.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Space more
+
+=== dashboard / 80x24 / unicode mono
+= same as classic
+
+=== wide / 80x24 / unicode mono
+= same as classic
+
+=== focus / 80x24 / unicode mono
+= same as classic
+
+=== split / 80x24 / unicode mono
+= same as classic
+
+=== classic / 80x24 / ascii mono
+ russh-bbs | Mail                                                     UTC 12:00
+ Mail
+ Two
+ From ann   2023-11-14 22:13 UTC
++ Mail ------------------------------------------------------------------------+
+| Hello there.                                                                 |
+| | an earlier line that is quoted                                             |
+| A second line that is long enough to wrap onto another row when the termi... |
+| is narrow, at least a little.                                                |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
+|                                                                              |
++------------------------------------------------------------------------------+
+UNENCRYPTED  LOW-SECURITY   Space more  b back  r reply  c quote  d delete
+
+=== lightbar / 80x24 / ascii mono
+= same as classic
+
+=== compact / 80x24 / ascii mono
+ Mail
+ Two
+ From ann   2023-11-14 22:13 UTC
+ Hello there.
+ | an earlier line that is quoted
+ A second line that is long enough to wrap onto another row when the terminal
+ is narrow, at least a little.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+UNENCRYPTED  LOW-SECURITY   Space more  b back  r reply  c quote  d delete
+
+=== dashboard / 80x24 / ascii mono
+= same as classic
+
+=== wide / 80x24 / ascii mono
+= same as classic
+
+=== focus / 80x24 / ascii mono
+= same as classic
+
+=== split / 80x24 / ascii mono
+= same as classic
+
+=== classic / 100x30 / unicode mono
+ russh-bbs │ Mail                                                                         UTC 12:00
+ Mail
+ Two
+ From ann   2023-11-14 22:13 UTC
+┌ Mail ────────────────────────────────────────────────────────────────────────────────────────────┐
+│ Hello there.                                                                                     │
+│ │ an earlier line that is quoted                                                                 │
+│ A second line that is long enough to wrap onto another row when the terminal is narrow, at leas… │
+│ a little.                                                                                        │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+│                                                                                                  │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Space more  b back  r reply
+
+=== lightbar / 100x30 / unicode mono
+= same as classic
+
+=== compact / 100x30 / unicode mono
+ Mail
+ Two
+ From ann   2023-11-14 22:13 UTC
+ Hello there.
+ │ an earlier line that is quoted
+ A second line that is long enough to wrap onto another row when the terminal is narrow, at least
+ a little.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Space more  b back  r reply
+
+=== dashboard / 100x30 / unicode mono
+= same as classic
+
+=== wide / 100x30 / unicode mono
+= same as classic
+
+=== focus / 100x30 / unicode mono
+= same as classic
+
+=== split / 100x30 / unicode mono
+= same as classic
+
+=== classic / 100x30 / ascii mono
+ russh-bbs | Mail                                                                         UTC 12:00
+ Mail
+ Two
+ From ann   2023-11-14 22:13 UTC
++ Mail --------------------------------------------------------------------------------------------+
+| Hello there.                                                                                     |
+| | an earlier line that is quoted                                                                 |
+| A second line that is long enough to wrap onto another row when the terminal is narrow, at le... |
+| a little.                                                                                        |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
+|                                                                                                  |
++--------------------------------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Space more
+
+=== lightbar / 100x30 / ascii mono
+= same as classic
+
+=== compact / 100x30 / ascii mono
+ Mail
+ Two
+ From ann   2023-11-14 22:13 UTC
+ Hello there.
+ | an earlier line that is quoted
+ A second line that is long enough to wrap onto another row when the terminal is narrow, at least
+ a little.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Space more
+
+=== dashboard / 100x30 / ascii mono
+= same as classic
+
+=== wide / 100x30 / ascii mono
+= same as classic
+
+=== focus / 100x30 / ascii mono
+= same as classic
+
+=== split / 100x30 / ascii mono
+= same as classic
+
+=== classic / 132x43 / unicode mono
+ russh-bbs │ Mail                                                                                                         UTC 12:00
+                 Mail
+                 Two
+                 From ann   2023-11-14 22:13 UTC
+                ┌ Mail ────────────────────────────────────────────────────────────────────────────────────────────┐
+                │ Hello there.                                                                                     │
+                │ │ an earlier line that is quoted                                                                 │
+                │ A second line that is long enough to wrap onto another row when the terminal is narrow, at leas… │
+                │ a little.                                                                                        │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                │                                                                                                  │
+                └──────────────────────────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Space more  b back  r reply  c quote  d delete  x report
+
+=== lightbar / 132x43 / unicode mono
+= same as classic
+
+=== compact / 132x43 / unicode mono
+                 Mail
+                 Two
+                 From ann   2023-11-14 22:13 UTC
+                 Hello there.
+                 │ an earlier line that is quoted
+                 A second line that is long enough to wrap onto another row when the terminal is narrow, at least
+                 a little.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Space more  b back  r reply  c quote  d delete  x report
+
+=== dashboard / 132x43 / unicode mono
+= same as classic
+
+=== wide / 132x43 / unicode mono
+= same as classic
+
+=== focus / 132x43 / unicode mono
+= same as classic
+
+=== split / 132x43 / unicode mono
+= same as classic
+
+=== classic / 132x43 / ascii mono
+ russh-bbs | Mail                                                                                                         UTC 12:00
+                 Mail
+                 Two
+                 From ann   2023-11-14 22:13 UTC
+                + Mail --------------------------------------------------------------------------------------------+
+                | Hello there.                                                                                     |
+                | | an earlier line that is quoted                                                                 |
+                | A second line that is long enough to wrap onto another row when the terminal is narrow, at le... |
+                | a little.                                                                                        |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                |                                                                                                  |
+                +--------------------------------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Space more  b back  r reply  c quote
+
+=== lightbar / 132x43 / ascii mono
+= same as classic
+
+=== compact / 132x43 / ascii mono
+                 Mail
+                 Two
+                 From ann   2023-11-14 22:13 UTC
+                 Hello there.
+                 | an earlier line that is quoted
+                 A second line that is long enough to wrap onto another row when the terminal is narrow, at least
+                 a little.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Space more  b back  r reply  c quote
+
+=== dashboard / 132x43 / ascii mono
+= same as classic
+
+=== wide / 132x43 / ascii mono
+= same as classic
+
+=== focus / 132x43 / ascii mono
+= same as classic
+
+=== split / 132x43 / ascii mono
+= same as classic
+

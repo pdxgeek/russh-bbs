@@ -236,6 +236,11 @@ pub struct RoomPage {
     pub rows: VecDeque<Row>,
     /// The line being typed.
     pub input: String,
+    /// The rooms the member may join, as the list last showed them (the room list pane).
+    pub rooms: Vec<Room>,
+    /// Who is in the room now, in the order they came (the who's-online pane). Handles are
+    /// validated usernames from the hub.
+    pub roster: Vec<Username>,
 }
 
 /// The room list page's contents.
@@ -369,15 +374,24 @@ impl ChatScreen {
                 let mut rows = VecDeque::new();
                 rows.extend(entered.history.into_iter().map(Row::Say));
                 rows.push_back(Row::Entered(room.name.clone()));
+                let roster = entered.roster.clone();
                 rows.push_back(Row::Here(entered.roster));
+                // The room list the member just chose from stays beside the conversation.
+                let rooms = match &mut self.mode {
+                    Mode::List(list) => std::mem::take(&mut list.rooms),
+                    Mode::Room(page) => std::mem::take(&mut page.rooms),
+                };
                 self.mode = Mode::Room(RoomPage {
                     room,
                     rows,
                     input: String::new(),
+                    rooms,
+                    roster,
                 });
             }
             ChatResponse::Roster(names) => {
                 if let Mode::Room(room) = &mut self.mode {
+                    room.roster.clone_from(&names);
                     push_row(room, Row::Here(names));
                 }
             }
@@ -395,8 +409,16 @@ impl ChatScreen {
         for event in events {
             let row = match event {
                 Event::Line(line) => Row::Say(line),
-                Event::Joined(who) => Row::Joined(who),
-                Event::Left(who) => Row::Left(who),
+                Event::Joined(who) => {
+                    if !room.roster.contains(&who) {
+                        room.roster.push(who.clone());
+                    }
+                    Row::Joined(who)
+                }
+                Event::Left(who) => {
+                    room.roster.retain(|name| name != &who);
+                    Row::Left(who)
+                }
                 Event::Whisper { from, text } => Row::Whisper { from, text },
                 Event::WhisperSent { to, text } => Row::WhisperSent { to, text },
                 Event::Missed(n) => Row::Missed(n),

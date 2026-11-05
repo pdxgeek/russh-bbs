@@ -1,0 +1,86 @@
+{
+ "80x24 main menu": {
+  "rev_cells_in_status_row": 3,
+  "rev_cells_elsewhere": 0,
+  "all_bold_no_colour": true,
+  "first_marker_text": "\u27e6\u2296\u27e7 telnet is on   ? help  Esc back  Ctr"
+ },
+ "80x24 forums": {
+  "rev_cells_in_status_row": 3,
+  "rev_cells_elsewhere": 0,
+  "all_bold_no_colour": true,
+  "first_marker_text": "\u27e6\u2296\u27e7 telnet is on   Enter open  1-9 jump"
+ },
+ "80x24 mail": {
+  "rev_cells_in_status_row": 3,
+  "rev_cells_elsewhere": 0,
+  "all_bold_no_colour": true,
+  "first_marker_text": "\u27e6\u2296\u27e7 telnet is on   Enter read  1-9 jump"
+ },
+ "80x24 chat": {
+  "rev_cells_in_status_row": 3,
+  "rev_cells_elsewhere": 0,
+  "all_bold_no_colour": true,
+  "first_marker_text": "\u27e6\u2296\u27e7 telnet is on   Up/Down choose  Enter"
+ },
+ "80x24 community polls": {
+  "rev_cells_in_status_row": 3,
+  "rev_cells_elsewhere": 0,
+  "all_bold_no_colour": true,
+  "first_marker_text": "\u27e6\u2296\u27e7 telnet is on   ? help  Esc back  Ctr"
+ },
+ "80x24 members": {
+  "rev_cells_in_status_row": 3,
+  "rev_cells_elsewhere": 0,
+  "all_bold_no_colour": true,
+  "first_marker_text": "\u27e6\u2296\u27e7 telnet is on   ? help  Esc back  Ctr"
+ },
+ "80x24 settings": {
+  "rev_cells_in_status_row": 3,
+  "rev_cells_elsewhere": 0,
+  "all_bold_no_colour": true,
+  "first_marker_text": "\u27e6\u2296\u27e7 telnet is on   ? help  Esc back  Ctr"
+ },
+ "132x43 main menu": {
+  "rev_cells_in_status_row": 3,
+  "rev_cells_elsewhere": 0,
+  "all_bold_no_colour": true,
+  "first_marker_text": "\u27e6\u2296\u27e7 telnet is on   ? help  Esc back  Ctr"
+ },
+ "132x43 forums": {
+  "rev_cells_in_status_row": 3,
+  "rev_cells_elsewhere": 0,
+  "all_bold_no_colour": true,
+  "first_marker_text": "\u27e6\u2296\u27e7 telnet is on   Enter open  1-9 jump"
+ },
+ "132x43 mail": {
+  "rev_cells_in_status_row": 3,
+  "rev_cells_elsewhere": 0,
+  "all_bold_no_colour": true,
+  "first_marker_text": "\u27e6\u2296\u27e7 telnet is on   Enter read  1-9 jump"
+ },
+ "132x43 chat": {
+  "rev_cells_in_status_row": 3,
+  "rev_cells_elsewhere": 0,
+  "all_bold_no_colour": true,
+  "first_marker_text": "\u27e6\u2296\u27e7 telnet is on   Up/Down choose  Enter"
+ },
+ "132x43 community polls": {
+  "rev_cells_in_status_row": 3,
+  "rev_cells_elsewhere": 0,
+  "all_bold_no_colour": true,
+  "first_marker_text": "\u27e6\u2296\u27e7 telnet is on   ? help  Esc back  Ctr"
+ },
+ "132x43 members": {
+  "rev_cells_in_status_row": 3,
+  "rev_cells_elsewhere": 0,
+  "all_bold_no_colour": true,
+  "first_marker_text": "\u27e6\u2296\u27e7 telnet is on   ? help  Esc back  Ctr"
+ },
+ "132x43 settings": {
+  "rev_cells_in_status_row": 3,
+  "rev_cells_elsewhere": 0,
+  "all_bold_no_colour": true,
+  "first_marker_text": "\u27e6\u2296\u27e7 telnet is on   ? help  Esc back  Ctr"
+ }
+}

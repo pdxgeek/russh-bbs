@@ -76,6 +76,23 @@ pub struct RoomCount {
     pub name: String,
     /// Members in it now.
     pub members: u32,
+    /// Their handles, by name (filled by the server from the live room; the split layout's
+    /// chat pane lists them). Empty when nobody is in.
+    pub here: Vec<String>,
+}
+
+/// One message in the viewer's inbox, for the split layout's mail pane. The subject was opened
+/// with the board's mail key by the server; nothing here is the body.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RecentMail {
+    /// Who sent it (a handle), or `None` when the account is gone.
+    pub from: Option<String>,
+    /// The subject, or `None` when the message cannot be opened.
+    pub subject: Option<String>,
+    /// Whether it has not been opened.
+    pub unread: bool,
+    /// When it was sent.
+    pub at: UnixSeconds,
 }
 
 /// The viewer's credits.
@@ -148,6 +165,9 @@ pub struct WidgetData {
     pub new_posts: Option<NewPosts>,
     /// Mail counts (needs `mail.read`).
     pub mail: Option<MailCount>,
+    /// The newest messages in the inbox (needs `mail.read`; the server fills it, with the mail
+    /// key, for the split layout's mail pane).
+    pub recent_mail: Option<Vec<RecentMail>>,
     /// Chat rooms the viewer may join.
     pub chat: Option<Vec<RoomCount>>,
     /// Threads last posted per day on readable boards, oldest first.

@@ -297,7 +297,9 @@ async fn three_members_post_reply_search_and_a_restricted_board_stays_hidden() {
     let screen = press(&mut sysop, SEND).await;
     let reading = flat(&screen);
     assert!(
-        reading.contains("Note: Posted.") && reading.contains("Post 1 of 1 in General"),
+        reading.contains("Note: Posted.")
+            && reading.contains("Post 1 of 1")
+            && reading.contains("General"),
         "{screen}"
     );
     assert!(
@@ -340,11 +342,12 @@ async fn three_members_post_reply_search_and_a_restricted_board_stays_hidden() {
     let screen = press(&mut ann, SEND).await;
     let reading = flat(&screen);
     assert!(
-        reading.contains("Post 2 of 2") && reading.contains("Me! Two plants."),
+        reading.contains("2 of 2") && reading.contains("Me! Two plants."),
         "{screen}"
     );
     assert!(
-        reading.contains("> Hello everyone"),
+        // The quote is drawn as a quote block (a bar, not the typed mark) since UI-4.
+        reading.contains("Hello everyone"),
         "the quote was kept: {screen}"
     );
 

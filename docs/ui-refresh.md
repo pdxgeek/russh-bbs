@@ -1,6 +1,6 @@
 # UI refresh and board customization (plan)
 
-Status: **Approved by the owner, 2026-11-04** as its own milestone, **M3.5: Look and feel** ([milestones.md](milestones.md)). The owner asked for it because "ratatui can make that UI look way better" and "there needs to be ways to customize the BBS so it looks cool". Slices UI-1 to UI-7 and the M3.5 QA gate are in [coordination.md](coordination.md). UI-1 (the frame, D109), UI-2 (style packs, layouts, board identity; [implementation notes](#ui-2-implementation-notes)) and UI-3 (board art; [implementation notes](#ui-3-implementation-notes)), UI-10 (widgets; [implementation notes](#ui-10-implementation-notes)) are built; the rest is not.
+Status: **Approved by the owner, 2026-11-04** as its own milestone, **M3.5: Look and feel** ([milestones.md](milestones.md)). The owner asked for it because "ratatui can make that UI look way better" and "there needs to be ways to customize the BBS so it looks cool". Slices UI-1 to UI-7 and the M3.5 QA gate are in [coordination.md](coordination.md). UI-1 (the frame, D109), UI-2 (style packs, layouts, board identity; [implementation notes](#ui-2-implementation-notes)) and UI-3 (board art; [implementation notes](#ui-3-implementation-notes)), UI-10 (widgets; [implementation notes](#ui-10-implementation-notes)) and UI-4 (screens; [implementation notes](#ui-4-implementation-notes)) are built; the rest is not.
 
 ## Goals
 
@@ -242,6 +242,19 @@ Built in `m35/board-art` (D123). The reference is [ui.md](ui.md#board-art-ui-3-d
 - **Large letters** are not drawn in the menu header at 80x24 (the header bar names the board and the menu needs its rows); they are drawn wherever there is room, and on the login and logoff screens.
 - **Preview.** Under Sysop tools, for `members.approve`. It previews the main menu and the login screen; reader, chat and popup samples wait for those screens to move onto the new frame (UI-4). Theme-file refusals are logged, not shown.
 - **Gallery, import and export** remain UI-7; sysop art is not part of a theme pack yet.
+
+## UI-4 implementation notes
+
+Built in `m35/screens` (D127). The reference is [ui.md](ui.md#screens-ui-4-d127); what differs from the plan above:
+
+- **Reader.** A header block (subject, author and date), a **tab per post** of the thread (a window of them, with `n of N`), quote blocks (a bar per `>` level), a scrollbar and the pager's prompt. The plan's "long threads can be split into tabs" is the thread's posts, not the text of one long post (that still pages with the pager).
+- **Chat.** Three panes as planned (rooms, conversation with the input under it, who is here); nicks are coloured by a hash of the handle with no modifier. Below 70 columns the rooms pane goes, below 56 the who pane goes. There is no transcript scrollback (core keeps 200 lines and has no scroll keys).
+- **Lists.** Boards, threads, search results, the mail inbox and the members list are tables with a highlighted row, a scrollbar and the FIX-M3-1 keys, and **`o` sorts**. A paged list sorts the page on screen. The members list's highlight and sort live in the front end (core numbers the rows and opens one on its digit; Enter becomes the highlighted row's digit), so no rule moved.
+- **Area headers** use UI-3's `area` slot above the forum lists, the mail inbox and chat, in the rows beyond 14 (so at 80x24 they are small or absent, as the menu's art is).
+- **Dashboard.** Unchanged where it fits (UI-10's cells). A dashboard (or wide, focus, split) layout the window is too small for now **collapses into one line of figures** after the fallback sentence, which needed the widget data to be fetched for the layout the member *chose* (it was fetched only for the layout in force).
+- **Motion.** UI-8's engine merged during the slice, so the transition between menus is **its** sweep. UI-4 adds only the blinking cursor in inputs (2 redraws a second while an input is on screen, no timer when motion is off or in accessibility mode).
+- **Split.** The second pane is a real chat pane (rooms, how many, who) above a real mail pane (unread of total, the newest messages), from the widgets' data, with hooks for UI-9 (`Plan::{divider, chat, mail}` and `side::{chat_pane, mail_pane}`). It is **not a live conversation**: the menu has the keys while the menu is up. UI-9's "split chat beside any screen" is the next step.
+- **Edits outside the UI crates.** `core::chat` (the room page keeps the room list and the roster; `Chat::room_roster`), `core::terminal_settings::Pager::position`, `core::widgets` (`RoomCount::here`, `RecentMail`, `WidgetData::recent_mail`). No migration, no new key.
 
 ## UI-10 implementation notes
 

@@ -6,7 +6,7 @@
 use ratatui::Frame;
 use ratatui::layout::Rect;
 use ratatui::style::{Modifier, Style};
-use ratatui::text::{Line, Span};
+use ratatui::text::Line;
 use russh_bbs_core::icons::Tier;
 use russh_bbs_core::sanitize::SingleLine;
 use russh_bbs_core::terminal_settings::{TerminalSettings, format_utc};
@@ -15,13 +15,19 @@ use russh_bbs_core::waiting_room::NoticeKind;
 use russh_bbs_core::forums::{SearchPage, ThreadPage};
 
 use super::exec::BoardList;
-use super::flow::{ForumsScreen, Input, InputKind, ListView, State, confirm_text, reader_title};
+use super::flow::{
+    ForumsScreen, Input, InputKind, SORT_BOARDS, SORT_RESULTS, SORT_THREADS, State, confirm_text,
+    reader_title,
+};
 use super::strings;
 use crate::settings::{self, Look};
+use crate::ui::art::Slot as ArtSlot;
 use crate::ui::classic::{self, MENU_MARKERS};
 use crate::ui::editor::EditorView;
-use crate::ui::frame::{ChromeText, FrameSpec, Hint};
+use crate::ui::frame::{ArtRequest, ChromeText, FrameSpec, Hint};
 use crate::ui::popup::{self, Popup, PopupKind, PopupLine};
+use crate::ui::screens::list::ListView;
+use crate::ui::screens::reader as reader_ui;
 use crate::ui::strings::StringTable;
 use crate::ui::table::{self, Cell, CellStyle, Column, TableRow, TableSpec, Title, Width};
 use crate::ui::{Ui, pager};
@@ -37,24 +43,13 @@ pub(crate) struct DrawCtx<'a> {
     pub(crate) markers: &'a [russh_bbs_core::icons::SecurityMarker],
     /// The header bar's clock text.
     pub(crate) clock: Option<&'a str>,
+    /// The board's art, for the area header above the lists (UI-3's `area` slot).
+    pub(crate) art: Option<&'a crate::ui::art::draw::ArtCtx<'a>>,
 }
 
 /// Member text, cleaned once more on its way to the terminal.
 fn clean(text: &str, max: usize) -> String {
     SingleLine::new(max).sanitize(text).into_string()
-}
-
-/// Cut `text` to at most `width` terminal columns so a row never wraps.
-fn fit(text: &str, width: usize) -> String {
-    let mut out = String::new();
-    for c in text.chars() {
-        out.push(c);
-        if Span::raw(out.as_str()).width() > width {
-            out.pop();
-            break;
-        }
-    }
-    out
 }
 
 /// Draw whatever the forum screen is showing into `frame`.
@@ -83,6 +78,11 @@ pub(crate) fn render(frame: &mut Frame<'_>, screen: &ForumsScreen, ctx: &DrawCtx
         .place(ChromeText::fixed(strings::TITLE_BOARDS))
         .clock(ctx.clock)
         .hints(&hints)
+        .art(ctx.art.map(|art| ArtRequest {
+            ctx: art,
+            slot: ArtSlot::Area,
+            keep: 14,
+        }))
         .draw(frame);
     match &screen.state {
         State::Boards { list, cursor } => board_table(frame, body, screen, ctx, list, *cursor),
@@ -135,6 +135,7 @@ fn state_hints(state: &State) -> Vec<Hint<'static>> {
                 hint("Enter", "open"),
                 hint("1-9", "jump"),
                 hint("s", "search"),
+                hint("o", "sort"),
             ];
             if list.can_manage {
                 hints.push(hint("n", "new board"));
@@ -154,6 +155,7 @@ fn state_hints(state: &State) -> Vec<Hint<'static>> {
             }
             hints.push(hint("n/b", "page"));
             hints.push(hint("s", "search"));
+            hints.push(hint("o", "sort"));
             if page.can_feeds && (!page.board.restricted || page.board.feed) {
                 hints.push(hint("p", "public RSS"));
             }
@@ -170,6 +172,7 @@ fn state_hints(state: &State) -> Vec<Hint<'static>> {
             hint("Enter", "read"),
             hint("1-9", "jump"),
             hint("n/b", "page"),
+            hint("o", "sort"),
             hint("Esc", "back"),
         ],
         State::Input(_) => vec![hint("Enter", "continue"), hint("Esc", "cancel")],
@@ -196,15 +199,48 @@ fn render_reader(
         rebuilt = screen.pager_for(reader, width);
         &rebuilt
     };
-    let title = fit(&clean(&reader_title(reader), 120), width.saturating_sub(4));
-    pager::render(
+    let view = &reader.view;
+    let hint = |key: &'static str, label: &'static str| {
+        Hint::new(ChromeText::fixed(key), ChromeText::fixed(label))
+    };
+    let mut hints = vec![hint("Space", "more"), hint("b", "back")];
+    if view.total > 1 {
+        hints.push(hint("n/p", "post"));
+    }
+    if view.can_reply {
+        hints.push(hint("r", "reply"));
+        hints.push(hint("c", "quote"));
+    }
+    if view.can_moderate {
+        hints.push(hint("x", "remove"));
+    }
+    hints.push(hint("Esc", "back"));
+    let from = view.post.author.as_deref().unwrap_or(strings::GONE_MEMBER);
+    let at = format_utc(view.post.at);
+    let body = reader_ui::render(
         frame,
-        pager_ref,
-        &title,
-        ctx.strings,
-        ctx.look,
-        ctx.tier,
-        &MENU_MARKERS,
+        &reader_ui::ReaderView {
+            place: ChromeText::fixed(strings::TITLE_BOARDS),
+            head: reader_ui::Head {
+                subject: &view.thread.subject,
+                from,
+                at: &at,
+                context: &view.thread.board_name,
+            },
+            strip: reader_ui::Strip::Posts {
+                index: view.index,
+                total: view.total,
+            },
+            pager: pager_ref,
+            hints: &hints,
+        },
+        &reader_ui::ReaderCtx {
+            strings: ctx.strings,
+            look: ctx.look,
+            tier: ctx.tier,
+            markers: ctx.markers,
+            clock: ctx.clock,
+        },
     );
     // The remove confirmation is a modal over the page.
     if let Some(text) = confirm_text(reader) {
@@ -217,7 +253,7 @@ fn render_reader(
         ];
         popup::render(
             frame,
-            area,
+            body,
             ctx.look,
             &Popup {
                 kind: PopupKind::Confirm,
@@ -322,6 +358,7 @@ fn board_table(
             empty: strings::NO_BOARDS,
             numbered: true,
             footer: None,
+            sorted: screen.sorts[SORT_BOARDS].mark(),
         },
     );
     remember(screen, drawn);
@@ -372,6 +409,7 @@ fn thread_table(
             empty: strings::NO_THREADS,
             numbered: true,
             footer: None,
+            sorted: screen.sorts[SORT_THREADS].mark(),
         },
     );
     remember(screen, drawn);
@@ -435,6 +473,7 @@ fn result_table(
             empty,
             numbered: true,
             footer: None,
+            sorted: screen.sorts[SORT_RESULTS].mark(),
         },
     );
     remember(screen, drawn);
@@ -517,7 +556,11 @@ fn input_lines(
             | InputKind::FeedHttp { .. }
             | InputKind::FeedRemove { .. }
     ) {
-        out.push(Line::raw(format!("> {}_", clean(&input.text, 200))));
+        out.push(Line::raw(format!(
+            "> {}{}",
+            clean(&input.text, 200),
+            ctx.look.cursor()
+        )));
     }
     out.push(Line::raw(""));
     notice(screen, ctx, out);

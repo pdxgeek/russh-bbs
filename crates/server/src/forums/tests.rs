@@ -114,6 +114,7 @@ fn draw(screen: &ForumsScreen, area: Rect) -> Buffer {
         tier: Tier::Ascii,
         markers: &[],
         clock: Some("UTC 12:00"),
+        art: None,
     };
     let mut terminal = Terminal::new(TestBackend::new(area.width, area.height)).unwrap();
     terminal.draw(|frame| render(frame, screen, &ctx)).unwrap();
@@ -308,7 +309,12 @@ fn the_reader_pages_a_long_post_and_every_line_is_reachable() {
     into_reader(&mut screen, view(0, 1, &body, false));
     let first = text(&screen);
     assert!(first.contains("More (1 of "), "{first}");
-    assert!(first.contains("Post 1 of 1 in General"), "{first}");
+    assert!(first.contains("Post 1 of 1"), "{first}");
+    assert!(
+        first.contains("General"),
+        "the board names the box: {first}"
+    );
+    assert!(first.contains("From ann"), "{first}");
     assert!(first.contains("line 0"), "{first}");
     let mut seen = first;
     for _ in 0..12 {
@@ -922,6 +928,7 @@ fn the_forum_lists_keep_the_marker_cell_clean_at_every_size_tier_layout_theme_an
                                 tier,
                                 markers: &DRAWN,
                                 clock: Some("UTC 12:00"),
+                                art: None,
                             };
                             let mut terminal =
                                 Terminal::new(TestBackend::new(size.0, size.1)).unwrap();
@@ -978,4 +985,51 @@ fn the_forum_lists_keep_the_marker_cell_clean_at_every_size_tier_layout_theme_an
             }
         }
     }
+}
+
+// ---- UI-4: every converted forum screen in every layout, size and mode ----
+
+/// Draw `screen` through the render matrix: golden text and cell properties (UI-4).
+fn matrix(name: &str, screen: &ForumsScreen) {
+    let settings = settings();
+    crate::ui::screens::matrix::golden(name, &|frame, d| {
+        render(
+            frame,
+            screen,
+            &DrawCtx {
+                ui: d.ui,
+                strings: d.strings,
+                settings: &settings,
+                look: d.look,
+                tier: d.tier,
+                markers: d.markers,
+                clock: d.clock,
+                art: None,
+            },
+        );
+    });
+}
+
+#[test]
+fn the_board_list_in_every_layout_size_and_mode() {
+    matrix("forums-boards", &many_boards(14));
+}
+
+#[test]
+fn the_thread_list_in_every_layout_size_and_mode() {
+    matrix("forums-threads", &many_threads(14));
+}
+
+#[test]
+fn search_results_in_every_layout_size_and_mode() {
+    matrix("forums-results", &many_results(14));
+}
+
+#[test]
+fn the_reader_with_quotes_and_tabs_in_every_layout_size_and_mode() {
+    let body = "Thanks for the invite, it works well.\n> I was not sure the search would find it.\n>> The first question was whether it would load at all.\nI wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a quote keeps its block when it wraps. {}\nSecond paragraph.\n"
+        .repeat(8);
+    let mut screen = open(false);
+    into_reader(&mut screen, view(4, 12, &body, true));
+    matrix("forums-reader", &screen);
 }
