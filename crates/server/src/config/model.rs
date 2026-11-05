@@ -108,6 +108,11 @@ pub struct BoardConfig {
     pub layouts: String,
     /// Whether members may have motion at all. Off turns it off for everyone.
     pub motion: bool,
+    /// The header ticker's lines (UI-9), separated by `|`. Empty: the ticker shows only the
+    /// clock.
+    pub ticker: String,
+    /// Whether the ticker also shows the newest headlines of the feed boards a member may read.
+    pub ticker_feeds: bool,
     /// Whether the banner and header art is drawn (UI-3). Off draws the board name in large
     /// letters only, whatever art is installed.
     pub art: bool,
@@ -129,6 +134,8 @@ impl Default for BoardConfig {
             styles: String::new(),
             layouts: String::new(),
             motion: true,
+            ticker: String::new(),
+            ticker_feeds: false,
             art: true,
             quotes: String::new(),
         }

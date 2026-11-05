@@ -55,6 +55,8 @@ fn the_table_holds_exactly_the_keys_the_code_uses() {
         .iter()
         .copied()
         .chain(keys::LAYOUT_KEYS.iter().copied())
+        .chain(super::palette::TEXT_KEYS.iter().copied())
+        .chain(super::toast::TEXT_KEYS.iter().copied())
         .chain(keys::PREVIEW_KEYS.iter().copied())
         .chain(main_tree().text_keys())
         .chain(crate::ui::widgets::TEXT_KEYS.iter().copied())

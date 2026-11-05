@@ -1,0 +1,6 @@
+t01-menu	Telnet: the main menu (UNENCRYPTED marker on the transport's own last row)
+t02-mouse-on	Telnet: the mouse setting turned on; the client is told to report it
+t03-click-target	Click target
+t04-click-result	Telnet: the click opened Terminal settings, the same as pressing [s]
+t05-palette	Telnet: Ctrl-K opens the palette (only what this telnet session may reach)
+t06-palette-typed	Telnet: typed 'lay'
