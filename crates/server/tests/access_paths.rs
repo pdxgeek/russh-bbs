@@ -932,7 +932,8 @@ async fn forum_paths_follow_their_permissions_on_the_next_action() {
     press_full(&mut channel, "r").await;
     press_full(&mut channel, "a reply").await;
     let screen = press_full(&mut channel, SEND).await;
-    assert!(screen.contains("Post 2 of 2"), "{screen}");
+    // The reader's tab strip (UI-4) says which post of the thread this is.
+    assert!(screen.contains("2 of 2"), "{screen}");
     assert_eq!(count(&rig, "post").await, 2);
 
     // forum.moderate: a post is removed only while it is held.
@@ -1051,7 +1052,12 @@ async fn posting_a_one_liner_needs_oneliners_post_and_a_removal_writes_nothing()
     assert!(full(&mut channel).await.contains("p: add a line"));
     send(&mut channel, "p").await;
     send(&mut channel, "hello there\r").await;
-    assert!(full(&mut channel).await.contains("1. alice: hello there"));
+    // The handle is drawn in its own colour (UI-4), so the line is several runs.
+    let screen = full(&mut channel).await;
+    assert!(
+        screen.contains("alice") && screen.contains("hello there"),
+        "{screen}"
+    );
     assert_eq!(count(&rig, "community_line").await, 1);
 
     // Taken away while the line is being typed: refused in words, nothing written.
@@ -1100,7 +1106,11 @@ async fn writing_on_the_wall_needs_graffiti_post_and_a_removal_writes_nothing() 
     assert!(full(&mut channel).await.contains("Graffiti wall"));
     send(&mut channel, "p").await;
     send(&mut channel, "was here\r").await;
-    assert!(full(&mut channel).await.contains("1. alice: was here"));
+    let screen = full(&mut channel).await;
+    assert!(
+        screen.contains("alice") && screen.contains("was here"),
+        "{screen}"
+    );
     assert_eq!(count(&rig, "community_line").await, 1);
     send(&mut channel, "p").await;
     let taken = rig.revoke(Permission::GraffitiPost).await;
@@ -1140,7 +1150,7 @@ async fn voting_and_making_polls_need_their_permissions_and_a_second_vote_is_ref
     send(&mut channel, "yp").await;
     let list = full(&mut channel).await;
     assert!(
-        list.contains("[1] Best colour?") && !list.contains("c: make a poll"),
+        list.contains("Best colour?") && !list.contains("c: make a poll"),
         "{list}"
     );
     send(&mut channel, "c").await;

@@ -78,7 +78,11 @@ impl MenuScreen<'_> {
     }
 }
 
-/// The sentence saying a smaller layout is shown, when one is (UI-2).
+/// The sentence saying a smaller layout is shown, when one is (UI-2). When the member chose a
+/// dashboard layout that does not fit, the dashboard collapses into this line: it carries the
+/// figures the member may see (who is online, unread mail, new posts) after the sentence
+/// (UI-4). Only figures the widget data holds are shown, so nothing is made up and nothing
+/// is shown to a member who may not reach it.
 pub(crate) fn fallback_note(screen: &MenuScreen<'_>) -> Option<String> {
     let shown = screen.look.layout();
     (shown != screen.wanted).then(|| {
@@ -88,10 +92,36 @@ pub(crate) fn fallback_note(screen: &MenuScreen<'_>) -> Option<String> {
                 .text(keys::LAYOUT_NAMES[layout_index(layout)])
                 .to_owned()
         };
-        screen.strings.filled(
+        let note = screen.strings.filled(
             keys::LAYOUT_FALLBACK,
             &[("shown", &name(shown)), ("wanted", &name(screen.wanted))],
-        )
+        );
+        match dashboard_line(screen) {
+            Some(figures) => format!("{note}  {figures}"),
+            None => note,
+        }
+    })
+}
+
+/// The dashboard's figures on one line: `5 online | 3 unread | 7 new`.
+fn dashboard_line(screen: &MenuScreen<'_>) -> Option<String> {
+    let data = screen.widgets.data;
+    let mut parts: Vec<String> = Vec::new();
+    if let Some(online) = &data.online {
+        parts.push(format!("{} online", online.len()));
+    }
+    if let Some(mail) = &data.mail {
+        parts.push(format!("{} unread", mail.unread));
+    }
+    if let Some(posts) = &data.new_posts {
+        parts.push(format!("{} new", posts.threads));
+    }
+    (!parts.is_empty()).then(|| {
+        parts.join(if screen.look.ascii() {
+            " | "
+        } else {
+            " \u{b7} "
+        })
     })
 }
 
@@ -427,23 +457,6 @@ pub(crate) struct ContentScreen<'a> {
 /// The hints a content screen shows when it has none of its own: the universal keys.
 pub(crate) fn content_hints(strings: &StringTable) -> Vec<Hint<'_>> {
     menu_hints(strings, false)
-}
-
-/// Draw a content screen on the older geometry: the box fills the screen and a status row is
-/// reserved only when a marker applies (the chat, mail and door screens, which size their own
-/// content to the box and move onto the frame in UI-4/UI-5). The row is the same marker row.
-pub(crate) fn render_content_bare(frame: &mut Frame<'_>, screen: ContentScreen<'_>) {
-    let (content, status) = super::chrome::split_status(frame.area(), screen.markers);
-    settings::boxed(
-        frame,
-        content,
-        screen.strings.text(keys::TITLE),
-        screen.lines,
-        screen.look,
-    );
-    if let Some(row) = status {
-        super::chrome::render_status(frame, row, screen.markers, screen.tier, screen.strings);
-    }
 }
 
 /// Draw a content screen: the frame's bars, and the box with the caller's lines in the body.

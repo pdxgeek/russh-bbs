@@ -11,10 +11,10 @@ use russh_bbs_core::icons::Tier;
 use russh_bbs_core::profiles::{Line, ScreenView, keys};
 use russh_bbs_core::terminal_settings::TerminalSettings;
 
-use super::{ListCtx, is_list, lines, render_list};
+use super::{ListCtx, is_list, panes, render_list};
 use crate::settings::Look;
 use crate::ui::Ui;
-use crate::ui::classic::{ContentScreen, MENU_MARKERS, render_content};
+use crate::ui::classic::MENU_MARKERS;
 
 fn draw(view: &ScreenView, tier: Tier, size: (u16, u16)) -> Buffer {
     let ui = Ui::standard().unwrap();
@@ -22,7 +22,6 @@ fn draw(view: &ScreenView, tier: Tier, size: (u16, u16)) -> Buffer {
     let mut terminal = Terminal::new(TestBackend::new(size.0, size.1)).unwrap();
     terminal
         .draw(|frame| {
-            let width = usize::from(frame.area().width.min(crate::settings::MAX_WIDTH)) - 2;
             if is_list(view) {
                 render_list(
                     frame,
@@ -33,15 +32,16 @@ fn draw(view: &ScreenView, tier: Tier, size: (u16, u16)) -> Buffer {
                         tier,
                         markers: &MENU_MARKERS,
                         clock: Some("UTC 12:00"),
+                        nav: &crate::ui::screens::list::Nav::default(),
                     },
                 );
                 return;
             }
-            render_content(
+            panes::render(
                 frame,
-                ContentScreen {
+                view,
+                &panes::ViewCtx {
                     strings: ui.strings(),
-                    lines: lines(view, ui.strings(), look, width),
                     look,
                     tier,
                     markers: &MENU_MARKERS,
@@ -193,7 +193,8 @@ fn the_fullest_screens_fit_80x24_with_their_footer_in_every_tier() {
 fn a_list_row_stays_on_one_line_even_with_wide_characters() {
     let out = text(&draw(&full_list(&"漢".repeat(40)), Tier::Unicode, (80, 24)));
     for n in 1..=9 {
-        let count = out.matches(&format!("{n}. handle_{n}_")).count();
+        // The list is a table (UI-4): the key is its own column, then the handle.
+        let count = out.matches(&format!("{n}    handle_{n}_")).count();
         assert_eq!(count, 1, "row {n}\n{out}");
     }
 }
@@ -348,4 +349,211 @@ fn the_poll_vote_counts_read_right_for_one_and_for_many() {
             "{shown}"
         );
     }
+}
+
+// ---- UI-4: the members and community screens in every layout, size and mode ----
+
+fn matrix(name: &str, view: &ScreenView) {
+    crate::ui::screens::matrix::golden(name, &|frame, d| {
+        if is_list(view) {
+            render_list(
+                frame,
+                view,
+                &ListCtx {
+                    strings: d.strings,
+                    look: d.look,
+                    tier: d.tier,
+                    markers: d.markers,
+                    clock: d.clock,
+                    nav: &crate::ui::screens::list::Nav::default(),
+                },
+            );
+        } else {
+            panes::render(
+                frame,
+                view,
+                &panes::ViewCtx {
+                    strings: d.strings,
+                    look: d.look,
+                    tier: d.tier,
+                    markers: d.markers,
+                    clock: d.clock,
+                },
+            );
+        }
+    });
+}
+
+fn filled(key: &'static str, values: &[(&'static str, &str)]) -> Line {
+    Line::Filled {
+        key,
+        values: values.iter().map(|(k, v)| (*k, (*v).to_owned())).collect(),
+    }
+}
+
+#[test]
+fn the_members_list_in_every_layout_size_and_mode() {
+    let mut lines = vec![
+        Line::Heading(keys::LIST_TITLE),
+        Line::Text(keys::LIST_SEARCH_NONE),
+    ];
+    lines.extend((1..=9u32).map(|n| Line::Row {
+        key: char::from_digit(n, 10).unwrap(),
+        handle: format!("member{n}"),
+        name: format!("Member Number {n}"),
+    }));
+    lines.push(Line::Filled {
+        key: keys::LIST_PAGE,
+        values: vec![("page", "1".to_owned())],
+    });
+    matrix(
+        "members-list",
+        &ScreenView {
+            lines,
+            footer: keys::LIST_FOOTER,
+        },
+    );
+}
+
+#[test]
+fn a_profile_in_every_layout_size_and_mode() {
+    matrix(
+        "members-profile",
+        &ScreenView {
+            lines: vec![
+                Line::Heading(keys::VIEW_TITLE),
+                pair(keys::LABEL_HANDLE, "ann"),
+                pair(keys::LABEL_ABOUT, "Runs the retro room. Likes terminals."),
+                pair(keys::LABEL_WEBSITE, "https://example.org"),
+            ],
+            footer: keys::VIEW_FOOTER,
+        },
+    );
+}
+
+#[test]
+fn last_callers_in_every_layout_size_and_mode() {
+    use russh_bbs_core::community::keys as ck;
+    let mut lines = vec![Line::Heading(ck::CALLERS_TITLE)];
+    for (who, when) in [
+        ("ann", "2026-11-04 09:12 UTC"),
+        ("bob", "2026-11-04 08:40 UTC"),
+        ("carol", "2026-11-03 22:05 UTC"),
+    ] {
+        lines.push(filled(ck::CALLER, &[("handle", who), ("when", when)]));
+    }
+    matrix(
+        "community-callers",
+        &ScreenView {
+            lines,
+            footer: ck::FOOTER_BACK,
+        },
+    );
+}
+
+#[test]
+fn the_wall_in_every_layout_size_and_mode() {
+    use russh_bbs_core::community::keys as ck;
+    let mut lines = vec![
+        Line::Heading(ck::GRAFFITI_TITLE),
+        filled(ck::GRAFFITI_INTRO, &[("keep", "20")]),
+    ];
+    for (n, (who, text)) in [
+        ("ann", "hello wall"),
+        ("bob", "was here"),
+        ("carol", "ratatui looks good"),
+    ]
+    .iter()
+    .enumerate()
+    {
+        lines.push(filled(
+            ck::ENTRY,
+            &[("n", &(n + 1).to_string()), ("handle", who), ("text", text)],
+        ));
+    }
+    lines.push(Line::Text(ck::HINT_POST));
+    matrix(
+        "community-wall",
+        &ScreenView {
+            lines,
+            footer: ck::FOOTER_BACK,
+        },
+    );
+}
+
+#[test]
+fn polls_in_every_layout_size_and_mode() {
+    use russh_bbs_core::community::keys as ck;
+    let mut lines = vec![Line::Heading(ck::POLLS_TITLE)];
+    for (n, (q, votes, closed)) in [
+        ("Best colour?", "12", false),
+        ("Tabs or spaces?", "30", false),
+        ("Old question", "5", true),
+    ]
+    .iter()
+    .enumerate()
+    {
+        lines.push(filled(
+            if *closed {
+                ck::POLL_ROW_CLOSED
+            } else {
+                ck::POLL_ROW_OPEN
+            },
+            &[
+                ("key", &(n + 1).to_string()),
+                ("question", q),
+                ("votes", votes),
+            ],
+        ));
+    }
+    lines.push(Line::Text(ck::HINT_OPEN));
+    matrix(
+        "community-polls",
+        &ScreenView {
+            lines,
+            footer: ck::FOOTER_BACK,
+        },
+    );
+}
+
+#[test]
+fn one_poll_with_counts_in_every_layout_size_and_mode() {
+    use russh_bbs_core::community::keys as ck;
+    let mut lines = vec![
+        Line::Pair {
+            label: ck::POLL_TITLE,
+            value: Some("Best colour?".to_owned()),
+        },
+        filled(ck::POLL_BY, &[("handle", "ann")]),
+    ];
+    for (n, (text, count, percent, mine)) in [
+        ("Green", "6", "50", false),
+        ("Amber", "4", "33", true),
+        ("Blue", "2", "17", false),
+    ]
+    .iter()
+    .enumerate()
+    {
+        lines.push(filled(
+            if *mine {
+                ck::POLL_OPTION_COUNT_MINE
+            } else {
+                ck::POLL_OPTION_COUNT
+            },
+            &[
+                ("key", &(n + 1).to_string()),
+                ("text", text),
+                ("count", count),
+                ("percent", percent),
+            ],
+        ));
+    }
+    lines.push(filled(ck::POLL_TOTAL, &[("total", "12")]));
+    matrix(
+        "community-poll",
+        &ScreenView {
+            lines,
+            footer: ck::FOOTER_BACK,
+        },
+    );
 }

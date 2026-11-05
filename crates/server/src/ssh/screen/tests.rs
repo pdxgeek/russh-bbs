@@ -539,6 +539,73 @@ mod frame {
         TerminalSettings::default().with_tier(Tier::Ascii)
     }
 
+    /// UI-4: an open text input starts a blinking cursor, but only with motion on. Motion off,
+    /// and accessibility mode with motion on, wake nothing: no timer-driven redraws at all.
+    #[test]
+    fn the_blink_wakes_the_shell_only_when_motion_is_allowed() {
+        let size = PtySize::from_request(80, 24);
+        let settings = |motion| {
+            TerminalSettings::default()
+                .with_tier(Tier::Unicode)
+                .with_color(true)
+                .with_motion(motion)
+        };
+        // The forum search box is a text input: open the forums, press `s`.
+        let forums_search = |settings: TerminalSettings| {
+            let flow = MemberFlow::new(
+                &sanitize_username("alice").unwrap(),
+                Snapshot::from_role(
+                    Some(AccountId::from_raw(1)),
+                    &Slug::SYSOP,
+                    100,
+                    &Via::Account,
+                    Permission::ALL.iter().copied(),
+                ),
+                None,
+                settings,
+            );
+            let (mut forums, _first) = crate::forums::ForumsScreen::open(settings);
+            forums.deliver(crate::forums::Response::Boards(Ok(
+                crate::forums::BoardList {
+                    boards: Vec::new(),
+                    can_manage: false,
+                    can_feeds: false,
+                },
+            )));
+            let area = ratatui::layout::Rect::new(0, 0, 80, 24);
+            forums.input(Key::Char('s'), area);
+            Screen::new(
+                size,
+                RenderCap::default(),
+                super::super::Content::Forums(Box::new(super::super::ForumsContent {
+                    flow: Box::new(flow),
+                    screen: forums,
+                })),
+                std::sync::Arc::new(crate::ui::Ui::standard().unwrap()),
+            )
+            .unwrap()
+        };
+        let open_search = |screen: &mut Screen| {
+            screen.enter().unwrap();
+            screen.render().unwrap();
+        };
+        let mut on = forums_search(settings(true));
+        open_search(&mut on);
+        assert!(on.has_input(), "the search box is an input");
+        assert!(on.motion_deadline().is_some(), "an input blinks its cursor");
+        let mut off = forums_search(settings(false));
+        open_search(&mut off);
+        assert!(off.has_input());
+        assert!(off.motion_deadline().is_none(), "motion off: no timer");
+        let mut plain = forums_search(settings(true));
+        plain.set_accessible(true);
+        open_search(&mut plain);
+        assert!(plain.has_input());
+        assert!(plain.motion_deadline().is_none(), "accessibility: no timer");
+        // Nothing is waiting to be drawn once the frame is out: no hidden redraws.
+        assert!(plain.render().unwrap().is_none());
+    }
+
     /// FIX-M3-6: while the board is in low-security mode every screen of a staff session shows
     /// `LOW-SECURITY` in the status bar's marker cell: login, menu, settings, members,
     /// community and the sysop menu. A plain member never does, and nobody does outside the mode.

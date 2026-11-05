@@ -1,0 +1,502 @@
+=== classic / 80x24 / unicode mono
+ russh-bbs │ Forums                                                   UTC 12:00
+┌ Search for: word ────────────────────────────────────────────────────────────┐
+│  #  Board             Subject                                                █
+│> 1. General           Subject001                                             █
+│     a snippet                                                                █
+│  2. General           Subject002                                             █
+│     a snippet                                                                █
+│  3. General           Subject003                                             █
+│     a snippet                                                                █
+│  4. General           Subject004                                             █
+│     a snippet                                                                █
+│  5. General           Subject005                                             █
+│     a snippet                                                                █
+│  6. General           Subject006                                             █
+│     a snippet                                                                █
+│  7. General           Subject007                                             █
+│     a snippet                                                                █
+│  8. General           Subject008                                             █
+│     a snippet                                                                █
+│  9. General           Subject009                                             │
+│     a snippet                                                                │
+│                                                                              │
+└─ 1-9 of 14 ──────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter read
+
+=== lightbar / 80x24 / unicode mono
+= same as classic
+
+=== compact / 80x24 / unicode mono
+  #  Board             Subject
+> 1. General           Subject001                                              █
+     a snippet                                                                 █
+  2. General           Subject002                                              █
+     a snippet                                                                 █
+  3. General           Subject003                                              █
+     a snippet                                                                 █
+  4. General           Subject004                                              █
+     a snippet                                                                 █
+  5. General           Subject005                                              █
+     a snippet                                                                 █
+  6. General           Subject006                                              █
+     a snippet                                                                 █
+  7. General           Subject007                                              █
+     a snippet                                                                 █
+  8. General           Subject008                                              █
+     a snippet                                                                 █
+  9. General           Subject009                                              █
+     a snippet                                                                 █
+     General           Subject010                                              █
+     a snippet                                                                 │
+     General           Subject011                                              │
+   1-11 of 14
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter read
+
+=== dashboard / 80x24 / unicode mono
+= same as classic
+
+=== wide / 80x24 / unicode mono
+= same as classic
+
+=== focus / 80x24 / unicode mono
+= same as classic
+
+=== split / 80x24 / unicode mono
+= same as classic
+
+=== classic / 80x24 / ascii mono
+ russh-bbs | Forums                                                   UTC 12:00
++ Search for: word ------------------------------------------------------------+
+|  #  Board             Subject                                                #
+|> 1. General           Subject001                                             #
+|     a snippet                                                                #
+|  2. General           Subject002                                             #
+|     a snippet                                                                #
+|  3. General           Subject003                                             #
+|     a snippet                                                                #
+|  4. General           Subject004                                             #
+|     a snippet                                                                #
+|  5. General           Subject005                                             #
+|     a snippet                                                                #
+|  6. General           Subject006                                             #
+|     a snippet                                                                #
+|  7. General           Subject007                                             #
+|     a snippet                                                                #
+|  8. General           Subject008                                             #
+|     a snippet                                                                #
+|  9. General           Subject009                                             |
+|     a snippet                                                                |
+|                                                                              |
++- 1-9 of 14 ------------------------------------------------------------------+
+UNENCRYPTED  LOW-SECURITY   Enter read  1-9 jump  n/b page  o sort  Esc back
+
+=== lightbar / 80x24 / ascii mono
+= same as classic
+
+=== compact / 80x24 / ascii mono
+  #  Board             Subject
+> 1. General           Subject001                                              #
+     a snippet                                                                 #
+  2. General           Subject002                                              #
+     a snippet                                                                 #
+  3. General           Subject003                                              #
+     a snippet                                                                 #
+  4. General           Subject004                                              #
+     a snippet                                                                 #
+  5. General           Subject005                                              #
+     a snippet                                                                 #
+  6. General           Subject006                                              #
+     a snippet                                                                 #
+  7. General           Subject007                                              #
+     a snippet                                                                 #
+  8. General           Subject008                                              #
+     a snippet                                                                 #
+  9. General           Subject009                                              #
+     a snippet                                                                 #
+     General           Subject010                                              #
+     a snippet                                                                 |
+     General           Subject011                                              |
+   1-11 of 14
+UNENCRYPTED  LOW-SECURITY   Enter read  1-9 jump  n/b page  o sort  Esc back
+
+=== dashboard / 80x24 / ascii mono
+= same as classic
+
+=== wide / 80x24 / ascii mono
+= same as classic
+
+=== focus / 80x24 / ascii mono
+= same as classic
+
+=== split / 80x24 / ascii mono
+= same as classic
+
+=== classic / 100x30 / unicode mono
+ russh-bbs │ Forums                                                                       UTC 12:00
+┌ Search for: word ────────────────────────────────────────────────────────────────────────────────┐
+│  #  Board             Subject                                                                    █
+│> 1. General           Subject001                                                                 █
+│     a snippet                                                                                    █
+│  2. General           Subject002                                                                 █
+│     a snippet                                                                                    █
+│  3. General           Subject003                                                                 █
+│     a snippet                                                                                    █
+│  4. General           Subject004                                                                 █
+│     a snippet                                                                                    █
+│  5. General           Subject005                                                                 █
+│     a snippet                                                                                    █
+│  6. General           Subject006                                                                 █
+│     a snippet                                                                                    █
+│  7. General           Subject007                                                                 █
+│     a snippet                                                                                    █
+│  8. General           Subject008                                                                 █
+│     a snippet                                                                                    █
+│  9. General           Subject009                                                                 █
+│     a snippet                                                                                    █
+│     General           Subject010                                                                 █
+│     a snippet                                                                                    █
+│     General           Subject011                                                                 █
+│     a snippet                                                                                    █
+│     General           Subject012                                                                 █
+│     a snippet                                                                                    █
+│                                                                                                  │
+└─ 1-12 of 14 ─────────────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter read  1-9 jump  n/b page
+
+=== lightbar / 100x30 / unicode mono
+= same as classic
+
+=== compact / 100x30 / unicode mono
+  #  Board             Subject
+> 1. General           Subject001
+     a snippet
+  2. General           Subject002
+     a snippet
+  3. General           Subject003
+     a snippet
+  4. General           Subject004
+     a snippet
+  5. General           Subject005
+     a snippet
+  6. General           Subject006
+     a snippet
+  7. General           Subject007
+     a snippet
+  8. General           Subject008
+     a snippet
+  9. General           Subject009
+     a snippet
+     General           Subject010
+     a snippet
+     General           Subject011
+     a snippet
+     General           Subject012
+     a snippet
+     General           Subject013
+     a snippet
+     General           Subject014
+     a snippet
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter read  1-9 jump  n/b page
+
+=== dashboard / 100x30 / unicode mono
+= same as classic
+
+=== wide / 100x30 / unicode mono
+= same as classic
+
+=== focus / 100x30 / unicode mono
+= same as classic
+
+=== split / 100x30 / unicode mono
+= same as classic
+
+=== classic / 100x30 / ascii mono
+ russh-bbs | Forums                                                                       UTC 12:00
++ Search for: word --------------------------------------------------------------------------------+
+|  #  Board             Subject                                                                    #
+|> 1. General           Subject001                                                                 #
+|     a snippet                                                                                    #
+|  2. General           Subject002                                                                 #
+|     a snippet                                                                                    #
+|  3. General           Subject003                                                                 #
+|     a snippet                                                                                    #
+|  4. General           Subject004                                                                 #
+|     a snippet                                                                                    #
+|  5. General           Subject005                                                                 #
+|     a snippet                                                                                    #
+|  6. General           Subject006                                                                 #
+|     a snippet                                                                                    #
+|  7. General           Subject007                                                                 #
+|     a snippet                                                                                    #
+|  8. General           Subject008                                                                 #
+|     a snippet                                                                                    #
+|  9. General           Subject009                                                                 #
+|     a snippet                                                                                    #
+|     General           Subject010                                                                 #
+|     a snippet                                                                                    #
+|     General           Subject011                                                                 #
+|     a snippet                                                                                    #
+|     General           Subject012                                                                 #
+|     a snippet                                                                                    #
+|                                                                                                  |
++- 1-12 of 14 -------------------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Enter read
+
+=== lightbar / 100x30 / ascii mono
+= same as classic
+
+=== compact / 100x30 / ascii mono
+  #  Board             Subject
+> 1. General           Subject001
+     a snippet
+  2. General           Subject002
+     a snippet
+  3. General           Subject003
+     a snippet
+  4. General           Subject004
+     a snippet
+  5. General           Subject005
+     a snippet
+  6. General           Subject006
+     a snippet
+  7. General           Subject007
+     a snippet
+  8. General           Subject008
+     a snippet
+  9. General           Subject009
+     a snippet
+     General           Subject010
+     a snippet
+     General           Subject011
+     a snippet
+     General           Subject012
+     a snippet
+     General           Subject013
+     a snippet
+     General           Subject014
+     a snippet
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Enter read
+
+=== dashboard / 100x30 / ascii mono
+= same as classic
+
+=== wide / 100x30 / ascii mono
+= same as classic
+
+=== focus / 100x30 / ascii mono
+= same as classic
+
+=== split / 100x30 / ascii mono
+= same as classic
+
+=== classic / 132x43 / unicode mono
+ russh-bbs │ Forums                                                                                                       UTC 12:00
+┌ Search for: word ────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  #  Board             Subject                                                                                                    │
+│> 1. General           Subject001                                                                                                 │
+│     a snippet                                                                                                                    │
+│  2. General           Subject002                                                                                                 │
+│     a snippet                                                                                                                    │
+│  3. General           Subject003                                                                                                 │
+│     a snippet                                                                                                                    │
+│  4. General           Subject004                                                                                                 │
+│     a snippet                                                                                                                    │
+│  5. General           Subject005                                                                                                 │
+│     a snippet                                                                                                                    │
+│  6. General           Subject006                                                                                                 │
+│     a snippet                                                                                                                    │
+│  7. General           Subject007                                                                                                 │
+│     a snippet                                                                                                                    │
+│  8. General           Subject008                                                                                                 │
+│     a snippet                                                                                                                    │
+│  9. General           Subject009                                                                                                 │
+│     a snippet                                                                                                                    │
+│     General           Subject010                                                                                                 │
+│     a snippet                                                                                                                    │
+│     General           Subject011                                                                                                 │
+│     a snippet                                                                                                                    │
+│     General           Subject012                                                                                                 │
+│     a snippet                                                                                                                    │
+│     General           Subject013                                                                                                 │
+│     a snippet                                                                                                                    │
+│     General           Subject014                                                                                                 │
+│     a snippet                                                                                                                    │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+│                                                                                                                                  │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter read  1-9 jump  n/b page  o sort  Esc back
+
+=== lightbar / 132x43 / unicode mono
+= same as classic
+
+=== compact / 132x43 / unicode mono
+  #  Board             Subject
+> 1. General           Subject001
+     a snippet
+  2. General           Subject002
+     a snippet
+  3. General           Subject003
+     a snippet
+  4. General           Subject004
+     a snippet
+  5. General           Subject005
+     a snippet
+  6. General           Subject006
+     a snippet
+  7. General           Subject007
+     a snippet
+  8. General           Subject008
+     a snippet
+  9. General           Subject009
+     a snippet
+     General           Subject010
+     a snippet
+     General           Subject011
+     a snippet
+     General           Subject012
+     a snippet
+     General           Subject013
+     a snippet
+     General           Subject014
+     a snippet
+
+
+
+
+
+
+
+
+
+
+
+
+
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Enter read  1-9 jump  n/b page  o sort  Esc back
+
+=== dashboard / 132x43 / unicode mono
+= same as classic
+
+=== wide / 132x43 / unicode mono
+= same as classic
+
+=== focus / 132x43 / unicode mono
+= same as classic
+
+=== split / 132x43 / unicode mono
+= same as classic
+
+=== classic / 132x43 / ascii mono
+ russh-bbs | Forums                                                                                                       UTC 12:00
++ Search for: word ----------------------------------------------------------------------------------------------------------------+
+|  #  Board             Subject                                                                                                    |
+|> 1. General           Subject001                                                                                                 |
+|     a snippet                                                                                                                    |
+|  2. General           Subject002                                                                                                 |
+|     a snippet                                                                                                                    |
+|  3. General           Subject003                                                                                                 |
+|     a snippet                                                                                                                    |
+|  4. General           Subject004                                                                                                 |
+|     a snippet                                                                                                                    |
+|  5. General           Subject005                                                                                                 |
+|     a snippet                                                                                                                    |
+|  6. General           Subject006                                                                                                 |
+|     a snippet                                                                                                                    |
+|  7. General           Subject007                                                                                                 |
+|     a snippet                                                                                                                    |
+|  8. General           Subject008                                                                                                 |
+|     a snippet                                                                                                                    |
+|  9. General           Subject009                                                                                                 |
+|     a snippet                                                                                                                    |
+|     General           Subject010                                                                                                 |
+|     a snippet                                                                                                                    |
+|     General           Subject011                                                                                                 |
+|     a snippet                                                                                                                    |
+|     General           Subject012                                                                                                 |
+|     a snippet                                                                                                                    |
+|     General           Subject013                                                                                                 |
+|     a snippet                                                                                                                    |
+|     General           Subject014                                                                                                 |
+|     a snippet                                                                                                                    |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
+|                                                                                                                                  |
++----------------------------------------------------------------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Enter read  1-9 jump  n/b page  o sort
+
+=== lightbar / 132x43 / ascii mono
+= same as classic
+
+=== compact / 132x43 / ascii mono
+  #  Board             Subject
+> 1. General           Subject001
+     a snippet
+  2. General           Subject002
+     a snippet
+  3. General           Subject003
+     a snippet
+  4. General           Subject004
+     a snippet
+  5. General           Subject005
+     a snippet
+  6. General           Subject006
+     a snippet
+  7. General           Subject007
+     a snippet
+  8. General           Subject008
+     a snippet
+  9. General           Subject009
+     a snippet
+     General           Subject010
+     a snippet
+     General           Subject011
+     a snippet
+     General           Subject012
+     a snippet
+     General           Subject013
+     a snippet
+     General           Subject014
+     a snippet
+
+
+
+
+
+
+
+
+
+
+
+
+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Enter read  1-9 jump  n/b page  o sort
+
+=== dashboard / 132x43 / ascii mono
+= same as classic
+
+=== wide / 132x43 / ascii mono
+= same as classic
+
+=== focus / 132x43 / ascii mono
+= same as classic
+
+=== split / 132x43 / ascii mono
+= same as classic
+

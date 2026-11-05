@@ -94,6 +94,19 @@ impl Pager {
         self.lines.len().div_ceil(rows).max(1)
     }
 
+    /// Where the page on screen starts and how many lines the text has, for a scrollbar. With
+    /// pausing on the start is snapped to the page that holds it, as [`Pager::view`] draws.
+    #[must_use]
+    pub fn position(&self, rows: usize) -> (usize, usize) {
+        let rows = rows.max(1);
+        let top = if self.pause {
+            self.top / rows * rows
+        } else {
+            0
+        };
+        (top, self.lines.len())
+    }
+
     /// What to draw with `rows` rows available for text (at least one is assumed).
     #[must_use]
     pub fn view(&self, rows: usize) -> PagerView<'_> {

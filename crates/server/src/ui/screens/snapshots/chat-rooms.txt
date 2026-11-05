@@ -1,0 +1,502 @@
+=== classic / 80x24 / unicode mono
+ russh-bbs │ Chat                                                     UTC 12:00
+┌ Chat rooms ──────────────────────────────┐┌ Commands ────────────────────────┐
+│  Room                                    ││Inside a room, type to talk.      │
+│> #lobby                                  ││                                  │
+│  #retro                                  ││/w name text  whisper to someone i│
+│  #dev                                    ││/who          list who is here    │
+│  #music                                  ││/leave        back to the room lis│
+│                                          ││/help         this list           │
+│                                          ││                                  │
+│                                          ││                                  │
+│                                          ││                                  │
+│                                          ││                                  │
+│                                          ││                                  │
+│                                          ││                                  │
+│                                          ││                                  │
+│                                          ││                                  │
+│                                          ││                                  │
+│                                          ││                                  │
+│                                          ││                                  │
+│                                          ││                                  │
+│                                          ││                                  │
+│                                          ││                                  │
+└──────────────────────────────────────────┘└──────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on
+
+=== lightbar / 80x24 / unicode mono
+= same as classic
+
+=== compact / 80x24 / unicode mono
+  Room                                      Inside a room, type to talk.
+> #lobby
+  #retro                                    /w name text  whisper to someone in
+  #dev                                      /who          list who is here
+  #music                                    /leave        back to the room list
+                                            /help         this list
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on
+
+=== dashboard / 80x24 / unicode mono
+= same as classic
+
+=== wide / 80x24 / unicode mono
+= same as classic
+
+=== focus / 80x24 / unicode mono
+= same as classic
+
+=== split / 80x24 / unicode mono
+= same as classic
+
+=== classic / 80x24 / ascii mono
+ russh-bbs | Chat                                                     UTC 12:00
++ Chat rooms ------------------------------++ Commands ------------------------+
+|  Room                                    ||Inside a room, type to talk.      |
+|> #lobby                                  ||                                  |
+|  #retro                                  ||/w name text  whisper to someone i|
+|  #dev                                    ||/who          list who is here    |
+|  #music                                  ||/leave        back to the room lis|
+|                                          ||/help         this list           |
+|                                          ||                                  |
+|                                          ||                                  |
+|                                          ||                                  |
+|                                          ||                                  |
+|                                          ||                                  |
+|                                          ||                                  |
+|                                          ||                                  |
+|                                          ||                                  |
+|                                          ||                                  |
+|                                          ||                                  |
+|                                          ||                                  |
+|                                          ||                                  |
+|                                          ||                                  |
+|                                          ||                                  |
++------------------------------------------++----------------------------------+
+UNENCRYPTED  LOW-SECURITY   Up/Down choose  Enter join  Esc back
+
+=== lightbar / 80x24 / ascii mono
+= same as classic
+
+=== compact / 80x24 / ascii mono
+  Room                                      Inside a room, type to talk.
+> #lobby
+  #retro                                    /w name text  whisper to someone in
+  #dev                                      /who          list who is here
+  #music                                    /leave        back to the room list
+                                            /help         this list
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+UNENCRYPTED  LOW-SECURITY   Up/Down choose  Enter join  Esc back
+
+=== dashboard / 80x24 / ascii mono
+= same as classic
+
+=== wide / 80x24 / ascii mono
+= same as classic
+
+=== focus / 80x24 / ascii mono
+= same as classic
+
+=== split / 80x24 / ascii mono
+= same as classic
+
+=== classic / 100x30 / unicode mono
+ russh-bbs │ Chat                                                                         UTC 12:00
+┌ Chat rooms ─────────────────────────────────────────┐┌ Commands ─────────────────────────────────┐
+│  Room                                               ││Inside a room, type to talk.               │
+│> #lobby                                             ││                                           │
+│  #retro                                             ││/w name text  whisper to someone in this ro│
+│  #dev                                               ││/who          list who is here             │
+│  #music                                             ││/leave        back to the room list (Esc do│
+│                                                     ││/help         this list                    │
+│                                                     ││                                           │
+│                                                     ││                                           │
+│                                                     ││                                           │
+│                                                     ││                                           │
+│                                                     ││                                           │
+│                                                     ││                                           │
+│                                                     ││                                           │
+│                                                     ││                                           │
+│                                                     ││                                           │
+│                                                     ││                                           │
+│                                                     ││                                           │
+│                                                     ││                                           │
+│                                                     ││                                           │
+│                                                     ││                                           │
+│                                                     ││                                           │
+│                                                     ││                                           │
+│                                                     ││                                           │
+│                                                     ││                                           │
+│                                                     ││                                           │
+│                                                     ││                                           │
+└─────────────────────────────────────────────────────┘└───────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Up/Down choose  Enter join
+
+=== lightbar / 100x30 / unicode mono
+= same as classic
+
+=== compact / 100x30 / unicode mono
+  Room                                                 Inside a room, type to talk.
+> #lobby
+  #retro                                               /w name text  whisper to someone in this room
+  #dev                                                 /who          list who is here
+  #music                                               /leave        back to the room list (Esc does
+                                                       /help         this list
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Up/Down choose  Enter join
+
+=== dashboard / 100x30 / unicode mono
+= same as classic
+
+=== wide / 100x30 / unicode mono
+= same as classic
+
+=== focus / 100x30 / unicode mono
+= same as classic
+
+=== split / 100x30 / unicode mono
+= same as classic
+
+=== classic / 100x30 / ascii mono
+ russh-bbs | Chat                                                                         UTC 12:00
++ Chat rooms -----------------------------------------++ Commands ---------------------------------+
+|  Room                                               ||Inside a room, type to talk.               |
+|> #lobby                                             ||                                           |
+|  #retro                                             ||/w name text  whisper to someone in this ro|
+|  #dev                                               ||/who          list who is here             |
+|  #music                                             ||/leave        back to the room list (Esc do|
+|                                                     ||/help         this list                    |
+|                                                     ||                                           |
+|                                                     ||                                           |
+|                                                     ||                                           |
+|                                                     ||                                           |
+|                                                     ||                                           |
+|                                                     ||                                           |
+|                                                     ||                                           |
+|                                                     ||                                           |
+|                                                     ||                                           |
+|                                                     ||                                           |
+|                                                     ||                                           |
+|                                                     ||                                           |
+|                                                     ||                                           |
+|                                                     ||                                           |
+|                                                     ||                                           |
+|                                                     ||                                           |
+|                                                     ||                                           |
+|                                                     ||                                           |
+|                                                     ||                                           |
+|                                                     ||                                           |
++-----------------------------------------------------++-------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on
+
+=== lightbar / 100x30 / ascii mono
+= same as classic
+
+=== compact / 100x30 / ascii mono
+  Room                                                 Inside a room, type to talk.
+> #lobby
+  #retro                                               /w name text  whisper to someone in this room
+  #dev                                                 /who          list who is here
+  #music                                               /leave        back to the room list (Esc does
+                                                       /help         this list
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on
+
+=== dashboard / 100x30 / ascii mono
+= same as classic
+
+=== wide / 100x30 / ascii mono
+= same as classic
+
+=== focus / 100x30 / ascii mono
+= same as classic
+
+=== split / 100x30 / ascii mono
+= same as classic
+
+=== classic / 132x43 / unicode mono
+ russh-bbs │ Chat                                                                                                         UTC 12:00
+┌ Chat rooms ───────────────────────────────────────────────────────────┐┌ Commands ───────────────────────────────────────────────┐
+│  Room                                                                 ││Inside a room, type to talk.                             │
+│> #lobby                                                               ││                                                         │
+│  #retro                                                               ││/w name text  whisper to someone in this room            │
+│  #dev                                                                 ││/who          list who is here                           │
+│  #music                                                               ││/leave        back to the room list (Esc does too)       │
+│                                                                       ││/help         this list                                  │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+│                                                                       ││                                                         │
+└───────────────────────────────────────────────────────────────────────┘└─────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Up/Down choose  Enter join  Esc back
+
+=== lightbar / 132x43 / unicode mono
+= same as classic
+
+=== compact / 132x43 / unicode mono
+  Room                                                                   Inside a room, type to talk.
+> #lobby
+  #retro                                                                 /w name text  whisper to someone in this room
+  #dev                                                                   /who          list who is here
+  #music                                                                 /leave        back to the room list (Esc does too)
+                                                                         /help         this list
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Up/Down choose  Enter join  Esc back
+
+=== dashboard / 132x43 / unicode mono
+= same as classic
+
+=== wide / 132x43 / unicode mono
+= same as classic
+
+=== focus / 132x43 / unicode mono
+= same as classic
+
+=== split / 132x43 / unicode mono
+= same as classic
+
+=== classic / 132x43 / ascii mono
+ russh-bbs | Chat                                                                                                         UTC 12:00
++ Chat rooms -----------------------------------------------------------++ Commands -----------------------------------------------+
+|  Room                                                                 ||Inside a room, type to talk.                             |
+|> #lobby                                                               ||                                                         |
+|  #retro                                                               ||/w name text  whisper to someone in this room            |
+|  #dev                                                                 ||/who          list who is here                           |
+|  #music                                                               ||/leave        back to the room list (Esc does too)       |
+|                                                                       ||/help         this list                                  |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
+|                                                                       ||                                                         |
++-----------------------------------------------------------------------++---------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Up/Down choose  Enter join  Esc back
+
+=== lightbar / 132x43 / ascii mono
+= same as classic
+
+=== compact / 132x43 / ascii mono
+  Room                                                                   Inside a room, type to talk.
+> #lobby
+  #retro                                                                 /w name text  whisper to someone in this room
+  #dev                                                                   /who          list who is here
+  #music                                                                 /leave        back to the room list (Esc does too)
+                                                                         /help         this list
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Up/Down choose  Enter join  Esc back
+
+=== dashboard / 132x43 / ascii mono
+= same as classic
+
+=== wide / 132x43 / ascii mono
+= same as classic
+
+=== focus / 132x43 / ascii mono
+= same as classic
+
+=== split / 132x43 / ascii mono
+= same as classic
+

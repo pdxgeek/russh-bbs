@@ -1,0 +1,502 @@
+=== classic / 80x24 / unicode mono
+ russh-bbs │ Forums                                                   UTC 12:00
+    1   2   3   4  [5]  6   7   8   9   10   11   12     5 of 12
+ Subject line
+ From ann   2023-11-14 22:13 UTC
+┌ General ─────────────────────────────────────────────────────────────────────┐
+│ Thanks for the invite, it works well.                                        ┃
+│ │ I was not sure the search would find it.                                   ┃
+│ │ │ The first question was whether it would load at all.                     ┃
+│ I wrote this reply on a narrow terminal, so it has to wrap onto more than    ┃
+│ one row to show that a quote keeps its block when it wraps. {}               ┃
+│ Second paragraph.                                                            │
+│ Thanks for the invite, it works well.                                        │
+│ │ I was not sure the search would find it.                                   │
+│ │ │ The first question was whether it would load at all.                     │
+│ I wrote this reply on a narrow terminal, so it has to wrap onto more than    │
+│ one row to show that a quote keeps its block when it wraps. {}               │
+│ Second paragraph.                                                            │
+│ Thanks for the invite, it works well.                                        │
+│ │ I was not sure the search would find it.                                   │
+│ │ │ The first question was whether it would load at all.                     │
+│                                                                              │
+│ -- More (1 of 4) --   Space/Enter: next page   b: back   Esc: stop           │
+└──────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Space more
+
+=== lightbar / 80x24 / unicode mono
+= same as classic
+
+=== compact / 80x24 / unicode mono
+    1   2   3   4  [5]  6   7   8   9   10   11   12     5 of 12
+ Subject line
+ From ann   2023-11-14 22:13 UTC
+ Thanks for the invite, it works well.
+ │ I was not sure the search would find it.                                    ┃
+ │ │ The first question was whether it would load at all.                      ┃
+ I wrote this reply on a narrow terminal, so it has to wrap onto more than     ┃
+ one row to show that a quote keeps its block when it wraps. {}                ┃
+ Second paragraph.                                                             ┃
+ Thanks for the invite, it works well.                                         ┃
+ │ I was not sure the search would find it.                                    ┃
+ │ │ The first question was whether it would load at all.                      │
+ I wrote this reply on a narrow terminal, so it has to wrap onto more than     │
+ one row to show that a quote keeps its block when it wraps. {}                │
+ Second paragraph.                                                             │
+ Thanks for the invite, it works well.                                         │
+ │ I was not sure the search would find it.                                    │
+ │ │ The first question was whether it would load at all.                      │
+ I wrote this reply on a narrow terminal, so it has to wrap onto more than     │
+ one row to show that a quote keeps its block when it wraps. {}                │
+ Second paragraph.                                                             │
+                                                                               │
+ -- More (1 of 3) --   Space/Enter: next page   b: back   Esc: stop
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Space more
+
+=== dashboard / 80x24 / unicode mono
+= same as classic
+
+=== wide / 80x24 / unicode mono
+= same as classic
+
+=== focus / 80x24 / unicode mono
+= same as classic
+
+=== split / 80x24 / unicode mono
+= same as classic
+
+=== classic / 80x24 / ascii mono
+ russh-bbs | Forums                                                   UTC 12:00
+    1   2   3   4  [5]  6   7   8   9   10   11   12     5 of 12
+ Subject line
+ From ann   2023-11-14 22:13 UTC
++ General ---------------------------------------------------------------------+
+| Thanks for the invite, it works well.                                        #
+| | I was not sure the search would find it.                                   #
+| | | The first question was whether it would load at all.                     #
+| I wrote this reply on a narrow terminal, so it has to wrap onto more than    #
+| one row to show that a quote keeps its block when it wraps. {}               #
+| Second paragraph.                                                            |
+| Thanks for the invite, it works well.                                        |
+| | I was not sure the search would find it.                                   |
+| | | The first question was whether it would load at all.                     |
+| I wrote this reply on a narrow terminal, so it has to wrap onto more than    |
+| one row to show that a quote keeps its block when it wraps. {}               |
+| Second paragraph.                                                            |
+| Thanks for the invite, it works well.                                        |
+| | I was not sure the search would find it.                                   |
+| | | The first question was whether it would load at all.                     |
+|                                                                              |
+| -- More (1 of 4) --   Space/Enter: next page   b: back   Esc: stop           |
++------------------------------------------------------------------------------+
+UNENCRYPTED  LOW-SECURITY   Space more  b back  n/p post  r reply  c quote
+
+=== lightbar / 80x24 / ascii mono
+= same as classic
+
+=== compact / 80x24 / ascii mono
+    1   2   3   4  [5]  6   7   8   9   10   11   12     5 of 12
+ Subject line
+ From ann   2023-11-14 22:13 UTC
+ Thanks for the invite, it works well.
+ | I was not sure the search would find it.                                    #
+ | | The first question was whether it would load at all.                      #
+ I wrote this reply on a narrow terminal, so it has to wrap onto more than     #
+ one row to show that a quote keeps its block when it wraps. {}                #
+ Second paragraph.                                                             #
+ Thanks for the invite, it works well.                                         #
+ | I was not sure the search would find it.                                    #
+ | | The first question was whether it would load at all.                      |
+ I wrote this reply on a narrow terminal, so it has to wrap onto more than     |
+ one row to show that a quote keeps its block when it wraps. {}                |
+ Second paragraph.                                                             |
+ Thanks for the invite, it works well.                                         |
+ | I was not sure the search would find it.                                    |
+ | | The first question was whether it would load at all.                      |
+ I wrote this reply on a narrow terminal, so it has to wrap onto more than     |
+ one row to show that a quote keeps its block when it wraps. {}                |
+ Second paragraph.                                                             |
+                                                                               |
+ -- More (1 of 3) --   Space/Enter: next page   b: back   Esc: stop
+UNENCRYPTED  LOW-SECURITY   Space more  b back  n/p post  r reply  c quote
+
+=== dashboard / 80x24 / ascii mono
+= same as classic
+
+=== wide / 80x24 / ascii mono
+= same as classic
+
+=== focus / 80x24 / ascii mono
+= same as classic
+
+=== split / 80x24 / ascii mono
+= same as classic
+
+=== classic / 100x30 / unicode mono
+ russh-bbs │ Forums                                                                       UTC 12:00
+    1   2   3   4  [5]  6   7   8   9   10   11   12     5 of 12
+ Subject line
+ From ann   2023-11-14 22:13 UTC
+┌ General ─────────────────────────────────────────────────────────────────────────────────────────┐
+│ Thanks for the invite, it works well.                                                            ┃
+│ │ I was not sure the search would find it.                                                       ┃
+│ │ │ The first question was whether it would load at all.                                         ┃
+│ I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that … ┃
+│ quote keeps its block when it wraps. {}                                                          ┃
+│ Second paragraph.                                                                                ┃
+│ Thanks for the invite, it works well.                                                            ┃
+│ │ I was not sure the search would find it.                                                       ┃
+│ │ │ The first question was whether it would load at all.                                         ┃
+│ I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that … ┃
+│ quote keeps its block when it wraps. {}                                                          │
+│ Second paragraph.                                                                                │
+│ Thanks for the invite, it works well.                                                            │
+│ │ I was not sure the search would find it.                                                       │
+│ │ │ The first question was whether it would load at all.                                         │
+│ I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that … │
+│ quote keeps its block when it wraps. {}                                                          │
+│ Second paragraph.                                                                                │
+│ Thanks for the invite, it works well.                                                            │
+│ │ I was not sure the search would find it.                                                       │
+│ │ │ The first question was whether it would load at all.                                         │
+│                                                                                                  │
+│ -- More (1 of 3) --   Space/Enter: next page   b: back   Esc: stop                               │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Space more  b back  n/p post
+
+=== lightbar / 100x30 / unicode mono
+= same as classic
+
+=== compact / 100x30 / unicode mono
+    1   2   3   4  [5]  6   7   8   9   10   11   12     5 of 12
+ Subject line
+ From ann   2023-11-14 22:13 UTC
+ Thanks for the invite, it works well.
+ │ I was not sure the search would find it.                                                        ┃
+ │ │ The first question was whether it would load at all.                                          ┃
+ I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a  ┃
+ quote keeps its block when it wraps. {}                                                           ┃
+ Second paragraph.                                                                                 ┃
+ Thanks for the invite, it works well.                                                             ┃
+ │ I was not sure the search would find it.                                                        ┃
+ │ │ The first question was whether it would load at all.                                          ┃
+ I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a  ┃
+ quote keeps its block when it wraps. {}                                                           ┃
+ Second paragraph.                                                                                 ┃
+ Thanks for the invite, it works well.                                                             ┃
+ │ I was not sure the search would find it.                                                        │
+ │ │ The first question was whether it would load at all.                                          │
+ I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a  │
+ quote keeps its block when it wraps. {}                                                           │
+ Second paragraph.                                                                                 │
+ Thanks for the invite, it works well.                                                             │
+ │ I was not sure the search would find it.                                                        │
+ │ │ The first question was whether it would load at all.                                          │
+ I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a  │
+ quote keeps its block when it wraps. {}                                                           │
+ Second paragraph.                                                                                 │
+                                                                                                   │
+ -- More (1 of 3) --   Space/Enter: next page   b: back   Esc: stop
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Space more  b back  n/p post
+
+=== dashboard / 100x30 / unicode mono
+= same as classic
+
+=== wide / 100x30 / unicode mono
+= same as classic
+
+=== focus / 100x30 / unicode mono
+= same as classic
+
+=== split / 100x30 / unicode mono
+= same as classic
+
+=== classic / 100x30 / ascii mono
+ russh-bbs | Forums                                                                       UTC 12:00
+    1   2   3   4  [5]  6   7   8   9   10   11   12     5 of 12
+ Subject line
+ From ann   2023-11-14 22:13 UTC
++ General -----------------------------------------------------------------------------------------+
+| Thanks for the invite, it works well.                                                            #
+| | I was not sure the search would find it.                                                       #
+| | | The first question was whether it would load at all.                                         #
+| I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show tha... #
+| quote keeps its block when it wraps. {}                                                          #
+| Second paragraph.                                                                                #
+| Thanks for the invite, it works well.                                                            #
+| | I was not sure the search would find it.                                                       #
+| | | The first question was whether it would load at all.                                         #
+| I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show tha... #
+| quote keeps its block when it wraps. {}                                                          |
+| Second paragraph.                                                                                |
+| Thanks for the invite, it works well.                                                            |
+| | I was not sure the search would find it.                                                       |
+| | | The first question was whether it would load at all.                                         |
+| I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show tha... |
+| quote keeps its block when it wraps. {}                                                          |
+| Second paragraph.                                                                                |
+| Thanks for the invite, it works well.                                                            |
+| | I was not sure the search would find it.                                                       |
+| | | The first question was whether it would load at all.                                         |
+|                                                                                                  |
+| -- More (1 of 3) --   Space/Enter: next page   b: back   Esc: stop                               |
++--------------------------------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Space more
+
+=== lightbar / 100x30 / ascii mono
+= same as classic
+
+=== compact / 100x30 / ascii mono
+    1   2   3   4  [5]  6   7   8   9   10   11   12     5 of 12
+ Subject line
+ From ann   2023-11-14 22:13 UTC
+ Thanks for the invite, it works well.
+ | I was not sure the search would find it.                                                        #
+ | | The first question was whether it would load at all.                                          #
+ I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a  #
+ quote keeps its block when it wraps. {}                                                           #
+ Second paragraph.                                                                                 #
+ Thanks for the invite, it works well.                                                             #
+ | I was not sure the search would find it.                                                        #
+ | | The first question was whether it would load at all.                                          #
+ I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a  #
+ quote keeps its block when it wraps. {}                                                           #
+ Second paragraph.                                                                                 #
+ Thanks for the invite, it works well.                                                             #
+ | I was not sure the search would find it.                                                        |
+ | | The first question was whether it would load at all.                                          |
+ I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a  |
+ quote keeps its block when it wraps. {}                                                           |
+ Second paragraph.                                                                                 |
+ Thanks for the invite, it works well.                                                             |
+ | I was not sure the search would find it.                                                        |
+ | | The first question was whether it would load at all.                                          |
+ I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a  |
+ quote keeps its block when it wraps. {}                                                           |
+ Second paragraph.                                                                                 |
+                                                                                                   |
+ -- More (1 of 3) --   Space/Enter: next page   b: back   Esc: stop
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Space more
+
+=== dashboard / 100x30 / ascii mono
+= same as classic
+
+=== wide / 100x30 / ascii mono
+= same as classic
+
+=== focus / 100x30 / ascii mono
+= same as classic
+
+=== split / 100x30 / ascii mono
+= same as classic
+
+=== classic / 132x43 / unicode mono
+ russh-bbs │ Forums                                                                                                       UTC 12:00
+                    1   2   3   4  [5]  6   7   8   9   10   11   12     5 of 12
+                 Subject line
+                 From ann   2023-11-14 22:13 UTC
+                ┌ General ─────────────────────────────────────────────────────────────────────────────────────────┐
+                │ Thanks for the invite, it works well.                                                            ┃
+                │ │ I was not sure the search would find it.                                                       ┃
+                │ │ │ The first question was whether it would load at all.                                         ┃
+                │ I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that … ┃
+                │ quote keeps its block when it wraps. {}                                                          ┃
+                │ Second paragraph.                                                                                ┃
+                │ Thanks for the invite, it works well.                                                            ┃
+                │ │ I was not sure the search would find it.                                                       ┃
+                │ │ │ The first question was whether it would load at all.                                         ┃
+                │ I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that … ┃
+                │ quote keeps its block when it wraps. {}                                                          ┃
+                │ Second paragraph.                                                                                ┃
+                │ Thanks for the invite, it works well.                                                            ┃
+                │ │ I was not sure the search would find it.                                                       ┃
+                │ │ │ The first question was whether it would load at all.                                         ┃
+                │ I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that … ┃
+                │ quote keeps its block when it wraps. {}                                                          ┃
+                │ Second paragraph.                                                                                ┃
+                │ Thanks for the invite, it works well.                                                            ┃
+                │ │ I was not sure the search would find it.                                                       ┃
+                │ │ │ The first question was whether it would load at all.                                         ┃
+                │ I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that … ┃
+                │ quote keeps its block when it wraps. {}                                                          ┃
+                │ Second paragraph.                                                                                ┃
+                │ Thanks for the invite, it works well.                                                            ┃
+                │ │ I was not sure the search would find it.                                                       ┃
+                │ │ │ The first question was whether it would load at all.                                         │
+                │ I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that … │
+                │ quote keeps its block when it wraps. {}                                                          │
+                │ Second paragraph.                                                                                │
+                │ Thanks for the invite, it works well.                                                            │
+                │ │ I was not sure the search would find it.                                                       │
+                │ │ │ The first question was whether it would load at all.                                         │
+                │ I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that … │
+                │                                                                                                  │
+                │ -- More (1 of 2) --   Space/Enter: next page   b: back   Esc: stop                               │
+                └──────────────────────────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Space more  b back  n/p post  r reply  c quote  x remove
+
+=== lightbar / 132x43 / unicode mono
+= same as classic
+
+=== compact / 132x43 / unicode mono
+                    1   2   3   4  [5]  6   7   8   9   10   11   12     5 of 12
+                 Subject line
+                 From ann   2023-11-14 22:13 UTC
+                 Thanks for the invite, it works well.
+                 │ I was not sure the search would find it.                                                        ┃
+                 │ │ The first question was whether it would load at all.                                          ┃
+                 I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a  ┃
+                 quote keeps its block when it wraps. {}                                                           ┃
+                 Second paragraph.                                                                                 ┃
+                 Thanks for the invite, it works well.                                                             ┃
+                 │ I was not sure the search would find it.                                                        ┃
+                 │ │ The first question was whether it would load at all.                                          ┃
+                 I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a  ┃
+                 quote keeps its block when it wraps. {}                                                           ┃
+                 Second paragraph.                                                                                 ┃
+                 Thanks for the invite, it works well.                                                             ┃
+                 │ I was not sure the search would find it.                                                        ┃
+                 │ │ The first question was whether it would load at all.                                          ┃
+                 I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a  ┃
+                 quote keeps its block when it wraps. {}                                                           ┃
+                 Second paragraph.                                                                                 ┃
+                 Thanks for the invite, it works well.                                                             ┃
+                 │ I was not sure the search would find it.                                                        ┃
+                 │ │ The first question was whether it would load at all.                                          ┃
+                 I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a  ┃
+                 quote keeps its block when it wraps. {}                                                           ┃
+                 Second paragraph.                                                                                 ┃
+                 Thanks for the invite, it works well.                                                             ┃
+                 │ I was not sure the search would find it.                                                        ┃
+                 │ │ The first question was whether it would load at all.                                          ┃
+                 I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a  ┃
+                 quote keeps its block when it wraps. {}                                                           ┃
+                 Second paragraph.                                                                                 ┃
+                 Thanks for the invite, it works well.                                                             │
+                 │ I was not sure the search would find it.                                                        │
+                 │ │ The first question was whether it would load at all.                                          │
+                 I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a  │
+                 quote keeps its block when it wraps. {}                                                           │
+                 Second paragraph.                                                                                 │
+                 Thanks for the invite, it works well.                                                             │
+                                                                                                                   │
+                 -- More (1 of 2) --   Space/Enter: next page   b: back   Esc: stop
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Space more  b back  n/p post  r reply  c quote  x remove
+
+=== dashboard / 132x43 / unicode mono
+= same as classic
+
+=== wide / 132x43 / unicode mono
+= same as classic
+
+=== focus / 132x43 / unicode mono
+= same as classic
+
+=== split / 132x43 / unicode mono
+= same as classic
+
+=== classic / 132x43 / ascii mono
+ russh-bbs | Forums                                                                                                       UTC 12:00
+                    1   2   3   4  [5]  6   7   8   9   10   11   12     5 of 12
+                 Subject line
+                 From ann   2023-11-14 22:13 UTC
+                + General -----------------------------------------------------------------------------------------+
+                | Thanks for the invite, it works well.                                                            #
+                | | I was not sure the search would find it.                                                       #
+                | | | The first question was whether it would load at all.                                         #
+                | I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show tha... #
+                | quote keeps its block when it wraps. {}                                                          #
+                | Second paragraph.                                                                                #
+                | Thanks for the invite, it works well.                                                            #
+                | | I was not sure the search would find it.                                                       #
+                | | | The first question was whether it would load at all.                                         #
+                | I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show tha... #
+                | quote keeps its block when it wraps. {}                                                          #
+                | Second paragraph.                                                                                #
+                | Thanks for the invite, it works well.                                                            #
+                | | I was not sure the search would find it.                                                       #
+                | | | The first question was whether it would load at all.                                         #
+                | I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show tha... #
+                | quote keeps its block when it wraps. {}                                                          #
+                | Second paragraph.                                                                                #
+                | Thanks for the invite, it works well.                                                            #
+                | | I was not sure the search would find it.                                                       #
+                | | | The first question was whether it would load at all.                                         #
+                | I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show tha... #
+                | quote keeps its block when it wraps. {}                                                          #
+                | Second paragraph.                                                                                #
+                | Thanks for the invite, it works well.                                                            #
+                | | I was not sure the search would find it.                                                       #
+                | | | The first question was whether it would load at all.                                         |
+                | I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show tha... |
+                | quote keeps its block when it wraps. {}                                                          |
+                | Second paragraph.                                                                                |
+                | Thanks for the invite, it works well.                                                            |
+                | | I was not sure the search would find it.                                                       |
+                | | | The first question was whether it would load at all.                                         |
+                | I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show tha... |
+                |                                                                                                  |
+                | -- More (1 of 2) --   Space/Enter: next page   b: back   Esc: stop                               |
+                +--------------------------------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Space more  b back  n/p post  r reply
+
+=== lightbar / 132x43 / ascii mono
+= same as classic
+
+=== compact / 132x43 / ascii mono
+                    1   2   3   4  [5]  6   7   8   9   10   11   12     5 of 12
+                 Subject line
+                 From ann   2023-11-14 22:13 UTC
+                 Thanks for the invite, it works well.
+                 | I was not sure the search would find it.                                                        #
+                 | | The first question was whether it would load at all.                                          #
+                 I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a  #
+                 quote keeps its block when it wraps. {}                                                           #
+                 Second paragraph.                                                                                 #
+                 Thanks for the invite, it works well.                                                             #
+                 | I was not sure the search would find it.                                                        #
+                 | | The first question was whether it would load at all.                                          #
+                 I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a  #
+                 quote keeps its block when it wraps. {}                                                           #
+                 Second paragraph.                                                                                 #
+                 Thanks for the invite, it works well.                                                             #
+                 | I was not sure the search would find it.                                                        #
+                 | | The first question was whether it would load at all.                                          #
+                 I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a  #
+                 quote keeps its block when it wraps. {}                                                           #
+                 Second paragraph.                                                                                 #
+                 Thanks for the invite, it works well.                                                             #
+                 | I was not sure the search would find it.                                                        #
+                 | | The first question was whether it would load at all.                                          #
+                 I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a  #
+                 quote keeps its block when it wraps. {}                                                           #
+                 Second paragraph.                                                                                 #
+                 Thanks for the invite, it works well.                                                             #
+                 | I was not sure the search would find it.                                                        #
+                 | | The first question was whether it would load at all.                                          #
+                 I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a  #
+                 quote keeps its block when it wraps. {}                                                           #
+                 Second paragraph.                                                                                 #
+                 Thanks for the invite, it works well.                                                             |
+                 | I was not sure the search would find it.                                                        |
+                 | | The first question was whether it would load at all.                                          |
+                 I wrote this reply on a narrow terminal, so it has to wrap onto more than one row to show that a  |
+                 quote keeps its block when it wraps. {}                                                           |
+                 Second paragraph.                                                                                 |
+                 Thanks for the invite, it works well.                                                             |
+                                                                                                                   |
+                 -- More (1 of 2) --   Space/Enter: next page   b: back   Esc: stop
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Space more  b back  n/p post  r reply
+
+=== dashboard / 132x43 / ascii mono
+= same as classic
+
+=== wide / 132x43 / ascii mono
+= same as classic
+
+=== focus / 132x43 / ascii mono
+= same as classic
+
+=== split / 132x43 / ascii mono
+= same as classic
+

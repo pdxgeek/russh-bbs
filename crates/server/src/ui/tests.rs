@@ -561,21 +561,36 @@ mod pager {
     use russh_bbs_core::terminal_settings::{Pager, PagerEffect, PagerKey};
 
     use super::*;
-    use crate::ui::pager::{render, text_rows, text_width, wrap};
+    use crate::ui::pager::{text_rows, text_width, wrap};
 
     fn frame_text(pager: &Pager, size: (u16, u16)) -> String {
+        use crate::ui::frame::ChromeText;
+        use crate::ui::screens::reader::{Head, ReaderCtx, ReaderView, Strip, render};
         let ui = ui();
         let mut terminal = Terminal::new(TestBackend::new(size.0, size.1)).unwrap();
         terminal
             .draw(|frame| {
                 render(
                     frame,
-                    pager,
-                    "Reader",
-                    ui.strings(),
-                    Look::of(&TerminalSettings::default().with_tier(Tier::Ascii)),
-                    Tier::Ascii,
-                    &MENU_MARKERS,
+                    &ReaderView {
+                        place: ChromeText::fixed("Reader"),
+                        head: Head {
+                            subject: "Reader",
+                            from: "ann",
+                            at: "2026-11-04 09:12 UTC",
+                            context: "Board",
+                        },
+                        strip: Strip::Posts { index: 0, total: 1 },
+                        pager,
+                        hints: &[],
+                    },
+                    &ReaderCtx {
+                        strings: ui.strings(),
+                        look: Look::of(&TerminalSettings::default().with_tier(Tier::Ascii)),
+                        tier: Tier::Ascii,
+                        markers: &MENU_MARKERS,
+                        clock: None,
+                    },
                 );
             })
             .unwrap();
@@ -639,7 +654,7 @@ mod pager {
 
     #[test]
     fn wrap_splits_long_lines_to_the_box_width_and_keeps_blank_rows() {
-        assert_eq!(text_width(Rect::new(0, 0, 80, 24)), 74);
+        assert_eq!(text_width(Rect::new(0, 0, 80, 24)), 76);
         let wrapped = wrap(&["abcdefghij".into(), String::new(), "xy".into()], 4);
         assert_eq!(wrapped, ["abcd", "efgh", "ij", "", "xy"]);
         assert_eq!(

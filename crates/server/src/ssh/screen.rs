@@ -78,6 +78,7 @@ use crate::ui::frame::clock_text;
 use crate::ui::fx;
 use crate::ui::input::mouse::Mouse;
 use crate::ui::palette;
+use crate::ui::screens::motion::Motion;
 use crate::ui::strings::StringTable;
 use crate::ui::toast::{Kind as ToastKind, Text as ToastText};
 use crate::ui::widgets::screen::{self as widgets_screen, WidgetsScreen};
@@ -608,6 +609,10 @@ pub(crate) struct Screen {
     widgets: WidgetState,
     /// The Widgets screen, while the member has it open over the settings (UI-10).
     widgets_page: Option<WidgetsScreen>,
+    /// The wipe between screens and the blinking cursor (UI-4).
+    motion: Motion,
+    /// The members list's highlight, sort and window (UI-4).
+    members_nav: crate::ui::screens::list::Nav,
 }
 
 /// What the widget panels show and how the member arranged them (UI-10).
@@ -712,6 +717,8 @@ impl Screen {
             interact,
             widgets: WidgetState::default(),
             widgets_page: None,
+            motion: Motion::default(),
+            members_nav: crate::ui::screens::list::Nav::default(),
         })
     }
 
@@ -1069,12 +1076,16 @@ impl Screen {
                 door_moved = doors::keys(&mut session.screen, keys, &mut effects);
             }
             Content::Member(flow) => {
-                for (index, input) in keys
-                    .iter()
-                    .copied()
-                    .enumerate()
-                    .filter_map(|(index, key)| member_input(key).map(|input| (index, input)))
-                {
+                for (index, key) in keys.iter().copied().enumerate() {
+                    // On the members list, arrows move a highlight, `o` sorts and Enter opens
+                    // the highlighted row by its own digit; every other key goes to core as is.
+                    let key = match flow.members_view() {
+                        Some(view) => members::nav_key(&mut self.members_nav, &view, key),
+                        None => Some(key),
+                    };
+                    let Some(input) = key.and_then(member_input) else {
+                        continue;
+                    };
                     match flow.input(input) {
                         MemberEffect::Stay => {}
                         MemberEffect::Save(settings) => effects.save_settings = Some(settings),
@@ -1363,7 +1374,85 @@ impl Screen {
         if self.content.menu_page().is_none() {
             return Vec::new();
         }
-        self.widgets_shown(self.content.layout(&self.ui, self.viewport))
+        // The layout the member chose, not the one the terminal fits: a dashboard too big for
+        // the window collapses into a line of figures, and the figures need the data.
+        self.widgets_shown(self.content.wanted_layout(&self.ui))
+    }
+
+    /// Turn accessibility mode on or off (M5 sets this): motion is always off in it.
+    #[allow(
+        dead_code,
+        reason = "M5 builds accessibility mode; tests drive it today"
+    )]
+    pub(crate) fn set_accessible(&mut self, on: bool) {
+        self.motion.set_accessible(on);
+        self.dirty = true;
+    }
+
+    /// Whether a text input line is on screen, so its cursor blinks.
+    fn has_input(&self) -> bool {
+        if let Some(chat) = &self.chat {
+            return match chat.page() {
+                russh_bbs_core::chat::ChatPage::Room(_) => true,
+                russh_bbs_core::chat::ChatPage::List(list) => list.naming.is_some(),
+            };
+        }
+        match &self.content {
+            Content::Forums(session) => session.screen.has_input(),
+            Content::Mail(session) => session.screen.has_input(),
+            Content::Member(_) => self
+                .content
+                .members_view()
+                .or_else(|| self.content.community_view())
+                .is_some_and(|view| {
+                    view.lines.iter().any(|line| {
+                        matches!(
+                            line,
+                            russh_bbs_core::profiles::Line::Field { active: true, .. }
+                        )
+                    })
+                }),
+            Content::Room(_) | Content::Claim(_) | Content::Doors(_) | Content::Limited(_) => false,
+        }
+    }
+
+    /// When the shell should next wake for motion (a wipe frame or a cursor blink), if
+    /// anything is moving. `None` with motion off, which is the common case.
+    pub(crate) fn motion_deadline(&self) -> Option<std::time::Instant> {
+        let look = self.content.look(&self.ui, self.viewport, self.depth())?;
+        self.motion.deadline(look, std::time::Instant::now())
+    }
+
+    /// If a motion deadline has passed, ask for a redraw.
+    pub(crate) fn motion_tick(&mut self, now: std::time::Instant) {
+        let due = self
+            .content
+            .look(&self.ui, self.viewport, self.depth())
+            .and_then(|look| self.motion.deadline(look, now))
+            .is_some_and(|at| at <= now);
+        if due {
+            self.dirty = true;
+        }
+    }
+
+    /// Note whether an input is on screen for the blink, and say whether the cursor is in its
+    /// dark half now. (The wipe between menus is UI-8's effect engine.)
+    fn motion_frame(&mut self) -> bool {
+        let Some(look) = self.content.look(&self.ui, self.viewport, self.depth()) else {
+            return false;
+        };
+        let now = std::time::Instant::now();
+        let input = self.has_input();
+        self.motion.set_input(input, now);
+        self.motion.cursor_dark(look, now)
+    }
+
+    /// Whether the screen in front of the member draws the split layout's chat and mail panes,
+    /// which need the newest messages as well as the widgets' data.
+    pub(crate) fn wants_side_panes(&self) -> bool {
+        self.chat.is_none()
+            && self.content.menu_page().is_some()
+            && self.content.layout(&self.ui, self.viewport) == LayoutId::Split
     }
 
     /// The previous sign-in time, the "since your last call" mark.
@@ -1845,8 +1934,9 @@ impl Screen {
         let size_ok = kind != Some(fx::Kind::Intro)
             || (self.viewport.width >= fx::intro::MIN_SIZE.0
                 && self.viewport.height >= fx::intro::MIN_SIZE.1);
-        // `accessible` is the M5 plain path; it does not exist yet, so it is always false here.
-        let allowed = look.is_some_and(|look| fx::allowed(look, false)) && size_ok;
+        // `accessible` is the M5 plain path (`Screen::set_accessible`); nothing sets it yet.
+        let accessible = self.motion.accessible();
+        let allowed = look.is_some_and(|look| fx::allowed(look, accessible)) && size_ok;
         match kind {
             Some(kind) => {
                 self.fx.start(kind, now, allowed);
@@ -1940,7 +2030,8 @@ impl Screen {
         };
         let text = self.farewell_text();
         let look = self.content.look(&self.ui, self.viewport, self.depth());
-        let allowed = look.is_some_and(|look| fx::allowed(look, false));
+        let accessible = self.motion.accessible();
+        let allowed = look.is_some_and(|look| fx::allowed(look, accessible));
         if text.is_empty() || !allowed {
             return Ok(None);
         }
@@ -2039,6 +2130,11 @@ impl Screen {
                 .duration_since(std::time::UNIX_EPOCH)
                 .map_or(0, |elapsed| elapsed.as_secs()),
         );
+        let cursor_dark = self.motion_frame();
+        let area_art = self
+            .content
+            .style(&self.ui)
+            .map(|style| self.ui.art_ctx(style));
         if let Content::Forums(session) = &self.content {
             let settings = session.flow.settings();
             let theme = self.ui.theme_for(settings);
@@ -2046,10 +2142,14 @@ impl Screen {
                 ui: &self.ui,
                 strings: theme.strings(),
                 settings,
-                look: self.ui.look(settings, self.viewport, self.depth()),
+                look: self
+                    .ui
+                    .look(settings, self.viewport, self.depth())
+                    .with_cursor_dark(cursor_dark),
                 tier: settings.icon_tier(),
                 markers: self.status_markers(),
                 clock: Some(clock.as_str()),
+                art: area_art.as_ref(),
             };
             let tier = ctx.tier;
             let interact = &self.interact;
@@ -2067,8 +2167,14 @@ impl Screen {
                 ui: &self.ui,
                 strings: theme.strings(),
                 settings,
-                look: self.ui.look(settings, self.viewport, self.depth()),
+                look: self
+                    .ui
+                    .look(settings, self.viewport, self.depth())
+                    .with_cursor_dark(cursor_dark),
                 tier: settings.icon_tier(),
+                markers: self.status_markers(),
+                clock: Some(clock.as_str()),
+                art: area_art.as_ref(),
             };
             let tier = ctx.tier;
             let interact = &self.interact;
@@ -2085,7 +2191,10 @@ impl Screen {
         let mut view = self.content.view(&self.ui);
         // Effects (UI-8): a change of screen starts one, and the one running (if any) is applied
         // last in the draw closure. Done before anything borrows the UI for the frame.
-        let look = self.content.look(&self.ui, self.viewport, self.depth());
+        let look = self
+            .content
+            .look(&self.ui, self.viewport, self.depth())
+            .map(|look| look.with_cursor_dark(cursor_dark));
         let menu = self.content.menu_page();
         let now = self.fx_clock.unwrap_or_else(Instant::now);
         self.start_fx(&view, menu.as_ref(), look, now);
@@ -2146,6 +2255,7 @@ impl Screen {
             settings: self.ui.widgets(),
             now: now_secs,
         };
+        let members_nav = &self.members_nav;
         let widgets_screen_state = self.widgets_page.as_ref();
         let widget_access = self.content.flow().map(MemberFlow::access_snapshot);
         let widget_choice = &self.widgets.choice;
@@ -2183,7 +2293,18 @@ impl Screen {
                     // The chat screen (M3-F): the same box and status row, with the room's lines.
                     (Some(look), _) if chat.is_some() => {
                         if let Some(screen) = chat {
-                            crate::chat::render(frame, screen, strings, look, tier);
+                            crate::chat::render(
+                                frame,
+                                screen,
+                                &crate::chat::ChatCtx {
+                                    strings,
+                                    look,
+                                    tier,
+                                    markers: staff_markers,
+                                    clock,
+                                    art: art_ctx.as_ref(),
+                                },
+                            );
                         }
                     }
                     // The member's style gallery and the sysop's Theme packs screen (UI-7).
@@ -2253,19 +2374,18 @@ impl Screen {
                                     tier,
                                     markers: staff_markers,
                                     clock,
+                                    nav: members_nav,
                                 },
                             );
                         }
                     }
                     (Some(look), None) if members_view.is_some() => {
                         if let Some(screen) = &members_view {
-                            let width = usize::from(frame.area().width.min(settings::MAX_WIDTH))
-                                .saturating_sub(2);
-                            classic::render_content(
+                            members::panes::render(
                                 frame,
-                                ContentScreen {
+                                screen,
+                                &members::panes::ViewCtx {
                                     strings,
-                                    lines: members::lines(screen, strings, look, width),
                                     look,
                                     tier,
                                     markers: staff_markers,
