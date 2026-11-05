@@ -14,17 +14,41 @@ use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 use russh_bbs_core::icons::Tier;
 use russh_bbs_core::sanitize::SingleLine;
+use russh_bbs_core::terminal_settings::LayoutId;
 use russh_bbs_door::{Canvas, ColorDepth, Composite, DoorPalette, DoorSurface};
 
 use super::screen::{DoorsScreen, State};
 use super::strings;
-use crate::settings::{self, Look};
+use crate::settings::{self, BoxSize, Look};
 use crate::ui::chrome;
-use crate::ui::classic::{self, ContentScreen, MENU_MARKERS, styles};
+use crate::ui::classic::{MENU_MARKERS, styles};
+use crate::ui::keys;
 use crate::ui::strings::StringTable;
 
 /// Rows of the box above the door's area: the heading and a blank line.
 const HEADER_ROWS: usize = 2;
+
+/// The widest a running door's box is drawn outside the Focus layout, border included. The five
+/// games lay out responsively up to 132 columns (their harnesses go to 132x43); the box is
+/// centred on anything wider.
+pub(crate) const DOOR_MAX_WIDTH: u16 = 132;
+
+/// The box a running door is drawn in, for the layout in force. The Focus layout gives the
+/// door the whole body (no margin, no width limit); every other layout gives it up to
+/// [`DOOR_MAX_WIDTH`] columns. The status row (the marker cell and the telnet footer) is split
+/// off before this, so it is never inside the box.
+pub(crate) const fn door_box(layout: LayoutId) -> BoxSize {
+    match layout {
+        LayoutId::Focus => BoxSize {
+            max_width: u16::MAX,
+            margin: false,
+        },
+        _ => BoxSize {
+            max_width: DOOR_MAX_WIDTH,
+            margin: true,
+        },
+    }
+}
 
 /// What drawing needs besides the screen.
 pub(crate) struct DrawCtx<'a> {
@@ -54,8 +78,12 @@ fn clean(text: &str) -> String {
 
 /// Draw the doors screens.
 pub(crate) fn render(frame: &mut Frame<'_>, screen: &DoorsScreen, ctx: &DrawCtx<'_>) {
-    let (content, _) = chrome::split_status(frame.area(), &MENU_MARKERS);
-    let (width, rows) = settings::inner_size(content);
+    let (content, status) = chrome::split_status(frame.area(), &MENU_MARKERS);
+    let size = match &screen.state {
+        State::Playing(_) => door_box(ctx.look.layout()),
+        State::Busy | State::List => BoxSize::MENU,
+    };
+    let (width, rows) = settings::inner_size_of(content, size);
     let lines = match &screen.state {
         State::Playing(running) => {
             let title = screen
@@ -76,17 +104,17 @@ pub(crate) fn render(frame: &mut Frame<'_>, screen: &DoorsScreen, ctx: &DrawCtx<
         }
         State::List => list_lines(screen, ctx),
     };
-    classic::render_content_bare(
+    settings::boxed_sized(
         frame,
-        ContentScreen {
-            strings: ctx.strings,
-            lines,
-            look: ctx.look,
-            tier: ctx.tier,
-            markers: &MENU_MARKERS,
-            clock: None,
-        },
+        content,
+        ctx.strings.text(keys::TITLE),
+        lines,
+        ctx.look,
+        size,
     );
+    if let Some(row) = status {
+        chrome::render_status(frame, row, &MENU_MARKERS, ctx.tier, ctx.strings);
+    }
 }
 
 fn header(title: &str, ctx: &DrawCtx<'_>) -> Vec<Line<'static>> {
