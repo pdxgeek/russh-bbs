@@ -590,3 +590,59 @@ async fn one_bad_stored_room_name_does_not_hide_the_other_rooms() {
         "{list}"
     );
 }
+
+/// UI-W: chat beside another screen over a real client. `Ctrl-T` opens the pane next to the
+/// menu, the pane is live while the member browses the forums, `Ctrl-W` moves the keys, and
+/// `Ctrl-T` leaves the room, so the others are told.
+#[tokio::test]
+async fn chat_beside_the_forums_is_live_and_closing_it_leaves_the_room() {
+    let rig = Rig::start().await;
+    let (_, ann_key) = rig.member("ann").await;
+    let (_, bob_key) = rig.member("bob").await;
+    let (_ann_session, mut ann) = at_menu(&rig, &ann_key).await;
+    let (_bob_session, mut bob) = at_menu(&rig, &bob_key).await;
+    into_the_lobby(&mut bob).await;
+
+    // 1. `Ctrl-T`: the room list beside the menu, then Enter joins the lobby from the pane.
+    let beside = send(&mut ann, "\x14").await;
+    assert!(
+        beside.contains("Main menu") && beside.contains("Chat rooms") && beside.contains("lobby"),
+        "{beside}"
+    );
+    send(&mut ann, "\r").await;
+    let joined = full(&mut ann).await;
+    assert!(
+        joined.contains("Main menu") && joined.contains("#lobby"),
+        "{joined}"
+    );
+    assert!(until(&mut bob, "ann joined").await.contains("ann joined"));
+
+    // 2. `Ctrl-W` gives the keys to the menu; `f` opens the forums with the pane still there.
+    send(&mut ann, "\x17").await;
+    send(&mut ann, "f").await;
+    let forums = full(&mut ann).await;
+    assert!(
+        forums.contains("#lobby") && !forums.contains("Main menu"),
+        "the forums are beside the chat: {forums}"
+    );
+
+    // 3. A line arrives in the pane with no key pressed on ann's side.
+    bob.data_bytes(b"hellofromthelobby\r".to_vec())
+        .await
+        .unwrap();
+    assert!(
+        until(&mut ann, "<bob> hellofromthelobby")
+            .await
+            .contains("hellofromthelobby")
+    );
+
+    // 4. Back to the menu, then `Ctrl-T` closes the pane and leaves the room.
+    send(&mut ann, "\x1b").await;
+    send(&mut ann, "\x14").await;
+    assert!(until(&mut bob, "ann left").await.contains("ann left"));
+    let after = full(&mut ann).await;
+    assert!(
+        after.contains("Main menu") && !after.contains("#lobby"),
+        "{after}"
+    );
+}

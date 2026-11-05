@@ -1,22 +1,22 @@
- Night Owl BBS │ Main menu                                            UTC 15:47
+ Night Owl BBS │ Main menu                                            UTC 13:05
+                        ╭──────────────────────────────╮
+    ╌╌╌╌╌╌╌╌╌───────────│  ◇   ◇   ◇   ◇   ◇   ◇   ◇   │───────────╌╌╌╌╌╌╌╌╌
+                        ╰──────────────────────────────╯
+
 ╭ Main menu ─────────────────────╮╭ This board ─────────╮╭ Clock ──────────────╮
-│ Signed in as founder.          ││ Night Owl BBS       ││ UTC 15:47           │
-│                                ││ After hours, all    ││                     │
-│   [f] Forums                   ││ hours.              ││                     │
-│   [m] Mail                     ││ Portland, OR        ││                     │
-│   [a] Files  (not built yet)   │╰─────────────────────╯╰─────────────────────╯
-│   [c] Chat                     │╭ Who is online ──────╮╭ Last callers ───────╮
-│   [d] Doors                    ││ Nothing to show     ││ Nothing to show     │
-│   [u] Members                  ││ yet.                ││ yet.                │
-│   [y] Community                ││                     ││                     │
-│   [i] Invites                  ││                     ││                     │
-│ > [s] Terminal settings        ││                     ││                     │
+│ Signed in as founder.          ││ Night Owl BBS       ││      ━     ━   ━    │
+│                                ││ Calm, late-night t… ││   ┃  ━┃ • ┃ ┃ ┃━    │
+│   [f] Forums                   ││ Portland, Oregon    ││   ┃  ━┃ • ┃━┃  ━┃   │
+│   [m] Mail                     ││                     ││ Thu 5 Nov 2026 UTC  │
+│   [a] Files  (not built yet)   ││                     ││                     │
+│   [c] Chat                     ││                     ││                     │
+│   [d] Doors                    ││                     ││                     │
+│   [u] Members                  │╰─────────────────────╯╰─────────────────────╯
+│   [y] Community                │╭ Who is online ──────╮╭ Last callers ───────╮
+│   [i] Invites                  ││ ● 1 online          ││ founder         now │
+│ > [s] Terminal settings        ││ ▸ founder           ││                     │
 │   [o] Sysop tools              ││                     ││                     │
-│   [l] Log off                  │╰─────────────────────╯╰─────────────────────╯
-│                                │╭ New posts ──────────╮╭ Unread mail ────────╮
-│                                ││ Nothing to show     ││ Nothing to show     │
-│                                ││ yet.                ││ yet.                │
-│                                ││                     ││                     │
+│   [l] Log off                  ││                     ││                     │
 │                                ││                     ││                     │
 │                                ││                     ││                     │
 │                                ││                     ││                     │

@@ -1,4 +1,4 @@
-=== phosphor / dashboard / 80x24 / unicode truecolor / colors=4d1019f8ce4bc5eb
+=== phosphor / dashboard / 80x24 / unicode truecolor / colors=4d34366c3cc174ef
  russh-bbs │ Main menu                                                UTC 12:00
 ┌[ Main menu ]───────────────────┐┌[ This board ]───────┐┌[ Clock ]────────────┐
 │ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
@@ -24,7 +24,7 @@
 └────────────────────────────────┘└─────────────────────┘└─────────────────────┘
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / dashboard / 132x43 / unicode truecolor / colors=af8dd38391bd5144
+=== phosphor / dashboard / 132x43 / unicode truecolor / colors=34e7782bb9c644d6
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ┌[ Main menu ]───────────────────┐┌[ This board ]─────────────────┐┌[ Clock ]─────────────────────┐┌[ Who is online ]──────────────┐
 │ Signed in as alice.            ││ russh-bbs                     ││      ━     ━   ━             ││ ● 5 online                    │
@@ -49,19 +49,19 @@
 │                                │└───────────────────────────────┘└──────────────────────────────┘└───────────────────────────────┘
 │                                │┌[ Activity ]───────────────────┐┌[ One-liners ]────────────────┐┌[ Poll ]───────────────────────┐
 │                                ││ 59 threads active in 14 days  ││ bob: the board looks great   ││ Best terminal font?           │
-│                                ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣤⣤⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿ ││      tonight                 ││  Mono      ██████▌░░░░░  54%  │
-│                                ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⠀⠀⠀⠀⠀⠀⣶⣶⣿⣿ ││ carol: hello from the        ││ ▸Nerd      ███▉░░░░░░░░  31%  │
-│                                ││ ⠀⠀⠀⠀⠀⠀⢠⣤⡄⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣤⣤⠀⠀⠀⠀⣿⣿⣿⣿ ││        terminal              ││  Bitmap    █▋░░░░░░░░░░  13%  │
-│                                ││ ⠀⠀⠀⠀⠀⠀⢸⣿⣷⣶⡆⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⠀⠀⣶⣶⣿⣿⣿⣿ ││ dave: anyone up for a door   ││                               │
-│                                ││ ⠀⠀⢸⣿⣧⣤⣼⣿⣿⣿⡇⠀⢠⣤⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││       game?                  ││                               │
-│                                ││ ⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⡇⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││                              ││                               │
+│                                ││                 ⢀⣀⣀        ⣸⣿ ││      tonight                 ││  Mono      ██████▌░░░░░  54%  │
+│                                ││                 ⣼⣿⣿⡀     ⢰⣶⣿⣿ ││ carol: hello from the        ││ ▸Nerd      ███▉░░░░░░░░  31%  │
+│                                ││      ⢠⣤⣤      ⢸⣿⣿⣿⣿⣧⣤    ⣼⣿⣿⣿ ││        terminal              ││  Bitmap    █▋░░░░░░░░░░  13%  │
+│                                ││  ⢀⣀⡀ ⣸⣿⣿⣷⣶    ⣼⣿⣿⣿⣿⣿⣿⣆⣀⣰⣶⣿⣿⣿⣿ ││ dave: anyone up for a door   ││                               │
+│                                ││  ⣼⣿⣷⣤⣿⣿⣿⣿⣿⡄ ⢠⣤⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││       game?                  ││                               │
+│                                ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⣀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││                              ││                               │
 │                                ││ 14 days ago             today ││                              ││                               │
 │                                │└───────────────────────────────┘└──────────────────────────────┘└───────────────────────────────┘
 │                                │┌[ Your credits ]───────────────┐
 │                                ││ 1,234 credits                 │
 │                                ││ +334 in 14 days               │
-│                                ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣠⣤⣤⣤⣤⣶⣶⣶⣶⣿⣿⣿⣿⣿⣿ │
-│                                ││ ⣤⣤⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
+│                                ││             ⢀⣀⣠⣤⣤⣤⣤⣤⣤⣤⣤⣴⣶⣶⣶⣾⣿ │
+│                                ││ ⣤⣤⣤⣴⣶⣶⣶⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
 │                                ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
 │                                ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
 │                                ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
@@ -69,7 +69,7 @@
 └────────────────────────────────┘└───────────────────────────────┘
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / dashboard / 80x24 / ascii mono / colors=c3c37a51f56968a1
+=== phosphor / dashboard / 80x24 / ascii mono / colors=b9a9f5e7a4019ba8
  russh-bbs | Main menu                                                UTC 12:00
 +[ Main menu ]-------------------++[ This board ]-------++[ Clock ]------------+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
@@ -95,7 +95,7 @@
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / dashboard / 80x24 / unicode truecolor / colors=c21e7efc87029ee7
+=== neon / dashboard / 80x24 / unicode truecolor / colors=6f835eaea9203b7b
  » russh-bbs « │ Main menu                                            UTC 12:00
 ╭« Main menu »───────────────────╮╭« This board »───────╮╭« Clock »────────────╮
 │ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
@@ -121,7 +121,7 @@
 ╰────────────────────────────────╯╰─────────────────────╯╰─────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / dashboard / 132x43 / unicode truecolor / colors=d471daeb3f595eb4
+=== neon / dashboard / 132x43 / unicode truecolor / colors=0c882c3dfa549872
  » russh-bbs « │ Main menu                                                                                                UTC 12:00
 ╭« Main menu »───────────────────╮╭« This board »─────────────────╮╭« Clock »─────────────────────╮╭« Who is online »──────────────╮
 │ Signed in as alice.            ││ russh-bbs                     ││      ━     ━   ━             ││ ● 5 online                    │
@@ -146,19 +146,19 @@
 │                                │╰───────────────────────────────╯╰──────────────────────────────╯╰───────────────────────────────╯
 │                                │╭« Activity »───────────────────╮╭« One-liners »────────────────╮╭« Poll »───────────────────────╮
 │                                ││ 59 threads active in 14 days  ││ bob: the board looks great   ││ Best terminal font?           │
-│                                ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣤⣤⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿ ││      tonight                 ││  Mono      ██████▌░░░░░  54%  │
-│                                ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⠀⠀⠀⠀⠀⠀⣶⣶⣿⣿ ││ carol: hello from the        ││ ▸Nerd      ███▉░░░░░░░░  31%  │
-│                                ││ ⠀⠀⠀⠀⠀⠀⢠⣤⡄⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣤⣤⠀⠀⠀⠀⣿⣿⣿⣿ ││        terminal              ││  Bitmap    █▋░░░░░░░░░░  13%  │
-│                                ││ ⠀⠀⠀⠀⠀⠀⢸⣿⣷⣶⡆⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⠀⠀⣶⣶⣿⣿⣿⣿ ││ dave: anyone up for a door   ││                               │
-│                                ││ ⠀⠀⢸⣿⣧⣤⣼⣿⣿⣿⡇⠀⢠⣤⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││       game?                  ││                               │
-│                                ││ ⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⡇⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││                              ││                               │
+│                                ││                 ⢀⣀⣀        ⣸⣿ ││      tonight                 ││  Mono      ██████▌░░░░░  54%  │
+│                                ││                 ⣼⣿⣿⡀     ⢰⣶⣿⣿ ││ carol: hello from the        ││ ▸Nerd      ███▉░░░░░░░░  31%  │
+│                                ││      ⢠⣤⣤      ⢸⣿⣿⣿⣿⣧⣤    ⣼⣿⣿⣿ ││        terminal              ││  Bitmap    █▋░░░░░░░░░░  13%  │
+│                                ││  ⢀⣀⡀ ⣸⣿⣿⣷⣶    ⣼⣿⣿⣿⣿⣿⣿⣆⣀⣰⣶⣿⣿⣿⣿ ││ dave: anyone up for a door   ││                               │
+│                                ││  ⣼⣿⣷⣤⣿⣿⣿⣿⣿⡄ ⢠⣤⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││       game?                  ││                               │
+│                                ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⣀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││                              ││                               │
 │                                ││ 14 days ago             today ││                              ││                               │
 │                                │╰───────────────────────────────╯╰──────────────────────────────╯╰───────────────────────────────╯
 │                                │╭« Your credits »───────────────╮  .     .     .     .     .     .     .     .     .     .     .
 │                                ││ 1,234 credits                 │
 │                                ││ +334 in 14 days               │
-│                                ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣠⣤⣤⣤⣤⣶⣶⣶⣶⣿⣿⣿⣿⣿⣿ │  .     .     .     .     .     .     .     .     .     .     .
-│                                ││ ⣤⣤⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
+│                                ││             ⢀⣀⣠⣤⣤⣤⣤⣤⣤⣤⣤⣴⣶⣶⣶⣾⣿ │  .     .     .     .     .     .     .     .     .     .     .
+│                                ││ ⣤⣤⣤⣴⣶⣶⣶⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
 │                                ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
 │                                ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │  .     .     .     .     .     .     .     .     .     .     .
 │                                ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
@@ -166,7 +166,7 @@
 ╰────────────────────────────────╯╰───────────────────────────────╯  .     .     .     .     .     .     .     .     .     .     .
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / dashboard / 80x24 / ascii mono / colors=677a3d8c4ffaf65f
+=== neon / dashboard / 80x24 / ascii mono / colors=83426de02138601a
  >> russh-bbs << | Main menu                                          UTC 12:00
 +<< Main menu >>-----------------++<< This board >>-----++<< Clock >>----------+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
@@ -192,7 +192,7 @@
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / dashboard / 80x24 / unicode truecolor / colors=cf6b3d35988a3443
+=== paper / dashboard / 80x24 / unicode truecolor / colors=c3aa85c0746cc3b9
  russh-bbs │ Main menu                                                UTC 12:00
 ╭ Main menu ─────────────────────╮╭ This board ─────────╮╭ Clock ──────────────╮
 │ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
@@ -218,7 +218,7 @@
 ╰────────────────────────────────╯╰─────────────────────╯╰─────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / dashboard / 132x43 / unicode truecolor / colors=66988d1616481ae4
+=== paper / dashboard / 132x43 / unicode truecolor / colors=5ac6aa8a76fee773
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ╭ Main menu ─────────────────────╮╭ This board ───────────────────╮╭ Clock ───────────────────────╮╭ Who is online ────────────────╮
 │ Signed in as alice.            ││ russh-bbs                     ││      ━     ━   ━             ││ ● 5 online                    │
@@ -243,19 +243,19 @@
 │                                │╰───────────────────────────────╯╰──────────────────────────────╯╰───────────────────────────────╯
 │                                │╭ Activity ─────────────────────╮╭ One-liners ──────────────────╮╭ Poll ─────────────────────────╮
 │                                ││ 59 threads active in 14 days  ││ bob: the board looks great   ││ Best terminal font?           │
-│                                ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣤⣤⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿ ││      tonight                 ││  Mono      ██████▌░░░░░  54%  │
-│                                ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⠀⠀⠀⠀⠀⠀⣶⣶⣿⣿ ││ carol: hello from the        ││ ▸Nerd      ███▉░░░░░░░░  31%  │
-│                                ││ ⠀⠀⠀⠀⠀⠀⢠⣤⡄⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣤⣤⠀⠀⠀⠀⣿⣿⣿⣿ ││        terminal              ││  Bitmap    █▋░░░░░░░░░░  13%  │
-│                                ││ ⠀⠀⠀⠀⠀⠀⢸⣿⣷⣶⡆⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⠀⠀⣶⣶⣿⣿⣿⣿ ││ dave: anyone up for a door   ││                               │
-│                                ││ ⠀⠀⢸⣿⣧⣤⣼⣿⣿⣿⡇⠀⢠⣤⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││       game?                  ││                               │
-│                                ││ ⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⡇⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││                              ││                               │
+│                                ││                 ⢀⣀⣀        ⣸⣿ ││      tonight                 ││  Mono      ██████▌░░░░░  54%  │
+│                                ││                 ⣼⣿⣿⡀     ⢰⣶⣿⣿ ││ carol: hello from the        ││ ▸Nerd      ███▉░░░░░░░░  31%  │
+│                                ││      ⢠⣤⣤      ⢸⣿⣿⣿⣿⣧⣤    ⣼⣿⣿⣿ ││        terminal              ││  Bitmap    █▋░░░░░░░░░░  13%  │
+│                                ││  ⢀⣀⡀ ⣸⣿⣿⣷⣶    ⣼⣿⣿⣿⣿⣿⣿⣆⣀⣰⣶⣿⣿⣿⣿ ││ dave: anyone up for a door   ││                               │
+│                                ││  ⣼⣿⣷⣤⣿⣿⣿⣿⣿⡄ ⢠⣤⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││       game?                  ││                               │
+│                                ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⣀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││                              ││                               │
 │                                ││ 14 days ago             today ││                              ││                               │
 │                                │╰───────────────────────────────╯╰──────────────────────────────╯╰───────────────────────────────╯
 │                                │╭ Your credits ─────────────────╮
 │                                ││ 1,234 credits                 │
 │                                ││ +334 in 14 days               │
-│                                ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣠⣤⣤⣤⣤⣶⣶⣶⣶⣿⣿⣿⣿⣿⣿ │
-│                                ││ ⣤⣤⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
+│                                ││             ⢀⣀⣠⣤⣤⣤⣤⣤⣤⣤⣤⣴⣶⣶⣶⣾⣿ │
+│                                ││ ⣤⣤⣤⣴⣶⣶⣶⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
 │                                ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
 │                                ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
 │                                ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
@@ -263,7 +263,7 @@
 ╰────────────────────────────────╯╰───────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / dashboard / 80x24 / ascii mono / colors=e13c2310828c02d5
+=== paper / dashboard / 80x24 / ascii mono / colors=4dad94086eaa8f84
  russh-bbs | Main menu                                                UTC 12:00
 + Main menu ---------------------++ This board ---------++ Clock --------------+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
@@ -289,7 +289,7 @@
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / dashboard / 80x24 / unicode truecolor / colors=57fca9df6d7583e8
+=== amber / dashboard / 80x24 / unicode truecolor / colors=56190560169764d4
  russh-bbs │ Main menu                                                UTC 12:00
 ┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━┓┏ THIS BOARD ━━━━━━━━━┓┏ CLOCK ━━━━━━━━━━━━━━┓
 ┃ Signed in as alice.            ┃┃ russh-bbs           ┃┃      ━     ━   ━    ┃
@@ -315,7 +315,7 @@
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / dashboard / 132x43 / unicode truecolor / colors=fb7ce9569b757ce3
+=== amber / dashboard / 132x43 / unicode truecolor / colors=06cb793a83842802
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━┓┏ THIS BOARD ━━━━━━━━━━━━━━━━━━━┓┏ CLOCK ━━━━━━━━━━━━━━━━━━━━━━━┓┏ WHO IS ONLINE ━━━━━━━━━━━━━━━━┓
 ┃ Signed in as alice.            ┃┃ russh-bbs                     ┃┃      ━     ━   ━             ┃┃ ● 5 online                    ┃
@@ -340,19 +340,19 @@
 ┃                                ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 ┃                                ┃┏ ACTIVITY ━━━━━━━━━━━━━━━━━━━━━┓┏ ONE-LINERS ━━━━━━━━━━━━━━━━━━┓┏ POLL ━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃                                ┃┃ 59 threads active in 14 days  ┃┃ bob: the board looks great   ┃┃ Best terminal font?           ┃
-┃                                ┃┃ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣤⣤⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿ ┃┃      tonight                 ┃┃  Mono      ██████▌░░░░░  54%  ┃
-┃                                ┃┃ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⠀⠀⠀⠀⠀⠀⣶⣶⣿⣿ ┃┃ carol: hello from the        ┃┃ ▸Nerd      ███▉░░░░░░░░  31%  ┃
-┃                                ┃┃ ⠀⠀⠀⠀⠀⠀⢠⣤⡄⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣤⣤⠀⠀⠀⠀⣿⣿⣿⣿ ┃┃        terminal              ┃┃  Bitmap    █▋░░░░░░░░░░  13%  ┃
-┃                                ┃┃ ⠀⠀⠀⠀⠀⠀⢸⣿⣷⣶⡆⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⠀⠀⣶⣶⣿⣿⣿⣿ ┃┃ dave: anyone up for a door   ┃┃                               ┃
-┃                                ┃┃ ⠀⠀⢸⣿⣧⣤⣼⣿⣿⣿⡇⠀⢠⣤⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ┃┃       game?                  ┃┃                               ┃
-┃                                ┃┃ ⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⡇⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ┃┃                              ┃┃                               ┃
+┃                                ┃┃                 ⢀⣀⣀        ⣸⣿ ┃┃      tonight                 ┃┃  Mono      ██████▌░░░░░  54%  ┃
+┃                                ┃┃                 ⣼⣿⣿⡀     ⢰⣶⣿⣿ ┃┃ carol: hello from the        ┃┃ ▸Nerd      ███▉░░░░░░░░  31%  ┃
+┃                                ┃┃      ⢠⣤⣤      ⢸⣿⣿⣿⣿⣧⣤    ⣼⣿⣿⣿ ┃┃        terminal              ┃┃  Bitmap    █▋░░░░░░░░░░  13%  ┃
+┃                                ┃┃  ⢀⣀⡀ ⣸⣿⣿⣷⣶    ⣼⣿⣿⣿⣿⣿⣿⣆⣀⣰⣶⣿⣿⣿⣿ ┃┃ dave: anyone up for a door   ┃┃                               ┃
+┃                                ┃┃  ⣼⣿⣷⣤⣿⣿⣿⣿⣿⡄ ⢠⣤⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ┃┃       game?                  ┃┃                               ┃
+┃                                ┃┃ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⣀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ┃┃                              ┃┃                               ┃
 ┃                                ┃┃ 14 days ago             today ┃┃                              ┃┃                               ┃
 ┃                                ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 ┃                                ┃┏ YOUR CREDITS ━━━━━━━━━━━━━━━━━┓
 ┃                                ┃┃ 1,234 credits                 ┃
 ┃                                ┃┃ +334 in 14 days               ┃
-┃                                ┃┃ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣠⣤⣤⣤⣤⣶⣶⣶⣶⣿⣿⣿⣿⣿⣿ ┃
-┃                                ┃┃ ⣤⣤⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ┃
+┃                                ┃┃             ⢀⣀⣠⣤⣤⣤⣤⣤⣤⣤⣤⣴⣶⣶⣶⣾⣿ ┃
+┃                                ┃┃ ⣤⣤⣤⣴⣶⣶⣶⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ┃
 ┃                                ┃┃ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ┃
 ┃                                ┃┃ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ┃
 ┃                                ┃┃ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ┃
@@ -360,7 +360,7 @@
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / dashboard / 80x24 / ascii mono / colors=e13c2310828c02d5
+=== amber / dashboard / 80x24 / ascii mono / colors=4dad94086eaa8f84
  russh-bbs | Main menu                                                UTC 12:00
 + MAIN MENU ---------------------++ THIS BOARD ---------++ CLOCK --------------+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
@@ -386,7 +386,7 @@
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / dashboard / 80x24 / unicode truecolor / colors=385d30fae545d35f
+=== deepspace / dashboard / 80x24 / unicode truecolor / colors=60fabd3246866df6
  ◆ russh-bbs ◆ │ Main menu                                            UTC 12:00
 ╭────── M A I N   M E N U ───────╮╭ T H I S   B O A R D ╮╭───── C L O C K ─────╮
 │ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
@@ -412,7 +412,7 @@
 ╰────────────────────────────────╯╰─────────────────────╯╰─────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / dashboard / 132x43 / unicode truecolor / colors=be5a51264ac0a04d
+=== deepspace / dashboard / 132x43 / unicode truecolor / colors=c38b7a093b9e9c92
  ◆ russh-bbs ◆ │ Main menu                                                                                                UTC 12:00
 ╭────── M A I N   M E N U ───────╮╭───── T H I S   B O A R D ─────╮╭───────── C L O C K ──────────╮╭── W H O   I S   O N L I N E ──╮
 │ Signed in as alice.            ││ russh-bbs                     ││      ━     ━   ━             ││ ● 5 online                    │
@@ -437,19 +437,19 @@
 │                                │╰───────────────────────────────╯╰──────────────────────────────╯╰───────────────────────────────╯
 │                                │╭─────── A C T I V I T Y ───────╮╭──── O N E - L I N E R S ─────╮╭─────────── P O L L ───────────╮
 │                                ││ 59 threads active in 14 days  ││ bob: the board looks great   ││ Best terminal font?           │
-│                                ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣤⣤⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿ ││      tonight                 ││  Mono      ██████▌░░░░░  54%  │
-│                                ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⠀⠀⠀⠀⠀⠀⣶⣶⣿⣿ ││ carol: hello from the        ││ ▸Nerd      ███▉░░░░░░░░  31%  │
-│                                ││ ⠀⠀⠀⠀⠀⠀⢠⣤⡄⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣤⣤⠀⠀⠀⠀⣿⣿⣿⣿ ││        terminal              ││  Bitmap    █▋░░░░░░░░░░  13%  │
-│                                ││ ⠀⠀⠀⠀⠀⠀⢸⣿⣷⣶⡆⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⠀⠀⣶⣶⣿⣿⣿⣿ ││ dave: anyone up for a door   ││                               │
-│                                ││ ⠀⠀⢸⣿⣧⣤⣼⣿⣿⣿⡇⠀⢠⣤⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││       game?                  ││                               │
-│                                ││ ⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⡇⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││                              ││                               │
+│                                ││                 ⢀⣀⣀        ⣸⣿ ││      tonight                 ││  Mono      ██████▌░░░░░  54%  │
+│                                ││                 ⣼⣿⣿⡀     ⢰⣶⣿⣿ ││ carol: hello from the        ││ ▸Nerd      ███▉░░░░░░░░  31%  │
+│                                ││      ⢠⣤⣤      ⢸⣿⣿⣿⣿⣧⣤    ⣼⣿⣿⣿ ││        terminal              ││  Bitmap    █▋░░░░░░░░░░  13%  │
+│                                ││  ⢀⣀⡀ ⣸⣿⣿⣷⣶    ⣼⣿⣿⣿⣿⣿⣿⣆⣀⣰⣶⣿⣿⣿⣿ ││ dave: anyone up for a door   ││                               │
+│                                ││  ⣼⣿⣷⣤⣿⣿⣿⣿⣿⡄ ⢠⣤⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││       game?                  ││                               │
+│                                ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⣀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││                              ││                               │
 │                                ││ 14 days ago             today ││                              ││                               │
 │                                │╰───────────────────────────────╯╰──────────────────────────────╯╰───────────────────────────────╯
 │                                │╭─── Y O U R   C R E D I T S ───╮      .           *  .                  .
 │                                ││ 1,234 credits                 │        .  . *                     .       . * .   **  .
 │                                ││ +334 in 14 days               │ .                                    *      .        .   .
-│                                ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣠⣤⣤⣤⣤⣶⣶⣶⣶⣿⣿⣿⣿⣿⣿ │            *         .             .  .
-│                                ││ ⣤⣤⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │ .      *           .  ...       *    .                       .
+│                                ││             ⢀⣀⣠⣤⣤⣤⣤⣤⣤⣤⣤⣴⣶⣶⣶⣾⣿ │            *         .             .  .
+│                                ││ ⣤⣤⣤⣴⣶⣶⣶⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │ .      *           .  ...       *    .                       .
 │                                ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │      .   .                     *             .   .  .
 │                                ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │              .   .
 │                                ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │                                                               .
@@ -457,7 +457,7 @@
 ╰────────────────────────────────╯╰───────────────────────────────╯ *                      .                 . .              .
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / dashboard / 80x24 / ascii mono / colors=d50ff68a1dfff31d
+=== deepspace / dashboard / 80x24 / ascii mono / colors=76ce7b4a9eab1d9c
  * russh-bbs * | Main menu                                            UTC 12:00
 +------ M A I N   M E N U -------++ T H I S   B O A R D ++----- C L O C K -----+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
@@ -483,7 +483,7 @@
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / dashboard / 80x24 / unicode truecolor / colors=b10c666871552867
+=== ansi / dashboard / 80x24 / unicode truecolor / colors=de4e4b20f4ad2302
  ░▒▓ russh-bbs ▓▒░ │ Main menu                                        UTC 12:00
 ╔═════════╡ Main menu ╞══════════╗╔═══╡ This board ╞════╗╔══════╡ Clock ╞══════╗
 ║ Signed in as alice.            ║║ russh-bbs           ║║      ━     ━   ━    ║
@@ -509,7 +509,7 @@
 ╚════════════════════════════════╝╚═════════════════════╝╚═════════════════════╝
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / dashboard / 132x43 / unicode truecolor / colors=60cfa55c3474a4fd
+=== ansi / dashboard / 132x43 / unicode truecolor / colors=1b9ff52cded67a3b
  ░▒▓ russh-bbs ▓▒░ │ Main menu                                                                                            UTC 12:00
 ╔═════════╡ Main menu ╞══════════╗╔════════╡ This board ╞═════════╗╔══════════╡ Clock ╞═══════════╗╔═══════╡ Who is online ╞═══════╗
 ║ Signed in as alice.            ║║ russh-bbs                     ║║      ━     ━   ━             ║║ ● 5 online                    ║
@@ -534,19 +534,19 @@
 ║                                ║╚═══════════════════════════════╝╚══════════════════════════════╝╚═══════════════════════════════╝
 ║                                ║╔═════════╡ Activity ╞══════════╗╔════════╡ One-liners ╞════════╗╔═══════════╡ Poll ╞════════════╗
 ║                                ║║ 59 threads active in 14 days  ║║ bob: the board looks great   ║║ Best terminal font?           ║
-║                                ║║ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣤⣤⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿ ║║      tonight                 ║║  Mono      ██████▌░░░░░  54%  ║
-║                                ║║ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⠀⠀⠀⠀⠀⠀⣶⣶⣿⣿ ║║ carol: hello from the        ║║ ▸Nerd      ███▉░░░░░░░░  31%  ║
-║                                ║║ ⠀⠀⠀⠀⠀⠀⢠⣤⡄⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣤⣤⠀⠀⠀⠀⣿⣿⣿⣿ ║║        terminal              ║║  Bitmap    █▋░░░░░░░░░░  13%  ║
-║                                ║║ ⠀⠀⠀⠀⠀⠀⢸⣿⣷⣶⡆⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⠀⠀⣶⣶⣿⣿⣿⣿ ║║ dave: anyone up for a door   ║║                               ║
-║                                ║║ ⠀⠀⢸⣿⣧⣤⣼⣿⣿⣿⡇⠀⢠⣤⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ║║       game?                  ║║                               ║
-║                                ║║ ⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⡇⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ║║                              ║║                               ║
+║                                ║║                 ⢀⣀⣀        ⣸⣿ ║║      tonight                 ║║  Mono      ██████▌░░░░░  54%  ║
+║                                ║║                 ⣼⣿⣿⡀     ⢰⣶⣿⣿ ║║ carol: hello from the        ║║ ▸Nerd      ███▉░░░░░░░░  31%  ║
+║                                ║║      ⢠⣤⣤      ⢸⣿⣿⣿⣿⣧⣤    ⣼⣿⣿⣿ ║║        terminal              ║║  Bitmap    █▋░░░░░░░░░░  13%  ║
+║                                ║║  ⢀⣀⡀ ⣸⣿⣿⣷⣶    ⣼⣿⣿⣿⣿⣿⣿⣆⣀⣰⣶⣿⣿⣿⣿ ║║ dave: anyone up for a door   ║║                               ║
+║                                ║║  ⣼⣿⣷⣤⣿⣿⣿⣿⣿⡄ ⢠⣤⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ║║       game?                  ║║                               ║
+║                                ║║ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⣀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ║║                              ║║                               ║
 ║                                ║║ 14 days ago             today ║║                              ║║                               ║
 ║                                ║╚═══════════════════════════════╝╚══════════════════════════════╝╚═══════════════════════════════╝
 ║                                ║╔═══════╡ Your credits ╞════════╗
 ║                                ║║ 1,234 credits                 ║
 ║                                ║║ +334 in 14 days               ║
-║                                ║║ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣠⣤⣤⣤⣤⣶⣶⣶⣶⣿⣿⣿⣿⣿⣿ ║
-║                                ║║ ⣤⣤⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ║
+║                                ║║             ⢀⣀⣠⣤⣤⣤⣤⣤⣤⣤⣤⣴⣶⣶⣶⣾⣿ ║
+║                                ║║ ⣤⣤⣤⣴⣶⣶⣶⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ║
 ║                                ║║ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ║
 ║                                ║║ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ║
 ║                                ║║ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ║
@@ -554,7 +554,7 @@
 ╚════════════════════════════════╝╚═══════════════════════════════╝
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / dashboard / 80x24 / ascii mono / colors=b22ebe35d8bda023
+=== ansi / dashboard / 80x24 / ascii mono / colors=b2f4aa72151ce096
  ## russh-bbs ## | Main menu                                          UTC 12:00
 +---------| Main menu |----------++---| This board |----++------| Clock |------+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |

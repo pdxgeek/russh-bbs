@@ -39,6 +39,7 @@ use std::time::{Duration, Instant};
 use ratatui::Frame;
 
 use crate::settings::Look;
+use crate::ui::art::Grid;
 use crate::ui::canvas::Rgb;
 
 /// The effects the screens use.
@@ -296,8 +297,15 @@ pub(crate) struct Overlay<'a> {
 }
 
 impl Overlay<'_> {
-    /// Rewrite the finished frame. Call last in the draw closure.
+    /// Rewrite the finished frame with no login banner. Call last in the draw closure.
+    #[cfg(test)]
     pub(crate) fn apply(self, frame: &mut Frame<'_>) {
+        self.apply_with(frame, None);
+    }
+
+    /// Like [`Overlay::apply`], with the style's login banner for the intro to reveal in place
+    /// of the big letters (`None`: the big letters). Other effects ignore it.
+    pub(crate) fn apply_with(self, frame: &mut Frame<'_>, banner: Option<&Grid>) {
         let stage = effects::Stage::new(frame.area(), self.look);
         let buf = frame.buffer_mut();
         match self.kind {
@@ -310,7 +318,11 @@ impl Overlay<'_> {
                     accent: rgb(palette.accent, (90, 200, 255)),
                     accent2: rgb(palette.accent2, (230, 90, 220)),
                 };
-                intro::paint(buf, &stage, self.t, self.title, colors);
+                let banner = banner.map(|grid| intro::Banner {
+                    grid,
+                    look: self.look,
+                });
+                intro::paint(buf, &stage, self.t, self.title, colors, banner);
             }
             Kind::Wipe => effects::wipe(buf, &stage, self.t),
             Kind::Reveal => effects::typewriter(buf, &stage, self.t),

@@ -21,7 +21,7 @@ use ratatui::style::{Color, Modifier};
 use ratatui::widgets::Widget;
 use russh_bbs_core::terminal_settings::TerminalSettings;
 
-use super::{BarChart, ChartTheme, Gauge, LineChart, Sparkline, Tone};
+use super::{BarChart, ChartTheme, Gauge, LineChart, Meter, Sparkline, Tone};
 use crate::settings::Look;
 use crate::ui::Ui;
 use crate::ui::depth::ColorDepth;
@@ -258,4 +258,91 @@ fn line_chart_golden_in_braille_and_ascii() {
     let first = line.content.iter().find(|c| c.symbol() != " ").unwrap();
     assert_eq!(first.fg, Color::Rgb(r, g, b));
     assert!(!first.modifier.contains(Modifier::REVERSED));
+}
+
+#[test]
+fn meter_golden_in_every_tier() {
+    let colour = draw(
+        Meter::new(5, 10, theme(ColorDepth::TrueColor, false)),
+        10,
+        1,
+    );
+    assert_eq!(rows(&colour), ["█████░░░░░"]);
+    let mono = draw(Meter::new(1, 3, theme(ColorDepth::Mono, false)), 10, 1);
+    assert_eq!(rows(&mono), ["███▍░░░░░░"]);
+    let ascii = draw(Meter::new(5, 10, theme(ColorDepth::Mono, true)), 10, 1);
+    assert_eq!(rows(&ascii), ["#####-----"]);
+    let partial = draw(Meter::new(1, 3, theme(ColorDepth::Mono, true)), 10, 1);
+    assert_eq!(rows(&partial), ["###-------"]);
+    // Anything past the whole is full; a whole of zero is empty and does not divide by zero.
+    let over = draw(Meter::new(70, 10, theme(ColorDepth::Mono, true)), 4, 1);
+    assert_eq!(rows(&over), ["####"]);
+    let huge = draw(
+        Meter::new(u64::MAX, u64::MAX, theme(ColorDepth::Mono, true)),
+        4,
+        1,
+    );
+    assert_eq!(rows(&huge), ["####"]);
+    let none = draw(Meter::new(5, 0, theme(ColorDepth::Mono, true)), 4, 1);
+    assert_eq!(rows(&none), ["----"]);
+    let empty = draw(Meter::new(0, 0, theme(ColorDepth::Mono, false)), 4, 1);
+    assert_eq!(rows(&empty), ["░░░░"]);
+}
+
+#[test]
+fn meter_uses_tone_roles_never_bold_or_reverse_and_stays_ascii() {
+    let palette = look(ColorDepth::TrueColor, false).palette();
+    for (tone, tint) in [
+        (Tone::Plain, palette.accent),
+        (Tone::Ok, palette.success),
+        (Tone::Warn, palette.warning),
+        (Tone::Bad, palette.error),
+    ] {
+        let want = look(ColorDepth::TrueColor, false).fg(tint).fg;
+        let buf = draw(
+            Meter::new(1, 1, theme(ColorDepth::TrueColor, false)).tone(tone),
+            6,
+            1,
+        );
+        for cell in &buf.content {
+            assert_eq!(cell.fg, want.unwrap(), "{tone:?}");
+            assert!(!cell.modifier.contains(Modifier::REVERSED));
+            assert!(!cell.modifier.contains(Modifier::BOLD));
+        }
+    }
+    let mono = draw(Meter::new(1, 2, theme(ColorDepth::Mono, false)), 6, 1);
+    assert!(mono.content.iter().all(|c| c.fg == Color::Reset));
+    let ascii = draw(Meter::new(1, 3, theme(ColorDepth::Ansi16, true)), 9, 1);
+    assert!(rows(&ascii)[0].is_ascii());
+    // A zero-sized area or one past the buffer draws nothing and does not panic.
+    let mut small = Buffer::empty(Rect::new(0, 0, 3, 1));
+    Meter::new(1, 2, theme(ColorDepth::Mono, false)).render(Rect::new(0, 0, 0, 1), &mut small);
+    Meter::new(1, 2, theme(ColorDepth::Mono, false)).render(Rect::new(0, 0, 9, 4), &mut small);
+    assert_eq!(rows(&small).len(), 1);
+}
+
+#[test]
+fn area_chart_scaled_from_zero_in_every_tier() {
+    // The widgets scale from zero: the tallest value reaches the top row, and it is the same
+    // chart in each tier (braille with and without colour, `.:+#` in ASCII).
+    let data = [0.0, 1.0, 2.0, 4.0, 8.0, 4.0, 2.0, 1.0];
+    let chart = |t: ChartTheme| LineChart::new(&data, t).filled().range(0.0, 8.0);
+    let colour = draw(chart(theme(ColorDepth::TrueColor, false)), 4, 2);
+    let mono = draw(chart(theme(ColorDepth::Mono, false)), 4, 2);
+    assert_eq!(rows(&colour), rows(&mono));
+    assert!(rows(&colour)[0].chars().any(|c| c != ' '));
+    assert!(
+        rows(&colour)
+            .iter()
+            .flat_map(|r| r.chars().collect::<Vec<_>>())
+            .all(|c| c == ' ' || ('\u{2800}'..='\u{28ff}').contains(&c))
+    );
+    assert!(mono.content.iter().all(|c| c.fg == Color::Reset));
+    let ascii = draw(chart(theme(ColorDepth::Mono, true)), 4, 2);
+    assert!(rows(&ascii).iter().all(|r| r.is_ascii()));
+    assert!(rows(&ascii)[0].chars().any(|c| c != ' '));
+    for cell in colour.content.iter().chain(&ascii.content) {
+        assert!(!cell.modifier.contains(Modifier::REVERSED));
+        assert!(!cell.modifier.contains(Modifier::BOLD));
+    }
 }

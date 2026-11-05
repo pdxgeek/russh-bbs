@@ -1,22 +1,22 @@
- ◆ Night Owl BBS ◆ │ Main menu                                        UTC 15:47
+ ◆ Night Owl BBS ◆ │ Main menu                                        UTC 13:05
+    .     .                          ███▓▓▓          .      .   +
+                         *   * *────────────────  .
+    *                                ▓▓▒▒▒▒      .                       .
+  *     .       .        *                               .          . .  *
 ╭────── M A I N   M E N U ───────╮╭ T H I S   B O A R D ╮╭───── C L O C K ─────╮
-│ Signed in as founder.          ││ Night Owl BBS       ││ UTC 15:47           │
-│                                ││ After hours, all    ││                     │
-│   [f] Forums                   ││ hours.              ││                     │
-│   [m] Mail                     ││ Portland, OR        ││                     │
-│   [a] Files  (not built yet)   │╰─────────────────────╯╰─────────────────────╯
-│   [c] Chat                     │╭I S   O N L I N E ───╮╭ T   C A L L E R S ──╮
-│   [d] Doors                    ││ Nothing to show     ││ Nothing to show     │
-│   [u] Members                  ││ yet.                ││ yet.                │
-│   [y] Community                ││                     ││                     │
-│   [i] Invites                  ││                     ││                     │
-│ > [s] Terminal settings        ││                     ││                     │
+│ Signed in as founder.          ││ Night Owl BBS       ││      ━     ━   ━    │
+│                                ││ Calm, late-night t… ││   ┃  ━┃ • ┃ ┃ ┃━    │
+│   [f] Forums                   ││ Portland, Oregon    ││   ┃  ━┃ • ┃━┃  ━┃   │
+│   [m] Mail                     ││                     ││ Thu 5 Nov 2026 UTC  │
+│   [a] Files  (not built yet)   ││                     ││                     │
+│   [c] Chat                     ││                     ││                     │
+│   [d] Doors                    ││                     ││                     │
+│   [u] Members                  │╰─────────────────────╯╰─────────────────────╯
+│   [y] Community                │╭I S   O N L I N E ───╮╭ T   C A L L E R S ──╮
+│   [i] Invites                  ││ ● 1 online          ││ founder          1m │
+│ > [s] Terminal settings        ││ ▸ founder           ││                     │
 │   [o] Sysop tools              ││                     ││                     │
-│   [l] Log off                  │╰─────────────────────╯╰─────────────────────╯
-│                                │╭─ N E W   P O S T S ─╮╭N R E A D   M A I L ─╮
-│                                ││ Nothing to show     ││ Nothing to show     │
-│                                ││ yet.                ││ yet.                │
-│                                ││                     ││                     │
+│   [l] Log off                  ││                     ││                     │
 │                                ││                     ││                     │
 │                                ││                     ││                     │
 │                                ││                     ││                     │

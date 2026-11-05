@@ -24,6 +24,7 @@ use russh_bbs_core::profiles::{Line, ScreenView, keys};
 
 use super::{clean, line_of};
 use crate::settings::Look;
+use crate::ui::charts::{ChartTheme, Gauge, Tone};
 use crate::ui::classic;
 use crate::ui::frame::{ChromeText, FrameSpec};
 use crate::ui::screens::nick;
@@ -31,7 +32,6 @@ use crate::ui::strings::StringTable;
 use crate::ui::table::{self, Cell, CellStyle, Column, TableRow, TableSpec, Title, Width, clip};
 use crate::ui::theme::Element;
 use crate::ui::widgets::Pen;
-use crate::ui::widgets::gfx::bar;
 
 /// Widest the pane is drawn.
 const MAX_WIDTH: u16 = 100;
@@ -325,8 +325,11 @@ fn poll(frame: &mut Frame<'_>, area: Rect, view: &ScreenView, ctx: &ViewCtx<'_>)
         false,
     );
     let width = usize::from(inner.width).saturating_sub(2);
-    let bar_width = width.saturating_sub(24).clamp(8, 40);
+    let bar_width = width.saturating_sub(4).clamp(8, 56);
     let mut lines: Vec<TextLine<'static>> = Vec::new();
+    // Each option's bar is a chart row (UI-W, D124): its row in `lines`, the vote count and the
+    // share. The line itself stays empty and the gauge is drawn into it after the text.
+    let mut gauges: Vec<(usize, u64, u64)> = Vec::new();
     for line in &view.lines {
         match line {
             Line::Pair {
@@ -342,7 +345,6 @@ fn poll(frame: &mut Frame<'_>, area: Rect, view: &ScreenView, ctx: &ViewCtx<'_>)
                 let count: u64 = value(values, "count").parse().unwrap_or(0);
                 let percent: u64 = value(values, "percent").parse().unwrap_or(0);
                 let mine = *key == ck::POLL_OPTION_COUNT_MINE;
-                let (filled, rest) = bar(percent, 100, bar_width, look.ascii());
                 lines.push(TextLine::from(vec![
                     Span::styled(format!("[{}] ", value(values, "key")), pen.key()),
                     Span::styled(
@@ -358,12 +360,8 @@ fn poll(frame: &mut Frame<'_>, area: Rect, view: &ScreenView, ctx: &ViewCtx<'_>)
                         pen.muted(),
                     ),
                 ]));
-                lines.push(TextLine::from(vec![
-                    Span::raw("    "),
-                    Span::styled(filled, pen.accent()),
-                    Span::styled(rest, pen.muted()),
-                    Span::styled(format!(" {count} ({percent}%)"), pen.text()),
-                ]));
+                gauges.push((lines.len(), count, percent));
+                lines.push(TextLine::raw(""));
             }
             Line::Filled { key, values } if *key == ck::POLL_BY => {
                 lines.push(TextLine::from(vec![
@@ -385,4 +383,28 @@ fn poll(frame: &mut Frame<'_>, area: Rect, view: &ScreenView, ctx: &ViewCtx<'_>)
             .wrap(Wrap { trim: false }),
         inner,
     );
+    let theme = ChartTheme::of(look);
+    for (row, count, percent) in gauges {
+        let Ok(row) = u16::try_from(row) else {
+            continue;
+        };
+        if row >= inner.height {
+            continue;
+        }
+        let label = count.to_string();
+        let area = Rect {
+            x: inner.x + 4,
+            y: inner.y + row,
+            width: u16::try_from(bar_width + label.len() + 6)
+                .unwrap_or(u16::MAX)
+                .min(inner.width.saturating_sub(4)),
+            height: 1,
+        };
+        #[allow(clippy::cast_precision_loss, reason = "a percentage of at most 100")]
+        let ratio = percent.min(100) as f64 / 100.0;
+        frame.render_widget(
+            Gauge::new(ratio, theme).label(&label).tone(Tone::Plain),
+            area,
+        );
+    }
 }

@@ -1,0 +1,24 @@
+ russh-bbs │ Main menu                                                UTC 12:16
+┌ Main menu ──────────────────────────────────┐│┌ Chat rooms ──────────────────┐
+│ Signed in as founder.                       │││  Room                        │
+│                                             │││> #lobby                      │
+│   [f] Forums                                │││                              │
+│   [m] Mail                                  │││                              │
+│   [a] Files  (not built yet)                │││                              │
+│   [c] Chat                                  │││                              │
+│   [d] Doors                                 │││                              │
+│   [u] Members                               │││                              │
+│   [y] Community                             │││                              │
+│   [i] Invites                               │││                              │
+│   [s] Terminal settings                     │┃│                              │
+│   [o] Sysop tools                           │││                              │
+│   [l] Log off                               │││                              │
+│                                             │││                              │
+│                                             │││                              │
+│                                             │││                              │
+│                                             │││                              │
+│                                             │││                              │
+│                                             │││                              │
+│                                             │││                              │
+└─────────────────────────────── Notice: Chat is beside this screen. Ctrl-W mo…
+ ? help  Esc back  Ctrl-C log off

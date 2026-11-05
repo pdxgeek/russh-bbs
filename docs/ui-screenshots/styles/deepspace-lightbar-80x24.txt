@@ -1,22 +1,22 @@
- ◆ Night Owl BBS ◆ │ Main menu                                        UTC 15:47
+ ◆ Night Owl BBS ◆ │ Main menu                                        UTC 13:05
+    .     .                          ███▓▓▓          .      .   +
+                         *   * *────────────────  .
+    *                                ▓▓▒▒▒▒      .                       .
+  *     .       .        *                               .          . .  *
   ┌─────────────────────────── M A I N   M E N U ────────────────────────────┐
-  │ Signed in as founder.                                                    │
+  │ Signed in as founder.                                                    │ .
   │                                                                          │
-  │   [f] Forums                                                             │
-  │   [m] Mail                                                               │
-  │   [a] Files  (not built yet)                                             │ .
+* │   [f] Forums                                                             │
+ .│   [m] Mail                                                               │
+  │   [a] Files  (not built yet)                                             │
   │   [c] Chat                                                               │
-* │   [d] Doors                                                              │
- .│   [u] Members                                                            │
+  │   [d] Doors                                                              │
+. │   [u] Members                                                            │
   │   [y] Community                                                          │
   │   [i] Invites                                                            │
   │ > [s] Terminal settings                                                  │
-. │   [o] Sysop tools                                                        │
-  │   [l] Log off                                                            │
-  │                                                                          │
-  │                                                                          │
-  │                                                                          │ .
-  │                                                                          │.
+  │   [o] Sysop tools                                                        │ .
+  │   [l] Log off                                                            │.
  .│                                                                          │
   │                                                                          │
   │                                                                          │

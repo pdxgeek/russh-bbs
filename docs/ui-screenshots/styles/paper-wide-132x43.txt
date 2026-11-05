@@ -1,40 +1,40 @@
- Night Owl BBS │ Main menu                                                                                                UTC 15:48
+ Night Owl BBS │ Main menu                                                                                                UTC 13:07
+                                                  ╭──────────────────────────────╮
+                              ╌╌╌╌╌╌╌╌╌───────────│  ◇   ◇   ◇   ◇   ◇   ◇   ◇   │───────────╌╌╌╌╌╌╌╌╌
+                                                  ╰──────────────────────────────╯
+
 ╭ Main menu ─────────────────────╮╭ Night Owl BBS ─────────────────────────────────────────────╮╭ This board ──────────────────────╮
 │   [f] Forums                   ││                                                            ││ Night Owl BBS                    │
-│   [m] Mail                     ││  Signed in as founder.                                     ││ After hours, all hours.          │
-│   [a] Files  (not built yet)   ││                                                            ││ Portland, OR · since 2026        │
+│   [m] Mail                     ││  Signed in as founder.                                     ││ Calm, late-night talk.           │
+│   [a] Files  (not built yet)   ││                                                            ││ Portland, Oregon · since 1994    │
 │   [c] Chat                     ││  > [s] Terminal settings                                   ││                                  │
-│   [d] Doors                    ││                                                            │╰──────────────────────────────────╯
-│   [u] Members                  ││                                                            │╭ Clock ───────────────────────────╮
-│   [y] Community                ││                                                            ││ UTC 15:48                        │
-│   [i] Invites                  ││                                                            │╰──────────────────────────────────╯
-│ > [s] Terminal settings        ││                                                            │╭ Who is online ───────────────────╮
-│   [o] Sysop tools              ││                                                            ││ Nothing to show yet.             │
-│   [l] Log off                  ││                                                            ││                                  │
+│   [d] Doors                    ││                                                            ││                                  │
+│   [u] Members                  ││                                                            │╰──────────────────────────────────╯
+│   [y] Community                ││                                                            │╭ Clock ───────────────────────────╮
+│   [i] Invites                  ││                                                            ││      ━     ━   ━                 │
+│ > [s] Terminal settings        ││                                                            ││   ┃  ━┃ • ┃ ┃   ┃                │
+│   [o] Sysop tools              ││                                                            ││   ┃  ━┃ • ┃━┃   ┃                │
+│   [l] Log off                  ││                                                            ││ Thu 5 Nov 2026 UTC               │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            │╰──────────────────────────────────╯
+│                                ││                                                            │╭ Who is online ───────────────────╮
+│                                ││                                                            ││ ● 1 online                       │
+│                                ││                                                            ││ ▸ founder                        │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
+│                                ││                                                            │╰──────────────────────────────────╯
+│                                ││                                                            │╭ Mail ────────────────────────────╮
+│                                ││                                                            ││ No unread mail.                  │
+│                                ││                                                            ││ 0 in your inbox                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            │╰──────────────────────────────────╯
-│                                ││                                                            │╭ New posts ───────────────────────╮
-│                                ││                                                            ││ Nothing to show yet.             │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            │╰──────────────────────────────────╯
-│                                ││                                                            │╭ Activity ────────────────────────╮
-│                                ││                                                            ││ Nothing to show yet.             │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
-│                                ││                                                            ││                                  │
+│                                ││                                                            │╭ Last callers ────────────────────╮
+│                                ││                                                            ││ founder                      now │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │
 │                                ││                                                            ││                                  │

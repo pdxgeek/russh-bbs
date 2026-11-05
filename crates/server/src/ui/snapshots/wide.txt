@@ -1,4 +1,4 @@
-=== phosphor / wide / 80x24 / unicode truecolor / colors=da4f4de99a24b3df
+=== phosphor / wide / 80x24 / unicode truecolor / colors=d84b4ff7adf19ec3
  russh-bbs │ Main menu                                                UTC 12:00
 ┌[ Main menu ]───────────────────┐┌[ This board ]───────┐┌[ Clock ]────────────┐
 │ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
@@ -24,7 +24,7 @@
 └────────────────────────────────┘└─────────────────────┘└─────────────────────┘
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / wide / 132x43 / unicode truecolor / colors=26920b9f9b3fef77
+=== phosphor / wide / 132x43 / unicode truecolor / colors=53c8e9ec89ca6cc9
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ┌[ Main menu ]───────────────────┐┌[ russh-bbs ]───────────────────────────────────────────────┐┌[ This board ]────────────────────┐
 │ > [f] Forums                   ││                                                            ││ russh-bbs                        │
@@ -61,15 +61,15 @@
 │                                ││                                                            │└──────────────────────────────────┘
 │                                ││                                                            │┌[ Activity ]──────────────────────┐
 │                                ││                                                            ││ 59 threads active in 14 days     │
-│                                ││                                                            ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣶⣶⠀⠀⠀⠀⠀⠀⢀⣀⣀⣿⣿ │
-│                                ││                                                            ││ ⠀⠀⠀⠀⠀⠀⠀⣀⣀⡀⠀⠀⠀⠀⠀⠀⣶⣶⣾⣿⣿⣀⣀⠀⠀⠀⠀⢸⣿⣿⣿⣿ │
-│                                ││                                                            ││ ⠀⠀⢠⣤⣤⠀⠀⣿⣿⣿⣿⡇⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣤⣤⣼⣿⣿⣿⣿⣿⣿ │
-│                                ││                                                            ││ ⣤⣤⣼⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
+│                                ││                                                            ││                   ⢠⣤⣤       ⣀⣀⣼⣿ │
+│                                ││                                                            ││       ⢀⣀⡀       ⣶⣶⣿⣿⣿⣆⣀⡀   ⢠⣿⣿⣿⣿ │
+│                                ││                                                            ││  ⢠⣤⣤⡀ ⣼⣿⣿⣿⣿    ⢰⣿⣿⣿⣿⣿⣿⣿⣷⣤⣼⣿⣿⣿⣿⣿⣿ │
+│                                ││                                                            ││ ⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⣀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
 │                                ││                                                            ││ 14 days ago                today │
 └────────────────────────────────┘└────────────────────────────────────────────────────────────┘└──────────────────────────────────┘
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / wide / 80x24 / ascii mono / colors=b38fa5d8be08b7ad
+=== phosphor / wide / 80x24 / ascii mono / colors=8c0adbe9c3d4452c
  russh-bbs | Main menu                                                UTC 12:00
 +[ Main menu ]-------------------++[ This board ]-------++[ Clock ]------------+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
@@ -95,7 +95,7 @@
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / wide / 80x24 / unicode truecolor / colors=08126b195a574e17
+=== neon / wide / 80x24 / unicode truecolor / colors=65e3b65dd7717d2b
  » russh-bbs « │ Main menu                                            UTC 12:00
 ╭« Main menu »───────────────────╮╭« This board »───────╮╭« Clock »────────────╮
 │ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
@@ -121,7 +121,7 @@
 ╰────────────────────────────────╯╰─────────────────────╯╰─────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / wide / 132x43 / unicode truecolor / colors=db87c52b79fd3764
+=== neon / wide / 132x43 / unicode truecolor / colors=d3a114f22e665292
  » russh-bbs « │ Main menu                                                                                                UTC 12:00
 ╭« Main menu »───────────────────╮╭« russh-bbs »───────────────────────────────────────────────╮╭« This board »────────────────────╮
 │ > [f] Forums                   ││                                                            ││ russh-bbs                        │
@@ -158,15 +158,15 @@
 │                                ││                                                            │╰──────────────────────────────────╯
 │                                ││                                                            │╭« Activity »──────────────────────╮
 │                                ││                                                            ││ 59 threads active in 14 days     │
-│                                ││                                                            ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣶⣶⠀⠀⠀⠀⠀⠀⢀⣀⣀⣿⣿ │
-│                                ││                                                            ││ ⠀⠀⠀⠀⠀⠀⠀⣀⣀⡀⠀⠀⠀⠀⠀⠀⣶⣶⣾⣿⣿⣀⣀⠀⠀⠀⠀⢸⣿⣿⣿⣿ │
-│                                ││                                                            ││ ⠀⠀⢠⣤⣤⠀⠀⣿⣿⣿⣿⡇⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣤⣤⣼⣿⣿⣿⣿⣿⣿ │
-│                                ││                                                            ││ ⣤⣤⣼⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
+│                                ││                                                            ││                   ⢠⣤⣤       ⣀⣀⣼⣿ │
+│                                ││                                                            ││       ⢀⣀⡀       ⣶⣶⣿⣿⣿⣆⣀⡀   ⢠⣿⣿⣿⣿ │
+│                                ││                                                            ││  ⢠⣤⣤⡀ ⣼⣿⣿⣿⣿    ⢰⣿⣿⣿⣿⣿⣿⣿⣷⣤⣼⣿⣿⣿⣿⣿⣿ │
+│                                ││                                                            ││ ⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⣀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
 │                                ││                                                            ││ 14 days ago                today │
 ╰────────────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / wide / 80x24 / ascii mono / colors=714e5896ca516c6b
+=== neon / wide / 80x24 / ascii mono / colors=979eef78f5e6a6ce
  >> russh-bbs << | Main menu                                          UTC 12:00
 +<< Main menu >>-----------------++<< This board >>-----++<< Clock >>----------+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
@@ -192,7 +192,7 @@
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / wide / 80x24 / unicode truecolor / colors=b677520917c11939
+=== paper / wide / 80x24 / unicode truecolor / colors=884f49bfb12e7907
  russh-bbs │ Main menu                                                UTC 12:00
 ╭ Main menu ─────────────────────╮╭ This board ─────────╮╭ Clock ──────────────╮
 │ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
@@ -218,7 +218,7 @@
 ╰────────────────────────────────╯╰─────────────────────╯╰─────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / wide / 132x43 / unicode truecolor / colors=cde43f664ef008d7
+=== paper / wide / 132x43 / unicode truecolor / colors=e63c6c4722ea3a93
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ╭ Main menu ─────────────────────╮╭ russh-bbs ─────────────────────────────────────────────────╮╭ This board ──────────────────────╮
 │ > [f] Forums                   ││                                                            ││ russh-bbs                        │
@@ -255,15 +255,15 @@
 │                                ││                                                            │╰──────────────────────────────────╯
 │                                ││                                                            │╭ Activity ────────────────────────╮
 │                                ││                                                            ││ 59 threads active in 14 days     │
-│                                ││                                                            ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣶⣶⠀⠀⠀⠀⠀⠀⢀⣀⣀⣿⣿ │
-│                                ││                                                            ││ ⠀⠀⠀⠀⠀⠀⠀⣀⣀⡀⠀⠀⠀⠀⠀⠀⣶⣶⣾⣿⣿⣀⣀⠀⠀⠀⠀⢸⣿⣿⣿⣿ │
-│                                ││                                                            ││ ⠀⠀⢠⣤⣤⠀⠀⣿⣿⣿⣿⡇⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣤⣤⣼⣿⣿⣿⣿⣿⣿ │
-│                                ││                                                            ││ ⣤⣤⣼⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
+│                                ││                                                            ││                   ⢠⣤⣤       ⣀⣀⣼⣿ │
+│                                ││                                                            ││       ⢀⣀⡀       ⣶⣶⣿⣿⣿⣆⣀⡀   ⢠⣿⣿⣿⣿ │
+│                                ││                                                            ││  ⢠⣤⣤⡀ ⣼⣿⣿⣿⣿    ⢰⣿⣿⣿⣿⣿⣿⣿⣷⣤⣼⣿⣿⣿⣿⣿⣿ │
+│                                ││                                                            ││ ⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⣀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
 │                                ││                                                            ││ 14 days ago                today │
 ╰────────────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / wide / 80x24 / ascii mono / colors=e951d0185562c3e1
+=== paper / wide / 80x24 / ascii mono / colors=1a9f9411539677e8
  russh-bbs | Main menu                                                UTC 12:00
 + Main menu ---------------------++ This board ---------++ Clock --------------+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
@@ -289,7 +289,7 @@
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / wide / 80x24 / unicode truecolor / colors=f7b61e31f3228d9c
+=== amber / wide / 80x24 / unicode truecolor / colors=dc8e18032d8b5f58
  russh-bbs │ Main menu                                                UTC 12:00
 ┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━┓┏ THIS BOARD ━━━━━━━━━┓┏ CLOCK ━━━━━━━━━━━━━━┓
 ┃ Signed in as alice.            ┃┃ russh-bbs           ┃┃      ━     ━   ━    ┃
@@ -315,7 +315,7 @@
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / wide / 132x43 / unicode truecolor / colors=9df932ea5a968d12
+=== amber / wide / 132x43 / unicode truecolor / colors=d879080f576eecd7
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━┓┏ RUSSH-BBS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓┏ THIS BOARD ━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ > [f] Forums                   ┃┃                                                            ┃┃ russh-bbs                        ┃
@@ -352,15 +352,15 @@
 ┃                                ┃┃                                                            ┃┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 ┃                                ┃┃                                                            ┃┏ ACTIVITY ━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃                                ┃┃                                                            ┃┃ 59 threads active in 14 days     ┃
-┃                                ┃┃                                                            ┃┃ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣶⣶⠀⠀⠀⠀⠀⠀⢀⣀⣀⣿⣿ ┃
-┃                                ┃┃                                                            ┃┃ ⠀⠀⠀⠀⠀⠀⠀⣀⣀⡀⠀⠀⠀⠀⠀⠀⣶⣶⣾⣿⣿⣀⣀⠀⠀⠀⠀⢸⣿⣿⣿⣿ ┃
-┃                                ┃┃                                                            ┃┃ ⠀⠀⢠⣤⣤⠀⠀⣿⣿⣿⣿⡇⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣤⣤⣼⣿⣿⣿⣿⣿⣿ ┃
-┃                                ┃┃                                                            ┃┃ ⣤⣤⣼⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ┃
+┃                                ┃┃                                                            ┃┃                   ⢠⣤⣤       ⣀⣀⣼⣿ ┃
+┃                                ┃┃                                                            ┃┃       ⢀⣀⡀       ⣶⣶⣿⣿⣿⣆⣀⡀   ⢠⣿⣿⣿⣿ ┃
+┃                                ┃┃                                                            ┃┃  ⢠⣤⣤⡀ ⣼⣿⣿⣿⣿    ⢰⣿⣿⣿⣿⣿⣿⣿⣷⣤⣼⣿⣿⣿⣿⣿⣿ ┃
+┃                                ┃┃                                                            ┃┃ ⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⣀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ┃
 ┃                                ┃┃                                                            ┃┃ 14 days ago                today ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / wide / 80x24 / ascii mono / colors=e951d0185562c3e1
+=== amber / wide / 80x24 / ascii mono / colors=1a9f9411539677e8
  russh-bbs | Main menu                                                UTC 12:00
 + MAIN MENU ---------------------++ THIS BOARD ---------++ CLOCK --------------+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
@@ -386,7 +386,7 @@
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / wide / 80x24 / unicode truecolor / colors=401f40ab2fe4e541
+=== deepspace / wide / 80x24 / unicode truecolor / colors=c9b891973f333ae8
  ◆ russh-bbs ◆ │ Main menu                                            UTC 12:00
 ╭────── M A I N   M E N U ───────╮╭ T H I S   B O A R D ╮╭───── C L O C K ─────╮
 │ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
@@ -412,7 +412,7 @@
 ╰────────────────────────────────╯╰─────────────────────╯╰─────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / wide / 132x43 / unicode truecolor / colors=10192b50678aec6f
+=== deepspace / wide / 132x43 / unicode truecolor / colors=bc311847b3fea579
  ◆ russh-bbs ◆ │ Main menu                                                                                                UTC 12:00
 ╭────── M A I N   M E N U ───────╮╭──────────────────── R U S S H - B B S ─────────────────────╮╭────── T H I S   B O A R D ───────╮
 │ > [f] Forums                   ││                                                            ││ russh-bbs                        │
@@ -449,15 +449,15 @@
 │                                ││                                                            │╰──────────────────────────────────╯
 │                                ││                                                            │╭──────── A C T I V I T Y ─────────╮
 │                                ││                                                            ││ 59 threads active in 14 days     │
-│                                ││                                                            ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣶⣶⠀⠀⠀⠀⠀⠀⢀⣀⣀⣿⣿ │
-│                                ││                                                            ││ ⠀⠀⠀⠀⠀⠀⠀⣀⣀⡀⠀⠀⠀⠀⠀⠀⣶⣶⣾⣿⣿⣀⣀⠀⠀⠀⠀⢸⣿⣿⣿⣿ │
-│                                ││                                                            ││ ⠀⠀⢠⣤⣤⠀⠀⣿⣿⣿⣿⡇⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣤⣤⣼⣿⣿⣿⣿⣿⣿ │
-│                                ││                                                            ││ ⣤⣤⣼⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
+│                                ││                                                            ││                   ⢠⣤⣤       ⣀⣀⣼⣿ │
+│                                ││                                                            ││       ⢀⣀⡀       ⣶⣶⣿⣿⣿⣆⣀⡀   ⢠⣿⣿⣿⣿ │
+│                                ││                                                            ││  ⢠⣤⣤⡀ ⣼⣿⣿⣿⣿    ⢰⣿⣿⣿⣿⣿⣿⣿⣷⣤⣼⣿⣿⣿⣿⣿⣿ │
+│                                ││                                                            ││ ⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⣀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
 │                                ││                                                            ││ 14 days ago                today │
 ╰────────────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / wide / 80x24 / ascii mono / colors=6f46658026d03c4d
+=== deepspace / wide / 80x24 / ascii mono / colors=35d855158f62facc
  * russh-bbs * | Main menu                                            UTC 12:00
 +------ M A I N   M E N U -------++ T H I S   B O A R D ++----- C L O C K -----+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
@@ -483,7 +483,7 @@
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / wide / 80x24 / unicode truecolor / colors=6e4cae94d3b6fe51
+=== ansi / wide / 80x24 / unicode truecolor / colors=63d65edbd86a314c
  ░▒▓ russh-bbs ▓▒░ │ Main menu                                        UTC 12:00
 ╔═════════╡ Main menu ╞══════════╗╔═══╡ This board ╞════╗╔══════╡ Clock ╞══════╗
 ║ Signed in as alice.            ║║ russh-bbs           ║║      ━     ━   ━    ║
@@ -509,7 +509,7 @@
 ╚════════════════════════════════╝╚═════════════════════╝╚═════════════════════╝
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / wide / 132x43 / unicode truecolor / colors=2aa011bc9b7bc196
+=== ansi / wide / 132x43 / unicode truecolor / colors=423d7dd5da8f8021
  ░▒▓ russh-bbs ▓▒░ │ Main menu                                                                                            UTC 12:00
 ╔═════════╡ Main menu ╞══════════╗╔═══════════════════════╡ russh-bbs ╞════════════════════════╗╔══════════╡ This board ╞══════════╗
 ║ > [f] Forums                   ║║                                                            ║║ russh-bbs                        ║
@@ -546,15 +546,15 @@
 ║                                ║║                                                            ║╚══════════════════════════════════╝
 ║                                ║║                                                            ║╔═══════════╡ Activity ╞═══════════╗
 ║                                ║║                                                            ║║ 59 threads active in 14 days     ║
-║                                ║║                                                            ║║ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣶⣶⠀⠀⠀⠀⠀⠀⢀⣀⣀⣿⣿ ║
-║                                ║║                                                            ║║ ⠀⠀⠀⠀⠀⠀⠀⣀⣀⡀⠀⠀⠀⠀⠀⠀⣶⣶⣾⣿⣿⣀⣀⠀⠀⠀⠀⢸⣿⣿⣿⣿ ║
-║                                ║║                                                            ║║ ⠀⠀⢠⣤⣤⠀⠀⣿⣿⣿⣿⡇⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣤⣤⣼⣿⣿⣿⣿⣿⣿ ║
-║                                ║║                                                            ║║ ⣤⣤⣼⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ║
+║                                ║║                                                            ║║                   ⢠⣤⣤       ⣀⣀⣼⣿ ║
+║                                ║║                                                            ║║       ⢀⣀⡀       ⣶⣶⣿⣿⣿⣆⣀⡀   ⢠⣿⣿⣿⣿ ║
+║                                ║║                                                            ║║  ⢠⣤⣤⡀ ⣼⣿⣿⣿⣿    ⢰⣿⣿⣿⣿⣿⣿⣿⣷⣤⣼⣿⣿⣿⣿⣿⣿ ║
+║                                ║║                                                            ║║ ⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⣀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ║
 ║                                ║║                                                            ║║ 14 days ago                today ║
 ╚════════════════════════════════╝╚════════════════════════════════════════════════════════════╝╚══════════════════════════════════╝
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / wide / 80x24 / ascii mono / colors=2cd19f631171904f
+=== ansi / wide / 80x24 / ascii mono / colors=0f122dc1f283bbca
  ## russh-bbs ## | Main menu                                          UTC 12:00
 +---------| Main menu |----------++---| This board |----++------| Clock |------+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |

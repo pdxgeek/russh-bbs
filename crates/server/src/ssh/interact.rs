@@ -31,11 +31,12 @@ use crate::ui::strings::StringTable;
 use crate::ui::ticker::{self, Ticker};
 use crate::ui::toast::{Kind as ToastKind, Text, Toasts};
 
-/// Turn mouse reporting on: button press and release with the wheel (1000), SGR coordinates
-/// (1006). No motion reporting yet; pane dragging (UI-4) adds 1002.
-pub(crate) const MOUSE_ON: &[u8] = b"\x1b[?1000h\x1b[?1006h";
+/// Turn mouse reporting on: button press and release with the wheel (1000), motion while a
+/// button is held (1002, for dragging the dock's divider), SGR coordinates (1006). Motion with
+/// no button held is not asked for.
+pub(crate) const MOUSE_ON: &[u8] = b"\x1b[?1000h\x1b[?1002h\x1b[?1006h";
 /// Turn it off again, in the opposite order.
-pub(crate) const MOUSE_OFF: &[u8] = b"\x1b[?1006l\x1b[?1000l";
+pub(crate) const MOUSE_OFF: &[u8] = b"\x1b[?1006l\x1b[?1002l\x1b[?1000l";
 
 /// Whether the member may have mouse reporting at all. Today that is their setting; accessibility
 /// mode (M5) will say no here.
@@ -59,6 +60,8 @@ pub(crate) struct Interact {
     pub(crate) toasts: Toasts,
     ticker: Ticker,
     last_step: usize,
+    /// A press on the dock's divider is being dragged (UI-W).
+    dragging: bool,
 }
 
 impl Interact {
@@ -74,6 +77,7 @@ impl Interact {
             toasts: Toasts::default(),
             ticker: Ticker::new(board, true, now),
             last_step: 0,
+            dragging: false,
         }
     }
 
@@ -157,6 +161,40 @@ impl Interact {
             keys = self.hits.wheel(wheel_at.0, wheel_at.1, wheel);
         }
         keys
+    }
+
+    /// Where the dock's divider was dragged to in this batch, as a terminal column, and the
+    /// body it was drawn in. A press on the divider starts a drag, motion with the button held
+    /// moves it, and the release ends it. Nothing is returned when mouse mode is off, when keys
+    /// came in the same batch, or when no dock was drawn (UI-W). The screen applies it with the
+    /// same resize the `<` and `>` keys use.
+    pub(crate) fn drag(&mut self, events: &[Mouse], typing: bool) -> Option<(u16, Rect)> {
+        if !self.mouse_on || typing {
+            self.dragging = false;
+            return None;
+        }
+        let dock = self.hits.dock().copied();
+        let mut column = None;
+        for event in events {
+            match event.kind {
+                Kind::Down(Button::Left) => {
+                    self.dragging = dock.is_some_and(|dock| {
+                        event.col >= dock.divider.x
+                            && event.col < dock.divider.x + dock.divider.width
+                            && event.row >= dock.divider.y
+                            && event.row < dock.divider.y + dock.divider.height
+                    });
+                }
+                Kind::Drag(Button::Left) if self.dragging => column = Some(event.col),
+                Kind::Up(_) => self.dragging = false,
+                _ => {}
+            }
+        }
+        let dock = dock?;
+        if !self.dragging && column.is_none() {
+            return None;
+        }
+        column.map(|column| (column, dock.body))
     }
 
     // ---- palette ----------------------------------------------------------------------

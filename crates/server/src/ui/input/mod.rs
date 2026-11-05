@@ -57,10 +57,27 @@ pub(crate) enum Region {
     Page { rect: Rect },
 }
 
+/// Where the dock was drawn in the last frame (UI-W), so a press on the divider starts a drag
+/// and a click on the side that does not have the keys moves them there.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct DockHit {
+    /// The body the dock was carved from (header and status rows excluded).
+    pub(crate) body: Rect,
+    /// The screen's share.
+    pub(crate) main: Rect,
+    /// The divider column.
+    pub(crate) divider: Rect,
+    /// The pane.
+    pub(crate) pane: Rect,
+    /// The pane has the keys.
+    pub(crate) chat_focused: bool,
+}
+
 /// The clickable regions of the last frame drawn.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub(crate) struct HitMap {
     regions: Vec<Region>,
+    dock: Option<DockHit>,
 }
 
 /// Most keys one click or wheel turn expands to, so a report that lands far from the cursor
@@ -73,7 +90,15 @@ impl HitMap {
     /// A map holding only `regions` (tests and modal overlays).
     #[cfg(test)]
     pub(crate) fn of(regions: Vec<Region>) -> Self {
-        Self { regions }
+        Self {
+            regions,
+            dock: None,
+        }
+    }
+
+    /// The dock of the last frame, if one was drawn.
+    pub(crate) fn dock(&self) -> Option<&DockHit> {
+        self.dock.as_ref()
     }
 
     /// The regions of the frame (tests).
@@ -84,6 +109,26 @@ impl HitMap {
 
     /// The keys a left click at `(col, row)` stands for. Empty when it hit nothing.
     pub(crate) fn click(&self, col: u16, row: u16) -> Vec<Key> {
+        if let Some(dock) = &self.dock {
+            // Moving between the screen and the pane is the key that does it (`Ctrl-W`); a
+            // click on the side that already has the keys goes on as usual.
+            if contains(dock.pane, col, row) || contains(dock.divider, col, row) {
+                return if dock.chat_focused || contains(dock.divider, col, row) {
+                    Vec::new()
+                } else {
+                    vec![Key::Ctrl('w')]
+                };
+            }
+            if dock.chat_focused && contains(dock.main, col, row) {
+                let mut keys = vec![Key::Ctrl('w')];
+                keys.extend(self.list_click(col, row));
+                return keys;
+            }
+        }
+        self.list_click(col, row)
+    }
+
+    fn list_click(&self, col: u16, row: u16) -> Vec<Key> {
         for region in &self.regions {
             let Region::List {
                 rect,
@@ -207,6 +252,16 @@ pub(crate) fn modal() {
     SINK.with(|sink| {
         if let Some(map) = sink.borrow_mut().as_mut() {
             map.regions.clear();
+            map.dock = None;
+        }
+    });
+}
+
+/// Record where the dock was drawn.
+pub(crate) fn dock(hit: DockHit) {
+    SINK.with(|sink| {
+        if let Some(map) = sink.borrow_mut().as_mut() {
+            map.dock = Some(hit);
         }
     });
 }

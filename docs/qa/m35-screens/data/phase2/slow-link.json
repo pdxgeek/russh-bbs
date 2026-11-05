@@ -1,0 +1,50 @@
+{
+ "7000 B/s (56 kbit) 80x24": {
+  "login_visible_after_s": 0.8,
+  "bytes_before_login": 8513,
+  "menu_after_key_s": 1.8,
+  "rev": {
+   "row23+bold": [
+    0,
+    0,
+    1
+   ]
+  }
+ },
+ "7000 B/s (56 kbit) 132x43": {
+  "login_visible_after_s": 0.8,
+  "bytes_before_login": 2557,
+  "menu_after_key_s": 2.0,
+  "rev": {
+   "row42+bold": [
+    0,
+    0,
+    1
+   ]
+  }
+ },
+ "125000 B/s (1 Mbit) 80x24": {
+  "login_visible_after_s": 1.9,
+  "bytes_before_login": 73969,
+  "menu_after_key_s": 0.6,
+  "rev": {
+   "row23+bold": [
+    0,
+    0,
+    1
+   ]
+  }
+ },
+ "125000 B/s (1 Mbit) 132x43": {
+  "login_visible_after_s": 0.3,
+  "bytes_before_login": 113793,
+  "menu_after_key_s": 0.7,
+  "rev": {
+   "row42+bold": [
+    0,
+    0,
+    1
+   ]
+  }
+ }
+}

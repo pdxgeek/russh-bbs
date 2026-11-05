@@ -603,3 +603,167 @@ fn gradient_text_runs_from_one_colour_to_the_other() {
         "the marker cell keeps its own style"
     );
 }
+
+// The intro with a style's login banner (UI-W 4).
+
+/// The bundled login banner of `style`, in the Unicode or the ASCII tier.
+fn banner_of(ui: &Ui, style: &str, ascii: bool) -> Option<crate::ui::art::Grid> {
+    let theme = russh_bbs_core::terminal_settings::ThemeName::new(style).unwrap();
+    ui.art_ctx(theme).login_banner(ascii).cloned()
+}
+
+/// Draw the intro at `t` over `before` with `banner`.
+fn run_banner(
+    t: f32,
+    depth: ColorDepth,
+    ascii: bool,
+    banner: &crate::ui::art::Grid,
+    before: &Buffer,
+) -> Buffer {
+    let (w, h) = (before.area.width, before.area.height);
+    let mut terminal = Terminal::new(TestBackend::new(w, h)).unwrap();
+    let ui = Ui::standard().unwrap();
+    let look = ui.look(&settings(true, ascii), Rect::new(0, 0, w, h), depth);
+    let done = terminal
+        .draw(|frame| {
+            *frame.buffer_mut() = before.clone();
+            Overlay {
+                kind: Kind::Intro,
+                t,
+                look,
+                title: "Test Board",
+            }
+            .apply_with(frame, Some(banner));
+        })
+        .unwrap();
+    done.buffer.clone()
+}
+
+fn symbols(buf: &Buffer, rows: std::ops::Range<u16>) -> String {
+    let mut text = String::new();
+    for y in rows {
+        for x in 0..buf.area.width {
+            text.push_str(buf[(x, y)].symbol());
+        }
+    }
+    text
+}
+
+#[test]
+fn the_intro_reveals_the_banner_instead_of_the_big_letters() {
+    let ui = Ui::standard().unwrap();
+    for style in ["neon", "paper"] {
+        let banner = banner_of(&ui, style, false).expect("a bundled login banner");
+        let before = screen(80, 24);
+        let mid = run_banner(0.5, ColorDepth::TrueColor, false, &banner, &before);
+        let text = symbols(&mid, 0..23);
+        let mark = if style == "neon" {
+            '\u{2502}'
+        } else {
+            '\u{25c7}'
+        };
+        assert!(text.contains(mark), "{style}: the art's own cells show");
+        // Revealed from the top: early on, less of it is there.
+        let early = run_banner(0.14, ColorDepth::TrueColor, false, &banner, &before);
+        assert!(symbols(&early, 0..23).matches(mark).count() <= text.matches(mark).count());
+        // At the end the scene is gone (a few dissolving cells at most).
+        let end = run_banner(0.999, ColorDepth::TrueColor, false, &banner, &before);
+        let changed = (0..23_u16)
+            .flat_map(|y| (0..80_u16).map(move |x| (x, y)))
+            .filter(|&(x, y)| end[(x, y)] != before[(x, y)])
+            .count();
+        assert!(changed < 40, "{style}: {changed} cells left at the end");
+    }
+}
+
+#[test]
+fn banner_cells_never_get_a_modifier_and_the_status_row_is_untouched() {
+    let ui = Ui::standard().unwrap();
+    let banner = banner_of(&ui, "neon", false).unwrap();
+    for (w, h) in [(80_u16, 24_u16), (132, 43), (40, 12)] {
+        let before = screen(w, h);
+        for t in [0.12, 0.2, 0.3, 0.45, 0.5, 0.6, 0.8] {
+            for depth in [
+                ColorDepth::TrueColor,
+                ColorDepth::Ansi256,
+                ColorDepth::Ansi16,
+            ] {
+                let after = run_banner(t, depth, false, &banner, &before);
+                for y in 0..h {
+                    for x in 0..w {
+                        let cell = &after[(x, y)];
+                        if cell == &before[(x, y)] {
+                            continue;
+                        }
+                        assert!(y + 1 < h, "{w}x{h}: the status row was drawn at t={t}");
+                        assert!(
+                            !cell
+                                .modifier
+                                .intersects(Modifier::BOLD | Modifier::REVERSED),
+                            "{w}x{h} t={t}: ({x},{y}) is bold or reversed"
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn the_ascii_tier_reveals_the_arts_ascii_stand_ins_and_never_block_glyphs() {
+    let ui = Ui::standard().unwrap();
+    let banner = banner_of(&ui, "neon", true).expect("neon's banner has an ASCII form");
+    let before = screen(80, 24);
+    let after = run_banner(0.5, ColorDepth::Ansi256, true, &banner, &before);
+    let text = symbols(&after, 0..23);
+    assert!(
+        text.is_ascii(),
+        "ASCII tier: only ASCII on screen: {:?}",
+        text.chars().find(|c| !c.is_ascii())
+    );
+    assert!(text.contains('/'), "the stand-in cells of the art show");
+}
+
+#[test]
+fn mono_keeps_the_plain_spaced_title_not_the_banner() {
+    let ui = Ui::standard().unwrap();
+    let banner = banner_of(&ui, "neon", false).unwrap();
+    let before = screen(80, 24);
+    let after = run_banner(0.5, ColorDepth::Mono, false, &banner, &before);
+    let text = symbols(&after, 0..23);
+    assert!(!text.contains('\u{2502}'), "no banner in mono");
+}
+
+#[test]
+fn a_banner_larger_than_the_scene_is_clipped_and_centred() {
+    // 80 columns by 45 rows of the letter A, parsed as a picture: taller than any scene here.
+    let mut bytes = Vec::new();
+    for _ in 0..45 {
+        bytes.extend(std::iter::repeat_n(b'A', 80));
+        bytes.extend_from_slice(b"\r\n");
+    }
+    let tall = crate::ui::art::parse_ans(&bytes).unwrap().grid;
+    assert!(tall.height() > 40);
+    let ui = Ui::standard().unwrap();
+    let wide = banner_of(&ui, "neon", false).unwrap();
+    for (grid, w, h) in [(&tall, 80_u16, 24_u16), (&tall, 45, 13), (&wide, 40, 12)] {
+        let before = screen(w, h);
+        for t in [0.3, 0.5, 0.7] {
+            let after = run_banner(t, ColorDepth::TrueColor, false, grid, &before);
+            for x in 0..w {
+                assert_eq!(after[(x, h - 1)], before[(x, h - 1)], "status row, {w}x{h}");
+            }
+        }
+    }
+}
+
+#[test]
+fn a_reserved_cell_inside_the_banner_is_left_alone() {
+    let ui = Ui::standard().unwrap();
+    let banner = banner_of(&ui, "paper", false).unwrap();
+    let mut before = screen(80, 24);
+    let marker = Style::new().add_modifier(Modifier::BOLD | Modifier::REVERSED);
+    before.set_string(40, 11, "X", marker);
+    let after = run_banner(0.5, ColorDepth::TrueColor, false, &banner, &before);
+    assert_eq!(after[(40, 11)], before[(40, 11)]);
+}
