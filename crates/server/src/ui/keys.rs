@@ -89,6 +89,56 @@ pub(crate) const PREVIEW_HINT_ART: &str = "ui.preview.hint_art";
 pub(crate) const PREVIEW_HINT_BACK: &str = "ui.preview.hint_back";
 pub(crate) const PREVIEW_SAMPLE_BODY: &str = "ui.preview.sample_body";
 
+/// The member style gallery's and the sysop Theme packs screen's words (UI-7).
+pub(crate) const GALLERY_TITLE: &str = "ui.gallery.title";
+pub(crate) const GALLERY_HINT_MOVE: &str = "ui.gallery.hint_move";
+pub(crate) const GALLERY_HINT_USE: &str = "ui.gallery.hint_use";
+pub(crate) const GALLERY_HINT_SAMPLE: &str = "ui.gallery.hint_sample";
+pub(crate) const GALLERY_HINT_BACK: &str = "ui.gallery.hint_back";
+pub(crate) const GALLERY_IN_USE: &str = "ui.gallery.in_use";
+pub(crate) const GALLERY_LOCKED: &str = "ui.gallery.locked";
+pub(crate) const GALLERY_OFFER: &str = "ui.gallery.offer";
+pub(crate) const PACKS_TITLE: &str = "ui.packs.title";
+pub(crate) const PACKS_HINT_MOVE: &str = "ui.packs.hint_move";
+pub(crate) const PACKS_HINT_EXPORT: &str = "ui.packs.hint_export";
+pub(crate) const PACKS_HINT_IMPORT: &str = "ui.packs.hint_import";
+pub(crate) const PACKS_HINT_RESCAN: &str = "ui.packs.hint_rescan";
+pub(crate) const PACKS_HINT_BACK: &str = "ui.packs.hint_back";
+pub(crate) const PACKS_STYLES: &str = "ui.packs.styles";
+pub(crate) const PACKS_FILES: &str = "ui.packs.files";
+pub(crate) const PACKS_NO_FILES: &str = "ui.packs.no_files";
+pub(crate) const PACKS_READY: &str = "ui.packs.ready";
+pub(crate) const PACKS_REFUSED: &str = "ui.packs.refused";
+pub(crate) const PACKS_LOADING: &str = "ui.packs.loading";
+pub(crate) const PACKS_UNAVAILABLE: &str = "ui.packs.unavailable";
+pub(crate) const PACKS_BUILT_IN: &str = "ui.packs.built_in";
+
+/// Every gallery and packs key, checked with [`FRAMEWORK`].
+pub(crate) const GALLERY_KEYS: [&str; 22] = [
+    GALLERY_TITLE,
+    GALLERY_HINT_MOVE,
+    GALLERY_HINT_USE,
+    GALLERY_HINT_SAMPLE,
+    GALLERY_HINT_BACK,
+    GALLERY_IN_USE,
+    GALLERY_LOCKED,
+    GALLERY_OFFER,
+    PACKS_TITLE,
+    PACKS_HINT_MOVE,
+    PACKS_HINT_EXPORT,
+    PACKS_HINT_IMPORT,
+    PACKS_HINT_RESCAN,
+    PACKS_HINT_BACK,
+    PACKS_STYLES,
+    PACKS_FILES,
+    PACKS_NO_FILES,
+    PACKS_READY,
+    PACKS_REFUSED,
+    PACKS_LOADING,
+    PACKS_UNAVAILABLE,
+    PACKS_BUILT_IN,
+];
+
 /// Every preview key, checked with [`FRAMEWORK`].
 pub(crate) const PREVIEW_KEYS: [&str; 23] = [
     PREVIEW_TITLE,

@@ -2,6 +2,10 @@
 # and no motion.
 name = "paper"
 
+[meta]
+title = "Paper"
+credit = "russh-bbs project"
+
 [colors]
 surface = "#f4efe2"
 panel = "#fbf8ef"

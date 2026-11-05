@@ -86,6 +86,8 @@ pub const MENU_ICONS: &str = "member.menu_icons";
 pub const MENU_BACK: &str = "member.menu_back";
 /// Settings footer.
 pub const SETTINGS_FOOTER: &str = "member.settings_footer";
+/// The settings row that opens the style gallery (UI-7).
+pub const MENU_GALLERY: &str = "member.menu_gallery";
 /// Label of the number field.
 pub const FIELD_WIDTH: &str = "member.field_width";
 /// Label of the number field.
@@ -171,7 +173,7 @@ pub const LAYOUT_LIGHTBAR: &str = "member.layout_lightbar";
 pub const LAYOUT_COMPACT: &str = "member.layout_compact";
 
 /// Every key above except [`TITLE`]; the string table must hold exactly these in `member.*`.
-pub const TEXT_KEYS: [&str; 70] = [
+pub const TEXT_KEYS: [&str; 71] = [
     MAIL_SSH_ONLY,
     LOGIN_HEADING,
     SIGNED_IN_AS,
@@ -206,6 +208,7 @@ pub const TEXT_KEYS: [&str; 70] = [
     MENU_ICONS,
     MENU_BACK,
     SETTINGS_FOOTER,
+    MENU_GALLERY,
     FIELD_WIDTH,
     FIELD_HEIGHT,
     EDIT_FOOTER,

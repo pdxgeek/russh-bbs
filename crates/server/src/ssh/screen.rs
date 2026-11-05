@@ -238,6 +238,9 @@ pub(crate) struct KeyEffects {
     pub(crate) claim_password: Option<russh_bbs_core::passwords::Secret>,
     /// Terminal settings the member changed. The session stores them.
     pub(crate) save_settings: Option<TerminalSettings>,
+    /// A theme-pack request from the sysop's Theme packs screen (UI-7). The session runs it
+    /// (files and the audit log) and reports through [`Screen::packs_done`].
+    pub(crate) packs: Option<russh_bbs_core::terminal_settings::PackRequest>,
     /// An invite the visitor asked to redeem in the waiting room (M2-D). The session redeems it
     /// (it needs the store) and reports back through [`Screen::redeem_refused`] or
     /// [`Screen::redeemed`].
@@ -316,6 +319,7 @@ impl KeyEffects {
         self.claim_token = later.claim_token.or(self.claim_token.take());
         self.claim_password = later.claim_password.or(self.claim_password.take());
         self.save_settings = later.save_settings.or(self.save_settings.take());
+        self.packs = later.packs.or(self.packs.take());
         self.redeem = later.redeem.or(self.redeem.take());
         self.link = later.link.or(self.link.take());
         self.link_device = later.link_device.or(self.link_device.take());
@@ -1085,6 +1089,11 @@ impl Screen {
                     match flow.input(input) {
                         MemberEffect::Stay => {}
                         MemberEffect::Save(settings) => effects.save_settings = Some(settings),
+                        MemberEffect::Packs(request) => {
+                            effects.packs = Some(request);
+                            effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
+                            break;
+                        }
                         MemberEffect::Invite(request) => {
                             effects.invite = Some(request);
                             break;
@@ -1466,6 +1475,23 @@ impl Screen {
 
     /// What the signed-in session holds, for the front end's own checks. `None` outside a
     /// member session.
+    /// The shared screens (the shell hands them to a blocking job).
+    pub(crate) fn ui_handle(&self) -> Arc<Ui> {
+        Arc::clone(&self.ui)
+    }
+
+    /// A theme-pack request finished: show the listing and what happened (UI-7).
+    pub(crate) fn packs_done(
+        &mut self,
+        listing: russh_bbs_core::terminal_settings::PackListing,
+        message: Option<&str>,
+    ) {
+        if let Some(flow) = self.content.flow_mut() {
+            flow.packs_done(listing, message);
+            self.dirty = true;
+        }
+    }
+
     pub(crate) fn access(&self) -> Option<&Snapshot> {
         self.content.flow().map(MemberFlow::access_snapshot)
     }
@@ -2204,6 +2230,9 @@ impl Screen {
             .or_else(|| self.content.community_view());
         let queue_view = self.content.queue_view();
         let preview = self.content.flow().and_then(|flow| flow.preview().cloned());
+        let gallery = self.content.flow().and_then(|flow| flow.gallery().cloned());
+        let packs = self.content.flow().and_then(|flow| flow.packs().cloned());
+        let member_settings = self.content.flow().map(|flow| *flow.settings());
         let tier = self.content.tier();
         let strings = self.content.strings(&self.ui);
         let framed = self.content.is_framed_screen();
@@ -2276,6 +2305,25 @@ impl Screen {
                                     art: art_ctx.as_ref(),
                                 },
                             );
+                        }
+                    }
+                    // The member's style gallery and the sysop's Theme packs screen (UI-7).
+                    (Some(look), None) if gallery.is_some() || packs.is_some() => {
+                        if let Some(settings) = &member_settings {
+                            let ctx = crate::ui::style_gallery::GalleryCtx {
+                                ui: &self.ui,
+                                strings,
+                                look,
+                                tier,
+                                markers: staff_markers,
+                                clock,
+                                settings,
+                            };
+                            if let Some(gallery) = &gallery {
+                                crate::ui::style_gallery::render(frame, gallery, &ctx);
+                            } else if let Some(packs) = &packs {
+                                crate::ui::style_gallery::render_packs(frame, packs, &ctx);
+                            }
                         }
                     }
                     // The sysop's theme preview (UI-3): a sample screen in a chosen style and size.

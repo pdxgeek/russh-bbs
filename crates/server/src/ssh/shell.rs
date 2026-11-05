@@ -322,9 +322,7 @@ impl<D: Backend> Shell<D> {
             }
             self.apply_chat_effects(&effects);
             self.answer_requests(&mut effects).await;
-            if let Some(request) = effects.invite.take() {
-                self.run_invite(request).await;
-            }
+            self.run_member_requests(&mut effects).await;
             let mut leaving = effects.disconnect || batch.finish || out_of_time;
             if !leaving && let Some(request) = effects.redeem {
                 self.try_redeem(request).await;
@@ -1111,6 +1109,43 @@ impl<D: Backend> Shell<D> {
     /// Carry out an invite request for the signed-in member and show its screen. The checks
     /// (permission, quota) are core's; this only supplies the session's snapshot and, for a new
     /// code, bytes from the OS random source.
+    /// The requests a member's keys made that need the store or the disk: an invite action, then
+    /// a theme-pack action (UI-7). At most one of each per batch, in that order.
+    async fn run_member_requests(&mut self, effects: &mut super::screen::KeyEffects) {
+        if let Some(request) = effects.invite.take() {
+            self.run_invite(request).await;
+        }
+        if let Some(request) = effects.packs.take() {
+            self.run_packs(request).await;
+        }
+    }
+
+    /// Carry out a theme-pack request (UI-7): the files on a blocking thread, then the audit row
+    /// for a change. The permission is checked again where the work is done.
+    async fn run_packs(&mut self, request: russh_bbs_core::terminal_settings::PackRequest) {
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let ui = self.parts.screen.ui_handle();
+        let job = tokio::task::spawn_blocking(move || {
+            crate::ui::theme::service::run(&ui, &access, request)
+        });
+        let Ok(Ok(outcome)) = timeout(MEMBER_START_TIMEOUT, job).await else {
+            warn!(session = ?self.parts.session.id(), "theme pack request failed or timed out");
+            return;
+        };
+        if let Some(event) = &outcome.event
+            && let Err(error) =
+                russh_bbs_core::audit::AuditStore::append(&*self.parts.directory, event).await
+        {
+            // The files are already written; say so rather than pretend nothing happened.
+            warn!(session = ?self.parts.session.id(), %error, "theme pack change could not be audited");
+        }
+        self.parts
+            .screen
+            .packs_done(outcome.listing, Some(&outcome.message));
+    }
+
     async fn run_invite(&mut self, request: InviteRequest) {
         let Some(access) = self.parts.screen.access().cloned() else {
             return;

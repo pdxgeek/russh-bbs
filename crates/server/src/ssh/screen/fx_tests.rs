@@ -54,7 +54,17 @@ fn member(motion: bool, size: PtySize, depth: Option<(&str, &str)>) -> Screen {
     if let Some((term, colorterm)) = depth {
         screen.set_client_terminal(Some(term), Some(colorterm));
     }
+    // The effect clock is frozen at "now", so no test depends on how long it takes to run: an
+    // effect's progress only moves when a test sets `fx_clock` (see `frame_at`). Without this a
+    // frame is drawn at whatever progress the wall clock happens to give, which differs between a
+    // debug and a release build and between a quiet and a busy machine.
+    screen.fx_clock = Some(Instant::now());
     screen
+}
+
+/// The frozen effect clock of `screen`.
+fn clock_of(screen: &Screen) -> Instant {
+    screen.fx_clock.expect("`member` freezes the effect clock")
 }
 
 /// Enter the screen and flush the redraw that telling it the terminal type asks for (that
@@ -85,7 +95,7 @@ fn motion_off_is_one_static_frame_and_arms_no_timer() {
     screen.render().unwrap();
     assert_eq!(screen.next_fx_due(), None, "no timer is armed");
     // However long we wait, nothing is due and nothing is drawn.
-    screen.tick_fx(Instant::now() + Duration::from_secs(60));
+    screen.tick_fx(clock_of(&screen) + Duration::from_secs(60));
     assert!(screen.render().unwrap().is_none(), "no further frame");
     assert!(!screen.dirty);
     // Moving on to the menu starts no wipe either.
@@ -97,22 +107,47 @@ fn motion_off_is_one_static_frame_and_arms_no_timer() {
 #[test]
 fn the_login_screen_runs_the_intro_on_the_ticker() {
     let mut screen = member(true, size(), TRUECOLOR);
+    let start = clock_of(&screen);
     enter(&mut screen);
-    let due = screen
-        .next_fx_due()
-        .expect("a timer is armed for the intro");
-    assert!(due > Instant::now() - Duration::from_secs(1));
-    // Not yet due: no redraw.
-    screen.tick_fx(Instant::now());
-    assert!(screen.render().unwrap().is_none());
-    // Due: the next frame is drawn.
-    screen.tick_fx(due);
-    let frame = screen.render().unwrap().expect("an intro frame");
+    // A timer is armed for exactly one frame interval after the intro began.
+    let interval = crate::ui::fx::Budget::default().interval;
+    assert_eq!(screen.next_fx_due(), Some(start + interval));
+    // Not yet due: no redraw, however often the shell looks.
+    screen.fx_clock = Some(start + interval / 2);
+    screen.tick_fx(start + interval / 2);
     assert!(
-        frame.len() > 500,
-        "the scene changes many cells: {}",
+        screen.render().unwrap().is_none(),
+        "nothing before the next frame is due"
+    );
+
+    // Due, at a known moment in the hold phase (progress 0.5, where the scene covers every
+    // cell): the next frame draws the scene. What changed is read from the bytes sent: the
+    // scene is half-block glyphs in 256-colour sequences (the intro never sends more than 256
+    // colours, even to a truecolor client), over the whole 80x23 area above the status row.
+    let at = start + Kind::Intro.duration() / 2;
+    let frame = frame_at(&mut screen, at).expect("an intro frame is due");
+    let text = String::from_utf8_lossy(&frame);
+    let blocks = text.matches('▀').count() + text.matches('█').count() + text.matches('▄').count();
+    assert!(
+        blocks > 1_000,
+        "the scene covers the screen: {blocks} block cells in {} bytes",
         frame.len()
     );
+    assert!(text.contains("38;5;"), "the scene is drawn in 256 colours");
+    assert!(!text.contains("38;2;"), "and never in truecolor");
+    // The status row is not part of the scene: nothing is drawn on the last row.
+    assert!(
+        !text.contains("\x1b[24;"),
+        "the status row (row 24) is untouched"
+    );
+
+    // The same moment gives the same bytes on a second screen: the frame is a function of the
+    // clock, not of how long the test took.
+    let mut again = member(true, size(), TRUECOLOR);
+    again.fx_clock = Some(start);
+    enter(&mut again);
+    let twin = frame_at(&mut again, at).expect("an intro frame is due");
+    assert_eq!(twin, frame, "the same progress draws the same frame");
 }
 
 #[test]
@@ -124,7 +159,7 @@ fn the_final_frame_equals_the_static_screen() {
     let mut moving = member(true, size(), TRUECOLOR);
     moving.enter().unwrap();
     // Run the clock past the end of the intro: the effect ends, and a last frame is due.
-    moving.tick_fx(Instant::now() + Duration::from_secs(5));
+    moving.tick_fx(clock_of(&moving) + Duration::from_secs(5));
     assert_eq!(moving.next_fx_due(), None);
     assert!(moving.dirty, "the static frame is drawn after the effect");
     let got = repaint(&mut moving);

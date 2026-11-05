@@ -1,0 +1,43 @@
+ ◆ Night Owl BBS ◆ │ Theme packs                                                                                          UTC 06:55
+Installed styles (e exports the one under the cursor to packs/)
+  default                  default  (built in, nothing to export)
+  phosphor                 Phosphor
+  neon                     Neon Night
+  paper                    Paper
+  amber                    Amber Terminal
+  deepspace                Deep Space
+  ansi                     Classic ANSI
+  green                    Green
+  contrast                 High Contrast
+
+Pack files in packs/ (i imports the one under the cursor)
+  neon.pack.toml               ready: style neon
+> neonx.pack.toml              ready: style neonx
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ ↑↓ move  e export style  i import pack  r look again  b back

@@ -33,6 +33,7 @@ fn the_shipped_table_and_tree_are_valid() {
         .copied()
         .chain(keys::LAYOUT_KEYS.iter().copied())
         .chain(keys::PREVIEW_KEYS.iter().copied())
+        .chain(keys::GALLERY_KEYS.iter().copied())
         .chain(main_tree().text_keys())
         .chain(crate::ui::widgets::TEXT_KEYS.iter().copied())
         .chain(crate::ui::widgets::screen::TEXT_KEYS.iter().copied())
@@ -58,6 +59,7 @@ fn the_table_holds_exactly_the_keys_the_code_uses() {
         .chain(super::palette::TEXT_KEYS.iter().copied())
         .chain(super::toast::TEXT_KEYS.iter().copied())
         .chain(keys::PREVIEW_KEYS.iter().copied())
+        .chain(keys::GALLERY_KEYS.iter().copied())
         .chain(main_tree().text_keys())
         .chain(crate::ui::widgets::TEXT_KEYS.iter().copied())
         .chain(crate::ui::widgets::screen::TEXT_KEYS.iter().copied())
@@ -72,6 +74,14 @@ fn the_table_holds_exactly_the_keys_the_code_uses() {
         .collect();
     let ui = ui();
     let held: std::collections::BTreeSet<&str> = ui.strings().keys().collect();
+    assert_eq!(
+        used.difference(&held).collect::<Vec<_>>(),
+        Vec::<&&str>::new()
+    );
+    assert_eq!(
+        held.difference(&used).collect::<Vec<_>>(),
+        Vec::<&&str>::new()
+    );
     assert_eq!(used, held);
 }
 

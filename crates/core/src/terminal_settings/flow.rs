@@ -8,8 +8,10 @@
 //! settings screen and the glyph test; `?` is help on menus. The login, glyph test and number
 //! entry pages are not menus, and `?` there would be input or nothing, so it is not offered.
 
+use super::gallery::{Gallery, GalleryKey, GalleryOutcome};
 use super::glyph::{GlyphAnswer, GlyphProgress, GlyphTest};
 use super::layout::{LayoutId, ThemeName};
+use super::packs::{PackKey, PackListing, PackRequest, PackScreen, PackStep};
 use super::preview::{PreviewKey, ThemePreview};
 use super::settings::{SettingsError, TerminalSettings};
 use super::strings::{self, TextSource, fill};
@@ -61,7 +63,7 @@ pub enum MemberInput {
 }
 
 /// What the front end must do next.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MemberEffect {
     /// Redraw.
     Stay,
@@ -85,6 +87,9 @@ pub enum MemberEffect {
     /// The member opened the Widgets screen from the settings (UI-10). The front end owns that
     /// screen (it draws live widgets); the flow stays on the settings page underneath.
     Widgets,
+    /// Carry out a theme-pack request with the server's files and the audit log, then report it
+    /// with [`MemberFlow::packs_done`] (UI-7). Only sent with `themes.manage`.
+    Packs(PackRequest),
     /// Redraw (the logoff screen is showing) and close the session.
     Disconnect,
 }
@@ -109,6 +114,10 @@ enum Page {
     Recovery(Box<RecoveryScreen>),
     /// The theme preview, under Sysop tools (UI-3). The server draws it.
     Preview(ThemePreview),
+    /// The style gallery, opened from the settings (UI-7). The server draws it.
+    Gallery(Gallery),
+    /// The theme packs screen, under Sysop tools (UI-7). The server draws it.
+    Packs(Box<PackScreen>),
     EditWidth(String),
     EditHeight(String),
     /// An invite screen (create, list, tree). Not `PartialEq`: it may hold a one-time code.
@@ -338,14 +347,9 @@ impl MemberFlow {
             });
             return MemberEffect::Stay;
         }
-        if matches!(self.page, Page::Preview(_)) && !self.access.allows(Permission::MembersApprove)
-        {
-            // Same rule: the permission went away since the screen opened.
+        if let Some(notice) = self.theme_screen_lost_permission() {
             self.page = Page::Home;
-            self.notice = Some(Notice {
-                kind: NoticeKind::Error,
-                text: strings::MEMBERS_NOT_PERMITTED,
-            });
+            self.notice = Some(notice);
             return MemberEffect::Stay;
         }
         if (matches!(self.page, Page::Keys(_)) && !self.access.allows(Permission::KeysManage))
@@ -411,6 +415,8 @@ impl MemberFlow {
             Page::Password(_) => self.password_input(input),
             Page::Keys(_) | Page::Recovery(_) => self.keys_input(input),
             Page::Preview(_) => self.preview_input(input),
+            Page::Gallery(_) => self.gallery_input(input),
+            Page::Packs(_) => self.packs_input(input),
             Page::EditWidth(_) | Page::EditHeight(_) => self.edit_input(input),
             Page::Invites(_) => self.invite_input(input),
             Page::Logoff => MemberEffect::Disconnect,
@@ -446,6 +452,8 @@ impl MemberFlow {
             | Page::Keys(_)
             | Page::Recovery(_)
             | Page::Preview(_)
+            | Page::Gallery(_)
+            | Page::Packs(_)
             | Page::Logoff => false,
         }
     }
@@ -531,6 +539,10 @@ impl MemberFlow {
                 ));
                 MemberEffect::Stay
             }
+            MenuOutcome::Action(Action::ThemePacks) => {
+                self.page = Page::Packs(Box::new(PackScreen::open()));
+                MemberEffect::Packs(PackRequest::List)
+            }
             MenuOutcome::Action(Action::MyKeys) => {
                 self.page = Page::Keys(Box::new(KeysScreen::open(self.telnet)));
                 MemberEffect::Stay
@@ -590,6 +602,7 @@ impl MemberFlow {
             | Action::LogOff
             | Action::SysopQueue
             | Action::ThemePreview
+            | Action::ThemePacks
             | Action::RecoveryCode
             | Action::MyKeys
             | Action::VouchQueue
@@ -848,6 +861,11 @@ impl MemberFlow {
                 self.save(self.settings.with_borders(self.settings.borders().next()))
             }
             MemberInput::Char('g' | 'G') => MemberEffect::Widgets,
+            MemberInput::Char('y' | 'Y') => {
+                let current = self.effective_theme();
+                self.page = Page::Gallery(Gallery::open(&self.themes, current));
+                MemberEffect::Stay
+            }
             MemberInput::Char('i' | 'I') => {
                 self.page = Page::GlyphTest(GlyphTest::new(self.settings.needs_glyph_test()));
                 MemberEffect::Stay
@@ -937,6 +955,110 @@ impl MemberFlow {
             self.page = Page::Home;
         }
         MemberEffect::Stay
+    }
+
+    /// The notice to show when the open gallery or Theme packs screen is no longer allowed: the
+    /// permission was taken away since it opened, and a role change applies on the next key.
+    fn theme_screen_lost_permission(&self) -> Option<Notice> {
+        let (held, text) = match &self.page {
+            Page::Packs(_) => (
+                self.access.allows(Permission::ThemesManage),
+                strings::MEMBERS_NOT_PERMITTED,
+            ),
+            Page::Gallery(_) => (
+                self.access.allows(Permission::AccountEditSettings),
+                strings::NOT_PERMITTED,
+            ),
+            Page::Preview(_) => (
+                self.access.allows(Permission::MembersApprove),
+                strings::MEMBERS_NOT_PERMITTED,
+            ),
+            _ => return None,
+        };
+        (!held).then_some(Notice {
+            kind: NoticeKind::Error,
+            text,
+        })
+    }
+
+    /// Keys on the gallery: Up/Down (or `k`/`j`, `p`/`n`) move, Enter or Space picks, `s`
+    /// changes the sample, `b` or Esc leaves. The board's limits are the list, so a locked
+    /// board lets the member look and nothing else.
+    fn gallery_input(&mut self, input: MemberInput) -> MemberEffect {
+        let key = match input {
+            MemberInput::Up | MemberInput::Char('k' | 'K' | 'p' | 'P') => GalleryKey::Prev,
+            MemberInput::Down | MemberInput::Char('j' | 'J' | 'n' | 'N') => GalleryKey::Next,
+            MemberInput::Enter | MemberInput::Char(' ') => GalleryKey::Pick,
+            MemberInput::Char('s' | 'S') => GalleryKey::Sample,
+            MemberInput::Char('b' | 'B') | MemberInput::Escape => GalleryKey::Back,
+            _ => return MemberEffect::Stay,
+        };
+        let Page::Gallery(gallery) = &mut self.page else {
+            return MemberEffect::Stay;
+        };
+        match gallery.press(key) {
+            GalleryOutcome::Stay => MemberEffect::Stay,
+            GalleryOutcome::Leave => {
+                self.page = Page::Settings;
+                MemberEffect::Stay
+            }
+            GalleryOutcome::Pick(style) => {
+                // Only a style the board allows can be on the list; the save is the settings
+                // key's own path, so the same permission and audit apply.
+                gallery.set_current(style);
+                self.save(self.settings.with_theme(style))
+            }
+        }
+    }
+
+    /// The gallery, while it is open.
+    #[must_use]
+    pub const fn gallery(&self) -> Option<&Gallery> {
+        match &self.page {
+            Page::Gallery(gallery) => Some(gallery),
+            _ => None,
+        }
+    }
+
+    /// Keys on the theme packs screen: Up/Down move, `e` exports the style, `i` imports the
+    /// pack file, `r` looks again, `b` or Esc leaves.
+    fn packs_input(&mut self, input: MemberInput) -> MemberEffect {
+        let key = match input {
+            MemberInput::Up | MemberInput::Char('k' | 'K') => PackKey::Up,
+            MemberInput::Down | MemberInput::Char('j' | 'J') => PackKey::Down,
+            MemberInput::Char('e' | 'E') => PackKey::Export,
+            MemberInput::Char('i' | 'I') => PackKey::Import,
+            MemberInput::Char('r' | 'R') => PackKey::Rescan,
+            MemberInput::Char('b' | 'B') | MemberInput::Escape => PackKey::Back,
+            _ => return MemberEffect::Stay,
+        };
+        let Page::Packs(screen) = &mut self.page else {
+            return MemberEffect::Stay;
+        };
+        match screen.press(key) {
+            PackStep::Stay => MemberEffect::Stay,
+            PackStep::Leave => {
+                self.page = Page::Home;
+                MemberEffect::Stay
+            }
+            PackStep::Ask(request) => MemberEffect::Packs(request),
+        }
+    }
+
+    /// The server finished a pack request: show the listing and what happened.
+    pub fn packs_done(&mut self, listing: PackListing, message: Option<&str>) {
+        if let Page::Packs(screen) = &mut self.page {
+            screen.listed(listing, message);
+        }
+    }
+
+    /// The theme packs screen, while it is open.
+    #[must_use]
+    pub fn packs(&self) -> Option<&PackScreen> {
+        match &self.page {
+            Page::Packs(screen) => Some(screen),
+            _ => None,
+        }
     }
 
     /// The theme preview, while it is open.
@@ -1142,7 +1264,12 @@ impl MemberFlow {
             Page::Login => self.login_view(&mut view, words),
             Page::GlyphTest(test) => glyph_view(&mut view, *test, words),
             Page::Home => self.home_view(&mut view, words),
-            Page::Members(_) | Page::Queue(_) | Page::Community(_) | Page::Preview(_) => {}
+            Page::Members(_)
+            | Page::Queue(_)
+            | Page::Community(_)
+            | Page::Preview(_)
+            | Page::Gallery(_)
+            | Page::Packs(_) => {}
             Page::Settings => self.settings_view(&mut view, words),
             Page::EditWidth(typed) => edit_view(&mut view, strings::FIELD_WIDTH, typed),
             Page::EditHeight(typed) => edit_view(&mut view, strings::FIELD_HEIGHT, typed),
@@ -1305,6 +1432,7 @@ impl MemberFlow {
             entry('c', strings::MENU_COLOR),
             entry('l', strings::MENU_LAYOUT),
             entry('m', strings::MENU_DISPLAY),
+            entry('y', strings::MENU_GALLERY),
             entry('i', strings::MENU_ICONS),
         ];
         if self.access.allows(Permission::AccountSetPassword) {

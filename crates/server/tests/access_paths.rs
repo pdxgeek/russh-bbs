@@ -118,6 +118,7 @@ const WIRED: &[Permission] = &[
     Permission::CommunityView,
     Permission::CommunityModerate,
     Permission::DoorsRun,
+    Permission::ThemesManage,
 ];
 
 /// Permissions with no front-end action yet. A slice that builds one moves it to `WIRED` in the
@@ -155,7 +156,6 @@ const NOT_YET_WIRED: &[Permission] = &[
     Permission::SettingsEdit,
     Permission::RolesEdit,
     Permission::GroupsEdit,
-    Permission::ThemesManage,
     Permission::BackupsRun,
 ];
 
@@ -178,7 +178,7 @@ struct Rig {
     store: SqliteStore,
     db: SqlitePool,
     token: String,
-    _dir: TempDir,
+    dir: TempDir,
 }
 
 impl Rig {
@@ -216,6 +216,11 @@ impl Rig {
         );
         let ui = russh_bbs_server::ui::Ui::standard()
             .unwrap()
+            .with_pack_dirs(russh_bbs_server::ui::PackDirs {
+                packs: dir.path().join("packs"),
+                themes: dir.path().join("themes"),
+                art: dir.path().join("art"),
+            })
             .with_mail_keys(Arc::new(keys))
             .with_doors(russh_bbs_server::doors::Doors::builtin().unwrap());
         let server = SshServer::start_with_ui(
@@ -232,7 +237,7 @@ impl Rig {
             store,
             db,
             token,
-            _dir: dir,
+            dir,
         }
     }
 
@@ -1479,5 +1484,78 @@ async fn doors_run_gates_the_menu_item_and_an_open_door_stops_saving_when_it_is_
     assert!(full(&mut channel).await.contains("[d] Doors"));
     send(&mut channel, "d").await;
     assert!(full(&mut channel).await.contains("Pick a door"));
+    rig.server.shutdown().await;
+}
+
+async fn audit_rows(rig: &Rig, action: &str) -> i64 {
+    sqlx::query_scalar("SELECT COUNT(*) FROM audit_log WHERE action = ?")
+        .bind(action)
+        .fetch_one(&rig.db)
+        .await
+        .unwrap()
+}
+
+#[tokio::test]
+async fn theme_packs_need_themes_manage_and_export_and_import_are_audited() {
+    let rig = Rig::start().await;
+    let key = new_client_key();
+    let (_session, mut channel) = founder_at_menu(&rig, &key).await;
+    let packs = rig.dir.path().join("packs");
+    let themes = rig.dir.path().join("themes");
+
+    send(&mut channel, "o").await;
+    assert!(full(&mut channel).await.contains("[p] Theme packs"));
+    send(&mut channel, "p").await;
+    let screen = full(&mut channel).await;
+    assert!(screen.contains("Installed styles"), "{screen}");
+    assert!(screen.contains("phosphor"), "{screen}");
+
+    // Row 0 is the built-in style (nothing to export); one down is the first shipped style.
+    send(&mut channel, "e").await;
+    assert!(!packs.join("default.pack.toml").exists());
+    assert_eq!(audit_rows(&rig, "theme.exported").await, 0);
+    send(&mut channel, "j").await;
+    send(&mut channel, "e").await;
+    let screen = full(&mut channel).await;
+    assert!(screen.contains("Exported phosphor"), "{screen}");
+    let file = packs.join("phosphor.pack.toml");
+    assert!(file.is_file());
+    assert_eq!(audit_rows(&rig, "theme.exported").await, 1);
+
+    // Edit it (a new name, so it is a new style) and import it back.
+    let edited = std::fs::read_to_string(&file)
+        .unwrap()
+        .replace("name = \"phosphor\"", "name = \"phosphor2\"")
+        .replace("style = \"phosphor\"", "style = \"phosphor2\"");
+    std::fs::write(packs.join("phosphor2.pack.toml"), edited).unwrap();
+    send(&mut channel, "r").await;
+    // Styles come first (9), then the files in name order: phosphor, phosphor2.
+    // The cursor is on row 1 now, so eight steps reach the first file (row 9).
+    for _ in 0..8 {
+        send(&mut channel, "j").await;
+    }
+    let screen = full(&mut channel).await;
+    assert!(screen.contains("ready: style phosphor2"), "{screen}");
+    // The cursor is on the file `phosphor.pack.toml`: that style is installed, so it is refused.
+    send(&mut channel, "i").await;
+    assert!(full(&mut channel).await.contains("Not imported"));
+    assert_eq!(audit_rows(&rig, "theme.imported").await, 0);
+    send(&mut channel, "j").await;
+    send(&mut channel, "i").await;
+    let screen = full(&mut channel).await;
+    assert!(screen.contains("Imported phosphor2"), "{screen}");
+    assert!(themes.join("phosphor2.toml").is_file());
+    assert_eq!(audit_rows(&rig, "theme.imported").await, 1);
+
+    // Taken away while the screen is open: the next key closes it and nothing is written.
+    let taken = rig.revoke(Permission::ThemesManage).await;
+    let first = send(&mut channel, "e").await;
+    let screen = format!("{first} {}", full(&mut channel).await);
+    assert!(screen.contains("You are not allowed"), "{screen}");
+    assert_eq!(audit_rows(&rig, "theme.exported").await, 1);
+    assert_eq!(audit_rows(&rig, "theme.imported").await, 1);
+    send(&mut channel, "o").await;
+    assert!(!full(&mut channel).await.contains("[p] Theme packs"));
+    rig.restore(&taken, Permission::ThemesManage).await;
     rig.server.shutdown().await;
 }
