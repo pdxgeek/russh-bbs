@@ -72,8 +72,14 @@ fn the_table_holds_exactly_the_keys_the_code_uses() {
         .collect();
     let ui = ui();
     let held: std::collections::BTreeSet<&str> = ui.strings().keys().collect();
-    assert_eq!(used.difference(&held).collect::<Vec<_>>(), Vec::<&&str>::new());
-    assert_eq!(held.difference(&used).collect::<Vec<_>>(), Vec::<&&str>::new());
+    assert_eq!(
+        used.difference(&held).collect::<Vec<_>>(),
+        Vec::<&&str>::new()
+    );
+    assert_eq!(
+        held.difference(&used).collect::<Vec<_>>(),
+        Vec::<&&str>::new()
+    );
     assert_eq!(used, held);
 }
 
