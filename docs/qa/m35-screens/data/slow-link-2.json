@@ -1,0 +1,22 @@
+{
+ "motion on, 56kbit, key at 0.5 s": {
+  "key_sent_at": 0.5,
+  "menu_after_key_s": 6.1,
+  "total_bytes": 43495
+ },
+ "motion on, 384kbit, key at 0.5 s": {
+  "key_sent_at": 0.5,
+  "menu_after_key_s": 0.9,
+  "total_bytes": 59019
+ },
+ "motion off, 56kbit, key at 0.5 s": {
+  "key_sent_at": 0.5,
+  "menu_after_key_s": 1.8,
+  "total_bytes": 14386
+ },
+ "motion off, 9.6kbit, key at 0.5 s": {
+  "key_sent_at": 0.5,
+  "menu_after_key_s": 16.1,
+  "total_bytes": 14454
+ }
+}

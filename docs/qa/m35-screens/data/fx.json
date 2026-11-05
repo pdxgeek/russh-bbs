@@ -1,0 +1,168 @@
+{
+ "intro-80x24-motion-on": {
+  "bytes": 85986,
+  "stats": {
+   "bytes": 85986,
+   "reverse_sgr": 1,
+   "bold_reverse_sgr": 0,
+   "truecolor": 7,
+   "c256": 2095,
+   "gfx": 0
+  },
+  "rev": {
+   "row23+bold": [
+    0,
+    0,
+    1
+   ]
+  },
+  "distinct_frame_changes": 17,
+  "last_byte_at": 1.86,
+  "last_visual_change_at": 1.96,
+  "final_sig": -4189842782283413528
+ },
+ "intro-132x43-motion-on": {
+  "bytes": 144937,
+  "stats": {
+   "bytes": 144937,
+   "reverse_sgr": 1,
+   "bold_reverse_sgr": 0,
+   "truecolor": 7,
+   "c256": 2517,
+   "gfx": 0
+  },
+  "rev": {
+   "row42+bold": [
+    0,
+    0,
+    1
+   ]
+  },
+  "distinct_frame_changes": 16,
+  "last_byte_at": 1.88,
+  "last_visual_change_at": 1.99,
+  "final_sig": 7767188772702226972
+ },
+ "skip-80x24": {
+  "menu_after_one_key": true,
+  "bytes": 38573,
+  "key_after_skip_handled": true
+ },
+ "skip-132x43": {
+  "menu_after_one_key": true,
+  "bytes": 69524,
+  "key_after_skip_handled": true
+ },
+ "skip-with-s-at-0.5s": {
+  "settings_open": true,
+  "menu": true
+ },
+ "motion_setting": "Motion: off",
+ "login-motion-off-80x24": {
+  "bytes": 2035,
+  "stats": {
+   "bytes": 2035,
+   "reverse_sgr": 1,
+   "bold_reverse_sgr": 0,
+   "truecolor": 7,
+   "c256": 8,
+   "gfx": 0
+  },
+  "rev": {
+   "row23+bold": [
+    0,
+    0,
+    1
+   ]
+  },
+  "distinct_frame_changes": 0,
+  "last_byte_at": 0,
+  "last_visual_change_at": 0,
+  "final_sig_equal_to_motion_on_final": false
+ },
+ "login-motion-off-132x43": {
+  "bytes": 2557,
+  "stats": {
+   "bytes": 2557,
+   "reverse_sgr": 1,
+   "bold_reverse_sgr": 0,
+   "truecolor": 7,
+   "c256": 8,
+   "gfx": 0
+  },
+  "rev": {
+   "row42+bold": [
+    0,
+    0,
+    1
+   ]
+  },
+  "distinct_frame_changes": 1,
+  "last_byte_at": 0,
+  "last_visual_change_at": 0.22,
+  "final_sig_equal_to_motion_on_final": false
+ },
+ "intro-TERM=xterm-256color-ct=True": {
+  "bytes": 85621,
+  "stats": {
+   "bytes": 85621,
+   "reverse_sgr": 1,
+   "bold_reverse_sgr": 0,
+   "truecolor": 7,
+   "c256": 2080,
+   "gfx": 0
+  },
+  "rev": {
+   "row23+bold": [
+    0,
+    0,
+    1
+   ]
+  },
+  "distinct_frame_changes": 17,
+  "last_byte_at": 1.85,
+  "last_visual_change_at": 1.95
+ },
+ "intro-TERM=xterm-ct=False": {
+  "bytes": 26468,
+  "stats": {
+   "bytes": 26468,
+   "reverse_sgr": 1,
+   "bold_reverse_sgr": 0,
+   "truecolor": 0,
+   "c256": 801,
+   "gfx": 0
+  },
+  "rev": {
+   "row23+bold": [
+    0,
+    0,
+    1
+   ]
+  },
+  "distinct_frame_changes": 18,
+  "last_byte_at": 1.89,
+  "last_visual_change_at": 1.99
+ },
+ "intro-TERM=vt100-ct=False": {
+  "bytes": 9879,
+  "stats": {
+   "bytes": 9879,
+   "reverse_sgr": 1,
+   "bold_reverse_sgr": 0,
+   "truecolor": 0,
+   "c256": 0,
+   "gfx": 0
+  },
+  "rev": {
+   "row23+bold": [
+    0,
+    0,
+    1
+   ]
+  },
+  "distinct_frame_changes": 17,
+  "last_byte_at": 1.85,
+  "last_visual_change_at": 1.85
+ }
+}
