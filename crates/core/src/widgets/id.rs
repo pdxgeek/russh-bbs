@@ -1,4 +1,4 @@
-//! The closed set of widgets the board can place (UI-10, D-TBD).
+//! The closed set of widgets the board can place (UI-10, D122).
 //!
 //! A widget is built in, in core and server code; it is not a plug-in. The id is a closed enum
 //! so a stored list can only ever name something the code draws, and the stored text never

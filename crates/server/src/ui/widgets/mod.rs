@@ -1,4 +1,4 @@
-//! The widget system (UI-10, D-TBD): small live panels the pane layouts place in their cells.
+//! The widget system (UI-10, D122): small live panels the pane layouts place in their cells.
 //!
 //! **Built in, not plug-ins.** [`Widget`] is implemented once per [`WidgetId`] in
 //! [`kinds`]; [`widget`] is the registry. A widget never reads the store: the shell fetches

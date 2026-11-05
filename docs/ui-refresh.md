@@ -234,7 +234,7 @@ Built in `m35/theme-packs-layouts` (D117). The reference is [ui.md](ui.md#styles
 
 ## UI-10 implementation notes
 
-Built in `m35/widgets` (D-TBD). The reference is [ui.md](ui.md#widgets-ui-10); what differs from the plan above:
+Built in `m35/widgets` (D122). The reference is [ui.md](ui.md#widgets-ui-10); what differs from the plan above:
 
 - **Launch set: 17 widgets.** Built: who's online, last callers, new posts (as active threads since the last call, per board), unread mail, a chat room list (rooms and how many are in each, not a live conversation), today's one-liners, the graffiti wall, the current poll, a board activity chart (threads last posted per day over 14 days, a braille area chart), a clock with a month calendar, doors with their seasons, feed headlines (the news ticker, as a list), the sysop's message of the day, your credits (a balance and a braille chart), plus identity, a quote of the day and a staff status gauge. **Not built:** the calendar's "event scheduler next events" (the scheduler only holds system jobs), real door *standings* (the framework has no call for them), a live chat sidebar and an auto-scrolling news ticker (UI-4/UI-8/UI-9).
 - **Cells, not slots.** The named `Slot`s are gone; the layouts make generic cells and the member's ordered list fills them (a widget takes the first cell that holds its minimum size; a widget with nothing to show takes none). The dashboard grid is 2 by 3 at 80x24 and 3 by 4 at 132x43.
