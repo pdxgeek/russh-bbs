@@ -83,7 +83,7 @@ pub(crate) fn shot(
 }
 
 /// The properties that hold for every cell of every render.
-fn check_cells(buffer: &Buffer, tier: Tier, label: &str) {
+pub(crate) fn check_cells(buffer: &Buffer, tier: Tier, label: &str) {
     let area = buffer.area;
     let last = area.height - 1;
     let marker_width = marker_cell_width(tier, area.width);
