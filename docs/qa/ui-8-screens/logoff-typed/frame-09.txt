@@ -1,0 +1,44 @@
+t=1.0s
+                            ┌─────────────────────────────── russh-bbs ────────────────────────────────┐
+                            │Logged off                                                                │
+                            │                                                                          │
+                            │Goodbye, founder.                                                         │
+                            │Your terminal settings are saved.                                         │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │              Goodbye, founder.                                           │
+Your terminal settings are saved.                                                                      │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            └──────────────────────────────────────────────────────────────────────────┘
+ ? help  Esc back  Ctrl-C log off
