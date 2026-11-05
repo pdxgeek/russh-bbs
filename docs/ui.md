@@ -589,7 +589,7 @@ The wipe between menus and the other effects are UI-8's engine ([below](#effects
 
 ### The geometry that did not move
 
-The reader's page size (`ui::pager::text_rows`/`text_width`) and its drawing both come from `ui::screens::reader`, so a page of text is never cut. The list keys are `ui::screens::list::pick` (shared by forums, mail and the members list): the FIX-M3-1 keys. The split plan is a pure function of the body (`panes::plan`), tested not to overlap or leave the body. **Hooks for UI-9:** `Plan::divider` is the grip to drag, `Plan::chat` and `Plan::mail` are the two panes' rectangles, and `side::chat_pane`/`mail_pane` draw into any `Rect`, so "chat beside any screen" calls them for another screen's second pane.
+The reader's page size (`ui::pager::text_rows`/`text_width`) and its drawing both come from `ui::screens::reader`, so a page of text is never cut. The list keys are `ui::screens::list::pick` (shared by forums, mail and the members list): the FIX-M3-1 keys. The split plan is a pure function of the body (`panes::plan`), tested not to overlap or leave the body. **Hooks for pane drag and split chat (UI-9's remaining work):** `Plan::divider` is the grip to drag, `Plan::chat` and `Plan::mail` are the two panes' rectangles, and `side::chat_pane`/`mail_pane` draw into any `Rect`, so "chat beside any screen" calls them for another screen's second pane.
 
 ### Verified
 
@@ -599,7 +599,7 @@ The reader's page size (`ui::pager::text_rows`/`text_width`) and its drawing bot
 - **Unit tests** for the reader geometry and tab window, the nick hash (stable, case-blind, never reversed), the sort cycle (each column both ways, stable, a permutation of the rows), the members list highlight (Enter opens the highlighted row by its digit, a sorted list still opens the right member), the three-pane chat at every width, and the roster following joins and leaves in core.
 - **Integration suites** (`tests/{access_paths,chat,forums,mail,members}.rs`) pass with their expected text updated only where a screen deliberately changed: lists are tables (`1 user00` for `1. user00`), the reader shows `2 of 2` and a quote as a bar instead of `Post 2 of 2 in General` and `> `, the inbox is a table, the chat hints moved to the status bar, a problem on the chat list is a popup, and the one-liner and wall lines are several coloured runs.
 - **Real OpenSSH 9.6 against the real binary**: see [qa/ui-4-walk.md](qa/ui-4-walk.md).
-- **Not built:** tabs that split a thread's *text* (a long post pages with the pager; the tabs are the thread's posts), a chat transcript scrollback (core keeps 200 lines and has no scroll keys), sorting the whole of a paged list (it sorts the page on screen), a live chat pane while the menu has the keys (UI-9 puts chat beside any screen; the split pane lists rooms and who is in them, not lines), the mouse and pane dragging (UI-9), accessibility mode (M5).
+- **Not built:** tabs that split a thread's *text* (a long post pages with the pager; the tabs are the thread's posts), a chat transcript scrollback (core keeps 200 lines and has no scroll keys), sorting the whole of a paged list (it sorts the page on screen), a live chat pane while the menu has the keys (UI-9 puts chat beside any screen; the split pane lists rooms and who is in them, not lines), pane dragging and chat beside any screen (the rest of UI-9; UI-9's mouse already clicks table rows, which turn into the same keys), accessibility mode (M5).
 
 ## Forum screens (M3-E, D83)
 
