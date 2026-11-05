@@ -184,7 +184,7 @@ fn truecolor_clients_get_the_doors_24_bit_colour() {
 #[test]
 fn a_256_colour_client_gets_indexed_colour_and_no_24_bit() {
     let colours = colours_at(ColorDepth::Ansi256);
-    assert!(!colours.is_empty());
+    assert_eq!(colours.len(), 1);
     for (fg, bg) in colours {
         assert!(matches!(fg, Some(Color::Indexed(_))), "{fg:?}");
         assert_eq!(bg, Some(Color::Indexed(33)));
