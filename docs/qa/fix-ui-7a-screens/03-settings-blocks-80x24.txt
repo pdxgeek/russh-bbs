@@ -1,0 +1,24 @@
+  ▗[ Night Owl BBS ]▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▖
+  ▐Terminal settings                                                         ▌
+  ▐                                                                          ▌
+  ▐Width: automatic                                                          ▌
+  ▐Height: automatic                                                         ▌
+  ▐Color: on                                                                 ▌
+  ▐Pause at screen end: on (long text stops at the end of each screen)       ▌
+  ▐Icons: Unicode                                                            ▌
+  ▐Layout: classic (board default)   Theme: phosphor (board default)         ▌
+  ▐Motion: on  Depth: auto  Borders: blocks  Mouse: off                      ▌
+  ▐                                                                          ▌
+  ▐[w] Set width   [h] Set height                                            ▌
+  ▐[c] Toggle color   [p] Toggle pause                                       ▌
+  ▐[l] Next layout   [t] Next theme                                          ▌
+  ▐[m] Toggle motion  [d] Depth  [r] Borders  [o] Mouse                      ▌
+  ▐[y] Style gallery                                                         ▌
+  ▐[i] Run the icon check again   [g] Widgets                                ▌
+  ▐[s] Password                                                              ▌
+  ▐[b] Back                                                                  ▌
+  ▐                                                                          ▌
+  ▐Notice: Saved.                                                            ▌
+  ▐                                                                          ▌
+  ▝▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▘
+ ? help  Esc back  Ctrl-C log off

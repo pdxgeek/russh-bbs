@@ -319,6 +319,50 @@ fn the_glyph_test_shows_no_security_marker() {
 // ---- the flow ----
 
 #[test]
+fn the_glyph_test_shows_the_line_spacing_hint_from_the_string_table() {
+    let hint = "Box lines look broken? Your terminal is drawing them from the font with extra \
+                line spacing. Set line spacing to 1.0, or choose the Blocks border style.";
+    assert_eq!(words().text(strings::GLYPH_SPACING_HINT), hint);
+    // On screen, with the sample row and the question.
+    let mut f = flow(TerminalSettings::default(), None);
+    press(&mut f, "x");
+    let shown = text(&f.view(words()));
+    assert!(shown.contains("Box lines look broken?"), "{shown}");
+    assert!(shown.contains("choose the Blocks border style."), "{shown}");
+    // Every step of the test shows it, not only the first.
+    press(&mut f, "n");
+    let next = text(&f.view(words()));
+    assert!(next.contains("Style: Unicode"), "{next}");
+    assert!(next.contains("Box lines look broken?"), "{next}");
+}
+
+#[test]
+fn the_borders_key_cycles_through_blocks_and_saves_each_choice() {
+    let mut f = at_settings();
+    let mut seen = Vec::new();
+    for _ in 0..3 {
+        let effects = press(&mut f, "r");
+        assert!(
+            matches!(effects.last(), Some(MemberEffect::Save(_))),
+            "r saves: {effects:?}"
+        );
+        seen.push(f.settings().borders());
+    }
+    assert_eq!(
+        seen,
+        [
+            BorderChoice::Ascii,
+            BorderChoice::Blocks,
+            BorderChoice::ThemeDefault
+        ]
+    );
+    press(&mut f, "rr");
+    let out = text(&f.view(words()));
+    assert!(out.contains("Borders: blocks"), "{out}");
+    assert_eq!(borders_to_stored(BorderChoice::Blocks), "blocks");
+}
+
+#[test]
 fn first_login_walks_login_then_glyph_test_then_home() {
     let mut f = flow(TerminalSettings::default(), None);
     let login = text(&f.view(words()));
@@ -1021,7 +1065,7 @@ fn depth_cap_and_borders_cycle_and_round_trip_their_stored_text() {
             borders_from_stored(borders_to_stored(borders)),
             Some(borders)
         );
-        assert_eq!(borders.next().next(), borders);
+        assert_eq!(borders.next().next().next(), borders);
         assert_ne!(words().text(borders.label_key()), borders.label_key());
     }
     assert_eq!(borders_from_stored("heavy"), None);

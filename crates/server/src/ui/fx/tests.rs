@@ -128,6 +128,27 @@ fn an_effect_runs_to_its_end_and_then_the_static_frame_returns() {
 }
 
 #[test]
+fn a_closed_gate_drops_the_due_frame_but_never_the_static_one() {
+    let mut fx = Fx::default();
+    let t0 = Instant::now();
+    fx.start(Kind::Intro, t0, true);
+    // Due, but the link is behind: no redraw, and the clock moves on so the effect is not
+    // stretched.
+    assert!(!fx.tick_gated(t0 + ms(90), false));
+    assert_eq!(
+        fx.next_due(),
+        Some(t0 + ms(90) + Budget::default().interval)
+    );
+    assert!(fx.is_running());
+    // Open again: the next due frame is drawn.
+    assert!(fx.tick_gated(t0 + ms(180), true));
+    // The end of the effect asks for the static frame even with the gate closed.
+    assert!(fx.tick_gated(t0 + ms(2000), false));
+    assert!(!fx.is_running());
+    assert_eq!(fx.frame(t0 + ms(2000)), None);
+}
+
+#[test]
 fn a_late_tick_skips_ahead_and_never_stretches_the_effect() {
     let mut fx = Fx::default();
     let t0 = Instant::now();

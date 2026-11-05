@@ -160,7 +160,8 @@ pub fn depth_cap_from_stored(text: &str) -> Option<DepthCap> {
         .find(|cap| depth_cap_to_stored(*cap) == text)
 }
 
-/// Which borders a member draws (UI-2): the style's own, or plain ASCII.
+/// Which borders a member draws (UI-2): the style's own, plain ASCII, or block elements
+/// (FIX-UI-7a: edges that fill the cell, for terminals that draw box lines from the font).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum BorderChoice {
     /// The style's border set.
@@ -168,18 +169,22 @@ pub enum BorderChoice {
     ThemeDefault,
     /// Plain `+ - |` borders whatever the style says.
     Ascii,
+    /// Block-element borders (`▐ ▌ ▄ ▀`), whatever the style says. The ASCII icon tier still
+    /// draws `+ - |`.
+    Blocks,
 }
 
 impl BorderChoice {
     /// Every choice, in the order "next" cycles.
-    pub const ALL: [Self; 2] = [Self::ThemeDefault, Self::Ascii];
+    pub const ALL: [Self; 3] = [Self::ThemeDefault, Self::Ascii, Self::Blocks];
 
     /// The other choice.
     #[must_use]
     pub const fn next(self) -> Self {
         match self {
             Self::ThemeDefault => Self::Ascii,
-            Self::Ascii => Self::ThemeDefault,
+            Self::Ascii => Self::Blocks,
+            Self::Blocks => Self::ThemeDefault,
         }
     }
 
@@ -189,6 +194,7 @@ impl BorderChoice {
         match self {
             Self::ThemeDefault => super::strings::BORDERS_THEME,
             Self::Ascii => super::strings::BORDERS_ASCII,
+            Self::Blocks => super::strings::BORDERS_BLOCKS,
         }
     }
 }
@@ -199,6 +205,7 @@ pub const fn borders_to_stored(borders: BorderChoice) -> &'static str {
     match borders {
         BorderChoice::ThemeDefault => "theme",
         BorderChoice::Ascii => "ascii",
+        BorderChoice::Blocks => "blocks",
     }
 }
 

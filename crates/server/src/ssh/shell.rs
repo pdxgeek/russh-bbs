@@ -62,6 +62,7 @@ use tracing::{debug, info, warn};
 use super::Backend;
 use super::abort::Abort;
 use super::live;
+use super::pace::{Gate, PROBE, Pacer};
 use super::password::PasswordLogin;
 use super::registry::{Revocation, SessionRef};
 use super::screen::{REVOKED_LINE, Screen};
@@ -221,6 +222,8 @@ pub(crate) struct ShellParts<D> {
 pub(crate) struct Shell<D> {
     parts: ShellParts<D>,
     keys: KeyParser,
+    /// Effect bytes the client has not yet acknowledged (FIX-M35-3).
+    pacer: Pacer,
     /// The session's place in chat while the chat screen is up (M3-F). Dropping it leaves the
     /// room, so every way the shell can end (log off, client gone, write timeout, panic
     /// unwinding) takes the member out of chat.
@@ -243,6 +246,7 @@ impl<D: Backend> Shell<D> {
         Self {
             parts,
             keys: KeyParser::new(),
+            pacer: Pacer::default(),
             chat: None,
             loaded_access: Instant::now(),
         }
@@ -287,12 +291,15 @@ impl<D: Backend> Shell<D> {
             }
             self.pump_chat().await; // what the room sent, before the keys act (M3-F)
             let now = Instant::now();
-            self.parts.screen.tick_fx(now); // the next effect frame, if one is due (UI-8)
             let mut keys = if batch.input.is_empty() {
                 Vec::new()
             } else {
                 self.keys.feed(&batch.input, now)
             };
+            // The client's answers to the probes after effect frames say how much it has taken
+            // (FIX-M35-3): a frame is drawn only if it is not too far behind.
+            self.pacer.acked(self.keys.take_acks());
+            self.pace_effects(now);
             if batch.input.is_empty() && self.keys.deadline().is_some_and(|d| d <= now) {
                 keys = self.keys.expire();
             }
@@ -363,14 +370,41 @@ impl<D: Backend> Shell<D> {
         }
     }
 
+    /// Advance the effect clock by what the link has carried (FIX-M35-3). While the client has
+    /// not taken the last effect bytes the due frame is dropped; when it has taken none of a
+    /// probe for too long, motion is over for the session and the static screen is drawn. Called
+    /// before the keys are applied, so a key in the same batch still ends the effect itself.
+    fn pace_effects(&mut self, now: Instant) {
+        match self.pacer.gate(now) {
+            Gate::Open => self.parts.screen.tick_fx_gated(now, true),
+            Gate::Held => self.parts.screen.tick_fx_gated(now, false),
+            Gate::TooSlow => {
+                debug!(session = ?self.parts.session.id(), "client is behind on effect frames; static screen");
+                self.pacer.clear();
+                self.parts.screen.slow_link();
+            }
+        }
+    }
+
     /// Draw what changed and send it. The last frame goes out before the terminal is restored,
     /// so a final message (the too-many-attempts notice) is seen. `false` means the shell must
     /// stop: the connection is gone or the frame could not be drawn.
     async fn draw_frame(&mut self) -> bool {
+        let effect = self.parts.screen.fx_running();
         match self.parts.screen.render() {
-            Ok(Some(frame)) => {
+            Ok(Some(mut frame)) => {
+                // An effect frame ends with a request the terminal answers once it has taken
+                // every byte before it (FIX-M35-3).
+                let probed = effect;
+                if probed {
+                    frame.extend_from_slice(PROBE);
+                }
                 let started = Instant::now();
+                let len = frame.len();
                 let sent = self.send(frame).await;
+                if sent && probed {
+                    self.pacer.sent(started, len);
+                }
                 // A send that had to wait for the client is a slow link. Effects stop for the
                 // rest of the session (UI-8), so no frame queues up in front of the next key.
                 if sent && started.elapsed() > SLOW_SEND {
