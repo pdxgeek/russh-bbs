@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO widget_list (account_id, layout, widgets) VALUES (?, ?, ?)\n                 ON CONFLICT (account_id, layout) DO UPDATE SET\n                     widgets    = excluded.widgets,\n                     updated_at = unixepoch()",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "98a6f0093c856479baf80b93293dc46a073edabae1c39c2ffc5393f4946a8d42"
+}

@@ -29,6 +29,7 @@ pub(crate) mod queue;
 pub(crate) mod registration;
 pub(crate) mod scheduler;
 pub(crate) mod terminal_settings;
+pub(crate) mod widgets;
 
 use std::sync::Arc;
 
@@ -53,6 +54,7 @@ use russh_bbs_core::registration::RegistrationStore;
 use russh_bbs_core::scheduler::SchedulerStore;
 use russh_bbs_core::store::{AccountStateStore, AccountStore, SettingsStore};
 use russh_bbs_core::terminal_settings::{MemberSessions, TerminalSettingsStore};
+use russh_bbs_core::widgets::WidgetStore;
 
 /// Everything the suite needs from a store: all the core traits, and cheap to clone so
 /// concurrent checks can share it.
@@ -82,6 +84,7 @@ pub(crate) trait TestStore:
     + RegistrationStore
     + MemberDirectory
     + MemberSessions
+    + WidgetStore
     + Clone
     + Send
     + Sync
@@ -115,6 +118,7 @@ impl<T> TestStore for T where
         + RegistrationStore
         + MemberDirectory
         + MemberSessions
+        + WidgetStore
         + Clone
         + Send
         + Sync
@@ -188,7 +192,7 @@ macro_rules! shared_suite {
             use $crate::suite::{
                 access, access_edit, accounts, audit, chat, community, credits, doors, drafts, feeds, forums, founder, invites, keys, limits,
                 mail, password_accounts, passwords, profiles,
-                queue, registration, scheduler, terminal_settings,
+                queue, registration, scheduler, terminal_settings, widgets,
             };
 
             $crate::suite::shared_suite!(@tests $harness, $attr;
@@ -483,6 +487,14 @@ macro_rules! shared_suite {
                 terminal_settings::only_active_accounts_start_a_session,
                 terminal_settings::settings_survive_reopening_the_database,
                 terminal_settings::concurrent_logins_each_see_a_consistent_previous_time,
+                widgets::lists_round_trip_in_order_and_none_follows_the_default,
+                widgets::a_save_for_an_unknown_account_fails_and_a_delete_takes_the_lists,
+                widgets::a_stored_list_the_code_could_not_have_written_is_refused_by_the_database,
+                widgets::a_save_writes_one_audit_row_and_no_widget_names,
+                widgets::a_viewer_sees_nothing_from_a_board_they_cannot_read,
+                widgets::community_widgets_need_community_view_and_polls_keep_their_visibility,
+                widgets::mail_and_credits_are_only_the_viewers_own,
+                widgets::the_waiting_room_is_shown_no_widget_data,
             );
         }
     };

@@ -106,6 +106,12 @@ fn board_of(loaded: &Loaded) -> anyhow::Result<russh_bbs_server::ui::Board> {
         .context("reading the [board] settings")
 }
 
+/// The sysop's widget settings (UI-10); the same checks the config ran.
+fn widgets_of(loaded: &Loaded) -> anyhow::Result<russh_bbs_server::ui::widgets::WidgetSettings> {
+    russh_bbs_server::ui::widgets::WidgetSettings::from_config(&loaded.config.widgets)
+        .context("reading the [widgets] settings")
+}
+
 #[allow(
     clippy::too_many_lines,
     reason = "the boot sequence, in order; splitting it hides the order"
@@ -118,6 +124,9 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
     themes_dir: Option<&std::path::Path>,
     art_dir: Option<&std::path::Path>,
 ) -> anyhow::Result<()> {
+    // Before anything listens, so a stop signal at any point after "listening" is handled.
+    let mut signals = shutdown::Signals::install().context("installing the signal handlers")?;
+
     // A registration mode set in the file, environment or flags wins over the stored value
     // (decision D38); when none is set the stored value stands.
     if let Some(mode) = loaded.registration_mode_override() {
@@ -152,7 +161,8 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
         None => Ui::standard(),
     }
     .context("building the screens")?
-    .with_board(board_of(loaded)?);
+    .with_board(board_of(loaded)?)
+    .with_widgets(widgets_of(loaded)?);
     let ui = match art_dir {
         Some(dir) => ui.with_art_dir(dir),
         None => ui,
@@ -230,11 +240,15 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
             .await;
     });
 
-    shutdown::wait_for_signal()
+    signals
+        .wait()
         .await
         .context("waiting for shutdown signal")?;
     info!("shutting down");
+    // `abort` only requests the stop: wait until the task is really gone, or it can still be
+    // writing when the store's final checkpoint runs (FIX-M4-1).
     purge.abort();
+    let _ = purge.await;
     // Stop the scheduler before the store closes, so no job is left writing to a closed pool.
     // `run` returns at once (it drops a tick in progress), so this wait is short.
     let _ = stop_scheduler.send(());

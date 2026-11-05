@@ -36,6 +36,8 @@ pub struct Config {
     pub mail: MailConfig,
     /// The board's identity, defaults and what members may choose (UI-2).
     pub board: BoardConfig,
+    /// Which widgets exist, their defaults and locks, and the sysop's own widget text (UI-10).
+    pub widgets: WidgetsConfig,
 }
 
 impl Default for Config {
@@ -50,8 +52,35 @@ impl Default for Config {
             waiting_room: WaitingRoomConfig::default(),
             mail: MailConfig::default(),
             board: BoardConfig::default(),
+            widgets: WidgetsConfig::default(),
         }
     }
+}
+
+/// `[widgets]` (UI-10): which widgets exist, what each layout shows by default, what is locked,
+/// and the sysop's message of the day and quotes. Checked by
+/// `ui::widgets::WidgetSettings::from_config`. Lists are comma-separated widget ids.
+#[derive(Debug, Clone, PartialEq, Eq, Default, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct WidgetsConfig {
+    /// Widgets that do not exist on this board: not offered, not drawn.
+    pub hidden: String,
+    /// Widgets every member sees (a member can reorder them but not switch them off).
+    pub on: String,
+    /// Widgets nobody can switch on.
+    pub off: String,
+    /// The default widgets and order for the dashboard layout. Empty: the built-in list.
+    pub dashboard: String,
+    /// The default widgets and order for the wide layout.
+    pub wide: String,
+    /// The default widgets and order for the focus layout's pop-over.
+    pub focus: String,
+    /// The default widgets and order for the split layout's second pane.
+    pub split: String,
+    /// The message of the day (the `motd` widget). Plain text, up to 240 characters.
+    pub motd: String,
+    /// Quotes for the `quote` widget, separated by `|`; one is shown per day.
+    pub quotes: String,
 }
 
 /// `[board]` (UI-2): the board's name and look. Checked by `ui::board::Board::from_config`.

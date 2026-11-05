@@ -192,6 +192,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         24,
         "03d23122f5c4dccb326d80c051c8cfa21bbdb3dea40b4ac04b86031b56dae5d99f0b28822b812e2a8e6f55924bafdfe2",
     ),
+    (
+        25,
+        "f4c80cd5ead4335e1aa616a9cb081c6cd7ef14bd94e9aafca05462e7a7a64f3f01340c65fc002360bf589cb41cc6499e",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {
@@ -291,7 +295,8 @@ async fn a_fresh_database_gets_every_migration() {
             "scheduler_job",
             "settings",
             "terminal_settings",
-            "thread"
+            "thread",
+            "widget_list"
         ]
     );
 }
@@ -392,6 +397,36 @@ async fn wal_and_foreign_keys_are_on() {
         .await
         .unwrap();
     assert_eq!(fks, 1);
+}
+
+/// `close` waits for a connection that is still in use, then leaves the WAL empty (FIX-M4-1).
+/// This pins the invariant; the race it guards (a statement already on a connection's worker
+/// thread committing after the checkpoint) is not deterministic here, and is exercised by
+/// `crates/server/tests/shutdown.rs` under load.
+#[tokio::test]
+async fn close_waits_for_a_busy_connection_and_empties_the_wal() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("bbs.db");
+    let store = SqliteStore::open(&path).await.unwrap();
+    let mut held = store.pool().acquire().await.unwrap();
+    sqlx::query("CREATE TABLE late (n INTEGER)")
+        .execute(&mut *held)
+        .await
+        .unwrap();
+    let closing = tokio::spawn({
+        let store = store.clone();
+        async move { store.close().await }
+    });
+    // A write while `close` is waiting on this connection lands in the WAL.
+    sqlx::query("INSERT INTO late (n) VALUES (1)")
+        .execute(&mut *held)
+        .await
+        .unwrap();
+    drop(held);
+    closing.await.unwrap();
+    let mut wal = path.clone().into_os_string();
+    wal.push("-wal");
+    assert_eq!(std::fs::metadata(&wal).map_or(0, |m| m.len()), 0);
 }
 
 #[tokio::test]
@@ -547,6 +582,62 @@ async fn a_row_from_before_0024_keeps_its_choices_and_gets_default_ui_settings()
     assert!(read.motion());
     assert_eq!(read.depth_cap(), DepthCap::Auto);
     assert_eq!(read.borders(), BorderChoice::ThemeDefault);
+}
+
+/// Migration 0025 only adds `widget_list`: a database from before it upgrades, keeps its
+/// account and settings rows, and starts with no widget lists (everyone follows the default).
+#[tokio::test]
+async fn a_database_from_before_0025_upgrades_and_keeps_its_rows() {
+    use russh_bbs_core::store::AccountId;
+    use russh_bbs_core::terminal_settings::LayoutId;
+    use russh_bbs_core::widgets::{Choice, WidgetId, WidgetStore as _};
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("old.db");
+    let pool = scratch_pool(&path).await;
+    let old = sqlx::migrate::Migrator {
+        migrations: std::borrow::Cow::Owned(
+            MIGRATOR
+                .iter()
+                .filter(|m| m.version < 25)
+                .cloned()
+                .collect(),
+        ),
+        ..sqlx::migrate::Migrator::DEFAULT
+    };
+    old.run(&pool).await.unwrap();
+    sqlx::query(
+        "INSERT INTO accounts (username, username_skeleton, state) \
+         VALUES ('alice', 'alice', 'active')",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO terminal_settings (account_id, color, pause, icon_tier, layout, theme) \
+         VALUES (1, 1, 1, 'unicode', 'wide', 'amber')",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    pool.close().await;
+    let store = SqliteStore::open(&path).await.unwrap();
+    let alice = AccountId::from_raw(1);
+    let read = store.terminal_settings(alice).await.unwrap();
+    assert_eq!(read.layout_choice(), Some(LayoutId::Wide));
+    assert_eq!(read.theme_choice().unwrap().as_str(), "amber");
+    assert_eq!(store.widget_choice(alice).await.unwrap(), Choice::new());
+    store
+        .set_widget_list(alice, LayoutId::Wide, Some(&[WidgetId::Clock]))
+        .await
+        .unwrap();
+    assert_eq!(
+        store
+            .widget_choice(alice)
+            .await
+            .unwrap()
+            .get(LayoutId::Wide),
+        Some(&[WidgetId::Clock][..])
+    );
 }
 
 #[tokio::test]

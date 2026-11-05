@@ -469,6 +469,7 @@ fn shot(
                     wanted: chosen,
                     popover: false,
                     art: Some(&ctx),
+                    widgets: crate::ui::widgets::WidgetView::none(),
                 },
             );
             crate::ui::backdrop::finish(frame, look);

@@ -227,6 +227,9 @@ fn draw_sample(ui: &Ui, preview: &ThemePreview, shown_with: Look) -> Buffer {
     };
     let mut terminal =
         Terminal::new(TestBackend::new(cols, rows)).unwrap_or_else(|never| match never {});
+    // The sample shows the layout's cells empty: widgets are the member's own, not the board's.
+    let widget_data = russh_bbs_core::widgets::WidgetData::default();
+    let widget_settings = crate::ui::widgets::WidgetSettings::default();
     let drawn = terminal.draw(|frame| match preview.sample() {
         PreviewSample::Menu => {
             let access = Snapshot::from_role(
@@ -255,6 +258,12 @@ fn draw_sample(ui: &Ui, preview: &ThemePreview, shown_with: Look) -> Buffer {
                     wanted: preview.layout(),
                     popover: false,
                     art: Some(&art),
+                    widgets: crate::ui::widgets::WidgetView {
+                        shown: &[],
+                        data: &widget_data,
+                        settings: &widget_settings,
+                        now: 0,
+                    },
                 },
             );
             backdrop::finish(frame, look);

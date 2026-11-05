@@ -64,6 +64,13 @@ pub(super) fn shot(
     let look = Look::for_theme(&settings, layout, theme).at_depth(depth);
     let page = page(&[]);
     let board = board();
+    let widget_data = crate::ui::widgets::fixture::data();
+    let widget_settings = crate::ui::widgets::fixture::settings();
+    let shown = russh_bbs_core::widgets::Rules::default().resolve_with(
+        layout,
+        &russh_bbs_core::widgets::Choice::new(),
+        |_| true,
+    );
     let mut terminal = Terminal::new(TestBackend::new(size.0, size.1)).unwrap();
     terminal
         .draw(|frame| {
@@ -84,6 +91,12 @@ pub(super) fn shot(
                     wanted: chosen,
                     popover: false,
                     art: None,
+                    widgets: crate::ui::widgets::WidgetView {
+                        shown: &shown,
+                        data: &widget_data,
+                        settings: &widget_settings,
+                        now: crate::ui::widgets::fixture::NOW,
+                    },
                 },
             );
             super::backdrop::finish(frame, look);
@@ -630,7 +643,7 @@ fn the_pane_layouts_really_have_panes() {
         "Who is online",
         "Last callers",
         "New posts",
-        "Unread mail",
+        "Mail",
     ] {
         assert!(
             dashboard.contains(title),
@@ -640,12 +653,16 @@ fn the_pane_layouts_really_have_panes() {
     assert!(dashboard.contains("Portland, OR") && dashboard.contains("since 2026"));
     assert!(
         dashboard.contains("UTC 12:00"),
-        "the clock slot shows the real time"
+        "the header clock shows the real time"
+    );
+    assert!(
+        dashboard.contains("Thu 5 Nov 2026"),
+        "the clock widget shows the date"
     );
     let wide = draw(LayoutId::Wide, (132, 43));
     assert!(wide.contains("Activity") && wide.contains("This board"));
     let split = draw(LayoutId::Split, (100, 30));
     assert!(split.contains("Chat"), "{split}");
-    // No pane invents numbers: every other slot says it has nothing to show.
-    assert!(dashboard.contains("Nothing to show yet."));
+    // The widgets show the data they were given, not made-up numbers.
+    assert!(dashboard.contains("5 online") && dashboard.contains("Active threads: 7"));
 }

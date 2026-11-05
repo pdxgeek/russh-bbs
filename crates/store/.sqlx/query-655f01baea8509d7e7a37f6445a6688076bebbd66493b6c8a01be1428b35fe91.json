@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM widget_list WHERE account_id = $1 AND layout = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "655f01baea8509d7e7a37f6445a6688076bebbd66493b6c8a01be1428b35fe91"
+}

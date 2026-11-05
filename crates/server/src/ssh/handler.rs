@@ -268,6 +268,34 @@ impl<D> ClientHandler<D> {
         Some((Content::Member(Box::new(flow)), Some(meter)))
     }
 
+    /// The handle of the active member `fingerprint` is bound to, without starting a session
+    /// (no login is recorded). Any failure is logged and answers `None`: the sign-in path fails
+    /// closed, like [`Self::member_start`].
+    async fn member_handle(
+        &self,
+        fingerprint: &Fingerprint,
+    ) -> Option<russh_bbs_core::sanitize::Username>
+    where
+        D: Backend,
+    {
+        match timeout(
+            MEMBER_START_TIMEOUT,
+            self.directory.handle_for_key(fingerprint),
+        )
+        .await
+        {
+            Ok(Ok(handle)) => handle,
+            Ok(Err(error)) => {
+                warn!(session = ?self.guard.id(), %error, "the key's account could not be read");
+                None
+            }
+            Err(_) => {
+                warn!(session = ?self.guard.id(), "reading the key's account timed out");
+                None
+            }
+        }
+    }
+
     /// Start a signed-in session for the account behind this session's key. Any failure (no
     /// account, a store error, a timeout) is logged and answers `None`, which sends the shell
     /// back to the waiting room: the member path fails closed, like the directory.
@@ -473,10 +501,12 @@ impl<D: Backend> Handler for ClientHandler<D> {
                 // Only a key bound to the account with this very handle signs in. Every other
                 // key is refused the same way, so the client falls back to a password and the
                 // answer is the same whether or not the handle exists.
+                // Read the binding only: starting the session here would record a login, and the
+                // shell starts it again, so "last login" would always be this very sign-in.
                 let bound = self
-                    .member_start(&fingerprint)
+                    .member_handle(&fingerprint)
                     .await
-                    .is_some_and(|start| names_the_handle(user, start.handle.as_str()));
+                    .is_some_and(|handle| names_the_handle(user, handle.as_str()));
                 if !bound {
                     info!(session = ?self.guard.id(), peer = ?self.peer, "public key not bound to that handle; refusing");
                     return Ok(retry_methods(self.passwords.enabled()));
@@ -678,6 +708,7 @@ impl<D: Backend> Handler for ClientHandler<D> {
             chat: Arc::clone(&self.chat),
             meter,
             redraw_interval: self.limits.redraw_interval,
+            max_connections: self.limits.max_connections,
             write_stall: self.limits.write_stall,
             access_filter: None,
         });

@@ -117,7 +117,7 @@ The fingerprint is logged at start (`host key ready ... fingerprint=SHA256:...`)
 
 ## Stopping, restarting, upgrading
 
-`docker stop` sends SIGTERM. The server stops accepting connections, disconnects sessions, checkpoints the SQLite WAL, closes the database and exits 0, within 8 seconds (under Docker's 10 s default; the compose example allows 15 s). SIGINT does the same. If a stop is cut off by SIGKILL, SQLite recovers the WAL on the next start.
+`docker stop` sends SIGTERM. The server stops accepting connections, disconnects sessions, checkpoints the SQLite WAL, closes the database and exits 0, within 8 seconds (under Docker's 10 s default; the compose example allows 15 s). SIGINT does the same. The order is fixed: the signal handlers are installed before anything listens, then the background jobs (the purge timer and the scheduler) are stopped and awaited, then the listeners and sessions, then the database pool is closed, and only then is the WAL checkpointed on a connection that is the only one open. A checkpoint that cannot finish is logged as a warning, not ignored. If a stop is cut off by SIGKILL, SQLite recovers the WAL on the next start.
 
 To upgrade: pull the new tag, then recreate the container with the same volume (`docker compose pull && docker compose up -d`). Database migrations are forward-only and run at start; **back up first** and do not run an older image on a newer database.
 

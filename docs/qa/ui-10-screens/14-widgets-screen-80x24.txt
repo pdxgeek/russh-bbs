@@ -1,0 +1,24 @@
+ » Night Owl BBS « │ Widgets                                          UTC 04:33
+╭« Widgets »───────────────────╮╭« Preview »───────────────────────────────────╮
+│ Layout: Dashboard            ││ ╭« Menu »────────╮╭« Who is o╮ ╭« Clock »─╮  │
+│ (your own list)              ││ │                ││ ● 2 onli │ │ 04:33 UT │  │
+│ >  1 [✓] Who is online       ││ │                ││ ▸ bob    │ │ Thu 5 N… │  │
+│    2 [✓] Clock               ││ │                ││ ▸ founde │ │          │  │
+│    3 [✓] Last callers        ││ │                ││          │ │          │  │
+│    4 [✓] New posts           ││ │                │╰──────────╯ ╰──────────╯  │
+│    5 [✓] Mail                ││ │                │╭« Last cal╮ ╭« New post╮  │
+│    6 [✓] Activity            ││ │                ││ fou… now │ │ All caug │  │
+│    7 [✓] One-liners          ││ │                ││ bob  now │ │          │  │
+│    8 [✓] Poll                ││ │                ││          │ │          │  │
+│    9 [✓] Message … locked on ││ │                ││          │ │          │  │
+│   10 [✓] Your credits        ││ │                │╰──────────╯ ╰──────────╯  │
+│      [ ] This board          ││ │                │                           │
+│      [ ] Chat                ││ │                │╭« Mail »──╮ ╭« Activity╮  │
+│      [-] Graffiti locked off ││ │                ││ No unrea │ │ 31 thre… │  │
+│      [ ] News                ││ │                ││ 0 in yo… │ │ ▄▆▇▄█▆▆▃ │  │
+│      [-] Doors    locked off ││ │                ││          │ │ 1… today │  │
+│      [ ] Status              ││ │                ││          │ │          │  │
+│                              ││ │                │╰──────────╯ ╰──────────╯  │
+│                              ││ ╰────────────────╯                           │
+╰──────────────────────────────╯╰──────────────────────────────────────────────╯
+ Up/Down choose  Space on/off  u/d move  Tab layout  r default  Esc back

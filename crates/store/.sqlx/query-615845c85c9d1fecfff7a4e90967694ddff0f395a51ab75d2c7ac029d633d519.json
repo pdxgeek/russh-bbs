@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM widget_list WHERE account_id = ? AND layout = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "615845c85c9d1fecfff7a4e90967694ddff0f395a51ab75d2c7ac029d633d519"
+}

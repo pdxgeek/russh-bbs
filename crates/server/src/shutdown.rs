@@ -11,24 +11,49 @@ use crate::ssh::SshServer;
 /// stop timeout, so a slow close ends in a clean exit rather than SIGKILL.
 pub const SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(8);
 
-/// Resolve when the process is asked to stop: SIGTERM (`docker stop`, systemd) or SIGINT (Ctrl-C).
-pub async fn wait_for_signal() -> std::io::Result<()> {
+/// The process's stop signals, installed **before** anything listens. Until a handler exists a
+/// SIGTERM takes its default action and kills the process with a signal status, so installing
+/// late left a window after "ssh server listening" in which `docker stop` did not exit 0.
+#[derive(Debug)]
+pub struct Signals {
     #[cfg(unix)]
-    {
-        use tokio::signal::unix::{SignalKind, signal};
-        let mut term = signal(SignalKind::terminate())?;
-        tokio::select! {
-            _ = term.recv() => info!("received SIGTERM"),
-            result = tokio::signal::ctrl_c() => {
-                result?;
-                info!("received SIGINT");
-            }
+    term: tokio::signal::unix::Signal,
+    #[cfg(unix)]
+    interrupt: tokio::signal::unix::Signal,
+}
+
+impl Signals {
+    /// Register the handlers for SIGTERM and SIGINT.
+    pub fn install() -> std::io::Result<Self> {
+        #[cfg(unix)]
+        {
+            use tokio::signal::unix::{SignalKind, signal};
+            Ok(Self {
+                term: signal(SignalKind::terminate())?,
+                interrupt: signal(SignalKind::interrupt())?,
+            })
         }
-        Ok(())
+        #[cfg(not(unix))]
+        {
+            Ok(Self {})
+        }
     }
-    #[cfg(not(unix))]
-    {
-        tokio::signal::ctrl_c().await
+
+    /// Resolve when the process is asked to stop: SIGTERM (`docker stop`, systemd) or SIGINT
+    /// (Ctrl-C). A signal that arrived after [`Signals::install`] is not lost.
+    pub async fn wait(&mut self) -> std::io::Result<()> {
+        #[cfg(unix)]
+        {
+            tokio::select! {
+                _ = self.term.recv() => info!("received SIGTERM"),
+                _ = self.interrupt.recv() => info!("received SIGINT"),
+            }
+            Ok(())
+        }
+        #[cfg(not(unix))]
+        {
+            tokio::signal::ctrl_c().await
+        }
     }
 }
 

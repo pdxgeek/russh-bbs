@@ -61,6 +61,14 @@ pub trait MemberSessions: Send + Sync {
         key: &Fingerprint,
     ) -> impl Future<Output = Result<Option<MemberStart>, StoreError>> + Send;
 
+    /// The handle of the active member `key` is bound to, or `None` for any other key. Unlike
+    /// [`MemberSessions::start_for_key`] it **records no login**: the SSH key check uses it to
+    /// see whether a key names its handle, and the shell then starts the one session.
+    fn handle_for_key(
+        &self,
+        key: &Fingerprint,
+    ) -> impl Future<Output = Result<Option<Username>, StoreError>> + Send;
+
     /// Begin a session for an account just created (the founder claim).
     fn start_for_account(
         &self,
@@ -106,6 +114,14 @@ impl<S: AccountStore + TerminalSettingsStore + AccessStore> MemberSessions for S
         }
     }
 
+    async fn handle_for_key(&self, key: &Fingerprint) -> Result<Option<Username>, StoreError> {
+        Ok(self
+            .account_by_fingerprint(key)
+            .await?
+            .filter(|account| account.state.is_member_access())
+            .map(|account| account.username))
+    }
+
     async fn start_for_account(&self, account: &Account) -> Result<MemberStart, StoreError> {
         let settings = self.terminal_settings(account.id).await?;
         let previous_login = self.record_login(account.id).await?;
@@ -143,6 +159,13 @@ impl MemberSessions for NoMembers {
         &self,
         _key: &Fingerprint,
     ) -> impl Future<Output = Result<Option<MemberStart>, StoreError>> + Send {
+        std::future::ready(Ok(None))
+    }
+
+    fn handle_for_key(
+        &self,
+        _key: &Fingerprint,
+    ) -> impl Future<Output = Result<Option<Username>, StoreError>> + Send {
         std::future::ready(Ok(None))
     }
 

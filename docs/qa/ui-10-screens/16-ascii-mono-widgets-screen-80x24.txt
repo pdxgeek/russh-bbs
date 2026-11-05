@@ -1,0 +1,24 @@
+ >> Night Owl BBS << | Widgets                                        UTC 04:33
++<< Widgets >>-----------------++<< Preview >>---------------------------------+
+| Layout: Dashboard            || +<< Menu >>------++<< This bo+ +<< Clock >+  |
+| (board default)              || |                || Night O~ | | 04:33 UT |  |
+| >  1 [x] This board          || |                || After h~ | | Thu 5 N~ |  |
+|    2 [x] Clock               || |                || Portlan~ | |          |  |
+|    3 [x] Who is online       || |                ||          | |          |  |
+|    4 [x] Last callers        || |                |+----------+ +----------+  |
+|    5 [x] New posts           || |                |+<< Who is + +<< Last ca+  |
+|    6 [x] Mail                || |                || * 1 onli | | bob  now |  |
+|    7 [x] Activity            || |                || > bob    | | fou~ now |  |
+|    8 [x] One-liners          || |                ||          | |          |  |
+|    9 [x] Poll                || |                ||          | |          |  |
+|   10 [x] Your credits        || |                |+----------+ +----------+  |
+|   11 [x] Message ~ locked on || |                |                           |
+|      [ ] Chat                || |                |+<< New pos+ +<< Mail >>+  |
+|      [-] Graffiti locked off || |                || All caug | | No unrea |  |
+|      [ ] News                || |                ||          | | 0 in yo~ |  |
+|      [-] Doors    locked off || |                ||          | |          |  |
+|                              || |                ||          | |          |  |
+|                              || |                |+----------+ +----------+  |
+|                              || +----------------+                           |
++------------------------------++----------------------------------------------+
+ Up/Down choose  Space on/off  u/d move  Tab layout  r default  Esc back

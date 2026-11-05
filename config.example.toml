@@ -46,6 +46,28 @@
 # Set false to turn motion off for every member.
 # motion = true
 
+[widgets]
+# Which widgets exist, what each layout shows by default, and what is locked (UI-10). Lists are
+# comma-separated widget ids: identity, clock, online, callers, new_posts, mail, chat, activity,
+# credits, oneliner, wall, poll, news, motd, quote, doors, status. A widget may be in only one of
+# hidden, on and off. Members switch widgets on and off and reorder them from Terminal settings
+# (g); they can only choose within what you allow here.
+# Widgets that do not exist on this board (not offered, not drawn):
+# hidden = "wall"
+# Widgets every member sees (they can move them, not switch them off):
+# on = "motd"
+# Widgets nobody can switch on:
+# off = "quote"
+# The default widgets and their order for the layouts that draw panes. Empty: the built-in list.
+# dashboard = "identity,clock,online,callers,new_posts,mail,activity,oneliner,poll,credits"
+# wide = "identity,clock,online,new_posts,activity,mail,callers,news,motd,status"
+# focus = "identity,clock,mail,new_posts,online,motd"
+# split = "chat,online,mail,new_posts"
+# The message of the day (plain text, up to 240 characters) for the motd widget, and quotes
+# separated by | for the quote widget (one is shown per day, up to 200 characters each).
+# motd = "Welcome aboard. Be kind."
+# quotes = "Be excellent to each other.|Keep it weird."
+
 [mail]
 # The key that seals stored mail (M3-I, D90). Default: mail.key beside the host key (in the
 # data directory). Created with mode 0600 on the first start of a board with no mail; the server

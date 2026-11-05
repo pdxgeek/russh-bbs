@@ -132,6 +132,7 @@ fn draw_on(
                     wanted: chosen,
                     popover: false,
                     art: None,
+                    widgets: crate::ui::widgets::WidgetView::none(),
                 },
             );
         })
