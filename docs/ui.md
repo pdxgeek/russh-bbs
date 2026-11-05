@@ -209,7 +209,7 @@ Status: **Implemented and tested; walked over real OpenSSH 9.6 and a raw telnet 
 ### ASCII tier and locked choices (FIX-M35-2, FIX-M35-4)
 
 - The menu list's scrollbar uses `#` and `|` in the ASCII tier, as tables do (QA M3.5 M2: ratatui's default `█` and `║` appeared whenever the list overflowed, in windows under about 16 rows). Tests scan every cell for non-ASCII at every height from 8 to 24 and widths 40, 80 and 132: the menu and help in every layout and every shipped style (`ui::layout_tests`), the table (`ui::table::tests`) and the forum board list and reader (`forums::tests`). Mail and chat were not scanned (they draw paragraphs, not scrollbars). Not verified: a real `ssh` walk of this fix.
-- A door's selection bar is not reverse video (D-TBD, QA M3.5 L1): it is the theme's selection colours with bold and underline.
+- A door's selection bar is not reverse video (D130, QA M3.5 L1): it is the theme's selection colours with bold and underline.
 - Pressing `l` or `t` on the settings screen when the sysop has fixed the layout or style shows "The sysop has fixed the layout (style) on this board." (L3).
 
 ### Converted screens
