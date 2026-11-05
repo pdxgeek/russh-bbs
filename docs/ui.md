@@ -405,7 +405,7 @@ A sysop with `members.approve` (what Sysop tools itself needs) opens **Sysop too
 - **Preview**: reached from Sysop tools by a sysop and not by a member; every key; every style x tier x colour x size x sample draws without a marker outside the real marker cell; the clipped note; refused art files listed; losing `members.approve` closes it.
 - **Real OpenSSH 9.6 against the real binary**, read through `pyte`: for each of the six styles the login banner and the main-menu header at 80x24 and 132x43 (the board's style locked per run), then, for `neon` and `ansi`, the Sysop tools, Theme preview screen at two sizes and the logoff screen with the style's banner and a board quote. PNGs and text captures are in [ui-screenshots/art](ui-screenshots/art/README.md).
 - **Not verified:** art in a real 16-colour or 256-colour client (the depth fallback is tested on cells), a Nerd Font session, other terminal emulators, telnet, a screen reader (accessibility mode, M5, will bypass art), art drawn by a third party's ANSI editor (the goldens are hand-written bytes), and the `area` slot on any screen.
-## Theme gallery, theme packs and screenshots (UI-7, D-TBD)
+## Theme gallery, theme packs and screenshots (UI-7, D126)
 
 ### The member gallery (Terminal settings, `y`)
 
@@ -440,7 +440,7 @@ hex = "1b5b..."
 
 **A pack holds files, and every file goes through the loader that reads the same file from disk**: the theme text through `Theme::parse` (schema, caps, contrast floor, string checks, version migrations), each `art.toml` through the art loader, each `.ans` through the `.ans` parser. Nothing in a pack is executed, fetched or interpreted as anything but data. Unknown fields are refused at every level. A pack cannot name the reserved style, a marker glyph, the Nerd Font range or the marker position because neither a theme file nor art has a key, style or glyph for them (D39), and the sanitizer replaces the reserved characters in every string and art cell; a string that claims privacy is refused. **Caps:** 512 KiB for the file, 16 art entries, the theme and `.art.toml` caps, the `.ans` cap checked on the hex *before* it is decoded, 240 characters per string. **Art belongs to its style:** every piece must be made for the pack's own style, and an `.ans` is installed as `<style>.<slot>.ans`, so a pack can never replace the board's generic art or another style's.
 
-**Sysop screen (Sysop tools, `p`, `themes.manage`).** Two lists: the installed styles (`e` exports the one under the cursor to `packs/<name>.pack.toml`; the built-in `default` has no file) and the pack files in `packs/` beside the host key (each shown as "ready: style x" or "refused: reason"; `i` imports it). Import validates the whole pack first, then installs with `create_new` into `themes/` and `art/` (art first, the theme last; a failure removes what it wrote; nothing is overwritten; a style name already installed is refused, so rename it in the file). The new style **loads when the server restarts**, like any file dropped in those directories (there is no hot reload; see D-TBD). The permission is checked again where the work is done, an export or import writes a `theme.exported` or `theme.imported` audit row (a refusal writes none), and an export holds only the style's own text and art: no board setting, no path, no member data.
+**Sysop screen (Sysop tools, `p`, `themes.manage`).** Two lists: the installed styles (`e` exports the one under the cursor to `packs/<name>.pack.toml`; the built-in `default` has no file) and the pack files in `packs/` beside the host key (each shown as "ready: style x" or "refused: reason"; `i` imports it). Import validates the whole pack first, then installs with `create_new` into `themes/` and `art/` (art first, the theme last; a failure removes what it wrote; nothing is overwritten; a style name already installed is refused, so rename it in the file). The new style **loads when the server restarts**, like any file dropped in those directories (there is no hot reload; see D126). The permission is checked again where the work is done, an export or import writes a `theme.exported` or `theme.imported` audit row (a refusal writes none), and an export holds only the style's own text and art: no board setting, no path, no member data.
 
 ### Screenshots (`tools/screenshots/`)
 
@@ -504,6 +504,62 @@ Every figure comes from a service the screens already use: last callers, one-lin
 - **Against the real stores** (`russh-bbs-store` shared suite, SQLite, plain Postgres 16 and TLS-required Postgres 16): the settings round trip (order, empty versus no row, reset, replace, other accounts untouched, cascade, a bad account, database constraints, one audit row per save), and the **no-leak tests**: a member without a grant sees nothing of a restricted board in new posts, activity or news (and one with a scoped grant does), nothing from callers, one-liners, wall or poll without `community.view`, poll counts only after voting when hidden, only their own mail count and credits, and a waiting-room snapshot gets an empty result.
 - **Real OpenSSH 9.6** against the real binary (dashboard, wide, focus and split layouts, the Widgets screen with locks, edits that persist across a reconnect, the ASCII tier in mono, and the marker cell with the `LOW-SECURITY` marker on): [qa/ui-10-walk.md](qa/ui-10-walk.md), with PNGs in [qa/ui-10-screens/](qa/ui-10-screens/). The walk found a defect older than this slice and fixed it here: one ssh key sign-in recorded **two** logins (`auth_publickey` started the whole member session to check the handle and the shell started it again), so "last login" and the "since your last call" mark were always the current sign-in; `MemberSessions::handle_for_key` now checks the key without recording a login, with a regression test that fails on the old code.
 - **Not built / not verified:** drag-to-resize and mouse (UI-9); widgets in accessibility mode as their own screen (M5); the other screens inside the panes (UI-4); real door standings (the doors widget shows seasons: the door framework has no standings call, noted in coordination); live updates of chat lines in a widget (the chat widget shows room counts); other terminal emulators, telnet, a screen reader.
+
+## Effects and graphics (UI-8, D124)
+
+Built in `m35/effects-graphics`, as **engine and components** on today's screens (UI-4 has not started, so the reader, chat, mail and community screens were not touched). Effects are wired into three places only: the login, the menu transition and the logoff. Everything else is an API in `crates/server/src/ui` for UI-4 and UI-10 to use. Walked over OpenSSH 9.6 in [qa/ui-8-walk.md](qa/ui-8-walk.md).
+
+### What exists
+
+| Module | What it is |
+|---|---|
+| `ui/fx` | The effect engine: `Fx` (state, ticker, budget), `Kind` (`Intro`, `Wipe`, `Reveal`), `Overlay` (rewrites a finished frame), `allowed` (the one motion gate). `fx::effects` has `dissolve`, `fade`, `wipe`, `typewriter`, `glow` and `gradient_text`. `fx::intro` is the login scene; `fx::font` its 5x5 letters. |
+| `ui/canvas` | `HalfBlock` (two square pixels per cell, each its own colour) and `Braille` (2x4 dots per cell, one colour per cell), with `Paint { depth, ascii }`. |
+| `ui/charts` | `Sparkline`, `BarChart`, `LineChart` (braille line, or filled for an area chart) and `Gauge`, coloured from palette roles through `ChartTheme::of(look)`. |
+| `ui/image` | `decode_png(bytes, &Limits, background)` to a `Raster`, then `to_half_blocks(w, h)` or `to_braille(w, h)`. |
+
+### Rules every effect keeps
+
+- **The last frame is the static screen.** A screen draws as it always did; an effect is an `Overlay` that rewrites the finished frame, and at its end (and whenever none runs) nothing rewrites it. A test compares the bytes of a screen after the intro with the same screen drawn with motion off.
+- **Motion off is one static frame.** `fx::allowed(look, accessible)` is the single gate: the member's setting, the board's and the style's ceilings (all in `Look::motion()`), and the plain accessibility path (M5; always off, passed as `false` until M5 exists). When it says no, nothing starts, `Screen::next_fx_due()` is `None`, so the shell arms no timer and draws no extra frame.
+- **A key finishes the effect at once.** `Screen::apply_keys` ends a running effect before handling the key, which then acts as usual; a resize ends it too. An effect never delays input.
+- **Bounded cost, three ways** (`fx::Budget`): at most 28 frames for one effect, at most 96 effect frames in any minute, and at most **160 KiB** sent for one effect (the largest measured intro is 146 KB, so the cap is a guard, not a trim) (it ends early and the static frame follows). An effect frame is one ordinary redraw cycle, so the shell's D49 cap (50 ms) still holds; the effect interval is 80 ms (12 frames a second at most). Progress comes from the clock, so a slow cycle drops frames; it never stretches the effect.
+- **A slow link ends effects.** If handing a frame to the connection takes longer than 250 ms (`SLOW_SEND` in the shell), the shell calls `Screen::slow_link()`: the effect ends and none runs for the rest of the session, so no animation frame ever waits in front of the next key.
+- **The status row and the marker cell are never touched.** An effect's `Stage` is the frame without its last row, and any cell wearing the reserved style (bold plus reverse) is skipped as well. Effects write only blanks, fixed ASCII, block glyphs and colours they compute; none writes the reserved style or a marker glyph or delimiter. Tests run every effect at 21 moments in every depth and tier and compare the whole status row, and scan for the reserved style and the six reserved codepoints.
+- **No terminal graphics protocol is ever sent.** Everything is styled cells; the walk counted zero sixel, kitty and iTerm sequences.
+
+### Where effects run
+
+| Where | Effect | Notes |
+|---|---|---|
+| Login screen | The **intro**, about 1.8 s | An original scene: a two-tone plasma (256 colours and up), a flying starfield, and the board's name in big letters that light up one by one with a shine, a shadow and an underline that draws itself; it then dissolves cell by cell into the login screen. Skippable by any key. Not drawn on a terminal under 40x12. The scene is at most 120x36 cells, centred. Drawn in at most 256 colours even on truecolor (see Cost). With no colour or in the ASCII tier the name is drawn as spaced capitals instead, since big letters would be a smudge there. |
+| Entering a menu | A **colour sweep**, 240 ms | The part ahead of a bright front is dimmed; **no symbol changes**, so a client that reads the text mid-sweep sees the whole screen (an earlier version hid cells and broke tests that read the screen). Below 256 colours it dims with the terminal's dim attribute and has no front bar. |
+| Logoff | The goodbye **typed out** on the main screen, about 0.9 s | `Log off` ends the session at once, so the goodbye is the text printed after the alternate screen is left. `Screen::leave_typed` cuts it into 12 chunks; the shell prints one per tick, and any key (or the connection closing) prints the rest at once. The chunks put together are exactly the text `leave` prints. |
+
+### Cost (measured)
+
+Bytes for one whole intro at truecolor, from the benchmark (`cargo test -p russh-bbs-server --lib effects_benchmark -- --ignored --nocapture`, the clock driven so each frame is drawn for its exact moment) and checked over a real ssh session:
+
+| Window | Intro total | Mean / largest frame | Worst frame time (release) |
+|---|---|---|---|
+| 80x24 | about 84 KB | 3.7 KB / 8 KB | about 1.0 ms |
+| 132x43 | about 143 KB | 6.2 KB / 18 KB | about 1.8 ms |
+| 200x60 | about 146 KB | 6.4 KB / 19 KB (the scene stays 120x36) | about 2.2 ms |
+
+At 16 colours (no plasma) the intro is 25 to 34 KB in total and a frame takes under 0.7 ms. Over a real ssh session the 80x24 and 132x43 totals were 84 KB and 144 KB ([qa/ui-8-walk.md](qa/ui-8-walk.md)), matching the benchmark.
+
+An earlier draft drew the scene in full truecolor and sent about 5 times that: every cell's colour changed every frame, each with two 16-byte sequences. The scene now uses the 256-colour palette, 2x2-pixel plasma blocks, seven brightness steps and a field that moves every 200 ms, so most cells are unchanged between frames. The menu sweep costs about 7 KB (80x24) to 12 KB (132x43) in total; the typed goodbye is plain text (tens of bytes). Frame time is under 1 ms in a release build (see the PR for the table); a debug build is slower.
+
+### Canvases, charts and images
+
+- **Canvases** draw at every depth and in the ASCII tier. Truecolor, 256 and 16 colours draw `▀ ▄ █` or braille with the colour quantised to the depth; mono draws shades (`░▒▓█`) for half-blocks and the braille glyph with no colour; the ASCII tier draws a brightness ramp (` .:-=+*#%@`) or a dot-density ramp (` .:+#`) and never a block or braille glyph (D18).
+- **Charts** take their colours from palette roles (accent for lines and bars, muted for tracks, success, warning and error for a gauge's tone) and have no way to ask for bold or reverse. A braille dot is drawn in the RGB the accent role stands for. **Labels are content**: every label goes through the shared sanitizer and is clipped to its column (a test feeds escape sequences and the reserved glyphs).
+- **Image to cells** is for sysop-uploaded files only (a logo, a member avatar once a sysop enables avatars). Nothing here opens a URL, so there is no SSRF surface. The decoder is the `png` crate (pure Rust, image-rs, MIT or Apache-2.0); **only PNG** is accepted (a sysop converts a JPEG once). `Limits::default()`: 256 KiB of file, 1024 pixels a side, 1,000,000 pixels, 250 ms to decode, and a decoder memory cap derived from the pixel cap. The IHDR is read **by hand before the decoder runs**, so a header that claims a huge picture is refused without any pixel buffer; the cap is checked again on what the decoder parsed. Truncated, corrupt, interlaced-with-no-data and "bomb" files are errors, never panics. `decode_png` is CPU work bounded by the caps; call it on a blocking thread.
+- **Not built, and why.** No screen draws a chart yet: the dashboard (UI-4) and the widget system (UI-10) will. UI-10's `widgets/gfx.rs` was written before this slice and has its own sparkline, bars and braille area chart; it should move to `ui/charts` and `ui/canvas` (noted in [coordination.md](coordination.md)). No sysop screen uploads a logo yet, so `ui/image` has no caller; its tests are the only exercise. The `Wipe` and `Reveal` effects on other screens, and `glow` on the lightbar's selected row, are API only.
+
+### Verified
+
+Unit tests (`ui/fx`, `ui/canvas`, `ui/charts`, `ui/image`, `ssh/screen/fx_tests.rs`) cover the gate, timing, the three budgets, motion off, the final frame, the interrupting key, the marker cell and reserved style, every tier and depth, goldens for the canvases and charts, hostile board names and labels, and hostile images. A real OpenSSH 9.6 walk captured the intro, an interrupting key, the menu sweep, the typed goodbye and a motion-off session ([qa/ui-8-walk.md](qa/ui-8-walk.md)). **Not verified:** terminals other than xterm-like ones (the walk used `pyte`), a real slow link (the slow-send guard is unit-tested through `slow_link` but no throttled connection was run), telnet, and a screen reader.
 
 ## Forum screens (M3-E, D83)
 

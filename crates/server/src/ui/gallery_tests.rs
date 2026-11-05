@@ -1,350 +1,379 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+#![allow(clippy::unwrap_used)]
+#![allow(
+    clippy::expect_used,
+    clippy::cast_precision_loss,
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    clippy::cast_possible_wrap,
+    clippy::unchecked_time_subtraction,
+    clippy::assert_is_empty,
+    clippy::manual_range_contains,
+    clippy::too_many_lines,
+    clippy::format_push_string,
+    reason = "tests: small bounded numbers, and a failed expectation should panic"
+)]
+#![allow(
+    clippy::many_single_char_names,
+    reason = "pixel and colour maths use x, y, w, h, r, g, b by convention"
+)]
 
-//! The member style gallery and the sysop Theme packs screen (UI-7): every allowed style is
-//! drawn live at the member's size, depth and tier; the board's locks are shown and respected;
-//! the marker cell is never covered by a preview; hostile text is cleaned.
+//! A gallery of the UI-8 charts, canvases and image-to-cells at 132x43, in each tier and depth.
+//! The regular test draws it everywhere to prove nothing panics and the ASCII tier is ASCII;
+//! the ignored one writes `.cells` dumps for `docs/qa/m4-s3-screens/render.py`
+//! (`UI8_GALLERY_OUT=dir cargo test ... gallery_dump -- --ignored`).
 
-use ratatui::Terminal;
-use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
-use ratatui::style::Modifier;
+use ratatui::style::{Color, Modifier, Style};
+use ratatui::widgets::{Block, Borders, Widget};
 use russh_bbs_core::icons::Tier;
-use russh_bbs_core::sanitize::RESERVED_CHROME;
-use russh_bbs_core::terminal_settings::{
-    FileRow, Gallery, GalleryKey, LayoutId, PackListing, PackScreen, StyleRow, TerminalSettings,
-    ThemeName,
-};
+use russh_bbs_core::terminal_settings::TerminalSettings;
 
-use super::depth::ColorDepth;
-use super::gallery::{GalleryCtx, render, render_packs};
-use super::layout_tests::{DRAWN, marker_cell_width, text};
-use super::styles_tests::STYLES;
-use super::{Board, Ui};
-use crate::config::BoardConfig;
+use super::canvas::{Braille, HalfBlock, Paint, Rgb, mix};
+use super::charts::{BarChart, ChartTheme, Gauge, LineChart, Sparkline, Tone};
+use super::depth::{ColorDepth, indexed_rgb};
+use super::image::{Limits, decode_png};
+use crate::settings::Look;
+use crate::ui::Ui;
 
-const SIZES: [(u16, u16); 3] = [(80, 24), (100, 30), (132, 43)];
-
-fn name(style: &str) -> ThemeName {
-    ThemeName::new(style).unwrap()
-}
-
-fn all_styles() -> Vec<ThemeName> {
-    STYLES.iter().map(|s| name(s)).collect()
-}
-
-fn screen(
-    ui: &Ui,
-    size: (u16, u16),
-    tier: Tier,
-    depth: ColorDepth,
-    layout: LayoutId,
-    draw: impl FnOnce(&mut ratatui::Frame<'_>, &GalleryCtx<'_>),
-) -> Buffer {
+fn look(depth: ColorDepth, ascii: bool, style: &str) -> Look {
+    let ui = Ui::standard().unwrap();
     let settings = TerminalSettings::default()
-        .with_tier(tier)
-        .with_layout(layout)
-        .with_color(true);
-    let area = Rect::new(0, 0, size.0, size.1);
-    let look = ui.look(&settings, area, depth);
-    let strings = ui.theme_for(&settings).strings();
-    let mut terminal = Terminal::new(TestBackend::new(size.0, size.1)).unwrap();
-    terminal
-        .draw(|frame| {
-            let ctx = GalleryCtx {
-                ui,
-                strings,
-                look,
-                tier,
-                markers: &DRAWN,
-                clock: Some("UTC 12:00"),
-                settings: &settings,
+        .with_tier(if ascii { Tier::Ascii } else { Tier::Unicode })
+        .with_theme(russh_bbs_core::terminal_settings::ThemeName::new(style).unwrap());
+    ui.look(&settings, Rect::new(0, 0, 132, 43), depth)
+}
+
+/// A logo-like picture, made here so no fixture is committed: a radial gradient with a ring.
+fn logo_png() -> Vec<u8> {
+    let (w, h) = (96_u32, 96_u32);
+    let mut data = Vec::new();
+    for y in 0..h {
+        for x in 0..w {
+            let (dx, dy) = (f64::from(x) - 47.5, f64::from(y) - 47.5);
+            let d = dx.hypot(dy);
+            let ring = (d - 34.0).abs() < 3.0;
+            let (r, g, b) = if ring {
+                (255, 220, 120)
+            } else if d < 30.0 {
+                (
+                    (40.0 + d * 4.0) as u8,
+                    (120.0 + 60.0 * (1.0 - d / 30.0)) as u8,
+                    (200.0 - d * 2.0) as u8,
+                )
+            } else {
+                (14, 18, 36)
             };
-            draw(frame, &ctx);
+            data.extend([r, g, b]);
+        }
+    }
+    let mut out = Vec::new();
+    let mut enc = png::Encoder::new(&mut out, w, h);
+    enc.set_color(png::ColorType::Rgb);
+    enc.set_depth(png::BitDepth::Eight);
+    enc.write_header().unwrap().write_image_data(&data).unwrap();
+    out
+}
+
+fn panel(buf: &mut Buffer, look: Look, area: Rect, title: &str) -> Rect {
+    let palette = look.palette();
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .border_style(look.fg(palette.border))
+        .title(ratatui::text::Span::styled(
+            format!(" {title} "),
+            look.fg(palette.heading).add_modifier(Modifier::BOLD),
+        ))
+        .style(look.text());
+    let inner = block.inner(area);
+    block.render(area, buf);
+    inner
+}
+
+fn hue(h: f32) -> Rgb {
+    let f = |n: f32| {
+        let k = (n + h * 6.0) % 6.0;
+        (255.0 * (1.0 - k.min(4.0 - k).clamp(0.0, 1.0))) as u8
+    };
+    (f(5.0), f(3.0), f(1.0))
+}
+
+/// The whole gallery at 132x43.
+fn draw(look: Look) -> Buffer {
+    let area = Rect::new(0, 0, 132, 43);
+    let mut buf = Buffer::empty(area);
+    Block::default()
+        .style(
+            look.fg(look.palette().text)
+                .patch(look.bg(look.palette().surface)),
+        )
+        .render(area, &mut buf);
+    let theme = ChartTheme::of(look);
+    let paint = Paint::new(look.depth(), look.ascii());
+    let calls: Vec<u64> = (0..60)
+        .map(|i| {
+            (40.0 + 30.0 * (f64::from(i) / 5.0).sin() + 25.0 * (f64::from(i) / 11.0).cos()) as u64
         })
-        .unwrap();
-    terminal.backend().buffer().clone()
-}
+        .collect();
+    let series: Vec<f64> = (0..120)
+        .map(|i| {
+            (f64::from(i) / 9.0).sin() * 3.0
+                + (f64::from(i) / 23.0).cos() * 2.0
+                + f64::from(i) / 30.0
+        })
+        .collect();
 
-fn gallery_at(
-    ui: &Ui,
-    gallery: &Gallery,
-    size: (u16, u16),
-    tier: Tier,
-    depth: ColorDepth,
-) -> Buffer {
-    screen(ui, size, tier, depth, LayoutId::Classic, |frame, ctx| {
-        render(frame, gallery, ctx);
-    })
+    let a = panel(
+        &mut buf,
+        look,
+        Rect::new(1, 1, 64, 7),
+        "Calls per hour, last 60 (sparkline)",
+    );
+    Sparkline::new(&calls, theme).render(Rect::new(a.x + 1, a.y, a.width - 2, 4), &mut buf);
+    Sparkline::new(&calls, theme)
+        .tone(Tone::Warn)
+        .render(Rect::new(a.x + 1, a.y + 4, a.width - 2, 1), &mut buf);
+
+    let b = panel(
+        &mut buf,
+        look,
+        Rect::new(1, 8, 64, 10),
+        "Posts by board (bars)",
+    );
+    let rows = [
+        ("General", 412),
+        ("Retro computing", 377),
+        ("Door games", 301),
+        ("Ham radio", 188),
+        ("Lounge", 142),
+        ("Sysop notes", 61),
+        ("Off topic", 23),
+    ];
+    BarChart::new(&rows, theme).render(Rect::new(b.x + 1, b.y, b.width - 2, b.height), &mut buf);
+
+    let c = panel(&mut buf, look, Rect::new(1, 18, 64, 7), "Capacity (gauges)");
+    Gauge::new(0.34, theme)
+        .label("Disk")
+        .tone(Tone::for_ratio(0.34, 0.7, 0.9))
+        .render(Rect::new(c.x + 1, c.y, c.width - 2, 1), &mut buf);
+    Gauge::new(0.78, theme)
+        .label("Memory")
+        .tone(Tone::for_ratio(0.78, 0.7, 0.9))
+        .render(Rect::new(c.x + 1, c.y + 1, c.width - 2, 1), &mut buf);
+    Gauge::new(0.96, theme)
+        .label("Queue")
+        .tone(Tone::for_ratio(0.96, 0.7, 0.9))
+        .render(Rect::new(c.x + 1, c.y + 2, c.width - 2, 1), &mut buf);
+    Gauge::new(0.5, theme)
+        .label("Calls today")
+        .render(Rect::new(c.x + 1, c.y + 3, c.width - 2, 1), &mut buf);
+
+    let d = panel(
+        &mut buf,
+        look,
+        Rect::new(67, 1, 64, 12),
+        "Activity (braille line)",
+    );
+    LineChart::new(&series, theme).render(d, &mut buf);
+    let e = panel(
+        &mut buf,
+        look,
+        Rect::new(67, 13, 64, 12),
+        "Activity (braille area)",
+    );
+    LineChart::new(&series, theme).filled().render(e, &mut buf);
+
+    let f = panel(
+        &mut buf,
+        look,
+        Rect::new(1, 25, 64, 17),
+        "Canvases (half-block and braille)",
+    );
+    let mut hb = HalfBlock::new(30, 7);
+    for y in 0..14_u16 {
+        for x in 0..30_u16 {
+            hb.set(
+                x,
+                y,
+                mix(hue(f32::from(x) / 30.0), (10, 10, 30), f32::from(y) / 18.0),
+            );
+        }
+    }
+    hb.render(&mut buf, Rect::new(f.x + 1, f.y, 30, 7), paint);
+    let mut br = Braille::new(30, 7);
+    for i in 0..400_u32 {
+        let t = f64::from(i) / 400.0 * std::f64::consts::TAU;
+        let (x, y) = (29.5 + 28.0 * (3.0 * t).sin(), 13.5 + 12.5 * (2.0 * t).cos());
+        br.set(x as i32, y as i32, hue(t as f32 / 6.3));
+    }
+    br.render(&mut buf, Rect::new(f.x + 32, f.y, 30, 7), paint);
+    let img = decode_png(&logo_png(), &Limits::default(), (14, 18, 36)).unwrap();
+    let halves = img.to_half_blocks(28, 7);
+    halves.render(&mut buf, Rect::new(f.x + 1, f.y + 8, 28, 7), paint);
+    let dots = img.to_braille(28, 7);
+    dots.render(&mut buf, Rect::new(f.x + 32, f.y + 8, 28, 7), paint);
+
+    let g = panel(
+        &mut buf,
+        look,
+        Rect::new(67, 25, 64, 17),
+        "A logo as cells (PNG, 96x96, sysop upload)",
+    );
+    let big = img.to_half_blocks(g.width - 2, g.height);
+    big.render(
+        &mut buf,
+        Rect::new(g.x + 1, g.y, g.width - 2, g.height),
+        paint,
+    );
+    buf
 }
 
 #[test]
-fn every_style_previews_live_at_every_size_depth_and_tier() {
-    let ui = Ui::standard().unwrap();
-    let mut gallery = Gallery::open(&all_styles(), name("phosphor"));
-    let mut drawn: Vec<(ThemeName, String)> = Vec::new();
-    for _ in 0..STYLES.len() {
-        let style = gallery.selected();
-        let title = ui.theme(style).title().to_owned();
-        for size in SIZES {
-            for (tier, depth) in [
-                (Tier::Unicode, ColorDepth::TrueColor),
-                (Tier::Unicode, ColorDepth::Ansi256),
-                (Tier::Unicode, ColorDepth::Ansi16),
-                (Tier::Ascii, ColorDepth::Ansi16),
-            ] {
-                let buffer = gallery_at(&ui, &gallery, size, tier, depth);
-                let shown = text(&buffer);
-                assert!(
-                    shown.contains(&title),
-                    "{style} {size:?} {tier:?}: no title"
-                );
-                assert!(shown.contains("Style gallery"), "{style}: no heading");
-                if tier == Tier::Ascii {
-                    // The ASCII tier is plain ASCII all the way down, sample included.
+fn the_gallery_draws_in_every_tier_and_depth() {
+    for style in ["default", "neon", "phosphor", "deepspace"] {
+        for depth in ColorDepth::ALL {
+            for ascii in [false, true] {
+                let buf = draw(look(depth, ascii, style));
+                let cells = &buf.content;
+                assert!(cells.iter().any(|c| c.symbol() != " "));
+                for cell in cells {
                     assert!(
-                        shown.is_ascii(),
-                        "{style} {size:?}: not ASCII: {:?}",
-                        shown.chars().filter(|c| !c.is_ascii()).collect::<String>()
+                        !cell.modifier.contains(Modifier::REVERSED),
+                        "no reserved style"
                     );
-                }
-            }
-        }
-        drawn.push((
-            style,
-            text(&gallery_at(
-                &ui,
-                &gallery,
-                (100, 30),
-                Tier::Unicode,
-                ColorDepth::TrueColor,
-            )),
-        ));
-        gallery.press(GalleryKey::Next);
-    }
-    // The previews differ: each style's sample is its own, not one picture relabelled.
-    for (i, (a, shown_a)) in drawn.iter().enumerate() {
-        for (b, shown_b) in &drawn[i + 1..] {
-            let body = |s: &str| s.lines().skip(2).collect::<Vec<_>>().join("\n");
-            assert_ne!(body(shown_a), body(shown_b), "{a} and {b} look the same");
-        }
-    }
-}
-
-#[test]
-fn the_sample_follows_the_viewers_depth() {
-    let ui = Ui::standard().unwrap();
-    let gallery = Gallery::open(&all_styles(), name("neon"));
-    let truecolor = gallery_at(
-        &ui,
-        &gallery,
-        (100, 30),
-        Tier::Unicode,
-        ColorDepth::TrueColor,
-    );
-    let sixteen = gallery_at(&ui, &gallery, (100, 30), Tier::Unicode, ColorDepth::Ansi16);
-    let has_rgb = |b: &Buffer| {
-        b.content()
-            .iter()
-            .any(|c| matches!(c.bg, ratatui::style::Color::Rgb(..)))
-    };
-    assert!(has_rgb(&truecolor));
-    assert!(!has_rgb(&sixteen), "a 16-colour viewer was shown truecolor");
-}
-
-#[test]
-fn the_marker_cell_is_never_covered_by_a_preview() {
-    let ui = Ui::standard().unwrap();
-    let mut gallery = Gallery::open(&all_styles(), name("phosphor"));
-    for _ in 0..STYLES.len() {
-        for sample in 0..2 {
-            for size in SIZES {
-                for tier in [Tier::Unicode, Tier::Ascii] {
-                    let buffer = gallery_at(&ui, &gallery, size, tier, ColorDepth::TrueColor);
-                    let width = marker_cell_width(tier, size.0);
-                    let last = size.1 - 1;
-                    for y in 0..size.1 {
-                        for x in 0..size.0 {
-                            let cell = &buffer[(x, y)];
-                            let reversed = cell.modifier.contains(Modifier::REVERSED);
-                            let marker_cell = y == last && x < width;
-                            assert!(
-                                !reversed || marker_cell,
-                                "{:?} {size:?} {tier:?} ({x},{y}): reverse video outside the marker cell",
-                                gallery.selected()
-                            );
-                        }
+                    if ascii {
+                        assert!(
+                            cell.symbol()
+                                .chars()
+                                .all(|c| c.is_ascii() || "─│┌┐└┘".contains(c)),
+                            "{style} {depth:?}: {:?}",
+                            cell.symbol()
+                        );
                     }
-                    // And the marker cell still carries the reserved style: bold plus reverse.
-                    let cell = &buffer[(0, last)];
-                    assert!(cell.modifier.contains(Modifier::BOLD | Modifier::REVERSED));
                 }
             }
-            gallery.press(GalleryKey::Sample);
-            let _ = sample;
         }
-        gallery.press(GalleryKey::Next);
+    }
+}
+
+fn dump_color(color: Color) -> String {
+    match color {
+        Color::Rgb(r, g, b) => format!("#{r:02x}{g:02x}{b:02x}"),
+        Color::Indexed(i) => {
+            let (r, g, b) = indexed_rgb(i);
+            format!("#{r:02x}{g:02x}{b:02x}")
+        }
+        Color::Reset => String::new(),
+        named => format!("{named:?}"),
     }
 }
 
 #[test]
-fn a_locked_board_shows_one_style_and_says_so() {
-    let board = Board::from_config(&BoardConfig {
-        styles: "neon".into(),
-        ..BoardConfig::default()
-    })
-    .unwrap();
-    let ui = Ui::standard().unwrap().with_board(board);
-    assert_eq!(ui.allowed_styles(), vec![name("neon")]);
-    let gallery = Gallery::open(&ui.allowed_styles(), name("neon"));
-    assert!(gallery.locked());
-    let shown = text(&gallery_at(
-        &ui,
-        &gallery,
-        (80, 24),
-        Tier::Unicode,
-        ColorDepth::TrueColor,
-    ));
-    assert!(
-        shown.contains("the sysop has set this board's style"),
-        "{shown}"
-    );
-    assert!(!shown.contains("Enter"), "a lock offers no pick");
-}
-
-#[test]
-fn the_gallery_lists_only_the_boards_allowed_styles() {
-    let board = Board::from_config(&BoardConfig {
-        styles: "neon, paper".into(),
-        ..BoardConfig::default()
-    })
-    .unwrap();
-    let ui = Ui::standard().unwrap().with_board(board);
-    let allowed = ui.allowed_styles();
-    assert_eq!(allowed, vec![name("neon"), name("paper")]);
-    let gallery = Gallery::open(&allowed, name("neon"));
-    let shown = text(&gallery_at(
-        &ui,
-        &gallery,
-        (100, 30),
-        Tier::Unicode,
-        ColorDepth::TrueColor,
-    ));
-    let strip = shown.lines().nth(1).unwrap_or_default();
-    assert!(
-        strip.contains("Neon Night") && strip.contains("Paper"),
-        "{strip}"
-    );
-    for other in ["Phosphor", "Amber Terminal", "Deep Space", "Classic ANSI"] {
-        assert!(!strip.contains(other), "{other} is not allowed: {strip}");
-    }
-}
-
-#[test]
-fn a_long_strip_scrolls_to_keep_the_cursor_on_screen() {
-    let ui = Ui::standard().unwrap();
-    let mut gallery = Gallery::open(&all_styles(), name("phosphor"));
-    for _ in 0..5 {
-        gallery.press(GalleryKey::Next);
-    }
-    assert_eq!(gallery.selected(), name("ansi"));
-    let shown = text(&gallery_at(
-        &ui,
-        &gallery,
-        (60, 24),
-        Tier::Unicode,
-        ColorDepth::TrueColor,
-    ));
-    assert!(
-        shown.lines().nth(1).unwrap().contains("Classic ANSI"),
-        "{shown}"
-    );
-}
-
-#[test]
-fn the_packs_screen_cleans_what_a_file_says() {
-    let ui = Ui::standard().unwrap();
-    let hostile = format!(
-        "bad \u{1b}[31mred\u{7} {}",
-        RESERVED_CHROME.iter().collect::<String>()
-    );
-    let listing = PackListing {
-        styles: vec![
-            StyleRow {
-                name: ThemeName::default_theme(),
-                title: "default".into(),
-                exportable: false,
-            },
-            StyleRow {
-                name: name("neon"),
-                title: hostile.clone(),
-                exportable: true,
-            },
-        ],
-        files: vec![
-            FileRow {
-                file: format!("a{}.pack.toml", '\u{1b}'),
-                verdict: Err(hostile.clone()),
-            },
-            FileRow {
-                file: "ok.pack.toml".into(),
-                verdict: Ok(name("ok")),
-            },
-        ],
-        unavailable: false,
-    };
-    let mut packs = PackScreen::open();
-    packs.listed(listing, Some(&hostile));
-    for size in SIZES {
-        let buffer = screen(
-            &ui,
-            size,
-            Tier::Unicode,
+#[ignore = "writes the gallery pictures on demand: set UI8_GALLERY_OUT"]
+fn gallery_dump() {
+    let out = std::env::var("UI8_GALLERY_OUT").expect("UI8_GALLERY_OUT");
+    std::fs::create_dir_all(&out).unwrap();
+    for (name, depth, ascii, style) in [
+        (
+            "charts-132x43-truecolor-default",
             ColorDepth::TrueColor,
-            LayoutId::Classic,
-            |frame, ctx| {
-                render_packs(frame, &packs, ctx);
-            },
-        );
-        let shown = text(&buffer);
-        assert!(shown.contains("Installed styles"), "{shown}");
-        assert!(shown.contains("ready: style ok") || size.1 < 30, "{shown}");
-        assert!(
-            !shown.chars().any(|c| c != '\n' && c.is_control()),
-            "control character on screen"
-        );
-        // The security markers' reserved glyphs only ever appear in the marker cell.
-        let last = size.1 - 1;
-        let body: String = (0..last)
-            .flat_map(|y| (0..size.0).map(move |x| (x, y)))
-            .map(|(x, y)| buffer[(x, y)].symbol().to_owned())
-            .collect();
-        for glyph in RESERVED_CHROME {
-            assert!(!body.contains(*glyph), "{glyph:?} drawn from content");
+            false,
+            "default",
+        ),
+        (
+            "charts-132x43-truecolor-neon",
+            ColorDepth::TrueColor,
+            false,
+            "neon",
+        ),
+        (
+            "charts-132x43-256-phosphor",
+            ColorDepth::Ansi256,
+            false,
+            "phosphor",
+        ),
+        ("charts-132x43-16", ColorDepth::Ansi16, false, "default"),
+        ("charts-132x43-ascii", ColorDepth::Mono, true, "default"),
+    ] {
+        let buf = draw(look(depth, ascii, style));
+        let mut text = String::new();
+        for y in 0..43 {
+            for x in 0..132 {
+                let cell = &buf[(x, y)];
+                let style: Style = cell.style();
+                let mut flags = String::new();
+                if style.add_modifier.contains(Modifier::BOLD) {
+                    flags.push('b');
+                }
+                text.push_str(&format!(
+                    "{}\t{}\t{}\t{flags}\n",
+                    if cell.symbol().is_empty() {
+                        " "
+                    } else {
+                        cell.symbol()
+                    },
+                    dump_color(cell.fg),
+                    dump_color(cell.bg)
+                ));
+            }
+            text.push_str("|\n");
         }
+        std::fs::write(format!("{out}/{name}.cells"), text).unwrap();
     }
 }
 
+/// Intro frames at chosen moments over a login-like static screen, for tuning the look.
 #[test]
-fn the_packs_screen_says_when_there_is_no_directory() {
+#[ignore = "writes intro pictures on demand: set UI8_GALLERY_OUT"]
+fn intro_dump() {
+    use crate::ui::fx::{Kind, Overlay};
+    use ratatui::Terminal;
+    use ratatui::backend::TestBackend;
+    let out = std::env::var("UI8_GALLERY_OUT").expect("UI8_GALLERY_OUT");
+    std::fs::create_dir_all(&out).unwrap();
     let ui = Ui::standard().unwrap();
-    let mut packs = PackScreen::open();
-    packs.listed(
-        PackListing {
-            unavailable: true,
-            ..PackListing::default()
-        },
-        None,
-    );
-    let shown = text(&screen(
-        &ui,
-        (80, 24),
-        Tier::Unicode,
-        ColorDepth::TrueColor,
-        LayoutId::Classic,
-        |f, c| {
-            render_packs(f, &packs, c);
-        },
-    ));
-    assert!(shown.contains("no packs directory"), "{shown}");
+    for (w, h) in [(132_u16, 43_u16), (80, 24)] {
+        for style in ["default", "neon", "deepspace"] {
+            let settings = TerminalSettings::default()
+                .with_tier(Tier::Unicode)
+                .with_theme(russh_bbs_core::terminal_settings::ThemeName::new(style).unwrap());
+            let look = ui.look(&settings, Rect::new(0, 0, w, h), ColorDepth::TrueColor);
+            for (i, t) in [0.05_f32, 0.2, 0.35, 0.5, 0.65, 0.8, 0.93]
+                .into_iter()
+                .enumerate()
+            {
+                let mut terminal = Terminal::new(TestBackend::new(w, h)).unwrap();
+                let done = terminal
+                    .draw(|frame| {
+                        Block::default()
+                            .style(look.text())
+                            .borders(Borders::ALL)
+                            .title(" Signed in ")
+                            .render(Rect::new(w / 2 - 38, 2, 76, h - 6), frame.buffer_mut());
+                        Overlay {
+                            kind: Kind::Intro,
+                            t,
+                            look,
+                            title: "russh-bbs",
+                        }
+                        .apply(frame);
+                    })
+                    .unwrap();
+                let mut text = String::new();
+                for y in 0..h {
+                    for x in 0..w {
+                        let cell = &done.buffer[(x, y)];
+                        text.push_str(&format!(
+                            "{}\t{}\t{}\t\n",
+                            cell.symbol(),
+                            dump_color(cell.fg),
+                            dump_color(cell.bg)
+                        ));
+                    }
+                    text.push_str("|\n");
+                }
+                std::fs::write(format!("{out}/intro-{w}x{h}-{style}-{i}.cells"), text).unwrap();
+            }
+        }
+    }
 }

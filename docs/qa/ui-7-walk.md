@@ -14,4 +14,4 @@ Date: 2026-11-05. Branch `m35/theme-gallery`. **What was run:** the real server 
 - Another terminal emulator, a real 16-colour or 256-colour client, Terminal.app, a Nerd Font session, a screen reader. The renderer is not a terminal emulator.
 - The sample screen carries its own status bar at its bottom edge, drawn by the real menu code; the gallery's own status bar (and its marker cell) is the last row. The walk board had no marker to show (telnet off); the marker-cell tests cover it.
 - Telnet sessions and Postgres. The store was not touched.
-- A hot reload: imports load at the next start by design (D-TBD).
+- A hot reload: imports load at the next start by design (D126).
