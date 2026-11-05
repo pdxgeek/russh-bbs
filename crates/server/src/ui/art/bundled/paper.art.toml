@@ -1,0 +1,47 @@
+# Original art for the "paper" style, drawn for russh-bbs. Calm and light: a cartouche of diamonds on a fading rule.
+format = 1
+name = "paper"
+style = "paper"
+credit = "russh-bbs project (original art)"
+
+[[piece]]
+slot = "login"
+rows = [
+  "         .  .  .  .  .  .  .  .  .  .  .  .          ",
+  "             ╭──────────────────────────╮            ",
+  "╌╌╌╌╌╌───────│  ◇   ◇   ◇   ◇   ◇   ◇   │───────╌╌╌╌╌",
+  "             ╰──────────────────────────╯            ",
+  "         .  .  .  .  .  .  .  .  .  .  .  .          ",
+]
+fg = [
+  ".........K..K..K..K..K..K..K..K..K..K..K..K..........",
+  ".............bbbbbbbbbbbbbbbbbbbbbbbbbbbb............",
+  "KKKKKKbbbbbbbb..B...B...B...B...B...B...bbbbbbbbKKKKK",
+  ".............bbbbbbbbbbbbbbbbbbbbbbbbbbbb............",
+  ".........K..K..K..K..K..K..K..K..K..K..K..K..........",
+]
+ascii = [
+  "                                                     ",
+  "                                                     ",
+  "                o   o   o   o   o   o                ",
+  "                                                     ",
+  "                                                     ",
+]
+
+[[piece]]
+slot = "menu"
+rows = [
+  "                    ╭──────────────────────────────╮                    ",
+  "╌╌╌╌╌╌╌╌╌───────────│  ◇   ◇   ◇   ◇   ◇   ◇   ◇   │───────────╌╌╌╌╌╌╌╌╌",
+  "                    ╰──────────────────────────────╯                    ",
+]
+fg = [
+  "....................bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb....................",
+  "KKKKKKKKKbbbbbbbbbbbb..B...B...B...B...B...B...B...bbbbbbbbbbbbKKKKKKKKK",
+  "....................bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb....................",
+]
+ascii = [
+  "                                                                        ",
+  "                       o   o   o   o   o   o   o                        ",
+  "                                                                        ",
+]

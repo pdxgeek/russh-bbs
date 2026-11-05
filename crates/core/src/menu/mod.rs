@@ -78,6 +78,10 @@ pub enum Action {
     MyKeys,
     /// Open the staff screen that issues a one-time recovery code (`keys.recover`, FIX-M3-11).
     RecoveryCode,
+    /// Open the theme preview under Sysop tools (UI-3): the styles, layouts and art as they
+    /// would draw, before a default is set. It changes nothing, so it needs only what Sysop
+    /// tools itself needs (`members.approve`).
+    ThemePreview,
     /// Open the vouch screen: pending requests a member can speak for (`members.vouch`, M2-E).
     VouchQueue,
     /// Open the one-liners (`community.view`, M3-J).
@@ -110,7 +114,7 @@ impl Action {
             Self::InviteTree => Some(Permission::InvitesViewTree),
             Self::MemberList | Self::OwnProfile => Some(Permission::MembersView),
             Self::EditOwnProfile => Some(Permission::AccountEditProfile),
-            Self::SysopQueue => Some(Permission::MembersApprove),
+            Self::SysopQueue | Self::ThemePreview => Some(Permission::MembersApprove),
             Self::RecoveryCode => Some(Permission::KeysRecover),
             Self::MyKeys => Some(Permission::KeysManage),
             Self::VouchQueue => Some(Permission::MembersVouch),

@@ -23,6 +23,7 @@ mod flow;
 mod glyph;
 mod layout;
 mod pager;
+mod preview;
 mod sessions;
 mod settings;
 pub mod strings;
@@ -36,6 +37,7 @@ pub use layout::{
     layout_from_stored, layout_to_stored,
 };
 pub use pager::{Pager, PagerEffect, PagerKey, PagerPrompt, PagerView};
+pub use preview::{PreviewKey, PreviewSample, SIZES as PREVIEW_SIZES, ThemePreview};
 pub use sessions::{MemberSessions, MemberStart, SaveError, TerminalSettingsStore};
 pub use settings::{
     MAX_HEIGHT, MAX_WIDTH, MIN_HEIGHT, MIN_WIDTH, SAFE_TIER, SettingsError, TerminalSettings,

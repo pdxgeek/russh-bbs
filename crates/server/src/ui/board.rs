@@ -27,6 +27,10 @@ pub const LINE_MAX: usize = 80;
 pub const SINCE_MAX: usize = 16;
 /// Most styles or layouts a list may name.
 pub const LIST_MAX: usize = 32;
+/// Longest logoff quote, in characters.
+pub const QUOTE_MAX: usize = 120;
+/// Most logoff quotes.
+pub const QUOTES_MAX: usize = 32;
 
 /// The board's own words, checked once.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
@@ -76,6 +80,8 @@ pub struct Board {
     styles: Vec<ThemeName>,
     layouts: Vec<LayoutId>,
     motion: bool,
+    art: bool,
+    quotes: Vec<BoardText>,
 }
 
 /// The name a board has until its sysop sets one: the same word the screens always showed.
@@ -94,6 +100,8 @@ impl Default for Board {
             styles: Vec::new(),
             layouts: Vec::new(),
             motion: true,
+            art: true,
+            quotes: Vec::new(),
         })
     }
 }
@@ -143,6 +151,7 @@ impl Board {
         if layout.is_some_and(|layout| !layouts.is_empty() && !layouts.contains(&layout)) {
             return Err(refuse("board.layout", "is not in board.layouts"));
         }
+        let quotes = quotes(&config.quotes)?;
         Ok(Self {
             name,
             tagline,
@@ -154,6 +163,8 @@ impl Board {
             styles,
             layouts,
             motion: config.motion,
+            art: config.art,
+            quotes,
         })
     }
 
@@ -217,11 +228,45 @@ impl Board {
         self.motion
     }
 
+    /// Whether the banner and header art is drawn (`board.art`); off leaves large letters only.
+    #[must_use]
+    pub const fn art(&self) -> bool {
+        self.art
+    }
+
+    /// The logoff quotes the sysop wrote (may be empty).
+    #[must_use]
+    pub fn quotes(&self) -> &[BoardText] {
+        &self.quotes
+    }
+
+    /// The quote for `seed` (any number: the clock, a counter), or `None` when there are none.
+    #[must_use]
+    pub fn quote_for(&self, seed: u64) -> Option<&BoardText> {
+        let count = u64::try_from(self.quotes.len()).ok().filter(|n| *n > 0)?;
+        self.quotes.get(usize::try_from(seed % count).ok()?)
+    }
+
     /// The name as the string table's `ui.title`, when it differs from the built-in word.
     #[must_use]
     pub fn title_override(&self) -> Option<String> {
         (self.name.as_str() != DEFAULT_NAME).then(|| self.name.0.clone())
     }
+}
+
+/// The `|`-separated logoff quotes, each checked like any other board text.
+fn quotes(raw: &str) -> Result<Vec<BoardText>, BoardError> {
+    let mut out = Vec::new();
+    for part in raw.split('|').map(str::trim).filter(|p| !p.is_empty()) {
+        out.push(text("board.quotes", part, QUOTE_MAX, false)?);
+        if out.len() > QUOTES_MAX {
+            return Err(refuse(
+                "board.quotes",
+                format!("names more than {QUOTES_MAX} quotes"),
+            ));
+        }
+    }
+    Ok(out)
 }
 
 /// Check one piece of board text. `optional` allows it to be empty.

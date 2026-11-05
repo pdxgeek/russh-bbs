@@ -3217,6 +3217,7 @@ dependencies = [
  "http-body-util",
  "hyper",
  "hyper-util",
+ "proptest",
  "rand 0.10.3",
  "ratatui",
  "rcgen",
