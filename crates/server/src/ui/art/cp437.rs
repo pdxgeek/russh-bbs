@@ -96,9 +96,12 @@ pub(crate) fn ascii_of(c: char) -> char {
 /// A box-drawing character as `-`, `|` or `+`.
 fn box_ascii(c: char) -> char {
     // Horizontal lines, vertical lines and everything else (corners, crossings, tees).
-    const HORIZONTAL: &str = "─━┄┅┈┉═╌╍╴╶╸╺╾╼";
+    const HORIZONTAL: &str = "─━┄┅┈┉╌╍╴╶╸╺╾╼";
+    const DOUBLE_HORIZONTAL: &str = "═";
     const VERTICAL: &str = "│┃┆┇┊┋║╎╏╵╷╹╻╽╿";
-    if HORIZONTAL.contains(c) {
+    if DOUBLE_HORIZONTAL.contains(c) {
+        '='
+    } else if HORIZONTAL.contains(c) {
         '-'
     } else if VERTICAL.contains(c) {
         '|'
