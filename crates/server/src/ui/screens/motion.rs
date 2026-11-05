@@ -65,6 +65,7 @@ impl Motion {
     }
 
     /// Whether accessibility mode is on.
+    #[cfg(test)]
     pub(crate) const fn accessible(&self) -> bool {
         self.accessible
     }

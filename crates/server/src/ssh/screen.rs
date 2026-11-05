@@ -1879,7 +1879,18 @@ impl Screen {
                     // The chat screen (M3-F): the same box and status row, with the room's lines.
                     (Some(look), _) if chat.is_some() => {
                         if let Some(screen) = chat {
-                            crate::chat::render(frame, screen, strings, look, tier);
+                            crate::chat::render(
+                                frame,
+                                screen,
+                                &crate::chat::ChatCtx {
+                                    strings,
+                                    look,
+                                    tier,
+                                    markers: staff_markers,
+                                    clock,
+                                    art: art_ctx.as_ref(),
+                                },
+                            );
                         }
                     }
                     // The sysop's theme preview (UI-3): a sample screen in a chosen style and size.

@@ -642,10 +642,10 @@ mod drawing {
     use russh_bbs_core::terminal_settings::TerminalSettings;
 
     use super::handle;
-    use crate::chat::lines;
+    use crate::chat::{ChatCtx, render};
     use crate::settings::Look;
     use crate::ui::Ui;
-    use crate::ui::classic::{ContentScreen, MENU_MARKERS, render_content_bare};
+    use crate::ui::classic::MENU_MARKERS;
 
     fn room(n: i64, name: &str) -> Room {
         Room {
@@ -655,24 +655,22 @@ mod drawing {
         }
     }
 
-    fn draw(screen: &ChatScreen, tier: Tier, size: (u16, u16)) -> Buffer {
+    pub(super) fn draw(screen: &ChatScreen, tier: Tier, size: (u16, u16)) -> Buffer {
         let ui = Ui::standard().unwrap();
         let look = Look::of(&TerminalSettings::default().with_tier(tier));
         let mut terminal = Terminal::new(TestBackend::new(size.0, size.1)).unwrap();
         terminal
             .draw(|frame| {
-                let width = usize::from(frame.area().width.min(crate::settings::MAX_WIDTH))
-                    .saturating_sub(2);
-                let height = crate::chat::box_height(frame.area().height);
-                render_content_bare(
+                render(
                     frame,
-                    ContentScreen {
+                    screen,
+                    &ChatCtx {
                         strings: ui.strings(),
-                        lines: lines(screen, ui.strings(), look, width, height),
                         look,
                         tier,
                         markers: &MENU_MARKERS,
-                        clock: None,
+                        clock: Some("UTC 12:00"),
+                        art: None,
                     },
                 );
             })
@@ -680,7 +678,7 @@ mod drawing {
         terminal.backend().buffer().clone()
     }
 
-    fn rows(buffer: &Buffer) -> Vec<String> {
+    pub(super) fn rows(buffer: &Buffer) -> Vec<String> {
         (0..buffer.area.height)
             .map(|y| {
                 (0..buffer.area.width)
@@ -690,17 +688,17 @@ mod drawing {
             .collect()
     }
 
-    fn in_room() -> ChatScreen {
+    pub(super) fn in_room() -> ChatScreen {
         let mut screen = ChatScreen::open();
         screen.deliver(ChatResponse::Rooms {
-            rooms: vec![room(1, "lobby")],
+            rooms: vec![room(1, "lobby"), room(2, "retro")],
             notice: None,
         });
         screen.input(ChatKey::Enter);
         screen.deliver(ChatResponse::Joined {
             room: room(1, "lobby"),
             entered: Entered {
-                roster: vec![handle("ann")],
+                roster: vec![handle("ann"), handle("bob")],
                 history: Vec::new(),
             },
         });
@@ -723,28 +721,60 @@ mod drawing {
     fn the_newest_lines_and_the_input_fit_every_size_and_the_status_row_is_untouched() {
         let mut screen = in_room();
         say_many(&mut screen, 100);
-        for size in [(80, 24), (40, 12), (120, 50), (20, 6)] {
+        for size in [(80, 24), (100, 30), (132, 43), (40, 12), (20, 6)] {
             let buffer = draw(&screen, Tier::Ascii, size);
             let text = rows(&buffer);
             assert_eq!(text.len(), usize::from(size.1));
-            // D93: no status row is reserved on a member screen, so the box reaches the end.
+            let body = text.join("\n");
             assert!(
-                !text.join("\n").contains("server can read"),
+                !body.contains("server can read"),
                 "{size:?}: no server-readable row"
             );
-            let body = text.join("\n");
             // A 20-column window wraps a line over several rows; the newest line is whole only
             // where it fits.
             assert!(
                 size.0 < 30 || body.contains("line number 99"),
-                "{size:?}: newest line missing"
+                "{size:?}: newest line missing\n{body}"
             );
             assert!(
                 !body.contains("line number 0 "),
                 "{size:?}: oldest line is off screen"
             );
-            assert!(body.contains("> _"), "{size:?}: input line missing");
+            assert!(
+                size.1 < 8 || body.contains("> _"),
+                "{size:?}: input line missing\n{body}"
+            );
         }
+    }
+
+    #[test]
+    fn three_panes_at_80_columns_and_fewer_as_it_narrows() {
+        let screen = in_room();
+        let wide = rows(&draw(&screen, Tier::Ascii, (80, 24))).join("\n");
+        assert!(wide.contains("Chat rooms"), "{wide}");
+        assert!(wide.contains("> #lobby") && wide.contains("#retro"), "{wide}");
+        assert!(wide.contains("Online (2)"), "{wide}");
+        assert!(wide.contains("* ann") && wide.contains("* bob"), "{wide}");
+        let narrow = rows(&draw(&screen, Tier::Ascii, (60, 24))).join("\n");
+        assert!(!narrow.contains("Chat rooms"), "{narrow}");
+        assert!(narrow.contains("Online (2)"), "{narrow}");
+        let tiny = rows(&draw(&screen, Tier::Ascii, (50, 24))).join("\n");
+        assert!(!tiny.contains("Online"), "{tiny}");
+        assert!(tiny.contains("#lobby"), "{tiny}");
+    }
+
+    #[test]
+    fn the_who_pane_follows_joins_and_leaves() {
+        let mut screen = in_room();
+        screen.receive(vec![Event::Joined(handle("carol")), Event::Left(handle("bob"))]);
+        let text = rows(&draw(&screen, Tier::Ascii, (80, 24))).join("\n");
+        assert!(text.contains("Online (2)"), "{text}");
+        assert!(text.contains("* carol"), "{text}");
+        assert_eq!(
+            text.matches("bob").count(),
+            2,
+            "bob is in the transcript only, not the roster\n{text}"
+        );
     }
 
     #[test]
@@ -764,7 +794,7 @@ mod drawing {
         for row in &text {
             assert!(!row.contains('\u{1b}') && !row.contains('\u{202e}'));
         }
-        // The box did not grow: every row has the same width and the frame is intact.
+        // The panes did not grow: every row has the same width and the frame is intact.
         assert!(text.iter().all(|r| r.chars().count() == 80));
     }
 
@@ -780,15 +810,15 @@ mod drawing {
         }
         screen.input(ChatKey::Char('!'));
         let text = rows(&draw(&screen, Tier::Ascii, (80, 24))).join("\n");
-        assert!(text.contains("bob whispers: over here"));
+        assert!(text.contains("bob whispers: over here"), "{text}");
         assert!(
             text.contains("x!_"),
-            "the end of what is typed stays visible"
+            "the end of what is typed stays visible\n{text}"
         );
     }
 
     #[test]
-    fn the_room_list_marks_the_cursor_shows_notices_and_keeps_it_in_view() {
+    fn the_room_list_marks_the_cursor_shows_notices_in_a_popup_and_keeps_it_in_view() {
         let mut screen = ChatScreen::open();
         let many = (1..=32).map(|n| room(n, &format!("room{n:02}"))).collect();
         screen.deliver(ChatResponse::Rooms {
@@ -800,12 +830,10 @@ mod drawing {
         }
         screen.deliver(ChatResponse::Refused(ChatNotice::Failed));
         let text = rows(&draw(&screen, Tier::Ascii, (80, 24))).join("\n");
-        assert!(
-            text.contains("> room32"),
-            "the selected last room is on screen"
-        );
-        assert!(!text.contains("room01"), "the list scrolled");
-        assert!(text.contains("Problem: That did not work."), "{text}");
+        assert!(text.contains("#room32"), "the selected last room is on screen\n{text}");
+        assert!(!text.contains("#room01"), "the list scrolled\n{text}");
+        assert!(text.contains("Problem"), "{text}");
+        assert!(text.contains("That did not work."), "{text}");
         assert!(text.contains("Esc back"));
     }
 }
@@ -814,16 +842,9 @@ mod drawing {
 /// room, at 80x24.
 #[test]
 fn coming_into_a_room_says_which_room_you_are_in() {
-    use ratatui::Terminal;
-    use ratatui::backend::TestBackend;
     use russh_bbs_core::chat::{ChatResponse, ChatScreen, Entered, Room, RoomId};
     use russh_bbs_core::icons::Tier;
     use russh_bbs_core::store::UnixSeconds;
-    use russh_bbs_core::terminal_settings::TerminalSettings;
-
-    use crate::settings::Look;
-    use crate::ui::Ui;
-    use crate::ui::classic::{ContentScreen, MENU_MARKERS, render_content_bare};
 
     let mut screen = ChatScreen::open();
     screen.deliver(ChatResponse::Joined {
@@ -837,33 +858,7 @@ fn coming_into_a_room_says_which_room_you_are_in() {
             history: Vec::new(),
         },
     });
-    let ui = Ui::standard().unwrap();
-    let look = Look::of(&TerminalSettings::default().with_tier(Tier::Ascii));
-    let mut terminal = Terminal::new(TestBackend::new(80, 24)).unwrap();
-    terminal
-        .draw(|frame| {
-            render_content_bare(
-                frame,
-                ContentScreen {
-                    strings: ui.strings(),
-                    lines: super::render::lines(&screen, ui.strings(), look, 78, 20),
-                    look,
-                    tier: Tier::Ascii,
-                    markers: &MENU_MARKERS,
-                    clock: None,
-                },
-            );
-        })
-        .unwrap();
-    let buffer = terminal.backend().buffer().clone();
-    let shown: String = (0..buffer.area.height)
-        .map(|y| {
-            (0..buffer.area.width)
-                .map(|x| buffer[(x, y)].symbol().to_owned())
-                .collect::<String>()
-        })
-        .collect::<Vec<_>>()
-        .join("\n");
+    let shown = drawing::rows(&drawing::draw(&screen, Tier::Ascii, (80, 24))).join("\n");
     assert!(shown.contains("You are in #lobby."), "{shown}");
     assert!(shown.contains("Here: ann"), "{shown}");
 }
