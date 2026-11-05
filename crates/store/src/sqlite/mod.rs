@@ -25,6 +25,7 @@ mod registration;
 mod scheduler;
 mod state;
 mod terminal_settings;
+mod widgets;
 
 #[cfg(test)]
 mod tests;

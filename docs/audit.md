@@ -62,6 +62,7 @@ sysop screen over it is M5; the board has no audit screen yet.
 | `delete_role` (M2-B2) | `role.deleted` | caller | the role | none |
 | `set_role_limit` / `set_member_limit` (M2-H) | `limit.changed` | caller | the role or the account | `<kind> set to <n>`, `<kind> set to unlimited` or `<kind> override cleared`; a repeat of the same value, or clearing an override that is not set, writes no row |
 | `set_terminal_settings` | `setting.changed` | the account | the account | `terminal settings` |
+| `set_widget_list` | `setting.changed` | the account | the account | `widget placement` |
 | `create_invite` (M2-D) | `invite.created` | the inviter | the invite (row id, never the code) | `expires at <unix seconds>` |
 | `redeem_invite` (M2-D) | `account.created` | the new account | the new account | `via invite <id> by account <id> state active` |
 | `redeem_invite` (M2-D) | `invite.redeemed` | the new account | the invite | `account <id> inviter <id>` |

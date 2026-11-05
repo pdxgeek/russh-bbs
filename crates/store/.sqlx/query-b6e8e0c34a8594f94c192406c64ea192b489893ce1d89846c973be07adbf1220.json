@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT layout, widgets FROM widget_list WHERE account_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "layout",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "widgets",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "b6e8e0c34a8594f94c192406c64ea192b489893ce1d89846c973be07adbf1220"
+}

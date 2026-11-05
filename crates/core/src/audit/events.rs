@@ -291,6 +291,17 @@ pub fn terminal_settings_changed(account: AccountId) -> AuditEvent {
     .detail("terminal settings")
 }
 
+/// A member saved their own widget placement (UI-10).
+#[must_use]
+pub fn widget_placement_changed(account: AccountId) -> AuditEvent {
+    AuditEvent::new(
+        Actor::Account(account),
+        Action::SettingChanged,
+        Target::Account(account),
+    )
+    .detail("widget placement")
+}
+
 /// A member made an invite. The target is the invite's id; the code is not known here and is
 /// never written. `expires_at` goes in the note.
 #[must_use]

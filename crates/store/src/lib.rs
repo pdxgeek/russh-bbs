@@ -48,6 +48,9 @@ mod queue_rows;
 #[cfg(any(feature = "sqlite", feature = "postgres"))]
 mod rows;
 
+#[cfg(any(feature = "sqlite", feature = "postgres"))]
+mod widget_rows;
+
 #[cfg(feature = "postgres")]
 mod postgres;
 #[cfg(feature = "sqlite")]

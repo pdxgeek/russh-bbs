@@ -173,6 +173,10 @@ fn the_events_the_store_writes_say_what_changed() {
     let setting = events::terminal_settings_changed(alice());
     assert_eq!(setting.action, Action::SettingChanged);
     assert_eq!(setting.actor, Actor::Account(alice()));
+
+    let widgets = events::widget_placement_changed(alice());
+    assert_eq!(widgets.action, Action::SettingChanged);
+    assert_eq!(widgets.detail.as_str(), "widget placement");
 }
 
 #[test]
