@@ -304,7 +304,7 @@ On the settings screen, saved per member and applied on the next frame: **layout
 
 ## Board art (UI-3, D123)
 
-Status: **Implemented and tested; walked over real OpenSSH** (see Verified). Code: `crates/server/src/ui/art/` (`ans`, `file`, `font`, `cp437`, `grid`, `piece`, `set`, `draw`, `preview`, and the bundled art in `bundled/*.art.toml`); the flow page in `crates/core/src/terminal_settings/preview.rs`; the `[board]` keys in [config.md](config.md#board-ui-2).
+Status: **Implemented and tested; walked over real OpenSSH 9.6** (see Verified and the [screenshots](ui-screenshots/art/README.md)). Code: `crates/server/src/ui/art/` (`ans`, `file`, `font`, `cp437`, `grid`, `piece`, `set`, `draw`, `preview`, and the bundled art in `bundled/*.art.toml`); the flow page in `crates/core/src/terminal_settings/preview.rs`; the `[board]` keys in [config.md](config.md#board-ui-2).
 
 Art is a **sysop asset, not member content**, but it is parsed as untrusted input. It becomes a grid of cells and is drawn as styled cells; nothing from an art file is ever written to a terminal as text, so a file cannot send an escape sequence, a clipboard write or a title change.
 
@@ -403,6 +403,7 @@ A sysop with `members.approve` (what Sysop tools itself needs) opens **Sysop too
 - **Sysop files**: seven hostile files in a directory (oversized, empty, misnamed, unknown key, invalid UTF-8, too tall, a symlink to `/etc/passwd`) are refused with reasons and the bundled art stays; a crowded directory is read to the cap.
 - **On screens:** every style's menu header at 80x24 and 132x43 in Unicode and ASCII, colour and mono; its login banner likewise; the status row identical with art on and off for every style x layout x size x tier; the reserved style only in the marker cell; no cell above the status row reversed; art cells carry no attribute; a 16-colour terminal gets no truecolor or 256 colours; the menu keeps every item in every layout with art; art gives way on a tight screen and the screen is then exactly what it was; large letters appear only where there is room, and in `#` in the ASCII tier; hostile sysop art (25 rows, bold, reverse, `ESC [2J`, OSC, a marker glyph) cannot reach the status row or wear the reserved style.
 - **Preview**: reached from Sysop tools by a sysop and not by a member; every key; every style x tier x colour x size x sample draws without a marker outside the real marker cell; the clipped note; refused art files listed; losing `members.approve` closes it.
+- **Real OpenSSH 9.6 against the real binary**, read through `pyte`: for each of the six styles the login banner and the main-menu header at 80x24 and 132x43 (the board's style locked per run), then, for `neon` and `ansi`, the Sysop tools, Theme preview screen at two sizes and the logoff screen with the style's banner and a board quote. PNGs and text captures are in [ui-screenshots/art](ui-screenshots/art/README.md).
 - **Not verified:** art in a real 16-colour or 256-colour client (the depth fallback is tested on cells), a Nerd Font session, other terminal emulators, telnet, a screen reader (accessibility mode, M5, will bypass art), art drawn by a third party's ANSI editor (the goldens are hand-written bytes), and the `area` slot on any screen.
 ## Widgets (UI-10)
 

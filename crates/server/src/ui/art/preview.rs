@@ -74,6 +74,11 @@ pub(crate) fn render(frame: &mut Frame<'_>, preview: &ThemePreview, ctx: &Previe
     let note_rows = u16::try_from(notes.len())
         .unwrap_or(u16::MAX)
         .min(body.height);
+    let notes_area = Rect {
+        height: note_rows,
+        ..body
+    };
+    frame.render_widget(Clear, notes_area);
     frame.render_widget(
         Paragraph::new(notes.into_iter().map(Line::raw).collect::<Vec<_>>()),
         Rect {
