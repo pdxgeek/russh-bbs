@@ -405,6 +405,51 @@ A sysop with `members.approve` (what Sysop tools itself needs) opens **Sysop too
 - **Preview**: reached from Sysop tools by a sysop and not by a member; every key; every style x tier x colour x size x sample draws without a marker outside the real marker cell; the clipped note; refused art files listed; losing `members.approve` closes it.
 - **Real OpenSSH 9.6 against the real binary**, read through `pyte`: for each of the six styles the login banner and the main-menu header at 80x24 and 132x43 (the board's style locked per run), then, for `neon` and `ansi`, the Sysop tools, Theme preview screen at two sizes and the logoff screen with the style's banner and a board quote. PNGs and text captures are in [ui-screenshots/art](ui-screenshots/art/README.md).
 - **Not verified:** art in a real 16-colour or 256-colour client (the depth fallback is tested on cells), a Nerd Font session, other terminal emulators, telnet, a screen reader (accessibility mode, M5, will bypass art), art drawn by a third party's ANSI editor (the goldens are hand-written bytes), and the `area` slot on any screen.
+## Theme gallery, theme packs and screenshots (UI-7, D-TBD)
+
+### The member gallery (Terminal settings, `y`)
+
+A strip of the styles the board allows, a line about the one under the cursor (its `[meta]` title, credit, and whether it is in use), and below them a **live sample** of that style: the main menu (or, with `s`, the login screen) drawn off-screen by the same code the real screens use, then copied in. The sample is drawn with the member's own layout, icon tier, colour mode and **colour depth**, at the size of the room the gallery has, so a 16-colour client sees 16 colours. `Up`/`Down` (or `k`/`j`, `p`/`n`) browse, `Enter` uses the style (it is saved through the settings path, so `account.edit_settings` applies and a removed permission closes the screen), `b` or `Esc` goes back.
+
+- **The board's limits are the list.** The strip holds exactly `board.styles`; a list of one is a **lock**: the gallery shows the style, says "the sysop has set this board's style" and offers no pick.
+- **The marker cell is never covered.** The sample is drawn with no markers and copied with the reverse attribute stripped; it goes into the body only, and the status bar's left cell belongs to the frame (D39, D109). A test asserts, for every style, sample, size and tier, that reverse video appears nowhere but in the marker cell.
+- **The ASCII tier** draws the strip, hints and sample in printable ASCII.
+
+### Theme files are versioned
+
+A theme file may start with `version = N`. A file without one is **version 1** (every file written before UI-7, including the shipped ones). The loader migrates an older file forward in memory, one step at a time, before any validation, so the schema, size, contrast and string checks are the same for every version; a version this server does not read is refused. Version 2 adds the optional `[meta]` table (`title` up to 40 characters, `credit` up to 80, both checked like any sysop string: no control, invisible or reserved characters, no claim of privacy). Export always writes the current version.
+
+### Theme packs
+
+A pack is one file, `*.pack.toml`, that carries a style and its art:
+
+```toml
+pack = 1
+theme = '''
+name = "harbour"
+...                       # a theme file, exactly as it would sit in themes/
+'''
+[[art]]
+kind = "art.toml"         # an .art.toml, as it would sit in art/
+text = '''...'''
+[[art]]
+kind = "ans"              # a CP437 .ans picture, in hex
+slot = "menu"
+hex = "1b5b..."
+```
+
+**A pack holds files, and every file goes through the loader that reads the same file from disk**: the theme text through `Theme::parse` (schema, caps, contrast floor, string checks, version migrations), each `art.toml` through the art loader, each `.ans` through the `.ans` parser. Nothing in a pack is executed, fetched or interpreted as anything but data. Unknown fields are refused at every level. A pack cannot name the reserved style, a marker glyph, the Nerd Font range or the marker position because neither a theme file nor art has a key, style or glyph for them (D39), and the sanitizer replaces the reserved characters in every string and art cell; a string that claims privacy is refused. **Caps:** 512 KiB for the file, 16 art entries, the theme and `.art.toml` caps, the `.ans` cap checked on the hex *before* it is decoded, 240 characters per string. **Art belongs to its style:** every piece must be made for the pack's own style, and an `.ans` is installed as `<style>.<slot>.ans`, so a pack can never replace the board's generic art or another style's.
+
+**Sysop screen (Sysop tools, `p`, `themes.manage`).** Two lists: the installed styles (`e` exports the one under the cursor to `packs/<name>.pack.toml`; the built-in `default` has no file) and the pack files in `packs/` beside the host key (each shown as "ready: style x" or "refused: reason"; `i` imports it). Import validates the whole pack first, then installs with `create_new` into `themes/` and `art/` (art first, the theme last; a failure removes what it wrote; nothing is overwritten; a style name already installed is refused, so rename it in the file). The new style **loads when the server restarts**, like any file dropped in those directories (there is no hot reload; see D-TBD). The permission is checked again where the work is done, an export or import writes a `theme.exported` or `theme.imported` audit row (a refusal writes none), and an export holds only the style's own text and art: no board setting, no path, no member data.
+
+### Screenshots (`tools/screenshots/`)
+
+One shared renderer for every walk: `shot.py` turns a `.cells` dump, a pyte screen or a `tmux capture-pane -e` into a PNG. It draws U+2500 to U+259F (box drawing and blocks) as filled lines and rectangles sized to the cell, so lines join with no gap, and uses the font for everything else. Python and Pillow only; no Rust dependency. See [tools/screenshots/README.md](../tools/screenshots/README.md). Other slices and QA should use it instead of a private `render.py`.
+
+### Verified
+
+Unit tests: each of the nine shipped styles exports, imports and loads back to the same palette, skin, strings, title and art, and a second export is byte-identical; hostile packs (oversized, wrong version, unknown fields, the reserved style and marker keys, marker glyphs, control characters and private-use characters in strings, a privacy claim, generic or foreign-style art, `.ans` bombs and bad hex, too many entries); an old version-1 file migrating forward and an unreadable version refused; install never overwrites and is all-or-nothing; the gallery draws every style at 80x24, 100x30 and 132x43, at every depth and tier, differs per style, follows the viewer's depth, respects locks and the allowed list, never covers the marker cell. A real in-process ssh session (`crates/server/tests/access_paths.rs`) exports, imports and loses `themes.manage` with the screen open. See [qa/ui-7-walk.md](qa/ui-7-walk.md) for the walk over OpenSSH.
+
 ## Widgets (UI-10)
 
 Status: **Implemented and tested; walked over real OpenSSH 9.6** (see Verified). Code: `crates/server/src/ui/widgets/` (the trait, the registry, the 17 widgets, placement, the Widgets screen), `crates/core/src/widgets/` (ids, the sysop's rules and the member's lists, what the widgets read), `crates/server/src/ssh/live.rs` (the live pieces), `[widgets]` in [config.md](config.md#widgets-ui-10), per-member lists in migration `0025_widgets`.

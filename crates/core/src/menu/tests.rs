@@ -12,10 +12,12 @@ fn member() -> Snapshot {
         &Slug::MEMBER,
         10,
         &Via::Account,
-        Permission::ALL
-            .iter()
-            .copied()
-            .filter(|p| !matches!(p, Permission::MembersApprove | Permission::KeysRecover)),
+        Permission::ALL.iter().copied().filter(|p| {
+            !matches!(
+                p,
+                Permission::MembersApprove | Permission::KeysRecover | Permission::ThemesManage
+            )
+        }),
     )
 }
 
