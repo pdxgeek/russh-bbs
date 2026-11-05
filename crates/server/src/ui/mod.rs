@@ -74,6 +74,19 @@ pub struct Ui {
     /// The banner and header art (UI-3): bundled, plus the sysop's `art/` directory.
     art: art::ArtSet,
     widgets: widgets::WidgetSettings,
+    /// Where theme packs are exported to, imported from and installed (UI-7).
+    packs: Option<PackDirs>,
+}
+
+/// The directories theme packs use, all beside the host key like `themes/` and `art/`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PackDirs {
+    /// `packs/`: exported packs are written here and imports are read from here.
+    pub packs: std::path::PathBuf,
+    /// `themes/`: an imported style's theme file is installed here.
+    pub themes: std::path::PathBuf,
+    /// `art/`: an imported style's art is installed here.
+    pub art: std::path::PathBuf,
 }
 
 /// The keys mail is sealed with (M3-I), carried to the sessions beside the screens' words because
@@ -194,7 +207,28 @@ impl Ui {
             doors: crate::doors::Doors::none(),
             art: art::ArtSet::bundled().map_err(|error| UiError::Art(error.to_string()))?,
             widgets: widgets::WidgetSettings::default(),
+            packs: None,
         })
+    }
+
+    /// The same screens with the directories theme packs use (UI-7). Without them the sysop's
+    /// Theme packs screen says packs are not available.
+    #[must_use]
+    pub fn with_pack_dirs(mut self, dirs: PackDirs) -> Self {
+        self.packs = Some(dirs);
+        self
+    }
+
+    /// The pack directories, if the board has them.
+    #[must_use]
+    pub fn pack_dirs(&self) -> Option<&PackDirs> {
+        self.packs.as_ref()
+    }
+
+    /// The loaded themes.
+    #[must_use]
+    pub fn theme_set(&self) -> &ThemeSet {
+        &self.themes
     }
 
     /// The same screens with the sysop's art files from `dir` added (UI-3). A bad file is

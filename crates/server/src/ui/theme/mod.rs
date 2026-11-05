@@ -30,8 +30,10 @@ use tracing::warn;
 use super::depth::Tint;
 use super::strings::{StringError, StringTable};
 
+pub mod pack;
 mod palette;
 pub(crate) mod skin;
+mod version;
 
 pub use palette::{Base, Palette, ROLES, check_contrast, contrast_ratio};
 pub use skin::{Backdrop, BorderSet, Element, HeaderDeco, Skin, TitleAlign, TitleTreatment};
@@ -49,6 +51,20 @@ pub struct Theme {
     palette: Palette,
     skin: Skin,
     strings: StringTable,
+    /// The display title and credit from `[meta]` (UI-7). The title is the name when unset.
+    title: String,
+    credit: String,
+    /// The file as authored and the version it was written in, so an export can write it back
+    /// (migrated forward) without re-deriving it from the resolved table. `None` for the
+    /// built-in theme, which has no file.
+    source: Option<Source>,
+}
+
+/// A theme file as read.
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct Source {
+    text: String,
+    version: u32,
 }
 
 impl Theme {
@@ -60,7 +76,39 @@ impl Theme {
             palette: Palette::default(),
             skin: Skin::default(),
             strings,
+            title: String::new(),
+            credit: String::new(),
+            source: None,
         }
+    }
+
+    /// What to call the style on a screen: its `[meta]` title, or its name.
+    #[must_use]
+    pub fn title(&self) -> &str {
+        if self.title.is_empty() {
+            self.name.as_str()
+        } else {
+            &self.title
+        }
+    }
+
+    /// Who made it (`[meta] credit`), or empty.
+    #[must_use]
+    pub fn credit(&self) -> &str {
+        &self.credit
+    }
+
+    /// The theme file as an export writes it, in the current version: the authored text, with
+    /// the version line a version-1 file lacks put in front. `None` for the built-in theme,
+    /// which is code and has no file to export.
+    #[must_use]
+    pub fn export_text(&self) -> Option<String> {
+        let source = self.source.as_ref()?;
+        Some(if source.version >= version::CURRENT {
+            source.text.clone()
+        } else {
+            format!("version = {}\n{}", version::CURRENT, source.text)
+        })
     }
 
     /// The theme's name.
@@ -95,6 +143,8 @@ impl Theme {
         let mut root: toml::Table = text
             .parse()
             .map_err(|error: toml::de::Error| ThemeError::Syntax(error.message().to_owned()))?;
+        let file_version = version::migrate(&mut root)?;
+        let (title, credit) = version::meta(root.remove("meta"))?;
         let name = match root.remove("name") {
             Some(toml::Value::String(name)) => {
                 ThemeName::new(&name).map_err(|_| ThemeError::Name(name))?
@@ -127,6 +177,12 @@ impl Theme {
             palette,
             skin,
             strings,
+            title,
+            credit,
+            source: Some(Source {
+                text: text.to_owned(),
+                version: file_version,
+            }),
         })
     }
 }
@@ -160,6 +216,12 @@ pub enum ThemeError {
     /// Two files name the same theme.
     #[error("theme `{0}` is defined twice")]
     Duplicate(String),
+    /// `version` is not a number this server reads.
+    #[error("theme version {0} is not understood (this server reads 1 to {max})", max = version::CURRENT)]
+    Version(String),
+    /// A problem in `[meta]`.
+    #[error("theme meta: {0}")]
+    Meta(String),
     /// A problem in `[colors]`.
     #[error("theme colors: {0}")]
     Colors(String),

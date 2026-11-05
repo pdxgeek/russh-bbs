@@ -120,6 +120,78 @@ pub fn parse(text: &str, sysop: bool) -> Result<ArtFile, ArtError> {
     Ok(ArtFile { name, pieces })
 }
 
+/// Write `pieces` back out as an `.art.toml` file that [`parse`] reads to the same pieces: the
+/// export side of a theme pack (UI-7). Every piece is written for `style`. Text goes through
+/// [`quote`], so a character that needs escaping is escaped and nothing can end the string early.
+#[must_use]
+pub fn write(name: &str, style: ThemeName, credit: &str, pieces: &[&ArtPiece]) -> String {
+    let mut out = format!("format = {FORMAT}\nname = {}\nstyle = {}\n", quote(name), quote(style.as_str()));
+    if !credit.is_empty() {
+        out.push_str(&format!("credit = {}\n", quote(credit)));
+    }
+    for piece in pieces {
+        out.push_str("\n[[piece]]\n");
+        out.push_str(&format!("slot = {}\n", quote(piece.slot.name())));
+        if let Some(fallback) = piece.fallback() {
+            out.push_str(&format!("fallback = {}\n", quote(fallback)));
+        }
+        let grid = &piece.grid;
+        let rows = |f: &dyn Fn(ArtCell) -> char| -> Vec<String> {
+            (0..grid.height())
+                .map(|y| (0..grid.width()).map(|x| f(grid.get(x, y))).collect())
+                .collect()
+        };
+        push_list(&mut out, "rows", &rows(&|c| c.ch));
+        if grid.cells().any(|c| c.fg.is_some()) {
+            push_list(&mut out, "fg", &rows(&|c| colour_char(c.fg)));
+        }
+        if grid.cells().any(|c| c.bg.is_some()) {
+            push_list(&mut out, "bg", &rows(&|c| colour_char(c.bg)));
+        }
+        if piece.ascii_given {
+            push_list(&mut out, "ascii", &rows(&|c| c.ascii));
+        }
+    }
+    out
+}
+
+fn push_list(out: &mut String, key: &str, rows: &[String]) {
+    out.push_str(&format!("{key} = [\n"));
+    for row in rows {
+        out.push_str(&format!("  {},\n", quote(row)));
+    }
+    out.push_str("]\n");
+}
+
+/// The colour character for a palette index (the inverse of the reader's).
+fn colour_char(index: Option<u8>) -> char {
+    const NAMES: &[u8; 8] = b"kbgcrmyw";
+    match index {
+        Some(i) if i < 8 => char::from(NAMES[usize::from(i)]),
+        Some(i) if i < 16 => char::from(NAMES[usize::from(i - 8)].to_ascii_uppercase()),
+        _ => '.',
+    }
+}
+
+/// A TOML basic string for `text`: quoted, with `\` `"` and every control character escaped.
+#[must_use]
+pub(crate) fn quote(text: &str) -> String {
+    let mut out = String::with_capacity(text.len() + 2);
+    out.push('"');
+    for c in text.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\t' => out.push_str("\\t"),
+            c if c.is_control() => out.push_str(&format!("\\u{:04X}", u32::from(c))),
+            c => out.push(c),
+        }
+    }
+    out.push('"');
+    out
+}
+
 fn invalid(message: impl Into<String>) -> ArtError {
     ArtError::Invalid(message.into())
 }
