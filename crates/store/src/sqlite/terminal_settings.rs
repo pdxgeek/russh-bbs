@@ -27,6 +27,7 @@ struct SettingsRow {
     motion: i64,
     depth_cap: String,
     borders: String,
+    mouse: i64,
 }
 
 impl SettingsRow {
@@ -59,6 +60,7 @@ impl SettingsRow {
         let borders =
             borders_from_stored(&self.borders).ok_or_else(|| corrupt("borders is not known"))?;
         let motion = flag(self.motion, "motion is not valid")?;
+        let mouse = flag(self.mouse, "mouse is not valid")?;
         let settings = TerminalSettings::new(
             size(self.width_override, "width is not valid")?,
             size(self.height_override, "height is not valid")?,
@@ -70,7 +72,8 @@ impl SettingsRow {
         let mut settings = settings
             .with_motion(motion)
             .with_depth_cap(depth_cap)
-            .with_borders(borders);
+            .with_borders(borders)
+            .with_mouse(mouse);
         if let Some(layout) = layout {
             settings = settings.with_layout(layout);
         }
@@ -87,7 +90,7 @@ impl TerminalSettingsStore for SqliteStore {
         let row = sqlx::query_as!(
             SettingsRow,
             "SELECT width_override, height_override, color, pause, icon_tier, layout, theme,
-                    motion, depth_cap, borders
+                    motion, depth_cap, borders, mouse
              FROM terminal_settings WHERE account_id = ?",
             id,
         )
@@ -117,12 +120,13 @@ impl TerminalSettingsStore for SqliteStore {
         let motion = i64::from(settings.motion());
         let depth_cap = depth_cap_to_stored(settings.depth_cap());
         let borders = borders_to_stored(settings.borders());
+        let mouse = i64::from(settings.mouse());
         let mut tx = self.pool().begin().await.map_err(backend)?;
         sqlx::query!(
             "INSERT INTO terminal_settings
                  (account_id, width_override, height_override, color, pause, icon_tier, layout, theme,
-                  motion, depth_cap, borders)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                  motion, depth_cap, borders, mouse)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
              ON CONFLICT (account_id) DO UPDATE SET
                  width_override  = excluded.width_override,
                  height_override = excluded.height_override,
@@ -134,6 +138,7 @@ impl TerminalSettingsStore for SqliteStore {
                  motion          = excluded.motion,
                  depth_cap       = excluded.depth_cap,
                  borders         = excluded.borders,
+                 mouse           = excluded.mouse,
                  updated_at      = unixepoch()",
             id,
             width,
@@ -146,6 +151,7 @@ impl TerminalSettingsStore for SqliteStore {
             motion,
             depth_cap,
             borders,
+            mouse,
         )
         .execute(&mut *tx)
         .await

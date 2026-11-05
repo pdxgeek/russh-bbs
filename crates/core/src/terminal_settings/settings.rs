@@ -28,6 +28,14 @@ pub enum SettingsError {
     Height,
 }
 
+/// Whether the board may turn the terminal's mouse reporting on (a two-variant enum rather than
+/// a fourth `bool`, so the struct's flags cannot be mixed up).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum MouseReporting {
+    Off,
+    On,
+}
+
 /// One account's terminal settings. Fields are private so every instance is in range.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TerminalSettings {
@@ -43,6 +51,8 @@ pub struct TerminalSettings {
     motion: bool,
     depth_cap: DepthCap,
     borders: BorderChoice,
+    /// The member lets the board turn mouse reporting on (UI-9). Off until they say so.
+    mouse: MouseReporting,
 }
 
 impl Default for TerminalSettings {
@@ -59,6 +69,7 @@ impl Default for TerminalSettings {
             motion: true,
             depth_cap: DepthCap::Auto,
             borders: BorderChoice::ThemeDefault,
+            mouse: MouseReporting::Off,
         }
     }
 }
@@ -89,6 +100,7 @@ impl TerminalSettings {
             motion: true,
             depth_cap: DepthCap::Auto,
             borders: BorderChoice::ThemeDefault,
+            mouse: MouseReporting::Off,
         })
     }
 
@@ -208,6 +220,24 @@ impl TerminalSettings {
     #[must_use]
     pub const fn borders(&self) -> BorderChoice {
         self.borders
+    }
+
+    /// Whether the member lets the board turn the terminal's mouse reporting on (UI-9). Off by
+    /// default; accessibility mode turns it off whatever this says.
+    #[must_use]
+    pub const fn mouse(&self) -> bool {
+        matches!(self.mouse, MouseReporting::On)
+    }
+
+    /// Allow or forbid mouse reporting.
+    #[must_use]
+    pub const fn with_mouse(mut self, mouse: bool) -> Self {
+        self.mouse = if mouse {
+            MouseReporting::On
+        } else {
+            MouseReporting::Off
+        };
+        self
     }
 
     /// Turn motion on or off.

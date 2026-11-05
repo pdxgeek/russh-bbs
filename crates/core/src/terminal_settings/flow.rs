@@ -850,6 +850,9 @@ impl MemberFlow {
             MemberInput::Char('m' | 'M') => {
                 self.save(self.settings.with_motion(!self.settings.motion()))
             }
+            MemberInput::Char('o' | 'O') => {
+                self.save(self.settings.with_mouse(!self.settings.mouse()))
+            }
             MemberInput::Char('d' | 'D') => self.save(
                 self.settings
                     .with_depth_cap(self.settings.depth_cap().next()),
@@ -1418,6 +1421,7 @@ impl MemberFlow {
                     ("motion", words.text(on_off(s.motion()))),
                     ("depth", words.text(s.depth_cap().label_key())),
                     ("borders", words.text(s.borders().label_key())),
+                    ("mouse", words.text(on_off(s.mouse()))),
                 ],
             ),
         ];

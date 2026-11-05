@@ -61,6 +61,7 @@ use russh_bbs_core::waiting_room::{
     CodeRequest, LinkRequest, Page, RedeemRequest, RoomEffect, RoomInput, View, WaitingRoom,
 };
 
+use super::interact::{self, Interact, PaletteStep};
 use russh_bbs_core::widgets::{Choice, WidgetData, WidgetId};
 
 use super::terminal::{Key, PtySize, RenderCap};
@@ -75,7 +76,10 @@ use crate::ui::depth::ColorDepth;
 use crate::ui::editor::{Editor, EditorEffect, EditorRequest, EditorView, Outcome};
 use crate::ui::frame::clock_text;
 use crate::ui::fx;
+use crate::ui::input::mouse::Mouse;
+use crate::ui::palette;
 use crate::ui::strings::StringTable;
+use crate::ui::toast::{Kind as ToastKind, Text as ToastText};
 use crate::ui::widgets::screen::{self as widgets_screen, WidgetsScreen};
 use crate::ui::widgets::{self, WidgetView};
 use crate::ui::{Ui, backdrop, chrome, layout};
@@ -211,6 +215,16 @@ impl Backend for SessionBackend {
     }
 }
 
+/// What the palette needs from the session (UI-9).
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum PaletteAsk {
+    /// Nothing.
+    #[default]
+    Nothing,
+    /// The names of the boards the member may list.
+    Boards,
+}
+
 /// What a batch of keypresses asked the session to do besides redraw.
 #[derive(Debug, Default)]
 pub(crate) struct KeyEffects {
@@ -286,6 +300,9 @@ pub(crate) struct KeyEffects {
     /// (M4-D0). The session runs it against the store and gives the answer to
     /// [`Screen::deliver_door`].
     pub(crate) door_request: Option<crate::doors::Request>,
+    /// The command palette opened (UI-9): the session loads the boards the member may list and
+    /// gives them to [`Screen::set_palette_boards`].
+    pub(crate) palette: PaletteAsk,
     /// The member changed their widget list for a layout (UI-10): store it (`None` goes back to
     /// the board's default) with `russh_bbs_core::widgets::save`.
     pub(crate) widget_save: Option<(LayoutId, Option<Vec<WidgetId>>)>,
@@ -319,6 +336,9 @@ impl KeyEffects {
         self.mail_request = later.mail_request;
         self.door_request = later.door_request;
         self.community_request = later.community_request;
+        if later.palette != PaletteAsk::Nothing {
+            self.palette = later.palette;
+        }
         self.widget_save = later.widget_save.or(self.widget_save.take());
         self.held_back = later.held_back;
     }
@@ -582,6 +602,8 @@ pub(crate) struct Screen {
     chat: Option<ChatScreen>,
     /// What the transport adds to the screens (M3-H).
     transport: Transport,
+    /// The mouse, the command palette, toasts and the header ticker (UI-9).
+    interact: Interact,
     /// The widgets' data and the member's saved lists (UI-10).
     widgets: WidgetState,
     /// The Widgets screen, while the member has it open over the settings (UI-10).
@@ -663,6 +685,7 @@ impl Screen {
         prepare_member(&mut content, size, &ui);
         let drawn = drawn_size(size, &content);
         let viewport = viewport(drawn, cap);
+        let interact = Interact::new(ui.board(), std::time::Instant::now());
         Ok(Self {
             terminal: new_terminal(&output, drawn, viewport)?,
             output,
@@ -686,6 +709,7 @@ impl Screen {
                 low_security: false,
                 depth: None,
             },
+            interact,
             widgets: WidgetState::default(),
             widgets_page: None,
         })
@@ -735,6 +759,175 @@ impl Screen {
     /// submits a token; keys after it are ignored. Nothing is drawn: call [`Screen::render`]
     /// once for the whole batch, so a flood of keys costs one redraw, not one per key.
     pub(crate) fn apply_keys(&mut self, keys: &[Key]) -> KeyEffects {
+        if self.interact.palette_open() || keys.contains(&Key::Ctrl('k')) {
+            return self.apply_keys_with_palette(keys);
+        }
+        self.apply_keys_plain(keys)
+    }
+
+    /// The batch has `Ctrl-K` in it or the palette is open: keys go to the palette while it is
+    /// up, and what it runs joins the normal keys, in order, so the choice goes through the
+    /// ordinary path (the menu, the permission check, the limits) as typed keys do.
+    fn apply_keys_with_palette(&mut self, keys: &[Key]) -> KeyEffects {
+        let mut normal: Vec<Key> = Vec::with_capacity(keys.len());
+        let mut ask = PaletteAsk::Nothing;
+        for key in keys.iter().copied() {
+            if self.interact.palette_open() {
+                match self.interact.palette_key(key) {
+                    PaletteStep::Closed | PaletteStep::Open => {}
+                    PaletteStep::PassThrough(key) => normal.push(key),
+                    PaletteStep::Run(path) => normal.extend(path),
+                }
+            } else if key == Key::Ctrl('k') && self.palette_available() {
+                if self.open_palette() {
+                    ask = PaletteAsk::Boards;
+                }
+            } else {
+                // Anywhere else `Ctrl-K` is an ordinary key: the screen gets it as it always
+                // did (the editor, chat and the forms ignore it).
+
+                normal.push(key);
+            }
+        }
+        let mut effects = if normal.is_empty() {
+            KeyEffects::default()
+        } else {
+            self.apply_keys_plain(&normal)
+        };
+        effects.palette = ask;
+        self.dirty = true;
+        effects
+    }
+
+    /// Whether `Ctrl-K` opens the palette now: a signed-in member at the main menu or one of its
+    /// submenus, not in chat, not in the editor, with the help overlay down. The waiting room,
+    /// the founder claim and every other screen have none.
+    fn palette_available(&self) -> bool {
+        self.chat.is_none()
+            && self.editor.is_none()
+            && self.content.menu_page().is_some_and(|page| !page.help)
+    }
+
+    /// Build the palette from what the member's permissions allow right now and open it.
+    /// `true` when the session should also refresh the board names.
+    fn open_palette(&mut self) -> bool {
+        let Content::Member(flow) = &self.content else {
+            return false;
+        };
+        let Some(page) = flow.menu_page() else {
+            return false;
+        };
+        let entries = palette::entries(&palette::Sources {
+            tree: russh_bbs_core::menu::main_tree(),
+            access: flow.access_snapshot(),
+            strings: self.content.strings(&self.ui),
+            doors: self
+                .ui
+                .doors()
+                .all()
+                .iter()
+                .map(|door| door.info().title.to_owned())
+                .collect(),
+            boards: self.interact.boards().to_vec(),
+        });
+        self.interact.open_palette(entries, page.depth);
+        true
+    }
+
+    /// The boards the member may list arrived for the open palette (the session asked the forum
+    /// service, which has already filtered them through `core::access`).
+    pub(crate) fn set_palette_boards(&mut self, names: Vec<String>) {
+        self.interact
+            .set_boards(names.into_iter().map(palette::BoardName).collect());
+        if !self.interact.palette_open() {
+            return;
+        }
+        let Content::Member(flow) = &self.content else {
+            return;
+        };
+        let entries = palette::entries(&palette::Sources {
+            tree: russh_bbs_core::menu::main_tree(),
+            access: flow.access_snapshot(),
+            strings: self.content.strings(&self.ui),
+            doors: self
+                .ui
+                .doors()
+                .all()
+                .iter()
+                .map(|door| door.info().title.to_owned())
+                .collect(),
+            boards: self.interact.boards().to_vec(),
+        });
+        self.interact.refresh_palette(entries);
+        self.dirty = true;
+    }
+
+    /// The keys a batch of mouse reports stands for, to be applied after the typed keys of the
+    /// same batch (`typing`: there were some, so the reports are dropped). Empty when the member
+    /// has not turned the mouse on.
+    pub(crate) fn mouse_keys(&mut self, events: &[Mouse], typing: bool) -> Vec<Key> {
+        self.interact.mouse_keys(events, typing)
+    }
+
+    /// Show a toast (UI-9). Rate limited; the words come from the string table or are sanitized.
+    pub(crate) fn toast(&mut self, kind: ToastKind, text: ToastText<'_>) {
+        let strings = self.content.strings(&self.ui);
+        if self
+            .interact
+            .toasts
+            .push(kind, text, strings, std::time::Instant::now())
+        {
+            self.dirty = true;
+        }
+    }
+
+    /// Time passed: expire toasts, move the ticker. Marks the screen dirty when a frame is due.
+    pub(crate) fn tick(&mut self, now: std::time::Instant) {
+        let visible = self.ticker_visible();
+        let moving = self.motion_now();
+        self.interact.ticker_mut().set_moving(moving);
+        if self.interact.tick(now, visible) {
+            self.dirty = true;
+        }
+    }
+
+    /// When the screen next needs a frame although nobody pressed anything (a toast expiring,
+    /// the ticker moving). `None`: nothing is pending, so the shell sleeps until real work.
+    pub(crate) fn next_wake(&self, now: std::time::Instant) -> Option<std::time::Instant> {
+        // A change waiting to be drawn (a toast just queued) needs its frame now.
+        if self.dirty {
+            return Some(now);
+        }
+        self.interact.next_wake(now, self.ticker_visible())
+    }
+
+    /// Whether the ticker shows on the screen the member is at (a signed-in member's framed
+    /// screen).
+    fn ticker_visible(&self) -> bool {
+        self.interact.ticker().has_text() && self.content.flow().is_some()
+    }
+
+    /// Whether motion is allowed for this member now (their choice, the board's, the style's).
+    fn motion_now(&self) -> bool {
+        self.content
+            .look(&self.ui, self.viewport, self.depth())
+            .is_some_and(Look::motion)
+    }
+
+    /// Whether feed headlines should be fetched for the ticker now.
+    pub(crate) fn ticker_headlines_due(&self, now: std::time::Instant) -> bool {
+        self.content.flow().is_some() && self.interact.ticker().headlines_due(now)
+    }
+
+    /// Feed headlines for the ticker, from the boards the member may read.
+    pub(crate) fn set_ticker_headlines(&mut self, subjects: &[String], now: std::time::Instant) {
+        self.interact
+            .ticker_mut()
+            .set_headlines(subjects.iter().map(String::as_str), now);
+        self.dirty = true;
+    }
+
+    fn apply_keys_plain(&mut self, keys: &[Key]) -> KeyEffects {
         // Any key finishes a running effect at once (UI-8): the key is then handled as usual, and
         // the next frame is the static screen.
         if !keys.is_empty() && self.fx.finish() {
@@ -1706,8 +1899,12 @@ impl Screen {
     /// Restore the client's terminal (cursor, main screen). After a logoff the goodbye is
     /// printed on the main screen, so it stays in the scrollback. Returns the bytes to send.
     pub(crate) fn leave(&mut self) -> io::Result<Vec<u8>> {
+        // Mouse reporting off first, while the alternate screen is still up.
+        let mouse_off = self.interact.restore();
+        self.interact.close_palette();
         queue!(self.terminal.backend_mut(), Show, LeaveAlternateScreen)?;
-        let mut bytes = self.take_output();
+        let mut bytes = mouse_off.to_vec();
+        bytes.extend(self.take_output());
         bytes.extend_from_slice(self.farewell_text().as_bytes());
         Ok(bytes)
     }
@@ -1751,8 +1948,12 @@ impl Screen {
         if !self.fx.reserve(FAREWELL_CHUNKS, now, allowed) {
             return Ok(None);
         }
+        // Mouse reporting off first, as in `leave`.
+        let mouse_off = self.interact.restore();
+        self.interact.close_palette();
         queue!(self.terminal.backend_mut(), Show, LeaveAlternateScreen)?;
-        let restore = self.take_output();
+        let mut restore = mouse_off.to_vec();
+        restore.extend(self.take_output());
         // Cut on character boundaries, never inside a line break.
         let chars: Vec<char> = text.chars().collect();
         let size = chars.len().div_ceil(usize::from(FAREWELL_CHUNKS)).max(1);
@@ -1773,11 +1974,63 @@ impl Screen {
         }))
     }
 
+    /// Draw the frame, keeping what the widgets recorded as clickable for the mouse, with the
+    /// header ticker in place and the client's mouse mode brought in line with the member's
+    /// setting.
+    fn draw(&mut self) -> io::Result<Vec<u8>> {
+        let now = std::time::Instant::now();
+        let ascii = self.content.tier() == Tier::Ascii;
+        let moving = self.motion_now();
+        self.interact.ticker_mut().set_moving(moving);
+        let view = if self.ticker_visible() {
+            self.interact.ticker().view(now, ascii)
+        } else {
+            None
+        };
+        let (drawn, hits) =
+            interact::capture_hits(|| interact::with_ticker(view, || self.draw_screen()));
+        let mut bytes = drawn?;
+        self.interact.set_hits(hits);
+        let wanted = self
+            .content
+            .flow()
+            .is_some_and(|flow| interact::mouse_allowed(flow.settings()));
+        let strings = self.content.strings(&self.ui);
+        let toggle = self.interact.sync_mouse(wanted, strings, now);
+        if !toggle.is_empty() {
+            // Before the footer row the transport paints, so that row is still the last thing
+            // drawn.
+            let at = bytes.len() - self.footer_len(&bytes);
+            bytes.splice(at..at, toggle.iter().copied());
+            // A toast announces the change; it appears with the next frame.
+            self.dirty = true;
+        }
+        Ok(bytes)
+    }
+
+    /// How many trailing bytes of `bytes` are the transport's footer row (zero without one).
+    fn footer_len(&self, bytes: &[u8]) -> usize {
+        let Some(footer) = self.transport.footer else {
+            return 0;
+        };
+        let tail = chrome::footer(
+            footer.marker,
+            self.content.tier(),
+            footer.window.cols(),
+            footer.window.rows(),
+        );
+        if bytes.ends_with(&tail) {
+            tail.len()
+        } else {
+            0
+        }
+    }
+
     #[allow(
         clippy::too_many_lines,
         reason = "one match over every screen the session can show; splitting it hides the flow"
     )]
-    fn draw(&mut self) -> io::Result<Vec<u8>> {
+    fn draw_screen(&mut self) -> io::Result<Vec<u8>> {
         if let Some(frame) = self.draw_doors()? {
             return Ok(frame);
         }
@@ -1799,8 +2052,10 @@ impl Screen {
                 clock: Some(clock.as_str()),
             };
             let tier = ctx.tier;
+            let interact = &self.interact;
             self.terminal.draw(|frame| {
                 forums::render(frame, &session.screen, &ctx);
+                interact.overlay(frame, ctx.look, ctx.strings);
                 backdrop::finish(frame, ctx.look);
             })?;
             return Ok(self.finish_frame(tier));
@@ -1816,8 +2071,10 @@ impl Screen {
                 tier: settings.icon_tier(),
             };
             let tier = ctx.tier;
+            let interact = &self.interact;
             self.terminal.draw(|frame| {
                 mail::render(frame, &session.screen, &ctx);
+                interact.overlay(frame, ctx.look, ctx.strings);
                 backdrop::finish(frame, ctx.look);
             })?;
             return Ok(self.finish_frame(tier));
@@ -1871,6 +2128,7 @@ impl Screen {
         let strings = self.content.strings(&self.ui);
         let framed = self.content.is_framed_screen();
         let chat = self.chat.as_ref();
+        let interact = &self.interact;
         // Staff sessions add the low-security marker to every screen while the board is in that
         // mode (D27, FIX-M3-6); the status bar's marker cell draws it.
         let staff_markers = self.status_markers();
@@ -2070,6 +2328,7 @@ impl Screen {
                     (None, _) => render(frame, &view),
                 }
                 if let Some(look) = look {
+                    interact.overlay(frame, look, strings);
                     backdrop::finish(frame, look);
                 }
                 // Last: an effect rewrites the finished frame; with none running the frame is

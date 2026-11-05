@@ -24,16 +24,20 @@ pub mod editor;
 pub(crate) mod frame;
 pub(crate) mod fx;
 pub(crate) mod image;
+pub(crate) mod input;
 pub(crate) mod keys;
 pub(crate) mod layout;
 pub(crate) mod lightbar;
 pub(crate) mod pager;
+pub(crate) mod palette;
 pub(crate) mod panes;
 pub(crate) mod popup;
 pub mod strings;
 pub(crate) mod style_gallery;
 pub(crate) mod table;
 pub mod theme;
+pub(crate) mod ticker;
+pub(crate) mod toast;
 pub mod widgets;
 
 use std::path::Path;
@@ -189,6 +193,8 @@ impl Ui {
             .iter()
             .copied()
             .chain(keys::LAYOUT_KEYS.iter().copied())
+            .chain(palette::TEXT_KEYS.iter().copied())
+            .chain(toast::TEXT_KEYS.iter().copied())
             .chain(keys::PREVIEW_KEYS.iter().copied())
             .chain(keys::GALLERY_KEYS.iter().copied())
             .chain(tree.text_keys())

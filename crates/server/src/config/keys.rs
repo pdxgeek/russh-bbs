@@ -192,6 +192,20 @@ pub(crate) static KEYS: &[KeyDef] = &[
         "One|Two",
     ),
     key(
+        "board.ticker",
+        "RUSSH_BBS_BOARD_TICKER",
+        None,
+        Str,
+        "Welcome | Sysop's picks tonight",
+    ),
+    key(
+        "board.ticker_feeds",
+        "RUSSH_BBS_BOARD_TICKER_FEEDS",
+        None,
+        Bool,
+        "true",
+    ),
+    key(
         "mail.key_file",
         "RUSSH_BBS_MAIL_KEY_FILE",
         None,
