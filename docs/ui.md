@@ -533,7 +533,7 @@ Built in `m35/interaction` on today's screens. Pane dragging and split-screen ch
 
 ### Mouse
 
-- **The member's choice, off by default.** Setting `o` on the settings screen (`Mouse: on|off`, stored per member, migration `0026`, both backends). The board asks the client to report the mouse (`ESC [ ? 1000 h`, press and release with the wheel, and `? 1006 h`, SGR coordinates) in the frame that follows the setting being on, and turns it off the same way when the member turns it off. It is always turned off before the alternate screen is left, so the person's terminal is restored on log off, revocation and every other normal end; if the connection is simply gone there is nobody to tell. No motion reporting is requested (pane dragging, UI-4, adds `1002`). `ssh::interact::mouse_allowed` is the one place accessibility mode (M5) will say no; there is no accessibility mode yet.
+- **The member's choice, off by default.** Setting `o` on the settings screen (`Mouse: on|off`, stored per member, migration `0026`, both backends). The board asks the client to report the mouse (`ESC [ ? 1000 h`, press and release with the wheel, and `? 1006 h`, SGR coordinates) in the frame that follows the setting being on, and turns it off the same way when the member turns it off. It is always turned off before the alternate screen is left, so the person's terminal is restored on log off, revocation and every other normal end; if the connection is simply gone there is nobody to tell. Button-motion reports (`?1002`, for dragging the dock's divider; see [Dock](#dock-chat-beside-any-screen-and-the-divider-ui-w-d-tbd)) are requested with it; motion with no button held is not. `ssh::interact::mouse_allowed` is the one place accessibility mode (M5) will say no; there is no accessibility mode yet.
 - **A bounded parser** (`ui::input::mouse`), inside the key parser, so both transports get it. It reads SGR 1006 (`ESC [ < b ; x ; y M|m`) and the legacy X10 encoding (`ESC [ M` and three bytes). A report is at most 24 bytes; fields are digits only, at most five each, and coordinates are capped at 4096; chords with Shift, Meta or Ctrl, sideways wheels and motion with no button decode to nothing. An invalid or oversized report is **dropped, never echoed**: none of its bytes becomes a key. After a bad one the parser skips to its `M` or `m` (at most 64 more bytes, or a new `Esc`), so a stuck sequence cannot swallow the session. At most 64 events wait for the next cycle. Reports from a client that was never asked (the setting is off) are dropped by the screen.
 - **A mouse does nothing a key does not.** A click or a wheel turn becomes the **keys** the same action takes on the keyboard, applied through the ordinary path (so the menu, `core::access` and the limits run exactly as for a typed key): a click on a menu row presses that row's own hotkey (in the classic, lightbar, dashboard, wide, focus and split layouts); a click on a table row moves the cursor there with `Up`/`Down`, and a click on the row already under the cursor presses `Enter`; the wheel is `Up`/`Down` on a list (at most three a cycle) and `PageUp`/`PageDown` in the reader (one a cycle). A click in the same batch as typed keys is dropped (the target may be out of date), and only the first click of a batch counts. The compact layout has no mouse targets (it is for tiny terminals and screen readers).
 - **Where it applies.** The main menu, the forum board, thread and search tables, the members table, the forum and mail readers (wheel). Not yet: chat, the editor, doors (UI-5 adds mouse events to the door API), and the sysop and community screens (UI-4 moves them onto widgets).
@@ -561,8 +561,7 @@ Markers keep the reserved style and the status bar's left cell; toasts, the pale
 
 ### Hooks for UI-4 and later
 
-- **Pane drag**: `HitMap` regions are the place to add a `Divider` region; the terminal would then be asked for `1002` (drag) in `ssh::interact::MOUSE_ON`; `panes::Plan::divider` already has the rectangle.
-- **Split-screen chat beside any screen**: `Screen::chat` is an overlay today; the split pane needs the chat screen drawn into a `Slot` rectangle and `Interact::overlay` kept clear of it.
+- **Pane drag and split-screen chat**: done in UI-W ([Dock](#dock-chat-beside-any-screen-and-the-divider-ui-w-d-tbd)).
 - **Page and door toasts**: `Screen::toast(Kind::Page | Kind::Door, Text::Member(..))`; chat events reach the shell only while the chat screen is up, and doors have no event channel yet.
 - **Palette entries for members**: a direct-open request for a profile.
 - **Screens on widgets (UI-4)** call `ui::input::list`/`page` from their draw code, as the table and the menu do, to be clickable.
@@ -571,6 +570,34 @@ Markers keep the reserved style and the status bar's left cell; toasts, the pale
 ### Verified
 
 See the PR for the commands and results; in short, property tests on the parser (arbitrary bytes never panic, never exceed the caps, never become keys), palette no-leak tests (a missing permission removes the area, the doors, the boards or the settings pages; no permissions leaves only Log off; an empty snapshot lists nothing), toast placement against the header and status rows, click-equals-hotkey parity per layout, redraw-budget tests for the ticker, and two integration tests over a real russh client; a walk over real OpenSSH 9.6 and a raw telnet client is in [qa/ui-9-walk.md](qa/ui-9-walk.md).
+
+## Dock: chat beside any screen, and the divider (UI-W, D-TBD)
+
+Built in `m35/wiring` on UI-4's frame. Code: `ui::dock` (geometry and the frame hook), `ssh::screen::dock` (state, keys, drawing), `chat::render_pane`, `ui::input` (`DockHit`) and `ssh::interact` (`drag`).
+
+**What it is.** `Ctrl-T` opens live chat in a second pane beside the screen the member is on: the main menu and its submenus, the forums, mail, the members and community screens and the invite and queue screens. The pane is the ordinary chat screen (room list, then the conversation and its input line) with the ordinary chat session: joining, the permission checks on every request, the bounded queues and the push path are the full-screen chat's, so a line arrives with no key pressed. The member keeps browsing; the pane stays.
+
+| Key | Does |
+|---|---|
+| `Ctrl-T` | open chat beside the screen (the pane takes the keys); press it again to close the pane and leave the room |
+| `Ctrl-W` | move the keys between the screen and the pane |
+| `<` `>` | widen or narrow the pane by one column; `{` `}` by eight. Only while the screen has the keys and no text field is open (in the pane they are text) |
+| mouse | press the divider and drag (the terminal is asked for button-motion reports, `?1002`, with the mouse setting); a click on the side without the keys moves them there |
+| `Esc` in the pane's room list | close the pane |
+
+Everything works from the keyboard alone. `Ctrl-T` is offered only to a member who holds `chat.join`; without it nothing happens. A terminal too narrow for both sides (under 65 columns) gets a toast and no pane. Opening chat from the menu (`c`) is still the full-screen chat and replaces the pane.
+
+**Geometry.** The dock takes columns from the **body only**. `FrameSpec::draw` asks `dock::carve` for the body it hands to the screen, so the header, the status bar and the marker cell keep the full width and cannot be moved or covered; the screen is drawn in the narrower body and lays itself out for it (`Screen::layout_area` is also what the layout choice, the look and the paging keys use, so a table's page size matches what is drawn). The screen keeps at least 40 columns and the pane at least 24 (`dock::bounds`); a pure `dock::split` of the body is tested to give three disjoint rectangles inside it that cover it. The default pane is two fifths of the width. In the **split layout** the dock is the second column: the layout's own chat and mail panes are not drawn a second time and the menu is drawn as the lightbar (`layout::effective_docked`). Panes, toasts and the palette are drawn in the body only; toasts overlay the body's bottom rows as before.
+
+**A drag is a resize.** The mouse does nothing a key cannot (D125 (1)): a press on the divider, motion with the button held and the release set the pane width through the same `dock::resized`/`dock::drag_target` clamp the keys use, so it cannot leave the bounds; motion that did not start on the divider moves nothing, and reports are ignored when the mouse setting is off or keys arrive in the same batch.
+
+**Honest limits.** The pane shows the conversation, not a scrollback (core keeps 200 lines and has no scroll keys). It is not drawn on the editor, the settings screens, the doors or the Widgets screen; going to one closes the pane and leaves the room (`close_dock_if_stranded`) so a joined chat is never left behind a pane nobody can see. Chat is not private from the server and the pane says nothing that suggests it is. Only one chat is open at a time.
+
+**Rules that did not move.** The pane carries no reserved style (an unfocused pane has no blinking cursor, which also shows which side has the keys); chat text is the sanitized text the chat screen already draws; the marker cell is the status bar's left cell on every frame.
+
+### Verified
+
+`ui::dock::tests` (bounds at every width, the three rectangles never overlap or leave the body, the clamp, resize keys and drag targets at the edges, the request does not outlive the draw), `ssh::screen::dock_tests` (a whole `Screen`: `Ctrl-T` in **all seven layouts at 80x24 and 132x43, in Unicode mono and the ASCII tier**, the status row text and marker cell equal with and without the pane, the divider where the geometry says and on every body row, the pane names a room and nothing of it leaks left of the divider, beside the menus, forums and mail with the keys following the focus, the split layout, no permission, too narrow, a stranded dock, resize keys to both bounds with the marker intact, a mouse drag past both edges, a drag that did not start on the divider, the mouse off, a click on each side, a 1000-line flood in one small frame, a hostile line never carrying the reserved style), `ui::input::tests` (dock clicks) and `tests/chat.rs` (a real russh client: `Ctrl-T`, join from the pane, forums beside it, a line pushed into the pane, `Ctrl-T` leaves the room). The walk over real OpenSSH is [qa/ui-w-walk.md](qa/ui-w-walk.md).
 
 ## Effects and graphics (UI-8, D124)
 
