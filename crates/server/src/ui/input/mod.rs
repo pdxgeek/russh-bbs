@@ -96,15 +96,6 @@ impl HitMap {
         }
     }
 
-    /// A map holding only `dock` (tests).
-    #[cfg(test)]
-    pub(crate) fn of_dock(dock: DockHit) -> Self {
-        Self {
-            regions: Vec::new(),
-            dock: Some(dock),
-        }
-    }
-
     /// The dock of the last frame, if one was drawn.
     pub(crate) fn dock(&self) -> Option<&DockHit> {
         self.dock.as_ref()

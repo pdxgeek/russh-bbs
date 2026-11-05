@@ -464,3 +464,126 @@ fn transitions_benchmark() {
         );
     }
 }
+
+// ---- the sweep on the UI-4 screens (UI-W) -----------------------------------------------
+
+/// A member at the main menu, past the intro, with the menu's own wipe over.
+fn at_menu(motion: bool) -> Screen {
+    let mut screen = member(motion, size(), TRUECOLOR);
+    enter(&mut screen);
+    screen.apply_keys(&[Key::Enter]);
+    screen.render().unwrap();
+    screen.fx.finish();
+    screen.dirty = true;
+    screen.render().unwrap();
+    screen
+}
+
+#[test]
+fn entering_forums_mail_and_the_members_screens_starts_the_wipe_once() {
+    for (hotkey, name) in [('f', "forums"), ('m', "mail"), ('u', "members menu")] {
+        let mut screen = at_menu(true);
+        screen.apply_keys(&[Key::Char(hotkey)]);
+        screen.render().unwrap();
+        assert_eq!(
+            screen.fx.running_kind(),
+            Some(Kind::Wipe),
+            "{name} starts the wipe"
+        );
+        assert!(screen.next_fx_due().is_some(), "{name}: a frame is due");
+        // Redrawing the same screen (a key inside it, new data) does not start it again.
+        screen.fx.finish();
+        screen.dirty = true;
+        screen.render().unwrap();
+        assert_eq!(screen.next_fx_due(), None, "{name}: once");
+    }
+}
+
+#[test]
+fn the_sweep_on_forums_and_mail_is_off_with_motion_off_and_in_accessibility_mode() {
+    for hotkey in ['f', 'm'] {
+        let mut still = at_menu(false);
+        still.apply_keys(&[Key::Char(hotkey)]);
+        still.render().unwrap();
+        assert_eq!(still.fx.running_kind(), None);
+        assert_eq!(still.next_fx_due(), None, "no timer at all");
+
+        let mut plain = at_menu(true);
+        plain.set_accessible(true);
+        plain.apply_keys(&[Key::Char(hotkey)]);
+        plain.render().unwrap();
+        assert_eq!(
+            plain.fx.running_kind(),
+            None,
+            "accessibility mode is static"
+        );
+        assert_eq!(plain.next_fx_due(), None);
+    }
+}
+
+#[test]
+fn the_final_frame_of_the_sweep_on_forums_and_mail_is_the_static_screen() {
+    for hotkey in ['f', 'm'] {
+        let mut still = at_menu(false);
+        still.apply_keys(&[Key::Char(hotkey)]);
+        still.render().unwrap();
+        let want = repaint(&mut still);
+
+        let mut moving = at_menu(true);
+        moving.apply_keys(&[Key::Char(hotkey)]);
+        moving.render().unwrap();
+        moving.tick_fx(clock_of(&moving) + Duration::from_secs(5));
+        assert_eq!(moving.next_fx_due(), None);
+        let got = repaint(&mut moving);
+        let strip = |bytes: Vec<u8>| {
+            String::from_utf8_lossy(&bytes)
+                .chars()
+                .filter(|c| !c.is_ascii_digit())
+                .collect::<String>()
+        };
+        assert_eq!(strip(got), strip(want), "{hotkey}");
+    }
+}
+
+#[test]
+fn a_sweep_frame_on_forums_changes_colour_only_and_never_the_status_row() {
+    let mut screen = at_menu(true);
+    screen.apply_keys(&[Key::Char('f')]);
+    let static_text = {
+        let mut still = at_menu(false);
+        still.apply_keys(&[Key::Char('f')]);
+        still.render().unwrap();
+        let bytes = repaint(&mut still);
+        strip_sgr(&String::from_utf8_lossy(&bytes))
+    };
+    screen.render().unwrap();
+    let at = clock_of(&screen) + Duration::from_millis(100);
+    screen.tick_fx(at);
+    let bytes = repaint(&mut screen);
+    let text = strip_sgr(&String::from_utf8_lossy(&bytes));
+    // The words are the same mid-sweep (a client reading the text sees the whole screen).
+    let words = |s: &str| {
+        s.split_whitespace()
+            .filter(|w| !w.chars().any(|c| c.is_ascii_digit()))
+            .collect::<Vec<_>>()
+            .join(" ")
+    };
+    assert_eq!(words(&text), words(&static_text));
+}
+
+fn strip_sgr(text: &str) -> String {
+    let mut out = String::new();
+    let mut chars = text.chars().peekable();
+    while let Some(ch) = chars.next() {
+        if ch == '\u{1b}' {
+            for next in chars.by_ref() {
+                if next.is_ascii_alphabetic() {
+                    break;
+                }
+            }
+        } else {
+            out.push(ch);
+        }
+    }
+    out
+}

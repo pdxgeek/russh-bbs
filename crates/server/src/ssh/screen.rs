@@ -1971,15 +1971,33 @@ impl Screen {
         let key = match (&self.content, menu) {
             (Content::Member(_), Some(page)) => ScreenKey::Menu(page.title, page.depth),
             (Content::Member(_), None) if view.heading == LOGIN_HEADING => ScreenKey::Login,
+            (Content::Member(_), None)
+                if self.content.members_view().is_some()
+                    || self.content.community_view().is_some()
+                    || self.content.queue_view().is_some() =>
+            {
+                ScreenKey::Framed
+            }
+            (Content::Forums(_), _) => ScreenKey::Forums,
+            (Content::Mail(_), _) => ScreenKey::Mail,
             _ => ScreenKey::Other,
         };
+        self.start_fx_for(key, look, now);
+    }
+
+    /// The effect for `key`, if it is a change of screen. The sweep is colour only (UI-8), so it
+    /// is as safe on a table as on a menu; the gate, the budgets and the slow-link stop are the
+    /// engine's.
+    fn start_fx_for(&mut self, key: ScreenKey, look: Option<Look>, now: Instant) {
         if self.fx_seen == Some(key) {
             return;
         }
         self.fx_seen = Some(key);
         let kind = match key {
             ScreenKey::Login => Some(fx::Kind::Intro),
-            ScreenKey::Menu(..) => Some(fx::Kind::Wipe),
+            ScreenKey::Menu(..) | ScreenKey::Forums | ScreenKey::Mail | ScreenKey::Framed => {
+                Some(fx::Kind::Wipe)
+            }
             ScreenKey::Other => None,
         };
         let size_ok = kind != Some(fx::Kind::Intro)
@@ -1996,6 +2014,20 @@ impl Screen {
                 self.fx.finish();
             }
         }
+    }
+
+    /// For the forum and mail screens: start the sweep when they were just entered and return
+    /// the frame to draw (`None` when no effect runs, which is the static screen).
+    fn early_fx(&mut self) -> Option<(fx::Kind, f32)> {
+        let (key, settings) = match &self.content {
+            Content::Forums(session) => (ScreenKey::Forums, *session.flow.settings()),
+            Content::Mail(session) => (ScreenKey::Mail, *session.flow.settings()),
+            _ => return None,
+        };
+        let now = self.fx_clock.unwrap_or_else(Instant::now);
+        let look = self.ui.look(&settings, self.layout_area(), self.depth());
+        self.start_fx_for(key, Some(look), now);
+        self.fx.frame(now)
     }
 
     /// Draw whatever changed since the last frame, once. `None` when nothing did.
@@ -2184,6 +2216,9 @@ impl Screen {
                 .map_or(0, |elapsed| elapsed.as_secs()),
         );
         let cursor_dark = self.motion_frame();
+        // The forum and mail screens draw before the common path below, so their sweep (UI-8
+        // on the UI-4 screens) is started here and applied last in their own draw.
+        let early_fx = self.early_fx();
         let area_art = self
             .content
             .style(&self.ui)
@@ -2225,6 +2260,7 @@ impl Screen {
                     )
                 });
             let request = self.dock_request();
+            let title_of_board = self.ui.board().name();
             let (drawn, _) = crate::ui::dock::with(request, || {
                 self.terminal.draw(|frame| {
                     forums::render(frame, &session.screen, &ctx);
@@ -2233,6 +2269,15 @@ impl Screen {
                     }
                     interact.overlay(frame, ctx.look, ctx.strings);
                     backdrop::finish(frame, ctx.look);
+                    if let Some((kind, t)) = early_fx {
+                        fx::Overlay {
+                            kind,
+                            t,
+                            look: ctx.look,
+                            title: title_of_board,
+                        }
+                        .apply(frame);
+                    }
                 })
             });
             drawn?;
@@ -2275,6 +2320,7 @@ impl Screen {
                     )
                 });
             let request = self.dock_request();
+            let title_of_board = self.ui.board().name();
             let (drawn, _) = crate::ui::dock::with(request, || {
                 self.terminal.draw(|frame| {
                     mail::render(frame, &session.screen, &ctx);
@@ -2283,6 +2329,15 @@ impl Screen {
                     }
                     interact.overlay(frame, ctx.look, ctx.strings);
                     backdrop::finish(frame, ctx.look);
+                    if let Some((kind, t)) = early_fx {
+                        fx::Overlay {
+                            kind,
+                            t,
+                            look: ctx.look,
+                            title: title_of_board,
+                        }
+                        .apply(frame);
+                    }
                 })
             });
             drawn?;
@@ -2694,6 +2749,12 @@ enum ScreenKey {
     Login,
     /// A menu: its title key and depth (the cursor is not part of it).
     Menu(&'static str, usize),
+    /// The forum screens, from the menu to the way back (moving inside them is not a change).
+    Forums,
+    /// The mail screens, likewise.
+    Mail,
+    /// A members, community or queue screen, from the menu to the way back.
+    Framed,
     Other,
 }
 

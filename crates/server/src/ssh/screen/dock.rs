@@ -20,7 +20,7 @@
 use ratatui::Frame;
 use ratatui::layout::Rect;
 use russh_bbs_core::access::{Permission, PermissionCheck};
-use russh_bbs_core::chat::{ChatPage, ChatRequest, ChatScreen};
+use russh_bbs_core::chat::{ChatRequest, ChatScreen};
 
 use super::{Content, KeyEffects, Screen};
 use crate::chat::{self, ChatCtx};
@@ -313,13 +313,6 @@ impl Screen {
                 self.dirty = true;
             }
         }
-    }
-
-    /// Whether the chat page in the pane is a room (it has a text field).
-    pub(super) fn dock_chat_in_room(&self) -> bool {
-        self.chat
-            .as_ref()
-            .is_some_and(|chat| matches!(chat.page(), ChatPage::Room(_)))
     }
 }
 
