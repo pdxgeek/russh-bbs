@@ -12,7 +12,7 @@
 use ratatui::Frame;
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
-use russh_bbs_core::icons::Tier;
+use russh_bbs_core::icons::{SecurityMarker, Tier};
 use russh_bbs_core::sanitize::SingleLine;
 use russh_bbs_core::terminal_settings::LayoutId;
 use russh_bbs_door::{Canvas, ColorDepth, Composite, DoorPalette, DoorSurface};
@@ -21,7 +21,7 @@ use super::screen::{DoorsScreen, State};
 use super::strings;
 use crate::settings::{self, BoxSize, Look};
 use crate::ui::chrome;
-use crate::ui::classic::{MENU_MARKERS, styles};
+use crate::ui::classic::styles;
 use crate::ui::keys;
 use crate::ui::strings::StringTable;
 
@@ -55,6 +55,9 @@ pub(crate) struct DrawCtx<'a> {
     pub(crate) strings: &'a StringTable,
     pub(crate) look: Look,
     pub(crate) tier: Tier,
+    /// The markers the status row's marker cell shows: the session's own (`LOW-SECURITY` on a
+    /// staff session of a board with telnet on), never the door's. Empty reserves no row.
+    pub(crate) markers: &'a [SecurityMarker],
 }
 
 /// A door's palette from the member's theme: the theme's colors when color is on, weights only
@@ -78,7 +81,7 @@ fn clean(text: &str) -> String {
 
 /// Draw the doors screens.
 pub(crate) fn render(frame: &mut Frame<'_>, screen: &DoorsScreen, ctx: &DrawCtx<'_>) {
-    let (content, status) = chrome::split_status(frame.area(), &MENU_MARKERS);
+    let (content, status) = chrome::split_status(frame.area(), ctx.markers);
     let size = match &screen.state {
         State::Playing(_) => door_box(ctx.look.layout()),
         State::Busy | State::List => BoxSize::MENU,
@@ -113,7 +116,7 @@ pub(crate) fn render(frame: &mut Frame<'_>, screen: &DoorsScreen, ctx: &DrawCtx<
         size,
     );
     if let Some(row) = status {
-        chrome::render_status(frame, row, &MENU_MARKERS, ctx.tier, ctx.strings);
+        chrome::render_status(frame, row, ctx.markers, ctx.tier, ctx.strings);
     }
 }
 
