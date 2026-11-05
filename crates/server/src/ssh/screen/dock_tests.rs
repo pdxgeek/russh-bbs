@@ -2,7 +2,14 @@
 //! 80x24 and 132x43, in mono and in the ASCII tier; the divider by keys and by mouse; the
 //! marker and the status row; the redraw budget. The terminal output is read back through a
 //! small grid reader so the tests can see the marker cell's attributes.
-#![allow(clippy::unwrap_used)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::panic,
+    clippy::similar_names,
+    clippy::cast_possible_truncation,
+    clippy::items_after_statements,
+    clippy::expect_used
+)]
 
 use russh_bbs_core::access::{Permission, Slug, Snapshot, Via};
 use russh_bbs_core::chat::{ChatResponse, Entered, Event, Line, Room, RoomId, clean_line};
@@ -174,7 +181,7 @@ fn settings(layout: LayoutId, tier: Tier, color: bool) -> TerminalSettings {
 /// A signed-in member at the main menu.
 fn at_menu(settings: TerminalSettings, size: (u32, u32)) -> Screen {
     let mut screen = member_with(
-        &Permission::ALL,
+        Permission::ALL,
         settings,
         PtySize::from_request(size.0, size.1),
     );

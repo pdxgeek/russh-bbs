@@ -134,10 +134,51 @@ def capture(port, key, out, size):
     term.close()
 
 
+def intro(port, key, out, size, name):
+    """The login intro: frames every ~110 ms for 2.6 s (no key), saved at a few moments."""
+    import select
+    import time
+
+    cols, rows = size
+    term = Term(port, key, cols, rows)
+    frames, started = [], time.time()
+    while time.time() - started < 2.6:
+        ready, _, _ = select.select([term.fd], [], [], 0.05)
+        if ready:
+            try:
+                data = os.read(term.fd, 65536)
+            except OSError:
+                break
+            term.raw += data
+            term.stream.feed(data)
+        frames.append((time.time() - started, term.text(), len(term.raw)))
+        if frames and len(frames) % 4 == 0 and time.time() - started > 0:
+            pass
+    # Re-run to take stills at fixed moments (frames above only prove it animates).
+    term.close()
+    distinct = len({t for _, t, _ in frames})
+    term = Term(port, key, cols, rows)
+    t0 = time.time()
+    for label, at in (("a", 0.45), ("b", 0.9), ("c", 1.4), ("d", 3.0)):
+        while time.time() - t0 < at:
+            ready, _, _ = select.select([term.fd], [], [], 0.02)
+            if ready:
+                data = os.read(term.fd, 65536)
+                term.raw += data
+                term.stream.feed(data)
+        snap(term, out, f"intro-{name}-{label}")
+    print(name, "distinct text frames:", distinct, "bytes:", len(term.raw))
+    term.send("\x03", quiet=0.3)
+    term.close()
+
+
 if __name__ == "__main__":
     mode = sys.argv[1]
     if mode == "claim":
         claim(int(sys.argv[2]), sys.argv[3], sys.argv[4])
+    elif mode == "intro":
+        size = tuple(int(n) for n in sys.argv[6].split("x"))
+        intro(int(sys.argv[2]), sys.argv[3], sys.argv[4], size, sys.argv[5])
     elif mode == "capture":
         size = tuple(int(n) for n in (sys.argv[5] if len(sys.argv) > 5 else "80x24").split("x"))
         capture(int(sys.argv[2]), sys.argv[3], sys.argv[4], size)

@@ -1430,7 +1430,6 @@ impl Screen {
     /// is not the chat).
     fn main_member_input(&self) -> bool {
         match &self.content {
-            Content::Forums(_) | Content::Mail(_) => false,
             Content::Member(_) => self
                 .content
                 .members_view()
@@ -1443,7 +1442,12 @@ impl Screen {
                         )
                     })
                 }),
-            Content::Room(_) | Content::Claim(_) | Content::Doors(_) | Content::Limited(_) => false,
+            Content::Forums(_)
+            | Content::Mail(_)
+            | Content::Room(_)
+            | Content::Claim(_)
+            | Content::Doors(_)
+            | Content::Limited(_) => false,
         }
     }
 

@@ -307,11 +307,11 @@ impl Screen {
         if !self.dock_active() {
             return;
         }
-        if let Some(width) = dock::drag_target(body, column) {
-            if self.dock.width != Some(width) {
-                self.dock.width = Some(width);
-                self.dirty = true;
-            }
+        if let Some(width) = dock::drag_target(body, column)
+            && self.dock.width != Some(width)
+        {
+            self.dock.width = Some(width);
+            self.dirty = true;
         }
     }
 }
