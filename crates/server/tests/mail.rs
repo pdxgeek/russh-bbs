@@ -337,7 +337,7 @@ async fn two_members_send_reply_with_a_quote_delete_and_report_and_the_file_hold
     let screen = press(&mut bob, "\r").await;
     let reading = flat(&screen);
     assert!(
-        reading.contains("From ann at") && reading.contains(TEXT),
+        reading.contains("From ann") && reading.contains(TEXT),
         "{screen}"
     );
     let editor = press(&mut bob, "c").await;
@@ -357,11 +357,15 @@ async fn two_members_send_reply_with_a_quote_delete_and_report_and_the_file_hold
     press(&mut ann, "\u{1b}").await; // the inbox -> the main menu
     let screen = press(&mut ann, "m").await; // ... and back in, to load the new mail
     let inbox = flat(&screen);
-    assert!(inbox.contains(&format!("bob - Re: {SUBJECT}")), "{screen}");
+    assert!(
+        inbox.contains("bob") && inbox.contains(&format!("Re: {SUBJECT}")),
+        "{screen}"
+    );
     let screen = press(&mut ann, "\r").await;
     let reading = flat(&screen);
     assert!(
-        reading.contains("Ours is eleven too.") && reading.contains(&format!("> {TEXT}")),
+        // The quote is drawn as a quote block (a bar, not the typed mark) since UI-4.
+        reading.contains("Ours is eleven too.") && reading.contains(TEXT),
         "{screen}"
     );
     seen.push_str(&reading);

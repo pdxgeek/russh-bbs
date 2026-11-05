@@ -330,7 +330,7 @@ async fn a_member_browses_the_list_searches_and_opens_a_profile() {
     send(&mut channel, "\r").await;
     let found = full(&mut channel).await;
     assert!(
-        found.contains("1. bob") && !found.contains("alice"),
+        found.contains("1 bob") && !found.contains("alice"),
         "{found}"
     );
     send(&mut channel, "/zzz\r").await;
@@ -340,7 +340,7 @@ async fn a_member_browses_the_list_searches_and_opens_a_profile() {
             .contains("No member's handle starts with that.")
     );
     send(&mut channel, "c").await;
-    assert!(full(&mut channel).await.contains("1. alice"));
+    assert!(full(&mut channel).await.contains("1 alice"));
 
     // Esc leaves the list, then the submenu.
     send(&mut channel, "\u{1b}").await;
@@ -367,7 +367,7 @@ async fn a_long_list_pages_forward_and_back_without_skipping() {
     send(&mut channel, "n").await;
     let second = full(&mut channel).await;
     assert!(
-        second.contains("1. user09") && second.contains("5. user13"),
+        second.contains("1 user09") && second.contains("5 user13"),
         "{second}"
     );
     assert!(second.contains("Page 2"), "{second}");
@@ -378,7 +378,7 @@ async fn a_long_list_pages_forward_and_back_without_skipping() {
     send(&mut channel, "p").await;
     let back = full(&mut channel).await;
     assert!(
-        back.contains("Page 1") && back.contains("1. user00"),
+        back.contains("Page 1") && back.contains("1 user00"),
         "{back}"
     );
     rig.server.shutdown().await;
@@ -658,7 +658,7 @@ async fn losing_members_view_closes_the_screen_on_the_next_key() {
     rig.member("bob").await;
     let (_session, mut channel) = at_menu(&rig, &key).await;
     send(&mut channel, "ul").await;
-    assert!(full(&mut channel).await.contains("2. bob"));
+    assert!(full(&mut channel).await.contains("2 bob"));
 
     let taken = rig
         .revoke(
@@ -684,7 +684,7 @@ async fn losing_members_view_closes_the_screen_on_the_next_key() {
     send(&mut channel, "l").await;
     let still = full(&mut channel).await;
     assert!(
-        !still.contains("Page 1") && !still.contains("1. alice"),
+        !still.contains("Page 1") && !still.contains("1 alice"),
         "{still}"
     );
 
@@ -692,6 +692,6 @@ async fn losing_members_view_closes_the_screen_on_the_next_key() {
     send(&mut channel, "x").await;
     assert!(full(&mut channel).await.contains("[l] Member list"));
     send(&mut channel, "l").await;
-    assert!(full(&mut channel).await.contains("1. alice"));
+    assert!(full(&mut channel).await.contains("1 alice"));
     rig.server.shutdown().await;
 }
