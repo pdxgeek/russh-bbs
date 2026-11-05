@@ -239,3 +239,16 @@ Built in `m35/widgets` (D122). The reference is [ui.md](ui.md#widgets-ui-10); wh
 - **Launch set: 17 widgets.** Built: who's online, last callers, new posts (as active threads since the last call, per board), unread mail, a chat room list (rooms and how many are in each, not a live conversation), today's one-liners, the graffiti wall, the current poll, a board activity chart (threads last posted per day over 14 days, a braille area chart), a clock with a month calendar, doors with their seasons, feed headlines (the news ticker, as a list), the sysop's message of the day, your credits (a balance and a braille chart), plus identity, a quote of the day and a staff status gauge. **Not built:** the calendar's "event scheduler next events" (the scheduler only holds system jobs), real door *standings* (the framework has no call for them), a live chat sidebar and an auto-scrolling news ticker (UI-4/UI-8/UI-9).
 - **Cells, not slots.** The named `Slot`s are gone; the layouts make generic cells and the member's ordered list fills them (a widget takes the first cell that holds its minimum size; a widget with nothing to show takes none). The dashboard grid is 2 by 3 at 80x24 and 3 by 4 at 132x43.
 - **Per layout, not per slot.** Members edit one ord
+
+## UI-8 implementation notes
+
+Built in `m35/effects-graphics` (D-TBD). The reference is [ui.md](ui.md#effects-and-graphics-ui-8-d-tbd); what differs from the plan above:
+
+- **Built as engine and components.** UI-4 had not started, so effects are wired into the login, the menu transition and the logoff only. The canvases, charts, image-to-cells and the other effects (fade, glow, gradient, typewriter on a screen) are API for UI-4 and UI-10.
+- **"A typewriter reveal for the login banner"** became the **animated intro** (plasma, starfield and big letters, about 1.8 s) on the login screen, and the typewriter became the **typed goodbye** on the main screen after `Log off`, because that session ends in the same cycle.
+- **"A short transition between menus"** is a colour sweep that changes no symbol, not a wipe that hides cells (an early version hid cells and broke tests that read the screen).
+- **Dashboard charts** exist as widgets (`ui/charts`) but no screen shows one: the dashboard is UI-4's, and UI-10's widgets still use their own `widgets/gfx.rs` (see coordination).
+- **No effects crate.** `tachyonfx` was considered and not taken (D47 reason in the decision).
+- **Budgets the plan did not name:** a byte budget per effect and a slow-link switch-off, both found necessary by measuring (truecolor first cost about 5 times the bytes).
+- **Not done:** an animated intro over UI-3's art (UI-3 has not merged; the intro draws the board name in its own font instead, as the plan's fallback says); the sysop logo upload and avatars (no screen or setting exists, so `ui/image` has no caller).
+

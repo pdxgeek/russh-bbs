@@ -357,6 +357,60 @@ Every figure comes from a service the screens already use: last callers, one-lin
 - **Real OpenSSH 9.6** against the real binary (dashboard, wide, focus and split layouts, the Widgets screen with locks, edits that persist across a reconnect, the ASCII tier in mono, and the marker cell with the `LOW-SECURITY` marker on): [qa/ui-10-walk.md](qa/ui-10-walk.md), with PNGs in [qa/ui-10-screens/](qa/ui-10-screens/). The walk found a defect older than this slice and fixed it here: one ssh key sign-in recorded **two** logins (`auth_publickey` started the whole member session to check the handle and the shell started it again), so "last login" and the "since your last call" mark were always the current sign-in; `MemberSessions::handle_for_key` now checks the key without recording a login, with a regression test that fails on the old code.
 - **Not built / not verified:** drag-to-resize and mouse (UI-9); widgets in accessibility mode as their own screen (M5); the other screens inside the panes (UI-4); real door standings (the doors widget shows seasons: the door framework has no standings call, noted in coordination); live updates of chat lines in a widget (the chat widget shows room counts); other terminal emulators, telnet, a screen reader.
 
+## Effects and graphics (UI-8, D-TBD)
+
+Built in `m35/effects-graphics`, as **engine and components** on today's screens (UI-4 has not started, so the reader, chat, mail and community screens were not touched). Effects are wired into three places only: the login, the menu transition and the logoff. Everything else is an API in `crates/server/src/ui` for UI-4 and UI-10 to use. Walked over OpenSSH 9.6 in [qa/ui-8-walk.md](qa/ui-8-walk.md).
+
+### What exists
+
+| Module | What it is |
+|---|---|
+| `ui/fx` | The effect engine: `Fx` (state, ticker, budget), `Kind` (`Intro`, `Wipe`, `Reveal`), `Overlay` (rewrites a finished frame), `allowed` (the one motion gate). `fx::effects` has `dissolve`, `fade`, `wipe`, `typewriter`, `glow` and `gradient_text`. `fx::intro` is the login scene; `fx::font` its 5x5 letters. |
+| `ui/canvas` | `HalfBlock` (two square pixels per cell, each its own colour) and `Braille` (2x4 dots per cell, one colour per cell), with `Paint { depth, ascii }`. |
+| `ui/charts` | `Sparkline`, `BarChart`, `LineChart` (braille line, or filled for an area chart) and `Gauge`, coloured from palette roles through `ChartTheme::of(look)`. |
+| `ui/image` | `decode_png(bytes, &Limits, background)` to a `Raster`, then `to_half_blocks(w, h)` or `to_braille(w, h)`. |
+
+### Rules every effect keeps
+
+- **The last frame is the static screen.** A screen draws as it always did; an effect is an `Overlay` that rewrites the finished frame, and at its end (and whenever none runs) nothing rewrites it. A test compares the bytes of a screen after the intro with the same screen drawn with motion off.
+- **Motion off is one static frame.** `fx::allowed(look, accessible)` is the single gate: the member's setting, the board's and the style's ceilings (all in `Look::motion()`), and the plain accessibility path (M5; always off, passed as `false` until M5 exists). When it says no, nothing starts, `Screen::next_fx_due()` is `None`, so the shell arms no timer and draws no extra frame.
+- **A key finishes the effect at once.** `Screen::apply_keys` ends a running effect before handling the key, which then acts as usual; a resize ends it too. An effect never delays input.
+- **Bounded cost, three ways** (`fx::Budget`): at most 28 frames for one effect, at most 96 effect frames in any minute, and at most **160 KiB** sent for one effect (it ends early and the static frame follows). An effect frame is one ordinary redraw cycle, so the shell's D49 cap (50 ms) still holds; the effect interval is 80 ms (12 frames a second at most). Progress comes from the clock, so a slow cycle drops frames; it never stretches the effect.
+- **A slow link ends effects.** If handing a frame to the connection takes longer than 250 ms (`SLOW_SEND` in the shell), the shell calls `Screen::slow_link()`: the effect ends and none runs for the rest of the session, so no animation frame ever waits in front of the next key.
+- **The status row and the marker cell are never touched.** An effect's `Stage` is the frame without its last row, and any cell wearing the reserved style (bold plus reverse) is skipped as well. Effects write only blanks, fixed ASCII, block glyphs and colours they compute; none writes the reserved style or a marker glyph or delimiter. Tests run every effect at 21 moments in every depth and tier and compare the whole status row, and scan for the reserved style and the six reserved codepoints.
+- **No terminal graphics protocol is ever sent.** Everything is styled cells; the walk counted zero sixel, kitty and iTerm sequences.
+
+### Where effects run
+
+| Where | Effect | Notes |
+|---|---|---|
+| Login screen | The **intro**, about 1.8 s | An original scene: a two-tone plasma (256 colours and up), a flying starfield, and the board's name in big letters that light up one by one with a shine, a shadow and an underline that draws itself; it then dissolves cell by cell into the login screen. Skippable by any key. Not drawn on a terminal under 40x12. The scene is at most 120x36 cells, centred. Drawn in at most 256 colours even on truecolor (see Cost). With no colour or in the ASCII tier the name is drawn as spaced capitals instead, since big letters would be a smudge there. |
+| Entering a menu | A **colour sweep**, 240 ms | The part ahead of a bright front is dimmed; **no symbol changes**, so a client that reads the text mid-sweep sees the whole screen (an earlier version hid cells and broke tests that read the screen). Below 256 colours it dims with the terminal's dim attribute and has no front bar. |
+| Logoff | The goodbye **typed out** on the main screen, about 0.9 s | `Log off` ends the session at once, so the goodbye is the text printed after the alternate screen is left. `Screen::leave_typed` cuts it into 12 chunks; the shell prints one per tick, and any key (or the connection closing) prints the rest at once. The chunks put together are exactly the text `leave` prints. |
+
+### Cost (measured)
+
+Bytes for one whole intro at truecolor, from the benchmark (`cargo test -p russh-bbs-server --lib effects_benchmark -- --ignored --nocapture`, the clock driven so each frame is drawn for its exact moment) and checked over a real ssh session:
+
+| Window | Intro total | Mean / largest frame |
+|---|---|---|
+| 80x24 | about 76 KB | 3.3 KB / 8 KB |
+| 132x43 | about 135 KB | 5.9 KB / 18 KB |
+| 200x60 | about 138 KB | 6.0 KB / 18 KB (the scene stays 120x36) |
+
+An earlier draft drew the scene in full truecolor and sent about 5 times that: every cell's colour changed every frame, each with two 16-byte sequences. The scene now uses the 256-colour palette, 2x2-pixel plasma blocks, seven brightness steps and a field that moves every 200 ms, so most cells are unchanged between frames. The menu sweep costs about 7 KB (80x24) to 12 KB (132x43) in total; the typed goodbye is plain text (tens of bytes). Frame time is under 1 ms in a release build (see the PR for the table); a debug build is slower.
+
+### Canvases, charts and images
+
+- **Canvases** draw at every depth and in the ASCII tier. Truecolor, 256 and 16 colours draw `▀ ▄ █` or braille with the colour quantised to the depth; mono draws shades (`░▒▓█`) for half-blocks and the braille glyph with no colour; the ASCII tier draws a brightness ramp (` .:-=+*#%@`) or a dot-density ramp (` .:+#`) and never a block or braille glyph (D18).
+- **Charts** take their colours from palette roles (accent for lines and bars, muted for tracks, success, warning and error for a gauge's tone) and have no way to ask for bold or reverse. A braille dot is drawn in the RGB the accent role stands for. **Labels are content**: every label goes through the shared sanitizer and is clipped to its column (a test feeds escape sequences and the reserved glyphs).
+- **Image to cells** is for sysop-uploaded files only (a logo, a member avatar once a sysop enables avatars). Nothing here opens a URL, so there is no SSRF surface. The decoder is the `png` crate (pure Rust, image-rs, MIT or Apache-2.0); **only PNG** is accepted (a sysop converts a JPEG once). `Limits::default()`: 256 KiB of file, 1024 pixels a side, 1,000,000 pixels, 250 ms to decode, and a decoder memory cap derived from the pixel cap. The IHDR is read **by hand before the decoder runs**, so a header that claims a huge picture is refused without any pixel buffer; the cap is checked again on what the decoder parsed. Truncated, corrupt, interlaced-with-no-data and "bomb" files are errors, never panics. `decode_png` is CPU work bounded by the caps; call it on a blocking thread.
+- **Not built, and why.** No screen draws a chart yet: the dashboard (UI-4) and the widget system (UI-10) will. UI-10's `widgets/gfx.rs` was written before this slice and has its own sparkline, bars and braille area chart; it should move to `ui/charts` and `ui/canvas` (noted in [coordination.md](coordination.md)). No sysop screen uploads a logo yet, so `ui/image` has no caller; its tests are the only exercise. The `Wipe` and `Reveal` effects on other screens, and `glow` on the lightbar's selected row, are API only.
+
+### Verified
+
+Unit tests (`ui/fx`, `ui/canvas`, `ui/charts`, `ui/image`, `ssh/screen/fx_tests.rs`) cover the gate, timing, the three budgets, motion off, the final frame, the interrupting key, the marker cell and reserved style, every tier and depth, goldens for the canvases and charts, hostile board names and labels, and hostile images. A real OpenSSH 9.6 walk captured the intro, an interrupting key, the menu sweep, the typed goodbye and a motion-off session ([qa/ui-8-walk.md](qa/ui-8-walk.md)). **Not verified:** terminals other than xterm-like ones (the walk used `pyte`), a real slow link (the slow-send guard is unit-tested through `slow_link` but no throttled connection was run), telnet, and a screen reader.
+
 ## Forum screens (M3-E, D83)
 
 `server::forums` draws four screens in the framed content box with the reserved status row: the **board list** (`Up`/`Down` and `Enter`, `1`-`9` to open, `s` search, `n` new board for `forum.manage`), the **thread list** (`w` write, `n`/`b` next/previous page, `s` search, `a` let a member into a restricted board for `forum.manage`), the **reader** and **search results**. The reader shows one post at a time and pages it with the pager (`Space`/`Enter` next page, `b` page back; with pause off the first screen is shown and the screen says how many lines are not); `n`/`p` move between posts, `r` replies, `c` replies quoting the post, `x` (then `y`) removes it for `forum.moderate`, `Esc` or `q` goes back. Posting opens the M3-B editor with the draft for that board or thread; a new thread asks for its subject first. Every key is described on its screen in words. Ctrl-C and Ctrl-D log off from every forum screen, from the editor after storing its changed draft. Member text (subjects, handles, bodies, snippets) is drawn only inside the content box in plain style; a test draws hostile names, subjects and 3,000-character lines at three sizes and asserts that nothing outside the status row carries the marker style. No forum screen shows a privacy notice or a lock (D78).
