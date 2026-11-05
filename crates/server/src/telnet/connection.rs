@@ -237,6 +237,7 @@ impl<D: Backend> Connection<D> {
                         .await;
                 let flow =
                     MemberFlow::new(&start.handle, access, start.previous_login, start.settings)
+                        .with_menu_tree(self.ui.menus().tree())
                         .signed_in_with_password()
                         .over_telnet()
                         .with_key_notices(russh_bbs_core::keys::notice_lines(&notices));

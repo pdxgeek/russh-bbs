@@ -35,6 +35,7 @@ pub(crate) mod popup;
 pub(crate) mod screens;
 pub mod strings;
 pub(crate) mod style_gallery;
+pub mod sysop_menus;
 pub(crate) mod table;
 pub mod theme;
 pub(crate) mod ticker;
@@ -86,6 +87,8 @@ pub struct Ui {
     widgets: widgets::WidgetSettings,
     /// Where theme packs are exported to, imported from and installed (UI-7).
     packs: Option<PackDirs>,
+    /// The board's `menus.toml` and pages (UI-6), reloadable.
+    menus: sysop_menus::MenusHandle,
 }
 
 /// The directories theme packs use, all beside the host key like `themes/` and `art/`.
@@ -198,6 +201,7 @@ impl Ui {
             .chain(toast::TEXT_KEYS.iter().copied())
             .chain(keys::PREVIEW_KEYS.iter().copied())
             .chain(keys::GALLERY_KEYS.iter().copied())
+            .chain(keys::MENUS_KEYS.iter().copied())
             .chain(tree.text_keys())
             .chain(widgets::TEXT_KEYS.iter().copied())
             .chain(widgets::screen::TEXT_KEYS.iter().copied())
@@ -221,6 +225,7 @@ impl Ui {
             art: art::ArtSet::bundled().map_err(|error| UiError::Art(error.to_string()))?,
             widgets: widgets::WidgetSettings::default(),
             packs: None,
+            menus: sysop_menus::MenusHandle::built_in(),
         })
     }
 
@@ -236,6 +241,34 @@ impl Ui {
     #[must_use]
     pub fn pack_dirs(&self) -> Option<&PackDirs> {
         self.packs.as_ref()
+    }
+
+    /// The same screens with the sysop's `menus.toml` and `pages/` from `dir` (UI-6). A missing
+    /// file is the built-in menu; a bad one is logged and refused, and the board still boots.
+    #[must_use]
+    pub fn with_menu_dir(mut self, dir: &Path) -> Self {
+        self.menus = sysop_menus::MenusHandle::with_dir(dir, self.strings());
+        self
+    }
+
+    /// The menu and pages in force now. New sessions start from `menus().tree()`.
+    #[must_use]
+    pub fn menus(&self) -> Arc<sysop_menus::MenuSetup> {
+        self.menus.get()
+    }
+
+    /// Whether the board has a data directory for `menus.toml` (otherwise there is nothing to
+    /// reload).
+    #[must_use]
+    pub fn has_menu_dir(&self) -> bool {
+        self.menus.dir().is_some()
+    }
+
+    /// Read `menus.toml` and the pages again and make the result current. `None` without a data
+    /// directory; otherwise the new setup and whether it differs from the old one.
+    #[must_use]
+    pub fn reload_menus(&self) -> Option<(Arc<sysop_menus::MenuSetup>, bool)> {
+        self.menus.reload(self.strings())
     }
 
     /// The loaded themes.

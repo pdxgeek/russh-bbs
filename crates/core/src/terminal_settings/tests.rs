@@ -1413,3 +1413,109 @@ fn keys_on_the_packs_screen_make_requests_for_the_row_under_the_cursor() {
     f.input(MemberInput::Down);
     assert_eq!(f.input(MemberInput::Char('i')), MemberEffect::Stay);
 }
+
+#[test]
+fn the_menus_and_pages_screen_is_a_sysop_action_and_only_for_themes_manage() {
+    use crate::menu::{MenuToolsListing, MenuToolsRequest, PageRow};
+    // A member never sees or reaches the item.
+    let mut member_flow = flow(TerminalSettings::default().with_tier(Tier::Ascii), None);
+    press(&mut member_flow, "x");
+    press(&mut member_flow, "om");
+    assert!(member_flow.menu_tools().is_none());
+
+    // The sysop gets the screen and a request to list.
+    let mut f = sysop_flow();
+    let effects = press(&mut f, "om");
+    assert_eq!(
+        effects.last(),
+        Some(&MemberEffect::MenuTools(MenuToolsRequest::List))
+    );
+    assert!(f.menu_tools().is_some());
+    f.menu_tools_done(
+        MenuToolsListing {
+            pages: vec![PageRow {
+                id: "rules".into(),
+                title: "Rules".into(),
+            }],
+            ..MenuToolsListing::default()
+        },
+        Some("ok\u{1b}[2J"),
+    );
+    // The message is one sanitized line.
+    assert!(
+        !f.menu_tools()
+            .unwrap()
+            .message()
+            .unwrap()
+            .contains('\u{1b}')
+    );
+    // `l` asks for a reload; Enter views the page; Esc leaves the page, then the screen.
+    assert_eq!(
+        f.input(MemberInput::Char('l')),
+        MemberEffect::MenuTools(MenuToolsRequest::Reload)
+    );
+    // Enter views a page only on the pages list; `t` switches to it.
+    f.input(MemberInput::Char('t'));
+    f.input(MemberInput::Enter);
+    assert_eq!(f.menu_tools().unwrap().viewing(), Some("rules"));
+    f.input(MemberInput::Escape);
+    assert!(f.menu_tools().unwrap().viewing().is_none());
+    f.input(MemberInput::Escape);
+    assert!(f.menu_tools().is_none());
+
+    // Taking the permission away closes the screen on the next key.
+    press(&mut f, "om");
+    let mut without = Permission::ALL.to_vec();
+    without.retain(|p| *p != Permission::ThemesManage);
+    f.set_access(Snapshot::from_role(
+        Some(AccountId::from_raw(1)),
+        &Slug::SYSOP,
+        100,
+        &Via::Account,
+        without,
+    ));
+    assert_eq!(f.input(MemberInput::Char('l')), MemberEffect::Stay);
+    assert!(f.menu_tools().is_none());
+}
+
+#[test]
+fn a_sysop_page_opens_scrolls_to_its_end_and_returns_to_the_same_menu() {
+    use crate::menu::{ItemSpec, MenuSpec, Spec, build};
+    let spec = Spec {
+        menus: vec![MenuSpec {
+            id: "main".into(),
+            title: None,
+            items: vec![ItemSpec {
+                target: "page:rules".into(),
+                key: Some('r'),
+                label: None,
+                hidden: false,
+            }],
+        }],
+    };
+    let tree = build(&spec, &|id| (id == "rules").then(|| "Rules".to_owned()))
+        .unwrap()
+        .tree;
+    let handle = sanitize_username("alice").unwrap();
+    let mut f = MemberFlow::new(
+        &handle,
+        member(),
+        None,
+        TerminalSettings::default().with_tier(Tier::Ascii),
+    )
+    .with_menu_tree(tree);
+    press(&mut f, "x");
+    assert!(std::ptr::eq(f.menu_tree(), tree));
+    press(&mut f, "r");
+    assert_eq!(f.bulletin().unwrap().id(), "rules");
+    // The draw reports how far the page can scroll; the keys stop there.
+    f.bulletin_extent(2);
+    press(&mut f, "jjjjj");
+    assert_eq!(f.bulletin().unwrap().scroll(), 2);
+    press(&mut f, "kkkkk");
+    assert_eq!(f.bulletin().unwrap().scroll(), 0);
+    // Esc goes back to the menu, which is still the board's menu.
+    f.input(MemberInput::Escape);
+    assert!(f.bulletin().is_none());
+    assert_eq!(f.menu_page().unwrap().items[0].hotkey, 'r');
+}

@@ -254,7 +254,8 @@ impl<D> ClientHandler<D> {
             start.access,
             start.previous_login,
             start.settings,
-        );
+        )
+        .with_menu_tree(self.ui.menus().tree());
         if self.password_account.is_some() {
             flow = flow.signed_in_with_password();
         }

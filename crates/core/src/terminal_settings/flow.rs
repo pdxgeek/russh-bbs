@@ -26,7 +26,10 @@ use crate::keys::{
     KeysKey, KeysScreen, RecoveryScreen, Request as KeysRequest, Response as KeysResponse,
     Step as KeysStep,
 };
-use crate::menu::{Action, MenuKey, MenuOutcome, MenuPage, MenuSession, main_tree};
+use crate::menu::{
+    Action, Bulletin, BulletinKey, MenuKey, MenuOutcome, MenuPage, MenuSession, MenuToolsKey,
+    MenuToolsListing, MenuToolsRequest, MenuToolsScreen, MenuToolsStep, MenuTree, main_tree,
+};
 use crate::passwords::{
     LoginMethod, PasswordKey, PasswordScreen, Request as PasswordRequest,
     Response as PasswordResponse, Step as PasswordStep, strings as password_strings,
@@ -90,6 +93,9 @@ pub enum MemberEffect {
     /// Carry out a theme-pack request with the server's files and the audit log, then report it
     /// with [`MemberFlow::packs_done`] (UI-7). Only sent with `themes.manage`.
     Packs(PackRequest),
+    /// Carry out a menus-and-pages request (UI-6) with the server's files and the audit log, then
+    /// report it with [`MemberFlow::menu_tools_done`]. Only sent with `themes.manage`.
+    MenuTools(MenuToolsRequest),
     /// Redraw (the logoff screen is showing) and close the session.
     Disconnect,
 }
@@ -118,6 +124,10 @@ enum Page {
     Gallery(Gallery),
     /// The theme packs screen, under Sysop tools (UI-7). The server draws it.
     Packs(Box<PackScreen>),
+    /// The sysop's menus and pages screen, under Sysop tools (UI-6). The server draws it.
+    MenuTools(Box<MenuToolsScreen>),
+    /// A sysop page a member opened from a menu (UI-6). The server draws it.
+    Bulletin(Bulletin),
     EditWidth(String),
     EditHeight(String),
     /// An invite screen (create, list, tree). Not `PartialEq`: it may hold a one-time code.
@@ -417,6 +427,8 @@ impl MemberFlow {
             Page::Preview(_) => self.preview_input(input),
             Page::Gallery(_) => self.gallery_input(input),
             Page::Packs(_) => self.packs_input(input),
+            Page::MenuTools(_) => self.menu_tools_input(input),
+            Page::Bulletin(_) => self.bulletin_input(input),
             Page::EditWidth(_) | Page::EditHeight(_) => self.edit_input(input),
             Page::Invites(_) => self.invite_input(input),
             Page::Logoff => MemberEffect::Disconnect,
@@ -454,6 +466,8 @@ impl MemberFlow {
             | Page::Preview(_)
             | Page::Gallery(_)
             | Page::Packs(_)
+            | Page::MenuTools(_)
+            | Page::Bulletin(_)
             | Page::Logoff => false,
         }
     }
@@ -543,6 +557,14 @@ impl MemberFlow {
                 self.page = Page::Packs(Box::new(PackScreen::open()));
                 MemberEffect::Packs(PackRequest::List)
             }
+            MenuOutcome::Action(Action::MenuTools) => {
+                self.page = Page::MenuTools(Box::new(MenuToolsScreen::open()));
+                MemberEffect::MenuTools(MenuToolsRequest::List)
+            }
+            MenuOutcome::Page(id) => {
+                self.page = Page::Bulletin(Bulletin::open(id));
+                MemberEffect::Stay
+            }
             MenuOutcome::Action(Action::MyKeys) => {
                 self.page = Page::Keys(Box::new(KeysScreen::open(self.telnet)));
                 MemberEffect::Stay
@@ -603,6 +625,7 @@ impl MemberFlow {
             | Action::SysopQueue
             | Action::ThemePreview
             | Action::ThemePacks
+            | Action::MenuTools
             | Action::RecoveryCode
             | Action::MyKeys
             | Action::VouchQueue
@@ -966,7 +989,7 @@ impl MemberFlow {
     /// permission was taken away since it opened, and a role change applies on the next key.
     fn theme_screen_lost_permission(&self) -> Option<Notice> {
         let (held, text) = match &self.page {
-            Page::Packs(_) => (
+            Page::Packs(_) | Page::MenuTools(_) => (
                 self.access.allows(Permission::ThemesManage),
                 strings::MEMBERS_NOT_PERMITTED,
             ),
@@ -1048,6 +1071,105 @@ impl MemberFlow {
             }
             PackStep::Ask(request) => MemberEffect::Packs(request),
         }
+    }
+
+    /// Keys on the menus and pages screen: `r` the next role, `t` switches between the menu and
+    /// the pages, Up/Down (or `k`/`j`) scroll the menu or move to a page, Enter or `v` opens the
+    /// page as a member would see it, `l` reads the files again, `b` or Esc leaves.
+    fn menu_tools_input(&mut self, input: MemberInput) -> MemberEffect {
+        let key = match input {
+            MemberInput::Up | MemberInput::Char('k' | 'K') => MenuToolsKey::Up,
+            MemberInput::Down | MemberInput::Char('j' | 'J') => MenuToolsKey::Down,
+            MemberInput::Char('r' | 'R') => MenuToolsKey::Role,
+            MemberInput::Char('t' | 'T') => MenuToolsKey::Toggle,
+            MemberInput::Enter | MemberInput::Char('v' | 'V') => MenuToolsKey::View,
+            MemberInput::Char('l' | 'L') => MenuToolsKey::Reload,
+            MemberInput::Char('b' | 'B') | MemberInput::Escape => MenuToolsKey::Back,
+            _ => return MemberEffect::Stay,
+        };
+        let Page::MenuTools(screen) = &mut self.page else {
+            return MemberEffect::Stay;
+        };
+        match screen.press(key) {
+            MenuToolsStep::Stay => MemberEffect::Stay,
+            MenuToolsStep::Leave => {
+                self.page = Page::Home;
+                MemberEffect::Stay
+            }
+            MenuToolsStep::Ask(request) => MemberEffect::MenuTools(request),
+        }
+    }
+
+    /// The server finished a menus-and-pages request: show the listing and what happened.
+    pub fn menu_tools_done(&mut self, listing: MenuToolsListing, message: Option<&str>) {
+        if let Page::MenuTools(screen) = &mut self.page {
+            screen.listed(listing, message);
+        }
+    }
+
+    /// The menus and pages screen, while it is open.
+    #[must_use]
+    pub fn menu_tools(&self) -> Option<&MenuToolsScreen> {
+        match &self.page {
+            Page::MenuTools(screen) => Some(screen),
+            _ => None,
+        }
+    }
+
+    /// Tell the open menus-and-pages screen how far its page can scroll.
+    pub fn menu_tools_extent(&mut self, max_scroll: usize) {
+        if let Page::MenuTools(screen) = &mut self.page {
+            screen.set_extent(max_scroll);
+        }
+    }
+
+    /// Keys on a sysop page: Up/Down (or `k`/`j`, space) scroll, `b` or Esc returns to the menu.
+    fn bulletin_input(&mut self, input: MemberInput) -> MemberEffect {
+        let key = match input {
+            MemberInput::Up | MemberInput::Char('k' | 'K') => BulletinKey::Up,
+            MemberInput::Down | MemberInput::Char('j' | 'J' | ' ') => BulletinKey::Down,
+            MemberInput::Char('b' | 'B') | MemberInput::Escape | MemberInput::Enter => {
+                BulletinKey::Back
+            }
+            _ => return MemberEffect::Stay,
+        };
+        let Page::Bulletin(page) = &mut self.page else {
+            return MemberEffect::Stay;
+        };
+        if page.press(key) {
+            self.page = Page::Home;
+        }
+        MemberEffect::Stay
+    }
+
+    /// The sysop page the member is reading.
+    #[must_use]
+    pub const fn bulletin(&self) -> Option<&Bulletin> {
+        match &self.page {
+            Page::Bulletin(page) => Some(page),
+            _ => None,
+        }
+    }
+
+    /// Tell the open sysop page how far it can scroll.
+    pub fn bulletin_extent(&mut self, max_scroll: usize) {
+        if let Page::Bulletin(page) = &mut self.page {
+            page.set_extent(max_scroll);
+        }
+    }
+
+    /// The menu tree this session walks: the built-in one, or the board's `menus.toml` (UI-6).
+    #[must_use]
+    pub const fn menu_tree(&self) -> &'static MenuTree {
+        self.menu.tree()
+    }
+
+    /// Use `tree` as this session's menu (the board's `menus.toml`, UI-6) instead of the
+    /// built-in one. Call before the first key; the session starts at the tree's root.
+    #[must_use]
+    pub fn with_menu_tree(mut self, tree: &'static MenuTree) -> Self {
+        self.menu = MenuSession::new(tree);
+        self
     }
 
     /// The server finished a pack request: show the listing and what happened.
@@ -1274,7 +1396,9 @@ impl MemberFlow {
             | Page::Community(_)
             | Page::Preview(_)
             | Page::Gallery(_)
-            | Page::Packs(_) => {}
+            | Page::Packs(_)
+            | Page::MenuTools(_)
+            | Page::Bulletin(_) => {}
             Page::Settings => self.settings_view(&mut view, words),
             Page::EditWidth(typed) => edit_view(&mut view, strings::FIELD_WIDTH, typed),
             Page::EditHeight(typed) => edit_view(&mut view, strings::FIELD_HEIGHT, typed),

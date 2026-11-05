@@ -1,0 +1,30 @@
+ » Night Owl BBS « │ Sysop tools                                                          UTC 10:49
+                                                █████
+   .     .    ──────────────────────────────────────────────────────────────────────── .     .     .
+              /     /     /     /     /     /     │     \     \     \     \     \
+
+╭« Sysop tools »─────────────────╮╭« This board »─────────────────╮╭« Clock »──────────────────────╮
+│ Signed in as founder.          ││ Night Owl BBS                 ││      ━         ━              │
+│                                ││ A bulletin board in your ter… ││   ┃ ┃ ┃ • ┃━┃ ┃━┃             │
+│ > [q] Invite requests          ││                               ││   ┃ ┃━┃ •   ┃  ━┃             │
+│   [r] Recovery code            ││                               ││ Thu 5 Nov 2026 UTC            │
+│   [t] Theme preview            ││                               ││                               │
+│   [p] Theme packs              ││                               ││                               │
+│   [m] Menus and pages          │╰───────────────────────────────╯╰───────────────────────────────╯
+│                                │╭« Who is online »──────────────╮╭« Last callers »───────────────╮
+│                                ││ ● 2 online                    ││ founder                   now │
+│                                ││ ▸ founder     ▸ marlowe       ││ marlowe                   now │
+│                                ││                               ││                               │
+│                                ││                               ││                               │
+│                                ││                               ││                               │
+│                                ││                               ││                               │
+│                                │╰───────────────────────────────╯╰───────────────────────────────╯
+│                                │╭« Mail »───────────────────────╮╭« Your credits »───────────────╮
+│                                ││ No unread mail.               ││ 0 credits                     │
+│                                ││ 0 in your inbox               ││ 0 in 14 days                  │
+│                                ││                               ││                               │
+│                                ││                               ││                               │
+│                                ││                               ││                               │
+│                                ││                               ││                               │
+╰────────────────────────────────╯╰───────────────────────────────╯╰───────────────────────────────╯
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off

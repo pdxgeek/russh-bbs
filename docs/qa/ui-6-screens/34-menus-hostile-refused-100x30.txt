@@ -1,0 +1,30 @@
+ » Night Owl BBS « │ Menus and pages                                                      UTC 10:50
+Using the built-in menu (no menus.toml)
+menus.toml refused, built-in menu in use: string table key `a label or title` contains control, invi
+Pages (Enter shows one as a member sees it)
+No pages are linked from menus.toml.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Reloaded: menus.toml refused, the built-in menu is in use: string table key `a label or title` conta
+ r next role  t menu or pages  ↑↓ move  Enter view page  l reload files  b back

@@ -19,6 +19,7 @@ const fn item(hotkey: char, label: &'static str, target: Target) -> Item {
         label,
         target,
         requires: None,
+        also: None,
     }
 }
 
@@ -28,6 +29,7 @@ const fn gated(hotkey: char, label: &'static str, target: Target, requires: Perm
         label,
         target,
         requires: Some(requires),
+        also: None,
     }
 }
 
@@ -74,7 +76,7 @@ static MAIN_ITEMS: [Item; 11] = [
     item('l', "menu.main.item.logoff", Target::Action(Action::LogOff)),
 ];
 
-static SYSOP_ITEMS: [Item; 4] = [
+static SYSOP_ITEMS: [Item; 5] = [
     item(
         'q',
         "menu.sysop.item.queue",
@@ -94,6 +96,11 @@ static SYSOP_ITEMS: [Item; 4] = [
         'p',
         "menu.sysop.item.packs",
         Target::Action(Action::ThemePacks),
+    ),
+    item(
+        'm',
+        "menu.sysop.item.menus",
+        Target::Action(Action::MenuTools),
     ),
 ];
 

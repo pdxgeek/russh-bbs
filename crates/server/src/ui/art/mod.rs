@@ -24,8 +24,8 @@ pub use file::{
 pub use font::{HEIGHT as LETTER_HEIGHT, render as big_letters, width_of as big_letters_width};
 pub use grid::{ArtCell, ArtError, Grid, MAX_COLS, MAX_ROWS};
 pub use piece::{ArtPiece, Slot};
-pub(crate) use set::ans_piece;
 pub use set::{ArtSet, MAX_FILES, Problem};
+pub(crate) use set::{ans_piece, page_piece};
 
 #[cfg(test)]
 mod tests;

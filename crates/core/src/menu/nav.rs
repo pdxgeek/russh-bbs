@@ -26,6 +26,8 @@ pub enum MenuOutcome {
     Stay,
     /// Carry out the action, then redraw.
     Action(Action),
+    /// Show the sysop page with this id, then come back to the menu (UI-6).
+    Page(&'static str),
 }
 
 /// One item as a layout draws it.
@@ -84,6 +86,12 @@ impl MenuSession {
         }
     }
 
+    /// The tree this session walks.
+    #[must_use]
+    pub const fn tree(&self) -> &'static MenuTree {
+        self.tree
+    }
+
     /// Id of the open menu.
     #[must_use]
     pub fn current(&self) -> &'static str {
@@ -138,7 +146,7 @@ impl MenuSession {
     fn visible_count(&self, access: &dyn PermissionCheck) -> usize {
         self.tree
             .menu(self.current())
-            .map_or(0, |menu| MenuTree::visible_items(menu, access).count())
+            .map_or(0, |menu| self.tree.visible_items(menu, access).count())
     }
 
     /// The cursor, kept inside the visible items.
@@ -152,7 +160,9 @@ impl MenuSession {
             return MenuOutcome::Stay;
         };
         // Only visible items can be picked: hiding an item also makes it unreachable.
-        let Some(index) = MenuTree::visible_items(menu, access)
+        let Some(index) = self
+            .tree
+            .visible_items(menu, access)
             .position(|item| item.hotkey.eq_ignore_ascii_case(&typed))
         else {
             return MenuOutcome::Stay;
@@ -171,7 +181,7 @@ impl MenuSession {
         let Some(menu) = self.tree.menu(self.current()) else {
             return MenuOutcome::Stay;
         };
-        let Some(item) = MenuTree::visible_items(menu, access).nth(index) else {
+        let Some(item) = self.tree.visible_items(menu, access).nth(index) else {
             return MenuOutcome::Stay;
         };
         match item.target {
@@ -183,6 +193,7 @@ impl MenuSession {
                 MenuOutcome::Stay
             }
             Target::Action(action) => MenuOutcome::Action(action),
+            Target::Page(id) => MenuOutcome::Page(id),
             Target::Placeholder(key) => {
                 self.notice = Some(key);
                 MenuOutcome::Stay
@@ -204,7 +215,8 @@ impl MenuSession {
             depth: self.stack.len() - 1,
             items: menu
                 .map(|m| {
-                    MenuTree::visible_items(m, access)
+                    self.tree
+                        .visible_items(m, access)
                         .map(|item| PageItem {
                             hotkey: item.hotkey,
                             label: item.label,
