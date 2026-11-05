@@ -342,10 +342,11 @@ fn the_borders_key_cycles_through_blocks_and_saves_each_choice() {
     let mut seen = Vec::new();
     for _ in 0..3 {
         let effects = press(&mut f, "r");
-        let Some(MemberEffect::Save(saved)) = effects.last() else {
-            panic!("r saves: {effects:?}");
-        };
-        seen.push(saved.borders());
+        assert!(
+            matches!(effects.last(), Some(MemberEffect::Save(_))),
+            "r saves: {effects:?}"
+        );
+        seen.push(f.settings().borders());
     }
     assert_eq!(
         seen,

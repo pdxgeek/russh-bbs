@@ -109,9 +109,7 @@ fn every_layout_draws_the_blocks_border_in_mono_and_the_ascii_tier() {
             );
             let ctx = format!("{chosen:?} {size:?}");
             let last = mono.area.height - 1;
-            if !boxed(chosen) {
-                assert_eq!(blocks_in(&mono, None), 0, "{ctx}: this layout draws no box");
-            } else {
+            if boxed(chosen) {
                 assert!(blocks_in(&mono, None) > 0, "{ctx}: Blocks is drawn");
                 // Both side edges are drawn on every row of the frame.
                 let left = (0..mono.area.height)
@@ -119,6 +117,8 @@ fn every_layout_draws_the_blocks_border_in_mono_and_the_ascii_tier() {
                     .filter(|(x, y)| mono[(*x, *y)].symbol() == "\u{2590}")
                     .count();
                 assert!(left >= 10, "{ctx}: the left edge is drawn ({left} rows)");
+            } else {
+                assert_eq!(blocks_in(&mono, None), 0, "{ctx}: this layout draws no box");
             }
             // The status row (marker cell and the rest) never holds a border.
             assert_eq!(blocks_in(&mono, Some(last)), 0, "{ctx}: status row");

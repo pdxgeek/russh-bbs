@@ -16,7 +16,7 @@ use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Clear, Paragraph, Wrap};
 use russh_bbs_core::icons::Tier;
-use russh_bbs_core::terminal_settings::{LayoutId, TerminalSettings};
+use russh_bbs_core::terminal_settings::{BorderChoice, LayoutId, TerminalSettings};
 use russh_bbs_core::waiting_room::View;
 
 use crate::ui::classic::notice_line;
@@ -35,8 +35,9 @@ pub(crate) const MAX_WIDTH: u16 = 76;
 pub(crate) struct Look {
     color: bool,
     ascii_borders: bool,
-    /// The member chose the Blocks border (FIX-UI-7a); the ASCII tier still wins.
-    blocks_borders: bool,
+    /// The member's border choice (FIX-UI-7a: Blocks replaces the style's set; the ASCII tier
+    /// and the ASCII choice still win).
+    member_borders: BorderChoice,
     /// The layout in force (a fallback for a small terminal, not the member's choice).
     layout: LayoutId,
     palette: Palette,
@@ -64,7 +65,7 @@ impl Look {
         Self {
             color: settings.use_color(),
             ascii_borders: settings.icon_tier() == Tier::Ascii || prefs::ascii_borders(settings),
-            blocks_borders: prefs::blocks_borders(settings),
+            member_borders: settings.borders(),
             layout,
             palette,
             skin: Skin::default(),
@@ -204,7 +205,7 @@ impl Look {
     ) -> Block<'static> {
         let set = if self.ascii_borders {
             BorderSet::Ascii
-        } else if self.blocks_borders {
+        } else if self.member_borders == BorderChoice::Blocks {
             BorderSet::Blocks
         } else {
             self.skin.border(element)
