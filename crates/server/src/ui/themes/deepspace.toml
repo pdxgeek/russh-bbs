@@ -2,6 +2,10 @@
 # around the board name and a blue-to-violet gradient where the terminal has the colours.
 name = "deepspace"
 
+[meta]
+title = "Deep Space"
+credit = "russh-bbs project"
+
 [colors]
 surface = "#03050f"
 panel = "#070b1c"

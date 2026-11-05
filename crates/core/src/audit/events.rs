@@ -291,6 +291,20 @@ pub fn terminal_settings_changed(account: AccountId) -> AuditEvent {
     .detail("terminal settings")
 }
 
+/// Staff exported a theme pack (UI-7). The note is the style's name (a validated word).
+#[must_use]
+pub fn theme_exported(actor: AccountId, style: &str) -> AuditEvent {
+    AuditEvent::new(Actor::Account(actor), Action::ThemeExported, Target::None)
+        .detail(&format!("style {style}"))
+}
+
+/// Staff imported a theme pack (UI-7): the style's name and the number of art files installed.
+#[must_use]
+pub fn theme_imported(actor: AccountId, style: &str, art_files: usize) -> AuditEvent {
+    AuditEvent::new(Actor::Account(actor), Action::ThemeImported, Target::None)
+        .detail(&format!("style {style} art {art_files}"))
+}
+
 /// A member saved their own widget placement (UI-10).
 #[must_use]
 pub fn widget_placement_changed(account: AccountId) -> AuditEvent {

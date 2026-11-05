@@ -723,7 +723,17 @@ fn parse(text: &str) -> Result<Theme, ThemeError> {
 #[test]
 fn a_theme_file_is_checked_against_a_fixed_schema() {
     assert!(parse("name = \"ok\"\n[colors]\nheading = \"red\"\n").is_ok());
-    assert_eq!(parse("name = \"ok\""), parse("name = \"ok\"\n[colors]\n"));
+    // The same theme written two ways: equal in everything but the text it was read from.
+    let looks = |text: &str| {
+        let theme = parse(text).unwrap();
+        (
+            theme.name(),
+            theme.palette(),
+            theme.skin(),
+            theme.strings().clone(),
+        )
+    };
+    assert_eq!(looks("name = \"ok\""), looks("name = \"ok\"\n[colors]\n"));
     assert_eq!(parse(""), Err(ThemeError::MissingName));
     assert_eq!(parse("name = 3"), Err(ThemeError::MissingName));
     assert!(matches!(

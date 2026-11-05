@@ -99,6 +99,8 @@ sysop screen over it is M5; the board has no audit screen yet.
 | `save_profile` by staff (M2-F) | `profile.edited` | the editor (`members.edit`) | the edited account | `fields <names>`: field names only, never values. The owner's own edits write no row |
 | `remove_line` (M3-J) | `community.entry_removed` | the staff member (`community.moderate`) | the author | `oneliner <id>` or `graffiti <id>`: the kind and the row id, never the text |
 | `close_poll` by staff on another member's poll (M3-J) | `community.poll_closed` | the staff member | the poll's creator | `poll <id>`. The creator closing their own poll writes no row |
+| Theme pack export (UI-7) | `theme.exported` | the staff member (`themes.manage`) | none | `style <name>` |
+| Theme pack import (UI-7) | `theme.imported` | the staff member (`themes.manage`) | none | `style <name> art <n>`: written after the files are installed; a refused pack writes nothing |
 | `remove_poll` (M3-J) | `community.poll_removed` | the staff member | the poll's creator | `poll <id>`; the options and votes go with the poll |
 
 A write that changed nothing (adding a member already in the group, removing one who is not, a

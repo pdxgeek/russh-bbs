@@ -190,7 +190,7 @@ fn load(path: &Path, name: &str, kind: Kind) -> Result<Vec<ArtPiece>, ArtError> 
 }
 
 /// A piece from an `.ans` file named `<slot>.ans` or `<style>.<slot>.ans`.
-fn ans_piece(file_name: &str, bytes: &[u8]) -> Result<ArtPiece, ArtError> {
+pub(crate) fn ans_piece(file_name: &str, bytes: &[u8]) -> Result<ArtPiece, ArtError> {
     let stem = file_name.trim_end_matches(".ans");
     let (style, slot_name) = match stem.split_once('.') {
         Some((style, slot)) => (Some(style), slot),

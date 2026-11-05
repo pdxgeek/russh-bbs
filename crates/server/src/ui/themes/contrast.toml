@@ -1,6 +1,10 @@
 # Shipped theme: high contrast. Bright colors only.
 name = "contrast"
 
+[meta]
+title = "High Contrast"
+credit = "russh-bbs project"
+
 [colors]
 heading = "white"
 key = "lightyellow"
