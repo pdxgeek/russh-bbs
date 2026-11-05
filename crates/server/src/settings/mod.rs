@@ -295,7 +295,24 @@ pub(crate) fn boxed(
     lines: Vec<Line<'static>>,
     look: Look,
 ) {
-    boxed_with(frame, area, title, lines, look, true);
+    boxed_with(frame, area, title, lines, look, BoxSize::MENU);
+}
+
+/// How wide a box may be and whether it keeps a margin off the edge of a roomy terminal.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct BoxSize {
+    /// The widest the box is drawn, border included.
+    pub(crate) max_width: u16,
+    /// Keep one row off the top and bottom of a terminal taller than 24 rows.
+    pub(crate) margin: bool,
+}
+
+impl BoxSize {
+    /// The reading box every text screen uses.
+    pub(crate) const MENU: Self = Self {
+        max_width: MAX_WIDTH,
+        margin: true,
+    };
 }
 
 /// Like [`boxed`] for a body the frame already insets (between its header and status bars): the
@@ -307,7 +324,17 @@ pub(crate) fn boxed_flush(
     lines: Vec<Line<'static>>,
     look: Look,
 ) {
-    boxed_with(frame, area, title, lines, look, false);
+    boxed_with(
+        frame,
+        area,
+        title,
+        lines,
+        look,
+        BoxSize {
+            margin: false,
+            ..BoxSize::MENU
+        },
+    );
 }
 
 fn boxed_with(
@@ -316,11 +343,11 @@ fn boxed_with(
     title: &str,
     lines: Vec<Line<'static>>,
     look: Look,
-    margin: bool,
+    size: BoxSize,
 ) {
     let [_, middle, _] = Layout::horizontal([
         Constraint::Fill(1),
-        Constraint::Length(MAX_WIDTH.min(area.width)),
+        Constraint::Length(size.max_width.min(area.width)),
         Constraint::Fill(1),
     ])
     .areas(area);
@@ -328,7 +355,7 @@ fn boxed_with(
     let paragraph = Paragraph::new(lines)
         .wrap(Wrap { trim: false })
         .block(block);
-    let rect = if margin { fit(middle) } else { middle };
+    let rect = if size.margin { fit(middle) } else { middle };
     frame.render_widget(Clear, rect);
     frame.render_widget(paragraph, rect);
 }
@@ -336,13 +363,30 @@ fn boxed_with(
 /// The columns and rows inside the box [`boxed`] draws in `area`: what a caller has to fit its
 /// text into if it wants to page or wrap it itself.
 pub(crate) fn inner_size(area: Rect) -> (usize, usize) {
+    inner_size_of(area, BoxSize::MENU)
+}
+
+/// Draw `lines` in a box of `size` (a door's box, which is wider than the reading box).
+pub(crate) fn boxed_sized(
+    frame: &mut Frame<'_>,
+    area: Rect,
+    title: &str,
+    lines: Vec<Line<'static>>,
+    look: Look,
+    size: BoxSize,
+) {
+    boxed_with(frame, area, title, lines, look, size);
+}
+
+/// The columns and rows inside the box [`boxed_sized`] draws in `area`.
+pub(crate) fn inner_size_of(area: Rect, size: BoxSize) -> (usize, usize) {
     let [_, middle, _] = Layout::horizontal([
         Constraint::Fill(1),
-        Constraint::Length(MAX_WIDTH.min(area.width)),
+        Constraint::Length(size.max_width.min(area.width)),
         Constraint::Fill(1),
     ])
     .areas(area);
-    let boxed = fit(middle);
+    let boxed = if size.margin { fit(middle) } else { middle };
     (
         usize::from(boxed.width.saturating_sub(2)),
         usize::from(boxed.height.saturating_sub(2)),
