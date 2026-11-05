@@ -307,31 +307,39 @@ pub(crate) fn draw_menu_in(
         record_rows(screen, list_area, state.offset(), cursor);
     }
     if usize::from(list_area.height) < screen.page.items.len() {
-        let mut bar_state = ScrollbarState::new(
-            screen
-                .page
-                .items
-                .len()
-                .saturating_sub(usize::from(list_area.height)),
-        )
-        .position(state.offset());
-        let mut bar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
-            .begin_symbol(None)
-            .end_symbol(None);
-        if look.ascii() {
-            // The ASCII tier draws ASCII only (QA M3.5 M2); ratatui's default is `█` and `║`.
-            bar = bar.track_symbol(Some("|")).thumb_symbol("#");
-        }
-        frame.render_stateful_widget(
-            bar,
+        draw_menu_scrollbar(
+            frame,
             outer.inner(Margin {
                 horizontal: 0,
                 vertical: 1,
             }),
-            &mut bar_state,
+            screen.page.items.len(),
+            usize::from(list_area.height),
+            state.offset(),
+            look,
         );
     }
     frame.render_widget(Paragraph::new(tail).wrap(Wrap { trim: false }), tail_area);
+}
+
+/// The menu list's scrollbar. The ASCII tier draws `#` and `|`; ratatui's default `█` and `║`
+/// are not ASCII (QA M3.5 M2).
+fn draw_menu_scrollbar(
+    frame: &mut Frame<'_>,
+    area: Rect,
+    items: usize,
+    shown: usize,
+    offset: usize,
+    look: Look,
+) {
+    let mut state = ScrollbarState::new(items.saturating_sub(shown)).position(offset);
+    let mut bar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
+        .begin_symbol(None)
+        .end_symbol(None);
+    if look.ascii() {
+        bar = bar.track_symbol(Some("|")).thumb_symbol("#");
+    }
+    frame.render_stateful_widget(bar, area, &mut state);
 }
 
 /// The help screen: the universal keys beside the menu on a wide box, stacked on a narrow one.
