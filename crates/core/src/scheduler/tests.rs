@@ -325,6 +325,46 @@ async fn shutdown_aborts_a_running_job_and_frees_it() {
     );
 }
 
+/// Sets a flag when dropped: proof that a job's future is gone, not merely told to stop.
+struct DropFlag(Arc<std::sync::atomic::AtomicBool>);
+
+impl Drop for DropFlag {
+    fn drop(&mut self) {
+        self.0.store(true, Ordering::SeqCst);
+    }
+}
+
+/// Regression for FIX-M4-1: a job mid-poll on another worker used to outlive `run` (dropping a
+/// `JoinSet` only requests the abort), so it wrote to the store after the final WAL checkpoint.
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn run_returns_only_after_a_busy_job_is_gone() {
+    let (store, clock) = (MemoryStore::default(), clock());
+    let entered = Arc::new(Notify::new());
+    let gone = Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let mut s = scheduler(&store, &clock);
+    s.register({
+        let (entered, gone) = (Arc::clone(&entered), Arc::clone(&gone));
+        Job::new(name("busy"), Duration::from_secs(60), move || {
+            let (entered, gone) = (Arc::clone(&entered), Arc::clone(&gone));
+            async move {
+                let _flag = DropFlag(gone);
+                entered.notify_one();
+                // Holds this worker inside one poll, as a job under CPU load can be.
+                std::thread::sleep(Duration::from_millis(300));
+                std::future::pending::<()>().await;
+                Ok(())
+            }
+        })
+        .unwrap()
+    })
+    .unwrap();
+    s.run(async { entered.notified().await }).await;
+    assert!(
+        gone.load(Ordering::SeqCst),
+        "run returned while the job was still running"
+    );
+}
+
 #[test]
 fn bad_jobs_are_refused_at_construction() {
     let work = || async { Ok(()) };

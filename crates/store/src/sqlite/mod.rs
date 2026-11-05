@@ -117,27 +117,43 @@ impl SqliteStore {
         &self.pool
     }
 
-    /// Checkpoint the WAL into the main file (truncating it), then close the pool. The
-    /// checkpoint is best effort: a failure is only reported, because SQLite recovers an
-    /// un-checkpointed WAL on the next open. The connection used for it is closed explicitly,
-    /// not returned to the pool, so that nothing is still settling when this returns.
+    /// Close the pool, then checkpoint the WAL into the main file (truncating it).
+    ///
+    /// The order matters. A statement already handed to a connection's worker thread keeps
+    /// running even when the future that sent it is cancelled, so under load a late write can
+    /// commit after a checkpoint taken on another connection and leave the WAL non-empty
+    /// (FIX-M4-1). `pool.close()` waits for every connection to be returned and closes each one
+    /// behind its pending commands, so once it returns nothing else holds the database. The
+    /// checkpoint then runs on a fresh connection that is the only one open.
+    ///
+    /// The checkpoint is best effort: a failure is only reported, because SQLite recovers an
+    /// un-checkpointed WAL on the next open. The pragma does not fail when it cannot finish; it
+    /// returns `busy = 1`, so that row is read and logged too.
     pub async fn close(&self) {
-        match self.pool.acquire().await {
-            Ok(connection) => {
-                let mut connection = connection.detach();
-                if let Err(error) = sqlx::query("PRAGMA wal_checkpoint(TRUNCATE)")
-                    .execute(&mut connection)
-                    .await
-                {
-                    tracing::warn!(%error, "WAL checkpoint failed at close");
-                }
-                if let Err(error) = connection.close().await {
-                    tracing::warn!(%error, "closing the checkpoint connection failed");
-                }
-            }
-            Err(error) => tracing::warn!(%error, "no connection for the WAL checkpoint at close"),
-        }
         self.pool.close().await;
+        let options = self.pool.connect_options();
+        let mut connection = match sqlx::SqliteConnection::connect_with(&options).await {
+            Ok(connection) => connection,
+            Err(error) => {
+                tracing::warn!(%error, "no connection for the WAL checkpoint at close");
+                return;
+            }
+        };
+        match sqlx::query_as::<_, (i64, i64, i64)>("PRAGMA wal_checkpoint(TRUNCATE)")
+            .fetch_one(&mut connection)
+            .await
+        {
+            Ok((0, ..)) => {}
+            Ok((_, log_frames, checkpointed)) => tracing::warn!(
+                log_frames,
+                checkpointed,
+                "WAL checkpoint was blocked at close; the WAL stays and is recovered on the next open"
+            ),
+            Err(error) => tracing::warn!(%error, "WAL checkpoint failed at close"),
+        }
+        if let Err(error) = connection.close().await {
+            tracing::warn!(%error, "closing the checkpoint connection failed");
+        }
     }
 }
 
