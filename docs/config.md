@@ -227,4 +227,4 @@ Usage counters (`limit_usage`) are per account per UTC day and survive a restart
 
 ## Menus and pages (UI-6)
 
-No config key. `menus.toml` and `pages/<id>.toml` live in the data directory (beside the host key, like `themes/` and `art/`) and are read at start and on the Sysop tools reload. A missing file is the built-in menu; a bad one is logged and refused. Schema and caps: [ui.md](ui.md#sysop-menus-and-pages-ui-6-d-tbd).
+No config key. `menus.toml` and `pages/<id>.toml` live in the data directory (beside the host key, like `themes/` and `art/`) and are read at start and on the Sysop tools reload. A missing file is the built-in menu; a bad one is logged and refused. Schema and caps: [ui.md](ui.md#sysop-menus-and-pages-ui-6-d131).

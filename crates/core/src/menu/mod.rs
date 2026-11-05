@@ -98,7 +98,7 @@ pub enum Action {
     ThemePacks,
     /// Open the menus and pages screen under Sysop tools (UI-6): the effective menu for a role,
     /// the pages, and the reload. Board look and feel, so it needs `themes.manage` like the
-    /// theme packs (D-TBD).
+    /// theme packs (D131).
     MenuTools,
     /// Open the vouch screen: pending requests a member can speak for (`members.vouch`, M2-E).
     VouchQueue,

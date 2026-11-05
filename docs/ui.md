@@ -476,7 +476,7 @@ One shared renderer for every walk: `shot.py` turns a `.cells` dump, a pyte scre
 
 Unit tests: each of the nine shipped styles exports, imports and loads back to the same palette, skin, strings, title and art, and a second export is byte-identical; hostile packs (oversized, wrong version, unknown fields, the reserved style and marker keys, marker glyphs, control characters and private-use characters in strings, a privacy claim, generic or foreign-style art, `.ans` bombs and bad hex, too many entries); an old version-1 file migrating forward and an unreadable version refused; install never overwrites and is all-or-nothing; the gallery draws every style at 80x24, 100x30 and 132x43, at every depth and tier, differs per style, follows the viewer's depth, respects locks and the allowed list, never covers the marker cell. A real in-process ssh session (`crates/server/tests/access_paths.rs`) exports, imports and loses `themes.manage` with the screen open. See [qa/ui-7-walk.md](qa/ui-7-walk.md) for the walk over OpenSSH.
 
-## Sysop menus and pages (UI-6, D-TBD)
+## Sysop menus and pages (UI-6, D131)
 
 The board's menu is still core data (D54). A `menus.toml` beside the host key (the data directory, like `themes/` and `art/`) can **reorder, rename, re-key, hide and group** the built-in items and **add links to pages**. It cannot add an action, a target or a permission.
 
