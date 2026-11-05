@@ -263,3 +263,13 @@ Built in `m35/effects-graphics` (D124). The reference is [ui.md](ui.md#effects-a
 - **Budgets the plan did not name:** a byte budget per effect and a slow-link switch-off, both found necessary by measuring (truecolor first cost about 5 times the bytes).
 - **Not done:** an animated intro over UI-3's art (UI-3 merged while this slice was in review; the intro still draws the board name in its own font, and moving the login-banner art into it is a follow-up); the sysop logo upload and avatars (no screen or setting exists, so `ui/image` has no caller).
 
+## UI-9 implementation notes
+
+Built in `m35/interaction` (D125) on today's screens because UI-4 has not started; the reference is [ui.md](ui.md#interaction-mouse-command-palette-toasts-ticker-ui-9-d125). What differs from the plan above:
+
+- **Done now:** the bounded mouse parser (ssh and telnet), click and scroll on menus, tables and the reader, the `Ctrl-K` palette, toasts, and the live header ticker.
+- **Waits for UI-4:** dragging pane dividers, and split-screen chat beside any screen. The divider rectangle (`panes::Plan::divider`) and the hit-region list (`ui::input`) are where they hook in; mouse reporting is requested without drag (`1000` and `1006`), and drag adds `1002`.
+- **Palette scope:** areas, settings pages, doors and boards. Members are not in it: a member has no direct-open request yet, and guessing a list position would open the wrong person.
+- **Mouse is the member's choice and off by default**, because reporting takes over the terminal's own selection and paste.
+- **Toasts have two real sources** (the mouse setting, unread mail at sign-in). Pages and door events are hooks with tests but no source: chat events reach the shell only while the chat screen is up, and doors have no event channel.
+

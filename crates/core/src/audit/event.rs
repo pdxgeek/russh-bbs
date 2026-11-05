@@ -155,6 +155,14 @@ pub enum Action {
     /// Staff removed a poll with its votes (M3-J, D86). The target is the creator.
     #[strum(serialize = "community.poll_removed")]
     CommunityPollRemoved,
+    /// Staff exported a theme pack (UI-7). The actor is the staff member; the note is the
+    /// style's name. No target: a pack is a file, not a member.
+    #[strum(serialize = "theme.exported")]
+    ThemeExported,
+    /// Staff imported a theme pack (UI-7). The note is the style's name and how many art files
+    /// came with it.
+    #[strum(serialize = "theme.imported")]
+    ThemeImported,
     /// Staff opened a chat room (M3-F). The resource is the room; the note is its name.
     #[strum(serialize = "chat.room_created")]
     ChatRoomCreated,

@@ -206,36 +206,68 @@ const fn layout_index(layout: LayoutId) -> usize {
     }
 }
 
+/// What a sample screen is drawn as: a style, a layout, a size, a tier and the sample itself.
+/// The sysop preview fills it from its keys; the member gallery from the member's own settings
+/// and terminal.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct SampleSpec {
+    pub(crate) style: russh_bbs_core::terminal_settings::ThemeName,
+    pub(crate) layout: LayoutId,
+    pub(crate) size: (u16, u16),
+    pub(crate) ascii: bool,
+    pub(crate) mono: bool,
+    pub(crate) sample: PreviewSample,
+    pub(crate) art: bool,
+}
+
 /// The sample screen, drawn off-screen at the preview's size with no markers.
 fn draw_sample(ui: &Ui, preview: &ThemePreview, shown_with: Look) -> Buffer {
-    let (cols, rows) = preview.size();
+    sample_buffer(
+        ui,
+        &SampleSpec {
+            style: preview.style(),
+            layout: preview.layout(),
+            size: preview.size(),
+            ascii: preview.ascii(),
+            mono: preview.mono(),
+            sample: preview.sample(),
+            art: preview.art(),
+        },
+        shown_with,
+    )
+}
+
+/// A sample screen drawn off-screen by the same code the members' screens use, with no security
+/// markers (the callers copy it with [`blit`], which strips the reverse attribute).
+pub(crate) fn sample_buffer(ui: &Ui, spec: &SampleSpec, shown_with: Look) -> Buffer {
+    let (cols, rows) = spec.size;
     let area = Rect::new(0, 0, cols, rows);
-    let tier = if preview.ascii() {
+    let tier = if spec.ascii {
         Tier::Ascii
     } else {
         Tier::Unicode
     };
     let settings = TerminalSettings::default()
         .with_tier(tier)
-        .with_color(!preview.mono())
-        .with_theme(preview.style())
-        .with_layout(preview.layout());
-    let theme = ui.theme(preview.style());
+        .with_color(!spec.mono)
+        .with_theme(spec.style)
+        .with_layout(spec.layout);
+    let theme = ui.theme(spec.style);
     let strings = theme.strings();
-    // The sysop's terminal limits the colours the sample can honestly show.
+    // The viewer's terminal limits the colours the sample can honestly show.
     let look = ui.look(&settings, area, shown_with.depth());
     let art = ArtCtx {
         set: ui.art(),
-        style: preview.style(),
+        style: spec.style,
         board: ui.board().name(),
-        enabled: preview.art() && ui.board().art(),
+        enabled: spec.art && ui.board().art(),
     };
     let mut terminal =
         Terminal::new(TestBackend::new(cols, rows)).unwrap_or_else(|never| match never {});
     // The sample shows the layout's cells empty: widgets are the member's own, not the board's.
     let widget_data = russh_bbs_core::widgets::WidgetData::default();
     let widget_settings = crate::ui::widgets::WidgetSettings::default();
-    let drawn = terminal.draw(|frame| match preview.sample() {
+    let drawn = terminal.draw(|frame| match spec.sample {
         PreviewSample::Menu => {
             let access = Snapshot::from_role(
                 None,
@@ -260,7 +292,7 @@ fn draw_sample(ui: &Ui, preview: &ThemePreview, shown_with: Look) -> Buffer {
                     clock: Some("UTC 12:00"),
                     mail_over_ssh_only: false,
                     board: ui.board(),
-                    wanted: preview.layout(),
+                    wanted: spec.layout,
                     popover: false,
                     art: Some(&art),
                     widgets: crate::ui::widgets::WidgetView {
@@ -313,7 +345,7 @@ fn sample_flow(settings: TerminalSettings) -> Option<MemberFlow> {
 
 /// Copy the top-left of `sample` into `region`, clearing it first. The reverse attribute is
 /// stripped from every copied cell: the preview shows how a screen looks, never a marker.
-fn blit(frame: &mut Frame<'_>, region: Rect, sample: &Buffer) {
+pub(crate) fn blit(frame: &mut Frame<'_>, region: Rect, sample: &Buffer) {
     frame.render_widget(Clear, region);
     let width = region.width.min(sample.area.width);
     let height = region.height.min(sample.area.height);

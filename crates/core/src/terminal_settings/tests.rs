@@ -1052,7 +1052,7 @@ fn motion_depth_and_borders_keys_save_at_once_and_show_in_words() {
     let mut f = at_settings();
     let out = text(&f.view(words()));
     assert!(
-        out.contains("Motion: on   Depth: auto   Borders: style's own"),
+        out.contains("Motion: on  Depth: auto  Borders: style's own  Mouse: off"),
         "{out}"
     );
     let effects = press(&mut f, "m");
@@ -1067,11 +1067,25 @@ fn motion_depth_and_borders_keys_save_at_once_and_show_in_words() {
     );
     let out = text(&f.view(words()));
     assert!(
-        out.contains("Motion: off   Depth: 16 colors   Borders: ascii"),
+        out.contains("Motion: off  Depth: 16 colors  Borders: ascii  Mouse: off"),
         "{out}"
     );
     press(&mut f, "ddd");
     assert_eq!(f.settings().depth_cap(), DepthCap::Auto);
+}
+
+/// UI-9: mouse reporting is the member's choice. It starts off, `o` toggles it and saves at
+/// once, and the settings screen says which it is in words.
+#[test]
+fn mouse_key_toggles_the_choice_and_shows_it_in_words() {
+    let mut f = at_settings();
+    assert!(!f.settings().mouse());
+    assert!(text(&f.view(words())).contains("Mouse: off"));
+    let effects = press(&mut f, "o");
+    assert!(matches!(effects.last(), Some(MemberEffect::Save(s)) if s.mouse()));
+    assert!(text(&f.view(words())).contains("Mouse: on"));
+    let effects = press(&mut f, "o");
+    assert!(matches!(effects.last(), Some(MemberEffect::Save(s)) if !s.mouse()));
 }
 
 #[test]
@@ -1154,4 +1168,190 @@ fn a_member_who_has_not_chosen_follows_the_board_default_and_the_screen_says_so(
     let before = g.menu_page().unwrap().cursor;
     g.input(MemberInput::Down);
     assert_eq!(g.menu_page().unwrap().cursor, before + 1);
+}
+
+// ---- style gallery and theme packs (UI-7) --------------------------------------------------
+
+fn style(name: &str) -> ThemeName {
+    ThemeName::new(name).unwrap()
+}
+
+fn gallery_flow(allowed: &[&str]) -> MemberFlow {
+    let mut f = flow(
+        TerminalSettings::default()
+            .with_tier(Tier::Ascii)
+            .with_theme(style("phosphor")),
+        None,
+    );
+    f.set_themes(allowed.iter().map(|n| style(n)).collect());
+    press(&mut f, "x"); // past the login page
+    f
+}
+
+/// Open the gallery from the menu: settings, then `y`.
+fn open_gallery(f: &mut MemberFlow) {
+    press(f, "sy");
+}
+
+#[test]
+fn the_gallery_lists_exactly_the_styles_the_board_allows() {
+    let mut f = gallery_flow(&["phosphor", "neon", "paper"]);
+    open_gallery(&mut f);
+    let gallery = f.gallery().unwrap();
+    assert_eq!(
+        gallery.choices(),
+        &[style("phosphor"), style("neon"), style("paper")]
+    );
+    assert_eq!(gallery.selected(), style("phosphor"));
+    assert!(!gallery.locked());
+}
+
+#[test]
+fn picking_in_the_gallery_saves_the_style() {
+    let mut f = gallery_flow(&["phosphor", "neon", "paper"]);
+    open_gallery(&mut f);
+    // Browsing previews without saving.
+    assert_eq!(f.input(MemberInput::Down), MemberEffect::Stay);
+    assert_eq!(f.gallery().unwrap().selected(), style("neon"));
+    assert_eq!(f.settings().theme_choice(), Some(style("phosphor")));
+    // Enter uses it, through the same save path as the settings key.
+    let effect = f.input(MemberInput::Enter);
+    let MemberEffect::Save(saved) = effect else {
+        unreachable!("expected a save, got {effect:?}");
+    };
+    assert_eq!(saved.theme_choice(), Some(style("neon")));
+    assert_eq!(f.settings().theme_choice(), Some(style("neon")));
+    // Picking the style already in use saves nothing.
+    assert_eq!(f.input(MemberInput::Enter), MemberEffect::Stay);
+    // Up wraps around; Esc goes back to the settings page.
+    f.input(MemberInput::Up);
+    f.input(MemberInput::Up);
+    assert_eq!(f.gallery().unwrap().selected(), style("paper"));
+    f.input(MemberInput::Escape);
+    assert!(f.gallery().is_none());
+}
+
+#[test]
+fn a_locked_board_lets_the_member_look_and_not_pick() {
+    let mut f = gallery_flow(&["neon"]);
+    open_gallery(&mut f);
+    let gallery = f.gallery().unwrap();
+    assert!(gallery.locked());
+    assert_eq!(gallery.choices(), &[style("neon")]);
+    f.input(MemberInput::Down);
+    assert_eq!(f.input(MemberInput::Enter), MemberEffect::Stay);
+    assert_ne!(f.settings().theme_choice(), Some(style("paper")));
+}
+
+#[test]
+fn the_gallery_needs_the_settings_permission() {
+    let mut f = gallery_flow(&["phosphor", "neon"]);
+    open_gallery(&mut f);
+    assert!(f.gallery().is_some());
+    f.set_access(Snapshot::from_role(
+        Some(AccountId::from_raw(1)),
+        &Slug::MEMBER,
+        10,
+        &Via::Account,
+        Permission::ALL
+            .iter()
+            .copied()
+            .filter(|p| *p != Permission::AccountEditSettings),
+    ));
+    f.input(MemberInput::Down);
+    assert!(f.gallery().is_none());
+}
+
+fn sysop_flow() -> MemberFlow {
+    let handle = sanitize_username("ravenna").unwrap();
+    let mut f = MemberFlow::new(
+        &handle,
+        sysop(),
+        None,
+        TerminalSettings::default().with_tier(Tier::Ascii),
+    );
+    press(&mut f, "x");
+    f
+}
+
+#[test]
+fn theme_packs_are_a_sysop_action_and_only_for_themes_manage() {
+    // A member without the permission never sees or reaches the item.
+    let mut member_flow = flow(TerminalSettings::default().with_tier(Tier::Ascii), None);
+    press(&mut member_flow, "x");
+    press(&mut member_flow, "op");
+    assert!(member_flow.packs().is_none());
+
+    // The sysop gets the screen and a request to list.
+    let mut f = sysop_flow();
+    let effects = press(&mut f, "op");
+    assert_eq!(
+        effects.last(),
+        Some(&MemberEffect::Packs(PackRequest::List))
+    );
+    assert!(f.packs().is_some());
+
+    // Taking the permission away closes the screen on the next key.
+    let mut without = Permission::ALL.to_vec();
+    without.retain(|p| *p != Permission::ThemesManage);
+    f.set_access(Snapshot::from_role(
+        Some(AccountId::from_raw(1)),
+        &Slug::SYSOP,
+        100,
+        &Via::Account,
+        without,
+    ));
+    assert_eq!(f.input(MemberInput::Char('e')), MemberEffect::Stay);
+    assert!(f.packs().is_none());
+}
+
+#[test]
+fn keys_on_the_packs_screen_make_requests_for_the_row_under_the_cursor() {
+    let mut f = sysop_flow();
+    press(&mut f, "op");
+    let listing = PackListing {
+        styles: vec![
+            StyleRow {
+                name: ThemeName::default_theme(),
+                title: "default".into(),
+                exportable: false,
+            },
+            StyleRow {
+                name: style("neon"),
+                title: "Neon Night".into(),
+                exportable: true,
+            },
+        ],
+        files: vec![
+            FileRow {
+                file: "good.pack.toml".into(),
+                verdict: Ok(style("good")),
+            },
+            FileRow {
+                file: "bad.pack.toml".into(),
+                verdict: Err("nope \u{1b}[31m".into()),
+            },
+        ],
+        unavailable: false,
+    };
+    f.packs_done(listing, Some("hello \u{1b}[31m there"));
+    // The message is sanitized on the way in.
+    assert!(!f.packs().unwrap().message().unwrap().contains('\u{1b}'));
+    // Row 0 is the built-in style: nothing to export.
+    assert_eq!(f.input(MemberInput::Char('e')), MemberEffect::Stay);
+    f.input(MemberInput::Down);
+    assert_eq!(
+        f.input(MemberInput::Char('e')),
+        MemberEffect::Packs(PackRequest::Export(style("neon")))
+    );
+    // A style row cannot be imported.
+    assert_eq!(f.input(MemberInput::Char('i')), MemberEffect::Stay);
+    f.input(MemberInput::Down);
+    assert_eq!(
+        f.input(MemberInput::Char('i')),
+        MemberEffect::Packs(PackRequest::Import("good.pack.toml".into()))
+    );
+    // A refused file cannot be imported.
+    f.input(MemberInput::Down);
+    assert_eq!(f.input(MemberInput::Char('i')), MemberEffect::Stay);
 }

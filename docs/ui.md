@@ -405,6 +405,51 @@ A sysop with `members.approve` (what Sysop tools itself needs) opens **Sysop too
 - **Preview**: reached from Sysop tools by a sysop and not by a member; every key; every style x tier x colour x size x sample draws without a marker outside the real marker cell; the clipped note; refused art files listed; losing `members.approve` closes it.
 - **Real OpenSSH 9.6 against the real binary**, read through `pyte`: for each of the six styles the login banner and the main-menu header at 80x24 and 132x43 (the board's style locked per run), then, for `neon` and `ansi`, the Sysop tools, Theme preview screen at two sizes and the logoff screen with the style's banner and a board quote. PNGs and text captures are in [ui-screenshots/art](ui-screenshots/art/README.md).
 - **Not verified:** art in a real 16-colour or 256-colour client (the depth fallback is tested on cells), a Nerd Font session, other terminal emulators, telnet, a screen reader (accessibility mode, M5, will bypass art), art drawn by a third party's ANSI editor (the goldens are hand-written bytes), and the `area` slot on any screen.
+## Theme gallery, theme packs and screenshots (UI-7, D126)
+
+### The member gallery (Terminal settings, `y`)
+
+A strip of the styles the board allows, a line about the one under the cursor (its `[meta]` title, credit, and whether it is in use), and below them a **live sample** of that style: the main menu (or, with `s`, the login screen) drawn off-screen by the same code the real screens use, then copied in. The sample is drawn with the member's own layout, icon tier, colour mode and **colour depth**, at the size of the room the gallery has, so a 16-colour client sees 16 colours. `Up`/`Down` (or `k`/`j`, `p`/`n`) browse, `Enter` uses the style (it is saved through the settings path, so `account.edit_settings` applies and a removed permission closes the screen), `b` or `Esc` goes back.
+
+- **The board's limits are the list.** The strip holds exactly `board.styles`; a list of one is a **lock**: the gallery shows the style, says "the sysop has set this board's style" and offers no pick.
+- **The marker cell is never covered.** The sample is drawn with no markers and copied with the reverse attribute stripped; it goes into the body only, and the status bar's left cell belongs to the frame (D39, D109). A test asserts, for every style, sample, size and tier, that reverse video appears nowhere but in the marker cell.
+- **The ASCII tier** draws the strip, hints and sample in printable ASCII.
+
+### Theme files are versioned
+
+A theme file may start with `version = N`. A file without one is **version 1** (every file written before UI-7, including the shipped ones). The loader migrates an older file forward in memory, one step at a time, before any validation, so the schema, size, contrast and string checks are the same for every version; a version this server does not read is refused. Version 2 adds the optional `[meta]` table (`title` up to 40 characters, `credit` up to 80, both checked like any sysop string: no control, invisible or reserved characters, no claim of privacy). Export always writes the current version.
+
+### Theme packs
+
+A pack is one file, `*.pack.toml`, that carries a style and its art:
+
+```toml
+pack = 1
+theme = '''
+name = "harbour"
+...                       # a theme file, exactly as it would sit in themes/
+'''
+[[art]]
+kind = "art.toml"         # an .art.toml, as it would sit in art/
+text = '''...'''
+[[art]]
+kind = "ans"              # a CP437 .ans picture, in hex
+slot = "menu"
+hex = "1b5b..."
+```
+
+**A pack holds files, and every file goes through the loader that reads the same file from disk**: the theme text through `Theme::parse` (schema, caps, contrast floor, string checks, version migrations), each `art.toml` through the art loader, each `.ans` through the `.ans` parser. Nothing in a pack is executed, fetched or interpreted as anything but data. Unknown fields are refused at every level. A pack cannot name the reserved style, a marker glyph, the Nerd Font range or the marker position because neither a theme file nor art has a key, style or glyph for them (D39), and the sanitizer replaces the reserved characters in every string and art cell; a string that claims privacy is refused. **Caps:** 512 KiB for the file, 16 art entries, the theme and `.art.toml` caps, the `.ans` cap checked on the hex *before* it is decoded, 240 characters per string. **Art belongs to its style:** every piece must be made for the pack's own style, and an `.ans` is installed as `<style>.<slot>.ans`, so a pack can never replace the board's generic art or another style's.
+
+**Sysop screen (Sysop tools, `p`, `themes.manage`).** Two lists: the installed styles (`e` exports the one under the cursor to `packs/<name>.pack.toml`; the built-in `default` has no file) and the pack files in `packs/` beside the host key (each shown as "ready: style x" or "refused: reason"; `i` imports it). Import validates the whole pack first, then installs with `create_new` into `themes/` and `art/` (art first, the theme last; a failure removes what it wrote; nothing is overwritten; a style name already installed is refused, so rename it in the file). The new style **loads when the server restarts**, like any file dropped in those directories (there is no hot reload; see D126). The permission is checked again where the work is done, an export or import writes a `theme.exported` or `theme.imported` audit row (a refusal writes none), and an export holds only the style's own text and art: no board setting, no path, no member data.
+
+### Screenshots (`tools/screenshots/`)
+
+One shared renderer for every walk: `shot.py` turns a `.cells` dump, a pyte screen or a `tmux capture-pane -e` into a PNG. It draws U+2500 to U+259F (box drawing and blocks) as filled lines and rectangles sized to the cell, so lines join with no gap, and uses the font for everything else. Python and Pillow only; no Rust dependency. See [tools/screenshots/README.md](../tools/screenshots/README.md). Other slices and QA should use it instead of a private `render.py`.
+
+### Verified
+
+Unit tests: each of the nine shipped styles exports, imports and loads back to the same palette, skin, strings, title and art, and a second export is byte-identical; hostile packs (oversized, wrong version, unknown fields, the reserved style and marker keys, marker glyphs, control characters and private-use characters in strings, a privacy claim, generic or foreign-style art, `.ans` bombs and bad hex, too many entries); an old version-1 file migrating forward and an unreadable version refused; install never overwrites and is all-or-nothing; the gallery draws every style at 80x24, 100x30 and 132x43, at every depth and tier, differs per style, follows the viewer's depth, respects locks and the allowed list, never covers the marker cell. A real in-process ssh session (`crates/server/tests/access_paths.rs`) exports, imports and loses `themes.manage` with the screen open. See [qa/ui-7-walk.md](qa/ui-7-walk.md) for the walk over OpenSSH.
+
 ## Widgets (UI-10)
 
 Status: **Implemented and tested; walked over real OpenSSH 9.6** (see Verified). Code: `crates/server/src/ui/widgets/` (the trait, the registry, the 17 widgets, placement, the Widgets screen), `crates/core/src/widgets/` (ids, the sysop's rules and the member's lists, what the widgets read), `crates/server/src/ssh/live.rs` (the live pieces), `[widgets]` in [config.md](config.md#widgets-ui-10), per-member lists in migration `0025_widgets`.
@@ -459,6 +504,50 @@ Every figure comes from a service the screens already use: last callers, one-lin
 - **Against the real stores** (`russh-bbs-store` shared suite, SQLite, plain Postgres 16 and TLS-required Postgres 16): the settings round trip (order, empty versus no row, reset, replace, other accounts untouched, cascade, a bad account, database constraints, one audit row per save), and the **no-leak tests**: a member without a grant sees nothing of a restricted board in new posts, activity or news (and one with a scoped grant does), nothing from callers, one-liners, wall or poll without `community.view`, poll counts only after voting when hidden, only their own mail count and credits, and a waiting-room snapshot gets an empty result.
 - **Real OpenSSH 9.6** against the real binary (dashboard, wide, focus and split layouts, the Widgets screen with locks, edits that persist across a reconnect, the ASCII tier in mono, and the marker cell with the `LOW-SECURITY` marker on): [qa/ui-10-walk.md](qa/ui-10-walk.md), with PNGs in [qa/ui-10-screens/](qa/ui-10-screens/). The walk found a defect older than this slice and fixed it here: one ssh key sign-in recorded **two** logins (`auth_publickey` started the whole member session to check the handle and the shell started it again), so "last login" and the "since your last call" mark were always the current sign-in; `MemberSessions::handle_for_key` now checks the key without recording a login, with a regression test that fails on the old code.
 - **Not built / not verified:** drag-to-resize and mouse (UI-9); widgets in accessibility mode as their own screen (M5); the other screens inside the panes (UI-4); real door standings (the doors widget shows seasons: the door framework has no standings call, noted in coordination); live updates of chat lines in a widget (the chat widget shows room counts); other terminal emulators, telnet, a screen reader.
+## Interaction: mouse, command palette, toasts, ticker (UI-9, D125)
+
+Built in `m35/interaction` on today's screens. Pane dragging and split-screen chat wait for UI-4 (the screens are not on the panes yet); the hooks they need are listed at the end. Code: `ui::input` (`mouse`: the parser; `mod`: hit regions), `ui::palette`, `ui::toast`, `ui::ticker`, and `ssh::interact`, the one object a `Screen` keeps for all of it. Both transports use it: telnet and ssh share the shell, the key parser and the screen.
+
+### Mouse
+
+- **The member's choice, off by default.** Setting `o` on the settings screen (`Mouse: on|off`, stored per member, migration `0026`, both backends). The board asks the client to report the mouse (`ESC [ ? 1000 h`, press and release with the wheel, and `? 1006 h`, SGR coordinates) in the frame that follows the setting being on, and turns it off the same way when the member turns it off. It is always turned off before the alternate screen is left, so the person's terminal is restored on log off, revocation and every other normal end; if the connection is simply gone there is nobody to tell. No motion reporting is requested (pane dragging, UI-4, adds `1002`). `ssh::interact::mouse_allowed` is the one place accessibility mode (M5) will say no; there is no accessibility mode yet.
+- **A bounded parser** (`ui::input::mouse`), inside the key parser, so both transports get it. It reads SGR 1006 (`ESC [ < b ; x ; y M|m`) and the legacy X10 encoding (`ESC [ M` and three bytes). A report is at most 24 bytes; fields are digits only, at most five each, and coordinates are capped at 4096; chords with Shift, Meta or Ctrl, sideways wheels and motion with no button decode to nothing. An invalid or oversized report is **dropped, never echoed**: none of its bytes becomes a key. After a bad one the parser skips to its `M` or `m` (at most 64 more bytes, or a new `Esc`), so a stuck sequence cannot swallow the session. At most 64 events wait for the next cycle. Reports from a client that was never asked (the setting is off) are dropped by the screen.
+- **A mouse does nothing a key does not.** A click or a wheel turn becomes the **keys** the same action takes on the keyboard, applied through the ordinary path (so the menu, `core::access` and the limits run exactly as for a typed key): a click on a menu row presses that row's own hotkey (in the classic, lightbar, dashboard, wide, focus and split layouts); a click on a table row moves the cursor there with `Up`/`Down`, and a click on the row already under the cursor presses `Enter`; the wheel is `Up`/`Down` on a list (at most three a cycle) and `PageUp`/`PageDown` in the reader (one a cycle). A click in the same batch as typed keys is dropped (the target may be out of date), and only the first click of a batch counts. The compact layout has no mouse targets (it is for tiny terminals and screen readers).
+- **Where it applies.** The main menu, the forum board, thread and search tables, the members table, the forum and mail readers (wheel). Not yet: chat, the editor, doors (UI-5 adds mouse events to the door API), and the sysop and community screens (UI-4 moves them onto widgets).
+- **How a screen says what is clickable.** While a frame is drawn, the widgets that draw a list or a page record a region (`ui::input::list`, `ui::input::page`) into a thread-local sink that `Screen::draw` sets for that one synchronous draw and reads back; the last frame's map is what a click is looked up in. With no sink (every widget test) recording does nothing.
+
+### Command palette (`Ctrl-K`)
+
+- **Offered at the main menu and its submenus** to a signed-in member, not in chat or the editor, not over the help overlay. The waiting room, the founder claim and every other screen have none.
+- **Built from `core::access`, never wider.** Areas are the menu tree's own items filtered by `Item::visible` (the rule the menu draws with); settings pages need the settings permission; doors need `doors.run`; boards are the names `forums::boards` returns for this member's snapshot (the session asks the forum service when the palette opens). Door and board names are sanitized when the entry is made. Members are not searched yet: a person has no key path that opens their profile directly (UI-4).
+- **Fuzzy search**: letters in order, case ignored, a run of consecutive letters and a match at the start of a word score more. With nothing typed, recent choices (this session, up to six) come first.
+- **It runs nothing itself.** An entry is a key path from the menu's root (`f`; `d` `Down` `Enter` for the second door; `s` `o` for the mouse setting). Choosing one presses `Esc` out of any submenu and then those keys through the ordinary path, so access is checked again: a permission lost since the palette opened makes the path do nothing. `Ctrl-C` still logs off from inside the palette.
+- A click on a palette row runs it; while it is open nothing under it answers the mouse.
+
+### Toasts
+
+Short notices over the body, at most three at once, five seconds each. **Rate limited**: a repeat of one showing or waiting is folded in, no more than six are accepted a minute, and at most eight wait. **Never over chrome**: they are drawn in the screen minus its first and last rows (the header bar, and the status bar with the marker cell), clamped there; a test draws the frame with and without toasts and the palette at several sizes and tiers and compares those rows cell for cell. Text is a string-table key or somebody else's words (`Text::Member`), which go through the shared sanitizer to one line of at most 120 characters. The kind is a word first (`Mail:`, `Notice:`, `Page:`, `Door:`), so a toast reads the same with no colour and to a screen reader (`Toast::announce` is that plain form). Sources today: turning the mouse on or off, and a count of unread mail when a member signs in with mail they may read (not over telnet, where mail is withheld). Pages and door events are hooks (below).
+
+### Header ticker
+
+A sysop line in the header bar between the board name and the clock: `[board] ticker` (up to eight lines of 80 characters, separated by `|`, each checked like the tagline) and, with `ticker_feeds`, the newest headlines of the feed boards the member may read (read through `core::access`, sanitized, refreshed every five minutes, at most eight). **Budget**: with motion on it moves one cell a second, which is one header-row diff a second and never more than the shell's redraw cap (D49); with motion off, or when the member or style has turned it off, it shows the first line, whole and still, and asks for **no** timer-driven redraw. It is drawn by the frame, in the header only, and takes only text that was checked or sanitized, so it cannot reach the status bar or the marker cell.
+
+### Rules that did not move
+
+Markers keep the reserved style and the status bar's left cell; toasts, the palette and the ticker never use bold plus reverse; all member text goes through the shared sanitizer; nothing here makes a "private" claim.
+
+### Hooks for UI-4 and later
+
+- **Pane drag**: `HitMap` regions are the place to add a `Divider` region; the terminal would then be asked for `1002` (drag) in `ssh::interact::MOUSE_ON`; `panes::Plan::divider` already has the rectangle.
+- **Split-screen chat beside any screen**: `Screen::chat` is an overlay today; the split pane needs the chat screen drawn into a `Slot` rectangle and `Interact::overlay` kept clear of it.
+- **Page and door toasts**: `Screen::toast(Kind::Page | Kind::Door, Text::Member(..))`; chat events reach the shell only while the chat screen is up, and doors have no event channel yet.
+- **Palette entries for members**: a direct-open request for a profile.
+- **Screens on widgets (UI-4)** call `ui::input::list`/`page` from their draw code, as the table and the menu do, to be clickable.
+- **Door mouse (UI-5)**: forward `Mouse` events inside the door's area to the door API.
+
+### Verified
+
+See the PR for the commands and results; in short, property tests on the parser (arbitrary bytes never panic, never exceed the caps, never become keys), palette no-leak tests (a missing permission removes the area, the doors, the boards or the settings pages; no permissions leaves only Log off; an empty snapshot lists nothing), toast placement against the header and status rows, click-equals-hotkey parity per layout, redraw-budget tests for the ticker, and two integration tests over a real russh client; a walk over real OpenSSH 9.6 and a raw telnet client is in [qa/ui-9-walk.md](qa/ui-9-walk.md).
 
 ## Effects and graphics (UI-8, D124)
 

@@ -1,0 +1,43 @@
+                            ╭« Night Owl BBS »─────────────────────────────────────────────────────────╮
+                            │Terminal settings                                                         │
+   .     .     .     .     .│                                                                          │ .     .     .     .     .
+                            │Width: automatic                                                          │
+                            │Height: automatic                                                         │
+   .     .     .     .     .│Color: on                                                                 │ .     .     .     .     .
+                            │Pause at screen end: on (long text stops at the end of each screen)       │
+                            │Icons: Unicode                                                            │
+   .     .     .     .     .│Layout: dashboard (board default)   Theme: neon (board default)           │ .     .     .     .     .
+                            │Motion: on   Depth: auto   Borders: style's own                           │
+                            │                                                                          │
+   .     .     .     .     .│[w] Set width   [h] Set height                                            │ .     .     .     .     .
+                            │[c] Toggle color   [p] Toggle pause                                       │
+                            │[l] Next layout   [t] Next theme                                          │
+   .     .     .     .     .│[m] Toggle motion   [d] Next depth   [r] Next borders                     │ .     .     .     .     .
+                            │[y] Style gallery                                                         │
+                            │[i] Run the icon check again   [g] Widgets                                │
+   .     .     .     .     .│[s] Password                                                              │ .     .     .     .     .
+                            │[b] Back                                                                  │
+                            │                                                                          │
+   .     .     .     .     .│Esc: back   Ctrl-C: log off                                               │ .     .     .     .     .
+                            │                                                                          │
+                            │                                                                          │
+   .     .     .     .     .│                                                                          │ .     .     .     .     .
+                            │                                                                          │
+                            │                                                                          │
+   .     .     .     .     .│                                                                          │ .     .     .     .     .
+                            │                                                                          │
+                            │                                                                          │
+   .     .     .     .     .│                                                                          │ .     .     .     .     .
+                            │                                                                          │
+                            │                                                                          │
+   .     .     .     .     .│                                                                          │ .     .     .     .     .
+                            │                                                                          │
+                            │                                                                          │
+   .     .     .     .     .│                                                                          │ .     .     .     .     .
+                            │                                                                          │
+                            │                                                                          │
+   .     .     .     .     .│                                                                          │ .     .     .     .     .
+                            │                                                                          │
+                            │                                                                          │
+   .     .     .     .     .╰──────────────────────────────────────────────────────────────────────────╯ .     .     .     .     .
+ ? help  Esc back  Ctrl-C log off

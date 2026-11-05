@@ -174,6 +174,19 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
             .map_err(|e| anyhow::anyhow!("{e}"))
             .context("building the doors")?,
     );
+    // Theme packs (UI-7): `packs/` beside the host key holds exported and importable packs; an
+    // import installs into `themes/` and `art/`. Only when all three directories are known.
+    let ui = match (themes_dir, art_dir) {
+        (Some(themes), Some(art)) => match themes.parent() {
+            Some(root) => ui.with_pack_dirs(russh_bbs_server::ui::PackDirs {
+                packs: root.join("packs"),
+                themes: themes.to_path_buf(),
+                art: art.to_path_buf(),
+            }),
+            None => ui,
+        },
+        _ => ui,
+    };
     // The store decides who is a member; an unknown key or a store error is Restricted.
     let ui = Arc::new(ui);
     let board_doors = ui.doors().clone();

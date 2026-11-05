@@ -31,7 +31,7 @@ use rand::TryRng as _;
 use rand::rngs::SysRng;
 use russh::ChannelId;
 use russh::server::Handle;
-use russh_bbs_core::access::{Access, Fingerprint, Permission, Snapshot};
+use russh_bbs_core::access::{Access, Fingerprint, Permission, PermissionCheck as _, Snapshot};
 use russh_bbs_core::chat::{ChatNotice, ChatRequest, ChatResponse};
 use russh_bbs_core::founder::{
     ClaimOutcome, FOUNDER_USERNAME, claim_founder, claim_founder_with_password,
@@ -271,6 +271,7 @@ impl<D: Backend> Shell<D> {
             self.finish().await;
             return;
         }
+        self.announce_unread_mail().await;
         let mut next_cycle = tokio::time::Instant::now() + self.parts.redraw_interval;
         loop {
             self.wait_for_work().await;
@@ -298,6 +299,11 @@ impl<D: Backend> Shell<D> {
             if let Some(size) = batch.resize {
                 self.parts.screen.set_size(size);
             }
+            // The mouse (UI-9): reports become the keys they stand for and join the batch, so
+            // they take the ordinary path. Reports that arrive with typed keys are dropped.
+            let mouse = self.keys.take_mouse();
+            let clicks = self.parts.screen.mouse_keys(&mouse, !keys.is_empty());
+            keys.extend(clicks);
             let mut effects = if keys.is_empty() {
                 super::screen::KeyEffects::default()
             } else {
@@ -316,9 +322,7 @@ impl<D: Backend> Shell<D> {
             }
             self.apply_chat_effects(&effects);
             self.answer_requests(&mut effects).await;
-            if let Some(request) = effects.invite.take() {
-                self.run_invite(request).await;
-            }
+            self.run_member_requests(&mut effects).await;
             let mut leaving = effects.disconnect || batch.finish || out_of_time;
             if !leaving && let Some(request) = effects.redeem {
                 self.try_redeem(request).await;
@@ -338,6 +342,7 @@ impl<D: Backend> Shell<D> {
             {
                 leaving = true;
             }
+            self.interaction_upkeep(effects.palette).await;
             if !batch.finish {
                 self.refresh_widgets().await;
             }
@@ -501,16 +506,22 @@ impl<D: Backend> Shell<D> {
                 () = self.parts.session.revoke_signal().revoked() => {}
             }
         };
-        // The earlier of the held-`Esc` deadline and the next effect frame (UI-8). With no effect
-        // running the screen has no deadline, so motion off arms no timer.
-        let deadline = [self.keys.deadline(), self.parts.screen.next_fx_due()]
-            .into_iter()
-            .flatten()
-            .min();
+        // The earliest of the parser's deadline (a held `Esc`), the screen's own (a toast
+        // expiring, the ticker moving) and the next effect frame (UI-8). Each only wakes the loop
+        // the one time it is due and the loop's redraw cap still applies; with nothing pending
+        // there is no deadline, so motion off arms no timer.
+        let deadline = [
+            self.keys.deadline(),
+            self.parts.screen.next_wake(Instant::now()),
+            self.parts.screen.next_fx_due(),
+        ]
+        .into_iter()
+        .flatten()
+        .min();
         match deadline {
             Some(deadline) => {
-                // Elapsing is the point: the cycle then expires the held `Esc` or draws the
-                // next effect frame.
+                // Elapsing is the point: the cycle then expires the held `Esc`, the toast or
+                // draws the next effect frame.
                 let _ = timeout_at(tokio::time::Instant::from_std(deadline), woken).await;
             }
             None => woken.await,
@@ -1088,6 +1099,43 @@ impl<D: Backend> Shell<D> {
     /// Carry out an invite request for the signed-in member and show its screen. The checks
     /// (permission, quota) are core's; this only supplies the session's snapshot and, for a new
     /// code, bytes from the OS random source.
+    /// The requests a member's keys made that need the store or the disk: an invite action, then
+    /// a theme-pack action (UI-7). At most one of each per batch, in that order.
+    async fn run_member_requests(&mut self, effects: &mut super::screen::KeyEffects) {
+        if let Some(request) = effects.invite.take() {
+            self.run_invite(request).await;
+        }
+        if let Some(request) = effects.packs.take() {
+            self.run_packs(request).await;
+        }
+    }
+
+    /// Carry out a theme-pack request (UI-7): the files on a blocking thread, then the audit row
+    /// for a change. The permission is checked again where the work is done.
+    async fn run_packs(&mut self, request: russh_bbs_core::terminal_settings::PackRequest) {
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let ui = self.parts.screen.ui_handle();
+        let job = tokio::task::spawn_blocking(move || {
+            crate::ui::theme::service::run(&ui, &access, request)
+        });
+        let Ok(Ok(outcome)) = timeout(MEMBER_START_TIMEOUT, job).await else {
+            warn!(session = ?self.parts.session.id(), "theme pack request failed or timed out");
+            return;
+        };
+        if let Some(event) = &outcome.event
+            && let Err(error) =
+                russh_bbs_core::audit::AuditStore::append(&*self.parts.directory, event).await
+        {
+            // The files are already written; say so rather than pretend nothing happened.
+            warn!(session = ?self.parts.session.id(), %error, "theme pack change could not be audited");
+        }
+        self.parts
+            .screen
+            .packs_done(outcome.listing, Some(&outcome.message));
+    }
+
     async fn run_invite(&mut self, request: InviteRequest) {
         let Some(access) = self.parts.screen.access().cloned() else {
             return;
@@ -1335,6 +1383,103 @@ impl<D: Backend> Shell<D> {
             match self.parts.screen.deliver_forum(response) {
                 Some(next) => request = next,
                 None => break,
+            }
+        }
+    }
+
+    /// Before each frame (UI-9): load what the palette and the ticker asked for, and let time
+    /// pass for toasts and the ticker.
+    async fn interaction_upkeep(&mut self, palette: super::screen::PaletteAsk) {
+        if palette == super::screen::PaletteAsk::Boards {
+            self.load_palette_boards().await;
+        }
+        let now = Instant::now();
+        if self.parts.screen.ticker_headlines_due(now) {
+            self.load_ticker_headlines(now).await;
+        }
+        self.parts.screen.tick(now);
+    }
+
+    /// Tell a member who signs in with unread mail so, with a toast (UI-9). Only when they may
+    /// read mail on this transport (telnet withholds it, D90) and the board can open it; a slow
+    /// or failing store just means no toast.
+    async fn announce_unread_mail(&mut self) {
+        let Some(account) = self.parts.account else {
+            return;
+        };
+        let may_read = self
+            .parts
+            .screen
+            .access()
+            .is_some_and(|access| access.allows(Permission::MailRead));
+        if !may_read || self.parts.screen.mail_keys().is_none() {
+            return;
+        }
+        let counts = timeout(
+            MEMBER_START_TIMEOUT,
+            russh_bbs_core::mail::MailStore::inbox_counts(&*self.parts.directory, account),
+        )
+        .await;
+        if let Ok(Ok((_, unread))) = counts
+            && unread > 0
+        {
+            self.parts.screen.toast(
+                crate::ui::toast::Kind::Mail,
+                crate::ui::toast::Text::Count("toast.new_mail", unread),
+            );
+        }
+    }
+
+    /// The palette opened: ask the forum service which boards this member may list (it filters
+    /// through `core::access`) and hand the names to the palette. A slow or failing store leaves
+    /// the palette without boards; nothing else changes.
+    async fn load_palette_boards(&mut self) {
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let listed = timeout(
+            MEMBER_START_TIMEOUT,
+            russh_bbs_core::forums::boards(&*self.parts.directory, &access),
+        )
+        .await;
+        if let Ok(Ok(boards)) = listed {
+            self.parts
+                .screen
+                .set_palette_boards(boards.into_iter().map(|board| board.name).collect());
+        }
+    }
+
+    /// Fetch the newest headlines of the feed boards this member may read, for the header
+    /// ticker. Only when the sysop turned feed headlines on; a failure keeps the old ones and
+    /// asks again after the usual interval.
+    async fn load_ticker_headlines(&mut self, now: Instant) {
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let store = &*self.parts.directory;
+        let gather = async {
+            let mut subjects = Vec::new();
+            for board in russh_bbs_core::forums::boards(store, &access).await? {
+                if !board.feed {
+                    continue;
+                }
+                let page = russh_bbs_core::forums::threads(store, &access, board.id, 0).await?;
+                subjects.extend(page.threads.into_iter().map(|thread| thread.subject));
+                if subjects.len() >= crate::ui::ticker::MAX_HEADLINES {
+                    break;
+                }
+            }
+            Ok::<_, russh_bbs_core::forums::ForumError>(subjects)
+        };
+        match timeout(MEMBER_START_TIMEOUT, gather).await {
+            Ok(Ok(subjects)) => self.parts.screen.set_ticker_headlines(&subjects, now),
+            Ok(Err(error)) => {
+                warn!(session = ?self.parts.session.id(), %error, "ticker headlines could not be read");
+                self.parts.screen.set_ticker_headlines(&[], now);
+            }
+            Err(_) => {
+                warn!(session = ?self.parts.session.id(), "ticker headlines timed out");
+                self.parts.screen.set_ticker_headlines(&[], now);
             }
         }
     }

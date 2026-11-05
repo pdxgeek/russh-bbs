@@ -24,15 +24,20 @@ pub mod editor;
 pub(crate) mod frame;
 pub(crate) mod fx;
 pub(crate) mod image;
+pub(crate) mod input;
 pub(crate) mod keys;
 pub(crate) mod layout;
 pub(crate) mod lightbar;
 pub(crate) mod pager;
+pub(crate) mod palette;
 pub(crate) mod panes;
 pub(crate) mod popup;
 pub mod strings;
+pub(crate) mod style_gallery;
 pub(crate) mod table;
 pub mod theme;
+pub(crate) mod ticker;
+pub(crate) mod toast;
 pub mod widgets;
 
 use std::path::Path;
@@ -78,6 +83,19 @@ pub struct Ui {
     /// The banner and header art (UI-3): bundled, plus the sysop's `art/` directory.
     art: art::ArtSet,
     widgets: widgets::WidgetSettings,
+    /// Where theme packs are exported to, imported from and installed (UI-7).
+    packs: Option<PackDirs>,
+}
+
+/// The directories theme packs use, all beside the host key like `themes/` and `art/`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PackDirs {
+    /// `packs/`: exported packs are written here and imports are read from here.
+    pub packs: std::path::PathBuf,
+    /// `themes/`: an imported style's theme file is installed here.
+    pub themes: std::path::PathBuf,
+    /// `art/`: an imported style's art is installed here.
+    pub art: std::path::PathBuf,
 }
 
 /// The keys mail is sealed with (M3-I), carried to the sessions beside the screens' words because
@@ -175,7 +193,10 @@ impl Ui {
             .iter()
             .copied()
             .chain(keys::LAYOUT_KEYS.iter().copied())
+            .chain(palette::TEXT_KEYS.iter().copied())
+            .chain(toast::TEXT_KEYS.iter().copied())
             .chain(keys::PREVIEW_KEYS.iter().copied())
+            .chain(keys::GALLERY_KEYS.iter().copied())
             .chain(tree.text_keys())
             .chain(widgets::TEXT_KEYS.iter().copied())
             .chain(widgets::screen::TEXT_KEYS.iter().copied())
@@ -198,7 +219,28 @@ impl Ui {
             doors: crate::doors::Doors::none(),
             art: art::ArtSet::bundled().map_err(|error| UiError::Art(error.to_string()))?,
             widgets: widgets::WidgetSettings::default(),
+            packs: None,
         })
+    }
+
+    /// The same screens with the directories theme packs use (UI-7). Without them the sysop's
+    /// Theme packs screen says packs are not available.
+    #[must_use]
+    pub fn with_pack_dirs(mut self, dirs: PackDirs) -> Self {
+        self.packs = Some(dirs);
+        self
+    }
+
+    /// The pack directories, if the board has them.
+    #[must_use]
+    pub fn pack_dirs(&self) -> Option<&PackDirs> {
+        self.packs.as_ref()
+    }
+
+    /// The loaded themes.
+    #[must_use]
+    pub fn theme_set(&self) -> &ThemeSet {
+        &self.themes
     }
 
     /// The same screens with the sysop's art files from `dir` added (UI-3). A bad file is
@@ -386,6 +428,8 @@ mod layout_tests;
 mod resolve_tests;
 #[cfg(test)]
 mod snapshots;
+#[cfg(test)]
+mod style_gallery_tests;
 #[cfg(test)]
 mod styles_tests;
 #[cfg(test)]

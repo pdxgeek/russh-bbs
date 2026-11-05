@@ -45,6 +45,10 @@
 # quotes = "Keep the line open.|See you in the morning."
 # Set false to turn motion off for every member.
 # motion = true
+# The live line in the header bar (UI-9): up to 8 lines separated by `|`, and optionally the
+# newest headlines of the feed boards each member may read. Motion off makes it static.
+# ticker = "Welcome | Tournament night is Friday"
+# ticker_feeds = false
 
 [widgets]
 # Which widgets exist, what each layout shows by default, and what is locked (UI-10). Lists are

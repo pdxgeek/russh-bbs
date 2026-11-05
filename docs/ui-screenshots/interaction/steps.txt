@@ -1,0 +1,13 @@
+01-menu-mouse-off	Main menu, mouse off (the default): a header ticker, no toast
+02-settings	Settings: the member's mouse choice ([o])
+03-mouse-on-toast	[o] pressed: the client was told to report the mouse, and a toast says so
+04-before-click	Click target: the Terminal settings row
+05-after-click	The click opened the row, exactly as pressing [s] does
+06-palette	Ctrl-K: the command palette over the menu (areas, settings pages, boards, doors the member may reach)
+07-palette-typed	Typing narrows it with a fuzzy match
+08-palette-ran	Enter ran the choice through the normal path: the members menu
+09-members-table	The members table: numbered rows are picked by their digit, so a click presses the row digit
+09b-members-click-target	Click target: the founder row
+10-table-click	The click pressed the row's digit: the profile opened, as typing 1 does
+11-lightbar-before-wheel	Lightbar layout: the cursor is on Terminal settings
+12-lightbar-after-wheel	Two wheel notches moved the cursor down two rows (to Log off), like the Down key

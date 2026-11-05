@@ -3,6 +3,10 @@
 # security markers are drawn.
 name = "green"
 
+[meta]
+title = "Green"
+credit = "russh-bbs project"
+
 [colors]
 heading = "lightgreen"
 key = "lightgreen"

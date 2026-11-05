@@ -29,6 +29,8 @@
 //! character goes through the shared sanitizer (controls become blanks, marker glyphs and
 //! private-use characters become U+FFFD), and a piece over its slot's cap is refused.
 
+use std::fmt::Write as _;
+
 use russh_bbs_core::terminal_settings::ThemeName;
 use serde::Deserialize;
 
@@ -118,6 +120,84 @@ pub fn parse(text: &str, sysop: bool) -> Result<ArtFile, ArtError> {
         pieces.push(one);
     }
     Ok(ArtFile { name, pieces })
+}
+
+/// Write `pieces` back out as an `.art.toml` file that [`parse`] reads to the same pieces: the
+/// export side of a theme pack (UI-7). Every piece is written for `style`. Text goes through
+/// [`quote`], so a character that needs escaping is escaped and nothing can end the string early.
+#[must_use]
+pub fn write(name: &str, style: ThemeName, credit: &str, pieces: &[&ArtPiece]) -> String {
+    let mut out = format!(
+        "format = {FORMAT}\nname = {}\nstyle = {}\n",
+        quote(name),
+        quote(style.as_str())
+    );
+    if !credit.is_empty() {
+        let _ = writeln!(out, "credit = {}", quote(credit));
+    }
+    for piece in pieces {
+        out.push_str("\n[[piece]]\n");
+        let _ = writeln!(out, "slot = {}", quote(piece.slot.name()));
+        if let Some(fallback) = piece.fallback() {
+            let _ = writeln!(out, "fallback = {}", quote(fallback));
+        }
+        let grid = &piece.grid;
+        let rows = |f: &dyn Fn(ArtCell) -> char| -> Vec<String> {
+            (0..grid.height())
+                .map(|y| (0..grid.width()).map(|x| f(grid.get(x, y))).collect())
+                .collect()
+        };
+        push_list(&mut out, "rows", &rows(&|c| c.ch));
+        if grid.cells().any(|c| c.fg.is_some()) {
+            push_list(&mut out, "fg", &rows(&|c| colour_char(c.fg)));
+        }
+        if grid.cells().any(|c| c.bg.is_some()) {
+            push_list(&mut out, "bg", &rows(&|c| colour_char(c.bg)));
+        }
+        if piece.ascii_given {
+            push_list(&mut out, "ascii", &rows(&|c| c.ascii));
+        }
+    }
+    out
+}
+
+fn push_list(out: &mut String, key: &str, rows: &[String]) {
+    let _ = writeln!(out, "{key} = [");
+    for row in rows {
+        let _ = writeln!(out, "  {},", quote(row));
+    }
+    out.push_str("]\n");
+}
+
+/// The colour character for a palette index (the inverse of the reader's).
+fn colour_char(index: Option<u8>) -> char {
+    const NAMES: &[u8; 8] = b"kbgcrmyw";
+    match index {
+        Some(i) if i < 8 => char::from(NAMES[usize::from(i)]),
+        Some(i) if i < 16 => char::from(NAMES[usize::from(i - 8)].to_ascii_uppercase()),
+        _ => '.',
+    }
+}
+
+/// A TOML basic string for `text`: quoted, with `\` `"` and every control character escaped.
+#[must_use]
+pub(crate) fn quote(text: &str) -> String {
+    let mut out = String::with_capacity(text.len() + 2);
+    out.push('"');
+    for c in text.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\t' => out.push_str("\\t"),
+            c if c.is_control() => {
+                let _ = write!(out, "\\u{:04X}", u32::from(c));
+            }
+            c => out.push(c),
+        }
+    }
+    out.push('"');
+    out
 }
 
 fn invalid(message: impl Into<String>) -> ArtError {

@@ -20,8 +20,10 @@
 //! [`View`]: crate::waiting_room::View
 
 mod flow;
+mod gallery;
 mod glyph;
 mod layout;
+mod packs;
 mod pager;
 mod preview;
 mod sessions;
@@ -30,12 +32,14 @@ pub mod strings;
 mod time;
 
 pub use flow::{MemberEffect, MemberFlow, MemberInput};
+pub use gallery::{Gallery, GalleryKey, GalleryOutcome};
 pub use glyph::{GlyphAnswer, GlyphProgress, GlyphStep, GlyphTest};
 pub use layout::{
     BorderChoice, DEFAULT_THEME, DepthCap, LayoutId, THEME_NAME_MAX, ThemeName, ThemeNameError,
     borders_from_stored, borders_to_stored, depth_cap_from_stored, depth_cap_to_stored,
     layout_from_stored, layout_to_stored,
 };
+pub use packs::{FileRow, PackKey, PackListing, PackRequest, PackScreen, PackStep, StyleRow};
 pub use pager::{Pager, PagerEffect, PagerKey, PagerPrompt, PagerView};
 pub use preview::{PreviewKey, PreviewSample, SIZES as PREVIEW_SIZES, ThemePreview};
 pub use sessions::{MemberSessions, MemberStart, SaveError, TerminalSettingsStore};
