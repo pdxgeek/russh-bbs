@@ -224,3 +224,7 @@ Usage counters (`limit_usage`) are per account per UTC day and survive a restart
 - **Implemented and tested (M4-F1, D106):** the `[blobs]` section is used: the server builds the local or S3 store at start. Tests: `config::tests::blob_limits_and_s3_only_settings_are_checked`, `s3_needs_a_bucket_and_no_credentials`; the stores themselves in `russh-bbs-store` (see [deploy.md](deploy.md#testing-the-s3-blob-backend)).
 - **Planned:** IAM token authentication.
 - **Verified end to end:** see the M1-H pull request for the `ssh` session against a file and against environment overrides.
+
+## Menus and pages (UI-6)
+
+No config key. `menus.toml` and `pages/<id>.toml` live in the data directory (beside the host key, like `themes/` and `art/`) and are read at start and on the Sysop tools reload. A missing file is the built-in menu; a bad one is logged and refused. Schema and caps: [ui.md](ui.md#sysop-menus-and-pages-ui-6-d-tbd).
