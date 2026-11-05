@@ -35,7 +35,7 @@ use russh_bbs_core::store::AccountId;
 use russh_bbs_core::waiting_room::Clock;
 use tokio::sync::Notify;
 
-pub(crate) use render::{ChatCtx, render};
+pub(crate) use render::{ChatCtx, render, render_pane};
 
 /// The monotonic clock the send limit reads, shared so tests can move it by hand.
 struct SharedClock(Arc<dyn Clock>);

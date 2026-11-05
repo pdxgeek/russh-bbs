@@ -65,6 +65,21 @@ impl Filling<'_> {
 const LETTER_SPACE: usize = 2;
 
 impl<'a> ArtCtx<'a> {
+    /// The grid of the style's login banner, for the animated intro to reveal: the best login
+    /// piece (the same order the static screen uses), skipping one with no faithful ASCII form
+    /// when `ascii`. `None` when art is off or the board has no login piece. Size is not
+    /// checked: the intro clips and centres.
+    pub(crate) fn login_banner(&self, ascii: bool) -> Option<&'a Grid> {
+        if !self.enabled {
+            return None;
+        }
+        self.set
+            .candidates(Slot::Login, self.style)
+            .into_iter()
+            .find(|p| !ascii || p.ascii_safe())
+            .map(super::piece::ArtPiece::grid)
+    }
+
     /// What fills `slot` in `width` x `height` cells at `tier`, or `None` if nothing does.
     pub(crate) fn fill(
         &self,
@@ -202,7 +217,7 @@ fn paint(
 
 /// A cell's style: colours only. The foreground is the cell's own palette colour, or `tint`
 /// where the cell has none; the background is the cell's own or the screen's.
-fn cell_style(cell: ArtCell, look: Look, tint: Tint) -> Style {
+pub(crate) fn cell_style(cell: ArtCell, look: Look, tint: Tint) -> Style {
     let fg = match cell.fg {
         Some(i) => look.fg(Tint::Named(vga(i))),
         None => look.fg(tint),

@@ -744,8 +744,8 @@ mod interaction {
     use crate::ui::input::{Click, Region};
     use crate::ui::toast::{Kind as ToastKind, Text};
 
-    const ON: &str = "\x1b[?1000h\x1b[?1006h";
-    const OFF: &str = "\x1b[?1006l\x1b[?1000l";
+    const ON: &str = "\x1b[?1000h\x1b[?1002h\x1b[?1006h";
+    const OFF: &str = "\x1b[?1006l\x1b[?1002l\x1b[?1000l";
 
     fn settings(mouse: bool) -> TerminalSettings {
         TerminalSettings::default()

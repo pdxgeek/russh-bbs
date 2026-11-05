@@ -20,6 +20,7 @@ pub(crate) mod chrome;
 pub(crate) mod classic;
 pub(crate) mod compact;
 pub mod depth;
+pub(crate) mod dock;
 pub mod editor;
 pub(crate) mod frame;
 pub(crate) mod fx;

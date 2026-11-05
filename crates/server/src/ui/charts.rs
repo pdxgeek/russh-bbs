@@ -25,7 +25,10 @@
     clippy::cast_sign_loss,
     reason = "chart geometry is small, non-negative and bounded by the area"
 )]
-#![allow(dead_code, reason = "the chart widgets are consumed by UI-4 and UI-10")]
+#![allow(
+    dead_code,
+    reason = "the widgets (UI-10) use Sparkline, Meter and LineChart; BarChart and Gauge wait for UI-4"
+)]
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
@@ -109,6 +112,14 @@ impl ChartTheme {
             Tone::Warn => self.warn,
             Tone::Bad => self.bad,
         }
+    }
+
+    /// This theme forced to the ASCII forms when `ascii` is set (the widgets' text form draws
+    /// seven-bit characters whatever the member's tier).
+    #[must_use]
+    pub(crate) const fn with_ascii(mut self, ascii: bool) -> Self {
+        self.paint.ascii = self.paint.ascii || ascii;
+        self
     }
 
     const fn ascii(&self) -> bool {
@@ -385,6 +396,77 @@ impl Widget for LineChart<'_> {
     }
 }
 
+/// Fill one row of `area` with a horizontal bar of `eighths` eighth-cells: full blocks, one
+/// partial block, then the track. ASCII draws `#`, `=` and `-`. Shared by [`Gauge`] and
+/// [`Meter`] so there is one bar.
+fn paint_bar(buf: &mut Buffer, area: Rect, eighths: u64, style: Style, theme: ChartTheme) {
+    for cell in 0..area.width {
+        let rem = eighths.saturating_sub(u64::from(cell) * 8).min(8) as usize;
+        let (symbol, st) = match (rem, theme.ascii()) {
+            (0, true) => ("-", theme.track),
+            (0, false) => ("░", theme.track),
+            (8, true) => ("#", style),
+            (_, true) => ("=", style),
+            (r, false) => (ACROSS[r], style),
+        };
+        put(buf, area.x + cell, area.y, symbol, st);
+    }
+}
+
+/// A bare one-row bar filled to `part` of `whole` across the whole area, with no label and no
+/// figure: the caller draws those beside it (a poll option's votes, a mail count, the load).
+/// `part` beyond `whole` is full and a `whole` of zero is empty. Unicode ends the fill in a
+/// partial block; ASCII rounds to whole cells (`#` and `-`).
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct Meter {
+    part: u64,
+    whole: u64,
+    tone: Tone,
+    theme: ChartTheme,
+}
+
+impl Meter {
+    /// A meter at `part` of `whole`.
+    pub(crate) const fn new(part: u64, whole: u64, theme: ChartTheme) -> Self {
+        Self {
+            part,
+            whole,
+            tone: Tone::Plain,
+            theme,
+        }
+    }
+
+    /// Draw in `tone`.
+    #[must_use]
+    pub(crate) const fn tone(mut self, tone: Tone) -> Self {
+        self.tone = tone;
+        self
+    }
+}
+
+impl Widget for Meter {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        let area = area.intersection(buf.area);
+        if area.is_empty() {
+            return;
+        }
+        let whole = u128::from(self.whole.max(1));
+        let part = u128::from(self.part.min(self.whole));
+        let mut eighths = ((part * u128::from(area.width) * 8 + whole / 2) / whole) as u64;
+        if self.theme.ascii() {
+            // ASCII has no partial cell here: `#` for a cell at least half full, else the track.
+            eighths = (eighths + 4) / 8 * 8;
+        }
+        paint_bar(
+            buf,
+            Rect::new(area.x, area.y, area.width, 1),
+            eighths,
+            self.theme.tone(self.tone),
+            self.theme,
+        );
+    }
+}
+
 /// A one-row gauge: a bar, then the percentage.
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct Gauge<'a> {
@@ -441,18 +523,13 @@ impl Widget for Gauge<'_> {
         }
         let bar_w = (area.x + area.width).saturating_sub(x + 5).max(1);
         let eighths = (self.ratio * f64::from(bar_w) * 8.0).round() as u64;
-        let style = self.theme.tone(self.tone);
-        for cell in 0..bar_w {
-            let rem = eighths.saturating_sub(u64::from(cell) * 8).min(8) as usize;
-            let (symbol, st) = match (rem, self.theme.ascii()) {
-                (0, true) => ("-", self.theme.track),
-                (0, false) => ("░", self.theme.track),
-                (8, true) => ("#", style),
-                (_, true) => ("=", style),
-                (r, false) => (ACROSS[r], style),
-            };
-            put(buf, x + cell, area.y, symbol, st);
-        }
+        paint_bar(
+            buf,
+            Rect::new(x, area.y, bar_w, 1),
+            eighths,
+            self.theme.tone(self.tone),
+            self.theme,
+        );
         put_text(buf, x + bar_w + 1, area.y, &value, 4, self.theme.text);
     }
 }

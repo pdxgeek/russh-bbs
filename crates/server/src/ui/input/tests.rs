@@ -152,3 +152,53 @@ fn a_click_on_a_numbered_row_without_a_cursor_presses_its_digit() {
     // The tenth drawn row has no digit: nothing happens, as nothing does on the keyboard.
     assert!(hits.click(2, 13).is_empty());
 }
+
+// ---- the dock (UI-W) -------------------------------------------------------------------
+
+fn docked(chat_focused: bool) -> HitMap {
+    let mut hits = menu(0, None);
+    hits.dock = Some(super::DockHit {
+        body: Rect::new(0, 1, 80, 22),
+        main: Rect::new(0, 1, 47, 22),
+        divider: Rect::new(47, 1, 1, 22),
+        pane: Rect::new(48, 1, 32, 22),
+        chat_focused,
+    });
+    hits
+}
+
+#[test]
+fn a_click_in_the_pane_moves_the_keys_there_and_a_click_on_the_divider_does_nothing() {
+    let hits = docked(false);
+    assert_eq!(hits.click(60, 10), vec![Key::Ctrl('w')]);
+    // The divider is for dragging, not a click.
+    assert!(hits.click(47, 10).is_empty());
+    // The screen's own clicks are unchanged while the screen has the keys.
+    assert_eq!(hits.click(3, 5), vec![Key::Char('f')]);
+}
+
+#[test]
+fn a_click_on_the_screen_while_the_pane_has_the_keys_moves_them_first() {
+    let hits = docked(true);
+    assert_eq!(hits.click(3, 5), vec![Key::Ctrl('w'), Key::Char('f')]);
+    // Inside the pane while it has the keys: the pane draws no rows to click.
+    assert!(hits.click(60, 10).is_empty());
+    // Empty space on the screen side still only moves the keys.
+    assert_eq!(hits.click(3, 20), vec![Key::Ctrl('w')]);
+}
+
+#[test]
+fn a_modal_overlay_forgets_the_dock_too() {
+    let ((), hits) = capture(|| {
+        super::dock(super::DockHit {
+            body: Rect::new(0, 1, 80, 22),
+            main: Rect::new(0, 1, 47, 22),
+            divider: Rect::new(47, 1, 1, 22),
+            pane: Rect::new(48, 1, 32, 22),
+            chat_focused: false,
+        });
+        modal();
+    });
+    assert!(hits.dock().is_none());
+    assert!(hits.click(60, 10).is_empty());
+}

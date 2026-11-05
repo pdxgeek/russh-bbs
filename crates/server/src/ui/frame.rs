@@ -218,7 +218,10 @@ impl<'a> FrameSpec<'a> {
 
     /// Draw the bars into `frame` and return the body rectangle for the screen's content.
     pub(crate) fn draw(&self, frame: &mut Frame<'_>) -> Rect {
-        let parts = self.parts(frame.area());
+        let mut parts = self.parts(frame.area());
+        // A dock (UI-W) takes columns from the body only: the bars below keep the full width,
+        // so the status bar's marker cell is never moved or covered.
+        parts.body = super::dock::carve(parts.body);
         // The style's glass and texture first, over everything above the status bar: the status
         // bar clears its own row, so the marker cell never carries any of it.
         let above = Rect {
