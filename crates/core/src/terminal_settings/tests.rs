@@ -1396,6 +1396,8 @@ fn the_menus_and_pages_screen_is_a_sysop_action_and_only_for_themes_manage() {
         f.input(MemberInput::Char('l')),
         MemberEffect::MenuTools(MenuToolsRequest::Reload)
     );
+    // Enter views a page only on the pages list; `t` switches to it.
+    f.input(MemberInput::Char('t'));
     f.input(MemberInput::Enter);
     assert_eq!(f.menu_tools().unwrap().viewing(), Some("rules"));
     f.input(MemberInput::Escape);
