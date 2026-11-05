@@ -1,0 +1,39 @@
+# Original art for the "neon" style, drawn for russh-bbs. Synthwave: a striped sun over a perspective grid.
+format = 1
+name = "neon"
+style = "neon"
+credit = "russh-bbs project (original art)"
+
+[[piece]]
+slot = "login"
+rows = [
+  "                      █████████                     ",
+  "                    █████████████                   ",
+  "                   ███████████████                  ",
+  "                  ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄                 ",
+  "────────────────────────────────────────────────────",
+  "  /     /     /     /     │     \\     \\     \\     \\ ",
+  "  /           /           │           \\           \\ ",
+]
+fg = [
+  "......................MMMMMMMMM.....................",
+  "....................MMMMMMMMMMMMM...................",
+  "...................RRRRRRRRRRRRRRR..................",
+  "..................YYYYYYYYYYYYYYYYY.................",
+  "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+  "..c.....c.....c.....c.....c.....c.....c.....c.....c.",
+  "..c...........c...........c...........c...........c.",
+]
+
+[[piece]]
+slot = "menu"
+rows = [
+  "                                  █████                                 ",
+  "────────────────────────────────────────────────────────────────────────",
+  "/     /     /     /     /     /     │     \\     \\     \\     \\     \\     ",
+]
+fg = [
+  "..................................MMMMM.................................",
+  "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+  "c.....c.....c.....c.....c.....c.....c.....c.....c.....c.....c.....c.....",
+]

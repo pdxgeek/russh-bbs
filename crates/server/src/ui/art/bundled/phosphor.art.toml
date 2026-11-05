@@ -1,0 +1,37 @@
+# Original art for the "phosphor" style, drawn for russh-bbs. A green CRT: an oscilloscope trace on a graticule.
+format = 1
+name = "phosphor"
+style = "phosphor"
+credit = "russh-bbs project (original art)"
+
+[[piece]]
+slot = "login"
+rows = [
+  "                           ▄▄▄▄▄▄▄                      ",
+  ".       .       .      ▄▄▀▀     . ▀▀▄▄  .       .       ",
+  ".   .   .   .   .   .▄▀ .   .   .   . ▀▄▄   .   .   .   ",
+  "▀▀▄     .       . ▄▀▀   .       .       .▀▄     .       ",
+  "   ▀▀▄▄       ▄▄▀▀                         ▀▀▄▄       ▄▄",
+  ".      ▀▀▀▀▀▀▀  .       .       .       .      ▀▀▀▀▀▀▀  ",
+]
+fg = [
+  "...........................GGGGGGG......................",
+  "g.......g.......g......GGGG.....g.GGGG..g.......g.......",
+  "g...g...g...g...g...gGG.g...g...g...g.GGG...g...g...g...",
+  "GGG.....g.......g.GGG...g.......g.......gGG.....g.......",
+  "...GGGG.......GGGG.........................GGGG.......GG",
+  "g......GGGGGGG..g.......g.......g.......g......GGGGGGG..",
+]
+
+[[piece]]
+slot = "menu"
+rows = [
+  "                ▄▄▄▄▀▀▀▀▀▀▄▄▄                       ▄▄▄▄▀▀▀▀▀▀▄▄▄       ",
+  ".   .   .  ▄▄▄▀▀.   .   .   .▀▀▀▄▄  .   .   .  ▄▄▄▀▀.   .   .   .▀▀▀▄▄  ",
+  "▀▀▄▄▄▄▄▄▀▀▀                       ▀▀▀▀▄▄▄▄▄▄▀▀▀                       ▀▀",
+]
+fg = [
+  "................GGGGGGGGGGGGG.......................GGGGGGGGGGGGG.......",
+  "g...g...g..GGGGGg...g...g...gGGGGG..g...g...g..GGGGGg...g...g...gGGGGG..",
+  "GGGGGGGGGGG.......................GGGGGGGGGGGGG.......................GG",
+]

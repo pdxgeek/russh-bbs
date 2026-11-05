@@ -131,6 +131,8 @@ fn draw_on(
                     board: Board::standard(),
                     wanted: chosen,
                     popover: false,
+                    art: None,
+                    widgets: crate::ui::widgets::WidgetView::none(),
                 },
             );
         })

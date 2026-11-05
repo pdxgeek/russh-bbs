@@ -35,6 +35,8 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Clear, Paragraph};
 use russh_bbs_core::icons::{SecurityMarker, Tier};
 
+use super::art::Slot;
+use super::art::draw::ArtCtx;
 use super::chrome;
 use super::strings::StringTable;
 use super::theme::skin::{blend, gradient_depth};
@@ -81,6 +83,25 @@ impl<'a> Hint<'a> {
     }
 }
 
+/// A request for art at the top of the body (UI-3): which slot, and how many rows the screen
+/// needs for itself, so the art takes only what is left over.
+#[derive(Clone, Copy)]
+pub(crate) struct ArtRequest<'a> {
+    pub(crate) ctx: &'a ArtCtx<'a>,
+    pub(crate) slot: Slot,
+    /// Rows of the body that stay for the screen's own content.
+    pub(crate) keep: u16,
+}
+
+impl std::fmt::Debug for ArtRequest<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ArtRequest")
+            .field("slot", &self.slot)
+            .field("keep", &self.keep)
+            .finish_non_exhaustive()
+    }
+}
+
 /// How a frame is split.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct Parts {
@@ -101,6 +122,7 @@ pub(crate) struct FrameSpec<'a> {
     clock: Option<&'a str>,
     hints: &'a [Hint<'a>],
     header: bool,
+    art: Option<ArtRequest<'a>>,
 }
 
 impl<'a> FrameSpec<'a> {
@@ -117,7 +139,16 @@ impl<'a> FrameSpec<'a> {
             clock: None,
             hints: &[],
             header: !look.is_borderless(),
+            art: None,
         }
+    }
+
+    /// Ask for art above the body (the screen's header or banner), in the rows beyond `keep`
+    /// only; the returned body starts below it.
+    #[must_use]
+    pub(crate) const fn art(mut self, art: Option<ArtRequest<'a>>) -> Self {
+        self.art = art;
+        self
     }
 
     /// The security markers that apply to this screen (drawn in the status bar's left cell).
@@ -203,7 +234,35 @@ impl<'a> FrameSpec<'a> {
         if let Some(area) = parts.status {
             self.draw_status(frame, area);
         }
-        parts.body
+        self.draw_art(frame, &parts)
+    }
+
+    /// Draw the requested art at the top of the body and return the body below it. The art goes
+    /// only in the body, never on the status bar's row where the marker cell is.
+    fn draw_art(&self, frame: &mut Frame<'_>, parts: &Parts) -> Rect {
+        let body = parts.body;
+        let Some(request) = self.art else {
+            return body;
+        };
+        let spare = body.height.saturating_sub(request.keep);
+        let Some(filling) = request.ctx.fill(request.slot, self.tier, body.width, spare) else {
+            return body;
+        };
+        let Ok(rows) = u16::try_from(filling.height()) else {
+            return body;
+        };
+        // One blank row under the art when there is room for it.
+        let used = if spare > rows { rows + 1 } else { rows };
+        let slot = Rect {
+            height: rows,
+            ..body
+        };
+        super::art::draw::draw(frame, slot, &filling, self.look, self.tier);
+        Rect {
+            y: body.y + used,
+            height: body.height - used,
+            ..body
+        }
     }
 
     fn bar(&self) -> Style {

@@ -173,6 +173,31 @@ pub trait CreditStore: Send + Sync {
     ) -> impl Future<Output = Result<Vec<LedgerEntry>, StoreError>> + Send;
 }
 
+/// The board with no members has no ledger.
+impl CreditStore for crate::access::NoMembers {
+    fn append(
+        &self,
+        _account: AccountId,
+        _delta: i64,
+        _reason: &Slug,
+    ) -> impl Future<Output = Result<Posted, CreditError>> + Send {
+        std::future::ready(Err(CreditError::Store(StoreError::AccountNotFound)))
+    }
+
+    fn balance(&self, _account: AccountId) -> impl Future<Output = Result<u64, StoreError>> + Send {
+        std::future::ready(Ok(0))
+    }
+
+    fn entries(
+        &self,
+        _account: AccountId,
+        _before: Option<LedgerId>,
+        _limit: u32,
+    ) -> impl Future<Output = Result<Vec<LedgerEntry>, StoreError>> + Send {
+        std::future::ready(Ok(Vec::new()))
+    }
+}
+
 /// Earn or spend credits for `account`. The one way credits move; see the [module docs](self).
 pub async fn post<S: CreditStore>(
     store: &S,

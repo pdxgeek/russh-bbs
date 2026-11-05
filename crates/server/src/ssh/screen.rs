@@ -61,20 +61,25 @@ use russh_bbs_core::waiting_room::{
 };
 
 use super::interact::{self, Interact, PaletteStep};
+use russh_bbs_core::widgets::{Choice, WidgetData, WidgetId};
+
 use super::terminal::{Key, PtySize, RenderCap};
 use crate::forums::{self, DrawCtx, ForumEffect, ForumsScreen};
 use crate::mail::{self, MailEffect, MailScreen};
 use crate::members;
 use crate::settings::{self, Look};
 use crate::sysop;
+use crate::ui::art::Slot as ArtSlot;
 use crate::ui::classic::{self, ContentScreen, MENU_MARKERS, MenuScreen};
 use crate::ui::depth::ColorDepth;
 use crate::ui::editor::{Editor, EditorEffect, EditorRequest, EditorView, Outcome};
-use crate::ui::frame::{FrameSpec, clock_text};
+use crate::ui::frame::clock_text;
 use crate::ui::input::mouse::Mouse;
 use crate::ui::palette;
 use crate::ui::strings::StringTable;
 use crate::ui::toast::{Kind as ToastKind, Text as ToastText};
+use crate::ui::widgets::screen::{self as widgets_screen, WidgetsScreen};
+use crate::ui::widgets::{self, WidgetView};
 use crate::ui::{Ui, backdrop, chrome, layout};
 use crate::waiting_room::render;
 
@@ -293,6 +298,9 @@ pub(crate) struct KeyEffects {
     /// The command palette opened (UI-9): the session loads the boards the member may list and
     /// gives them to [`Screen::set_palette_boards`].
     pub(crate) palette: PaletteAsk,
+    /// The member changed their widget list for a layout (UI-10): store it (`None` goes back to
+    /// the board's default) with `russh_bbs_core::widgets::save`.
+    pub(crate) widget_save: Option<(LayoutId, Option<Vec<WidgetId>>)>,
     /// Keys held back because `members_request` has to be answered first. The session applies
     /// them after delivering the answer, so a fast typist's next key is not lost.
     pub(crate) held_back: Vec<Key>,
@@ -325,6 +333,7 @@ impl KeyEffects {
         if later.palette != PaletteAsk::Nothing {
             self.palette = later.palette;
         }
+        self.widget_save = later.widget_save.or(self.widget_save.take());
         self.held_back = later.held_back;
     }
 }
@@ -508,12 +517,32 @@ impl Content {
             .map_or(LayoutId::Classic, |flow| ui.layout_for(flow.settings()))
     }
 
+    /// The style the member draws with, for choosing art (UI-3).
+    fn style(&self, ui: &Ui) -> Option<russh_bbs_core::terminal_settings::ThemeName> {
+        self.flow().map(|flow| ui.style_for(flow.settings()))
+    }
+
     /// The strings to draw with: the member's theme, or the default for everyone else.
     fn strings<'a>(&self, ui: &'a Ui) -> &'a StringTable {
         self.flow().map_or_else(
             || ui.strings(),
             |flow| ui.theme_for(flow.settings()).strings(),
         )
+    }
+}
+
+/// Which art slot a plain member screen has: the login banner or the logoff screen.
+fn art_slot_of(
+    view: &russh_bbs_core::waiting_room::View,
+    flow: Option<&MemberFlow>,
+) -> Option<ArtSlot> {
+    use russh_bbs_core::terminal_settings::strings::LOGIN_HEADING;
+    if flow.is_some_and(MemberFlow::is_logged_off) {
+        Some(ArtSlot::Logoff)
+    } else if view.heading == LOGIN_HEADING {
+        Some(ArtSlot::Login)
+    } else {
+        None
     }
 }
 
@@ -562,6 +591,25 @@ pub(crate) struct Screen {
     transport: Transport,
     /// The mouse, the command palette, toasts and the header ticker (UI-9).
     interact: Interact,
+    /// The widgets' data and the member's saved lists (UI-10).
+    widgets: WidgetState,
+    /// The Widgets screen, while the member has it open over the settings (UI-10).
+    widgets_page: Option<WidgetsScreen>,
+}
+
+/// What the widget panels show and how the member arranged them (UI-10).
+#[derive(Debug, Default)]
+struct WidgetState {
+    /// The last fetch.
+    data: WidgetData,
+    /// The member's saved lists, loaded when the session starts.
+    choice: Choice,
+    /// When `data` was fetched.
+    fetched: Option<std::time::Instant>,
+    /// The widgets `data` was fetched for; a different list fetches again at once.
+    fetched_for: Vec<WidgetId>,
+    /// The member's saved lists were read (even if the read failed and the defaults stand).
+    choice_loaded: bool,
 }
 
 /// What the transport around a screen adds to it (M3-H, D27).
@@ -646,6 +694,8 @@ impl Screen {
                 depth: None,
             },
             interact,
+            widgets: WidgetState::default(),
+            widgets_page: None,
         })
     }
 
@@ -914,6 +964,10 @@ impl Screen {
             return self.apply_chat_keys(keys);
         }
         let mut effects = KeyEffects::default();
+        if self.widgets_page.is_some() {
+            self.widget_keys(keys, &mut effects);
+            return effects;
+        }
         if self.editor.is_some() {
             self.editor_keys(keys, &mut effects);
             self.dirty = true;
@@ -1028,6 +1082,15 @@ impl Screen {
                         }
                         MemberEffect::Doors => {
                             door_moved = DoorMove::Open(index);
+                            break;
+                        }
+                        MemberEffect::Widgets => {
+                            let start = self.ui.layout_for(flow.settings());
+                            self.widgets_page = Some(WidgetsScreen::open(start));
+                            self.widgets.fetched = None;
+                            self.dirty = true;
+                            // Keys typed after it belong to the new screen.
+                            effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
                             break;
                         }
                         MemberEffect::Disconnect => {
@@ -1164,6 +1227,135 @@ impl Screen {
     /// The room the chat screen shows, if it is in one.
     pub(super) fn chat_room(&self) -> Option<RoomId> {
         self.chat.as_ref().and_then(ChatScreen::room_id)
+    }
+
+    /// Keys on the Widgets screen (UI-10). Ctrl-C and Ctrl-D still log off.
+    fn widget_keys(&mut self, keys: &[Key], effects: &mut KeyEffects) {
+        self.dirty = true;
+        for (index, key) in keys.iter().copied().enumerate() {
+            if matches!(key, Key::Ctrl('c' | 'd')) {
+                effects.disconnect = true;
+                return;
+            }
+            let Some(access) = self.content.flow().map(MemberFlow::access_snapshot) else {
+                self.widgets_page = None;
+                return;
+            };
+            let ctx = widgets_screen::Ctx {
+                rules: self.ui.widgets().rules(),
+                choice: &self.widgets.choice,
+                access,
+            };
+            let Some(screen) = self.widgets_page.as_mut() else {
+                return;
+            };
+            match screen.press(key, &ctx) {
+                widgets_screen::Outcome::Stay => {}
+                widgets_screen::Outcome::Back => {
+                    self.widgets_page = None;
+                    // The rest of the batch is for the settings screen again.
+                    effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
+                    return;
+                }
+                widgets_screen::Outcome::Edit {
+                    choice,
+                    layout,
+                    list,
+                } => {
+                    self.widgets.choice = choice;
+                    effects.widget_save = Some((layout, list));
+                }
+            }
+        }
+    }
+
+    /// The member's saved widget lists, read when the session starts and after a save.
+    pub(crate) fn set_widget_choice(&mut self, choice: Choice) {
+        self.widgets.choice = choice;
+        self.widgets.choice_loaded = true;
+        self.dirty = true;
+    }
+
+    /// Whether the member's saved lists have been read.
+    pub(crate) fn widget_choice_loaded(&self) -> bool {
+        self.widgets.choice_loaded
+    }
+
+    /// The widgets the layout in force shows this member, in order: their saved list or the
+    /// board's default, within the sysop's locks and what they may reach. Empty outside the menu
+    /// and for the layouts that draw no widget panes.
+    fn widgets_shown(&self, layout: LayoutId) -> Vec<WidgetId> {
+        let Some(access) = self.access() else {
+            return Vec::new();
+        };
+        self.ui
+            .widgets()
+            .rules()
+            .resolve(layout, &self.widgets.choice, access)
+    }
+
+    /// Which widgets the screen needs data for now, if a fetch is due: the menu in a pane layout
+    /// (or the Widgets screen, which previews everything on offer) with data older than the
+    /// smallest refresh budget among the widgets drawn, or none yet. `None` when nothing shown
+    /// needs data, so a classic menu never wakes the store.
+    pub(crate) fn widgets_due(&self, now: std::time::Instant) -> Option<Vec<WidgetId>> {
+        let wanted = self.widgets_wanted();
+        if wanted.is_empty() {
+            return None;
+        }
+        let stale = match (self.widgets.fetched, widgets::refresh_interval(&wanted)) {
+            (Some(at), Some(every)) => {
+                now.saturating_duration_since(at) >= every || self.widgets.fetched_for != wanted
+            }
+            _ => true,
+        };
+        stale.then_some(wanted)
+    }
+
+    /// When the next timer-driven refresh is due, if widgets are on screen. The shell wakes at
+    /// this instant (no sooner than [`widgets::MIN_REFRESH`] after the last fetch).
+    pub(crate) fn widgets_deadline(&self) -> Option<std::time::Instant> {
+        let wanted = self.widgets_wanted();
+        let every = widgets::refresh_interval(&wanted)?;
+        self.widgets.fetched.map(|at| at + every)
+    }
+
+    /// The widgets whose data the screen in front of the member draws.
+    fn widgets_wanted(&self) -> Vec<WidgetId> {
+        if self.chat.is_some() || self.editor.is_some() {
+            return Vec::new();
+        }
+        if self.widgets_page.is_some() {
+            return self
+                .access()
+                .map(|access| self.ui.widgets().rules().offered(access))
+                .unwrap_or_default()
+                .into_iter()
+                .map(|(id, _)| id)
+                .collect();
+        }
+        if self.content.menu_page().is_none() {
+            return Vec::new();
+        }
+        self.widgets_shown(self.content.layout(&self.ui, self.viewport))
+    }
+
+    /// The previous sign-in time, the "since your last call" mark.
+    pub(crate) fn last_login(&self) -> Option<russh_bbs_core::store::UnixSeconds> {
+        self.content.flow().and_then(MemberFlow::last_login)
+    }
+
+    /// Give the screen freshly fetched widget data for `for_widgets`.
+    pub(crate) fn deliver_widgets(&mut self, data: WidgetData, for_widgets: Vec<WidgetId>) {
+        self.widgets.data = data;
+        self.widgets.fetched = Some(std::time::Instant::now());
+        self.widgets.fetched_for = for_widgets;
+        self.dirty = true;
+    }
+
+    /// The doors this board runs, for the doors widget.
+    pub(crate) fn doors(&self) -> &crate::doors::Doors {
+        self.ui.doors()
     }
 
     /// What the signed-in session holds, for the front end's own checks. `None` outside a
@@ -1732,7 +1924,22 @@ impl Screen {
         // While the editor is open it is drawn instead of the content (the transport's footer
         // row below still follows it).
         let drew_editor = self.draw_editor()?;
-        let view = self.content.view(&self.ui);
+        let mut view = self.content.view(&self.ui);
+        let art_ctx = self
+            .content
+            .style(&self.ui)
+            .map(|style| self.ui.art_ctx(style));
+        let art_slot = art_slot_of(&view, self.content.flow());
+        if art_slot == Some(ArtSlot::Logoff) {
+            // The board's own parting words, when the sysop wrote some (the clock picks one).
+            let seed = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map_or(0, |d| d.as_secs() / 60);
+            if let Some(quote) = self.ui.board().quote_for(seed) {
+                view.body.push(String::new());
+                view.body.push(quote.as_str().to_owned());
+            }
+        }
         let look = self.content.look(&self.ui, self.viewport, self.depth());
         let layout = self.content.layout(&self.ui, self.viewport);
         let wanted = self.content.wanted_layout(&self.ui);
@@ -1743,6 +1950,7 @@ impl Screen {
             .members_view()
             .or_else(|| self.content.community_view());
         let queue_view = self.content.queue_view();
+        let preview = self.content.flow().and_then(|flow| flow.preview().cloned());
         let tier = self.content.tier();
         let strings = self.content.strings(&self.ui);
         let framed = self.content.is_framed_screen();
@@ -1752,13 +1960,74 @@ impl Screen {
         // mode (D27, FIX-M3-6); the status bar's marker cell draws it.
         let staff_markers = self.status_markers();
         let clock = Some(clock.as_str());
+        let now_secs = i64::try_from(
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map_or(0, |elapsed| elapsed.as_secs()),
+        )
+        .unwrap_or(0);
+        let shown = self.widgets_shown(layout);
+        let widget_view = WidgetView {
+            shown: &shown,
+            data: &self.widgets.data,
+            settings: self.ui.widgets(),
+            now: now_secs,
+        };
+        let widgets_screen_state = self.widgets_page.as_ref();
+        let widget_access = self.content.flow().map(MemberFlow::access_snapshot);
+        let widget_choice = &self.widgets.choice;
         if !drew_editor {
             self.terminal.draw(|frame| {
                 match (look, &menu) {
+                    // The Widgets screen (UI-10), over the settings.
+                    (Some(look), _)
+                        if widgets_screen_state.is_some() && widget_access.is_some() =>
+                    {
+                        if let (Some(screen), Some(access)) = (widgets_screen_state, widget_access)
+                        {
+                            widgets_screen::render(
+                                frame,
+                                screen,
+                                &widgets_screen::DrawIn {
+                                    strings,
+                                    look,
+                                    tier,
+                                    markers: staff_markers,
+                                    clock,
+                                    ctx: widgets_screen::Ctx {
+                                        rules: self.ui.widgets().rules(),
+                                        choice: widget_choice,
+                                        access,
+                                    },
+                                    data: &self.widgets.data,
+                                    board: self.ui.board(),
+                                    settings: self.ui.widgets(),
+                                    now: now_secs,
+                                },
+                            );
+                        }
+                    }
                     // The chat screen (M3-F): the same box and status row, with the room's lines.
                     (Some(look), _) if chat.is_some() => {
                         if let Some(screen) = chat {
                             crate::chat::render(frame, screen, strings, look, tier);
+                        }
+                    }
+                    // The sysop's theme preview (UI-3): a sample screen in a chosen style and size.
+                    (Some(look), None) if preview.is_some() => {
+                        if let Some(preview) = &preview {
+                            crate::ui::art::preview::render(
+                                frame,
+                                preview,
+                                &crate::ui::art::preview::PreviewCtx {
+                                    ui: &self.ui,
+                                    strings,
+                                    look,
+                                    tier,
+                                    markers: staff_markers,
+                                    clock,
+                                },
+                            );
                         }
                     }
                     // The sysop queue and the vouch screen (M2-E): the same layout and status row. The
@@ -1830,6 +2099,8 @@ impl Screen {
                             board: self.ui.board(),
                             wanted,
                             popover: self.popover == Popover::Open,
+                            art: art_ctx.as_ref(),
+                            widgets: widget_view,
                         },
                     ),
                     // The invite screens (M2-D): the same framed layout, with the reserved status row.
@@ -1849,12 +2120,18 @@ impl Screen {
                     // keeps its 22 rows at 80x24.
                     (Some(look), None) => {
                         let hints = classic::content_hints(strings);
-                        let body = FrameSpec::new(strings, look, tier)
-                            .markers(staff_markers)
-                            .hints(&hints)
-                            .header(false)
-                            .draw(frame);
-                        settings::render_in(frame, body, &view, look, strings);
+                        settings::render_framed(
+                            frame,
+                            &view,
+                            &settings::Framed {
+                                strings,
+                                look,
+                                tier,
+                                markers: staff_markers,
+                                hints: &hints,
+                                art: art_ctx.as_ref().zip(art_slot),
+                            },
+                        );
                     }
                     (None, _) => render(frame, &view),
                 }

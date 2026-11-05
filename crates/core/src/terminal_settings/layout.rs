@@ -9,7 +9,7 @@
 use std::fmt;
 
 /// How menus are arranged. Every layout draws the same menu tree.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub enum LayoutId {
     /// A bordered box of `[k] Label` lines. The default and the accessible choice.
     #[default]

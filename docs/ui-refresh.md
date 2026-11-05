@@ -1,6 +1,6 @@
 # UI refresh and board customization (plan)
 
-Status: **Approved by the owner, 2026-11-04** as its own milestone, **M3.5: Look and feel** ([milestones.md](milestones.md)). The owner asked for it because "ratatui can make that UI look way better" and "there needs to be ways to customize the BBS so it looks cool". Slices UI-1 to UI-7 and the M3.5 QA gate are in [coordination.md](coordination.md). UI-1 (the frame, D109) and UI-2 (style packs, layouts, board identity; [implementation notes](#ui-2-implementation-notes)) are built; the rest is not.
+Status: **Approved by the owner, 2026-11-04** as its own milestone, **M3.5: Look and feel** ([milestones.md](milestones.md)). The owner asked for it because "ratatui can make that UI look way better" and "there needs to be ways to customize the BBS so it looks cool". Slices UI-1 to UI-7 and the M3.5 QA gate are in [coordination.md](coordination.md). UI-1 (the frame, D109), UI-2 (style packs, layouts, board identity; [implementation notes](#ui-2-implementation-notes)) and UI-3 (board art; [implementation notes](#ui-3-implementation-notes)), UI-10 (widgets; [implementation notes](#ui-10-implementation-notes)) are built; the rest is not.
 
 ## Goals
 
@@ -232,6 +232,24 @@ Built in `m35/theme-packs-layouts` (D117). The reference is [ui.md](ui.md#styles
 - **Member choices.** Style, layout, motion, colour-depth ceiling and borders, saved per member (migration `0024`), within the board's limits.
 - **Theme gallery, import and export, and the sysop preview** remain UI-3 and UI-7; the screenshots in [ui-screenshots/](ui-screenshots/README.md) are the owner's preview until then.
 
+## UI-3 implementation notes
+
+Built in `m35/board-art` (D123). The reference is [ui.md](ui.md#board-art-ui-3-d123); what differs from the plan above:
+
+- **Formats.** `.ans` and `.art.toml` as planned. The `.art.toml` colours are one character per cell in the VGA palette (`k b g c r m y w`, capitals bright), not hex; there is no 256-colour or truecolor art, so art looks the same at every depth that has colour.
+- **Slots.** `login`, `menu` and `logoff` are drawn. `area` is in the format and the loader and no screen draws it yet (UI-4). The **door menu** slot from the plan is not built (door screens are full ratatui buffers, UI-5).
+- **Board identity.** Of the art parts of `[board]` only `art` (on/off) and `quotes` (the logoff list) are keys; the banner and header are files in `art/`. Menu order and area labels remain UI-6.
+- **Large letters** are not drawn in the menu header at 80x24 (the header bar names the board and the menu needs its rows); they are drawn wherever there is room, and on the login and logoff screens.
+- **Preview.** Under Sysop tools, for `members.approve`. It previews the main menu and the login screen; reader, chat and popup samples wait for those screens to move onto the new frame (UI-4). Theme-file refusals are logged, not shown.
+- **Gallery, import and export** remain UI-7; sysop art is not part of a theme pack yet.
+
+## UI-10 implementation notes
+
+Built in `m35/widgets` (D122). The reference is [ui.md](ui.md#widgets-ui-10); what differs from the plan above:
+
+- **Launch set: 17 widgets.** Built: who's online, last callers, new posts (as active threads since the last call, per board), unread mail, a chat room list (rooms and how many are in each, not a live conversation), today's one-liners, the graffiti wall, the current poll, a board activity chart (threads last posted per day over 14 days, a braille area chart), a clock with a month calendar, doors with their seasons, feed headlines (the news ticker, as a list), the sysop's message of the day, your credits (a balance and a braille chart), plus identity, a quote of the day and a staff status gauge. **Not built:** the calendar's "event scheduler next events" (the scheduler only holds system jobs), real door *standings* (the framework has no call for them), a live chat sidebar and an auto-scrolling news ticker (UI-4/UI-8/UI-9).
+- **Cells, not slots.** The named `Slot`s are gone; the layouts make generic cells and the member's ordered list fills them (a widget takes the first cell that holds its minimum size; a widget with nothing to show takes none). The dashboard grid is 2 by 3 at 80x24 and 3 by 4 at 132x43.
+- **Per layout, not per slot.** Members edit one ord
 ## UI-9 implementation notes
 
 Built in `m35/interaction` (D-TBD) on today's screens because UI-4 has not started; the reference is [ui.md](ui.md#interaction-mouse-command-palette-toasts-ticker-ui-9-d-tbd). What differs from the plan above:

@@ -14,6 +14,7 @@ mod handler;
 pub mod host_key;
 pub(crate) mod interact;
 pub mod limits;
+mod live;
 pub(crate) mod password;
 pub mod registry;
 pub(crate) mod room;
@@ -33,6 +34,7 @@ use russh_bbs_core::access::{AccessStore, MemberDirectory};
 use russh_bbs_core::audit::AuditStore;
 use russh_bbs_core::chat::RoomStore;
 use russh_bbs_core::community::CommunityStore;
+use russh_bbs_core::credits::CreditStore;
 use russh_bbs_core::doors::DoorStore;
 use russh_bbs_core::drafts::DraftStore;
 use russh_bbs_core::feeds::FeedStore;
@@ -48,6 +50,7 @@ use russh_bbs_core::queue::QueueStore;
 use russh_bbs_core::registration::RegistrationStore;
 use russh_bbs_core::terminal_settings::MemberSessions;
 use russh_bbs_core::waiting_room::WaitingRoomSource;
+use russh_bbs_core::widgets::WidgetStore;
 
 /// Everything the SSH front end asks of the board's store: who is a member, the waiting room's
 /// settings, the founder claim, member profiles, and a member's session (what the account holds, terminal
@@ -75,6 +78,8 @@ pub trait Backend:
     + MailStore
     + AuditStore
     + DoorStore
+    + CreditStore
+    + WidgetStore
     + 'static
 {
 }
@@ -100,6 +105,8 @@ impl<T> Backend for T where
         + MailStore
         + AuditStore
         + DoorStore
+        + CreditStore
+        + WidgetStore
         + 'static
 {
 }

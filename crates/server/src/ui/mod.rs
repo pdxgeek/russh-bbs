@@ -11,6 +11,7 @@
 //! string table holds exactly the keys the tree and the layout use, so a bad table stops the
 //! server with a message naming the key instead of drawing blanks.
 
+pub mod art;
 pub(crate) mod backdrop;
 pub mod board;
 pub(crate) mod chrome;
@@ -32,6 +33,7 @@ pub(crate) mod table;
 pub mod theme;
 pub(crate) mod ticker;
 pub(crate) mod toast;
+pub mod widgets;
 
 use std::path::Path;
 use std::sync::Arc;
@@ -57,6 +59,9 @@ pub enum UiError {
     /// skipped with a warning).
     #[error("shipped theme: {0}")]
     Theme(#[from] ThemeError),
+    /// Bundled art is invalid (a build bug).
+    #[error("bundled art: {0}")]
+    Art(String),
 }
 
 /// What every screen on the framework draws with.
@@ -70,6 +75,9 @@ pub struct Ui {
     layouts: Vec<LayoutId>,
     mail: MailKeysHandle,
     doors: crate::doors::Doors,
+    /// The banner and header art (UI-3): bundled, plus the sysop's `art/` directory.
+    art: art::ArtSet,
+    widgets: widgets::WidgetSettings,
 }
 
 /// The keys mail is sealed with (M3-I), carried to the sessions beside the screens' words because
@@ -129,6 +137,20 @@ impl Ui {
         self
     }
 
+    /// The same screens with the board's widget settings (UI-10): which widgets exist, their
+    /// defaults and locks, the message of the day and the quotes.
+    #[must_use]
+    pub fn with_widgets(mut self, widgets: widgets::WidgetSettings) -> Self {
+        self.widgets = widgets;
+        self
+    }
+
+    /// The board's widget settings.
+    #[must_use]
+    pub fn widgets(&self) -> &widgets::WidgetSettings {
+        &self.widgets
+    }
+
     /// The doors this board runs.
     #[must_use]
     pub fn doors(&self) -> &crate::doors::Doors {
@@ -155,7 +177,10 @@ impl Ui {
             .chain(keys::LAYOUT_KEYS.iter().copied())
             .chain(palette::TEXT_KEYS.iter().copied())
             .chain(toast::TEXT_KEYS.iter().copied())
+            .chain(keys::PREVIEW_KEYS.iter().copied())
             .chain(tree.text_keys())
+            .chain(widgets::TEXT_KEYS.iter().copied())
+            .chain(widgets::screen::TEXT_KEYS.iter().copied())
             .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
             .chain(russh_bbs_core::community::TEXT_KEYS.iter().copied())
             .chain(russh_bbs_core::queue::keys::TEXT_KEYS.iter().copied())
@@ -173,7 +198,33 @@ impl Ui {
             themes: ThemeSet::shipped(&strings)?,
             mail: MailKeysHandle::default(),
             doors: crate::doors::Doors::none(),
+            art: art::ArtSet::bundled().map_err(|error| UiError::Art(error.to_string()))?,
+            widgets: widgets::WidgetSettings::default(),
         })
+    }
+
+    /// The same screens with the sysop's art files from `dir` added (UI-3). A bad file is
+    /// skipped with a logged reason and never fails this.
+    #[must_use]
+    pub fn with_art_dir(mut self, dir: &Path) -> Self {
+        self.art.add_dir(dir);
+        self
+    }
+
+    /// The art the board has.
+    #[must_use]
+    pub fn art(&self) -> &art::ArtSet {
+        &self.art
+    }
+
+    /// What screens ask for art with, for `style`.
+    pub(crate) fn art_ctx(&self, style: ThemeName) -> art::draw::ArtCtx<'_> {
+        art::draw::ArtCtx {
+            set: &self.art,
+            style,
+            board: self.board.name(),
+            enabled: self.board.art(),
+        }
     }
 
     /// The same screens with the board's identity and limits (UI-2). The name replaces the

@@ -114,10 +114,30 @@ The board's identity, and what members may choose. Every key is optional and the
 | `board.styles` | comma-separated style names | empty (every loaded style) | `RUSSH_BBS_BOARD_STYLES` | none | The styles members can pick. **One entry locks the style for everyone**, whatever they stored. A name that is not loaded is ignored with a warning at start |
 | `board.layouts` | comma-separated layout names | empty (all seven) | `RUSSH_BBS_BOARD_LAYOUTS` | none | The layouts members can pick. One entry locks the layout |
 | `board.motion` | boolean | `true` | `RUSSH_BBS_BOARD_MOTION` | none | `false` turns motion off for every member (the setting is stored; nothing animates yet, UI-4 and UI-8 will read it) |
+| `board.art` | boolean | `true` | `RUSSH_BBS_BOARD_ART` | none | `false` ignores all banner and header art, bundled and the sysop's, and draws the board name in large letters only (where the screen has room). Art itself is files, not keys: see [ui.md](ui.md#board-art-ui-3-d-tbd) |
+| `board.quotes` | text, `\|`-separated, each 1 to 120 characters, up to 32 | empty | `RUSSH_BBS_BOARD_QUOTES` | none | The logoff quotes. The logoff screen shows one (picked by the clock); empty shows none. Checked like every board text: no control, invisible or reserved characters, no claim of privacy |
 | `board.ticker` | up to 8 lines of up to 80 characters, separated by `\|` | empty (clock only) | `RUSSH_BBS_BOARD_TICKER` | none | The live line in the header bar between the board name and the clock (UI-9). Each line is checked like the tagline (no control, invisible or reserved characters, no claim of privacy). With motion on it scrolls one cell a second; with motion off, or on a terminal that has turned it off, it shows the first line, still |
 | `board.ticker_feeds` | boolean | `false` | `RUSSH_BBS_BOARD_TICKER_FEEDS` | none | Also show the newest headlines of the feed boards each member may read (read through `core::access`, sanitized, refreshed every five minutes) |
 
 A member's own choices (style, layout, motion, colour depth ceiling, border set) are stored per member and apply at once; they can only narrow what the board allows and what the client's terminal can show (see [ui.md](ui.md#styles-layouts-and-board-identity-ui-2)).
+
+### `[widgets]` (UI-10)
+
+Which widgets exist, what each pane layout shows by default, which are locked, and the sysop's own words for two of them. Every key is optional. The lists are comma-separated widget ids: `identity`, `clock`, `online`, `callers`, `new_posts`, `mail`, `chat`, `activity`, `credits`, `oneliner`, `wall`, `poll`, `news`, `motd`, `quote`, `doors`, `status`. An unknown id, a widget named twice in one list, a widget in two of `hidden`, `on` and `off`, or a default list of more than 12 widgets refuses the config and names the key. Text goes through the same checks as `[board]` (the shared sanitizer must leave it unchanged, and it may not say the board is private, secure or encrypted).
+
+| Key | Type | Default | Environment | Flag | Used by |
+|---|---|---|---|---|---|
+| `widgets.hidden` | widget ids | none | `RUSSH_BBS_WIDGETS_HIDDEN` | none | Widgets that do not exist on this board: not offered on the Widgets screen, never drawn |
+| `widgets.on` | widget ids | none | `RUSSH_BBS_WIDGETS_ON` | none | Widgets every member sees. A member can move one but not switch it off, and a lock added later wins over what a member saved |
+| `widgets.off` | widget ids | none | `RUSSH_BBS_WIDGETS_OFF` | none | Widgets nobody can switch on (listed as "locked off") |
+| `widgets.dashboard` | widget ids, in order | built in: `identity,clock,online,callers,new_posts,mail,activity,oneliner,poll,credits` | `RUSSH_BBS_WIDGETS_DASHBOARD` | none | The widgets (and order) a member who never chose gets in the dashboard layout |
+| `widgets.wide` | widget ids, in order | built in: `identity,clock,online,new_posts,activity,mail,callers,news,motd,status` | `RUSSH_BBS_WIDGETS_WIDE` | none | The same for the wide layout's right rail |
+| `widgets.focus` | widget ids, in order | built in: `identity,clock,mail,new_posts,online,motd` | `RUSSH_BBS_WIDGETS_FOCUS` | none | The same for the focus layout's pop-over (`Tab`) |
+| `widgets.split` | widget ids, in order | built in: `chat,online,mail,new_posts` | `RUSSH_BBS_WIDGETS_SPLIT` | none | The same for the split layout's second pane |
+| `widgets.motd` | text, up to 240 characters | empty (the `motd` widget collapses) | `RUSSH_BBS_WIDGETS_MOTD` | none | The message of the day widget |
+| `widgets.quotes` | quotes separated by `\|`, each up to 200 characters, at most 64 | empty (the `quote` widget collapses) | `RUSSH_BBS_WIDGETS_QUOTES` | none | The quote of the day widget: one quote per UTC day, in turn |
+
+A widget a member cannot reach (for example `status` without `sessions.view`, or `mail` without `mail.read`) is never offered to them and never fetched, whatever these lists say: they only choose among what the sysop allows **and** the member's permissions cover. The classic, lightbar and compact layouts draw no widgets. See [ui.md](ui.md#widgets-ui-10).
 
 ### `[mail]` (M3-I, D90)
 

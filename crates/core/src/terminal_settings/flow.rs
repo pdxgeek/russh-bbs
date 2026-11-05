@@ -10,6 +10,7 @@
 
 use super::glyph::{GlyphAnswer, GlyphProgress, GlyphTest};
 use super::layout::{LayoutId, ThemeName};
+use super::preview::{PreviewKey, ThemePreview};
 use super::settings::{SettingsError, TerminalSettings};
 use super::strings::{self, TextSource, fill};
 use super::{format_utc, tier_name};
@@ -81,6 +82,9 @@ pub enum MemberEffect {
     /// The member chose Doors: the front end hands the session to the door framework (M4-D0)
     /// and gives the flow back when they leave, like [`MemberEffect::Forums`].
     Doors,
+    /// The member opened the Widgets screen from the settings (UI-10). The front end owns that
+    /// screen (it draws live widgets); the flow stays on the settings page underneath.
+    Widgets,
     /// Redraw (the logoff screen is showing) and close the session.
     Disconnect,
 }
@@ -103,6 +107,8 @@ enum Page {
     Keys(Box<KeysScreen>),
     /// The staff recovery-code screen, under Sysop tools (FIX-M3-11).
     Recovery(Box<RecoveryScreen>),
+    /// The theme preview, under Sysop tools (UI-3). The server draws it.
+    Preview(ThemePreview),
     EditWidth(String),
     EditHeight(String),
     /// An invite screen (create, list, tree). Not `PartialEq`: it may hold a one-time code.
@@ -332,6 +338,16 @@ impl MemberFlow {
             });
             return MemberEffect::Stay;
         }
+        if matches!(self.page, Page::Preview(_)) && !self.access.allows(Permission::MembersApprove)
+        {
+            // Same rule: the permission went away since the screen opened.
+            self.page = Page::Home;
+            self.notice = Some(Notice {
+                kind: NoticeKind::Error,
+                text: strings::MEMBERS_NOT_PERMITTED,
+            });
+            return MemberEffect::Stay;
+        }
         if (matches!(self.page, Page::Keys(_)) && !self.access.allows(Permission::KeysManage))
             || (matches!(self.page, Page::Recovery(_))
                 && !self.access.allows(Permission::KeysRecover))
@@ -394,6 +410,7 @@ impl MemberFlow {
             Page::Settings => self.settings_input(input),
             Page::Password(_) => self.password_input(input),
             Page::Keys(_) | Page::Recovery(_) => self.keys_input(input),
+            Page::Preview(_) => self.preview_input(input),
             Page::EditWidth(_) | Page::EditHeight(_) => self.edit_input(input),
             Page::Invites(_) => self.invite_input(input),
             Page::Logoff => MemberEffect::Disconnect,
@@ -403,6 +420,18 @@ impl MemberFlow {
     /// Whether a page that changes the account's terminal settings is showing. The first-run
     /// glyph test is not one: it runs before the menu, and what it picks is kept for the session
     /// (the store refuses to save it without the permission).
+    /// Whether the member is at the settings screen itself (not a sub-page of it).
+    #[must_use]
+    pub const fn at_settings(&self) -> bool {
+        matches!(self.page, Page::Settings)
+    }
+
+    /// When the account signed in before this session, if it had.
+    #[must_use]
+    pub const fn last_login(&self) -> Option<UnixSeconds> {
+        self.last_login
+    }
+
     const fn settings_page_open(&self) -> bool {
         match &self.page {
             Page::Settings | Page::EditWidth(_) | Page::EditHeight(_) => true,
@@ -416,6 +445,7 @@ impl MemberFlow {
             | Page::Password(_)
             | Page::Keys(_)
             | Page::Recovery(_)
+            | Page::Preview(_)
             | Page::Logoff => false,
         }
     }
@@ -494,6 +524,13 @@ impl MemberFlow {
                 )));
                 MemberEffect::Stay
             }
+            MenuOutcome::Action(Action::ThemePreview) => {
+                self.page = Page::Preview(ThemePreview::open(
+                    self.effective_theme(),
+                    self.effective_layout(),
+                ));
+                MemberEffect::Stay
+            }
             MenuOutcome::Action(Action::MyKeys) => {
                 self.page = Page::Keys(Box::new(KeysScreen::open(self.telnet)));
                 MemberEffect::Stay
@@ -552,6 +589,7 @@ impl MemberFlow {
             | Action::Chat
             | Action::LogOff
             | Action::SysopQueue
+            | Action::ThemePreview
             | Action::RecoveryCode
             | Action::MyKeys
             | Action::VouchQueue
@@ -809,6 +847,7 @@ impl MemberFlow {
             MemberInput::Char('r' | 'R') => {
                 self.save(self.settings.with_borders(self.settings.borders().next()))
             }
+            MemberInput::Char('g' | 'G') => MemberEffect::Widgets,
             MemberInput::Char('i' | 'I') => {
                 self.page = Page::GlyphTest(GlyphTest::new(self.settings.needs_glyph_test()));
                 MemberEffect::Stay
@@ -874,6 +913,38 @@ impl MemberFlow {
         match next {
             Some(theme) => self.save(self.settings.with_theme(theme)),
             None => MemberEffect::Stay,
+        }
+    }
+
+    /// Keys on the theme preview: `t` style, `l` layout, `z` size, `i` icon tier, `c` colour,
+    /// `s` sample screen, `a` art, `b` or Esc back.
+    fn preview_input(&mut self, input: MemberInput) -> MemberEffect {
+        let key = match input {
+            MemberInput::Char('t' | 'T') => PreviewKey::Style,
+            MemberInput::Char('l' | 'L') => PreviewKey::Layout,
+            MemberInput::Char('z' | 'Z') => PreviewKey::Size,
+            MemberInput::Char('i' | 'I') => PreviewKey::Tier,
+            MemberInput::Char('c' | 'C') => PreviewKey::Colour,
+            MemberInput::Char('s' | 'S') => PreviewKey::Sample,
+            MemberInput::Char('a' | 'A') => PreviewKey::Art,
+            MemberInput::Char('b' | 'B') | MemberInput::Escape => PreviewKey::Back,
+            _ => return MemberEffect::Stay,
+        };
+        let (themes, layouts) = (self.themes.clone(), self.layouts.clone());
+        if let Page::Preview(preview) = &mut self.page
+            && preview.press(key, &themes, &layouts)
+        {
+            self.page = Page::Home;
+        }
+        MemberEffect::Stay
+    }
+
+    /// The theme preview, while it is open.
+    #[must_use]
+    pub const fn preview(&self) -> Option<&ThemePreview> {
+        match &self.page {
+            Page::Preview(preview) => Some(preview),
+            _ => None,
         }
     }
 
@@ -1071,7 +1142,7 @@ impl MemberFlow {
             Page::Login => self.login_view(&mut view, words),
             Page::GlyphTest(test) => glyph_view(&mut view, *test, words),
             Page::Home => self.home_view(&mut view, words),
-            Page::Members(_) | Page::Queue(_) | Page::Community(_) => {}
+            Page::Members(_) | Page::Queue(_) | Page::Community(_) | Page::Preview(_) => {}
             Page::Settings => self.settings_view(&mut view, words),
             Page::EditWidth(typed) => edit_view(&mut view, strings::FIELD_WIDTH, typed),
             Page::EditHeight(typed) => edit_view(&mut view, strings::FIELD_HEIGHT, typed),

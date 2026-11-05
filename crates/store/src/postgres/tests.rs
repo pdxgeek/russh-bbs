@@ -278,6 +278,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         "b882984db402233a152c4dcde1bde0c4668c4e2cb50fa7de32cc239e88f4e0b1214a1d398f0a07057a312c1545cd91c4",
     ),
     (
+        25,
+        "81b01a3655f45c292a3fbbe2adfa0f27f98213b46d1168890ba158186e74a3adee0e82759f24939ff3bf826691b7e88e",
+    ),
+    (
         26,
         "f0013ac40a598513e60a87e3e89e8da9321b0b4e214c9cde57f03ed11c3c6f2373ef9f803231bb694e3df8312a01912c",
     ),
@@ -376,7 +380,8 @@ async fn a_fresh_database_gets_every_migration_and_only_these_tables() {
             "scheduler_job",
             "settings",
             "terminal_settings",
-            "thread"
+            "thread",
+            "widget_list"
         ]
     );
 }

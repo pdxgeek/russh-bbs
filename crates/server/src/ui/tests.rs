@@ -32,7 +32,10 @@ fn the_shipped_table_and_tree_are_valid() {
         .iter()
         .copied()
         .chain(keys::LAYOUT_KEYS.iter().copied())
+        .chain(keys::PREVIEW_KEYS.iter().copied())
         .chain(main_tree().text_keys())
+        .chain(crate::ui::widgets::TEXT_KEYS.iter().copied())
+        .chain(crate::ui::widgets::screen::TEXT_KEYS.iter().copied())
         .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
         .chain(russh_bbs_core::community::TEXT_KEYS.iter().copied())
         .chain(russh_bbs_core::queue::keys::TEXT_KEYS.iter().copied())
@@ -54,7 +57,10 @@ fn the_table_holds_exactly_the_keys_the_code_uses() {
         .chain(keys::LAYOUT_KEYS.iter().copied())
         .chain(super::palette::TEXT_KEYS.iter().copied())
         .chain(super::toast::TEXT_KEYS.iter().copied())
+        .chain(keys::PREVIEW_KEYS.iter().copied())
         .chain(main_tree().text_keys())
+        .chain(crate::ui::widgets::TEXT_KEYS.iter().copied())
+        .chain(crate::ui::widgets::screen::TEXT_KEYS.iter().copied())
         .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
         .chain(russh_bbs_core::community::TEXT_KEYS.iter().copied())
         .chain(russh_bbs_core::queue::keys::TEXT_KEYS.iter().copied())
@@ -245,6 +251,8 @@ fn draw_with(
                     board: Board::standard(),
                     wanted: LayoutId::Classic,
                     popover: false,
+                    art: None,
+                    widgets: crate::ui::widgets::WidgetView::none(),
                 },
             );
         })

@@ -1,580 +1,580 @@
-=== phosphor / split / 80x24 / unicode truecolor / colors=f68e3f528dc8ae5f
+=== phosphor / split / 80x24 / unicode truecolor / colors=c4a09891427acd59
  russh-bbs │ Main menu                                                UTC 12:00
 ┌[ Main menu ]───────────────────┐│┌[ Chat ]───────────────────────────────────┐
-│ Signed in as alice.            │││ Nothing to show yet.                      │
-│                                │││                                           │
+│ Signed in as alice.            │││ #lobby                              ●●● 3 │
+│                                │││ #tech                                 ● 1 │
 │ > [f] Forums                   │││                                           │
 │   [m] Mail                     │││                                           │
 │   [a] Files  (not built yet)   │││                                           │
-│   [c] Chat                     │││                                           │
-│   [d] Doors                    │││                                           │
-│   [u] Members                  │││                                           │
-│   [y] Community                │││                                           │
-│   [i] Invites                  │││                                           │
-│   [s] Terminal settings        │┃│                                           │
+│   [c] Chat                     ││└───────────────────────────────────────────┘
+│   [d] Doors                    ││┌[ Who is online ]──────────────────────────┐
+│   [u] Members                  │││ ● 5 online                                │
+│   [y] Community                │││ ▸ alice             ▸ bob                 │
+│   [i] Invites                  │││ ▸ carol             ▸ dave                │
+│   [s] Terminal settings        │┃│ ▸ erin                                    │
 │   [o] Sysop tools              │││                                           │
 │   [l] Log off                  │││                                           │
-│                                │││                                           │
-│                                │││                                           │
-│                                │││                                           │
-│                                │││                                           │
-│                                │││                                           │
+│                                ││└───────────────────────────────────────────┘
+│                                ││┌[ Mail ]───────────────────────────────────┐
+│                                │││ 3 unread                                  │
+│                                │││ ██████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+│                                │││ 12 in your inbox                          │
 │                                │││                                           │
 │                                │││                                           │
 └────────────────────────────────┘│└───────────────────────────────────────────┘
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / split / 132x43 / unicode truecolor / colors=9aae0b3aea591122
+=== phosphor / split / 132x43 / unicode truecolor / colors=1d4d95a63ff69a04
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ┌[ Main menu ]───────────────────┐│┌[ Chat ]───────────────────────────────────────────────────────────────────────────────────────┐
-│ Signed in as alice.            │││ Nothing to show yet.                                                                          │
-│                                │││                                                                                               │
+│ Signed in as alice.            │││ #lobby                                                                                  ●●● 3 │
+│                                │││ #tech                                                                                     ● 1 │
 │ > [f] Forums                   │││                                                                                               │
 │   [m] Mail                     │││                                                                                               │
 │   [a] Files  (not built yet)   │││                                                                                               │
 │   [c] Chat                     │││                                                                                               │
-│   [d] Doors                    │││                                                                                               │
-│   [u] Members                  │││                                                                                               │
-│   [y] Community                │││                                                                                               │
-│   [i] Invites                  │││                                                                                               │
-│   [s] Terminal settings        │││                                                                                               │
-│   [o] Sysop tools              │││                                                                                               │
+│   [d] Doors                    ││└───────────────────────────────────────────────────────────────────────────────────────────────┘
+│   [u] Members                  ││┌[ Who is online ]──────────────────────────────────────────────────────────────────────────────┐
+│   [y] Community                │││ ● 5 online                                                                                    │
+│   [i] Invites                  │││ ▸ alice                                       ▸ bob                                           │
+│   [s] Terminal settings        │││ ▸ carol                                       ▸ dave                                          │
+│   [o] Sysop tools              │││ ▸ erin                                                                                        │
 │   [l] Log off                  │││                                                                                               │
 │                                │││                                                                                               │
+│                                ││└───────────────────────────────────────────────────────────────────────────────────────────────┘
+│                                ││┌[ Mail ]───────────────────────────────────────────────────────────────────────────────────────┐
+│                                │││  ━                                                                                            │
+│                                │││  ━┃                                                                                           │
+│                                │││  ━┃                                                                                           │
+│                                │┃│ 3 unread                                                                                      │
+│                                │││ ███████████████████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+│                                │││ 12 in your inbox                                                                              │
+│                                │││                                                                                               │
+│                                ││└───────────────────────────────────────────────────────────────────────────────────────────────┘
+│                                ││┌[ New posts ]──────────────────────────────────────────────────────────────────────────────────┐
+│                                │││ Active threads: 7                                                                             │
+│                                │││ General        █████████████████████████████████████████████████████████████████████████   4  │
+│                                │││ Tech           ████████████████████████████████████▌░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   2  │
+│                                │││ Chat           ██████████████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   1  │
 │                                │││                                                                                               │
 │                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │┃│                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-└────────────────────────────────┘│└───────────────────────────────────────────────────────────────────────────────────────────────┘
+│                                ││└───────────────────────────────────────────────────────────────────────────────────────────────┘
+│                                ││
+│                                ││
+│                                ││
+│                                ││
+│                                ││
+│                                ││
+│                                ││
+└────────────────────────────────┘│
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / split / 80x24 / ascii mono / colors=f88282c1a018d563
+=== phosphor / split / 80x24 / ascii mono / colors=81a06d5b70e3308b
  russh-bbs | Main menu                                                UTC 12:00
 +[ Main menu ]-------------------+|+[ Chat ]-----------------------------------+
-| Signed in as alice.            ||| Nothing to show yet.                      |
-|                                |||                                           |
+| Signed in as alice.            ||| #lobby                              *** 3 |
+|                                ||| #tech                                 * 1 |
 | > [f] Forums                   |||                                           |
 |   [m] Mail                     |||                                           |
 |   [a] Files  (not built yet)   |||                                           |
-|   [c] Chat                     |||                                           |
-|   [d] Doors                    |||                                           |
-|   [u] Members                  |||                                           |
-|   [y] Community                |||                                           |
-|   [i] Invites                  |||                                           |
-|   [s] Terminal settings        |#|                                           |
+|   [c] Chat                     ||+-------------------------------------------+
+|   [d] Doors                    ||+[ Who is online ]--------------------------+
+|   [u] Members                  ||| * 5 online                                |
+|   [y] Community                ||| > alice             > bob                 |
+|   [i] Invites                  ||| > carol             > dave                |
+|   [s] Terminal settings        |#| > erin                                    |
 |   [o] Sysop tools              |||                                           |
 |   [l] Log off                  |||                                           |
-|                                |||                                           |
-|                                |||                                           |
-|                                |||                                           |
-|                                |||                                           |
-|                                |||                                           |
+|                                ||+-------------------------------------------+
+|                                ||+[ Mail ]-----------------------------------+
+|                                ||| 3 unread                                  |
+|                                ||| ##########------------------------------- |
+|                                ||| 12 in your inbox                          |
 |                                |||                                           |
 |                                |||                                           |
 +--------------------------------+|+-------------------------------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / split / 80x24 / unicode truecolor / colors=82708dfefc5c28dd
+=== neon / split / 80x24 / unicode truecolor / colors=43529c315cc70dba
  » russh-bbs « │ Main menu                                            UTC 12:00
 ╭« Main menu »───────────────────╮│╭« Chat »───────────────────────────────────╮
-│ Signed in as alice.            │││ Nothing to show yet.                      │
-│                                │││                                           │
+│ Signed in as alice.            │││ #lobby                              ●●● 3 │
+│                                │││ #tech                                 ● 1 │
 │ > [f] Forums                   │││                                           │
 │   [m] Mail                     │││                                           │
 │   [a] Files  (not built yet)   │││                                           │
-│   [c] Chat                     │││                                           │
-│   [d] Doors                    │││                                           │
-│   [u] Members                  │││                                           │
-│   [y] Community                │││                                           │
-│   [i] Invites                  │││                                           │
-│   [s] Terminal settings        │┃│                                           │
+│   [c] Chat                     ││╰───────────────────────────────────────────╯
+│   [d] Doors                    ││╭« Who is online »──────────────────────────╮
+│   [u] Members                  │││ ● 5 online                                │
+│   [y] Community                │││ ▸ alice             ▸ bob                 │
+│   [i] Invites                  │││ ▸ carol             ▸ dave                │
+│   [s] Terminal settings        │┃│ ▸ erin                                    │
 │   [o] Sysop tools              │││                                           │
 │   [l] Log off                  │││                                           │
-│                                │││                                           │
-│                                │││                                           │
-│                                │││                                           │
-│                                │││                                           │
-│                                │││                                           │
+│                                ││╰───────────────────────────────────────────╯
+│                                ││╭« Mail »───────────────────────────────────╮
+│                                │││ 3 unread                                  │
+│                                │││ ██████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+│                                │││ 12 in your inbox                          │
 │                                │││                                           │
 │                                │││                                           │
 ╰────────────────────────────────╯│╰───────────────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / split / 132x43 / unicode truecolor / colors=e7ee95bdc2f825bc
+=== neon / split / 132x43 / unicode truecolor / colors=7325518bec2d6fcb
  » russh-bbs « │ Main menu                                                                                                UTC 12:00
 ╭« Main menu »───────────────────╮│╭« Chat »───────────────────────────────────────────────────────────────────────────────────────╮
-│ Signed in as alice.            │││ Nothing to show yet.                                                                          │
-│                                │││                                                                                               │
+│ Signed in as alice.            │││ #lobby                                                                                  ●●● 3 │
+│                                │││ #tech                                                                                     ● 1 │
 │ > [f] Forums                   │││                                                                                               │
 │   [m] Mail                     │││                                                                                               │
 │   [a] Files  (not built yet)   │││                                                                                               │
 │   [c] Chat                     │││                                                                                               │
-│   [d] Doors                    │││                                                                                               │
-│   [u] Members                  │││                                                                                               │
-│   [y] Community                │││                                                                                               │
-│   [i] Invites                  │││                                                                                               │
-│   [s] Terminal settings        │││                                                                                               │
-│   [o] Sysop tools              │││                                                                                               │
+│   [d] Doors                    ││╰───────────────────────────────────────────────────────────────────────────────────────────────╯
+│   [u] Members                  ││╭« Who is online »──────────────────────────────────────────────────────────────────────────────╮
+│   [y] Community                │││ ● 5 online                                                                                    │
+│   [i] Invites                  │││ ▸ alice                                       ▸ bob                                           │
+│   [s] Terminal settings        │││ ▸ carol                                       ▸ dave                                          │
+│   [o] Sysop tools              │││ ▸ erin                                                                                        │
 │   [l] Log off                  │││                                                                                               │
 │                                │││                                                                                               │
+│                                ││╰───────────────────────────────────────────────────────────────────────────────────────────────╯
+│                                ││╭« Mail »───────────────────────────────────────────────────────────────────────────────────────╮
+│                                │││  ━                                                                                            │
+│                                │││  ━┃                                                                                           │
+│                                │││  ━┃                                                                                           │
+│                                │┃│ 3 unread                                                                                      │
+│                                │││ ███████████████████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+│                                │││ 12 in your inbox                                                                              │
+│                                │││                                                                                               │
+│                                ││╰───────────────────────────────────────────────────────────────────────────────────────────────╯
+│                                ││╭« New posts »──────────────────────────────────────────────────────────────────────────────────╮
+│                                │││ Active threads: 7                                                                             │
+│                                │││ General        █████████████████████████████████████████████████████████████████████████   4  │
+│                                │││ Tech           ████████████████████████████████████▌░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   2  │
+│                                │││ Chat           ██████████████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   1  │
 │                                │││                                                                                               │
 │                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │┃│                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-╰────────────────────────────────╯│╰───────────────────────────────────────────────────────────────────────────────────────────────╯
+│                                ││╰───────────────────────────────────────────────────────────────────────────────────────────────╯
+│                                ││
+│                                ││    .     .     .     .     .     .     .     .     .     .     .     .     .     .     .     .
+│                                ││
+│                                ││
+│                                ││    .     .     .     .     .     .     .     .     .     .     .     .     .     .     .     .
+│                                ││
+│                                ││
+╰────────────────────────────────╯│    .     .     .     .     .     .     .     .     .     .     .     .     .     .     .     .
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / split / 80x24 / ascii mono / colors=2cdb706ce010d47d
+=== neon / split / 80x24 / ascii mono / colors=b7967a6ba3f9b26d
  >> russh-bbs << | Main menu                                          UTC 12:00
 +<< Main menu >>-----------------+|+<< Chat >>---------------------------------+
-| Signed in as alice.            ||| Nothing to show yet.                      |
-|                                |||                                           |
+| Signed in as alice.            ||| #lobby                              *** 3 |
+|                                ||| #tech                                 * 1 |
 | > [f] Forums                   |||                                           |
 |   [m] Mail                     |||                                           |
 |   [a] Files  (not built yet)   |||                                           |
-|   [c] Chat                     |||                                           |
-|   [d] Doors                    |||                                           |
-|   [u] Members                  |||                                           |
-|   [y] Community                |||                                           |
-|   [i] Invites                  |||                                           |
-|   [s] Terminal settings        |#|                                           |
+|   [c] Chat                     ||+-------------------------------------------+
+|   [d] Doors                    ||+<< Who is online >>------------------------+
+|   [u] Members                  ||| * 5 online                                |
+|   [y] Community                ||| > alice             > bob                 |
+|   [i] Invites                  ||| > carol             > dave                |
+|   [s] Terminal settings        |#| > erin                                    |
 |   [o] Sysop tools              |||                                           |
 |   [l] Log off                  |||                                           |
-|                                |||                                           |
-|                                |||                                           |
-|                                |||                                           |
-|                                |||                                           |
-|                                |||                                           |
+|                                ||+-------------------------------------------+
+|                                ||+<< Mail >>---------------------------------+
+|                                ||| 3 unread                                  |
+|                                ||| ##########------------------------------- |
+|                                ||| 12 in your inbox                          |
 |                                |||                                           |
 |                                |||                                           |
 +--------------------------------+|+-------------------------------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / split / 80x24 / unicode truecolor / colors=70e8f038a9350584
+=== paper / split / 80x24 / unicode truecolor / colors=e0f95d3887513002
  russh-bbs │ Main menu                                                UTC 12:00
 ╭ Main menu ─────────────────────╮│╭ Chat ─────────────────────────────────────╮
-│ Signed in as alice.            │││ Nothing to show yet.                      │
-│                                │││                                           │
+│ Signed in as alice.            │││ #lobby                              ●●● 3 │
+│                                │││ #tech                                 ● 1 │
 │ > [f] Forums                   │││                                           │
 │   [m] Mail                     │││                                           │
 │   [a] Files  (not built yet)   │││                                           │
-│   [c] Chat                     │││                                           │
-│   [d] Doors                    │││                                           │
-│   [u] Members                  │││                                           │
-│   [y] Community                │││                                           │
-│   [i] Invites                  │││                                           │
-│   [s] Terminal settings        │┃│                                           │
+│   [c] Chat                     ││╰───────────────────────────────────────────╯
+│   [d] Doors                    ││╭ Who is online ────────────────────────────╮
+│   [u] Members                  │││ ● 5 online                                │
+│   [y] Community                │││ ▸ alice             ▸ bob                 │
+│   [i] Invites                  │││ ▸ carol             ▸ dave                │
+│   [s] Terminal settings        │┃│ ▸ erin                                    │
 │   [o] Sysop tools              │││                                           │
 │   [l] Log off                  │││                                           │
-│                                │││                                           │
-│                                │││                                           │
-│                                │││                                           │
-│                                │││                                           │
-│                                │││                                           │
+│                                ││╰───────────────────────────────────────────╯
+│                                ││╭ Mail ─────────────────────────────────────╮
+│                                │││ 3 unread                                  │
+│                                │││ ██████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+│                                │││ 12 in your inbox                          │
 │                                │││                                           │
 │                                │││                                           │
 ╰────────────────────────────────╯│╰───────────────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / split / 132x43 / unicode truecolor / colors=9665607ba4d0da29
+=== paper / split / 132x43 / unicode truecolor / colors=fc1a71bfc3ad785a
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ╭ Main menu ─────────────────────╮│╭ Chat ─────────────────────────────────────────────────────────────────────────────────────────╮
-│ Signed in as alice.            │││ Nothing to show yet.                                                                          │
-│                                │││                                                                                               │
+│ Signed in as alice.            │││ #lobby                                                                                  ●●● 3 │
+│                                │││ #tech                                                                                     ● 1 │
 │ > [f] Forums                   │││                                                                                               │
 │   [m] Mail                     │││                                                                                               │
 │   [a] Files  (not built yet)   │││                                                                                               │
 │   [c] Chat                     │││                                                                                               │
-│   [d] Doors                    │││                                                                                               │
-│   [u] Members                  │││                                                                                               │
-│   [y] Community                │││                                                                                               │
-│   [i] Invites                  │││                                                                                               │
-│   [s] Terminal settings        │││                                                                                               │
-│   [o] Sysop tools              │││                                                                                               │
+│   [d] Doors                    ││╰───────────────────────────────────────────────────────────────────────────────────────────────╯
+│   [u] Members                  ││╭ Who is online ────────────────────────────────────────────────────────────────────────────────╮
+│   [y] Community                │││ ● 5 online                                                                                    │
+│   [i] Invites                  │││ ▸ alice                                       ▸ bob                                           │
+│   [s] Terminal settings        │││ ▸ carol                                       ▸ dave                                          │
+│   [o] Sysop tools              │││ ▸ erin                                                                                        │
 │   [l] Log off                  │││                                                                                               │
 │                                │││                                                                                               │
+│                                ││╰───────────────────────────────────────────────────────────────────────────────────────────────╯
+│                                ││╭ Mail ─────────────────────────────────────────────────────────────────────────────────────────╮
+│                                │││  ━                                                                                            │
+│                                │││  ━┃                                                                                           │
+│                                │││  ━┃                                                                                           │
+│                                │┃│ 3 unread                                                                                      │
+│                                │││ ███████████████████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+│                                │││ 12 in your inbox                                                                              │
+│                                │││                                                                                               │
+│                                ││╰───────────────────────────────────────────────────────────────────────────────────────────────╯
+│                                ││╭ New posts ────────────────────────────────────────────────────────────────────────────────────╮
+│                                │││ Active threads: 7                                                                             │
+│                                │││ General        █████████████████████████████████████████████████████████████████████████   4  │
+│                                │││ Tech           ████████████████████████████████████▌░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   2  │
+│                                │││ Chat           ██████████████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   1  │
 │                                │││                                                                                               │
 │                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │┃│                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-╰────────────────────────────────╯│╰───────────────────────────────────────────────────────────────────────────────────────────────╯
+│                                ││╰───────────────────────────────────────────────────────────────────────────────────────────────╯
+│                                ││
+│                                ││
+│                                ││
+│                                ││
+│                                ││
+│                                ││
+│                                ││
+╰────────────────────────────────╯│
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / split / 80x24 / ascii mono / colors=9cc829542612bafb
+=== paper / split / 80x24 / ascii mono / colors=9307c296adf5251b
  russh-bbs | Main menu                                                UTC 12:00
 + Main menu ---------------------+|+ Chat -------------------------------------+
-| Signed in as alice.            ||| Nothing to show yet.                      |
-|                                |||                                           |
+| Signed in as alice.            ||| #lobby                              *** 3 |
+|                                ||| #tech                                 * 1 |
 | > [f] Forums                   |||                                           |
 |   [m] Mail                     |||                                           |
 |   [a] Files  (not built yet)   |||                                           |
-|   [c] Chat                     |||                                           |
-|   [d] Doors                    |||                                           |
-|   [u] Members                  |||                                           |
-|   [y] Community                |||                                           |
-|   [i] Invites                  |||                                           |
-|   [s] Terminal settings        |#|                                           |
+|   [c] Chat                     ||+-------------------------------------------+
+|   [d] Doors                    ||+ Who is online ----------------------------+
+|   [u] Members                  ||| * 5 online                                |
+|   [y] Community                ||| > alice             > bob                 |
+|   [i] Invites                  ||| > carol             > dave                |
+|   [s] Terminal settings        |#| > erin                                    |
 |   [o] Sysop tools              |||                                           |
 |   [l] Log off                  |||                                           |
-|                                |||                                           |
-|                                |||                                           |
-|                                |||                                           |
-|                                |||                                           |
-|                                |||                                           |
+|                                ||+-------------------------------------------+
+|                                ||+ Mail -------------------------------------+
+|                                ||| 3 unread                                  |
+|                                ||| ##########------------------------------- |
+|                                ||| 12 in your inbox                          |
 |                                |||                                           |
 |                                |||                                           |
 +--------------------------------+|+-------------------------------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / split / 80x24 / unicode truecolor / colors=e2b4cfc6098aeef1
+=== amber / split / 80x24 / unicode truecolor / colors=cb4afff48dccb756
  russh-bbs │ Main menu                                                UTC 12:00
 ┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━┓│┏ CHAT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Signed in as alice.            ┃│┃ Nothing to show yet.                      ┃
-┃                                ┃│┃                                           ┃
+┃ Signed in as alice.            ┃│┃ #lobby                              ●●● 3 ┃
+┃                                ┃│┃ #tech                                 ● 1 ┃
 ┃ > [f] Forums                   ┃│┃                                           ┃
 ┃   [m] Mail                     ┃│┃                                           ┃
 ┃   [a] Files  (not built yet)   ┃│┃                                           ┃
-┃   [c] Chat                     ┃│┃                                           ┃
-┃   [d] Doors                    ┃│┃                                           ┃
-┃   [u] Members                  ┃│┃                                           ┃
-┃   [y] Community                ┃│┃                                           ┃
-┃   [i] Invites                  ┃│┃                                           ┃
-┃   [s] Terminal settings        ┃┃┃                                           ┃
+┃   [c] Chat                     ┃│┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┃   [d] Doors                    ┃│┏ WHO IS ONLINE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃   [u] Members                  ┃│┃ ● 5 online                                ┃
+┃   [y] Community                ┃│┃ ▸ alice             ▸ bob                 ┃
+┃   [i] Invites                  ┃│┃ ▸ carol             ▸ dave                ┃
+┃   [s] Terminal settings        ┃┃┃ ▸ erin                                    ┃
 ┃   [o] Sysop tools              ┃│┃                                           ┃
 ┃   [l] Log off                  ┃│┃                                           ┃
-┃                                ┃│┃                                           ┃
-┃                                ┃│┃                                           ┃
-┃                                ┃│┃                                           ┃
-┃                                ┃│┃                                           ┃
-┃                                ┃│┃                                           ┃
+┃                                ┃│┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┃                                ┃│┏ MAIL ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                ┃│┃ 3 unread                                  ┃
+┃                                ┃│┃ ██████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ ┃
+┃                                ┃│┃ 12 in your inbox                          ┃
 ┃                                ┃│┃                                           ┃
 ┃                                ┃│┃                                           ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛│┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / split / 132x43 / unicode truecolor / colors=b9e8789a42256357
+=== amber / split / 132x43 / unicode truecolor / colors=d0660e87a077e9a3
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━┓│┏ CHAT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Signed in as alice.            ┃│┃ Nothing to show yet.                                                                          ┃
-┃                                ┃│┃                                                                                               ┃
+┃ Signed in as alice.            ┃│┃ #lobby                                                                                  ●●● 3 ┃
+┃                                ┃│┃ #tech                                                                                     ● 1 ┃
 ┃ > [f] Forums                   ┃│┃                                                                                               ┃
 ┃   [m] Mail                     ┃│┃                                                                                               ┃
 ┃   [a] Files  (not built yet)   ┃│┃                                                                                               ┃
 ┃   [c] Chat                     ┃│┃                                                                                               ┃
-┃   [d] Doors                    ┃│┃                                                                                               ┃
-┃   [u] Members                  ┃│┃                                                                                               ┃
-┃   [y] Community                ┃│┃                                                                                               ┃
-┃   [i] Invites                  ┃│┃                                                                                               ┃
-┃   [s] Terminal settings        ┃│┃                                                                                               ┃
-┃   [o] Sysop tools              ┃│┃                                                                                               ┃
+┃   [d] Doors                    ┃│┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┃   [u] Members                  ┃│┏ WHO IS ONLINE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃   [y] Community                ┃│┃ ● 5 online                                                                                    ┃
+┃   [i] Invites                  ┃│┃ ▸ alice                                       ▸ bob                                           ┃
+┃   [s] Terminal settings        ┃│┃ ▸ carol                                       ▸ dave                                          ┃
+┃   [o] Sysop tools              ┃│┃ ▸ erin                                                                                        ┃
 ┃   [l] Log off                  ┃│┃                                                                                               ┃
 ┃                                ┃│┃                                                                                               ┃
+┃                                ┃│┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┃                                ┃│┏ MAIL ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                ┃│┃  ━                                                                                            ┃
+┃                                ┃│┃  ━┃                                                                                           ┃
+┃                                ┃│┃  ━┃                                                                                           ┃
+┃                                ┃┃┃ 3 unread                                                                                      ┃
+┃                                ┃│┃ ███████████████████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ ┃
+┃                                ┃│┃ 12 in your inbox                                                                              ┃
+┃                                ┃│┃                                                                                               ┃
+┃                                ┃│┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┃                                ┃│┏ NEW POSTS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                ┃│┃ Active threads: 7                                                                             ┃
+┃                                ┃│┃ General        █████████████████████████████████████████████████████████████████████████   4  ┃
+┃                                ┃│┃ Tech           ████████████████████████████████████▌░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   2  ┃
+┃                                ┃│┃ Chat           ██████████████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   1  ┃
 ┃                                ┃│┃                                                                                               ┃
 ┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃┃┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┃                                ┃│┃                                                                                               ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛│┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┃                                ┃│┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┃                                ┃│
+┃                                ┃│
+┃                                ┃│
+┃                                ┃│
+┃                                ┃│
+┃                                ┃│
+┃                                ┃│
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛│
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / split / 80x24 / ascii mono / colors=9cc829542612bafb
+=== amber / split / 80x24 / ascii mono / colors=9307c296adf5251b
  russh-bbs | Main menu                                                UTC 12:00
 + MAIN MENU ---------------------+|+ CHAT -------------------------------------+
-| Signed in as alice.            ||| Nothing to show yet.                      |
-|                                |||                                           |
+| Signed in as alice.            ||| #lobby                              *** 3 |
+|                                ||| #tech                                 * 1 |
 | > [f] Forums                   |||                                           |
 |   [m] Mail                     |||                                           |
 |   [a] Files  (not built yet)   |||                                           |
-|   [c] Chat                     |||                                           |
-|   [d] Doors                    |||                                           |
-|   [u] Members                  |||                                           |
-|   [y] Community                |||                                           |
-|   [i] Invites                  |||                                           |
-|   [s] Terminal settings        |#|                                           |
+|   [c] Chat                     ||+-------------------------------------------+
+|   [d] Doors                    ||+ WHO IS ONLINE ----------------------------+
+|   [u] Members                  ||| * 5 online                                |
+|   [y] Community                ||| > alice             > bob                 |
+|   [i] Invites                  ||| > carol             > dave                |
+|   [s] Terminal settings        |#| > erin                                    |
 |   [o] Sysop tools              |||                                           |
 |   [l] Log off                  |||                                           |
-|                                |||                                           |
-|                                |||                                           |
-|                                |||                                           |
-|                                |||                                           |
-|                                |||                                           |
+|                                ||+-------------------------------------------+
+|                                ||+ MAIL -------------------------------------+
+|                                ||| 3 unread                                  |
+|                                ||| ##########------------------------------- |
+|                                ||| 12 in your inbox                          |
 |                                |||                                           |
 |                                |||                                           |
 +--------------------------------+|+-------------------------------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / split / 80x24 / unicode truecolor / colors=0acf299576e66db2
+=== deepspace / split / 80x24 / unicode truecolor / colors=4c5bad886fc62d52
  ◆ russh-bbs ◆ │ Main menu                                            UTC 12:00
 ╭────── M A I N   M E N U ───────╮│╭───────────────── C H A T ─────────────────╮
-│ Signed in as alice.            │││ Nothing to show yet.                      │
-│                                │││                                           │
+│ Signed in as alice.            │││ #lobby                              ●●● 3 │
+│                                │││ #tech                                 ● 1 │
 │ > [f] Forums                   │││                                           │
 │   [m] Mail                     │││                                           │
 │   [a] Files  (not built yet)   │││                                           │
-│   [c] Chat                     │││                                           │
-│   [d] Doors                    │││                                           │
-│   [u] Members                  │││                                           │
-│   [y] Community                │││                                           │
-│   [i] Invites                  │││                                           │
-│   [s] Terminal settings        │┃│                                           │
+│   [c] Chat                     ││╰───────────────────────────────────────────╯
+│   [d] Doors                    ││╭──────── W H O   I S   O N L I N E ────────╮
+│   [u] Members                  │││ ● 5 online                                │
+│   [y] Community                │││ ▸ alice             ▸ bob                 │
+│   [i] Invites                  │││ ▸ carol             ▸ dave                │
+│   [s] Terminal settings        │┃│ ▸ erin                                    │
 │   [o] Sysop tools              │││                                           │
 │   [l] Log off                  │││                                           │
-│                                │││                                           │
-│                                │││                                           │
-│                                │││                                           │
-│                                │││                                           │
-│                                │││                                           │
+│                                ││╰───────────────────────────────────────────╯
+│                                ││╭───────────────── M A I L ─────────────────╮
+│                                │││ 3 unread                                  │
+│                                │││ ██████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+│                                │││ 12 in your inbox                          │
 │                                │││                                           │
 │                                │││                                           │
 ╰────────────────────────────────╯│╰───────────────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / split / 132x43 / unicode truecolor / colors=c5a33a6481a59401
+=== deepspace / split / 132x43 / unicode truecolor / colors=74669970d54331b4
  ◆ russh-bbs ◆ │ Main menu                                                                                                UTC 12:00
 ╭────── M A I N   M E N U ───────╮│╭─────────────────────────────────────────── C H A T ───────────────────────────────────────────╮
-│ Signed in as alice.            │││ Nothing to show yet.                                                                          │
-│                                │││                                                                                               │
+│ Signed in as alice.            │││ #lobby                                                                                  ●●● 3 │
+│                                │││ #tech                                                                                     ● 1 │
 │ > [f] Forums                   │││                                                                                               │
 │   [m] Mail                     │││                                                                                               │
 │   [a] Files  (not built yet)   │││                                                                                               │
 │   [c] Chat                     │││                                                                                               │
-│   [d] Doors                    │││                                                                                               │
-│   [u] Members                  │││                                                                                               │
-│   [y] Community                │││                                                                                               │
-│   [i] Invites                  │││                                                                                               │
-│   [s] Terminal settings        │││                                                                                               │
-│   [o] Sysop tools              │││                                                                                               │
+│   [d] Doors                    ││╰───────────────────────────────────────────────────────────────────────────────────────────────╯
+│   [u] Members                  ││╭────────────────────────────────── W H O   I S   O N L I N E ──────────────────────────────────╮
+│   [y] Community                │││ ● 5 online                                                                                    │
+│   [i] Invites                  │││ ▸ alice                                       ▸ bob                                           │
+│   [s] Terminal settings        │││ ▸ carol                                       ▸ dave                                          │
+│   [o] Sysop tools              │││ ▸ erin                                                                                        │
 │   [l] Log off                  │││                                                                                               │
 │                                │││                                                                                               │
+│                                ││╰───────────────────────────────────────────────────────────────────────────────────────────────╯
+│                                ││╭─────────────────────────────────────────── M A I L ───────────────────────────────────────────╮
+│                                │││  ━                                                                                            │
+│                                │││  ━┃                                                                                           │
+│                                │││  ━┃                                                                                           │
+│                                │┃│ 3 unread                                                                                      │
+│                                │││ ███████████████████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │
+│                                │││ 12 in your inbox                                                                              │
+│                                │││                                                                                               │
+│                                ││╰───────────────────────────────────────────────────────────────────────────────────────────────╯
+│                                ││╭────────────────────────────────────── N E W   P O S T S ──────────────────────────────────────╮
+│                                │││ Active threads: 7                                                                             │
+│                                │││ General        █████████████████████████████████████████████████████████████████████████   4  │
+│                                │││ Tech           ████████████████████████████████████▌░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   2  │
+│                                │││ Chat           ██████████████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   1  │
 │                                │││                                                                                               │
 │                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │┃│                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-│                                │││                                                                                               │
-╰────────────────────────────────╯│╰───────────────────────────────────────────────────────────────────────────────────────────────╯
+│                                ││╰───────────────────────────────────────────────────────────────────────────────────────────────╯
+│                                ││                     .           .                                    *      .        .   .
+│                                ││ .                                          *         .             .  .
+│                                ││     * .                         .      *           .  ...       *    .                       .
+│                                ││   *       *  *.  .    .      .       .   .                     *             .   .  .
+│                                ││  * .        .  .                             .   .
+│                                ││                              .                                                                .
+│                                ││                          *.           .       .          .    *  *                 .        .
+╰────────────────────────────────╯│     .                       .   *                      .                 . .              .
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / split / 80x24 / ascii mono / colors=1aab3681ed00c266
+=== deepspace / split / 80x24 / ascii mono / colors=988a8dd367d7f40b
  * russh-bbs * | Main menu                                            UTC 12:00
 +------ M A I N   M E N U -------+|+----------------- C H A T -----------------+
-| Signed in as alice.            ||| Nothing to show yet.                      |
-|                                |||                                           |
+| Signed in as alice.            ||| #lobby                              *** 3 |
+|                                ||| #tech                                 * 1 |
 | > [f] Forums                   |||                                           |
 |   [m] Mail                     |||                                           |
 |   [a] Files  (not built yet)   |||                                           |
-|   [c] Chat                     |||                                           |
-|   [d] Doors                    |||                                           |
-|   [u] Members                  |||                                           |
-|   [y] Community                |||                                           |
-|   [i] Invites                  |||                                           |
-|   [s] Terminal settings        |#|                                           |
+|   [c] Chat                     ||+-------------------------------------------+
+|   [d] Doors                    ||+-------- W H O   I S   O N L I N E --------+
+|   [u] Members                  ||| * 5 online                                |
+|   [y] Community                ||| > alice             > bob                 |
+|   [i] Invites                  ||| > carol             > dave                |
+|   [s] Terminal settings        |#| > erin                                    |
 |   [o] Sysop tools              |||                                           |
 |   [l] Log off                  |||                                           |
-|                                |||                                           |
-|                                |||                                           |
-|                                |||                                           |
-|                                |||                                           |
-|                                |||                                           |
+|                                ||+-------------------------------------------+
+|                                ||+----------------- M A I L -----------------+
+|                                ||| 3 unread                                  |
+|                                ||| ##########------------------------------- |
+|                                ||| 12 in your inbox                          |
 |                                |||                                           |
 |                                |||                                           |
 +--------------------------------+|+-------------------------------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / split / 80x24 / unicode truecolor / colors=2bfd51a41d43dcbe
+=== ansi / split / 80x24 / unicode truecolor / colors=3dfbe65d7c90541e
  ░▒▓ russh-bbs ▓▒░ │ Main menu                                        UTC 12:00
 ╔═════════╡ Main menu ╞══════════╗│╔═════════════════╡ Chat ╞══════════════════╗
-║ Signed in as alice.            ║│║ Nothing to show yet.                      ║
-║                                ║│║                                           ║
+║ Signed in as alice.            ║│║ #lobby                              ●●● 3 ║
+║                                ║│║ #tech                                 ● 1 ║
 ║ > [f] Forums                   ║│║                                           ║
 ║   [m] Mail                     ║│║                                           ║
 ║   [a] Files  (not built yet)   ║│║                                           ║
-║   [c] Chat                     ║│║                                           ║
-║   [d] Doors                    ║│║                                           ║
-║   [u] Members                  ║│║                                           ║
-║   [y] Community                ║│║                                           ║
-║   [i] Invites                  ║│║                                           ║
-║   [s] Terminal settings        ║┃║                                           ║
+║   [c] Chat                     ║│╚═══════════════════════════════════════════╝
+║   [d] Doors                    ║│╔═════════════╡ Who is online ╞═════════════╗
+║   [u] Members                  ║│║ ● 5 online                                ║
+║   [y] Community                ║│║ ▸ alice             ▸ bob                 ║
+║   [i] Invites                  ║│║ ▸ carol             ▸ dave                ║
+║   [s] Terminal settings        ║┃║ ▸ erin                                    ║
 ║   [o] Sysop tools              ║│║                                           ║
 ║   [l] Log off                  ║│║                                           ║
-║                                ║│║                                           ║
-║                                ║│║                                           ║
-║                                ║│║                                           ║
-║                                ║│║                                           ║
-║                                ║│║                                           ║
+║                                ║│╚═══════════════════════════════════════════╝
+║                                ║│╔═════════════════╡ Mail ╞══════════════════╗
+║                                ║│║ 3 unread                                  ║
+║                                ║│║ ██████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ ║
+║                                ║│║ 12 in your inbox                          ║
 ║                                ║│║                                           ║
 ║                                ║│║                                           ║
 ╚════════════════════════════════╝│╚═══════════════════════════════════════════╝
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / split / 132x43 / unicode truecolor / colors=a9700241a42851d6
+=== ansi / split / 132x43 / unicode truecolor / colors=2cbf87f2e20ddb7c
  ░▒▓ russh-bbs ▓▒░ │ Main menu                                                                                            UTC 12:00
 ╔═════════╡ Main menu ╞══════════╗│╔═══════════════════════════════════════════╡ Chat ╞════════════════════════════════════════════╗
-║ Signed in as alice.            ║│║ Nothing to show yet.                                                                          ║
-║                                ║│║                                                                                               ║
+║ Signed in as alice.            ║│║ #lobby                                                                                  ●●● 3 ║
+║                                ║│║ #tech                                                                                     ● 1 ║
 ║ > [f] Forums                   ║│║                                                                                               ║
 ║   [m] Mail                     ║│║                                                                                               ║
 ║   [a] Files  (not built yet)   ║│║                                                                                               ║
 ║   [c] Chat                     ║│║                                                                                               ║
-║   [d] Doors                    ║│║                                                                                               ║
-║   [u] Members                  ║│║                                                                                               ║
-║   [y] Community                ║│║                                                                                               ║
-║   [i] Invites                  ║│║                                                                                               ║
-║   [s] Terminal settings        ║│║                                                                                               ║
-║   [o] Sysop tools              ║│║                                                                                               ║
+║   [d] Doors                    ║│╚═══════════════════════════════════════════════════════════════════════════════════════════════╝
+║   [u] Members                  ║│╔═══════════════════════════════════════╡ Who is online ╞═══════════════════════════════════════╗
+║   [y] Community                ║│║ ● 5 online                                                                                    ║
+║   [i] Invites                  ║│║ ▸ alice                                       ▸ bob                                           ║
+║   [s] Terminal settings        ║│║ ▸ carol                                       ▸ dave                                          ║
+║   [o] Sysop tools              ║│║ ▸ erin                                                                                        ║
 ║   [l] Log off                  ║│║                                                                                               ║
 ║                                ║│║                                                                                               ║
+║                                ║│╚═══════════════════════════════════════════════════════════════════════════════════════════════╝
+║                                ║│╔═══════════════════════════════════════════╡ Mail ╞════════════════════════════════════════════╗
+║                                ║│║  ━                                                                                            ║
+║                                ║│║  ━┃                                                                                           ║
+║                                ║│║  ━┃                                                                                           ║
+║                                ║┃║ 3 unread                                                                                      ║
+║                                ║│║ ███████████████████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ ║
+║                                ║│║ 12 in your inbox                                                                              ║
+║                                ║│║                                                                                               ║
+║                                ║│╚═══════════════════════════════════════════════════════════════════════════════════════════════╝
+║                                ║│╔═════════════════════════════════════════╡ New posts ╞═════════════════════════════════════════╗
+║                                ║│║ Active threads: 7                                                                             ║
+║                                ║│║ General        █████████████████████████████████████████████████████████████████████████   4  ║
+║                                ║│║ Tech           ████████████████████████████████████▌░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   2  ║
+║                                ║│║ Chat           ██████████████████▎░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   1  ║
 ║                                ║│║                                                                                               ║
 ║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║┃║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-║                                ║│║                                                                                               ║
-╚════════════════════════════════╝│╚═══════════════════════════════════════════════════════════════════════════════════════════════╝
+║                                ║│╚═══════════════════════════════════════════════════════════════════════════════════════════════╝
+║                                ║│
+║                                ║│
+║                                ║│
+║                                ║│
+║                                ║│
+║                                ║│
+║                                ║│
+╚════════════════════════════════╝│
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / split / 80x24 / ascii mono / colors=3c8597eeb5ab75fd
+=== ansi / split / 80x24 / ascii mono / colors=9bf500a0e005d07d
  ## russh-bbs ## | Main menu                                          UTC 12:00
 +---------| Main menu |----------+|+-----------------| Chat |------------------+
-| Signed in as alice.            ||| Nothing to show yet.                      |
-|                                |||                                           |
+| Signed in as alice.            ||| #lobby                              *** 3 |
+|                                ||| #tech                                 * 1 |
 | > [f] Forums                   |||                                           |
 |   [m] Mail                     |||                                           |
 |   [a] Files  (not built yet)   |||                                           |
-|   [c] Chat                     |||                                           |
-|   [d] Doors                    |||                                           |
-|   [u] Members                  |||                                           |
-|   [y] Community                |||                                           |
-|   [i] Invites                  |||                                           |
-|   [s] Terminal settings        |#|                                           |
+|   [c] Chat                     ||+-------------------------------------------+
+|   [d] Doors                    ||+-------------| Who is online |-------------+
+|   [u] Members                  ||| * 5 online                                |
+|   [y] Community                ||| > alice             > bob                 |
+|   [i] Invites                  ||| > carol             > dave                |
+|   [s] Terminal settings        |#| > erin                                    |
 |   [o] Sysop tools              |||                                           |
 |   [l] Log off                  |||                                           |
-|                                |||                                           |
-|                                |||                                           |
-|                                |||                                           |
-|                                |||                                           |
-|                                |||                                           |
+|                                ||+-------------------------------------------+
+|                                ||+-----------------| Mail |------------------+
+|                                ||| 3 unread                                  |
+|                                ||| ##########------------------------------- |
+|                                ||| 12 in your inbox                          |
 |                                |||                                           |
 |                                |||                                           |
 +--------------------------------+|+-------------------------------------------+

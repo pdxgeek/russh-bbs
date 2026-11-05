@@ -54,7 +54,7 @@ qa-loopback-feeds = []
 
 [dev-dependencies]
 tempfile = { workspace = true }
-# Property tests for the mouse parser (UI-9); already used by the core crate, no new crate.
+# Property tests: the art parser (UI-3) and the mouse parser (UI-9); already a workspace dependency of core.
 proptest = { workspace = true }
 # Test-only: the access-path tests take a permission away with raw SQL (the role editing
 # services are a later slice). Already a dependency of the store crate; no new crate.

@@ -42,6 +42,8 @@ async fn main() -> anyhow::Result<()> {
 
     // Sysop theme files live in `themes/` beside the host key (M3-A); no config key is needed.
     let themes_dir = paths.host_key.parent().map(|dir| dir.join("themes"));
+    // Sysop art files live in `art/` beside them (UI-3), also without a config key.
+    let art_dir = paths.host_key.parent().map(|dir| dir.join("art"));
     let key_path = paths.host_key.clone();
     let host_key = tokio::task::spawn_blocking(move || HostKey::load_or_create(&key_path))
         .await
@@ -72,6 +74,7 @@ async fn main() -> anyhow::Result<()> {
                 &host_key,
                 &paths.mail_key,
                 themes_dir.as_deref(),
+                art_dir.as_deref(),
             )
             .await?;
         }
@@ -87,6 +90,7 @@ async fn main() -> anyhow::Result<()> {
                 &host_key,
                 &paths.mail_key,
                 themes_dir.as_deref(),
+                art_dir.as_deref(),
             )
             .await?;
         }
@@ -102,6 +106,12 @@ fn board_of(loaded: &Loaded) -> anyhow::Result<russh_bbs_server::ui::Board> {
         .context("reading the [board] settings")
 }
 
+/// The sysop's widget settings (UI-10); the same checks the config ran.
+fn widgets_of(loaded: &Loaded) -> anyhow::Result<russh_bbs_server::ui::widgets::WidgetSettings> {
+    russh_bbs_server::ui::widgets::WidgetSettings::from_config(&loaded.config.widgets)
+        .context("reading the [widgets] settings")
+}
+
 #[allow(
     clippy::too_many_lines,
     reason = "the boot sequence, in order; splitting it hides the order"
@@ -112,6 +122,7 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
     host_key: &HostKey,
     mail_key_path: &std::path::Path,
     themes_dir: Option<&std::path::Path>,
+    art_dir: Option<&std::path::Path>,
 ) -> anyhow::Result<()> {
     // Before anything listens, so a stop signal at any point after "listening" is handled.
     let mut signals = shutdown::Signals::install().context("installing the signal handlers")?;
@@ -151,6 +162,11 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
     }
     .context("building the screens")?
     .with_board(board_of(loaded)?)
+    .with_widgets(widgets_of(loaded)?);
+    let ui = match art_dir {
+        Some(dir) => ui.with_art_dir(dir),
+        None => ui,
+    }
     .with_mail_keys(Arc::new(mail_keys))
     // The doors built into this board (M4-D0): the example coin toss until a game replaces it.
     .with_doors(

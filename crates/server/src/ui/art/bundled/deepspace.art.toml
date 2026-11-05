@@ -1,0 +1,37 @@
+# Original art for the "deepspace" style, drawn for russh-bbs. Deep Space: a ringed planet in a starfield.
+format = 1
+name = "deepspace"
+style = "deepspace"
+credit = "russh-bbs project (original art)"
+
+[[piece]]
+slot = "login"
+rows = [
+  "                  .*      █████▓▓▓        .*                ",
+  "                        ██████▓▓▓▓▓▒                   .    ",
+  "                       █████▓▓▓▓▓▒▒▒▒                   .   ",
+  "        .      ──────────────────────────────             + ",
+  "               .        ▓▓▓▓▓▓▒▒▒▒▒▒          +        +  + ",
+  "            +             ▓▓▒▒▒▒▒▒           .   *    +     ",
+]
+fg = [
+  "..................CC......BBBBBbbb........Kw................",
+  "........................BBBBBBbbbbbb...................w....",
+  ".......................BBBBBbbbbbbbbb...................K...",
+  "........W......CcCcCcCcCcCcCcCcCcCcCcCcCcCcCc.............C.",
+  "...............W........bbbbbbbbbbbb..........w........K..K.",
+  "............C.............bbbbbbbb...........W...C....K.....",
+]
+
+[[piece]]
+slot = "menu"
+rows = [
+  ".     .                          ███▓▓▓          .      .   +           ",
+  "                     *   * *────────────────  .                         ",
+  "*                                ▓▓▒▒▒▒      .                       .  ",
+]
+fg = [
+  "w.....W..........................BBBbbb..........w......K...K...........",
+  ".....................w...K.wcCcCcCcCcCcCcCcC..w.........................",
+  "K................................bbbbbb......C.......................w..",
+]

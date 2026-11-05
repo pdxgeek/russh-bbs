@@ -319,6 +319,7 @@ impl<D: Backend> Connection<D> {
             chat: Arc::clone(self.registry.chat()),
             meter,
             redraw_interval: self.limits.redraw_interval,
+            max_connections: self.limits.max_connections,
             write_stall: self.limits.write_stall,
             access_filter: Some(without_staff),
         });
