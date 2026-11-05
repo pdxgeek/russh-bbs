@@ -135,9 +135,32 @@ fn path(name: &str) -> PathBuf {
         .join(format!("{name}.txt"))
 }
 
+/// QA M3.5 M2: lists overflow, and scrollbars appear, in windows shorter than the golden
+/// sizes. Draw the screen in every layout at heights 8 to 24 and widths 40, 80 and 132 in the
+/// ASCII tier and require seven-bit text in every cell. No golden is written for these.
+fn ascii_at_small_heights(ui: &Ui, name: &str, draw: &dyn Fn(&mut Frame<'_>, &Draw<'_>)) {
+    for layout in LayoutId::ALL {
+        for height in 8..=24u16 {
+            for width in [40u16, 80, 132] {
+                let buffer = shot(ui, layout, Tier::Ascii, (width, height), draw);
+                for y in 0..height {
+                    for x in 0..width {
+                        let symbol = buffer[(x, y)].symbol();
+                        assert!(
+                            symbol.is_ascii(),
+                            "{name} {layout:?} {width}x{height}: non-ASCII {symbol:?} at ({x},{y})"
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
 /// Draw `draw` in every layout, size and mode; check every cell; compare with the golden file.
 pub(crate) fn golden(name: &str, draw: &dyn Fn(&mut Frame<'_>, &Draw<'_>)) {
     let ui = Ui::standard().unwrap();
+    ascii_at_small_heights(&ui, name, draw);
     let mut out = String::new();
     for size in SIZES {
         for tier in [Tier::Unicode, Tier::Ascii] {

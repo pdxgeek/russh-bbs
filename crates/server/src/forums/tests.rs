@@ -301,6 +301,29 @@ fn nothing_found_is_a_plain_line() {
 }
 
 #[test]
+fn the_ascii_tier_forum_screens_draw_only_ascii_at_every_height() {
+    let boards = open(false);
+    let mut reader = open(false);
+    let body: String = (0..70)
+        .map(|i| ["line ", &i.to_string(), "\n"].concat())
+        .collect();
+    into_reader(&mut reader, view(0, 1, &body, false));
+    for screen in [&boards, &reader] {
+        for height in 8..=24u16 {
+            for width in [40u16, 80, 132] {
+                let buffer = draw(screen, Rect::new(0, 0, width, height));
+                for y in 0..height {
+                    for x in 0..width {
+                        let symbol = buffer[(x, y)].symbol();
+                        assert!(symbol.is_ascii(), "{width}x{height} ({x},{y}) {symbol:?}");
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
 fn the_reader_pages_a_long_post_and_every_line_is_reachable() {
     let mut screen = open(false);
     let body: String = (0..70)

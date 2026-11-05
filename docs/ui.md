@@ -209,6 +209,12 @@ Status: **Implemented and tested; walked over real OpenSSH 9.6 and a raw telnet 
 - **The clock** is drawn with the screen, not by a timer (D49).
 - **Words, not only colour.** Popups carry `Notice`/`Problem`/`Confirm` in the title; the pointer and the header row read in mono and in the ASCII tier (plain `+ - |`, `#` scrollbar, `...` ellipsis).
 
+### ASCII tier and locked choices (FIX-M35-2, FIX-M35-4)
+
+- The menu list's scrollbar uses `#` and `|` in the ASCII tier, as tables do (QA M3.5 M2: ratatui's default `█` and `║` appeared whenever the list overflowed, in windows under about 16 rows). Tests scan every cell for non-ASCII at every height from 8 to 24 and widths 40, 80 and 132: the menu and help in every layout and every shipped style (`ui::layout_tests`), the table (`ui::table::tests`) and the forum board list and reader (`forums::tests`). After merging UI-4 (D127), `ui::screens::matrix::golden` also scans the home, forum, mail, chat and members screens in every layout at the same heights and widths in the ASCII tier. The reader and chat scrollbars already used `#` and `|`. Not verified: a real `ssh` walk of this fix.
+- A door's selection bar is not reverse video (D130, QA M3.5 L1): it is the theme's selection colours with bold and underline.
+- Pressing `l` or `t` on the settings screen when the sysop has fixed the layout or style shows "The sysop has fixed the layout (style) on this board." (L3).
+
 ### Converted screens
 
 The main menu in the classic, lightbar and compact layouts (the menu is a ratatui `List` with a highlight and a scrollbar; help is two panes when the box is 64 columns wide); the forum board list, thread list and search results (tables; `1`-`9` jumps and paging use the table's window); forum errors and the remove confirmation (popups); the members list (a table of the page's members); the login, glyph test, settings, password and key screens (status bar only); the invite, community and queue screens (header and status bar). **Not converted in UI-1:** the forum reader, mail, chat, door and editor screens. The reader, mail, chat and community screens moved onto the frame in UI-4 ([below](#screens-ui-4-d127)); the door screens are UI-5's ratatui buffers and the editor keeps its own full-screen view.

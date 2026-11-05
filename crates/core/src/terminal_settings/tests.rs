@@ -1178,7 +1178,21 @@ fn a_single_allowed_layout_or_theme_is_locked_and_the_screen_says_so() {
     f.set_layouts(vec![LayoutId::Wide]);
     f.set_themes(vec![ThemeName::new("amber").unwrap()]);
     assert_eq!(press(&mut f, "l"), [MemberEffect::Stay]);
+    let out = text(&f.view(words()));
+    assert!(
+        out.contains("The sysop has fixed the layout on this board."),
+        "{out}"
+    );
     assert_eq!(press(&mut f, "t"), [MemberEffect::Stay]);
+    let out = text(&f.view(words()));
+    assert!(
+        out.contains("The sysop has fixed the style on this board."),
+        "{out}"
+    );
+    assert!(
+        !out.contains("fixed the layout"),
+        "the notice is replaced, not stacked: {out}"
+    );
     assert_eq!(f.settings().layout_choice(), None, "nothing was saved");
     assert_eq!(f.effective_layout(), LayoutId::Wide);
     assert_eq!(f.effective_theme().as_str(), "amber");
