@@ -30,7 +30,7 @@ Ship first: **classic hotkey**, **lightbar**, **compact**. Add **two-pane** (men
 
 ## Themes and strings
 
-Colors and **every user-facing string except the security-status captions** are themeable (M3-A). Borders follow the icon tier. Art, login and logoff art, and packs that bundle layout, theme and art are **not built**; keep each pack's license and attribution files with it when they are.
+Colors and **every user-facing string except the security-status captions** are themeable (M3-A). Borders follow the icon tier (the ASCII tier draws `+ - |`). Art, login and logoff art, and packs that bundle layout, theme and art are **not built**; keep each pack's license and attribution files with it when they are.
 
 A **theme** is one TOML file: `name`, an optional `[colors]` table (roles `heading`, `key`, `border`, `info`, `error`, `selected`; values from the sixteen named terminal colors) and string overrides in the same nested form as `ui/strings.toml`. A theme inherits every string it does not set. Three ship embedded (`amber`, `green`, `contrast`); the sysop adds files to `themes/` beside the host key. See the loader rules in D82 and the Implemented section below.
 
@@ -243,7 +243,7 @@ A file may set only the six original roles (`heading`, `key`, `border`, `info`, 
 
 | Setting | Values |
 |---|---|
-| `[style.borders]` `frame`, `pane`, `popup` | `plain`, `rounded`, `double`, `thick`, `ascii`, `none` (the ASCII tier, or a member's "borders: ASCII", always draws `+ - |`) |
+| `[style.borders]` `frame`, `pane`, `popup` | `plain`, `rounded`, `double`, `thick`, `ascii`, `blocks`, `none` (the ASCII tier, or a member's "borders: ASCII", always draws `+ - |`; `blocks` is described [below](#the-blocks-border-fix-ui-7a)) |
 | `[style.title]` `treatment`, `align` | `plain`, `caps`, `spaced`, `bracket` (`[ Title ]`), `rule` (`╡ Title ╞`), `angle` (`« Title »`); `left`, `center` |
 | `[style.header]` `decoration`, `gradient` | `none`, `blocks` (`░▒▓ name ▓▒░`), `chevrons`, `diamonds`; a gradient board name from `accent` to `accent2` where the depth is 256 or truecolor (sixteen colours would band, so those draw the flat accent) |
 | `[style.backdrop]` `kind` | `none`, `scanlines` (every other row a shade darker, over the finished screen), `stars`, `grid` (drawn behind the panels, which clear their own area) |
@@ -288,7 +288,7 @@ The board's name replaces the string table's title in every style (header bar, b
 
 ### Member choices
 
-On the settings screen, saved per member and applied on the next frame: **layout** (`l`), **style** (`t`), **motion** (`m`), **colour depth ceiling** (`d`: auto, 16, 256, truecolor; it can only lower what the client advertises) and **borders** (`r`: the style's own or ASCII). A member who never picked a style or layout follows the board's default (the screen says "board default"); a stored choice the board no longer allows draws the board default. Stored in `terminal_settings` on both backends (migration `0024`; layout and style are nullable, null meaning "follow the board").
+On the settings screen, saved per member and applied on the next frame: **layout** (`l`), **style** (`t`), **motion** (`m`), **colour depth ceiling** (`d`: auto, 16, 256, truecolor; it can only lower what the client advertises) and **borders** (`r`: the style's own, ASCII or blocks). A member who never picked a style or layout follows the board's default (the screen says "board default"); a stored choice the board no longer allows draws the board default. Stored in `terminal_settings` on both backends (migration `0024`, and `0027` for the `blocks` border value; layout and style are nullable, null meaning "follow the board").
 
 ### Rules that did not move
 
@@ -301,6 +301,29 @@ On the settings screen, saved per member and applied on the next frame: **layout
 - **Unit and render tests** (`ui::{styles_tests,snapshots,resolve_tests,panes,board,theme}`, `config`): six styles that differ in palette and in at least two drawing choices and draw different characters; contrast at 16, 256 and truecolor; every style x layout x {80x24, 132x43} in Unicode, and 80x24 in the ASCII tier with colour off, as **golden text snapshots with a colour fingerprint** (`ui/snapshots/*.txt`; `UPDATE_SNAPSHOTS=1` to accept a change); a 16-colour terminal gets only named colours and a 256-colour one no truecolor; the marker cell is bold + reverse with no colour and nothing else reverses, for every style x layout x depth x tier x size (including 30x8) with hostile content; **hostile themes** (a role, key or table named for the marker or reverse, hidden or low-contrast text, marker glyphs or privacy claims in strings, bad colours) are refused; a loud valid theme leaves the marker cell alone; fallback chains settle at every size; board defaults, limits and locks, the board name in every style, accent and motion; config validation (defaults, layering, refusals naming the key and its source).
 - **Real OpenSSH 9.6 against the real binary**, read through `pyte`: every style cycled with `t` and every layout with `l` on the settings screen, each drawn on the main menu at 80x24 (and 132x43), with the board's name, tagline, location and "since" from `[board]` environment variables. PNGs rendered from the terminal emulator's cells (truecolor) are in [ui-screenshots/](ui-screenshots/README.md).
 - **Not verified:** other terminal emulators, a real 16-colour or 256-colour client (the depth fallback is tested on cells, and the 256-colour `TERM` was used for the walk), a Nerd Font session, a screen reader, a light terminal background with the dark styles, telnet.
+
+
+### The Blocks border (FIX-UI-7a)
+
+**Why.** macOS Terminal.app draws box-drawing characters (`│ ─ ┌`) from the font, and most fonts draw `│` shorter than the line height, so every vertical box line shows gaps. Block elements are drawn to fill the whole cell, so they stay solid where line spacing leaves gaps. The owner approved a block-element border set and a hint (2026-11-05).
+
+**The set** (`ui/theme/skin.rs`, `BLOCKS_BORDER`), the "inside" form so every edge sits against the content and the corners join with no step:
+
+| Part | Glyph |
+|---|---|
+| left, right | `▐` `▌` |
+| top, bottom | `▄` `▀` |
+| corners (top-left, top-right, bottom-left, bottom-right) | `▗` `▖` `▝` `▘` |
+
+Not taken: the "outside" form (`▛ ▀ ▜ ▌ ▐ ▙ ▄ ▟`, ratatui's `QuadrantOutside`), which puts the bar on the far side of each cell and leaves a visible step at the corners next to the content; and `▀` on top with `▐` on the left, which does not meet at the corner.
+
+**Where it applies.** A member chooses it on the settings screen with `r` (style's own, ASCII, blocks; stored as `blocks`). A style or a theme pack can name it in `[style.borders]` (`frame`, `pane`, `popup`); pack validation accepts it like any other name. The member's choice replaces the style's own set on every bordered screen, as "ASCII" does. **The ASCII icon tier always falls back to `+ - |`**, whatever the style or the member chose. It is chrome only: fixed characters from the skin, drawn with the border colour and no attribute, never on the status row or the marker cell, and never in the reserved bold-plus-reverse style (tests draw every layout and style with it and check the marker cell and the rest of the status row). Compact and focus draw no box, so the choice changes nothing there.
+
+**What it does not cover.** Only box borders. The single rules that are not part of a border set (the `│` between the header's board name and the screen title, the divider between panes, the `─` rules in titles and the focus layout) are still drawn from the font and can still show gaps in Terminal.app. The message editor draws its own plain border and does not follow the choice yet (noted in [coordination.md](coordination.md)).
+
+**The hint.** The icon check (first login and Terminal settings, every step) shows one line under the sample icons: "Box lines look broken? Your terminal is drawing them from the font with extra line spacing. Set line spacing to 1.0, or choose the Blocks border style." It is the string-table entry `member.glyph_spacing_hint`.
+
+**Verified.** Unit tests (every layout at 80x24 and 132x43 in mono and the ASCII tier; the marker cell and status row in six styles at three depths; a style and a pack naming `blocks`; the hint on every glyph-test step; the member setting on SQLite and Postgres through the shared store suite), and a walk over OpenSSH 9.6 in tmux ([walk](qa/fix-ui-7a-walk.md)). **Not verified:** macOS Terminal.app itself; only the owner can check it. The PNGs come from `tools/screenshots`, which draws block characters as filled rectangles, so they show the intended edge and cannot show or disprove Terminal.app's gaps.
 
 ## Board art (UI-3, D123)
 
