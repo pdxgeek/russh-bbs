@@ -1,0 +1,66 @@
+{
+ "Ctrl-T beside menu/forums/mail/members/community 65x20 nerd": [
+  true,
+  "[]"
+ ],
+ "  no hostile tokens / non-ASCII (nerd)": [
+  true,
+  ""
+ ],
+ "Ctrl-T beside menu/forums/mail/members/community 80x24 nerd": [
+  true,
+  "[]"
+ ],
+ "Ctrl-T beside menu/forums/mail/members/community 100x30 nerd": [
+  true,
+  "[]"
+ ],
+ "Ctrl-T beside menu/forums/mail/members/community 132x43 nerd": [
+  true,
+  "[]"
+ ],
+ "Ctrl-T beside menu/forums/mail/members/community 65x20 ascii": [
+  true,
+  "[]"
+ ],
+ "  no hostile tokens / non-ASCII (ascii)": [
+  true,
+  ""
+ ],
+ "Ctrl-T beside menu/forums/mail/members/community 80x24 ascii": [
+  true,
+  "[]"
+ ],
+ "Ctrl-T beside menu/forums/mail/members/community 100x30 ascii": [
+  true,
+  "[]"
+ ],
+ "Ctrl-T beside menu/forums/mail/members/community 132x43 ascii": [
+  true,
+  "[]"
+ ],
+ "resize keys move the divider (< > { })": [
+  true,
+  "([(59, 24)], [(57, 24)])"
+ ],
+ "'{' moves divider by 8": [
+  true,
+  "(57, 0)"
+ ],
+ "mouse drag moves the divider": [
+  false,
+  "(0, 0)"
+ ],
+ "drag to edges clamps (divider stays between 20 and cols-20ish)": [
+  false,
+  "0"
+ ],
+ "reverse only on marker during keys+drag": [
+  true,
+  "[]"
+ ],
+ "60 columns: toast, no pane": [
+  true,
+  "['\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 Notice: This terminal is too narrow to show c\u2026']"
+ ]
+}
