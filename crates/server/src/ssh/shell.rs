@@ -352,6 +352,7 @@ impl<D: Backend> Shell<D> {
             self.interaction_upkeep(effects.palette).await;
             if !batch.finish {
                 self.refresh_widgets().await;
+                self.parts.screen.motion_tick(Instant::now());
             }
             if !batch.finish && !self.draw_frame().await {
                 return;
@@ -533,10 +534,19 @@ impl<D: Backend> Shell<D> {
                     None => std::future::pending().await,
                 }
             };
+            // A screen change is wiping in, or an input's cursor is blinking (UI-4): wake for
+            // the next frame. Under the redraw cap by construction; none with motion off.
+            let motion = async {
+                match self.parts.screen.motion_deadline() {
+                    Some(at) => sleep_until(tokio::time::Instant::from_std(at)).await,
+                    None => std::future::pending().await,
+                }
+            };
             tokio::select! {
                 () = inbox => {}
                 () = room => {}
                 () = widgets => {}
+                () = motion => {}
                 () = self.parts.session.revoke_signal().revoked() => {}
             }
         };
@@ -1269,6 +1279,31 @@ impl<D: Backend> Shell<D> {
         let live_part = live::fill(&mut data, &wanted, &access, &sources);
         if timeout(MEMBER_START_TIMEOUT, live_part).await.is_err() {
             warn!(session = ?self.parts.session.id(), "live widget data timed out");
+        }
+        // The split layout's mail pane lists the newest messages. The inbox call checks
+        // `mail.read` itself and opens subjects with the board's mail key.
+        if self.parts.screen.wants_side_panes()
+            && let Some(keys) = self.parts.screen.mail_keys()
+        {
+            let page = timeout(
+                MEMBER_START_TIMEOUT,
+                russh_bbs_core::mail::inbox(&*self.parts.directory, &keys, &access, 0),
+            )
+            .await;
+            if let Ok(Ok(page)) = page {
+                data.recent_mail = Some(
+                    page.entries
+                        .into_iter()
+                        .take(8)
+                        .map(|entry| russh_bbs_core::widgets::RecentMail {
+                            from: entry.from,
+                            subject: entry.subject,
+                            unread: entry.unread,
+                            at: entry.at,
+                        })
+                        .collect(),
+                );
+            }
         }
         self.parts.screen.deliver_widgets(data, wanted);
     }

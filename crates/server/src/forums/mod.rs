@@ -21,6 +21,8 @@ mod flow;
 mod strings;
 
 pub(crate) use draw::{DrawCtx, render};
+#[cfg(test)]
+pub(crate) use exec::BoardList;
 pub(crate) use exec::{Request, Response, run};
 
 /// Longest address the feed prompt accepts while typing.

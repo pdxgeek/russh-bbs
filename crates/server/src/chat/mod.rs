@@ -35,45 +35,7 @@ use russh_bbs_core::store::AccountId;
 use russh_bbs_core::waiting_room::Clock;
 use tokio::sync::Notify;
 
-pub(crate) use render::lines;
-
-/// Draw the chat screen into `frame`: the classic content box and the reserved status row.
-pub(crate) fn render(
-    frame: &mut ratatui::Frame<'_>,
-    screen: &russh_bbs_core::chat::ChatScreen,
-    strings: &crate::ui::strings::StringTable,
-    look: crate::settings::Look,
-    tier: russh_bbs_core::icons::Tier,
-) {
-    use crate::ui::classic::{ContentScreen, MENU_MARKERS, render_content_bare};
-    let width = usize::from(frame.area().width.min(crate::settings::MAX_WIDTH)).saturating_sub(2);
-    let height = box_height(frame.area().height);
-    render_content_bare(
-        frame,
-        ContentScreen {
-            strings,
-            lines: lines(screen, strings, look, width, height),
-            look,
-            tier,
-            markers: &MENU_MARKERS,
-            clock: None,
-        },
-    );
-}
-
-/// Rows of text that fit in the content box of a frame `frame_height` rows tall: one row goes to
-/// the reserved status row, a roomy frame (over 24 rows of content) keeps a row of margin above
-/// and below the box (`settings::boxed`), and the border takes two. The chat page fills exactly
-/// this, so the input line is always the last row of the box.
-pub(crate) fn box_height(frame_height: u16) -> usize {
-    let content = frame_height.saturating_sub(1);
-    let content = if content > 24 {
-        content.saturating_sub(2)
-    } else {
-        content
-    };
-    usize::from(content.saturating_sub(2))
-}
+pub(crate) use render::{ChatCtx, render};
 
 /// The monotonic clock the send limit reads, shared so tests can move it by hand.
 struct SharedClock(Arc<dyn Clock>);
@@ -167,6 +129,11 @@ impl Hub {
     /// How many sessions are in `room` now (the chat widget, UI-10).
     pub(crate) fn members_in(&self, room: RoomId) -> usize {
         self.lock().chat.member_count(room)
+    }
+
+    /// Who is in `room` now, by name (the split layout's chat pane).
+    pub(crate) fn roster_of(&self, room: RoomId) -> Vec<Username> {
+        self.lock().chat.room_roster(room)
     }
 
     /// Staff closed `room`: put its members out and wake them.

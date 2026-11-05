@@ -93,6 +93,9 @@ fn buffer(screen: &MailScreen, area: Rect) -> Buffer {
         settings: &settings,
         look: Look::of(&settings),
         tier: Tier::Ascii,
+        markers: &crate::ui::classic::MENU_MARKERS,
+        clock: Some("UTC 12:00"),
+        art: None,
     };
     let mut terminal = Terminal::new(TestBackend::new(area.width, area.height)).unwrap();
     terminal.draw(|frame| render(frame, screen, &ctx)).unwrap();
@@ -149,7 +152,11 @@ fn the_inbox_marks_unread_and_shows_an_unreadable_message_as_an_error_entry() {
     let shown = text(&screen);
     assert!(shown.contains("3 messages, 2 unread"), "{shown}");
     assert!(shown.contains("* 1.") || shown.contains("1. * "), "{shown}");
-    assert!(shown.contains("ann - Hello"), "{shown}");
+    // The inbox is a table now (UI-4): who from and the subject are separate columns.
+    assert!(
+        shown.contains("ann") && shown.contains("Hello") && shown.contains("Subject"),
+        "{shown}"
+    );
     assert!(shown.contains("(this message cannot be opened)"), "{shown}");
     // An empty mailbox is a plain line.
     let empty = open(Vec::new());
@@ -169,7 +176,7 @@ fn enter_and_digits_open_a_message_and_esc_leaves_mail() {
     screen.deliver(Response::Message(Ok(message(2, "Two", "the body"))));
     let shown = text(&screen);
     assert!(
-        shown.contains("From ann at") && shown.contains("the body"),
+        shown.contains("From ann") && shown.contains("the body"),
         "{shown}"
     );
     // Esc goes back to the inbox page it came from; Esc there leaves.
@@ -464,4 +471,53 @@ fn hostile_member_text_stays_in_the_content_box_and_never_gets_the_marker_style(
             );
         }
     }
+}
+
+// ---- UI-4: the inbox and the reader in every layout, size and mode ----
+
+fn matrix(name: &str, screen: &MailScreen) {
+    let settings = settings();
+    crate::ui::screens::matrix::golden(name, &|frame, d| {
+        render(
+            frame,
+            screen,
+            &DrawCtx {
+                ui: d.ui,
+                strings: d.strings,
+                settings: &settings,
+                look: d.look,
+                tier: d.tier,
+                markers: d.markers,
+                clock: d.clock,
+                art: None,
+            },
+        );
+    });
+}
+
+#[test]
+fn the_inbox_in_every_layout_size_and_mode() {
+    let entries = (1..=14)
+        .map(|n| {
+            entry(
+                n,
+                if n % 2 == 0 { "ann" } else { "bob" },
+                Some(&format!("Subject number {n}")),
+                n % 3 == 0,
+            )
+        })
+        .collect();
+    matrix("mail-inbox", &open(entries));
+}
+
+#[test]
+fn a_message_in_every_layout_size_and_mode() {
+    let mut screen = open(vec![entry(2, "ann", Some("Two"), true)]);
+    let _ = press(&mut screen, Key::Enter);
+    screen.deliver(Response::Message(Ok(message(
+        2,
+        "Two",
+        "Hello there.\n> an earlier line that is quoted\nA second line that is long enough to wrap onto another row when the terminal is narrow, at least a little.\n",
+    ))));
+    matrix("mail-reader", &screen);
 }

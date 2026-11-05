@@ -58,6 +58,7 @@ fn spec(rows: Vec<TableRow>, selected: Option<usize>, top: usize) -> TableSpec<'
         empty: "Nothing here.",
         numbered: true,
         footer: None,
+        sorted: None,
     }
 }
 

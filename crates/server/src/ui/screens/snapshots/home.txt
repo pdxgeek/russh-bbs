@@ -1,0 +1,1442 @@
+=== classic / 80x24 / unicode mono
+ russh-bbs │ Main menu                                                UTC 12:00
+  ┌ Main menu ───────────────────────────────────────────────────────────────┐
+  │ Signed in as alice.                                                      │
+  │                                                                          │
+  │   [f] Forums                                                             │
+  │   [m] Mail                                                               │
+  │   [a] Files  (not built yet)                                             │
+  │   [c] Chat                                                               │
+  │   [d] Doors                                                              │
+  │   [u] Members                                                            │
+  │   [y] Community                                                          │
+  │   [i] Invites                                                            │
+  │   [s] Terminal settings                                                  │
+  │   [o] Sysop tools                                                        │
+  │   [l] Log off                                                            │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  └──────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help
+
+=== lightbar / 80x24 / unicode mono
+ russh-bbs │ Main menu                                                UTC 12:00
+  ┌ Main menu ───────────────────────────────────────────────────────────────┐
+  │ Signed in as alice.                                                      │
+  │                                                                          │
+  │ > [f] Forums                                                             │
+  │   [m] Mail                                                               │
+  │   [a] Files  (not built yet)                                             │
+  │   [c] Chat                                                               │
+  │   [d] Doors                                                              │
+  │   [u] Members                                                            │
+  │   [y] Community                                                          │
+  │   [i] Invites                                                            │
+  │   [s] Terminal settings                                                  │
+  │   [o] Sysop tools                                                        │
+  │   [l] Log off                                                            │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  └──────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on
+
+=== compact / 80x24 / unicode mono
+  Main menu
+  Signed in as alice.
+  f Forums
+  m Mail
+  a Files (not built yet)
+  c Chat
+  d Doors
+  u Members
+  y Community
+  i Invites
+  s Terminal settings
+  o Sysop tools
+  l Log off
+
+
+
+
+
+
+
+
+
+
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help
+
+=== dashboard / 80x24 / unicode mono
+ russh-bbs │ Main menu                                                UTC 12:00
+┌ Main menu ─────────────────────┐┌ This board ─────────┐┌ Clock ──────────────┐
+│ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
+│                                ││ A bulletin board i… ││   ┃  ━┃ • ┃ ┃ ┃ ┃   │
+│ > [f] Forums                   ││ Portland, OR        ││   ┃ ┃━  • ┃━┃ ┃━┃   │
+│   [m] Mail                     ││                     ││ Thu 5 Nov 2026 UTC  │
+│   [a] Files  (not built yet)   ││                     ││                     │
+│   [c] Chat                     │└─────────────────────┘└─────────────────────┘
+│   [d] Doors                    │┌ Who is online ──────┐┌ Last callers ───────┐
+│   [u] Members                  ││ ● 5 online          ││ bob              2m │
+│   [y] Community                ││ ▸ alice             ││ carol            1h │
+│   [i] Invites                  ││ ▸ bob               ││ dave             1d │
+│   [s] Terminal settings        ││ ▸ carol             ││ erin             2d │
+│   [o] Sysop tools              ││ ▸ dave              ││                     │
+│   [l] Log off                  ││ ▸ erin              ││                     │
+│                                │└─────────────────────┘└─────────────────────┘
+│                                │┌ New posts ──────────┐┌ Mail ───────────────┐
+│                                ││ Active threads: 7   ││ 3 unread            │
+│                                ││ Gener… ███████   4  ││ ████▊░░░░░░░░░░░░░░ │
+│                                ││ Tech   ███▌░░░   2  ││ 12 in your inbox    │
+│                                ││ Chat   █▊░░░░░   1  ││                     │
+│                                ││                     ││                     │
+└────────────────────────────────┘└─────────────────────┘└─────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on
+
+=== wide / 80x24 / unicode mono
+ russh-bbs │ Main menu                                                UTC 12:00
+┌ Main menu ─────────────────────┐┌ This board ─────────┐┌ Clock ──────────────┐
+│ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
+│ Showing Dashboard: this        ││ A bulletin board i… ││   ┃  ━┃ • ┃ ┃ ┃ ┃   │
+│ terminal is too small for      ││ Portland, OR        ││   ┃ ┃━  • ┃━┃ ┃━┃   │
+│ > [f] Forums                   ││                     ││ Thu 5 Nov 2026 UTC  │
+│   [m] Mail                     ││                     ││                     │
+│   [a] Files  (not built yet)   │└─────────────────────┘└─────────────────────┘
+│   [c] Chat                     │┌ Who is online ──────┐┌ Last callers ───────┐
+│   [d] Doors                    ││ ● 5 online          ││ bob              2m │
+│   [u] Members                  ││ ▸ alice             ││ carol            1h │
+│   [y] Community                ││ ▸ bob               ││ dave             1d │
+│   [i] Invites                  ││ ▸ carol             ││ erin             2d │
+│   [s] Terminal settings        ││ ▸ dave              ││                     │
+│   [o] Sysop tools              ││ ▸ erin              ││                     │
+│   [l] Log off                  │└─────────────────────┘└─────────────────────┘
+│                                │┌ New posts ──────────┐┌ Mail ───────────────┐
+│                                ││ Active threads: 7   ││ 3 unread            │
+│                                ││ Gener… ███████   4  ││ ████▊░░░░░░░░░░░░░░ │
+│                                ││ Tech   ███▌░░░   2  ││ 12 in your inbox    │
+│                                ││ Chat   █▊░░░░░   1  ││                     │
+│                                ││                     ││                     │
+└────────────────────────────────┘└─────────────────────┘└─────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on
+
+=== focus / 80x24 / unicode mono
+ russh-bbs │ Main menu                                                UTC 12:00
+           Main menu
+           ────────────────────────────────────────
+           Signed in as alice.
+
+           > [f] Forums
+             [m] Mail
+             [a] Files  (not built yet)
+             [c] Chat
+             [d] Doors
+             [u] Members
+             [y] Community
+             [i] Invites
+             [s] Terminal settings
+             [o] Sysop tools
+             [l] Log off
+
+
+
+
+
+
+
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on
+
+=== split / 80x24 / unicode mono
+ russh-bbs │ Main menu                                                UTC 12:00
+┌ Main menu ─────────────────────┐│┌ Chat ─────────────────────────────────────┐
+│ Signed in as alice.            │││#lobby  3                                  │
+│                                │││  ann                                      │
+│ > [f] Forums                   │││  bob                                      │
+│   [m] Mail                     │││  carol                                    │
+│   [a] Files  (not built yet)   │││#tech  1                                   │
+│   [c] Chat                     │││  dave                                     │
+│   [d] Doors                    │││                                           │
+│   [u] Members                  │││                                           │
+│   [y] Community                │││                                           │
+│   [i] Invites                  ││└───────────────────────────────────────────┘
+│   [s] Terminal settings        │┃┌ Mail ─────────────────────────────────────┐
+│   [o] Sysop tools              │││3 unread of 12                             │
+│   [l] Log off                  │││* ann       Welcome aboard 1h              │
+│                                │││  bob       Re: the retro room 1d          │
+│                                │││* (gone)    (cannot be opened) 2d          │
+│                                │││                                           │
+│                                │││                                           │
+│                                │││                                           │
+│                                │││                                           │
+│                                │││                                           │
+└────────────────────────────────┘│└───────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on
+
+=== classic / 80x24 / ascii mono
+ russh-bbs | Main menu                                                UTC 12:00
+  + Main menu ---------------------------------------------------------------+
+  | Signed in as alice.                                                      |
+  |                                                                          |
+  |   [f] Forums                                                             |
+  |   [m] Mail                                                               |
+  |   [a] Files  (not built yet)                                             |
+  |   [c] Chat                                                               |
+  |   [d] Doors                                                              |
+  |   [u] Members                                                            |
+  |   [y] Community                                                          |
+  |   [i] Invites                                                            |
+  |   [s] Terminal settings                                                  |
+  |   [o] Sysop tools                                                        |
+  |   [l] Log off                                                            |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  +--------------------------------------------------------------------------+
+UNENCRYPTED  LOW-SECURITY   ? help  Esc back  Ctrl-C log off
+
+=== lightbar / 80x24 / ascii mono
+ russh-bbs | Main menu                                                UTC 12:00
+  + Main menu ---------------------------------------------------------------+
+  | Signed in as alice.                                                      |
+  |                                                                          |
+  | > [f] Forums                                                             |
+  |   [m] Mail                                                               |
+  |   [a] Files  (not built yet)                                             |
+  |   [c] Chat                                                               |
+  |   [d] Doors                                                              |
+  |   [u] Members                                                            |
+  |   [y] Community                                                          |
+  |   [i] Invites                                                            |
+  |   [s] Terminal settings                                                  |
+  |   [o] Sysop tools                                                        |
+  |   [l] Log off                                                            |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  |                                                                          |
+  +--------------------------------------------------------------------------+
+UNENCRYPTED  LOW-SECURITY   Up/Down move  Enter choose  ? help  Esc back
+
+=== compact / 80x24 / ascii mono
+  Main menu
+  Signed in as alice.
+  f Forums
+  m Mail
+  a Files (not built yet)
+  c Chat
+  d Doors
+  u Members
+  y Community
+  i Invites
+  s Terminal settings
+  o Sysop tools
+  l Log off
+
+
+
+
+
+
+
+
+
+
+UNENCRYPTED  LOW-SECURITY   ? help  Esc back  Ctrl-C log off
+
+=== dashboard / 80x24 / ascii mono
+ russh-bbs | Main menu                                                UTC 12:00
++ Main menu ---------------------++ This board ---------++ Clock --------------+
+| Signed in as alice.            || russh-bbs           ||      _     _   _    |
+|                                || A bulletin board i~ ||   |  _| . | | | |   |
+| > [f] Forums                   || Portland, OR        ||   | |_  . |_| |_|   |
+|   [m] Mail                     ||                     || Thu 5 Nov 2026 UTC  |
+|   [a] Files  (not built yet)   ||                     ||                     |
+|   [c] Chat                     |+---------------------++---------------------+
+|   [d] Doors                    |+ Who is online ------++ Last callers -------+
+|   [u] Members                  || * 5 online          || bob              2m |
+|   [y] Community                || > alice             || carol            1h |
+|   [i] Invites                  || > bob               || dave             1d |
+|   [s] Terminal settings        || > carol             || erin             2d |
+|   [o] Sysop tools              || > dave              ||                     |
+|   [l] Log off                  || > erin              ||                     |
+|                                |+---------------------++---------------------+
+|                                |+ New posts ----------++ Mail ---------------+
+|                                || Active threads: 7   || 3 unread            |
+|                                || Gener~ #######   4  || #####-------------- |
+|                                || Tech   ####---   2  || 12 in your inbox    |
+|                                || Chat   ##-----   1  ||                     |
+|                                ||                     ||                     |
++--------------------------------++---------------------++---------------------+
+UNENCRYPTED  LOW-SECURITY   Up/Down move  Enter choose  ? help  Esc back
+
+=== wide / 80x24 / ascii mono
+ russh-bbs | Main menu                                                UTC 12:00
++ Main menu ---------------------++ This board ---------++ Clock --------------+
+| Signed in as alice.            || russh-bbs           ||      _     _   _    |
+| Showing Dashboard: this        || A bulletin board i~ ||   |  _| . | | | |   |
+| terminal is too small for      || Portland, OR        ||   | |_  . |_| |_|   |
+| > [f] Forums                   ||                     || Thu 5 Nov 2026 UTC  |
+|   [m] Mail                     ||                     ||                     |
+|   [a] Files  (not built yet)   |+---------------------++---------------------+
+|   [c] Chat                     |+ Who is online ------++ Last callers -------+
+|   [d] Doors                    || * 5 online          || bob              2m |
+|   [u] Members                  || > alice             || carol            1h |
+|   [y] Community                || > bob               || dave             1d |
+|   [i] Invites                  || > carol             || erin             2d |
+|   [s] Terminal settings        || > dave              ||                     |
+|   [o] Sysop tools              || > erin              ||                     |
+|   [l] Log off                  |+---------------------++---------------------+
+|                                |+ New posts ----------++ Mail ---------------+
+|                                || Active threads: 7   || 3 unread            |
+|                                || Gener~ #######   4  || #####-------------- |
+|                                || Tech   ####---   2  || 12 in your inbox    |
+|                                || Chat   ##-----   1  ||                     |
+|                                ||                     ||                     |
++--------------------------------++---------------------++---------------------+
+UNENCRYPTED  LOW-SECURITY   Up/Down move  Enter choose  ? help  Esc back
+
+=== focus / 80x24 / ascii mono
+ russh-bbs | Main menu                                                UTC 12:00
+           Main menu
+           ----------------------------------------
+           Signed in as alice.
+
+           > [f] Forums
+             [m] Mail
+             [a] Files  (not built yet)
+             [c] Chat
+             [d] Doors
+             [u] Members
+             [y] Community
+             [i] Invites
+             [s] Terminal settings
+             [o] Sysop tools
+             [l] Log off
+
+
+
+
+
+
+
+UNENCRYPTED  LOW-SECURITY   Up/Down move  Enter choose  Tab widgets  ? help
+
+=== split / 80x24 / ascii mono
+ russh-bbs | Main menu                                                UTC 12:00
++ Main menu ---------------------+|+ Chat -------------------------------------+
+| Signed in as alice.            |||#lobby  3                                  |
+|                                |||  ann                                      |
+| > [f] Forums                   |||  bob                                      |
+|   [m] Mail                     |||  carol                                    |
+|   [a] Files  (not built yet)   |||#tech  1                                   |
+|   [c] Chat                     |||  dave                                     |
+|   [d] Doors                    |||                                           |
+|   [u] Members                  |||                                           |
+|   [y] Community                |||                                           |
+|   [i] Invites                  ||+-------------------------------------------+
+|   [s] Terminal settings        |#+ Mail -------------------------------------+
+|   [o] Sysop tools              |||3 unread of 12                             |
+|   [l] Log off                  |||* ann       Welcome aboard 1h              |
+|                                |||  bob       Re: the retro room 1d          |
+|                                |||* (gone)    (cannot be opened) 2d          |
+|                                |||                                           |
+|                                |||                                           |
+|                                |||                                           |
+|                                |||                                           |
+|                                |||                                           |
++--------------------------------+|+-------------------------------------------+
+UNENCRYPTED  LOW-SECURITY   Up/Down move  Enter choose  ? help  Esc back
+
+=== classic / 100x30 / unicode mono
+ russh-bbs │ Main menu                                                                    UTC 12:00
+            ┌ Main menu ───────────────────────────────────────────────────────────────┐
+            │ Signed in as alice.                                                      │
+            │                                                                          │
+            │   [f] Forums                                                             │
+            │   [m] Mail                                                               │
+            │   [a] Files  (not built yet)                                             │
+            │   [c] Chat                                                               │
+            │   [d] Doors                                                              │
+            │   [u] Members                                                            │
+            │   [y] Community                                                          │
+            │   [i] Invites                                                            │
+            │   [s] Terminal settings                                                  │
+            │   [o] Sysop tools                                                        │
+            │   [l] Log off                                                            │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            └──────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help  Esc back
+
+=== lightbar / 100x30 / unicode mono
+ russh-bbs │ Main menu                                                                    UTC 12:00
+            ┌ Main menu ───────────────────────────────────────────────────────────────┐
+            │ Signed in as alice.                                                      │
+            │                                                                          │
+            │ > [f] Forums                                                             │
+            │   [m] Mail                                                               │
+            │   [a] Files  (not built yet)                                             │
+            │   [c] Chat                                                               │
+            │   [d] Doors                                                              │
+            │   [u] Members                                                            │
+            │   [y] Community                                                          │
+            │   [i] Invites                                                            │
+            │   [s] Terminal settings                                                  │
+            │   [o] Sysop tools                                                        │
+            │   [l] Log off                                                            │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            │                                                                          │
+            └──────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Up/Down move  Enter choose
+
+=== compact / 100x30 / unicode mono
+
+            Main menu
+            Signed in as alice.
+            f Forums
+            m Mail
+            a Files (not built yet)
+            c Chat
+            d Doors
+            u Members
+            y Community
+            i Invites
+            s Terminal settings
+            o Sysop tools
+            l Log off
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help  Esc back
+
+=== dashboard / 100x30 / unicode mono
+ russh-bbs │ Main menu                                                                    UTC 12:00
+┌ Main menu ─────────────────────┐┌ This board ───────────────────┐┌ Clock ────────────────────────┐
+│ Signed in as alice.            ││ russh-bbs                     ││      ━     ━   ━              │
+│                                ││ A bulletin board in your ter… ││   ┃  ━┃ • ┃ ┃ ┃ ┃             │
+│ > [f] Forums                   ││ Portland, OR · since 2026     ││   ┃ ┃━  • ┃━┃ ┃━┃             │
+│   [m] Mail                     ││                               ││ Thu 5 Nov 2026 UTC            │
+│   [a] Files  (not built yet)   ││                               ││                               │
+│   [c] Chat                     ││                               ││                               │
+│   [d] Doors                    ││                               ││                               │
+│   [u] Members                  │└───────────────────────────────┘└───────────────────────────────┘
+│   [y] Community                │┌ Who is online ────────────────┐┌ Last callers ─────────────────┐
+│   [i] Invites                  ││ ● 5 online                    ││ bob                        2m │
+│   [s] Terminal settings        ││ ▸ alice       ▸ bob           ││ carol                      1h │
+│   [o] Sysop tools              ││ ▸ carol       ▸ dave          ││ dave                       1d │
+│   [l] Log off                  ││ ▸ erin                        ││ erin                       2d │
+│                                ││                               ││                               │
+│                                ││                               ││                               │
+│                                ││                               ││                               │
+│                                ││                               ││                               │
+│                                │└───────────────────────────────┘└───────────────────────────────┘
+│                                │┌ New posts ────────────────────┐┌ Mail ─────────────────────────┐
+│                                ││ Active threads: 7             ││  ━                            │
+│                                ││ General   ██████████████   4  ││  ━┃                           │
+│                                ││ Tech      ███████░░░░░░░   2  ││  ━┃                           │
+│                                ││ Chat      ███▌░░░░░░░░░░   1  ││ 3 unread                      │
+│                                ││                               ││ ███████▎░░░░░░░░░░░░░░░░░░░░░ │
+│                                ││                               ││ 12 in your inbox              │
+│                                ││                               ││                               │
+└────────────────────────────────┘└───────────────────────────────┘└───────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Up/Down move  Enter choose
+
+=== wide / 100x30 / unicode mono
+ russh-bbs │ Main menu                                                                    UTC 12:00
+┌ Main menu ─────────────────────┐┌ This board ───────────────────┐┌ Clock ────────────────────────┐
+│ Signed in as alice.            ││ russh-bbs                     ││      ━     ━   ━              │
+│ Showing Dashboard: this        ││ A bulletin board in your ter… ││   ┃  ━┃ • ┃ ┃ ┃ ┃             │
+│ terminal is too small for      ││ Portland, OR · since 2026     ││   ┃ ┃━  • ┃━┃ ┃━┃             │
+│ > [f] Forums                   ││                               ││ Thu 5 Nov 2026 UTC            │
+│   [m] Mail                     ││                               ││                               │
+│   [a] Files  (not built yet)   ││                               ││                               │
+│   [c] Chat                     ││                               ││                               │
+│   [d] Doors                    │└───────────────────────────────┘└───────────────────────────────┘
+│   [u] Members                  │┌ Who is online ────────────────┐┌ Last callers ─────────────────┐
+│   [y] Community                ││ ● 5 online                    ││ bob                        2m │
+│   [i] Invites                  ││ ▸ alice       ▸ bob           ││ carol                      1h │
+│   [s] Terminal settings        ││ ▸ carol       ▸ dave          ││ dave                       1d │
+│   [o] Sysop tools              ││ ▸ erin                        ││ erin                       2d │
+│   [l] Log off                  ││                               ││                               │
+│                                ││                               ││                               │
+│                                ││                               ││                               │
+│                                ││                               ││                               │
+│                                │└───────────────────────────────┘└───────────────────────────────┘
+│                                │┌ New posts ────────────────────┐┌ Mail ─────────────────────────┐
+│                                ││ Active threads: 7             ││  ━                            │
+│                                ││ General   ██████████████   4  ││  ━┃                           │
+│                                ││ Tech      ███████░░░░░░░   2  ││  ━┃                           │
+│                                ││ Chat      ███▌░░░░░░░░░░   1  ││ 3 unread                      │
+│                                ││                               ││ ███████▎░░░░░░░░░░░░░░░░░░░░░ │
+│                                ││                               ││ 12 in your inbox              │
+│                                ││                               ││                               │
+└────────────────────────────────┘└───────────────────────────────┘└───────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Up/Down move  Enter choose
+
+=== focus / 100x30 / unicode mono
+ russh-bbs │ Main menu                                                                    UTC 12:00
+                     Main menu
+                     ────────────────────────────────────────
+                     Signed in as alice.
+
+                     > [f] Forums
+
+                       [m] Mail
+
+                       [a] Files  (not built yet)
+
+                       [c] Chat
+
+                       [d] Doors
+
+                       [u] Members
+
+                       [y] Community
+
+                       [i] Invites
+
+                       [s] Terminal settings
+
+                       [o] Sysop tools
+
+                       [l] Log off
+
+
+
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Up/Down move  Enter choose
+
+=== split / 100x30 / unicode mono
+ russh-bbs │ Main menu                                                                    UTC 12:00
+┌ Main menu ─────────────────────┐│┌ Chat ─────────────────────────────────────────────────────────┐
+│ Signed in as alice.            │││#lobby  3                                                      │
+│                                │││  ann                                                          │
+│ > [f] Forums                   │││  bob                                                          │
+│   [m] Mail                     │││  carol                                                        │
+│   [a] Files  (not built yet)   │││#tech  1                                                       │
+│   [c] Chat                     │││  dave                                                         │
+│   [d] Doors                    │││                                                               │
+│   [u] Members                  │││                                                               │
+│   [y] Community                │││                                                               │
+│   [i] Invites                  │││                                                               │
+│   [s] Terminal settings        │││                                                               │
+│   [o] Sysop tools              │││                                                               │
+│   [l] Log off                  ││└───────────────────────────────────────────────────────────────┘
+│                                │┃┌ Mail ─────────────────────────────────────────────────────────┐
+│                                │││3 unread of 12                                                 │
+│                                │││* ann       Welcome aboard 1h                                  │
+│                                │││  bob       Re: the retro room 1d                              │
+│                                │││* (gone)    (cannot be opened) 2d                              │
+│                                │││                                                               │
+│                                │││                                                               │
+│                                │││                                                               │
+│                                │││                                                               │
+│                                │││                                                               │
+│                                │││                                                               │
+│                                │││                                                               │
+│                                │││                                                               │
+└────────────────────────────────┘│└───────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Up/Down move  Enter choose
+
+=== classic / 100x30 / ascii mono
+ russh-bbs | Main menu                                                                    UTC 12:00
+            + Main menu ---------------------------------------------------------------+
+            | Signed in as alice.                                                      |
+            |                                                                          |
+            |   [f] Forums                                                             |
+            |   [m] Mail                                                               |
+            |   [a] Files  (not built yet)                                             |
+            |   [c] Chat                                                               |
+            |   [d] Doors                                                              |
+            |   [u] Members                                                            |
+            |   [y] Community                                                          |
+            |   [i] Invites                                                            |
+            |   [s] Terminal settings                                                  |
+            |   [o] Sysop tools                                                        |
+            |   [l] Log off                                                            |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            +--------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   ? help
+
+=== lightbar / 100x30 / ascii mono
+ russh-bbs | Main menu                                                                    UTC 12:00
+            + Main menu ---------------------------------------------------------------+
+            | Signed in as alice.                                                      |
+            |                                                                          |
+            | > [f] Forums                                                             |
+            |   [m] Mail                                                               |
+            |   [a] Files  (not built yet)                                             |
+            |   [c] Chat                                                               |
+            |   [d] Doors                                                              |
+            |   [u] Members                                                            |
+            |   [y] Community                                                          |
+            |   [i] Invites                                                            |
+            |   [s] Terminal settings                                                  |
+            |   [o] Sysop tools                                                        |
+            |   [l] Log off                                                            |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            |                                                                          |
+            +--------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Up/Down move
+
+=== compact / 100x30 / ascii mono
+
+            Main menu
+            Signed in as alice.
+            f Forums
+            m Mail
+            a Files (not built yet)
+            c Chat
+            d Doors
+            u Members
+            y Community
+            i Invites
+            s Terminal settings
+            o Sysop tools
+            l Log off
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   ? help
+
+=== dashboard / 100x30 / ascii mono
+ russh-bbs | Main menu                                                                    UTC 12:00
++ Main menu ---------------------++ This board -------------------++ Clock ------------------------+
+| Signed in as alice.            || russh-bbs                     ||      _     _   _              |
+|                                || A bulletin board in your ter~ ||   |  _| . | | | |             |
+| > [f] Forums                   || Portland, OR - since 2026     ||   | |_  . |_| |_|             |
+|   [m] Mail                     ||                               || Thu 5 Nov 2026 UTC            |
+|   [a] Files  (not built yet)   ||                               ||                               |
+|   [c] Chat                     ||                               ||                               |
+|   [d] Doors                    ||                               ||                               |
+|   [u] Members                  |+-------------------------------++-------------------------------+
+|   [y] Community                |+ Who is online ----------------++ Last callers -----------------+
+|   [i] Invites                  || * 5 online                    || bob                        2m |
+|   [s] Terminal settings        || > alice       > bob           || carol                      1h |
+|   [o] Sysop tools              || > carol       > dave          || dave                       1d |
+|   [l] Log off                  || > erin                        || erin                       2d |
+|                                ||                               ||                               |
+|                                ||                               ||                               |
+|                                ||                               ||                               |
+|                                ||                               ||                               |
+|                                |+-------------------------------++-------------------------------+
+|                                |+ New posts --------------------++ Mail -------------------------+
+|                                || Active threads: 7             ||  _                            |
+|                                || General   ##############   4  ||  _|                           |
+|                                || Tech      #######-------   2  ||  _|                           |
+|                                || Chat      ####----------   1  || 3 unread                      |
+|                                ||                               || #######---------------------- |
+|                                ||                               || 12 in your inbox              |
+|                                ||                               ||                               |
++--------------------------------++-------------------------------++-------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Up/Down move
+
+=== wide / 100x30 / ascii mono
+ russh-bbs | Main menu                                                                    UTC 12:00
++ Main menu ---------------------++ This board -------------------++ Clock ------------------------+
+| Signed in as alice.            || russh-bbs                     ||      _     _   _              |
+| Showing Dashboard: this        || A bulletin board in your ter~ ||   |  _| . | | | |             |
+| terminal is too small for      || Portland, OR - since 2026     ||   | |_  . |_| |_|             |
+| > [f] Forums                   ||                               || Thu 5 Nov 2026 UTC            |
+|   [m] Mail                     ||                               ||                               |
+|   [a] Files  (not built yet)   ||                               ||                               |
+|   [c] Chat                     ||                               ||                               |
+|   [d] Doors                    |+-------------------------------++-------------------------------+
+|   [u] Members                  |+ Who is online ----------------++ Last callers -----------------+
+|   [y] Community                || * 5 online                    || bob                        2m |
+|   [i] Invites                  || > alice       > bob           || carol                      1h |
+|   [s] Terminal settings        || > carol       > dave          || dave                       1d |
+|   [o] Sysop tools              || > erin                        || erin                       2d |
+|   [l] Log off                  ||                               ||                               |
+|                                ||                               ||                               |
+|                                ||                               ||                               |
+|                                ||                               ||                               |
+|                                |+-------------------------------++-------------------------------+
+|                                |+ New posts --------------------++ Mail -------------------------+
+|                                || Active threads: 7             ||  _                            |
+|                                || General   ##############   4  ||  _|                           |
+|                                || Tech      #######-------   2  ||  _|                           |
+|                                || Chat      ####----------   1  || 3 unread                      |
+|                                ||                               || #######---------------------- |
+|                                ||                               || 12 in your inbox              |
+|                                ||                               ||                               |
++--------------------------------++-------------------------------++-------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Up/Down move
+
+=== focus / 100x30 / ascii mono
+ russh-bbs | Main menu                                                                    UTC 12:00
+                     Main menu
+                     ----------------------------------------
+                     Signed in as alice.
+
+                     > [f] Forums
+
+                       [m] Mail
+
+                       [a] Files  (not built yet)
+
+                       [c] Chat
+
+                       [d] Doors
+
+                       [u] Members
+
+                       [y] Community
+
+                       [i] Invites
+
+                       [s] Terminal settings
+
+                       [o] Sysop tools
+
+                       [l] Log off
+
+
+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Up/Down move
+
+=== split / 100x30 / ascii mono
+ russh-bbs | Main menu                                                                    UTC 12:00
++ Main menu ---------------------+|+ Chat ---------------------------------------------------------+
+| Signed in as alice.            |||#lobby  3                                                      |
+|                                |||  ann                                                          |
+| > [f] Forums                   |||  bob                                                          |
+|   [m] Mail                     |||  carol                                                        |
+|   [a] Files  (not built yet)   |||#tech  1                                                       |
+|   [c] Chat                     |||  dave                                                         |
+|   [d] Doors                    |||                                                               |
+|   [u] Members                  |||                                                               |
+|   [y] Community                |||                                                               |
+|   [i] Invites                  |||                                                               |
+|   [s] Terminal settings        |||                                                               |
+|   [o] Sysop tools              |||                                                               |
+|   [l] Log off                  ||+---------------------------------------------------------------+
+|                                |#+ Mail ---------------------------------------------------------+
+|                                |||3 unread of 12                                                 |
+|                                |||* ann       Welcome aboard 1h                                  |
+|                                |||  bob       Re: the retro room 1d                              |
+|                                |||* (gone)    (cannot be opened) 2d                              |
+|                                |||                                                               |
+|                                |||                                                               |
+|                                |||                                                               |
+|                                |||                                                               |
+|                                |||                                                               |
+|                                |||                                                               |
+|                                |||                                                               |
+|                                |||                                                               |
++--------------------------------+|+---------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Up/Down move
+
+=== classic / 132x43 / unicode mono
+ russh-bbs │ Main menu                                                                                                    UTC 12:00
+                            ┌ Main menu ───────────────────────────────────────────────────────────────┐
+                            │ Signed in as alice.                                                      │
+                            │                                                                          │
+                            │   [f] Forums                                                             │
+                            │   [m] Mail                                                               │
+                            │   [a] Files  (not built yet)                                             │
+                            │   [c] Chat                                                               │
+                            │   [d] Doors                                                              │
+                            │   [u] Members                                                            │
+                            │   [y] Community                                                          │
+                            │   [i] Invites                                                            │
+                            │   [s] Terminal settings                                                  │
+                            │   [o] Sysop tools                                                        │
+                            │   [l] Log off                                                            │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            └──────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help  Esc back  Ctrl-C log off
+
+=== lightbar / 132x43 / unicode mono
+ russh-bbs │ Main menu                                                                                                    UTC 12:00
+                            ┌ Main menu ───────────────────────────────────────────────────────────────┐
+                            │ Signed in as alice.                                                      │
+                            │                                                                          │
+                            │ > [f] Forums                                                             │
+                            │   [m] Mail                                                               │
+                            │   [a] Files  (not built yet)                                             │
+                            │   [c] Chat                                                               │
+                            │   [d] Doors                                                              │
+                            │   [u] Members                                                            │
+                            │   [y] Community                                                          │
+                            │   [i] Invites                                                            │
+                            │   [s] Terminal settings                                                  │
+                            │   [o] Sysop tools                                                        │
+                            │   [l] Log off                                                            │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            │                                                                          │
+                            └──────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== compact / 132x43 / unicode mono
+
+                            Main menu
+                            Signed in as alice.
+                            f Forums
+                            m Mail
+                            a Files (not built yet)
+                            c Chat
+                            d Doors
+                            u Members
+                            y Community
+                            i Invites
+                            s Terminal settings
+                            o Sysop tools
+                            l Log off
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   ? help  Esc back  Ctrl-C log off
+
+=== dashboard / 132x43 / unicode mono
+ russh-bbs │ Main menu                                                                                                    UTC 12:00
+┌ Main menu ─────────────────────┐┌ This board ───────────────────┐┌ Clock ───────────────────────┐┌ Who is online ────────────────┐
+│ Signed in as alice.            ││ russh-bbs                     ││      ━     ━   ━             ││ ● 5 online                    │
+│                                ││ A bulletin board in your ter… ││   ┃  ━┃ • ┃ ┃ ┃ ┃            ││ ▸ alice       ▸ bob           │
+│ > [f] Forums                   ││ Portland, OR · since 2026     ││   ┃ ┃━  • ┃━┃ ┃━┃            ││ ▸ carol       ▸ dave          │
+│   [m] Mail                     ││                               ││ Thu 5 Nov 2026 UTC           ││ ▸ erin                        │
+│   [a] Files  (not built yet)   ││                               ││                              ││                               │
+│   [c] Chat                     ││                               ││                              ││                               │
+│   [d] Doors                    ││                               ││                              ││                               │
+│   [u] Members                  ││                               ││                              ││                               │
+│   [y] Community                │└───────────────────────────────┘└──────────────────────────────┘└───────────────────────────────┘
+│   [i] Invites                  │┌ Last callers ─────────────────┐┌ New posts ───────────────────┐┌ Mail ─────────────────────────┐
+│   [s] Terminal settings        ││ bob                        2m ││ Active threads: 7            ││  ━                            │
+│   [o] Sysop tools              ││ carol                      1h ││ General   █████████████   4  ││  ━┃                           │
+│   [l] Log off                  ││ dave                       1d ││ Tech      ██████▌░░░░░░   2  ││  ━┃                           │
+│                                ││ erin                       2d ││ Chat      ███▎░░░░░░░░░   1  ││ 3 unread                      │
+│                                ││                               ││                              ││ ███████▎░░░░░░░░░░░░░░░░░░░░░ │
+│                                ││                               ││                              ││ 12 in your inbox              │
+│                                ││                               ││                              ││                               │
+│                                ││                               ││                              ││                               │
+│                                ││                               ││                              ││                               │
+│                                │└───────────────────────────────┘└──────────────────────────────┘└───────────────────────────────┘
+│                                │┌ Activity ─────────────────────┐┌ One-liners ──────────────────┐┌ Poll ─────────────────────────┐
+│                                ││ 59 threads active in 14 days  ││ bob: the board looks great   ││ Best terminal font?           │
+│                                ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣤⣤⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿ ││      tonight                 ││  Mono      ██████▌░░░░░  54%  │
+│                                ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⠀⠀⠀⠀⠀⠀⣶⣶⣿⣿ ││ carol: hello from the        ││ ▸Nerd      ███▉░░░░░░░░  31%  │
+│                                ││ ⠀⠀⠀⠀⠀⠀⢠⣤⡄⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣤⣤⠀⠀⠀⠀⣿⣿⣿⣿ ││        terminal              ││  Bitmap    █▋░░░░░░░░░░  13%  │
+│                                ││ ⠀⠀⠀⠀⠀⠀⢸⣿⣷⣶⡆⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⠀⠀⣶⣶⣿⣿⣿⣿ ││ dave: anyone up for a door   ││                               │
+│                                ││ ⠀⠀⢸⣿⣧⣤⣼⣿⣿⣿⡇⠀⢠⣤⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││       game?                  ││                               │
+│                                ││ ⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⡇⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ ││                              ││                               │
+│                                ││ 14 days ago             today ││                              ││                               │
+│                                │└───────────────────────────────┘└──────────────────────────────┘└───────────────────────────────┘
+│                                │┌ Your credits ─────────────────┐
+│                                ││ 1,234 credits                 │
+│                                ││ +334 in 14 days               │
+│                                ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣠⣤⣤⣤⣤⣶⣶⣶⣶⣿⣿⣿⣿⣿⣿ │
+│                                ││ ⣤⣤⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
+│                                ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
+│                                ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
+│                                ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
+│                                ││ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
+└────────────────────────────────┘└───────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== wide / 132x43 / unicode mono
+ russh-bbs │ Main menu                                                                                                    UTC 12:00
+┌ Main menu ─────────────────────┐┌ russh-bbs ─────────────────────────────────────────────────┐┌ This board ──────────────────────┐
+│ > [f] Forums                   ││                                                            ││ russh-bbs                        │
+│   [m] Mail                     ││  Signed in as alice.                                       ││ A bulletin board in your termin… │
+│   [a] Files  (not built yet)   ││                                                            ││ Portland, OR · since 2026        │
+│   [c] Chat                     ││  > [f] Forums                                              ││                                  │
+│   [d] Doors                    ││                                                            ││                                  │
+│   [u] Members                  ││                                                            ││                                  │
+│   [y] Community                ││                                                            │└──────────────────────────────────┘
+│   [i] Invites                  ││                                                            │┌ Clock ───────────────────────────┐
+│   [s] Terminal settings        ││                                                            ││      ━     ━   ━                 │
+│   [o] Sysop tools              ││                                                            ││   ┃  ━┃ • ┃ ┃ ┃ ┃                │
+│   [l] Log off                  ││                                                            ││   ┃ ┃━  • ┃━┃ ┃━┃                │
+│                                ││                                                            ││ Thu 5 Nov 2026 UTC               │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            │└──────────────────────────────────┘
+│                                ││                                                            │┌ Who is online ───────────────────┐
+│                                ││                                                            ││ ● 5 online                       │
+│                                ││                                                            ││ ▸ alice         ▸ bob            │
+│                                ││                                                            ││ ▸ carol         ▸ dave           │
+│                                ││                                                            ││ ▸ erin                           │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            │└──────────────────────────────────┘
+│                                ││                                                            │┌ New posts ───────────────────────┐
+│                                ││                                                            ││ Active threads: 7                │
+│                                ││                                                            ││ General    ████████████████   4  │
+│                                ││                                                            ││ Tech       ████████░░░░░░░░   2  │
+│                                ││                                                            ││ Chat       ████░░░░░░░░░░░░   1  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            ││                                  │
+│                                ││                                                            │└──────────────────────────────────┘
+│                                ││                                                            │┌ Activity ────────────────────────┐
+│                                ││                                                            ││ 59 threads active in 14 days     │
+│                                ││                                                            ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣶⣶⠀⠀⠀⠀⠀⠀⢀⣀⣀⣿⣿ │
+│                                ││                                                            ││ ⠀⠀⠀⠀⠀⠀⠀⣀⣀⡀⠀⠀⠀⠀⠀⠀⣶⣶⣾⣿⣿⣀⣀⠀⠀⠀⠀⢸⣿⣿⣿⣿ │
+│                                ││                                                            ││ ⠀⠀⢠⣤⣤⠀⠀⣿⣿⣿⣿⡇⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣤⣤⣼⣿⣿⣿⣿⣿⣿ │
+│                                ││                                                            ││ ⣤⣤⣼⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ │
+│                                ││                                                            ││ 14 days ago                today │
+└────────────────────────────────┘└────────────────────────────────────────────────────────────┘└──────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== focus / 132x43 / unicode mono
+ russh-bbs │ Main menu                                                                                                    UTC 12:00
+                                     Main menu
+                                     ────────────────────────────────────────
+                                     Signed in as alice.
+
+                                     > [f] Forums
+
+                                       [m] Mail
+
+                                       [a] Files  (not built yet)
+
+                                       [c] Chat
+
+                                       [d] Doors
+
+                                       [u] Members
+
+                                       [y] Community
+
+                                       [i] Invites
+
+                                       [s] Terminal settings
+
+                                       [o] Sysop tools
+
+                                       [l] Log off
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Up/Down move  Enter choose  Tab widgets  ? help  Esc back
+
+=== split / 132x43 / unicode mono
+ russh-bbs │ Main menu                                                                                                    UTC 12:00
+┌ Main menu ─────────────────────┐│┌ Chat ─────────────────────────────────────────────────────────────────────────────────────────┐
+│ Signed in as alice.            │││#lobby  3                                                                                      │
+│                                │││  ann                                                                                          │
+│ > [f] Forums                   │││  bob                                                                                          │
+│   [m] Mail                     │││  carol                                                                                        │
+│   [a] Files  (not built yet)   │││#tech  1                                                                                       │
+│   [c] Chat                     │││  dave                                                                                         │
+│   [d] Doors                    │││                                                                                               │
+│   [u] Members                  │││                                                                                               │
+│   [y] Community                │││                                                                                               │
+│   [i] Invites                  │││                                                                                               │
+│   [s] Terminal settings        │││                                                                                               │
+│   [o] Sysop tools              │││                                                                                               │
+│   [l] Log off                  │││                                                                                               │
+│                                │││                                                                                               │
+│                                │││                                                                                               │
+│                                │││                                                                                               │
+│                                │││                                                                                               │
+│                                │││                                                                                               │
+│                                │││                                                                                               │
+│                                │┃└───────────────────────────────────────────────────────────────────────────────────────────────┘
+│                                ││┌ Mail ─────────────────────────────────────────────────────────────────────────────────────────┐
+│                                │││3 unread of 12                                                                                 │
+│                                │││* ann       Welcome aboard 1h                                                                  │
+│                                │││  bob       Re: the retro room 1d                                                              │
+│                                │││* (gone)    (cannot be opened) 2d                                                              │
+│                                │││                                                                                               │
+│                                │││                                                                                               │
+│                                │││                                                                                               │
+│                                │││                                                                                               │
+│                                │││                                                                                               │
+│                                │││                                                                                               │
+│                                │││                                                                                               │
+│                                │││                                                                                               │
+│                                │││                                                                                               │
+│                                │││                                                                                               │
+│                                │││                                                                                               │
+│                                │││                                                                                               │
+│                                │││                                                                                               │
+│                                │││                                                                                               │
+└────────────────────────────────┘│└───────────────────────────────────────────────────────────────────────────────────────────────┘
+⟦⊗⟧ anyone on the network can read this session  ⟦⊖⟧ telnet is on   Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
+
+=== classic / 132x43 / ascii mono
+ russh-bbs | Main menu                                                                                                    UTC 12:00
+                            + Main menu ---------------------------------------------------------------+
+                            | Signed in as alice.                                                      |
+                            |                                                                          |
+                            |   [f] Forums                                                             |
+                            |   [m] Mail                                                               |
+                            |   [a] Files  (not built yet)                                             |
+                            |   [c] Chat                                                               |
+                            |   [d] Doors                                                              |
+                            |   [u] Members                                                            |
+                            |   [y] Community                                                          |
+                            |   [i] Invites                                                            |
+                            |   [s] Terminal settings                                                  |
+                            |   [o] Sysop tools                                                        |
+                            |   [l] Log off                                                            |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            +--------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   ? help  Esc back  Ctrl-C log off
+
+=== lightbar / 132x43 / ascii mono
+ russh-bbs | Main menu                                                                                                    UTC 12:00
+                            + Main menu ---------------------------------------------------------------+
+                            | Signed in as alice.                                                      |
+                            |                                                                          |
+                            | > [f] Forums                                                             |
+                            |   [m] Mail                                                               |
+                            |   [a] Files  (not built yet)                                             |
+                            |   [c] Chat                                                               |
+                            |   [d] Doors                                                              |
+                            |   [u] Members                                                            |
+                            |   [y] Community                                                          |
+                            |   [i] Invites                                                            |
+                            |   [s] Terminal settings                                                  |
+                            |   [o] Sysop tools                                                        |
+                            |   [l] Log off                                                            |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            |                                                                          |
+                            +--------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Up/Down move  Enter choose  ? help  Esc back
+
+=== compact / 132x43 / ascii mono
+
+                            Main menu
+                            Signed in as alice.
+                            f Forums
+                            m Mail
+                            a Files (not built yet)
+                            c Chat
+                            d Doors
+                            u Members
+                            y Community
+                            i Invites
+                            s Terminal settings
+                            o Sysop tools
+                            l Log off
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   ? help  Esc back  Ctrl-C log off
+
+=== dashboard / 132x43 / ascii mono
+ russh-bbs | Main menu                                                                                                    UTC 12:00
++ Main menu ---------------------++ This board -------------------++ Clock -----------------------++ Who is online ----------------+
+| Signed in as alice.            || russh-bbs                     ||      _     _   _             || * 5 online                    |
+|                                || A bulletin board in your ter~ ||   |  _| . | | | |            || > alice       > bob           |
+| > [f] Forums                   || Portland, OR - since 2026     ||   | |_  . |_| |_|            || > carol       > dave          |
+|   [m] Mail                     ||                               || Thu 5 Nov 2026 UTC           || > erin                        |
+|   [a] Files  (not built yet)   ||                               ||                              ||                               |
+|   [c] Chat                     ||                               ||                              ||                               |
+|   [d] Doors                    ||                               ||                              ||                               |
+|   [u] Members                  ||                               ||                              ||                               |
+|   [y] Community                |+-------------------------------++------------------------------++-------------------------------+
+|   [i] Invites                  |+ Last callers -----------------++ New posts -------------------++ Mail -------------------------+
+|   [s] Terminal settings        || bob                        2m || Active threads: 7            ||  _                            |
+|   [o] Sysop tools              || carol                      1h || General   #############   4  ||  _|                           |
+|   [l] Log off                  || dave                       1d || Tech      #######------   2  ||  _|                           |
+|                                || erin                       2d || Chat      ###----------   1  || 3 unread                      |
+|                                ||                               ||                              || #######---------------------- |
+|                                ||                               ||                              || 12 in your inbox              |
+|                                ||                               ||                              ||                               |
+|                                ||                               ||                              ||                               |
+|                                ||                               ||                              ||                               |
+|                                |+-------------------------------++------------------------------++-------------------------------+
+|                                |+ Activity ---------------------++ One-liners ------------------++ Poll -------------------------+
+|                                || 59 threads active in 14 days  || bob: the board looks great   || Best terminal font?           |
+|                                ||                  ##        ## ||      tonight                 ||  Mono      #######-----  54%  |
+|                                ||                  ##      #### || carol: hello from the        || >Nerd      ####--------  31%  |
+|                                ||        ##      ######    #### ||        terminal              ||  Bitmap    ##----------  13%  |
+|                                ||        ####    ######  ###### || dave: anyone up for a door   ||                               |
+|                                ||    ########  ################ ||       game?                  ||                               |
+|                                || ###########  ################ ||                              ||                               |
+|                                || 14 days ago             today ||                              ||                               |
+|                                |+-------------------------------++------------------------------++-------------------------------+
+|                                |+ Your credits -----------------+
+|                                || 1,234 credits                 |
+|                                || +334 in 14 days               |
+|                                ||              ################ |
+|                                || ############################# |
+|                                || ############################# |
+|                                || ############################# |
+|                                || ############################# |
+|                                || ############################# |
++--------------------------------++-------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Up/Down move  Enter choose  ? help  Esc back
+
+=== wide / 132x43 / ascii mono
+ russh-bbs | Main menu                                                                                                    UTC 12:00
++ Main menu ---------------------++ russh-bbs -------------------------------------------------++ This board ----------------------+
+| > [f] Forums                   ||                                                            || russh-bbs                        |
+|   [m] Mail                     ||  Signed in as alice.                                       || A bulletin board in your termin~ |
+|   [a] Files  (not built yet)   ||                                                            || Portland, OR - since 2026        |
+|   [c] Chat                     ||  > [f] Forums                                              ||                                  |
+|   [d] Doors                    ||                                                            ||                                  |
+|   [u] Members                  ||                                                            ||                                  |
+|   [y] Community                ||                                                            |+----------------------------------+
+|   [i] Invites                  ||                                                            |+ Clock ---------------------------+
+|   [s] Terminal settings        ||                                                            ||      _     _   _                 |
+|   [o] Sysop tools              ||                                                            ||   |  _| . | | | |                |
+|   [l] Log off                  ||                                                            ||   | |_  . |_| |_|                |
+|                                ||                                                            || Thu 5 Nov 2026 UTC               |
+|                                ||                                                            ||                                  |
+|                                ||                                                            ||                                  |
+|                                ||                                                            |+----------------------------------+
+|                                ||                                                            |+ Who is online -------------------+
+|                                ||                                                            || * 5 online                       |
+|                                ||                                                            || > alice         > bob            |
+|                                ||                                                            || > carol         > dave           |
+|                                ||                                                            || > erin                           |
+|                                ||                                                            ||                                  |
+|                                ||                                                            ||                                  |
+|                                ||                                                            ||                                  |
+|                                ||                                                            |+----------------------------------+
+|                                ||                                                            |+ New posts -----------------------+
+|                                ||                                                            || Active threads: 7                |
+|                                ||                                                            || General    ################   4  |
+|                                ||                                                            || Tech       ########--------   2  |
+|                                ||                                                            || Chat       ####------------   1  |
+|                                ||                                                            ||                                  |
+|                                ||                                                            ||                                  |
+|                                ||                                                            |+----------------------------------+
+|                                ||                                                            |+ Activity ------------------------+
+|                                ||                                                            || 59 threads active in 14 days     |
+|                                ||                                                            ||                    ##       #### |
+|                                ||                                                            ||        ###      #######     #### |
+|                                ||                                                            ||    ##  #####    ################ |
+|                                ||                                                            || ############  ################## |
+|                                ||                                                            || 14 days ago                today |
++--------------------------------++------------------------------------------------------------++----------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Up/Down move  Enter choose  ? help  Esc back
+
+=== focus / 132x43 / ascii mono
+ russh-bbs | Main menu                                                                                                    UTC 12:00
+                                     Main menu
+                                     ----------------------------------------
+                                     Signed in as alice.
+
+                                     > [f] Forums
+
+                                       [m] Mail
+
+                                       [a] Files  (not built yet)
+
+                                       [c] Chat
+
+                                       [d] Doors
+
+                                       [u] Members
+
+                                       [y] Community
+
+                                       [i] Invites
+
+                                       [s] Terminal settings
+
+                                       [o] Sysop tools
+
+                                       [l] Log off
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Up/Down move  Enter choose  Tab widgets
+
+=== split / 132x43 / ascii mono
+ russh-bbs | Main menu                                                                                                    UTC 12:00
++ Main menu ---------------------+|+ Chat -----------------------------------------------------------------------------------------+
+| Signed in as alice.            |||#lobby  3                                                                                      |
+|                                |||  ann                                                                                          |
+| > [f] Forums                   |||  bob                                                                                          |
+|   [m] Mail                     |||  carol                                                                                        |
+|   [a] Files  (not built yet)   |||#tech  1                                                                                       |
+|   [c] Chat                     |||  dave                                                                                         |
+|   [d] Doors                    |||                                                                                               |
+|   [u] Members                  |||                                                                                               |
+|   [y] Community                |||                                                                                               |
+|   [i] Invites                  |||                                                                                               |
+|   [s] Terminal settings        |||                                                                                               |
+|   [o] Sysop tools              |||                                                                                               |
+|   [l] Log off                  |||                                                                                               |
+|                                |||                                                                                               |
+|                                |||                                                                                               |
+|                                |||                                                                                               |
+|                                |||                                                                                               |
+|                                |||                                                                                               |
+|                                |||                                                                                               |
+|                                |#+-----------------------------------------------------------------------------------------------+
+|                                ||+ Mail -----------------------------------------------------------------------------------------+
+|                                |||3 unread of 12                                                                                 |
+|                                |||* ann       Welcome aboard 1h                                                                  |
+|                                |||  bob       Re: the retro room 1d                                                              |
+|                                |||* (gone)    (cannot be opened) 2d                                                              |
+|                                |||                                                                                               |
+|                                |||                                                                                               |
+|                                |||                                                                                               |
+|                                |||                                                                                               |
+|                                |||                                                                                               |
+|                                |||                                                                                               |
+|                                |||                                                                                               |
+|                                |||                                                                                               |
+|                                |||                                                                                               |
+|                                |||                                                                                               |
+|                                |||                                                                                               |
+|                                |||                                                                                               |
+|                                |||                                                                                               |
+|                                |||                                                                                               |
++--------------------------------+|+-----------------------------------------------------------------------------------------------+
+UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is on   Up/Down move  Enter choose  ? help  Esc back
+

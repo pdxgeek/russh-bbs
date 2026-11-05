@@ -20,6 +20,9 @@ use crate::doors::Doors;
 /// Most names the who's-online widget keeps.
 const ONLINE_KEPT: usize = 24;
 
+/// Most names of who is in a room the chat pane keeps.
+const ROOM_NAMES_KEPT: usize = 12;
+
 /// What the live widgets read: the running server's own state.
 pub(super) struct Sources<'a, D> {
     pub(super) directory: &'a D,
@@ -92,6 +95,12 @@ async fn chat<D: Backend>(directory: &D, access: &Snapshot, hub: &Hub) -> Option
         .map(|room| RoomCount {
             name: room.name.as_str().to_owned(),
             members: u32::try_from(hub.members_in(room.id)).unwrap_or(u32::MAX),
+            here: hub
+                .roster_of(room.id)
+                .iter()
+                .take(ROOM_NAMES_KEPT)
+                .map(|who| SingleLine::new(40).sanitize(who.as_str()).into_string())
+                .collect(),
         })
         .collect();
     counts.sort_by(|a, b| b.members.cmp(&a.members).then_with(|| a.name.cmp(&b.name)));

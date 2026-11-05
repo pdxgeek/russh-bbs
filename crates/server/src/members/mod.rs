@@ -23,7 +23,9 @@ use tokio::time::timeout;
 use tracing::warn;
 
 use crate::settings::Look;
+use crate::ssh::terminal::Key;
 use crate::ui::classic;
+use crate::ui::screens::list::{ListView, Nav, NavKey, Sort, text_key};
 use crate::ui::strings::StringTable;
 
 /// How long a members request may take. A slow store must not hang the screen; the screen then
@@ -44,6 +46,8 @@ pub(crate) async fn run<S: ProfileStore>(
         Response::Failed
     }
 }
+
+pub(crate) mod panes;
 
 /// Content text, sanitized once more on its way to the terminal.
 fn clean(text: &str) -> String {
@@ -105,7 +109,11 @@ fn line_of(line: &Line, strings: &StringTable, look: Look, width: usize) -> Text
             active,
         } => {
             // The cursor is `>` and `_`, words and marks, so it shows without color.
-            let (lead, tail) = if *active { ("> ", "_") } else { ("  ", "") };
+            let (lead, tail) = if *active {
+                ("> ", look.cursor())
+            } else {
+                ("  ", "")
+            };
             let label_style = if *active { heading } else { bold };
             TextLine::from(vec![
                 Span::styled(format!("{lead}{}: ", strings.text(label)), label_style),
@@ -126,31 +134,68 @@ fn line_of(line: &Line, strings: &StringTable, look: Look, width: usize) -> Text
     }
 }
 
-/// The lines of `view`, ready for [`classic::render_content`]. `width` is the room inside the
-/// box, used only to keep list rows on one line.
-pub(crate) fn lines(
-    view: &ScreenView,
-    strings: &StringTable,
-    look: Look,
-    width: usize,
-) -> Vec<TextLine<'static>> {
-    let (_, dim, _, _) = classic::styles(look);
-    let mut out = Vec::with_capacity(view.lines.len() + 2);
-    out.extend(
-        view.lines
-            .iter()
-            .map(|line| line_of(line, strings, look, width)),
-    );
-    out.push(TextLine::raw(""));
-    out.push(TextLine::styled(strings.text(view.footer).to_owned(), dim));
-    out
-}
-
 /// Whether `view` is the members list (it has rows to show as a table).
 pub(crate) fn is_list(view: &ScreenView) -> bool {
     view.lines
         .iter()
         .any(|line| matches!(line, Line::Row { .. }))
+}
+
+/// One member row as drawn: the key core opens it with, the handle and the display name.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct ShownRow<'a> {
+    pub(crate) key: char,
+    pub(crate) handle: &'a str,
+    pub(crate) name: &'a str,
+}
+
+/// The rows of `view` in the order they are drawn: core's order, or sorted by `sort`. Each row
+/// keeps its own key, so a sorted list still opens the member it shows.
+pub(crate) fn display_rows(view: &ScreenView, sort: Sort) -> Vec<ShownRow<'_>> {
+    let mut rows: Vec<ShownRow<'_>> = view
+        .lines
+        .iter()
+        .filter_map(|line| match line {
+            Line::Row { key, handle, name } => Some(ShownRow {
+                key: *key,
+                handle,
+                name,
+            }),
+            _ => None,
+        })
+        .collect();
+    sort.apply(&mut rows, |row, column| match column {
+        0 => text_key(row.handle),
+        _ => text_key(row.name),
+    });
+    rows
+}
+
+/// A cheap fingerprint of the rows on screen, so the cursor starts again on another page.
+fn signature(rows: &[ShownRow<'_>]) -> u64 {
+    use std::hash::{Hash, Hasher};
+    let mut hasher = std::collections::hash_map::DefaultHasher::new();
+    for row in rows {
+        row.handle.hash(&mut hasher);
+    }
+    hasher.finish()
+}
+
+/// What to deliver to core for `key` while the members list is up: the key itself, the digit of
+/// the highlighted row for Enter, or nothing when the key only moved the highlight or the sort.
+/// Digits and every other key go to core unchanged, so core's own keys (`/` search, `n`/`p`
+/// pages, `c` clear) and its rules are exactly as before.
+pub(crate) fn nav_key(nav: &mut Nav, view: &ScreenView, key: Key) -> Option<Key> {
+    if !is_list(view) || view.footer == keys::LIST_FOOTER_SEARCH {
+        return Some(key);
+    }
+    let rows = display_rows(view, nav.sort);
+    nav.rows_are(signature(&rows));
+    match nav.key(key, rows.len(), 2) {
+        NavKey::Pass => Some(key),
+        NavKey::Consumed => None,
+        NavKey::Open(at) => rows.get(at).map(|row| Key::Char(row.key)),
+    }
 }
 
 /// Everything the members list needs besides its view.
@@ -160,6 +205,8 @@ pub(crate) struct ListCtx<'a> {
     pub(crate) tier: russh_bbs_core::icons::Tier,
     pub(crate) markers: &'a [russh_bbs_core::icons::SecurityMarker],
     pub(crate) clock: Option<&'a str>,
+    /// The highlight, the sort and the window of the list (kept by the session).
+    pub(crate) nav: &'a Nav,
 }
 
 /// Draw the members list: the frame's bars, then a box holding the search line, a table of the
@@ -204,14 +251,15 @@ pub(crate) fn render_list(frame: &mut ratatui::Frame<'_>, view: &ScreenView, ctx
         ctx.strings.text(view.footer).to_owned(),
         dim,
     ));
-    let rows: Vec<TableRow> = view.lines[first_row..last_row]
+    let shown = display_rows(view, ctx.nav.sort);
+    let rows: Vec<TableRow> = shown
         .iter()
-        .filter_map(|line| match line {
-            Line::Row { handle, name, .. } => Some(TableRow::new(vec![
-                Cell::content(handle).styled(CellStyle::Key),
-                Cell::content(name),
-            ])),
-            _ => None,
+        .map(|row| {
+            TableRow::new(vec![
+                Cell::plain(row.key.to_string()).styled(CellStyle::Dim),
+                Cell::content(row.handle).styled(CellStyle::Key),
+                Cell::content(row.name),
+            ])
         })
         .collect();
     let outer = crate::ui::table::framed(ctx.look, Some(ctx.strings.text(keys::LIST_TITLE)));
@@ -231,25 +279,31 @@ pub(crate) fn render_list(frame: &mut ratatui::Frame<'_>, view: &ScreenView, ctx
     ])
     .areas(inner);
     frame.render_widget(Paragraph::new(before), top);
-    table::render(
+    let drawn = table::render(
         frame,
         middle,
         ctx.look,
         &TableSpec {
             title: Title::None,
             columns: vec![
-                Column::new(ChromeText::fixed("Handle"), Width::Fixed(26)),
+                Column::new(ChromeText::fixed("Key"), Width::Fixed(3)),
+                Column::new(ChromeText::fixed("Handle"), Width::Fixed(24)),
                 Column::new(ChromeText::fixed("Name"), Width::Fill(1)),
             ],
             rows,
-            selected: None,
+            selected: (!shown.is_empty()).then(|| ctx.nav.cursor.min(shown.len() - 1)),
             bordered: false,
-            top: 0,
+            top: ctx.nav.view.get().top,
             empty: ctx.strings.text(keys::LIST_EMPTY),
-            numbered: true,
+            numbered: false,
             footer: None,
+            sorted: ctx.nav.sort.mark().map(|(column, desc)| (column + 1, desc)),
         },
     );
+    ctx.nav.view.set(ListView {
+        top: drawn.top,
+        shown: drawn.shown,
+    });
     frame.render_widget(Paragraph::new(after), bottom);
 }
 
