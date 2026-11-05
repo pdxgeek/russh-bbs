@@ -245,7 +245,7 @@ Built in `m35/board-art` (D123). The reference is [ui.md](ui.md#board-art-ui-3-d
 
 ## UI-4 implementation notes
 
-Built in `m35/screens` (D-TBD). The reference is [ui.md](ui.md#screens-ui-4-d-tbd); what differs from the plan above:
+Built in `m35/screens` (D127). The reference is [ui.md](ui.md#screens-ui-4-d127); what differs from the plan above:
 
 - **Reader.** A header block (subject, author and date), a **tab per post** of the thread (a window of them, with `n of N`), quote blocks (a bar per `>` level), a scrollbar and the pager's prompt. The plan's "long threads can be split into tabs" is the thread's posts, not the text of one long post (that still pages with the pager).
 - **Chat.** Three panes as planned (rooms, conversation with the input under it, who is here); nicks are coloured by a hash of the handle with no modifier. Below 70 columns the rooms pane goes, below 56 the who pane goes. There is no transcript scrollback (core keeps 200 lines and has no scroll keys).

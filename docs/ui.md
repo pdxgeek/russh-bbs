@@ -2,7 +2,7 @@
 
 A UI refresh and board customization plan (owner approved, 2026-11-04) is in [ui-refresh.md](ui-refresh.md).
 
-Status: **Partly implemented.** UI-4 (the screens: reader, three-pane chat, mail, community, sortable list tables, the split layout's chat and mail panes, the blinking cursor; [below](#screens-ui-4-d-tbd)) moves the long-text and live screens onto the frame. UI-2 (style packs, seven layouts, board identity, member choices; [below](#styles-layouts-and-board-identity-ui-2-d117)) is built on UI-1. UI-1 (the frame, tables, popups and colour depth, [below](#frame-tables-popups-and-colour-depth-ui-1-d109)) is the foundation the rest of M3.5 builds on. The forum screens (M3-E, below) are the first long-text screens. The menu tree, universal keys and string table (M2-A) and the **classic, lightbar and compact layouts with theme packs and live switching** (M3-A, D82) exist; two-pane, tabs, dashboard and command line, declarative layout files and art blocks do not.
+Status: **Partly implemented.** UI-4 (the screens: reader, three-pane chat, mail, community, sortable list tables, the split layout's chat and mail panes, the blinking cursor; [below](#screens-ui-4-d127)) moves the long-text and live screens onto the frame. UI-2 (style packs, seven layouts, board identity, member choices; [below](#styles-layouts-and-board-identity-ui-2-d117)) is built on UI-1. UI-1 (the frame, tables, popups and colour depth, [below](#frame-tables-popups-and-colour-depth-ui-1-d109)) is the foundation the rest of M3.5 builds on. The forum screens (M3-E, below) are the first long-text screens. The menu tree, universal keys and string table (M2-A) and the **classic, lightbar and compact layouts with theme packs and live switching** (M3-A, D82) exist; two-pane, tabs, dashboard and command line, declarative layout files and art blocks do not.
 
 ## Four separate layers
 
@@ -208,7 +208,7 @@ Status: **Implemented and tested; walked over real OpenSSH 9.6 and a raw telnet 
 
 ### Converted screens
 
-The main menu in the classic, lightbar and compact layouts (the menu is a ratatui `List` with a highlight and a scrollbar; help is two panes when the box is 64 columns wide); the forum board list, thread list and search results (tables; `1`-`9` jumps and paging use the table's window); forum errors and the remove confirmation (popups); the members list (a table of the page's members); the login, glyph test, settings, password and key screens (status bar only); the invite, community and queue screens (header and status bar). **Not converted in UI-1:** the forum reader, mail, chat, door and editor screens. The reader, mail, chat and community screens moved onto the frame in UI-4 ([below](#screens-ui-4-d-tbd)); the door screens are UI-5's ratatui buffers and the editor keeps its own full-screen view.
+The main menu in the classic, lightbar and compact layouts (the menu is a ratatui `List` with a highlight and a scrollbar; help is two panes when the box is 64 columns wide); the forum board list, thread list and search results (tables; `1`-`9` jumps and paging use the table's window); forum errors and the remove confirmation (popups); the members list (a table of the page's members); the login, glyph test, settings, password and key screens (status bar only); the invite, community and queue screens (header and status bar). **Not converted in UI-1:** the forum reader, mail, chat, door and editor screens. The reader, mail, chat and community screens moved onto the frame in UI-4 ([below](#screens-ui-4-d127)); the door screens are UI-5's ratatui buffers and the editor keeps its own full-screen view.
 
 ### Verified
 
@@ -560,7 +560,7 @@ An earlier draft drew the scene in full truecolor and sent about 5 times that: e
 
 Unit tests (`ui/fx`, `ui/canvas`, `ui/charts`, `ui/image`, `ssh/screen/fx_tests.rs`) cover the gate, timing, the three budgets, motion off, the final frame, the interrupting key, the marker cell and reserved style, every tier and depth, goldens for the canvases and charts, hostile board names and labels, and hostile images. A real OpenSSH 9.6 walk captured the intro, an interrupting key, the menu sweep, the typed goodbye and a motion-off session ([qa/ui-8-walk.md](qa/ui-8-walk.md)). **Not verified:** terminals other than xterm-like ones (the walk used `pyte`), a real slow link (the slow-send guard is unit-tested through `slow_link` but no throttled connection was run), telnet, and a screen reader.
 
-## Screens (UI-4, D-TBD)
+## Screens (UI-4, D127)
 
 Status: **Implemented and tested; walked over real OpenSSH 9.6** ([walk](qa/ui-4-walk.md), [screenshots](qa/ui-4-screens/)). Code: `crates/server/src/ui/screens/` (`reader`, `list`, `nick`, `motion`, `side`, and the test-only `matrix`), `chat/render.rs`, `forums/draw.rs`, `mail/draw.rs`, `members/{mod,panes}.rs`; `ui::panes` (the split plan). Not walked: telnet, other terminals, a screen reader, Postgres for the new data (it adds none).
 

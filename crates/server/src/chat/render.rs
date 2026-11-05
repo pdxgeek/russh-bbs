@@ -1,4 +1,4 @@
-//! Drawing the chat screen as three panes (UI-4, D-TBD): the **room list** on the left, the
+//! Drawing the chat screen as three panes (UI-4, D127): the **room list** on the left, the
 //! **conversation** in the middle with the input line under it, and **who is online** on the
 //! right. The frame's header and status bars sit around them; the marker cell is the status
 //! bar's left cell, which no pane can reach.

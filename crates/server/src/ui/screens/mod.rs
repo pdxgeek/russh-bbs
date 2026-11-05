@@ -1,4 +1,4 @@
-//! The screens that moved onto the new frame, panes and widgets (UI-4, D-TBD).
+//! The screens that moved onto the new frame, panes and widgets (UI-4, D127).
 //!
 //! Shared pieces live here; each screen's own drawing stays next to the service that owns it
 //! (`forums::draw`, `mail::draw`, `chat::render`, `members`), and calls these:
