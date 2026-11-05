@@ -113,6 +113,47 @@ pub(crate) const PACKS_LOADING: &str = "ui.packs.loading";
 pub(crate) const PACKS_UNAVAILABLE: &str = "ui.packs.unavailable";
 pub(crate) const PACKS_BUILT_IN: &str = "ui.packs.built_in";
 
+pub(crate) const MENUS_TITLE: &str = "ui.menus.title";
+pub(crate) const MENUS_HINT_ROLE: &str = "ui.menus.hint_role";
+pub(crate) const MENUS_HINT_PAGE: &str = "ui.menus.hint_page";
+pub(crate) const MENUS_HINT_VIEW: &str = "ui.menus.hint_view";
+pub(crate) const MENUS_HINT_RELOAD: &str = "ui.menus.hint_reload";
+pub(crate) const MENUS_HINT_BACK: &str = "ui.menus.hint_back";
+pub(crate) const MENUS_HINT_SCROLL: &str = "ui.menus.hint_scroll";
+pub(crate) const MENUS_LOADING: &str = "ui.menus.loading";
+pub(crate) const MENUS_UNAVAILABLE: &str = "ui.menus.unavailable";
+pub(crate) const MENUS_USING_FILE: &str = "ui.menus.using_file";
+pub(crate) const MENUS_USING_DEFAULT: &str = "ui.menus.using_default";
+pub(crate) const MENUS_REFUSED: &str = "ui.menus.refused";
+pub(crate) const MENUS_MENU_FOR: &str = "ui.menus.menu_for";
+pub(crate) const MENUS_PAGES: &str = "ui.menus.pages";
+pub(crate) const MENUS_NO_PAGES: &str = "ui.menus.no_pages";
+pub(crate) const MENUS_EMPTY: &str = "ui.menus.empty_menu";
+pub(crate) const MENUS_POSITION: &str = "ui.menus.page_position";
+pub(crate) const MENUS_PAGE_GONE: &str = "ui.menus.page_gone";
+
+/// Every menus-and-pages key, checked with [`FRAMEWORK`].
+pub(crate) const MENUS_KEYS: [&str; 18] = [
+    MENUS_TITLE,
+    MENUS_HINT_ROLE,
+    MENUS_HINT_PAGE,
+    MENUS_HINT_VIEW,
+    MENUS_HINT_RELOAD,
+    MENUS_HINT_BACK,
+    MENUS_HINT_SCROLL,
+    MENUS_LOADING,
+    MENUS_UNAVAILABLE,
+    MENUS_USING_FILE,
+    MENUS_USING_DEFAULT,
+    MENUS_REFUSED,
+    MENUS_MENU_FOR,
+    MENUS_PAGES,
+    MENUS_NO_PAGES,
+    MENUS_EMPTY,
+    MENUS_POSITION,
+    MENUS_PAGE_GONE,
+];
+
 /// Every gallery and packs key, checked with [`FRAMEWORK`].
 pub(crate) const GALLERY_KEYS: [&str; 22] = [
     GALLERY_TITLE,

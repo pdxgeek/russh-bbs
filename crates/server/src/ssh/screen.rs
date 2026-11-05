@@ -241,6 +241,9 @@ pub(crate) struct KeyEffects {
     /// A theme-pack request from the sysop's Theme packs screen (UI-7). The session runs it
     /// (files and the audit log) and reports through [`Screen::packs_done`].
     pub(crate) packs: Option<russh_bbs_core::terminal_settings::PackRequest>,
+    /// A request from the sysop's Menus and pages screen (UI-6): list or reload. The session
+    /// runs it (the files and the audit log) and reports through [`Screen::menu_tools_done`].
+    pub(crate) menu_tools: Option<russh_bbs_core::menu::MenuToolsRequest>,
     /// An invite the visitor asked to redeem in the waiting room (M2-D). The session redeems it
     /// (it needs the store) and reports back through [`Screen::redeem_refused`] or
     /// [`Screen::redeemed`].
@@ -320,6 +323,7 @@ impl KeyEffects {
         self.claim_password = later.claim_password.or(self.claim_password.take());
         self.save_settings = later.save_settings.or(self.save_settings.take());
         self.packs = later.packs.or(self.packs.take());
+        self.menu_tools = later.menu_tools.or(self.menu_tools.take());
         self.redeem = later.redeem.or(self.redeem.take());
         self.link = later.link.or(self.link.take());
         self.link_device = later.link_device.or(self.link_device.take());
@@ -825,7 +829,7 @@ impl Screen {
             return false;
         };
         let entries = palette::entries(&palette::Sources {
-            tree: russh_bbs_core::menu::main_tree(),
+            tree: flow.menu_tree(),
             access: flow.access_snapshot(),
             strings: self.content.strings(&self.ui),
             doors: self
@@ -853,7 +857,7 @@ impl Screen {
             return;
         };
         let entries = palette::entries(&palette::Sources {
-            tree: russh_bbs_core::menu::main_tree(),
+            tree: flow.menu_tree(),
             access: flow.access_snapshot(),
             strings: self.content.strings(&self.ui),
             doors: self
@@ -1091,6 +1095,11 @@ impl Screen {
                         MemberEffect::Save(settings) => effects.save_settings = Some(settings),
                         MemberEffect::Packs(request) => {
                             effects.packs = Some(request);
+                            effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
+                            break;
+                        }
+                        MemberEffect::MenuTools(request) => {
+                            effects.menu_tools = Some(request);
                             effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
                             break;
                         }
@@ -1488,6 +1497,18 @@ impl Screen {
     ) {
         if let Some(flow) = self.content.flow_mut() {
             flow.packs_done(listing, message);
+            self.dirty = true;
+        }
+    }
+
+    /// A menus-and-pages request finished: show the listing and what happened (UI-6).
+    pub(crate) fn menu_tools_done(
+        &mut self,
+        listing: russh_bbs_core::menu::MenuToolsListing,
+        message: Option<&str>,
+    ) {
+        if let Some(flow) = self.content.flow_mut() {
+            flow.menu_tools_done(listing, message);
             self.dirty = true;
         }
     }
@@ -2232,6 +2253,17 @@ impl Screen {
         let preview = self.content.flow().and_then(|flow| flow.preview().cloned());
         let gallery = self.content.flow().and_then(|flow| flow.gallery().cloned());
         let packs = self.content.flow().and_then(|flow| flow.packs().cloned());
+        // Sysop pages and the Menus and pages screen (UI-6).
+        let bulletin = self
+            .content
+            .flow()
+            .and_then(|flow| flow.bulletin().map(|b| (b.id(), b.scroll())));
+        let menu_tools = self
+            .content
+            .flow()
+            .and_then(|flow| flow.menu_tools().cloned());
+        let menu_setup = (bulletin.is_some() || menu_tools.is_some()).then(|| self.ui.menus());
+        let page_extent = std::cell::Cell::new(0_usize);
         let member_settings = self.content.flow().map(|flow| *flow.settings());
         let tier = self.content.tier();
         let strings = self.content.strings(&self.ui);
@@ -2324,6 +2356,32 @@ impl Screen {
                             } else if let Some(packs) = &packs {
                                 crate::ui::style_gallery::render_packs(frame, packs, &ctx);
                             }
+                        }
+                    }
+                    // A sysop page (UI-6), or the Menus and pages screen under Sysop tools.
+                    (Some(look), None) if bulletin.is_some() || menu_tools.is_some() => {
+                        if let Some(setup) = &menu_setup {
+                            let ctx = crate::ui::sysop_menus::render::DrawCtx {
+                                strings,
+                                look,
+                                tier,
+                                markers: staff_markers,
+                                clock,
+                            };
+                            let extent = match (&bulletin, &menu_tools) {
+                                (Some((id, scroll)), _) => {
+                                    crate::ui::sysop_menus::render::render_bulletin(
+                                        frame, setup, id, *scroll, &ctx,
+                                    )
+                                }
+                                (None, Some(tools)) => {
+                                    crate::ui::sysop_menus::render::render_tools(
+                                        frame, tools, setup, &ctx,
+                                    )
+                                }
+                                (None, None) => 0,
+                            };
+                            page_extent.set(extent);
                         }
                     }
                     // The sysop's theme preview (UI-3): a sample screen in a chosen style and size.
@@ -2457,6 +2515,14 @@ impl Screen {
                     overlay.apply(frame);
                 }
             })?;
+            // Tell the open sysop page how far it can scroll, so the next key stops at the end.
+            if let Some(flow) = self.content.flow_mut() {
+                if flow.bulletin().is_some() {
+                    flow.bulletin_extent(page_extent.get());
+                } else if flow.menu_tools().is_some() {
+                    flow.menu_tools_extent(page_extent.get());
+                }
+            }
         }
         Ok(self.finish_frame(tier))
     }

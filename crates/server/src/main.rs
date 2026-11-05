@@ -174,6 +174,12 @@ async fn serve<S: Backend + SettingsStore + SchedulerStore + Close + Clone>(
             .map_err(|e| anyhow::anyhow!("{e}"))
             .context("building the doors")?,
     );
+    // The sysop's menu file and pages (UI-6): `menus.toml` and `pages/` beside the host key. A
+    // missing file is the built-in menu; a bad one is logged and refused, and the board boots.
+    let ui = match themes_dir.and_then(std::path::Path::parent) {
+        Some(root) => ui.with_menu_dir(root),
+        None => ui,
+    };
     // Theme packs (UI-7): `packs/` beside the host key holds exported and importable packs; an
     // import installs into `themes/` and `art/`. Only when all three directories are known.
     let ui = match (themes_dir, art_dir) {

@@ -189,6 +189,51 @@ fn load(path: &Path, name: &str, kind: Kind) -> Result<Vec<ArtPiece>, ArtError> 
     }
 }
 
+/// The picture a sysop page shows (UI-6): one file named by the page, read with the same caps and
+/// parsers as `art/` (no link followed, bounded bytes, bounded grid), drawn in the area-header
+/// size. An `.art.toml` file gives its first `area` piece; an `.ans` file is the picture itself.
+pub(crate) fn page_piece(path: &Path, name: &str) -> Result<ArtPiece, ArtError> {
+    let lower = name.to_ascii_lowercase();
+    if lower.ends_with(".art.toml") {
+        let pieces = load(path, name, Kind::Toml)?;
+        return pieces
+            .into_iter()
+            .find(|piece| piece.slot == Slot::Area)
+            .ok_or_else(|| {
+                ArtError::Invalid("the file has no piece for the `area` slot".to_owned())
+            });
+    }
+    if Path::new(&lower).extension().is_none_or(|e| e != "ans") {
+        return Err(ArtError::Invalid(
+            "page art must be an .art.toml or .ans file".to_owned(),
+        ));
+    }
+    let meta = fs::symlink_metadata(path).map_err(|e| ArtError::Invalid(e.to_string()))?;
+    if !meta.file_type().is_file() {
+        return Err(ArtError::Invalid(
+            "not a regular file (links are not followed)".to_owned(),
+        ));
+    }
+    let mut bytes = Vec::new();
+    fs::File::open(path)
+        .map_err(|e| ArtError::Invalid(e.to_string()))?
+        .take(ans::MAX_BYTES as u64 + 1)
+        .read_to_end(&mut bytes)
+        .map_err(|e| ArtError::Invalid(e.to_string()))?;
+    let parsed = ans::parse(&bytes)?;
+    ArtPiece::check(Slot::Area, &parsed.grid)?;
+    Ok(ArtPiece {
+        slot: Slot::Area,
+        style: None,
+        set: name.trim_end_matches(".ans").to_owned(),
+        credit: String::new(),
+        fallback: None,
+        grid: parsed.grid,
+        ascii_given: false,
+        sysop: true,
+    })
+}
+
 /// A piece from an `.ans` file named `<slot>.ans` or `<style>.<slot>.ans`.
 pub(crate) fn ans_piece(file_name: &str, bytes: &[u8]) -> Result<ArtPiece, ArtError> {
     let stem = file_name.trim_end_matches(".ans");

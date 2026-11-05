@@ -213,6 +213,7 @@ queue = "Invite requests"
 recovery = "Recovery code"
 preview = "Theme preview"
 packs = "Theme packs"
+menus = "Menus and pages"
 
 [menu.members]
 title = "Members"

@@ -305,6 +305,14 @@ pub fn theme_imported(actor: AccountId, style: &str, art_files: usize) -> AuditE
         .detail(&format!("style {style} art {art_files}"))
 }
 
+/// Staff reloaded the menu file and pages (UI-6). `state` is a fixed word (`menus.toml` in force,
+/// `built-in`, or `refused`); nothing from the file is written.
+#[must_use]
+pub fn menus_reloaded(actor: AccountId, state: &str, pages: usize) -> AuditEvent {
+    AuditEvent::new(Actor::Account(actor), Action::MenusReloaded, Target::None)
+        .detail(&format!("{state} pages {pages}"))
+}
+
 /// A member saved their own widget placement (UI-10).
 #[must_use]
 pub fn widget_placement_changed(account: AccountId) -> AuditEvent {
