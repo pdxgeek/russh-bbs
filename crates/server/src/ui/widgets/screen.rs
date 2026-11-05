@@ -22,7 +22,7 @@ use russh_bbs_core::icons::{SecurityMarker, Tier};
 use russh_bbs_core::terminal_settings::LayoutId;
 use russh_bbs_core::widgets::{Choice, Lock, Rules, WidgetData, WidgetId};
 
-use super::{Cx, Pen, WidgetSettings, assign, gfx, widget};
+use super::{Cx, Pen, WidgetSettings, assign, figures, widget};
 use crate::settings::Look;
 use crate::ssh::terminal::Key;
 use crate::ui::board::Board;
@@ -424,7 +424,7 @@ fn draw_list(frame: &mut Frame<'_>, area: Rect, screen: &WidgetsScreen, input: &
         let room = width.saturating_sub(
             lead.chars().count() + note.chars().count() + usize::from(!note.is_empty()),
         );
-        let title = gfx::clip(title, room.max(1), input.tier == Tier::Ascii);
+        let title = figures::clip(title, room.max(1), input.tier == Tier::Ascii);
         let mut text = format!("{lead}{title}");
         if !note.is_empty() {
             let gap = width.saturating_sub(text.chars().count() + note.chars().count());

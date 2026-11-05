@@ -9,8 +9,10 @@ use ratatui::style::Style;
 use ratatui::text::{Line, Span};
 use russh_bbs_core::widgets::WidgetId;
 
-use super::gfx::{self, Unit};
+use super::draw::{area, meter, sparkline, theme};
+use super::figures::{self, Unit};
 use super::{Cx, Pen, Widget};
+use crate::ui::charts::Tone;
 
 /// Every chrome sentence the widgets use, as string-table keys (checked at boot with the
 /// framework's keys, so a missing one is an error naming it, never a blank).
@@ -122,7 +124,7 @@ fn row(
         if left_over == 0 {
             break;
         }
-        let text = gfx::clip(span.content.as_ref(), left_over, cx.ascii);
+        let text = figures::clip(span.content.as_ref(), left_over, cx.ascii);
         used += text.chars().count();
         spans.push(Span::styled(text, span.style));
     }
@@ -135,7 +137,7 @@ fn row(
 }
 
 fn ago(cx: &Cx<'_>, at: i64) -> String {
-    match gfx::ago(cx.now, at) {
+    match figures::ago(cx.now, at) {
         None => cx.strings.text("ui.widget.ago_now").to_owned(),
         Some((unit, n)) => cx.said(
             match unit {
@@ -190,12 +192,12 @@ impl Widget for Identity {
         let board = cx.board;
         let width = usize::from(width);
         let mut lines = vec![line(
-            gfx::clip(cx.strings.text("ui.title"), width, cx.ascii),
+            figures::clip(cx.strings.text("ui.title"), width, cx.ascii),
             pen.accent(),
         )];
         if !board.tagline().is_empty() {
             lines.push(line(
-                gfx::clip(board.tagline().as_str(), width, cx.ascii),
+                figures::clip(board.tagline().as_str(), width, cx.ascii),
                 pen.text(),
             ));
         }
@@ -218,7 +220,7 @@ impl Widget for Identity {
             (true, None) => None,
         };
         if let Some(place) = place {
-            lines.push(line(gfx::clip(&place, width, cx.ascii), pen.muted()));
+            lines.push(line(figures::clip(&place, width, cx.ascii), pen.muted()));
         }
         fit(lines, height)
     }
@@ -235,14 +237,14 @@ impl Widget for Clock {
 
     fn lines(&self, cx: &Cx<'_>, width: u16, height: u16) -> Vec<Line<'static>> {
         let pen = Pen(cx.look);
-        let date = gfx::date_of(cx.now);
+        let date = figures::date_of(cx.now);
         let secs = cx.now.rem_euclid(86_400);
         let hhmm = format!("{:02}:{:02}", secs / 3_600, secs % 3_600 / 60);
         let day = format!(
             "{} {} {} {}",
-            gfx::weekday_name(date.weekday),
+            figures::weekday_name(date.weekday),
             date.day,
-            gfx::month_name(date.month),
+            figures::month_name(date.month),
             date.year
         );
         let width = usize::from(width);
@@ -250,12 +252,12 @@ impl Widget for Clock {
             return fit(
                 vec![
                     line(format!("{hhmm} UTC"), pen.accent()),
-                    line(gfx::clip(&day, width, cx.ascii), pen.muted()),
+                    line(figures::clip(&day, width, cx.ascii), pen.muted()),
                 ],
                 height,
             );
         }
-        let mut lines: Vec<Line<'static>> = gfx::big_digits(&hhmm, cx.ascii)
+        let mut lines: Vec<Line<'static>> = figures::big_digits(&hhmm, cx.ascii)
             .into_iter()
             .map(|row| line(row, pen.accent()))
             .collect();
@@ -264,9 +266,9 @@ impl Widget for Clock {
             Span::styled(" UTC", pen.muted()),
         ]));
         // A month calendar when the cell is tall enough: heads, then up to six weeks.
-        let weeks = gfx::month_weeks(date);
+        let weeks = figures::month_weeks(date);
         if width >= 21 && usize::from(height) >= lines.len() + 1 + weeks.len() {
-            lines.push(line(gfx::WEEKDAYS.join(" "), pen.heading()));
+            lines.push(line(figures::WEEKDAYS.join(" "), pen.heading()));
             for week in weeks {
                 let mut spans = Vec::new();
                 for day in week {
@@ -426,7 +428,7 @@ impl Widget for NewPosts {
             );
         }
         let mut lines = vec![line(
-            gfx::clip(
+            figures::clip(
                 &cx.said("ui.widget.posts_some", posts.threads),
                 width,
                 cx.ascii,
@@ -444,14 +446,17 @@ impl Widget for NewPosts {
         let count_w = 4;
         let bar_w = width.saturating_sub(name_w + count_w + 2);
         for (name, n) in &posts.boards {
-            let name = gfx::clip(&cx.member(name, 40), name_w, cx.ascii);
-            let (filled, rest) = gfx::bar(*n, most, bar_w, cx.ascii);
-            lines.push(Line::from(vec![
-                Span::styled(format!("{name:<name_w$} "), pen.text()),
-                Span::styled(filled, pen.accent2()),
-                Span::styled(rest, pen.muted()),
-                Span::styled(format!(" {n:>3}"), pen.heading()),
-            ]));
+            let name = figures::clip(&cx.member(name, 40), name_w, cx.ascii);
+            let mut spans = vec![Span::styled(format!("{name:<name_w$} "), pen.text())];
+            spans.extend(meter(
+                theme(cx.look, cx.ascii),
+                *n,
+                most,
+                bar_w,
+                Tone::Plain,
+            ));
+            spans.push(Span::styled(format!(" {n:>3}"), pen.heading()));
+            lines.push(Line::from(spans));
         }
         fit(lines, height)
     }
@@ -478,26 +483,28 @@ impl Widget for Mail {
         } else {
             if height >= 6 && width >= 12 {
                 let shown = mail.unread.min(99).to_string();
-                for digits in gfx::big_digits(&shown, cx.ascii) {
+                for digits in figures::big_digits(&shown, cx.ascii) {
                     lines.push(line(digits, pen.good()));
                 }
             }
             lines.push(line(
-                gfx::clip(
+                figures::clip(
                     &cx.said("ui.widget.mail_unread", mail.unread),
                     width,
                     cx.ascii,
                 ),
                 pen.good(),
             ));
-            let (filled, rest) = gfx::bar(mail.unread, mail.total, width, cx.ascii);
-            lines.push(Line::from(vec![
-                Span::styled(filled, pen.good()),
-                Span::styled(rest, pen.muted()),
-            ]));
+            lines.push(Line::from(meter(
+                theme(cx.look, cx.ascii),
+                mail.unread,
+                mail.total,
+                width,
+                Tone::Ok,
+            )));
         }
         lines.push(line(
-            gfx::clip(
+            figures::clip(
                 &cx.said("ui.widget.mail_total", mail.total),
                 width,
                 cx.ascii,
@@ -525,19 +532,17 @@ impl Widget for Activity {
         let w = usize::from(width);
         let total = series.iter().fold(0_u64, |a, b| a.saturating_add(*b));
         let mut lines = vec![line(
-            gfx::clip(&cx.said("ui.widget.activity_total", total), w, cx.ascii),
+            figures::clip(&cx.said("ui.widget.activity_total", total), w, cx.ascii),
             pen.heading(),
         )];
         let chart_rows = usize::from(height).saturating_sub(2);
         if total == 0 {
             // A quiet fortnight draws no empty chart: it says so with a flat line.
-            lines.push(line(gfx::spark(series, w, cx.ascii), pen.muted()));
+            lines.push(sparkline(theme(cx.look, cx.ascii), series, w, Tone::Plain));
         } else if chart_rows >= 3 {
-            for chart in gfx::area_chart(series, w, chart_rows, cx.ascii) {
-                lines.push(line(chart, pen.accent2()));
-            }
+            lines.extend(area(theme(cx.look, cx.ascii), series, w, chart_rows));
         } else {
-            lines.push(line(gfx::spark(series, w, cx.ascii), pen.accent2()));
+            lines.push(sparkline(theme(cx.look, cx.ascii), series, w, Tone::Plain));
         }
         let from = cx.strings.text("ui.widget.activity_from");
         let to = cx.strings.text("ui.widget.activity_to");
@@ -569,7 +574,7 @@ impl Widget for Credits {
         };
         let w = usize::from(width);
         let mut lines = vec![line(
-            gfx::clip(
+            figures::clip(
                 &cx.said("ui.widget.credits_now", grouped(credits.balance)),
                 w,
                 cx.ascii,
@@ -584,15 +589,18 @@ impl Widget for Credits {
             std::cmp::Ordering::Equal => ("0".to_owned(), pen.muted()),
         };
         lines.push(line(
-            gfx::clip(&cx.said("ui.widget.credits_change", text), w, cx.ascii),
+            figures::clip(&cx.said("ui.widget.credits_change", text), w, cx.ascii),
             style,
         ));
         let chart_rows = usize::from(height).saturating_sub(2);
         let moved = credits.series.iter().any(|v| *v != 0);
         if chart_rows >= 2 && moved {
-            for chart in gfx::area_chart(&credits.series, w, chart_rows, cx.ascii) {
-                lines.push(line(chart, pen.accent2()));
-            }
+            lines.extend(area(
+                theme(cx.look, cx.ascii),
+                &credits.series,
+                w,
+                chart_rows,
+            ));
         }
         fit(lines, height)
     }
@@ -615,7 +623,7 @@ impl Widget for Poll {
         let w = usize::from(width);
         let question = cx.member(&poll.question, 120);
         let q_lines = if height >= 7 { 2 } else { 1 };
-        let mut lines: Vec<Line<'static>> = gfx::wrap(&question, w, q_lines, cx.ascii)
+        let mut lines: Vec<Line<'static>> = figures::wrap(&question, w, q_lines, cx.ascii)
             .into_iter()
             .map(|text| line(text, pen.heading()))
             .collect();
@@ -630,23 +638,27 @@ impl Widget for Poll {
         for (at, (text, votes)) in poll.options.iter().enumerate() {
             let mine = poll.my_vote == Some(at);
             let mark = if mine { pointer(cx) } else { " " };
-            let label = gfx::clip(&cx.member(text, 60), label_w, cx.ascii);
+            let label = figures::clip(&cx.member(text, 60), label_w, cx.ascii);
             let mut spans = vec![Span::styled(
                 format!("{mark}{label:<label_w$} "),
                 if mine { pen.key() } else { pen.text() },
             )];
             if let Some(votes) = votes {
-                let (filled, rest) = gfx::bar(*votes, total, bar_w, cx.ascii);
                 let pct = (votes * 100).checked_div(total).unwrap_or(0);
-                spans.push(Span::styled(filled, pen.accent2()));
-                spans.push(Span::styled(rest, pen.muted()));
+                spans.extend(meter(
+                    theme(cx.look, cx.ascii),
+                    *votes,
+                    total,
+                    bar_w,
+                    Tone::Plain,
+                ));
                 spans.push(Span::styled(format!(" {pct:>3}%"), pen.heading()));
             }
             lines.push(Line::from(spans));
         }
         if hidden {
             lines.push(line(
-                gfx::clip(cx.strings.text("ui.widget.poll_hidden"), w, cx.ascii),
+                figures::clip(cx.strings.text("ui.widget.poll_hidden"), w, cx.ascii),
                 pen.muted(),
             ));
         }
@@ -671,7 +683,8 @@ fn said_lines(
         let text = cx.member(&entry.text, 160);
         let head = format!("{author}: ");
         let head_w = head.chars().count();
-        let mut parts = gfx::wrap(&text, w.saturating_sub(head_w).max(1), 2, cx.ascii).into_iter();
+        let mut parts =
+            figures::wrap(&text, w.saturating_sub(head_w).max(1), 2, cx.ascii).into_iter();
         let first = parts.next().unwrap_or_default();
         lines.push(Line::from(vec![
             Span::styled(head, pen.key()),
@@ -756,7 +769,7 @@ impl Widget for News {
                 lines.push(line(
                     format!(
                         "  {}",
-                        gfx::clip(&cx.member(&item.board, 40), w.saturating_sub(2), cx.ascii)
+                        figures::clip(&cx.member(&item.board, 40), w.saturating_sub(2), cx.ascii)
                     ),
                     pen.muted(),
                 ));
@@ -779,7 +792,7 @@ impl Widget for Motd {
         let pen = Pen(cx.look);
         let bar = if cx.ascii { "|" } else { "\u{258c}" };
         let w = usize::from(width).saturating_sub(2);
-        let lines = gfx::wrap(
+        let lines = figures::wrap(
             cx.settings.motd().as_str(),
             w,
             usize::from(height),
@@ -817,7 +830,7 @@ impl Widget for Quote {
             ("\u{201c}", "\u{201d}")
         };
         let w = usize::from(width);
-        let mut lines: Vec<Line<'static>> = gfx::wrap(
+        let mut lines: Vec<Line<'static>> = figures::wrap(
             quote.as_str(),
             w.saturating_sub(2),
             usize::from(height),
@@ -895,18 +908,20 @@ impl Widget for Status {
         )];
         let capacity = u64::from(status.capacity.max(1));
         let load = u64::from(status.sessions) * 100 / capacity;
-        let (filled, rest) = gfx::bar(u64::from(status.sessions), capacity, w, cx.ascii);
-        let style = if load > 90 {
-            pen.bad()
+        let tone = if load > 90 {
+            Tone::Bad
         } else if load > 70 {
-            pen.warn()
+            Tone::Warn
         } else {
-            pen.good()
+            Tone::Ok
         };
-        lines.push(Line::from(vec![
-            Span::styled(filled, style),
-            Span::styled(rest, pen.muted()),
-        ]));
+        lines.push(Line::from(meter(
+            theme(cx.look, cx.ascii),
+            u64::from(status.sessions),
+            capacity,
+            w,
+            tone,
+        )));
         let pair = |key: &str, value: String| {
             row(
                 cx,
@@ -916,8 +931,8 @@ impl Widget for Status {
             )
         };
         lines.push(pair("ui.widget.status_members", status.members.to_string()));
-        lines.push(pair("ui.widget.status_sent", gfx::bytes(status.bytes)));
-        lines.push(pair("ui.widget.status_up", gfx::span(status.uptime)));
+        lines.push(pair("ui.widget.status_sent", figures::bytes(status.bytes)));
+        lines.push(pair("ui.widget.status_up", figures::span(status.uptime)));
         fit(lines, height)
     }
 }

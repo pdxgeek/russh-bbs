@@ -26,7 +26,9 @@ use russh_bbs_core::widgets::{Caller, Choice, Headline, Line, Lock, Rules, Widge
 
 use super::fixture::{self, NOW};
 use super::screen::{self, Ctx, Outcome, State, WidgetsScreen};
-use super::{Cx, MIN_REFRESH, WidgetSettings, assign, draw_cells, gfx, refresh_interval, widget};
+use super::{
+    Cx, MIN_REFRESH, WidgetSettings, assign, draw_cells, figures, refresh_interval, widget,
+};
 use crate::config::{BoardConfig, WidgetsConfig};
 use crate::settings::Look;
 use crate::ssh::terminal::Key;
@@ -135,24 +137,24 @@ fn bad_settings_are_refused_naming_the_key() {
 
 #[test]
 fn dates_are_right() {
-    let d = gfx::date_of(NOW);
+    let d = figures::date_of(NOW);
     assert_eq!((d.year, d.month, d.day, d.weekday), (2026, 11, 5, 3));
-    let epoch = gfx::date_of(0);
+    let epoch = figures::date_of(0);
     assert_eq!(
         (epoch.year, epoch.month, epoch.day, epoch.weekday),
         (1970, 1, 1, 3)
     );
-    let leap = gfx::date_of(1_709_164_800); // 2024-02-29 00:00 UTC, a Thursday
+    let leap = figures::date_of(1_709_164_800); // 2024-02-29 00:00 UTC, a Thursday
     assert_eq!(
         (leap.year, leap.month, leap.day, leap.weekday),
         (2024, 2, 29, 3)
     );
-    let before = gfx::date_of(-1);
+    let before = figures::date_of(-1);
     assert_eq!((before.year, before.month, before.day), (1969, 12, 31));
-    assert_eq!(gfx::days_in_month(2024, 2), 29);
-    assert_eq!(gfx::days_in_month(2100, 2), 28);
-    assert_eq!(gfx::days_in_month(2000, 2), 29);
-    let weeks = gfx::month_weeks(d);
+    assert_eq!(figures::days_in_month(2024, 2), 29);
+    assert_eq!(figures::days_in_month(2100, 2), 28);
+    assert_eq!(figures::days_in_month(2000, 2), 29);
+    let weeks = figures::month_weeks(d);
     // November 2026 starts on a Sunday: the first week has one day, in the last column.
     assert_eq!(weeks[0], [None, None, None, None, None, None, Some(1)]);
     assert_eq!(weeks.iter().flatten().flatten().count(), 30);
@@ -160,114 +162,55 @@ fn dates_are_right() {
 }
 
 #[test]
-fn sparklines_bars_and_charts_have_exact_widths_and_ascii_forms() {
-    for ascii in [false, true] {
-        let s = gfx::spark(&[0, 1, 2, 8], 6, ascii);
-        assert_eq!(s.chars().count(), 6);
-        assert_eq!(s.is_ascii(), ascii);
-        assert_eq!(gfx::spark(&[], 4, ascii).chars().count(), 4);
-        assert_eq!(
-            gfx::spark(&[5; 20], 4, ascii).chars().count(),
-            4,
-            "newest values only"
-        );
-        for (part, whole) in [
-            (0, 10),
-            (1, 3),
-            (10, 10),
-            (70, 10),
-            (5, 0),
-            (u64::MAX, u64::MAX),
-            (0, 0),
-        ] {
-            let (a, b) = gfx::bar(part, whole, 10, ascii);
-            assert_eq!(a.chars().count() + b.chars().count(), 10, "{part}/{whole}");
-            assert_eq!((a + &b).is_ascii(), ascii);
-        }
-        assert_eq!(
-            gfx::bar(5, 10, 10, true),
-            ("#####".to_owned(), "-----".to_owned())
-        );
-        assert_eq!(gfx::bar(0, 0, 4, true).0, "");
-        assert_eq!(gfx::bar(1, 1, 4, false).0.chars().count(), 4);
-        let chart = gfx::area_chart(&[1, 4, 9, 2], 8, 3, ascii);
-        assert_eq!(chart.len(), 3);
-        assert!(chart.iter().all(|l| l.chars().count() == 8));
-        assert!(chart.iter().all(|l| l.is_ascii() == ascii || !ascii));
-        if ascii {
-            assert!(chart.iter().all(|l| l.is_ascii()));
-        }
-    }
-    // The tallest value reaches the top row, the smallest non-zero value shows at the bottom.
-    let tall = gfx::area_chart(&[0, 0, 100], 3, 2, true);
-    assert_eq!(tall[0].chars().last(), Some('#'));
-    assert_eq!(gfx::area_chart(&[3], 0, 2, false), Vec::<String>::new());
-    // Every braille cell is in the braille block.
-    for line in gfx::area_chart(&[1, 9, 3, 7, 5], 5, 2, false) {
-        assert!(line.chars().all(|c| ('\u{2800}'..='\u{28ff}').contains(&c)));
-    }
-    // A full-height column lights every dot.
-    assert_eq!(
-        gfx::area_chart(&[8], 1, 2, false),
-        vec!["\u{28ff}", "\u{28ff}"]
-    );
-    // Flat zero draws blank cells.
-    assert_eq!(
-        gfx::area_chart(&[0, 0], 2, 1, false),
-        vec!["\u{2800}\u{2800}"]
-    );
-}
-
-#[test]
 fn big_digits_are_three_rows_and_ascii_safe() {
     for ascii in [false, true] {
-        let rows = gfx::big_digits("12:09", ascii);
+        let rows = figures::big_digits("12:09", ascii);
         let width = rows[0].chars().count();
         assert!(rows.iter().all(|r| r.chars().count() == width));
         assert_eq!(width, 4 + 4 + 2 + 4 + 4);
         assert_eq!(rows.iter().all(|r| r.is_ascii()), ascii);
     }
     // Eight lights every segment; one lights two uprights.
-    assert_eq!(gfx::big_digits("8", true), [" _  ", "|_| ", "|_| "]);
-    assert_eq!(gfx::big_digits("1", true), ["    ", "  | ", "  | "]);
+    assert_eq!(figures::big_digits("8", true), [" _  ", "|_| ", "|_| "]);
+    assert_eq!(figures::big_digits("1", true), ["    ", "  | ", "  | "]);
 }
 
 #[test]
 fn figures_are_short_and_exact() {
-    assert_eq!(gfx::ago(100, 100), None);
-    assert_eq!(gfx::ago(100, 41), None);
-    assert_eq!(gfx::ago(1000, 700), Some((gfx::Unit::Minute, 5)));
-    assert_eq!(gfx::ago(10_000, 0), Some((gfx::Unit::Hour, 2)));
-    assert_eq!(gfx::ago(300_000, 0), Some((gfx::Unit::Day, 3)));
-    assert_eq!(gfx::ago(0, 100), None, "a time in the future is now");
-    assert_eq!(gfx::bytes(812), "812B");
-    assert_eq!(gfx::bytes(3_500), "3.4K");
-    assert_eq!(gfx::bytes(12 * 1024 * 1024), "12M");
-    assert_eq!(gfx::span(59), "0m");
-    assert_eq!(gfx::span(3 * 3600 + 5 * 60), "3h 05m");
-    assert_eq!(gfx::span(2 * 86_400 + 4 * 3600), "2d 4h");
+    assert_eq!(figures::ago(100, 100), None);
+    assert_eq!(figures::ago(100, 41), None);
+    assert_eq!(figures::ago(1000, 700), Some((figures::Unit::Minute, 5)));
+    assert_eq!(figures::ago(10_000, 0), Some((figures::Unit::Hour, 2)));
+    assert_eq!(figures::ago(300_000, 0), Some((figures::Unit::Day, 3)));
+    assert_eq!(figures::ago(0, 100), None, "a time in the future is now");
+    assert_eq!(figures::bytes(812), "812B");
+    assert_eq!(figures::bytes(3_500), "3.4K");
+    assert_eq!(figures::bytes(12 * 1024 * 1024), "12M");
+    assert_eq!(figures::span(59), "0m");
+    assert_eq!(figures::span(3 * 3600 + 5 * 60), "3h 05m");
+    assert_eq!(figures::span(2 * 86_400 + 4 * 3600), "2d 4h");
 }
 
 #[test]
 fn clip_and_wrap_never_exceed_the_width() {
-    assert_eq!(gfx::clip("hello", 5, false), "hello");
-    assert_eq!(gfx::clip("hello world", 6, true), "hello~");
-    assert_eq!(gfx::clip("hello world", 6, false), "hello\u{2026}");
-    assert_eq!(gfx::clip("x", 0, false), "");
+    assert_eq!(figures::clip("hello", 5, false), "hello");
+    assert_eq!(figures::clip("hello world", 6, true), "hello~");
+    assert_eq!(figures::clip("hello world", 6, false), "hello\u{2026}");
+    assert_eq!(figures::clip("x", 0, false), "");
     for ascii in [false, true] {
         for width in 1..30 {
             let text = "the quick brown fox jumps over the lazy dog and keeps running far away";
-            for line in gfx::wrap(text, width, 3, ascii) {
+            for line in figures::wrap(text, width, 3, ascii) {
                 assert!(line.chars().count() <= width, "{width}: {line:?}");
                 assert_eq!(line.is_ascii(), ascii || line.is_ascii());
             }
-            assert!(gfx::wrap(text, width, 3, ascii).len() <= 3);
+            assert!(figures::wrap(text, width, 3, ascii).len() <= 3);
         }
     }
-    assert_eq!(gfx::wrap("a b c", 10, 5, false), vec!["a b c"]);
-    assert!(gfx::wrap("a b c d e f g", 3, 1, true)[0].ends_with('~'));
-    assert!(gfx::wrap("", 5, 2, false).is_empty());
-    assert_eq!(gfx::wrap("superlongword", 4, 2, false), vec!["supe"]);
+    assert_eq!(figures::wrap("a b c", 10, 5, false), vec!["a b c"]);
+    assert!(figures::wrap("a b c d e f g", 3, 1, true)[0].ends_with('~'));
+    assert!(figures::wrap("", 5, 2, false).is_empty());
+    assert_eq!(figures::wrap("superlongword", 4, 2, false), vec!["supe"]);
 }
 
 // ---- the widgets in the layouts -------------------------------------------------------------

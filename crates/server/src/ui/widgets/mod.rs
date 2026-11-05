@@ -22,7 +22,8 @@
 //!   faster than the smallest budget among the widgets it shows, never faster than
 //!   [`MIN_REFRESH`], far under the D49 redraw cap.
 
-pub(crate) mod gfx;
+pub(crate) mod draw;
+pub(crate) mod figures;
 mod kinds;
 pub(crate) mod screen;
 pub mod settings;
@@ -159,9 +160,6 @@ impl Pen {
             Style::new().add_modifier(Modifier::BOLD),
             self.0.palette().accent,
         )
-    }
-    pub(crate) fn accent2(self) -> Style {
-        self.0.accent(Style::new(), self.0.palette().accent2)
     }
     pub(crate) fn key(self) -> Style {
         self.0.accent(
