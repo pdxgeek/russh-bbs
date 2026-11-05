@@ -33,6 +33,7 @@ fn draw(view: &ScreenView, tier: Tier, size: (u16, u16)) -> Buffer {
                         tier,
                         markers: &MENU_MARKERS,
                         clock: Some("UTC 12:00"),
+                        nav: &crate::ui::screens::list::Nav::default(),
                     },
                 );
                 return;
@@ -193,7 +194,8 @@ fn the_fullest_screens_fit_80x24_with_their_footer_in_every_tier() {
 fn a_list_row_stays_on_one_line_even_with_wide_characters() {
     let out = text(&draw(&full_list(&"漢".repeat(40)), Tier::Unicode, (80, 24)));
     for n in 1..=9 {
-        let count = out.matches(&format!("{n}. handle_{n}_")).count();
+        // The list is a table (UI-4): the key is its own column, then the handle.
+        let count = out.matches(&format!("{n}    handle_{n}_")).count();
         assert_eq!(count, 1, "row {n}\n{out}");
     }
 }

@@ -114,6 +114,7 @@ fn draw(screen: &ForumsScreen, area: Rect) -> Buffer {
         tier: Tier::Ascii,
         markers: &[],
         clock: Some("UTC 12:00"),
+        art: None,
     };
     let mut terminal = Terminal::new(TestBackend::new(area.width, area.height)).unwrap();
     terminal.draw(|frame| render(frame, screen, &ctx)).unwrap();
@@ -927,6 +928,7 @@ fn the_forum_lists_keep_the_marker_cell_clean_at_every_size_tier_layout_theme_an
                                 tier,
                                 markers: &DRAWN,
                                 clock: Some("UTC 12:00"),
+                                art: None,
                             };
                             let mut terminal =
                                 Terminal::new(TestBackend::new(size.0, size.1)).unwrap();

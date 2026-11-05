@@ -139,3 +139,58 @@ impl Sort {
 pub(crate) fn text_key(text: &str) -> String {
     text.to_lowercase()
 }
+
+/// What a list the front end holds the cursor for (the members list, whose rows core numbers)
+/// does with a key.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum NavKey {
+    /// The key moved the cursor or the sort; nothing goes to core.
+    Consumed,
+    /// Enter on the row at this index of the order drawn.
+    Open(usize),
+    /// Not a list-navigation key: hand it to core unchanged.
+    Pass,
+}
+
+/// A cursor, a sort and a window for a list whose rows core owns. Core numbers the rows and
+/// opens one when its digit is pressed; this only moves a highlight, reorders the **display**
+/// and turns Enter into the digit of the highlighted row, so core's rules are untouched.
+#[derive(Debug, Default)]
+pub(crate) struct Nav {
+    pub(crate) cursor: usize,
+    pub(crate) sort: Sort,
+    pub(crate) view: ViewCell,
+    sig: u64,
+}
+
+impl Nav {
+    /// Start again at the top when the rows are different ones (another page, a new search).
+    /// The sort stays: it is a choice about the list, not about a page.
+    pub(crate) fn rows_are(&mut self, sig: u64) {
+        if self.sig != sig {
+            self.sig = sig;
+            self.cursor = 0;
+        }
+    }
+
+    /// Handle `key` for a list of `len` rows with `columns` sortable columns. Digits are never
+    /// taken: they are core's.
+    pub(crate) fn key(&mut self, key: Key, len: usize, columns: usize) -> NavKey {
+        if matches!(key, Key::Char('1'..='9')) {
+            return NavKey::Pass;
+        }
+        if key == Key::Char(SORT_KEY) {
+            self.sort = self.sort.next(columns);
+            self.cursor = 0;
+            return NavKey::Consumed;
+        }
+        match pick(key, self.cursor, len, self.view.get()) {
+            Pick::Move(to) => {
+                self.cursor = to;
+                NavKey::Consumed
+            }
+            Pick::Open(at) => NavKey::Open(at),
+            Pick::None => NavKey::Pass,
+        }
+    }
+}

@@ -576,6 +576,8 @@ pub(crate) struct Screen {
     widgets_page: Option<WidgetsScreen>,
     /// The wipe between screens and the blinking cursor (UI-4).
     motion: Motion,
+    /// The members list's highlight, sort and window (UI-4).
+    members_nav: crate::ui::screens::list::Nav,
 }
 
 /// What the widget panels show and how the member arranged them (UI-10).
@@ -676,6 +678,7 @@ impl Screen {
             widgets: WidgetState::default(),
             widgets_page: None,
             motion: Motion::default(),
+            members_nav: crate::ui::screens::list::Nav::default(),
         })
     }
 
@@ -859,12 +862,16 @@ impl Screen {
                 door_moved = doors::keys(&mut session.screen, keys, &mut effects);
             }
             Content::Member(flow) => {
-                for (index, input) in keys
-                    .iter()
-                    .copied()
-                    .enumerate()
-                    .filter_map(|(index, key)| member_input(key).map(|input| (index, input)))
-                {
+                for (index, key) in keys.iter().copied().enumerate() {
+                    // On the members list, arrows move a highlight, `o` sorts and Enter opens
+                    // the highlighted row by its own digit; every other key goes to core as is.
+                    let key = match flow.members_view() {
+                        Some(view) => members::nav_key(&mut self.members_nav, &view, key),
+                        None => Some(key),
+                    };
+                    let Some(input) = key.and_then(member_input) else {
+                        continue;
+                    };
                     match flow.input(input) {
                         MemberEffect::Stay => {}
                         MemberEffect::Save(settings) => effects.save_settings = Some(settings),
@@ -1758,6 +1765,7 @@ impl Screen {
                 tier: settings.icon_tier(),
                 markers: self.status_markers(),
                 clock: Some(clock.as_str()),
+                art: area_art.as_ref(),
             };
             let tier = ctx.tier;
             self.terminal.draw(|frame| {
@@ -1849,6 +1857,7 @@ impl Screen {
             settings: self.ui.widgets(),
             now: now_secs,
         };
+        let members_nav = &self.members_nav;
         let widgets_screen_state = self.widgets_page.as_ref();
         let widget_access = self.content.flow().map(MemberFlow::access_snapshot);
         let widget_choice = &self.widgets.choice;
@@ -1948,6 +1957,7 @@ impl Screen {
                                     tier,
                                     markers: staff_markers,
                                     clock,
+                                    nav: members_nav,
                                 },
                             );
                         }

@@ -23,7 +23,8 @@ use super::strings;
 use crate::settings::{self, Look};
 use crate::ui::classic::{self, MENU_MARKERS};
 use crate::ui::editor::EditorView;
-use crate::ui::frame::{ChromeText, FrameSpec, Hint};
+use crate::ui::art::Slot as ArtSlot;
+use crate::ui::frame::{ArtRequest, ChromeText, FrameSpec, Hint};
 use crate::ui::popup::{self, Popup, PopupKind, PopupLine};
 use crate::ui::screens::list::ListView;
 use crate::ui::screens::reader as reader_ui;
@@ -42,6 +43,8 @@ pub(crate) struct DrawCtx<'a> {
     pub(crate) markers: &'a [russh_bbs_core::icons::SecurityMarker],
     /// The header bar's clock text.
     pub(crate) clock: Option<&'a str>,
+    /// The board's art, for the area header above the lists (UI-3's `area` slot).
+    pub(crate) art: Option<&'a crate::ui::art::draw::ArtCtx<'a>>,
 }
 
 /// Member text, cleaned once more on its way to the terminal.
@@ -75,6 +78,11 @@ pub(crate) fn render(frame: &mut Frame<'_>, screen: &ForumsScreen, ctx: &DrawCtx
         .place(ChromeText::fixed(strings::TITLE_BOARDS))
         .clock(ctx.clock)
         .hints(&hints)
+        .art(ctx.art.map(|art| ArtRequest {
+            ctx: art,
+            slot: ArtSlot::Area,
+            keep: 14,
+        }))
         .draw(frame);
     match &screen.state {
         State::Boards { list, cursor } => board_table(frame, body, screen, ctx, list, *cursor),
