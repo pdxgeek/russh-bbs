@@ -28,6 +28,7 @@ pub mod signin;
 pub mod store;
 pub mod terminal_settings;
 pub mod waiting_room;
+pub mod widgets;
 
 /// The crate version, used by front ends to report what they were built against.
 #[must_use]

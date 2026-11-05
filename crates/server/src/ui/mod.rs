@@ -32,6 +32,7 @@ pub(crate) mod popup;
 pub mod strings;
 pub(crate) mod table;
 pub mod theme;
+pub mod widgets;
 
 use std::path::Path;
 use std::sync::Arc;
@@ -70,6 +71,7 @@ pub struct Ui {
     layouts: Vec<LayoutId>,
     mail: MailKeysHandle,
     doors: crate::doors::Doors,
+    widgets: widgets::WidgetSettings,
 }
 
 /// The keys mail is sealed with (M3-I), carried to the sessions beside the screens' words because
@@ -129,6 +131,20 @@ impl Ui {
         self
     }
 
+    /// The same screens with the board's widget settings (UI-10): which widgets exist, their
+    /// defaults and locks, the message of the day and the quotes.
+    #[must_use]
+    pub fn with_widgets(mut self, widgets: widgets::WidgetSettings) -> Self {
+        self.widgets = widgets;
+        self
+    }
+
+    /// The board's widget settings.
+    #[must_use]
+    pub fn widgets(&self) -> &widgets::WidgetSettings {
+        &self.widgets
+    }
+
     /// The doors this board runs.
     #[must_use]
     pub fn doors(&self) -> &crate::doors::Doors {
@@ -154,6 +170,8 @@ impl Ui {
             .copied()
             .chain(keys::LAYOUT_KEYS.iter().copied())
             .chain(tree.text_keys())
+            .chain(widgets::TEXT_KEYS.iter().copied())
+            .chain(widgets::screen::TEXT_KEYS.iter().copied())
             .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
             .chain(russh_bbs_core::community::TEXT_KEYS.iter().copied())
             .chain(russh_bbs_core::queue::keys::TEXT_KEYS.iter().copied())
@@ -171,6 +189,7 @@ impl Ui {
             themes: ThemeSet::shipped(&strings)?,
             mail: MailKeysHandle::default(),
             doors: crate::doors::Doors::none(),
+            widgets: widgets::WidgetSettings::default(),
         })
     }
 

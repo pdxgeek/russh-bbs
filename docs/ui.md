@@ -10,7 +10,7 @@ Status: **Partly implemented.** UI-2 (style packs, seven layouts, board identity
 |---|---|---|
 | Menu tree | What exists and where it leads | Main, Forums, Files, Mail, Doors |
 
-**Doors (M4-D0, D98).** The main menu's `d` (shown with `doors.run`) opens the door list; Enter or the door's number opens it; Esc goes back. A door is drawn inside the same box and reserved status row as every other screen, so on telnet the `UNENCRYPTED` footer row is outside what the door is given. The door list's own sentences are fixed English for now (not in the theme string table); the menu label is. Ctrl-C and Ctrl-D log off from inside a door.
+**Doors (M4-D0, D98).** The main menu's `d` (shown with `doors.run`) opens the door list; Enter or the door's number opens it; Esc goes back. A door is drawn inside the same box and reserved status row as every other screen, so on telnet the `UNENCRYPTED` footer row is outside what the door is given. **A running door's box and colour (FIX-UI-2a, D121).** The door is composited at the member's effective colour depth (`Ui::look(..).depth()`: the client's, lowered by the member's cap), so truecolor and 256 colours reach clients that have them and 16, mono and the ASCII tier degrade as before; the per-cell cleaning is unchanged. The box follows the layout: the Focus layout gives a door the whole body (no margin, no width limit); every other layout gives it up to 132 columns (`DOOR_MAX_WIDTH`), centred, instead of the reading box's 76 (74 inside). The border is the only chrome inside the box's rectangle, and any status row (the marker cell) is split off before the box is sized. The door list and the opening screen keep the reading box. The door list's own sentences are fixed English for now (not in the theme string table); the menu label is. Ctrl-C and Ctrl-D log off from inside a door.
 | Layout | How a menu is arranged | Hotkey list, lightbar, two-pane, tabs, dashboard, command line, compact |
 | Theme | How it looks | Colors, borders, art |
 | Icon set | Which glyphs are drawn | Nerd Font, plain Unicode, ASCII |
@@ -273,18 +273,18 @@ The **menu screen** is arranged in panes; every other screen draws in the body o
 | `classic` | A hotkey menu in a centred box | 24x9 | compact |
 | `lightbar` | The same box with a cursor (Up, Down, Enter) | 44x12 | classic |
 | `compact` | One column, no box, no header | none | |
-| `dashboard` | Menu on the left, a grid of widget slots on the right (2x3, fewer rows when short) | 72x20 | lightbar |
-| `wide` | Navigation, a content pane (where you are, the signed-in line, the row under the cursor) and a right rail of slots | 110x22 | dashboard |
+| `dashboard` | Menu on the left, a grid of widget cells on the right (2x3 at 80x24, 3x4 at 132x43, fewer rows when short) | 72x20 | lightbar |
+| `wide` | Navigation, a content pane (where you are, the signed-in line, the row under the cursor) and a right rail of widget cells | 110x22 | dashboard |
 | `focus` | The menu as a roomy centred column with no box; `Tab` opens a widgets pop-over | 40x10 | lightbar |
 | `split` | The menu beside a second pane with a divider | 72x16 | lightbar |
 
-**Slots** are named places UI-10's widgets will fill (`panes::Slot`: identity, clock, who is online, last callers, new posts, unread mail, chat, activity). Today the identity slot shows the board's real name, tagline, location and age and the clock slot shows the real time; **every other slot says "Nothing to show yet." It never shows invented numbers.** The geometry is a pure function of the body rectangle (`panes::plan`), tested for overlap and containment from 24x9 to 500x198.
+**Cells** are the places the member's widgets fill (UI-10, [Widgets](#widgets-ui-10); UI-2 had named slots with placeholders). A cell no widget fills is blank; **a pane never shows invented numbers.** The geometry is a pure function of the body rectangle (`panes::plan`), tested for overlap and containment from 24x9 to 500x198.
 
-**Not built:** dragging the split divider (UI-9; the grip is drawn), live widgets (UI-10), the other screens inside the panes (UI-4), animated motion (the setting is stored and read as `Look::motion()`; UI-4 and UI-8 will use it).
+**Not built:** dragging the split divider (UI-9; the grip is drawn), the other screens inside the panes (UI-4), animated motion (the setting is stored and read as `Look::motion()`; UI-4 and UI-8 will use it).
 
 ### Board identity and limits (`[board]`)
 
-The board's name replaces the string table's title in every style (header bar, box titles, member screens), and its tagline, location and "since" fill the identity slot. The text is the sysop's own, but it goes through the shared sanitizer (refused, not altered, if it would change) and the honesty check: **a board cannot be named to claim it is private, secure or encrypted.** `board.accent` replaces the style's accent. `board.style` and `board.layout` are what members who never chose get. `board.styles` and `board.layouts` limit what members may pick; **one entry locks the choice for everyone**, whatever they stored. `board.motion = false` turns motion off board-wide. All keys: [config.md](config.md#board-ui-2).
+The board's name replaces the string table's title in every style (header bar, box titles, member screens), and its tagline, location and "since" fill the identity widget. The text is the sysop's own, but it goes through the shared sanitizer (refused, not altered, if it would change) and the honesty check: **a board cannot be named to claim it is private, secure or encrypted.** `board.accent` replaces the style's accent. `board.style` and `board.layout` are what members who never chose get. `board.styles` and `board.layouts` limit what members may pick; **one entry locks the choice for everyone**, whatever they stored. `board.motion = false` turns motion off board-wide. All keys: [config.md](config.md#board-ui-2).
 
 ### Member choices
 
@@ -301,6 +301,61 @@ On the settings screen, saved per member and applied on the next frame: **layout
 - **Unit and render tests** (`ui::{styles_tests,snapshots,resolve_tests,panes,board,theme}`, `config`): six styles that differ in palette and in at least two drawing choices and draw different characters; contrast at 16, 256 and truecolor; every style x layout x {80x24, 132x43} in Unicode, and 80x24 in the ASCII tier with colour off, as **golden text snapshots with a colour fingerprint** (`ui/snapshots/*.txt`; `UPDATE_SNAPSHOTS=1` to accept a change); a 16-colour terminal gets only named colours and a 256-colour one no truecolor; the marker cell is bold + reverse with no colour and nothing else reverses, for every style x layout x depth x tier x size (including 30x8) with hostile content; **hostile themes** (a role, key or table named for the marker or reverse, hidden or low-contrast text, marker glyphs or privacy claims in strings, bad colours) are refused; a loud valid theme leaves the marker cell alone; fallback chains settle at every size; board defaults, limits and locks, the board name in every style, accent and motion; config validation (defaults, layering, refusals naming the key and its source).
 - **Real OpenSSH 9.6 against the real binary**, read through `pyte`: every style cycled with `t` and every layout with `l` on the settings screen, each drawn on the main menu at 80x24 (and 132x43), with the board's name, tagline, location and "since" from `[board]` environment variables. PNGs rendered from the terminal emulator's cells (truecolor) are in [ui-screenshots/](ui-screenshots/README.md).
 - **Not verified:** other terminal emulators, a real 16-colour or 256-colour client (the depth fallback is tested on cells, and the 256-colour `TERM` was used for the walk), a Nerd Font session, a screen reader, a light terminal background with the dark styles, telnet.
+
+## Widgets (UI-10)
+
+Status: **Implemented and tested; walked over real OpenSSH 9.6** (see Verified). Code: `crates/server/src/ui/widgets/` (the trait, the registry, the 17 widgets, placement, the Widgets screen), `crates/core/src/widgets/` (ids, the sysop's rules and the member's lists, what the widgets read), `crates/server/src/ssh/live.rs` (the live pieces), `[widgets]` in [config.md](config.md#widgets-ui-10), per-member lists in migration `0025_widgets`.
+
+A **widget** is a small live panel the pane layouts place in their cells (the dashboard grid, the wide rail, the split pane and the focus pop-over). Widgets are built in, not plug-ins. Style, layout and widgets stay independent choices.
+
+### The launch set
+
+| Widget (`id`) | Shows | Needs | Refresh budget |
+|---|---|---|---|
+| `identity` | The board's name, tagline, location and age | nothing | 1 h |
+| `clock` | `HH:MM` in large seven-segment digits, the date, and (when the cell is tall) a month calendar with today marked | nothing | 60 s |
+| `online` | Members with a shell open now (one or two columns) | `members.view` | 10 s |
+| `callers` | Last callers with how long ago | `community.view` | 60 s |
+| `new_posts` | Active threads since the member's last call, per board, as bars | a board the member may list | 60 s |
+| `mail` | Unread mail as large digits, a bar of unread to all, the inbox size | `mail.read` | 30 s |
+| `chat` | The rooms the member may join, with a dot per member in each | a room the member may join | 10 s |
+| `activity` | Threads last posted per day over 14 days on the boards the member may read, as a braille area chart (a sparkline in a short cell) | a board the member may list | 5 min |
+| `credits` | The member's own balance, the 14-day change, and a braille chart of the balance | nothing (own ledger) | 60 s |
+| `oneliner` | Today's one-liners | `community.view` | 60 s |
+| `wall` | The graffiti wall | `community.view` | 60 s |
+| `poll` | The newest open poll with bars; counts show only when the poll lets this member see them | `community.view` | 60 s |
+| `news` | Newest headlines from the feed boards the member may read | a board the member may list | 2 min |
+| `motd` | The sysop's message of the day (`widgets.motd`) | nothing; collapses when unset | 1 h |
+| `quote` | A quote of the day from `widgets.quotes` (one per UTC day) | nothing; collapses when none | 1 h |
+| `doors` | The doors this board runs, with their current season | `doors.run` | 5 min |
+| `status` | Sessions against the connection cap (a gauge), members, bytes sent, uptime | `sessions.view` | 5 s |
+
+Every figure comes from a service the screens already use: last callers, one-liners, the wall and polls from `community::execute` (which checks the permission and the poll's result visibility), boards and threads from `forums::boards` and `forums::threads` (the boards the member may list and read; a restricted board without a grant contributes nothing), the member's own mail counts, own credit ledger, the chat rooms from `chat::joinable_rooms`, the doors from the door registry. There is no second set of rules: a widget the member's permissions do not cover is not offered, not fetched and not drawn ([`WidgetId::reachable_by`], one match). **"Who is online" has no per-member invisible mode yet**: anyone who may view the members list sees who has a shell open.
+
+### What a widget is
+
+`ui::widgets::Widget` (one implementation per `WidgetId`, in `kinds.rs`): an id that never changes, a title key, a minimum and a preferred inside size, a refresh `budget`, `has_content`, `lines` (styled lines for an inside of a given size, drawn with the theme's palette roles through `Pen`; a graphic widget may override `draw`) and `text` (the ASCII text form). The **data fetch** is not in the widget: `russh_bbs_core::widgets::fetch` reads the store through the services above and the shell adds the live pieces (`ssh/live.rs`), each gated by the access the session holds that second. The widget draws only what it is handed, so a widget cannot read around `core::access`.
+
+### Rules every widget follows
+
+- **Cells, not slots.** A layout makes generic cells (`panes::plan`); the member's widgets for that layout are assigned in order, each into the first cell it fits (its minimum size). A widget with nothing to show (`has_content` false) takes no cell and the next one moves up; a widget too big for every remaining cell is left out rather than squeezed. A cell nothing fills is blank. The grid grows with the terminal: dashboard 2 columns by up to 3 rows at 80x24, 3 by 4 at 132x43; the wide rail and the split pane hold up to five widgets.
+- **The marker cell and the chrome.** Cells come from the body rectangle the frame hands out, which never includes the header or the status bar, so a widget cannot reach the marker cell. No widget uses reverse video (that style is the marker's) or a Nerd Font glyph; "today" in the calendar is bold and underlined.
+- **Member text is sanitized.** Every handle, subject, line and option goes through `Cx::member` (the shared sanitizer) when drawn, as well as when fetched. Chrome words come from the string table.
+- **Mono and ASCII.** Colour comes from the look, so mono draws weight only. In the ASCII tier every widget draws seven-bit characters (`_.:-=+*#` sparklines, `#`/`-` bars, `_`/`|` digits, `~` for an ellipsis, `*` for today); the focus pop-over shows each widget's text form there.
+- **Refresh budgets.** The session fetches widget data when the screen shows widgets and the oldest data is older than the smallest budget among them, and never more often than every **5 seconds** (`MIN_REFRESH`): at most 0.2 timer-driven redraws a second against D49's cap of 20. A classic menu, a forum, the editor or chat shows no widgets and sets no timer. A slow or failed read gives the screen what could be read; the next attempt waits a full budget.
+
+### Who controls what
+
+- **The sysop** (`[widgets]`): `hidden` (the widget does not exist on this board), `on` (every member sees it; they can move it but not switch it off), `off` (nobody can switch it on) and a default list and order for each pane layout. A lock is applied when a list is **read**, so a lock added later wins over what a member saved earlier.
+- **The member**: from Terminal settings press **`g`** for the Widgets screen. `Up`/`Down` choose a widget, `Space` (or `Enter`, `x`) switches it on or off, `u`/`d` move it up or down, `Tab` (or `Left`/`Right`) switches between the dashboard, wide, focus and split layouts, `r` goes back to the board's default for that layout, `Esc` leaves. Each change is saved at once, per layout, in `widget_list` (one row per member and layout, the ids in order; no row means "follow the default"; an empty row means "none"). The list shows `locked on`/`locked off` and leaves out hidden widgets and widgets the member cannot reach. The **preview** on the right draws the real widgets with the real data in a miniature of the real layout geometry for the member's terminal size, so it shows what the menu will show.
+- The classic, lightbar and compact layouts draw no widgets.
+
+### Verified
+
+- **Unit and render tests** (`ui::widgets`, `ui::panes`, `ui::{snapshots,styles_tests}`, `config`): the sysop's settings (lists, locks, defaults, text) and every refusal; the date arithmetic (leap day, epoch, a Sunday-start month), sparklines, bars, braille charts, big digits, `clip` and `wrap` at every width; **every widget in every layout cell at 80x24 and 132x43 in Unicode with colour, Unicode mono, ASCII mono and ASCII with 16 colours**: it stays in its cell, writes nothing outside it, uses no reverse video, no colour in mono and only ASCII in the ASCII tier; a widget without data collapses; widgets fill cells in the member's order; hostile data (escape sequences, marker glyphs, Nerd Font glyphs, control characters, wide characters, 5,000-character lines, `u64::MAX` figures) is cleaned or clipped in every tier (this found and fixed an overflow in a sum); refresh budgets are at least five seconds, the interval is the smallest of the widgets shown and none shown means no timer; the Widgets screen toggles, moves, resets and cycles layouts within the sysop's locks, shows locks, and draws at both sizes in every tier with reverse video only in the marker cell; the golden snapshots now show the widgets.
+- **Against the real stores** (`russh-bbs-store` shared suite, SQLite, plain Postgres 16 and TLS-required Postgres 16): the settings round trip (order, empty versus no row, reset, replace, other accounts untouched, cascade, a bad account, database constraints, one audit row per save), and the **no-leak tests**: a member without a grant sees nothing of a restricted board in new posts, activity or news (and one with a scoped grant does), nothing from callers, one-liners, wall or poll without `community.view`, poll counts only after voting when hidden, only their own mail count and credits, and a waiting-room snapshot gets an empty result.
+- **Real OpenSSH 9.6** against the real binary (dashboard, wide, focus and split layouts, the Widgets screen with locks, edits that persist across a reconnect, the ASCII tier in mono, and the marker cell with the `LOW-SECURITY` marker on): [qa/ui-10-walk.md](qa/ui-10-walk.md), with PNGs in [qa/ui-10-screens/](qa/ui-10-screens/). The walk found a defect older than this slice and fixed it here: one ssh key sign-in recorded **two** logins (`auth_publickey` started the whole member session to check the handle and the shell started it again), so "last login" and the "since your last call" mark were always the current sign-in; `MemberSessions::handle_for_key` now checks the key without recording a login, with a regression test that fails on the old code.
+- **Not built / not verified:** drag-to-resize and mouse (UI-9); widgets in accessibility mode as their own screen (M5); the other screens inside the panes (UI-4); real door standings (the doors widget shows seasons: the door framework has no standings call, noted in coordination); live updates of chat lines in a widget (the chat widget shows room counts); other terminal emulators, telnet, a screen reader.
 
 ## Forum screens (M3-E, D83)
 

@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT layout, widgets FROM widget_list WHERE account_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "layout",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "widgets",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "0bcc11f61d309d5f2075164e5bec3d6a99e563b6dfa269a6cd1e3e4af7d82bd5"
+}

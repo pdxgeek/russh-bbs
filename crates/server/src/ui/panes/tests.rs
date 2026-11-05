@@ -37,7 +37,7 @@ fn panes_stay_inside_the_body_and_never_overlap() {
             let mut rects = vec![plan.nav];
             rects.extend(plan.content);
             rects.extend(plan.divider);
-            rects.extend(plan.slots.iter().map(|(_, r)| *r));
+            rects.extend(plan.cells.iter().copied());
             for rect in &rects {
                 assert!(
                     inside(*rect, body),
@@ -61,13 +61,18 @@ fn panes_stay_inside_the_body_and_never_overlap() {
 fn the_pane_layouts_are_real_arrangements() {
     let body = Rect::new(0, 1, 132, 41);
     let dashboard = plan(LayoutId::Dashboard, body);
-    assert_eq!(dashboard.slots.len(), 6, "a 2x3 grid at this height");
+    assert_eq!(
+        dashboard.cells.len(),
+        12,
+        "three columns of four rows at this size"
+    );
     let wide = plan(LayoutId::Wide, body);
     assert!(wide.content.is_some(), "three columns");
-    assert!(wide.nav.x < wide.content.unwrap().x && wide.content.unwrap().x < wide.slots[0].1.x);
+    assert!(wide.nav.x < wide.content.unwrap().x && wide.content.unwrap().x < wide.cells[0].x);
+    assert!(wide.cells.len() >= 4, "a tall rail holds several widgets");
     let split = plan(LayoutId::Split, body);
     assert!(split.divider.is_some());
-    assert_eq!(split.slots.len(), 1);
+    assert!(split.cells.len() >= 2);
     // The classic family has no panes of its own.
     for layout in [
         LayoutId::Classic,
@@ -76,36 +81,38 @@ fn the_pane_layouts_are_real_arrangements() {
         LayoutId::Focus,
     ] {
         let p = plan(layout, body);
-        assert!(p.slots.is_empty() && p.content.is_none() && p.divider.is_none());
+        assert!(p.cells.is_empty() && p.content.is_none() && p.divider.is_none());
     }
 }
 
 #[test]
 fn a_short_dashboard_drops_rows_instead_of_squashing_them() {
-    let tall = plan(LayoutId::Dashboard, Rect::new(0, 1, 80, 22))
-        .slots
-        .len();
-    let short = plan(LayoutId::Dashboard, Rect::new(0, 1, 80, 14))
-        .slots
-        .len();
-    let tiny = plan(LayoutId::Dashboard, Rect::new(0, 1, 80, 8))
-        .slots
-        .len();
-    assert_eq!((tall, short, tiny), (6, 4, 2));
+    let cells = |h| {
+        plan(LayoutId::Dashboard, Rect::new(0, 1, 80, h))
+            .cells
+            .len()
+    };
+    // Two columns at 80 wide; rows grow with the height.
+    assert_eq!((cells(22), cells(14), cells(8)), (6, 4, 2));
+    // Three columns once the grid is 90 wide.
+    assert_eq!(
+        plan(LayoutId::Dashboard, Rect::new(0, 1, 132, 22))
+            .cells
+            .len(),
+        9
+    );
 }
 
 #[test]
-fn every_slot_has_a_title_key() {
-    for slot in [
-        Slot::Identity,
-        Slot::Clock,
-        Slot::WhoOnline,
-        Slot::LastCallers,
-        Slot::NewPosts,
-        Slot::UnreadMail,
-        Slot::Chat,
-        Slot::Activity,
-    ] {
-        assert!(slot.title_key().starts_with("ui.slot."));
+fn a_cell_is_tall_enough_for_a_panel_with_content() {
+    // Every cell the layouts offer holds a panel with at least a few rows inside it.
+    for layout in [LayoutId::Dashboard, LayoutId::Wide, LayoutId::Split] {
+        for (w, h) in [(80, 21), (100, 28), (132, 40), (200, 60)] {
+            for cell in plan(layout, Rect::new(0, 1, w, h)).cells {
+                if w >= 80 && h >= 21 {
+                    assert!(cell.height >= 4, "{layout:?} {w}x{h}: {cell:?}");
+                }
+            }
+        }
     }
 }

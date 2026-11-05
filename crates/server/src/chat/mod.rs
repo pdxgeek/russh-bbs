@@ -164,6 +164,11 @@ impl Hub {
         })
     }
 
+    /// How many sessions are in `room` now (the chat widget, UI-10).
+    pub(crate) fn members_in(&self, room: RoomId) -> usize {
+        self.lock().chat.member_count(room)
+    }
+
     /// Staff closed `room`: put its members out and wake them.
     pub(crate) fn room_closed(&self, room: RoomId) {
         let mut inner = self.lock();

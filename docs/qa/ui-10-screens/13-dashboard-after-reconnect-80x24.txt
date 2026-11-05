@@ -1,0 +1,24 @@
+ » Night Owl BBS « │ Main menu                                        UTC 04:33
+╭« Main menu »───────────────────╮╭« Who is online »────╮╭« Clock »────────────╮
+│ Signed in as founder.          ││ ● 2 online          ││  ━         ━   ━    │
+│                                ││ ▸ bob               ││ ┃ ┃ ┃━┃ •  ━┃  ━┃   │
+│   [f] Forums                   ││ ▸ founder           ││ ┃━┃   ┃ •  ━┃  ━┃   │
+│   [m] Mail                     ││                     ││ Thu 5 Nov 2026 UTC  │
+│   [a] Files  (not built yet)   ││                     ││                     │
+│   [c] Chat                     │╰─────────────────────╯╰─────────────────────╯
+│   [d] Doors                    │╭« Last callers »─────╮╭« New posts »────────╮
+│   [u] Members                  ││ founder         now ││ All caught up.      │
+│   [y] Community                ││ bob             now ││                     │
+│   [i] Invites                  ││                     ││                     │
+│ > [s] Terminal settings        ││                     ││                     │
+│   [o] Sysop tools              ││                     ││                     │
+│   [l] Log off                  ││                     ││                     │
+│                                │╰─────────────────────╯╰─────────────────────╯
+│                                │╭« Mail »─────────────╮╭« Activity »─────────╮
+│                                ││ No unread mail.     ││ 31 threads active … │
+│                                ││ 0 in your inbox     ││ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣤⡄⠀⣿⠀⠀⠀⠀ │
+│                                ││                     ││ ⣀⡀⠀⠀⠀⢀⣀⣿⣇⣸⣿⣿⣇⣀⣿⣿⣿⣿⠀ │
+│                                ││                     ││ ⣿⡇⠀⣶⡆⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶ │
+│                                ││                     ││ 14 days ago   today │
+╰────────────────────────────────╯╰─────────────────────╯╰─────────────────────╯
+ Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off

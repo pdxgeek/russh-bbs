@@ -1,0 +1,24 @@
+ » Night Owl BBS « │ Main menu                                        UTC 04:34
+╭« Main menu »───────────────────╮╭« This board »───────╮╭« Clock »────────────╮
+│ Signed in as founder.          ││ Night Owl BBS       ││  ━         ━        │
+│                                ││ After hours in the… ││ ┃ ┃ ┃━┃ •  ━┃ ┃━┃   │
+│ > [f] Forums                   ││ Portland, OR        ││ ┃━┃   ┃ •  ━┃   ┃   │
+│   [m] Mail                     ││                     ││ Thu 5 Nov 2026 UTC  │
+│   [a] Files  (not built yet)   ││                     ││                     │
+│   [c] Chat                     │╰─────────────────────╯╰─────────────────────╯
+│   [d] Doors                    │╭« Who is online »────╮╭« Last callers »─────╮
+│   [u] Members                  ││ ● 1 online          ││ founder         now │
+│   [y] Community                ││ ▸ founder           ││ bob             now │
+│   [i] Invites                  ││                     ││                     │
+│   [s] Terminal settings        ││                     ││                     │
+│   [o] Sysop tools              ││                     ││                     │
+│   [l] Log off                  ││                     ││                     │
+│                                │╰─────────────────────╯╰─────────────────────╯
+│                                │╭« New posts »────────╮╭« Mail »─────────────╮
+│                                ││ All caught up.      ││ No unread mail.     │
+│                                ││                     ││ 0 in your inbox     │
+│                                ││                     ││                     │
+│                                ││                     ││                     │
+│                                ││                     ││                     │
+╰────────────────────────────────╯╰─────────────────────╯╰─────────────────────╯
+⟦⊖⟧ telnet is on   Up/Down move  Enter choose  ? help  Esc back

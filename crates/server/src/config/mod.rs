@@ -30,7 +30,7 @@ pub use error::{ConfigError, Source};
 pub use layers::{Assembled, CliValue, FileInput, Sources, assemble};
 pub use model::{
     BlobBackend, BlobsConfig, BoardConfig, Config, DatasourceConfig, DatasourceKind, MailConfig,
-    SshConfig, TelnetConfig, TlsMode, WaitingRoomConfig,
+    SshConfig, TelnetConfig, TlsMode, WaitingRoomConfig, WidgetsConfig,
 };
 pub use paths::{CONTAINER_CONFIG, Dirs};
 pub use secret::SecretUrl;
