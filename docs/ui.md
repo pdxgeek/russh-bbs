@@ -375,7 +375,7 @@ Built in `m35/effects-graphics`, as **engine and components** on today's screens
 - **The last frame is the static screen.** A screen draws as it always did; an effect is an `Overlay` that rewrites the finished frame, and at its end (and whenever none runs) nothing rewrites it. A test compares the bytes of a screen after the intro with the same screen drawn with motion off.
 - **Motion off is one static frame.** `fx::allowed(look, accessible)` is the single gate: the member's setting, the board's and the style's ceilings (all in `Look::motion()`), and the plain accessibility path (M5; always off, passed as `false` until M5 exists). When it says no, nothing starts, `Screen::next_fx_due()` is `None`, so the shell arms no timer and draws no extra frame.
 - **A key finishes the effect at once.** `Screen::apply_keys` ends a running effect before handling the key, which then acts as usual; a resize ends it too. An effect never delays input.
-- **Bounded cost, three ways** (`fx::Budget`): at most 28 frames for one effect, at most 96 effect frames in any minute, and at most **160 KiB** sent for one effect (it ends early and the static frame follows). An effect frame is one ordinary redraw cycle, so the shell's D49 cap (50 ms) still holds; the effect interval is 80 ms (12 frames a second at most). Progress comes from the clock, so a slow cycle drops frames; it never stretches the effect.
+- **Bounded cost, three ways** (`fx::Budget`): at most 28 frames for one effect, at most 96 effect frames in any minute, and at most **160 KiB** sent for one effect (the largest measured intro is 146 KB, so the cap is a guard, not a trim) (it ends early and the static frame follows). An effect frame is one ordinary redraw cycle, so the shell's D49 cap (50 ms) still holds; the effect interval is 80 ms (12 frames a second at most). Progress comes from the clock, so a slow cycle drops frames; it never stretches the effect.
 - **A slow link ends effects.** If handing a frame to the connection takes longer than 250 ms (`SLOW_SEND` in the shell), the shell calls `Screen::slow_link()`: the effect ends and none runs for the rest of the session, so no animation frame ever waits in front of the next key.
 - **The status row and the marker cell are never touched.** An effect's `Stage` is the frame without its last row, and any cell wearing the reserved style (bold plus reverse) is skipped as well. Effects write only blanks, fixed ASCII, block glyphs and colours they compute; none writes the reserved style or a marker glyph or delimiter. Tests run every effect at 21 moments in every depth and tier and compare the whole status row, and scan for the reserved style and the six reserved codepoints.
 - **No terminal graphics protocol is ever sent.** Everything is styled cells; the walk counted zero sixel, kitty and iTerm sequences.
@@ -392,11 +392,13 @@ Built in `m35/effects-graphics`, as **engine and components** on today's screens
 
 Bytes for one whole intro at truecolor, from the benchmark (`cargo test -p russh-bbs-server --lib effects_benchmark -- --ignored --nocapture`, the clock driven so each frame is drawn for its exact moment) and checked over a real ssh session:
 
-| Window | Intro total | Mean / largest frame |
-|---|---|---|
-| 80x24 | about 76 KB | 3.3 KB / 8 KB |
-| 132x43 | about 135 KB | 5.9 KB / 18 KB |
-| 200x60 | about 138 KB | 6.0 KB / 18 KB (the scene stays 120x36) |
+| Window | Intro total | Mean / largest frame | Worst frame time (release) |
+|---|---|---|---|
+| 80x24 | about 84 KB | 3.7 KB / 8 KB | about 1.0 ms |
+| 132x43 | about 143 KB | 6.2 KB / 18 KB | about 1.8 ms |
+| 200x60 | about 146 KB | 6.4 KB / 19 KB (the scene stays 120x36) | about 2.2 ms |
+
+At 16 colours (no plasma) the intro is 25 to 34 KB in total and a frame takes under 0.7 ms. Over a real ssh session the 80x24 and 132x43 totals were 84 KB and 144 KB ([qa/ui-8-walk.md](qa/ui-8-walk.md)), matching the benchmark.
 
 An earlier draft drew the scene in full truecolor and sent about 5 times that: every cell's colour changed every frame, each with two 16-byte sequences. The scene now uses the 256-colour palette, 2x2-pixel plasma blocks, seven brightness steps and a field that moves every 200 ms, so most cells are unchanged between frames. The menu sweep costs about 7 KB (80x24) to 12 KB (132x43) in total; the typed goodbye is plain text (tens of bytes). Frame time is under 1 ms in a release build (see the PR for the table); a debug build is slower.
 
