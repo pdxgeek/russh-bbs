@@ -394,6 +394,36 @@ async fn wal_and_foreign_keys_are_on() {
     assert_eq!(fks, 1);
 }
 
+/// `close` waits for a connection that is still in use, then leaves the WAL empty (FIX-M4-1).
+/// This pins the invariant; the race it guards (a statement already on a connection's worker
+/// thread committing after the checkpoint) is not deterministic here, and is exercised by
+/// `crates/server/tests/shutdown.rs` under load.
+#[tokio::test]
+async fn close_waits_for_a_busy_connection_and_empties_the_wal() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("bbs.db");
+    let store = SqliteStore::open(&path).await.unwrap();
+    let mut held = store.pool().acquire().await.unwrap();
+    sqlx::query("CREATE TABLE late (n INTEGER)")
+        .execute(&mut *held)
+        .await
+        .unwrap();
+    let closing = tokio::spawn({
+        let store = store.clone();
+        async move { store.close().await }
+    });
+    // A write while `close` is waiting on this connection lands in the WAL.
+    sqlx::query("INSERT INTO late (n) VALUES (1)")
+        .execute(&mut *held)
+        .await
+        .unwrap();
+    drop(held);
+    closing.await.unwrap();
+    let mut wal = path.clone().into_os_string();
+    wal.push("-wal");
+    assert_eq!(std::fs::metadata(&wal).map_or(0, |m| m.len()), 0);
+}
+
 #[tokio::test]
 async fn foreign_keys_are_enforced_on_every_pooled_connection() {
     let (_dir, store) = temp_store().await;
