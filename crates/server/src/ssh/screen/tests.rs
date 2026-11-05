@@ -562,7 +562,7 @@ mod frame {
                     Permission::ALL.iter().copied(),
                 ),
                 None,
-                settings.clone(),
+                settings,
             );
             let (mut forums, _first) = crate::forums::ForumsScreen::open(settings);
             forums.deliver(crate::forums::Response::Boards(Ok(

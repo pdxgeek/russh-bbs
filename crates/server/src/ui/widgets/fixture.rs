@@ -27,6 +27,10 @@ fn line(author: &str, text: &str, ago: i64) -> Line {
 }
 
 /// Data for every widget.
+#[allow(
+    clippy::too_many_lines,
+    reason = "one fixture holding a value for every widget"
+)]
 pub(crate) fn data() -> WidgetData {
     WidgetData {
         at: Some(at(0)),

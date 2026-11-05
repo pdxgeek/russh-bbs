@@ -128,9 +128,9 @@ impl Sort {
             return;
         };
         if self.descending {
-            items.sort_by(|a, b| key(b, column).cmp(&key(a, column)));
+            items.sort_by_key(|item| std::cmp::Reverse(key(item, column)));
         } else {
-            items.sort_by(|a, b| key(a, column).cmp(&key(b, column)));
+            items.sort_by_key(|item| key(item, column));
         }
     }
 }

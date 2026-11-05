@@ -46,9 +46,16 @@ pub(crate) struct Look {
     /// Whether motion is allowed: the member wants it, the board allows it and the style has it.
     motion: bool,
     surfaces: Surfaces,
-    /// The input cursor is in the dark half of its blink (UI-4). Always false when motion is
-    /// off, so a steady cursor is the plain path.
-    cursor_dark: bool,
+    /// Where the input cursor is in its blink (UI-4). Always lit when motion is off, so a
+    /// steady cursor is the plain path.
+    blink: Blink,
+}
+
+/// The two halves of a blink.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Blink {
+    Lit,
+    Dark,
 }
 
 impl Look {
@@ -74,7 +81,7 @@ impl Look {
             cap,
             motion: prefs::motion(settings),
             surfaces: palette.surfaces(),
-            cursor_dark: false,
+            blink: Blink::Lit,
         }
     }
 
@@ -141,15 +148,22 @@ impl Look {
     /// This look with the input cursor in the dark half of its blink or the lit half. Only a
     /// look that allows motion ever goes dark.
     #[must_use]
-    pub(crate) const fn with_cursor_dark(mut self, dark: bool) -> Self {
-        self.cursor_dark = dark && self.motion;
+    pub(crate) fn with_cursor_dark(mut self, dark: bool) -> Self {
+        self.blink = if dark && self.motion {
+            Blink::Dark
+        } else {
+            Blink::Lit
+        };
         self
     }
 
     /// The text cursor in an input line: `_`, which blinks to a space when motion is on. A
     /// plain character in the content, never a marker (it has no style of its own).
     pub(crate) const fn cursor(self) -> &'static str {
-        if self.cursor_dark { " " } else { "_" }
+        match self.blink {
+            Blink::Dark => " ",
+            Blink::Lit => "_",
+        }
     }
 
     /// The frame's surface colours for this theme.

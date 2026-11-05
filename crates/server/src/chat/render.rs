@@ -245,6 +245,17 @@ fn render_list(
         }
         frame.render_widget(Paragraph::new(lines), inner);
     }
+    list_popup(frame, body, screen, list, ctx);
+}
+
+/// The popup over the room list: the new-room prompt, the close confirmation or a notice.
+fn list_popup(
+    frame: &mut Frame<'_>,
+    body: Rect,
+    screen: &ChatScreen,
+    list: &ListPage,
+    ctx: &ChatCtx<'_>,
+) {
     if let Some(name) = &list.naming {
         let keys = [Hint::new(
             ChromeText::fixed("Enter"),
