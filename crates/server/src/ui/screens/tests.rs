@@ -54,54 +54,25 @@ fn motion_is_off_when_the_look_says_so_or_in_accessibility_mode() {
 }
 
 #[test]
-fn a_screen_change_starts_a_wipe_that_ends_after_its_steps() {
-    let look = look_with_motion(true);
-    let mut state = Motion::default();
-    let start = Instant::now();
-    state.note_screen(1, look, start);
-    assert!(!state.wiping(), "the first screen does not wipe");
-    state.note_screen(2, look, start);
-    assert!(state.wiping());
-    assert_eq!(
-        state.wipe_step(start),
-        None,
-        "the frame that shows the screen has no sweep"
-    );
-    assert!(state.wiping());
-    assert_eq!(state.wipe_step(start + motion::STEP), Some(1));
-    assert_eq!(state.wipe_step(start + motion::STEP * 3), Some(3));
-    assert_eq!(state.wipe_step(start + motion::STEP * 4), None);
-    assert!(!state.wiping());
-}
-
-#[test]
 fn motion_off_means_no_timer_at_all() {
     let off = look_with_motion(false);
     let mut state = Motion::default();
     let now = Instant::now();
-    state.note_screen(1, off, now);
-    state.note_screen(2, off, now);
     state.set_input(true, now);
-    assert!(!state.wiping());
     assert_eq!(state.deadline(off, now), None);
     assert!(!state.cursor_dark(off, now + Duration::from_millis(600)));
 }
 
 #[test]
-fn accessibility_mode_cancels_and_blocks_motion() {
+fn accessibility_mode_stops_the_blink_and_its_timer() {
     let look = look_with_motion(true);
     let mut state = Motion::default();
     let now = Instant::now();
-    state.note_screen(1, look, now);
-    state.note_screen(2, look, now);
     state.set_input(true, now);
     assert!(state.deadline(look, now).is_some());
     state.set_accessible(true);
     assert!(state.accessible());
-    assert!(!state.wiping());
     assert_eq!(state.deadline(look, now), None);
-    state.note_screen(3, look, now);
-    assert!(!state.wiping());
     assert!(!state.cursor_dark(look, now + Duration::from_millis(600)));
 }
 
@@ -131,22 +102,16 @@ fn the_cursor_is_steady_when_motion_is_off() {
     assert_eq!(on.with_cursor_dark(false).cursor(), "_");
 }
 
-/// D49: the shell draws at most every 50 ms. Motion asks for fewer redraws than that, and the
-/// cost of a wipe is a few frames once per screen change.
+/// D49: the shell draws at most every 50 ms. The blink asks for far fewer redraws than that.
 #[test]
 fn motion_stays_under_the_redraw_cap() {
     let cap = crate::ssh::limits::Limits::default().redraw_interval;
     assert!(
-        motion::STEP >= cap,
-        "a wipe frame is no sooner than the cap"
-    );
-    assert!(
         motion::BLINK >= cap * 10,
         "the cursor blinks far below the cap"
     );
-    assert!(motion::STEPS <= 6, "a wipe is short");
-    let wipe_time = motion::STEP * u32::from(motion::STEPS);
-    assert!(wipe_time <= Duration::from_millis(500), "a wipe is a flick");
+    // The effect engine's own frames are at least a cap apart as well (its tests cover it).
+    assert!(crate::ui::fx::Budget::default().interval >= cap);
 }
 
 // ---- the home screen: the menu with its live widgets, in every layout, size and mode ----

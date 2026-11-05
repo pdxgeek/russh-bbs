@@ -155,19 +155,6 @@ pub(super) const SORT_RESULTS: usize = 2;
 pub(super) const SORT_COLUMNS: [usize; 3] = [2, 4, 2];
 
 impl ForumsScreen {
-    /// Which screen of the forums this is, for the motion wipe: a change starts one (UI-4).
-    pub(crate) fn screen_id(&self) -> u8 {
-        match &self.state {
-            State::Start => 0,
-            State::Boards { .. } => 1,
-            State::Threads { .. } => 2,
-            State::Reader(_) => 3,
-            State::Results { .. } => 4,
-            State::Input(_) => 5,
-            State::Editor(_) => 6,
-        }
-    }
-
     /// Whether a one-line input is open (the cursor blinks).
     pub(crate) fn has_input(&self) -> bool {
         matches!(self.state, State::Input(_))

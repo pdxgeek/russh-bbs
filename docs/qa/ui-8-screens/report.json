@@ -1,0 +1,64 @@
+{
+  "intro-ascii-80x24": {
+    "frames_that_differ": 17,
+    "sgr": {
+      "bytes": 7706,
+      "truecolor_sgr": 0,
+      "256_sgr": 0,
+      "bold_reverse_sgr": 0,
+      "sixel_kitty_iterm": 0
+    }
+  },
+  "intro-132x43": {
+    "frames_that_differ": 19,
+    "sgr": {
+      "bytes": 143636,
+      "truecolor_sgr": 7,
+      "256_sgr": 2471,
+      "bold_reverse_sgr": 0,
+      "sixel_kitty_iterm": 0
+    },
+    "bytes_total": 143636
+  },
+  "intro-80x24": {
+    "frames_that_differ": 18,
+    "sgr": {
+      "bytes": 84119,
+      "truecolor_sgr": 7,
+      "256_sgr": 2008,
+      "bold_reverse_sgr": 0,
+      "sixel_kitty_iterm": 0
+    },
+    "bytes_total": 84119
+  },
+  "interrupt-132x43": {
+    "last_frame_has_menu": true,
+    "sgr": {
+      "bytes": 72412,
+      "truecolor_sgr": 229,
+      "256_sgr": 1002,
+      "bold_reverse_sgr": 0,
+      "sixel_kitty_iterm": 0
+    }
+  },
+  "logoff-132x43": {
+    "final_frame_has_goodbye": true,
+    "frames_that_differ": 10
+  },
+  "motion-off-menu-132x43": {
+    "settings_showed_motion_off": true,
+    "frames_that_differ": 1,
+    "bytes_after_the_menu_returned": 0
+  },
+  "motion-off-login-132x43": {
+    "frames_that_differ": 2,
+    "bytes_total_in_2.6s": 2097,
+    "sgr": {
+      "bytes": 2097,
+      "truecolor_sgr": 7,
+      "256_sgr": 8,
+      "bold_reverse_sgr": 0,
+      "sixel_kitty_iterm": 0
+    }
+  }
+}

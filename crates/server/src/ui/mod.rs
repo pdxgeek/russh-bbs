@@ -14,12 +14,16 @@
 pub mod art;
 pub(crate) mod backdrop;
 pub mod board;
+pub(crate) mod canvas;
+pub(crate) mod charts;
 pub(crate) mod chrome;
 pub(crate) mod classic;
 pub(crate) mod compact;
 pub mod depth;
 pub mod editor;
 pub(crate) mod frame;
+pub(crate) mod fx;
+pub(crate) mod image;
 pub(crate) mod keys;
 pub(crate) mod layout;
 pub(crate) mod lightbar;
@@ -375,6 +379,8 @@ impl Ui {
     }
 }
 
+#[cfg(test)]
+mod gallery_tests;
 #[cfg(test)]
 mod layout_tests;
 #[cfg(test)]

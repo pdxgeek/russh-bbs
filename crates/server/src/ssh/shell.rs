@@ -23,6 +23,10 @@ use std::net::IpAddr;
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
 use std::time::{Duration, Instant};
 
+/// A frame that takes longer than this to hand to the connection means the client's link is slow.
+/// Effects switch off for the session when that happens (UI-8).
+const SLOW_SEND: Duration = Duration::from_millis(250);
+
 use rand::TryRng as _;
 use rand::rngs::SysRng;
 use russh::ChannelId;
@@ -282,6 +286,7 @@ impl<D: Backend> Shell<D> {
             }
             self.pump_chat().await; // what the room sent, before the keys act (M3-F)
             let now = Instant::now();
+            self.parts.screen.tick_fx(now); // the next effect frame, if one is due (UI-8)
             let mut keys = if batch.input.is_empty() {
                 Vec::new()
             } else {
@@ -358,7 +363,16 @@ impl<D: Backend> Shell<D> {
     /// stop: the connection is gone or the frame could not be drawn.
     async fn draw_frame(&mut self) -> bool {
         match self.parts.screen.render() {
-            Ok(Some(frame)) => self.send(frame).await,
+            Ok(Some(frame)) => {
+                let started = Instant::now();
+                let sent = self.send(frame).await;
+                // A send that had to wait for the client is a slow link. Effects stop for the
+                // rest of the session (UI-8), so no frame queues up in front of the next key.
+                if sent && started.elapsed() > SLOW_SEND {
+                    self.parts.screen.slow_link();
+                }
+                sent
+            }
             Ok(None) => true,
             Err(error) => {
                 warn!(session = ?self.parts.session.id(), %error, "frame could not be drawn");
@@ -497,9 +511,16 @@ impl<D: Backend> Shell<D> {
                 () = self.parts.session.revoke_signal().revoked() => {}
             }
         };
-        match self.keys.deadline() {
+        // The earlier of the held-`Esc` deadline and the next effect frame (UI-8). With no effect
+        // running the screen has no deadline, so motion off arms no timer.
+        let deadline = [self.keys.deadline(), self.parts.screen.next_fx_due()]
+            .into_iter()
+            .flatten()
+            .min();
+        match deadline {
             Some(deadline) => {
-                // Elapsing is the point: the cycle then expires the held `Esc`.
+                // Elapsing is the point: the cycle then expires the held `Esc` or draws the
+                // next effect frame.
                 let _ = timeout_at(tokio::time::Instant::from_std(deadline), woken).await;
             }
             None => woken.await,
@@ -644,6 +665,21 @@ impl<D: Backend> Shell<D> {
     }
 
     async fn finish(&mut self) {
+        // A member who logged off gets their goodbye typed out (UI-8). Any key, or the
+        // connection closing, prints the rest at once; the text is the same either way.
+        match self.parts.screen.leave_typed() {
+            Ok(Some(farewell)) => {
+                if self.type_farewell(farewell).await {
+                    self.parts.session.set_shell_open(false);
+                    self.parts.output.close().await;
+                    return;
+                }
+            }
+            Ok(None) => {}
+            Err(error) => {
+                warn!(session = ?self.parts.session.id(), %error, "terminal could not be restored");
+            }
+        }
         match self.parts.screen.leave() {
             Ok(bytes) => {
                 self.send(bytes).await;
@@ -654,6 +690,33 @@ impl<D: Backend> Shell<D> {
         }
         self.parts.session.set_shell_open(false);
         self.parts.output.close().await;
+    }
+
+    /// Print a typed goodbye: the restore bytes, then the chunks one interval apart. A key (or
+    /// the connection closing) ends the wait and sends what is left at once. `false` means the
+    /// connection is gone.
+    async fn type_farewell(&mut self, farewell: super::screen::Farewell) -> bool {
+        if !self.send(farewell.restore).await {
+            return false;
+        }
+        let mut chunks = farewell.chunks.into_iter();
+        let mut skipping = false;
+        while let Some(chunk) = chunks.next() {
+            if skipping {
+                // Everything left, in one write: the same text, with no more waiting.
+                let mut rest = chunk;
+                for more in chunks.by_ref() {
+                    rest.extend(more);
+                }
+                return self.send(rest).await;
+            }
+            if !self.send(chunk).await {
+                return false;
+            }
+            let woken = self.parts.inbox.wake.notified();
+            skipping = timeout(farewell.interval, woken).await.is_ok();
+        }
+        true
     }
 
     /// Check a token typed at the claim prompt and update the screen. Every failure (limited,

@@ -539,11 +539,10 @@ mod frame {
         TerminalSettings::default().with_tier(Tier::Ascii)
     }
 
-    /// UI-4: a change of screen starts a short sweep and a typed input starts a blinking cursor,
-    /// but only with motion on. Motion off, and accessibility mode with motion on, wake nothing:
-    /// no timer-driven redraws at all.
+    /// UI-4: an open text input starts a blinking cursor, but only with motion on. Motion off,
+    /// and accessibility mode with motion on, wake nothing: no timer-driven redraws at all.
     #[test]
-    fn motion_wakes_the_shell_only_when_it_is_allowed() {
+    fn the_blink_wakes_the_shell_only_when_motion_is_allowed() {
         let size = PtySize::from_request(80, 24);
         let settings = |motion| {
             TerminalSettings::default()
@@ -551,32 +550,59 @@ mod frame {
                 .with_color(true)
                 .with_motion(motion)
         };
-        // On: opening the Community menu is a change of screen.
-        let mut on = member_screen(&Slug::SYSOP, 100, settings(true), size);
-        on.enter().unwrap();
-        on.apply_keys(&[Key::Char('x'), Key::Char('n'), Key::Char('y')]);
-        on.render().unwrap();
-        on.apply_keys(&[Key::Char('y')]);
-        on.render().unwrap();
-        assert!(on.motion_deadline().is_some(), "a screen change sweeps");
-        // Off: the same keys wake nothing.
-        let mut off = member_screen(&Slug::SYSOP, 100, settings(false), size);
-        off.enter().unwrap();
-        off.apply_keys(&[Key::Char('x'), Key::Char('n'), Key::Char('y')]);
-        off.render().unwrap();
-        off.apply_keys(&[Key::Char('y')]);
-        off.render().unwrap();
+        // The forum search box is a text input: open the forums, press `s`.
+        let forums_search = |settings: TerminalSettings| {
+            let flow = MemberFlow::new(
+                &sanitize_username("alice").unwrap(),
+                Snapshot::from_role(
+                    Some(AccountId::from_raw(1)),
+                    &Slug::SYSOP,
+                    100,
+                    &Via::Account,
+                    Permission::ALL.iter().copied(),
+                ),
+                None,
+                settings.clone(),
+            );
+            let (mut forums, _first) = crate::forums::ForumsScreen::open(settings);
+            forums.deliver(crate::forums::Response::Boards(Ok(
+                crate::forums::BoardList {
+                    boards: Vec::new(),
+                    can_manage: false,
+                    can_feeds: false,
+                },
+            )));
+            let area = ratatui::layout::Rect::new(0, 0, 80, 24);
+            forums.input(Key::Char('s'), area);
+            Screen::new(
+                size,
+                RenderCap::default(),
+                super::super::Content::Forums(Box::new(super::super::ForumsContent {
+                    flow: Box::new(flow),
+                    screen: forums,
+                })),
+                std::sync::Arc::new(crate::ui::Ui::standard().unwrap()),
+            )
+            .unwrap()
+        };
+        let open_search = |screen: &mut Screen| {
+            screen.enter().unwrap();
+            screen.render().unwrap();
+        };
+        let mut on = forums_search(settings(true));
+        open_search(&mut on);
+        assert!(on.has_input(), "the search box is an input");
+        assert!(on.motion_deadline().is_some(), "an input blinks its cursor");
+        let mut off = forums_search(settings(false));
+        open_search(&mut off);
+        assert!(off.has_input());
         assert!(off.motion_deadline().is_none(), "motion off: no timer");
-        // Accessibility mode: always plain, even with motion on.
-        let mut plain = member_screen(&Slug::SYSOP, 100, settings(true), size);
+        let mut plain = forums_search(settings(true));
         plain.set_accessible(true);
-        plain.enter().unwrap();
-        plain.apply_keys(&[Key::Char('x'), Key::Char('n'), Key::Char('y')]);
-        plain.render().unwrap();
-        plain.apply_keys(&[Key::Char('y')]);
-        plain.render().unwrap();
+        open_search(&mut plain);
+        assert!(plain.has_input());
         assert!(plain.motion_deadline().is_none(), "accessibility: no timer");
-        // And the frames it draws carry no sweep: a second render has nothing to draw.
+        // Nothing is waiting to be drawn once the frame is out: no hidden redraws.
         assert!(plain.render().unwrap().is_none());
     }
 
