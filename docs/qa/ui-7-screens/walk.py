@@ -112,14 +112,14 @@ def main():
     keys("c1", "Down", wait=0.8)
     capture("c1", out, "03-gallery-paper-132x43")
     keys("c1", "Down", "Down", wait=0.8)
-    capture("c1", out, "04-gallery-amber-132x43")
+    capture("c1", out, "04-gallery-deepspace-132x43")
     keys("c1", "s", wait=0.8)  # the login sample
-    capture("c1", out, "05-gallery-amber-login-132x43")
+    capture("c1", out, "05-gallery-deepspace-login-132x43")
     keys("c1", "s", wait=0.5)
     keys("c1", "Enter", wait=1.2)  # use it
-    capture("c1", out, "06-gallery-amber-in-use-132x43")
+    capture("c1", out, "06-gallery-deepspace-in-use-132x43")
     keys("c1", "Escape", "Escape", wait=1)
-    capture("c1", out, "07-menu-in-amber-132x43")
+    capture("c1", out, "07-menu-in-deepspace-132x43")
 
     # ---- the sysop: export, edit, import ---------------------------------------------------
     keys("c1", "o", wait=0.8)
@@ -156,13 +156,15 @@ def main():
     # ---- restart: the imported style is in the gallery --------------------------------------
     start_server(work, "bbs", "")
     time.sleep(2)
-    ssh("c2", work, (100, 30))
+    ssh("c2", work, (100, 30), user="founder")
     time.sleep(1.5)
     keys("c2", "x", wait=1)
     keys("c2", "s", wait=0.8)
     keys("c2", "y", wait=1)
-    for _ in range(9):
-        keys("c2", "Down", wait=0.15)
+    for _ in range(12):  # until the imported style is under the cursor
+        if "Neon Night X" in text("c2").splitlines()[2]:
+            break
+        keys("c2", "Down", wait=0.3)
     capture("c2", out, "20-gallery-imported-style-100x30")
     keys("c2", "C-c", wait=1)
     tmux("kill-session", "-t", "bbs", check=False)
@@ -170,7 +172,7 @@ def main():
     # ---- board 2: one style allowed (a lock) ------------------------------------------------
     start_server(work, "bbs", "neon")
     time.sleep(2)
-    ssh("c3", work, (100, 30))
+    ssh("c3", work, (100, 30), user="founder")
     time.sleep(1.5)
     keys("c3", "x", wait=1)
     keys("c3", "s", wait=0.8)
