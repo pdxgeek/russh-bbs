@@ -21,6 +21,9 @@ use serde::Deserialize;
 
 use crate::codec::{Reader, Writer};
 use crate::content::{Content, Faction, SlotKind};
+
+/// Credits the patrol offices pay for each hull point of a wrecked pirate ship.
+pub const KILL_BOUNTY_PER_HULL: i64 = 14;
 use crate::crew::{DANGER, Role};
 use crate::engine::{Env, can_pay};
 use crate::events::{Event, Refusal};
@@ -885,6 +888,16 @@ impl Player {
             enemy: fight.enemy,
             loot,
         });
+        // The League and the Union pay a bounty on pirate ships, win or not a posted job
+        // (balance: a fight paid a fraction of what the same days of jobs did).
+        if def.faction == Faction::Free {
+            let bounty = i64::from(def.hull) * KILL_BOUNTY_PER_HULL;
+            self.credit(Cause::Salvage, bounty);
+            events.push(Event::Social {
+                text: format!("The patrol office pays a bounty of {bounty} credits for the wreck."),
+                tone: 1,
+            });
+        }
         // Killing a faction's ship costs standing with it, and its rival is pleased.
         if def.kill_standing != 0 {
             self.shift_standing_with_rival(def.faction, def.kill_standing, events);

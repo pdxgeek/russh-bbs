@@ -39,6 +39,8 @@ pub const MISSED_PENALTY_PCT: i64 = 3;
 pub const REPO_MISSES: u8 = 3;
 /// Fee added to the loan on repossession, percent.
 pub const REPO_FEE_PCT: i64 = 12;
+/// Percent of a seized ship's resale value the lender takes off the loan at the auction.
+pub const REPO_AUCTION_PCT: i64 = 60;
 /// The most the lender carries at the start.
 pub const BASE_CREDIT_LIMIT: i64 = 36_000;
 /// Credit limit lost for each repossession.
@@ -49,6 +51,12 @@ pub const MIN_CREDIT_LIMIT: i64 = 9_000;
 pub const BAR_STANDING: i16 = -40;
 /// At or above this Free Captains standing the military posts refuse the ship.
 pub const SMUGGLER_STANDING: i16 = 50;
+/// The Guild's fee to the first captain to chart a system: a base and a sum per point of richness.
+pub const CHARTER_FEE_BASE: i64 = 400;
+/// See [`CHARTER_FEE_BASE`].
+pub const CHARTER_FEE_PER_RICHNESS: i64 = 200;
+/// A deep scan of a charted system pays this percent of a first survey.
+pub const DEEP_SCAN_PCT: u32 = 50;
 /// Credits of sales that raise standing by one.
 pub const TURNOVER_PER_STANDING: i64 = 2_000;
 
@@ -357,6 +365,18 @@ impl Player {
     }
 
     fn repossess(&mut self, env: &Env<'_>, events: &mut Vec<Event>) {
+        // The lender auctions the ship and the modules and takes the price off the loan before
+        // the fee (balance: it used to keep the loan whole and add the fee, a spiral few
+        // captains climbed out of).
+        let resale: i64 = self.ship.hull_resale(env.content)
+            + self
+                .ship
+                .modules
+                .iter()
+                .map(|m| Ship::module_resale(m, env.content))
+                .sum::<i64>();
+        let seized = resale * REPO_AUCTION_PCT / 100;
+        self.debt.principal = (self.debt.principal - seized).max(0);
         let fee = self.debt.principal * REPO_FEE_PCT / 100;
         self.debt.principal += fee;
         self.debt.missed = 0;
@@ -741,6 +761,14 @@ impl Player {
             system: system.id,
             value,
         });
+        // The Guild pays the first captain to chart a system a fee on the spot, on top of the
+        // data (balance: exploring lost money when the data was its only income).
+        let fee = CHARTER_FEE_BASE + CHARTER_FEE_PER_RICHNESS * i64::from(system.richness);
+        self.credit(Cause::Contract, fee);
+        events.push(Event::Social {
+            text: format!("The Cartographers' Guild pays a charter fee of {fee} credits."),
+            tone: 1,
+        });
         self.gain(Skill::Survey, 10, events);
     }
 
@@ -852,7 +880,7 @@ impl Player {
             return Err(Refusal::NothingToDo);
         }
         let mut events = Vec::new();
-        let value = self.survey_value(content, system) / 3;
+        let value = self.survey_value(content, system) * DEEP_SCAN_PCT / 100;
         self.wear_kind(
             content,
             SlotKind::Scanner,
