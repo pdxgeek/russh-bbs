@@ -723,13 +723,15 @@ async fn a_paste_with_a_line_break_joins_with_a_space_and_dropped_letters_are_sa
     )
     .await;
     // Pronouns: ASCII text with letters the input cannot take.
-    let hint = send(&mut channel, "caf\u{e9} \u{65e5}\u{672c}").await;
-    let hint = if hint.contains("Non-ASCII characters were skipped") {
-        hint
-    } else {
-        full(&mut channel).await
-    };
-    assert!(hint.contains("Non-ASCII characters were skipped"), "{hint}");
+    let mut hint = send(&mut channel, "caf\u{e9} \u{65e5}\u{672c}").await;
+    // The toast is drawn with a frame that may land after the first quiet moment.
+    for _ in 0..5 {
+        if hint.contains("Non ASCII characters were skipped") {
+            break;
+        }
+        hint = full(&mut channel).await;
+    }
+    assert!(hint.contains("Non ASCII characters were skipped"), "{hint}");
     send(&mut channel, "\r\r\r\r").await;
     let saved = full(&mut channel).await;
     assert!(saved.contains("Profile saved."), "{saved}");
