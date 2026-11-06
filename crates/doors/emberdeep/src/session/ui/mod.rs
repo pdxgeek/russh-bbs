@@ -135,6 +135,13 @@ pub(super) fn draw(s: &Session, canvas: &mut Canvas<'_>, env: &DoorEnv) {
         w,
         h,
     };
+    if let Some(buf) = &s.epitaph {
+        epitaph_screen(&mut frame, area, buf, roles);
+        if ascii {
+            frame.render_widget(Asciify, area);
+        }
+        return;
+    }
     match (&s.mode, &s.game) {
         (Mode::Stuck(text), _) => stuck(&mut frame, area, text, roles),
         (Mode::Create(c), _) => create::draw(s, &mut frame, area, c, roles, look),
@@ -173,6 +180,37 @@ fn main_screen(cx: &Cx<'_>, frame: &mut DoorFrame<'_>, area: Rect) {
         Place::Delve { depth, room } => delve::draw(cx, frame, area, *depth, *room),
         Place::Dead { depth, since, .. } => town::draw_dead(cx, frame, area, *depth, *since),
     }
+}
+
+/// The line the hero is typing for the hall.
+fn epitaph_screen(frame: &mut DoorFrame<'_>, area: Rect, buf: &str, roles: Roles) {
+    frame.render_widget(russh_bbs_door::widgets::Clear, area);
+    let block = kit::panel("EMBERDEEP: an epitaph", true);
+    frame.render_widget(block, area);
+    let b = kit::inner(area);
+    let max = crate::social::EPITAPH_MAX;
+    let lines: Vec<Line<'static>> = vec![
+        Line::styled(
+            format!(
+                "One line, up to {max} characters. The hall prints it only if you are not found."
+            ),
+            roles.dim,
+        ),
+        Line::default(),
+        Line::styled(format!("> {buf}_"), roles.strong),
+        Line::default(),
+        Line::styled(
+            format!(
+                "{}/{max}   [Enter] save   [Backspace] delete   [Esc] cancel",
+                buf.chars().count()
+            ),
+            roles.dim,
+        ),
+    ];
+    frame.render_widget(
+        Paragraph::new(lines).wrap(russh_bbs_door::widgets::Wrap { trim: false }),
+        b,
+    );
 }
 
 /// The sealed or damaged screen.

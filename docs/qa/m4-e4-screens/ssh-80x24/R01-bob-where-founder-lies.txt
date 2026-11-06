@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Emberdeep                                                                     │
+│                                                                              │
+│◆ EMBERDEEP · Level 3 · the Upper Works ━━━━━━━━━━━━━━━━━━━━━━━ bob L4 Warden │
+│Depth  ███▎░░░░░░░░░░░░░░░░░░░░░░░ 3/25  Torch  ██████████████████ 25/25 turns│
+│Health ██████████████████████▊░░░ 62/71  Fatigue ░░░░░░░░░░░░░░░░░░░░░░░░░░ 0%│
+│╭ Floor 3 ──────────────────╮╭ Bone Pit ─────────────────────────────────────╮│
+││   ░      ░      ░         ││A wide pit ringed with bones, the stairs to the││
+││         ·      ░  ░· ·    ││lower hall visible beyond. Shapes lift from the││
+││         ·     ░           ││heaps as you enter.                            ││
+││                         ░ ││founder lies here, dead. They can be carried h…││
+││··   ·     ░         ·  ░  ││                                               ││
+││         ░   ·             ││[1]   Carry founder home                   2t  ││
+││   ░            · ░     <@>†│ ✗ Creep around the rim (needs sneak)          ││
+││Light ●●●● bright          ││ ✗ Set a snare line an… (needs ensnare)        ││
+││@ you  ▼ way down  ▲ way up││                                               ││
+││L lair  G guardian  S shaft││[n] unexplored  [w] unexplored                 ││
+│╰───────────────────────────╯╰───────────────────────────────────────────────╯│
+│──────────────────────────────────────────────────────────────────────────────│
+│                                                                              │
+│                                                                              │
+│[n e s w] move  [1] act  [r] camp (2t)  [u] climb (3t)  [m] map  [c] sheet    │
+│[Esc] leave door                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘

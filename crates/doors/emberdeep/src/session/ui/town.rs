@@ -17,7 +17,7 @@ use crate::game::Game;
 use crate::rules::RECOVERY_DAYS;
 
 /// The places of the hub, in the order the list shows them: key, name.
-pub(crate) const PLACES: [(char, &str); 11] = [
+pub(crate) const PLACES: [(char, &str); 14] = [
     ('b', "Tavern"),
     ('m', "Market"),
     ('i', "Gear"),
@@ -26,6 +26,9 @@ pub(crate) const PLACES: [(char, &str); 11] = [
     ('g', "Guild hall"),
     ('l', "Library"),
     ('w', "Town works"),
+    ('c', "Company"),
+    ('u', "Duel ring"),
+    ('j', "Journal"),
     ('s', "Skills"),
     ('h', "Hero sheet"),
     ('r', "The hall"),
@@ -103,6 +106,42 @@ fn status(cx: &Cx<'_>, game: &Game, key: char) -> (String, bool) {
                     "no points".to_owned()
                 },
                 pts > 0,
+            )
+        }
+        'c' => {
+            let c = &game.world.commons;
+            let invites = c
+                .invites_for(&h.name)
+                .filter(|i| game.day - i.day <= crate::social::INVITE_DAYS)
+                .count();
+            match c.party_of(&h.name) {
+                Some(p) => (format!("{} in your company", p.members.len()), false),
+                None if invites > 0 => (format!("{invites} invitation(s)"), true),
+                None => ("you ride alone".to_owned(), false),
+            }
+        }
+        'u' => (
+            if h.social.ring {
+                format!("in the ring: {}-{}", h.social.wins, h.social.losses)
+            } else {
+                "not in the ring".to_owned()
+            },
+            false,
+        ),
+        'j' => {
+            let waiting = c
+                .quests
+                .quest
+                .iter()
+                .any(|q| game.quest_waiting(q).is_some());
+            (
+                if waiting {
+                    "a choice waits".to_owned()
+                } else {
+                    let done: usize = c.quests.quest.iter().map(|q| game.quest_done(&q.id)).sum();
+                    format!("{done} step(s) done")
+                },
+                waiting,
             )
         }
         'h' => (format!("level {}", h.level), false),

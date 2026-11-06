@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Emberdeep                                                                     │
+│                                                                              │
+│◆ EMBERDEEP · The Company ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ bob L1 Warden │
+│who rides together   Coin 20  Salvage 0  Store 0  Turns 25/25                 │
+│╭ The Company ─────────────────────────────╮╭ Preview ───────────────────────╮│
+││Your company (2 of 3):                    ││Leave                           ││
+││founder, level 1 (leader)                 ││You leave at once. A company of ││
+││bob, level 1                              ││one is no company.              ││
+││Deepest together: level 0. Carried home by││                                ││
+││each other: 0.                            ││                                ││
+││Packs a companion dealt with today stay   ││                                ││
+││dealt with for you. A companion           ││                                ││
+││carries you home for one turn less and    ││                                ││
+││with no wound.                            ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+│╰──────────────────────────────────────────╯╰────────────────────────────────╯│
+│[1] Leave the company  [2] Close the door to invitatio…  [Esc] back           │
+└──────────────────────────────────────────────────────────────────────────────┘

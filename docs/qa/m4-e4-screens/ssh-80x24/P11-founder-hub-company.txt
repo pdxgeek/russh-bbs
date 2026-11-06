@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Emberdeep                                                                     │
+│                                                                              │
+│◆ EMBERDEEP · Cindermere ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ founder L1 Warden │
+│Deepest ░░░░░░░░░░░░░░░░░░░░░░░░░░ 0/25  Torch  ██████████████████ 25/25 turns│
+│Health ██████████████████████████ 55/55  Level up ░░░░░░░░░░░░░░░░░░░░░ 0/40xp│
+│╭ Under the hill ─────────────────────╮╭ Places ─────────────────────────────╮│
+││  .   ◖   *                  .      .││▸ [b] Tavern     3 postings today    ││
+││           ▄▄▄▄▄     ▄▄▄▄  ░.    *   ││  [m] Market     4 stalls            ││
+││          ▁██▪██▅▅▆▆▆████▅▄▀▀▀       ││  [i] Gear       0 spare piece(s)    ││
+││ ▄▄▄▄▄▅▆▇████████████████████▇▅▃     ││  [f] Forge      forge level 1       ││
+││▁██▪█████████████████████████████▆▃  ││  [t] Temple     you are well        ││
+││█████████████████████████████████████││  [g] Guild hall drill 8c, 0 today   ││
+│╰─────────────────────────────────────╯│  [l] Library    reading room shut   ││
+│╭ Tavern board ───────────────────────╮│  [w] Town works 0 of 12 finished    ││
+││▪ bob joined founder's company.      ││  [c] Company    2 in your company   ││
+││                                     ││  [u] Duel ring  not in the ring     ││
+││                                     ││  [j] Journal    0 step(s) done      ││
+││                                     ││  [s] Skills     1 point(s) to spend ││
+││                                     ││  [h] Hero sheet level 1             ││
+││                                     ││[d] Descend to level 1 (1 turn)      ││
+│╰─────────────────────────────────────╯╰─────────────────────────────────────╯│
+│[Up/Down Enter] open a place  [d] descend  [q] leave the door                 │
+└──────────────────────────────────────────────────────────────────────────────┘
