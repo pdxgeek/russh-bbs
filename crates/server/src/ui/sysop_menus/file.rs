@@ -153,8 +153,9 @@ pub(crate) fn check_lines(text: &str, lines: usize, width: usize) -> Result<(), 
 
 /// Parse the text into a [`Spec`] for `core::menu::build`.
 pub(crate) fn parse(text: &str) -> Result<Spec, FileError> {
-    let raw: RawFile = toml::from_str(text)
-        .map_err(|error: toml::de::Error| FileError::Syntax(error.message().to_owned()))?;
+    let raw: RawFile = toml::from_str(text).map_err(|error: toml::de::Error| {
+        FileError::Syntax(crate::ui::strings::reason(error.message()))
+    })?;
     if raw.version != VERSION {
         return Err(FileError::Version(raw.version));
     }

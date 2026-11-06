@@ -9,6 +9,8 @@
 
 mod cli;
 mod error;
+#[cfg(test)]
+mod fuzz_tests;
 mod keys;
 mod layers;
 mod model;
@@ -237,8 +239,24 @@ fn read_config_file(
     Ok(None)
 }
 
+/// The largest config file read, in bytes. A real file is a few KiB; the cap keeps a wrong path
+/// (a log, a device, a database) from being held whole at boot.
+pub(crate) const MAX_CONFIG_BYTES: usize = 256 * 1024;
+
 fn read_one(path: &Path) -> std::io::Result<ConfigFile> {
-    let text = std::fs::read_to_string(path)?;
+    use std::io::Read as _;
+    let mut bytes = Vec::new();
+    std::fs::File::open(path)?
+        .take(MAX_CONFIG_BYTES as u64 + 1)
+        .read_to_end(&mut bytes)?;
+    if bytes.len() > MAX_CONFIG_BYTES {
+        return Err(std::io::Error::new(
+            ErrorKind::InvalidData,
+            format!("the file is larger than {MAX_CONFIG_BYTES} bytes"),
+        ));
+    }
+    let text = String::from_utf8(bytes)
+        .map_err(|_| std::io::Error::new(ErrorKind::InvalidData, "the file is not valid UTF-8"))?;
     Ok(ConfigFile {
         loose_permissions: is_loose(path),
         path: path.to_path_buf(),

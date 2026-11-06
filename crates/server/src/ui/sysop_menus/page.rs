@@ -149,8 +149,9 @@ pub(crate) fn parse(
     dir: &Path,
     strings: &StringTable,
 ) -> Result<Page, PageError> {
-    let raw: Raw = toml::from_str(text)
-        .map_err(|error: toml::de::Error| FileError::Syntax(error.message().to_owned()))?;
+    let raw: Raw = toml::from_str(text).map_err(|error: toml::de::Error| {
+        FileError::Syntax(crate::ui::strings::reason(error.message()))
+    })?;
     if raw.version != VERSION {
         return Err(FileError::Version(raw.version).into());
     }

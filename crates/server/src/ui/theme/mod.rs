@@ -28,7 +28,7 @@ use russh_bbs_core::terminal_settings::{DEFAULT_THEME, ThemeName};
 use tracing::warn;
 
 use super::depth::Tint;
-use super::strings::{StringError, StringTable};
+use super::strings::{StringError, StringTable, reason};
 
 pub mod pack;
 mod palette;
@@ -136,8 +136,13 @@ impl Theme {
         &self.strings
     }
 
-    /// Parse and validate one theme file over `base` (the default table).
+    /// Parse and validate one theme file over `base` (the default table). A refusal's text is
+    /// bounded: whatever the file chose to put in a key or a value is cut and made one line.
     pub fn parse(text: &str, base: &StringTable) -> Result<Self, ThemeError> {
+        Self::parse_raw(text, base).map_err(ThemeError::bounded)
+    }
+
+    fn parse_raw(text: &str, base: &StringTable) -> Result<Self, ThemeError> {
         if text.len() > MAX_THEME_BYTES {
             return Err(ThemeError::TooLarge(text.len()));
         }
@@ -251,6 +256,32 @@ pub enum ThemeError {
     Read(String),
 }
 
+impl ThemeError {
+    /// This error with every part the file chose cut by [`reason`], so a refusal is one short
+    /// line whatever the file held.
+    fn bounded(self) -> Self {
+        match self {
+            Self::Syntax(m) => Self::Syntax(reason(&m)),
+            Self::Name(m) => Self::Name(reason(&m)),
+            Self::NameMismatch { name, file } => Self::NameMismatch {
+                name: reason(&name),
+                file: reason(&file),
+            },
+            Self::Duplicate(m) => Self::Duplicate(reason(&m)),
+            Self::Version(m) => Self::Version(reason(&m)),
+            Self::Meta(m) => Self::Meta(reason(&m)),
+            Self::Colors(m) => Self::Colors(reason(&m)),
+            Self::Style(m) => Self::Style(reason(&m)),
+            Self::Strings(e) => Self::Strings(e.bounded()),
+            Self::Read(m) => Self::Read(reason(&m)),
+            other @ (Self::TooLarge(_)
+            | Self::MissingName
+            | Self::ReservedName
+            | Self::Contrast { .. }) => other,
+        }
+    }
+}
+
 /// Read `[colors]`: any of the [`ROLES`]. The six original roles set first, then the rest derive
 /// from them, then every explicit role is applied, so a file that sets only `border` still gets
 /// matching bars and selection.
@@ -335,7 +366,7 @@ impl ThemeSet {
             match self.load_file(&path, base) {
                 Ok(()) => added += 1,
                 Err(error) => {
-                    warn!(file = %path.display(), %error, "theme refused; the default stays");
+                    warn!(file = %path.display(), error = %error.bounded(), "theme refused; the default stays");
                 }
             }
         }

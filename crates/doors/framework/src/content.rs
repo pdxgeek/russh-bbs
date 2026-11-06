@@ -61,14 +61,54 @@ pub fn load<T: Table>(name: &'static str, text: &str) -> Result<T, ContentError>
     }
     let table: T = toml::from_str(text).map_err(|error| ContentError::Parse {
         name,
-        message: error.message().to_owned(),
+        message: one_line(error.message()),
     })?;
     let problems = table.validate();
     if problems.is_empty() {
         Ok(table)
     } else {
-        Err(ContentError::Invalid { name, problems })
+        Err(ContentError::Invalid {
+            name,
+            problems: bounded_problems(problems),
+        })
     }
+}
+
+/// The longest single message kept, in characters.
+const MESSAGE_MAX: usize = 160;
+/// The most problems kept.
+const PROBLEMS_MAX: usize = 20;
+
+/// A parser or validator message made safe to log: one line, control characters escaped, cut at
+/// [`MESSAGE_MAX`] characters. It may quote the file, which can be any length (H-4).
+fn one_line(text: &str) -> String {
+    let mut out = String::new();
+    for (count, c) in text.chars().enumerate() {
+        if count >= MESSAGE_MAX {
+            out.push_str("...");
+            break;
+        }
+        match c {
+            '\n' | '\r' | '\t' => out.push(' '),
+            c if c.is_control() => out.extend(c.escape_default()),
+            c => out.push(c),
+        }
+    }
+    out
+}
+
+/// At most [`PROBLEMS_MAX`] problems, each one line, with a count of the rest.
+fn bounded_problems(problems: Vec<String>) -> Vec<String> {
+    let extra = problems.len().saturating_sub(PROBLEMS_MAX);
+    let mut out: Vec<String> = problems
+        .into_iter()
+        .take(PROBLEMS_MAX)
+        .map(|p| one_line(&p))
+        .collect();
+    if extra > 0 {
+        out.push(format!("...and {extra} more"));
+    }
+    out
 }
 
 /// The schema-test hook: `Ok(())` when `text` loads as `T`, otherwise the error to print.
@@ -155,5 +195,132 @@ mod tests {
             load::<Phrases>("p", &huge),
             Err(ContentError::TooLarge { .. })
         ));
+    }
+
+    // ---- H-4: hostile input ----
+
+    use std::fmt::Write as _;
+
+    use proptest::prelude::*;
+
+    const GOOD: &str =
+        "[[phrase]]\nid = 'a'\ntext = 'Hello'\n\n[[phrase]]\nid = 'b'\ntext = 'World'\n";
+
+    /// Reserved marker codepoints, a Nerd Font glyph, an escape, a bidi override and the
+    /// fragments that have broken parsers.
+    const BAD: &[&str] = &[
+        "\u{1b}[31m",
+        "\u{e0a0}",
+        "\u{202e}",
+        "\u{0}",
+        "\u{200b}",
+        "\\u001b[2J",
+        "[[[[",
+        "'''",
+        "nan",
+        "inf",
+        "-1",
+        "1e999",
+        "99999999999999999999",
+        "{ a = { b = 1 } }",
+        "= [",
+        "\n[[phrase]]\n",
+    ];
+
+    fn floor(t: &str, n: u32) -> usize {
+        let mut i = n as usize % (t.len() + 1);
+        while !t.is_char_boundary(i) {
+            i -= 1;
+        }
+        i
+    }
+
+    fn hostile() -> impl Strategy<Value = String> {
+        let edits =
+            prop::collection::vec((0_u8..6, any::<u32>(), any::<u32>()), 1..6).prop_map(|ops| {
+                let mut text = GOOD.to_owned();
+                for (kind, a, b) in ops {
+                    let i = floor(&text, a);
+                    match kind {
+                        0 => text.truncate(i),
+                        1 => text.insert_str(i, BAD[b as usize % BAD.len()]),
+                        2 => {
+                            let span: String = text[i..].chars().take(40).collect();
+                            let end = i + span.len();
+                            text.insert_str(end, &span.repeat(1 + b as usize % 300));
+                        }
+                        3 => text.insert_str(i, &"x".repeat(1 + b as usize % 60_000)),
+                        4 => text = text.replace("'Hello'", "[1, 2, [3, [4]]]"),
+                        _ => {
+                            let _ = write!(text, "\nextra{a} = {b}\n");
+                        }
+                    }
+                }
+                text
+            });
+        let garbage = prop_oneof![
+            (1_usize..20_000).prop_map(|n| format!("a = {}{}", "[".repeat(n), "]".repeat(n))),
+            (1_usize..20_000).prop_map(|n| format!("a = {}", "{ a = ".repeat(n))),
+            (1_usize..4_000).prop_map(|n| "[[phrase]]\n".repeat(n)),
+            (1_usize..4_000).prop_map(|n| format!("[{}]\n", vec!["phrase"; n].join("."))),
+            prop::collection::vec(any::<u8>(), 0..2048)
+                .prop_map(|b| String::from_utf8_lossy(&b).into_owned()),
+        ];
+        prop_oneof![3 => edits, 1 => garbage]
+    }
+
+    proptest! {
+        #![proptest_config(ProptestConfig { cases: 256, failure_persistence: None, ..ProptestConfig::default() })]
+
+        /// Nothing panics; a refusal is short and one line; what loads passes the validator, so
+        /// it holds no character the board strips.
+        #[test]
+        fn hostile_tables_never_panic_and_refusals_are_short(text in hostile()) {
+            match load::<Phrases>("p", &text) {
+                Ok(table) => {
+                    prop_assert!(table.phrase.iter().all(|p| plain_text(&p.text)));
+                }
+                Err(error) => {
+                    let shown = error.to_string();
+                    prop_assert!(shown.chars().count() < 4_000, "{} chars", shown.chars().count());
+                    prop_assert!(!shown.chars().any(char::is_control), "{shown:?}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn a_table_over_the_cap_is_refused_before_it_is_parsed() {
+        let text = format!("{GOOD}# {}", "x".repeat(MAX_TABLE_BYTES));
+        assert!(matches!(
+            load::<Phrases>("p", &text),
+            Err(ContentError::TooLarge { .. })
+        ));
+    }
+
+    #[test]
+    fn a_long_unknown_key_is_not_repeated_whole() {
+        let text = format!(
+            "[[phrase]]\nid = 'a'\ntext = 'x'\n{} = 1\n",
+            "k".repeat(50_000)
+        );
+        let shown = load::<Phrases>("p", &text).unwrap_err().to_string();
+        assert!(
+            shown.chars().count() < 400,
+            "{} chars",
+            shown.chars().count()
+        );
+    }
+
+    #[test]
+    fn a_validator_with_many_problems_is_summarised() {
+        let text = "[[phrase]]\nid = 'a'\ntext = ''\n".repeat(200);
+        match load::<Phrases>("p", &text) {
+            Err(ContentError::Invalid { problems, .. }) => {
+                assert!(problems.len() <= PROBLEMS_MAX + 1, "{}", problems.len());
+                assert!(problems.last().unwrap().contains("more"));
+            }
+            other => panic!("{other:?}"),
+        }
     }
 }

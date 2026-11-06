@@ -138,6 +138,12 @@ Approved by the owner on 2026-11-04 by adding them here. The other M4 work is in
 | M4-H3 Hallpass UI | `crates/doors/hallpass` | M4-H2, UI-5 | Done ([PR #111](https://github.com/pdxgeek/russh-bbs/pull/111)) | Timetable strip, day, school map, scheme planner and run, the file, lessons, conversations, clubs, journal, paper, hall and yearbook on full ratatui (D104), three tiers and sizes, look-around, real-ssh walk. Built: see [doors/hallpass.md](doors/hallpass.md) and [qa/m4-h3-walk.md](qa/m4-h3-walk.md). |
 | M4-H4 Hallpass social, mystery and balance | `crates/doors/hallpass` | M4-H3 | In review (`m4/hallpass-social`, [PR #138](https://github.com/pdxgeek/russh-bbs/pull/138)) | Structured player schemes, template rumours, opt-out, election, awards, the mystery, balance. |
 
+### Hardening (H-*)
+
+| Slice | Owns | Depends on | Status | Branch / PR |
+|---|---|---|---|---|
+| H-4 Loader fuzz and caps (server config, `menus.toml` and pages, theme files and packs, `.art.toml` and `.ans`, door content TOML, image PNG headers) | tests in each loader's crate; small fixes in the loaders; this row | none | In review | Branch `hard/loader-fuzz`, [PR #149](https://github.com/pdxgeek/russh-bbs/pull/149). No FIX rows: nothing found needed more than a small change. Report: [qa/h4-loader-fuzz.md](qa/h4-loader-fuzz.md) |
+
 ### Documentation
 
 | Slice | Owns | Depends on | Status | Branch / PR |

@@ -387,4 +387,6 @@ impl Raster {
 }
 
 #[cfg(test)]
+mod fuzz_tests;
+#[cfg(test)]
 mod tests;

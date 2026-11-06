@@ -462,6 +462,8 @@ mod gallery_tests;
 #[cfg(test)]
 mod layout_tests;
 #[cfg(test)]
+mod loader_fuzz;
+#[cfg(test)]
 mod resolve_tests;
 #[cfg(test)]
 mod snapshots;
