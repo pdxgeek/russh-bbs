@@ -148,7 +148,9 @@ const fn security_cap(tier: u8) -> i32 {
     match tier {
         1 => 2,
         2 => 4,
-        _ => 7,
+        // The best break script in the shop has power 6, so no tier 3 lock asks for more
+        // (M4-N4: it asked for 7, and one tier 3 network in five could not be opened at all).
+        _ => 6,
     }
 }
 

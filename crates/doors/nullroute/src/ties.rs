@@ -523,13 +523,19 @@ impl Player {
         Ok(text)
     }
 
-    /// The step an arc job belongs to is done: its choice is waiting.
-    pub(crate) fn arc_done(&mut self, arc: u8, step: u8) {
+    /// The step an arc job belongs to is done: its choice is waiting, and the fixer hands over
+    /// any fragments the step gives.
+    pub(crate) fn arc_done(&mut self, content: &Content, arc: u8, step: u8) -> Vec<u8> {
+        let given: Vec<u8> = content.step(arc, step).map(|s| s.give.clone()).unwrap_or_default();
+        let room = crate::code::FRAGMENTS_MAX.saturating_sub(self.fragments.len());
+        let given: Vec<u8> = given.into_iter().take(room).collect();
+        self.fragments.extend(given.iter().copied());
         if let Some(st) = self.ties.arcs.get_mut(usize::from(arc)) {
             st.step = step;
             st.awaiting = true;
             st.since = self.day;
         }
+        given
     }
 
     /// The epilogue for the season that is ending (the first rule that holds).

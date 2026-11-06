@@ -333,3 +333,26 @@ fn holes_and_alerts_move_the_reach_of_the_same_deck() {
         }
     ));
 }
+
+proptest! {
+    #![proptest_config(ProptestConfig::with_cases(400))]
+
+    /// The best scripts anyone can buy (power 6 in every family, a power 6 purge, a power 6 scan)
+    /// reach every objective on every network of every tier: no contract is one the shop cannot
+    /// answer (M4-N4: tier 3 locks asked for power 7 and one network in five could not be opened).
+    #[test]
+    fn the_best_scripts_in_the_shop_reach_every_objective(season in 0u32..200, corp in 0u8..12, tier in 1u8..=3) {
+        let c = content();
+        let net = make(&c, season, corp, tier);
+        let cap = Capability { breaks: [6; 3], purge: 6, scan: 6 };
+        let mask = net.reachable(&cap, &Overlay::default());
+        for code in ["VT", "AC", "SR"] {
+            let reached = net
+                .nodes
+                .iter()
+                .filter(|n| !n.honeypot && c.node(n.kind).is_some_and(|d| d.code == code))
+                .any(|n| mask & (1 << n.id) != 0);
+            prop_assert!(reached, "{code} on season {season} corp {corp} tier {tier}");
+        }
+    }
+}

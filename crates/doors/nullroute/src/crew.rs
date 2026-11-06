@@ -43,7 +43,7 @@ pub const STALE_DAYS: i64 = 2;
 /// Days a finished run is kept for its members to collect.
 pub const KEEP_DAYS: i64 = 7;
 /// The most cycles a member commits to a crew run (besides the jack-in cost).
-pub const COMMIT_MAX: u32 = 24;
+pub const COMMIT_MAX: u32 = 32;
 /// The longest crew name.
 pub const NAME_MAX: usize = 20;
 /// Pending invitations a crew may have out.
@@ -51,17 +51,17 @@ pub const INVITES_MAX: usize = 5;
 /// The contract template number that marks the finale (never a real template).
 pub const FINALE_TMPL: u8 = 250;
 /// The finale's corporation.
-pub const FINALE_CORP: u8 = 11;
+pub const FINALE_CORP: u8 = 9;
 /// Members needed to start the finale.
 pub const FINALE_MEMBERS: usize = 3;
 /// What the finale pays the crew, in marks, split like any crew job.
 pub const FINALE_REWARD: u32 = 900;
 
 /// Percent of the noise a member adds, by crew size: the shared meter is shared work.
-pub const TRACE_SHARE: [u32; CREW_MAX] = [100, 70, 55, 45, 40];
+pub const TRACE_SHARE: [u32; CREW_MAX] = [100, 50, 36, 28, 23];
 
 /// Percent of the contract's pay a crew earns, by crew size.
-pub const PAY_PCT: [u32; CREW_MAX] = [100, 125, 150, 170, 190];
+pub const PAY_PCT: [u32; CREW_MAX] = [100, 170, 250, 330, 410];
 
 /// A crew.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -1018,6 +1018,7 @@ impl World {
                 c.jobs = c.jobs.saturating_add(1);
             }
             if op.is_finale() {
+                self.social.tallies.finale = 1;
                 self.social.finale = Some(crew_name.clone());
                 self.social.deed(today, Lines::DEED_FINALE, &crew_name, 0);
             } else {

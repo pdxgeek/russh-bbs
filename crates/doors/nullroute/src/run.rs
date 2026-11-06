@@ -415,6 +415,8 @@ impl Run {
         if other.alarm {
             self.alarm = true;
         }
+        // A machine a crewmate put down stays down for everyone.
+        self.beaten |= other.beaten;
     }
 
     /// Crew seam: the crew's warden arrives for this member.

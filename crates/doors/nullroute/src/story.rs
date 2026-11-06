@@ -118,6 +118,10 @@ pub struct StepDef {
     pub brief: String,
     /// What the fixer says when it is done.
     pub done: String,
+    /// Fragments (by number) the fixer hands over when the job is done: how a story gives a
+    /// character the code it cannot count on finding.
+    #[serde(default)]
+    pub give: Vec<u8>,
     /// The choices after it.
     #[serde(default)]
     pub choice: Vec<ChoiceDef>,
@@ -264,6 +268,9 @@ impl Table for StoryTable {
             if !matches!(s.effect, Effect::Copy | Effect::Plant | Effect::Shred) {
                 p.push(format!("{what}: the objective effect must be copy, plant or shred"));
             }
+            if !crate::content::objective_possible(&s.target, s.effect) {
+                p.push(format!("{what}: {:?} cannot be done at a {} node", s.effect, s.target));
+            }
             if s.target.len() != 2 || !s.target.bytes().all(|b| b.is_ascii_uppercase()) {
                 p.push(format!("{what}: target is a two-letter node code"));
             }
@@ -271,6 +278,9 @@ impl Table for StoryTable {
             text_problem(&format!("{what} brief"), &s.brief, 220, &mut p);
             text_problem(&format!("{what} done"), &s.done, 220, &mut p);
             cond(&what, &s.open, &mut p);
+            if s.give.len() > 3 || s.give.iter().any(|n| *n == 0 || *n > 31) {
+                p.push(format!("{what}: `give` is up to three fragment numbers, 1 to 31"));
+            }
             if s.choice.is_empty() {
                 p.push(format!("{what}: needs at least one choice"));
             }

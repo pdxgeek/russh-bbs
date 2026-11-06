@@ -17,12 +17,7 @@ fn thirty_days_with_twelve_bots_gives_sane_numbers() {
     for seed in [1u64, 2, 3] {
         let r = simulate(
             &content,
-            Config {
-                players: 12,
-                days: 30,
-                seed,
-                season: 1,
-            },
+            Config::solo(12, 30, seed, 1),
         );
         let per_player_day = r.earned as f64 / 12.0 / 30.0;
         eprintln!(
@@ -100,21 +95,11 @@ fn the_simulation_is_deterministic() {
     let content = Content::try_embedded().unwrap();
     let a = simulate(
         &content,
-        Config {
-            players: 4,
-            days: 10,
-            seed: 9,
-            season: 1,
-        },
+        Config::solo(4, 10, 9, 1),
     );
     let b = simulate(
         &content,
-        Config {
-            players: 4,
-            days: 10,
-            seed: 9,
-            season: 1,
-        },
+        Config::solo(4, 10, 9, 1),
     );
     assert_eq!(
         (a.earned, a.runs(), a.marks, a.per_day),

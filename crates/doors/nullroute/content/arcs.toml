@@ -213,6 +213,7 @@ heat = 9
 open = "rep>=10"
 brief = "Whoever got there first left a trail into Pennywhistle. Wipe it before anyone else follows, or follow it yourself."
 done = "The trail is gone, or you have it. Either way Marrow is waiting."
+give = [14]
 
 [[step.choice]]
 label = "Follow the trail yourself"
@@ -479,6 +480,7 @@ heat = 8
 open = "rep>=10"
 brief = "Wire the server room at Orrery Health. The rumours are being shaved there, one at a time, and sold on."
 done = "The rack hums a hymn you half remember."
+give = [23, 6]
 
 [[step.choice]]
 label = "Report the whole rack"
@@ -825,6 +827,7 @@ heat = 9
 open = "rep>=10"
 brief = "Paper Lantern keeps the receipts of everything Dovetail ever moved. Wipe them, or keep them as insurance."
 done = "He is waiting in the back of a van you did not order."
+give = [18]
 
 [[step.choice]]
 label = "Wipe them"
@@ -1091,6 +1094,7 @@ heat = 8
 open = "rep>=10"
 brief = "Wire Tallow's server room. Ostrander keeps a second set of orders there, for the weapons nobody admits to."
 done = "The orders are older than the treaty, and larger."
+give = [14, 9]
 
 [[step.choice]]
 label = "Tell Ostrander what you saw"
@@ -1357,6 +1361,7 @@ heat = 8
 open = "rep>=10"
 brief = "Sable Court has recordings of Anna's calls. Copy them before they are used against her."
 done = "Her own voice, years ago, on a line she thought was safe."
+give = [11, 24]
 
 [[step.choice]]
 label = "Bring her every tape"

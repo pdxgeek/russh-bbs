@@ -846,6 +846,16 @@ impl Table for ScriptsTable {
     }
 }
 
+/// Whether an objective effect can be done at a node with this code: the rule `Run` enforces.
+#[must_use]
+pub fn objective_possible(target: &str, effect: Effect) -> bool {
+    match effect {
+        Effect::Copy | Effect::Shred => target == "VT",
+        Effect::Plant => matches!(target, "AC" | "SR"),
+        _ => false,
+    }
+}
+
 impl Table for ContractsTable {
     fn validate(&self) -> Vec<String> {
         let mut problems = id_problems(
@@ -875,6 +885,12 @@ impl Table for ContractsTable {
                 problems.push(format!(
                     "contract `{}`: the objective effect must be copy, plant or shred",
                     c.title
+                ));
+            }
+            if !objective_possible(&c.target, c.effect) {
+                problems.push(format!(
+                    "contract `{}`: {:?} cannot be done at a {} node (copy and shred work on a data vault, plant on an admin console or a server room)",
+                    c.title, c.effect, c.target
                 ));
             }
         }

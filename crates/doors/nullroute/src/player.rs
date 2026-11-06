@@ -953,7 +953,13 @@ impl Player {
                     self.heat = (self.heat + heat).min(HEAT_MAX);
                     self.touch_standing(content, contract);
                     if let Some((arc, step)) = job.as_ref().and_then(|j| j.arc) {
-                        self.arc_done(arc, step);
+                        let given = self.arc_done(content, arc, step);
+                        if !given.is_empty() {
+                            notes.push(format!(
+                                "The fixer slips you {} fragment(s) of code.",
+                                given.len()
+                            ));
+                        }
                         notes.push("The fixer has something to ask you. See the arcs [a].".into());
                     } else {
                         if self.done.len() >= DONE_MAX {
