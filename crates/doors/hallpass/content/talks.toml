@@ -2599,3 +2599,527 @@ effects = ["bond:posy:+3", "stand:strays:+3"]
 [[talk.node.choice]]
 label = "Admire it and tread carefully"
 say = "You do not step on the Old Wing."
+
+# ================================================================ launch content: the librarian
+
+[[talk]]
+id = "abney_fines"
+npc = "abney"
+title = "Miss Abney and the overdue book"
+when = ["day>=2"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Miss Abney holds up a copy of a book by two fingers, as though it were a dead mouse. 'Eleven days overdue,' she says. 'It is not yours. It is, however, the ninth to come back from your dormitory this term.'"
+[[talk.node.choice]]
+label = "Apologise, and offer to re-cover the spine"
+needs = ["skill:tinker>=1"]
+say = "A quarter of an hour with a needle, paste and a clamp, and the spine is better than new. She holds it up to the light, and then nods once, as if at a witness."
+effects = ["bond:abney:+4", "xp:tinker:1", "stat:cool:+1"]
+[[talk.node.choice]]
+label = "Pay the fine out of your pocket"
+needs = ["cash>=2"]
+say = "She takes the coins, counts them, writes you a receipt in a spidery hand and says nothing. It is, in the library, a kind of blessing."
+effects = ["stat:cash:-2", "bond:abney:+3"]
+[[talk.node.choice]]
+label = "Say the book was a bad one, and you were helping the school"
+needs = ["skill:bluff>=2"]
+say = "She looks at you over her glasses for a very long time. 'It was,' she says at last. 'It really was.' She waives the fine. You suspect she has never done it before."
+effects = ["bond:abney:+3", "xp:bluff:1", "stat:cool:+1"]
+[[talk.node.choice]]
+label = "Take the book and say nothing"
+say = "She hands it back with a faint, dry sigh, like a page turning."
+effects = ["bond:abney:+1"]
+
+[[talk]]
+id = "abney_stacks"
+npc = "abney"
+title = "Miss Abney's key"
+when = ["bond:abney>=6", "grade:history>=65"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Miss Abney takes off her glasses and polishes them on her cardigan. 'You read the way the books deserve,' she says. 'Careful, slow, with a pencil. There is a shelf in the stacks I do not often open. Would you like to see it?'"
+[[talk.node.choice]]
+label = "Accept the key to the restricted stacks"
+say = "It is a small iron key on a ribbon, still warm from her pocket. 'Mind the dust,' she says. 'And mind the books. And mind the one at the back.'"
+effects = ["know:restricted_key", "bond:abney:+3"]
+[[talk.node.choice]]
+label = "Ask what is on the shelf at the back"
+needs = ["bond:abney>=8"]
+say = "She is quiet for a long while. 'The brown register,' she says, finally. 'And a few letters that were not returned. I was young. I am sorry to say I was not brave.' She does not elaborate, and you do not press."
+effects = ["know:restricted_key", "bond:abney:+4", "know:abney_remembers"]
+[[talk.node.choice]]
+label = "Say you would rather earn it"
+say = "She puts her glasses back on. 'A very good answer,' says Miss Abney. 'Come back in a week.'"
+effects = ["bond:abney:+2"]
+
+[[talk]]
+id = "abney_confides"
+npc = "abney"
+title = "Miss Abney tells you why she is a librarian"
+when = ["know:abney_remembers", "bond:abney>=8", "day>=24"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "It is late, and the library is empty but for the two of you and a single green-shaded lamp. Miss Abney says, without looking up, 'You have been reading the register. You have been to the old wing. You have been busy.' She puts down her pen. 'Sit.'"
+[[talk.node.choice]]
+label = "Tell her you know about the paper's front page"
+needs = ["know:abney_wrote_it"]
+say = "Her pen stops. 'I was the editor,' she says. 'I was fifteen. I wrote three lines, because I was told to and because I was afraid. I have been a librarian ever since, because books do not need me to be brave.'"
+effects = ["bond:abney:+5", "know:abney_confided"]
+[[talk.node.choice]]
+label = "Tell her you want the whole truth printed, now"
+needs = ["bond:wren>=6"]
+say = "She is silent. Then: 'I will not stand in your way. If Miss Okonjo wants the register, she shall have it.' She slides the lending card across the desk, and a spare key."
+effects = ["bond:abney:+4", "know:abney_confided", "item:spare_card", "stand:ink_society:+2"]
+[[talk.node.choice]]
+label = "Tell her it was a long time ago"
+say = "'It was,' she says. 'And it was yesterday. They are not different.'"
+effects = ["bond:abney:+2", "know:abney_confided"]
+[[talk.node.choice]]
+label = "Say nothing, and offer her a biscuit"
+say = "She takes it. The lamp hums."
+effects = ["bond:abney:+1"]
+
+
+# ================================================================ launch content: second beats for the staff
+
+[[talk]]
+id = "fenn_garden"
+npc = "fenn"
+title = "Mr. Fenn and the lilies"
+when = ["know:ines_lilies", "bond:fenn>=6", "day>=18"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Mr. Fenn is on one knee beside the cold frame with a trowel in his hand, very still. You have the sense of having stumbled on a church in a field. He does not look up. 'Moss has been talking,' he says. 'Moss is a good boy.'"
+[[talk.node.choice]]
+label = "Kneel beside him and weed"
+say = "You work for an hour without speaking. He says, in the end, only: 'She liked these.' You say you can see why."
+effects = ["bond:fenn:+5", "know:fenn_garden", "stat:cool:+1"]
+[[talk.node.choice]]
+label = "Tell him you know her name"
+needs = ["know:harrow_name"]
+say = "He sets the trowel down very carefully. 'Do you,' says Mr. Fenn. His voice is not quite his own. 'I thought nobody did.'"
+effects = ["bond:fenn:+6", "know:fenn_garden"]
+[[talk.node.choice]]
+label = "Tell him you have been in the wing"
+needs = ["item:east_wing_key"]
+say = "'Then you have seen the beds,' he says, after a long pause. 'And the bolt.' He sits back on his heels and looks at the sky for a time. 'I can't ask you to stop. I don't think I'd want to.'"
+effects = ["bond:fenn:+5", "know:fenn_garden", "wary:fenn:-1"]
+[[talk.node.choice]]
+label = "Leave him in peace"
+say = "You go quietly. He does not look up, but his shoulders ease."
+effects = ["bond:fenn:+1"]
+
+[[talk]]
+id = "soames_seventy_three"
+npc = "soames"
+title = "Reverend Soames and seventy-three"
+when = ["know:hymn_73", "bond:soames>=4", "day>=16"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Reverend Soames is at the organ, but not playing. His hands lie in his lap. 'You have been in my loft,' he says, with no particular emphasis. 'You found the hymnal. The pressed flower is my own. I put it there in the year I was ordained. It was her favourite.'"
+[[talk.node.choice]]
+label = "Ask him why he can't sing seventy-three"
+say = "'Because it was the hymn the girls sang that night,' says Reverend Soames. 'I turned the key on a hymn I loved.' He closes his eyes. 'I am not asking for forgiveness. I am telling you why I cannot sing.'"
+effects = ["bond:soames:+5", "know:soames_hymn_story"]
+[[talk.node.choice]]
+label = "Offer to turn the pages for him while he plays it"
+needs = ["bond:soames>=7"]
+say = "His hands rise over the keys, and falter, and play it. It is not beautiful. It is true. When it ends he is crying without noticing, and so, a little, are you."
+effects = ["bond:soames:+6", "know:soames_hymn_story", "stat:cool:+1"]
+[[talk.node.choice]]
+label = "Say nothing, and sit in the second pew"
+say = "He plays something else instead, a gentler tune. It is, you realise, a thank-you."
+effects = ["bond:soames:+2"]
+
+[[talk]]
+id = "vane_tea"
+npc = "vane"
+title = "Tea with the headmistress"
+when = ["file<=2", "day>=14", "bond:vane>=3"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Dame Vane's study smells of beeswax and tea. She does not offer you a seat; she merely indicates one. 'You will have noticed,' she says, 'that I make a point of speaking to a pupil each term who has not given me cause for concern.' She pours."
+[[talk.node.choice]]
+label = "Drink the tea and keep your counsel"
+say = "It is Earl Grey and strong enough to stand a spoon in. She asks about your classes and listens to the answers. You leave feeling oddly seen, and unsure whether you've been inspected."
+effects = ["bond:vane:+3", "wary:vane:-1", "stat:cool:+2"]
+[[talk.node.choice]]
+label = "Ask about the Founder's Day dinner of years ago"
+needs = ["know:fire_report"]
+say = "Her cup stops halfway. 'What an oddly specific question,' says Dame Vane. 'I think you had better finish your tea.' For one second you see her face as it must have been at twenty. Then it closes."
+effects = ["bond:vane:-1", "wary:vane:+2", "know:vane_flinched"]
+[[talk.node.choice]]
+label = "Praise the school"
+needs = ["skill:bluff>=1"]
+say = "A little overdone, but she takes it as her due. 'Quite,' she says. 'It is.' She adds you to a list in her head."
+effects = ["bond:vane:+4", "stat:cool:+1", "xp:bluff:1"]
+[[talk.node.choice]]
+label = "Ask for a day's leave of absence"
+needs = ["bond:vane>=7"]
+say = "She considers you for a long, assessing minute. 'Granted,' she says. 'And a day's gratitude is expected in return.' It is the most formal kindness you have ever received."
+effects = ["bond:vane:+2", "stat:nerve:+2"]
+
+[[talk]]
+id = "orrin_lamps"
+npc = "orrin"
+title = "Ms. Orrin and the lamp experiment"
+when = ["day>=6"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Ms. Orrin has a darkened lab, a candle, a mirror and a funnel. Gerald the skeleton is draped with a sheet. 'A demonstration of light,' she announces. 'It bends. It bounces. It occasionally gets into the wrong sort of trouble.'"
+[[talk.node.choice]]
+label = "Hold the mirror at the right angle"
+needs = ["skill:tinker>=1"]
+say = "The beam leaps across the lab and strikes Gerald's skull. A hundred years of dust lights up like a halo. Ms. Orrin, awed, forgets to be strict."
+effects = ["bond:orrin:+4", "xp:tinker:2", "grade:sciences:+2"]
+[[talk.node.choice]]
+label = "Ask whether light could be bent round a corner"
+needs = ["grade:sciences>=65"]
+say = "'Yes,' says Ms. Orrin, startled. 'In a glass fibre. Nobody has asked me that in nine years.' She gives you a leaflet and an afternoon's tutorial."
+effects = ["bond:orrin:+4", "grade:sciences:+4"]
+[[talk.node.choice]]
+label = "Offer to be the demonstration"
+say = "You stand in the beam, as a helpful screen. It is flattering, in a way, to be lit from within by science."
+effects = ["bond:orrin:+2", "stat:cool:+1"]
+[[talk.node.choice]]
+label = "Watch from the back with your arms folded"
+say = "A decent demonstration. Gerald gets the best of it."
+
+[[talk]]
+id = "pell_abacus"
+npc = "pell"
+title = "Mr. Pell and the abacus"
+when = ["day>=6"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Mr. Pell has an abacus on his desk as long as a canoe, and he is moving its beads in a slow rhythm, as if he were counting hymns. 'My grandfather's,' he says. 'He could do a quarter of a million in a minute. I can do nine.'"
+[[talk.node.choice]]
+label = "Learn to read it"
+needs = ["grade:maths>=60"]
+say = "By the end of the hour you can add two columns faster than the blackboard. Mr. Pell watches you do it with the quiet joy of a man whose one sum has come out."
+effects = ["bond:pell:+4", "grade:maths:+4", "xp:tinker:1"]
+[[talk.node.choice]]
+label = "Challenge him to a race"
+needs = ["skill:bluff>=1"]
+say = "You lose gracefully; he wins, thrilled. Afterwards he buys you a bun and tells you about his grandfather in a voice that does not seem to belong to a maths master."
+effects = ["bond:pell:+4", "stat:cool:+1"]
+[[talk.node.choice]]
+label = "Ask to borrow the abacus for a scheme"
+needs = ["trait:known_troublemaker"]
+say = "He sets down the bead he was holding. 'No,' he says. 'But I would be curious to know what the scheme was.' You have the uncomfortable feeling he would enjoy it."
+effects = ["bond:pell:+1", "wary:pell:+1"]
+[[talk.node.choice]]
+label = "Say it is a lovely thing and go"
+say = "'It is,' says Mr. Pell."
+effects = ["bond:pell:+1"]
+
+[[talk]]
+id = "thorne_recital"
+npc = "thorne"
+title = "Madame Thorne's recital"
+when = ["know:play_hit", "day>=27"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Madame Thorne is in the Languages room with a tin of shortbread and a gramophone. 'After the play,' she says, 'there is always the little recital for the people who made it. Nobody comes. I make the shortbread anyway.'"
+[[talk.node.choice]]
+label = "Stay for the shortbread and the poem she reads"
+say = "She reads something in Greywater Latin about a lamp. It is the loveliest thing you have heard all term. You eat four pieces of shortbread without noticing."
+effects = ["bond:thorne:+5", "stat:cool:+2", "grade:languages:+2"]
+[[talk.node.choice]]
+label = "Read a passage back in her own language"
+needs = ["grade:languages>=70"]
+say = "You stumble over the third line and get the fourth perfectly. She puts a hand over her mouth. 'I haven't heard that cadence since I was a girl,' she says."
+effects = ["bond:thorne:+6", "grade:languages:+3"]
+[[talk.node.choice]]
+label = "Ask her about the play she was in, years ago"
+needs = ["know:thorne_knew"]
+say = "She puts the shortbread down. 'You were told,' she says. 'Yes. I was sixteen, and I played the Founder's Daughter, and the fire was the week after. They never did the play again, and I have taught Latin to eight hundred children since, and I have never once told one of them.'"
+effects = ["bond:thorne:+6", "know:thorne_story"]
+[[talk.node.choice]]
+label = "Take a piece of shortbread and go"
+say = "She looks pleased and a little relieved."
+effects = ["bond:thorne:+1"]
+
+[[talk]]
+id = "alder_lantern"
+npc = "alder"
+title = "Mr. Alder's magic lantern"
+when = ["bond:alder>=3", "day>=8"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Mr. Alder has dragged the school's ancient magic lantern into the History room, with a box of glass slides each labelled in a different hand. The first slide is the Founder. The second is the Great Hall, full of nineteenth-century people looking uncomfortable."
+[[talk.node.choice]]
+label = "Ask to see slides from the year the wing closed"
+needs = ["know:old_photograph"]
+say = "A pause, a rustle, a square of glass held to the light. Eight girls in the front row, and one face scratched out of the emulsion. Mr. Alder says, 'I never saw that. I never did. Who has been in my slides?'"
+effects = ["bond:alder:+3", "know:lantern_slide"]
+[[talk.node.choice]]
+label = "Help him sort the slides by date"
+needs = ["grade:history>=65"]
+say = "A quarter of the slides are in the wrong box. By the end of the afternoon you have made him happier than he has been all year."
+effects = ["bond:alder:+4", "grade:history:+3"]
+[[talk.node.choice]]
+label = "Ask about the Battle of 1066, so he will talk for an hour"
+say = "He does. It is a magnificent hour. He reaches the Conqueror's breakfast and you are on the edge of your chair."
+effects = ["bond:alder:+2", "grade:history:+1"]
+[[talk.node.choice]]
+label = "Watch the slides pass"
+say = "The Founder returns, looking more stern."
+
+[[talk]]
+id = "ruddock_portrait"
+npc = "ruddock"
+title = "Ms. Ruddock paints you"
+when = ["day>=7"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Ms. Ruddock has set an easel in the art room's north light and is looking at you the way other people look at weather. 'Sit,' she says. 'Don't look at me. Don't look at the window. Look, if you can, at the middle distance.'"
+[[talk.node.choice]]
+label = "Sit very still, and try to think of nothing"
+say = "An hour of silence, the sound of a brush, and a sense of being slowly understood. She turns the canvas round at the end: it is you, but with a lamp behind your shoulder."
+effects = ["bond:ruddock:+5", "grade:art:+3", "stat:cool:+2"]
+[[talk.node.choice]]
+label = "Sit with your best scheming expression"
+needs = ["trait:known_troublemaker"]
+say = "She paints it, exactly. When you see it, it is a portrait of someone who has done something extremely clever, and been caught. She hangs it in the corridor."
+effects = ["bond:ruddock:+3", "stat:legend:+3", "stand:the_bench:+3", "stat:notoriety:+3"]
+[[talk.node.choice]]
+label = "Offer to hold the palette and mix her blues"
+needs = ["grade:art>=65"]
+say = "She looks at your mixing, grunts, and gives you a pot of ultramarine as a present. 'Hardly anyone knows how,' she says. 'That blue is the lake.'"
+effects = ["bond:ruddock:+4", "grade:art:+4"]
+[[talk.node.choice]]
+label = "Say you must go"
+say = "'Yes,' says Ms. Ruddock. 'You always do.'"
+
+[[talk]]
+id = "marsh_theory"
+npc = "marsh"
+title = "Mr. Marsh and the theory"
+when = ["wary:marsh>=2", "day>=8"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Mr. Marsh has a diagram on the back of the admin corridor noticeboard, a spider of arrows and initials in red pen. 'Pattern recognition,' he says. 'Three things went wrong this month. All were on a Thursday. All in the same wing. A person who understood this would be alarmed.'"
+[[talk.node.choice]]
+label = "Look suitably alarmed"
+say = "He nods slowly, vindicated. 'Good,' he says. 'Someone has to be.' He rubs out one of the arrows and draws a different one, still pointing the wrong way."
+effects = ["bond:marsh:+3", "wary:marsh:-1"]
+[[talk.node.choice]]
+label = "Give him a completely different theory"
+needs = ["skill:bluff>=2"]
+say = "You construct an elaborate narrative involving Thursday deliveries and a mislaid ladder. He follows it, enthralled, and takes notes. He will spend the next week looking for the ladder."
+effects = ["wary:marsh:-2", "xp:bluff:2", "stat:legend:+1"]
+[[talk.node.choice]]
+label = "Offer to help with the diagram"
+needs = ["grade:maths>=65"]
+say = "You tidy it, quite honestly, into a graph. It shows that his theory is nonsense. He looks at it for a long moment, says 'Hm,' and takes it home."
+effects = ["bond:marsh:+4", "grade:maths:+2", "wary:marsh:-1"]
+[[talk.node.choice]]
+label = "Say you have nothing to add"
+say = "'No,' says Mr. Marsh. 'That is what they all say.'"
+
+[[talk]]
+id = "tarn_recipe"
+npc = "tarn"
+title = "Mrs. Tarn and the recipe"
+when = ["bond:tarn>=4", "day>=8"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Mrs. Tarn has an old recipe book, held together with elastic bands and grease, open on the counter at a page labelled 'Founder's Day, 1938.' 'I can't read the last line,' she says. 'It's the secret ingredient. The ink has run.'"
+[[talk.node.choice]]
+label = "Read the last line with her"
+needs = ["skill:bluff>=1"]
+say = "Between the two of you the ink gives up its secret: nutmeg, and a spoon of marmalade. She cooks it that evening, and the whole dining hall goes quiet. She slips you the heel of the loaf."
+effects = ["bond:tarn:+5", "stat:cool:+2", "stat:cash:+1"]
+[[talk.node.choice]]
+label = "Offer to copy the recipe out neatly"
+needs = ["grade:languages>=60"]
+say = "Three hours of careful handwriting, a ruler and a pot of ink. She hangs the copy on the wall above the oven where it will outlast both of you."
+effects = ["bond:tarn:+4", "grade:languages:+1"]
+[[talk.node.choice]]
+label = "Ask for a taste of the Founder's cake"
+needs = ["cash>=2"]
+say = "She cuts you a slice the size of a brick. It costs two coins and is worth ten."
+effects = ["stat:cash:-2", "bond:tarn:+3", "stat:cool:+1"]
+[[talk.node.choice]]
+label = "Say you must go"
+say = "'Mind the stairs,' says Mrs. Tarn."
+
+
+# ================================================================ launch content: second beats for the cast, after the term's events
+
+[[talk]]
+id = "imogen_cox"
+npc = "imogen"
+title = "Imogen after the match"
+when = ["know:match_crew", "day>=19"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Imogen is sitting on the boathouse steps with her megaphone across her knees and her chin on her hands. The crew has gone to supper. She hasn't. 'I never said thank you,' she says, 'because I never know how. You were good in the boat.'"
+[[talk.node.choice]]
+label = "Say she was the best cox the school has had"
+say = "She goes pink to the ears, and then, awkwardly, hugs you. 'Don't tell,' she says into your shoulder. 'I will deny it.'"
+effects = ["bond:imogen:+5", "stand:rowing_eight:+3"]
+[[talk.node.choice]]
+label = "Ask her to teach you to cox"
+needs = ["bond:imogen>=8"]
+say = "Two hours on the lake in a skiff, steering by her voice. 'Left a bit. Left a bit. Not that left.' You come in with your shirt soaked and your confidence considerably larger than your skill."
+effects = ["bond:imogen:+4", "xp:fleet:2", "merit:rowing:+2"]
+[[talk.node.choice]]
+label = "Say it was a team effort"
+say = "'It was,' she says, relieved. 'Yes. A team.' She puts the megaphone down."
+effects = ["bond:imogen:+2"]
+
+[[talk]]
+id = "hollis_speech"
+npc = "hollis"
+title = "Rafe Hollis and the speech"
+when = ["know:match_won", "day>=19", "standing:rowing_eight>=3"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Rafe has a speech written on the back of the team sheet, in capitals, and no confidence in it whatever. 'Boats,' he reads. 'And fewer Fridays. That's all I've got. Should I mention the lake?'"
+[[talk.node.choice]]
+label = "Help him write a speech with an actual argument"
+needs = ["grade:languages>=60"]
+say = "A good two hours, three drafts and a joke he refuses to cut. At the end he can read it without his hands shaking, and it does mention the lake, at length, beautifully."
+effects = ["bond:hollis:+5", "stand:rowing_eight:+3"]
+[[talk.node.choice]]
+label = "Tell him to promise a boat for every house"
+needs = ["skill:bluff>=1"]
+say = "'That's brilliant,' says Rafe. 'It's absurd. It'll work.' He writes it down in capitals and underlines it."
+effects = ["bond:hollis:+3", "stat:legend:+1"]
+[[talk.node.choice]]
+label = "Tell him to say less"
+say = "'Less?' says Rafe, much struck. 'Less. Hm.' He crosses out a paragraph. It improves."
+effects = ["bond:hollis:+2"]
+
+[[talk]]
+id = "crouch_second_chance"
+npc = "crouch"
+title = "Barnaby Crouch on his own"
+when = ["know:match_won", "day>=19", "bond:crouch>=-8"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Crouch is sitting on his own on the stand in the dusk. He is eating a sandwich very slowly and not looking at anybody. He glances up. 'I've been horrid,' he says, abruptly. 'The lower fourth said I was horrid. I didn't think I was. And then I thought about it.'"
+[[talk.node.choice]]
+label = "Tell him it is not too late to be different"
+say = "He looks at his hands. 'I don't know how,' says Crouch. 'I think you start by not doing it,' you say. 'The next time.' He nods, slowly, like a heavy door."
+effects = ["bond:crouch:+6", "know:crouch_turned", "stand:strays:+3"]
+[[talk.node.choice]]
+label = "Tell him the Strays would hear an apology"
+needs = ["standing:strays>=4"]
+say = "He swallows. 'I'll try,' he says. 'I'll do it properly. I'll do it tomorrow.' He does, over breakfast, to Mags and Tilly and Bertie. It is excruciating. They accept."
+effects = ["bond:crouch:+5", "stand:strays:+3", "know:crouch_turned"]
+[[talk.node.choice]]
+label = "Say you will believe it when you see it"
+say = "'Fair,' says Crouch. 'Fair enough.' He finishes the sandwich."
+effects = ["bond:crouch:+1"]
+
+[[talk]]
+id = "priya_after_the_dance"
+npc = "priya"
+title = "Priya and the badge"
+when = ["know:priya_unbadged", "day>=32"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Priya is sitting on the wall of the quad with her badge in her palm, turning it over and over. 'I took it off,' she says. 'At the dance. And then I put it back on. And I felt worse.' She looks at you. 'What should I do?'"
+[[talk.node.choice]]
+label = "Tell her to wear it because she wants to, not because she was given it"
+say = "She sits very still. Then, slowly, she pins it back on, straighter than before. 'Because I want to,' she says. 'Right.' She looks ten years older and ten years younger."
+effects = ["bond:priya:+5", "stand:lamplighters:+3"]
+[[talk.node.choice]]
+label = "Tell her she can take it off whenever she likes"
+needs = ["bond:priya>=12"]
+say = "'I can't,' says Priya, 'and you know I can't.' But she smiles. 'I like that you said it.' She keeps it in her pocket for a week. Then she puts it back on. It is hers."
+effects = ["bond:priya:+4"]
+[[talk.node.choice]]
+label = "Tell her to ask Cordelia what she thinks"
+needs = ["bond:wick>=3"]
+say = "Priya nods. She walks off across the quad and finds Cordelia Wick and says a few words. When she comes back she is crying a little, and relieved."
+effects = ["bond:priya:+3", "bond:wick:+2"]
+
+[[talk]]
+id = "tilly_keepsake"
+npc = "tilly"
+title = "Tilly and the dance card"
+when = ["know:dance_tilly", "day>=32"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Tilly has laid out three things on the common room table: the dance card, a pressed leaf and a boiled sweet in a twist of paper. 'It's my collection,' she says, quietly. 'Of the days that were good. It's got one more thing in it this term than it had last.'"
+[[talk.node.choice]]
+label = "Add something of your own to the collection"
+say = "You give her a button off your blazer. She looks at it for a long time, then puts it carefully in the middle of the pressed leaf. 'It's a good one,' she says."
+effects = ["bond:tilly:+6", "stand:strays:+3"]
+[[talk.node.choice]]
+label = "Ask her to tell you about the day she put in the sweet"
+needs = ["bond:tilly>=10"]
+say = "It was the first morning she was ever picked for a team. She doesn't say which team; it doesn't matter. She smiles as she tells it."
+effects = ["bond:tilly:+5", "stand:strays:+2"]
+[[talk.node.choice]]
+label = "Sit with her and say nothing"
+say = "The two of you sit until the common room is dark. Nobody turns on the light."
+effects = ["bond:tilly:+3"]
+
+[[talk]]
+id = "mags_clock"
+npc = "mags"
+title = "Mags and the slow clock"
+when = ["know:slow_clock", "day>=32"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Mags has drawn the Great Hall's balcony clock on a sheet of squared paper, with the seven-minute lag marked in red. 'It's always been slow,' she says. 'Ever since October. I looked in the records. It's been slow since the winter before the fire.'"
+[[talk.node.choice]]
+label = "Ask what she thinks it means"
+say = "'That someone keeps it slow on purpose,' says Mags. 'To remember a moment. Or to forget one.' She shrugs. 'Only a Stray would notice. Nobody looks at the clock who has somewhere to be.'"
+effects = ["bond:mags:+5", "stand:strays:+3", "know:mags_clock_theory"]
+[[talk.node.choice]]
+label = "Offer to climb up and have a look at the mechanism"
+needs = ["skill:fleet>=1"]
+say = "You go up the back stairs and over the beam, with Mags holding the rope. The clock has been fixed with a shim of folded paper, a letter, three words visible: Stay a little."
+effects = ["bond:mags:+4", "xp:fleet:2", "know:clock_shim"]
+[[talk.node.choice]]
+label = "Say it is a very good clock to be slow"
+say = "'Isn't it?' says Mags."
+effects = ["bond:mags:+2"]
+
+[[talk]]
+id = "dot_debt"
+npc = "dot"
+title = "Dot calls in a debt"
+when = ["know:exam_cheated", "day>=36"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Dot is standing at the head of the stairs with her arms folded, and an exercise book open in one hand. 'Four biscuits,' she says. 'For a paper. Which I notice has led you to a bit of trouble. I want you to know that I would never have sold it to you if I had known you'd be that obvious.'"
+[[talk.node.choice]]
+label = "Ask her to help you clean up the mess"
+needs = ["bond:dot>=3"]
+say = "She frowns at the ceiling. 'You owe me,' she says. 'I'll have a word with someone in Mr. Pell's office. It'll cost you.' It does, by two weeks of washing her plates and a promise you'd rather not keep."
+effects = ["bond:dot:+3", "stat:cash:-4", "file:caught:0"]
+[[talk.node.choice]]
+label = "Say you made a mistake and take the consequences"
+say = "She looks at you for a very long time. 'That's not what most people say,' says Dot. 'I'll tell you what. I'll give you the biscuits back.' She does."
+effects = ["bond:dot:+4", "stat:cash:+4", "stat:cool:+2"]
+[[talk.node.choice]]
+label = "Tell her you won't be buying again"
+say = "'Good,' says Dot. 'It's bad for business.' She pockets the book."
+effects = ["bond:dot:-1"]

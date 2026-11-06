@@ -1656,6 +1656,8 @@ impl Content {
         if !place(&self.rules.start_place) {
             out.push("start_place is not a place".into());
         }
+        // Talks come from two files (the calendar's scenes are talks too): ids are shared.
+        dupes("talk", self.talks.iter().map(|t| t.id.as_str()), &mut out);
         for s in &self.subjects {
             if !place(&s.room) || !npc(&s.teacher) {
                 out.push(format!("subject `{}` has an unknown room or teacher", s.id));
