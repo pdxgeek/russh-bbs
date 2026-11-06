@@ -182,6 +182,37 @@ Every slice: adds its permission rows to [access.md](access.md) and the `Permiss
 
 **M3 batches.** Batch 1: M3-A, M3-B, M3-C, M3-D (no shared Owns paths). Batch 2 after the needed batch-1 slices merge: M3-E, M3-F, M3-H, M3-J. Batch 3: M3-G, M3-I. At most four workers at once. Slices that add migrations develop in parallel but merge one at a time: merge `main` first, then take the next migration number. Menu entries in `core::menu` are the one shared file every screen slice touches; add one entry per slice and resolve conflicts at merge.
 
+### M5: Sysop tooling and API (proposed, not approved)
+
+Proposal from PLAN-M5. **Every row is `Proposed (owner review)` and none is claimable until the owner approves it and changes it to `Open`.** Details, acceptance criteria, sizes, the open owner questions and the merge order are in [m5-plan.md](m5-plan.md). A proposed **hardening milestone** (HARD-1 to HARD-6) is in the same file and has no rows here until the owner decides (OQ15).
+
+| Slice | Owns | Depends on | Status | Branch / PR |
+|---|---|---|---|---|
+| PLAN-M5 Draft the M5 slice plan | `docs/m5-plan.md`, this section | none | In review (`plan/m5-slices`) | Docs only. Proposal; changes no recorded milestone or decision. Open owner questions are at the top of the plan. |
+| M5-A0 Console skeleton and extension seam | `crates/server/src/sysop/console` (mod, registry), one `core::menu` entry, one `ssh/screen.rs` arm | none | Proposed (owner review) | S. The only serial gate of M5; unlocks batch 2. |
+| M5-A1 Live sessions and server logs | `sysop/console/{sessions,logs}.rs`, read-only snapshot on `ssh/registry`, log ring | M5-A0 | Proposed (owner review) | M. OQ6, OQ14. No screen mirror. |
+| M5-B1 Users editor: suspend, roles, member limits, invite revoke | `sysop/console/users.rs`, `core::members`, `core::invites` (revoke), migration, both stores | M5-A0 | Proposed (owner review) | L. Migration. Closes the suspended-session gap and `invites.revoke`. |
+| M5-B2 Roles, groups and limits editor | `sysop/console/{roles,groups}.rs`, `core::access` group services with the rank rule | M5-A0 | Proposed (owner review) | M. Closes D69 (5). |
+| M5-C Board settings console and `menus.manage` | `sysop/console/settings.rs`, settings facade, scheduler jobs view, migration only if OQ7 is yes | M5-A0 | Proposed (owner review) | M. OQ7. |
+| M5-D1 Audit viewer and audit retention | `sysop/console/audit.rs`, `core::audit` (name resolution, archive), store archive methods | M5-A0 | Proposed (owner review) | M. OQ13. Archive by dated file, never `DELETE` (D59). |
+| M5-E Door staff tools and per-door grants | `sysop/console/doors.rs`, `core::doors` (staff wrappers, door table, grants), migration, both stores | M5-A0 | Proposed (owner review) | M. Migration. Does not touch `crates/doors/*`. |
+| M5-F Page the sysop, sysop chat, split chat, chat moderation | `core::chat`, `server::chat`, `sysop/console/chat.rs` | M5-A0 (room console only) | Proposed (owner review) | L. Sole owner of chat in M5. OQ6. |
+| M5-G Moderation workflow | `sysop/console/moderation.rs`, `core::forums` admin services, mail reports screen, community removals view | M5-A0 | Proposed (owner review) | L. OQ9 may split report-a-post into M5-G2. |
+| M5-H Backups and tested restore, every backend | `core::backup`, `server::backup`, `backup`/`restore` subcommand, per-backend `backup.rs`, `.github/workflows/backup.yml`, deploy.md Backups | M4-F1; M4-F2 for file content | Proposed (owner review) | L. OQ2, OQ8. Postgres uses the operator's `pg_dump` (the image has none); restore test in CI for each backend. |
+| M5-I Data export and account deletion | `core::account_data`, new per-area export files in both stores, SFTP read-only export node, member and staff screens | M4-F1, M4-F2 | Proposed (owner review) | L. OQ2, OQ3, OQ4. Migration if a deletion queue is needed. |
+| M5-J Notifications and digests | `core::notify`, tables and migration, Notifications screen, dashboard widget hook, login summary | M4-F3 for the digest | Proposed (owner review) | M. Migration. OQ5: in-board only, no address stored. |
+| M5-K Accessibility mode | `core::terminal_settings` flag and migration, `server::ui` linear layout, real flag to `fx::allowed` | none | Proposed (owner review) | M. Migration. OQ10. Not tested with a real screen reader. |
+| M5-L Retention sweeps and purge registry | `core::retention`, per-backend purge methods | none | Proposed (owner review) | S. Includes FIX-M3-11 (login codes, key notices). |
+| M5-M FIX-M0-F5 emoji-capable glyphs | `crates/core/src/icons` | the owner's real-terminal check | Proposed (owner review) | S. Blocked on the owner. |
+| M5-N Optional RSA client keys (D21-REVISIT) | `crates/server/src/ssh` auth, `deny.toml` | OQ12 | Proposed (owner review) | M. Only if the owner says yes. |
+| M5-O Sessions counted per process (FIX-M2-5) | `ssh/registry`, `core::limits`, lease table migration | OQ11 | Proposed (owner review) | M. Parked unless the beta runs more than one process. |
+| M5-P Outbound feeds polish and feed console | `core::feeds` (out), `server::feeds`, `sysop/console/feeds.rs` | M3-G; M5-A0 for the console file | Proposed (owner review) | M. Owns the public snapshot that M5-Q reads. |
+| M5-Q Read-only GraphQL for the public tier | `crates/api`, `[api]` config, `server::api`, `docs/api.md` | OQ1 (Q3), M5-P | Proposed (owner review) | L. Blocked on Q3. |
+| M5-R Sysop handbook and beta checklist | `docs/sysop.md` | late drafts of the others | Proposed (owner review) | S. |
+| M5-QA Milestone QA gate | `docs/qa/m5.md` and the fix rows it adds | all scheduled M5 slices | Proposed (owner review) | M. Includes a restore drill from an empty volume. |
+
+**M5 batches (proposed).** Batch 0: M5-A0. Batch 1 (with A0, eight workers): M5-H, M5-I, M5-J, M5-K, M5-L, M5-P and one of M5-M or M5-N. Batch 2 (after M5-A0 merges): M5-A1, M5-B1, M5-B2, M5-C, M5-D1, M5-E, M5-F, M5-G. Batch 3: M5-Q, M5-R, M5-QA. Migration slices (M5-B1, M5-C, M5-E, M5-I, M5-J, M5-K) merge one at a time; numbers are taken at merge time (`0028` is M4-F2's).
+
 ## Cross-slice requests
 
 Add a line here if you need a change in code another slice owns. Do not make it yourself.
