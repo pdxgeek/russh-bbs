@@ -291,3 +291,22 @@ async fn the_headless_harness_plays_a_season_and_the_numbers_make_sense() {
     assert_eq!(world.days, 101);
     assert_eq!(world.yesterday, 20, "four players, five tosses");
 }
+
+#[test]
+fn a_question_mark_typed_into_the_name_prompt_is_text_not_the_look_around_view() {
+    use russh_bbs_door::host::Driver;
+    use russh_bbs_door::{Save, Start};
+    let door = CoinToss::new().unwrap();
+    let start = Start {
+        save: Save::Fresh,
+        world: None,
+        env: &env(),
+        today: Day::from_raw(DAY),
+        season: 1,
+    };
+    let mut driver = Driver::open(&door, start, 1, clock(DAY));
+    driver.key(DoorKey::Char('n'));
+    driver.key(DoorKey::Char('?'));
+    assert!(!driver.is_looking());
+    assert!(driver.look_around(&env()).join("\n").contains('?'));
+}

@@ -526,6 +526,12 @@ pub(in crate::session) fn describe(s: &Session, _env: &DoorEnv) -> Vec<String> {
         | Screen::Getaway
         | Screen::Recruit
         | Screen::Schedule
+        | Screen::Social
+        | Screen::Classmates
+        | Screen::PlotKinds
+        | Screen::Rumours
+        | Screen::RumourAbout
+        | Screen::Election
         | Screen::Talk => {
             out.extend(body.iter().take(2).cloned());
             let (_, items) = s.view();

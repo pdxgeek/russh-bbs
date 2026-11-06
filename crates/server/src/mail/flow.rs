@@ -170,6 +170,11 @@ impl MailScreen {
         )
     }
 
+    /// Whether an editor is open.
+    pub(crate) fn editor_open(&self) -> bool {
+        self.editor().is_some()
+    }
+
     /// The editor, while one is open.
     pub(super) fn editor(&self) -> Option<&SyncEditor> {
         match &self.state {

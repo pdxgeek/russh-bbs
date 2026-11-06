@@ -1,0 +1,279 @@
+# The social layer: structured schemes one pupil may play on another, template rumours, the
+# school election and the end-of-term awards. Nothing here is typed at a player: every scheme and
+# rumour is a row, aimed at a name from the roster (a plot) or at a character, a clique or the
+# speaker (a rumour). What lands on a player is a small change of cool, nerve or cash and never
+# touches the file, the world, a friendship or a standing; every mischief scheme has a counterplay
+# that depends on the target's build or kit; a target is left alone for `protect_days` after one
+# reaches them; and a pupil who opts out can neither send nor receive any of them.
+
+[rules]
+plots_per_day = 2
+pair_days = 3
+protect_days = 2
+plot_days = 6
+rumour_days = 7
+rumours_per_day = 1
+nominate_from = 11
+vote_from = 20
+tally_day = 27
+canvass_per_day = 2
+vote_weight = 3
+nominate_needs = ["file<=6", "cool>=2"]
+winner_legend = 8
+winner_trait = "head_of_school"
+player_win_effect = "head_player"
+award_cash = 10
+
+# ---------------------------------------------------------------- schemes on another pupil
+
+[[plot]]
+id = "swapped_timetable"
+name = "A swapped timetable"
+blurb = "Two forged cards trade places in a pigeonhole, and someone spends first period in the wrong room."
+kind = "mischief"
+nerve = 2
+needs = ["item:forgery_kit"]
+counter = ["item:spare_card", "tag:trusted"]
+countered = "{from} tried to swap your timetable, but you keep a spare card (or the staff know your face) and walked into the right room."
+seen = "Your timetable was swapped (somebody calls {from} the culprit, softly) and you spent a period in the wrong room."
+hit = ["stat:nerve:-1", "stat:cool:-1"]
+reward = ["stat:legend:+1", "xp:bluff:1"]
+fizzle = ["stat:cool:-1"]
+
+[[plot]]
+id = "glued_locker"
+name = "A glued locker"
+blurb = "A dab of paste on the latch, and a tidy pupil finds the door will not open."
+kind = "mischief"
+nerve = 2
+needs = ["skill:tinker>=1"]
+counter = ["item:padlock", "tag:gadgets"]
+countered = "{from} tried to glue your locker. Your padlock (or your screwdriver) laughed at it."
+seen = "Your locker was glued shut and it cost you a new latch. The whisper says {from}."
+hit = ["stat:cash:-3"]
+reward = ["stat:legend:+1", "xp:tinker:1"]
+fizzle = ["stat:cool:-1"]
+
+[[plot]]
+id = "fake_note"
+name = "A fake note from a teacher"
+blurb = "A note in a teacher's hand tells someone to report to the library at once. They will arrive, puzzled."
+kind = "mischief"
+nerve = 2
+needs = ["skill:bluff>=1"]
+counter = ["skill:bluff>=3", "tag:charm"]
+countered = "{from} sent you a note signed by a teacher. You smelled it at once."
+seen = "A note in a teacher's hand sent you to the library for nothing. It had {from}'s fingerprints all over it, in spirit."
+hit = ["stat:cool:-2"]
+reward = ["stat:legend:+1", "xp:bluff:1"]
+fizzle = ["stat:cool:-1"]
+
+[[plot]]
+id = "squeaky_laces"
+name = "Squeaky laces"
+blurb = "A pair of laces that sing at every step, swapped in overnight."
+kind = "mischief"
+nerve = 1
+cash = 2
+counter = ["tag:fast_exit", "skill:sneak>=3"]
+countered = "{from} swapped your laces for squeaky ones. You walk too carefully to be caught by that."
+seen = "Your laces squeaked at every step all morning. It was {from}, probably."
+hit = ["stat:cool:-1", "stat:nerve:-1"]
+reward = ["stat:legend:+1"]
+fizzle = ["stat:cool:-1"]
+
+[[plot]]
+id = "good_word"
+name = "A good word"
+blurb = "You tell anyone who will listen that this one is all right."
+kind = "kind"
+nerve = 1
+needs = ["cool>=3"]
+countered = "{from} said something kind about you."
+seen = "Word reaches you that {from} has been saying good things about you. You walk a little taller."
+hit = ["stat:cool:+2"]
+reward = ["stat:cool:+1"]
+
+[[plot]]
+id = "pep_talk"
+name = "A pep talk"
+blurb = "A few words in the corridor before a big day."
+kind = "kind"
+nerve = 1
+countered = "{from} offered you a pep talk."
+seen = "{from} found you in the corridor with a few words that were exactly what you needed."
+hit = ["stat:nerve:+2"]
+reward = ["xp:bluff:1"]
+
+[[plot]]
+id = "spare_change"
+name = "Spare change"
+blurb = "A few coins left on a desk with no note."
+kind = "kind"
+nerve = 1
+cash = 5
+needs = ["cash>=8"]
+countered = "{from} left you some change."
+seen = "A few coins turned up on your desk with no note. Everyone says it was {from}."
+hit = ["stat:cash:+5"]
+reward = ["stat:cool:+2"]
+
+# ---------------------------------------------------------------- rumours
+
+[[rumour]]
+id = "fair_play"
+name = "They are the fairest in the school"
+text = "People are saying {about} is the fairest person at Greywater."
+about = "npc"
+kind = "praise"
+bond = 1
+backing = 2
+
+[[rumour]]
+id = "biscuits"
+name = "Seen raiding the biscuit tin"
+text = "They say {about} was seen with a hand in the staffroom biscuit tin."
+about = "npc"
+kind = "gossip"
+legend = 1
+bond = -1
+patrol = 1
+backing = -2
+
+[[rumour]]
+id = "secret_pupil"
+name = "A secret admirer in the staff"
+text = "A little bird says {about} has been marking the good essays twice."
+about = "npc"
+kind = "gossip"
+legend = 1
+bond = -1
+backing = -1
+
+[[rumour]]
+id = "clique_watch"
+name = "They are the ones to watch"
+text = "Everyone agrees {about} are the ones to watch this term."
+about = "clique"
+kind = "praise"
+stand = 2
+
+[[rumour]]
+id = "clique_boast"
+name = "They think they are better than us"
+text = "Have you heard what {about} say about the rest of us?"
+about = "clique"
+kind = "gossip"
+stand = -2
+legend = 1
+cool = 1
+
+[[rumour]]
+id = "bell_rope"
+name = "You swung from the bell rope"
+text = "They say you once swung from the chapel bell rope to get out of detention."
+about = "self"
+kind = "tall"
+needs = ["pulled>=1"]
+legend = 2
+cool = 1
+heat = 2
+
+[[rumour]]
+id = "night_visitor"
+name = "You spent a night in the East Wing"
+text = "They say you spent a night in the East Wing and came out laughing."
+about = "self"
+kind = "tall"
+needs = ["clues>=3"]
+legend = 3
+cool = 2
+heat = 3
+
+[[rumour]]
+id = "cool_head"
+name = "You never panic"
+text = "They say you have never once run in a corridor."
+about = "self"
+kind = "tall"
+needs = ["cool>=6"]
+legend = 1
+cool = 2
+
+# ---------------------------------------------------------------- the election
+
+[[runner]]
+npc = "bramley"
+platform = "More patrols and tidier corridors."
+base = 10
+grow = 2
+withdrawn_by = ["prefects_stood_down"]
+swing = [["paper_hijack", -3]]
+win = "head_bramley"
+
+[[runner]]
+npc = "wren"
+platform = "An open paper and a longer lights-out."
+base = 9
+grow = 2
+swing = [["paper_hijack", 4], ["prefects_stood_down", 3]]
+win = "head_wren"
+
+[[runner]]
+npc = "hollis"
+platform = "Boats for everyone and fewer lessons on Fridays."
+base = 9
+grow = 2
+swing = [["tuck_shop_closed", -2]]
+win = "head_hollis"
+
+# ---------------------------------------------------------------- the awards
+
+[[award]]
+id = "legend_cup"
+name = "The Greywater Legend Cup"
+text = "The most talked-about pupil of the term."
+stat = "legend"
+min = 10
+
+[[award]]
+id = "scholar"
+name = "The Scholarship Prize"
+text = "Top marks across the board, and nobody asked how."
+stat = "grades"
+min = 60
+
+[[award]]
+id = "clean_hands"
+name = "The Clean Hands Medal"
+text = "Plenty done, nothing proved."
+stat = "clean"
+min = 10
+
+[[award]]
+id = "mischief"
+name = "The Mischief Shield"
+text = "More schemes pulled off than anyone else."
+stat = "pulled"
+min = 3
+
+[[award]]
+id = "sleuth"
+name = "The Lantern Prize"
+text = "For the most patient search of the old wings."
+stat = "clues"
+min = 4
+
+[[award]]
+id = "colours"
+name = "Club Colours"
+text = "Never missed a meeting."
+stat = "merit"
+min = 8
+
+[[award]]
+id = "best_liked"
+name = "Best Liked"
+text = "More friends than anyone in the school."
+stat = "friends"
+min = 3

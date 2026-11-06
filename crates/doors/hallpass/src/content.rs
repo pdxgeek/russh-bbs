@@ -1445,6 +1445,10 @@ pub struct Content {
     pub talks: Vec<Talk>,
     /// Storylines.
     pub arcs: Vec<ArcSpec>,
+    /// Player schemes, rumours, the election and the awards (H4).
+    pub social: crate::social_spec::SocialSpec,
+    /// The east wing's clues and verdicts (H4).
+    pub mystery: crate::social_spec::MysterySpec,
     place_index: HashMap<String, usize>,
     npc_index: HashMap<String, usize>,
 }
@@ -1475,6 +1479,10 @@ pub struct Sources<'a> {
     pub talks: &'a str,
     /// `arcs.toml`
     pub arcs: &'a str,
+    /// `social.toml`
+    pub social: &'a str,
+    /// `mystery.toml`
+    pub mystery: &'a str,
 }
 
 /// The tables shipped in this crate.
@@ -1491,6 +1499,8 @@ pub const EMBEDDED: Sources<'static> = Sources {
     clubs: include_str!("../content/clubs.toml"),
     talks: include_str!("../content/talks.toml"),
     arcs: include_str!("../content/arcs.toml"),
+    social: include_str!("../content/social.toml"),
+    mystery: include_str!("../content/mystery.toml"),
 };
 
 impl Content {
@@ -1513,6 +1523,7 @@ impl Content {
         let clubs: ClubsFile = content::load("clubs", src.clubs)?;
         let talks: TalksFile = content::load("talks", src.talks)?;
         let arcs: ArcsFile = content::load("arcs", src.arcs)?;
+        let (social, mystery) = crate::social_spec::load(src.social, src.mystery)?;
         let place_index = places
             .place
             .iter()
@@ -1555,6 +1566,8 @@ impl Content {
             clubs: clubs.club,
             talks: talks.talk,
             arcs: arcs.arc,
+            social,
+            mystery,
             place_index,
             npc_index,
         };
@@ -1618,10 +1631,11 @@ impl Content {
             }
         }
         for i in &self.items {
-            if !self
-                .places
-                .iter()
-                .any(|p| p.shop.as_deref() == Some(i.shop.as_str()))
+            if !i.shop.is_empty()
+                && !self
+                    .places
+                    .iter()
+                    .any(|p| p.shop.as_deref() == Some(i.shop.as_str()))
             {
                 out.push(format!("item `{}` is sold in a shop no place has", i.id));
             }
@@ -1749,6 +1763,8 @@ impl Content {
             }
         }
         out.extend(self.life_problems());
+        out.extend(self.social_problems());
+        out.extend(self.mystery_problems());
         out
     }
 

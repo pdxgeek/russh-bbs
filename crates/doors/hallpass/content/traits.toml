@@ -82,3 +82,12 @@ start = false
 earn = ["legend>=60"]
 tags = ["famous"]
 cool = 10
+
+[[trait]]
+id = "head_of_school"
+name = "Head of School"
+blurb = "You won the school election. The staff nod to you in the corridor, and the prefects never quite forgive it."
+start = false
+earn = ["know:won_election"]
+tags = ["head"]
+cool = 6

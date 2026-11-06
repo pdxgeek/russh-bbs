@@ -18,11 +18,15 @@
 mod common;
 
 use std::collections::BTreeMap;
+use std::fmt::Write;
 
-use common::bot::{Policy, balanced, cautious, play_day, reckless, scholar, variety};
+use common::bot::{
+    Policy, balanced, cautious, play_day, politician, reckless, recluse, rival, scholar, sleuth,
+    take_coverage, variety,
+};
 use common::{content, monday};
 use russh_bbs_door::DoorRng;
-use russh_bbs_door_hallpass::game::{Action, Event, Game};
+use russh_bbs_door_hallpass::game::{Action, Game};
 use russh_bbs_door_hallpass::state::{Status, World};
 use russh_bbs_door_hallpass::world::tick_day;
 
@@ -56,6 +60,22 @@ struct Outcome {
     /// Friends and rivals made.
     friends: usize,
     rivals: usize,
+    /// Clues found in the east wing's mystery.
+    clues: i32,
+    /// The pupil's own ending of the mystery, `open` if they did not reach one, `none` if it never began.
+    wing: String,
+    /// Schemes sent to other pupils, how they ended for the sender, and rumours started.
+    sent: u32,
+    landed: u32,
+    seen: u32,
+    turned: u32,
+    rumours: u32,
+    /// Whether they stood for election and how many votes and backing they got.
+    ran: bool,
+    opted_out: bool,
+    awards: Vec<String>,
+    /// Lines in the inbox that are not awards: what other pupils did to this one.
+    hit: usize,
 }
 
 /// One whole term on one shared school with one player per policy.
@@ -63,6 +83,8 @@ fn term(policies: &[Policy], traits: &[&str], seed: u64) -> (Vec<Outcome>, World
     let content = content();
     let start = monday();
     let mut world = World::new(start);
+    // The school's mood rotates with the term, so the seeds stand for terms one, two and three.
+    world.term = 1 + u32::try_from(seed % 3).unwrap();
     let mut games: Vec<Game> = Vec::new();
     let mut rngs: Vec<DoorRng> = Vec::new();
     for (i, policy) in policies.iter().enumerate() {
@@ -79,16 +101,29 @@ fn term(policies: &[Policy], traits: &[&str], seed: u64) -> (Vec<Outcome>, World
     }
     let mut curves = vec![Curve::default(); policies.len()];
     let mut methods: Vec<Vec<String>> = vec![Vec::new(); policies.len()];
+    // sent, landed, seen, turned, rumours
+    let mut social: Vec<[u32; 5]> = vec![[0; 5]; policies.len()];
     let mut tick_rng = DoorRng::from_label("hallpass", seed as i64);
     for day in 0..content.rules.term_days {
         let today = start + day;
         for (i, g) in games.iter_mut().enumerate() {
             g.world = world.clone();
-            g.sync_day(today);
-            let events = play_day(g, &policies[i], &mut rngs[i]);
+            let mut events = g.sync_day(today);
+            events.extend(g.social_day());
+            events.extend(play_day(g, &policies[i], &mut rngs[i]));
             for e in &events {
-                if let Event::Pulled { scheme, .. } = e {
-                    let _ = scheme;
+                let text = e.describe();
+                let n = &mut social[i];
+                if text.contains("in motion for") {
+                    n[0] += 1;
+                } else if text.contains("it landed") {
+                    n[1] += 1;
+                } else if text.contains("saw it coming") {
+                    n[2] += 1;
+                } else if text.contains("never reached") {
+                    n[3] += 1;
+                } else if text.contains("You let it drop") {
+                    n[4] += 1;
                 }
             }
             for d in g.take_world_changes() {
@@ -109,6 +144,7 @@ fn term(policies: &[Policy], traits: &[&str], seed: u64) -> (Vec<Outcome>, World
         }
     }
     let end = start + content.rules.term_days;
+    let social = social;
     let outcomes = games
         .into_iter()
         .enumerate()
@@ -160,7 +196,29 @@ fn term(policies: &[Policy], traits: &[&str], seed: u64) -> (Vec<Outcome>, World
                 .history
                 .last()
                 .map_or_else(|| "unfinished".to_owned(), |r| r.ending.clone());
+            let wing = g.player.life.arc("the_wing").map_or_else(
+                || "none".to_owned(),
+                |a| a.ended.clone().unwrap_or_else(|| "open".to_owned()),
+            );
+            let clues = g.stat(&russh_bbs_door_hallpass::cond::Stat::Clues);
             Outcome {
+                clues,
+                wing,
+                sent: social[i][0],
+                landed: social[i][1],
+                seen: social[i][2],
+                turned: social[i][3],
+                rumours: social[i][4],
+                ran: g.player.social.ran_term == g.player.term,
+                hit: g
+                    .player
+                    .social
+                    .inbox
+                    .iter()
+                    .filter(|l| !l.starts_with("Award"))
+                    .count(),
+                opted_out: g.player.social.opt_out,
+                awards: g.player.social.awards.clone(),
                 policy: policies[i].name,
                 ending,
                 legend: g.player.legend,
@@ -369,12 +427,428 @@ fn school_life_in_numbers_grades_club_ranks_and_storyline_endings() {
         "clubs are climbed: {ranks:?}"
     );
     assert!(
-        by_arc.len() == 2,
-        "both storylines begin for somebody: {by_arc:?}"
+        by_arc.len() == 3,
+        "every storyline begins for somebody: {by_arc:?}"
     );
     let finished: usize = by_arc
         .values()
         .map(|e| e.keys().filter(|k| *k != "open").count())
         .sum();
     assert!(finished >= 3, "several storyline endings occur: {by_arc:?}");
+}
+
+// ---------------------------------------------------------------- the full report (H4)
+
+/// How the east wing's secret is settled by the investigators of a term: which of the six endings
+/// they go for rotates with the seed, so every ending is tried.
+const ENDINGS: [&[&str]; 6] = [
+    &["fenn"],
+    &["soames"],
+    &["wren"],
+    &["vane"],
+    &["bonfire"],
+    &["walk_away"],
+];
+
+fn mixed_policies(seed: u64) -> Vec<Policy> {
+    let which = usize::try_from(seed % 6).unwrap();
+    let mut investigator = sleuth();
+    investigator.verdicts = ENDINGS[which];
+    let mut quiet = recluse();
+    quiet.verdicts = ENDINGS[(which + 3) % 6];
+    vec![
+        scholar(),
+        cautious(),
+        balanced(),
+        reckless(),
+        variety(),
+        investigator,
+        politician(),
+        rival(),
+        quiet,
+    ]
+}
+
+/// The policy a player name belongs to (`politician6` is a politician).
+fn policy_of(name: &str) -> &str {
+    name.trim_end_matches(|c: char| c.is_ascii_digit())
+}
+
+/// Everything the balance pass measures, over `seeds` whole terms of nine mixed styles on one school.
+struct Report {
+    stats: BTreeMap<&'static str, Vec<Outcome>>,
+    winners: BTreeMap<String, u32>,
+    finales: BTreeMap<String, u32>,
+    awards: BTreeMap<String, u32>,
+    effects: BTreeMap<String, u32>,
+    coverage: BTreeMap<String, u32>,
+    terms: u32,
+}
+
+fn report(seeds: u64) -> Report {
+    let content = content();
+    let mut r = Report {
+        stats: BTreeMap::new(),
+        winners: BTreeMap::new(),
+        finales: BTreeMap::new(),
+        awards: BTreeMap::new(),
+        effects: BTreeMap::new(),
+        coverage: BTreeMap::new(),
+        terms: 0,
+    };
+    let _ = take_coverage();
+    for seed in 0..seeds {
+        let (outcomes, world) = term(
+            &mixed_policies(seed),
+            &["smooth_talker", "fast_runner", "tinkerer", "teachers_pet"],
+            seed,
+        );
+        r.terms += 1;
+        let winner = world
+            .commons
+            .election
+            .winner
+            .clone()
+            .map_or_else(|| "nobody".to_owned(), |w| policy_of(&w).to_owned());
+        *r.winners.entry(winner).or_default() += 1;
+        *r.finales
+            .entry(world.commons.finale.clone().map_or_else(
+                || "not yet".to_owned(),
+                |f| {
+                    if f.is_empty() {
+                        "unsolved".to_owned()
+                    } else {
+                        f
+                    }
+                },
+            ))
+            .or_default() += 1;
+        for a in &world.active {
+            *r.effects.entry(a.id.clone()).or_default() += 1;
+        }
+        let mut rolled = world.clone();
+        tick_day(
+            &mut rolled,
+            &content,
+            world.term_start + content.rules.term_days,
+            &mut DoorRng::from_seed(1),
+        );
+        for a in &rolled.commons.awards {
+            *r.awards
+                .entry(format!("{}:{}", a.award, policy_of(&a.name)))
+                .or_default() += 1;
+        }
+        for o in outcomes {
+            r.stats.entry(o.policy).or_default().push(o);
+        }
+    }
+    r.coverage = take_coverage();
+    r
+}
+
+fn print_report(r: &Report) {
+    let mean =
+        |v: &[Outcome], f: &dyn Fn(&Outcome) -> f64| v.iter().map(f).sum::<f64>() / v.len() as f64;
+    eprintln!("\n=== {} terms, nine styles on one school ===", r.terms);
+    eprintln!(
+        "{:<11} {:>6} {:>5} {:>8} {:>6} {:>7} {:>6} {:>7} {:>6} {:>6} {:>5} {:>7}",
+        "style",
+        "legend",
+        "file",
+        "expelled",
+        "grade",
+        "honour%",
+        "clues",
+        "wing%",
+        "sent",
+        "landed",
+        "seen",
+        "rumours"
+    );
+    for (name, v) in &r.stats {
+        eprintln!(
+            "{:<11} {:>6.1} {:>5.1} {:>7.0}% {:>6.1} {:>6.0}% {:>6.1} {:>6.0}% {:>6.1} {:>6.1} {:>5.1} {:>7.1}",
+            name,
+            mean(v, &|o| f64::from(o.legend)),
+            mean(v, &|o| f64::from(o.file)),
+            100.0 * mean(v, &|o| f64::from(u8::from(o.ending == "expelled"))),
+            mean(v, &|o| f64::from(o.grades)),
+            100.0 * mean(v, &|o| f64::from(u8::from(o.grades >= 75))),
+            mean(v, &|o| f64::from(o.clues)),
+            100.0
+                * mean(v, &|o| f64::from(u8::from(
+                    !["none", "open"].contains(&o.wing.as_str())
+                ))),
+            mean(v, &|o| f64::from(o.sent)),
+            mean(v, &|o| f64::from(o.landed)),
+            mean(v, &|o| f64::from(o.seen)),
+            mean(v, &|o| f64::from(o.rumours)),
+        );
+    }
+    eprintln!(
+        "\nother pupils and the polls (per style: schemes turned away, share who stood, awards won in total):"
+    );
+    for (name, v) in &r.stats {
+        eprintln!(
+            "  {name:<11} turned away {:>4.1}  stood {:>3.0}%  awards held {:>3}",
+            mean(v, &|o| f64::from(o.turned)),
+            100.0 * mean(v, &|o| f64::from(u8::from(o.ran))),
+            v.iter().map(|o| o.awards.len()).sum::<usize>(),
+        );
+    }
+    let mut endings: BTreeMap<String, u32> = BTreeMap::new();
+    let mut wing: BTreeMap<String, u32> = BTreeMap::new();
+    let mut ranks: BTreeMap<(String, u8), u32> = BTreeMap::new();
+    let mut by_arc: BTreeMap<String, BTreeMap<String, u32>> = BTreeMap::new();
+    let mut deepest: BTreeMap<i32, u32> = BTreeMap::new();
+    for o in r.stats.values().flatten() {
+        *endings.entry(o.ending.clone()).or_default() += 1;
+        *wing.entry(o.wing.clone()).or_default() += 1;
+        *deepest.entry(o.clues).or_default() += 1;
+        for (club, rank) in &o.clubs {
+            *ranks.entry((club.clone(), *rank)).or_default() += 1;
+        }
+        for (arc, end) in &o.arcs {
+            *by_arc
+                .entry(arc.clone())
+                .or_default()
+                .entry(end.clone())
+                .or_default() += 1;
+        }
+    }
+    eprintln!("\nterm endings (players): {endings:?}");
+    eprintln!("club ranks (club rank: players):");
+    let mut line = String::new();
+    for ((club, rank), n) in &ranks {
+        let _ = write!(line, "  {club} {rank}: {n};");
+    }
+    eprintln!("{line}");
+    eprintln!("storylines at term end (players):");
+    for (arc, ends) in &by_arc {
+        eprintln!("  {arc}: {ends:?}");
+    }
+    eprintln!("the east wing: clues found by players {deepest:?}");
+    eprintln!("the east wing: each pupil's own ending {wing:?}");
+    eprintln!("the east wing: how the school ended it {:?}", r.finales);
+    eprintln!("election winners (who won the term): {:?}", r.winners);
+    let mut by_award: BTreeMap<&str, Vec<String>> = BTreeMap::new();
+    for (k, n) in &r.awards {
+        let (award, who) = k.split_once(':').unwrap_or((k, "?"));
+        by_award
+            .entry(award)
+            .or_default()
+            .push(format!("{who} {n}"));
+    }
+    eprintln!("awards won over the terms (winning style and times): {by_award:?}");
+    eprintln!("world effects in force at term end: {:?}", r.effects);
+    let c = content();
+    let total_choices: usize = c
+        .talks
+        .iter()
+        .flat_map(|t| t.node.iter().map(move |n| (t, n)))
+        .map(|(_, n)| n.choice.len())
+        .sum();
+    let taken_choices = r
+        .coverage
+        .keys()
+        .filter(|k| k.starts_with("choice:"))
+        .count();
+    let talks_taken: std::collections::BTreeSet<&str> = r
+        .coverage
+        .keys()
+        .filter_map(|k| k.strip_prefix("choice:"))
+        .filter_map(|k| k.split('/').next())
+        .collect();
+    let dead_talks: Vec<&str> = c
+        .talks
+        .iter()
+        .map(|t| t.id.as_str())
+        .filter(|t| !talks_taken.contains(t))
+        .collect();
+    eprintln!(
+        "branch coverage: {taken_choices} of {total_choices} conversation choices taken; talks never had: {dead_talks:?}"
+    );
+    let missed = |prefix: &str, all: Vec<String>| -> Vec<String> {
+        all.into_iter()
+            .filter(|id| !r.coverage.contains_key(&format!("{prefix}:{id}")))
+            .collect()
+    };
+    eprintln!(
+        "plots never played: {:?}; rumours never told: {:?}; clues never found: {:?}",
+        missed(
+            "plot",
+            c.social.plots.iter().map(|p| p.id.clone()).collect()
+        ),
+        missed(
+            "rumour",
+            c.social.rumours.iter().map(|p| p.id.clone()).collect()
+        ),
+        missed(
+            "clue",
+            c.mystery.clues.iter().map(|p| p.id.clone()).collect()
+        ),
+    );
+}
+
+#[test]
+fn the_full_report_nine_styles_whole_terms() {
+    let seeds: u64 = std::env::var("HALLPASS_SEEDS")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(40);
+    let r = report(seeds);
+    print_report(&r);
+    // Sanity only here; the no-dead-content gates are in the next test.
+    assert_eq!(r.stats.len(), 9);
+    for v in r.stats.values() {
+        assert_eq!(v.len() as u64, seeds);
+    }
+}
+
+#[test]
+fn no_ending_and_no_branch_of_the_social_layer_or_the_mystery_is_dead_content() {
+    let r = report(40);
+    let c = content();
+    let all = |f: &dyn Fn(&Outcome) -> bool| r.stats.values().flatten().any(f);
+    // The clubs the H2 simulation never saw joined are joined, and climbed.
+    for club in ["paper", "candle"] {
+        assert!(
+            all(&|o| o.clubs.iter().any(|(c, rank)| c == club && *rank >= 1)),
+            "{club} was never joined"
+        );
+    }
+    assert!(
+        all(&|o| o.clubs.iter().any(|(c, rank)| c == "candle" && *rank >= 3)),
+        "the Candle Society is climbed"
+    );
+    // Every ending of the prefects' ledger occurs, including the headline H2 never saw.
+    let arc_end = |arc: &str, end: &str| all(&|o| o.arcs.iter().any(|(a, e)| a == arc && e == end));
+    for ledger in ["shrugged", "returned", "owed", "purged", "headline"] {
+        assert!(
+            arc_end("ledger", ledger),
+            "ledger ending {ledger} never occurs"
+        );
+    }
+    for light in ["ignored", "quiet", "informer", "secret", "shared"] {
+        assert!(
+            arc_end("east_light", light),
+            "east light ending {light} never occurs"
+        );
+    }
+    // Every ending of the east wing, for a pupil and for the school.
+    for ending in ["fenn", "soames", "vane", "paper", "bonfire", "walk_away"] {
+        assert!(
+            arc_end("the_wing", ending),
+            "the_wing ending {ending} never occurs"
+        );
+    }
+    for verdict in &c.mystery.verdicts {
+        assert!(
+            r.finales.get(&verdict.id).copied().unwrap_or(0) > 0,
+            "the school never settled on {}: {:?}",
+            verdict.id,
+            r.finales
+        );
+    }
+    assert!(r.finales.contains_key("unsolved"), "{:?}", r.finales);
+    // The election: each character who runs wins sometimes, and so do pupils.
+    for runner in &c.social.runners {
+        assert!(
+            r.winners.contains_key(&format!("npc:{}", runner.npc)),
+            "{} never wins: {:?}",
+            runner.npc,
+            r.winners
+        );
+    }
+    assert!(
+        r.winners.keys().any(|w| !w.starts_with("npc:")),
+        "{:?}",
+        r.winners
+    );
+    // Every award, plot, rumour and clue gets used.
+    for a in &c.social.awards {
+        assert!(
+            r.awards
+                .keys()
+                .any(|k| k.starts_with(&format!("{}:", a.id))),
+            "award {} is never won",
+            a.id
+        );
+    }
+    for p in &c.social.plots {
+        assert!(
+            r.coverage.contains_key(&format!("plot:{}", p.id)),
+            "plot {}",
+            p.id
+        );
+    }
+    for u in &c.social.rumours {
+        assert!(
+            r.coverage.contains_key(&format!("rumour:{}", u.id)),
+            "rumour {}",
+            u.id
+        );
+    }
+    for k in &c.mystery.clues {
+        assert!(
+            r.coverage.contains_key(&format!("clue:{}", k.id)),
+            "clue {}",
+            k.id
+        );
+    }
+    // Conversations: nearly every choice is taken by somebody. The ones that need a betrayal
+    // (a made-up quarrel) are the exception the bots do not play.
+    let total: usize = c
+        .talks
+        .iter()
+        .flat_map(|t| t.node.iter())
+        .map(|n| n.choice.len())
+        .sum();
+    let taken = r
+        .coverage
+        .keys()
+        .filter(|k| k.starts_with("choice:"))
+        .count();
+    assert!(
+        taken * 100 >= total * 90,
+        "{taken} of {total} conversation choices taken"
+    );
+    // The opt-out holds in play: the pupil who opted out sent nothing and was sent nothing,
+    // while the others were hit.
+    let hits = |style: &str| r.stats[style].iter().map(|o| o.hit).sum::<usize>();
+    let sent = |style: &str| r.stats[style].iter().map(|o| o.sent).sum::<u32>();
+    assert!(r.stats["recluse"].iter().all(|o| o.opted_out));
+    assert_eq!(
+        hits("recluse"),
+        0,
+        "nothing was done to a pupil who opted out"
+    );
+    assert_eq!(sent("recluse"), 0);
+    assert!(hits("balanced") + hits("reckless") + hits("rival") + hits("cautious") > 0);
+    // The strong are not unbeatable: expulsions happen only to the reckless, and the careful are never expelled.
+    let expelled = |style: &str| {
+        r.stats[style]
+            .iter()
+            .filter(|o| o.ending == "expelled")
+            .count()
+    };
+    assert_eq!(
+        expelled("scholar") + expelled("cautious") + expelled("recluse"),
+        0
+    );
+    assert!(expelled("reckless") > 0);
+}
+
+#[test]
+fn the_school_mood_rotates_so_a_different_character_is_the_favourite_each_term() {
+    // With nobody standing, the count over terms one to six gives different winners.
+    let c = content();
+    let mut winners = std::collections::BTreeSet::new();
+    for term in 1..=6u32 {
+        let mut w = World::new(0);
+        w.term = term;
+        w.last_day = c.social.rules.tally_day;
+        winners.insert(russh_bbs_door_hallpass::social::tally(&c, &w).unwrap().id);
+    }
+    assert!(winners.len() >= 3, "{winners:?}");
 }

@@ -610,3 +610,24 @@ fn a_version_one_world_migrates_through_the_door_and_a_newer_one_is_not_understo
         Err(MigrateError::Corrupt(2))
     );
 }
+
+#[test]
+fn a_question_mark_typed_into_the_clan_name_prompt_is_text_not_the_look_around_view() {
+    use russh_bbs_door::host::Driver;
+    use russh_bbs_door::{Save, Start};
+    let door = Saltmarch::new().unwrap();
+    let env = DoorEnv::for_tests("ann");
+    let start = Start {
+        save: Save::Fresh,
+        world: None,
+        env: &env,
+        today: Day::from_raw(20_000),
+        season: 1,
+    };
+    let clock = Arc::new(ManualClock::new(Day::from_raw(20_000).start()));
+    let mut driver = Driver::open(&door, start, 1, clock);
+    // A fresh save starts at the naming prompt; `?` is a character of the name.
+    driver.key(DoorKey::Char('?'));
+    assert!(!driver.is_looking());
+    assert!(driver.look_around(&env).join("\n").contains("?_"));
+}

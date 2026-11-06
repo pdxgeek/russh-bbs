@@ -422,7 +422,7 @@ fn a_member_edits_their_own_profile_and_not_anyone_elses() {
         Response::NotPermitted
     );
     // Nothing was written to Bob.
-    let Response::Profile(bob) = run(execute(&store, &access, Request::View(id(2)))) else {
+    let Response::Profile(bob, _) = run(execute(&store, &access, Request::View(id(2)))) else {
         panic!("not a profile");
     };
     assert_eq!(bob.profile, Profile::default());
@@ -561,13 +561,55 @@ fn a_session_without_the_permission_learns_nothing_from_the_rank_rule() {
 }
 
 #[test]
+fn the_edit_key_is_offered_only_for_a_member_the_rank_allows() {
+    // FIX-M2-7: bob ranks below the editor, carol equals, dave above.
+    let store = seeded();
+    store.add(5, "dave", true);
+    store.set_rank(2, 20);
+    store.set_rank(4, 50);
+    store.set_rank(5, 100);
+    let staff = ranked(1, 50, &[Permission::MembersView, Permission::MembersEdit]);
+    let footer = |target: &str| {
+        let mut screen = MembersScreen::list(Some(id(1)));
+        pump(&mut screen, &store, &staff);
+        press(&mut screen, &store, &staff, target);
+        screen.view(&staff).footer
+    };
+    assert_eq!(footer("2"), keys::VIEW_FOOTER_EDIT, "below: shown");
+    assert_eq!(footer("3"), keys::VIEW_FOOTER, "equal: hidden");
+    assert_eq!(footer("4"), keys::VIEW_FOOTER, "above: hidden");
+    // A hidden key does nothing: no request, no form.
+    let mut screen = MembersScreen::list(Some(id(1)));
+    pump(&mut screen, &store, &staff);
+    press(&mut screen, &store, &staff, "4e");
+    assert!(screen.take_request().is_none());
+    assert_eq!(screen.view(&staff).footer, keys::VIEW_FOOTER);
+}
+
+#[test]
+fn the_edit_key_for_your_own_profile_ignores_rank() {
+    let store = seeded();
+    store.set_rank(1, 10);
+    let access = ranked(1, 10, MEMBER_SET);
+    let mut screen = MembersScreen::own_profile(id(1));
+    pump(&mut screen, &store, &access);
+    assert_eq!(screen.view(&access).footer, keys::VIEW_FOOTER_EDIT);
+}
+
+#[test]
 fn the_refusal_is_an_honest_notice_on_the_screen() {
+    // The key is hidden now (above), but the refusal in core stays: the answer, however it
+    // arrives, shows the honest notice.
     let store = seeded();
     store.set_rank(2, 100);
     let staff = ranked(1, 50, &[Permission::MembersView, Permission::MembersEdit]);
+    let Response::RankTooLow = run(execute(&store, &staff, Request::Edit(id(2)))) else {
+        panic!("not refused");
+    };
     let mut screen = MembersScreen::list(Some(id(1)));
     pump(&mut screen, &store, &staff);
-    press(&mut screen, &store, &staff, "2e");
+    press(&mut screen, &store, &staff, "2");
+    screen.deliver(Response::RankTooLow);
     let shown = text_of(&screen.view(&staff));
     assert!(shown.contains("members.notice.rank"), "{shown:?}");
 }
@@ -758,7 +800,7 @@ fn the_edit_form_prefills_edits_field_by_field_and_saves_on_the_last_enter() {
         saved.contains("Paris") && saved.contains("example.org"),
         "{saved}"
     );
-    let Response::Profile(now) = run(execute(&store, &access, Request::View(id(1)))) else {
+    let Response::Profile(now, _) = run(execute(&store, &access, Request::View(id(1)))) else {
         panic!("not a profile");
     };
     assert_eq!(now.profile.get(Field::Location), "Paris");
