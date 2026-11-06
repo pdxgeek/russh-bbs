@@ -239,8 +239,8 @@ impl Session {
                     out.push(line(
                         format!(
                             "Convoys: up to {CONVOY_MAX} captains who share risk and reward. Your \
-                             ships need not be in the same place: the guns of the others cut your \
-                             raider odds and the pool pays out while you sleep."
+                             ships need not be in the same place: the guns of the others make \
+                             raiders less likely and soften a bad night, and the pool pays out while you sleep."
                         ),
                         DoorStyle::Plain,
                     ));

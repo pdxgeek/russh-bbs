@@ -466,3 +466,33 @@ fn outposts_need_the_season_to_be_late_a_charted_empty_system_and_the_credits() 
         .is_err()
     );
 }
+
+#[test]
+fn a_convoys_guard_makes_pirate_events_rarer_and_nothing_else() {
+    use russh_bbs_door_long_haul::transit::Where;
+    let h = Harness::new(1, 5);
+    let mut alone = h.captain("dockhand");
+    let mut guarded = h.captain("dockhand");
+    guarded.social.guard = 100;
+    alone.social.guard = 0;
+    let w = Where {
+        content: &h.content,
+        frontier: &h.frontier,
+        system: alone.at,
+        fresh: false,
+    };
+    let sum = |p: &Player, pirate: bool| -> u64 {
+        p.event_weights(&w)
+            .iter()
+            .filter(|(i, _)| (h.content.transit.event[*i].family == "pirate") == pirate)
+            .map(|(_, wt)| u64::from(*wt))
+            .sum()
+    };
+    assert!(sum(&alone, true) > 0);
+    assert!(sum(&guarded, true) < sum(&alone, true) * 7 / 10);
+    assert_eq!(
+        sum(&guarded, false),
+        sum(&alone, false),
+        "only pirates are kept away"
+    );
+}

@@ -769,6 +769,11 @@ impl Player {
                         wt = wt * u64::from(m.pm) / 1000;
                     }
                 }
+                // A convoy's guns keep raiders away: the other members' guard (0 to 100) cuts the
+                // weight of pirate events by up to four-tenths.
+                if e.family == "pirate" && self.social.guard > 0 {
+                    wt = wt * (1000 - u64::from(self.social.guard) * 4) / 1000;
+                }
                 let wt = u32::try_from(wt).unwrap_or(u32::MAX);
                 (wt > 0).then_some((i, wt))
             })
