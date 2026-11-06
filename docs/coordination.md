@@ -59,7 +59,7 @@ A slice with an unmet dependency is not claimable.
 
 | Slice | Owns | Depends on | Status | Branch / PR |
 |---|---|---|---|---|
-| DOC-2 README refresh | `README.md`, `docs/readme/` (its screenshots), this row | none | Claimed | Branch `docs/readme-refresh`. Docs only. Merged `origin/main` (DOC-1's `docs/guide/` is there, so the "Sysop and member guides" link works). The new README replaces the stale status line named in FIX-DOC1-4 (a); the other parts of FIX-DOC1-4 are untouched. |
+| DOC-2 README refresh | `README.md`, `docs/readme/` (its screenshots), this row | none | In review ([PR #145](https://github.com/pdxgeek/russh-bbs/pull/145)) | Branch `docs/readme-refresh`. Docs only. Merged `origin/main` (DOC-1's `docs/guide/` is there, so the "Sysop and member guides" link works). The new README replaces the stale status line named in FIX-DOC1-4 (a); the other parts of FIX-DOC1-4 are untouched. |
 
 ### M2: Invites and members
 
