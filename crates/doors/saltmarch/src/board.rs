@@ -24,12 +24,7 @@ fn wage(def: &ContractDef, clan: &Clan, rng: &mut DoorRng) -> u32 {
     base * (100 + TIER_BONUS_PCT * tier) / 100
 }
 
-fn finish(
-    def: &ContractDef,
-    clan: &mut Clan,
-    rng: &mut DoorRng,
-    events: &mut Vec<Event>,
-) {
+fn finish(def: &ContractDef, clan: &mut Clan, rng: &mut DoorRng, events: &mut Vec<Event>) {
     let pay = wage(def, clan, rng);
     clan.tallies = clan.tallies.saturating_add(pay);
     clan.story.contract = None;
@@ -209,7 +204,10 @@ pub fn on_return(
         .sum();
     let have = u32::from(a.progress) + brought;
     if have >= u32::from(def.qty) {
-        clan.stock.take_up_to(good, u32::from(def.qty).saturating_sub(u32::from(a.progress)));
+        clan.stock.take_up_to(
+            good,
+            u32::from(def.qty).saturating_sub(u32::from(a.progress)),
+        );
         finish(def, clan, rng, events);
     } else if brought > 0
         && let Some(c) = clan.story.contract.as_mut()
@@ -275,7 +273,12 @@ impl From<ContractError> for ActionError {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::similar_names,
+        clippy::unnecessary_wraps
+    )]
     use super::*;
     use crate::clan::tests::fixture;
     use crate::story::Faction;
@@ -290,7 +293,7 @@ mod tests {
         clan.story.rep = [standing; 3];
         let day = (DAY..DAY + 400)
             .find(|d| offers(&cat, &clan, SEED, *d).iter().any(|c| c.id == id))
-            .unwrap_or_else(|| panic!("`{id}` is never on the board"));
+            .expect("a contract of that id is on some board");
         (cat, clan, day)
     }
 
@@ -301,21 +304,29 @@ mod tests {
     #[test]
     fn the_board_is_the_same_for_the_same_standing_and_day_and_closed_to_outcasts() {
         let (cat, _, mut clan) = fixture();
-        let a: Vec<_> = offers(&cat, &clan, SEED, DAY).iter().map(|c| &c.id).collect();
-        let b: Vec<_> = offers(&cat, &clan, SEED, DAY).iter().map(|c| &c.id).collect();
+        let a: Vec<_> = offers(&cat, &clan, SEED, DAY)
+            .iter()
+            .map(|c| &c.id)
+            .collect();
+        let b: Vec<_> = offers(&cat, &clan, SEED, DAY)
+            .iter()
+            .map(|c| &c.id)
+            .collect();
         assert_eq!(a, b);
         assert!(a.len() <= crate::story::OFFERS && !a.is_empty());
         assert!(
-            offers(&cat, &clan, SEED, DAY)
-                .iter()
-                .all(|c| c.tier <= 1),
+            offers(&cat, &clan, SEED, DAY).iter().all(|c| c.tier <= 1),
             "a Stranger is offered only the first tier"
         );
         clan.story.rep = [70; 3];
-        let high = (DAY..DAY + 60).any(|d| offers(&cat, &clan, SEED, d).iter().any(|c| c.tier >= 3));
+        let high =
+            (DAY..DAY + 60).any(|d| offers(&cat, &clan, SEED, d).iter().any(|c| c.tier >= 3));
         assert!(high, "the Honoured see the big contracts");
         clan.story.rep = [-30; 3];
-        assert!(offers(&cat, &clan, SEED, DAY).is_empty(), "an outcast is offered nothing");
+        assert!(
+            offers(&cat, &clan, SEED, DAY).is_empty(),
+            "an outcast is offered nothing"
+        );
         clan.story.rep = [0, 0, -30];
         assert!(
             (DAY..DAY + 60).all(|d| offers(&cat, &clan, SEED, d)
@@ -342,10 +353,17 @@ mod tests {
         clan.stock.add(Resource::Salt, 20);
         let (t0, rep0) = (clan.tallies, clan.story.rep[Faction::Rakers.index()]);
         deliver(&cat, &mut clan, &mut rng(), &mut ev).unwrap();
-        let def = cat.contracts.iter().find(|c| c.id == "rk-salt-sacks").unwrap();
+        let def = cat
+            .contracts
+            .iter()
+            .find(|c| c.id == "rk-salt-sacks")
+            .unwrap();
         assert_eq!(clan.stock.get(Resource::Salt), 20 - u32::from(def.qty));
         let pay = clan.tallies - t0;
-        assert!((u32::from(def.pay_lo)..=u32::from(def.pay_hi)).contains(&pay), "{pay}");
+        assert!(
+            (u32::from(def.pay_lo)..=u32::from(def.pay_hi)).contains(&pay),
+            "{pay}"
+        );
         assert_eq!(
             clan.story.rep[Faction::Rakers.index()],
             rep0 + i16::from(def.rep)
@@ -386,7 +404,13 @@ mod tests {
         take(&cat, &mut clan, SEED, day, "rk-hound-bounty", &mut ev).unwrap();
         on_fight_won(&cat, &mut clan, &["mire-eel"], &mut rng(), &mut ev);
         assert_eq!(clan.story.contract.as_ref().unwrap().progress, 0);
-        on_fight_won(&cat, &mut clan, &["bog-hound", "bog-hound"], &mut rng(), &mut ev);
+        on_fight_won(
+            &cat,
+            &mut clan,
+            &["bog-hound", "bog-hound"],
+            &mut rng(),
+            &mut ev,
+        );
         assert_eq!(clan.story.contract.as_ref().unwrap().progress, 1);
         let t = clan.tallies;
         on_fight_won(&cat, &mut clan, &["bog-hound"], &mut rng(), &mut ev);
@@ -406,11 +430,21 @@ mod tests {
         clan.stock.add(Resource::Iron, 6);
         on_return(&cat, &mut clan, &[(Resource::Iron, 6)], &mut rng(), &mut ev);
         assert!(clan.story.contract.is_none());
-        assert_eq!(clan.stock.get(Resource::Iron), 3, "only what was asked for was taken");
+        assert_eq!(
+            clan.stock.get(Resource::Iron),
+            3,
+            "only what was asked for was taken"
+        );
         // Goods of another kind are not counted.
         let (cat, mut clan, day) = offered("rk-iron-pans", 20);
         take(&cat, &mut clan, SEED, day, "rk-iron-pans", &mut ev).unwrap();
-        on_return(&cat, &mut clan, &[(Resource::Salt, 50)], &mut rng(), &mut ev);
+        on_return(
+            &cat,
+            &mut clan,
+            &[(Resource::Salt, 50)],
+            &mut rng(),
+            &mut ev,
+        );
         assert_eq!(clan.story.contract.as_ref().unwrap().progress, 0);
     }
 
@@ -420,7 +454,10 @@ mod tests {
         let mut ev = Vec::new();
         take(&cat, &mut clan, SEED, day, "ct-toll-escort", &mut ev).unwrap();
         on_place(&cat, &mut clan, PoiKind::Trader, 1, &mut rng(), &mut ev);
-        assert!(clan.story.contract.is_some(), "a party of one escorts nobody");
+        assert!(
+            clan.story.contract.is_some(),
+            "a party of one escorts nobody"
+        );
         on_place(&cat, &mut clan, PoiKind::Camp, 3, &mut rng(), &mut ev);
         assert!(clan.story.contract.is_some(), "the wrong kind of place");
         on_place(&cat, &mut clan, PoiKind::Trader, 2, &mut rng(), &mut ev);
@@ -432,7 +469,11 @@ mod tests {
         let (cat, mut clan, day) = offered("rk-salt-sacks", 20);
         let mut ev = Vec::new();
         take(&cat, &mut clan, SEED, day, "rk-salt-sacks", &mut ev).unwrap();
-        let def = cat.contracts.iter().find(|c| c.id == "rk-salt-sacks").unwrap();
+        let def = cat
+            .contracts
+            .iter()
+            .find(|c| c.id == "rk-salt-sacks")
+            .unwrap();
         let last = day + i64::from(def.days) - 1;
         let rep = clan.story.rep[Faction::Rakers.index()];
         expire(&cat, &mut clan, last, &mut ev);
@@ -446,9 +487,15 @@ mod tests {
         take(&cat, &mut clan, SEED, day, "rk-salt-sacks", &mut ev).unwrap();
         let rep = clan.story.rep[Faction::Rakers.index()];
         give_back(&cat, &mut clan, &mut ev).unwrap();
-        let lost = rep - clan.story.rep[Faction::Rakers.index()];
-        assert!(lost > 0 && lost < i16::from(def.fail), "giving back is gentler: {lost}");
-        assert_eq!(give_back(&cat, &mut clan, &mut ev), Err(ContractError::None));
+        let dropped = rep - clan.story.rep[Faction::Rakers.index()];
+        assert!(
+            dropped > 0 && dropped < i16::from(def.fail),
+            "giving back is gentler: {dropped}"
+        );
+        assert_eq!(
+            give_back(&cat, &mut clan, &mut ev),
+            Err(ContractError::None)
+        );
         assert_eq!(
             take(&cat, &mut clan, SEED, day, "no-such-contract", &mut ev),
             Err(ContractError::NotOffered)

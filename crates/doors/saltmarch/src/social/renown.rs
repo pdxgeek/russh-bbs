@@ -194,6 +194,6 @@ mod story_tests {
         clan.story.toll_income = 4000;
         assert_eq!(of(&cat, &clan, &w, 5).story, 2 * CHAIN + ROADS_MAX);
         // And none of it alone can outrun a built hold: the caps keep the sum bounded.
-        assert!(CONTRACTS_MAX + CHAINS_MAX + ROADS_MAX <= 55);
+        const { assert!(CONTRACTS_MAX + CHAINS_MAX + ROADS_MAX <= 55) };
     }
 }

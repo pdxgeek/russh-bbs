@@ -95,7 +95,11 @@ struct Entry {
 
 /// The next toll in the cycle 0 to the highest.
 const fn next_toll(now: u8) -> u8 {
-    if now >= crate::story::TOLL_MAX { 0 } else { now + 1 }
+    if now >= crate::story::TOLL_MAX {
+        0
+    } else {
+        now + 1
+    }
 }
 
 fn entry(tag: impl Into<String>, text: impl Into<String>, act: Act) -> Entry {

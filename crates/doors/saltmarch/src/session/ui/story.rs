@@ -18,7 +18,10 @@ fn standing_lines(ui: &Ui<'_>) -> Vec<Line<'static>> {
             let tier = usize::from(ui.clan.story.tier(*f));
             Line::from(vec![
                 Span::styled(format!("{:<15}", f.name()), p.plain),
-                Span::styled(format!("{:<9}", TIERS[tier]), if tier == 0 { p.rust() } else { p.gold() }),
+                Span::styled(
+                    format!("{:<9}", TIERS[tier]),
+                    if tier == 0 { p.rust() } else { p.gold() },
+                ),
                 Span::styled(format!("{rep:>4}"), p.dim),
             ])
         })
@@ -106,7 +109,10 @@ pub(super) fn journal(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
             )),
             Progress::Under(n) => {
                 let last = &q.steps[n.saturating_sub(1)];
-                lines.push(Line::styled(format!("  {}/{} {}", n, q.steps.len(), last.text), p.plain));
+                lines.push(Line::styled(
+                    format!("  {}/{} {}", n, q.steps.len(), last.text),
+                    p.plain,
+                ));
             }
             Progress::Unheard => {}
         }
@@ -119,7 +125,10 @@ pub(super) fn journal(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     }
     if let Some(h) = ui.clan.story.heirloom() {
         lines.push(Line::raw(""));
-        lines.push(Line::styled(format!("Heirloom: {} ({})", h.name(), h.effect()), p.gold()));
+        lines.push(Line::styled(
+            format!("Heirloom: {} ({})", h.name(), h.effect()),
+            p.gold(),
+        ));
     }
     f.render_widget(
         Paragraph::new(lines)

@@ -58,6 +58,8 @@ enum Step {
         turn: &'static str,
         max: u8,
     },
+    /// Back out of whatever screen this is, to the home screen.
+    Home,
     /// Take the first contract on the board whose line holds this word.
     Take(&'static str),
     /// Go out on an expedition if there is time.
@@ -158,13 +160,17 @@ fn script(style: Style, visit: u32, salt: u64) -> VecDeque<Step> {
             Style::Trader => "(salvage",
         }),
         Tag("hand-over"),
-        esc(),
-        esc(),
+        Step::Home,
     ]);
     // Everyone keeps building a little: a hold is how a clan is measured.
     s.extend([Tag("go:hold"), Tag("build:"), Tag("labour:")]);
     if style == Style::Builder {
-        s.extend([Tag("build:"), Tag("labour:"), Tag("labour:"), Tag("labour:")]);
+        s.extend([
+            Tag("build:"),
+            Tag("labour:"),
+            Tag("labour:"),
+            Tag("labour:"),
+        ]);
     }
     s.push_back(esc());
     match style {
@@ -215,13 +221,24 @@ fn script(style: Style, visit: u32, salt: u64) -> VecDeque<Step> {
             // A pact is broken now and then (two presses): the diplomat is not a saint.
             // Only one diplomat in four ever does.
             if visit == 40 && salt % 4 == 1 {
-                s.extend([Tag("go:court"), Tag("go:pacts"), Tag("break:"), Tag("break:")]);
+                s.extend([
+                    Tag("go:court"),
+                    Tag("go:pacts"),
+                    Tag("break:"),
+                    Tag("break:"),
+                ]);
             }
         }
         Style::Trader => {
             s.extend([Trip, Tag("go:court"), Tag("go:exchange")]);
             for _ in 0..4 {
-                s.extend([Tag("xbuy:"), Tag("xsell:"), Tag("bid:"), Tag("ask:"), Tag("good:next")]);
+                s.extend([
+                    Tag("xbuy:"),
+                    Tag("xsell:"),
+                    Tag("bid:"),
+                    Tag("ask:"),
+                    Tag("good:next"),
+                ]);
             }
         }
     }
@@ -275,10 +292,29 @@ impl Player {
         // the diplomat choose by temperament (a stable hash of who they are and where they are),
         // so across a season they walk different branches.
         let pick = match self.style {
-            Style::Builder => rows.iter().min_by_key(|(i, score, _)| (*score, *i)),
-            Style::Raider => rows
-                .iter()
-                .max_by_key(|(i, score, _)| (*score >= 200, std::cmp::Reverse(*score), std::cmp::Reverse(*i))),
+            Style::Builder => {
+                // Careful, but not a coward: one safe answer in two is the first, the rest vary.
+                let h = self
+                    .salt
+                    .wrapping_mul(0x9E37_79B9_7F4A_7C15)
+                    .wrapping_add(u64::from(self.legs).wrapping_mul(0xD1B5_4A32_D192_ED03));
+                let safe: Vec<_> = rows.iter().filter(|(_, s, _)| *s <= 40).collect();
+                if h >> 63 == 0 || safe.is_empty() {
+                    rows.iter().min_by_key(|(i, score, _)| (*score, *i))
+                } else {
+                    safe.get(
+                        usize::try_from((h >> 20) % u64::try_from(safe.len()).unwrap()).unwrap(),
+                    )
+                    .copied()
+                }
+            }
+            Style::Raider => rows.iter().max_by_key(|(i, score, _)| {
+                (
+                    *score >= 200,
+                    std::cmp::Reverse(*score),
+                    std::cmp::Reverse(*i),
+                )
+            }),
             Style::Diplomat | Style::Trader => {
                 let h = self
                     .salt
@@ -301,8 +337,20 @@ impl Player {
 impl Bot for Player {
     fn next_key(&mut self, screen: &[String], visit: u32, sent: u32) -> Option<DoorKey> {
         let k = self.next_key_inner(screen, visit, sent);
-        if std::env::var("SEASON_SIM_DEBUG").is_ok_and(|w| w == self.name) && (2..=3).contains(&visit) {
-            eprintln!("[{} v{visit} #{sent}] {:?}\n  top: {}", self.name, k, screen.iter().take(3).cloned().collect::<Vec<_>>().join(" | "));
+        if std::env::var("SEASON_SIM_DEBUG").is_ok_and(|w| w == self.name)
+            && (2..=3).contains(&visit)
+        {
+            eprintln!(
+                "[{} v{visit} #{sent}] {:?}\n  top: {}",
+                self.name,
+                k,
+                screen
+                    .iter()
+                    .take(3)
+                    .cloned()
+                    .collect::<Vec<_>>()
+                    .join(" | ")
+            );
         }
         k
     }
@@ -358,22 +406,25 @@ impl Player {
                 .count();
             if picked < want {
                 // A diplomat wants hands that can lay a causeway.
-                let builders: Vec<char> = screen
+                let builders: Vec<(char, String)> = screen
                     .iter()
                     .filter_map(|l| {
                         let rest = l.strip_prefix('[')?;
                         let (key, text) = rest.split_once("] ")?;
                         (text.starts_with("party:")
                             && (text.contains("wader") || text.contains("boatwright")))
-                        .then(|| key.chars().next().unwrap())
+                        .then(|| {
+                            (
+                                key.chars().next().unwrap(),
+                                text.split_whitespace().next().unwrap().to_owned(),
+                            )
+                        })
                     })
                     .collect();
                 if self.style == Style::Diplomat {
-                    for k in builders {
-                        let tag = format!("builder-{k}");
-                        if !self.tried.contains_key(&tag) {
+                    for (k, tag) in builders {
+                        if self.tried.get(&tag).copied().unwrap_or(0) == 0 {
                             self.tried.insert(tag, 1);
-                            self.tried.insert(format!("party:picked-{k}"), 1);
                             return Some(DoorKey::Char(k));
                         }
                     }
@@ -434,10 +485,12 @@ impl Player {
                 return press("home");
             }
             // The diplomat lays a causeway when it can, once or twice a season.
-            if self.style == Style::Diplomat && !at_hold && !flooding && self.legs % 4 == 0 {
-                if let Some(k) = press("lay") {
-                    return Some(k);
-                }
+            if self.style == Style::Diplomat
+                && !at_hold
+                && !flooding
+                && let Some(k) = press("lay")
+            {
+                return Some(k);
             }
             if has("march") {
                 return press("march");
@@ -510,6 +563,12 @@ impl Player {
                         return Some(k);
                     }
                 }
+                Step::Home => {
+                    if !has("go:expedition") {
+                        self.script.push_front(Step::Home);
+                        return Some(DoorKey::Escape);
+                    }
+                }
                 Step::Take(word) => {
                     // The line is "[k] take:<id> Take: <title> (<kind> ...".
                     if let Some(k) = screen.iter().find_map(|l| {
@@ -520,7 +579,9 @@ impl Player {
                     }) {
                         return Some(k);
                     }
-                    return press("take:");
+                    if let Some(k) = press("take:") {
+                        return Some(k);
+                    }
                 }
                 Step::Trip => {
                     if turns >= 12 && self.trips_today < 1 && has("go:expedition") {
@@ -562,16 +623,25 @@ fn wealth(c: &Clan) -> u32 {
 }
 
 const NAMES: [&str; 16] = [
-    "Ashlock", "Brinemere", "Copperfen", "Drystake", "Eelgrass", "Fogbank", "Gullcry",
-    "Hollowmere", "Ironsalt", "Kelpgate", "Lantern", "Mudlark", "Nettlebed", "Ospreyfen",
-    "Peatgate", "Quillreed",
+    "Ashlock",
+    "Brinemere",
+    "Copperfen",
+    "Drystake",
+    "Eelgrass",
+    "Fogbank",
+    "Gullcry",
+    "Hollowmere",
+    "Ironsalt",
+    "Kelpgate",
+    "Lantern",
+    "Mudlark",
+    "Nettlebed",
+    "Ospreyfen",
+    "Peatgate",
+    "Quillreed",
 ];
 
-async fn clans_of(
-    sim: &Simulation,
-    door: &Arc<dyn Door>,
-    order: &[Style],
-) -> Vec<(Style, Clan)> {
+async fn clans_of(sim: &Simulation, door: &Arc<dyn Door>, order: &[Style]) -> Vec<(Style, Clan)> {
     let id = door.info().id.clone();
     let mut clans = Vec::new();
     for (i, style) in order.iter().enumerate() {
@@ -591,7 +661,12 @@ async fn clans_of(
 async fn play(seed: u64) -> Outcome {
     let door: Arc<dyn Door> = Saltmarch::shared().unwrap();
     let mut sim = Simulation::new(door.clone(), Day::from_raw(START), seed);
-    let styles = [Style::Builder, Style::Raider, Style::Diplomat, Style::Trader];
+    let styles = [
+        Style::Builder,
+        Style::Raider,
+        Style::Diplomat,
+        Style::Trader,
+    ];
     let mut order = Vec::new();
     for i in 0..PER_STYLE * styles.len() {
         let style = styles[i % styles.len()];
@@ -659,7 +734,12 @@ fn a_season_of_four_styles_is_balanced_and_the_content_is_reached() {
     let outs = run_seeds(&seeds);
     let cat = Saltmarch::new().unwrap();
     let cat = cat.catalog();
-    let styles = [Style::Builder, Style::Raider, Style::Diplomat, Style::Trader];
+    let styles = [
+        Style::Builder,
+        Style::Raider,
+        Style::Diplomat,
+        Style::Trader,
+    ];
 
     eprintln!(
         "\nSaltmarch season sim: {DAYS} days, {} clans per seed ({PER_STYLE} per style), seeds {seeds:?}",
@@ -684,8 +764,21 @@ fn a_season_of_four_styles_is_balanced_and_the_content_is_reached() {
     eprintln!("\nPer style, mean per clan over all seeds");
     eprintln!(
         "{:<9} {:>6} {:>5} {:>5} {:>5} {:>5} {:>5} {:>5} {:>5} {:>5} {:>5} {:>5} {:>5} {:>5} {:>6}",
-        "style", "renown", "raids", "won", "lost", "held", "crew", "dead", "bld", "cntr", "fail",
-        "chain", "laid", "tollP", "tollE"
+        "style",
+        "renown",
+        "raids",
+        "won",
+        "lost",
+        "held",
+        "crew",
+        "dead",
+        "bld",
+        "cntr",
+        "fail",
+        "chain",
+        "laid",
+        "tollP",
+        "tollE"
     );
     let mut renown: BTreeMap<Style, f64> = BTreeMap::new();
     let mut extra: Vec<String> = Vec::new();
@@ -720,8 +813,23 @@ fn a_season_of_four_styles_is_balanced_and_the_content_is_reached() {
             mean(&cl, &|c| f64::from(c.social.plundered)),
             mean(&cl, &|c| f64::from(c.social.robbed)),
         ));
-        raids_won += cl.iter().map(|c| u32::from(c.social.raids_won)).sum::<u32>();
-        raids_sent += cl.iter().map(|c| u32::from(c.social.raids_sent)).sum::<u32>();
+        extra.push(format!(
+            "{:<9} morale {:>4.1} food {:>5.1} peat {:>5.1} tallies {:>6.1} hall-lines {:>4.1}",
+            "",
+            mean(&cl, &|c| f64::from(c.morale)),
+            mean(&cl, &|c| f64::from(c.stock.get(Resource::Food))),
+            mean(&cl, &|c| f64::from(c.stock.get(Resource::Peat))),
+            mean(&cl, &|c| f64::from(c.tallies)),
+            mean(&cl, &|c| c.hall.len() as f64),
+        ));
+        raids_won += cl
+            .iter()
+            .map(|c| u32::from(c.social.raids_won))
+            .sum::<u32>();
+        raids_sent += cl
+            .iter()
+            .map(|c| u32::from(c.social.raids_sent))
+            .sum::<u32>();
         eprintln!(
             "{:<9} {:>6.1} {:>5.1} {:>5.1} {:>5.1} {:>5.1} {:>5.1} {:>5.1} {:>5.1} {:>5.1} {:>5.1} {:>5.1} {:>5.1} {:>5.1} {:>6.1}",
             format!("{style:?}"),
@@ -770,8 +878,14 @@ fn a_season_of_four_styles_is_balanced_and_the_content_is_reached() {
         let tally = russh_bbs_door_saltmarch::social::legacy::Tally::of(w);
         eprintln!(
             "seed {seed:>5}: raids won {:>2}, pacts in force {signed}, broken {broken}, traded {}, deep {}, chains {}, contracts {}, causeways {}, world {} B -> {}",
-            tally.raids, tally.traded, tally.deep, tally.quests, tally.contracts, tally.laid,
-            o.world_bytes, ending.name()
+            tally.raids,
+            tally.traded,
+            tally.deep,
+            tally.quests,
+            tally.contracts,
+            tally.laid,
+            o.world_bytes,
+            ending.name()
         );
         assert!(o.world_bytes < russh_bbs_door_saltmarch::social::caps::WORLD_SOFT_CAP);
     }
@@ -845,7 +959,10 @@ fn a_season_of_four_styles_is_balanced_and_the_content_is_reached() {
     }
     let lo = renown.values().copied().fold(f64::MAX, f64::min);
     let hi = renown.values().copied().fold(0.0, f64::max);
-    assert!(hi < lo * 2.6, "one style runs away with the league: {renown:?}");
+    assert!(
+        hi < lo * 2.6,
+        "one style runs away with the league: {renown:?}"
+    );
     assert!(raids_sent > 0);
 }
 

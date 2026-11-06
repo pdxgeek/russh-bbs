@@ -162,11 +162,26 @@ fn the_post_is_rewritten_only_when_it_changed() {
     let w = world();
     let mut posted = w.clans[0].posted.clone();
     assert_eq!(
-        post_update(Some(&w.encode()), 1, "Ash", &posted, Some(40), crate::world::Badge::default()),
+        post_update(
+            Some(&w.encode()),
+            1,
+            "Ash",
+            &posted,
+            Some(40),
+            crate::world::Badge::default()
+        ),
         None
     );
     posted.rating = 3;
-    let bytes = post_update(Some(&w.encode()), 1, "Ash", &posted, Some(41), crate::world::Badge::default()).unwrap();
+    let bytes = post_update(
+        Some(&w.encode()),
+        1,
+        "Ash",
+        &posted,
+        Some(41),
+        crate::world::Badge::default(),
+    )
+    .unwrap();
     let after = World::decode(&bytes).unwrap();
     assert_eq!(
         (after.clans[0].posted.rating, after.clans[0].score),
@@ -174,7 +189,14 @@ fn the_post_is_rewritten_only_when_it_changed() {
     );
     assert_eq!(after.clans[1], w.clans[1], "nobody else changes");
     assert_eq!(
-        post_update(Some(&w.encode()), 1, "Nobody", &posted, None, crate::world::Badge::default()),
+        post_update(
+            Some(&w.encode()),
+            1,
+            "Nobody",
+            &posted,
+            None,
+            crate::world::Badge::default()
+        ),
         None
     );
 }
@@ -419,16 +441,38 @@ fn laying_a_causeway_follows_the_ground_and_the_caps() {
     let w = world();
     let sites = lay_sites(&w, 12);
     let (a, b) = (sites[0], sites[1]);
-    let (w2, why) = after(&w, "Ash", 1, Act::Lay { x: a.0, y: a.1, toll: 9 });
+    let (w2, why) = after(
+        &w,
+        "Ash",
+        1,
+        Act::Lay {
+            x: a.0,
+            y: a.1,
+            toll: 9,
+        },
+    );
     assert_eq!(why, None);
     assert_eq!(w2.causeways.len(), 1);
     assert_eq!(
-        (w2.causeways[0].x, w2.causeways[0].owner, w2.causeways[0].toll),
+        (
+            w2.causeways[0].x,
+            w2.causeways[0].owner,
+            w2.causeways[0].toll
+        ),
         (a.0, 0, crate::story::TOLL_MAX),
         "the toll is capped"
     );
     // The same tile twice, and ground that is not for it (the Deep).
-    let (_, why) = after(&w2, "Brindle", 2, Act::Lay { x: a.0, y: a.1, toll: 1 });
+    let (_, why) = after(
+        &w2,
+        "Brindle",
+        2,
+        Act::Lay {
+            x: a.0,
+            y: a.1,
+            toll: 1,
+        },
+    );
     assert_eq!(why, Some(Refusal::Blocked));
     let map = crate::map::Map::generate(w.seed, &cat().pois);
     let deep = map
@@ -436,10 +480,28 @@ fn laying_a_causeway_follows_the_ground_and_the_caps() {
         .find(|(_, t)| t.kind == crate::map::TileKind::Deep)
         .map(|((x, y), _)| (u8::try_from(x).unwrap(), u8::try_from(y).unwrap()))
         .unwrap();
-    let (_, why) = after(&w, "Ash", 3, Act::Lay { x: deep.0, y: deep.1, toll: 1 });
+    let (_, why) = after(
+        &w,
+        "Ash",
+        3,
+        Act::Lay {
+            x: deep.0,
+            y: deep.1,
+            toll: 1,
+        },
+    );
     assert_eq!(why, Some(Refusal::Blocked));
     let poi = map.pois.first().unwrap();
-    let (_, why) = after(&w, "Ash", 4, Act::Lay { x: poi.x, y: poi.y, toll: 1 });
+    let (_, why) = after(
+        &w,
+        "Ash",
+        4,
+        Act::Lay {
+            x: poi.x,
+            y: poi.y,
+            toll: 1,
+        },
+    );
     assert_eq!(why, Some(Refusal::Blocked), "a place cannot be built over");
     // One clan may lay only so much a season.
     let mut full = w.clone();
@@ -452,10 +514,31 @@ fn laying_a_causeway_follows_the_ground_and_the_caps() {
             laid: 0,
         });
     }
-    let (_, why) = after(&full, "Ash", 5, Act::Lay { x: sites[10].0, y: sites[10].1, toll: 1 });
+    let (_, why) = after(
+        &full,
+        "Ash",
+        5,
+        Act::Lay {
+            x: sites[10].0,
+            y: sites[10].1,
+            toll: 1,
+        },
+    );
     assert_eq!(why, Some(Refusal::TooMany));
-    let (w3, why) = after(&full, "Brindle", 6, Act::Lay { x: sites[10].0, y: sites[10].1, toll: 1 });
-    assert_eq!((why, w3.causeways.len()), (None, usize::from(crate::story::LAY_MAX) + 1));
+    let (w3, why) = after(
+        &full,
+        "Brindle",
+        6,
+        Act::Lay {
+            x: sites[10].0,
+            y: sites[10].1,
+            toll: 1,
+        },
+    );
+    assert_eq!(
+        (why, w3.causeways.len()),
+        (None, usize::from(crate::story::LAY_MAX) + 1)
+    );
     let _ = b;
 }
 
@@ -466,7 +549,11 @@ fn a_quest_changes_the_marsh_for_everyone_who_opens_the_door_next() {
     let w = world();
     let cat = cat();
     let base = Map::generate(w.seed, &cat.pois);
-    let channels = |m: &Map| m.iter().filter(|(_, t)| t.kind == TileKind::Channel).count();
+    let channels = |m: &Map| {
+        m.iter()
+            .filter(|(_, t)| t.kind == TileKind::Channel)
+            .count()
+    };
     let lairs = |m: &Map, id: &str| {
         m.pois
             .iter()
@@ -478,16 +565,35 @@ fn a_quest_changes_the_marsh_for_everyone_who_opens_the_door_next() {
     assert_eq!(dredged.flags, Flag::Dredge.bit());
     let mut m = base.clone();
     dredged.overlay(&mut m, &cat, Some("Brindle"));
-    assert!(channels(&m) < channels(&base), "{} !< {}", channels(&m), channels(&base));
+    assert!(
+        channels(&m) < channels(&base),
+        "{} !< {}",
+        channels(&m),
+        channels(&base)
+    );
     assert!(channels(&m) > 0, "far channels stay channels");
     // The lairs of a kind vanish, the others stay.
     assert!(lairs(&base, "eel-lair") > 0 && lairs(&base, "bog-hag-lair") > 0);
-    let (cleared, _) = after(&w, "Ash", 2, Act::Flag { flag: Flag::ClearEels });
+    let (cleared, _) = after(
+        &w,
+        "Ash",
+        2,
+        Act::Flag {
+            flag: Flag::ClearEels,
+        },
+    );
     let mut m = base.clone();
     cleared.overlay(&mut m, &cat, None);
     assert_eq!(lairs(&m, "eel-lair"), 0);
     assert_eq!(lairs(&m, "bog-hag-lair"), lairs(&base, "bog-hag-lair"));
-    let (hags, _) = after(&cleared, "Brindle", 3, Act::Flag { flag: Flag::ClearHags });
+    let (hags, _) = after(
+        &cleared,
+        "Brindle",
+        3,
+        Act::Flag {
+            flag: Flag::ClearHags,
+        },
+    );
     assert_eq!(hags.flags, Flag::ClearEels.bit() | Flag::ClearHags.bit());
     // The same change twice is the same world.
     let (again, _) = after(&dredged, "Cove", 4, Act::Flag { flag: Flag::Dredge });
@@ -503,8 +609,18 @@ fn a_quest_changes_the_marsh_for_everyone_who_opens_the_door_next() {
             laid,
         });
     }
-    let (washed, _) = after(&w, "Ash", 5, Act::Flag { flag: Flag::Washout });
+    let (washed, _) = after(
+        &w,
+        "Ash",
+        5,
+        Act::Flag {
+            flag: Flag::Washout,
+        },
+    );
     assert_eq!(washed.flags, 0);
     assert_eq!(washed.causeways.len(), 2);
-    assert!(washed.causeways.iter().all(|c| c.laid != 10), "the oldest went");
+    assert!(
+        washed.causeways.iter().all(|c| c.laid != 10),
+        "the oldest went"
+    );
 }

@@ -518,9 +518,9 @@ fn fight(
 }
 
 /// Percent chance a raider who fell in a lost raid does not get up again.
-pub const LOST_DEATH_PCT: u32 = 20;
+pub const LOST_DEATH_PCT: u32 = 12;
 /// Percent chance a raider who fell in a won or drawn raid does not get up again.
-pub const WON_DEATH_PCT: u32 = 4;
+pub const WON_DEATH_PCT: u32 = 3;
 
 /// What a won raid takes from the posted stock.
 fn loot(w: &World, o: &Order, survivors: usize, half: bool) -> (Vec<(Resource, u32)>, u32) {

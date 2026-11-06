@@ -9,8 +9,8 @@
 use super::market::Side;
 use super::{ClanIx, Defender, Posted, Receipt, Refusal, caps, letters::Kind};
 use crate::content::Catalog;
-use crate::tide::Tide;
 use crate::story::{Flag, LAY_MAX, TOLL_MAX};
+use crate::tide::Tide;
 use crate::types::Resource;
 use crate::world::{SPANS_CAP, Span, World};
 
@@ -134,6 +134,7 @@ fn target(w: &World, name: &str) -> Result<ClanIx, Refusal> {
     w.ix(name).ok_or(Refusal::Unknown)
 }
 
+#[allow(clippy::too_many_lines)]
 fn apply(w: &mut World, cat: &Catalog, me: ClanIx, d: &Dispatch) -> Result<(), Refusal> {
     let day = d.day;
     match &d.act {
@@ -259,9 +260,9 @@ fn lay(
     }
     let mut map = crate::map::Map::generate(w.seed, &cat.pois);
     map.apply_flags(w.flags, &cat.pois);
-    let ok = map.tile(usize::from(x), usize::from(y)).is_some_and(|t| {
-        crate::map::can_lay_on(t.kind) && map.poi_at(x, y).is_none()
-    });
+    let ok = map
+        .tile(usize::from(x), usize::from(y))
+        .is_some_and(|t| crate::map::can_lay_on(t.kind) && map.poi_at(x, y).is_none());
     if !ok {
         return Err(Refusal::Blocked);
     }

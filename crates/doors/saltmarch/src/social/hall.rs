@@ -211,7 +211,10 @@ fn ending(w: &World, winner: &str) -> String {
         return "The marsh stood empty. The tide came and went and nobody was there to see it."
             .to_owned();
     }
-    format!("{} {winner} held the highest ground.", which_ending(w).line())
+    format!(
+        "{} {winner} held the highest ground.",
+        which_ending(w).line()
+    )
 }
 
 impl World {

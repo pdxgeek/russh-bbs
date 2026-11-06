@@ -141,7 +141,12 @@ impl World {
     /// Put what clans and quests have done onto a freshly generated map, as the clan named
     /// `me` meets it: the toll on a span is zero for its builder and for a pact partner whose
     /// pact shares causeways.
-    pub fn overlay(&self, map: &mut crate::map::Map, cat: &crate::content::Catalog, me: Option<&str>) {
+    pub fn overlay(
+        &self,
+        map: &mut crate::map::Map,
+        cat: &crate::content::Catalog,
+        me: Option<&str>,
+    ) {
         map.apply_flags(self.flags, &cat.pois);
         let me_ix = me.and_then(|n| self.ix(n));
         for s in &self.causeways {
@@ -555,7 +560,8 @@ mod tests {
         assert_eq!(World::decode(&v1), None, "version 1 is not the current one");
         let v2 = World::upgrade_v1(&v1).unwrap();
         assert_eq!(World::decode(&v2), None, "version 2 is not the current one");
-        let up = World::decode(&World::upgrade_v3(&World::upgrade_v2(&v2).unwrap()).unwrap()).unwrap();
+        let up =
+            World::decode(&World::upgrade_v3(&World::upgrade_v2(&v2).unwrap()).unwrap()).unwrap();
         assert_eq!((up.season, up.seed, up.last_tick), (2, 77, 20_003));
         assert_eq!(up.clans[0].name, "Brindle");
         assert_eq!(up.clans[0].score, 0);
@@ -591,7 +597,8 @@ mod tests {
         }
         let v2 = w.finish();
         assert_eq!(World::decode(&v2), None, "version 2 is not the current one");
-        let up = World::decode(&World::upgrade_v3(&World::upgrade_v2(&v2).unwrap()).unwrap()).unwrap();
+        let up =
+            World::decode(&World::upgrade_v3(&World::upgrade_v2(&v2).unwrap()).unwrap()).unwrap();
         assert_eq!((up.season, up.seed, up.last_tick), (3, 99, 20_005));
         assert_eq!(up.clans.len(), 2);
         assert_eq!(

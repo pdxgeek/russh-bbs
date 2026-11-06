@@ -421,7 +421,10 @@ impl fmt::Display for Event {
                     }
                     Memo::Cancelled => write!(f, "Your order was taken down: {back} came back."),
                     Memo::Refused => write!(f, "An order was turned away: {back} came back."),
-                    Memo::Toll => write!(f, "Travellers paid {tallies} tallies toll on your causeways."),
+                    Memo::Toll => write!(
+                        f,
+                        "Travellers paid {tallies} tallies toll on your causeways."
+                    ),
                     Memo::Dividend => write!(
                         f,
                         "The Tidecourt paid {tallies} tallies: a week of keeping a pact."

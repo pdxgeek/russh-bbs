@@ -321,7 +321,14 @@ mod tests {
             Ending::DeepOpened
         );
         assert_eq!(Ending::of(&Tally { deep: 1, ..t }), Ending::Quiet);
-        assert_eq!(Ending::of(&Tally { broken: 3, raids: 9, ..t }), Ending::BrokenOaths);
+        assert_eq!(
+            Ending::of(&Tally {
+                broken: 3,
+                raids: 9,
+                ..t
+            }),
+            Ending::BrokenOaths
+        );
         assert_eq!(Ending::of(&Tally { raids: 6, ..t }), Ending::RedTide);
         assert_eq!(
             Ending::of(&Tally {
@@ -373,8 +380,11 @@ mod tests {
             start_of(Ending::RedTide).stock.get(Resource::Arms),
             base.stock.get(Resource::Arms) + 4
         );
-        assert!(start_of(Ending::BrokenOaths).story.tier(Faction::Court) == 1);
-        assert_eq!(start_of(Ending::BrokenOaths).story.rep[Faction::Court.index()], -12);
+        assert_eq!(start_of(Ending::BrokenOaths).story.tier(Faction::Court), 1);
+        assert_eq!(
+            start_of(Ending::BrokenOaths).story.rep[Faction::Court.index()],
+            -12
+        );
         let gate = map.deep_gate().unwrap();
         assert!(!base.is_charted(usize::from(gate.0), usize::from(gate.1)));
         assert!(start_of(Ending::DeepOpened).is_charted(usize::from(gate.0), usize::from(gate.1)));
@@ -386,7 +396,10 @@ mod tests {
         let mut p = World::new(1, 1, 0).prices;
         let before = p[Resource::Iron.index()];
         adjust_prices(Ending::TradeBoom, &mut p);
-        assert_eq!(u32::from(p[Resource::Iron.index()]), u32::from(before) * 110 / 100);
+        assert_eq!(
+            u32::from(p[Resource::Iron.index()]),
+            u32::from(before) * 110 / 100
+        );
         let mut q = World::new(1, 1, 0).prices;
         adjust_prices(Ending::Quiet, &mut q);
         assert_eq!(q, World::new(1, 1, 0).prices);
@@ -428,7 +441,10 @@ mod tests {
         clan.social.deep = false;
         clan.social.raids_won = 0;
         clan.story.rep = [0; 3];
-        assert_eq!(heirloom_for(&clan, Some(&w), 100), Some(Heirloom::SaltCrown));
+        assert_eq!(
+            heirloom_for(&clan, Some(&w), 100),
+            Some(Heirloom::SaltCrown)
+        );
         clan.name = "Bo".into();
         assert_eq!(heirloom_for(&clan, Some(&w), 100), None);
     }

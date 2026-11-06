@@ -268,7 +268,9 @@ impl Flag {
     #[must_use]
     pub const fn news(self) -> &'static str {
         match self {
-            Self::Dredge => "The channels by the Tidecourt have been dredged: the flats there can be walked.",
+            Self::Dredge => {
+                "The channels by the Tidecourt have been dredged: the flats there can be walked."
+            }
             Self::Washout => "A surge has taken the oldest causeway on the marsh.",
             Self::ClearEels => "The eel lairs are cleared. The channels are quieter for everyone.",
             Self::ClearHags => "The bog-hag's lairs are cleared. The peat is safer for everyone.",
@@ -756,7 +758,9 @@ impl Table for Quests {
                 }
                 marks.push(mark);
                 if !text_ok(text, 200) {
-                    p.push(format!("[quest] `{id}` {label}: text (200) must be plain text"));
+                    p.push(format!(
+                        "[quest] `{id}` {label}: text (200) must be plain text"
+                    ));
                 }
             }
         }
@@ -851,8 +855,10 @@ mod tests {
 
     #[test]
     fn a_story_round_trips_with_its_outbox_and_contract() {
-        let mut s = Story::default();
-        s.rep = [-5, 33, 71];
+        let mut s = Story {
+            rep: [-5, 33, 71],
+            ..Story::default()
+        };
         s.contract = Some(Active {
             id: "salt-for-the-court".into(),
             deadline: 20_000,
@@ -864,7 +870,11 @@ mod tests {
             owner: "Ash".into(),
             tallies: 3,
         });
-        s.queue(Out::Lay { x: 3, y: 9, toll: 2 });
+        s.queue(Out::Lay {
+            x: 3,
+            y: 9,
+            toll: 2,
+        });
         s.queue(Out::Flag(Flag::Dredge));
         let mut w = Writer::new();
         s.write(&mut w);
@@ -872,7 +882,10 @@ mod tests {
         let mut r = Reader::new(&bytes);
         assert_eq!(Story::read(&mut r), Some(s));
         assert!(r.done());
-        assert_eq!(Story::read(&mut Reader::new(&bytes[..bytes.len() - 1])), None);
+        assert_eq!(
+            Story::read(&mut Reader::new(&bytes[..bytes.len() - 1])),
+            None
+        );
     }
 
     #[test]
@@ -885,7 +898,10 @@ mod tests {
             });
         }
         assert_eq!(s.outbox.len(), OUTBOX_CAP);
-        assert!(matches!(s.outbox.last(), Some(Out::Toll { tallies: 19, .. })));
+        assert!(matches!(
+            s.outbox.last(),
+            Some(Out::Toll { tallies: 19, .. })
+        ));
     }
 
     #[test]

@@ -827,7 +827,11 @@ impl Session {
                     },
                 ),
                 Out::Lay { x, y, toll } => {
-                    let me = self.clan.as_ref().map(|c| c.name.clone()).unwrap_or_default();
+                    let me = self
+                        .clan
+                        .as_ref()
+                        .map(|c| c.name.clone())
+                        .unwrap_or_default();
                     self.map.lay(crate::map::Laid {
                         x,
                         y,
@@ -839,7 +843,10 @@ impl Session {
                         K::Lay,
                         format!("{x},{y}"),
                         Pending {
-                            goods: Some((crate::types::Resource::Rope, u32::from(crate::trip::LAY_ROPE))),
+                            goods: Some((
+                                crate::types::Resource::Rope,
+                                u32::from(crate::trip::LAY_ROPE),
+                            )),
                             ..Self::blank_on(self.today)
                         },
                         Send::Lay { x, y, toll },
@@ -855,7 +862,6 @@ impl Session {
             self.send(ctx, kind, about, hold, act);
         }
     }
-
 
     /// Tell the world, and keep what is at risk until its receipt comes.
     fn send(&mut self, ctx: &mut Ctx<'_>, kind: PendKind, about: String, hold: Pending, act: Send) {

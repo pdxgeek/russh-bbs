@@ -950,7 +950,9 @@ impl Catalog {
                         p.push(format!("event `{}`: unknown fight group `{g}`", e.id));
                     }
                     Effect::Recipe(r)
-                        if self.recipe(r).is_none_or(|d| !matches!(d.learn, Learn::Ruin | Learn::Trade)) =>
+                        if self
+                            .recipe(r)
+                            .is_none_or(|d| !matches!(d.learn, Learn::Ruin | Learn::Trade)) =>
                     {
                         p.push(format!(
                             "event `{}`: `{r}` is not a recipe learned from a ruin or a trade",

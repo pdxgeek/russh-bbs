@@ -196,7 +196,11 @@ impl Door for Saltmarch {
             if let Some(h) = heirloom {
                 next.hall.push(clan::HallEntry {
                     season: c.season,
-                    text: format!("Carried into the new season: {} ({}).", h.name(), h.effect()),
+                    text: format!(
+                        "Carried into the new season: {} ({}).",
+                        h.name(),
+                        h.effect()
+                    ),
                 });
             }
             if next.hall.len() > clan::HALL_CAP {

@@ -1640,6 +1640,45 @@ fn remember_ground(clan: &mut Clan, kind: TileKind) {
     }
 }
 
+/// A causeway someone else laid is crossed for a toll, once for each span entered.
+fn pay_toll(
+    env: &Env<'_>,
+    clan: &mut Clan,
+    trip: &Trip,
+    to: (u8, u8),
+    events: &mut Vec<Event>,
+) -> Result<(), ActionError> {
+    let Some(span) = env.map.laid_at(to.0, to.1) else {
+        return Ok(());
+    };
+    let on_the_same_span = env
+        .map
+        .laid_at(trip.at.0, trip.at.1)
+        .is_some_and(|p| p.owner == span.owner);
+    if span.mine || span.toll == 0 || on_the_same_span {
+        return Ok(());
+    }
+    let toll = u32::from(span.toll);
+    if clan.tallies < toll {
+        return Err(ActionError::Blocked(format!(
+            "{} asks {toll} tallies toll on the causeway, and the strongbox is short.",
+            span.owner
+        )));
+    }
+    clan.tallies -= toll;
+    clan.story.tolls_paid = clan.story.tolls_paid.saturating_add(toll);
+    let paid = u16::from(span.toll);
+    clan.story.queue(crate::story::Out::Toll {
+        owner: span.owner.clone(),
+        tallies: paid,
+    });
+    events.push(Event::TollPaid {
+        owner: span.owner.clone(),
+        tallies: paid,
+    });
+    Ok(())
+}
+
 fn enter(
     env: &Env<'_>,
     clan: &mut Clan,
@@ -1656,34 +1695,7 @@ fn enter(
     if cost > have {
         return Err(ActionError::NoTurns { need: cost, have });
     }
-    // A causeway someone else laid is crossed for a toll, once for each span entered.
-    if let Some(span) = env.map.laid_at(to.0, to.1)
-        && !span.mine
-        && span.toll > 0
-        && !env
-            .map
-            .laid_at(trip.at.0, trip.at.1)
-            .is_some_and(|p| p.owner == span.owner)
-    {
-        let toll = u32::from(span.toll);
-        if clan.tallies < toll {
-            return Err(ActionError::Blocked(format!(
-                "{} asks {toll} tallies toll on the causeway, and the strongbox is short.",
-                span.owner
-            )));
-        }
-        clan.tallies -= toll;
-        clan.story.tolls_paid = clan.story.tolls_paid.saturating_add(toll);
-        let paid = u16::from(span.toll);
-        clan.story.queue(crate::story::Out::Toll {
-            owner: span.owner.clone(),
-            tallies: paid,
-        });
-        events.push(Event::TollPaid {
-            owner: span.owner.clone(),
-            tallies: paid,
-        });
-    }
+    pay_toll(env, clan, trip, to, events)?;
     spend(env, clan, trip, cost);
     trip.at = to;
     let new = !trip.visited.contains(&to);
@@ -2112,8 +2124,10 @@ fn choose(
     };
     events.push(Event::Told(outcome.text.clone()));
     if let Some(ei) = env.cat.event_index(&event) {
-        clan.story
-            .note_branch(env.cat.branch_bit(ei, index, failed && option.lose.is_some()));
+        clan.story.note_branch(
+            env.cat
+                .branch_bit(ei, index, failed && option.lose.is_some()),
+        );
     }
     // A skill used well is a skill learned, win or lose.
     if let Some(skill) = option.skill

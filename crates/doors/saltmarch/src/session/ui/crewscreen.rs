@@ -23,7 +23,12 @@ fn status(ui: &Ui<'_>, c: &Crew) -> (String, Style) {
     let p = &ui.pal;
     if ui.clan.social.is_away(c.id) {
         ("away".to_owned(), p.gold())
-    } else if ui.clan.trip.as_ref().is_some_and(|t| t.party.contains(&c.id)) {
+    } else if ui
+        .clan
+        .trip
+        .as_ref()
+        .is_some_and(|t| t.party.contains(&c.id))
+    {
         ("out".to_owned(), p.sea())
     } else if !c.injuries.is_empty() {
         (format!("hurt {}", c.injuries.len()), p.rust())
@@ -178,7 +183,12 @@ fn detail(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect, c: &Crew) {
             "Away on a raid: back with the report.",
             p.gold(),
         ));
-    } else if ui.clan.trip.as_ref().is_some_and(|t| t.party.contains(&c.id)) {
+    } else if ui
+        .clan
+        .trip
+        .as_ref()
+        .is_some_and(|t| t.party.contains(&c.id))
+    {
         lines.push(Line::styled("Out on the marsh with the party.", p.sea()));
     }
 

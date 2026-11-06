@@ -431,9 +431,7 @@ fn a_route_never_enters_ground_the_water_will_have_by_then() {
                 )
                 .unwrap();
                 let at = walker.trip.as_ref().map(|t| t.at);
-                if at != Some((x, y))
-                    && events.iter().any(|e| matches!(e, Event::Arrived { .. }))
-                {
+                if at != Some((x, y)) && events.iter().any(|e| matches!(e, Event::Arrived { .. })) {
                     // A place on the way halts the march; that is the march working.
                     continue;
                 }
@@ -1737,10 +1735,34 @@ fn standing_in_the_deep_is_remembered_and_other_ground_is_not() {
 /// boat, so every option of every chain is open to one of them.
 fn arc_clan(fx: &Fx, variant: usize, marks: &[String]) -> Clan {
     const BUILDS: [[Trade; 5]; 4] = [
-        [Trade::Wader, Trade::Raker, Trade::Salvager, Trade::Fighter, Trade::Healer],
-        [Trade::Smith, Trade::Boatwright, Trade::ReedWitch, Trade::Fighter, Trade::Healer],
-        [Trade::Smith, Trade::Raker, Trade::Wader, Trade::Boatwright, Trade::Salvager],
-        [Trade::ReedWitch, Trade::Healer, Trade::Wader, Trade::Raker, Trade::Smith],
+        [
+            Trade::Wader,
+            Trade::Raker,
+            Trade::Salvager,
+            Trade::Fighter,
+            Trade::Healer,
+        ],
+        [
+            Trade::Smith,
+            Trade::Boatwright,
+            Trade::ReedWitch,
+            Trade::Fighter,
+            Trade::Healer,
+        ],
+        [
+            Trade::Smith,
+            Trade::Raker,
+            Trade::Wader,
+            Trade::Boatwright,
+            Trade::Salvager,
+        ],
+        [
+            Trade::ReedWitch,
+            Trade::Healer,
+            Trade::Wader,
+            Trade::Raker,
+            Trade::Smith,
+        ],
     ];
     let mut clan = fx.clan();
     for (c, t) in clan.crew.iter_mut().zip(BUILDS[variant]) {
@@ -1890,7 +1912,9 @@ fn every_chain_can_be_walked_to_each_of_its_ends_and_each_end_closes_the_others(
 
 /// Two neighbouring lay-able tiles with no place on either, and the way from the first to the
 /// second; and a third beyond the second, for a span of two.
-fn span_site(fx: &Fx, clan: &Clan) -> ((u8, u8), Dir, (u8, u8), (u8, u8)) {
+type Site = ((u8, u8), Dir, (u8, u8), (u8, u8));
+
+fn span_site(fx: &Fx, clan: &Clan) -> Site {
     let home = fx.home(clan);
     let free = |p: (u8, u8)| {
         p != home
@@ -1916,7 +1940,7 @@ fn span_site(fx: &Fx, clan: &Clan) -> ((u8, u8), Dir, (u8, u8), (u8, u8)) {
     panic!("no site for a causeway");
 }
 
-fn toll_fx(owner: &str, toll: u8, mine: bool) -> (Fx, Clan, Map, (u8, u8), Dir, (u8, u8), (u8, u8)) {
+fn toll_fx(owner: &str, toll: u8, mine: bool) -> (Fx, Clan, Map, Site) {
     let fx = Fx::quiet();
     let mut clan = fx.clan();
     let (a, d, b, c) = span_site(&fx, &clan);
@@ -1933,7 +1957,7 @@ fn toll_fx(owner: &str, toll: u8, mine: bool) -> (Fx, Clan, Map, (u8, u8), Dir, 
     let ids = party(&clan, 2);
     out(&fx, &mut clan, &ids, kit());
     clan.trip.as_mut().unwrap().at = a;
-    (fx, clan, map, a, d, b, c)
+    (fx, clan, map, (a, d, b, c))
 }
 
 fn env_on<'a>(fx: &'a Fx, map: &'a Map, day: i64) -> Env<'a> {
@@ -1949,7 +1973,7 @@ fn env_on<'a>(fx: &'a Fx, map: &'a Map, day: i64) -> Env<'a> {
 
 #[test]
 fn a_toll_is_paid_once_for_each_span_entered_and_owed_to_its_builder() {
-    let (fx, mut clan, map, a, d, b, c) = toll_fx("Ash", 3, false);
+    let (fx, mut clan, map, (a, d, b, c)) = toll_fx("Ash", 3, false);
     let (day, turn) = fx.moment(|l| l < 15);
     clan.turns_used = turn;
     let env = env_on(&fx, &map, day);
@@ -1957,11 +1981,16 @@ fn a_toll_is_paid_once_for_each_span_entered_and_owed_to_its_builder() {
     let before = clan.tallies;
     let ev = apply(&env, &mut clan, TripAction::Step(d), &mut dice).unwrap();
     assert_eq!(clan.trip.as_ref().unwrap().at, b);
-    assert_eq!(before - clan.tallies, 3, "the toll came out of the strongbox");
+    assert_eq!(
+        before - clan.tallies,
+        3,
+        "the toll came out of the strongbox"
+    );
     assert_eq!(clan.story.tolls_paid, 3);
-    assert!(ev
-        .iter()
-        .any(|e| matches!(e, Event::TollPaid { owner, tallies: 3 } if owner == "Ash")));
+    assert!(
+        ev.iter()
+            .any(|e| matches!(e, Event::TollPaid { owner, tallies: 3 } if owner == "Ash"))
+    );
     assert_eq!(
         clan.story.outbox,
         vec![crate::story::Out::Toll {
@@ -1975,10 +2004,7 @@ fn a_toll_is_paid_once_for_each_span_entered_and_owed_to_its_builder() {
     assert_eq!(clan.trip.as_ref().unwrap().at, c);
     assert_eq!(clan.tallies, t);
     // Off the span and on again: a second span, a second toll.
-    let back = Dir::ALL
-        .into_iter()
-        .find(|x| x.step(b) == Some(a))
-        .unwrap();
+    let back = Dir::ALL.into_iter().find(|x| x.step(b) == Some(a)).unwrap();
     let t0 = clan.tallies;
     apply(&env, &mut clan, TripAction::Step(back), &mut dice).unwrap();
     apply(&env, &mut clan, TripAction::Step(back), &mut dice).unwrap();
@@ -1991,7 +2017,7 @@ fn a_toll_is_paid_once_for_each_span_entered_and_owed_to_its_builder() {
 #[test]
 fn a_causeway_is_free_to_its_builder_and_to_a_pact_partner_and_when_the_toll_is_zero() {
     for (toll, mine) in [(3, true), (0, false)] {
-        let (fx, mut clan, map, _, d, b, _) = toll_fx("Ash", toll, mine);
+        let (fx, mut clan, map, (_, d, b, _)) = toll_fx("Ash", toll, mine);
         let (day, turn) = fx.moment(|l| l < 15);
         clan.turns_used = turn;
         let env = env_on(&fx, &map, day);
@@ -1999,7 +2025,7 @@ fn a_causeway_is_free_to_its_builder_and_to_a_pact_partner_and_when_the_toll_is_
         apply(&env, &mut clan, TripAction::Step(d), &mut rng(4)).unwrap();
         assert_eq!(clan.trip.as_ref().unwrap().at, b);
         assert_eq!(clan.tallies, before);
-        assert!(clan.story.outbox.is_empty());
+        assert_eq!(clan.story.outbox, []);
     }
     // The world's overlay makes it so for a partner whose pact shares causeways, and only then.
     let fx = Fx::quiet();
@@ -2027,17 +2053,30 @@ fn a_causeway_is_free_to_its_builder_and_to_a_pact_partner_and_when_the_toll_is_
     assert_eq!(toll_for(&w, "Brindle"), Some((4, false)), "a stranger pays");
     assert_eq!(toll_for(&w, "Nobody"), Some((4, false)));
     let id = w
-        .propose(0, 1, crate::social::pact::TRUCE | crate::social::pact::CAUSEWAY, 5)
+        .propose(
+            0,
+            1,
+            crate::social::pact::TRUCE | crate::social::pact::CAUSEWAY,
+            5,
+        )
         .unwrap();
     w.accept(1, id, 6).unwrap();
-    assert_eq!(toll_for(&w, "Brindle"), Some((0, false)), "the partner crosses free");
-    assert_eq!(toll_for(&w, "Cove"), Some((4, false)), "a third clan still pays");
+    assert_eq!(
+        toll_for(&w, "Brindle"),
+        Some((0, false)),
+        "the partner crosses free"
+    );
+    assert_eq!(
+        toll_for(&w, "Cove"),
+        Some((4, false)),
+        "a third clan still pays"
+    );
     let _ = a;
 }
 
 #[test]
 fn a_toll_the_strongbox_cannot_pay_stops_the_party_and_changes_nothing() {
-    let (fx, mut clan, map, a, d, _, _) = toll_fx("Ash", 5, false);
+    let (fx, mut clan, map, (a, d, _, _)) = toll_fx("Ash", 5, false);
     let (day, turn) = fx.moment(|l| l < 15);
     clan.turns_used = turn;
     clan.tallies = 2;
@@ -2089,10 +2128,14 @@ fn laying_a_causeway_needs_rope_a_builder_and_open_ground_and_queues_the_order()
     short.turns_used = before.turns_used;
     assert_eq!(short.story, before.story);
     let mut idle = with(&[3, 4], 6);
-    assert!(matches!(go(&mut idle), Err(ActionError::NotNow(m)) if m.contains("wader or a boatwright")));
+    assert!(
+        matches!(go(&mut idle), Err(ActionError::NotNow(m)) if m.contains("wader or a boatwright"))
+    );
     let mut capped = with(&[0, 1], 6);
     capped.story.laid = crate::story::LAY_MAX;
-    assert!(matches!(go(&mut capped), Err(ActionError::NotNow(m)) if m.contains("all the causeway")));
+    assert!(
+        matches!(go(&mut capped), Err(ActionError::NotNow(m)) if m.contains("all the causeway"))
+    );
     // Not on a place, nor at home, nor on ground that cannot take one.
     let poi = fx.map.pois.first().unwrap();
     let mut at_place = with(&[0, 1], 6);

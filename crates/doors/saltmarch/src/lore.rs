@@ -328,9 +328,9 @@ impl TryFrom<String> for Effect {
                 Faction::from_id(f).ok_or_else(|| format!("`{f}` is not a faction"))?,
                 number(n)?,
             ),
-            ["world", f] => Self::World(
-                Flag::from_id(f).ok_or_else(|| format!("`{f}` is not a world change"))?,
-            ),
+            ["world", f] => {
+                Self::World(Flag::from_id(f).ok_or_else(|| format!("`{f}` is not a world change"))?)
+            }
             _ => return Err(format!("`{text}` is not an effect")),
         })
     }

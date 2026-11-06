@@ -567,7 +567,10 @@ impl Map {
         self.iter()
             .filter(|(_, t)| t.kind == TileKind::Deep)
             .min_by_key(|((x, y), _)| {
-                let (dx, dy) = (i32::try_from(*x).unwrap_or(0) - tx, i32::try_from(*y).unwrap_or(0) - ty);
+                let (dx, dy) = (
+                    i32::try_from(*x).unwrap_or(0) - tx,
+                    i32::try_from(*y).unwrap_or(0) - ty,
+                );
                 (dx * dx + dy * dy, *y, *x)
             })
             .map(|((x, y), _)| (u8::try_from(x).unwrap_or(0), u8::try_from(y).unwrap_or(0)))
@@ -596,7 +599,10 @@ impl Map {
                 }
             }
         }
-        for (flag, template) in [(Flag::ClearEels, "eel-lair"), (Flag::ClearHags, "bog-hag-lair")] {
+        for (flag, template) in [
+            (Flag::ClearEels, "eel-lair"),
+            (Flag::ClearHags, "bog-hag-lair"),
+        ] {
             if flags & flag.bit() != 0 {
                 self.pois.retain(|p| {
                     templates
