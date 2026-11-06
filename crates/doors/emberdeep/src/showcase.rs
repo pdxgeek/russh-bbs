@@ -393,23 +393,37 @@ pub struct RescuePair {
 /// Build a [`RescuePair`] on [`DAY`].
 #[must_use]
 pub fn rescue_pair(companions: bool) -> RescuePair {
+    rescue_pair_at(companions, DAY, 0, "ann", "bo")
+}
+
+/// Build a [`RescuePair`] named `fallen` and `rescuer` on calendar day `today`, the first having
+/// fallen `ago` days before (for a walk on a real board, whose clock is not [`DAY`]).
+#[must_use]
+pub fn rescue_pair_at(
+    companions: bool,
+    today: i64,
+    ago: i64,
+    fallen: &str,
+    rescuer: &str,
+) -> RescuePair {
     let c = content();
     let traits = ["quick".to_owned(), "stout".to_owned()];
-    let mk = |name: &str, seed: u64| {
+    let mk = |name: &str, seed: u64, day: i64| {
         let hero = Hero::create(&c, name, "warden", &traits, [1, 1, 1, 1]).expect("hero");
         let mut g = Game::new(
             hero,
             DoorRng::from_seed(seed),
-            DAY - 1,
+            day - 1,
             SEASON,
             World::new(SEASON),
         );
-        let _ = g.new_day(&c, DAY);
+        let _ = g.new_day(&c, day);
         g.hero.level = 4;
         g
     };
-    let mut ann = mk("ann", 1);
-    let mut bo = mk("bo", 2);
+    let fell = today - ago;
+    let mut ann = mk(fallen, 1, fell);
+    let mut bo = mk(rescuer, 2, today);
     place_in(&c, &mut ann, "bone-pit", 3);
     let Place::Delve { depth, room } = ann.place else {
         unreachable!("placed");
@@ -418,33 +432,34 @@ pub fn rescue_pair(companions: bool) -> RescuePair {
     ann.place = Place::Dead {
         depth,
         room,
-        since: DAY,
+        since: fell,
     };
     bo.place = Place::Delve { depth, room };
     bo.prev_room = room;
     bo.today.cleared.push((depth, room));
     bo.hero.turns = 25;
     let mut world = World::new(SEASON);
+    world.day = today;
     for g in [&mut ann, &mut bo] {
         let card = g.member_card(&c);
         world.apply(&Change::Social(SocialChange::Roster(card)));
     }
     world.apply(&Change::Fall(Fallen {
-        name: "ann".to_owned(),
+        name: fallen.to_owned(),
         depth,
         room,
-        day: DAY,
+        day: fell,
         rescued_by: None,
     }));
     if companions {
         world.apply(&Change::Social(SocialChange::Invite(Invite {
-            from: "bo".to_owned(),
-            to: "ann".to_owned(),
-            day: DAY,
+            from: rescuer.to_owned(),
+            to: fallen.to_owned(),
+            day: today,
         })));
         world.apply(&Change::Social(SocialChange::Join {
-            leader: "bo".to_owned(),
-            name: "ann".to_owned(),
+            leader: rescuer.to_owned(),
+            name: fallen.to_owned(),
         }));
     }
     RescuePair {

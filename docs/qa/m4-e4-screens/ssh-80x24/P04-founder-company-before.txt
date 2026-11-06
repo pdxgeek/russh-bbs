@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Emberdeep                                                                     │
+│                                                                              │
+│◆ EMBERDEEP · The Company ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ founder L1 Warden │
+│who rides together   Coin 20  Salvage 0  Store 0  Turns 25/25                 │
+│╭ The Company ─────────────────────────────╮╭ Preview ───────────────────────╮│
+││You ride alone.                           ││Invite bob                      ││
+││                                          ││They are asked once; the        ││
+││                                          ││invitation stands for three     ││
+││                                          ││days. Words cannot be sent, only││
+││                                          ││the invitation. A company holds ││
+││                                          ││three.                          ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+│╰──────────────────────────────────────────╯╰────────────────────────────────╯│
+│[1] Invite bob (level 1, warden)  [2] Close the door to invitatio…            │
+└──────────────────────────────────────────────────────────────────────────────┘
