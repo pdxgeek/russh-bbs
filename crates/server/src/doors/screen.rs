@@ -125,6 +125,15 @@ impl DoorsScreen {
             self.state = State::Playing(running);
             return DoorEffect::Stay;
         };
+        if running.world_is_stale() {
+            // Re-read the door's world before this key (one store read), so the door sees other
+            // players' edits; the store answers like a flush.
+            self.state = State::Busy;
+            return DoorEffect::Request(Request::Key {
+                running,
+                key: door_key,
+            });
+        }
         let flow = running.key(door_key);
         if flow == Flow::Exit || running.has_pending() {
             // Write before the next key is read, so the writes keep their order and a crash

@@ -61,7 +61,7 @@ kind = "evening"
 days = [1, 3, 5]
 advisor = "alder"
 members = ["wren", "mags"]
-join = ["standing:ink_society>=6"]
+join = ["standing:ink_society>=3"]
 rivals = ["rowing"]
 skill = "bluff"
 ranks = [["Proofreader", 0], ["Reporter", 4], ["Sub-editor", 10], ["Editor", 18]]

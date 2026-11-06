@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Saltmarch                                                                     │
+│                                                                              │
+│ ⌂ bob  day 10 of season 1               turns ██████████ 30/30  ◈ 31 tallies │
+│ ≈ TIDE ██████░░░░░░░░░┃░░░░░░  30 ↑ high in 4h44 (80)  middling tides  calm  │
+│╭ While you were away ─────────────────────╮╭ Today: middling tides ─────────╮│
+││9 nights passed  ◗ the tide ran on without││100│⡇                           ││
+││you                                       ││   │⡇⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀││
+││◆ Made:  +49 fish  +34 peat               ││   │⡇ ⡰⠃   ⠈⠣⡀      ⣠⠋    ⠱⡀    ││
+││▣ founder came for the hold in the night  ││50 │⡇⠞       ⠱⣄    ⡴⠁      ⠘⢦   ││
+││and was beaten off.                       ││   │⡇         ⠈⠲⠤⠤⠚          ⠓⠤⠤││
+││▤ Letters: none waiting at the post.      ││0  │⡇                           ││
+││                                          ││   └────────────────────────────││
+││                                          ││  00       06   12   18       24││
+││                                          │╰────────────────────────────────╯│
+│╰──────────────────────────────────────────╯╭ Standings: you are 1st of 2 ───╮│
+│╭ Today ───────────────────────────────────╮│ 1  bob                      21 ││
+││30 tide-turns. middling tides.            ││ 2  founder                  21 ││
+││Over the flood line: 03:10-06:30,         ││                                ││
+││15:30-19:00                               ││                                ││
+││Lows, the best time on the flats: 10:56   ││                                ││
+│╰──────────────────────────────────────────╯╰────────────────────────────────╯│
+│ »                                                                   any key  │
+└──────────────────────────────────────────────────────────────────────────────┘

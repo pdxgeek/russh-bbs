@@ -649,3 +649,29 @@ mod replies {
         assert_eq!(parser.take_acks(), 10_000);
     }
 }
+
+/// FIX-M3-7: characters the key set has no key for are counted, so the shell can say so.
+#[test]
+fn dropped_non_ascii_characters_are_counted_typed_and_pasted() {
+    let mut parser = KeyParser::new();
+    let now = Instant::now();
+    // Typed: `café` is four keys of which one is dropped (and counted).
+    let keys = parser.feed("caf\u{e9}".as_bytes(), now);
+    assert_eq!(keys.len(), 4, "{keys:?}");
+    assert_eq!(parser.take_dropped(), 1);
+    assert_eq!(parser.take_dropped(), 0, "taking resets the count");
+    // Pasted: CJK and an emoji inside a bracketed paste, one count per character.
+    let paste = "\u{1b}[200~a\u{65e5}\u{672c}\u{1f600}b\u{1b}[201~";
+    let keys = parser.feed(paste.as_bytes(), now);
+    assert_eq!(keys, vec![Key::Char('a'), Key::Char('b')]);
+    assert_eq!(parser.take_dropped(), 3);
+}
+
+#[test]
+fn ascii_arrows_and_control_keys_are_not_counted_as_dropped() {
+    let mut parser = KeyParser::new();
+    let now = Instant::now();
+    let _ = parser.feed(b"hello \x1b[A\x1b[D\x1b[3~\r\x03\x7f", now);
+    let _ = parser.expire();
+    assert_eq!(parser.take_dropped(), 0);
+}

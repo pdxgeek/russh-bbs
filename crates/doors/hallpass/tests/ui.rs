@@ -34,6 +34,7 @@ use russh_bbs_door::{
     ColorDepth, Composite, DoorEnv, DoorKey, DoorPalette, DoorSurface, Save, Start, Tier,
 };
 use russh_bbs_door_hallpass::Hallpass;
+use russh_bbs_door_hallpass::commons::{Candidate, Pupil, Rumour};
 use russh_bbs_door_hallpass::cond::Cond;
 use russh_bbs_door_hallpass::game::Action;
 use russh_bbs_door_hallpass::save::encode_player;
@@ -234,6 +235,33 @@ fn school(day: i64) -> World {
         until: Some(day + 3),
         by: "Wick".into(),
     }];
+    // The social side: two other pupils (one has opted out), a rumour and a candidate.
+    w.commons.roster = vec![
+        Pupil {
+            name: "Wick".into(),
+            last_day: day,
+            legend: 38,
+            grades: 74,
+            ..Pupil::default()
+        },
+        Pupil {
+            name: "Sol".into(),
+            last_day: day,
+            opt_out: true,
+            legend: 22,
+            ..Pupil::default()
+        },
+    ];
+    w.commons.rumours = vec![Rumour {
+        id: "fair_play".into(),
+        about: "tilly".into(),
+        by: "Wick".into(),
+        day,
+    }];
+    w.commons.election.candidates = vec![Candidate {
+        who: "Wick".into(),
+        backing: 7,
+    }];
     w
 }
 
@@ -331,6 +359,12 @@ fn all_states() -> Vec<State> {
         ("paper", "n"),
         ("hall", "nh"),
         ("yearbook", "ny"),
+        ("social", "o"),
+        ("classmates", "oc"),
+        ("plots", "oc1"),
+        ("rumours", "or"),
+        ("rumour", "or1"),
+        ("election", "oe"),
     ] {
         out.push(state_of(name, &base, day, keys));
     }

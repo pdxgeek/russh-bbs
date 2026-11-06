@@ -216,6 +216,19 @@ impl ForumsScreen {
         });
     }
 
+    /// Whether an editor is open.
+    pub(crate) fn editor_open(&self) -> bool {
+        self.editor().is_some()
+    }
+
+    /// The open editor's unsaved draft, if there is one to keep (FIX-M3-7): what a lost
+    /// connection and the periodic autosave store. Only an editor with a draft context and
+    /// changed text has one.
+    pub(crate) fn pending_draft(&self) -> Option<DraftSave> {
+        self.editor()
+            .and_then(|editor| editor.with(|editor| editor.pending_draft()))
+    }
+
     /// The editor, while one is open.
     pub(super) fn editor(&self) -> Option<&SyncEditor> {
         match &self.state {

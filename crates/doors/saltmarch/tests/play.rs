@@ -107,6 +107,25 @@ impl Live {
 }
 
 #[test]
+fn a_question_mark_typed_into_the_clan_name_is_text_and_in_a_menu_it_is_not_the_door_s() {
+    let door = door();
+    let mut live = Live::open(&door, 1, None);
+    assert!(live.said("Clan name: ann_"));
+    live.key(DoorKey::Char('?'));
+    assert!(
+        live.said("Clan name: ann?_"),
+        "the name took the mark: {:?}",
+        live.screen()
+    );
+    // Once the clan is founded the key is the board's again: the door never sees it.
+    live.key(DoorKey::Backspace);
+    live.key(DoorKey::Enter);
+    let before = live.screen();
+    live.key(DoorKey::Char('?'));
+    assert_eq!(live.screen(), before, "a menu does not take a typed mark");
+}
+
+#[test]
 fn a_fresh_visit_asks_for_a_name_the_board_accepts_and_founds_a_clan() {
     let door = door();
     let mut live = Live::open(&door, 1, None);
@@ -549,7 +568,7 @@ fn the_door_is_registered_under_its_id_and_has_a_tick() {
     assert!(door.has_daily_tick());
     assert_eq!(
         (door.info().save_version, door.info().world_version),
-        (3, 3)
+        (4, 4)
     );
 }
 
@@ -585,7 +604,14 @@ fn a_version_one_world_migrates_through_the_door_and_a_newer_one_is_not_understo
         "version 2 is not readable as version 3"
     );
     let v3 = door.migrate(BlobKind::World, 2, &v2).unwrap();
-    let world = World::decode(&v3).unwrap();
+    assert_eq!(
+        World::decode(&v3),
+        None,
+        "version 3 is not readable as version 4"
+    );
+    let v4 = door.migrate(BlobKind::World, 3, &v3).unwrap();
+    let world = World::decode(&v4).unwrap();
+    assert!(world.causeways.is_empty() && world.flags == 0);
     assert_eq!(world.clans.len(), 2);
     assert!(world.clans.iter().all(|c| c.score == 0));
     assert_eq!(world.history, [] as [[u16; 13]; 0]);
@@ -595,11 +621,32 @@ fn a_version_one_world_migrates_through_the_door_and_a_newer_one_is_not_understo
         Err(MigrateError::Corrupt(1))
     );
     assert_eq!(
-        door.migrate(BlobKind::World, 3, &v3),
-        Err(MigrateError::Unsupported(3))
+        door.migrate(BlobKind::World, 4, &v4),
+        Err(MigrateError::Unsupported(4))
     );
     assert_eq!(
         door.migrate(BlobKind::World, 2, &v2[..12]),
         Err(MigrateError::Corrupt(2))
     );
+}
+
+#[test]
+fn a_question_mark_typed_into_the_clan_name_prompt_is_text_not_the_look_around_view() {
+    use russh_bbs_door::host::Driver;
+    use russh_bbs_door::{Save, Start};
+    let door = Saltmarch::new().unwrap();
+    let env = DoorEnv::for_tests("ann");
+    let start = Start {
+        save: Save::Fresh,
+        world: None,
+        env: &env,
+        today: Day::from_raw(20_000),
+        season: 1,
+    };
+    let clock = Arc::new(ManualClock::new(Day::from_raw(20_000).start()));
+    let mut driver = Driver::open(&door, start, 1, clock);
+    // A fresh save starts at the naming prompt; `?` is a character of the name.
+    driver.key(DoorKey::Char('?'));
+    assert!(!driver.is_looking());
+    assert!(driver.look_around(&env).join("\n").contains("?_"));
 }

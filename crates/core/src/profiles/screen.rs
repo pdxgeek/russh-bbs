@@ -148,6 +148,9 @@ pub struct MembersScreen {
     back: Option<ListState>,
     pending: Option<Pending>,
     notice: Option<(bool, &'static str)>,
+    /// The rank rule lets the viewer edit the profile now open (FIX-M2-7), as the last
+    /// [`Response::Profile`] said. Another member's profile is not editable until it says so.
+    rank_allows: bool,
 }
 
 impl MembersScreen {
@@ -178,10 +181,11 @@ impl MembersScreen {
     const fn blank(own: Option<AccountId>, mode: Mode) -> Self {
         Self {
             own,
-            mode,
             back: None,
+            mode,
             pending: None,
             notice: None,
+            rank_allows: false,
         }
     }
 
@@ -206,7 +210,9 @@ impl MembersScreen {
         if self.own == Some(record.id) {
             access.allows(Permission::AccountEditProfile)
         } else {
-            access.allows(Permission::MembersEdit)
+            // Rank too (FIX-M2-7): the key is not offered for a member the viewer's rank
+            // refuses. The refusal in core stays as the real check.
+            access.allows(Permission::MembersEdit) && self.rank_allows
         }
     }
 
@@ -330,7 +336,8 @@ impl MembersScreen {
         self.notice = None;
         match response {
             Response::Page(query, page) => self.show_page(&query, page),
-            Response::Profile(record) => {
+            Response::Profile(record, editable) => {
+                self.rank_allows = editable;
                 if let Mode::List(list) = std::mem::replace(&mut self.mode, Mode::Loading) {
                     self.back = Some(list);
                 }

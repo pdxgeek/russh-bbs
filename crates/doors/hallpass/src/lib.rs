@@ -19,6 +19,7 @@
 
 mod check;
 pub mod club;
+pub mod commons;
 pub mod cond;
 pub mod content;
 pub mod effect;
@@ -28,6 +29,8 @@ pub mod options;
 pub mod save;
 pub mod scheme;
 mod session;
+pub mod social;
+pub mod social_spec;
 pub mod state;
 pub mod talk;
 pub mod wire;
@@ -48,10 +51,10 @@ use crate::game::Game;
 pub const DOOR_ID: &str = "hallpass";
 
 /// The current save format version.
-pub const SAVE_VERSION: u32 = 2;
+pub const SAVE_VERSION: u32 = 3;
 
 /// The current world format version.
-pub const WORLD_VERSION: u32 = 1;
+pub const WORLD_VERSION: u32 = 2;
 
 /// Why the door could not be built.
 #[derive(Debug)]

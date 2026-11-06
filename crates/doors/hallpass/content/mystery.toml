@@ -1,0 +1,184 @@
+# The east wing's mystery: four acts, clues found by searching places (mostly after lights-out),
+# and five ways the secret can come out, chosen by whom the pupils trust. Each pupil who gets to
+# the end casts one verdict (an ending of the storyline `the_wing`); on the finale day the school
+# counts them and the winning ending changes the school for everyone, through the shared world.
+#
+# A clue sets the flag `clue_ID` when found. `after` clues must be found first; `needs` is the
+# same condition language as everywhere (a build, an item, a bond, a day, the storyline's step).
+
+[mystery]
+arc = "the_wing"
+finale_day = 38
+unsolved = "The East Wing stays shut. Nobody could agree what happened there, or nobody tried."
+risk_pct = 12
+
+# ---------------------------------------------------------------- act one: the torn page
+
+[[clue]]
+id = "c1_register"
+act = 1
+place = "library"
+kinds = ["free", "after", "evening"]
+needs = ["arc:the_wing@whispers"]
+text = "The accession register has a page razored out of March, the year the wing closed. On the stub, in pencil: I. Harrow, East Wing."
+
+[[clue]]
+id = "c2_hymn"
+act = 1
+place = "chapel"
+kinds = ["free", "after", "evening"]
+after = ["c1_register"]
+text = "A hymn slip is tucked in the music desk: Ines H., treble, sang the last night. Someone has underlined last."
+effects = ["bond:soames:+1"]
+
+[[clue]]
+id = "c3_arrows"
+act = 1
+place = "old_wing"
+kinds = ["evening", "night", "free", "after"]
+needs = ["arc:the_wing@whispers", "day>=9"]
+after = ["c1_register"]
+risk = 1
+text = "Chalk arrows run along the Old Wing wall, fresh this week, and every one points down."
+effects = ["arc:the_wing:chalk", "xp:sneak:1"]
+
+# ---------------------------------------------------------------- act two: under the school
+
+[[clue]]
+id = "c4_pipes"
+act = 2
+place = "chapel"
+kinds = ["evening", "after", "free"]
+needs = ["arc:the_wing@chalk", "day>=12"]
+after = ["c3_arrows"]
+risk = 1
+text = "Behind the third organ pipe, a brass key on a ribbon. It will open the loft."
+effects = ["know:organ_key_spot"]
+
+[[clue]]
+id = "c5_loft"
+act = 2
+place = "organ_loft"
+kinds = ["evening", "after", "free"]
+needs = ["day>=13"]
+after = ["c4_pipes"]
+risk = 1
+text = "In the loft, under the bench: a caretaker's tunnel map, folded small, with the East Wing's cellar stair marked in red."
+effects = ["item:tunnel_map", "arc:the_wing:loft"]
+
+[[clue]]
+id = "c6_tunnel"
+act = 2
+place = "tunnels"
+kinds = ["night", "evening", "after", "free"]
+needs = ["arc:the_wing@loft", "day>=15"]
+after = ["c5_loft"]
+risk = 2
+text = "The tunnel runs right under the East Wing. A drain grate shows the foot of a stair, and on the brick, in chalk: Hallway three. Ines was here."
+effects = ["xp:sneak:1"]
+
+[[clue]]
+id = "c7_trunk"
+act = 2
+place = "cellars"
+kinds = ["night", "evening", "after", "free"]
+needs = ["day>=16"]
+after = ["c6_tunnel"]
+risk = 2
+text = "A trunk in the cellars holds a school uniform in the old pattern, a pressed flower and a silver locket with two photographs."
+effects = ["know:ines_locket", "arc:the_wing:key"]
+
+# ---------------------------------------------------------------- act three: the wing
+
+[[clue]]
+id = "c8_shed"
+act = 3
+place = "caretaker_shed"
+kinds = ["free", "after", "evening"]
+needs = ["arc:the_wing@key", "skill:sneak>=1", "day>=17"]
+after = ["c7_trunk"]
+risk = 2
+text = "On a nail behind the shed door, where a careful hand would hang the one key nobody is meant to use: the East Wing's."
+effects = ["item:east_wing_key", "arc:the_wing:wing", "know:key_lifted"]
+
+[[clue]]
+id = "c9_hall"
+act = 3
+place = "east_wing"
+kinds = ["night"]
+needs = ["item:east_wing_key", "arc:the_wing@wing", "day>=20"]
+after = ["c7_trunk"]
+risk = 2
+text = "The dormitory is as it was left: eight beds, a scorched ceiling, and a door whose bolt is on the outside."
+
+[[clue]]
+id = "c10_diary"
+act = 3
+place = "east_wing"
+kinds = ["night"]
+needs = ["day>=21"]
+after = ["c9_hall"]
+risk = 1
+text = "Ines's diary, in the drawer of the last bed. She was locked in as a punishment, the night of a prank she had not played. The last page is a drawing of a door."
+effects = ["know:diary_page", "arc:the_wing:truth"]
+
+# ---------------------------------------------------------------- act four: who signed
+
+[[clue]]
+id = "c11_bolt"
+act = 4
+place = "east_wing"
+kinds = ["night"]
+needs = ["arc:the_wing@truth", "day>=24"]
+after = ["c10_diary"]
+risk = 2
+text = "Scratched into the bolt's brass plate, small and neat: W.S. Someone has been polishing it for years."
+effects = ["know:bolt_outside"]
+
+[[clue]]
+id = "c12_report"
+act = 4
+place = "admin_corridor"
+kinds = ["free", "after"]
+needs = ["arc:the_wing@truth", "day>=26"]
+after = ["c11_bolt"]
+risk = 3
+text = "In the cabinet marked CLOSED: the fire report. Cause: a prank gone wrong. Signed D. Vane. The bolt is never once mentioned."
+effects = ["know:fire_report", "arc:the_wing:choice"]
+
+# ---------------------------------------------------------------- the five verdicts
+
+[[verdict]]
+id = "fenn"
+name = "Trust the caretaker"
+blurb = "Mr. Fenn tells the whole school who he is and what happened, and opens the wing himself"
+effect = "wing_opened"
+order = 1
+
+[[verdict]]
+id = "soames"
+name = "Trust the chaplain"
+blurb = "the chaplain holds a quiet vigil in the opened wing and says what he did"
+effect = "wing_vigil"
+order = 2
+
+[[verdict]]
+id = "wren"
+name = "Give it to the paper"
+blurb = "the paper prints the diary and the whole school reads it"
+effect = "truth_printed"
+order = 3
+
+[[verdict]]
+id = "vane"
+name = "Trust the headmistress"
+blurb = "the headmistress has the wing sealed for good and promises a gentler school"
+effect = "wing_sealed"
+order = 4
+
+[[verdict]]
+id = "bonfire"
+name = "Burn it"
+blurb = "the pages go on a bonfire in the quad and the cellars are bricked up"
+effect = "bonfire"
+order = 5
