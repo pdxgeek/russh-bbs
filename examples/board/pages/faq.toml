@@ -1,0 +1,32 @@
+version = 1
+title = "Questions and answers"
+text = """
+# Getting started
+> How do I move around?
+Press the letter in the brackets beside an item. Press ? for help on any screen, and Esc or b to go back.
+
+> I cannot see an item someone mentioned.
+Some areas are only for certain roles. If you should have it, ask the sysop.
+
+# Mail and privacy
+> Who can read my mail?
+The server can, and so can the sysop team through the server. Only mail you encrypt with PGP yourself is hidden from them.
+The same is true of chat and posts: there is no hidden channel on this board.
+
+> How do I use PGP?
+Make a key on your own machine, add your public key to your profile, and encrypt before you send. The board never sees your private key.
+
+# Accounts
+> I lost my key.
+Ask the sysop for a recovery. They will check it is really you before they let a new key in.
+
+> Can I change my theme?
+Yes. Open Settings and pick a style. The board offers a few, and your choice follows you.
+
+# Doors
+> What are the doors?
+Small games run by the board. Each keeps a season and a hall of fame, and none needs anything but a terminal.
+
+---
+Still stuck? Write to the sysop.
+"""

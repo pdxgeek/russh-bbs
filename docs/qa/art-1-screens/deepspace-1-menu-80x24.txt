@@ -1,0 +1,24 @@
+ ◆ Tidepool BBS ◆ │ The Front Hall                                    UTC 04:52
+    .     .                          ███▓▓▓          .      .   +
+                         *   * *────────────────  .
+    *                                ▓▓▒▒▒▒      .                       .
+  *     .       .        *                               .          . .  *
+  ┌────────────────────── T H E   F R O N T   H A L L ───────────────────────┐
+  │ Signed in as founder.                                                    │ .
+  │                                                                          │
+* │   [n] Notice board                                                       │
+ .│   [f] Message boards                                                     │
+  │   [p] Post office                                                        │
+  │   [t] The Commons                                                        │
+  │   [a] Files  (not built yet)                                             │
+. │   [u] Members                                                            │
+  │   [y] Community                                                          │
+  │   [i] Invites                                                            │
+  │   [s] Terminal settings                                                  │
+  │   [o] Sysop tools                                                        │ .
+  │   [l] Log off                                                            │.
+ .│                                                                          │
+  │                                                                          │
+  │                                                                          │
+  └──────────────────────────────────────────────────────────────────────────┘ .
+ ? help  Esc back  Ctrl-C log off

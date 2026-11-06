@@ -1,0 +1,20 @@
+version = 1
+title = "A short history"
+art = "history.art.toml"
+text = """
+# How we got here
+Replace this with your own story. This is a sample, written to show how a page reads.
+
+# The timeline
+- Year one: a spare computer, a long cable and a very patient sysop.
+- Year two: the first regulars. Someone started a board for bad puns; it is still the busiest.
+- Year three: the great migration, when the whole board moved house over a weekend and lost only the coffee.
+- Year four: doors opened. Everyone stayed up too late.
+- Today: still small, still friendly, still here.
+
+# Things we remember
+> The first post on the first board was a single word: "hello". It got four replies.
+
+# Thanks
+To everyone who called, who stayed, who wrote a long reply at midnight, and who left a kind word for a stranger.
+"""
