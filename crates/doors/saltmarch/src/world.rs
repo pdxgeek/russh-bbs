@@ -37,6 +37,18 @@ pub struct Badge {
     pub contracts: u8,
 }
 
+impl Badge {
+    /// What a clan has done that the ending reads.
+    #[must_use]
+    pub fn of(cat: &crate::content::Catalog, clan: &crate::clan::Clan) -> Self {
+        Self {
+            deep: clan.social.deep,
+            quests: u8::try_from(cat.quests_done(|m| clan.has_mark(m))).unwrap_or(u8::MAX),
+            contracts: u8::try_from(clan.story.done).unwrap_or(u8::MAX),
+        }
+    }
+}
+
 /// A causeway tile laid by a clan.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Span {
@@ -123,6 +135,31 @@ impl World {
             causeways: Vec::new(),
             flags: 0,
             legacy: Ending::Quiet,
+        }
+    }
+
+    /// Put what clans and quests have done onto a freshly generated map, as the clan named
+    /// `me` meets it: the toll on a span is zero for its builder and for a pact partner whose
+    /// pact shares causeways.
+    pub fn overlay(&self, map: &mut crate::map::Map, cat: &crate::content::Catalog, me: Option<&str>) {
+        map.apply_flags(self.flags, &cat.pois);
+        let me_ix = me.and_then(|n| self.ix(n));
+        for s in &self.causeways {
+            let Some(owner) = self.clans.get(usize::from(s.owner)) else {
+                continue;
+            };
+            let mine = me_ix == Some(s.owner);
+            let shared = me_ix.is_some_and(|m| {
+                self.pact_between(m, s.owner)
+                    .is_some_and(|p| p.terms & crate::social::pact::CAUSEWAY != 0)
+            });
+            map.lay(crate::map::Laid {
+                x: s.x,
+                y: s.y,
+                owner: owner.name.clone(),
+                toll: if mine || shared { 0 } else { s.toll },
+                mine,
+            });
         }
     }
 

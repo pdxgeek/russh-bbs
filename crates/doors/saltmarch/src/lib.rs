@@ -186,11 +186,19 @@ impl Door for Saltmarch {
             let line = social::hall::season_line(&c, old_world.as_ref());
             let map = crate::map::Map::generate(world.seed, &self.cat.pois);
             let site = Clan::site_for(&c.name, map.sites.len());
+            let heirloom = social::legacy::heirloom_for(&c, old_world.as_ref(), today);
             let mut next = c.next_season(&self.cat, &map, start.season, site, today, rng);
+            social::legacy::start(&mut next, &self.cat, &map, world.legacy, heirloom);
             next.hall.push(clan::HallEntry {
                 season: c.season,
                 text: line,
             });
+            if let Some(h) = heirloom {
+                next.hall.push(clan::HallEntry {
+                    season: c.season,
+                    text: format!("Carried into the new season: {} ({}).", h.name(), h.effect()),
+                });
+            }
             if next.hall.len() > clan::HALL_CAP {
                 next.hall.remove(0);
             }

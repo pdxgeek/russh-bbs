@@ -332,7 +332,7 @@ pub fn check(w: &World, from: ClanIx, to: ClanIx, day: i64) -> Result<(), Refusa
     if b.record.shield_until > day {
         return Err(Refusal::Shielded);
     }
-    if day - b.posted.founded < caps::NEW_CLAN_DAYS && !b.record.raided_first {
+    if day - b.posted.founded < super::legacy::new_clan_days(w.legacy) && !b.record.raided_first {
         return Err(Refusal::NewClan);
     }
     if day - b.posted.seen >= caps::DORMANT_SAFE_DAYS {

@@ -549,7 +549,7 @@ fn the_door_is_registered_under_its_id_and_has_a_tick() {
     assert!(door.has_daily_tick());
     assert_eq!(
         (door.info().save_version, door.info().world_version),
-        (3, 3)
+        (4, 4)
     );
 }
 
@@ -585,7 +585,14 @@ fn a_version_one_world_migrates_through_the_door_and_a_newer_one_is_not_understo
         "version 2 is not readable as version 3"
     );
     let v3 = door.migrate(BlobKind::World, 2, &v2).unwrap();
-    let world = World::decode(&v3).unwrap();
+    assert_eq!(
+        World::decode(&v3),
+        None,
+        "version 3 is not readable as version 4"
+    );
+    let v4 = door.migrate(BlobKind::World, 3, &v3).unwrap();
+    let world = World::decode(&v4).unwrap();
+    assert!(world.causeways.is_empty() && world.flags == 0);
     assert_eq!(world.clans.len(), 2);
     assert!(world.clans.iter().all(|c| c.score == 0));
     assert_eq!(world.history, [] as [[u16; 13]; 0]);
@@ -595,8 +602,8 @@ fn a_version_one_world_migrates_through_the_door_and_a_newer_one_is_not_understo
         Err(MigrateError::Corrupt(1))
     );
     assert_eq!(
-        door.migrate(BlobKind::World, 3, &v3),
-        Err(MigrateError::Unsupported(3))
+        door.migrate(BlobKind::World, 4, &v4),
+        Err(MigrateError::Unsupported(4))
     );
     assert_eq!(
         door.migrate(BlobKind::World, 2, &v2[..12]),

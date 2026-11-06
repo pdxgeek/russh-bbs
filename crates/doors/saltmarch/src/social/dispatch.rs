@@ -10,8 +10,9 @@ use super::market::Side;
 use super::{ClanIx, Defender, Posted, Receipt, Refusal, caps, letters::Kind};
 use crate::content::Catalog;
 use crate::tide::Tide;
+use crate::story::{Flag, LAY_MAX, TOLL_MAX};
 use crate::types::Resource;
-use crate::world::World;
+use crate::world::{SPANS_CAP, Span, World};
 
 /// What to ask of the world.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -91,6 +92,28 @@ pub enum Act {
     Block {
         /// The clan.
         who: String,
+    },
+    /// Pay a toll to the clan that built a causeway (the tallies left the payer already; the
+    /// world turns them into a parcel for the builder).
+    Toll {
+        /// The builder's clan.
+        owner: String,
+        /// Tallies.
+        tallies: u32,
+    },
+    /// Lay a causeway tile.
+    Lay {
+        /// Column.
+        x: u8,
+        /// Row.
+        y: u8,
+        /// The toll the builder sets.
+        toll: u8,
+    },
+    /// A quest changed the marsh for everyone.
+    Flag {
+        /// What changed.
+        flag: Flag,
     },
 }
 
@@ -189,6 +212,84 @@ fn apply(w: &mut World, cat: &Catalog, me: ClanIx, d: &Dispatch) -> Result<(), R
             let who = target(w, who)?;
             w.block(me, who)
         }
+        Act::Toll { owner, tallies } => {
+            let owner = target(w, owner)?;
+            if owner == me || *tallies == 0 {
+                return Err(Refusal::Unknown);
+            }
+            if w.social.mail_for(owner) >= caps::MAIL_PER_CLAN {
+                return Err(Refusal::MailFull);
+            }
+            w.social.deliver(
+                owner,
+                super::Body::Parcel(super::market::Parcel {
+                    goods: None,
+                    tallies: *tallies,
+                    memo: super::market::Memo::Toll,
+                    about: None,
+                }),
+            );
+            Ok(())
+        }
+        Act::Lay { x, y, toll } => lay(w, cat, me, (*x, *y), *toll, day),
+        Act::Flag { flag } => {
+            apply_flag(w, *flag);
+            Ok(())
+        }
+    }
+}
+
+/// Lay a causeway tile for `me`, if the ground and the caps allow.
+fn lay(
+    w: &mut World,
+    cat: &Catalog,
+    me: ClanIx,
+    (x, y): (u8, u8),
+    toll: u8,
+    day: i64,
+) -> Result<(), Refusal> {
+    if w.causeways.len() >= SPANS_CAP {
+        return Err(Refusal::Full);
+    }
+    if w.causeways.iter().filter(|c| c.owner == me).count() >= usize::from(LAY_MAX) {
+        return Err(Refusal::TooMany);
+    }
+    if w.causeways.iter().any(|c| c.x == x && c.y == y) {
+        return Err(Refusal::Blocked);
+    }
+    let mut map = crate::map::Map::generate(w.seed, &cat.pois);
+    map.apply_flags(w.flags, &cat.pois);
+    let ok = map.tile(usize::from(x), usize::from(y)).is_some_and(|t| {
+        crate::map::can_lay_on(t.kind) && map.poi_at(x, y).is_none()
+    });
+    if !ok {
+        return Err(Refusal::Blocked);
+    }
+    w.causeways.push(Span {
+        x,
+        y,
+        owner: me,
+        toll: toll.min(TOLL_MAX),
+        laid: day,
+    });
+    Ok(())
+}
+
+/// A quest's change to the marsh: a surge takes the oldest causeway once; the rest set a
+/// lasting bit that every session's map reads.
+fn apply_flag(w: &mut World, flag: Flag) {
+    if flag == Flag::Washout {
+        if let Some(i) = w
+            .causeways
+            .iter()
+            .enumerate()
+            .min_by_key(|(i, c)| (c.laid, *i))
+            .map(|(i, _)| i)
+        {
+            w.causeways.remove(i);
+        }
+    } else {
+        w.flags |= flag.bit();
     }
 }
 
@@ -246,6 +347,7 @@ pub fn post_update(
     name: &str,
     posted: &Posted,
     score: Option<u32>,
+    badge: crate::world::Badge,
 ) -> Option<Vec<u8>> {
     let mut w = World::decode(stored?).filter(|w| w.season == season)?;
     let me = usize::from(w.ix(name)?);
@@ -259,6 +361,10 @@ pub fn post_update(
         && entry.score != s
     {
         entry.score = s;
+        changed = true;
+    }
+    if entry.badge != badge {
+        entry.badge = badge;
         changed = true;
     }
     if !changed {

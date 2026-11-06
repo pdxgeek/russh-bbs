@@ -157,6 +157,11 @@ pub enum Action {
         /// Where they mean to go.
         target: Option<(u8, u8)>,
     },
+    /// Set the toll the clan charges on the causeways it lays from now on (0 to 5).
+    SetToll {
+        /// Tallies.
+        toll: u8,
+    },
     /// Take a contract from today's board.
     TakeContract {
         /// The contract template's id.
@@ -480,6 +485,12 @@ pub fn apply(
         }
         Action::Depart { party, kit, target } => {
             trip::depart(env, clan, &party, kit, target, rng, &mut events)?;
+        }
+        Action::SetToll { toll } => {
+            if toll > crate::story::TOLL_MAX {
+                return Err(ActionError::BadAmount);
+            }
+            clan.story.toll = toll;
         }
         Action::TakeContract { id } => {
             crate::board::take(env.cat, clan, env.map.seed, env.day, &id, &mut events)?;

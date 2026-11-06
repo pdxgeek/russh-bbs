@@ -421,6 +421,7 @@ impl fmt::Display for Event {
                     }
                     Memo::Cancelled => write!(f, "Your order was taken down: {back} came back."),
                     Memo::Refused => write!(f, "An order was turned away: {back} came back."),
+                    Memo::Toll => write!(f, "Travellers paid {tallies} tallies toll on your causeways."),
                 }
             }
             Self::RaidWon {

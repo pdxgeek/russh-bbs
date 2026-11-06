@@ -495,6 +495,8 @@ pub enum Refusal {
     MailFull,
     /// The sender is in the Tidecourt's bad books.
     Outlaw,
+    /// The ground cannot take a causeway (or one is there already).
+    Blocked,
 }
 
 impl Refusal {
@@ -524,6 +526,7 @@ impl Refusal {
             Self::NotYours => "That is not yours to change.",
             Self::MailFull => "That clan's post is full.",
             Self::Outlaw => "The Tidecourt will not carry your word.",
+            Self::Blocked => "That ground cannot take a causeway.",
         }
     }
 
@@ -555,6 +558,7 @@ impl Refusal {
             19 => Self::NotYours,
             20 => Self::MailFull,
             21 => Self::Outlaw,
+            22 => Self::Blocked,
             _ => return None,
         })
     }
@@ -806,12 +810,12 @@ mod tests {
 
     #[test]
     fn every_refusal_has_a_sentence_and_a_code_that_round_trips() {
-        for code in 0..=21u8 {
+        for code in 0..=22u8 {
             let r = Refusal::from_code(code).unwrap();
             assert_eq!(r.code(), code);
             assert!(r.text().ends_with('.') && r.text().len() > 12);
         }
-        assert_eq!(Refusal::from_code(22), None);
+        assert_eq!(Refusal::from_code(23), None);
     }
 
     #[test]

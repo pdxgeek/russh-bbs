@@ -804,6 +804,59 @@ impl Session {
 
     // ------------------------------------------------------------------ acting
 
+    /// Send the world what the clan has done that it must hear about (tolls paid, causeways
+    /// laid, changes quests made to the marsh). What is at risk stays in the clan's pendings
+    /// until the receipt, like every other dispatch.
+    pub(super) fn flush_outbox(&mut self, ctx: &mut Ctx<'_>) {
+        use crate::social::ledger::Kind as K;
+        use crate::story::Out;
+        let Some(c) = self.clan.as_mut() else { return };
+        let outbox = std::mem::take(&mut c.story.outbox);
+        for out in outbox {
+            let (kind, about, hold, act) = match out {
+                Out::Toll { owner, tallies } => (
+                    K::Toll,
+                    owner.clone(),
+                    Pending {
+                        tallies: u32::from(tallies),
+                        ..Self::blank_on(self.today)
+                    },
+                    Send::Toll {
+                        owner,
+                        tallies: u32::from(tallies),
+                    },
+                ),
+                Out::Lay { x, y, toll } => {
+                    let me = self.clan.as_ref().map(|c| c.name.clone()).unwrap_or_default();
+                    self.map.lay(crate::map::Laid {
+                        x,
+                        y,
+                        owner: me,
+                        toll: 0,
+                        mine: true,
+                    });
+                    (
+                        K::Lay,
+                        format!("{x},{y}"),
+                        Pending {
+                            goods: Some((crate::types::Resource::Rope, u32::from(crate::trip::LAY_ROPE))),
+                            ..Self::blank_on(self.today)
+                        },
+                        Send::Lay { x, y, toll },
+                    )
+                }
+                Out::Flag(flag) => (
+                    K::Change,
+                    flag.id().to_owned(),
+                    Self::blank_on(self.today),
+                    Send::Flag { flag },
+                ),
+            };
+            self.send(ctx, kind, about, hold, act);
+        }
+    }
+
+
     /// Tell the world, and keep what is at risk until its receipt comes.
     fn send(&mut self, ctx: &mut Ctx<'_>, kind: PendKind, about: String, hold: Pending, act: Send) {
         let Some(clan) = self.clan.as_mut() else {

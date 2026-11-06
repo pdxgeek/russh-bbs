@@ -292,6 +292,8 @@ pub struct Story {
     pub laid: u8,
     /// Tolls paid this season.
     pub tolls_paid: u32,
+    /// Tolls earned on the clan's causeways this season.
+    pub toll_income: u32,
     /// Orders for the world.
     pub outbox: Vec<Out>,
 }
@@ -307,6 +309,7 @@ impl Default for Story {
             toll: TOLL_DEFAULT,
             laid: 0,
             tolls_paid: 0,
+            toll_income: 0,
             outbox: Vec::new(),
         }
     }
@@ -361,6 +364,7 @@ impl Story {
         w.u8(self.toll);
         w.u8(self.laid);
         w.u32(self.tolls_paid);
+        w.u32(self.toll_income);
         w.count(self.outbox.len());
         for o in &self.outbox {
             match o {
@@ -400,6 +404,7 @@ impl Story {
         };
         let (done, failed, heirloom, toll, laid, tolls_paid) =
             (r.u16()?, r.u16()?, r.u8()?, r.u8()?, r.u8()?, r.u32()?);
+        let toll_income = r.u32()?;
         let n = r.u8()?;
         let mut outbox = Vec::new();
         for _ in 0..n {
@@ -426,6 +431,7 @@ impl Story {
             toll: toll.min(TOLL_MAX),
             laid,
             tolls_paid,
+            toll_income,
             outbox,
         })
     }

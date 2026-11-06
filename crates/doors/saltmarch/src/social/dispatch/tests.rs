@@ -162,11 +162,11 @@ fn the_post_is_rewritten_only_when_it_changed() {
     let w = world();
     let mut posted = w.clans[0].posted.clone();
     assert_eq!(
-        post_update(Some(&w.encode()), 1, "Ash", &posted, Some(40)),
+        post_update(Some(&w.encode()), 1, "Ash", &posted, Some(40), crate::world::Badge::default()),
         None
     );
     posted.rating = 3;
-    let bytes = post_update(Some(&w.encode()), 1, "Ash", &posted, Some(41)).unwrap();
+    let bytes = post_update(Some(&w.encode()), 1, "Ash", &posted, Some(41), crate::world::Badge::default()).unwrap();
     let after = World::decode(&bytes).unwrap();
     assert_eq!(
         (after.clans[0].posted.rating, after.clans[0].score),
@@ -174,7 +174,7 @@ fn the_post_is_rewritten_only_when_it_changed() {
     );
     assert_eq!(after.clans[1], w.clans[1], "nobody else changes");
     assert_eq!(
-        post_update(Some(&w.encode()), 1, "Nobody", &posted, None),
+        post_update(Some(&w.encode()), 1, "Nobody", &posted, None, crate::world::Badge::default()),
         None
     );
 }
