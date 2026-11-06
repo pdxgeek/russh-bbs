@@ -677,16 +677,6 @@ impl Table for Events {
                 }
             }
         }
-        for rare in [false, true] {
-            let n = self.entries.iter().filter(|e| e.rare == rare).count();
-            let need = if rare { 6 } else { 34 };
-            if n < need {
-                p.push(format!(
-                    "[event] at least {need} {} events are needed (have {n})",
-                    if rare { "rare" } else { "common" }
-                ));
-            }
-        }
         p
     }
 }

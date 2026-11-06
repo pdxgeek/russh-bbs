@@ -20,7 +20,13 @@ use crate::map::PoiKind;
 use crate::types::Resource;
 
 /// Quests table text.
-pub const QUESTS_TOML: &str = include_str!("../content/quests.toml");
+pub const QUESTS_TOML: &str = concat!(
+    include_str!("../content/quests.toml"),
+    "\n",
+    include_str!("../content/quests-b.toml"),
+    "\n",
+    include_str!("../content/quests-c.toml"),
+);
 /// Contracts table text.
 pub const CONTRACTS_TOML: &str = include_str!("../content/contracts.toml");
 
