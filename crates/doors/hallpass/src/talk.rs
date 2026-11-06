@@ -553,6 +553,14 @@ impl Game {
                         .find(|s| s.id == p.step)
                         .map_or_else(String::new, |s| s.text.clone()),
                 };
+                if p.ended.is_none() && p.id == self.content.mystery.rules.arc {
+                    let found = self.stat(&crate::cond::Stat::Clues);
+                    return Some(format!(
+                        "{} - {line} (clues found: {found} of {})",
+                        spec.name,
+                        self.content.mystery.clues.len()
+                    ));
+                }
                 Some(format!("{} - {line}", spec.name))
             })
             .collect()

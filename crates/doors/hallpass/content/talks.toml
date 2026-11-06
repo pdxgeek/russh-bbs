@@ -989,6 +989,29 @@ label = "Say it was nothing"
 say = "He looks at you kindly and says nothing either."
 
 [[talk]]
+id = "wing_soames_hint"
+npc = "soames"
+title = "Reverend Soames and the music desk"
+when = ["know:soames_trust"]
+arc = "the_wing"
+step = "chalk"
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Reverend Soames has been waiting for you to come back. 'You brought me a page once, and I said I would think about the East Wing. I have. If someone were looking for the loft key, I would look behind the organ pipes.'"
+[[talk.node.choice]]
+label = "Thank him and ask nothing more"
+say = "He nods, relieved not to have been asked. 'Mind the third pipe,' he says. 'It sticks.'"
+effects = ["know:organ_key_spot", "know:clue_c4_pipes", "bond:soames:+2"]
+[[talk.node.choice]]
+label = "Ask what he is afraid of"
+say = "'Of being asked,' says Reverend Soames, and smiles, and tells you the same thing about the pipes."
+effects = ["know:organ_key_spot", "know:clue_c4_pipes", "bond:soames:+1"]
+[[talk.node.choice]]
+label = "Say you will find it yourself"
+say = "'Of course,' he says, and goes back to the hymnal."
+
+[[talk]]
 id = "wing_fenn_choice"
 npc = "fenn"
 title = "Tell Mr. Fenn what you found"
