@@ -1,7 +1,7 @@
 # H-4: loader fuzz and caps
 
 Slice H-4, branch `hard/loader-fuzz`. Hardening of every loader that reads a sysop- or
-file-supplied document. Tests only, plus the small fixes the tests found (D-TBD).
+file-supplied document. Tests only, plus the small fixes the tests found (D139).
 
 ## What is covered
 
