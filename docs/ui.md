@@ -414,7 +414,7 @@ CP437 bytes in, cells out (`art::ans::parse`).
 
 ### The six bundled sets
 
-Original art, drawn for this project: per style a login banner, a menu header, an **area header** (three rows, drawn above forums, mail and chat) and a **logoff picture** (`bundled/<style>.art.toml`; credit "russh-bbs project (original art)"; ART-1, D136). Every piece has its own ASCII-tier rows and a one-line fallback for a narrow screen. Nothing is taken from another board or pack. There is one `area` piece per style, shared by every screen that draws the slot; the doors list and the Files placeholder draw none (FIX-ART-1).
+Original art, drawn for this project: per style a login banner, a menu header, an **area header** (three rows, drawn above forums, mail and chat) and a **logoff picture** (`bundled/<style>.art.toml`; credit "russh-bbs project (original art)"; ART-1, D138). Every piece has its own ASCII-tier rows and a one-line fallback for a narrow screen. Nothing is taken from another board or pack. There is one `area` piece per style, shared by every screen that draws the slot; the doors list and the Files placeholder draw none (FIX-ART-1).
 
 | Style | Login banner / menu header |
 |---|---|
