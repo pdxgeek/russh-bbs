@@ -18,7 +18,7 @@
 )]
 mod common;
 
-use common::{Sandbox, Setup, arrange, content, meet, monday, satisfy};
+use common::{Sandbox, Setup, arrange, at_event, content, meet, monday, satisfy};
 use russh_bbs_door::DoorRng;
 use russh_bbs_door_hallpass::game::{Action, Event, Game};
 use russh_bbs_door_hallpass::save::{decode_player, encode_player};
@@ -438,7 +438,12 @@ fn friendships_grow_by_doing_and_a_friend_opens_roles_a_stranger_will_not() {
     // Passing time together.
     let mut sb = at("smooth_talker", "paper_office", "after", 1, 1);
     sb.ok(Action::Loiter);
-    assert_eq!(sb.game.player.life.bond_with("wren"), 1);
+    // Whoever of the paper's people was about (Wren, or Theo the columnist) warms by one.
+    let warmed: i32 = ["wren", "theo"]
+        .iter()
+        .map(|n| sb.game.player.life.bond_with(n))
+        .sum();
+    assert_eq!(warmed, 1);
     // Rafe will not play distraction for a stranger, but will for a friend.
     let mut sb = Sandbox::new("fast_runner", 1);
     let id = arrange(&mut sb, "pell", "salt_swap", &Setup::default());
@@ -600,7 +605,20 @@ fn there_are_twenty_conversations_and_every_choice_is_open_to_some_build() {
                 },
             );
         }
-        meet(&mut sb.game, &talk.npc);
+        if let Some(ev) = &talk.event {
+            // A term event is open on its days, whoever is about: find a day when the talk's own
+            // day conditions hold inside the event.
+            let spec = c.calendar.iter().find(|e| e.id == *ev).unwrap();
+            let day = (spec.from..=spec.to)
+                .find(|d| {
+                    sb.game.world.term_start = sb.game.player.day - *d;
+                    sb.game.all_hold(&talk.when)
+                })
+                .unwrap_or_else(|| panic!("{} is never open on its event's days", talk.id));
+            at_event(&mut sb.game, ev, day);
+        } else {
+            meet(&mut sb.game, &talk.npc);
+        }
         assert!(sb.game.talk_open(talk), "{} can never be started", talk.id);
         for node in &talk.node {
             for choice in &node.choice {
@@ -917,4 +935,149 @@ fn decode_scene_game(sb: &Sandbox) -> Sandbox {
         game,
         rng: DoorRng::from_seed(2),
     }
+}
+
+// ------------------------------------------------------------------ every option, taken
+
+/// The ways into each node of a talk: the choices (node, index) that lead from the first node to
+/// it, in order. The first node is reached by no choice.
+fn path_to(talk: &russh_bbs_door_hallpass::content::Talk, node: &str) -> Vec<(String, usize)> {
+    let mut best: std::collections::HashMap<String, Vec<(String, usize)>> =
+        std::collections::HashMap::new();
+    best.insert(talk.first.clone(), Vec::new());
+    let mut queue = std::collections::VecDeque::from([talk.first.clone()]);
+    while let Some(at) = queue.pop_front() {
+        let here = best[&at].clone();
+        let Some(n) = talk.node.iter().find(|n| n.id == at) else {
+            continue;
+        };
+        for (i, c) in n.choice.iter().enumerate() {
+            if !c.next.is_empty() && !best.contains_key(&c.next) {
+                let mut p = here.clone();
+                p.push((at.clone(), i));
+                best.insert(c.next.clone(), p);
+                queue.push_back(c.next.clone());
+            }
+        }
+    }
+    best.remove(node).unwrap_or_default()
+}
+
+#[test]
+fn every_choice_of_every_conversation_can_be_taken_by_a_build_and_does_what_it_says() {
+    use russh_bbs_door_hallpass::cond::Cond;
+    use russh_bbs_door_hallpass::effect::Eff;
+    let c = content();
+    let mut taken = 0;
+    for talk in &c.talks {
+        for node in &talk.node {
+            let way = path_to(talk, &node.id);
+            for (i, choice) in node.choice.iter().enumerate() {
+                let mut sb = Sandbox::new("smooth_talker", 1);
+                sb.game.world.term_start = sb.game.player.day - 20;
+                let mut needs: Vec<Cond> = talk.when.clone();
+                // Everything the build must hold: the talk's conditions, then every choice on the
+                // way to this node, then this choice.
+                let mut chain: Vec<&russh_bbs_door_hallpass::content::Choice> = Vec::new();
+                for (nid, ci) in &way {
+                    let n = talk.node.iter().find(|n| n.id == *nid).unwrap();
+                    chain.push(&n.choice[*ci]);
+                }
+                chain.push(choice);
+                for ch in &chain {
+                    needs.extend(ch.needs.iter().cloned());
+                }
+                // Conditions that contradict each other (a flag the path itself forgets) are not
+                // asked of the build; satisfy them in order, later ones winning.
+                for cond in &needs {
+                    satisfy(&mut sb.game, cond);
+                }
+                if let (Some(arc), Some(step)) = (&talk.arc, &talk.step) {
+                    satisfy(
+                        &mut sb.game,
+                        &Cond::Arc {
+                            arc: arc.clone(),
+                            step: step.clone(),
+                        },
+                    );
+                }
+                if let Some(ev) = &talk.event {
+                    let spec = c.calendar.iter().find(|e| e.id == *ev).unwrap();
+                    let day = (spec.from..=spec.to)
+                        .find(|d| {
+                            sb.game.world.term_start = sb.game.player.day - *d;
+                            sb.game.all_hold(&talk.when)
+                        })
+                        .unwrap();
+                    at_event(&mut sb.game, ev, day);
+                } else {
+                    meet(&mut sb.game, &talk.npc);
+                }
+                sb.game.player.nerve = sb.game.player.nerve_max.max(8);
+                sb.game.player.nerve_max = sb.game.player.nerve_max.max(8);
+                sb.ok(Action::Talk(talk.id.clone()));
+                // Walk the way to the node (each step must be open and must lead where it says).
+                for (nid, ci) in &way {
+                    let view = sb.game.scene_view().unwrap();
+                    assert!(
+                        view.choices[*ci].open,
+                        "{}: step {nid}/{ci} on the way to {}/{i} is shut: {:?}",
+                        talk.id, node.id, view.choices[*ci]
+                    );
+                    sb.ok(Action::Choose(u8::try_from(*ci).unwrap()));
+                }
+                let view = sb.game.scene_view().unwrap();
+                assert_eq!(view.text, node.text, "{} reached the wrong node", talk.id);
+                assert!(
+                    view.choices[i].open,
+                    "{}/{}/{i} `{}` is shut to the build that meets its needs ({})",
+                    talk.id, node.id, choice.label, view.choices[i].wants
+                );
+                let before = sb.game.clone();
+                sb.ok(Action::Choose(u8::try_from(i).unwrap()));
+                taken += 1;
+                // It leads where it says: to the next node, or the conversation ends.
+                if choice.next.is_empty() {
+                    assert!(
+                        sb.game.scene_view().is_none(),
+                        "{}/{}/{i} ends it",
+                        talk.id,
+                        node.id
+                    );
+                } else {
+                    assert!(
+                        sb.game.scene_view().is_some(),
+                        "{}/{}/{i} goes on",
+                        talk.id,
+                        node.id
+                    );
+                }
+                // And it does what it says.
+                for e in &choice.effects {
+                    match e {
+                        Eff::Know(k) => assert!(sb.game.player.knows(k), "{}: know {k}", talk.id),
+                        Eff::Item(it) => assert!(
+                            sb.game.player.count(it) > before.player.count(it),
+                            "{}: item {it}",
+                            talk.id
+                        ),
+                        Eff::World(w) => assert!(sb.game.world.has(w), "{}: world {w}", talk.id),
+                        Eff::ArcEnd(a, end) => assert_eq!(
+                            sb.game
+                                .player
+                                .life
+                                .arc(a)
+                                .and_then(|p| p.ended.clone())
+                                .as_deref(),
+                            Some(end.as_str()),
+                            "{}: ends {a}",
+                            talk.id
+                        ),
+                        _ => {}
+                    }
+                }
+            }
+        }
+    }
+    assert!(taken >= 550, "{taken} choices were taken");
 }

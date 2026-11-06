@@ -99,6 +99,39 @@ id = "the_alarm"
 name = "the fire alarm"
 kind = "school"
 
+
+# ---- Launch-content targets ----
+[[target]]
+id = "abney"
+name = "Miss Abney"
+kind = "staff"
+npc = "abney"
+[[target]]
+id = "workshop"
+name = "the Workshop"
+kind = "clique"
+clique = "workshop"
+[[target]]
+id = "the_menu"
+name = "the dining-hall menu"
+kind = "school"
+place = "main_hall"
+[[target]]
+id = "the_trophies"
+name = "the trophy cabinet"
+kind = "school"
+place = "gym"
+[[target]]
+id = "the_clock"
+name = "the Great Hall clock"
+kind = "school"
+place = "main_hall"
+[[target]]
+id = "the_tannoy"
+name = "the school tannoy"
+kind = "school"
+place = "admin_corridor"
+
 # ---- small methods ----
 
 [[method]]
@@ -522,6 +555,539 @@ big = true
 effect = "paper_hijack"
 skills = ["sneak", "bluff", "fleet"]
 story = "The paper came out with a front page nobody authorised, and everybody read it twice."
+
+
+# ---- launch-content methods ----
+[[method]]
+id = "flour_door"
+name = "Balance a flour sack over the door"
+blurb = "Patience, a coat hook and a very still afternoon."
+place = "room_languages"
+kinds = ["staff"]
+only = ["thorne", "alder", "orrin", "pell"]
+present = "absent"
+needs = ["flour"]
+difficulty = 17
+legend = 6
+heat = 5
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "{target} opened the door, and for the rest of the day left small white footprints that nobody had the nerve to mention."
+[[method]]
+id = "hollin_flag"
+name = "Raise the Hollin House flag in the quad"
+blurb = "You will need to know their signals, and a very tall pole."
+place = "quad"
+kinds = ["staff", "prefect"]
+only = ["marsh", "wick"]
+present = "any"
+needs = ["bunting"]
+requires = ["know:match_signals"]
+difficulty = 24
+legend = 9
+heat = 7
+severity = 1
+skills = ["sneak", "bluff", "fleet"]
+story = "Hollin House's blue flag flew over the quad for the whole of morning break, and {target} was the last to notice."
+[[method]]
+id = "chapel_bubbles"
+name = "Bubbles through the chapel hymn"
+blurb = "A machine in the font, a cord in your sleeve, and sixty hymn-singers."
+place = "chapel"
+kinds = ["staff", "school"]
+only = ["soames", "the_organ"]
+present = "absent"
+needs = ["bubble_mix"]
+requires = ["tag:gadgets"]
+difficulty = 22
+legend = 8
+heat = 6
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "A rainbow of bubbles rose from the font in the middle of the second verse, and {target} sang on with great dignity through them."
+[[method]]
+id = "kazoo_anthem"
+name = "Hand out kazoos before the anthem"
+blurb = "Two hundred tin kazoos and a perfectly straight face."
+place = "main_hall"
+kinds = ["staff"]
+only = ["vane", "marsh"]
+present = "any"
+needs = ["kazoo"]
+roles = ["distraction"]
+difficulty = 26
+legend = 11
+heat = 8
+severity = 1
+skills = ["bluff", "bluff", "fleet"]
+story = "The school anthem was sung in two hundred buzzing voices, and {target} stood to attention throughout without moving a muscle."
+[[method]]
+id = "paint_footprints"
+name = "Paint tiny footprints across the ceiling"
+blurb = "Whoever walks on the ceiling in this school is very small and extremely determined."
+place = "classroom_corridor"
+kinds = ["staff"]
+only = ["marsh", "vane", "thorne"]
+present = "absent"
+needs = ["paint"]
+requires = ["grade:art>=65"]
+difficulty = 23
+legend = 9
+heat = 6
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "A line of neat little footprints ran across the ceiling from end to end, and {target} spent a week looking for the culprit's ladder."
+[[method]]
+id = "colour_shelves"
+name = "Shelve all of Fiction by the colour of the spine"
+blurb = "The most beautiful library in the county, for one afternoon."
+place = "library"
+kinds = ["staff"]
+only = ["abney"]
+present = "absent"
+needs = []
+requires = ["skill:sneak>=1"]
+difficulty = 20
+legend = 7
+heat = 5
+severity = 1
+skills = ["sneak", "sneak", "fleet"]
+story = "Fiction was a rainbow when {target} came back from lunch, and she stood in front of it with her hands clasped for a very long minute."
+[[method]]
+id = "feather_storm"
+name = "Release a feather storm in the prefects' room"
+blurb = "Every pillow has a seam, and every seam has a story."
+place = "common_room"
+kinds = ["prefect"]
+only = ["wick", "bramley"]
+present = "absent"
+needs = ["feather"]
+difficulty = 19
+legend = 7
+heat = 5
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "The prefects' room was white to the ceiling, and {target} found a feather in every pocket for a week."
+[[method]]
+id = "chapel_clocks"
+name = "Hide alarm clocks in the chapel pews"
+blurb = "Each set a minute apart, each wound to the last turn."
+place = "chapel"
+kinds = ["staff", "school"]
+only = ["soames", "the_organ"]
+present = "absent"
+needs = ["alarm_clock", "decoy"]
+difficulty = 26
+legend = 10
+heat = 7
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "A clock went off in every pew, one minute after another, and {target} counted them with his eyes shut."
+[[method]]
+id = "chalk_hopscotch"
+name = "Chalk a hopscotch the length of the quad"
+blurb = "It reaches the front steps. It ends in the Headmistress's office."
+place = "quad"
+kinds = ["staff", "prefect"]
+only = ["marsh", "wick", "bramley"]
+present = "any"
+needs = ["chalk"]
+difficulty = 15
+legend = 5
+heat = 4
+severity = 1
+skills = ["sneak", "bluff", "fleet"]
+story = "By break the whole school was hopping to the Headmistress's door, and {target} was too slow to stop them."
+[[method]]
+id = "mirror_notice"
+name = "Hang a mirror so the notice reads backwards"
+blurb = "A forgery, a mirror and the one angle at which it makes sense."
+place = "admin_corridor"
+kinds = ["staff", "prefect"]
+only = ["marsh", "wick", "bramley"]
+present = "absent"
+needs = ["mirror", "forgery_kit"]
+requires = ["tag:forge"]
+difficulty = 24
+legend = 9
+heat = 6
+severity = 1
+skills = ["sneak", "bluff", "fleet"]
+story = "{target}'s new notice could be read only by standing on one tile and looking over one's left shoulder."
+[[method]]
+id = "megaphone_dawn"
+name = "Wake the prefects' dormitory by megaphone"
+blurb = "'Good morning, Lamplighters,' in a voice from the next county."
+place = "dorm"
+kinds = ["clique"]
+only = ["lamplighters"]
+present = "absent"
+needs = ["megaphone"]
+difficulty = 21
+legend = 8
+heat = 6
+severity = 1
+skills = ["sneak", "bluff", "fleet"]
+story = "{target} were woken by a voice that wished them a very good morning, and not one of them could find the speaker."
+[[method]]
+id = "cocoa_urn"
+name = "Fill the tea urn with hot chocolate"
+blurb = "Nobody can object to cocoa. Nobody will try."
+place = "main_hall"
+kinds = ["school"]
+only = ["the_menu"]
+present = "any"
+needs = ["cocoa"]
+difficulty = 18
+legend = 7
+heat = 4
+severity = 1
+skills = ["sneak", "bluff", "fleet"]
+story = "The Great Hall drank hot chocolate at breakfast, and {target} was never explained, only enjoyed."
+[[method]]
+id = "menu_poem"
+name = "Rewrite the dining-hall menu in rhyming verse"
+blurb = "Ode to a boiled cabbage. In iambic pentameter."
+place = "main_hall"
+kinds = ["school"]
+only = ["the_menu"]
+present = "any"
+needs = ["forgery_kit"]
+requires = ["skill:bluff>=1"]
+difficulty = 17
+legend = 6
+heat = 4
+severity = 1
+skills = ["sneak", "bluff", "fleet"]
+story = "{target} was recited, not read, by the whole school, and Mrs. Tarn pretended not to have written a word of it."
+[[method]]
+id = "puddings_first"
+name = "Serve every pudding first"
+blurb = "Mrs. Tarn will do it herself, if she trusts you."
+place = "tuck_shop"
+kinds = ["school"]
+only = ["the_menu"]
+present = "any"
+needs = []
+roles = ["cover"]
+requires = ["bond:tarn>=8"]
+difficulty = 14
+legend = 6
+heat = 3
+severity = 1
+skills = ["bluff", "bluff", "fleet"]
+story = "Pudding came before the soup, and {target} was reorganised by popular demand for the rest of the week."
+[[method]]
+id = "trophy_wig"
+name = "Put a curly wig on the Founder's bust"
+blurb = "The Founder looked stern for a hundred years. He now looks magnificent."
+place = "main_hall"
+kinds = ["school"]
+only = ["the_trophies"]
+present = "any"
+needs = ["wig"]
+difficulty = 20
+legend = 8
+heat = 5
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "The Founder's bust wore a white wig down to its shoulders, and {target} was photographed with it by every visiting governor."
+[[method]]
+id = "trophy_plate"
+name = "Swap the cup's plate for 'Best Bluffer'"
+blurb = "A little brass, a little lie."
+place = "gym"
+kinds = ["school"]
+only = ["the_trophies"]
+present = "any"
+needs = ["forgery_kit"]
+requires = ["tag:forge"]
+difficulty = 25
+legend = 10
+heat = 7
+severity = 1
+skills = ["sneak", "bluff", "fleet"]
+story = "The Founder's Cup was engraved 'Best Bluffer' for a whole week before {target} noticed, and nobody could say it was wrong."
+[[method]]
+id = "clock_forward"
+name = "Put the Great Hall clock forward ten minutes"
+blurb = "Ten minutes is a lifetime in a school."
+place = "main_hall"
+kinds = ["school"]
+only = ["the_clock"]
+present = "any"
+needs = ["alarm_clock"]
+requires = ["skill:tinker>=1"]
+difficulty = 22
+legend = 8
+heat = 5
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "Every class began ten minutes early and ended on time, and {target} was blamed for it for a fortnight."
+[[method]]
+id = "slow_clock"
+name = "Stop the balcony clock at five to"
+blurb = "Mags told you which clock. You will have to be quick."
+place = "main_hall"
+kinds = ["school"]
+only = ["the_clock"]
+present = "any"
+needs = ["decoy"]
+requires = ["know:slow_clock"]
+difficulty = 19
+legend = 7
+heat = 4
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "The balcony clock stopped at five to, and for once it was the only one in the building that was right."
+[[method]]
+id = "bell_muffler"
+name = "Muffle the school bell with a sock"
+blurb = "A very large sock, and a ladder, and a flair for suspense."
+place = "quad"
+kinds = ["school"]
+only = ["the_bell"]
+present = "any"
+needs = ["twine"]
+requires = ["skill:fleet>=1"]
+difficulty = 21
+legend = 8
+heat = 6
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "The bell rang with a muffled 'thud', and the whole school stood in the corridors waiting for lessons to begin."
+[[method]]
+id = "bell_tune"
+name = "Make the bell play a little tune"
+blurb = "A servo and some good taste in music."
+place = "quad"
+kinds = ["school"]
+only = ["the_bell"]
+present = "any"
+needs = ["servo"]
+requires = ["rank:robotics>=2"]
+difficulty = 26
+legend = 11
+heat = 7
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "The bell rang out the first line of a jig, and by the second line the whole quad was humming it."
+[[method]]
+id = "organ_stops"
+name = "Pull out all the stops at the wrong moment"
+blurb = "One thump of a chord, in the middle of a very solemn silence."
+place = "organ_loft"
+kinds = ["school"]
+only = ["the_organ"]
+present = "absent"
+needs = []
+roles = ["lookout"]
+requires = ["know:organ_key_spot"]
+difficulty = 28
+legend = 11
+heat = 8
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "The organ gave a triumphant blast in the middle of the silence, and {target} was never found in the loft."
+[[method]]
+id = "crossword_swap"
+name = "Replace the crossword with one nobody can solve"
+blurb = "Cass sets the puzzle. You supply the cruelty."
+place = "paper_office"
+kinds = ["school"]
+only = ["the_paper"]
+present = "any"
+needs = []
+requires = ["bond:cass>=4"]
+difficulty = 16
+legend = 6
+heat = 4
+severity = 1
+skills = ["sneak", "bluff", "fleet"]
+story = "The Friday crossword had no answers anyone could find, and {target} received eleven letters from furious staff."
+[[method]]
+id = "horoscope_staff"
+name = "Forecast the staff's week in the horoscope"
+blurb = "'Mr. Pell will lose something small this afternoon.' He will."
+place = "paper_office"
+kinds = ["school"]
+only = ["the_paper"]
+present = "any"
+needs = ["forgery_kit"]
+requires = ["rank:paper>=2"]
+difficulty = 23
+legend = 9
+heat = 6
+severity = 1
+skills = ["sneak", "bluff", "fleet"]
+story = "The paper's horoscope was uncomfortably accurate, and {target} was gossiped about at every table."
+[[method]]
+id = "oars_up"
+name = "Hang the Eight's oars from the chapel roof"
+blurb = "Twelve oars, a lot of twine, and a very polite ladder."
+place = "chapel"
+kinds = ["clique"]
+only = ["rowing_eight"]
+present = "absent"
+needs = ["twine"]
+roles = ["lookout"]
+difficulty = 24
+legend = 9
+heat = 7
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "Twelve oars swung from the chapel roof in a perfect row, and {target} spent the morning on a ladder."
+[[method]]
+id = "vanishing_pens"
+name = "Put vanishing ink in the Ink Society's pens"
+blurb = "Every masterpiece fades by the end of the day."
+place = "common_room"
+kinds = ["clique"]
+only = ["ink_society"]
+present = "absent"
+needs = ["vanishing_ink"]
+difficulty = 18
+legend = 7
+heat = 5
+severity = 1
+skills = ["sneak", "bluff", "fleet"]
+story = "Every page {target} wrote that day faded by supper, and they spent the evening suspecting one another."
+[[method]]
+id = "robot_greeting"
+name = "Teach the Workshop's robot a greeting"
+blurb = "'Good morning, Mr. Marsh,' in a calm electronic voice."
+place = "workshop"
+kinds = ["clique"]
+only = ["workshop"]
+present = "absent"
+needs = ["buzzer"]
+requires = ["tag:gadgets"]
+difficulty = 22
+legend = 8
+heat = 5
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "{target}'s robot greeted every visitor with 'Good morning, Mr. Marsh', including Mr. Marsh."
+[[method]]
+id = "lamp_badges"
+name = "Swap the Lamplighters' badges for owls"
+blurb = "A pot of paint and a very small brush."
+place = "common_room"
+kinds = ["clique"]
+only = ["lamplighters"]
+present = "absent"
+needs = ["paint"]
+requires = ["not:trait:teachers_pet"]
+difficulty = 20
+legend = 8
+heat = 6
+severity = 1
+skills = ["sneak", "bluff", "fleet"]
+story = "Every {target} badge sprouted a small owl overnight, and nobody could say who had done it."
+[[method]]
+id = "date_stamp"
+name = "Change the library date stamp to next year"
+blurb = "Every book is mysteriously early."
+place = "library"
+kinds = ["staff"]
+only = ["abney"]
+present = "absent"
+needs = ["forgery_kit"]
+requires = ["grade:history>=60"]
+difficulty = 21
+legend = 7
+heat = 5
+severity = 1
+skills = ["sneak", "bluff", "fleet"]
+story = "Every book was returned a year early, and {target} wrote a long, careful letter to nobody about it."
+[[method]]
+id = "library_gong"
+name = "Turn the library's silence bell into a gong"
+blurb = "One ring, and the entire reading room looks at its shoes."
+place = "library"
+kinds = ["staff"]
+only = ["abney"]
+present = "absent"
+needs = ["buzzer"]
+requires = ["skill:tinker>=2"]
+difficulty = 24
+legend = 9
+heat = 7
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "The silence bell gave a deep gong that rolled down the aisles, and {target} was heard to say something unladylike."
+[[method]]
+id = "latin_graffiti"
+name = "Chalk the Languages blackboard in Greywater Latin"
+blurb = "A perfectly grammatical insult, in a dead language."
+place = "room_languages"
+kinds = ["staff"]
+only = ["thorne"]
+present = "absent"
+needs = ["chalk"]
+requires = ["grade:languages>=70"]
+difficulty = 19
+legend = 7
+heat = 5
+severity = 1
+skills = ["sneak", "bluff", "fleet"]
+story = "The blackboard read, in perfect Greywater Latin, 'with the best will in the world', and {target} did not wipe it off for a week."
+[[method]]
+id = "timeline_swap"
+name = "Swap two dates on the history timeline"
+blurb = "1066 and 1666. The class will learn something."
+place = "room_history"
+kinds = ["staff"]
+only = ["alder"]
+present = "absent"
+needs = ["forgery_kit"]
+requires = ["grade:history>=70"]
+difficulty = 22
+legend = 8
+heat = 5
+severity = 1
+skills = ["sneak", "bluff", "fleet"]
+story = "The timeline put the Great Fire before the Conquest, and {target} spent a whole lesson explaining why it was wrong, and by the end believed it."
+[[method]]
+id = "tannoy_takeover"
+name = "Take over the tannoy for a school-wide broadcast"
+blurb = "Wire, a megaphone and a very good voice."
+place = "admin_corridor"
+kinds = ["school"]
+only = ["the_tannoy"]
+present = "any"
+needs = ["wire", "megaphone"]
+roles = ["lookout", "gadget"]
+requires = ["legend>=40", "skill:tinker>=2"]
+scout = 2
+difficulty = 46
+legend = 28
+heat = 22
+severity = 3
+big = true
+effect = "tannoy_takeover"
+skills = ["sneak", "tinker", "fleet"]
+story = "The tannoy crackled and a voice announced a half-holiday for good behaviour. Nobody believed it, and then everybody did."
+[[method]]
+id = "cup_switch"
+name = "Replace the Founder's Cup with a teapot"
+blurb = "Gleaming and hollow, in the trophy cabinet, for all to see."
+place = "gym"
+kinds = ["school"]
+only = ["the_trophies"]
+present = "any"
+needs = ["decoy", "forgery_kit", "wig"]
+roles = ["cover"]
+requires = ["legend>=35"]
+scout = 2
+difficulty = 44
+legend = 26
+heat = 21
+severity = 3
+big = true
+effect = "cup_switched"
+skills = ["sneak", "bluff", "fleet"]
+story = "The Founder's Cup was a teapot for three days, and the Headmistress said nothing, which was far worse."
 
 # ---- twists ----
 

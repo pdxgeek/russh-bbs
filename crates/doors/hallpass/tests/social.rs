@@ -1158,3 +1158,88 @@ async fn two_players_play_a_scheme_through_the_framework_store_and_the_opt_out_s
         "nothing was posted for an opted-out pupil"
     );
 }
+
+/// FW-1's world read: Bea is already in the door when Ann posts a scheme at her. Bea's next key
+/// (the board has re-read the world, a clock second on) delivers it then and there; she does not
+/// wait for tomorrow's visit, and her roster is fresh.
+#[tokio::test]
+async fn a_scheme_reaches_a_pupil_who_is_already_in_the_door_through_the_worlds_latest_read() {
+    let store = MemoryDoorStore::new();
+    let door: Arc<dyn Door> = Hallpass::shared().unwrap();
+    let day = monday() + 3;
+    let t0 = Day::from_raw(day).start();
+    let clock = Arc::new(ManualClock::new(t0));
+    store.set_now(t0);
+    let c: Arc<dyn Clock> = clock.clone();
+    let mut school = School::new(day);
+    let ann = forger(&mut school, "ann", day).player;
+    let bea = school.enrol("bea", "fast_runner", day).player;
+    put_save(&store, door.as_ref(), 1, &ann).await;
+    put_save(&store, door.as_ref(), 2, &bea).await;
+    let (env_ann, env_bea) = (DoorEnv::for_tests("ann"), DoorEnv::for_tests("bea"));
+    // Bea opens the door first (so she is on the roster) and stays in it.
+    let mut bea_run = Running::open(
+        &store,
+        door.clone(),
+        AccountId::from_raw(2),
+        &env_bea,
+        c.clone(),
+        1,
+    )
+    .await
+    .unwrap();
+    bea_run.key(DoorKey::Char('o'));
+    bea_run.flush(&store).await.unwrap();
+    // Ann comes in and plays the swapped timetable on her.
+    let mut ann_run = Running::open(
+        &store,
+        door.clone(),
+        AccountId::from_raw(1),
+        &env_ann,
+        c.clone(),
+        2,
+    )
+    .await
+    .unwrap();
+    for k in keys("oc11") {
+        ann_run.key(k);
+        ann_run.flush(&store).await.unwrap();
+    }
+    assert_eq!(
+        get_world(&store, door.as_ref()).await.commons.plots.len(),
+        1,
+        "the scheme is posted"
+    );
+    // Bea, still in the door, presses a key within the same clock second: nothing yet.
+    bea_run.key(DoorKey::Char('b'));
+    bea_run.flush(&store).await.unwrap();
+    assert_eq!(
+        get_player(&store, door.as_ref(), 2).await.cool,
+        bea.cool,
+        "the board has not re-read the world yet"
+    );
+    // A clock second on, the board re-reads the world before her next key, and the key finds it.
+    clock.set(russh_bbs_core::store::UnixSeconds::from_raw(
+        t0.as_raw() + 2,
+    ));
+    bea_run.refresh_world_if_stale(&store).await.unwrap();
+    bea_run.key(DoorKey::Char('o'));
+    bea_run.flush(&store).await.unwrap();
+    let after = get_player(&store, door.as_ref(), 2).await;
+    assert_eq!(
+        after.cool,
+        bea.cool - 1,
+        "delivered in the middle of her visit"
+    );
+    assert!(after.social.protected_until > day);
+    assert_eq!(
+        get_world(&store, door.as_ref()).await.commons.plots[0].state,
+        plot_state::LANDED,
+        "and the record is updated"
+    );
+    let screen = bea_run.look_around(&env_bea).join("\n");
+    assert!(
+        screen.contains("swapped") || screen.contains("Lately"),
+        "{screen}"
+    );
+}

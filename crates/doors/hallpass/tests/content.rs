@@ -49,16 +49,16 @@ fn the_shipped_content_loads_and_has_the_amount_this_slice_promises() {
     assert_eq!(c.cliques.len(), 6);
     assert!(c.places.len() >= 25, "{}", c.places.len());
     assert!(c.npcs.len() >= 26, "{}", c.npcs.len());
-    assert!(c.methods.iter().filter(|m| !m.big).count() >= 23);
+    assert!(c.methods.iter().filter(|m| !m.big).count() >= 54);
     assert_eq!(
         c.methods.iter().filter(|m| m.big).count(),
-        4,
+        6,
         "one big scheme per world effect"
     );
     assert_eq!(
         c.effects.len(),
-        14,
-        "four big schemes, one storyline ending, five endings of the east wing and four of the election"
+        20,
+        "six big schemes, one storyline ending, five endings of the east wing, four of the election and four from the term's events"
     );
     assert!(c.twists.len() >= 6 && c.getaways.len() >= 6);
     assert!(c.endings.len() >= 5);
@@ -71,8 +71,18 @@ fn the_shipped_content_loads_and_has_the_amount_this_slice_promises() {
         let by_verdict = c.mystery.verdicts.iter().any(|v| v.effect == e.id);
         let by_election = c.social.runners.iter().any(|r| r.win == e.id)
             || c.social.rules.player_win_effect == e.id;
+        let by_event = c
+            .talks
+            .iter()
+            .flat_map(|t| t.node.iter())
+            .flat_map(|n| n.choice.iter())
+            .any(|ch| {
+                ch.effects
+                    .contains(&russh_bbs_door_hallpass::effect::Eff::World(e.id.clone()))
+            });
         assert!(
             by_story
+                || by_event
                 || by_verdict
                 || by_election
                 || c.methods
@@ -221,9 +231,12 @@ fn the_bad_edits_a_writer_could_make_are_each_named() {
     );
     // A method that needs a helper nobody offers.
     assert!(
-        problems(broken(
-            |s, _| s.cast = replace(EMBEDDED.cast, "role = \"gadget\"", "role = \"cover\"")
-        ))
+        problems(broken(|s, _| s.cast = Box::leak(
+            EMBEDDED
+                .cast
+                .replace("role = \"gadget\"", "role = \"cover\"")
+                .into_boxed_str()
+        )))
         .contains("gadget")
     );
 }
@@ -567,7 +580,7 @@ fn the_social_and_mystery_tables_meet_the_content_the_slice_promises() {
     assert!(c.social.rumours.len() >= 8);
     assert!(c.social.runners.len() >= 3);
     assert!(c.social.awards.len() >= 7);
-    assert_eq!(c.mystery.clues.len(), 12);
+    assert_eq!(c.mystery.clues.len(), 40, "the design's forty steps");
     assert_eq!(c.mystery.verdicts.len(), 5);
     // Six endings of the pupil's story: five verdicts and walking away.
     assert_eq!(c.arc("the_wing").unwrap().ending.len(), 6);
@@ -770,15 +783,11 @@ fn breaking_the_mystery_is_caught_with_the_named_problem() {
     assert!(edited("mystery", "risk = 3", "risk = 9").contains("risk is over 3"));
     // An act with no clue.
     let no_four = problems(broken(|s, _| {
-        let once = replace(
-            EMBEDDED.mystery,
-            "act = 4\nplace = \"east_wing\"",
-            "act = 3\nplace = \"east_wing\"",
-        );
-        s.mystery = replace(
-            once,
-            "act = 4\nplace = \"admin_corridor\"",
-            "act = 3\nplace = \"admin_corridor\"",
+        s.mystery = Box::leak(
+            EMBEDDED
+                .mystery
+                .replace("act = 4\n", "act = 3\n")
+                .into_boxed_str(),
         );
     }));
     assert!(

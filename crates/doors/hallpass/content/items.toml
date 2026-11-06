@@ -127,3 +127,70 @@ id = "buzzer"
 name = "A pocket buzzer"
 price = 5
 shop = "workshop"
+
+# Launch-content novelties: cheap, one use each, sold in the same shops as the rest.
+[[item]]
+id = "flour"
+name = "A paper sack of flour"
+price = 2
+shop = "tuck"
+[[item]]
+id = "bunting"
+name = "A string of paper bunting"
+price = 3
+shop = "art"
+[[item]]
+id = "bubble_mix"
+name = "A bottle of bubble mix"
+price = 3
+shop = "workshop"
+[[item]]
+id = "kazoo"
+name = "A bag of tin kazoos"
+price = 2
+shop = "tuck"
+[[item]]
+id = "paint"
+name = "A pot of washable paint"
+price = 3
+shop = "art"
+[[item]]
+id = "twine"
+name = "A ball of garden twine"
+price = 1
+shop = "boats"
+[[item]]
+id = "feather"
+name = "A bag of goose feathers"
+price = 2
+shop = "art"
+[[item]]
+id = "alarm_clock"
+name = "A wind-up alarm clock"
+price = 4
+shop = "workshop"
+[[item]]
+id = "chalk"
+name = "A box of coloured chalk"
+price = 1
+shop = "art"
+[[item]]
+id = "mirror"
+name = "A shaving mirror"
+price = 3
+shop = "art"
+[[item]]
+id = "megaphone"
+name = "A cardboard megaphone"
+price = 5
+shop = "workshop"
+[[item]]
+id = "cocoa"
+name = "A tin of drinking chocolate"
+price = 2
+shop = "tuck"
+[[item]]
+id = "wig"
+name = "A curly white wig"
+price = 4
+shop = "art"

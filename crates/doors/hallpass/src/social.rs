@@ -647,6 +647,25 @@ impl Game {
         events
     }
 
+    /// Take the board's latest view of the school (`Ctx::world`) in the middle of a visit: what
+    /// other pupils posted since the visit opened is delivered now (a scheme aimed at this pupil,
+    /// the result of the election, the finale), and the roster is fresh. A view of another term,
+    /// or one that is damaged or no different, changes nothing.
+    pub fn refresh_world(&mut self, bytes: &[u8]) -> Vec<Event> {
+        let Some(fresh) = crate::save::decode_world(bytes) else {
+            return Vec::new();
+        };
+        if fresh == self.world || fresh.term != self.world.term {
+            return Vec::new();
+        }
+        self.world = fresh;
+        if self.player.status == crate::state::Status::Active && !self.term_over() {
+            self.social_day()
+        } else {
+            Vec::new()
+        }
+    }
+
     /// What the social layer owes this player at the start of a visit: plots delivered, the
     /// election result, the finale, awards won.
     pub fn social_day(&mut self) -> Vec<Event> {

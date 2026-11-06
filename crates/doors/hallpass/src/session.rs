@@ -1599,7 +1599,20 @@ impl Session {
 impl DoorSession for Session {
     fn key(&mut self, key: DoorKey, ctx: &mut Ctx<'_>) -> Flow {
         let today = ctx.today().as_raw();
-        let events = self.game.sync_day(today);
+        // What this pupil did since the last key (the opening's own changes, say) goes to the board
+        // first. A view of the school read before those landed would not have them, so the latest
+        // view (`Ctx::world`) is taken only when nothing was waiting: then what other pupils did
+        // since the visit opened is delivered now, mid-visit, and the roster is fresh.
+        let waiting = !self.game.pending.is_empty();
+        self.flush_world(ctx);
+        let mut events = if waiting {
+            Vec::new()
+        } else {
+            ctx.world()
+                .map(|bytes| self.game.refresh_world(bytes))
+                .unwrap_or_default()
+        };
+        events.extend(self.game.sync_day(today));
         if !events.is_empty() {
             self.dirty = true;
             self.messages = events
@@ -1679,6 +1692,13 @@ impl DoorSession for Session {
     fn render(&self, canvas: &mut Canvas<'_>, env: &DoorEnv) {
         canvas.clear();
         ui::draw(self, canvas, env);
+    }
+
+    /// Hallpass takes no typed text anywhere: the roster, the rumours and the schemes are all
+    /// chosen from lists (a player cannot type a name or a message at another), so the board's
+    /// look-around key is never a letter in a name.
+    fn captures_text(&self) -> bool {
+        false
     }
 
     fn look_around(&self, env: &DoorEnv) -> Vec<String> {

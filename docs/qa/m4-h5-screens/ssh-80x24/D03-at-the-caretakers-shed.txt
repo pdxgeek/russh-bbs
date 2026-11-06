@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Hallpass                                                                      │
+│                                                                              │
+│ ♜ GREYWATER ACADEMY  · founder                        term 1 · Thu day 21/42 │
+│  Lang    Hist     Lunch    Sci      Art    ▐Free▌   After     Eve     Night  │
+│━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄│
+│╭ Caretaker's shed ─────────────────────╮╭ You ──────────────────────────────╮│
+││Grounds wing                           ││heat   ░░░░░░░░░░░░░░░░░░░░░░░░░░ 0││
+││Tools on hooks, a kettle on a paraffin ││file   ░░░░░░░░░░░░░░░░░░░░░░░ 0/12││
+││stove, and Mr. Fenn's armchair.        ││nerve  ●●●●●● 6/6                  ││
+││Here: Kessler, Abara                   ││legend 0   ◈ cash 12               ││
+││Now: free                              ││                                   ││
+││Next: After                            ││                                   ││
+││The grounds: Fenn, Tull, Rook, Dacre   ││                                   ││
+││The Old Wing: Osei                     ││                                   ││
+││                                       ││                                   ││
+││                                       ││                                   ││
+│╰───────────────────────────────────────╯╰───────────────────────────────────╯│
+│ g Go   l Loiter   t Talk   r Rest   p Schemes   c Clubs   f File             │
+│ j Journal   n Paper   o Social   e Search   q Leave                          │
+│ A story begins - The light in the East Wing: Mr. Fenn says a light           │
+│ shows in the closed wing at night.                                           │
+│ » Go somewhere                                          up/down  Enter  Esc  │
+└──────────────────────────────────────────────────────────────────────────────┘

@@ -37,6 +37,8 @@ pub struct Policy {
     pub helpers: bool,
     /// Pick any feasible scheme at random, to exercise the content.
     pub variety: bool,
+    /// Answer conversations at random among the open answers, to exercise the content.
+    pub explore: bool,
     /// Percent of puzzles answered right (the bot may read the answer; a pupil would work it out).
     pub accuracy: u32,
     /// Percent of free periods spent on clubs and conversations.
@@ -74,6 +76,7 @@ pub fn cautious() -> Policy {
         scout_to: 3,
         helpers: true,
         variety: false,
+        explore: false,
         accuracy: 75,
         social: 30,
         clubs: &["chess", "paper"],
@@ -85,6 +88,36 @@ pub fn cautious() -> Policy {
         opt_out: false,
         mean: false,
         verdicts: &["fenn", "soames", "vane"],
+    }
+}
+
+/// A pupil who lives at the boathouse and the school's events, and makes little mischief: the
+/// one who takes the boat in the house match and the part in the play.
+pub fn athlete() -> Policy {
+    Policy {
+        name: "athlete",
+        max_heat: 8,
+        max_file: 3,
+        push: 1,
+        big: false,
+        skip_class: false,
+        flashy: false,
+        lead_days: 1,
+        scout_to: 2,
+        helpers: true,
+        variety: false,
+        explore: true,
+        accuracy: 70,
+        social: 80,
+        clubs: &["rowing", "drama"],
+        informer: false,
+        sleuth: 5,
+        plots: 0,
+        rumours: 10,
+        politics: false,
+        opt_out: false,
+        mean: false,
+        verdicts: &["walk_away"],
     }
 }
 
@@ -101,6 +134,7 @@ pub fn balanced() -> Policy {
         scout_to: 2,
         helpers: true,
         variety: false,
+        explore: false,
         accuracy: 70,
         social: 30,
         clubs: &["robotics", "paper", "chess"],
@@ -128,6 +162,7 @@ pub fn reckless() -> Policy {
         scout_to: 0,
         helpers: false,
         variety: false,
+        explore: true,
         accuracy: 55,
         social: 15,
         clubs: &["rowing"],
@@ -156,8 +191,9 @@ pub fn variety() -> Policy {
         scout_to: 2,
         helpers: true,
         variety: true,
+        explore: false,
         accuracy: 65,
-        social: 40,
+        social: 70,
         clubs: &["chess", "drama", "rowing", "paper", "robotics", "candle"],
         informer: true,
         sleuth: 30,
@@ -184,6 +220,7 @@ pub fn scholar() -> Policy {
         scout_to: 0,
         helpers: false,
         variety: false,
+        explore: false,
         accuracy: 90,
         social: 70,
         clubs: &["chess", "paper", "robotics"],
@@ -212,6 +249,7 @@ pub fn sleuth() -> Policy {
         scout_to: 2,
         helpers: true,
         variety: false,
+        explore: true,
         accuracy: 75,
         social: 40,
         clubs: &["candle", "paper"],
@@ -240,6 +278,7 @@ pub fn politician() -> Policy {
         scout_to: 2,
         helpers: true,
         variety: false,
+        explore: true,
         accuracy: 70,
         social: 60,
         clubs: &["paper", "drama"],
@@ -268,6 +307,7 @@ pub fn rival() -> Policy {
         scout_to: 2,
         helpers: true,
         variety: false,
+        explore: true,
         accuracy: 70,
         social: 40,
         clubs: &["candle", "robotics", "chess"],
@@ -296,6 +336,7 @@ pub fn recluse() -> Policy {
         scout_to: 2,
         helpers: true,
         variety: false,
+        explore: false,
         accuracy: 80,
         social: 50,
         clubs: &["chess", "robotics"],
@@ -356,10 +397,55 @@ fn answer_scene(game: &mut Game, policy: &Policy, rng: &mut DoorRng, events: &mu
         .filter(|(_, c)| c.open && (policy.informer || !c.label.starts_with("Name the")))
         .map(|(i, _)| i)
         .collect();
+    // An explorer wants to try something: choices that do nothing (the ways out) come last.
+    let doing: Vec<usize> = if policy.explore {
+        let node = game.scene_view().and_then(|_| {
+            let scene = game.player.life.scene.as_ref()?;
+            let talk = game.content.talk(&scene.talk)?;
+            talk.node.iter().find(|n| n.id == scene.node).cloned()
+        });
+        node.map_or_else(Vec::new, |n| {
+            open.iter()
+                .copied()
+                .filter(|i| n.choice.get(*i).is_some_and(|c| !c.effects.is_empty()))
+                .collect()
+        })
+    } else {
+        Vec::new()
+    };
+    // An explorer also wants what nobody has tried yet: answers no pupil has given come first.
+    let doing: Vec<usize> = if policy.explore {
+        let untried: Vec<usize> = game
+            .player
+            .life
+            .scene
+            .as_ref()
+            .map(|scene| {
+                open.iter()
+                    .copied()
+                    .filter(|i| {
+                        COVERAGE.with(|c| {
+                            !c.borrow()
+                                .contains_key(&format!("choice:{}/{}/{i}", scene.talk, scene.node))
+                        })
+                    })
+                    .collect()
+            })
+            .unwrap_or_default();
+        if untried.is_empty() { doing } else { untried }
+    } else {
+        doing
+    };
+    // (One time in four it takes any open answer, the ways out included.)
+    let open = if doing.is_empty() || rng.below(100) < 25 {
+        open
+    } else {
+        doing
+    };
     let pick = match open.as_slice() {
         [] => None,
         [only] => Some(*only),
-        many if rng.below(100) < 35 => {
+        many if policy.variety || policy.explore || rng.below(100) < 35 => {
             Some(many[usize::try_from(rng.below(u32::try_from(many.len()).unwrap())).unwrap()])
         }
         many => Some(many[0]),
@@ -449,7 +535,7 @@ fn sleuth_step(game: &mut Game, rng: &mut DoorRng, events: &mut Vec<Event>) -> b
         })
         .cloned();
     let Some(clue) = clue else {
-        return false;
+        return befriend_for_clue(game, rng, events);
     };
     let now_ok = clue.kinds.iter().any(|k| k == game.kind(day, slot))
         && game.place_open(&clue.place, day, slot);
@@ -471,6 +557,204 @@ fn sleuth_step(game: &mut Game, rng: &mut DoorRng, events: &mut Vec<Event>) -> b
         let _ = travel(game, &clue.place, rng, events);
     }
     (game.player.place.clone(), game.player.slot) != before
+}
+
+/// A pupil heading for an ending courts whoever that ending needs: if its scene asks for standing
+/// with a clique or a friendship that is not there yet, go and talk to that clique's people (or
+/// that friend). True if the bot did anything with the period.
+fn court_for_verdict(
+    game: &mut Game,
+    policy: &Policy,
+    rng: &mut DoorRng,
+    events: &mut Vec<Event>,
+) -> bool {
+    use russh_bbs_door_hallpass::cond::{Cond, Stat};
+    let Some(slot) = game.current_slot() else {
+        return false;
+    };
+    let day = game.player.day;
+    let Some(verdict) = policy.verdicts.first() else {
+        return false;
+    };
+    let Some(scene) = game
+        .content
+        .talks
+        .iter()
+        .find(|t| verdict_of_talk(&t.id) == Some(*verdict))
+        .cloned()
+    else {
+        return false;
+    };
+    let mut wanted: Vec<String> = Vec::new();
+    for cond in &scene.when {
+        if let Cond::Cmp { stat, value, .. } = cond {
+            match stat {
+                Stat::Standing(clique) if game.stat(stat) < *value => {
+                    wanted.extend(
+                        game.content
+                            .npcs
+                            .iter()
+                            .filter(|n| n.clique.as_deref() == Some(clique.as_str()))
+                            .map(|n| n.id.clone()),
+                    );
+                }
+                Stat::Bond(npc) if game.stat(stat) < *value => wanted.push(npc.clone()),
+                _ => {}
+            }
+        }
+    }
+    for npc in wanted {
+        let talk = game
+            .content
+            .talks
+            .iter()
+            .find(|t| t.npc == npc && t.event.is_none() && t.arc.is_none() && game.talk_ready(t))
+            .cloned();
+        let Some(talk) = talk else { continue };
+        let Some(spec) = game.content.npc(&npc).cloned() else {
+            continue;
+        };
+        let at = game.npc_place(&spec, day, slot).to_owned();
+        if game.place_open(&at, day, slot)
+            && go_then(game, &at, rng, events)
+            && game.talk_open(&talk)
+        {
+            if let Ok(e) = game.apply(&Action::Talk(talk.id.clone()), rng) {
+                events.extend(e);
+                return true;
+            }
+        }
+    }
+    false
+}
+
+/// A term event is on and a scene of it is open to the pupil: go to the event and take part.
+/// True if the bot did anything with the period.
+fn event_step(game: &mut Game, rng: &mut DoorRng, events: &mut Vec<Event>) -> bool {
+    let Some(slot) = game.current_slot() else {
+        return false;
+    };
+    let day = game.player.day;
+    let events_on: Vec<_> = game
+        .content
+        .calendar
+        .iter()
+        .filter(|e| game.event_open_at(e, slot, &e.place))
+        .cloned()
+        .collect();
+    for event in events_on {
+        let mut scenes: Vec<_> = game
+            .content
+            .talks
+            .iter()
+            .filter(|t| t.event.as_deref() == Some(event.id.as_str()) && game.talk_ready(t))
+            .cloned()
+            .collect();
+        if scenes.is_empty() || !game.place_open(&event.place, day, slot) {
+            continue;
+        }
+        for i in (1..scenes.len()).rev() {
+            let j = usize::try_from(rng.below(u32::try_from(i + 1).unwrap())).unwrap();
+            scenes.swap(i, j);
+        }
+        if !go_then(game, &event.place, rng, events) {
+            continue;
+        }
+        for scene in scenes {
+            if game.talk_open(&scene) {
+                if let Ok(e) = game.apply(&Action::Talk(scene.id.clone()), rng) {
+                    events.extend(e);
+                    return true;
+                }
+            }
+        }
+    }
+    false
+}
+
+/// The next clue is shut only by a friendship: go and talk to that character, if they have
+/// something to say. True if the bot did anything with the period.
+fn befriend_for_clue(game: &mut Game, rng: &mut DoorRng, events: &mut Vec<Event>) -> bool {
+    use russh_bbs_door_hallpass::cond::{Cond, Stat};
+    let Some(slot) = game.current_slot() else {
+        return false;
+    };
+    let day = game.player.day;
+    let wanted: Vec<String> = game
+        .content
+        .mystery
+        .clues
+        .iter()
+        .filter(|c| {
+            !game.player.knows(&format!("clue_{}", c.id))
+                && c.after
+                    .iter()
+                    .all(|a| game.player.knows(&format!("clue_{a}")))
+        })
+        .flat_map(|c| {
+            let others_hold = c.needs.iter().all(|n| {
+                matches!(
+                    n,
+                    Cond::Cmp {
+                        stat: Stat::Bond(_),
+                        ..
+                    }
+                ) || game.holds(n)
+            });
+            c.needs
+                .iter()
+                .filter_map(move |n| match n {
+                    Cond::Cmp {
+                        stat: Stat::Bond(npc),
+                        ..
+                    } if others_hold => Some(npc.clone()),
+                    _ => None,
+                })
+                .collect::<Vec<_>>()
+        })
+        .filter(|npc| {
+            let need = game
+                .content
+                .mystery
+                .clues
+                .iter()
+                .flat_map(|c| c.needs.iter())
+                .filter_map(|n| match n {
+                    Cond::Cmp {
+                        stat: Stat::Bond(x),
+                        value,
+                        ..
+                    } if x == npc => Some(*value),
+                    _ => None,
+                })
+                .max()
+                .unwrap_or(0);
+            game.bond(npc) < need
+        })
+        .collect();
+    for npc in wanted {
+        let talk = game
+            .content
+            .talks
+            .iter()
+            .find(|t| t.npc == npc && t.event.is_none() && game.talk_ready(t))
+            .cloned();
+        let Some(talk) = talk else { continue };
+        let Some(spec) = game.content.npc(&npc).cloned() else {
+            continue;
+        };
+        let at = game.npc_place(&spec, day, slot).to_owned();
+        if game.place_open(&at, day, slot)
+            && go_then(game, &at, rng, events)
+            && game.talk_open(&talk)
+        {
+            if let Ok(e) = game.apply(&Action::Talk(talk.id.clone()), rng) {
+                events.extend(e);
+                return true;
+            }
+        }
+    }
+    false
 }
 
 /// A scheme on another pupil, if one is open to the bot.
@@ -593,12 +877,8 @@ fn verdict_of_talk(talk: &str) -> Option<&'static str> {
 }
 
 /// A club meeting, a sign-up or a conversation, whichever is on offer. True if anything happened.
-fn social_step(
-    game: &mut Game,
-    policy: &Policy,
-    rng: &mut DoorRng,
-    events: &mut Vec<Event>,
-) -> bool {
+/// A club meeting that is on today and not yet attended: go to it. True if the bot did anything.
+fn club_meeting_step(game: &mut Game, rng: &mut DoorRng, events: &mut Vec<Event>) -> bool {
     let Some(slot) = game.current_slot() else {
         return false;
     };
@@ -628,6 +908,23 @@ fn social_step(
                 return true;
             }
         }
+    }
+    false
+}
+
+fn social_step(
+    game: &mut Game,
+    policy: &Policy,
+    rng: &mut DoorRng,
+    events: &mut Vec<Event>,
+) -> bool {
+    let Some(slot) = game.current_slot() else {
+        return false;
+    };
+    let day = game.player.day;
+    let kind = game.kind(day, slot).to_owned();
+    if kind == "class" {
+        return false;
     }
     // After lights-out only a club that meets then (the Candle Society) is worth the risk.
     if kind == "night" {
@@ -662,7 +959,20 @@ fn social_step(
         .filter(|t| game.talk_ready(t))
         .cloned()
         .collect();
-    let mut talks = talks;
+    // A pupil follows a story they are in before they chat: the storylines' scenes first, in the
+    // table's order; then half the time the rest in the table's order and half the time in any.
+    // (Whoever wants the Candle Society goes to Sol for the knock first: it is the way in.)
+    let (mut story, mut chat): (Vec<_>, Vec<_>) = talks.into_iter().partition(|t| {
+        t.arc.is_some() || (t.id == "sol_candle" && policy.clubs.contains(&"candle"))
+    });
+    if rng.below(100) < 50 {
+        for i in (1..chat.len()).rev() {
+            let j = usize::try_from(rng.below(u32::try_from(i + 1).unwrap())).unwrap();
+            chat.swap(i, j);
+        }
+    }
+    story.extend(chat);
+    let mut talks = story;
     // At the end of the mystery a pupil only takes the conversations they would end it with, in
     // the order they would prefer.
     talks.retain(|t| verdict_of_talk(&t.id).is_none_or(|v| policy.verdicts.contains(&v)));
@@ -672,6 +982,25 @@ fn social_step(
             .unwrap_or(usize::MAX)
     });
     for talk in talks {
+        // A scene of a term event is held at the event's place, whoever is about.
+        if let Some(event) = talk
+            .event
+            .as_ref()
+            .and_then(|e| game.content.calendar.iter().find(|c| c.id == *e))
+            .cloned()
+        {
+            if game.event_open_at(&event, slot, &event.place)
+                && game.place_open(&event.place, day, slot)
+                && go_then(game, &event.place, rng, events)
+                && game.talk_open(&talk)
+            {
+                if let Ok(e) = game.apply(&Action::Talk(talk.id.clone()), rng) {
+                    events.extend(e);
+                    return true;
+                }
+            }
+            continue;
+        }
         let Some(npc) = game.content.npc(&talk.npc).cloned() else {
             continue;
         };
@@ -787,8 +1116,15 @@ fn pick_draft(game: &Game, policy: &Policy, rng: &mut DoorRng) -> Option<(String
         }
     }
     if policy.variety && !pool.is_empty() {
-        let pick = usize::try_from(rng.below(u32::try_from(pool.len()).unwrap_or(1))).unwrap_or(0);
-        return pool.into_iter().nth(pick);
+        // For coverage: methods nobody has drafted yet come first, so the long tail is reached.
+        let fresh: Vec<(String, String)> = pool
+            .iter()
+            .filter(|(_, m)| COVERAGE.with(|c| !c.borrow().contains_key(&format!("method:{m}"))))
+            .cloned()
+            .collect();
+        let from = if fresh.is_empty() { pool } else { fresh };
+        let pick = usize::try_from(rng.below(u32::try_from(from.len()).unwrap_or(1))).unwrap_or(0);
+        return from.into_iter().nth(pick);
     }
     best.map(|(_, d)| d)
 }
@@ -1010,6 +1346,18 @@ pub fn play_day(game: &mut Game, policy: &Policy, rng: &mut DoorRng) -> Vec<Even
         // The mystery, the other pupils, the election.
         if (!in_class || policy.skip_class) && game.player.due == 0 {
             let night = game.kind(day, slot) == "night";
+            if rng.below(100) < policy.social && club_meeting_step(game, rng, &mut events) {
+                continue;
+            }
+            if rng.below(100) < 45 + policy.social / 2 && event_step(game, rng, &mut events) {
+                continue;
+            }
+            if policy.sleuth > 0
+                && rng.below(100) < 15
+                && court_for_verdict(game, policy, rng, &mut events)
+            {
+                continue;
+            }
             if policy.sleuth > 0
                 && rng.below(100) < policy.sleuth
                 && sleuth_step(game, rng, &mut events)
@@ -1046,7 +1394,9 @@ pub fn play_day(game: &mut Game, policy: &Policy, rng: &mut DoorRng) -> Vec<Even
                 .all(|s| game.readiness(s).scheduled)
         {
             if let Some((target, method)) = pick_draft(game, policy, rng) {
+                let drafted = method.clone();
                 if game.apply(&Action::Draft { target, method }, rng).is_ok() {
+                    note(format!("method:{drafted}"));
                     let id = game.player.schemes.last().unwrap().id;
                     if policy.flashy {
                         let _ = game.apply(&Action::AddTwist(id, "calling_card".into()), rng);

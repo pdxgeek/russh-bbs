@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Hallpass                                                                      │
+│                                                                              │
+│ ♜ GREYWATER ACADEMY  · founder                        term 1 · Mon day 18/42 │
+│ Maths    Lang     Lunch    Sci     Hist     Free   ▐After▌    Eve     Night  │
+│━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄│
+│╭ Who do you want a word with? ──────────╮╭ The person ──────────────────────╮│
+││ 1 Mr. Fenn has seen something          ││Mr. Abel Fenn                     ││
+││ 2 Mr. Fenn and the leaves              ││Caretaker                         ││
+││ 3 Kit Varga and the folded notes       ││Has every key and no interest in  ││
+││ 4 Fitch on the crate                   ││telling anyone.                   ││
+││ 5 Bex on the roof                      ││bond   ──────────╵◆╵─────────── +0││
+││ 6 Ping's radio                         ││                                  ││
+││ 7 Hattie and the cats                  ││                                  ││
+││ 8 The team sheet for the house match   ││                                  ││
+││ b Back                                 ││                                  ││
+││                                        ││                                  ││
+││                                        ││                                  ││
+││                                        ││                                  ││
+││                                        ││                                  ││
+││                                        ││                                  ││
+│╰────────────────────────────────────────╯╰──────────────────────────────────╯│
+│ » Mr. Fenn has seen something                           up/down  Enter  Esc  │
+└──────────────────────────────────────────────────────────────────────────────┘

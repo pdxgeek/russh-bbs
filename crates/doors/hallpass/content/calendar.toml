@@ -1,0 +1,1014 @@
+# The school calendar: term events that fall on set days. Each is a place, a window of days (the same
+# count `day>=N` uses), the periods it runs in and the character who runs it. What a pupil does there
+# is the scenes below that name the event with `event = "ID"`: they are open at the event's place, in
+# its periods and on its days, whoever is about. An early scene sends a pupil down one path and shuts
+# the others (the flags it sets are what the later scenes ask for), and the last scene of each event
+# pays out by what was done.
+
+# ---------------------------------------------------------------- the house match
+
+[[event]]
+id = "house_match"
+name = "The house match"
+blurb = "Greywater against Hollin House on the lake, three afternoons of it."
+place = "grounds"
+from = 17
+to = 19
+kinds = ["after"]
+host = "gale"
+
+[[talk]]
+id = "match_pick"
+npc = "gale"
+event = "house_match"
+title = "The team sheet for the house match"
+when = ["day>=17", "day<=18"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Mr. Gale has pinned the team sheet to a goalpost with a rowing boot. Greywater against Hollin House: a race, a scoreboard, a stand full of parents' cars and a great deal of mud. Eleven jobs are still without a name. 'Pick one and keep it,' he says. 'I do not take changes.'"
+[[talk.node.choice]]
+label = "Put your name down for the Eight"
+needs = ["rank:rowing>=1"]
+say = "Mr. Gale writes it in capitals and underlines it twice. Imogen, passing with the oars, says 'About time,' and means it kindly."
+effects = ["know:match_crew", "bond:gale:+3", "bond:imogen:+2", "merit:rowing:+2"]
+[[talk.node.choice]]
+label = "Offer to run the scoreboard"
+needs = ["skill:tinker>=1"]
+say = "'Mind the numbers do not fall off,' says Mr. Gale. They always fall off. It is the one job in the school where being useful means being a screwdriver."
+effects = ["know:match_board", "bond:gale:+2", "xp:tinker:1"]
+[[talk.node.choice]]
+label = "Take the touchline and lead the singing"
+needs = ["cool>=48"]
+say = "Mr. Gale looks at the size of your voice and the state of the stand, and decides the stand needs it."
+effects = ["know:match_line", "stat:cool:+2"]
+[[talk.node.choice]]
+label = "Slip over to the Hollin House shed and see what they are planning"
+needs = ["skill:sneak>=1"]
+say = "'I did not hear that,' says Mr. Gale, who has just heard it, and turns very slowly to look at the lake."
+effects = ["know:match_scout", "xp:sneak:1"]
+[[talk.node.choice]]
+label = "Watch from the stands like a sensible person"
+say = "'Somebody has to,' says Mr. Gale. 'Mind the mud on the third step.'"
+effects = ["know:match_stands"]
+
+[[talk]]
+id = "match_crew"
+npc = "gale"
+event = "house_match"
+title = "In the boat: the last three hundred metres"
+when = ["know:match_crew", "day>=18"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Level with Hollin House, three hundred metres from the line, the lake flat as a plate and every oar on the water. Imogen's voice, from the stern: 'Stroke, I need a number. Give me a number.'"
+[[talk.node.choice]]
+label = "Push for the finish, everything you have"
+needs = ["nerve>=2"]
+say = "Your oar bites and the boat lifts. Hollin's bow slips back by a length, then two, and the stand is shouting your name wrongly. By the line you cannot feel your hands, and you have never been happier."
+effects = ["stat:nerve:-2", "know:match_won", "merit:rowing:+4", "stat:legend:+3", "bond:imogen:+3", "bond:hollis:+4", "world:match_glory"]
+[[talk.node.choice]]
+label = "Trust Imogen's rhythm and row to her call"
+needs = ["bond:imogen>=8"]
+say = "She counts, you row, and the whole boat becomes one slow animal. You win by a canvas that nobody on the bank can see, and Imogen tells everyone it was exactly what she had planned."
+effects = ["know:match_won", "merit:rowing:+3", "stat:legend:+2", "bond:imogen:+4", "bond:hollis:+2", "world:match_glory"]
+[[talk.node.choice]]
+label = "Catch a crab on purpose, and splash Hollin House's bow with a neat flick"
+needs = ["trait:known_troublemaker"]
+say = "The wave drenches their bow and their coach blows his whistle in outrage. You win; the umpire writes your name in a small, pointed hand."
+effects = ["know:match_won", "file:caught:1", "stand:the_bench:+4", "stat:legend:+3", "bond:hollis:-2"]
+[[talk.node.choice]]
+label = "Keep a steady rate and save your strength"
+say = "You finish a length behind, upright, unwinded and with every limb accounted for. Hollin House cheers. Imogen gives you a look you can feel through your back."
+effects = ["know:match_lost", "merit:rowing:+1", "stat:cool:-1", "bond:imogen:-2"]
+
+[[talk]]
+id = "match_board"
+npc = "gale"
+event = "house_match"
+title = "At the scoreboard"
+when = ["know:match_board", "day>=18"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "The scoreboard is a wooden frame with tin numbers that slide on rails and a grudge. Hollin House's coach stands under it, arms folded, watching your hands."
+[[talk.node.choice]]
+label = "Keep the score honest, and hang every number straight"
+say = "The match is close and the board is right every time. Mr. Gale thanks you with a rare, short nod, and the Hollin coach thanks you with a rarer handshake."
+effects = ["know:match_honest", "bond:gale:+3", "stat:cool:+2"]
+[[talk.node.choice]]
+label = "Let Pip's counter jam, just once, at Hollin House's last point"
+needs = ["bond:pip>=6"]
+say = "Pip's little brass counter hesitates, consults itself and tells the stand the score is a point lower. Nobody can prove it, and Hollin House's coach thumps the frame."
+effects = ["know:match_rigged", "bond:pip:+3", "stat:legend:+3", "stat:heat:+4"]
+[[talk.node.choice]]
+label = "Fit a servo so Greywater's tin numbers slide up a shade faster"
+needs = ["item:servo", "rank:robotics>=2"]
+say = "Greywater's numbers climb with a smart little whirr. Mr. Gale looks at them, at you, and at the sky. 'Modern,' he says. It is not a compliment, and not entirely not."
+effects = ["know:match_rigged", "stat:legend:+4", "stat:heat:+5", "xp:tinker:2"]
+
+[[talk]]
+id = "match_line"
+npc = "gale"
+event = "house_match"
+title = "Leading the singing from the touchline"
+when = ["know:match_line", "day>=18"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "The stand is two hundred pupils, a few parents and a collie. It has the song sheet and no idea how to begin. You have a megaphone made of rolled cardboard, and everyone is waiting."
+[[talk.node.choice]]
+label = "Strike up the school song, loud and a half-tone sharp"
+say = "By the second verse the whole stand is as sharp as you are. It sounds like a school. Even the Lamplighters are mouthing it."
+effects = ["stand:rowing_eight:+3", "stand:lamplighters:+2", "stat:cool:+2"]
+[[talk.node.choice]]
+label = "Start a chant about the smell of the Hollin House boathouse"
+needs = ["trait:known_troublemaker"]
+say = "It catches like dry grass. Hollin House's coach turns a colour. Mr. Marsh turns another."
+effects = ["stand:the_bench:+3", "stat:legend:+2", "stat:notoriety:+4", "wary:marsh:+1"]
+[[talk.node.choice]]
+label = "Teach the stand the round about the headmistress's hat"
+needs = ["skill:bluff>=2"]
+say = "It takes three goes, and the third goes off like a bell. Dame Vane, across the lawn, does not turn her head, and her hat shivers."
+effects = ["stat:legend:+3", "wary:vane:+1", "xp:bluff:1"]
+[[talk.node.choice]]
+label = "Pass a tin round for the boat fund"
+needs = ["bond:tarn>=5"]
+say = "Mrs. Tarn lent you the tin and expects it back with something in it. It comes back heavy, and she counts it twice, with approval."
+effects = ["bond:tarn:+3", "stand:rowing_eight:+2", "stat:cash:+3"]
+
+[[talk]]
+id = "match_scout"
+npc = "gale"
+event = "house_match"
+title = "In Hollin House's shed"
+when = ["know:match_scout", "day>=18"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Hollin House's shed smells of varnish and cold tea. Their coach has chalked a diagram of the course on the wall: arrows, a little crown, and a note that says STROKE LEANS LEFT. You have perhaps a minute."
+[[talk.node.choice]]
+label = "Memorise their signals and slip out"
+say = "A whistle for 'steady', two for 'push', a handkerchief for 'we are losing'. You are back at the touchline before they have finished their tea."
+effects = ["know:match_signals", "xp:sneak:2"]
+[[talk.node.choice]]
+label = "Chalk a small owl beside the diagram"
+needs = ["skill:bluff>=2"]
+say = "It looks like a note from their own coach. They will spend the match wondering what it means."
+effects = ["know:match_signals", "stat:legend:+3", "stat:heat:+3"]
+[[talk.node.choice]]
+label = "Be gone before anybody comes"
+say = "Wise. You are on the bank, innocently eating a biscuit, before the first whistle."
+
+[[talk]]
+id = "match_stands"
+npc = "gale"
+event = "house_match"
+title = "In the stands"
+when = ["know:match_stands", "day>=18"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "The stand is damp and loud. Mags is two rows down with a notebook, tallying strokes. Dot, three seats along, is quietly taking bets in biscuits."
+[[talk.node.choice]]
+label = "Sit with Mags and keep her tally"
+say = "She says nothing for nine minutes, then hands you the notebook. In it, in tiny writing, she has predicted every stroke."
+effects = ["bond:mags:+3", "xp:bluff:1"]
+[[talk.node.choice]]
+label = "Count Hollin House's whistles from the stand and learn their signals"
+say = "One whistle for 'steady', two for 'push', a handkerchief for 'we are losing'. By the third race you can call their orders before the stroke hears them."
+effects = ["know:match_signals", "xp:sneak:1"]
+[[talk.node.choice]]
+label = "Put two biscuits on the Eight with Dot"
+needs = ["bond:dot>=2"]
+say = "Dot writes it down on her cuff. The Eight wins; she pays out with a face of deep suffering."
+effects = ["bond:dot:+2", "stat:cash:+3"]
+[[talk.node.choice]]
+label = "Buy a flask of cocoa for the crew"
+needs = ["cash>=3"]
+say = "They drink it on the bank with their hands shaking, and Bea tells you you are all right, which for Bea is a speech."
+effects = ["stat:cash:-3", "stand:rowing_eight:+3", "bond:bea:+3"]
+[[talk.node.choice]]
+label = "Cheer for both boats and eat your sandwich"
+say = "Nobody can tell which side you are on. This is the whole art of the stand."
+
+[[talk]]
+id = "match_supper"
+npc = "gale"
+event = "house_match"
+title = "The supper after the match"
+when = ["day>=19"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Greywater and Hollin House eat together on the lawn, under a tarpaulin, off trestle tables. Dunstan has brought a cake the size of a boat. Hollis stands up to make a speech and is stopped by a strong smell of lemon."
+[[talk.node.choice]]
+label = "Take the Eight's ribbon, with the crew that won"
+needs = ["know:match_crew", "know:match_won"]
+say = "Gale presents it with a face that is working hard at not being proud. 'Colours,' he says. It is a small bit of blue silk and it feels like a medal."
+effects = ["know:match_colours", "stat:legend:+4", "stand:rowing_eight:+5", "bond:gale:+3"]
+[[talk.node.choice]]
+label = "Take a plate from Dunstan's cake and say well rowed anyway"
+needs = ["know:match_crew", "know:match_lost"]
+say = "Dunstan gives you two slices. 'It was a good row,' he says, with such certainty that it becomes true."
+effects = ["bond:dunstan:+4", "bond:imogen:+1", "stand:rowing_eight:+1"]
+[[talk.node.choice]]
+label = "Tell the Eight what you saw in Hollin House's shed"
+needs = ["know:match_signals"]
+say = "They listen in a circle with their mouths full. Next year they will whistle the wrong signals back at Hollin House, and Hollin House will not know why."
+effects = ["stand:rowing_eight:+4", "bond:hollis:+3", "bond:imogen:+2"]
+[[talk.node.choice]]
+label = "Sell what you saw to Dot, for a price"
+needs = ["know:match_signals", "bond:dot>=4"]
+say = "Dot weighs it in her palm like a sweet and names a figure. You take it. She does not tell you what she does with it."
+effects = ["stat:cash:+6", "bond:dot:+3", "stand:rowing_eight:-3"]
+[[talk.node.choice]]
+label = "Hand Mr. Gale a spotless scoreboard card with a smile"
+needs = ["know:match_honest"]
+say = "He reads it twice, folds it, and tucks it in his breast pocket. 'Honest numbers,' he says. 'That is rarer than a fast boat.'"
+effects = ["bond:gale:+4", "stat:cool:+2", "stat:legend:+1"]
+[[talk.node.choice]]
+label = "Eat your cake and go quietly"
+say = "It is a very good cake. You leave the lawn full and unnoticed, which at a supper is a kind of success."
+
+# ---------------------------------------------------------------- the winter play
+
+[[event]]
+id = "winter_play"
+name = "The winter play"
+blurb = "The Lamp Under the Lake, in the Great Hall, four evenings of rehearsal and one of glory."
+place = "main_hall"
+from = 23
+to = 26
+kinds = ["evening"]
+host = "thorne"
+
+[[talk]]
+id = "play_casting"
+npc = "thorne"
+event = "winter_play"
+title = "The cast list for The Lamp Under the Lake"
+when = ["day>=23", "day<=24"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Madame Thorne has pinned the cast list to the Great Hall door and is standing beside it, in case anyone weeps. The play is The Lamp Under the Lake, a melodrama about the founder, with a drowned bell, a wicked bursar, and a storm that has to be made with a bucket of peas."
+[[talk.node.choice]]
+label = "Step up as the Founder's Daughter, the lead's understudy"
+needs = ["rank:drama>=2"]
+say = "The lead has a chest cold. Madame Thorne writes your name over hers in pencil. 'Only until she is better,' she says, in the voice of a woman who means never. She hands you forty pages of lines in an extremely upright hand."
+effects = ["know:play_lead", "merit:drama:+3", "bond:thorne:+2"]
+[[talk.node.choice]]
+label = "Read for the Wicked Bursar"
+needs = ["skill:bluff>=2"]
+say = "You twirl an imaginary moustache. Madame Thorne laughs once, helplessly, and writes it down. 'You will be dreadful,' she says. 'It is a compliment.'"
+effects = ["know:play_villain", "xp:bluff:2", "bond:thorne:+2"]
+[[talk.node.choice]]
+label = "Take the lighting rig and the storm"
+needs = ["skill:tinker>=1"]
+say = "The lighting rig is two desk lamps, a dimmer from 1962 and Grace Adeyemi's notes. The storm is a sheet of tin. You are promoted to weather."
+effects = ["know:play_lights", "xp:tinker:1"]
+[[talk.node.choice]]
+label = "Prompt from the wings"
+needs = ["rank:drama>=1"]
+say = "The prompt corner is the best seat in the hall. It has a lamp, a stool, a view of the whole stage and a door into the green room's corridor."
+effects = ["know:play_prompt", "merit:drama:+1"]
+[[talk.node.choice]]
+label = "Paint scenery with Ms. Ruddock"
+needs = ["grade:art>=60"]
+say = "A drowned bell, ten feet high, in grey and green. Ms. Ruddock lets you add the bubbles. They are the best thing in the hall."
+effects = ["know:play_scenery", "bond:ruddock:+3", "grade:art:+2"]
+[[talk.node.choice]]
+label = "Sell programmes at the door, and see everything for free"
+say = "A tray, a pencil and a wide, innocent smile. Everyone who comes in has to pass you, and everyone who leaves is trying not to cry."
+effects = ["know:play_door"]
+
+[[talk]]
+id = "play_lead"
+npc = "thorne"
+event = "winter_play"
+title = "The Founder's Daughter"
+when = ["know:play_lead", "day>=25"]
+first = "dress"
+[[talk.node]]
+id = "dress"
+text = "The dress rehearsal. You have the lines, the long dress, and a drowned bell that sticks on its hinge. The hall is empty except for Madame Thorne in the third row, with her pencil like a little sword."
+[[talk.node.choice]]
+label = "Play it straight, as written"
+say = "It is accurate and nobody breathes. Madame Thorne writes one word in her notebook, and does not show you."
+effects = ["xp:bluff:1"]
+next = "night"
+[[talk.node.choice]]
+label = "Take a risk with the big speech, and cry real tears"
+needs = ["skill:bluff>=2"]
+say = "Your voice cracks in the right place. Thorne's pencil stops. Behind you the bell, for once, hangs perfectly still."
+effects = ["xp:bluff:2", "know:play_risk"]
+next = "night"
+[[talk.node.choice]]
+label = "Ask Greta to sing the lullaby from the wings"
+needs = ["bond:greta>=6"]
+say = "She stands in the dark with her hands knotted together, and her voice goes up into the roof and stays there. The stage hands stop."
+effects = ["bond:greta:+3", "know:play_lullaby"]
+next = "night"
+[[talk.node]]
+id = "night"
+text = "Opening night. The hall is full to the doors. The lamp goes down, the peas rattle, and the first line is yours."
+[[talk.node.choice]]
+label = "Give the speech you promised yourself you would not cry through"
+needs = ["know:play_risk"]
+say = "You do cry. So does the hall. When the lamp comes up the applause is so long that Madame Thorne has to stand in the aisle and wave it down."
+effects = ["know:play_hit", "stat:legend:+5", "stat:cool:+4", "merit:drama:+4", "bond:thorne:+4", "world:play_triumph"]
+[[talk.node.choice]]
+label = "Let the lullaby lift the scene"
+needs = ["know:play_lullaby"]
+say = "Greta's voice comes down from the dark like snow and you say nothing for fourteen seconds. It is the best thing in the play. At the curtain, half the hall turns to look for the singer."
+effects = ["know:play_hit", "stat:legend:+3", "merit:drama:+3", "bond:greta:+4", "bond:thorne:+3", "world:play_triumph"]
+[[talk.node.choice]]
+label = "Play it straight"
+say = "Clean, correct and quite forgotten by supper. The review in the paper uses the word 'competent' twice."
+effects = ["know:play_flat", "merit:drama:+2", "bond:thorne:+1"]
+
+[[talk]]
+id = "play_villain"
+npc = "thorne"
+event = "winter_play"
+title = "The Wicked Bursar"
+when = ["know:play_villain", "day>=25"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Opening night. You are in a borrowed gown and an enormous false moustache, standing in the wings with Jonty, who has drawn the Bursar's portrait on the programme and made him look suspiciously like Mr. Marsh."
+[[talk.node.choice]]
+label = "Play the Bursar as a perfect, silky monster"
+say = "The hall hisses on cue and applauds you for it. Madame Thorne, in the wings, mouths 'Yes, YES,' like a woman at a cricket match."
+effects = ["know:play_hit", "stat:legend:+4", "xp:bluff:2", "merit:drama:+3", "bond:thorne:+3"]
+[[talk.node.choice]]
+label = "Play the Bursar as Mr. Marsh, with a clipboard"
+needs = ["trait:known_troublemaker"]
+say = "The hall understands within a sentence. Mr. Marsh, in the second row, begins to write something down. By the interval he has stopped, and then he laughs."
+effects = ["know:play_hit", "stat:legend:+6", "wary:marsh:+2", "stand:the_bench:+4", "merit:drama:+3"]
+[[talk.node.choice]]
+label = "Forget your lines and improvise a villain's soliloquy"
+needs = ["skill:bluff>=3"]
+say = "You talk for ninety seconds about grey ledgers and cold tea, and none of it is in the script. The hall is on its feet. Madame Thorne has her face in her hands."
+effects = ["know:play_hit", "stat:legend:+5", "xp:bluff:3", "merit:drama:+4", "bond:thorne:-1", "world:play_triumph"]
+[[talk.node.choice]]
+label = "Stick to the script and keep the moustache on"
+say = "The moustache slips in the third act and you hold it on with your hand. The hall thinks it is deliberate."
+effects = ["know:play_flat", "merit:drama:+2"]
+
+[[talk]]
+id = "play_lights"
+npc = "thorne"
+event = "winter_play"
+title = "Weather and lamplight"
+when = ["know:play_lights", "day>=25"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Opening night, from the gallery. The desk lamps are rigged, the sheet of tin is ready, and Grace's note taped to the dimmer reads DO NOT TOUCH THE RED KNOB. There is, naturally, a red knob."
+[[talk.node.choice]]
+label = "Run the cues exactly as marked"
+say = "A flash, a rumble, the peas on the drum: the storm is the best thing in the hall. Madame Thorne gives you an unscripted, lopsided salute."
+effects = ["know:play_hit", "stat:legend:+3", "xp:tinker:2", "merit:drama:+2", "bond:thorne:+3"]
+[[talk.node.choice]]
+label = "Hand Pip the red knob and let him loose"
+needs = ["bond:pip>=6"]
+say = "The red knob does something with the footlights nobody had planned. The whole stage turns the blue of deep water, and the audience gasps in a single breath."
+effects = ["know:play_hit", "stat:legend:+5", "bond:pip:+4", "xp:tinker:3", "world:play_triumph"]
+[[talk.node.choice]]
+label = "Fuse the hall lights during the storm and enjoy the dark"
+needs = ["item:servo"]
+say = "The fuse pops, the hall goes black, and for four seconds a hundred people scream happily. The torches come on. Mr. Marsh glares at the dimmer for a long time."
+effects = ["know:play_hit", "stat:legend:+4", "stat:heat:+5", "xp:tinker:2"]
+[[talk.node.choice]]
+label = "Touch the red knob"
+say = "The lights go out and stay out for most of Act Two. The play carries on by candle. It is not as bad as you would think, and Madame Thorne says so, between her teeth."
+effects = ["know:play_flat", "stat:cool:-2", "xp:tinker:1"]
+
+[[talk]]
+id = "play_prompt"
+npc = "thorne"
+event = "winter_play"
+title = "In the prompt corner"
+when = ["know:play_prompt", "day>=25"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "From the prompt corner you can see the whole stage, the whole wings, and the green-room corridor, down which Lark hurries with a poem for the programme and Ambrose, in costume as a pirate, hurries with a sword he is not allowed."
+[[talk.node.choice]]
+label = "Whisper the lines to the lead, every time"
+say = "She dries three times, and each time she hears you before she knows she needs you. Afterwards she takes both your hands in hers."
+effects = ["merit:drama:+3", "bond:thorne:+3", "stat:cool:+2"]
+[[talk.node.choice]]
+label = "Slip down the green-room corridor in the interval"
+needs = ["skill:sneak>=1"]
+say = "Behind the costume rail is a cupboard with a dusty hat box. Inside is a faded programme from a play nobody has mentioned, and a hand-drawn plan of the East Wing."
+effects = ["know:old_programme", "xp:sneak:1"]
+[[talk.node.choice]]
+label = "Prompt the wrong line to Ambrose, just once"
+needs = ["trait:known_troublemaker"]
+say = "He says 'To the lighthouse!' to a drowned bell. The audience, unforgivably, applauds. He will never find out who did it."
+effects = ["stat:legend:+2", "stand:the_bench:+3", "bond:ambrose:-2"]
+[[talk.node.choice]]
+label = "Keep your finger on the page and your mouth shut"
+say = "It is the whole job. Nobody notices a good prompter. That is the whole victory."
+effects = ["merit:drama:+1"]
+
+[[talk]]
+id = "play_scenery"
+npc = "thorne"
+event = "winter_play"
+title = "Behind the drowned bell"
+when = ["know:play_scenery", "day>=25"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Opening night, and the drowned bell is the first thing anybody sees. It hangs in a net of green gauze and the wet paint is not quite dry. Ms. Ruddock is standing at the back with her arms folded, daring it to fall."
+[[talk.node.choice]]
+label = "Touch up the last bubble with a steady hand"
+say = "It dries by the first line. The bell looks as if it has been drowned for a hundred years."
+effects = ["know:play_hit", "bond:ruddock:+3", "grade:art:+2", "stat:cool:+2"]
+[[talk.node.choice]]
+label = "Hide a small, tidy owl among the bubbles"
+needs = ["trait:known_troublemaker"]
+say = "It is the best thing on the set, and only you and one prefect with sharp eyes will ever find it. Ruddock does not look."
+effects = ["know:play_hit", "stat:legend:+3", "stand:the_bench:+3", "bond:ruddock:+1"]
+[[talk.node.choice]]
+label = "Leave the bell as it is"
+say = "It sags a little in the middle. The audience takes it for atmosphere."
+effects = ["know:play_flat", "bond:ruddock:+1"]
+
+[[talk]]
+id = "play_door"
+npc = "thorne"
+event = "winter_play"
+title = "At the door with the programmes"
+when = ["know:play_door", "day>=25"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "A tray of programmes and a tin for the coppers. From the door you see everyone arrive: the staff in their good coats, the parents with their umbrellas, and Dame Vane, who takes a programme and does not pay."
+[[talk.node.choice]]
+label = "Tell the headmistress the programme is a donation"
+needs = ["skill:bluff>=1"]
+say = "She looks at you for a second too long, and puts a coin in the tin with a flat click. 'For the school,' she says."
+effects = ["stat:cash:+3", "bond:vane:+2", "xp:bluff:1"]
+[[talk.node.choice]]
+label = "Eavesdrop on the staff as they come in"
+needs = ["skill:sneak>=1"]
+say = "Mr. Fenn tells Reverend Soames, in a low voice, that he is not sure he can sit through the part with the fire. The chaplain says nothing at all."
+effects = ["know:play_overheard", "xp:sneak:1"]
+[[talk.node.choice]]
+label = "Give the programmes out, take the coppers, smile"
+say = "Forty-one coppers, a button and a sweet. You hand the tin to Madame Thorne and she pretends not to be moved."
+effects = ["stat:cash:+2"]
+
+[[talk]]
+id = "play_curtain"
+npc = "thorne"
+event = "winter_play"
+title = "The curtain call and the party"
+when = ["day>=26"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Backstage, after the last curtain, in a smell of greasepaint and wet peas. Madame Thorne stands on a crate with a paper cup of something that is definitely not tea."
+[[talk.node.choice]]
+label = "Take the bow with the cast"
+needs = ["know:play_hit", "know:play_lead"]
+say = "You bow with the hall on its feet, and then again, and then Madame Thorne takes your hand and raises it. The paper's review calls you 'luminous'. Wren printed it herself."
+effects = ["know:play_star", "stat:legend:+5", "stand:ink_society:+3", "merit:drama:+3"]
+[[talk.node.choice]]
+label = "Toast the crew who made it work"
+needs = ["know:play_hit"]
+say = "You raise the paper cup to the people nobody applauds: the prompt, the paint, the weather. They cheer louder than the hall did."
+effects = ["stat:cool:+3", "bond:thorne:+2", "bond:ruddock:+1", "bond:pip:+1"]
+[[talk.node.choice]]
+label = "Share a drink with the cast whatever happened"
+needs = ["know:play_flat"]
+say = "It went rather flat, and nobody minds. Someone starts a song. It is not from the play. It is a better one."
+effects = ["stat:cool:+1", "bond:thorne:+1"]
+[[talk.node.choice]]
+label = "Find the old programme's plan in your pocket and show it to Madame Thorne"
+needs = ["know:old_programme"]
+say = "She goes very still. 'That was the play they did the year before the fire,' she says. 'I was sixteen. I played the Founder's Daughter. They never did the play again.'"
+effects = ["know:thorne_knew", "bond:thorne:+5", "xp:bluff:1"]
+[[talk.node.choice]]
+label = "Slip away before the speeches"
+say = "You are in the corridor before the first toast. The hall's roar follows you all the way to the dormitory."
+
+# ---------------------------------------------------------------- the formal dance
+
+[[event]]
+id = "formal_dance"
+name = "The formal dance"
+blurb = "Dame Vane's winter dance in the Great Hall: gowns, a quartet, and a chaperone on every pillar."
+place = "main_hall"
+from = 30
+to = 32
+kinds = ["evening"]
+host = "vane"
+
+[[talk]]
+id = "dance_invite"
+npc = "vane"
+event = "formal_dance"
+title = "Who to take to the dance"
+when = ["day>=30", "day<=31"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "A card on the Great Hall door in Dame Vane's own copperplate: gowns and jackets, a quartet from the village, and no one to leave before the last waltz. Ambrose is pinning up the dance cards. 'Rule one,' he says, 'you may not go alone, but you may go with someone who is also alone.'"
+[[talk.node.choice]]
+label = "Ask Wren Okonjo"
+needs = ["bond:wren>=6"]
+say = "'I would love to,' says Wren, 'provided you tell me everything you know, in order, at some point before the music stops.' It is the nicest thing she has ever said to anyone."
+effects = ["know:dance_wren", "bond:wren:+3"]
+[[talk.node.choice]]
+label = "Ask Sol Marchetti"
+needs = ["bond:sol>=6"]
+say = "Sol says no one will believe it, and that he refuses to wear a tie. He wears a tie. It is a very small one."
+effects = ["know:dance_sol", "bond:sol:+3"]
+[[talk.node.choice]]
+label = "Ask Priya Venkat"
+needs = ["bond:priya>=3"]
+say = "'I'm meant to be chaperoning,' says Priya, then adds quickly, 'in a dress.' She goes the colour of her badge."
+effects = ["know:dance_priya", "bond:priya:+3"]
+[[talk.node.choice]]
+label = "Ask Tilly Brandt, who has been standing by the stairs for a quarter of an hour"
+needs = ["bond:tilly>=6"]
+say = "Tilly says yes before you have finished. She has a dress she wears for nothing, and it is exactly the right green."
+effects = ["know:dance_tilly", "bond:tilly:+3", "stand:strays:+2"]
+[[talk.node.choice]]
+label = "Go with the Bench in a gang and see what the punch is made of"
+needs = ["standing:the_bench>=6"]
+say = "The Bench go as a pack, in odd gloves and one communal tie. Sol is a very small tie, and the rest are borrowed."
+effects = ["know:dance_gang", "stand:the_bench:+2"]
+[[talk.node.choice]]
+label = "Go on your own, and stand near the door where the view is best"
+say = "Rule one is bent, not broken: Ambrose finds you a partner on the dance card who is also, by a happy coincidence, alone."
+effects = ["know:dance_solo"]
+
+[[talk]]
+id = "dance_waltz"
+npc = "vane"
+event = "formal_dance"
+title = "The headmistress's opening waltz"
+when = ["day>=31"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "The quartet strikes up. Dame Vane stands alone at the foot of the hall, hands folded, with the look of a woman who has been waiting for someone to cross a floor for a very long time. The whole school is looking at its shoes."
+[[talk.node.choice]]
+label = "Cross the floor and ask the headmistress for the first waltz"
+needs = ["cool>=60", "file<=2"]
+say = "Silence all the way down the hall, then the quartet, then a sound like a hundred people forgetting to breathe. She waltzes beautifully, and says one thing in your ear: 'I do not forgive, but I do not forget a courtesy.'"
+effects = ["bond:vane:+5", "wary:vane:-2", "stat:legend:+5", "stat:cool:+3", "know:waltzed_with_vane"]
+[[talk.node.choice]]
+label = "Ask Mr. Marsh to dance, so as to keep the dance floor moving"
+needs = ["skill:bluff>=2"]
+say = "He is so surprised he says yes. He dances like a man filling in a form. The prefects, scandalised, forgive you on the spot."
+effects = ["bond:marsh:+3", "stat:legend:+3", "stand:lamplighters:+2"]
+[[talk.node.choice]]
+label = "Get Reverend Soames to play a second piano under the first, very slightly out of tune"
+needs = ["bond:soames>=6", "skill:bluff>=1"]
+say = "The waltz comes out in two minds, and Dame Vane stops, and listens, and then smiles with one corner of her mouth. 'Reverend,' she says. 'Is that you?'"
+effects = ["bond:soames:+3", "bond:vane:+2", "stat:legend:+2"]
+[[talk.node.choice]]
+label = "Stay at the edge of the floor and watch"
+say = "Somebody else asks, eventually. It is Mr. Fenn, in a jacket that has been a jacket for forty years. They dance one verse together without speaking."
+
+[[talk]]
+id = "dance_wren"
+npc = "vane"
+event = "formal_dance"
+title = "On the floor with Wren"
+when = ["know:dance_wren", "day>=31"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Wren dances the way she writes: fast, accurate and ready to correct you. Halfway round she lowers her voice. 'There's a rumour that a diary has surfaced. If it has, I would very much like to be the one it surfaced for.'"
+[[talk.node.choice]]
+label = "Tell her about the diary and let her decide what the paper does"
+needs = ["know:diary_page"]
+say = "Her face does not move, but her feet stop. 'Come to the office on Monday,' she says. 'Bring the whole thing.'"
+effects = ["bond:wren:+5", "stand:ink_society:+3", "know:wren_has_the_story"]
+[[talk.node.choice]]
+label = "Tell her you have not seen a diary, and let her think what she likes"
+say = "'Of course,' says Wren. She steers you into a pillar with great precision. 'Sorry,' she says. She is not."
+effects = ["bond:wren:-1"]
+[[talk.node.choice]]
+label = "Tell her about the ledger instead, and swap one story for another"
+needs = ["arc:ledger@expose"]
+say = "She slows, stops, then speeds up again. 'That,' she says, 'is almost as good.' By the end of the dance you have a deal and a bruised toe."
+effects = ["bond:wren:+3", "stand:ink_society:+4"]
+[[talk.node.choice]]
+label = "Dance, and say nothing"
+say = "The quartet ends. Wren curtsies like a woman making a note to herself."
+effects = ["bond:wren:+1"]
+
+[[talk]]
+id = "dance_sol"
+npc = "vane"
+event = "formal_dance"
+title = "On the roof with Sol"
+when = ["know:dance_sol", "day>=31"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Sol dances for one minute, then jerks his head at the roof hatch. Bex has run a rope to the leads, and on the Great Hall's roof the lights of the dance are spread across the wet slates below like a spilt jewel box. 'Best seat in the school,' says Sol."
+[[talk.node.choice]]
+label = "Climb up and watch the dance from the roof"
+needs = ["skill:fleet>=1"]
+say = "The wind takes your gown and the quartet comes up through the chimney in pieces. You and Sol share a bag of toffees and a view of the lake. For ten minutes nobody on earth can see you."
+effects = ["bond:sol:+4", "stand:the_bench:+3", "xp:fleet:2", "know:roof_route"]
+[[talk.node.choice]]
+label = "Pull the fuse for the last waltz, from the roof panel"
+needs = ["skill:tinker>=1", "bond:sol>=10"]
+say = "The hall goes black in the middle of the last bar. There is a stunned gasp, then a cheer, then the sound of a great many prefects falling over. Candles are found. Nobody is hurt, and everybody is delighted."
+effects = ["world:dance_blackout", "stat:legend:+5", "stat:heat:+5", "bond:sol:+4", "stand:the_bench:+5"]
+[[talk.node.choice]]
+label = "Stay on the floor and finish the dance properly"
+say = "'Suit yourself,' says Sol, shrugging. He is back in two minutes with a toffee and no explanation."
+effects = ["bond:sol:+1"]
+
+[[talk]]
+id = "dance_priya"
+npc = "vane"
+event = "formal_dance"
+title = "Dancing with Priya, who is on duty"
+when = ["know:dance_priya", "day>=31"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Priya has a badge pinned to her dress and a face that is trying hard to look as if it has a badge pinned to it. Cordelia Wick is two pillars away. 'Pretend we're discussing the rota,' whispers Priya."
+[[talk.node.choice]]
+label = "Discuss the rota with great seriousness, and dance very correctly"
+say = "Wick passes without looking, which is a sort of blessing. Priya exhales through her nose and starts to laugh."
+effects = ["bond:priya:+3", "stand:lamplighters:+3"]
+[[talk.node.choice]]
+label = "Tell her she is allowed to take the badge off for one dance"
+needs = ["bond:priya>=6"]
+say = "She unpins it, looks at it, puts it in a pocket where it clinks against a toffee. For three minutes she is just a girl at a dance."
+effects = ["bond:priya:+5", "stand:lamplighters:-1", "know:priya_unbadged"]
+[[talk.node.choice]]
+label = "Tell her what the prefects are really chaperoning for tonight"
+needs = ["arc:ledger@expose"]
+say = "She goes pale. 'Where did you hear that?' she says. Then, much quieter: 'I'll tell Cordelia I never saw you.' It is a promise, and a debt."
+effects = ["know:priya_owes", "bond:priya:+2", "stand:lamplighters:-2"]
+
+[[talk]]
+id = "dance_tilly"
+npc = "vane"
+event = "formal_dance"
+title = "Dancing with Tilly"
+when = ["know:dance_tilly", "day>=31"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Tilly dances like someone who has practised alone in the dark, a little too much and in exactly the right places. By the third song she is laughing, and by the fourth the Strays are dancing together in a corner, with the best view of the hall."
+[[talk.node.choice]]
+label = "Stay with Tilly through every song"
+say = "She says nothing about it afterwards. She puts the dance card in her pocket, and later you find she has kept it, folded in her diary, for the rest of the term."
+effects = ["bond:tilly:+5", "stand:strays:+3"]
+[[talk.node.choice]]
+label = "Join the Strays' corner, and share what you know about the dance floor"
+needs = ["standing:strays>=6"]
+say = "Mags leans over: 'You see the clock above the balcony? It has been seven minutes slow since October.' She is right. Nobody else in the hall has noticed it, which makes it the kind of fact you can use."
+effects = ["bond:mags:+3", "know:slow_clock", "stand:strays:+2"]
+[[talk.node.choice]]
+label = "Take the corner, then take a plate to Hattie who is guarding the coats"
+needs = ["bond:hattie>=4"]
+say = "Hattie eats a sandwich in four bites and tells you which cat sleeps on which coat. It turns out this is useful. The coats are all warm."
+effects = ["bond:hattie:+4", "stand:strays:+2"]
+
+[[talk]]
+id = "dance_gang"
+npc = "vane"
+event = "formal_dance"
+title = "The Bench and the punch bowl"
+when = ["know:dance_gang", "day>=31"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "The punch is in a great glass bowl on a table with a lace cloth, guarded by Mrs. Tarn with a ladle. Dot is at your elbow, murmuring. 'It's lemon,' she says. 'Plain lemon. An outrage. We could do something about that.'"
+[[talk.node.choice]]
+label = "Salt the punch, a pinch at a time, while Mrs. Tarn is looking at the quartet"
+needs = ["item:salt", "skill:sneak>=1"]
+say = "Four dancers cough, two politely, and Ambrose drinks his whole cup with a face of heroic restraint. Mrs. Tarn tastes it and says only: 'Hm.'"
+effects = ["stat:legend:+4", "stat:heat:+3", "stand:the_bench:+4", "bond:dot:+3"]
+[[talk.node.choice]]
+label = "Buy a round for the Strays' corner from Dot's biscuit tin"
+needs = ["cash>=3", "bond:dot>=4"]
+say = "Dot looks at you as if you have bought her a pony. The Strays' corner drinks lemonade with great ceremony and the best manners in the hall."
+effects = ["stat:cash:-3", "bond:dot:+3", "stand:strays:+3"]
+[[talk.node.choice]]
+label = "Hang a small card on the bowl: 'Please do not feed the prefects'"
+say = "Cordelia Wick finds it within a minute. She does not smile, but she does not take it down either."
+effects = ["stat:legend:+1", "stand:the_bench:+2", "wary:marsh:+1"]
+[[talk.node.choice]]
+label = "Drink the lemon punch and leave well alone"
+say = "It is lemon. It is quite nice. You spend the evening quietly in the company of a very sensible drink."
+
+[[talk]]
+id = "dance_solo"
+npc = "vane"
+event = "formal_dance"
+title = "At the edge of the floor"
+when = ["know:dance_solo", "day>=31"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "From the door you can see the whole floor. Reverend Soames is at the piano, playing waltzes with his eyes shut. Mr. Fenn stands by the east door of the hall, in a jacket, not dancing, looking down the dark passage that leads to the closed wing."
+[[talk.node.choice]]
+label = "Cross to Mr. Fenn and ask him if he would like to sit down"
+needs = ["bond:fenn>=6"]
+say = "'No,' says Mr. Fenn. Then, after a pause, 'Stay a moment.' He says nothing else, and neither do you. When the waltz ends he nods to you, once, as to a colleague."
+effects = ["bond:fenn:+4", "know:fenn_watches_the_wing"]
+[[talk.node.choice]]
+label = "Watch the chaplain's hands on the keys"
+needs = ["skill:bluff>=1"]
+say = "He plays every waltz perfectly. But on the last one he plays a bar from another tune, a hymn, and then quickly covers it. You are almost sure it was seventy-three."
+effects = ["know:soames_hymn_slip", "xp:bluff:1"]
+[[talk.node.choice]]
+label = "Count how many times the prefects look at the clock"
+needs = []
+say = "Eleven. It is the slow clock above the balcony. Every time it ticks over, Cordelia Wick's hand goes to her pocket."
+effects = ["know:slow_clock", "xp:sneak:1"]
+[[talk.node.choice]]
+label = "Stand at the door and enjoy the music"
+say = "The quartet is better than anyone expected. You hum the last waltz all the way home."
+
+[[talk]]
+id = "dance_last"
+npc = "vane"
+event = "formal_dance"
+title = "The morning after the dance"
+when = ["day>=32"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "The Great Hall in grey light, with the chairs stacked and a single glove on the piano. Mrs. Tarn is sweeping up confetti with a face that says she knows who threw it."
+[[talk.node.choice]]
+label = "Own up to the blackout and offer to rewire the fuse"
+needs = ["know:waltzed_with_vane"]
+say = "Dame Vane, who is passing, stops. 'A pupil who confesses,' she says. 'I had begun to think it extinct.' You get a week of washing-up and, on the sly, a sherbet lemon."
+effects = ["file:caught:1", "bond:vane:+3", "stat:cool:+2"]
+[[talk.node.choice]]
+label = "Help Mrs. Tarn sweep up the confetti"
+say = "She gives you a bun as warm as a handshake and a look as sharp as a pin. 'I won't ask,' she says. 'You won't tell.' It is exactly the right deal."
+effects = ["bond:tarn:+4", "stat:cool:+1"]
+[[talk.node.choice]]
+label = "Collect the single glove and return it to its owner"
+needs = ["know:dance_priya"]
+say = "It is Priya's. She takes it, blushing, and in return tells you something about the prefects' rota you did not know."
+effects = ["bond:priya:+3", "know:prefect_rota"]
+[[talk.node.choice]]
+label = "Slip out through the East door, where Fenn was standing last night"
+needs = ["know:fenn_watches_the_wing", "skill:sneak>=1"]
+say = "The passage is cold and smells of sealed rooms. At the end is a door with a brass plate worn smooth by a thumb. Someone has polished it. You hear someone coming and are away before you see who."
+effects = ["know:east_door_seen", "xp:sneak:1"]
+[[talk.node.choice]]
+label = "Go back to bed"
+say = "A long morning. You sleep through half of it, and nobody blames you."
+
+# ---------------------------------------------------------------- exam week
+
+[[event]]
+id = "exam_week"
+name = "Exam week"
+blurb = "Mr. Marsh's examinations in the Great Hall: silence, ink, and a very loud clock."
+place = "main_hall"
+from = 34
+to = 37
+kinds = ["free", "after"]
+host = "marsh"
+
+[[talk]]
+id = "exam_prep"
+npc = "marsh"
+event = "exam_week"
+title = "How to prepare for the examinations"
+when = ["day>=34", "day<=35"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Mr. Marsh has posted the timetable on the Great Hall door and underlined the word SILENCE four times. The examinations run for four days. 'You have until tomorrow,' he says, 'to decide what sort of pupil you are.'"
+[[talk.node.choice]]
+label = "Revise properly, and spend the evening on it"
+needs = ["nerve>=2"]
+say = "You work through your notes until the print swims, and then work through them again. By the end you could sit any paper in the school."
+effects = ["stat:nerve:-2", "know:exam_swot", "grade:maths:+3", "grade:sciences:+3", "grade:languages:+3", "grade:history:+3"]
+[[talk.node.choice]]
+label = "Borrow Jonty's notes, which are drawn rather than written"
+needs = ["bond:jonty>=6"]
+say = "The notes are in pictures. Every date in history has a small, rude drawing attached. It is the best revision you have ever done."
+effects = ["know:exam_notes", "bond:jonty:+3", "grade:history:+6", "grade:languages:+4"]
+[[talk.node.choice]]
+label = "Form a study group with the Strays at the library table"
+needs = ["standing:strays>=4"]
+say = "Mags tests you, Bertie dozes through it and corrects you when you are wrong. You all learn more than anyone expected, and the library lets you stay late."
+effects = ["know:exam_group", "bond:mags:+3", "bond:bertie:+3", "grade:sciences:+5", "grade:maths:+4"]
+[[talk.node.choice]]
+label = "Prepare a crib, in a very small hand, on the underside of a cuff"
+needs = ["skill:bluff>=2", "item:forgery_kit"]
+say = "It takes three hours, a magnifying glass and a good deal of nerve. It will be very useful, if you dare."
+effects = ["know:exam_crib", "xp:bluff:1"]
+[[talk.node.choice]]
+label = "Rely on what you already know"
+say = "'Admirable,' says Mr. Marsh, in the voice of a man who does not believe you. You go and sit by the lake."
+effects = ["know:exam_bare"]
+
+[[talk]]
+id = "exam_leak"
+npc = "marsh"
+event = "exam_week"
+title = "A paper changes hands in the dormitory"
+when = ["day>=35", "day<=36"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Dot catches your sleeve in the corridor. 'I know a person,' she says, 'who knows a person who has a copy of tomorrow's maths paper. It would cost four biscuits and it would not, strictly speaking, be mine.' She is looking at you very steadily."
+[[talk.node.choice]]
+label = "Buy the paper for four biscuits"
+needs = ["cash>=4", "bond:dot>=3"]
+say = "The paper is folded into a sweet wrapper. You learn the answers in an hour and your conscience in a night. You will not enjoy tomorrow."
+effects = ["stat:cash:-4", "know:exam_met_dot", "know:exam_cheated", "grade:maths:+10", "bond:dot:+2"]
+[[talk.node.choice]]
+label = "Tell Mr. Marsh that a paper is going round the dormitory"
+say = "He stares at you, then at his clipboard, then at the wall behind you. 'This will be dealt with,' he says. By evening every pupil in the school is to resit the maths paper, in silence, under his personal supervision."
+effects = ["know:exam_met_dot", "know:exam_reported", "bond:marsh:+4", "stand:the_bench:-4", "bond:dot:-6", "world:exam_resit"]
+[[talk.node.choice]]
+label = "Swap the paper's pages for a joke paper before it reaches anyone"
+needs = ["skill:bluff>=2", "item:forgery_kit"]
+say = "Question One asks for the number of halves in a whole sheep. The cheats do not find out until tomorrow, and nobody can say who did it."
+effects = ["know:exam_met_dot", "know:exam_swapped", "stat:legend:+4", "stat:heat:+3", "bond:dot:-1", "item:spare_card"]
+[[talk.node.choice]]
+label = "Tell Dot you want no part in it, and ask her to burn it"
+needs = ["bond:dot>=6"]
+say = "Dot sniffs. 'A friend,' she says, 'would say that.' She puts the paper in the radiator. It makes a very small, very decisive sound."
+effects = ["know:exam_met_dot", "know:exam_burned", "bond:dot:+3", "stand:the_bench:+2"]
+[[talk.node.choice]]
+label = "Walk away"
+say = "Dot shrugs. There are other customers. You hear the biscuits changing hands behind you, and you do not look round."
+effects = ["know:exam_met_dot", "know:exam_walked"]
+
+[[talk]]
+id = "exam_numbers"
+npc = "marsh"
+event = "exam_week"
+title = "The mathematics and sciences papers"
+when = ["day>=35"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Two hours, one clock, forty desks and a smell of ink and nerves. Mr. Marsh walks the aisles on tiptoe, which is somehow worse than marching. The paper is face down. 'You may begin,' he says."
+[[talk.node.choice]]
+label = "Work it through, line by line"
+needs = ["grade:maths>=60"]
+say = "The sums come in the order you learned them. By the end you are not sure you got them all right, but you are sure you got them honestly."
+effects = ["grade:maths:+5", "grade:sciences:+3", "know:exam_numbers_done"]
+[[talk.node.choice]]
+label = "Answer everything with the answers you memorised"
+needs = ["know:exam_cheated"]
+say = "Every answer is right, and every one of them looks it. Mr. Marsh pauses at your desk, reads over your shoulder, and moves on with a very thoughtful expression."
+effects = ["grade:maths:+8", "grade:sciences:+2", "know:exam_numbers_done", "wary:marsh:+1"]
+[[talk.node.choice]]
+label = "Read the crib, a line at a time, when he turns his back"
+needs = ["know:exam_crib"]
+say = "Your cuff is a work of art. Every answer is there, and every one of them is wrong in exactly the way the crib's author intended."
+effects = ["grade:maths:+4", "grade:sciences:+4", "know:exam_numbers_done", "stat:heat:+3", "xp:bluff:1"]
+[[talk.node.choice]]
+label = "Write what you can and leave the rest blank"
+say = "A white page is a kind of honesty. Mr. Marsh writes something and underlines it. You decide not to look."
+effects = ["grade:maths:+1", "know:exam_numbers_done"]
+
+[[talk]]
+id = "exam_words"
+npc = "marsh"
+event = "exam_week"
+title = "The languages and history papers"
+when = ["day>=35"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Essays today: a question about the Founder, a translation from the Greywater Latin, and a prompt that begins 'Discuss'. The pens scratch in a hush so deep you can hear your own pulse."
+[[talk.node.choice]]
+label = "Write the history essay from Jonty's pictures"
+needs = ["know:exam_notes"]
+say = "The dates come back in cartoons, and every cartoon is right. You win a gold star in the margin, and a puzzled expression from Mr. Alder."
+effects = ["grade:history:+6", "grade:languages:+3", "bond:alder:+2", "know:exam_words_done"]
+[[talk.node.choice]]
+label = "Translate the Latin with the phrase Madame Thorne taught you"
+needs = ["bond:thorne>=6", "grade:languages>=60"]
+say = "You write 'with the best will in the world' three times in the margin and it is the right answer all three. Madame Thorne, invigilating, closes her eyes."
+effects = ["grade:languages:+7", "bond:thorne:+2", "know:exam_words_done"]
+[[talk.node.choice]]
+label = "Write a long, earnest essay on the Founder's love of the lake"
+needs = ["skill:bluff>=1"]
+say = "It is not strictly history. It is, however, very moving. Mr. Alder will read it twice and give it a mark he cannot quite justify."
+effects = ["grade:history:+5", "xp:bluff:1", "know:exam_words_done"]
+[[talk.node.choice]]
+label = "Do what you can"
+say = "Half an answer here, a guess there. It is not heroic and not a disaster."
+effects = ["grade:history:+1", "grade:languages:+1", "know:exam_words_done"]
+
+[[talk]]
+id = "exam_viva"
+npc = "marsh"
+event = "exam_week"
+title = "The art and games practical"
+when = ["day>=36"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "A practical examination: Ms. Ruddock sets a still life of a kettle and an onion; Mr. Gale, in the next room, sets everyone to run a lap of the quad with a book on their head. Mr. Marsh, with a clipboard, is in both rooms at once."
+[[talk.node.choice]]
+label = "Paint the kettle and the onion as a pair of sworn enemies"
+needs = ["grade:art>=60"]
+say = "Ms. Ruddock stands in front of your easel for a full minute. 'It's bad,' she says. 'It is also the best thing in the room.' She gives you the mark you were hoping for, and a long look."
+effects = ["grade:art:+7", "bond:ruddock:+3"]
+[[talk.node.choice]]
+label = "Run the lap at a steady jog with the book on your head"
+needs = ["skill:fleet>=1"]
+say = "You win by a length and a half and the book never wobbles. Mr. Gale writes your name down in capitals and forgets, for once, to glare."
+effects = ["grade:games:+7", "bond:gale:+3", "xp:fleet:1"]
+[[talk.node.choice]]
+label = "Fix the examiners' slow clock so the lap is timed fairly"
+needs = ["skill:tinker>=1"]
+say = "The clock, which has been wrong since Easter, has never been so right. Mr. Marsh is so surprised he compliments it."
+effects = ["bond:marsh:+3", "xp:tinker:2", "stat:cool:+1"]
+[[talk.node.choice]]
+label = "Sketch an onion, an apology and a kettle"
+say = "It is recognisably all three. It will be marked kindly and promptly forgotten."
+effects = ["grade:art:+2"]
+
+[[talk]]
+id = "exam_results"
+npc = "marsh"
+event = "exam_week"
+title = "Results day in the Great Hall"
+when = ["day>=37"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Mr. Marsh reads the results aloud from the top of the Great Hall steps, in order of merit, in the manner of a man announcing weather. Wren is writing it all down for the paper. Behind you, someone is quietly being sick."
+[[talk.node.choice]]
+label = "Hear your name read out with a distinction"
+needs = ["grades>=80"]
+say = "He reads it flatly, but the hall claps anyway. Mr. Pell, at the back, nods once, and Mr. Alder is smiling at his shoes."
+effects = ["stat:legend:+3", "stat:cool:+3", "bond:pell:+2", "bond:alder:+2", "know:exam_distinction"]
+[[talk.node.choice]]
+label = "Be called to the front over the maths paper"
+needs = ["know:exam_cheated"]
+say = "Mr. Marsh holds your answers up to the light. 'These are very good,' he says. 'Remarkably good. Strikingly like another set of answers I have seen.' There is a long silence, and the whole hall hears it."
+effects = ["file:caught:2", "grade:maths:-12", "wary:marsh:+2", "bond:dot:-1"]
+[[talk.node.choice]]
+label = "Ask for a re-mark of the history essay on the Founder's love of the lake"
+needs = ["grade:history>=60", "bond:alder>=4"]
+say = "Mr. Alder rereads it, moved and a little embarrassed. He writes a number higher than the first one in red, with a note: 'See me about the Founder.' You do."
+effects = ["grade:history:+4", "bond:alder:+3", "know:alder_founder_chat"]
+[[talk.node.choice]]
+label = "Collect the joke paper's answers, and a note: 'Well done, whoever you are'"
+needs = ["know:exam_swapped"]
+say = "A note in a hand you almost recognise is pinned to the hall noticeboard. It is signed 'Anonymous, with respect'. Pell is bewildered. Dot is furious, and also impressed."
+effects = ["stat:legend:+3", "bond:dot:-1", "stand:the_bench:+2"]
+[[talk.node.choice]]
+label = "Read the results quietly and go and have tea"
+say = "Not a triumph, not a disaster. The tea is hot and the school is nearly over."
+effects = ["stat:cool:+1"]
+
+[[talk]]
+id = "exam_invigilate"
+npc = "marsh"
+event = "exam_week"
+title = "Mr. Marsh asks for a monitor"
+when = ["day>=35", "day<=36", "standing:lamplighters>=6"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Mr. Marsh is short of monitors. 'Prefects and their friends,' he says. 'Two of you to walk the aisles, on tiptoe, and to say nothing whatever to anyone who is writing. I am told this is a privilege.' He hands you a clipboard of your own."
+[[talk.node.choice]]
+label = "Walk the aisles on tiptoe and see nothing you should not"
+say = "Forty desks, forty bent heads, and not one rule broken that you can swear to. Mr. Marsh takes the clipboard back with a nod that costs him some effort."
+effects = ["bond:marsh:+3", "stand:lamplighters:+2", "stat:cool:+1"]
+[[talk.node.choice]]
+label = "Spot the crib on a cuff, and report it"
+needs = ["skill:sneak>=1"]
+say = "You notice a very small hand on a very small cuff, and you tell Mr. Marsh. He writes something. By supper half the Bench knows who it was who told."
+effects = ["know:exam_informer", "bond:marsh:+5", "stand:lamplighters:+3", "stand:the_bench:-4"]
+[[talk.node.choice]]
+label = "Spot the crib on a cuff, and quietly stand where it cannot be seen"
+needs = ["skill:sneak>=1", "not:know:exam_informer"]
+say = "You pass the desk twice, and the second time you are standing between the cuff and the clipboard. The pupil never knows, and never needs to."
+effects = ["know:exam_mercy", "stand:the_bench:+3", "bond:marsh:-1"]
+[[talk.node.choice]]
+label = "Stand by Ollie's desk, who has frozen, and point at the clock"
+needs = ["bond:ollie>=3"]
+say = "He looks up at the clock and at you, and breathes out. Then he writes, and writes, and does not stop. You have told him nothing but the time."
+effects = ["bond:ollie:+4", "stand:strays:+3", "stat:cool:+1"]
+[[talk.node.choice]]
+label = "Slip out for a cup of tea"
+say = "Mr. Marsh finds you in the corridor with a mug and an innocent face. 'Monitors,' he says, 'are the other reason for examinations.'"
+effects = ["bond:marsh:-1"]

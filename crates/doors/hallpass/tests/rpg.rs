@@ -421,9 +421,20 @@ fn no_content_is_dead_every_option_is_open_to_some_build() {
     }
     let (drafts, twists, getaways) = available(&everything);
     for m in &content.methods {
+        if drafts.iter().any(|(_, id)| *id == m.id) {
+            continue;
+        }
+        // Some methods are for one kind of pupil and not for another (a teacher's pet is never
+        // offered the owl badges). Each must still be open to a pupil who meets exactly its own
+        // requirements: build that pupil and ask.
+        let mut build = Sandbox::new("smooth_talker", 1);
+        build.game.world.term_start = build.game.player.day - 20;
+        for cond in &m.requires {
+            common::satisfy(&mut build.game, cond);
+        }
         assert!(
-            drafts.iter().any(|(_, id)| *id == m.id),
-            "method {} is unreachable",
+            draft_ids(&build).iter().any(|(_, id)| *id == m.id),
+            "method {} is unreachable for any build",
             m.id
         );
     }

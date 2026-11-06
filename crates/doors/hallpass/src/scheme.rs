@@ -553,7 +553,7 @@ impl Game {
             }
             self.gain_xp("sneak", 1);
         } else {
-            self.player.heat = to_u8(i32::from(self.player.heat) + 2);
+            self.player.add_heat(2);
             events.push(Event::Say("Somebody looked your way, and you had to pretend to tie a shoelace. Nothing learned.".into()));
         }
         events.extend(self.end_slot(Spent::Other, rng));
@@ -835,7 +835,7 @@ impl Game {
             heat = heat * 3 / 2;
         }
         let heat = (heat * heat_pct / 100).max(0);
-        self.player.heat = to_u8(i32::from(self.player.heat) + heat);
+        self.player.add_heat(heat);
 
         if let Some(phase) = busted {
             self.player.caught = self.player.caught.saturating_add(1);

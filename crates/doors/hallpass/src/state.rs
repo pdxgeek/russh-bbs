@@ -487,7 +487,15 @@ wire_struct!(Player {
     social
 });
 
+/// The most heat a pupil can carry: the staff cannot be more watchful than all of them looking.
+pub const MAX_HEAT: i32 = 100;
+
 impl Player {
+    /// Raise (or lower) heat, kept between nothing and [`MAX_HEAT`].
+    pub fn add_heat(&mut self, delta: i32) {
+        self.heat = to_u8((i32::from(self.heat) + delta).clamp(0, MAX_HEAT));
+    }
+
     /// A new character who has not enrolled.
     #[must_use]
     pub fn new(name: &str, term: u32, day: i64, start_place: &str) -> Self {

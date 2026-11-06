@@ -25,7 +25,7 @@ mod common;
 
 use std::sync::Arc;
 
-use common::{Sandbox, content, meet, monday, satisfy};
+use common::{Sandbox, content, keys, meet, monday, replay_twice, run_branch, satisfy, world_at};
 use russh_bbs_core::doors::{DoorStore, Revision, SaveWrite, WorldWrite};
 use russh_bbs_core::limits::{Clock, Day, ManualClock};
 use russh_bbs_core::store::AccountId;
@@ -34,7 +34,7 @@ use russh_bbs_door::sim::MemoryDoorStore;
 use russh_bbs_door::tick::{TickPolicy, run_due};
 use russh_bbs_door::{Door, DoorEnv, DoorKey, DoorRng};
 use russh_bbs_door_hallpass::game::{Action, Game};
-use russh_bbs_door_hallpass::save::{decode_player, decode_world, encode_player};
+use russh_bbs_door_hallpass::save::{decode_world, encode_player};
 use russh_bbs_door_hallpass::state::{ArcProgress, Player, World, map_set};
 use russh_bbs_door_hallpass::world::{WorldDelta, tick_day};
 use russh_bbs_door_hallpass::{Hallpass, SAVE_VERSION, WORLD_VERSION};
@@ -89,9 +89,57 @@ fn step_of(sb: &Sandbox) -> String {
 #[test]
 fn the_mystery_has_four_acts_over_weeks_and_every_clue_is_gated() {
     let c = content();
-    // Four acts, a dozen clues; the first can be found in the first fortnight and the last not
-    // before day 26, so the arc spans weeks, and the finale is after the last.
-    assert_eq!(c.mystery.clues.len(), 12);
+    // Four acts and forty clues (a dozen on the main road and twenty-eight second sources and side
+    // branches); the first can be found in the first fortnight and the last not before day 26, so
+    // the arc spans weeks, and the finale is after the last.
+    assert_eq!(c.mystery.clues.len(), 40);
+    let main: Vec<_> = c
+        .mystery
+        .clues
+        .iter()
+        .filter(|x| x.id.starts_with('c'))
+        .collect();
+    assert_eq!(main.len(), 12, "the main road is still twelve clues");
+    for side in c.mystery.clues.iter().filter(|x| !x.id.starts_with('c')) {
+        assert!(
+            !side.after.is_empty(),
+            "{} follows an earlier clue",
+            side.id
+        );
+        assert!(side.risk <= 3, "{}", side.id);
+    }
+    // Every act has side clues, and most of them are opened by a friend, not a step.
+    for act in 1..=4u8 {
+        assert!(
+            c.mystery
+                .clues
+                .iter()
+                .filter(|x| !x.id.starts_with('c') && x.act == act)
+                .count()
+                >= 4,
+            "act {act}"
+        );
+    }
+    let by_friend = c
+        .mystery
+        .clues
+        .iter()
+        .filter(|x| {
+            x.needs.iter().any(|n| {
+                matches!(
+                    n,
+                    russh_bbs_door_hallpass::cond::Cond::Cmp {
+                        stat: russh_bbs_door_hallpass::cond::Stat::Bond(_),
+                        ..
+                    }
+                )
+            })
+        })
+        .count();
+    assert!(
+        by_friend >= 15,
+        "{by_friend} clues are opened by a friendship"
+    );
     for act in 1..=4 {
         assert!(c.mystery.clues.iter().any(|x| x.act == act));
     }
@@ -179,9 +227,14 @@ fn a_whole_investigation_by_search_reaches_the_choice_and_each_gate_holds_on_the
         sb.game.stat(&russh_bbs_door_hallpass::cond::Stat::Clues),
         12
     );
-    // A clue is found once.
+    // A clue is found once; the next thing in the cabinet is the envelope behind the report.
     sb.game.player.place = "admin_corridor".into();
     sb.game.player.slot = u8::try_from(slot_of(&sb.game, "after")).unwrap();
+    assert_eq!(
+        sb.game.next_clue().map(|c| c.id.as_str()),
+        Some("a4_vane_envelope")
+    );
+    find(&mut sb, "admin_corridor", "after", "a4_vane_envelope");
     assert!(sb.game.next_clue().is_none());
     // The journal says where the story stands.
     assert!(
@@ -350,75 +403,6 @@ fn at_the_choice(talk: &str, term_day: i64) -> Player {
     sb.game.player.clone()
 }
 
-fn keys(text: &str) -> Vec<DoorKey> {
-    text.chars().map(DoorKey::Char).collect()
-}
-
-struct Branch {
-    player: Player,
-    world: World,
-}
-
-/// One recorded branch: a store seeded with a world and a save, a session that presses `text`.
-async fn run_branch(player: &Player, world: &World, text: &str, seed: u64) -> Branch {
-    let store = MemoryDoorStore::new();
-    let door: Arc<dyn Door> = Hallpass::shared().unwrap();
-    let day = player.day;
-    store.set_now(Day::from_raw(day).start());
-    store
-        .write_save(
-            &door.info().id,
-            AccountId::from_raw(1),
-            &SaveWrite {
-                expected: Revision::NONE,
-                season: 1,
-                version: SAVE_VERSION,
-                bytes: &encode_player(player),
-            },
-        )
-        .await
-        .unwrap();
-    store
-        .write_world(
-            &door.info().id,
-            &WorldWrite {
-                expected: Revision::NONE,
-                version: WORLD_VERSION,
-                bytes: &world.to_bytes(),
-                tick: None,
-            },
-        )
-        .await
-        .unwrap();
-    let clock = Arc::new(ManualClock::new(Day::from_raw(day).start()));
-    let c: Arc<dyn Clock> = clock;
-    let env = DoorEnv::for_tests(&player.name);
-    let mut run = Running::open(&store, door.clone(), AccountId::from_raw(1), &env, c, seed)
-        .await
-        .unwrap();
-    for k in keys(text) {
-        run.key(k);
-        run.flush(&store).await.unwrap();
-    }
-    let saved = store
-        .load_save(&door.info().id, AccountId::from_raw(1))
-        .await
-        .unwrap()
-        .unwrap();
-    let w = store.load_world(&door.info().id).await.unwrap().unwrap();
-    Branch {
-        player: decode_player(&saved.bytes).unwrap(),
-        world: decode_world(&w.bytes).unwrap(),
-    }
-}
-
-fn world_at(term_day: i64) -> World {
-    let mut w = World::new(monday() + term_day);
-    w.term_start = monday();
-    w.last_day = monday() + term_day - 1;
-    w
-}
-
 #[tokio::test]
 async fn every_ending_of_the_pupils_story_is_replayable_and_casts_its_own_verdict() {
     let c = content();
@@ -440,14 +424,17 @@ async fn every_ending_of_the_pupils_story_is_replayable_and_casts_its_own_verdic
             .position(|t| t == talk)
             .unwrap_or_else(|| panic!("{talk} not on offer: {here:?}"));
         let text = format!("t{}{}", at + 1, choice + 1);
+        // The world-aware log (the school as the visit began, the keys): replayed twice it is the
+        // same run, and its last save is the pupil the real store and keys leave behind.
+        let log = common::world_log(&player, &world, &text, 9);
+        let again = replay_twice(&log);
         let one = run_branch(&player, &world, &text, 9).await;
-        let two = run_branch(&player, &world, &text, 9).await;
         assert_eq!(
-            encode_player(&one.player),
-            encode_player(&two.player),
+            again.save.as_deref(),
+            Some(encode_player(&one.player).as_slice()),
             "{talk}: the same keys give the same pupil"
         );
-        assert_eq!(one.world, two.world, "{talk}: and the same school");
+        assert!(again.world_edits >= 1, "{talk}: and it changed the school");
         let arc = one.player.life.arc("the_wing").unwrap();
         assert_eq!(arc.ended.as_deref(), Some(*ending), "{talk}");
         if verdict.is_empty() {
@@ -840,4 +827,226 @@ fn the_finale_is_told_to_everyone_once_through_the_real_board() {
                 .any(|e| e.describe().contains("the paper prints the diary"))
         );
     });
+}
+
+// ------------------------------------------------------------------ the longer investigation (H5)
+
+/// A pupil who has found every clue but `this`, standing where `this` is found, on a day it can be.
+fn ready_for(
+    clue: &russh_bbs_door_hallpass::social_spec::ClueSpec,
+    skip_need: Option<usize>,
+) -> Sandbox {
+    let c = content();
+    let mut sb = sleuth("whispers", 36);
+    for other in c.mystery.clues.iter().filter(|o| o.id != clue.id) {
+        sb.game.player.learn(&format!("clue_{}", other.id));
+    }
+    sb.game.player.life.arcs.clear();
+    for (i, need) in clue.needs.iter().enumerate() {
+        if Some(i) != skip_need {
+            satisfy(&mut sb.game, need);
+        }
+    }
+    sb.game.world.term_start = monday();
+    sb.game.player.place.clone_from(&clue.place);
+    let kind = &clue.kinds[0];
+    sb.game.player.slot = u8::try_from(slot_of(&sb.game, kind)).unwrap();
+    sb
+}
+
+#[test]
+fn every_new_clue_waits_for_its_friend_its_day_and_the_clue_before_it() {
+    let c = content();
+    let new: Vec<_> = c
+        .mystery
+        .clues
+        .iter()
+        .filter(|x| !x.id.starts_with('c'))
+        .collect();
+    assert_eq!(new.len(), 28);
+    for clue in new {
+        // With everything it asks for, a search here turns up this clue and no other.
+        let sb = ready_for(clue, None);
+        assert_eq!(
+            sb.game.next_clue().map(|x| x.id.as_str()),
+            Some(clue.id.as_str()),
+            "{} cannot be found by a pupil who has what it wants",
+            clue.id
+        );
+        // Without any one of its needs, it cannot.
+        for i in 0..clue.needs.len() {
+            let sb = ready_for(clue, Some(i));
+            if sb.game.all_hold(&clue.needs) {
+                continue; // the other needs happened to give this one too
+            }
+            assert!(
+                sb.game.next_clue().is_none(),
+                "{} is found without `{}`",
+                clue.id,
+                clue.needs[i].describe()
+            );
+        }
+        // Without the clue before it, it cannot.
+        for before in &clue.after {
+            let mut sb = ready_for(clue, None);
+            sb.game
+                .player
+                .knowledge
+                .retain(|k| *k != format!("clue_{before}"));
+            assert_ne!(
+                sb.game.next_clue().map(|x| x.id.as_str()),
+                Some(clue.id.as_str()),
+                "{} is found before `{before}`",
+                clue.id
+            );
+        }
+        // And on a day before it, it cannot.
+        let mut early = ready_for(clue, None);
+        early.game.world.term_start = early.game.player.day - 2;
+        assert_ne!(
+            early.game.next_clue().map(|x| x.id.as_str()),
+            Some(clue.id.as_str()),
+            "{} is found on a day before the term has got there",
+            clue.id
+        );
+    }
+}
+
+#[tokio::test]
+async fn a_side_clue_in_each_act_replays_through_the_real_keys_and_the_store_leaves_the_same_pupil()
+{
+    for id in [
+        "a1_posy_map",
+        "a2_ping_tapping",
+        "a3_stacks_register",
+        "a4_wren_plates",
+    ] {
+        let c = content();
+        let clue = c.clue(id).unwrap();
+        let sb = ready_for(clue, None);
+        let (probe, _) = Game::open(
+            &c,
+            &sb.game.player.name,
+            Some(sb.game.player.clone()),
+            Some(&world_at(36).to_bytes()),
+            sb.game.player.day,
+        );
+        assert!(
+            probe.can(&Action::Search),
+            "{id}: the search order is on offer"
+        );
+        let log = common::world_log(&sb.game.player, &world_at(36), "e", 21);
+        let run = replay_twice(&log);
+        let stored = run_branch(&sb.game.player, &world_at(36), "e", 21).await;
+        assert_eq!(
+            run.save.as_deref(),
+            Some(encode_player(&stored.player).as_slice()),
+            "{id}"
+        );
+        assert!(
+            stored.player.knows(&format!("clue_{id}")) || stored.player.file_points() > 0,
+            "{id}: found, or a risky search was caught (a real outcome)"
+        );
+    }
+}
+
+#[test]
+fn what_the_side_clues_teach_is_asked_for_by_the_conversations_the_locks_and_the_schemes() {
+    use russh_bbs_door_hallpass::cond::Cond;
+    use russh_bbs_door_hallpass::effect::Eff;
+    let c = content();
+    let mut tested: std::collections::HashSet<String> = std::collections::HashSet::new();
+    let mut note = |cs: &[Cond]| {
+        for cond in cs {
+            let inner = match cond {
+                Cond::Not(b) => b.as_ref(),
+                other => other,
+            };
+            if let Cond::Know(k) = inner {
+                tested.insert(k.clone());
+            }
+        }
+    };
+    for t in &c.talks {
+        note(&t.when);
+        for ch in t.node.iter().flat_map(|n| n.choice.iter()) {
+            note(&ch.needs);
+        }
+    }
+    for p in &c.places {
+        note(&p.unlock);
+    }
+    for m in &c.methods {
+        note(&m.requires);
+    }
+    for k in &c.mystery.clues {
+        note(&k.needs);
+    }
+    let flags: Vec<String> = c
+        .mystery
+        .clues
+        .iter()
+        .filter(|x| !x.id.starts_with('c'))
+        .flat_map(|x| x.effects.iter())
+        .filter_map(|e| match e {
+            Eff::Know(k) => Some(k.clone()),
+            _ => None,
+        })
+        .collect();
+    let asked = flags.iter().filter(|f| tested.contains(*f)).count();
+    assert!(
+        asked * 100 >= flags.len() * 35,
+        "{asked} of {} side-clue flags are asked for anywhere",
+        flags.len()
+    );
+    // And the ones that open conversations and endings are the ones that matter: the garden, the
+    // seventy-third hymn, the register, the paper's front page.
+    for flag in [
+        "ines_lilies",
+        "hymn_73",
+        "abney_remembers",
+        "abney_wrote_it",
+    ] {
+        assert!(tested.contains(flag), "{flag}");
+    }
+}
+
+#[test]
+fn saying_not_yet_in_a_storylines_scene_leaves_the_door_open_for_when_the_pupil_is_ready() {
+    let c = content();
+    for (talk, ..) in ENDINGS {
+        let spec = c.talk(talk).unwrap();
+        // The way out: the choice that does nothing and goes nowhere.
+        let exit = spec
+            .node
+            .iter()
+            .flat_map(|n| n.choice.iter().enumerate())
+            .find_map(|(i, ch)| (ch.effects.is_empty() && ch.next.is_empty()).then_some(i))
+            .unwrap_or_else(|| panic!("{talk} has a way out"));
+        let player = at_the_choice(talk, 30);
+        let name = player.name.clone();
+        let (mut g, _) = Game::open(
+            &c,
+            &name,
+            Some(player),
+            Some(&world_at(30).to_bytes()),
+            monday() + 30,
+        );
+        meet(&mut g, &spec.npc);
+        let mut rng = DoorRng::from_seed(3);
+        g.apply(&Action::Talk((*talk).into()), &mut rng).unwrap();
+        g.apply(&Action::Choose(u8::try_from(exit).unwrap()), &mut rng)
+            .unwrap();
+        assert!(
+            g.player.life.arc("the_wing").unwrap().ended.is_none(),
+            "{talk}: the story goes on"
+        );
+        // Another day: the scene is there again, and the first real choice ends the story.
+        g.sync_day(monday() + 31);
+        meet(&mut g, &spec.npc);
+        assert!(
+            g.talks_here().iter().any(|t| t.id == *talk),
+            "{talk}: still on offer after saying not yet"
+        );
+    }
 }

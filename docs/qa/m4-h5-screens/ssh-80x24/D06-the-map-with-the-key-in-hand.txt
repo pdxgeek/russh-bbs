@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Hallpass                                                                      │
+│                                                                              │
+│ ♜ GREYWATER ACADEMY  · founder                        term 1 · Thu day 21/42 │
+│  Lang    Hist     Lunch    Sci      Art     Free   ▐After▌    Eve     Night  │
+│━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄│
+│╭ Greywater Academy ─────────────────────────────────────────────────────────╮│
+││⊘ Head's    ● Library†  ● Hall      ● Gym†      ● Loft                      ││
+││           ╲ │         ╱ │         ╲           ╱                            ││
+││⊘ Deputy────● Admin†    ⊘ Greenroom ● Chapel†───● Grounds†──● Car park      ││
+││           ╱ │                     ╱           ╱ │                          ││
+││⊘ Quarters  ⊘ Staffroom ● Tunnels───● Boathouse ◉ Shed                      ││
+││                       ╲ │                     ╱                            ││
+││            ⊘ Candles───● Cellars───● Old Wing──∙ East Wing                 ││
+││                                   ╱ │         ╲                            ││
+││                        ⊘ Paper     ● Detention ● Workshop                  ││
+│╰ ◉you ●reach ○open ∙shut ⊘locked †staff ────────────────────────────────────╯│
+│╭────────────────────────────────────────────────────────────────────────────╮│
+││◉ Caretaker's shed  you are here                                            ││
+││doors The grounds, The Old Wing                                             ││
+││here  Kessler, Abara                                                        ││
+│╰────────────────────────────────────────────────────────────────────────────╯│
+│ » Caretaker's shed                             arrows choose  Enter go  Esc  │
+└──────────────────────────────────────────────────────────────────────────────┘

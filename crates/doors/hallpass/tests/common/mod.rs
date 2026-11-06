@@ -355,9 +355,163 @@ pub fn satisfy(game: &mut Game, cond: &Cond) {
 }
 
 /// Stand the character where `npc` is in the first period of their day.
+/// Put the character at a term event: the day of the term is `day` (inside the event's days), the
+/// period is one the event runs in, and they stand where it is held.
+pub fn at_event(game: &mut Game, event: &str, day: i64) {
+    let spec = game
+        .content
+        .calendar
+        .iter()
+        .find(|e| e.id == event)
+        .unwrap()
+        .clone();
+    assert!(
+        (spec.from..=spec.to).contains(&day),
+        "{event} is not on day {day}"
+    );
+    game.world.term_start = game.player.day - day;
+    let slot = (0..game.periods())
+        .find(|s| {
+            spec.kinds
+                .iter()
+                .any(|k| k == game.kind(game.player.day, *s))
+                && game.place_open(&spec.place, game.player.day, *s)
+        })
+        .expect("the event has a period");
+    game.player.slot = u8::try_from(slot).unwrap();
+    game.player.place = spec.place;
+}
+
 pub fn meet(game: &mut Game, npc: &str) {
     let day = game.player.day;
     let spec = game.content.npc(npc).unwrap().clone();
     game.player.slot = 0;
     game.player.place = game.npc_place(&spec, day, 0).to_owned();
+}
+
+// ---------------------------------------------------------------- recorded branches
+
+use russh_bbs_core::doors::{DoorStore, Revision, SaveWrite, WorldWrite};
+use russh_bbs_core::limits::{Clock, Day, ManualClock};
+use russh_bbs_core::store::AccountId;
+use russh_bbs_door::host::Running;
+use russh_bbs_door::sim::MemoryDoorStore;
+use russh_bbs_door::{Door, DoorEnv, DoorKey};
+use russh_bbs_door_hallpass::save::{decode_player, decode_world, encode_player};
+use russh_bbs_door_hallpass::state::Player;
+use russh_bbs_door_hallpass::{Hallpass, SAVE_VERSION, WORLD_VERSION};
+
+/// A character and a school after a recorded session.
+pub struct Branch {
+    pub player: Player,
+    pub world: World,
+}
+
+/// Keys, one per character.
+pub fn keys(text: &str) -> Vec<DoorKey> {
+    text.chars().map(DoorKey::Char).collect()
+}
+
+/// One recorded branch: a store seeded with a school and a save, a `Running` session that presses
+/// `text` through the framework's real keys, and the save and school it leaves behind.
+pub async fn run_branch(player: &Player, world: &World, text: &str, seed: u64) -> Branch {
+    let store = MemoryDoorStore::new();
+    let door: Arc<dyn Door> = Hallpass::shared().unwrap();
+    let day = player.day;
+    store.set_now(Day::from_raw(day).start());
+    store
+        .write_save(
+            &door.info().id,
+            AccountId::from_raw(1),
+            &SaveWrite {
+                expected: Revision::NONE,
+                season: 1,
+                version: SAVE_VERSION,
+                bytes: &encode_player(player),
+            },
+        )
+        .await
+        .unwrap();
+    store
+        .write_world(
+            &door.info().id,
+            &WorldWrite {
+                expected: Revision::NONE,
+                version: WORLD_VERSION,
+                bytes: &world.to_bytes(),
+                tick: None,
+            },
+        )
+        .await
+        .unwrap();
+    let clock = Arc::new(ManualClock::new(Day::from_raw(day).start()));
+    let c: Arc<dyn Clock> = clock;
+    let env = DoorEnv::for_tests(&player.name);
+    let mut run = Running::open(&store, door.clone(), AccountId::from_raw(1), &env, c, seed)
+        .await
+        .unwrap();
+    for k in keys(text) {
+        run.key(k);
+        run.flush(&store).await.unwrap();
+    }
+    let saved = store
+        .load_save(&door.info().id, AccountId::from_raw(1))
+        .await
+        .unwrap()
+        .unwrap();
+    let w = store.load_world(&door.info().id).await.unwrap().unwrap();
+    Branch {
+        player: decode_player(&saved.bytes).unwrap(),
+        world: decode_world(&w.bytes).unwrap(),
+    }
+}
+
+/// A school `term_day` days into a term that began on `monday()`.
+pub fn world_at(term_day: i64) -> World {
+    let mut w = World::new(monday() + term_day);
+    w.term_start = monday();
+    w.last_day = monday() + term_day - 1;
+    w
+}
+
+// ---------------------------------------------------------------- world-aware replay (FW-1)
+
+use russh_bbs_door::replay::{self, ReplayLog, ReplayRun, WorldLog};
+
+/// A log of one visit: the pupil's save, the school as the visit starts, the keys. It carries
+/// the world it read, so a visit that reads the school (a scheme posted at the pupil, the day of
+/// the term) replays to the same bytes.
+pub fn world_log(player: &Player, world: &World, text: &str, seed: u64) -> WorldLog {
+    WorldLog {
+        log: ReplayLog {
+            door: russh_bbs_door_hallpass::DOOR_ID.to_owned(),
+            seed,
+            start: Day::from_raw(player.day).start().as_raw(),
+            season: 1,
+            save: Some(encode_player(player)),
+            keys: keys(text),
+        },
+        world: Some(world.to_bytes()),
+        reads: Vec::new(),
+    }
+}
+
+/// Replay the visit twice: the runs must be identical, and the log must survive its text form.
+pub fn replay_twice(log: &WorldLog) -> ReplayRun {
+    let door = Hallpass::new().unwrap();
+    let env = DoorEnv::for_tests(
+        &decode_player(log.log.save.as_deref().unwrap())
+            .unwrap()
+            .name,
+    );
+    let text = log.to_string();
+    assert_eq!(
+        &text.parse::<WorldLog>().unwrap(),
+        log,
+        "the log round-trips"
+    );
+    let one = replay::run_world(&door, log, &env);
+    let two = replay::run_world(&door, log, &env);
+    assert_eq!(one, two, "the same log gives the same run");
+    one
 }

@@ -498,6 +498,20 @@ impl Game {
             self.term_day() + 1,
             rules.term_days
         )));
+        let on: Vec<String> = self
+            .events_today()
+            .iter()
+            .map(|e| {
+                let place = self
+                    .content
+                    .place(&e.place)
+                    .map_or(e.place.as_str(), |p| p.name.as_str());
+                format!("{} ({place}): {}", e.name, e.blurb)
+            })
+            .collect();
+        for line in on {
+            events.push(Event::Say(format!("On the calendar: {line}")));
+        }
         events
     }
 

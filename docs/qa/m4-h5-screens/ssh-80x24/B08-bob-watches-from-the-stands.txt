@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Hallpass                                                                      │
+│                                                                              │
+│ ♜ GREYWATER ACADEMY  · bob                            term 1 · Mon day 18/42 │
+│ Maths    Lang     Lunch    Sci     Hist     Free    After    ▐Eve▌    Night  │
+│━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄│
+│╭ The grounds ──────────────────────────╮╭ You ──────────────────────────────╮│
+││Grounds wing                           ││heat   ░░░░░░░░░░░░░░░░░░░░░░░░░░ 0││
+││Lawn sloping to a fog-bound lake.      ││file   ░░░░░░░░░░░░░░░░░░░░░░░ 0/12││
+││Gravel paths, one gate.                ││nerve  ●●●●●● 6/6                  ││
+││Here: Fenn                             ││legend 0   ◈ cash 30               ││
+││Now: evening                           ││                                   ││
+││Next: Night                            ││                                   ││
+││The boathouse: Hollis, Ferrier         ││                                   ││
+││Chapel: Soames                         ││                                   ││
+││Gymnasium: Gale, Crouch                ││                                   ││
+││The Quad: Wick, Varga                  ││                                   ││
+││                                       ││                                   ││
+│╰───────────────────────────────────────╯╰───────────────────────────────────╯│
+│ g Go   l Loiter   t Talk   r Rest   p Schemes   c Clubs   f File             │
+│ j Journal   n Paper   o Social   q Leave                                     │
+│ 'Somebody has to,' says Mr. Gale. 'Mind the mud on the third step.'          │
+│ » Go somewhere                                          up/down  Enter  Esc  │
+└──────────────────────────────────────────────────────────────────────────────┘

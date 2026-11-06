@@ -54,16 +54,16 @@
 │Here: Tobias Bramley, Sol Marchetti           ││legend 23   ◈ cash 18                ││ ▶ Third period  Art  Art room             │
 │Now: Art class                                ││ DETENTION  1 owed                   ││   Fourth period Sci  Science lab          │
 │Next: Sci in the Science lab                  ││schemes                              ││   Free period   Games  Gymnasium          │
-│Classroom cor~: Wick, Hollis                  ││ #1 Swap the sugar for salt    READY ││   After school  After                     │
-│The grounds: Fenn                             ││                                     ││   Evening       Eve                       │
-│Gymnasium: Gale, Crouch                       ││                                     ││   Lights-out    Night                     │
+│Classroom cor~: Wick, Hollis, Deveraux, Finch,││ #1 Swap the sugar for salt    READY ││   After school  After                     │
+│The grounds: Fenn, Rook, Abara, Dacre         ││                                     ││   Evening       Eve                       │
+│Gymnasium: Gale, Crouch, Carrow, Oyelaran     ││                                     ││   Lights-out    Night                     │
 │                                              ││                                     ││                                           │
 ╰──────────────────────────────────────────────╯│                                     ││                                           │
 ╭ Nearby ──────────────────────────────────────╮│                                     ││                                           │
-│Classroom corridor: Wick, Hollis              ││                                     ││                                           │
-│The grounds: Fenn                             ││                                     ││                                           │
-│Gymnasium: Gale, Crouch                       ││                                     ││                                           │
-│Library: Lund                                 ││                                     ││                                           │
+│Classroom corridor: Wick, Hollis, Deveraux, Fi││                                     ││                                           │
+│The grounds: Fenn, Rook, Abara, Dacre         ││                                     ││                                           │
+│Gymnasium: Gale, Crouch, Carrow, Oyelaran     ││                                     ││                                           │
+│Library: Lund, Abney, Pym, Hartnell           ││                                     ││                                           │
 │                                              ││                                     ││                                           │
 │                                              ││                                     ││                                           │
 │                                              ││                                     ││                                           │
@@ -104,7 +104,7 @@
 │           ╲             ╲ ╱ │         ╲ ╱                                          │╰────────────────────────────────────────────╯
 │            ╲             ╱  │          ╱                                           │╭ Who is where ──────────────────────────────╮
 │             ╲           ╱ ╲ │         ╱ ╲                                          ││Ruddock  Art room                           │
-│⊘ Head's      ● Library     ∙ Hall        ● Gym†        ⊘ Loft                      ││Fenn  The grounds                           │
+│⊘ Head's      ● Library†    ∙ Hall        ● Gym†        ⊘ Loft                      ││Fenn  The grounds                           │
 │           ╲   │           ╱ │         ╲             ╲ ╱                            ││Wick  Classroom corridor                    │
 │            ╲  │          ╱  │          ╲             ╱                             ││Bramley  The Quad                           │
 │             ╲ │         ╱   │           ╲           ╱ ╲                            ││Gale  Gymnasium                             │
@@ -118,15 +118,15 @@
 │                           ╲ │                       ╱                              ││Mercer  Staff car park                      │
 │              ⊘ Candles─────⊘ Cellars─────∙ Old Wing────⊘ East Wing                 ││Venkat  Admin corridor                      │
 │                                         ╱ │         ╲                              ││Ashby  Staff car park                       │
-│                                        ╱  │          ╲                             ││Also: Admin to Classes, Quad to Grounds.    │
-│                                       ╱   │           ╲                            ││                                            │
-│                            ⊘ Paper       ∙ Detention   ∙ Workshop                  ││                                            │
-│                                                                                    ││                                            │
-│                                                                                    ││                                            │
-│                                                                                    ││                                            │
-│                                                                                    ││                                            │
-│                                                                                    ││                                            │
-│                                                                                    ││                                            │
+│                                        ╱  │          ╲                             ││Abney  Library                              │
+│                                       ╱   │           ╲                            ││Carrow  Gymnasium                           │
+│                            ⊘ Paper       ∙ Detention   ∙ Workshop                  ││Oyelaran  Gymnasium                         │
+│                                                                                    ││Ferrier  Staff car park                     │
+│                                                                                    ││Halloran  Admin corridor                    │
+│                                                                                    ││Brightwater  Admin corridor                 │
+│                                                                                    ││Deveraux  Classroom corridor                │
+│                                                                                    ││Osei  Admin corridor                        │
+│                                                                                    ││Also: Admin to Classes, Quad to Grounds.    │
 │                                                                                    ││                                            │
 ╰ ◉you ●reach ○open ∙shut ⊘locked †staff ────────────────────────────────────────────╯╰────────────────────────────────────────────╯
  » The Quad                                                                                           arrows choose  Enter go  Esc
@@ -148,7 +148,7 @@
 │           ╲             ╲ ╱ │         ╲ ╱                                          │╰────────────────────────────────────────────╯
 │            ╲             ╱  │          ╱                                           │╭ Who is where ──────────────────────────────╮
 │             ╲           ╱ ╲ │         ╱ ╲                                          ││Ruddock  Art room                           │
-│⊘ Head's      ● Library     ∙ Hall        ● Gym†        ⊘ Loft                      ││Fenn  The grounds                           │
+│⊘ Head's      ● Library†    ∙ Hall        ● Gym†        ⊘ Loft                      ││Fenn  The grounds                           │
 │           ╲   │           ╱ │         ╲             ╲ ╱                            ││Wick  Classroom corridor                    │
 │            ╲  │          ╱  │          ╲             ╱                             ││Bramley  The Quad                           │
 │             ╲ │         ╱   │           ╲           ╱ ╲                            ││Gale  Gymnasium                             │
@@ -162,15 +162,15 @@
 │                           ╲ │                       ╱                              ││Mercer  Staff car park                      │
 │              ⊘ Candles─────⊘ Cellars─────∙ Old Wing────⊘ East Wing                 ││Venkat  Admin corridor                      │
 │                                         ╱ │         ╲                              ││Ashby  Staff car park                       │
-│                                        ╱  │          ╲                             ││Also: Admin to Classes, Quad to Grounds.    │
-│                                       ╱   │           ╲                            ││                                            │
-│                            ⊘ Paper       ∙ Detention   ∙ Workshop                  ││                                            │
-│                                                                                    ││                                            │
-│                                                                                    ││                                            │
-│                                                                                    ││                                            │
-│                                                                                    ││                                            │
-│                                                                                    ││                                            │
-│                                                                                    ││                                            │
+│                                        ╱  │          ╲                             ││Abney  Library                              │
+│                                       ╱   │           ╲                            ││Carrow  Gymnasium                           │
+│                            ⊘ Paper       ∙ Detention   ∙ Workshop                  ││Oyelaran  Gymnasium                         │
+│                                                                                    ││Ferrier  Staff car park                     │
+│                                                                                    ││Halloran  Admin corridor                    │
+│                                                                                    ││Brightwater  Admin corridor                 │
+│                                                                                    ││Deveraux  Classroom corridor                │
+│                                                                                    ││Osei  Admin corridor                        │
+│                                                                                    ││Also: Admin to Classes, Quad to Grounds.    │
 │                                                                                    ││                                            │
 ╰ ◉you ●reach ○open ∙shut ⊘locked †staff ────────────────────────────────────────────╯╰────────────────────────────────────────────╯
  » Fenwick dormitory                                                                                  arrows choose  Enter go  Esc
@@ -232,7 +232,7 @@
 │ 6 Mr. Alder (staff)                                         ││wary of you ○○○                                                    │
 │ 7 Reverend Soames (staff)                                   ││                                                                   │
 │ 8 Mrs. Tarn (staff)                                         ││                                                                   │
-│ 9 Cordelia Wick (prefect)                                   ││                                                                   │
+│ 9 Miss Abney (staff)                                        ││                                                                   │
 │ . More                                                      ││                                                                   │
 │ b Back                                                      ││                                                                   │
 │                                                             ││                                                                   │
@@ -1153,10 +1153,10 @@
 │ 3 A spare timetable card - 2 cash                                      ││                                                        │
 │ 4 A rubber whoopee cushion - 3 cash                                    ││                                                        │
 │ 5 A bag of glass marbles - 2 cash                                      ││                                                        │
+│ 6 A paper sack of flour - 2 cash                                       ││                                                        │
+│ 7 A bag of tin kazoos - 2 cash                                         ││                                                        │
+│ 8 A tin of drinking chocolate - 2 cash                                 ││                                                        │
 │ b Back                                                                 ││                                                        │
-│                                                                        ││                                                        │
-│                                                                        ││                                                        │
-│                                                                        ││                                                        │
 │                                                                        ││                                                        │
 │                                                                        ││                                                        │
 │                                                                        ││                                                        │
@@ -1325,8 +1325,8 @@
 ██████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 ╭ Who do you want a word with? ───────────────────────────────╮╭ The person ───────────────────────────────────────────────────────╮
 │ 1 Mr. Marsh has noticed you                                 ││Who do you want a word with?                                       │
-│ b Back                                                      ││                                                                   │
-│                                                             ││Mr. Quillon Marsh                                                  │
+│ 2 Mr. Marsh and the theory                                  ││                                                                   │
+│ b Back                                                      ││Mr. Quillon Marsh                                                  │
 │                                                             ││Deputy head                                                        │
 │                                                             ││Patrols the quad with a clipboard and a theory about you.          │
 │                                                             ││bond   ────────────────────◆─╵─┼─╵─────────────────────── -18 rival│

@@ -41,12 +41,12 @@
 │Here: Tobias Bramley, Sol Marchett││legend 23   ◈ cash 18       ││ ▶ Third period  Art  Art room  │
 │Now: Art class                    ││ DETENTION  1 owed          ││   Fourth period Sci  Science l~│
 │Next: Sci in the Science lab      ││                            ││   Free period   Games  Gymnasi~│
-│Classroom cor~: Wick, Hollis      │╰────────────────────────────╯│   After school  After          │
-│The grounds: Fenn                 │╭ Nearby ────────────────────╮│   Evening       Eve            │
-│Gymnasium: Gale, Crouch           ││Classroom corridor: Wick, Ho││   Lights-out    Night          │
-│Library: Lund                     ││The grounds: Fenn           ││                                │
-│                                  ││Gymnasium: Gale, Crouch     ││                                │
-│                                  ││Library: Lund               ││                                │
+│Classroom cor~: Wick, Hollis, Deve│╰────────────────────────────╯│   After school  After          │
+│The grounds: Fenn, Rook, Abara, Da│╭ Nearby ────────────────────╮│   Evening       Eve            │
+│Gymnasium: Gale, Crouch, Carrow, O││Classroom corridor: Wick, Ho││   Lights-out    Night          │
+│Library: Lund, Abney, Pym, Hartnel││The grounds: Fenn, Rook, Aba││                                │
+│                                  ││Gymnasium: Gale, Crouch, Car││                                │
+│                                  ││Library: Lund, Abney, Pym, H││                                │
 │                                  ││                            ││                                │
 │                                  ││                            ││                                │
 │                                  ││                            ││                                │
@@ -75,7 +75,7 @@
 │● Stacks    ∙ Common rm ◉ The Quad† ∙ Tuck shop ● Maths                 ││Fenwick dormitory, The  │
 │          ╲           ╲╱ │        ╲╱                                    ││grounds, Gymnasium,     │
 │           ╲          ╱╲ │        ╱╲                                    ││Library, Great Hall, The│
-│⊘ Head's    ● Library   ∙ Hall      ● Gym†      ⊘ Loft                  │╰────────────────────────╯
+│⊘ Head's    ● Library†  ∙ Hall      ● Gym†      ⊘ Loft                  │╰────────────────────────╯
 │          ╲  │         ╱ │        ╲           ╲╱                        │╭ Who is where ──────────╮
 │           ╲ │        ╱  │         ╲          ╱╲                        ││Ruddock  Art room       │
 │● Deputy────● Admin     ⊘ Greenroom ∙ Chapel────● Grounds†──● Car park  ││Fenn  The grounds       │
@@ -106,7 +106,7 @@
 │● Stacks    ∙ Common rm─◉ The Quad† ∙ Tuck shop ● Maths                 ││Quad                    │
 │          ╲           ╲╱ │        ╲╱                                    ││here nobody you can see │
 │           ╲          ╱╲ │        ╱╲                                    ││                        │
-│⊘ Head's    ● Library   ∙ Hall      ● Gym†      ⊘ Loft                  │╰────────────────────────╯
+│⊘ Head's    ● Library†  ∙ Hall      ● Gym†      ⊘ Loft                  │╰────────────────────────╯
 │          ╲  │         ╱ │        ╲           ╲╱                        │╭ Who is where ──────────╮
 │           ╲ │        ╱  │         ╲          ╱╲                        ││Ruddock  Art room       │
 │● Deputy────● Admin     ⊘ Greenroom ∙ Chapel────● Grounds†──● Car park  ││Fenn  The grounds       │
@@ -167,7 +167,7 @@
 │ 6 Mr. Alder (staff)                          ││Keeps every file in a cabinet she alone has the   │
 │ 7 Reverend Soames (staff)                    ││key to.                                           │
 │ 8 Mrs. Tarn (staff)                          ││wary of you ○○○                                   │
-│ 9 Cordelia Wick (prefect)                    ││                                                  │
+│ 9 Miss Abney (staff)                         ││                                                  │
 │ . More                                       ││                                                  │
 │ b Back                                       ││                                                  │
 │                                              ││                                                  │
@@ -815,10 +815,10 @@
 │ 3 A spare timetable card - 2 cash                    ││                                          │
 │ 4 A rubber whoopee cushion - 3 cash                  ││                                          │
 │ 5 A bag of glass marbles - 2 cash                    ││                                          │
+│ 6 A paper sack of flour - 2 cash                     ││                                          │
+│ 7 A bag of tin kazoos - 2 cash                       ││                                          │
+│ 8 A tin of drinking chocolate - 2 cash               ││                                          │
 │ b Back                                               ││                                          │
-│                                                      ││                                          │
-│                                                      ││                                          │
-│                                                      ││                                          │
 │                                                      ││                                          │
 │                                                      ││                                          │
 │                                                      ││                                          │
@@ -935,8 +935,8 @@
 ███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 ╭ Who do you want a word with? ────────────────╮╭ The person ──────────────────────────────────────╮
 │ 1 Mr. Marsh has noticed you                  ││Who do you want a word with?                      │
-│ b Back                                       ││                                                  │
-│                                              ││Mr. Quillon Marsh                                 │
+│ 2 Mr. Marsh and the theory                   ││                                                  │
+│ b Back                                       ││Mr. Quillon Marsh                                 │
 │                                              ││Deputy head                                       │
 │                                              ││Patrols the quad with a clipboard and a theory    │
 │                                              ││about you.                                        │

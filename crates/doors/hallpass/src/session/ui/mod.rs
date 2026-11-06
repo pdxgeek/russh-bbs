@@ -384,6 +384,9 @@ pub(super) struct Ui<'a> {
     pub body: Vec<String>,
     /// The menu: what the keys press.
     pub items: Vec<Item>,
+    /// The board's clock has moved to a later day than the one on screen (a visit left open
+    /// across midnight): the next key starts the new morning.
+    pub bell: bool,
 }
 
 impl Ui<'_> {
@@ -656,14 +659,19 @@ impl Widget for Cells {
     }
 }
 
+/// Said when the board's day has moved on from the one on screen.
+const BELL: &str = "The morning bell has rung: press any key for the new day.";
+
 /// Draw the whole screen.
 pub(super) fn draw(s: &Session, canvas: &mut Canvas<'_>, env: &DoorEnv) {
+    // The day on the board's clock when drawing (`Canvas::today`), not the day the visit opened.
+    let bell = s.game.playing() && canvas.today().as_raw() > s.game.player.day;
     let mut f = canvas.frame();
     let area = f.area();
     let look = Look::new(env, area);
     let pal = Pal::new(&f, look.color);
     if area.width < MIN_COLS || area.height < MIN_ROWS {
-        small(s, &mut f, area, &pal);
+        small(s, &mut f, area, &pal, bell);
         return;
     }
     let (body, items) = s.view();
@@ -675,17 +683,23 @@ pub(super) fn draw(s: &Session, canvas: &mut Canvas<'_>, env: &DoorEnv) {
         screen: Screen::of(s),
         body,
         items,
+        bell,
     };
     screen(&ui, &mut f, area);
 }
 
 /// The plain text screen, for a window too small for the real ones.
-fn small(s: &Session, f: &mut DoorFrame<'_>, area: Rect, pal: &Pal) {
-    let lines: Vec<Line<'_>> = s
+fn small(s: &Session, f: &mut DoorFrame<'_>, area: Rect, pal: &Pal, bell: bool) {
+    let mut lines: Vec<Line<'_>> = s
         .lines(usize::from(area.height), false)
         .into_iter()
         .map(|(text, style)| Line::styled(text, pal.role(style)))
         .collect();
+    if bell {
+        // The bell takes the last row.
+        lines.truncate(usize::from(area.height).saturating_sub(1));
+        lines.push(Line::styled(BELL, pal.lamp()));
+    }
     f.render_widget(Paragraph::new(lines), area);
 }
 
@@ -724,7 +738,7 @@ fn screen(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
     let notes = if own_log {
         0
     } else {
-        ui.s.messages.len().min(notes_cap)
+        (ui.s.messages.len() + usize::from(ui.bell)).min(notes_cap)
     };
     let notes_h = u16::try_from(notes).unwrap_or(0);
     let [head, strip, body, foot] = Layout::vertical([
@@ -806,8 +820,12 @@ fn masthead(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
 fn footer(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect, notes: usize) {
     let p = &ui.pal;
     let mut lines: Vec<Line<'_>> = Vec::new();
-    let skip = ui.s.messages.len().saturating_sub(notes);
-    for text in ui.s.messages.iter().skip(skip) {
+    let mut texts: Vec<&str> = ui.s.messages.iter().map(String::as_str).collect();
+    if ui.bell {
+        texts.push(BELL);
+    }
+    let skip = texts.len().saturating_sub(notes);
+    for text in texts.iter().skip(skip) {
         lines.push(Line::styled(
             fit(&format!(" {text}"), usize::from(area.width)),
             p.lamp(),
