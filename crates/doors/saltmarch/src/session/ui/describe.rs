@@ -326,6 +326,15 @@ pub(in crate::session) fn describe(s: &Session) -> Vec<String> {
                 clan.crew.len(),
                 clan.hold.crew_cap(&s.cat)
             ));
+            let away: Vec<&str> = clan
+                .crew
+                .iter()
+                .filter(|c| clan.social.is_away(c.id))
+                .map(|c| c.name.as_str())
+                .collect();
+            if !away.is_empty() {
+                out.push(format!("Away on a raid: {}.", away.join(", ")));
+            }
             if let Some(c) = clan.crew.get(s.crew_sel) {
                 let traits: Vec<String> = c
                     .traits
@@ -676,9 +685,70 @@ pub(in crate::session) fn describe(s: &Session) -> Vec<String> {
             out.push("The league table: clans ranked by renown, which rewards a big hold, a skilled crew, expeditions, pacts kept and raids won (raids count for little on their own), less any pact broken.".to_owned());
             out.push(standing_line(s, clan));
             out.push(format!(
-                "Your renown: hold {}, crew {}, deeds {}, the Deep {}, pacts {}, raids {}, wealth {}, betrayals minus {}.",
-                rn.hold, rn.crew, rn.deeds, rn.deep, rn.pacts, rn.raids, rn.wealth, rn.penalty
+                "Your renown: hold {}, crew {}, deeds {}, the Deep {}, pacts {}, raids {}, wealth {}, contracts, chains and roads {}, betrayals minus {}.",
+                rn.hold, rn.crew, rn.deeds, rn.deep, rn.pacts, rn.raids, rn.wealth, rn.story, rn.penalty
             ));
+        }
+        Mode::Menu(MenuId::Board) => {
+            out.push("The faction boards: contracts from the Rakers' Guild, the Tidecourt and the Reed-folk. Your standing with each decides what is posted for you.".to_owned());
+            for f in crate::story::Faction::ALL {
+                out.push(format!(
+                    "{}: {} (standing {}).",
+                    f.name(),
+                    crate::story::TIERS[usize::from(clan.story.tier(f))],
+                    clan.story.rep[f.index()]
+                ));
+            }
+            match clan
+                .story
+                .contract
+                .as_ref()
+                .and_then(|a| s.cat.contracts.iter().find(|c| c.id == a.id))
+            {
+                Some(def) => out.push(format!("In hand: {}. {}", def.title, def.text)),
+                None => out.push("You hold no contract.".to_owned()),
+            }
+            for def in crate::board::offers(&s.cat, clan, s.world.seed, s.today) {
+                out.push(format!(
+                    "Offered: {} ({} {}, {} day(s), {} to {} tallies, standing +{}).",
+                    def.title,
+                    def.kind.word(),
+                    def.qty,
+                    def.days,
+                    def.pay_lo,
+                    def.pay_hi,
+                    def.rep
+                ));
+            }
+        }
+        Mode::Menu(MenuId::Journal) => {
+            out.push("The journal: the quest chains your clan has heard of.".to_owned());
+            let mut heard = 0;
+            for q in &s.cat.quests {
+                match q.progress(|m| clan.has_mark(m)) {
+                    crate::story::Progress::Unheard => {}
+                    crate::story::Progress::Under(n) => {
+                        heard += 1;
+                        out.push(format!(
+                            "{}: step {} of {}. {}",
+                            q.title,
+                            n,
+                            q.steps.len(),
+                            q.steps[n - 1].text
+                        ));
+                    }
+                    crate::story::Progress::Ended(i) => {
+                        heard += 1;
+                        out.push(format!("{}: ended. {}", q.title, q.ends[i].text));
+                    }
+                }
+            }
+            if heard == 0 {
+                out.push("No chain has begun yet.".to_owned());
+            }
+            if let Some(h) = clan.story.heirloom() {
+                out.push(format!("Heirloom: {} ({}).", h.name(), h.effect()));
+            }
         }
         Mode::Menu(MenuId::Hall) => {
             out.push(format!(

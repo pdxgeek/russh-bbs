@@ -25,6 +25,15 @@ use crate::engine::injure;
 use crate::event::Event;
 use crate::types::{RESOURCES, Resource};
 
+/// Morale a won raid brings the hold.
+pub const WIN_MORALE: u8 = 6;
+/// Morale a raid beaten off at the gate costs the raider.
+pub const LOSS_MORALE: u8 = 2;
+/// Bond points raiders who won earn together.
+pub const WIN_BOND: u8 = 3;
+/// Bond points raiders who were beaten off earn together.
+pub const LOSS_BOND: u8 = 1;
+
 /// Days a raiding party may be away without a report before it is sent home.
 pub const AWAY_DAYS: i64 = 5;
 
@@ -51,6 +60,12 @@ pub enum Kind {
     Raid,
     /// A blocked sender.
     Block,
+    /// A toll paid on someone's causeway.
+    Toll,
+    /// A causeway laid.
+    Lay,
+    /// A change to the marsh.
+    Change,
 }
 
 impl Kind {
@@ -70,6 +85,9 @@ impl Kind {
             7 => Self::Break,
             8 => Self::Raid,
             9 => Self::Block,
+            10 => Self::Toll,
+            11 => Self::Lay,
+            12 => Self::Change,
             _ => return None,
         })
     }
@@ -88,6 +106,9 @@ impl Kind {
             Self::Break => "break",
             Self::Raid => "raid",
             Self::Block => "block",
+            Self::Toll => "toll",
+            Self::Lay => "causeway",
+            Self::Change => "change to the marsh",
         }
     }
 }
@@ -507,6 +528,9 @@ fn parcel(clan: &mut Clan, p: &market::Parcel, events: &mut Vec<Event>) {
     if p.memo == market::Memo::Sold {
         clan.stats.earned = clan.stats.earned.saturating_add(p.tallies);
     }
+    if p.memo == market::Memo::Toll {
+        clan.story.toll_income = clan.story.toll_income.saturating_add(p.tallies);
+    }
     events.push(Event::Parcel {
         memo: p.memo,
         about: p.about,
@@ -584,7 +608,7 @@ fn raid(
                     clan.tallies = clan.tallies.saturating_add(r.tallies);
                     clan.social.raids_won = clan.social.raids_won.saturating_add(1);
                     clan.social.plundered = clan.social.plundered.saturating_add(value);
-                    clan.morale = clan.morale.saturating_add(3).min(100);
+                    clan.morale = clan.morale.saturating_add(WIN_MORALE).min(100);
                     events.push(Event::RaidWon {
                         against: r.defender.clone(),
                         loot: r.loot.clone(),
@@ -593,10 +617,31 @@ fn raid(
                 }
                 Outcome::Repelled => {
                     clan.social.raids_lost = clan.social.raids_lost.saturating_add(1);
-                    clan.morale = clan.morale.saturating_sub(3);
+                    clan.morale = clan.morale.saturating_sub(LOSS_MORALE);
                     events.push(Event::RaidFailed {
                         against: r.defender.clone(),
                     });
+                }
+            }
+            // Raiders who fought side by side and came back are closer for it.
+            let survivors: Vec<u16> = r
+                .fates
+                .iter()
+                .filter(|(_, f)| *f != Fate::Dead)
+                .map(|(id, _)| *id)
+                .collect();
+            let points = match r.outcome {
+                Outcome::Won => WIN_BOND,
+                Outcome::Repelled => LOSS_BOND,
+                Outcome::Recalled => 0,
+            };
+            if points > 0 {
+                for (i, &a) in survivors.iter().enumerate() {
+                    for &b in &survivors[i + 1..] {
+                        if clan.share_hardship(a, b, points).is_some() {
+                            clan.stats.bonds += 1;
+                        }
+                    }
                 }
             }
             for &(id, fate) in &r.fates {
@@ -752,7 +797,7 @@ impl Posted {
             stock,
             tallies: u16::try_from(clan.tallies / 10 * 10).unwrap_or(u16::MAX),
             buildings: u8::try_from(clan.hold.built(cat).count()).unwrap_or(u8::MAX),
-            causeways: 0,
+            causeways: clan.story.laid,
             crew: u8::try_from(clan.crew.len()).unwrap_or(u8::MAX),
         }
     }

@@ -332,7 +332,7 @@ pub fn check(w: &World, from: ClanIx, to: ClanIx, day: i64) -> Result<(), Refusa
     if b.record.shield_until > day {
         return Err(Refusal::Shielded);
     }
-    if day - b.posted.founded < caps::NEW_CLAN_DAYS && !b.record.raided_first {
+    if day - b.posted.founded < super::legacy::new_clan_days(w.legacy) && !b.record.raided_first {
         return Err(Refusal::NewClan);
     }
     if day - b.posted.seen >= caps::DORMANT_SAFE_DAYS {
@@ -517,6 +517,11 @@ fn fight(
     }
 }
 
+/// Percent chance a raider who fell in a lost raid does not get up again.
+pub const LOST_DEATH_PCT: u32 = 12;
+/// Percent chance a raider who fell in a won or drawn raid does not get up again.
+pub const WON_DEATH_PCT: u32 = 3;
+
 /// What a won raid takes from the posted stock.
 fn loot(w: &World, o: &Order, survivors: usize, half: bool) -> (Vec<(Resource, u32)>, u32) {
     let Some(b) = w.clans.get(usize::from(o.to)) else {
@@ -557,7 +562,11 @@ fn fates(raiders: &[(u16, i16, i16)], verdict: Verdict, rng: &mut DoorRng) -> Ve
         .iter()
         .map(|&(id, hp, max)| {
             let fate = if hp <= 0 {
-                let death = if verdict == Verdict::Lost { 35 } else { 8 };
+                let death = if verdict == Verdict::Lost {
+                    LOST_DEATH_PCT
+                } else {
+                    WON_DEATH_PCT
+                };
                 if rng.chance(death, 100) {
                     Fate::Dead
                 } else {

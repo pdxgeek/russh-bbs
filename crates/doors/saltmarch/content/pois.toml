@@ -142,3 +142,236 @@ tiles = ["deep"]
 band = "deep"
 count = 3
 paints = "wreck"
+
+[[poi]]
+id = "pan-house"
+name = "Raker pan-house"
+blurb = "Brine pans and a hut with a ledger nailed to the door. Rakers sleep here in season."
+kind = "camp"
+tiles = ["salt-pan", "island"]
+band = "near"
+count = 2
+
+[[poi]]
+id = "bell-fold"
+name = "Bell-ringers' fold"
+blurb = "Reed-folk who ring the tide on a cracked bell and share their fire with quiet guests."
+kind = "camp"
+tiles = ["reedbed", "island"]
+band = "mid"
+count = 2
+
+[[poi]]
+id = "castaway-fire"
+name = "Castaways' fire"
+blurb = "A fire kept alive in the Deep by people who will not say how long they have been here."
+kind = "camp"
+tiles = ["deep"]
+band = "deep"
+count = 1
+
+[[poi]]
+id = "eel-wife-stone"
+name = "Eel-wives' stone"
+blurb = "A flat stone slick with offerings. The eel-wives ask that you not touch the fish."
+kind = "shrine"
+tiles = ["channel", "mere"]
+band = "mid"
+count = 2
+
+[[poi]]
+id = "heron-stones"
+name = "Heron stones"
+blurb = "Seven stones in a ring, each with a heron's footprint worn into the top."
+kind = "shrine"
+tiles = ["mudflat", "salt-pan"]
+band = "far"
+count = 2
+
+[[poi]]
+id = "glass-altar"
+name = "Glass altar"
+blurb = "A slab of silt-glass in the Deep that hums when the tide turns."
+kind = "shrine"
+tiles = ["deep"]
+band = "deep"
+count = 1
+
+[[poi]]
+id = "sunk-quay"
+name = "Sunk quay"
+blurb = "Bollards and a crane arm, all of it under the tide but the top."
+kind = "salvage"
+tiles = ["channel", "mudflat"]
+band = "far"
+count = 2
+paints = "drowned-town"
+
+[[poi]]
+id = "stranded-lighter"
+name = "Stranded lighter"
+blurb = "A cargo lighter run aground at the last spring tide, hold half full of silt."
+kind = "salvage"
+tiles = ["mudflat", "channel", "salt-pan"]
+band = "far"
+count = 2
+paints = "wreck"
+
+[[poi]]
+id = "flooded-cellars"
+name = "Flooded cellars"
+blurb = "Brick steps go down into dark water. Shelves still stand along the walls."
+kind = "salvage"
+tiles = ["mudflat", "channel"]
+band = "near"
+count = 2
+paints = "drowned-town"
+
+[[poi]]
+id = "peat-store"
+name = "Peat-cutters' store"
+blurb = "A shed the drovers abandoned in a hurry. The lock is rusted, not broken."
+kind = "salvage"
+tiles = ["peat-bog", "reedbed"]
+band = "mid"
+count = 2
+
+[[poi]]
+id = "mere-drake-lair"
+name = "Drake's mere"
+blurb = "The reeds here are flattened in long trails, and the water is too still."
+kind = "lair"
+tiles = ["mere", "channel"]
+band = "far"
+count = 2
+
+[[poi]]
+id = "leech-bog"
+name = "Leech bog"
+blurb = "A black pool with a skin on it. The drovers go around, and so should you."
+kind = "lair"
+tiles = ["peat-bog"]
+band = "mid"
+count = 2
+
+[[poi]]
+id = "wrecker-camp"
+name = "Wreckers' hulk"
+blurb = "A hulk with lamps in the rigging, set to draw ships onto the bank."
+kind = "lair"
+tiles = ["mudflat", "channel"]
+band = "mid"
+count = 2
+paints = "wreck"
+
+[[poi]]
+id = "sentinel-stair"
+name = "Sentinel stair"
+blurb = "A stair of glass steps that climbs out of the water to nothing at all."
+kind = "lair"
+tiles = ["deep"]
+band = "deep"
+count = 1
+
+[[poi]]
+id = "drowned-hall"
+name = "The Drowned Hall"
+blurb = "A roofless hall under green water. Something sits at the end of it."
+kind = "lair"
+tiles = ["deep"]
+band = "deep"
+count = 1
+
+[[poi]]
+id = "eel-wife"
+name = "Eel-wife's hut"
+blurb = "A hut on stilts, hung with smoked eels and charms of knotted reed."
+kind = "hermit"
+tiles = ["island", "mere"]
+band = "mid"
+count = 2
+
+[[poi]]
+id = "bell-hermit"
+name = "Bell-hermit's tower"
+blurb = "A drowned church tower with one man in it and a lot of ropes."
+kind = "hermit"
+tiles = ["island", "salt-pan"]
+band = "far"
+count = 2
+
+[[poi]]
+id = "lamplighter"
+name = "The lamplighter"
+blurb = "A lone keeper who tends a lamp in the Deep for ships that no longer come."
+kind = "hermit"
+tiles = ["deep"]
+band = "deep"
+count = 1
+
+[[poi]]
+id = "tally-stall"
+name = "Raker tally-stall"
+blurb = "A guild stall that buys salt and sells tools at fair, dull prices."
+kind = "trader"
+tiles = ["salt-pan", "island"]
+band = "near"
+count = 2
+
+[[poi]]
+id = "reed-barge"
+name = "Reed-barge market"
+blurb = "A raft of punts lashed together, selling rope, fish and rumour."
+kind = "trader"
+tiles = ["channel", "mudflat"]
+band = "mid"
+count = 2
+
+[[poi]]
+id = "peat-factor"
+name = "Peat-factor's stage"
+blurb = "A factor with scales and a ledger, buying from drovers who come too far out."
+kind = "trader"
+tiles = ["peat-bog", "island"]
+band = "far"
+count = 1
+
+[[poi]]
+id = "chapel-crypt"
+name = "Chapel crypt"
+blurb = "A chapel crypt with its door open to the tide. The vaults go down in tiers."
+kind = "ruin"
+tiles = ["island", "mudflat"]
+band = "mid"
+count = 2
+rooms = 3
+
+[[poi]]
+id = "drowned-school"
+name = "Drowned school"
+blurb = "A long low school with desks still in rows and a map on the wall."
+kind = "ruin"
+tiles = ["mudflat", "island"]
+band = "mid"
+count = 2
+rooms = 5
+
+[[poi]]
+id = "pump-hall"
+name = "Pump hall"
+blurb = "The engine hall of a drainage works. The pumps are rust, but the sluices still hold."
+kind = "ruin"
+tiles = ["salt-pan", "island", "mudflat"]
+band = "near"
+count = 2
+rooms = 4
+
+[[poi]]
+id = "customs-vault"
+name = "Customs vault"
+blurb = "A bonded vault, the last dry room of the old customs-house, with seals on every door."
+kind = "ruin"
+tiles = ["island", "mudflat", "salt-pan"]
+band = "far"
+count = 2
+rooms = 7

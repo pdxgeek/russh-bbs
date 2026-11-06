@@ -44,8 +44,14 @@ pub const MAX_BOATS: u8 = 2;
 /// Chance (percent) that entering a fresh tile raises a scene.
 pub const EVENT_PCT: u32 = 22;
 
+/// Rope a causeway tile takes.
+pub const LAY_ROPE: u8 = 3;
+
+/// Turns laying a causeway tile takes.
+pub const LAY_TURNS: u8 = 3;
+
 /// The most marks a clan remembers.
-pub const MARKS_CAP: usize = 48;
+pub const MARKS_CAP: usize = 160;
 
 /// The most tiles remembered as visited on one trip.
 const VISITED_CAP: usize = 120;
@@ -321,6 +327,8 @@ pub enum TripAction {
     Fight(FightAction),
     /// Fight it out on the standard policy.
     Quick,
+    /// Lay a causeway tile on the ground the party stands on.
+    Lay,
     /// Drop goods from the pack to travel lighter.
     Jettison {
         /// What.
@@ -771,6 +779,9 @@ impl View<'_> {
             Req::Carry(r, n) => self.trip.carried(*r) >= *n,
             Req::Size(n) => self.trip.party.len() >= usize::from(*n),
             Req::Boat => self.trip.kit.boats > 0,
+            Req::Tier(f, n) => self.clan.story.tier(*f) >= *n,
+            Req::Quests(n) => self.cat.quests_done(|m| self.clan.has_mark(m)) >= usize::from(*n),
+            Req::Contracts(n) => self.clan.story.done >= *n,
         };
         yes != cond.not
     }
@@ -1060,7 +1071,7 @@ fn run_effects(
             Effect::Recipe(id) => {
                 if !clan.recipes.contains(id)
                     && let Some(def) = cat.recipe(id)
-                    && def.learn == Learn::Ruin
+                    && matches!(def.learn, Learn::Ruin | Learn::Trade)
                 {
                     clan.recipes.push(id.clone());
                     events.push(Event::Learned {
@@ -1092,6 +1103,19 @@ fn run_effects(
                         finish_injury(cat, clan, id, &inj, rng, events);
                     }
                 }
+            }
+            Effect::Rep(faction, by) => {
+                let (before, after) = clan.story.add_rep(*faction, i16::from(*by));
+                events.push(Event::Standing {
+                    faction: *faction,
+                    by: *by,
+                    tier: after,
+                    changed: before != after,
+                });
+            }
+            Effect::World(flag) => {
+                clan.story.queue(crate::story::Out::Flag(*flag));
+                events.push(Event::MarshChanged { flag: *flag });
             }
             Effect::Fight(group) => {
                 if let Some(end) = begin_fight(env, clan, trip, group, rng, events) {
@@ -1235,6 +1259,13 @@ fn finish_fight(
     match verdict {
         Verdict::Won => {
             clan.stats.fights_won += 1;
+            let foe_ids: Vec<&str> = fight
+                .units
+                .iter()
+                .filter(|u| u.side == Side::Foe)
+                .map(|u| u.foe.as_str())
+                .collect();
+            crate::board::on_fight_won(cat, clan, &foe_ids, rng, events);
             let mut taken = 0u32;
             for u in fight
                 .units
@@ -1380,6 +1411,11 @@ fn conclude(
             }
             clan.tallies = clan.tallies.saturating_add(trip.tallies);
             clan.stats.loot_value = clan.stats.loot_value.saturating_add(value);
+            let cargo: Vec<(Resource, u32)> = Resource::ALL
+                .iter()
+                .map(|r| (*r, trip.loot.get(*r)))
+                .collect();
+            crate::board::on_return(cat, clan, &cargo, rng, events);
             let xp = 1 + (turns / 8).min(3);
             for &id in &trip.party {
                 if let Some(c) = clan.crew_mut(id) {
@@ -1604,6 +1640,45 @@ fn remember_ground(clan: &mut Clan, kind: TileKind) {
     }
 }
 
+/// A causeway someone else laid is crossed for a toll, once for each span entered.
+fn pay_toll(
+    env: &Env<'_>,
+    clan: &mut Clan,
+    trip: &Trip,
+    to: (u8, u8),
+    events: &mut Vec<Event>,
+) -> Result<(), ActionError> {
+    let Some(span) = env.map.laid_at(to.0, to.1) else {
+        return Ok(());
+    };
+    let on_the_same_span = env
+        .map
+        .laid_at(trip.at.0, trip.at.1)
+        .is_some_and(|p| p.owner == span.owner);
+    if span.mine || span.toll == 0 || on_the_same_span {
+        return Ok(());
+    }
+    let toll = u32::from(span.toll);
+    if clan.tallies < toll {
+        return Err(ActionError::Blocked(format!(
+            "{} asks {toll} tallies toll on the causeway, and the strongbox is short.",
+            span.owner
+        )));
+    }
+    clan.tallies -= toll;
+    clan.story.tolls_paid = clan.story.tolls_paid.saturating_add(toll);
+    let paid = u16::from(span.toll);
+    clan.story.queue(crate::story::Out::Toll {
+        owner: span.owner.clone(),
+        tallies: paid,
+    });
+    events.push(Event::TollPaid {
+        owner: span.owner.clone(),
+        tallies: paid,
+    });
+    Ok(())
+}
+
 fn enter(
     env: &Env<'_>,
     clan: &mut Clan,
@@ -1620,6 +1695,7 @@ fn enter(
     if cost > have {
         return Err(ActionError::NoTurns { need: cost, have });
     }
+    pay_toll(env, clan, trip, to, events)?;
     spend(env, clan, trip, cost);
     trip.at = to;
     let new = !trip.visited.contains(&to);
@@ -1654,6 +1730,7 @@ fn enter(
         events.push(Event::Arrived {
             place: name.to_owned(),
         });
+        crate::board::on_place(env.cat, clan, poi.kind, trip.party.len(), rng, events);
         if trip.target == Some(to) {
             trip.target = None;
         }
@@ -1695,6 +1772,56 @@ fn enter(
         return Ok(Stop::Halt);
     }
     Ok(Stop::Go)
+}
+
+/// Lay a causeway tile where the party stands: it never floods, it is the clan's own (no toll
+/// for it) and everyone else pays the toll it sets. Costs rope and turns, and needs a hand
+/// that can build on mud.
+fn lay(
+    env: &Env<'_>,
+    clan: &mut Clan,
+    trip: &mut Trip,
+    events: &mut Vec<Event>,
+) -> Result<(), ActionError> {
+    let (x, y) = trip.at;
+    let not_now = |s: &str| Err(ActionError::NotNow(s.to_owned()));
+    let Some(tile) = env.map.tile(usize::from(x), usize::from(y)) else {
+        return not_now("There is no ground here.");
+    };
+    if !crate::map::can_lay_on(tile.kind)
+        || env.map.poi_at(x, y).is_some()
+        || trip.at == home(env, clan)
+    {
+        return not_now("A causeway cannot be laid on this ground.");
+    }
+    if clan.story.laid >= crate::story::LAY_MAX {
+        return not_now("Your clan has laid all the causeway it may this season.");
+    }
+    let builders = trip
+        .party
+        .iter()
+        .filter_map(|id| clan.crew_by(*id))
+        .any(|c| c.fit(env.cat) && matches!(c.trade, Trade::Wader | Trade::Boatwright));
+    if !builders {
+        return not_now("Laying a causeway needs a wader or a boatwright.");
+    }
+    if trip.kit.rope < LAY_ROPE {
+        return Err(ActionError::Missing(format!("{LAY_ROPE} rope")));
+    }
+    let have = clan.turns_left(&env.settings);
+    if have < LAY_TURNS {
+        return Err(ActionError::NoTurns {
+            need: LAY_TURNS,
+            have,
+        });
+    }
+    trip.kit.rope -= LAY_ROPE;
+    spend(env, clan, trip, LAY_TURNS);
+    let toll = clan.story.toll;
+    clan.story.laid += 1;
+    clan.story.queue(crate::story::Out::Lay { x, y, toll });
+    events.push(Event::CausewayLaid { x, y, toll });
+    Ok(())
 }
 
 fn march(
@@ -1996,6 +2123,12 @@ fn choose(
         _ => &option.win,
     };
     events.push(Event::Told(outcome.text.clone()));
+    if let Some(ei) = env.cat.event_index(&event) {
+        clan.story.note_branch(
+            env.cat
+                .branch_bit(ei, index, failed && option.lose.is_some()),
+        );
+    }
     // A skill used well is a skill learned, win or lose.
     if let Some(skill) = option.skill
         && let Some(best) = trip
@@ -2086,6 +2219,11 @@ fn run(
         TripAction::Choose(n) => choose(env, clan, trip, n, rng, events),
         TripAction::Fight(a) => drive_fight(env, clan, trip, Some(a), rng, events),
         TripAction::Quick => drive_fight(env, clan, trip, None, rng, events),
+        TripAction::Lay => {
+            must_be_free(trip)?;
+            lay(env, clan, trip, events)?;
+            Ok(None)
+        }
         TripAction::Jettison { what, qty } => {
             must_be_free(trip)?;
             if qty == 0 || what == Resource::Boats {

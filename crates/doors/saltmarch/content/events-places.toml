@@ -1,0 +1,765 @@
+# Place scenes: the party stands at a point of interest. Joined onto events.toml at load.
+
+# ------------------------------------------------------------------ camps
+
+[[event]]
+id = "salters-night-fire"
+title = "The salters' night fire"
+text = "A pan-crew has drawn its rakes up in a ring and lit a driftwood fire that burns green with salt. They look you over, then shove along the bench. Their foreman has a ledger on her knee, even here."
+poi = ["camp"]
+weight = 8
+draws = ["trade:raker"]
+[[event.option]]
+label = "Share your salt and sit"
+needs = ["carry:salt:2"]
+[event.option.win]
+text = "You lay two measures on the ledger. She weighs them in her palm, nods, and writes your clan's name in a column headed 'Guests'. Guild custom is old, and long-memoried."
+fx = ["lose:salt:2", "rep:rakers:3", "morale:3", "mark:salters-guest"]
+[[event.option]]
+label = "Trade pan-lore with the raker"
+needs = ["trade:raker"]
+[event.option.win]
+text = "Two rakers cannot sit near each other without arguing about brine. By midnight you have a better way to rake the corners and they have a worse opinion of your grandmother."
+fx = ["xp:raker:3", "tallies:4-9", "bond:1"]
+[[event.option]]
+label = "Ask for a measure of the good salt"
+needs = ["tier:rakers:2"]
+[event.option.win]
+text = "A Known clan does not pay for the first measure. The foreman has it scooped from the white heap, not the grey, and says nothing about it."
+fx = ["gain:salt:6-10", "rep:rakers:1"]
+[[event.option]]
+label = "Keep to your own side of the fire"
+[event.option.win]
+text = "You eat your own food and sleep with a hand on your bag. Nobody is offended. Nobody is anything."
+
+[[event]]
+id = "peat-stack-camp"
+title = "The turf-cutters' stacks"
+text = "Rows of drying peat stand like a small city, each stack roofed with reed. A watchman's hut at the end has a pot on and nobody in it. The wind carries the smell of a hundred winters of other people's fires."
+poi = ["camp"]
+weight = 7
+[[event.option]]
+label = "Turn the stacks while you rest"
+[event.option.win]
+text = "Dry work, and you are paid in the usual coin of the marsh: a few dried blocks and the watchman's thanks when he returns."
+fx = ["gain:peat:4-7", "morale:1"]
+[[event.option]]
+label = "Plant the orchard graft in the lee of the stacks"
+needs = ["mark:has-the-graft"]
+[event.option.win]
+text = "You push the sunken tree's cutting into the warm peat and pack it with reed. By morning it has two leaves and a small, smug look. The watchman promises to water it."
+fx = ["gain:food:4-8", "morale:4", "bond:1"]
+[[event.option]]
+label = "Haul a stack home for the hold"
+needs = ["size:3"]
+risk = 25
+skill = "wader"
+[event.option.win]
+text = "Three of you, one stack, and a fast walk before anyone looks round. The hold will burn well this winter."
+fx = ["gain:peat:10-16", "tallies:3-6"]
+[event.option.lose]
+text = "The stack tips over the lead's boots, and the watchman arrives in time to see it."
+fx = ["hurt:lead:hurt", "rep:court:-3"]
+[[event.option]]
+label = "Tell the watchman you buried the man in the bog"
+needs = ["mark:reburied-the-bog-body"]
+[event.option.win]
+text = "He takes off his cap. His own grandfather cut peat over that bank and never liked it. He shows you the stack he keeps for family and will not hear of payment."
+fx = ["gain:peat:8-12", "gain:food:2-4", "morale:4"]
+
+[[event]]
+id = "trimmers-hut"
+title = "The lamp-trimmers' hut"
+text = "A Tidecourt lamp-trimmer lives in this stilt hut, and trims the harbour lamps by rowing out to them. His eyes are bad. He has been trimming by memory for a year and he would like you not to mention it."
+poi = ["camp"]
+weight = 7
+[[event.option]]
+label = "Look at his eyes"
+needs = ["trade:healer"]
+[event.option.win]
+text = "Cloudy, but not dead. The healer washes them with boiled salt and shows him how to rest them. He holds her wrist for a long moment and says the Tidecourt will hear of this."
+fx = ["xp:healer:3", "rep:court:3", "mark:trimmer-owes"]
+[[event.option]]
+label = "Buy lamp-oil and a wick"
+[event.option.win]
+text = "He sells you oil at a price that feels honest and a wick that feels like a favour."
+fx = ["pay:4", "gain:food:2-3", "morale:2"]
+[[event.option]]
+label = "Row out and trim the near lamp for him"
+needs = ["boat"]
+risk = 20
+skill = "boatwright"
+[event.option.win]
+text = "You hold the boat in the chop while the crew trims. The lamp burns clean. From the hut he lifts a hand, and from the Tidecourt, later, comes the thanks."
+fx = ["rep:court:3", "mark:trimmer-owes", "xp:boatwright:2"]
+[event.option.lose]
+text = "A wave, a slipped oar, and a lamp that is now out. He will have to row out himself, and he does not say a word about it."
+fx = ["rep:court:-2", "hurt:any:water"]
+[[event.option]]
+label = "Tell him you sat the old bench in the drowned court"
+needs = ["mark:sat-the-old-bench"]
+[event.option.win]
+text = "He has heard the gavel rapped under the water, in his sleep, for years. He sits down on the step. When he rises he gives you the spare lamp-glass he was saving for a funeral, and means it."
+fx = ["gain:silt-glass:2-4", "morale:4", "rep:court:2"]
+
+# ------------------------------------------------------------------ shrines
+
+[[event]]
+id = "faceless-saint"
+title = "The saint with no face"
+text = "A stone saint stands in a niche of a broken wall, her face worn smooth by the weather and by generations of thumbs. Reed-folk have left small knots at her feet. Fresh ones, tied this week."
+poi = ["shrine"]
+weight = 8
+[[event.option]]
+label = "Tie a knot of your own"
+needs = ["carry:reed:2"]
+[event.option.win]
+text = "You twist the reed into the pattern you saw on the others and lay it among them. It is not very good. Whoever tied the fresh ones will see that, and be pleased by the effort."
+fx = ["lose:reed:2", "rep:reed:3", "morale:2"]
+[[event.option]]
+label = "Read the knots"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "Every knot is a prayer, and every prayer asks for the same thing: that the water not come in the night. The witch adds her own, and the crew leave lighter than they came."
+fx = ["rep:reed:4", "xp:reed-witch:3", "mark:marked-by-the-reeds"]
+[[event.option]]
+label = "Kneel, and see why the lamps went to her"
+needs = ["mark:lamps-follow"]
+[event.option.win]
+text = "The stone face is warm. Warm all across, like a hearth. For one breath you can see what the lamp-bearers saw. It heals what it can and leaves the rest."
+fx = ["heal:all:3", "morale:5", "rep:reed:3"]
+[[event.option]]
+label = "Take the dry offerings from her feet"
+[event.option.win]
+text = "A handful of old coins and a few beads. Behind you, somewhere in the reeds, something that was watching stops watching."
+fx = ["tallies:4-8", "rep:reed:-4", "morale:-2"]
+
+[[event]]
+id = "gauge-stone"
+title = "The gauge stone"
+text = "A pillar the height of a man, cut with the Tidecourt's marks for every flood on record. At its foot is a bowl for tithes. Nobody has collected them for a while, and the bowl is heavy with coin."
+poi = ["shrine"]
+weight = 8
+[[event.option]]
+label = "Pay the tithe, as the law asks"
+[event.option.win]
+text = "You drop a coin in the bowl and press your palm to the stone as custom says. Somewhere a clerk will mark it, and someone with a long memory will be glad."
+fx = ["pay:8", "rep:court:3", "morale:2", "mark:tithe-paid"]
+[[event.option]]
+label = "Read the flood marks"
+needs = ["trade:salvager"]
+[event.option.win]
+text = "Every mark has a year. The salvager lays them over what she knows of the drowned towns and sees which streets went under first, and which went quietly."
+fx = ["chart:3", "xp:salvager:2"]
+[[event.option]]
+label = "Empty the bowl into your hat"
+risk = 30
+[event.option.win]
+text = "A fat bowl, and nobody to stop you. The coin is real, and you carry it away a little faster than you came."
+fx = ["tallies:14-22", "morale:-2"]
+[event.option.lose]
+text = "The bowl is bolted down and the bolts are loud. A watch-boat hears it across the water, and a court never forgets the sound of a stolen tithe."
+fx = ["rep:court:-5", "mark:fouled-the-gauge"]
+
+[[event]]
+id = "feather-cairn"
+title = "The cairn of feathers"
+text = "A cairn of grey heron feathers stands on a hummock above the water, each quill pushed into a crack between stones. The Reed-folk build them where someone has drowned. This one is old, and it has not been added to in years."
+poi = ["shrine"]
+weight = 7
+[[event.option]]
+label = "Add a feather of your own and say a name"
+needs = ["!mark:plucked-the-cairn"]
+[event.option.win]
+text = "You find a feather on the shore and push it into the cairn. You do not know the name, so you say your own. It seems to be enough."
+fx = ["rep:reed:2", "morale:3", "mark:marked-by-the-reeds"]
+[[event.option]]
+label = "Sit with the dead a while"
+needs = ["scar"]
+[event.option.win]
+text = "You have your own way of knowing what the cairn is for. The crew wait, and nobody hurries you. When you rise, something in your shoulders has come down a little."
+fx = ["morale:6", "bond:1", "rep:reed:2"]
+[[event.option]]
+label = "Tell the cairn what the eel-wives ruled"
+needs = ["mark:judged-for-the-eels"]
+[event.option.win]
+text = "You stand at the cairn and say it aloud: the stream is theirs again. A heron lands on the nearest stone, looks at you, and stays. The Reed-folk hear of it before you are home."
+fx = ["rep:reed:4", "morale:4"]
+[[event.option]]
+label = "Pull the quills for the feather-sellers"
+[event.option.win]
+text = "A bundle of good quills, sold by the dozen in Tidecourt. You do not look back at the cairn, which looks a good deal smaller."
+fx = ["tallies:8-14", "rep:reed:-5", "morale:-3", "mark:plucked-the-cairn"]
+
+# ------------------------------------------------------------------ salvage
+
+[[event]]
+id = "grounded-lighter"
+title = "A grounded lighter"
+text = "A long cargo lighter has settled on its keel in the shallows with its hatches still on. It was loaded when it went down. Whatever it carried, the sea has been working on the lids for a century."
+poi = ["salvage"]
+weight = 9
+[[event.option]]
+label = "Pry the hatches open"
+skill = "salvager"
+risk = 30
+[event.option.win]
+text = "The first lid goes with a shriek. Under it: ingots of something heavy and bluish and a crate of nails. The sea did not get to those."
+fx = ["gain:iron:3-6", "tallies:5-10", "xp:salvager:2"]
+[event.option.lose]
+text = "A hatch drops back on a hand, and the hold fills with brown water."
+fx = ["hurt:any:hurt", "gain:iron:1-2"]
+[[event.option]]
+label = "Cut the planking for timber"
+needs = ["carry:tools:1"]
+[event.option.win]
+text = "Dry-docked oak, gone black and hard. The tools go through it with a sound like chewing."
+fx = ["gain:timber:4-7", "xp:salvager:1"]
+[[event.option]]
+label = "Tow the lighter's cargo off by boat"
+needs = ["boat", "size:3"]
+[event.option.win]
+text = "Three hands to load, one to row, one eye on the tide. You make two trips and the tide waits."
+fx = ["gain:iron:4-7", "gain:timber:3-5", "tallies:6-12", "turns:1"]
+[[event.option]]
+label = "Take only what is in reach"
+[event.option.win]
+text = "A few nails, a hasp, a bundle of rope with the bottom half gone to jelly."
+fx = ["gain:rope:1-2", "tallies:2-5"]
+
+[[event]]
+id = "tram-sheds"
+title = "The tram sheds"
+text = "Long iron sheds, roofless, in rows. Each holds the skeleton of a carriage on rails that run, mile on mile, into the water. The iron is orange, thick, and in remarkably good shape under the scale."
+poi = ["salvage"]
+weight = 8
+[[event.option]]
+label = "Sort the rails by weight"
+needs = ["trade:smith:2"]
+[event.option.win]
+text = "The smith taps and listens. This rail is good, this one is rotten at the heart. She leaves the bad ones in the mud and loads the good, and the crew work in a rhythm she sets."
+fx = ["gain:iron:5-9", "tallies:3-6", "xp:smith:3"]
+[[event.option]]
+label = "Haul up the rails by hand"
+needs = ["size:3"]
+risk = 30
+skill = "fighter"
+[event.option.win]
+text = "Two on the bar, one on the rope, and the rail comes up out of the mud with a roar. Your backs are no longer a rumour, but there is iron."
+fx = ["gain:iron:4-8", "xp:fighter:1"]
+[event.option.lose]
+text = "The bar slips. The rail drops, and someone's foot is under the bar's end."
+fx = ["hurt:any:hurt", "gain:iron:1-2"]
+[[event.option]]
+label = "Scrape the carriages for fittings"
+[event.option.win]
+text = "Hinges, a brass whistle, a long iron key of no obvious use. It is slow, honest work."
+fx = ["gain:iron:2-3", "tallies:3-6"]
+
+[[event]]
+id = "bottle-bank"
+title = "A bank of old bottles"
+text = "A shingle bank at the edge of the flat is not shingle at all. It is old bottles, thousands, green and brown and clear, tumbled smooth. Where the light catches them it flashes like a signal."
+poi = ["salvage"]
+weight = 7
+[[event.option]]
+label = "Sieve out the clear glass"
+needs = ["carry:rope:1"]
+risk = 15
+skill = "wader"
+[event.option.win]
+text = "A rope-and-reed sieve, a slow hour, and the clearest glass in a cartload gleaming in your sack."
+fx = ["gain:silt-glass:3-5", "xp:wader:2"]
+[event.option.lose]
+text = "The bank slides under your boots, and you go down among a thousand edges."
+fx = ["hurt:any:hurt", "gain:silt-glass:1"]
+[[event.option]]
+label = "Follow the gulls to the cache they have found"
+needs = ["mark:gull-kings-friend"]
+[event.option.win]
+text = "The gulls lift off the bank in a line and settle fifty yards on. Under their feet, a tin-lined chest the tide uncovered last month. They watch you take it with grave approval."
+fx = ["gain:silt-glass:3-6", "tallies:8-14", "morale:3"]
+[[event.option]]
+label = "Fill your pockets and leave"
+[event.option.win]
+text = "A pocketful of the prettiest. They will sell, in a small way."
+fx = ["gain:silt-glass:1-2", "tallies:2-4"]
+
+# ------------------------------------------------------------------ lairs
+
+[[event]]
+id = "leech-pool"
+title = "The leech pool"
+text = "A stagnant pool in a hollow, black and perfectly round. The reeds around it are grey and bent. Something under the surface moves like a slow pulse, and every few seconds the pool breathes out."
+poi = ["lair"]
+weight = 9
+[[event.option]]
+label = "Wade in and clear the swarm"
+[event.option.win]
+text = "They come up out of the black water in a ribbon, as thick as your wrist and as hungry."
+fx = ["fight:leech-swarm"]
+[[event.option]]
+label = "Soothe the pool"
+needs = ["trade:reed-witch"]
+risk = 20
+skill = "reed-witch"
+[event.option.win]
+text = "She sings the pool down, three notes and a long falling one. The swarm sinks and settles, and you cross the hollow dry-shod. At the edge she plucks a clump of moss that is better than anything in a healer's chest."
+fx = ["xp:reed-witch:3", "heal:all:2", "gain:fish:2-4"]
+[event.option.lose]
+text = "The third note breaks. The pool answers."
+fx = ["hurt:any:hurt", "fight:leech-and-hag"]
+[[event.option]]
+label = "Burn the margin and drive them under"
+needs = ["carry:peat:2"]
+[event.option.win]
+text = "You pile the peat on the bank and burn it, and a smoke like a wet blanket rolls across the pool. The swarm goes under. You loot the margin while it is quiet."
+fx = ["lose:peat:2", "tallies:6-12", "gain:silt-glass:0-1"]
+[[event.option]]
+label = "Go round the hollow"
+[event.option.win]
+text = "You circle wide, hearing the pool breathe, and do not look down."
+
+[[event]]
+id = "drake-shore"
+title = "The drake's shore"
+text = "A shingle beach strewn with fish bones and bigger bones, and a smell like a sour cellar. The tracks in the mud are as wide as a door. At the water's edge a long, low, dark thing is sunning itself and does not seem to mind company."
+poi = ["lair"]
+weight = 8
+[[event.option]]
+label = "Take it on"
+needs = ["trade:fighter"]
+[event.option.win]
+text = "The fighter walks down the beach shouting. It lifts its head, considers, and decides to be insulted."
+fx = ["fight:mere-drake"]
+[[event.option]]
+label = "Leave it a share of fish"
+needs = ["carry:fish:3"]
+[event.option.win]
+text = "You roll three baskets of fish down the shingle and back away. It eats, belches, and slides into the mere. The beach is yours, and the hoard in the dunes beyond it."
+fx = ["lose:fish:3", "tallies:8-14", "gain:iron:1-2"]
+[[event.option]]
+label = "Row out and draw it away"
+needs = ["boat"]
+risk = 30
+skill = "boatwright"
+[event.option.win]
+text = "The boat slaps the water, and the drake follows it half a mile out. The crew on the bank take what they can in the time you buy them."
+fx = ["gain:iron:2-4", "tallies:8-16", "xp:boatwright:3"]
+[event.option.lose]
+text = "It is faster in the water than anything you have ever rowed from."
+fx = ["hurt:any:water", "fight:mere-drake"]
+[[event.option]]
+label = "Withdraw, and say nothing about it"
+[event.option.win]
+text = "You back up the beach, a step at a time. It watches you go with one yellow eye."
+
+[[event]]
+id = "wreckers-hut"
+title = "The wreckers' lamp-hut"
+text = "A driftwood hut on a false headland, with a lamp in its window that is exactly where a harbour light should not be. Boat-hooks lean by the door. A strongbox sits in the open. It is bait, and quite obviously so."
+poi = ["lair"]
+weight = 8
+[[event.option]]
+label = "Spring the trap, and fight"
+[event.option.win]
+text = "The strongbox is wired to a bell. The bell rings and the hut empties."
+fx = ["fight:wrecker-gang"]
+[[event.option]]
+label = "Find the snare and take the box"
+needs = ["trade:salvager"]
+risk = 20
+skill = "salvager"
+[event.option.win]
+text = "She finds the wire, trips it with a dry reed, and the bell does not ring. The box is full of other people's goods. You leave a note in the hut for the Tidecourt assize."
+fx = ["tallies:12-22", "gain:rope:1-2", "xp:salvager:3", "rep:court:3", "mark:broke-the-wreckers"]
+[event.option.lose]
+text = "The snare has a second wire. The bell rings, and the hut empties."
+fx = ["hurt:any:hurt", "fight:wrecker-hounds"]
+[[event.option]]
+label = "Show the assize warrant and call them out"
+needs = ["tier:court:3"]
+[event.option.win]
+text = "A Trusted clan carries the court's writ and the wreckers know it. The lamp goes out. By the time your crew reach the hut it is empty, and the box is full of coin they dropped."
+fx = ["tallies:14-24", "rep:court:4", "mark:broke-the-wreckers"]
+[[event.option]]
+label = "Put out the lamp and leave"
+[event.option.win]
+text = "You snuff the false light and tip the oil into the mud. Some ship may not wreck on this headland tonight."
+fx = ["rep:court:2", "morale:1"]
+
+# ------------------------------------------------------------------ hermits
+
+[[event]]
+id = "net-mender"
+title = "The net-mender"
+text = "An old man sits on an upturned boat in a spiderweb of nets, mending, mending. He does not look up. 'I need fish for my supper,' he says to nobody, 'and you need nets that hold.' He has a very precise voice."
+poi = ["hermit"]
+weight = 8
+[[event.option]]
+label = "Trade four fish for a mended net"
+needs = ["carry:fish:4"]
+[event.option.win]
+text = "He weighs the fish with his thumb and hands over a net that is much better than the four fish. Then he adds a knot of twine, which is better still."
+fx = ["lose:fish:4", "gain:rope:2-3", "tallies:6-10", "xp:wader:2"]
+[[event.option]]
+label = "Ask him how the keel should be set"
+needs = ["trade:boatwright"]
+[event.option.win]
+text = "He puts down the net for the first time. For an hour he and the boatwright draw on the mud with a stick, and neither is in the least polite, and both are happier at the end of it."
+fx = ["xp:boatwright:4", "bond:1", "morale:2"]
+[[event.option]]
+label = "Ask for the Reed-folk salve he keeps"
+needs = ["tier:reed:2"]
+[event.option.win]
+text = "He gives it to you without asking why. The Reed-folk have told him you are Known, and for him that is the whole of a reference."
+fx = ["heal:all:3", "rep:reed:1"]
+[[event.option]]
+label = "Thank him and move on"
+[event.option.win]
+text = "'Mind the gap in the third reach,' he says to the net."
+
+[[event]]
+id = "tide-reader"
+title = "The tide-reader's post"
+text = "A tall hut on legs, with a rope from the door to a post in the water. The hermit watches the flow along the rope all day, and has kept a ledger of it for forty years. He will sell you a chart if you can make him interested."
+poi = ["hermit"]
+weight = 7
+draws = ["trade:wader"]
+[[event.option]]
+label = "Buy a chart of the channels"
+[event.option.win]
+text = "He takes six tallies and gives you a chart on a scrap of hide. It is better than most that cost twenty."
+fx = ["pay:6", "chart:3"]
+[[event.option]]
+label = "Describe the bell you heard under the water"
+needs = ["mark:heard-the-drowned-bell"]
+[event.option.win]
+text = "He puts down his pen. 'That is the eleventh hour,' he says. 'It has not rung in my time. I need to sit down.' Then he tells you what the tides have been doing on the nights before it rings, and writes your name beside the entry."
+fx = ["chart:5", "xp:reed-witch:3", "morale:3", "mark:read-the-tides"]
+[[event.option]]
+label = "Tell him of the whale-bone ribs where you slept"
+needs = ["mark:slept-in-the-ribs"]
+[event.option.win]
+text = "He knows the place and has never seen it. He asks which way the ribs lean, and is silent a long while. 'Then the big tides come from the north-west,' he says, and redraws a page of his ledger. He gives you the old page."
+fx = ["chart:4", "morale:2"]
+[[event.option]]
+label = "Help him read the rope at the turn"
+needs = ["trade:wader:2"]
+[event.option.win]
+text = "You stand in the cold water for an hour, calling the rope's tug aloud. His pen scratches. At the end he says it is the first time in a year he has not been alone to see a turn."
+fx = ["chart:4", "xp:wader:3", "morale:2", "mark:read-the-tides"]
+
+[[event]]
+id = "goat-widow"
+title = "The woman with the goats"
+text = "A woman and eleven goats share a hut on a hummock too small for either. The goats eat anything. The woman eats very little. She asks who you are in the tone of someone who would like to know, but is not going to be disappointed."
+poi = ["hermit"]
+weight = 7
+[[event.option]]
+label = "Sit and tell her about home"
+needs = ["bond"]
+[event.option.win]
+text = "You tell her the names. She knows the sound of a household and listens as one would to a long-lost song. When you rise, she tells you her own name, which she has not said aloud in years."
+fx = ["morale:5", "bond:1", "mark:heard-the-hermits-name"]
+[[event.option]]
+label = "Offer food for a night's shelter"
+needs = ["carry:food:3"]
+[event.option.win]
+text = "She cooks. It is mostly goat, and it is excellent. In the morning she gives you back half the food and a hard cheese with a rind like a boot."
+fx = ["lose:food:3", "gain:food:4-6", "heal:all:2", "morale:3"]
+[[event.option]]
+label = "Let her look at the scars"
+needs = ["scar"]
+[event.option.win]
+text = "She has a salve of goat-fat and something else. It stings for a minute and then does not. 'That is old,' she says of your worst one, 'but it is not finished.'"
+fx = ["heal:all:4", "xp:healer:1", "morale:2"]
+[[event.option]]
+label = "Buy a cheese and be on your way"
+[event.option.win]
+text = "She names a price. You pay it. The cheese is good, and she is a little disappointed."
+fx = ["pay:3", "gain:food:3-4"]
+
+# ------------------------------------------------------------------ traders
+
+[[event]]
+id = "stilt-tinker"
+title = "The tinker on stilts"
+text = "A man on stilts, six feet above the mud, with a pack on his back the size of a hay-bale. Tools hang from every strap, and they all ring faintly when he moves. He is too tall to haggle with, and it does not seem to slow him."
+poi = ["trader"]
+weight = 8
+[[event.option]]
+label = "Sell him iron for tools"
+needs = ["carry:iron:3"]
+[event.option.win]
+text = "He weighs the iron on a hanging scale and hands down two tools, still warm from the bench. 'The best haggle is no haggle,' he says."
+fx = ["lose:iron:3", "gain:tools:1", "tallies:4-8"]
+[[event.option]]
+label = "Trade steel with a fellow smith"
+needs = ["trade:smith:2"]
+[event.option.win]
+text = "He is wary of other smiths and sizes up yours the way one dog does another. By the end he is showing off the hammer he forged last winter, and you have a better one of your own."
+fx = ["gain:tools:1", "xp:smith:3", "tallies:6-10"]
+[[event.option]]
+label = "Show the hermit's token"
+needs = ["mark:hermits-heir"]
+[event.option.win]
+text = "He knows the token. He knew the hermit. 'Poor old devil. He talked to himself so much I thought he had company.' He sells you his best at cost, and does not say what it cost him to say so."
+fx = ["gain:tools:1", "gain:iron:2-3", "morale:2"]
+[[event.option]]
+label = "Look at the wares and buy nothing"
+[event.option.win]
+text = "He lets you look, which is the first rule of his trade."
+
+[[event]]
+id = "lamp-raft"
+title = "The raft with the lamps"
+text = "A raft poled by two silent children, hung with lamps from the prow to the stern, selling oil, wicks and glass chimneys. Their mother is on the far bank and her voice carries over the water in a ceaseless stream of reminders."
+poi = ["trader"]
+weight = 8
+[[event.option]]
+label = "Trade salt for oil and a lamp"
+needs = ["carry:salt:3"]
+[event.option.win]
+text = "Three measures across the plank, one lamp and a bottle of oil the other way. A clean bargain. From the bank comes a short, approving whistle."
+fx = ["lose:salt:3", "gain:food:2-3", "tallies:6-10", "morale:2"]
+[[event.option]]
+label = "Clear the ferry debt with the mother's token"
+needs = ["mark:owes-the-ferry"]
+[event.option.win]
+text = "The children look at the coin you drew from the old ferry, then at each other. One poles back to the bank at speed. The mother comes across herself, takes it, speaks for a minute in a language of her own, and the debt is gone."
+fx = ["unmark:owes-the-ferry", "morale:6", "rep:reed:3"]
+[[event.option]]
+label = "Haggle with the children"
+needs = ["trait:greedy"]
+risk = 40
+[event.option.win]
+text = "You talk them down on the oil and up on the glass. Nobody has told them that the lamps are priced to the pound, and nobody tells them now."
+fx = ["tallies:10-18", "morale:-1"]
+[event.option.lose]
+text = "The mother's voice stops mid-sentence. The silence is worse. They cut your rope and pole off."
+fx = ["lose:rope:1", "rep:reed:-2"]
+[[event.option]]
+label = "Wave to the children and walk on"
+[event.option.win]
+text = "They wave. The mother, from the bank, waves louder."
+
+[[event]]
+id = "assize-clerk"
+title = "The assize clerk's stall"
+text = "A folding stall under a striped awning, a clerk on a high stool, a bell on the table. Writs, seals, lists of the lost and found. 'Everything in the marsh is recorded somewhere,' she says. 'I merely hold the key to the drawer.'"
+poi = ["trader"]
+weight = 8
+[[event.option]]
+label = "Buy a writ of passage"
+[event.option.win]
+text = "She stamps it with a seal that would flatten a small dog. It is accepted at the next tollgate, and the one after."
+fx = ["pay:8", "rep:court:2", "chart:2"]
+[[event.option]]
+label = "Ask for the sealed list of salvage rights"
+needs = ["tier:court:3"]
+[event.option.win]
+text = "A Trusted clan may see the list. She unlocks the drawer and reads out three names, and what each has claimed, and what none of them has the right to. You leave with a good idea of where the real finds are."
+fx = ["chart:5", "tallies:8-14", "rep:court:2"]
+[[event.option]]
+label = "Close the Rakers' account for the dead auditor"
+needs = ["mark:closed-the-account"]
+[event.option.win]
+text = "She finds the entry in under a minute, stamps it, and enters the balance. The Tidecourt, rarely generous, sets a little coin against the Rakers' good name and yours."
+fx = ["tallies:14-24", "rep:court:3", "rep:rakers:3"]
+[[event.option]]
+label = "Sell a relic to the court"
+needs = ["carry:relic:1"]
+[event.option.win]
+text = "She takes the relic in a gloved hand, holds it to the light, and names a price that is fair. She will resell it at a markup, but nobody else here can pay in coin."
+fx = ["lose:relic:1", "tallies:40-55", "rep:court:2"]
+
+# ------------------------------------------------------------------ ruins (a room each)
+
+[[event]]
+id = "counting-house-floor"
+title = "Counting house: the weighing floor"
+text = "A long hall of brass scales, each on its own marble plinth. The weights are in neat rows beside them, a few hundred still in their velvet. On the wall behind the last scale is a table of assays, engraved, in a language of proportions."
+poi = ["ruin"]
+weight = 8
+[[event.option]]
+label = "Read the assay table"
+needs = ["trade:smith:2"]
+[event.option.win]
+text = "Iron to carbon to a metal you do not know the name of. The smith copies the proportions on the back of her hand, then a page, then the back of yours. It is a way to make an alloy that does not rust in the water."
+fx = ["recipe:drowned-alloy", "xp:smith:4", "turns:1"]
+[[event.option]]
+label = "Lift the weights and the lead pans"
+risk = 20
+[event.option.win]
+text = "Good lead and a fair weight of brass. The velvet has gone to mulch."
+fx = ["gain:iron:2-4", "tallies:6-12"]
+[event.option.lose]
+text = "The plinth was loose. The pan came down with its full weight."
+fx = ["hurt:any:hurt", "gain:iron:1"]
+[[event.option]]
+label = "Sweep the floor for dropped coin"
+[event.option.win]
+text = "A hundred years of loose change is a fine harvest for a patient broom."
+fx = ["tallies:5-10", "turns:1"]
+
+[[event]]
+id = "chapel-crypt"
+title = "Chapel crypt: the bone shelves"
+text = "Steps down under a chapel, a low barrel vault, and bones stacked in rows on shelves of stone, each skull with a tin tag. Along the back wall is a long table of old reliquaries. Most are black. One has a small silver bell on it."
+poi = ["ruin"]
+weight = 8
+[[event.option]]
+label = "Clean a reliquary with the sexton's own method"
+needs = ["trade:healer:2"]
+[event.option.win]
+text = "On the sexton's bench is a stained book of recipes for burnishing sacred silver. The healer reads it as she might a patient's chart. 'It is chemistry,' she says. 'The old way of keeping things clean.' She copies the method in a neat hand."
+fx = ["recipe:relic-polish", "xp:healer:4", "turns:1"]
+[[event.option]]
+label = "Take the small silver bell"
+risk = 55
+[event.option.win]
+text = "A tin tag falls, and a skull rolls. No more than that. The bell is worth a good deal to anyone who does not know where you got it."
+fx = ["gain:relic:1", "morale:-3"]
+[event.option.lose]
+text = "The bell rings once as you lift it, and from down the nave comes an answer. The shelves are no longer silent."
+fx = ["fight:wight-walk"]
+[[event.option]]
+label = "Let the bell ring, and wait"
+needs = ["mark:heard-the-drowned-bell"]
+[event.option.win]
+text = "You have heard that note before. It comes again, from far under the floor, and the crypt settles like a house. Your crew do not speak, but something in the air agrees to let you take what the sexton left."
+fx = ["gain:silt-glass:2-3", "tallies:10-16", "morale:4", "xp:reed-witch:2"]
+[[event.option]]
+label = "Take a rubbing of the tags and go"
+[event.option.win]
+text = "A hundred names, pressed in charcoal on rough paper. Somewhere, someone is looking for them."
+fx = ["tallies:3-6", "morale:2"]
+
+[[event]]
+id = "drowned-school"
+title = "Drowned school: the long classroom"
+text = "Rows of small desks, some still in place, the lids swollen shut. A slate board runs along one wall, and on it, half-washed, a tide-table in a child's hand. A bell-pull still hangs by the door. The water in here is ankle deep and very clear."
+poi = ["ruin"]
+weight = 8
+[[event.option]]
+label = "Read the board with a raker's eye"
+needs = ["trade:raker"]
+[event.option.win]
+text = "Under the child's table is the teacher's chalk: a lesson in how to boil sea water down in layers, each a different grain. It is not a recipe for ordinary salt. The raker copies it, and wipes her eyes."
+fx = ["recipe:salt-glass", "xp:raker:4", "turns:1"]
+[[event.option]]
+label = "Open the desks"
+risk = 25
+[event.option.win]
+text = "Slates, chalk, a pocket-knife, a jar of buttons. A child's whole pocket-estate, and you take only the knife and the buttons that gleam."
+fx = ["tallies:5-10", "gain:silt-glass:0-1"]
+[event.option.lose]
+text = "A lid snaps back on a hand, and a swell of cold water pours out from under the desks."
+fx = ["hurt:any:water", "tallies:2-4"]
+[[event.option]]
+label = "Ring the bell-pull, once"
+[event.option.win]
+text = "It does not ring. The rope parts in your hand, and you stand a moment holding it. It is just enough to bring the room back."
+fx = ["morale:3", "gain:rope:1"]
+
+[[event]]
+id = "pump-hall"
+title = "Pump hall: the great wheel"
+text = "A hall as tall as a chapel, taken up by one wheel taller than the hall. The wheel is stopped, its spokes thick with weed, and its great shaft is joined to pumps that once kept the old city dry. On a bracket by the door hangs a ring of heavy keys."
+poi = ["ruin"]
+weight = 8
+[[event.option]]
+label = "Study the keys and the sluice-gear"
+needs = ["trade:boatwright"]
+[event.option.win]
+text = "A sluice-key opens one sluice. These open a chain of them, and the boatwright traces the order on the wall with a thumb: seaward gate, foul gate, last gate. It is the way of a careful old engineer. She copies out the sequence and the shape of each key."
+fx = ["recipe:sluice-key", "xp:boatwright:4", "turns:1"]
+[[event.option]]
+label = "Strip the brass from the pumps"
+risk = 30
+skill = "smith"
+[event.option.win]
+text = "Brass fittings, bronze bearings, and a spare shaft-collar the length of your arm."
+fx = ["gain:iron:3-5", "tallies:8-14", "xp:smith:2"]
+[event.option.lose]
+text = "The wheel shifts a finger's breadth. It has been waiting a hundred years for the excuse."
+fx = ["hurt:any:hurt", "turns:1"]
+[[event.option]]
+label = "Climb the wheel for the view"
+needs = ["trait:quick-study"]
+[event.option.win]
+text = "From the rim you see the whole drowned district laid out like a map, and the way the water drains, which is the way it will drain again."
+fx = ["chart:4", "xp:wader:2"]
+[[event.option]]
+label = "Check the doors and move on"
+[event.option.win]
+text = "The wheel is too big to feel at ease around. You leave it to its dark."
+
+[[event]]
+id = "customs-vault"
+title = "Customs vault: the bonded room"
+text = "Steel doors set in stone, standing open on a rotted lock. Inside, cages of iron lattice hold tagged crates, mostly crushed. A small office in the corner has a desk with a seal in its drawer and a chart on the wall. The chart is of the whole coast, before."
+poi = ["ruin"]
+weight = 8
+[[event.option]]
+label = "Study the old coast chart"
+needs = ["trade:salvager:2"]
+[event.option.win]
+text = "The old coast, before. She sets the chart against the marsh and moves it slowly until the shapes agree. A needle in a brass bowl, used to find a fixed point on it, lies beside the chart. She copies how it was made."
+fx = ["recipe:tide-compass", "xp:salvager:4", "turns:1"]
+[[event.option]]
+label = "Show the court seal at the desk"
+needs = ["tier:court:2"]
+[event.option.win]
+text = "The Tidecourt took over the customs when the sea took the customs house, and its clerks still keep a key to this room. You are Known, and your seal fits. The strongest crate holds unbroken goods."
+fx = ["gain:tools:1", "tallies:10-18", "rep:court:2"]
+[[event.option]]
+label = "Open the crates with a bar"
+needs = ["carry:tools:1"]
+risk = 25
+[event.option.win]
+text = "Most are crushed. Two are not. In the second, wrapped in oilcloth: a dozen good knives in their sheaths."
+fx = ["gain:iron:2-4", "tallies:6-12"]
+[event.option.lose]
+text = "The bar slips and the lattice sings. Something in the next cage shifts and the dust falls."
+fx = ["lose:tools:1", "hurt:any:hurt"]
+[[event.option]]
+label = "Take the seal from the drawer"
+[event.option.win]
+text = "A brass seal with a crowned wave. It is of no use but worth a little as an antique."
+fx = ["tallies:4-8"]
+
+[[event]]
+id = "keepers-tower"
+title = "Lamp-keepers' tower: the lantern room"
+text = "A white tower, streaked green, with a ring of glass at the top still mostly whole. The keepers' quarters are below: a table, three cups, a logbook open at the last entry. In the lamp room above stands the great lens, tall as a person, clouded but unbroken."
+poi = ["ruin"]
+weight = 8
+[[event.option]]
+label = "Read the keepers' logbook"
+needs = ["skill:reed-witch:2"]
+[event.option.win]
+text = "Between the weather notes is a margin of small writing: how to get a flame to burn pale and steady, even in a gale. The witch reads it by her own light. 'They knew what the lamps were for,' she says. She copies it."
+fx = ["recipe:pale-lantern", "xp:reed-witch:4", "turns:1"]
+[[event.option]]
+label = "Open the lamp room with the trimmer's key"
+needs = ["mark:trimmer-owes"]
+[event.option.win]
+text = "The old trimmer pressed a rusted key into your hand at parting. It turns. Behind the lens: a store of fine lamp-glass, in straw, in perfect shape, and the view from the gallery that you have not earned and enjoy."
+fx = ["gain:silt-glass:3-5", "chart:3", "morale:3"]
+[[event.option]]
+label = "Climb up and prise a piece from the lens"
+risk = 35
+skill = "salvager"
+[event.option.win]
+text = "A curved panel the size of a platter, flawless, worth more than a day's catch."
+fx = ["gain:silt-glass:3-6", "tallies:8-14", "xp:salvager:2"]
+[event.option.lose]
+text = "The stair is rotten under the third flight. You land hard, on the way down, with some of the lens."
+fx = ["hurt:any:hurt", "gain:silt-glass:1"]
+[[event.option]]
+label = "Sit at the keepers' table a minute"
+[event.option.win]
+text = "Three cups, a thin layer of dust. You do not drink, but you do sit. It feels like the right thing to have done."
+fx = ["morale:2"]
