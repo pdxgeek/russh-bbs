@@ -704,7 +704,7 @@ impl Table for Quests {
                 .map(|s| ("step", &s.mark, &s.text))
                 .chain(q.ends.iter().map(|e| ("end", &e.mark, &e.text)))
             {
-                if !id_ok(mark) || !mark.starts_with("q-") {
+                if !crate::lore::mark_ok(mark) || !mark.starts_with("q-") {
                     p.push(format!(
                         "[quest] `{id}` {label}: mark `{mark}` must be a-z and - and start with `q-`"
                     ));

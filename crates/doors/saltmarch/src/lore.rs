@@ -564,8 +564,12 @@ fn text_ok(text: &str, max: usize) -> bool {
     !text.trim().is_empty() && text.chars().count() <= max && plain_text(text)
 }
 
-fn mark_ok(id: &str) -> bool {
-    id_ok(id)
+pub(crate) fn mark_ok(id: &str) -> bool {
+    !id.is_empty()
+        && id.len() <= 30
+        && id
+            .bytes()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
 }
 
 fn check_cond(c: &Cond, who: &str, p: &mut Vec<String>) {

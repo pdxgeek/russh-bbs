@@ -25,6 +25,7 @@
 pub mod dispatch;
 pub mod hall;
 pub mod ledger;
+pub mod legacy;
 pub mod letters;
 pub mod market;
 pub mod pact;

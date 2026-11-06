@@ -1,0 +1,274 @@
+//! The faction boards: taking, doing, handing back and losing contracts. The templates are
+//! data (`content/contracts.toml`, schema in [`crate::story`]); this is the engine that applies
+//! them. Everything here is local to one clan's save: a contract's pay comes from the Tidecourt
+//! and the guilds, not from another player, so nothing crosses to the world.
+
+use russh_bbs_door::DoorRng;
+
+use crate::clan::Clan;
+use crate::content::Catalog;
+use crate::engine::ActionError;
+use crate::event::Event;
+use crate::map::PoiKind;
+use crate::story::{Active, ContractDef, ContractError, ContractKind, board};
+use crate::types::Resource;
+
+/// Percent added to a contract's pay for each tier of standing above Stranger.
+pub const TIER_BONUS_PCT: u32 = 5;
+
+/// What a contract pays in tallies, with the faction's regard for the clan: 5% more for each
+/// tier above Stranger.
+fn wage(def: &ContractDef, clan: &Clan, rng: &mut DoorRng) -> u32 {
+    let base = rng.range(u32::from(def.pay_lo), u32::from(def.pay_hi));
+    let tier = u32::from(clan.story.tier(def.faction).saturating_sub(1));
+    base * (100 + TIER_BONUS_PCT * tier) / 100
+}
+
+fn finish(
+    def: &ContractDef,
+    clan: &mut Clan,
+    rng: &mut DoorRng,
+    events: &mut Vec<Event>,
+) {
+    let pay = wage(def, clan, rng);
+    clan.tallies = clan.tallies.saturating_add(pay);
+    clan.story.contract = None;
+    clan.story.done = clan.story.done.saturating_add(1);
+    events.push(Event::ContractDone {
+        title: def.title.clone(),
+        tallies: pay,
+    });
+    let (before, after) = clan.story.add_rep(def.faction, i16::from(def.rep));
+    events.push(Event::Standing {
+        faction: def.faction,
+        by: def.rep,
+        tier: after,
+        changed: before != after,
+    });
+}
+
+/// The offers on the board today for this clan.
+#[must_use]
+pub fn offers<'a>(cat: &'a Catalog, clan: &Clan, seed: u64, today: i64) -> Vec<&'a ContractDef> {
+    board(&cat.contracts, &clan.story, seed, today)
+}
+
+/// Take a contract from today's board.
+///
+/// # Errors
+/// [`ContractError::Busy`] with one in hand, [`ContractError::NotOffered`] if it is not on
+/// today's board for this clan.
+pub fn take(
+    cat: &Catalog,
+    clan: &mut Clan,
+    seed: u64,
+    today: i64,
+    id: &str,
+    events: &mut Vec<Event>,
+) -> Result<(), ContractError> {
+    if clan.story.contract.is_some() {
+        return Err(ContractError::Busy);
+    }
+    let def = offers(cat, clan, seed, today)
+        .into_iter()
+        .find(|c| c.id == id)
+        .ok_or(ContractError::NotOffered)?;
+    clan.story.contract = Some(Active {
+        id: def.id.clone(),
+        deadline: today + i64::from(def.days) - 1,
+        progress: 0,
+    });
+    events.push(Event::ContractTaken {
+        title: def.title.clone(),
+        days: def.days,
+    });
+    Ok(())
+}
+
+/// Hand a contract back (the faction thinks a little worse of the clan).
+///
+/// # Errors
+/// [`ContractError::None`] when nothing is in hand.
+pub fn give_back(
+    cat: &Catalog,
+    clan: &mut Clan,
+    events: &mut Vec<Event>,
+) -> Result<(), ContractError> {
+    let id = clan
+        .story
+        .contract
+        .as_ref()
+        .map(|a| a.id.clone())
+        .ok_or(ContractError::None)?;
+    clan.story.contract = None;
+    if let Some(def) = cat.contracts.iter().find(|c| c.id == id) {
+        clan.story.failed = clan.story.failed.saturating_add(1);
+        let by = -((i16::from(def.fail) + 1) / 2);
+        let (before, after) = clan.story.add_rep(def.faction, by);
+        events.push(Event::ContractLapsed {
+            title: def.title.clone(),
+            given_back: true,
+        });
+        events.push(Event::Standing {
+            faction: def.faction,
+            by: i8::try_from(by).unwrap_or(-1),
+            tier: after,
+            changed: before != after,
+        });
+    }
+    Ok(())
+}
+
+/// Hand over the goods a `deliver` contract asks for, from the stores.
+///
+/// # Errors
+/// [`ContractError::None`], [`ContractError::WrongKind`] or [`ContractError::Short`].
+pub fn deliver(
+    cat: &Catalog,
+    clan: &mut Clan,
+    rng: &mut DoorRng,
+    events: &mut Vec<Event>,
+) -> Result<(), ContractError> {
+    let id = clan
+        .story
+        .contract
+        .as_ref()
+        .map(|a| a.id.clone())
+        .ok_or(ContractError::None)?;
+    let def = cat
+        .contracts
+        .iter()
+        .find(|c| c.id == id)
+        .ok_or(ContractError::None)?;
+    if def.kind != ContractKind::Deliver {
+        return Err(ContractError::WrongKind);
+    }
+    let good = def.resource().ok_or(ContractError::WrongKind)?;
+    let qty = u32::from(def.qty);
+    if clan.stock.get(good) < qty {
+        return Err(ContractError::Short(format!(
+            "{} (need {qty}, have {})",
+            good.name(),
+            clan.stock.get(good)
+        )));
+    }
+    clan.stock.take_up_to(good, qty);
+    finish(def, clan, rng, events);
+    Ok(())
+}
+
+/// A fight was won against these foes (by id): a `clear` contract counts the win if one of
+/// them is the foe it names.
+pub fn on_fight_won(
+    cat: &Catalog,
+    clan: &mut Clan,
+    foes: &[&str],
+    rng: &mut DoorRng,
+    events: &mut Vec<Event>,
+) {
+    let Some(a) = clan.story.contract.clone() else {
+        return;
+    };
+    let Some(def) = cat.contracts.iter().find(|c| c.id == a.id) else {
+        return;
+    };
+    if def.kind != ContractKind::Clear || !foes.iter().any(|f| Some(*f) == def.foe.as_deref()) {
+        return;
+    }
+    let progress = a.progress.saturating_add(1);
+    if progress >= def.qty {
+        finish(def, clan, rng, events);
+    } else if let Some(c) = clan.story.contract.as_mut() {
+        c.progress = progress;
+    }
+}
+
+/// An expedition came home with this cargo (already in the stores): a `salvage` contract
+/// takes the goods it asks for out of the stores.
+pub fn on_return(
+    cat: &Catalog,
+    clan: &mut Clan,
+    cargo: &[(Resource, u32)],
+    rng: &mut DoorRng,
+    events: &mut Vec<Event>,
+) {
+    let Some(a) = clan.story.contract.clone() else {
+        return;
+    };
+    let Some(def) = cat.contracts.iter().find(|c| c.id == a.id) else {
+        return;
+    };
+    if def.kind != ContractKind::Salvage {
+        return;
+    }
+    let Some(good) = def.resource() else { return };
+    let brought: u32 = cargo
+        .iter()
+        .filter(|(r, _)| *r == good)
+        .map(|(_, n)| *n)
+        .sum();
+    let have = u32::from(a.progress) + brought;
+    if have >= u32::from(def.qty) {
+        clan.stock.take_up_to(good, u32::from(def.qty).saturating_sub(u32::from(a.progress)));
+        finish(def, clan, rng, events);
+    } else if brought > 0
+        && let Some(c) = clan.story.contract.as_mut()
+    {
+        // What was brought is held back for the contract and counted.
+        clan.stock.take_up_to(good, brought);
+        c.progress = u16::try_from(have).unwrap_or(u16::MAX);
+    }
+}
+
+/// The party stands at a place of this kind: an `escort` contract for that kind is done.
+pub fn on_place(
+    cat: &Catalog,
+    clan: &mut Clan,
+    kind: PoiKind,
+    party: usize,
+    rng: &mut DoorRng,
+    events: &mut Vec<Event>,
+) {
+    let Some(a) = clan.story.contract.as_ref() else {
+        return;
+    };
+    let Some(def) = cat.contracts.iter().find(|c| c.id == a.id) else {
+        return;
+    };
+    // An escort needs company: a party of one has no one to see to the place.
+    if def.kind == ContractKind::Escort && def.poi == Some(kind) && party >= 2 {
+        finish(def, clan, rng, events);
+    }
+}
+
+/// A new day: a contract past its deadline lapses and the faction remembers.
+pub fn expire(cat: &Catalog, clan: &mut Clan, today: i64, events: &mut Vec<Event>) {
+    let Some(a) = clan.story.contract.clone() else {
+        return;
+    };
+    if today <= a.deadline {
+        return;
+    }
+    clan.story.contract = None;
+    clan.story.failed = clan.story.failed.saturating_add(1);
+    if let Some(def) = cat.contracts.iter().find(|c| c.id == a.id) {
+        let (before, after) = clan.story.add_rep(def.faction, -i16::from(def.fail));
+        events.push(Event::ContractLapsed {
+            title: def.title.clone(),
+            given_back: false,
+        });
+        events.push(Event::Standing {
+            faction: def.faction,
+            by: -i8::try_from(def.fail).unwrap_or(1),
+            tier: after,
+            changed: before != after,
+        });
+    }
+}
+
+/// Why taking or doing a contract was refused, as an action error for the engine.
+impl From<ContractError> for ActionError {
+    fn from(e: ContractError) -> Self {
+        Self::Missing(e.to_string())
+    }
+}

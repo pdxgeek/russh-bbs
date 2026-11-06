@@ -1251,6 +1251,13 @@ fn finish_fight(
     match verdict {
         Verdict::Won => {
             clan.stats.fights_won += 1;
+            let foe_ids: Vec<&str> = fight
+                .units
+                .iter()
+                .filter(|u| u.side == Side::Foe)
+                .map(|u| u.foe.as_str())
+                .collect();
+            crate::board::on_fight_won(cat, clan, &foe_ids, rng, events);
             let mut taken = 0u32;
             for u in fight
                 .units
@@ -1396,6 +1403,11 @@ fn conclude(
             }
             clan.tallies = clan.tallies.saturating_add(trip.tallies);
             clan.stats.loot_value = clan.stats.loot_value.saturating_add(value);
+            let cargo: Vec<(Resource, u32)> = Resource::ALL
+                .iter()
+                .map(|r| (*r, trip.loot.get(*r)))
+                .collect();
+            crate::board::on_return(cat, clan, &cargo, rng, events);
             let xp = 1 + (turns / 8).min(3);
             for &id in &trip.party {
                 if let Some(c) = clan.crew_mut(id) {
@@ -1670,6 +1682,7 @@ fn enter(
         events.push(Event::Arrived {
             place: name.to_owned(),
         });
+        crate::board::on_place(env.cat, clan, poi.kind, trip.party.len(), rng, events);
         if trip.target == Some(to) {
             trip.target = None;
         }

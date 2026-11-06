@@ -1,0 +1,1047 @@
+# Scenes for the Tidecourt quest chains in quests-b.toml. A step scene needs the previous step's
+# mark and sets its own; an end scene waits for the last step, refuses every other end of its chain,
+# and sets its own end mark.
+
+# ============================================================ toll-inquiry
+
+[[event]]
+id = "toll-board"
+title = "The toll board"
+text = "A board is nailed to the first post of the causeway, chalked with prices: a copper per boot, two per barrow, five for a boat's shadow. Clerk Ansel Pike sits under it with a ledger and a face like wet paper. 'Court business,' he says. 'Walk with me.'"
+tiles = ["causeway"]
+weight = 10
+needs = ["tier:court:1", "!mark:q-toll-inquiry-1"]
+draws = ["trade:healer", "trade:wader"]
+[[event.option]]
+label = "Take the commission and copy the board"
+[event.option.win]
+text = "Pike gives you a pen, a stub of wax and a day's pay. You copy every price on the board, spelling mistakes included. He is pleased by the mistakes."
+fx = ["tallies:4-8", "mark:q-toll-inquiry-1"]
+[[event.option]]
+label = "Read the planks for wear and measure the toll"
+needs = ["trade:wader"]
+[event.option.win]
+text = "The wader counts the worn planks and the new ones. The tolls are three times what the repairs could cost. Pike writes that down and underlines it twice."
+fx = ["xp:wader:2", "tallies:6-10", "mark:q-toll-inquiry-1"]
+[[event.option]]
+label = "Pay the toll as a stranger and see how it feels"
+needs = ["carry:food:1"]
+[event.option.win]
+text = "You pay in bread. The keeper takes it, bites it, and charges again for the crumbs. Pike writes: 'the crumbs', and nothing else."
+fx = ["lose:food:1", "rep:court:2", "mark:q-toll-inquiry-1"]
+[[event.option]]
+label = "Tell Pike you have no time for clerks"
+[event.option.win]
+text = "He nods as if he had expected it, and goes back to his ledger. The board goes on being chalked."
+
+[[event]]
+id = "toll-pike-stall"
+title = "Pike at the pie stall"
+text = "Ansel Pike is eating a fish pie standing up, so as not to lose his place in the queue of people who want something. He sees your crew's boots and waves the pie at you. 'The causeway,' he says. 'Someone is gouging travellers there. Who is free to look?'"
+poi = ["trader"]
+weight = 7
+needs = ["tier:court:1", "!mark:q-toll-inquiry-1"]
+[[event.option]]
+label = "Offer to look into it"
+[event.option.win]
+text = "He hands you the ledger of complaints, mostly written by people who spell like their feet hurt. 'Start at the board,' he says, with his mouth full."
+fx = ["rep:court:1", "mark:q-toll-inquiry-1"]
+[[event.option]]
+label = "Ask for pay before you ask any questions"
+needs = ["trait:greedy"]
+[event.option.win]
+text = "He counts out the coin like each one is a small death. The ledger comes with it. Your name goes on the first line, in ink, where everyone can read it."
+fx = ["tallies:8-12", "mark:q-toll-inquiry-1"]
+[[event.option]]
+label = "Trade fish for gossip and move on"
+needs = ["carry:fish:1"]
+[event.option.win]
+text = "Pike's clerks know a great deal about the causeway for the price of a fish. None of it is proof. You keep the names anyway."
+fx = ["lose:fish:1", "mark:q-toll-inquiry-1"]
+
+[[event]]
+id = "toll-travellers"
+title = "Travellers who paid"
+text = "Four people sit on a barrow at the middle of the causeway, boots in their hands, arguing about the toll they have just paid and the one they cannot. A pedlar, a midwife and two sisters with a goat. They would like very much to tell somebody."
+tiles = ["causeway", "mudflat"]
+weight = 9
+needs = ["mark:q-toll-inquiry-1", "!mark:q-toll-inquiry-2"]
+draws = ["trade:healer"]
+[[event.option]]
+label = "Sit down and take their statements"
+[event.option.win]
+text = "You write for an hour. The goat eats the second page. The sisters sign with a thumb in the mud and the midwife with a flourish. Four witnesses."
+fx = ["bond:1", "mark:q-toll-inquiry-2"]
+[[event.option]]
+label = "Stand the toll for the goat sisters"
+needs = ["carry:salt:1"]
+[event.option.win]
+text = "You pay in salt and the sisters cry a little. They swear in front of anybody that the keeper said, out loud, that 'the Court can bill the weather'."
+fx = ["lose:salt:1", "rep:court:3", "mark:q-toll-inquiry-2"]
+[[event.option]]
+label = "Treat the midwife's blistered feet"
+needs = ["trade:healer"]
+[event.option.win]
+text = "The healer binds her heels. She tells you what the keeper's men do to travellers who will not pay: nothing, but slowly. She signs twice."
+fx = ["xp:healer:2", "rep:court:2", "mark:q-toll-inquiry-2"]
+[[event.option]]
+label = "Take the pedlar's complaint in the keeper's hearing"
+needs = ["trade:fighter", "size:2"]
+skill = "fighter"
+risk = 30
+[event.option.win]
+text = "The keeper's men arrive to collect. You stand between, steady and unhurried, and the pedlar says his piece. The men leave the toll and some of their pride."
+fx = ["rep:court:3", "mark:q-toll-inquiry-2"]
+[event.option.lose]
+text = "The keeper's men do not like an audience. There is a scuffle on the planks. The statements survive; one of you does not, quite."
+fx = ["hurt:any:fight", "mark:q-toll-inquiry-2"]
+
+[[event]]
+id = "toll-ferrymen-island"
+title = "Ferryman of the dry side"
+text = "On a reed island off the causeway, a ferryman has pulled his punt up on the grass. He used to carry travellers across for a copper. Now the causeway has the trade, and he has opinions about the people who built it and a sack of receipts."
+tiles = ["island", "reedbed"]
+weight = 7
+needs = ["mark:q-toll-inquiry-1", "!mark:q-toll-inquiry-2"]
+[[event.option]]
+label = "Buy the receipts"
+needs = ["carry:rope:1"]
+[event.option.win]
+text = "He takes rope for them, and lets you read each one. Every year the toll doubles. The last receipt has a drawing of a boat on it with a very sad face."
+fx = ["lose:rope:1", "mark:q-toll-inquiry-2"]
+[[event.option]]
+label = "Offer a day's help with the punt"
+[event.option.win]
+text = "You pole him across twice and back. He talks the whole time. By evening you know every complaint, and he knows your name."
+fx = ["bond:1", "mark:q-toll-inquiry-2"]
+[[event.option]]
+label = "Ask what the builders say for themselves"
+needs = ["trait:sea-born"]
+[event.option.win]
+text = "A sea-born knows boats, and the ferryman admits the builders spend half the toll on planks. He is a fair man in a bad temper. You take his word as well as his sack."
+fx = ["rep:court:2", "mark:q-toll-inquiry-2"]
+
+[[event]]
+id = "toll-inspector-camp"
+title = "The inspector's fire"
+text = "Inspector Hesper Voll has pitched a Court tent on the dry end of the causeway: neat, lamplit, patched with other tents. She is tall and speaks quietly, like a person who has had to repeat herself. 'You are the clan Pike sent. Show me what you have.'"
+camp = true
+weight = 10
+needs = ["mark:q-toll-inquiry-2", "!mark:q-toll-inquiry-3"]
+[[event.option]]
+label = "Lay out the statements and the copied board"
+[event.option.win]
+text = "She reads every page twice and lights her pipe with the last. 'Good,' she says. 'Bad news for somebody.' She puts you down in her book as a reliable witness."
+fx = ["rep:court:2", "mark:q-toll-inquiry-3"]
+[[event.option]]
+label = "Count the toll-chest with her"
+needs = ["trade:raker"]
+[event.option.win]
+text = "The raker counts the chest faster than she does and finds it light by a third. Voll raises an eyebrow. 'Somebody has been taking a small share of a large share.'"
+fx = ["xp:raker:2", "tallies:4-8", "mark:q-toll-inquiry-3"]
+[[event.option]]
+label = "Drink with her until she says what she thinks"
+needs = ["trait:drinks"]
+[event.option.win]
+text = "By the third cup she says the law would be a fine thing, and the builders are not wicked. By the fourth she says that she is poorly paid. You note that last remark."
+fx = ["morale:3", "mark:q-toll-inquiry-3"]
+[[event.option]]
+label = "Take the pay and leave her to it"
+[event.option.win]
+text = "She counts out your fee and does not look up. You do not need her good opinion, only her signature. You get the second."
+fx = ["tallies:5-9", "mark:q-toll-inquiry-3"]
+
+[[event]]
+id = "toll-law-hearing"
+title = "The toll law at the market hall"
+text = "The market hall is full. Voll has read her report. Now the harbourmaster, Corwen Fiske, stands on a barrel and proposes a toll law: one coin to all, spent on the planks, posted on the board, inspected twice a year. People look at you. You are the clan that knows."
+poi = ["trader"]
+weight = 9
+needs = ["mark:q-toll-inquiry-3", "!mark:q-toll-inquiry-end-law", "!mark:q-toll-inquiry-end-builders", "!mark:q-toll-inquiry-end-bribe"]
+[[event.option]]
+label = "Speak for the law"
+[event.option.win]
+text = "You speak for ten steady minutes and nobody leaves. The law passes by a show of hands. Fiske pays you from the first week's toll and grins like a harbour lamp. Some Reed-folk at the back do not clap."
+fx = ["rep:court:12", "rep:reed:-5", "tallies:18-28", "mark:q-toll-inquiry-end-law"]
+[[event.option]]
+label = "Speak for the law, in the reed-tongue as well"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "You repeat it in the marsh-tongue, so the Reed-folk at the back hear that the toll is fixed, not just higher. The law passes with fewer grumbles. Fiske pays well and the Reed-folk remember."
+fx = ["rep:court:12", "rep:reed:-3", "xp:reed-witch:2", "tallies:14-22", "mark:q-toll-inquiry-end-law"]
+[[event.option]]
+label = "Leave the hall before the vote"
+[event.option.win]
+text = "You slip out to the quay. The vote happens without you. You hear the cheering from the water and nobody sends for you."
+
+[[event]]
+id = "toll-builders-stand"
+title = "The builders' stand"
+text = "The causeway-builders have gathered at the foot of their road with mallets and a banner of old sailcloth. Their foreman, Bram Tallow, is no fool. 'Every plank is ours,' he says. 'Every nail. Tell the Court that, or tell it nothing.' Behind him the causeway groans in the swell."
+tiles = ["causeway"]
+weight = 9
+needs = ["mark:q-toll-inquiry-3", "!mark:q-toll-inquiry-end-law", "!mark:q-toll-inquiry-end-builders", "!mark:q-toll-inquiry-end-bribe"]
+[[event.option]]
+label = "Show the inspector which planks are honest"
+needs = ["trade:boatwright"]
+[event.option.win]
+text = "The boatwright shows Voll which planks are keel-grade and which are Tallow's own coin. The inquiry dissolves in a sulk. The road is theirs. At the next big tide the oldest causeway goes out like a thread."
+fx = ["rep:rakers:10", "rep:court:-8", "xp:boatwright:3", "mark:q-toll-inquiry-end-builders", "world:washout"]
+[[event.option]]
+label = "Vouch for the builders' nail-ledger"
+needs = ["trade:smith"]
+[event.option.win]
+text = "The smith reads the nail-ledger and declares it honest. Tallow weeps into his sleeve. The Court's judgement is withdrawn. The surge that night takes the oldest causeway on the board."
+fx = ["rep:rakers:10", "rep:court:-8", "xp:smith:3", "mark:q-toll-inquiry-end-builders", "world:washout"]
+[[event.option]]
+label = "Stand beside them, whatever the cost"
+needs = ["size:3"]
+[event.option.win]
+text = "Your crew stands in a line at the post and the inspector's men think better of it. The builders keep the road. The tide that follows is rough, and takes the oldest causeway on the board."
+fx = ["rep:rakers:8", "rep:court:-10", "mark:q-toll-inquiry-end-builders", "world:washout"]
+[[event.option]]
+label = "Say nothing and let them stew"
+[event.option.win]
+text = "Tallow glares. You go on. The causeway creaks behind you as if it understood."
+
+[[event]]
+id = "toll-inspector-purse"
+title = "Voll's purse"
+text = "Voll finds you at the water's edge, alone. She is not quite hiding the purse. 'The inquiry could say several things,' she says. 'Some of them are quicker. Some are kinder to the right people. I would be grateful, and so would they.'"
+tiles = ["island", "mudflat"]
+weight = 8
+needs = ["mark:q-toll-inquiry-3", "!mark:q-toll-inquiry-end-law", "!mark:q-toll-inquiry-end-builders", "!mark:q-toll-inquiry-end-bribe"]
+[[event.option]]
+label = "Take the purse and lose your notes"
+needs = ["!trait:steady"]
+[event.option.win]
+text = "The purse is heavy and the notes burn quickly. Voll writes her report with a calm hand. It says very little, politely. You are not mentioned, and neither is the truth."
+fx = ["tallies:30-45", "rep:court:-10", "mark:q-toll-inquiry-end-bribe"]
+[[event.option]]
+label = "Take it, and keep a copy of the notes"
+needs = ["trait:greedy"]
+[event.option.win]
+text = "You pocket the coin and the second copy. Voll never learns. The inquiry fizzles. You have an insurance policy and a pocket of coin that will still need explaining."
+fx = ["tallies:35-50", "rep:court:-8", "mark:q-toll-inquiry-end-bribe"]
+[[event.option]]
+label = "Refuse the purse and walk back to the camp"
+[event.option.win]
+text = "She watches you go, and lets the purse sag. Another day, another offer; the inquiry has not ended. You hear her tent flap fall behind you."
+
+[[event]]
+id = "toll-coin-returns"
+title = "A coin with a heron on it"
+text = "The trader at the quay turns your coin over twice and asks pleasantly where you came by it. It is one of the inspector's, the fresh-minted kind the Court uses and should not spend. 'Everybody saw her give you that,' the trader says. 'Everybody.'"
+poi = ["trader"]
+weight = 8
+needs = ["mark:q-toll-inquiry-end-bribe"]
+[[event.option]]
+label = "Say you found it in the road"
+needs = ["trait:lucky"]
+[event.option.win]
+text = "You say it so easily that the trader laughs. Luck again. You keep the coin, and an uneasy feeling that luck is not a plan."
+fx = ["tallies:3-6"]
+[[event.option]]
+label = "Pay a fine to close the matter"
+[event.option.win]
+text = "The fine is paid. The trader writes a small note in a small book. You walk away poorer, and the coin follows you out of the market."
+fx = ["pay:12", "morale:-3"]
+[[event.option]]
+label = "Give the coin to the board's repair fund"
+needs = ["carry:timber:1"]
+[event.option.win]
+text = "You hand over a plank as well as the coin. The trader writes it down as a gift. It is not forgiveness, but it is a start."
+fx = ["lose:timber:1", "rep:court:3", "morale:2"]
+
+# ============================================================ sealed-cargo
+
+[[event]]
+id = "crate-offer"
+title = "A crate sealed in grey wax"
+text = "Clerk Odalys Marr sits behind a table of seals and string. On it is a crate the size of a bread oven, tied with cord and stamped with a heron in grey wax. 'To the hermit on the far marsh,' she says. 'Unopened. Today is fine. Next week is not.'"
+poi = ["trader"]
+weight = 9
+needs = ["tier:court:1", "!mark:q-sealed-cargo-1"]
+draws = ["trait:steady", "trade:wader"]
+[[event.option]]
+label = "Take the crate and the advance"
+[event.option.win]
+text = "She counts out the advance without looking at you and pushes the crate across. It is heavier than it looks and cooler than it should be. The wax is perfectly unbroken."
+fx = ["tallies:6-10", "mark:q-sealed-cargo-1"]
+[[event.option]]
+label = "Ask for double, since it is urgent"
+needs = ["tier:court:2"]
+[event.option.win]
+text = "Known to the Court, you have standing to haggle. Marr's mouth tightens, then she doubles it. 'Do not make me regret that,' she says. The crate is ready."
+fx = ["tallies:12-18", "mark:q-sealed-cargo-1"]
+[[event.option]]
+label = "Carry it for nothing, to be owed a favour"
+needs = ["trait:steady"]
+[event.option.win]
+text = "She looks at you a little longer than is polite. 'A steady clan,' she says. 'Good. The Court will remember that.' The crate is handed over without a coin."
+fx = ["rep:court:3", "mark:q-sealed-cargo-1"]
+[[event.option]]
+label = "Decline, the crate smells wrong"
+[event.option.win]
+text = "She shrugs and waves the next person forward. The crate sits on the table behind her like a patient dog."
+
+[[event]]
+id = "crate-offer-quay"
+title = "The clerk on the quay"
+text = "A clerk in a Court coat paces the end of a little reed-quay on an island, with a wax-sealed crate on a hand-barrow. Odalys Marr counts the days on her fingers. 'You,' she says, as if she had been expecting you. 'You have a boat or a good pair of boots. Take this to the far marsh.'"
+tiles = ["island"]
+weight = 7
+needs = ["tier:court:1", "!mark:q-sealed-cargo-1"]
+[[event.option]]
+label = "Take the crate and the advance"
+[event.option.win]
+text = "The advance is small and the crate is cold. A heron stands on the quay's last post and watches the transfer as if the matter were its own. Marr hurries away along the reeds."
+fx = ["tallies:5-9", "mark:q-sealed-cargo-1"]
+[[event.option]]
+label = "Take it by boat and ask for the boat's fare"
+needs = ["boat"]
+[event.option.win]
+text = "You name the price of the boat. Marr pays it, wincing. The crate rides in the bow like a quiet passenger who has not been introduced."
+fx = ["tallies:10-15", "mark:q-sealed-cargo-1"]
+[[event.option]]
+label = "Leave it, you have a long way to go"
+[event.option.win]
+text = "She sighs. The heron does not move. You go on. Somebody else will be offered the work, and the crate will be carried."
+
+[[event]]
+id = "crate-follower"
+title = "The man in good boots"
+text = "A man in clean boots has been walking behind you since the last bridge, in a way that does not look like walking behind you. He catches up at the edge of the flat. 'Silas Quill,' he says. 'I act for people who would like to know what you carry. A look. Nothing more.'"
+tiles = ["mudflat", "reedbed"]
+weight = 9
+needs = ["mark:q-sealed-cargo-1", "!mark:q-sealed-cargo-2"]
+[[event.option]]
+label = "Tell him it is not yours to show"
+[event.option.win]
+text = "'No harm,' says Quill, and tips his hat. He falls behind, but not far. In the next hour you see his boots twice, a long way back, going where you go."
+fx = ["rep:court:1", "mark:q-sealed-cargo-2"]
+[[event.option]]
+label = "Show him the wax and nothing more"
+needs = ["trade:salvager"]
+[event.option.win]
+text = "The salvager shows him an unbroken seal. Quill peers, and sees that it has been well kept. 'Pity,' he says. He lingers, then takes a longer route round, wearing the look of a man doing arithmetic."
+fx = ["xp:salvager:2", "mark:q-sealed-cargo-2"]
+[[event.option]]
+label = "Put your fighter between him and the crate"
+needs = ["trade:fighter"]
+skill = "fighter"
+risk = 25
+[event.option.win]
+text = "The fighter says nothing and stands. Quill finds a sudden interest in the weather. He goes back along the flat without his dignity and without his questions."
+fx = ["xp:fighter:2", "mark:q-sealed-cargo-2"]
+[event.option.lose]
+text = "Quill's hired man comes out of the reeds and hits you before anyone is ready. The crate is not taken but your fighter is hurt, and Quill has a long look at the seal."
+fx = ["hurt:fighter:fight", "mark:q-sealed-cargo-2"]
+[[event.option]]
+label = "Lie that the crate is a coffin"
+needs = ["trait:lucky"]
+[event.option.win]
+text = "Quill takes off his hat and goes pale. 'My condolences,' he says. He leaves at speed. The crate hums, faintly, as if it had enjoyed that."
+fx = ["morale:2", "mark:q-sealed-cargo-2"]
+
+[[event]]
+id = "crate-far-reeds"
+title = "The far reeds at night"
+text = "Past the last cut reed the marsh goes quiet. The crate has been getting colder through the day, and now frost grows on the cord although the night is mild. The wax is still whole. Something inside taps once, twice, as if remembering how."
+tiles = ["reedbed", "mere"]
+day = ["night", "dusk"]
+weight = 9
+needs = ["mark:q-sealed-cargo-2", "!mark:q-sealed-cargo-3"]
+[[event.option]]
+label = "Wrap the crate in oilskin and press on"
+needs = ["carry:rope:1"]
+[event.option.win]
+text = "You bind the crate in wet oilskin and rope and walk on at a steady pace. The tapping stops somewhere near dawn. You are not sure whether that is better."
+fx = ["lose:rope:1", "mark:q-sealed-cargo-3"]
+[[event.option]]
+label = "Sing it quiet, in the old marsh way"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "The reed-witch hums the bell-ringers' lull. The crate stops tapping. The cold goes out of it like an animal settling. She says nothing about what she thinks is inside."
+fx = ["xp:reed-witch:2", "mark:q-sealed-cargo-3"]
+[[event.option]]
+label = "Walk on and say nothing about it"
+[event.option.win]
+text = "Nobody speaks until dawn. Somebody puts a hand on the crate and takes it away again, fast. You reach the far marsh grey in the face, and with a story nobody wants to tell."
+fx = ["morale:-3", "mark:q-sealed-cargo-3"]
+[[event.option]]
+label = "Put the crate down and sleep a way off from it"
+needs = ["trait:fearful"]
+[event.option.win]
+text = "You camp forty steps off and tie it to a post. In the morning it is just a crate, wet with dew. The fearful among you feel foolish and rested."
+fx = ["morale:2", "mark:q-sealed-cargo-3"]
+
+[[event]]
+id = "crate-hermit-door"
+title = "The hermit's door"
+text = "The hermit, Old Corvane, opens the door of a hut made from an upturned boat. He looks at the crate and then at you. 'Is the heron whole?' he asks. 'Do not say it is. Show me.' The seal is whole. The crate is quiet, as if holding its breath."
+poi = ["hermit"]
+weight = 9
+needs = ["mark:q-sealed-cargo-3", "!mark:q-sealed-cargo-end-deliver", "!mark:q-sealed-cargo-end-open", "!mark:q-sealed-cargo-end-sell"]
+[[event.option]]
+label = "Hand it over, unopened"
+[event.option.win]
+text = "Corvane takes it as one takes a sleeping child. He breaks the wax with his thumb, looks, and weeps a little, quietly. 'You were told to bring it whole,' he says. 'Thank you.' He pays, and he has more work for you."
+fx = ["rep:court:10", "tallies:18-26", "mark:q-sealed-cargo-end-deliver"]
+[[event.option]]
+label = "Hand it over and ask what it was"
+needs = ["trade:healer"]
+[event.option.win]
+text = "'My wife's letters,' says Corvane, 'and a lock of hair, and a pair of boots she never wore.' The healer sits with him a while. He gives you salve for the trouble, and the Court hears of it."
+fx = ["rep:court:10", "heal:any:2", "xp:healer:2", "mark:q-sealed-cargo-end-deliver"]
+[[event.option]]
+label = "Take the crate away again"
+[event.option.win]
+text = "He lets you go without a word, and shuts the door. You will have to decide, one way or the other, what the crate is for."
+
+[[event]]
+id = "crate-opened-night"
+title = "A knife at the heron"
+text = "The fire is low. The crate sits at the edge of the light, grey and patient. Nobody has said what they all think: it would take one cut. The wax is only wax. The hermit is a week away, and nobody would know."
+camp = true
+weight = 8
+needs = ["mark:q-sealed-cargo-3", "!mark:q-sealed-cargo-end-deliver", "!mark:q-sealed-cargo-end-open", "!mark:q-sealed-cargo-end-sell"]
+[[event.option]]
+label = "Cut the seal and take what is inside"
+needs = ["trait:greedy"]
+skill = "salvager"
+risk = 30
+[event.option.win]
+text = "The wax splits with a sound like a cough. Inside, in a nest of salt-grass: a relic of the old world, still cold. The seal cannot be mended. The fire gutters once, as if something had passed."
+fx = ["gain:relic:1-1", "rep:court:-12", "mark:q-sealed-cargo-end-open"]
+[event.option.lose]
+text = "The wax splits and a breath comes out of the crate, cold as a well. You lose a hand's feeling for an hour. The relic is there, but the cold stays with the one who cut."
+fx = ["gain:relic:1-1", "hurt:lead:cold", "rep:court:-12", "mark:q-sealed-cargo-end-open"]
+[[event.option]]
+label = "Work the seal off with a heated blade, and keep the relic"
+needs = ["trade:smith"]
+skill = "smith"
+risk = 20
+[event.option.win]
+text = "The smith heats the blade and lifts the wax whole. Inside: a relic, wrapped in a child's blanket. The smith reseals the empty crate neatly. It will pass for a while, and the Court will learn."
+fx = ["gain:relic:1-1", "rep:court:-12", "xp:smith:3", "mark:q-sealed-cargo-end-open"]
+[event.option.lose]
+text = "The wax tears. Beneath it the relic hums and a blue light runs up the blade into the smith's hand. You keep the thing, and the burn, and nobody sleeps."
+fx = ["gain:relic:1-1", "hurt:smith:hurt", "rep:court:-12", "mark:q-sealed-cargo-end-open"]
+[[event.option]]
+label = "Leave it alone, and sleep with your back to it"
+[event.option.win]
+text = "You turn your back on the temptation. The crate sits through the night like a stone in a shoe. In the morning it is still whole, and so is your resolve, more or less."
+
+[[event]]
+id = "crate-rival-quay"
+title = "Quill's quay"
+text = "Silas Quill sits at a folding table at the end of a Tidecourt quay as if he had been waiting years. He does not look at the crate but at you. 'I will pay for the crate,' he says. 'Not for what is in it. I can wait for that. For the heron, unbroken, delivered here.'"
+poi = ["trader"]
+weight = 9
+needs = ["mark:q-sealed-cargo-3", "!mark:q-sealed-cargo-end-deliver", "!mark:q-sealed-cargo-end-open", "!mark:q-sealed-cargo-end-sell"]
+[[event.option]]
+label = "Sell him the crate"
+needs = ["!trait:steady"]
+[event.option.win]
+text = "He pays in good coin and signs for it with a flourish. Marr's clerk sees the exchange from across the quay. She does not wave. A day later a sack of Guild thanks arrives, which is useful and worthless."
+fx = ["tallies:25-40", "rep:court:-8", "rep:rakers:4", "mark:q-sealed-cargo-end-sell"]
+[[event.option]]
+label = "Sell it and haggle for the barrow too"
+needs = ["trait:greedy"]
+[event.option.win]
+text = "He winces and pays for the barrow. You pocket more than you expected and slightly less than you wanted. The hermit will never know why the crate did not come."
+fx = ["tallies:32-48", "rep:court:-9", "mark:q-sealed-cargo-end-sell"]
+[[event.option]]
+label = "Tell him it is not for sale"
+[event.option.win]
+text = "He folds his hands and smiles. 'Then I will wait,' he says. You have the feeling that he will."
+
+[[event]]
+id = "crate-parcel-pays"
+title = "Corvane's second parcel"
+text = "The hermit's boat-hut has a new thing on its rail: a bundle for you, tied with the same grey cord. Corvane waves from the door. 'For the heron-bearers,' he says. 'He who delivers is paid twice.' There is a note: 'Come again with the Court's letters.'"
+poi = ["hermit"]
+weight = 8
+needs = ["mark:q-sealed-cargo-end-deliver"]
+[[event.option]]
+label = "Take the bundle and thank him"
+[event.option.win]
+text = "Inside: cured eel, a knot of rope, a few tallies in a twist of paper. It is the same every time, and every time it is exactly enough."
+fx = ["gain:fish:3-5", "gain:rope:1", "tallies:8-14"]
+[[event.option]]
+label = "Carry the Court's reply back for him"
+needs = ["carry:food:1"]
+[event.option.win]
+text = "You take a letter he has written and a loaf you can spare. Corvane is pleased, and pays the freight. The Court will read the letter, and not smile."
+fx = ["lose:food:1", "tallies:12-18", "rep:court:2"]
+
+[[event]]
+id = "crate-seal-cold"
+title = "The cold that follows the seal"
+text = "The wreck where you shelter for the night has a clean cold in it that is not the weather. The relic you took from the heron crate hums in its sack, and the ones you left at the fire sleep badly. A small grey heron stands in the shallows, watching."
+tiles = ["wreck", "peat-bog"]
+weight = 8
+needs = ["mark:q-sealed-cargo-end-open"]
+[[event.option]]
+label = "Sit up with it and do not look away"
+needs = ["trait:steady"]
+[event.option.win]
+text = "You sit until dawn. The humming settles, a little. The heron leaves at first light. You are tired, and slightly less haunted."
+fx = ["morale:2", "xp:fighter:1"]
+[[event.option]]
+label = "Salt the doorways and sing the lull"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "The reed-witch salts the sills and sings. The cold leaves in sullen steps. She tells you the relic will take more than one night of that, and the heron on the bank agrees."
+fx = ["xp:reed-witch:2", "morale:1"]
+[[event.option]]
+label = "Take the cold and call it a bad night"
+[event.option.win]
+text = "You do not sleep. In the morning the whole crew looks older than it did. The sack is quiet at last, and the mark of the thing does not leave the one who cut the wax."
+fx = ["hurt:any:cold", "morale:-4"]
+
+# ============================================================ drowned-assize
+
+[[event]]
+id = "assize-registrar"
+title = "Registrar Teal's red tape"
+text = "Registrar Mabry Teal keeps a tiny office behind the market hall, lit by a lamp and stacked with ledgers. She holds up a tin tube with red tape round it. 'The old assize kept its rolls in tubes like this,' she says. 'Find them. Before somebody less honest does.'"
+poi = ["trader"]
+weight = 8
+needs = ["tier:court:2", "!mark:q-drowned-assize-1"]
+draws = ["trade:salvager"]
+[[event.option]]
+label = "Take the commission and the empty tube"
+[event.option.win]
+text = "She gives you the tube, a chart of the old town, and a day's food. 'The rolls will be wet,' she says. 'Do not dry them in the sun.' You pocket the chart and the warning."
+fx = ["gain:food:2-3", "chart:2", "mark:q-drowned-assize-1"]
+[[event.option]]
+label = "Ask what the rolls are really worth"
+needs = ["trade:raker"]
+[event.option.win]
+text = "The raker asks the right question. Teal looks at the door, then lowers her voice. 'Who owned what, before the water.' You take the tube and the knowledge, and a little extra coin to keep quiet about it."
+fx = ["tallies:6-10", "xp:raker:2", "mark:q-drowned-assize-1"]
+[[event.option]]
+label = "Turn the work down, she looks too nervous"
+[event.option.win]
+text = "She nods as if it is the answer she expected, and goes back to her ledgers. The tube stays on her desk with its red ribbon curling."
+
+[[event]]
+id = "assize-plaque"
+title = "Red tape on a drowned door"
+text = "A door in a half-drowned street still has a brass plaque: ASSIZE in letters worn almost smooth. A scrap of red tape hangs from the latch, rotten and bright. Registrar Teal described just such a door. There are other clans' footprints in the silt, a day old."
+tiles = ["drowned-town"]
+weight = 7
+needs = ["tier:court:2", "!mark:q-drowned-assize-1"]
+[[event.option]]
+label = "Copy the plaque and mark the street"
+[event.option.win]
+text = "You copy the plaque with a charcoal stick and tally the street's turns. The Court will want this. A courier meets you on the way back and takes your word for the rest."
+fx = ["chart:2", "rep:court:2", "mark:q-drowned-assize-1"]
+[[event.option]]
+label = "Strip the brass as well"
+needs = ["trade:salvager"]
+[event.option.win]
+text = "The salvager lifts the plaque whole and pockets it. It is good brass. Somebody at the Court will want to know where it came from; you tell them, and they pay."
+fx = ["gain:iron:2-3", "xp:salvager:2", "mark:q-drowned-assize-1"]
+[[event.option]]
+label = "Follow the other footprints"
+needs = ["trait:quick-study"]
+[event.option.win]
+text = "The footprints lead to a cold fire and a note nailed to a post: 'Red tube, third stair.' Another clan was here first and could not read the town. You can, and now you can find it."
+fx = ["chart:3", "mark:q-drowned-assize-1"]
+
+[[event]]
+id = "assize-stair"
+title = "The stair to the flooded court"
+text = "The assize hall is a roofless shell, its floor a black pool. Under the water the old court stair goes down, each step green and slick, to a door with a lintel carved in a scale and a heron. The pool is cold and very clear, and it breathes."
+tiles = ["drowned-town"]
+water = ["low", "mid"]
+weight = 9
+needs = ["mark:q-drowned-assize-1", "!mark:q-drowned-assize-2"]
+[[event.option]]
+label = "Wade down on a rope"
+needs = ["carry:rope:1"]
+skill = "wader"
+risk = 25
+[event.option.win]
+text = "The rope holds. You find the door by feel, open it, and cold air comes out like a long sigh. Beyond is the court, and the tube-room beyond that. The stair is known now."
+fx = ["xp:wader:2", "mark:q-drowned-assize-2"]
+[event.option.lose]
+text = "The fourth step is not there. You hang on the rope in black water while the others haul. You know the stair now, and the cold of it will not leave your legs."
+fx = ["hurt:wader:water", "mark:q-drowned-assize-2"]
+[[event.option]]
+label = "Take the boat down the stair"
+needs = ["boat"]
+[event.option.win]
+text = "The boat slides down the flooded steps like a hand into a glove. You light the lamp and row into the old court under a ceiling of glass-green water, unharmed."
+fx = ["xp:boatwright:2", "mark:q-drowned-assize-2"]
+[[event.option]]
+label = "Read the town's old plan and find a dry way down"
+needs = ["skill:salvager:2"]
+[event.option.win]
+text = "The salvager reads the cornices and the pillar marks, and finds a stair at the back of the hall that runs above the waterline. The way is long, and dry."
+fx = ["xp:salvager:3", "mark:q-drowned-assize-2"]
+[[event.option]]
+label = "Look at the water a while, and go on"
+[event.option.win]
+text = "You walk the rim of the pool and mark a few places. No stair, and no tube. The silence of the place does not change."
+
+[[event]]
+id = "assize-witch-warning"
+title = "An old woman at the shrine"
+text = "At a drowned-town shrine a reed-witch is weaving a net of small bells. She does not look up. 'Court wants the rolls,' she says. 'Guild wants the rolls. Nobody asks the ones the rolls were about.' She points a bone needle toward the third stair, left of the bell tower."
+poi = ["shrine"]
+weight = 7
+needs = ["mark:q-drowned-assize-1", "!mark:q-drowned-assize-2"]
+[[event.option]]
+label = "Ask her which stair, and thank her"
+[event.option.win]
+text = "She tells you plainly: the third, left of the bell tower, behind the pillar with the fish. 'And mind the heron,' she says, 'the old one, in the stair.' You mind it."
+fx = ["chart:2", "mark:q-drowned-assize-2"]
+[[event.option]]
+label = "Offer salt for an honest account"
+needs = ["carry:salt:1"]
+[event.option.win]
+text = "She takes the salt and gives you the whole account: the town, the eviction, the roll of names in the Court's own ink. 'My grandmother's name is in there,' she says. Then the way down."
+fx = ["lose:salt:1", "rep:reed:2", "mark:q-drowned-assize-2"]
+[[event.option]]
+label = "Ring one of her bells and ask again"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "A witch knows how to ask a witch. She laughs and rings the bell in a way that tells you the stair, the guard and the price. 'Burn them if you can,' she says, quite gently."
+fx = ["xp:reed-witch:2", "rep:reed:3", "mark:q-drowned-assize-2"]
+
+[[event]]
+id = "assize-cellar"
+title = "Cellar of the red tubes"
+text = "The rolls are in a cellar under the court, in racks of tin tubes with red tape faded to pink. Water laps the bottom row. Something glistens on the wall, long and slow. 'Leeches,' someone says, and nobody has to say more. The tubes are all still sealed."
+tiles = ["drowned-town"]
+weight = 9
+needs = ["mark:q-drowned-assize-2", "!mark:q-drowned-assize-3"]
+[[event.option]]
+label = "Lift the tubes out one at a time, quickly"
+skill = "salvager"
+risk = 25
+[event.option.win]
+text = "You take twelve tubes in twelve trips and nobody is bitten. Every tube is sealed, every roll dry. You bring them up into the light and they smell of old cedar."
+fx = ["xp:salvager:2", "mark:q-drowned-assize-3"]
+[event.option.lose]
+text = "The leeches come off the wall in a long ripple. You get the tubes out and a few bites in. The rolls are saved. You will find it harder to like cellars."
+fx = ["hurt:any:sickness", "mark:q-drowned-assize-3"]
+[[event.option]]
+label = "Smoke the cellar out first"
+needs = ["carry:peat:1"]
+[event.option.win]
+text = "You burn peat at the door and the leeches drop from the walls like wet fruit. The tubes come out without a scratch. The peat is gone, and the cellar smells of old bog and gratitude."
+fx = ["lose:peat:1", "mark:q-drowned-assize-3"]
+[[event.option]]
+label = "Fight the leeches out of the way"
+needs = ["trade:fighter", "size:3"]
+[event.option.win]
+text = "The fighters take the wall in a line. There are a great many leeches, and then there are not. The rolls come up in good order, and nobody wants to talk about the cellar."
+fx = ["xp:fighter:2", "mark:q-drowned-assize-3", "fight:leech-swarm"]
+
+[[event]]
+id = "assize-reading"
+title = "The rolls by lamplight"
+text = "You unseal a tube with the camp knife. The roll inside is in a clerk's tidy hand: names, plots, charges. It says that the Reed-folk's holdings in the old town were taken by order of the assize, and that a Guild factor signed for the sale. There are twelve more tubes."
+camp = true
+weight = 9
+needs = ["mark:q-drowned-assize-3", "!mark:q-drowned-assize-4"]
+[[event.option]]
+label = "Read all of it, and decide what it is for"
+[event.option.win]
+text = "It takes the night. By dawn you know what the Court did and what the Guild paid for, and what the Reed-folk lost. You will have to choose who gets the truth, and who gets the tubes."
+fx = ["morale:-2", "mark:q-drowned-assize-4"]
+[[event.option]]
+label = "Copy the important pages in secret"
+needs = ["trait:quick-study"]
+[event.option.win]
+text = "You copy fast and small. Three pages of names and prices. They fit in a boot. Whatever you do with the originals, the copy will be yours."
+fx = ["xp:raker:1", "mark:q-drowned-assize-4"]
+[[event.option]]
+label = "Put the lid back and sleep on it"
+needs = ["trait:fearful"]
+[event.option.win]
+text = "You reseal the tube and sit on it. In the morning you feel no wiser, but the roll's weight is the same and the answer comes a little clearer."
+fx = ["mark:q-drowned-assize-4"]
+
+[[event]]
+id = "assize-restore"
+title = "The rolls come home"
+text = "Registrar Teal receives the tubes in her office as if they were children. She turns each one over and breathes on the tape. The lamp throws a long shadow of her across the shelves. 'The assize can sit again,' she says. 'The Court has its memory.'"
+poi = ["trader"]
+weight = 9
+needs = ["mark:q-drowned-assize-4", "!mark:q-drowned-assize-end-restore", "!mark:q-drowned-assize-end-burn", "!mark:q-drowned-assize-end-sell"]
+[[event.option]]
+label = "Hand over the rolls"
+[event.option.win]
+text = "She signs the receipt in front of three witnesses. The Chancellor sends a cask of good salt and a letter of thanks. Guild men look at you across the market, and are slow to look away."
+fx = ["rep:court:12", "rep:rakers:-5", "gain:salt:4-6", "mark:q-drowned-assize-end-restore"]
+[[event.option]]
+label = "Hand them over and ask for the assize seal"
+needs = ["tier:court:3"]
+[event.option.win]
+text = "A Trusted clan can ask. Teal stamps the receipt with the assize seal, a heron in red. It will open a few doors. The Chancellor's own pen adds a line to the register."
+fx = ["rep:court:14", "rep:rakers:-6", "tallies:12-18", "mark:q-drowned-assize-end-restore"]
+[[event.option]]
+label = "Keep the tubes and go away"
+[event.option.win]
+text = "Teal watches you leave with the tubes under your arm. 'Come back when you know what they are for,' she says. She is right, and unforgiving about it."
+
+[[event]]
+id = "assize-burn"
+title = "A pyre for the old claims"
+text = "The reed-witch from the drowned-town shrine has built a pyre of reeds on the shrine's step. The Reed-folk stand in a half circle, mud to the knees, silent. Everyone has brought a name. Nobody says what the pyre is for. It is waiting for the tubes."
+poi = ["shrine"]
+weight = 8
+needs = ["mark:q-drowned-assize-4", "!mark:q-drowned-assize-end-restore", "!mark:q-drowned-assize-end-burn", "!mark:q-drowned-assize-end-sell"]
+[[event.option]]
+label = "Burn the rolls on the pyre"
+[event.option.win]
+text = "The tubes burn with a clean, oily flame. The names go up in a long grey rope. The Reed-folk weep and laugh and share their eels. The Court will know, in time, who was not there to stop it."
+fx = ["rep:reed:12", "rep:court:-8", "gain:fish:4-6", "mark:q-drowned-assize-end-burn"]
+[[event.option]]
+label = "Burn them, and let the witch read the first names aloud"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "The witch reads the names of the families the assize struck from the town. The Reed-folk answer each one. The roll burns slowly, as if it were being heard. The Court's displeasure comes later."
+fx = ["rep:reed:14", "rep:court:-10", "xp:reed-witch:3", "mark:q-drowned-assize-end-burn"]
+[[event.option]]
+label = "Carry the tubes away from the fire"
+[event.option.win]
+text = "The Reed-folk watch you go without a word. Somebody puts out the pyre. It will be built again."
+
+[[event]]
+id = "assize-sell"
+title = "The factor on the salt-pan"
+text = "A pan-boss's tent on the salt-pan has a clean tarpaulin and a clean table. Factor Brannoch Gale, in a Guild coat, does not rise. 'I hear you have some old paper,' he says. 'The Guild would like to own it. For tidiness. We pay promptly.'"
+tiles = ["salt-pan"]
+weight = 8
+needs = ["mark:q-drowned-assize-4", "!mark:q-drowned-assize-end-restore", "!mark:q-drowned-assize-end-burn", "!mark:q-drowned-assize-end-sell"]
+[[event.option]]
+label = "Sell him the tubes"
+[event.option.win]
+text = "He counts the price into your hand, in good coin, without arguing. The tubes go into a locked chest. Somebody at the Court will hear of it by morning."
+fx = ["rep:rakers:10", "rep:court:-7", "tallies:30-45", "mark:q-drowned-assize-end-sell"]
+[[event.option]]
+label = "Sell them and haggle for salt as well"
+needs = ["trade:raker"]
+[event.option.win]
+text = "The raker names a price in salt and tallies, and Gale pays it with a thin smile. The tubes are his, the salt is yours, and the rolls are never mentioned again in your hearing."
+fx = ["rep:rakers:12", "rep:court:-8", "tallies:30-42", "gain:salt:3-5", "xp:raker:2", "mark:q-drowned-assize-end-sell"]
+[[event.option]]
+label = "Decline and keep walking"
+[event.option.win]
+text = "Gale lifts a hand in a mild gesture. 'The offer will keep,' he says. It sounds like a threat, and may be."
+
+[[event]]
+id = "assize-sits"
+title = "The assize sits"
+text = "The Court has convened in the old way, in the market hall, under the heron banner. The Registrar reads from the restored rolls. A name is struck from a fine, a plot is returned, and a clerk looks up and finds you in the crowd. 'Clan of the tubes,' she says. 'The Court remembers.'"
+poi = ["trader"]
+weight = 8
+needs = ["mark:q-drowned-assize-end-restore"]
+[[event.option]]
+label = "Accept the Court's thanks"
+[event.option.win]
+text = "The Registrar sends a small purse and a loaf. 'The assize pays its debts,' she says. It is not much, but the whole room saw it paid."
+fx = ["tallies:8-14", "gain:food:2-3", "rep:court:2"]
+[[event.option]]
+label = "Ask for the old fines to be lifted"
+needs = ["tier:court:3"]
+[event.option.win]
+text = "Teal reads the rolls aloud and strikes the fines in two lines. The clan's debts are lighter. Whatever else the assize does, it has done this."
+fx = ["morale:5", "tallies:14-20"]
+[[event.option]]
+label = "Ask the Registrar's healer to see to your crew"
+needs = ["scar"]
+[event.option.win]
+text = "The assize physician reads your scars like a record, finds the oldest injury, and treats it. 'The Court owes you a hand,' she says. It is a plain kindness, and it works."
+fx = ["heal:any:4", "morale:2"]
+
+# ============================================================ dredgers-oath
+
+[[event]]
+id = "dredgers-meet"
+title = "The Patient Mule aground"
+text = "A flat dredge-barge lies tilted in a silted channel, its bucket-chain slack, its crew sitting on the rail eating cold eels. Captain Ruan Dray comes down the plank with a hat in his hand. 'The Mule needs a night's guard and a dredge-head we lost,' he says. 'Do it, and I will swear to clear the Tidecourt's channels.'"
+tiles = ["channel"]
+weight = 9
+needs = ["tier:court:2", "!mark:q-dredgers-oath-1"]
+draws = ["trade:boatwright", "trade:wader"]
+[[event.option]]
+label = "Swear to guard the barge"
+[event.option.win]
+text = "Dray puts a hand on a mud-black chain and makes you do the same. 'It is an old oath,' he says. 'It binds on the Mule.' His crew cheer, mouths full of eel."
+fx = ["rep:court:2", "mark:q-dredgers-oath-1"]
+[[event.option]]
+label = "Offer a boatwright's eye on the barge's hull"
+needs = ["trade:boatwright"]
+[event.option.win]
+text = "The boatwright crawls under the Mule with a lamp and returns with a list of the hull's sins. Dray is thrilled and ashamed. The oath is sworn on a tally-stick, and a free repair."
+fx = ["xp:boatwright:2", "tallies:5-9", "mark:q-dredgers-oath-1"]
+[[event.option]]
+label = "Ask for a share of the first dredged silt-glass"
+needs = ["trait:greedy"]
+[event.option.win]
+text = "Dray scratches under his hat. 'The first load, a third,' he says. You shake on it. The crew mutter. The oath is sworn with less warmth and a little more paper."
+fx = ["tallies:6-12", "mark:q-dredgers-oath-1"]
+[[event.option]]
+label = "Say the eels will not like it, and go on"
+[event.option.win]
+text = "Dray puts his hat back on. 'The eels never like anything,' he says. The Mule stays where she is, tilted in her channel, patient as a stone."
+
+[[event]]
+id = "dredgers-harbour"
+title = "Dray at the harbourmaster's"
+text = "Captain Dray is in the harbourmaster's office arguing with a clerk about the price of a channel. He sees your boots and abandons the clerk. 'The Mule is aground and the dredge-head is lost,' he says. 'I need a clan with a steady hand and a free week. I will pay in oaths and channels.'"
+poi = ["trader"]
+weight = 7
+needs = ["tier:court:2", "!mark:q-dredgers-oath-1"]
+[[event.option]]
+label = "Take the oath and the commission"
+[event.option.win]
+text = "The clerk witnesses it, bored. The oath is short and the work is long. Dray gives you a map of the channels he means to clear, and a small bag of nails."
+fx = ["chart:2", "gain:iron:1-2", "mark:q-dredgers-oath-1"]
+[[event.option]]
+label = "Take the commission, and bring a rope"
+needs = ["carry:rope:1"]
+[event.option.win]
+text = "Dray looks at the rope with respect. 'You will need that,' he says. 'And more.' He pays for it, and the clerk notes the sale."
+fx = ["tallies:7-11", "mark:q-dredgers-oath-1"]
+[[event.option]]
+label = "Refuse, and tell him to find somebody else"
+[event.option.win]
+text = "He bows and goes back to the clerk. The argument resumes with new energy. The Mule will have to wait for another clan."
+
+[[event]]
+id = "barge-night-watch"
+title = "A night on the barge"
+text = "The Mule creaks at her moorings. The dredgers sleep under the deck-tarp. Out in the dark channel something is working the water: a slow circling, a bubble, a sound like a throat. The eels do not like the Mule, and tonight they have come to say so."
+tiles = ["channel", "mudflat"]
+day = ["night", "dusk"]
+weight = 10
+needs = ["mark:q-dredgers-oath-1", "!mark:q-dredgers-oath-2"]
+[[event.option]]
+label = "Keep watch with a lantern and a pole"
+skill = "wader"
+risk = 25
+[event.option.win]
+text = "You sit up all night with the lantern shuttered to a slit and poke at anything that rises. By dawn the channel has stopped muttering. Dray nods at you and says nothing, which is high praise."
+fx = ["xp:wader:2", "mark:q-dredgers-oath-2"]
+[event.option.lose]
+text = "An eel the length of a boat-hook comes over the rail and goes for the nearest ankle. You beat it off and it takes a piece of the lamp and a piece of your leg."
+fx = ["hurt:any:hurt", "mark:q-dredgers-oath-2"]
+[[event.option]]
+label = "Stand the watch in a line, spears out"
+needs = ["trade:fighter", "size:3"]
+[event.option.win]
+text = "Three of you at the rail with spears. The eels test the line twice and think better of it. The dredgers sleep very soundly, and the Mule keeps all her planks."
+fx = ["xp:fighter:2", "rep:court:2", "mark:q-dredgers-oath-2"]
+[[event.option]]
+label = "Fight the eels off the hull"
+needs = ["trade:fighter"]
+[event.option.win]
+text = "They come over the side in pairs and you meet them with the flat of an axe. It is loud and short. The Mule survives with a split plank and a story."
+fx = ["xp:fighter:2", "mark:q-dredgers-oath-2", "fight:eel-pair"]
+[[event.option]]
+label = "Sing the eels quiet"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "The reed-witch sings a low note that is not quite a word. The eels stop circling and drift off into the dark. 'They were only asking,' she says. The dredgers do not sleep any better for it."
+fx = ["xp:reed-witch:2", "rep:reed:1", "mark:q-dredgers-oath-2"]
+
+[[event]]
+id = "barge-eel-wives"
+title = "The eel-wives at the shrine"
+text = "At the channel's shrine, two eel-wives are laying fish heads on the stones. They look up as you come, calm and unfriendly. 'You are the Mule's guard,' says the elder. 'We know what she will do to the water. Guard her all you like. We will watch you guard.'"
+poi = ["shrine"]
+weight = 7
+needs = ["mark:q-dredgers-oath-1", "!mark:q-dredgers-oath-2"]
+[[event.option]]
+label = "Leave a gift of fish at the stones"
+needs = ["carry:fish:1"]
+[event.option.win]
+text = "You set a fish among the heads. The elder tilts her head, as if recording it. 'The Mule's night will be a quiet one,' she says. 'Not a kind one, but quiet.' It is, and you have the oath's first night behind you."
+fx = ["lose:fish:1", "rep:reed:2", "mark:q-dredgers-oath-2"]
+[[event.option]]
+label = "Promise to guard the barge, not the dredging"
+[event.option.win]
+text = "The younger eel-wife snorts. 'That is a fine hair to split,' she says. The night passes with no eels and many stares. By morning the barge is guarded and the water is cold on your side."
+fx = ["rep:court:1", "mark:q-dredgers-oath-2"]
+[[event.option]]
+label = "Ask them where the dredge-head lies"
+needs = ["trait:sea-born"]
+[event.option.win]
+text = "A sea-born asks as one water-person to another. The elder points with a wet finger: past the bend, under the pilings, in the mud with a bent tooth. 'It is an ugly thing,' she says. 'Leave it.'"
+fx = ["chart:2", "mark:q-dredgers-oath-2"]
+
+[[event]]
+id = "sunk-dredge-head"
+title = "The sunk dredge-head"
+text = "Past the bend, under a rotten piling, the channel's mud has a hump in it, and in the hump a row of bent iron teeth. The dredge-head: a cast bucket the size of a coffin, lost in the last spring tide with half the chain still on it. The water over it is dark and sweet."
+tiles = ["channel", "mere"]
+water = ["low", "mid"]
+weight = 9
+needs = ["mark:q-dredgers-oath-2", "!mark:q-dredgers-oath-3"]
+[[event.option]]
+label = "Chain it to the boat and haul"
+needs = ["boat", "carry:rope:1"]
+[event.option.win]
+text = "The boat strains. The head lifts out of the mud with a long wet noise and rides under the stern. It is as ugly as the eel-wife said, and entirely recoverable."
+fx = ["lose:rope:1", "xp:boatwright:2", "mark:q-dredgers-oath-3"]
+[[event.option]]
+label = "Dive down and free the chain by hand"
+needs = ["trade:wader"]
+skill = "wader"
+risk = 30
+[event.option.win]
+text = "The wader goes down three times. The third time the chain comes free. You haul the head to the bank with the whole crew on the rope. It is cold and heavy and entirely whole."
+fx = ["xp:wader:3", "mark:q-dredgers-oath-3"]
+[event.option.lose]
+text = "The wader is under too long and comes up grey, with weed in the teeth and the chain in one fist. The head comes out with the others pulling. It is a near thing."
+fx = ["hurt:wader:water", "mark:q-dredgers-oath-3"]
+[[event.option]]
+label = "Hammer the bent teeth straight where it lies"
+needs = ["trade:smith"]
+[event.option.win]
+text = "The smith works the teeth in cold water, one at a time, with a sledge and a great deal of swearing. The head comes up straighter than it went down. Dray will want to marry the smith."
+fx = ["xp:smith:3", "mark:q-dredgers-oath-3"]
+[[event.option]]
+label = "Mark the place and leave it for now"
+[event.option.win]
+text = "You drive a reed stake beside the piling. The head sits in the mud like something that has all the time in the world."
+
+[[event]]
+id = "dredgers-finish"
+title = "The Mule's first cut"
+text = "The dredge-head is on. The Mule's chain clanks and a first bucket comes up streaming silt. Dray stands on the rail with his hat off. 'The channel by the Tidecourt,' he says. 'Clear to the quay, and walkable. If you stand by me, we cut it. All of it, to the old harbour wall.'"
+tiles = ["channel"]
+weight = 9
+needs = ["mark:q-dredgers-oath-3", "!mark:q-dredgers-oath-end-dredge", "!mark:q-dredgers-oath-end-refuse", "!mark:q-dredgers-oath-end-sabotage"]
+[[event.option]]
+label = "Stand by the Mule and see it done"
+[event.option.win]
+text = "For three days the Mule cuts and the crew dumps silt into the shallows. By the third evening the channels around the Tidecourt run clear and deep, and the whole town walks them. The eels are not pleased."
+fx = ["rep:court:12", "rep:reed:-6", "tallies:14-22", "mark:q-dredgers-oath-end-dredge", "world:dredge"]
+[[event.option]]
+label = "Set the chain's tension and teach the crew the trick"
+needs = ["trade:smith"]
+[event.option.win]
+text = "The smith sets the chain and shows the dredgers how a lock-key sluice should work. The cut goes faster and cleaner. Dray gives you the sluice plan he has been hiding for years."
+fx = ["rep:court:12", "rep:reed:-6", "xp:smith:3", "recipe:sluice-key", "mark:q-dredgers-oath-end-dredge", "world:dredge"]
+[[event.option]]
+label = "Walk away and let the Mule work alone"
+[event.option.win]
+text = "Dray watches you go. The Mule cuts on without you, slower, with an uneasy crew. The oath hangs over the channel like a fog, and has not been honoured."
+
+[[event]]
+id = "dredgers-refuse"
+title = "What the eel-wives asked"
+text = "The elder eel-wife meets you at the shrine's edge at slack water. She does not ask for much. 'Do not let the Mule cut,' she says. 'The channels are ours, and the water is old, and the eels have nowhere else. We will remember who stood on our side.'"
+poi = ["shrine"]
+weight = 9
+needs = ["mark:q-dredgers-oath-3", "!mark:q-dredgers-oath-end-dredge", "!mark:q-dredgers-oath-end-refuse", "!mark:q-dredgers-oath-end-sabotage"]
+[[event.option]]
+label = "Refuse the work and keep the water as it is"
+[event.option.win]
+text = "You send the dredge-head back to the mud with a word to Dray. The eel-wives give you eels, and a salt-knot for luck. Dray does not speak to you again, and the Court notes your absence."
+fx = ["rep:reed:10", "rep:court:-8", "gain:fish:4-6", "mark:q-dredgers-oath-end-refuse"]
+[[event.option]]
+label = "Refuse, and say so loudly at the quay"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "The reed-witch speaks for the eel-wives at the Court's quay, in marsh-tongue and in plain. People listen, though not kindly. The dredging is shelved. The Reed-folk bring gifts."
+fx = ["rep:reed:12", "rep:court:-10", "xp:reed-witch:2", "gain:fish:4-6", "mark:q-dredgers-oath-end-refuse"]
+[[event.option]]
+label = "Say you will think about it"
+[event.option.win]
+text = "The elder nods slowly, without pleasure. 'Think quickly,' she says. The tide turns behind her."
+
+[[event]]
+id = "dredgers-sabotage"
+title = "A word in the night"
+text = "A man in a good coat finds you at the Mule's mooring after dark. He calls himself Merrow Quill and says he acts for a rival barge-master who would like the Mule to stay aground. He has a bag of coin and a small cask. 'Pitch,' he says. 'And a bung to pull.'"
+tiles = ["channel", "mudflat"]
+day = ["night", "dusk"]
+weight = 8
+needs = ["mark:q-dredgers-oath-3", "!mark:q-dredgers-oath-end-dredge", "!mark:q-dredgers-oath-end-refuse", "!mark:q-dredgers-oath-end-sabotage"]
+[[event.option]]
+label = "Pull the bung and fire the pitch"
+needs = ["!trait:steady"]
+skill = "wader"
+risk = 30
+[event.option.win]
+text = "The Mule settles in the channel with a long groan, her planks open to the tide. Nobody sees. Quill pays in good coin, and the dredge-head goes down again. Dray weeps at the rail."
+fx = ["tallies:28-40", "rep:court:-10", "mark:q-dredgers-oath-end-sabotage"]
+[event.option.lose]
+text = "A dredger wakes and shouts. There is a scuffle on the deck, the pitch flares, and you are chased off the barge with a burn and a bad conscience. The Mule is wrecked all the same."
+fx = ["tallies:14-20", "rep:court:-12", "hurt:any:hurt", "mark:q-dredgers-oath-end-sabotage", "fight:rival-crew"]
+[[event.option]]
+label = "Do it quietly with a hidden knife"
+needs = ["trait:greedy"]
+[event.option.win]
+text = "You cut the bilge-line with a hidden knife and leave the pitch for the next fool. The Mule is out of the water by morning. Quill is as pleased as a man can be who has paid for the wrong thing."
+fx = ["tallies:30-42", "rep:court:-9", "mark:q-dredgers-oath-end-sabotage"]
+[[event.option]]
+label = "Turn him away from the mooring"
+[event.option.win]
+text = "Quill shrugs and walks off into the dark with his cask. He will find somebody else. You stand a while on the plank, listening to the Mule creak."
+
+[[event]]
+id = "dredged-water"
+title = "Clear water by the quay"
+text = "The channel by the Tidecourt runs clear now and a long way down. Children paddle in it. Dray's crew have strung a little rope-rail along the bank. A fat eel lies in the deep, looking up at the sky with open resentment."
+tiles = ["channel"]
+weight = 8
+needs = ["mark:q-dredgers-oath-end-dredge"]
+[[event.option]]
+label = "Fish the cut while the water is clean"
+[event.option.win]
+text = "The cut is deep and the fish are fat. You take a good haul and the dredgers wave from the rail."
+fx = ["gain:fish:4-7", "tallies:2-5"]
+[[event.option]]
+label = "Salute the Mule and share her cook-fire"
+needs = ["carry:food:1"]
+[event.option.win]
+text = "You bring bread to the dredgers' fire. Dray remembers the oath and says so loudly. The Court is told. It is a small thing, and it is remembered."
+fx = ["lose:food:1", "rep:court:3", "morale:3"]
+[[event.option]]
+label = "Leave a fish for the eel"
+needs = ["trait:sea-born"]
+[event.option.win]
+text = "The sea-born puts a fish on the bank. The eel takes it, slowly, and sinks. It is not forgiveness, but it is the nearest thing the water offers."
+fx = ["lose:fish:1", "rep:reed:2", "morale:2"]
+
+[[event]]
+id = "dray-remembers"
+title = "Dray at the market"
+text = "Captain Ruan Dray stands at the market's edge with a crowd of dredgers, a battered hat and no barge. He has been told, or has guessed. He does not shout. He says your clan's name, plainly, as the people turn to see who it is."
+poi = ["trader"]
+weight = 8
+needs = ["mark:q-dredgers-oath-end-sabotage"]
+[[event.option]]
+label = "Put coin on the table for his loss"
+needs = ["carry:iron:1"]
+[event.option.win]
+text = "You pay in iron, and do not say why. Dray looks at it a long time. 'It is not the barge,' he says. He takes it all the same. The market has watched, and has formed a view."
+fx = ["lose:iron:1", "rep:court:2", "morale:-2"]
+[[event.option]]
+label = "Face him down"
+needs = ["trade:fighter"]
+skill = "fighter"
+risk = 30
+[event.option.win]
+text = "You stand your ground. The dredgers have no heart for it. They go away muttering, with the look of men who will be back."
+fx = ["xp:fighter:2"]
+[event.option.lose]
+text = "A dredger throws a bucket and a brawl begins. You get out with bruises and the market's disapproval. Dray watches without a word."
+fx = ["hurt:any:fight", "rep:court:-3", "fight:rival-crew"]
+[[event.option]]
+label = "Slip out through the back of the market"
+[event.option.win]
+text = "You find a gap in the stalls and take it. Dray's eyes follow you out. He does not say anything. He does not need to."
+fx = ["morale:-2"]

@@ -13,6 +13,7 @@
 use russh_bbs_door::DoorRng;
 
 use crate::codec::{Reader, Writer};
+use crate::social::legacy::Ending;
 use crate::social::{ClanIx, Posted, Record, Social, Wire};
 use crate::types::{RESOURCES, Resource};
 
@@ -24,6 +25,35 @@ pub type Prices = [u16; RESOURCES];
 
 /// How many nights of prices the market remembers (two weeks, one tide cycle).
 pub const HISTORY_DAYS: usize = 14;
+
+/// What a clan has done that the season's ending reads (the clan writes it; the world sums it).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct Badge {
+    /// The clan has stood in the Deep.
+    pub deep: bool,
+    /// Quest chains finished.
+    pub quests: u8,
+    /// Contracts finished.
+    pub contracts: u8,
+}
+
+/// A causeway tile laid by a clan.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Span {
+    /// Column.
+    pub x: u8,
+    /// Row.
+    pub y: u8,
+    /// The builder.
+    pub owner: ClanIx,
+    /// The toll in tallies.
+    pub toll: u8,
+    /// The day it was laid.
+    pub laid: i64,
+}
+
+/// The most causeway tiles on the marsh.
+pub const SPANS_CAP: usize = 40;
 
 /// A hold in the registry.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -38,6 +68,8 @@ pub struct ClanEntry {
     pub posted: Posted,
     /// The world's counters about the clan (standing, betrayals, raid and letter counts).
     pub record: Record,
+    /// What the clan has done that the ending reads.
+    pub badge: Badge,
 }
 
 /// The world.
@@ -62,6 +94,12 @@ pub struct World {
     pub history: Vec<Prices>,
     /// Raids, pacts, the exchange, letters and the book of past seasons.
     pub social: Social,
+    /// Causeway tiles on the marsh.
+    pub causeways: Vec<Span>,
+    /// Changes quests made to the marsh (bits of [`crate::story::Flag`]).
+    pub flags: u8,
+    /// How the season before ended (what this one inherited).
+    pub legacy: Ending,
 }
 
 impl World {
@@ -82,6 +120,9 @@ impl World {
             clans: Vec::new(),
             history: Vec::new(),
             social: Social::default(),
+            causeways: Vec::new(),
+            flags: 0,
+            legacy: Ending::Quiet,
         }
     }
 
@@ -109,6 +150,7 @@ impl World {
                     ..Posted::default()
                 },
                 record: Record::default(),
+                badge: Badge::default(),
             });
         }
     }
@@ -195,9 +237,35 @@ impl World {
             .unwrap_or(u32::MAX)
     }
 
-    /// Encode.
+    /// Encode as the current version.
     #[must_use]
     pub fn encode(&self) -> Vec<u8> {
+        let mut bytes = self.encode_v3();
+        let mut w = Writer::new();
+        w.count(self.causeways.len());
+        for c in &self.causeways {
+            w.u8(c.x);
+            w.u8(c.y);
+            w.u8(c.owner);
+            w.u8(c.toll);
+            w.i64(c.laid);
+        }
+        w.u8(self.flags);
+        w.u8(self.legacy.code());
+        for c in &self.clans {
+            w.bool(c.badge.deep);
+            w.u8(c.badge.quests);
+            w.u8(c.badge.contracts);
+        }
+        for b in &self.social.book {
+            w.u8(b.code);
+        }
+        bytes.extend(w.finish());
+        bytes
+    }
+
+    /// The version 3 layout (everything but the version 4 tail).
+    fn encode_v3(&self) -> Vec<u8> {
         let mut w = Writer::new();
         w.u32(self.season);
         w.u64(self.seed);
@@ -227,11 +295,17 @@ impl World {
         w.finish()
     }
 
+    /// Version 3 bytes brought to version 4: nothing laid, no changes, a quiet legacy.
+    #[must_use]
+    pub fn upgrade_v3(bytes: &[u8]) -> Option<Vec<u8>> {
+        Self::decode_layout(bytes, 3).map(|w| w.encode())
+    }
+
     /// Version 2 bytes brought to version 3: nothing is posted yet and the social state is
     /// empty. (A clan posts itself the next time it saves.)
     #[must_use]
     pub fn upgrade_v2(bytes: &[u8]) -> Option<Vec<u8>> {
-        Self::decode_v2(bytes).map(|w| w.encode())
+        Self::decode_v2(bytes).map(|w| w.encode_v3())
     }
 
     /// Version 1 bytes brought to version 2: no scores yet and no history.
@@ -263,7 +337,7 @@ impl World {
     /// Decode, or `None` for bytes that are not a world (an empty blob is "no world yet").
     #[must_use]
     pub fn decode(bytes: &[u8]) -> Option<Self> {
-        Self::decode_layout(bytes, 3)
+        Self::decode_layout(bytes, 4)
     }
 
     /// Decode the version 2 layout (for the migration).
@@ -308,6 +382,7 @@ impl World {
                     score,
                     posted,
                     record,
+                    badge: Badge::default(),
                 })
             })
             .collect::<Option<Vec<_>>>()?;
@@ -325,7 +400,7 @@ impl World {
         } else {
             Social::default()
         };
-        r.done().then_some(Self {
+        let mut w = Self {
             season,
             seed,
             created,
@@ -335,7 +410,36 @@ impl World {
             clans,
             history,
             social,
-        })
+            causeways: Vec::new(),
+            flags: 0,
+            legacy: Ending::Quiet,
+        };
+        if version >= 4 {
+            w.causeways = (0..r.u8()?)
+                .map(|_| {
+                    Some(Span {
+                        x: r.u8()?,
+                        y: r.u8()?,
+                        owner: r.u8()?,
+                        toll: r.u8()?,
+                        laid: r.i64()?,
+                    })
+                })
+                .collect::<Option<Vec<_>>>()?;
+            w.flags = r.u8()?;
+            w.legacy = Ending::from_code(r.u8()?);
+            for c in &mut w.clans {
+                c.badge = Badge {
+                    deep: r.bool()?,
+                    quests: r.u8()?,
+                    contracts: r.u8()?,
+                };
+            }
+            for b in &mut w.social.book {
+                b.code = r.u8()?;
+            }
+        }
+        r.done().then_some(w)
     }
 }
 
@@ -411,10 +515,10 @@ mod tests {
         w.str("Brindle");
         w.u8(4);
         let v1 = w.finish();
-        assert_eq!(World::decode(&v1), None, "version 1 is not version 3");
+        assert_eq!(World::decode(&v1), None, "version 1 is not the current one");
         let v2 = World::upgrade_v1(&v1).unwrap();
-        assert_eq!(World::decode(&v2), None, "version 2 is not version 3");
-        let up = World::decode(&World::upgrade_v2(&v2).unwrap()).unwrap();
+        assert_eq!(World::decode(&v2), None, "version 2 is not the current one");
+        let up = World::decode(&World::upgrade_v3(&World::upgrade_v2(&v2).unwrap()).unwrap()).unwrap();
         assert_eq!((up.season, up.seed, up.last_tick), (2, 77, 20_003));
         assert_eq!(up.clans[0].name, "Brindle");
         assert_eq!(up.clans[0].score, 0);
@@ -449,8 +553,8 @@ mod tests {
             }
         }
         let v2 = w.finish();
-        assert_eq!(World::decode(&v2), None, "version 2 is not version 3");
-        let up = World::decode(&World::upgrade_v2(&v2).unwrap()).unwrap();
+        assert_eq!(World::decode(&v2), None, "version 2 is not the current one");
+        let up = World::decode(&World::upgrade_v3(&World::upgrade_v2(&v2).unwrap()).unwrap()).unwrap();
         assert_eq!((up.season, up.seed, up.last_tick), (3, 99, 20_005));
         assert_eq!(up.clans.len(), 2);
         assert_eq!(

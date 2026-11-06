@@ -1,7 +1,8 @@
 //! The hall's book: what each season came to, written when the next season's world is made,
 //! and the line a clan carries in its own hall about the season it played.
 
-use super::{Wire, caps};
+use super::legacy::{Ending, Tally};
+use super::{Wire, caps, legacy};
 use crate::clan::Clan;
 use crate::codec::{Reader, Writer};
 use crate::world::World;
@@ -75,6 +76,8 @@ pub struct SeasonRecord {
     pub records: Vec<Holder>,
     /// How the season is remembered.
     pub ending: String,
+    /// Which ending it was ([`Ending::code`]); kept in the world's version 4 tail.
+    pub code: u8,
 }
 
 impl Wire for SeasonRecord {
@@ -116,6 +119,7 @@ impl Wire for SeasonRecord {
             top,
             records,
             ending: r.str()?,
+            code: 0,
         })
     }
 }
@@ -179,43 +183,35 @@ impl SeasonRecord {
             best(w, |c| u32::from(c.record.betrayals)),
         );
         let winner = top.first().map_or("nobody", |t| t.0.as_str());
+        let which = which_ending(w);
         Self {
             season: w.season,
             clans: u8::try_from(w.clans.len()).unwrap_or(u8::MAX),
             ending: ending(w, winner),
+            code: which.code(),
             top,
             records,
         }
     }
 }
 
+/// Which ending a world's season comes to.
+#[must_use]
+pub fn which_ending(w: &World) -> Ending {
+    if w.clans.is_empty() {
+        Ending::Quiet
+    } else {
+        Ending::of(&Tally::of(w))
+    }
+}
+
 /// How the season is remembered, by what it was mostly about.
 fn ending(w: &World, winner: &str) -> String {
-    let raids: u32 = w.clans.iter().map(|c| u32::from(c.record.raids_won)).sum();
-    let broken: u32 = w.clans.iter().map(|c| u32::from(c.record.betrayals)).sum();
-    let traded: u32 = w.clans.iter().map(|c| c.record.traded).sum();
-    let pacts = w
-        .social
-        .pacts
-        .iter()
-        .filter(|p| p.state == super::pact::State::Active)
-        .count();
     if w.clans.is_empty() {
         return "The marsh stood empty. The tide came and went and nobody was there to see it."
             .to_owned();
     }
-    let line = if broken >= 3 {
-        "It was a season of broken oaths: the Tidecourt kept a longer list of liars than of friends."
-    } else if raids >= 5 && raids > u32::try_from(pacts).unwrap_or(0) * 2 {
-        "It was a season of raids: the gates were never quiet, and the reed-folk learned to sleep light."
-    } else if traded >= 400 {
-        "It was a season of trade: the Tidecourt's boards were never empty, and the lamps burned late."
-    } else if pacts >= 2 {
-        "It was a season of pacts: lamps were lit between the holds, and the water found fewer open doors."
-    } else {
-        "It was a quiet season: the water did most of the talking."
-    };
-    format!("{line} {winner} held the highest ground.")
+    format!("{} {winner} held the highest ground.", which_ending(w).line())
 }
 
 impl World {
@@ -229,6 +225,9 @@ impl World {
             if !w.social.book.iter().any(|b| b.season == old.season) {
                 w.social.book.push(SeasonRecord::of(old, day));
             }
+            // What the season that ended leaves the one that begins.
+            w.legacy = which_ending(old);
+            legacy::adjust_prices(w.legacy, &mut w.prices);
             let extra = w.social.book.len().saturating_sub(caps::BOOK_SEASONS);
             w.social.book.drain(..extra);
         }

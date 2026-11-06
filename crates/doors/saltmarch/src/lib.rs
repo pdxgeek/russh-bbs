@@ -26,6 +26,7 @@
 //! changed by the framework's daily tick.
 #![forbid(unsafe_code)]
 
+pub mod board;
 pub mod clan;
 pub mod codec;
 pub mod combat;
@@ -65,7 +66,7 @@ pub const DOOR_ID: &str = "saltmarch";
 pub const SAVE_VERSION: u32 = 4;
 
 /// The current world format version.
-pub const WORLD_VERSION: u32 = 3;
+pub const WORLD_VERSION: u32 = 4;
 
 /// Why the door could not be built.
 #[derive(Debug)]
@@ -235,6 +236,9 @@ impl Door for Saltmarch {
             (BlobKind::World, 1) => World::upgrade_v1(bytes).ok_or(MigrateError::Corrupt(1)),
             // Version 3 added the posted defences, the records and the social state.
             (BlobKind::World, 2) => World::upgrade_v2(bytes).ok_or(MigrateError::Corrupt(2)),
+            // Version 4 added the causeways, the quests' changes to the marsh, the legacy and
+            // what each clan has done that the ending reads.
+            (BlobKind::World, 3) => World::upgrade_v3(bytes).ok_or(MigrateError::Corrupt(3)),
             _ => Err(MigrateError::Unsupported(from)),
         }
     }

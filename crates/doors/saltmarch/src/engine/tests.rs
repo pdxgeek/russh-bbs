@@ -325,7 +325,7 @@ fn finishing_a_workshop_teaches_its_recipes_and_ruin_plans_stay_locked() {
         !clan.recipes.iter().any(|r| r == "fuse-silt-glass"),
         "ruin plans are not learned from the workshop"
     );
-    assert_eq!(count(&ev, |e| matches!(e, Event::Learned { .. })), 2);
+    assert_eq!(count(&ev, |e| matches!(e, Event::Learned { .. })), 4);
     assert!(matches!(
         apply(
             &env,
