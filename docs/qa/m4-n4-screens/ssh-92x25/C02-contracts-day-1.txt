@@ -1,0 +1,25 @@
+
+┌─────────────────────────────────────── russh-bbs ────────────────────────────────────────┐
+│Nullroute                                                                                 │
+│                                                                                          │
+│╭ JOBS ──────────────────────────────────────────────────────────────────────────────────╮│
+││#  job     target                                         T  pays  fixer         status ││
+││1  Wipe    Brackwater Bio                                 T1    67 Sister Quill  no tool││
+││2  Wipe    Halcyon Freight                                T1    63 Glass Anna    no tool││
+││3  Plant   Brackwater Bio                                 T1    62 Sister Quill  ready  ││
+││4  Wipe    Pennywhistle Savings                           T1    56 Dovetail      no tool││
+││5  Wipe    Orrery Health                                  T1    50 Dovetail      no tool││
+││6  Plant   Paper Lantern Media                            T3   235 Ostrander     closed ││
+││7  Plant   Kestrel Dynamics                               T2   163 Glass Anna    closed ││
+││8  Steal   Ninefold Bank                                  T2   155 Marrow        closed ││
+││9  Steal   Brackwater Bio                                 T2   153 Glass Anna    closed ││
+│╰────────────────────────────────────────────────────────────────────────────────────────╯│
+│╭ BRIEF ─────────────────────────────────────────────────────────────────────────────────╮│
+││Leave a door ajar  (Sister Quill)                                                       ││
+││Target: Brackwater Bio (tier 1)                                                         ││
+││Sterile, patient, and walled off below the first floor. Leans on                        ││
+│╰────────────────────────────────────────────────────────────────────────────────────────╯│
+│                                                                                          │
+│[Up/Down]choose  [Enter]brief  [1-9]open  [Esc]back                                       │
+└──────────────────────────────────────────────────────────────────────────────────────────┘
+

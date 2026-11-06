@@ -1,0 +1,25 @@
+
+┌─────────────────────────────────────── russh-bbs ────────────────────────────────────────┐
+│Nullroute                                                                                 │
+│                                                                                          │
+│╭ MARKET  marks 29  page 2 ──────────────────────────────────────────────────────────────╮│
+││    script                                        family  effect   pow mem price gate   ││
+││[a] long-way-round                                Hide    reroute  p4  m4    267 rep 10 ││
+││[b] jammer                                        Fight   jam      p2  m2     92        ││
+││[c] hardjam                                       Fight   jam      p4  m4    257 rep 10 ││
+││[d] fork-bomb                                     Fight   fork     p2  m3    123        ││
+││[e] purge-lance                                   Fight   purge    p3  m4    226 rep 10 ││
+││[f] purge-hammer                                  Fight   purge    p6  m5    494 rep 30 ││
+││[g] shredder                                      Utility shred    p1  m2     61        ││
+││[h] blind-eye                                     Utility cutfeed  p1  m1     51        ││
+││[i] log-scrub                                     Utility wipelogs p2  m2     72        ││
+││[j] echo-ping                                     Probe   scan     p3  m2     72        ││
+││[k] sonar                                         Probe   scan     p5  m4    309 rep 12 ││
+││[l] blueprint                                     Probe   map      p3  m3    154 rep 5  ││
+││                                                                                        ││
+││                                                                                        ││
+│╰────────────────────────────────────────────────────────────────────────────────────────╯│
+│Bought implant for 61.                                                                    │
+│[a-l]buy  [Enter]buy selected  [n/p]page  [Esc]back                                       │
+└──────────────────────────────────────────────────────────────────────────────────────────┘
+

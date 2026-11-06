@@ -267,3 +267,76 @@ The look-around view is the text of every screen (the `lines()` of `session.rs`,
 - **N4.** A shared run for a crew would need the map to draw several positions; `MapView` takes one `Run`. A price history in the world would give the market a real sparkline.
 - **UI-8 and UI-9.** The packet that runs along the edges moves with the log; effects (UI-8) could animate it with time. Mouse (UI-9) could pick a node on the map; the node positions are computed in `MapView::render` and would need to be returned.
 - **Wider board layouts.** When the board lets a door use more than 72 columns, `Medium` and `Large` start being seen.
+
+## Implementation notes (M4-N4: social, content, balance, endings)
+
+Status: **Implemented (in review); Verified** by schema, unit, property, replay and migration tests, a two-player crew run through the framework's store, caps tests, the sandbox audit, the balance harness (numbers below) and a walk with the OpenSSH 9.6 client with two accounts on one board ([walk](../qa/m4-n4-walk.md), screenshots in [m4-n4-screens/](../qa/m4-n4-screens/)). Decision D-TBD.
+
+### What is implemented
+
+| Area | What it does | Where |
+|---|---|---|
+| **Crews** | Up to 5 pilots. A leader opens a run on a contract (`g` on the brief), members join (`j`), the leader starts it (`s`), everyone enters (`e`). One shared **trace** (each member adds a share: 100/50/36/28/23 percent for crews of 1 to 5), shared opened locks and scans, **one crew warden** (wakes at the shared threshold or an alarm, lands on whoever moved), per-crew fights. The map shows every mate's initial on its node; the debrief lists the crew's split (points and marks per member). Pay is the job times 100/170/250/330/410 percent for 1 to 5. | `crew.rs`, `session/social.rs`, `session/ui/map.rs` |
+| **The Null Vault (finale)** | A heist for 3 or more pilots (reputation 40, heat under 60): a layered network that needs crack, spoof and overflow in turn, so no single script family can open it. | `net.rs` (`generate_finale`), `crew.rs` |
+| **Honeypots** | Hideout upgrade (60/120/240 marks, 3 levels). A hack on your hideout has a 25 percent chance per level to trip it and hurt the hacker. | `ties.rs`, `social.rs` |
+| **Hacks and bounties** | Hack a rival's posted hideout (6 cycles, settled by the nightly tick, you hear tomorrow). A hit steals 10 percent up to 60 marks. Post a bounty (100 to 400 marks, 20 percent fee) on a pilot at your tier or above; paid to the first hack that gets in, it fries a rig part. | `social.rs` |
+| **Heat between players** | Heat persists, decays slowly and has consequences: a rival can see "hot", heat 70 or more draws an automatic fixer bounty, and a bounty hit adds heat. | `social.rs`, `player.rs` |
+| **Fixer arcs** | 5 arcs, 35 steps, 15 endings, multi-day, branching on choices and stats (a small condition language, `cond.rs`). Steps hand out contracts; some hand out specific fragments. | `content/arcs.toml`, `story.rs`, `cond.rs`, `ties.rs` |
+| **Seasons and endings** | A season closes into the hall with its own ending (7 season endings, 9 epilogues) chosen from the season's tallies; the next season resets holes, learning, heat ties and standings; legends persist. | `content/seasons.toml`, `world.rs` |
+| **Market history** | `World.hist` keeps a nightly price trail (saved, migrated, tested). **The market screen does not draw it yet:** it still shows the price ladder, so the sparkline is a seam for the next pass. | `world.rs`, `save.rs` |
+
+**Caps on griefing.** New characters are safe for 7 days. 2 hacks a day, 2 hits taken a day, 3 days between the same two pilots, 2 bounties per poster, 2 per target, 6 fixer bounties on the board, 2 days of peace after being hit. **Opt out:** `pvp` off (a 2-day wait to opt back in) and `crews_open` off (not invitable). A crewmate cannot be a bounty or hack target. Nothing reads another player's save: every social action is an order or a delivery on the world, applied by the nightly tick, with a receipt (nonce) so it applies once, or refused with a refund (a pending order with no receipt is refunded after 14 days).
+
+**Player text.** The only player-to-player free text is the crew name, the invitation handle and the bounty note; each goes through `Ctx::player_text` or `Ctx::player_name` (so the shared sanitizer, 140 characters and 6 a minute), everything else is a template line from `content/social.toml`. The bounty is shown on the street with the poster's handle: the board can read every post and the screens say so.
+
+### The RPG rule, as implemented in N4
+
+Time comes from `Ctx`, randomness from `DoorRng`. A crew run is an **event log** (`Op` in the world: the contract, a snapshot of holes, alert and learning, each member's deck and skills, and a list of packed `u16` actions). Replay is deterministic (`DoorRng::from_label("nullroute-crew", op.id * 1024 + nth)`), so a member's session rebuilds the whole run from the log and the screens always agree; a stale action (the log moved on) is dropped, which is why a mate's move shows after you reopen. The replay tests, the sandbox audit and a two-player run through `MemoryDoorStore` pin it.
+
+### Content against the launch budget
+
+| | Budget | Now | |
+|---|---|---|---|
+| Corporations | 12 | 12 | met (7 added, 2 fixers) |
+| Node types | 30 | 30 | met (21 corporation-specific mid types) |
+| Countermeasures and wardens | 20 + 3 | 20 + 3 | met |
+| Scripts | 60 | 60 | met |
+| Fragments | 30 | 30 | met |
+| Contract templates | about 80 | 80 | met (from 11) |
+| Fixer arcs | 5 | 5 (35 steps, 15 endings) | met |
+| **Rig parts** | 40 | 15 levels of 5 parts | **short** |
+| **Hideout upgrades** | 15 | not built toward 15 (honeypot and the N1 set) | **short** |
+
+`perks` and `mods` exist in the save but nothing uses them yet.
+
+### Balance: before and after
+
+Before (N2/N3 harness): about 645 runs and 76 to 79 percent done, 3 percent burned, **tier 3 never played, 0 wardens down**; a first N4 pass had about 96 percent dry runs because 17 contract templates asked for an objective the engine cannot do (copy or shred need a vault; plant needs an admin console or a server): fixed, and a validator now rejects such content at load. Changes: the tier 3 security cap 7 to 6 (the best shop script has power 6; 1 in 5 tier 3 networks was unopenable), warden numbers Bulwark 22/3/12 to 16/2/4, Hound 21/3/11 to 15/2/4, Mimic 20/3/10 to 14/2/4 (integrity, armor, strike), warden wake threshold 55 to 45 and arrival 3 to 4, lens and prism fragment weights 5 to 9 and 5 to 8, and the planner now picks scripts that hurt.
+
+`cargo test -p russh-bbs-door-nullroute --test balance -- --nocapture` (debug, about 45 s): 12 bots, 30 days, 4 seeds, one shared world; bots 0 to 5 are two crews of three, bots 6 to 11 are solo, the last bot opts out of hacks on day 10.
+
+| | Runs | Done | Burned |
+|---|---|---|---|
+| Solo tier 1 | 1106 | 751 (68%) | 1 (0%) |
+| Solo tier 2 | 762 | 400 (52%) | 85 (11%) |
+| Solo tier 3 | 169 | 88 (52%) | 37 (22%) |
+| Crew tier 2 | 175 | 117 (67%) | 0 |
+| Crew tier 3 | 48 | 14 (29%) | 0 |
+
+- **Tier 3 is played:** first tier 3 run on day 7 to 13. **Wardens:** woke 17 to 31 times a seed at tiers 2 and 3. In the 30-day runs 0 are downed, because bots prepare (tuned scripts, lens) rarely; in the 60-day seasons the harness downs 2 to 7 tier 3 wardens a seed. The targeted `the_warden_gate` trial (120 tier 3 runs with a warden): before (cap 7, old numbers) the stock deck met 15, downed 0; a prepared hunter met 39, downed 0, burned 68. After: stock met 13, downed 0, burned 56; prepared met 59, **downed 32** (54 percent of meets), burned 77, done 43. So the gate needs preparation, as designed.
+- **Degradation pressure:** 8 to 86 of about 510 runs a seed used a wary or patched script (first row by night 0, up to 3 rows patched at the close).
+- **Crew versus solo:** per-bot earnings over 30 days are about 5.5k for a crew bot against 5.6k for a solo bot: comparable on purpose. Crews burn nothing (the shared trace share and the single warden) but finish tier 3 less often (29 percent against 52 percent), because a tier 3 crew run needs the whole crew carrying the tool.
+- **Hacks, honeypots, bounties** (4 seeds): 92 hacks filed, 46 got in, **24 caught by a honeypot**; 26 bounties posted, 12 paid, 24 automatic fixer bounties (heat at 70); **0 hits on the opted-out bot**.
+- **Finale:** a ready crew cracks it in 5 of 16 seasons (`a_crew_that_is_ready_can_crack_the_finale`); one family alone cannot (60 seasons tried). In the plain 30-day runs 0 of 12.
+- **Endings and branches** (`branch_coverage`, 12 seeds, release): 32 of 35 arc steps and 68 of 80 choices reached by the bots, **15 of 15 arc endings**, 4 of 9 epilogues and season endings {2, 5, 7} in simulation; the rest are reached by the test fixtures (every ending, epilogue and season ending has a replay that reaches it, so none is dead content). Some endings are hit once in 12 seeds: rare by design, reachable.
+
+### What was walked over a real ssh client
+
+The server binary on a fresh SQLite board, two accounts (`founder`, `bob`) with the OpenSSH 9.6 client at 92x25: a crew founded and an invitation accepted, a run opened on the brief, both pilots on one shared map (the other's initial on its node), a lookout fight, a plant, two debriefs showing the crew's split, then the next day (the board's clock moved with `faketime`) a second crew run, the leader leaving the crew, a **bounty posted with a typed note**, the target told next visit, and the street's pages. 51 screenshots. See [the walk](../qa/m4-n4-walk.md) for what it found and what it did not cover.
+
+### Seams and what is not built
+
+- **FW-1** (a `Ctx` read of the current world, a render-time "today", world-aware replay logs) had not landed. The workaround is small: the session sees the world as of `open`; every social action goes through `Session::edit` (an `edit_world` closure that may retry) and re-posts the hideout after each key. A crew member sees a mate's moves after reopening the run, not live. When FW-1 lands, `Session::gather` and `edit` can read the world directly.
+- **Not built:** drawing the price trail on the market screen; taking the heat for a crewmate for a cut; bespoke social widgets (the social screens are bordered text panels, as the look-around text); a live crew refresh; the 25 missing rig parts and the missing hideout upgrades; `perks` and `mods`.
+- Crew names are one handle-shaped word (the framework's name check): no spaces.
+- Honeypots, hacks, the rival list and the arcs were exercised by the tests and the simulation; the walk covered the crew run and the bounty only.
