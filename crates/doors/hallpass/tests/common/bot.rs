@@ -45,6 +45,20 @@ pub struct Policy {
     pub clubs: &'static [&'static str],
     /// Whether to give up a helper when the headmistress asks.
     pub informer: bool,
+    /// Percent of free, evening and night periods spent searching for the east wing's clues.
+    pub sleuth: u32,
+    /// Percent of free periods spent on a scheme against another pupil.
+    pub plots: u32,
+    /// Percent of free periods spent on a rumour.
+    pub rumours: u32,
+    /// Whether to stand in the school election (and canvass), and to vote.
+    pub politics: bool,
+    /// Whether to opt out of player-versus-player play.
+    pub opt_out: bool,
+    /// Whether schemes on other pupils are mischief (true) or kindness (false).
+    pub mean: bool,
+    /// The verdicts this pupil will end the mystery with, in order of preference.
+    pub verdicts: &'static [&'static str],
 }
 
 pub fn cautious() -> Policy {
@@ -64,6 +78,13 @@ pub fn cautious() -> Policy {
         social: 30,
         clubs: &["chess", "paper"],
         informer: false,
+        sleuth: 12,
+        plots: 0,
+        rumours: 10,
+        politics: false,
+        opt_out: false,
+        mean: false,
+        verdicts: &["fenn", "soames", "vane"],
     }
 }
 
@@ -84,6 +105,13 @@ pub fn balanced() -> Policy {
         social: 30,
         clubs: &["robotics", "paper", "chess"],
         informer: false,
+        sleuth: 20,
+        plots: 8,
+        rumours: 10,
+        politics: false,
+        opt_out: false,
+        mean: true,
+        verdicts: &["wren", "fenn", "soames"],
     }
 }
 
@@ -104,6 +132,13 @@ pub fn reckless() -> Policy {
         social: 15,
         clubs: &["rowing"],
         informer: true,
+        sleuth: 15,
+        plots: 15,
+        rumours: 15,
+        politics: false,
+        opt_out: false,
+        mean: true,
+        verdicts: &["bonfire", "wren"],
     }
 }
 
@@ -124,7 +159,14 @@ pub fn variety() -> Policy {
         accuracy: 65,
         social: 40,
         clubs: &["chess", "drama", "rowing", "paper", "robotics", "candle"],
-        informer: false,
+        informer: true,
+        sleuth: 30,
+        plots: 12,
+        rumours: 15,
+        politics: true,
+        opt_out: false,
+        mean: true,
+        verdicts: &["vane", "walk_away", "soames", "fenn", "wren", "bonfire"],
     }
 }
 
@@ -146,7 +188,143 @@ pub fn scholar() -> Policy {
         social: 70,
         clubs: &["chess", "paper", "robotics"],
         informer: false,
+        sleuth: 8,
+        plots: 0,
+        rumours: 0,
+        politics: true,
+        opt_out: false,
+        mean: false,
+        verdicts: &["vane", "soames"],
     }
+}
+
+/// An investigator: spends most free evenings and nights on the east wing.
+pub fn sleuth() -> Policy {
+    Policy {
+        name: "sleuth",
+        max_heat: 12,
+        max_file: 3,
+        push: 1,
+        big: false,
+        skip_class: false,
+        flashy: false,
+        lead_days: 1,
+        scout_to: 2,
+        helpers: true,
+        variety: false,
+        accuracy: 75,
+        social: 40,
+        clubs: &["candle", "paper"],
+        informer: false,
+        sleuth: 85,
+        plots: 0,
+        rumours: 8,
+        politics: false,
+        opt_out: false,
+        mean: false,
+        verdicts: &["fenn", "soames", "wren", "vane", "bonfire", "walk_away"],
+    }
+}
+
+/// A campaigner: stands for Head of School, canvasses, votes and spreads word.
+pub fn politician() -> Policy {
+    Policy {
+        name: "politician",
+        max_heat: 6,
+        max_file: 3,
+        push: 0,
+        big: false,
+        skip_class: false,
+        flashy: false,
+        lead_days: 1,
+        scout_to: 2,
+        helpers: true,
+        variety: false,
+        accuracy: 70,
+        social: 60,
+        clubs: &["paper", "drama"],
+        informer: false,
+        sleuth: 5,
+        plots: 10,
+        rumours: 30,
+        politics: true,
+        opt_out: false,
+        mean: false,
+        verdicts: &["wren", "vane"],
+    }
+}
+
+/// A prankster who plays schemes on other pupils, and spreads gossip.
+pub fn rival() -> Policy {
+    Policy {
+        name: "rival",
+        max_heat: 20,
+        max_file: 5,
+        push: 1,
+        big: false,
+        skip_class: false,
+        flashy: false,
+        lead_days: 1,
+        scout_to: 2,
+        helpers: true,
+        variety: false,
+        accuracy: 70,
+        social: 40,
+        clubs: &["candle", "robotics", "chess"],
+        informer: false,
+        sleuth: 10,
+        plots: 45,
+        rumours: 25,
+        politics: false,
+        opt_out: false,
+        mean: true,
+        verdicts: &["bonfire", "walk_away"],
+    }
+}
+
+/// A pupil who opted out of player-versus-player play and just gets on with school.
+pub fn recluse() -> Policy {
+    Policy {
+        name: "recluse",
+        max_heat: 10,
+        max_file: 3,
+        push: 0,
+        big: false,
+        skip_class: false,
+        flashy: false,
+        lead_days: 1,
+        scout_to: 2,
+        helpers: true,
+        variety: false,
+        accuracy: 80,
+        social: 50,
+        clubs: &["chess", "robotics"],
+        informer: false,
+        sleuth: 25,
+        plots: 0,
+        rumours: 5,
+        politics: true,
+        opt_out: true,
+        mean: false,
+        verdicts: &["soames", "walk_away"],
+    }
+}
+
+// ---------------------------------------------------------------- branch coverage
+
+thread_local! {
+    static COVERAGE: std::cell::RefCell<std::collections::BTreeMap<String, u32>> =
+        const { std::cell::RefCell::new(std::collections::BTreeMap::new()) };
+}
+
+/// Note that a branch was taken (per test thread).
+pub fn note(what: String) {
+    COVERAGE.with(|c| *c.borrow_mut().entry(what).or_default() += 1);
+}
+
+/// Take what this thread noted.
+pub fn take_coverage() -> std::collections::BTreeMap<String, u32> {
+    COVERAGE.with(|c| std::mem::take(&mut *c.borrow_mut()))
 }
 
 fn answer_lesson(game: &mut Game, policy: &Policy, rng: &mut DoorRng, events: &mut Vec<Event>) {
@@ -186,6 +364,9 @@ fn answer_scene(game: &mut Game, policy: &Policy, rng: &mut DoorRng, events: &mu
         }
         many => Some(many[0]),
     };
+    if let (Some(i), Some(scene)) = (pick, game.player.life.scene.as_ref()) {
+        note(format!("choice:{}/{}/{i}", scene.talk, scene.node));
+    }
     let action = pick.map_or(Action::Abandon, |i| {
         Action::Choose(u8::try_from(i).unwrap())
     });
@@ -194,6 +375,221 @@ fn answer_scene(game: &mut Game, policy: &Policy, rng: &mut DoorRng, events: &mu
     } else if let Ok(e) = game.apply(&Action::Abandon, rng) {
         events.extend(e);
     }
+}
+
+// ---------------------------------------------------------------- the social layer and the mystery
+
+/// Distance in corridors from every place to `to`, over the school's doors (locks ignored).
+fn distances(game: &Game, to: &str) -> std::collections::HashMap<String, u32> {
+    let mut out = std::collections::HashMap::new();
+    out.insert(to.to_owned(), 0u32);
+    let mut queue = std::collections::VecDeque::from([to.to_owned()]);
+    while let Some(at) = queue.pop_front() {
+        let d = out[&at];
+        for p in &game.content.places {
+            let touches = p.exits.contains(&at)
+                || game
+                    .content
+                    .place(&at)
+                    .is_some_and(|a| a.exits.contains(&p.id));
+            if touches && !out.contains_key(&p.id) {
+                out.insert(p.id.clone(), d + 1);
+                queue.push_back(p.id.clone());
+            }
+        }
+    }
+    out
+}
+
+/// Walk toward `place` as far as this period's corridors allow. True if the bot is there.
+fn travel(game: &mut Game, place: &str, rng: &mut DoorRng, events: &mut Vec<Event>) -> bool {
+    let dist = distances(game, place);
+    for _ in 0..6 {
+        if game.player.place == place {
+            return true;
+        }
+        let Some(d_here) = dist.get(&game.player.place).copied() else {
+            return false;
+        };
+        let best = game
+            .routes()
+            .into_iter()
+            .filter_map(|(p, _)| dist.get(&p).map(|d| (p, *d)))
+            .filter(|(_, d)| *d < d_here)
+            .min_by_key(|(_, d)| *d);
+        let Some((next, _)) = best else {
+            return false;
+        };
+        match game.apply(&Action::Go(next), rng) {
+            Ok(e) => events.extend(e),
+            Err(_) => return false,
+        }
+    }
+    game.player.place == place
+}
+
+/// One step of the east wing's mystery: walk to where the next clue is and search. True if the
+/// bot did anything with the period.
+fn sleuth_step(game: &mut Game, rng: &mut DoorRng, events: &mut Vec<Event>) -> bool {
+    let Some(slot) = game.current_slot() else {
+        return false;
+    };
+    let day = game.player.day;
+    let clue = game
+        .content
+        .mystery
+        .clues
+        .iter()
+        .find(|c| {
+            !game.player.knows(&format!("clue_{}", c.id))
+                && c.after
+                    .iter()
+                    .all(|a| game.player.knows(&format!("clue_{a}")))
+                && game.all_hold(&c.needs)
+        })
+        .cloned();
+    let Some(clue) = clue else {
+        return false;
+    };
+    let now_ok = clue.kinds.iter().any(|k| k == game.kind(day, slot))
+        && game.place_open(&clue.place, day, slot);
+    let later_ok = (slot + 1..9).any(|s| {
+        clue.kinds.iter().any(|k| k == game.kind(day, s)) && game.place_open(&clue.place, day, s)
+    });
+    let before = (game.player.place.clone(), game.player.slot);
+    if now_ok {
+        if travel(game, &clue.place, rng, events) {
+            if let Ok(e) = game.apply(&Action::Search, rng) {
+                events.extend(e);
+                if game.player.knows(&format!("clue_{}", clue.id)) {
+                    note(format!("clue:{}", clue.id));
+                }
+                return true;
+            }
+        }
+    } else if later_ok {
+        let _ = travel(game, &clue.place, rng, events);
+    }
+    (game.player.place.clone(), game.player.slot) != before
+}
+
+/// A scheme on another pupil, if one is open to the bot.
+fn plot_step(game: &mut Game, policy: &Policy, rng: &mut DoorRng, events: &mut Vec<Event>) -> bool {
+    let mut options: Vec<Action> = Vec::new();
+    for spec in &game.content.social.plots {
+        if (spec.kind == "mischief") != policy.mean {
+            continue;
+        }
+        for mate in game.classmates() {
+            if game.plot_block(&spec.id, &mate.name).is_none() {
+                options.push(Action::Plot {
+                    kind: spec.id.clone(),
+                    to: mate.name,
+                });
+            }
+        }
+    }
+    if options.is_empty() {
+        return false;
+    }
+    let pick = usize::try_from(rng.below(u32::try_from(options.len()).unwrap())).unwrap();
+    if let Action::Plot { kind, .. } = &options[pick] {
+        note(format!("plot:{kind}"));
+    }
+    match game.apply(&options[pick], rng) {
+        Ok(e) => {
+            events.extend(e);
+            true
+        }
+        Err(_) => false,
+    }
+}
+
+/// A rumour, if one can be started here and now.
+fn rumour_step(
+    game: &mut Game,
+    policy: &Policy,
+    rng: &mut DoorRng,
+    events: &mut Vec<Event>,
+) -> bool {
+    let mut options: Vec<Action> = Vec::new();
+    for spec in &game.content.social.rumours {
+        let nasty = spec.kind == "gossip";
+        if nasty && !policy.mean {
+            continue;
+        }
+        for about in game.content.rumour_subjects(spec) {
+            if game.rumour_block(&spec.id, &about).is_none() {
+                options.push(Action::Spread {
+                    rumour: spec.id.clone(),
+                    about,
+                });
+            }
+        }
+    }
+    if options.is_empty() {
+        return false;
+    }
+    let pick = usize::try_from(rng.below(u32::try_from(options.len()).unwrap())).unwrap();
+    if let Action::Spread { rumour, .. } = &options[pick] {
+        note(format!("rumour:{rumour}"));
+    }
+    match game.apply(&options[pick], rng) {
+        Ok(e) => {
+            events.extend(e);
+            true
+        }
+        Err(_) => false,
+    }
+}
+
+/// Stand, canvass and vote, as the policy's politics go. True if it used the period.
+fn politics_step(game: &mut Game, rng: &mut DoorRng, events: &mut Vec<Event>) -> bool {
+    // About half of the politically minded decide, once, to stand; the rest only vote.
+    if game.can(&Action::Nominate) && !game.player.knows("declined_election") {
+        if rng.below(100) < 50 {
+            if let Ok(e) = game.apply(&Action::Nominate, rng) {
+                events.extend(e);
+            }
+        } else {
+            game.player.learn("declined_election");
+        }
+    }
+    if game.voting_open() && game.player.social.voted_term != game.player.term {
+        let ballot = game.ballot();
+        let me = game.player.name.clone();
+        let choice = if game.player.social.ran_term == game.player.term {
+            Some(me)
+        } else {
+            let n = u32::try_from(ballot.len()).unwrap();
+            (n > 0).then(|| ballot[usize::try_from(rng.below(n)).unwrap()].id.clone())
+        };
+        if let Some(who) = choice {
+            if let Ok(e) = game.apply(&Action::Vote(who), rng) {
+                events.extend(e);
+            }
+        }
+    }
+    if game.can(&Action::Canvass) && rng.below(100) < 60 {
+        if let Ok(e) = game.apply(&Action::Canvass, rng) {
+            events.extend(e);
+            return true;
+        }
+    }
+    false
+}
+
+/// Which verdict a talk at the choice casts (or `walk_away`).
+fn verdict_of_talk(talk: &str) -> Option<&'static str> {
+    Some(match talk {
+        "wing_fenn_choice" => "fenn",
+        "wing_soames_choice" => "soames",
+        "wing_vane_choice" => "vane",
+        "wing_wren_choice" => "wren",
+        "wing_sol_choice" => "bonfire",
+        "wing_tilly_walk_away" => "walk_away",
+        _ => return None,
+    })
 }
 
 /// A club meeting, a sign-up or a conversation, whichever is on offer. True if anything happened.
@@ -208,7 +604,7 @@ fn social_step(
     };
     let day = game.player.day;
     let kind = game.kind(day, slot).to_owned();
-    if kind == "class" || kind == "night" {
+    if kind == "class" {
         return false;
     }
     let weekday = u8::try_from(Game::weekday(day)).unwrap();
@@ -232,6 +628,10 @@ fn social_step(
                 return true;
             }
         }
+    }
+    // After lights-out only a club that meets then (the Candle Society) is worth the risk.
+    if kind == "night" {
+        return false;
     }
     if game.player.life.clubs.len() < game.content.rules.max_clubs {
         for id in policy.clubs {
@@ -262,6 +662,15 @@ fn social_step(
         .filter(|t| game.talk_ready(t))
         .cloned()
         .collect();
+    let mut talks = talks;
+    // At the end of the mystery a pupil only takes the conversations they would end it with, in
+    // the order they would prefer.
+    talks.retain(|t| verdict_of_talk(&t.id).is_none_or(|v| policy.verdicts.contains(&v)));
+    talks.sort_by_key(|t| {
+        verdict_of_talk(&t.id)
+            .and_then(|v| policy.verdicts.iter().position(|x| *x == v))
+            .unwrap_or(usize::MAX)
+    });
     for talk in talks {
         let Some(npc) = game.content.npc(&talk.npc).cloned() else {
             continue;
@@ -527,6 +936,11 @@ fn setup_step(
 pub fn play_day(game: &mut Game, policy: &Policy, rng: &mut DoorRng) -> Vec<Event> {
     let mut events = Vec::new();
     let mut guard = 0;
+    if policy.opt_out && !game.player.social.opt_out {
+        if let Ok(e) = game.apply(&Action::OptOut(true), rng) {
+            events.extend(e);
+        }
+    }
     while game.playing() && game.current_slot().is_some() && guard < 80 {
         guard += 1;
         if game.player.life.lesson.is_some() {
@@ -590,6 +1004,33 @@ pub fn play_day(game: &mut Game, policy: &Policy, rng: &mut DoorRng) -> Vec<Even
                 continue;
             }
             if worked {
+                continue;
+            }
+        }
+        // The mystery, the other pupils, the election.
+        if (!in_class || policy.skip_class) && game.player.due == 0 {
+            let night = game.kind(day, slot) == "night";
+            if policy.sleuth > 0
+                && rng.below(100) < policy.sleuth
+                && sleuth_step(game, rng, &mut events)
+            {
+                continue;
+            }
+            if !night && policy.politics && politics_step(game, rng, &mut events) {
+                continue;
+            }
+            if !night
+                && policy.plots > 0
+                && rng.below(100) < policy.plots
+                && plot_step(game, policy, rng, &mut events)
+            {
+                continue;
+            }
+            if !night
+                && policy.rumours > 0
+                && rng.below(100) < policy.rumours
+                && rumour_step(game, policy, rng, &mut events)
+            {
                 continue;
             }
         }

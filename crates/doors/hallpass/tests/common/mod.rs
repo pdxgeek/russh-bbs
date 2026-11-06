@@ -344,6 +344,11 @@ pub fn satisfy(game: &mut Game, cond: &Cond) {
                     }
                 }
                 Stat::Day => game.world.term_start = day - i64::from(v),
+                Stat::Clues => {
+                    for i in 0..v.max(0) {
+                        p.learn(&format!("clue_filler{i}"));
+                    }
+                }
             }
         }
     }

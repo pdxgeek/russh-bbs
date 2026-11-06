@@ -9,7 +9,7 @@
 //! A target that is absent and a target that is not an active member are the same answer
 //! ([`ProfileError::NotFound`]), so a pending or suspended account cannot be probed.
 
-use crate::access::{Granted, Permission, Snapshot};
+use crate::access::{Granted, Permission, PermissionCheck, Snapshot};
 use crate::audit::{Actor, events};
 use crate::store::{AccountId, StoreError};
 
@@ -169,17 +169,31 @@ pub async fn edit_grant<S: ProfileStore>(
     let granted = access
         .require(permission, None)
         .map_err(|_| ProfileError::NotPermitted)?;
-    if !own {
-        let editor = access.top_rank().ok_or(ProfileError::RankTooLow)?;
-        if store
-            .standing(target)
-            .await?
-            .is_some_and(|rank| rank >= editor)
-        {
-            return Err(ProfileError::RankTooLow);
-        }
+    if !outranks(store, access, target).await? {
+        return Err(ProfileError::RankTooLow);
     }
     Ok(granted)
+}
+
+/// Whether the rank rule lets `access`'s holder edit `target`'s profile (FIX-M2-7): always for
+/// their own profile, otherwise only if their top global rank is strictly above the target's.
+/// The same test [`edit_grant`] makes, so the profile page can leave out the `e` key the
+/// refusal would only turn down.
+async fn outranks<S: ProfileStore>(
+    store: &S,
+    access: &Snapshot,
+    target: AccountId,
+) -> Result<bool, ProfileError> {
+    if access.account() == Some(target) {
+        return Ok(true);
+    }
+    let Some(editor) = access.top_rank() else {
+        return Ok(false);
+    };
+    Ok(store
+        .standing(target)
+        .await?
+        .is_none_or(|rank| rank < editor))
 }
 
 /// What a screen asks for. The front end runs it with [`execute`] and gives the answer back.
@@ -200,8 +214,10 @@ pub enum Request {
 pub enum Response {
     /// A page of members.
     Page(MemberQuery, MemberPage),
-    /// A profile to show.
-    Profile(MemberRecord),
+    /// A profile to show, and whether the viewer's rank allows editing it (always for their own;
+    /// for another member's, whether the member's top rank is below the viewer's). The screen
+    /// offers `e` only when it does (FIX-M2-7); the refusal in [`edit_grant`] stays.
+    Profile(MemberRecord, bool),
     /// A profile to edit.
     EditForm(MemberRecord),
     /// A profile was written (or nothing changed).
@@ -246,7 +262,14 @@ async fn run<S: ProfileStore>(
             let page = list_members(store, &view()?, &query).await?;
             Response::Page(query, page)
         }
-        Request::View(id) => Response::Profile(view_profile(store, &view()?, id).await?),
+        Request::View(id) => {
+            let record = view_profile(store, &view()?, id).await?;
+            // Only worth a rank lookup when the permission to edit others is held; without it
+            // the key is hidden by the permission anyway.
+            let rankable = access.account() == Some(id) || access.allows(Permission::MembersEdit);
+            let editable = rankable && outranks(store, access, id).await?;
+            Response::Profile(record, editable)
+        }
         Request::Edit(id) => {
             let granted = edit_grant(store, access, id).await?;
             Response::EditForm(load_for_edit(store, &granted, id).await?)

@@ -30,7 +30,7 @@ use russh_bbs_door::{Door, DoorEnv, DoorKey};
 use russh_bbs_door_hallpass::game::{Action, Game};
 use russh_bbs_door_hallpass::save::{decode_world, encode_player};
 use russh_bbs_door_hallpass::state::{Player, map_set};
-use russh_bbs_door_hallpass::{Hallpass, SAVE_VERSION};
+use russh_bbs_door_hallpass::{Hallpass, SAVE_VERSION, WORLD_VERSION};
 
 /// A strong character with a big scheme set up and timed, standing at the place at the moment.
 fn big_scheme_player(
@@ -101,7 +101,7 @@ async fn pull_it_off(
                     &door.info().id,
                     &russh_bbs_core::doors::WorldWrite {
                         expected: Revision::NONE,
-                        version: 1,
+                        version: WORLD_VERSION,
                         bytes: &world.bytes,
                         tick: None,
                     },

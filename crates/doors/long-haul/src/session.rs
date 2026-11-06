@@ -1196,6 +1196,11 @@ impl DoorSession for Session {
         }
     }
 
+    fn captures_text(&self) -> bool {
+        // The convoy line takes every key, a `?` included.
+        matches!(self.mode, Mode::Society(_, _, Some(_)))
+    }
+
     fn look_around(&self, _env: &DoorEnv) -> Vec<String> {
         let mut text: Vec<String> = self.lines(40).into_iter().map(|(t, _)| t).collect();
         if let Some(player) = &self.player {

@@ -57,6 +57,109 @@ patrol_mod = -1
 legend_pct = 0
 heat_pct = 0
 
+# ---------------------------------------------------------------- the east wing's endings (H4)
+# One of these comes about for everyone on the finale day, by the pupils' verdicts on the mystery.
+
+[[effect]]
+id = "wing_opened"
+name = "The East Wing is open"
+days = 0
+headline = "Mr. Fenn has told the whole school what happened in the East Wing, and the wing is open. {player} was beside him."
+closes = []
+moves = []
+patrol_mod = 0
+legend_pct = 10
+heat_pct = 0
+
+[[effect]]
+id = "wing_vigil"
+name = "A vigil in the East Wing"
+days = 0
+headline = "A candle vigil was held in the East Wing; the chaplain spoke, and the school stood in the dark. {player} was there."
+closes = []
+moves = []
+patrol_mod = -1
+legend_pct = 0
+heat_pct = 0
+
+[[effect]]
+id = "truth_printed"
+name = "The paper printed the diary"
+days = 5
+headline = "The paper has printed Ines Harrow's diary on the front page. {player} brought it to the editor."
+closes = []
+moves = []
+patrol_mod = 0
+legend_pct = 25
+heat_pct = 25
+
+[[effect]]
+id = "wing_sealed"
+name = "The East Wing is sealed for good"
+days = 0
+headline = "Dame Vane has the East Wing and the tunnel mouth bricked up 'for safety'. {player} believed her promises."
+closes = ["east_wing", "tunnels"]
+moves = []
+patrol_mod = 1
+legend_pct = 0
+heat_pct = 0
+
+[[effect]]
+id = "bonfire"
+name = "The bonfire in the quad"
+days = 0
+headline = "Smoke over the quad: a diary and some old registers went on a bonfire, and the tunnel mouth was bricked up. {player} held the matches."
+closes = ["east_wing", "tunnels"]
+moves = []
+patrol_mod = -1
+legend_pct = 0
+heat_pct = 0
+
+[[effect]]
+id = "head_bramley"
+name = "Tobias Bramley is Head of School"
+days = 0
+headline = "Tobias Bramley is elected Head of School. The corridors will be very tidy."
+closes = []
+moves = []
+patrol_mod = 1
+legend_pct = 0
+heat_pct = 0
+
+[[effect]]
+id = "head_wren"
+name = "Wren Okonjo is Head of School"
+days = 0
+headline = "Wren Okonjo is elected Head of School. The paper's door is open to anyone with a story."
+closes = []
+moves = []
+patrol_mod = 0
+legend_pct = 10
+heat_pct = 0
+
+[[effect]]
+id = "head_hollis"
+name = "Rafe Hollis is Head of School"
+days = 0
+headline = "Rafe Hollis is elected Head of School on a promise of boats and fewer Fridays."
+closes = []
+moves = []
+patrol_mod = 0
+legend_pct = 0
+heat_pct = -15
+
+[[effect]]
+id = "head_player"
+name = "A pupil is Head of School"
+days = 0
+headline = "{player} is elected Head of School and takes down half the notices."
+closes = []
+moves = []
+patrol_mod = -1
+legend_pct = 0
+heat_pct = 0
+
+
 [[ending]]
 id = "expelled"
 name = "Expelled"

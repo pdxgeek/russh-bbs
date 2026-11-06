@@ -12,7 +12,7 @@ use russh_bbs_core::access::{Permission, Snapshot};
 use russh_bbs_core::doors::DoorStore;
 use russh_bbs_core::limits::Clock;
 use russh_bbs_door::host::{FlushError, OpenError, Running};
-use russh_bbs_door::{Door, DoorEnv};
+use russh_bbs_door::{Door, DoorEnv, DoorKey, Flow};
 use tracing::warn;
 
 /// How long one request may take.
@@ -44,6 +44,10 @@ pub(crate) enum Request {
         door: Arc<dyn Door>,
         env: Box<DoorEnv>,
     },
+    /// Give the door one key after re-reading its world, which has gone stale (older than
+    /// `WORLD_REFRESH_SECS`): one store read, so a door sees other players' edits made since its
+    /// last read. Then write whatever the key queued. Answered like a [`Request::Flush`].
+    Key { running: Box<Running>, key: DoorKey },
     /// Write what the door asked for; `leave` hands the session back afterwards.
     Flush { running: Box<Running>, leave: bool },
 }
@@ -64,6 +68,7 @@ impl std::fmt::Debug for Request {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Open { door, .. } => write!(f, "Open({})", door.info().id),
+            Self::Key { key, .. } => write!(f, "Key({key:?})"),
             Self::Flush { leave, .. } => write!(f, "Flush(leave: {leave})"),
         }
     }
@@ -77,6 +82,10 @@ impl Request {
             Self::Flush { leave, .. } => Response::Flushed {
                 result: Err(Refusal::SaveFailed),
                 leave: *leave,
+            },
+            Self::Key { .. } => Response::Flushed {
+                result: Err(Refusal::SaveFailed),
+                leave: false,
             },
         }
     }
@@ -137,7 +146,27 @@ async fn execute<S: DoorStore>(
                 }
             })
         }
-        Request::Flush { mut running, leave } => {
+        Request::Key { mut running, key } => {
+            if access.require(Permission::DoorsRun, None).is_err() {
+                return Response::Flushed {
+                    result: Err(Refusal::Denied),
+                    leave: false,
+                };
+            }
+            // A failed read is not fatal: the door keeps the world it had and the next key
+            // tries again.
+            if let Err(error) = running.refresh_world_if_stale(store).await {
+                warn!(%error, "a door's world could not be re-read");
+            }
+            let leave = running.key(key) == Flow::Exit;
+            let result = if leave || running.has_pending() {
+                flush(store, running).await
+            } else {
+                Ok(running)
+            };
+            Response::Flushed { result, leave }
+        }
+        Request::Flush { running, leave } => {
             // The permission is checked again on every write: a member whose access was taken
             // away mid-session stops saving on the next key.
             if access.require(Permission::DoorsRun, None).is_err() {
@@ -146,16 +175,25 @@ async fn execute<S: DoorStore>(
                     leave,
                 };
             }
-            let result = match running.flush(store).await {
-                Ok(()) => Ok(running),
-                Err(FlushError::Conflict) => Err(Refusal::Conflict),
-                Err(FlushError::TooLarge) => Err(Refusal::TooLarge),
-                Err(FlushError::Store(error)) => {
-                    warn!(%error, "a door could not save");
-                    Err(Refusal::SaveFailed)
-                }
-            };
-            Response::Flushed { result, leave }
+            Response::Flushed {
+                result: flush(store, running).await,
+                leave,
+            }
+        }
+    }
+}
+
+async fn flush<S: DoorStore>(
+    store: &S,
+    mut running: Box<Running>,
+) -> Result<Box<Running>, Refusal> {
+    match running.flush(store).await {
+        Ok(()) => Ok(running),
+        Err(FlushError::Conflict) => Err(Refusal::Conflict),
+        Err(FlushError::TooLarge) => Err(Refusal::TooLarge),
+        Err(FlushError::Store(error)) => {
+            warn!(%error, "a door could not save");
+            Err(Refusal::SaveFailed)
         }
     }
 }

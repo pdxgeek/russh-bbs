@@ -348,11 +348,16 @@ impl Simulation {
                 };
                 sent += 1;
                 self.report.keys += 1;
+                running.refresh_world_if_stale(&self.store).await?;
                 let flow = running.key(key);
                 if running.has_pending() {
                     self.report.saves += 1;
                 }
+                let save_len = running.pending_save_len();
                 running.flush(&self.store).await?;
+                if let Some(len) = save_len {
+                    self.report.largest_save = self.report.largest_save.max(len);
+                }
                 if flow == Flow::Exit {
                     self.report.exits += 1;
                     break;
