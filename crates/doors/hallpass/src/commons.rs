@@ -5,7 +5,6 @@
 //! a small record in the shared world, chosen from a template and aimed at a name taken from the
 //! roster, never typed. Every list here has a cap, so no player can fill the world.
 
-use crate::state::{Map, map_get};
 use crate::wire::wire_struct;
 
 /// The most pupils on the roster.
@@ -255,8 +254,6 @@ pub struct Commons {
     pub clues: u16,
     /// Awards, newest last.
     pub awards: Vec<AwardWin>,
-    /// The day each office-holder's term of notice began: reserved for the next slice.
-    pub marks: Map<i64>,
 }
 wire_struct!(Commons {
     roster,
@@ -267,8 +264,7 @@ wire_struct!(Commons {
     verdicts,
     finale,
     clues,
-    awards,
-    marks
+    awards
 });
 
 impl Commons {
@@ -321,11 +317,5 @@ impl Commons {
             .iter()
             .find(|v| v.by == name)
             .map(|v| v.trust.as_str())
-    }
-
-    /// A value from a map by id (a small helper for the tick).
-    #[must_use]
-    pub fn mark(&self, id: &str) -> Option<i64> {
-        map_get(&self.marks, id).copied()
     }
 }
