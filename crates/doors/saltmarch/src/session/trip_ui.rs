@@ -512,6 +512,23 @@ impl Session {
                 Act::Do(Action::Go(TripAction::Gather)),
             ));
         }
+        if let Some(tile) = tile
+            && t.at != home
+            && crate::map::can_lay_on(tile.kind)
+            && env.map.poi_at(t.at.0, t.at.1).is_none()
+            && t.kit.rope >= crate::trip::LAY_ROPE
+        {
+            out.push(entry(
+                "lay",
+                format!(
+                    "Lay a causeway tile here ({} rope, {} turns, toll {})",
+                    crate::trip::LAY_ROPE,
+                    crate::trip::LAY_TURNS,
+                    clan.story.toll
+                ),
+                Act::Do(Action::Go(TripAction::Lay)),
+            ));
+        }
         if let Some(r) = t.ruin
             && r.room < r.rooms
         {

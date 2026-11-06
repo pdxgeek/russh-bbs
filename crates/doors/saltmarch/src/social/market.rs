@@ -27,6 +27,10 @@ pub enum Memo {
     Cancelled,
     /// An order the world refused: its escrow came back.
     Refused,
+    /// Tolls paid by travellers on the clan's causeway.
+    Toll,
+    /// The Tidecourt's dividend for a week of keeping a pact.
+    Dividend,
 }
 
 impl Memo {
@@ -41,6 +45,8 @@ impl Memo {
             2 => Self::Expired,
             3 => Self::Cancelled,
             4 => Self::Refused,
+            5 => Self::Toll,
+            6 => Self::Dividend,
             _ => return None,
         })
     }

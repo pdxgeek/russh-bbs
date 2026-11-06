@@ -572,6 +572,18 @@ impl World {
                 if let Some(e) = self.clans.get_mut(usize::from(c)) {
                     e.record.rep = e.record.rep.saturating_add(2).min(100);
                 }
+                // A kept pact pays: the Tidecourt's peace dividend.
+                if self.social.mail_for(c) < super::caps::MAIL_PER_CLAN {
+                    self.social.deliver(
+                        c,
+                        super::Body::Parcel(super::market::Parcel {
+                            goods: None,
+                            tallies: super::caps::PEACE_DIVIDEND,
+                            memo: super::market::Memo::Dividend,
+                            about: None,
+                        }),
+                    );
+                }
             }
         }
     }

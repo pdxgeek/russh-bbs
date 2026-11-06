@@ -29,6 +29,99 @@ use crate::host::Driver;
 use crate::key::DoorKey;
 use crate::surface::{Composite, DoorSurface};
 
+/// A [`ReplayLog`] plus the shared world the visit saw: its bytes at the start and every later
+/// point where the board's re-read changed what [`Ctx::world`](crate::Ctx::world) returned.
+///
+/// A door that reads the world (to show standings, to pick a target) is only reproducible if
+/// the log has what it read. `reads` holds `(key index, world)` pairs: the world replaces the
+/// previous one just before that key (index 0 is before the first key). The text form is the
+/// [`ReplayLog`] text with optional `world=<hex|->` and `reads=<index>:<hex|->,...` fields before
+/// `keys=`; a log with neither prints exactly as a [`ReplayLog`] does, and a plain log parses.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WorldLog {
+    /// The keys, seed, clock and starting save.
+    pub log: ReplayLog,
+    /// The world at the start of the visit (`None`: no world yet).
+    pub world: Option<Vec<u8>>,
+    /// Later world reads, by the index of the key they come before (ascending).
+    pub reads: Vec<(usize, Option<Vec<u8>>)>,
+}
+
+impl From<ReplayLog> for WorldLog {
+    fn from(log: ReplayLog) -> Self {
+        Self {
+            log,
+            world: None,
+            reads: Vec::new(),
+        }
+    }
+}
+
+fn hex_or_dash(bytes: Option<&[u8]>) -> String {
+    bytes.map_or_else(|| "-".to_owned(), hex)
+}
+
+impl fmt::Display for WorldLog {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let plain = self.log.to_string();
+        let Some((head, keys)) = plain.split_once(" keys=") else {
+            return write!(f, "{plain}");
+        };
+        let mut extra = String::new();
+        if self.world.is_some() {
+            extra.push_str(" world=");
+            extra.push_str(&hex_or_dash(self.world.as_deref()));
+        }
+        if !self.reads.is_empty() {
+            let reads: Vec<String> = self
+                .reads
+                .iter()
+                .map(|(at, world)| format!("{at}:{}", hex_or_dash(world.as_deref())))
+                .collect();
+            extra.push_str(" reads=");
+            extra.push_str(&reads.join(","));
+        }
+        write!(f, "{head}{extra} keys={keys}")
+    }
+}
+
+impl FromStr for WorldLog {
+    type Err = LogParseError;
+
+    fn from_str(text: &str) -> Result<Self, Self::Err> {
+        let (head, keys) = text
+            .split_once(" keys=")
+            .or_else(|| text.strip_suffix(" keys=").map(|head| (head, "")))
+            .ok_or(LogParseError("no keys field"))?;
+        let mut world = None;
+        let mut reads = Vec::new();
+        let mut rest = Vec::new();
+        for part in head.split(' ') {
+            if let Some(value) = part.strip_prefix("world=") {
+                world = parse_world(value)?;
+            } else if let Some(value) = part.strip_prefix("reads=") {
+                for item in value.split(',').filter(|item| !item.is_empty()) {
+                    let (at, bytes) = item.split_once(':').ok_or(LogParseError("bad read"))?;
+                    let at = at.parse().map_err(|_| LogParseError("bad read index"))?;
+                    reads.push((at, parse_world(bytes)?));
+                }
+            } else {
+                rest.push(part);
+            }
+        }
+        let log = format!("{} keys={keys}", rest.join(" ")).parse()?;
+        Ok(Self { log, world, reads })
+    }
+}
+
+fn parse_world(value: &str) -> Result<Option<Vec<u8>>, LogParseError> {
+    if value == "-" {
+        Ok(None)
+    } else {
+        unhex(value).map(Some).ok_or(LogParseError("bad world"))
+    }
+}
+
 /// Everything needed to rerun a visit.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ReplayLog {
@@ -153,6 +246,17 @@ pub struct ReplayRun {
 /// Never; a log for a different door is reported by [`run_checked`].
 #[must_use]
 pub fn run(door: &dyn Door, log: &ReplayLog, env: &DoorEnv) -> ReplayRun {
+    run_world(door, &log.clone().into(), env)
+}
+
+/// Run a [`WorldLog`]: [`run`], with the door's world set from the log at the start and at each
+/// recorded read, so a visit that reads the world replays to identical bytes.
+///
+/// # Panics
+/// Never.
+#[must_use]
+pub fn run_world(door: &dyn Door, world_log: &WorldLog, env: &DoorEnv) -> ReplayRun {
+    let log = &world_log.log;
     let clock = Arc::new(ManualClock::new(UnixSeconds::from_raw(log.start)));
     let start = Start {
         save: match &log.save {
@@ -162,7 +266,7 @@ pub fn run(door: &dyn Door, log: &ReplayLog, env: &DoorEnv) -> ReplayRun {
             },
             None => Save::Fresh,
         },
-        world: None,
+        world: world_log.world.as_deref(),
         env,
         today: Day::of(UnixSeconds::from_raw(log.start)),
         season: log.season,
@@ -172,8 +276,13 @@ pub fn run(door: &dyn Door, log: &ReplayLog, env: &DoorEnv) -> ReplayRun {
     let mut world_edits = 0;
     let mut exited = false;
     let mut used = 0;
-    for key in &log.keys {
+    for (index, key) in log.keys.iter().enumerate() {
         used += 1;
+        for (at, world) in &world_log.reads {
+            if *at == index {
+                driver.set_world(world.clone());
+            }
+        }
         let flow = driver.key(*key);
         let effects = driver.take_effects();
         world_edits += effects.world.len();
@@ -228,6 +337,8 @@ pub fn draw_to_text(driver: &Driver, env: &DoorEnv, cols: u16, rows: u16) -> Vec
 #[derive(Debug, Clone)]
 pub struct Recorder {
     log: ReplayLog,
+    world: Option<Vec<u8>>,
+    reads: Vec<(usize, Option<Vec<u8>>)>,
 }
 
 impl Recorder {
@@ -243,7 +354,21 @@ impl Recorder {
                 save,
                 keys: Vec::new(),
             },
+            world: None,
+            reads: Vec::new(),
         }
+    }
+
+    /// Note the world the visit started with.
+    #[must_use]
+    pub fn with_world(mut self, world: Option<Vec<u8>>) -> Self {
+        self.world = world;
+        self
+    }
+
+    /// Note that the door's world changed to `world` before the next key.
+    pub fn world_read(&mut self, world: Option<Vec<u8>>) {
+        self.reads.push((self.log.keys.len(), world));
     }
 
     /// Note a key.
@@ -255,6 +380,16 @@ impl Recorder {
     #[must_use]
     pub fn into_log(self) -> ReplayLog {
         self.log
+    }
+
+    /// The finished log with the world it saw.
+    #[must_use]
+    pub fn into_world_log(self) -> WorldLog {
+        WorldLog {
+            log: self.log,
+            world: self.world,
+            reads: self.reads,
+        }
     }
 }
 
@@ -306,5 +441,36 @@ mod tests {
         ] {
             assert!(bad.parse::<ReplayLog>().is_err(), "{bad:?}");
         }
+    }
+
+    #[test]
+    fn a_world_log_round_trips_and_a_plain_log_prints_the_same() {
+        let plain = ReplayLog {
+            door: "coin-toss".into(),
+            seed: 1,
+            start: 5,
+            season: 1,
+            save: None,
+            keys: vec![DoorKey::Char('f'), DoorKey::Enter],
+        };
+        let none = WorldLog::from(plain.clone());
+        assert_eq!(none.to_string(), plain.to_string());
+        assert_eq!(plain.to_string().parse::<WorldLog>().unwrap(), none);
+        let with = WorldLog {
+            log: plain,
+            world: Some(vec![1, 2]),
+            reads: vec![(0, None), (1, Some(vec![255]))],
+        };
+        assert_eq!(with.to_string().parse::<WorldLog>().unwrap(), with);
+        assert!(
+            "door=x seed=1 start=0 season=1 save=- reads=x:00 keys="
+                .parse::<WorldLog>()
+                .is_err()
+        );
+        assert!(
+            "door=x seed=1 start=0 season=1 save=- world=zz keys="
+                .parse::<WorldLog>()
+                .is_err()
+        );
     }
 }

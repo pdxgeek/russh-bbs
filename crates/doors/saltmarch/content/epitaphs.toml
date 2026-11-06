@@ -27,3 +27,83 @@ text = "{name}, {trade}. The water came in faster than the light."
 [[epitaph]]
 cause = "lost"
 text = "{name}, {trade}. Did not come back with the tide."
+
+[[epitaph]]
+cause = "retired"
+text = "{name}, {trade}. Handed the rake to younger hands and called it a good tide."
+
+[[epitaph]]
+cause = "retired"
+text = "{name}, {trade}. Sits by the watchfire now and corrects everyone's knots."
+
+[[epitaph]]
+cause = "retired"
+text = "{name}, {trade}. Forty winters of peat smoke, and still no opinion on the weather."
+
+[[epitaph]]
+cause = "retired"
+text = "{name}, {trade}. Paid off the last debt, then mostly slept."
+
+[[epitaph]]
+cause = "retired"
+text = "{name}, {trade}. Left the work to the others and kept the best chair."
+
+[[epitaph]]
+cause = "retired"
+text = "{name}, {trade}. The heron on the roof-tree is theirs now, by long agreement."
+
+[[epitaph]]
+cause = "retired"
+text = "{name}, {trade}. Taught half the hold to read the sky. The other half did not listen."
+
+[[epitaph]]
+cause = "starved"
+text = "{name}, {trade}. Gave their share to the young ones first. Nobody argued fast enough."
+
+[[epitaph]]
+cause = "starved"
+text = "{name}, {trade}. The hold ate its pride before it ate its fish. Too late."
+
+[[epitaph]]
+cause = "starved"
+text = "{name}, {trade}. Still hauling when the pots went bare. Remembered at every meal."
+
+[[epitaph]]
+cause = "starved"
+text = "{name}, {trade}. The lean winter took the quiet ones first."
+
+[[epitaph]]
+cause = "starved"
+text = "{name}, {trade}. Salt on the table, nothing under it."
+
+[[epitaph]]
+cause = "lost"
+text = "{name}, {trade}. Went out past the third marker. The marker is still there."
+
+[[epitaph]]
+cause = "lost"
+text = "{name}, {trade}. Last seen waving from a mudbank. We took it for a greeting."
+
+[[epitaph]]
+cause = "lost"
+text = "{name}, {trade}. Their boots came home with the tide. Nothing else did."
+
+[[epitaph]]
+cause = "lost"
+text = "{name}, {trade}. Argued with the channel and lost, as all of us would."
+
+[[epitaph]]
+cause = "lost"
+text = "{name}, {trade}. The bell rang for them at dusk, and the reeds did not answer."
+
+[[epitaph]]
+cause = "lost"
+text = "{name}, {trade}. Said it was only a short cut. It was a short cut."
+
+[[epitaph]]
+cause = "lost"
+text = "{name}, {trade}. Went into the drowned town to see one more room."
+
+[[epitaph]]
+cause = "lost"
+text = "{name}, {trade}. Fell with their back to the gate and their face to the water."

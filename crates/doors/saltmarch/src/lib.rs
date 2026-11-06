@@ -26,6 +26,7 @@
 //! changed by the framework's daily tick.
 #![forbid(unsafe_code)]
 
+pub mod board;
 pub mod clan;
 pub mod codec;
 pub mod combat;
@@ -38,6 +39,7 @@ pub mod lore;
 pub mod map;
 mod session;
 pub mod social;
+pub mod story;
 pub mod tide;
 pub mod trip;
 pub mod types;
@@ -61,10 +63,10 @@ use crate::world::World;
 pub const DOOR_ID: &str = "saltmarch";
 
 /// The current save format version.
-pub const SAVE_VERSION: u32 = 3;
+pub const SAVE_VERSION: u32 = 4;
 
 /// The current world format version.
-pub const WORLD_VERSION: u32 = 3;
+pub const WORLD_VERSION: u32 = 4;
 
 /// Why the door could not be built.
 #[derive(Debug)]
@@ -184,7 +186,19 @@ impl Door for Saltmarch {
             let line = social::hall::season_line(&c, old_world.as_ref());
             let map = crate::map::Map::generate(world.seed, &self.cat.pois);
             let site = Clan::site_for(&c.name, map.sites.len());
+            let heirloom = social::legacy::heirloom_for(&c, old_world.as_ref(), today);
             let mut next = c.next_season(&self.cat, &map, start.season, site, today, rng);
+            social::legacy::start(&mut next, &self.cat, &map, world.legacy, heirloom);
+            if let Some(h) = heirloom {
+                next.hall.push(clan::HallEntry {
+                    season: c.season,
+                    text: format!(
+                        "Carried into the new season: {} ({}).",
+                        h.name(),
+                        h.effect()
+                    ),
+                });
+            }
             next.hall.push(clan::HallEntry {
                 season: c.season,
                 text: line,
@@ -214,19 +228,29 @@ impl Door for Saltmarch {
                 let upgraded = Clan::upgrade_v1(bytes);
                 // Version 2 is not readable by this code; check it as it will be once the next
                 // step has run.
-                Clan::decode(&Clan::upgrade_v2(&upgraded)).ok_or(MigrateError::Corrupt(1))?;
+                Clan::decode(&Clan::upgrade_v3(&Clan::upgrade_v2(&upgraded)))
+                    .ok_or(MigrateError::Corrupt(1))?;
                 Ok(upgraded)
             }
             // Version 3 added the social state: the clan's pending dispatches, inbox and counters.
             (BlobKind::Save, 2) => {
                 let upgraded = Clan::upgrade_v2(bytes);
-                Clan::decode(&upgraded).ok_or(MigrateError::Corrupt(2))?;
+                Clan::decode(&Clan::upgrade_v3(&upgraded)).ok_or(MigrateError::Corrupt(2))?;
+                Ok(upgraded)
+            }
+            // Version 4 added the story: standing, the contract in hand, the heirloom, the outbox.
+            (BlobKind::Save, 3) => {
+                let upgraded = Clan::upgrade_v3(bytes);
+                Clan::decode(&upgraded).ok_or(MigrateError::Corrupt(3))?;
                 Ok(upgraded)
             }
             // Version 2 added the league scores and the price history.
             (BlobKind::World, 1) => World::upgrade_v1(bytes).ok_or(MigrateError::Corrupt(1)),
             // Version 3 added the posted defences, the records and the social state.
             (BlobKind::World, 2) => World::upgrade_v2(bytes).ok_or(MigrateError::Corrupt(2)),
+            // Version 4 added the causeways, the quests' changes to the marsh, the legacy and
+            // what each clan has done that the ending reads.
+            (BlobKind::World, 3) => World::upgrade_v3(bytes).ok_or(MigrateError::Corrupt(3)),
             _ => Err(MigrateError::Unsupported(from)),
         }
     }

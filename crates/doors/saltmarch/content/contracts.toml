@@ -1,0 +1,301 @@
+# The daily boards of the three factions. Pay is in tallies; kind, tier and standing follow story.rs.
+
+[[contract]]
+id = "rk-salt-sacks"
+kind = "deliver"
+faction = "rakers"
+tier = 1
+title = "Salt for the guild stores"
+text = "Ledger entry 41. The guild is short twelve sacks of dry salt for the winter pans. Hand them to the clerk at the Tidecourt. No credit, no hurry, but not tomorrow either."
+good = "salt"
+qty = 12
+days = 4
+pay_lo = 65
+pay_hi = 75
+rep = 2
+fail = 2
+
+[[contract]]
+id = "rk-tool-order"
+kind = "deliver"
+faction = "rakers"
+tier = 2
+title = "Two sets of rake-tools"
+text = "Guild order. Two sets of tines and handles, sound and unsplit, to the tool-room at the Tidecourt. The guild stamps what it buys, so do not bring us your cousin's work."
+good = "tools"
+qty = 2
+days = 4
+pay_lo = 56
+pay_hi = 64
+rep = 3
+fail = 3
+
+[[contract]]
+id = "rk-iron-pans"
+kind = "salvage"
+faction = "rakers"
+tier = 2
+title = "Iron for the new pans"
+text = "The old pan-plates are cracking. Bring back eight iron in an expedition's cargo, from a wreck, a barge or any drowned thing. The ledger does not ask where you found it."
+good = "iron"
+qty = 8
+days = 5
+pay_lo = 130
+pay_hi = 150
+rep = 3
+fail = 3
+
+[[contract]]
+id = "rk-hound-bounty"
+kind = "clear"
+faction = "rakers"
+tier = 1
+title = "Hounds off the salt road"
+text = "Two hound packs have been at the carters. The guild pays a clerk's bounty for each pack you break. Bring a witness or a tail, whichever travels better."
+qty = 2
+foe = "bog-hound"
+days = 4
+pay_lo = 30
+pay_hi = 40
+rep = 2
+fail = 2
+
+[[contract]]
+id = "rk-glass-lens"
+kind = "salvage"
+faction = "rakers"
+tier = 3
+title = "Silt-glass for the lens-makers"
+text = "The brine-glass shop wants eight lumps of silt-glass, clear for choice. Carry them home in an expedition's cargo. The guild buys by weight and by honesty."
+good = "silt-glass"
+qty = 8
+days = 5
+pay_lo = 190
+pay_hi = 230
+rep = 5
+fail = 4
+
+[[contract]]
+id = "rk-wrecker-purge"
+kind = "clear"
+faction = "rakers"
+tier = 3
+title = "Wreckers off the guild barges"
+text = "Barges have been burned for their timber. The guild wants three fights won against wreckers on the hulks. Come back with names, if they gave any."
+qty = 3
+foe = "wrecker"
+days = 4
+pay_lo = 55
+pay_hi = 70
+rep = 5
+fail = 4
+
+[[contract]]
+id = "rk-deep-survey"
+kind = "escort"
+faction = "rakers"
+tier = 4
+title = "A surveyor to the old stone"
+text = "The guild's own surveyor must stand inside a ruin and check the old plans against the walls. Take her there, bring her back dry, and the Honoured seat is warm for you."
+qty = 1
+poi = "ruin"
+days = 6
+pay_lo = 55
+pay_hi = 60
+rep = 8
+fail = 6
+
+[[contract]]
+id = "ct-grain-levy"
+kind = "deliver"
+faction = "court"
+tier = 1
+title = "Grain levy, ten measures"
+text = "Notice. The harbourmaster calls ten measures of food to the Tidecourt granary against the lean weeks. A fee of two tallies is waived for those who deliver within the three days."
+good = "food"
+qty = 10
+days = 3
+pay_lo = 70
+pay_hi = 80
+rep = 2
+fail = 2
+
+[[contract]]
+id = "ct-timber-fees"
+kind = "deliver"
+faction = "court"
+tier = 2
+title = "Timber for the causeway"
+text = "Notice of works. Ten lengths of sound timber are required at the Tidecourt for the causeway decking. Rotten lengths will be refused and the refusal logged."
+good = "timber"
+qty = 10
+days = 4
+pay_lo = 85
+pay_hi = 95
+rep = 3
+fail = 3
+
+[[contract]]
+id = "ct-road-wardens"
+kind = "clear"
+faction = "court"
+tier = 1
+title = "Cutters on the Tidecourt road"
+text = "By order of the assize, cutters who rob the road are to be met. Two such fights won, and the warden's clerk will pay the standing sum. Receipts are given."
+qty = 2
+foe = "cutter"
+days = 4
+pay_lo = 32
+pay_hi = 40
+rep = 2
+fail = 2
+
+[[contract]]
+id = "ct-toll-escort"
+kind = "escort"
+faction = "court"
+tier = 2
+title = "A toll-keeper to the ferry"
+text = "A toll-keeper of the Court must be taken to a trader's stage and seen counting. The Court wants it known that its keepers are still safe in the marsh. Hire is fixed."
+qty = 1
+poi = "trader"
+days = 4
+pay_lo = 32
+pay_hi = 40
+rep = 3
+fail = 3
+
+[[contract]]
+id = "ct-lost-cargo"
+kind = "salvage"
+faction = "court"
+tier = 3
+title = "Rope from the lost lighter"
+text = "A lighter sank with the Court's rope on it, twelve lengths insured by the assize. Recover them in an expedition's cargo and the loss is struck from the book."
+good = "rope"
+qty = 12
+days = 5
+pay_lo = 160
+pay_hi = 190
+rep = 4
+fail = 4
+
+[[contract]]
+id = "ct-sworn-claim"
+kind = "escort"
+faction = "court"
+tier = 3
+title = "Witness for a salvage claim"
+text = "Two crews dispute a drowned street. The Court sends a sworn witness, who must see the place with her own eyes. Take her to a salvage site and see that she walks home."
+qty = 1
+poi = "salvage"
+days = 5
+pay_lo = 35
+pay_hi = 45
+rep = 5
+fail = 4
+
+[[contract]]
+id = "ct-assize-relic"
+kind = "salvage"
+faction = "court"
+tier = 4
+title = "A relic for the assize hall"
+text = "The assize's old lamp was lost in the flood. The Court will pay the Honoured, and only them, for a relic of the old world recovered in an expedition's cargo and handed over in the hall."
+good = "relic"
+qty = 1
+days = 6
+pay_lo = 200
+pay_hi = 240
+rep = 9
+fail = 6
+
+[[contract]]
+id = "rd-reed-bundles"
+kind = "deliver"
+faction = "reed"
+tier = 1
+title = "Reed for the thatchers"
+text = "Word came by the heron boy. The bell-ringers want twenty bundles of cut reed brought to the Tidecourt for their sister's roof. Bring them dry. Say Marrow sent you."
+good = "reed"
+qty = 20
+days = 4
+pay_lo = 55
+pay_hi = 64
+rep = 2
+fail = 2
+
+[[contract]]
+id = "rd-smoked-eel"
+kind = "deliver"
+faction = "reed"
+tier = 2
+title = "Fifteen fish for the smokehouse"
+text = "The eel-wives' smokehouse is bare. Fifteen fish, hand to hand, at the Tidecourt gate, to a woman in a green shawl. She will not haggle, so do not."
+good = "fish"
+qty = 15
+days = 3
+pay_lo = 40
+pay_hi = 48
+rep = 3
+fail = 3
+
+[[contract]]
+id = "rd-leech-thin"
+kind = "clear"
+faction = "reed"
+tier = 2
+title = "Thin the leech-bog"
+text = "The bog-children cannot cross where the black pool is. Two fights won against leech swarms, and the path is theirs again. The reed-witch pays in coin and in a blessing."
+qty = 2
+foe = "peat-leech"
+days = 4
+pay_lo = 30
+pay_hi = 40
+rep = 3
+fail = 3
+
+[[contract]]
+id = "rd-lamp-escort"
+kind = "escort"
+faction = "reed"
+tier = 3
+title = "A lamp-bearer to the shrine"
+text = "A reed-woman must carry a lamp to an old shrine and leave it burning. She walks slowly and says nothing. Keep up, keep quiet, bring her home, and the reed remembers you."
+qty = 1
+poi = "shrine"
+days = 5
+pay_lo = 40
+pay_hi = 48
+rep = 5
+fail = 4
+
+[[contract]]
+id = "rd-peat-cut"
+kind = "salvage"
+faction = "reed"
+tier = 1
+title = "Peat for the winter fires"
+text = "The reed-folk have no peat this year. Bring twenty in an expedition's cargo, cut or found, from a drover's store or a bog. They will not ask which."
+good = "peat"
+qty = 20
+days = 5
+pay_lo = 100
+pay_hi = 120
+rep = 3
+fail = 3
+
+[[contract]]
+id = "rd-drowned-bell"
+kind = "clear"
+faction = "reed"
+tier = 4
+title = "Quiet the drowned bell"
+text = "A hag rings a bell under the water at night, and the children will not sleep. Three fights won against tide-hags. The reed-witches name the Honoured only for this."
+qty = 3
+foe = "tide-hag"
+days = 5
+pay_lo = 60
+pay_hi = 72
+rep = 8
+fail = 5
