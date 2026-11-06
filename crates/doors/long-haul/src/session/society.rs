@@ -16,10 +16,17 @@ pub(crate) enum Tab {
     Piracy,
     Outposts,
     Hall,
+    Journal,
 }
 
 impl Tab {
-    pub(crate) const ALL: [Self; 4] = [Self::Convoy, Self::Piracy, Self::Outposts, Self::Hall];
+    pub(crate) const ALL: [Self; 5] = [
+        Self::Convoy,
+        Self::Piracy,
+        Self::Outposts,
+        Self::Hall,
+        Self::Journal,
+    ];
 
     pub(crate) const fn name(self) -> &'static str {
         match self {
@@ -27,6 +34,7 @@ impl Tab {
             Self::Piracy => "Piracy",
             Self::Outposts => "Outposts",
             Self::Hall => "Hall",
+            Self::Journal => "Journal",
         }
     }
 
@@ -360,6 +368,45 @@ impl Session {
                     format!("You are in {here}. [p] pledge 500 cr  [P] pledge 5,000 cr toward a station here."),
                     DoorStyle::Strong,
                 ));
+            }
+            Tab::Journal => {
+                out.push(line("Stories you have begun, and how they ended.", DoorStyle::Dim));
+                for (i, arc) in self.content.arcs.arc.iter().enumerate() {
+                    let state = p.social.arcs[i];
+                    let total = self
+                        .content
+                        .arcs
+                        .event
+                        .iter()
+                        .filter(|e| e.arc == arc.id)
+                        .count();
+                    if let Some((title, text)) = state
+                        .finished()
+                        .then(|| self.content.ending_text(state.ending))
+                        .flatten()
+                    {
+                        out.push(line(format!("{} - finished: {title}", arc.title), DoorStyle::Good));
+                        out.push(line(format!("  {text}"), DoorStyle::Dim));
+                    } else if state.step == 0 {
+                        out.push(line(format!("? {}", arc.hint), DoorStyle::Dim));
+                    } else {
+                        out.push(line(
+                            format!("{} - step {} of {total}", arc.title, state.step + 1),
+                            DoorStyle::Strong,
+                        ));
+                        out.push(line(format!("  {}", arc.blurb), DoorStyle::Plain));
+                    }
+                }
+                for l in &p.social.legacy {
+                    let title = self
+                        .content
+                        .ending_text(l.ending)
+                        .map_or("unknown", |(t, _)| t);
+                    out.push(line(
+                        format!("Season {}: {title}, worth {} cr", l.season, cr(l.worth)),
+                        DoorStyle::Accent,
+                    ));
+                }
             }
             Tab::Hall => {
                 for (cat, title) in [(0u8, "Richest captains"), (1, "Best surveyors"), (2, "Most feared")] {

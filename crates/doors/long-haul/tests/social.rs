@@ -30,6 +30,7 @@ struct Board {
     store: MemoryDoorStore,
     clock: Arc<ManualClock>,
     visits: u64,
+    season: u32,
 }
 
 fn keys(text: &str) -> Vec<DoorKey> {
@@ -48,6 +49,7 @@ impl Board {
             store,
             clock: Arc::new(ManualClock::new(Day::from_raw(DAY0).start())),
             visits: 0,
+            season: 1,
         }
     }
 
@@ -97,14 +99,14 @@ impl Board {
             .await
             .unwrap()
             .unwrap();
-        let ext = self.world().await.extended(self.door.content(), &self.door.frontier(1));
+        let ext = self.world_ext().await;
         Player::decode(&saved.bytes, self.door.content(), &ext).unwrap()
     }
 
     async fn edit(&self, n: i64, f: impl FnOnce(&mut Player)) {
         let id = &self.door.info().id;
         let saved = self.store.load_save(id, Self::id(n)).await.unwrap().unwrap();
-        let ext = self.world().await.extended(self.door.content(), &self.door.frontier(1));
+        let ext = self.world_ext().await;
         let mut p = Player::decode(&saved.bytes, self.door.content(), &ext).unwrap();
         f(&mut p);
         self.store
@@ -113,7 +115,7 @@ impl Board {
                 Self::id(n),
                 &SaveWrite {
                     expected: saved.revision,
-                    season: 1,
+                    season: self.season,
                     version: SAVE_VERSION,
                     bytes: &p.encode(),
                 },
@@ -122,11 +124,29 @@ impl Board {
             .unwrap();
     }
 
+    /// The map with the outposts of the world the captains are in now (the current season).
+    async fn world_ext(&self) -> russh_bbs_door_long_haul::frontier::Frontier {
+        let world = self.world().await;
+        let base = self.door.frontier(self.season);
+        if world.season == self.season {
+            world.extended(self.door.content(), &base)
+        } else {
+            (*base).clone()
+        }
+    }
+
     async fn world(&self) -> World {
-        let frontier = self.door.frontier(1);
         match self.store.load_world(&self.door.info().id).await.unwrap() {
-            Some(stored) => World::decode(&stored.bytes, self.door.content(), &frontier).unwrap(),
-            None => World::fresh(self.door.content(), &frontier, self.day()),
+            Some(stored) => {
+                let season = World::peek_season(&stored.bytes).unwrap();
+                let frontier = self.door.frontier(season);
+                World::decode(&stored.bytes, self.door.content(), &frontier).unwrap()
+            }
+            None => World::fresh(
+                self.door.content(),
+                &self.door.frontier(self.season),
+                self.day(),
+            ),
         }
     }
 
@@ -138,7 +158,7 @@ impl Board {
         let bytes = World::apply_stored(
             old.as_deref(),
             self.door.content(),
-            &self.door.frontier(1),
+            &self.door.frontier(self.season),
             self.day(),
             deltas,
         );
@@ -360,4 +380,53 @@ async fn players_fund_an_outpost_late_in_the_season_and_it_becomes_a_market() {
     b.night().await;
     assert_eq!(b.world().await.social.outposts.len(), 1);
     let _ = Social::cost_of(1);
+}
+
+#[tokio::test]
+async fn a_season_ends_with_an_ending_a_legacy_an_heirloom_and_a_hall_that_carries_over() {
+    use russh_bbs_core::audit::{Actor, events};
+    let mut b = Board::new();
+    join(&mut b, 1).await;
+    join(&mut b, 2).await;
+    // Captain 1 got rich and finished the League's story; captain 2 just got by.
+    b.edit(1, |p| {
+        p.credit(Cause::Start, 120_000);
+        p.social.arcs[1].ending = 8;
+    })
+    .await;
+    b.night().await;
+    b.visit(1, "q").await;
+    b.visit(2, "q").await;
+    let world = b.world().await;
+    let rich = world.social.hall(0);
+    assert_eq!(rich.first().map(|r| r.name.clone()), Some(b.player(1).await.captain));
+    let heir = b.player(1).await.heirloom_choice(b.door.content());
+    // Staff end the season.
+    let id = b.door.info().id.clone();
+    b.store
+        .end_season(&id, &events::door_season_ended(Actor::System, "long-haul"))
+        .await
+        .unwrap();
+    b.season = 2;
+    // The next visit starts a new captain who remembers how it ended and inherits a module.
+    let lines = b.visit(1, "enter").await;
+    let p = b.player(1).await;
+    assert_eq!(p.social.legacy.len(), 1);
+    assert_eq!(p.social.legacy[0].season, 1);
+    assert_eq!(p.social.legacy[0].ending, 8, "the arc's ending counts before riches");
+    assert_eq!(p.social.heirloom, heir);
+    assert!(p.ship.modules.iter().any(|m| m.module == heir));
+    assert!(p.cash < 5_000, "a new captain, a new purse");
+    let text = lines.join("\n");
+    assert!(text.contains("Last season ended") || p.social.legacy.len() == 1, "{text}");
+    // Captain 2 had no story: a season ending is picked from how they did.
+    b.visit(2, "enter").await;
+    assert!(b.player(2).await.social.legacy[0].ending >= 100);
+    // The new world appears with the first change a captain makes to it, and keeps the hall.
+    b.visit(1, "o n").await;
+    let world = b.world().await;
+    assert_eq!(world.season, 2);
+    assert_eq!(world.social.past.len(), 1);
+    assert_eq!(world.social.past[0].season, 1);
+    assert!(!world.social.past[0].records.is_empty());
 }

@@ -39,6 +39,13 @@ pub(crate) enum Start {
     Captain(Box<Player>),
     /// A save this build cannot read; nothing is written over it.
     Unreadable,
+    /// No captain yet this season, but an earlier season's captain left a legacy.
+    Successor {
+        /// Earlier seasons, the last one included.
+        legacy: Vec<crate::socialplay::Legacy>,
+        /// The module handed down (255 for none).
+        heirloom: u8,
+    },
 }
 
 enum Mode {
@@ -76,6 +83,8 @@ pub(crate) struct Session {
     reactor: ui::combat::Reactor,
     /// World changes made while the door was opening, sent with the first key.
     pending: Vec<crate::world::Delta>,
+    /// What an earlier season left the captain who is about to sign on.
+    inheritance: Option<(Vec<crate::socialplay::Legacy>, u8)>,
     /// Opening the door changed the captain (a new day, collected raids and dividends); the
     /// first key writes it, even if that key leaves.
     opened_dirty: bool,
@@ -154,8 +163,13 @@ impl Session {
         today: i64,
         rng: &mut DoorRng,
     ) -> Self {
+        let mut inheritance = None;
         let (player, mode) = match start {
             Start::New => (None, Mode::Pick(0)),
+            Start::Successor { legacy, heirloom } => {
+                inheritance = Some((legacy, heirloom));
+                (None, Mode::Pick(0))
+            }
             Start::Unreadable => (None, Mode::Unreadable),
             Start::Captain(player) => (Some(*player), Mode::Bridge),
         };
@@ -190,6 +204,7 @@ impl Session {
             chart: ui::chart::ChartState::new(0),
             plan: None,
             reactor: ui::combat::Reactor::new(),
+            inheritance,
             pending,
             opened_dirty: false,
         };
@@ -350,6 +365,22 @@ impl Session {
                 let mut player =
                     Player::new(&self.content, &self.frontier, &captain, background, today);
                 player.social.handle.clone_from(&self.handle);
+                if let Some((legacy, heirloom)) = self.inheritance.take() {
+                    if let Some(last) = legacy.last()
+                        && let Some((title, text)) = self.content.ending_text(last.ending)
+                    {
+                        self.push(
+                            format!("Last season ended as {title}: {text}"),
+                            DoorStyle::Accent,
+                        );
+                    }
+                    if let Some(name) = player.inherit(&self.content, legacy, heirloom) {
+                        self.push(
+                            format!("A {name} comes down to you from the last captain."),
+                            DoorStyle::Good,
+                        );
+                    }
+                }
                 ctx.request_save(player.encode());
                 self.push(
                     "You sign the loan. The ship is yours, and so is the debt.".to_owned(),

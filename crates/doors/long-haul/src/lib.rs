@@ -112,6 +112,29 @@ impl LongHaul {
         Ok(Arc::new(Self::new()?))
     }
 
+    /// The start of a new captain after a season ended: what the last one made of it, and an
+    /// heirloom, if the old save can be read against the old season's map.
+    fn successor(&self, bytes: &[u8], season: u32, world: Option<&[u8]>) -> session::Start {
+        let base = self.frontier(season);
+        let map = world
+            .and_then(|w| World::decode(w, &self.content, &base))
+            .filter(|w| w.season == season)
+            .map_or_else(|| (*base).clone(), |w| w.extended(&self.content, &base));
+        let Some(old) = Player::decode(bytes, &self.content, &map) else {
+            return session::Start::New;
+        };
+        let mut legacy = old.social.legacy.clone();
+        legacy.push(socialplay::Legacy {
+            season,
+            ending: old.season_ending(&self.content),
+            worth: old.net_worth(&self.content),
+        });
+        session::Start::Successor {
+            legacy,
+            heirloom: old.heirloom_choice(&self.content),
+        }
+    }
+
     /// The content tables.
     #[must_use]
     pub fn content(&self) -> &Arc<Content> {
@@ -153,8 +176,11 @@ impl Door for LongHaul {
         let frontier = Arc::new(world.extended(&self.content, &base));
         let player = match start.save {
             Save::Fresh => session::Start::New,
-            // A save from an earlier season is a past captain: this season starts a new one.
-            Save::Loaded { season, .. } if season != start.season => session::Start::New,
+            // A save from an earlier season is a past captain: this season starts a new one, who
+            // remembers how that season ended and inherits a module.
+            Save::Loaded { bytes, season } if season != start.season => {
+                self.successor(bytes, season, start.world)
+            }
             Save::Loaded { bytes, .. } => match Player::decode(bytes, &self.content, &frontier) {
                 Some(player) => session::Start::Captain(Box::new(player)),
                 None => session::Start::Unreadable,

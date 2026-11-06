@@ -665,6 +665,21 @@ impl Player {
         if self.social.handle.is_empty() {
             return;
         }
+        let worth = self.net_worth(env.content);
+        for (category, value) in [
+            (0u8, worth),
+            (1, i64::from(self.stats.charted)),
+            (2, i64::from(self.social.infamy)),
+        ] {
+            if value > 0 {
+                env.push(Delta::Social(SocialDelta::Record(social::Record {
+                    category,
+                    name: self.captain.clone(),
+                    value,
+                    day: env.today,
+                })));
+            }
+        }
         if self.social.flagged {
             let entry = self.roster_entry(env.content, env.today);
             env.push(Delta::Social(SocialDelta::Roster(entry)));
@@ -922,5 +937,73 @@ impl Player {
                 ending: code,
             })));
         }
+    }
+}
+
+impl Player {
+    /// How this captain's season reads, as an ending code: the finished arc that counts most
+    /// (the gates first), else what the captain made of themselves.
+    #[must_use]
+    pub fn season_ending(&self, content: &crate::content::Content) -> u8 {
+        if let Some((arc, ending)) = self.arc_ending() {
+            return u8::try_from(arc * 8).unwrap_or(0) + ending % 8;
+        }
+        let worth = self.net_worth(content);
+        let id = if worth >= 60_000 {
+            "tycoon"
+        } else if self.social.infamy >= 50 {
+            "pirate_king"
+        } else if self.social.renown >= 30 {
+            "folk_hero"
+        } else if self.stats.charted >= 6 {
+            "cartographer"
+        } else if worth < -20_000 || self.repossessions >= 2 {
+            "bankrupt"
+        } else if worth > 0 {
+            "solvent"
+        } else {
+            "drifter"
+        };
+        content.season_ending_code(id)
+    }
+
+    /// The module this captain would hand down: the dearest one aboard (255 for none).
+    #[must_use]
+    pub fn heirloom_choice(&self, content: &crate::content::Content) -> u8 {
+        self.ship
+            .modules
+            .iter()
+            .max_by_key(|m| content.modules.get(usize::from(m.module)).map_or(0, |d| d.price))
+            .map_or(255, |m| m.module)
+    }
+
+    /// Take on the memory of earlier seasons and install the heirloom if it has a place: a free
+    /// slot of its kind, or one held by a cheaper module of that kind.
+    pub fn inherit(
+        &mut self,
+        content: &crate::content::Content,
+        legacy: Vec<Legacy>,
+        heirloom: u8,
+    ) -> Option<String> {
+        self.social.legacy = legacy;
+        while self.social.legacy.len() > MAX_LEGACY {
+            self.social.legacy.remove(0);
+        }
+        self.social.heirloom = heirloom;
+        let def = content.modules.get(usize::from(heirloom))?;
+        let hull = content.hulls.get(usize::from(self.ship.hull))?;
+        let installed = crate::ship::Installed { module: heirloom, wear: 0 };
+        if self.ship.used_slots(content, def.slot) < usize::from(hull.slots.of(def.slot)) {
+            self.ship.modules.push(installed);
+        } else {
+            let weaker = self.ship.modules.iter().position(|m| {
+                content
+                    .modules
+                    .get(usize::from(m.module))
+                    .is_some_and(|d| d.slot == def.slot && d.price < def.price)
+            })?;
+            self.ship.modules[weaker] = installed;
+        }
+        Some(def.name.clone())
     }
 }
