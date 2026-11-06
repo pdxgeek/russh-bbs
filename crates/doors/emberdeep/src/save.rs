@@ -1,5 +1,6 @@
-//! The player's save, format version 2 (version 1 is the same bytes without the trailing town
-//! section; [`upgrade_v1`] appends an empty one). Everything the game needs to continue exactly where the
+//! The player's save, format version 3. Version 2 is the same bytes without the trailing story
+//! and social section ([`upgrade_v2`] appends an empty one); version 1 also lacks the town
+//! section ([`upgrade_v1`] appends an empty one). Everything the game needs to continue exactly where the
 //! hero stopped, the fight included (disconnecting is not an escape) and the hero's own random
 //! generator (reopening is not a re-roll). The shared world is a separate blob (`world`).
 
@@ -14,7 +15,7 @@ use crate::rules::{CORES_MAX, DEPTH_MAX, FOUND_MAX, PACK_MAX};
 use crate::world::World;
 
 /// The save format version this code writes.
-pub const SAVE_VERSION: u32 = 2;
+pub const SAVE_VERSION: u32 = 3;
 
 const TAG_TOWN: u8 = 0;
 const TAG_DELVE: u8 = 1;
@@ -188,11 +189,17 @@ impl Game {
             w.u8(*c);
         }
         write_town(&mut w, self);
+        write_story(&mut w, self);
         w.0
     }
 
     /// Read a save, or `None` if the bytes are not one.
     pub(crate) fn decode(bytes: &[u8]) -> Option<Self> {
+        Self::decode_with(bytes, true)
+    }
+
+    /// Read a save of format 3 (`story` true) or of format 2 (no story section).
+    fn decode_with(bytes: &[u8], story: bool) -> Option<Self> {
         let mut r = Reader(bytes);
         let hero = read_hero(&mut r)?;
         let state = [r.u64()?, r.u64()?, r.u64()?, r.u64()?];
@@ -225,6 +232,9 @@ impl Game {
         let mut today = read_today(&mut r)?;
         let mut hero = hero;
         read_town(&mut r, &mut hero, &mut today)?;
+        if story {
+            read_story(&mut r, &mut hero, &mut today)?;
+        }
         if !r.done() {
             return None;
         }
@@ -396,10 +406,121 @@ pub(crate) fn upgrade_v1(bytes: &[u8]) -> Option<Vec<u8>> {
     let mut out = bytes.to_vec();
     let empty = Game::empty_town_section();
     out.extend_from_slice(&empty);
+    Game::decode_with(&out, false).map(|_| out)
+}
+
+/// Bring a format-2 save up to format 3: the same hero with an empty story section.
+pub(crate) fn upgrade_v2(bytes: &[u8]) -> Option<Vec<u8>> {
+    Game::decode_with(bytes, false)?;
+    let mut out = bytes.to_vec();
+    out.extend_from_slice(&Game::empty_story_section());
     Game::decode(&out).map(|_| out)
 }
 
+/// Most entries of any list the story and social sections hold.
+const STORY_LIST_MAX: usize = 64;
+/// Most notes a hero remembers having collected.
+pub(crate) const SEEN_MAX: usize = 16;
+
+/// The format-3 section: the chain of questlines, its tallies, and the hero's social state.
+fn write_story(w: &mut Writer, g: &Game) {
+    let h = &g.hero;
+    w.count(h.story.quests.len());
+    for (id, done) in &h.story.quests {
+        w.str(id);
+        w.u8(*done);
+    }
+    write_list(w, &h.story.flags);
+    w.count(h.story.slain.len());
+    for (id, n) in &h.story.slain {
+        w.str(id);
+        w.u16(*n);
+    }
+    for v in h.story.visits {
+        w.u16(v);
+    }
+    w.u8(h.story.guardians);
+    w.bool(h.story.verdict_due);
+    let s = &h.social;
+    w.bool(s.open);
+    w.bool(s.ring);
+    w.str(&s.epitaph);
+    write_list(w, &s.seen);
+    w.u16(s.rescues);
+    w.u16(s.rescued);
+    w.u16(s.wins);
+    w.u16(s.losses);
+    w.u8(g.today.bouts);
+    write_list(w, &g.today.sparred);
+}
+
+fn read_story(r: &mut Reader<'_>, h: &mut Hero, today: &mut Today) -> Option<()> {
+    let n = r.count()?;
+    if n > STORY_LIST_MAX {
+        return None;
+    }
+    h.story.quests = (0..n)
+        .map(|_| Some((r.str()?, r.u8()?)))
+        .collect::<Option<Vec<_>>>()?;
+    h.story.flags = read_list(r)?;
+    let n = r.count()?;
+    if n > STORY_LIST_MAX {
+        return None;
+    }
+    h.story.slain = (0..n)
+        .map(|_| Some((r.str()?, r.u16()?)))
+        .collect::<Option<Vec<_>>>()?;
+    for v in &mut h.story.visits {
+        *v = r.u16()?;
+    }
+    h.story.guardians = r.u8()?;
+    h.story.verdict_due = r.bool()?;
+    h.social.open = r.bool()?;
+    h.social.ring = r.bool()?;
+    h.social.epitaph = r.str()?;
+    if h.social.epitaph.chars().count() > crate::social::EPITAPH_MAX {
+        return None;
+    }
+    h.social.seen = read_list(r)?;
+    if h.social.seen.len() > SEEN_MAX || h.story.flags.len() > STORY_LIST_MAX {
+        return None;
+    }
+    h.social.rescues = r.u16()?;
+    h.social.rescued = r.u16()?;
+    h.social.wins = r.u16()?;
+    h.social.losses = r.u16()?;
+    today.bouts = r.u8()?;
+    today.sparred = read_list(r)?;
+    if today.sparred.len() > 8 {
+        return None;
+    }
+    Some(())
+}
+
 impl Game {
+    /// The bytes of a story section for a hero who has done nothing yet.
+    fn empty_story_section() -> Vec<u8> {
+        let mut w = Writer::default();
+        w.count(0); // quests
+        w.count(0); // flags
+        w.count(0); // slain
+        for _ in 0..10 {
+            w.u16(0); // visits
+        }
+        w.u8(0); // guardians
+        w.bool(false); // verdict due
+        w.bool(true); // open to company
+        w.bool(false); // in the ring
+        w.str(""); // epitaph
+        w.count(0); // seen
+        for _ in 0..4 {
+            w.u16(0); // rescues, rescued, wins, losses
+        }
+        w.u8(0); // bouts today
+        w.count(0); // sparred today
+        w.0
+    }
+
     /// The bytes of a town section for a hero with no gear marks and nothing in the town.
     fn empty_town_section() -> Vec<u8> {
         let mut w = Writer::default();
@@ -498,6 +619,8 @@ fn read_hero(r: &mut Reader<'_>) -> Option<Hero> {
         given: Vec::new(),
         contract: None,
         contracts_done: 0,
+        story: crate::hero::Story::default(),
+        social: crate::hero::Social::default(),
     })
 }
 

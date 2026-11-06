@@ -18,8 +18,10 @@
 mod codec;
 mod combat;
 pub mod content;
+pub mod content_story;
 pub mod content_town;
 mod dungeon;
+mod endings;
 mod game;
 mod hero;
 mod rules;
@@ -27,6 +29,8 @@ mod save;
 mod session;
 #[doc(hidden)]
 pub mod showcase;
+mod social;
+mod story;
 mod town;
 mod world;
 
@@ -106,11 +110,14 @@ impl Door for Emberdeep {
     }
 
     fn migrate(&self, kind: BlobKind, from: u32, bytes: &[u8]) -> Result<Vec<u8>, MigrateError> {
-        // Format 1 (M4-E1) becomes format 2 (the town slice) by appending an empty town section;
+        // Format 1 (M4-E1) becomes format 2 (the town slice) by appending an empty town section, and
+        // format 2 becomes format 3 (M4-E4) by appending an empty story and social section;
         // a blob that does not read as format 1 is refused, never guessed at.
         match (kind, from) {
             (BlobKind::Save, 1) => save::upgrade_v1(bytes).ok_or(MigrateError::Corrupt(1)),
             (BlobKind::World, 1) => world::upgrade_v1(bytes).ok_or(MigrateError::Corrupt(1)),
+            (BlobKind::Save, 2) => save::upgrade_v2(bytes).ok_or(MigrateError::Corrupt(2)),
+            (BlobKind::World, 2) => world::upgrade_v2(bytes).ok_or(MigrateError::Corrupt(2)),
             _ => Err(MigrateError::Unsupported(from)),
         }
     }
@@ -127,7 +134,10 @@ impl Door for Emberdeep {
             .world()
             .and_then(World::decode)
             .unwrap_or_else(|| World::new(1));
-        world.tick(day);
+        match &self.content {
+            Some(content) => world.tick_full(day, content),
+            None => world.tick(day),
+        }
         tick.set_world(world.encode());
         Ok(())
     }

@@ -42,6 +42,8 @@ pub(super) fn why_closed(c: &Content, need: &Need) -> String {
             c.node(id).map_or(id.as_str(), |x| x.name.as_str())
         ),
         Need::Level { min } => format!("needs level {min}"),
+        Need::Flag { id } => format!("needs the choice `{id}`"),
+        Need::NoFlag { id } => format!("closed by the choice `{id}`"),
     }
 }
 

@@ -1,0 +1,18 @@
+# Dungeon events: short scenes that overlay an ordinary room (corridor, vault, forge, flooded hall
+# or shrine) on some days. Options are room options (needs, rolls, gains), added to the room's own.
+
+[[event]]
+id = "warm-handprint"
+name = "A Warm Handprint"
+bands = [1, 2]
+kinds = ["corridor"]
+text = "A hand-shaped place on the wall is warm, as if someone had only just left it."
+[[event.option]]
+id = "match"
+label = "Set your own hand in it"
+cost = 1
+check = { attr = "spirit", dc = 10 }
+ok = [{ kind = "xp", amount = 10 }]
+ok_text = "The wall hums, and for a moment you know the way back by heart."
+fail = [{ kind = "fatigue", amount = 4 }]
+fail_text = "The warmth drains out through your palm."

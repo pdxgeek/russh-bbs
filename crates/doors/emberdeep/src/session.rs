@@ -1388,6 +1388,8 @@ fn empty_content() -> Content {
             companion: Vec::new(),
             rumour: Vec::new(),
         },
+        events: crate::content_story::Events { event: Vec::new() },
+        quests: crate::content_story::Quests { quest: Vec::new() },
     }
 }
 

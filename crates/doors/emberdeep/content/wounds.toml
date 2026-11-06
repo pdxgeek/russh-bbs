@@ -19,4 +19,6 @@ wound = [
   { id = "drilled", name = "Drilled", boon = true, days = 1, effects = [{ kind = "start_focus", amount = 1 }, { kind = "damage", amount = 1 }] },
   { id = "hangover", name = "Hangover", days = 1, effects = [{ kind = "attr", attr = "wits", amount = -2 }, { kind = "fatigue_guard", amount = -10 }] },
   { id = "roughed-up", name = "Roughed Up", days = 3, effects = [{ kind = "max_hp", amount = -6 }, { kind = "damage", amount = -1 }] },
+  { id = "ring-bruise", name = "Ring Bruise", days = 1, effects = [{ kind = "max_hp", amount = -3 }, { kind = "damage", amount = -1 }] },
+  { id = "ring-pride", name = "Ring Pride", boon = true, days = 2, effects = [{ kind = "crit_pct", amount = 2 }, { kind = "attr", attr = "spirit", amount = 1 }] },
 ]

@@ -96,6 +96,10 @@ pub(crate) struct Today {
     pub(crate) tips: Vec<u8>,
     /// Thrown out of the dice game for the night.
     pub(crate) shut_out: bool,
+    /// Challenges made in the duel ring today.
+    pub(crate) bouts: u8,
+    /// Whom the hero has already fought today.
+    pub(crate) sparred: Vec<String>,
 }
 
 impl Today {
@@ -593,6 +597,16 @@ impl Game {
         content: &Content,
         action: Action,
     ) -> Result<Vec<Event>, Refused> {
+        let mut ev = self.apply_inner(content, action)?;
+        self.story_advance(content, &mut ev);
+        Ok(ev)
+    }
+
+    fn apply_inner(
+        &mut self,
+        content: &Content,
+        action: Action,
+    ) -> Result<Vec<Event>, Refused> {
         let mut ev = Vec::new();
         if self.fight.is_some() {
             return match action {
@@ -777,7 +791,14 @@ impl Game {
             depth: level.depth,
             room: target,
         };
+        let fresh = self
+            .explored
+            .get(usize::from(level.depth) - 1)
+            .is_some_and(|m| m & (1 << target) == 0);
         self.mark(level.depth, target);
+        if fresh && let Some(t) = level.room(target) {
+            self.note_new_room(t.kind);
+        }
         self.add_fatigue(1, &d);
         let name = level
             .template(content, target)
@@ -1135,7 +1156,7 @@ impl Game {
         }
     }
 
-    fn find_recipe(&mut self, content: &Content, id: &str, ev: &mut Vec<Event>) {
+    pub(crate) fn find_recipe(&mut self, content: &Content, id: &str, ev: &mut Vec<Event>) {
         let name = content.recipe(id).map_or("a recipe", |r| r.name.as_str());
         if content.recipe(id).is_some_and(|r| self.hero.knows(r)) {
             say(
@@ -1149,7 +1170,7 @@ impl Game {
         }
     }
 
-    fn find_core(&mut self, content: &Content, id: &str, ev: &mut Vec<Event>) {
+    pub(crate) fn find_core(&mut self, content: &Content, id: &str, ev: &mut Vec<Event>) {
         let name = content.core(id).map_or("a core", |c| c.name.as_str());
         if self.hero.cores.len() < crate::rules::CORES_MAX {
             self.hero.cores.push(id.to_owned());

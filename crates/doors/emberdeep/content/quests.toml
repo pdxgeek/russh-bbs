@@ -1,0 +1,120 @@
+# The ember-priests' chain: three questlines. Each step reads the hero's own tallies; the last
+# step of a line makes a choice that sets a flag for good (a room option and the Furnace's
+# verdict may need it).
+
+[[quest]]
+id = "the-low-flame"
+name = "The Low Flame"
+text = "Sister Orlis keeps the temple's lamp and thinks the fires below are listening."
+level = 1
+[[quest.step]]
+id = "first-descent"
+text = "Go down to level 2 and see how the stair-lamps burn."
+goal = { kind = "reach", depth = 2 }
+done_text = "Orlis nods. The lamps burn low at the second landing, she says, as if to hear you."
+reward = [{ kind = "coin", amount = 20 }]
+[[quest.step]]
+id = "three-rats"
+text = "Clear three slag rats from the cellar stair."
+goal = { kind = "slay", monster = "slag-rat", count = 3 }
+done_text = "The cellar is quiet. Orlis lights a second lamp."
+reward = [{ kind = "xp", amount = 30 }]
+[[quest.step]]
+id = "shrine-watch"
+text = "Visit two shrines below and trim their wicks."
+goal = { kind = "visit", room = "shrine", count = 2 }
+done_text = "Both wicks burn blue. Orlis says the flame knows you now."
+reward = [{ kind = "coin", amount = 30 }]
+[[quest.step]]
+id = "warden-fall"
+text = "Put down the Bellows Golem, the first guardian."
+goal = { kind = "guardian", band = 1 }
+done_text = "The Golem's breath stops. Orlis weeps, and then asks what you felt as it fell."
+reward = [{ kind = "relic" }]
+[[quest.step]]
+id = "the-choice"
+text = "Orlis asks what the flame is owed."
+goal = { kind = "level", level = 3 }
+done_text = "You answer, and the lamp does not flicker."
+choose = [
+  { id = "feed", label = "Feed it: the flame must be kept", text = "You promise the temple lamp a share of everything you bring up.", flag = "keeps-the-flame" },
+  { id = "free", label = "Let it burn down: it was never ours", text = "You tell Orlis the flame owes no one. She is quiet a long while.", flag = "lets-it-fall" },
+]
+
+[[quest]]
+id = "the-smiths-debt"
+name = "The Smiths' Debt"
+text = "Master Okwe's apprentices say the old smiths borrowed something from the Furnace and never paid it back."
+level = 3
+[[quest.step]]
+id = "okwe-hammer"
+text = "Reach level 4, where the dead forges are."
+goal = { kind = "reach", depth = 4 }
+done_text = "In a cold forge you find a ledger written in a smith's shorthand."
+reward = [{ kind = "coin", amount = 40 }]
+[[quest.step]]
+id = "forges-seen"
+text = "Walk into three old forges."
+goal = { kind = "visit", room = "forge", count = 3 }
+done_text = "Each anvil bears the same mark: a key, struck twice."
+reward = [{ kind = "xp", amount = 50 }]
+[[quest.step]]
+id = "slag-mother"
+text = "Put down the Slagmother, who sits on the oldest anvil."
+goal = { kind = "guardian", band = 2 }
+done_text = "Under the Slagmother's bulk, a key of black iron."
+reward = [{ kind = "relic" }]
+[[quest.step]]
+id = "paid-in-full"
+text = "Give the town's works 100 coin, to begin repaying the debt."
+goal = { kind = "give", coin = 100 }
+done_text = "Okwe's apprentices bring the key to the town works, and look at you."
+reward = [{ kind = "xp", amount = 60 }]
+[[quest.step]]
+id = "the-key"
+text = "The key is yours to decide."
+goal = { kind = "level", level = 6 }
+done_text = "The apprentices watch you decide."
+choose = [
+  { id = "keep", label = "Keep the key: the Furnace is worth a lifetime", text = "You hang the key at your belt. It is cold, and it is heavy.", flag = "keeps-the-key" },
+  { id = "give", label = "Hand it to the apprentices", text = "You hand the key over. The apprentices put it in a box, and the box in a vault.", flag = "gave-the-key" },
+]
+
+[[quest]]
+id = "the-quiet-watch"
+name = "The Quiet Watch"
+text = "The lamplighters keep a watch on the lower stairs, and one of them will not say why."
+level = 5
+[[quest.step]]
+id = "stair-six"
+text = "Reach level 6."
+goal = { kind = "reach", depth = 6 }
+done_text = "The lamplighters tell you the stair there has never been quiet."
+reward = [{ kind = "coin", amount = 60 }]
+[[quest.step]]
+id = "ten-contracts"
+text = "Turn in three contracts at the board."
+goal = { kind = "contracts", count = 3 }
+done_text = "The board-keeper nods. The watch hears about those who finish."
+reward = [{ kind = "xp", amount = 80 }]
+[[quest.step]]
+id = "carry-one-home"
+text = "Carry a fallen hero home."
+goal = { kind = "rescues", count = 1 }
+done_text = "The watch opens its ledger and writes your name in it."
+reward = [{ kind = "relic" }]
+[[quest.step]]
+id = "prism"
+text = "Put down the Prism Warden in the Glass Halls."
+goal = { kind = "guardian", band = 3 }
+done_text = "In the glass, a gate you had not seen."
+reward = [{ kind = "xp", amount = 120 }]
+[[quest.step]]
+id = "the-gate"
+text = "The lamplighters ask what the watch is for."
+goal = { kind = "level", level = 8 }
+done_text = "You answer them."
+choose = [
+  { id = "open", label = "To open the gates the old smiths shut", text = "You tell the lamplighters the gates should open. They light a lamp for it.", flag = "opens-the-gate" },
+  { id = "shut", label = "To keep them shut, and the town safe", text = "You tell them to keep watch. The lamps are trimmed low.", flag = "keeps-the-watch" },
+]
