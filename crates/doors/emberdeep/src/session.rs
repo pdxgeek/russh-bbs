@@ -363,6 +363,7 @@ impl Session {
                 let rng = russh_bbs_door::DoorRng::from_seed(self.fresh_seed);
                 let mut game = Game::new(hero, rng, self.day - 1, self.season, self.world.clone());
                 let events = game.new_day(&content, self.day);
+                game.sync_roster(&content);
                 let line = format!(
                     "{} the {} is ready for the Emberdeep.",
                     game.hero.name,
@@ -373,6 +374,7 @@ impl Session {
                 self.game = Some(game);
                 self.mode = Mode::Play(Screen::Main);
                 self.dirty = true;
+                self.flush_changes(ctx);
             }
             Err(_) => {
                 if let Mode::Create(c) = &mut self.mode {
@@ -720,14 +722,20 @@ impl Session {
     fn lines(&self) -> Lines {
         if let Some(buf) = &self.epitaph {
             return Lines {
-                head: vec![
-                    styled("WRITE AN EPITAPH", DoorStyle::Strong),
-                    plain(format!(
-                        "One line of up to {} characters, read in the hall only if you are not found.",
-                        crate::social::EPITAPH_MAX
-                    )),
-                    plain(format!("> {buf}_")),
-                ],
+                head: std::iter::once(styled("WRITE AN EPITAPH", DoorStyle::Strong))
+                    .chain(
+                        wrap(
+                            &format!(
+                                "One line of up to {} characters, read in the hall only if you are not found.",
+                                crate::social::EPITAPH_MAX
+                            ),
+                            WRAP,
+                        )
+                        .into_iter()
+                        .map(plain),
+                    )
+                    .chain(wrap(&format!("> {buf}_"), WRAP).into_iter().map(plain))
+                    .collect(),
                 log: Vec::new(),
                 keys: vec![plain("[Enter] Save   [Backspace] Delete   [Esc] Cancel")],
             };
@@ -958,6 +966,7 @@ impl Session {
         keys.push(plain(
             "[g] Guild hall   [l] Library   [w] Town works   [s] Skills",
         ));
+        keys.push(plain("[c] Company   [u] Duel ring   [j] Journal"));
         keys.push(plain("[h] Hero sheet   [r] The hall   [q] Leave"));
     }
 
@@ -1340,7 +1349,11 @@ impl Session {
         }
         for (epoch, code) in &c.chronicle {
             let e = crate::endings::ENDINGS[usize::from(*code).min(5)];
-            out.push(plain(format!("  Fall {}: {}", u32::from(*epoch) + 1, e.name)));
+            out.push(plain(format!(
+                "  Fall {}: {}",
+                u32::from(*epoch) + 1,
+                e.name
+            )));
         }
         let epi = crate::endings::epilogue(&game.hero);
         out.push(plain(format!("Your epilogue so far: {}", epi.name)));

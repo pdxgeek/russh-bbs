@@ -738,6 +738,16 @@ pub struct Summary {
     pub given: (u32, u32),
     /// Recipes learned below or at the library.
     pub recipes: usize,
+    /// Questline steps done, in all.
+    pub quest_steps: usize,
+    /// Choices made in the questlines.
+    pub flags: Vec<String>,
+    /// Companions carried home, and times carried home.
+    pub rescues: (u16, u16),
+    /// Duels won and lost.
+    pub duels: (u16, u16),
+    /// In the ring.
+    pub ring: bool,
 }
 
 /// Read a save into a [`Summary`].
@@ -789,5 +799,10 @@ pub fn summarize(bytes: &[u8], content: &Content) -> Option<Summary> {
             .iter()
             .fold((0, 0), |(c, s), (_, gc, gs)| (c + gc, s + gs)),
         recipes: h.recipes.len(),
+        quest_steps: h.story.quests.iter().map(|(_, n)| usize::from(*n)).sum(),
+        flags: h.story.flags.clone(),
+        rescues: (h.social.rescues, h.social.rescued),
+        duels: (h.social.wins, h.social.losses),
+        ring: h.social.ring,
     })
 }

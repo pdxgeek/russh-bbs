@@ -14,6 +14,7 @@
     clippy::manual_assert_eq
 )]
 
+mod balance;
 mod board;
 mod branches;
 mod combat;

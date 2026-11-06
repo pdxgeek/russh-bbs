@@ -290,14 +290,7 @@ pub(crate) fn generate(content: &Content, season: u32, epoch: u16, depth: u8) ->
 const EVENT_PCT: u32 = 40;
 
 /// Lay events over ordinary rooms. A separate generator keeps the rooms themselves unchanged.
-fn lay_events(
-    content: &Content,
-    season: u32,
-    epoch: u16,
-    depth: u8,
-    band: u8,
-    rooms: &mut [Room],
-) {
+fn lay_events(content: &Content, season: u32, epoch: u16, depth: u8, band: u8, rooms: &mut [Room]) {
     let mut rng = rng_for(
         "events",
         &[i64::from(season), i64::from(epoch), i64::from(depth)],

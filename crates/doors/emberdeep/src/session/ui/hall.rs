@@ -274,7 +274,13 @@ fn the_world(cx: &Cx<'_>, frame: &mut DoorFrame<'_>, area: Rect) {
 }
 
 /// A panel of plain lines.
-fn paged(cx: &Cx<'_>, frame: &mut DoorFrame<'_>, area: Rect, title: &str, lines: Vec<Line<'static>>) {
+fn paged(
+    cx: &Cx<'_>,
+    frame: &mut DoorFrame<'_>,
+    area: Rect,
+    title: &str,
+    lines: Vec<Line<'static>>,
+) {
     frame.render_widget(Clear, area);
     frame.render_widget(panel(title, false), area);
     frame.render_widget(
@@ -296,7 +302,10 @@ fn companies_lines(cx: &Cx<'_>) -> Vec<Line<'static>> {
             cx.roles.accent,
         ));
         out.push(Line::styled(
-            format!("  deepest together: level {}   carried home: {}", p.deepest, p.rescues),
+            format!(
+                "  deepest together: level {}   carried home: {}",
+                p.deepest, p.rescues
+            ),
             cx.roles.plain,
         ));
     }
@@ -316,7 +325,10 @@ fn ring_lines(cx: &Cx<'_>) -> Vec<Line<'static>> {
     let c = &cx.game.world.commons;
     let mut out: Vec<Line<'static>> = Vec::new();
     if c.ladder.is_empty() {
-        out.push(Line::styled("No one has fought in the ring yet.", cx.roles.dim));
+        out.push(Line::styled(
+            "No one has fought in the ring yet.",
+            cx.roles.dim,
+        ));
     }
     for (i, r) in c.ladder.iter().enumerate().take(12) {
         out.push(Line::styled(
@@ -328,12 +340,19 @@ fn ring_lines(cx: &Cx<'_>) -> Vec<Line<'static>> {
                 r.wins,
                 r.losses
             ),
-            if i == 0 { Style::new().fg(EMBER_HOT) } else { cx.roles.plain },
+            if i == 0 {
+                Style::new().fg(EMBER_HOT)
+            } else {
+                cx.roles.plain
+            },
         ));
     }
     out.push(Line::default());
     out.push(Line::styled(
-        format!("{} duel(s) fought this season. Stakes lost feed the works.", c.duels),
+        format!(
+            "{} duel(s) fought this season. Stakes lost feed the works.",
+            c.duels
+        ),
         cx.roles.dim,
     ));
     out
@@ -354,12 +373,19 @@ fn donor_lines(cx: &Cx<'_>) -> Vec<Line<'static>> {
     totals.sort_by(|a, b| (b.1 + b.2).cmp(&(a.1 + a.2)).then_with(|| a.0.cmp(&b.0)));
     let mut out: Vec<Line<'static>> = Vec::new();
     if totals.is_empty() {
-        out.push(Line::styled("No one has given to the works yet.", cx.roles.dim));
+        out.push(Line::styled(
+            "No one has given to the works yet.",
+            cx.roles.dim,
+        ));
     }
     for (i, (name, coin, salvage)) in totals.iter().enumerate().take(10) {
         out.push(Line::styled(
             format!("{:>2}. {:<14} {coin}c  {salvage}s", i + 1, clip(name, 14)),
-            if i == 0 { Style::new().fg(EMBER_HOT) } else { cx.roles.plain },
+            if i == 0 {
+                Style::new().fg(EMBER_HOT)
+            } else {
+                cx.roles.plain
+            },
         ));
     }
     out.push(Line::default());
@@ -392,12 +418,18 @@ fn chronicle_lines(cx: &Cx<'_>) -> Vec<Line<'static>> {
     }
     for (epoch, code) in &c.chronicle {
         let e = crate::endings::ENDINGS[usize::from(*code).min(crate::endings::ENDINGS.len() - 1)];
-        out.push(Line::styled(format!("Fall {}: {}", u32::from(*epoch) + 1, e.name), cx.roles.accent));
+        out.push(Line::styled(
+            format!("Fall {}: {}", u32::from(*epoch) + 1, e.name),
+            cx.roles.accent,
+        ));
         out.push(Line::styled(format!("  {}", e.text), cx.roles.plain));
     }
     out.push(Line::default());
     let ep = crate::endings::epilogue(&game.hero);
-    out.push(Line::styled(format!("Your epilogue so far: {}", ep.name), Style::new().fg(EMBER_HOT)));
+    out.push(Line::styled(
+        format!("Your epilogue so far: {}", ep.name),
+        Style::new().fg(EMBER_HOT),
+    ));
     out.push(Line::styled(ep.text.to_owned(), cx.roles.plain));
     if !c.epitaphs.is_empty() {
         out.push(Line::default());

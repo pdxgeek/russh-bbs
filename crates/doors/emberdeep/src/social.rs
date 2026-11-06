@@ -175,15 +175,32 @@ pub(crate) struct Commons {
 pub(crate) enum SocialChange {
     Roster(Member),
     Invite(Invite),
-    Join { leader: String, name: String },
+    Join {
+        leader: String,
+        name: String,
+    },
     Leave(String),
-    PartyClear { who: String, day: i64, depth: u8, room: u8 },
-    PartyDepth { who: String, depth: u8 },
+    PartyClear {
+        who: String,
+        day: i64,
+        depth: u8,
+        room: u8,
+    },
+    PartyDepth {
+        who: String,
+        depth: u8,
+    },
     Note(Note),
-    Collect { id: String, to: String },
+    Collect {
+        id: String,
+        to: String,
+    },
     Duel(Bout),
     Epitaph(Epitaph),
-    Verdict { kind: String, by: String },
+    Verdict {
+        kind: String,
+        by: String,
+    },
 }
 
 impl Commons {
@@ -195,7 +212,10 @@ impl Commons {
 
     /// Whether two heroes are in the same company.
     pub(crate) fn companions(&self, a: &str, b: &str) -> bool {
-        a != b && self.party_of(a).is_some_and(|p| p.members.iter().any(|m| m == b))
+        a != b
+            && self
+                .party_of(a)
+                .is_some_and(|p| p.members.iter().any(|m| m == b))
     }
 
     pub(crate) fn member(&self, name: &str) -> Option<&Member> {
@@ -262,14 +282,18 @@ impl Commons {
                     }
                 }
                 if !m.ring {
-                    self.ladder.retain(|r| r.name != m.name || r.wins + r.losses > 0);
+                    self.ladder
+                        .retain(|r| r.name != m.name || r.wins + r.losses > 0);
                 }
                 None
             }
             SocialChange::Invite(i) => {
                 let fresh = i.from != i.to
                     && self.party_of(&i.to).is_none()
-                    && !self.invites.iter().any(|x| x.from == i.from && x.to == i.to)
+                    && !self
+                        .invites
+                        .iter()
+                        .any(|x| x.from == i.from && x.to == i.to)
                     && self.invites_from(&i.from) < INVITES_PER_HERO
                     && self.invites.len() < INVITES_MAX;
                 if fresh {
@@ -322,7 +346,11 @@ impl Commons {
             }
             SocialChange::Duel(b) => self.duel(b),
             SocialChange::Epitaph(e) => {
-                if !self.epitaphs.iter().any(|x| x.name == e.name && x.day == e.day) {
+                if !self
+                    .epitaphs
+                    .iter()
+                    .any(|x| x.name == e.name && x.day == e.day)
+                {
                     self.epitaphs.push(e.clone());
                     while self.epitaphs.len() > EPITAPHS_MAX {
                         self.epitaphs.remove(0);
@@ -515,7 +543,13 @@ impl Commons {
             w.i64(m.day);
             w.bool(m.open);
             w.bool(m.ring);
-            for v in [m.ghost.hp, m.ghost.armor, m.ghost.damage, m.ghost.crit, m.ghost.evade] {
+            for v in [
+                m.ghost.hp,
+                m.ghost.armor,
+                m.ghost.damage,
+                m.ghost.crit,
+                m.ghost.evade,
+            ] {
                 w.i32(v);
             }
         }

@@ -16,6 +16,7 @@ use crate::content::{Content, Intent, ShortcutKind};
 use crate::dungeon;
 use crate::game::{Action, Game, Place};
 use crate::hero::Hero;
+use crate::social::{Epitaph, Ghost, Invite, Member, SocialChange};
 use crate::town::TownAct;
 use crate::world::{Change, Fallen, Pledge, World};
 
@@ -101,6 +102,55 @@ fn lived_in(c: &Content) -> World {
     ));
     w.apply(&Change::News("Ash opened a lift at level 6.".to_owned()));
     finish(&mut w, c, &c.projects.project[0].id);
+    // Company, ring and chronicle.
+    for (name, level, calling, ring) in [
+        ("Wren", 5u8, "wanderer", true),
+        ("Ash", 6, "duelist", true),
+        ("Brindle", 7, "warden", true),
+        ("Tallow", 4, "cutthroat", false),
+    ] {
+        w.apply(&Change::Social(SocialChange::Roster(Member {
+            name: name.to_owned(),
+            level,
+            calling: calling.to_owned(),
+            day: DAY,
+            open: true,
+            ring,
+            ghost: Ghost {
+                hp: 60,
+                armor: 3,
+                damage: 11,
+                crit: 5,
+                evade: 10,
+            },
+        })));
+    }
+    for (from, to) in [("Ash", "Wren"), ("Brindle", "Ember")] {
+        w.apply(&Change::Social(SocialChange::Invite(Invite {
+            from: from.to_owned(),
+            to: to.to_owned(),
+            day: DAY,
+        })));
+    }
+    w.apply(&Change::Social(SocialChange::Join {
+        leader: "Ash".to_owned(),
+        name: "Wren".to_owned(),
+    }));
+    w.apply(&Change::Social(SocialChange::Duel(crate::social::Bout {
+        id: "Ash:Brindle:1:0".to_owned(),
+        challenger: "Ash".to_owned(),
+        target: "Brindle".to_owned(),
+        challenger_won: true,
+        wager: 5,
+        day: DAY - 1,
+    })));
+    w.commons.chronicle.push((0, 4));
+    w.apply(&Change::Social(SocialChange::Epitaph(Epitaph {
+        name: "Mott".to_owned(),
+        text: "He read the walls to the end.".to_owned(),
+        depth: 4,
+        day: DAY - 6,
+    })));
     w.apply(&Change::Pledge(Pledge {
         hero: "Wren".to_owned(),
         project: c.projects.project[1].id.clone(),
@@ -206,6 +256,32 @@ pub fn showcases() -> Vec<Showcase> {
     add("hall-standings", &town, "r");
     add("hall-dead", &town, "r right");
     add("hall-world", &town, "r right right");
+    add("hall-companies", &town, "r right right right");
+    add("hall-ring", &town, "r right right right right");
+    add("hall-donors", &town, "r right right right right right");
+    add(
+        "hall-chronicle",
+        &town,
+        "r right right right right right right",
+    );
+    let mut social = in_town(&c, "duelist", &world);
+    social.hero.social.ring = true;
+    social.hero.level = 6;
+    social.hero.story.guardians = 0b1;
+    social.hero.story.slain.push(("slag-rat".to_owned(), 3));
+    social.hero.best_depth = 8;
+    social.hero.contracts_done = 3;
+    social.hero.given.push(("new-bellows".to_owned(), 120, 0));
+    let mut ev = Vec::new();
+    social.story_advance(&c, &mut ev);
+    add("company", &social, "c");
+    add("ring", &social, "u");
+    add("journal", &social, "j");
+    add("journal-epitaph", &social, "j e a s h");
+    let mut furnace = in_town(&c, "warden", &world);
+    furnace.hero.story.verdict_due = true;
+    furnace.hero.story.flags.push("keeps-the-flame".to_owned());
+    add("verdict", &furnace, "up");
     let mut smith = in_town(&c, "runesmith", &world);
     smith.hero.hp = smith.derived(&c).max_hp * 2 / 3;
     smith.hero.debt = 18;
@@ -300,4 +376,80 @@ pub fn showcases() -> Vec<Showcase> {
     }
     let _ = FightAct::Flee;
     out
+}
+
+/// Two heroes on one level: `ann` lies dead in a room, and `bo` stands in it. With
+/// `companions`, the two ride in one company. For the tests that carry one home through the
+/// framework's store and tick.
+pub struct RescuePair {
+    /// `ann`'s save.
+    pub fallen: Vec<u8>,
+    /// `bo`'s save.
+    pub rescuer: Vec<u8>,
+    /// The shared world.
+    pub world: Vec<u8>,
+}
+
+/// Build a [`RescuePair`] on [`DAY`].
+#[must_use]
+pub fn rescue_pair(companions: bool) -> RescuePair {
+    let c = content();
+    let traits = ["quick".to_owned(), "stout".to_owned()];
+    let mk = |name: &str, seed: u64| {
+        let hero = Hero::create(&c, name, "warden", &traits, [1, 1, 1, 1]).expect("hero");
+        let mut g = Game::new(
+            hero,
+            DoorRng::from_seed(seed),
+            DAY - 1,
+            SEASON,
+            World::new(SEASON),
+        );
+        let _ = g.new_day(&c, DAY);
+        g.hero.level = 4;
+        g
+    };
+    let mut ann = mk("ann", 1);
+    let mut bo = mk("bo", 2);
+    place_in(&c, &mut ann, "bone-pit", 3);
+    let Place::Delve { depth, room } = ann.place else {
+        unreachable!("placed");
+    };
+    ann.hero.coin = 100;
+    ann.place = Place::Dead {
+        depth,
+        room,
+        since: DAY,
+    };
+    bo.place = Place::Delve { depth, room };
+    bo.prev_room = room;
+    bo.today.cleared.push((depth, room));
+    bo.hero.turns = 25;
+    let mut world = World::new(SEASON);
+    for g in [&mut ann, &mut bo] {
+        let card = g.member_card(&c);
+        world.apply(&Change::Social(SocialChange::Roster(card)));
+    }
+    world.apply(&Change::Fall(Fallen {
+        name: "ann".to_owned(),
+        depth,
+        room,
+        day: DAY,
+        rescued_by: None,
+    }));
+    if companions {
+        world.apply(&Change::Social(SocialChange::Invite(Invite {
+            from: "bo".to_owned(),
+            to: "ann".to_owned(),
+            day: DAY,
+        })));
+        world.apply(&Change::Social(SocialChange::Join {
+            leader: "bo".to_owned(),
+            name: "ann".to_owned(),
+        }));
+    }
+    RescuePair {
+        fallen: ann.encode(),
+        rescuer: bo.encode(),
+        world: world.encode(),
+    }
 }

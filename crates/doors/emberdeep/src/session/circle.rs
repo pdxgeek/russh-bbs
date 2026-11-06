@@ -268,12 +268,23 @@ impl Session {
 impl Session {
     /// What the social place shows (no title, no purse, no keys) and what it offers.
     pub(super) fn social_body(&self, game: &Game, spot: Spot) -> (Vec<Line>, Vec<Entry>) {
-        match spot {
+        let (lines, entries) = match spot {
             Spot::Company => self.company_body(game),
             Spot::Ring => self.ring_body(game),
             Spot::Journal => self.journal_body(game),
             _ => self.verdict_body(game),
-        }
+        };
+        // Every line fits the board's box.
+        let lines = lines
+            .into_iter()
+            .flat_map(|(text, style)| {
+                wrap(&text, WRAP)
+                    .into_iter()
+                    .map(move |l| (l, style))
+                    .collect::<Vec<_>>()
+            })
+            .collect();
+        (lines, entries)
     }
 
     /// The whole text screen of a social place.

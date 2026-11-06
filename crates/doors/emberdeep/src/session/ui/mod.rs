@@ -185,20 +185,25 @@ fn main_screen(cx: &Cx<'_>, frame: &mut DoorFrame<'_>, area: Rect) {
 /// The line the hero is typing for the hall.
 fn epitaph_screen(frame: &mut DoorFrame<'_>, area: Rect, buf: &str, roles: Roles) {
     frame.render_widget(russh_bbs_door::widgets::Clear, area);
-    let block = kit::panel("An epitaph", true);
+    let block = kit::panel("EMBERDEEP: an epitaph", true);
     frame.render_widget(block, area);
     let b = kit::inner(area);
     let max = crate::social::EPITAPH_MAX;
     let lines: Vec<Line<'static>> = vec![
         Line::styled(
-            format!("One line, up to {max} characters. The hall prints it only if you are not found."),
+            format!(
+                "One line, up to {max} characters. The hall prints it only if you are not found."
+            ),
             roles.dim,
         ),
         Line::default(),
         Line::styled(format!("> {buf}_"), roles.strong),
         Line::default(),
         Line::styled(
-            format!("{}/{max}   Enter: save   Backspace: delete   Esc: cancel", buf.chars().count()),
+            format!(
+                "{}/{max}   [Enter] save   [Backspace] delete   [Esc] cancel",
+                buf.chars().count()
+            ),
             roles.dim,
         ),
     ];

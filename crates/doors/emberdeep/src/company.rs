@@ -9,8 +9,8 @@ use crate::game::{Event, Game, Place, Refused, Tone, say};
 use crate::hero::derive;
 use crate::save::SEEN_MAX;
 use crate::social::{
-    self, BOUTS_PER_DAY, Bout, CALLS_PER_TARGET, DUEL_LEVEL_GAP, EPITAPH_MAX, Epitaph,
-    INVITE_DAYS, INVITES_PER_HERO, Invite, Member, NoteKind, PARTY_MAX, SocialChange, WAGERS,
+    self, BOUTS_PER_DAY, Bout, CALLS_PER_TARGET, DUEL_LEVEL_GAP, EPITAPH_MAX, Epitaph, INVITE_DAYS,
+    INVITES_PER_HERO, Invite, Member, NoteKind, PARTY_MAX, SocialChange, WAGERS,
 };
 use crate::world::Change;
 
@@ -61,10 +61,13 @@ impl Game {
             day: self.day,
             open: self.hero.social.open,
             ring: self.hero.social.ring,
+            // Ring rules: the ring evens the field, so hit points and armour depend on level
+            // alone, damage is pulled halfway to the level's norm, and what is left to tell
+            // heroes apart is crit, evasion and the blow. No calling owns the ladder (see the balance notes).
             ghost: social::Ghost {
-                hp: d.max_hp,
-                armor: d.armor,
-                damage: damage.max(1),
+                hp: 40 + 4 * i32::from(self.hero.level),
+                armor: 2 + i32::from(self.hero.level) / 4,
+                damage: ((damage + 8 + i32::from(self.hero.level)) / 2).max(1),
                 crit: d.crit,
                 evade: d.evade,
             },
@@ -129,7 +132,10 @@ impl Game {
                         say(
                             ev,
                             Tone::Bad,
-                            format!("{} called you out in the ring and won. You are bruised.", n.from),
+                            format!(
+                                "{} called you out in the ring and won. You are bruised.",
+                                n.from
+                            ),
                         );
                     }
                 }
@@ -138,7 +144,10 @@ impl Game {
                     self.hero.social.seen.remove(0);
                 }
             }
-            self.say_social(SocialChange::Collect { id: n.id, to: me.clone() });
+            self.say_social(SocialChange::Collect {
+                id: n.id,
+                to: me.clone(),
+            });
         }
     }
 
@@ -201,7 +210,11 @@ impl Game {
             SocialAct::Challenge { target, wager } => self.challenge(content, &target, wager, ev),
             SocialAct::Epitaph(text) => {
                 self.hero.social.epitaph = text.chars().take(EPITAPH_MAX).collect();
-                say(ev, Tone::Dim, "Your epitaph is set. It is read only if you are not found.");
+                say(
+                    ev,
+                    Tone::Dim,
+                    "Your epitaph is set. It is read only if you are not found.",
+                );
                 Ok(())
             }
             SocialAct::Verdict(_) | SocialAct::Choose { .. } => Ok(()),
@@ -223,7 +236,9 @@ impl Game {
         if c.party_of(name).is_some() {
             return Err(Refused::new("They already ride with a company."));
         }
-        if c.party_of(&me).is_some_and(|p| p.members.len() >= PARTY_MAX) {
+        if c.party_of(&me)
+            .is_some_and(|p| p.members.len() >= PARTY_MAX)
+        {
             return Err(Refused::new("Your company is full."));
         }
         if c.invites_from(&me) >= INVITES_PER_HERO {
@@ -284,7 +299,9 @@ impl Game {
             return Err(Refused::new("Step into the ring first. It is your choice."));
         }
         if !WAGERS.contains(&wager) {
-            return Err(Refused::new("The ring takes stakes of 0, 5, 20 or 50 coin."));
+            return Err(Refused::new(
+                "The ring takes stakes of 0, 5, 20 or 50 coin.",
+            ));
         }
         if self.today.bouts >= BOUTS_PER_DAY {
             return Err(Refused::new("The ring will not host you again today."));

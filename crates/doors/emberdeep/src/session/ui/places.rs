@@ -1277,23 +1277,36 @@ fn social_detail(
     match act {
         SocialAct::Invite(name) => (
             format!("Invite {name}"),
-            say("They are asked once; the invitation stands for three days. Words cannot be sent, only the invitation. A company holds three."),
+            say(
+                "They are asked once; the invitation stands for three days. Words cannot be sent, only the invitation. A company holds three.",
+            ),
         ),
         SocialAct::Accept(from) => (
             format!("Ride with {from}"),
-            say("You share the day's dealt-with packs, and carry each other home for a turn less and with no wound."),
+            say(
+                "You share the day's dealt-with packs, and carry each other home for a turn less and with no wound.",
+            ),
         ),
         SocialAct::Leave => (
             "Leave".to_owned(),
             say("You leave at once. A company of one is no company."),
         ),
         SocialAct::Open(on) => (
-            if *on { "Open the door" } else { "Close the door" }.to_owned(),
-            say("Closing the door hides you from the invitations list. You can still invite others."),
+            if *on {
+                "Open the door"
+            } else {
+                "Close the door"
+            }
+            .to_owned(),
+            say(
+                "Closing the door hides you from the invitations list. You can still invite others.",
+            ),
         ),
         SocialAct::Ring(on) => (
             if *on { "Step in" } else { "Step out" }.to_owned(),
-            say("The ring is opt-in. In the ring, others may call you out up to three times a day; out of it, no one can."),
+            say(
+                "The ring is opt-in. In the ring, others may call you out up to three times a day; out of it, no one can.",
+            ),
         ),
         SocialAct::Challenge { target, wager } => (
             format!("Call out {target}"),
@@ -1304,7 +1317,9 @@ fn social_detail(
         ),
         SocialAct::Choose { .. } => (
             "A choice for good".to_owned(),
-            say("It cannot be taken back. It opens some doors and closes others, for you and for the Furnace's verdict."),
+            say(
+                "It cannot be taken back. It opens some doors and closes others, for you and for the Furnace's verdict.",
+            ),
         ),
         SocialAct::Verdict(id) => {
             let text = crate::endings::verdict(id).map_or("", |v| v.text);

@@ -4,7 +4,7 @@
 use super::support::*;
 use crate::company::SocialAct;
 use crate::game::{Action, Game, Place};
-use crate::social::{Bout, Commons, Invite, SocialChange, BOUTS_PER_DAY, WAGERS};
+use crate::social::{BOUTS_PER_DAY, Bout, Commons, Invite, SocialChange, WAGERS};
 use crate::world::{Change, Fallen, World};
 
 fn named(name: &str, level: u8, seed: u64) -> Game {
@@ -27,7 +27,9 @@ fn share(a: &mut Game, b: &mut Game) {
 }
 
 fn act(g: &mut Game, a: SocialAct) -> Result<(), String> {
-    g.apply(&content(), Action::Social(a)).map(|_| ()).map_err(|r| r.0)
+    g.apply(&content(), Action::Social(a))
+        .map(|_| ())
+        .map_err(|r| r.0)
 }
 
 fn pair() -> (Game, Game) {
@@ -94,7 +96,7 @@ fn a_company_shares_the_packs_a_member_dealt_with_today_and_only_today() {
     share(&mut a, &mut b);
     act(&mut b, SocialAct::Accept("Ann".into())).unwrap();
     share(&mut a, &mut b);
-    let (depth, room) = place(&mut a, "lair-slag-nest");
+    let (depth, room) = place(&mut a, "slag-den");
     assert!(a.pack_cleared(depth, room) == a.today.is_cleared(depth, room));
     a.share_clear(depth, room);
     share(&mut a, &mut b);
@@ -110,7 +112,11 @@ fn a_rescue_pays_the_rescuer_by_note_once_and_a_companion_costs_less() {
     let c = content();
     // Ann falls; Bo, a stranger, carries her home.
     let (mut ann, mut bo) = pair();
-    ann.place = Place::Dead { depth: 3, room: 2, since: TODAY };
+    ann.place = Place::Dead {
+        depth: 3,
+        room: 2,
+        since: TODAY,
+    };
     ann.hero.coin = 100;
     ann.emit(Change::Fall(Fallen {
         name: "Ann".into(),
@@ -121,7 +127,11 @@ fn a_rescue_pays_the_rescuer_by_note_once_and_a_companion_costs_less() {
     }));
     share(&mut ann, &mut bo);
     bo.place = Place::Delve { depth: 3, room: 2 };
-    let at = bo.options(&c).iter().position(|o| o.label == "Carry Ann home").unwrap();
+    let at = bo
+        .options(&c)
+        .iter()
+        .position(|o| o.label == "Carry Ann home")
+        .unwrap();
     assert_eq!(bo.options(&c)[at].cost, 3);
     bo.hero.turns = 25;
     run(&mut bo, Action::Option(at));
@@ -138,7 +148,15 @@ fn a_rescue_pays_the_rescuer_by_note_once_and_a_companion_costs_less() {
     let mut ev = Vec::new();
     bo.collect_notes(&c, &mut ev);
     assert_eq!(bo.hero.coin, before + paid);
-    bo.world.commons.notes.push(crate::social::Commons::thanks_note("Ann", "Bo", TODAY + 1, paid));
+    bo.world
+        .commons
+        .notes
+        .push(crate::social::Commons::thanks_note(
+            "Ann",
+            "Bo",
+            TODAY + 1,
+            paid,
+        ));
     bo.collect_notes(&c, &mut ev);
     assert_eq!(bo.hero.coin, before + paid, "never twice");
 }
@@ -151,7 +169,11 @@ fn a_companion_carries_you_home_for_a_turn_less_and_with_no_wound() {
     share(&mut ann, &mut bo);
     act(&mut bo, SocialAct::Accept("Ann".into())).unwrap();
     share(&mut ann, &mut bo);
-    ann.place = Place::Dead { depth: 3, room: 2, since: TODAY };
+    ann.place = Place::Dead {
+        depth: 3,
+        room: 2,
+        since: TODAY,
+    };
     ann.hero.coin = 100;
     ann.emit(Change::Fall(Fallen {
         name: "Ann".into(),
@@ -163,7 +185,11 @@ fn a_companion_carries_you_home_for_a_turn_less_and_with_no_wound() {
     share(&mut ann, &mut bo);
     bo.place = Place::Delve { depth: 3, room: 2 };
     bo.hero.turns = 25;
-    let at = bo.options(&c).iter().position(|o| o.label == "Carry Ann home").unwrap();
+    let at = bo
+        .options(&c)
+        .iter()
+        .position(|o| o.label == "Carry Ann home")
+        .unwrap();
     assert_eq!(bo.options(&c)[at].cost, 2);
     run(&mut bo, Action::Option(at));
     share(&mut ann, &mut bo);
@@ -177,19 +203,68 @@ fn a_companion_carries_you_home_for_a_turn_less_and_with_no_wound() {
 fn the_ring_is_opt_in_capped_and_leaves_marks() {
     let c = content();
     let (mut a, mut b) = pair();
-    assert!(act(&mut a, SocialAct::Challenge { target: "Bo".into(), wager: 0 }).is_err());
+    assert!(
+        act(
+            &mut a,
+            SocialAct::Challenge {
+                target: "Bo".into(),
+                wager: 0
+            }
+        )
+        .is_err()
+    );
     act(&mut a, SocialAct::Ring(true)).unwrap();
     share(&mut a, &mut b);
     // Bo is not in the ring, so cannot be called out.
-    assert!(act(&mut a, SocialAct::Challenge { target: "Bo".into(), wager: 0 }).is_err());
+    assert!(
+        act(
+            &mut a,
+            SocialAct::Challenge {
+                target: "Bo".into(),
+                wager: 0
+            }
+        )
+        .is_err()
+    );
     act(&mut b, SocialAct::Ring(true)).unwrap();
     share(&mut a, &mut b);
-    assert!(act(&mut a, SocialAct::Challenge { target: "Bo".into(), wager: 7 }).is_err(), "stakes are fixed");
+    assert!(
+        act(
+            &mut a,
+            SocialAct::Challenge {
+                target: "Bo".into(),
+                wager: 7
+            }
+        )
+        .is_err(),
+        "stakes are fixed"
+    );
     a.hero.coin = 500;
     a.hero.turns = 25;
-    act(&mut a, SocialAct::Challenge { target: "Bo".into(), wager: 20 }).unwrap();
-    assert!(a.take_changes().iter().any(|ch| matches!(ch, Change::Social(SocialChange::Duel(_)))));
-    assert!(act(&mut a, SocialAct::Challenge { target: "Bo".into(), wager: 0 }).is_err(), "once a day per foe");
+    act(
+        &mut a,
+        SocialAct::Challenge {
+            target: "Bo".into(),
+            wager: 20,
+        },
+    )
+    .unwrap();
+    assert!(
+        a.take_changes()
+            .iter()
+            .any(|ch| matches!(ch, Change::Social(SocialChange::Duel(_))))
+    );
+    assert!(
+        act(
+            &mut a,
+            SocialAct::Challenge {
+                target: "Bo".into(),
+                wager: 0
+            }
+        )
+        .is_err(),
+        "once a day per foe"
+    );
     assert_eq!(a.today.bouts, 1);
     assert_eq!(a.world.commons.ladder.len(), 2, "both are on the ladder");
     assert!(a.hero.social.wins + a.hero.social.losses == 1);
@@ -201,8 +276,20 @@ fn the_ring_is_opt_in_capped_and_leaves_marks() {
         share(&mut a, &mut g);
     }
     a.hero.turns = 25;
-    let first = act(&mut a, SocialAct::Challenge { target: "Cy".into(), wager: 0 });
-    let second = act(&mut a, SocialAct::Challenge { target: "Di".into(), wager: 0 });
+    let first = act(
+        &mut a,
+        SocialAct::Challenge {
+            target: "Cy".into(),
+            wager: 0,
+        },
+    );
+    let second = act(
+        &mut a,
+        SocialAct::Challenge {
+            target: "Di".into(),
+            wager: 0,
+        },
+    );
     assert!(first.is_ok());
     assert_eq!(a.today.bouts, BOUTS_PER_DAY);
     assert!(second.is_err(), "the third call of the day is refused");
@@ -212,7 +299,16 @@ fn the_ring_is_opt_in_capped_and_leaves_marks() {
     far.sync_roster(&c);
     share(&mut a, &mut far);
     a.today.bouts = 0;
-    assert!(act(&mut a, SocialAct::Challenge { target: "Zed".into(), wager: 0 }).is_err());
+    assert!(
+        act(
+            &mut a,
+            SocialAct::Challenge {
+                target: "Zed".into(),
+                wager: 0
+            }
+        )
+        .is_err()
+    );
     assert!(WAGERS.contains(&20));
 }
 
@@ -233,7 +329,10 @@ fn a_duel_is_counted_once_and_a_loss_feeds_the_works_and_bruises_the_target() {
     assert_eq!(c.ring_fund, 20);
     assert_eq!(c.rank_of("Bo").unwrap().wins, 1);
     assert_eq!(c.rank_of("Ann").unwrap().losses, 1);
-    assert!(c.notes.is_empty(), "the challenger lost: no bruise note for the target");
+    assert!(
+        c.notes.is_empty(),
+        "the challenger lost: no bruise note for the target"
+    );
     // And the ring fund goes to the works in the night.
     let content = content();
     let mut w = World::new(1);
@@ -241,13 +340,24 @@ fn a_duel_is_counted_once_and_a_loss_feeds_the_works_and_bruises_the_target() {
     w.tick_full(5, &content);
     assert_eq!(w.commons.ring_fund, 0);
     let first = &content.projects.project[0].id;
-    assert!(w.pledges.iter().any(|p| p.hero == "the Ring" && &p.project == first));
+    assert!(
+        w.pledges
+            .iter()
+            .any(|p| p.hero == "the Ring" && &p.project == first)
+    );
 }
 
 #[test]
 fn social_changes_merge_in_any_order() {
-    let invite = SocialChange::Invite(Invite { from: "Ann".into(), to: "Bo".into(), day: 1 });
-    let join = SocialChange::Join { leader: "Ann".into(), name: "Bo".into() };
+    let invite = SocialChange::Invite(Invite {
+        from: "Ann".into(),
+        to: "Bo".into(),
+        day: 1,
+    });
+    let join = SocialChange::Join {
+        leader: "Ann".into(),
+        name: "Bo".into(),
+    };
     let mut once = Commons::default();
     for ch in [&invite, &join] {
         once.apply(ch);
@@ -331,6 +441,13 @@ fn every_verdict_is_reachable_and_every_ending_is_reachable() {
                     deepest: 0,
                 });
                 if finished {
+                    for d in 1..=8 {
+                        w.apply(&Change::Shortcut(
+                            d,
+                            crate::content::ShortcutKind::Lift,
+                            "X".into(),
+                        ));
+                    }
                     for p in &c.projects.project {
                         finish(&mut w, &p.id);
                     }
@@ -347,9 +464,19 @@ fn the_fall_of_the_furnace_writes_the_chronicle_then_collapses_the_dungeon() {
     let c = content();
     let mut w = World::new(1);
     w.apply(&Change::Slain(5, "Ann".into()));
-    w.apply(&Change::Social(SocialChange::Verdict { kind: "quench".into(), by: "Ann".into() }));
-    w.apply(&Change::Social(SocialChange::Verdict { kind: "claim".into(), by: "Bo".into() }));
-    assert_eq!(w.commons.verdict.as_ref().unwrap().0, "quench", "the slayer's word stands");
+    w.apply(&Change::Social(SocialChange::Verdict {
+        kind: "quench".into(),
+        by: "Ann".into(),
+    }));
+    w.apply(&Change::Social(SocialChange::Verdict {
+        kind: "claim".into(),
+        by: "Bo".into(),
+    }));
+    assert_eq!(
+        w.commons.verdict.as_ref().unwrap().0,
+        "quench",
+        "the slayer's word stands"
+    );
     w.tick_full(TODAY, &c);
     assert_eq!(w.epoch, 1);
     assert_eq!(w.commons.chronicle.len(), 1);
@@ -361,9 +488,19 @@ fn a_hero_not_found_leaves_an_epitaph_in_the_hall() {
     let c = content();
     let mut g = named("Ann", 4, 5);
     act(&mut g, SocialAct::Epitaph("She read the walls.".into())).unwrap();
-    g.place = Place::Dead { depth: 4, room: 1, since: TODAY };
+    g.place = Place::Dead {
+        depth: 4,
+        room: 1,
+        since: TODAY,
+    };
     let _ = g.apply(&c, Action::GiveUp).unwrap();
-    assert!(g.world.commons.epitaphs.iter().any(|e| e.name == "Ann" && e.text == "She read the walls."));
+    assert!(
+        g.world
+            .commons
+            .epitaphs
+            .iter()
+            .any(|e| e.name == "Ann" && e.text == "She read the walls.")
+    );
 }
 
 #[test]

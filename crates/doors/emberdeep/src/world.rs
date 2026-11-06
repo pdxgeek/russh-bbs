@@ -559,6 +559,18 @@ pub struct WorldSummary {
     pub news: Vec<String>,
     /// Coin and salvage given to each project so far (unfinished and finished alike).
     pub pledged: Vec<(String, u32, u32)>,
+    /// Companies: leader, members, rescues between companions.
+    pub companies: Vec<(String, Vec<String>, u16)>,
+    /// The ring's ladder: name, wins, losses.
+    pub ladder: Vec<(String, u16, u16)>,
+    /// Duels fought and heroes carried home this season.
+    pub duels: u16,
+    /// Carried home, all told.
+    pub carried_home: u16,
+    /// Endings written in the chronicle: epoch and ending name.
+    pub chronicle: Vec<(u16, String)>,
+    /// Epitaphs in the hall.
+    pub epitaphs: usize,
 }
 
 /// Read a world blob into a [`WorldSummary`].
@@ -589,6 +601,34 @@ pub fn summarize_world(bytes: &[u8]) -> Option<WorldSummary> {
                 })
                 .collect()
         },
+        companies: w
+            .commons
+            .parties
+            .iter()
+            .map(|p| (p.leader.clone(), p.members.clone(), p.rescues))
+            .collect(),
+        ladder: w
+            .commons
+            .ladder
+            .iter()
+            .map(|r| (r.name.clone(), r.wins, r.losses))
+            .collect(),
+        duels: w.commons.duels,
+        carried_home: w.commons.rescues,
+        chronicle: w
+            .commons
+            .chronicle
+            .iter()
+            .map(|(e, c)| {
+                (
+                    *e,
+                    crate::endings::ENDINGS[usize::from(*c).min(5)]
+                        .name
+                        .to_owned(),
+                )
+            })
+            .collect(),
+        epitaphs: w.commons.epitaphs.len(),
     })
 }
 

@@ -1167,10 +1167,7 @@ impl Table for Bestiary {
 }
 
 pub(crate) fn check_option(who: &str, o: &RoomOption, problems: &mut Vec<String>) {
-    if o.label.trim().is_empty()
-        || o.label.chars().count() > 60
-        || !plain_text(&o.label)
-    {
+    if o.label.trim().is_empty() || o.label.chars().count() > 60 || !plain_text(&o.label) {
         problems.push(format!("{who}: label must be 1 to 60 plain characters"));
     }
     if o.cost > 4 {

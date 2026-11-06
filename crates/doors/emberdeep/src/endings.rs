@@ -197,5 +197,8 @@ pub(crate) fn epilogue(hero: &Hero) -> &'static Epilogue {
     } else {
         "hand"
     };
-    EPILOGUES.iter().find(|e| e.id == id).unwrap_or(&EPILOGUES[7])
+    EPILOGUES
+        .iter()
+        .find(|e| e.id == id)
+        .unwrap_or(&EPILOGUES[7])
 }

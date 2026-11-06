@@ -6,6 +6,7 @@
 use russh_bbs_door::DoorRng;
 
 use crate::combat::{Fight, FightAct};
+use crate::company::SocialAct;
 use crate::content::{Attr, Content, Gain, Intent, RoomKind, RoomOption, Weapon};
 use crate::dungeon::{self, Dir, Level};
 use crate::hero::{Derived, Hero, derive, fatigue_steps, modifier};
@@ -13,9 +14,8 @@ use crate::rules::{
     BASE_CARRY, DEPTH_MAX, NIGHT_BELOW_TURNS, RECOVERY_DAYS, RESCUE_TURNS, REST_TURNS,
     TURNS_PER_DAY,
 };
-use crate::company::SocialAct;
-use crate::town::TownAct;
 use crate::social::SocialChange;
+use crate::town::TownAct;
 use crate::world::{Change, Fallen, World};
 
 /// How a line of the log is drawn.
@@ -442,7 +442,9 @@ impl Game {
                 say(
                     ev,
                     Tone::Good,
-                    format!("{by}, of your company, carried you home. Your gear and your pack came with you."),
+                    format!(
+                        "{by}, of your company, carried you home. Your gear and your pack came with you."
+                    ),
                 );
             } else {
                 self.hero.inflict(content, "dragged-home");
@@ -459,12 +461,8 @@ impl Game {
                 let thanks = (self.hero.coin / 5).min(10 + 3 * u32::from(depth));
                 if thanks > 0 {
                     self.hero.coin -= thanks;
-                    let note = crate::social::Commons::thanks_note(
-                        &self.hero.name,
-                        &by,
-                        today,
-                        thanks,
-                    );
+                    let note =
+                        crate::social::Commons::thanks_note(&self.hero.name, &by, today, thanks);
                     self.emit(Change::Social(SocialChange::Note(note)));
                     say(
                         ev,
@@ -614,7 +612,11 @@ impl Game {
                 let family = self.world.commons.companions(&self.hero.name, &f.name);
                 out.push(OptionView {
                     label: format!("Carry {} home", f.name),
-                    cost: if family { RESCUE_TURNS - 1 } else { RESCUE_TURNS },
+                    cost: if family {
+                        RESCUE_TURNS - 1
+                    } else {
+                        RESCUE_TURNS
+                    },
                     roll: None,
                     what: OptionWhat::Rescue(f.name.clone()),
                 });
@@ -664,11 +666,7 @@ impl Game {
         Ok(ev)
     }
 
-    fn apply_inner(
-        &mut self,
-        content: &Content,
-        action: Action,
-    ) -> Result<Vec<Event>, Refused> {
+    fn apply_inner(&mut self, content: &Content, action: Action) -> Result<Vec<Event>, Refused> {
         let mut ev = Vec::new();
         if self.fight.is_some() {
             return match action {
@@ -1074,8 +1072,7 @@ impl Game {
                 self.resolve_option(content, level, room, option, ev);
             }
             OptionWhat::Event(i) => {
-                let Some(option) = level.event(content, room).and_then(|e| e.option.get(*i))
-                else {
+                let Some(option) = level.event(content, room).and_then(|e| e.option.get(*i)) else {
                     return;
                 };
                 if option.once {

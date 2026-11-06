@@ -67,7 +67,9 @@ impl Game {
 
     /// The step `quest` is on, if the hero has begun it and it is not finished.
     pub(crate) fn quest_step<'a>(&self, q: &'a Quest) -> Option<&'a Step> {
-        self.quest_open(q).then(|| q.step.get(self.quest_done(&q.id))).flatten()
+        self.quest_open(q)
+            .then(|| q.step.get(self.quest_done(&q.id)))
+            .flatten()
     }
 
     /// Whether the step the hero is on has its goal met and waits on a choice.
@@ -123,7 +125,9 @@ impl Game {
                 done += 1;
                 self.set_done(&q.id, done);
             }
-            if done == self.quest_done(&q.id) && !self.hero.story.quests.iter().any(|(id, _)| *id == q.id) {
+            if done == self.quest_done(&q.id)
+                && !self.hero.story.quests.iter().any(|(id, _)| *id == q.id)
+            {
                 self.set_done(&q.id, 0);
             }
         }
