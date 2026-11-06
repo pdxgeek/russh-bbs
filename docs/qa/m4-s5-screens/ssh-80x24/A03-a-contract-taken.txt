@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Saltmarch                                                                     │
+│                                                                              │
+│ ⌂ founder  day 1 of season 1            turns ██████████ 30/30  ◈ 40 tallies │
+│ ≈ TIDE ██████████░┃░░░░  66 ↓ low in 3h44 (9)  spring tides  ▲ HIGH WATER ▲  │
+│╭ The boards ─────────────────────────╮╭ Standing and offers ────────────────╮│
+││ a Take: Grain levy, ten measures ~  ││Rakers' Guild  Stranger    0         ││
+││ b Take: Reed for the thatchers (d~  ││The Tidecourt  Stranger    0         ││
+││ c Take: Peat for the winter fires~  ││The Reed-folk  Stranger    0         ││
+││ d Take: Cutters on the Tidecourt ~  ││                                     ││
+││ e Hand over the goods the contrac~  ││In hand: Grain levy, ten measures    ││
+││ f Give the contract back (the fac~  ││Notice. The harbourmaster calls ten  ││
+││                                     ││measures of food to the Tidecourt    ││
+││                                     ││granary against the lean weeks. A fee││
+││                                     ││of two tallies is waived for those   ││
+││                                     ││who deliver within the three days.   ││
+││                                     ││The Tidecourt deliver x10 - 3 day(s) ││
+││                                     ││left, 0/10 done                      ││
+││                                     ││                                     ││
+││                                     ││court Grain levy~ 70-80t +2          ││
+│╰─────────────────────────────────────╯╰─────────────────────────────────────╯│
+│ Contract taken: Grain levy, ten measures (3 days to do it).                  │
+│ » Take: Grain levy, ten measures (deliver 10, 3 day(s)~ up/down  Enter  Esc  │
+└──────────────────────────────────────────────────────────────────────────────┘
