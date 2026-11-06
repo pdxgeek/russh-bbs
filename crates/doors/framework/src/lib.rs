@@ -47,7 +47,8 @@ pub use ctx::{
     TextRefused, WorldEdit,
 };
 pub use door::{
-    BlobKind, Door, DoorEnv, DoorInfo, DoorSession, Flow, MigrateError, Save, Start, TransportKind,
+    BlobKind, Door, DoorEnv, DoorInfo, DoorSession, Flow, LOOK_AROUND_KEY, MigrateError, Save,
+    Start, TransportKind,
 };
 pub use key::DoorKey;
 pub use rng::DoorRng;
