@@ -31,6 +31,45 @@ affix = [
   # Either.
   { id = "owlish", name = "Owlish", slot = "any", band = 1, effects = [{ kind = "attr", attr = "wits", amount = 1 }] },
   { id = "fortunate", name = "Fortunate", slot = "any", band = 1, effects = [{ kind = "loot_pct", amount = 6 }] },
+
+  # More weapon affixes.
+  { id = "whetted", name = "Whetted", slot = "weapon", band = 1, effects = [{ kind = "crit_pct", amount = 4 }] },
+  { id = "wiry", name = "Wiry", slot = "weapon", band = 1, effects = [{ kind = "attr", attr = "might", amount = 1 }] },
+  { id = "devout", name = "Devout", slot = "weapon", band = 1, effects = [{ kind = "attr", attr = "spirit", amount = 1 }] },
+  { id = "scavengers", name = "Scavenger's", slot = "weapon", band = 2, effects = [{ kind = "loot_pct", amount = 8 }, { kind = "carry", amount = 4 }] },
+  { id = "tempered", name = "Tempered", slot = "weapon", band = 2, effects = [{ kind = "damage", amount = 1 }, { kind = "crit_pct", amount = 3 }] },
+  { id = "tinkered", name = "Tinkered", slot = "weapon", band = 2, effects = [{ kind = "tag", tag = "tinker" }] },
+  { id = "scholars", name = "Scholar's", slot = "weapon", band = 2, effects = [{ kind = "attr", attr = "wits", amount = 1 }, { kind = "tag", tag = "lore" }] },
+  { id = "mirrored", name = "Mirrored", slot = "weapon", band = 3, effects = [{ kind = "crit_pct", amount = 4 }, { kind = "evade_pct", amount = 4 }] },
+  { id = "disarming", name = "Disarming", slot = "weapon", band = 3, effects = [{ kind = "tag", tag = "disarm" }, { kind = "trap_sense", amount = 1 }] },
+  { id = "hearthbound", name = "Hearthbound", slot = "weapon", band = 4, effects = [{ kind = "damage", amount = 2 }, { kind = "start_focus", amount = 2 }] },
+  { id = "coldforged", name = "Coldforged", slot = "weapon", band = 5, effects = [{ kind = "damage", amount = 5 }, { kind = "crit_pct", amount = 6 }] },
+  { id = "breaking", name = "Breaking", slot = "weapon", band = 3, effects = [{ kind = "tag", tag = "demolish" }, { kind = "damage", amount = 1 }] },
+  # More armour affixes.
+  { id = "quilted", name = "Quilted", slot = "armour", band = 1, effects = [{ kind = "max_hp", amount = 3 }, { kind = "evade_pct", amount = 2 }] },
+  { id = "hooded", name = "Hooded", slot = "armour", band = 1, effects = [{ kind = "trap_sense", amount = 1 }] },
+  { id = "ropewound", name = "Ropewound", slot = "armour", band = 1, effects = [{ kind = "tag", tag = "ropework" }] },
+  { id = "snug", name = "Snug", slot = "armour", band = 1, effects = [{ kind = "carry", amount = 5 }] },
+  { id = "hardened", name = "Hardened", slot = "armour", band = 2, effects = [{ kind = "armor", amount = 2 }] },
+  { id = "lampsewn", name = "Lamp-Sewn", slot = "armour", band = 2, effects = [{ kind = "tag", tag = "lantern" }] },
+  { id = "shrouded", name = "Shrouded", slot = "armour", band = 2, effects = [{ kind = "evade_pct", amount = 6 }] },
+  { id = "ashproof", name = "Ashproof", slot = "armour", band = 2, effects = [{ kind = "fatigue_guard", amount = 8 }, { kind = "max_hp", amount = 3 }] },
+  { id = "gravewarden", name = "Gravewarden", slot = "armour", band = 3, effects = [{ kind = "death_save", amount = 10 }] },
+  { id = "mirrorback", name = "Mirrorback", slot = "armour", band = 3, effects = [{ kind = "evade_pct", amount = 7 }] },
+  { id = "quiet", name = "Quiet", slot = "armour", band = 3, effects = [{ kind = "tag", tag = "sneak" }, { kind = "evade_pct", amount = 3 }] },
+  { id = "deepfoot", name = "Deepfoot", slot = "armour", band = 4, effects = [{ kind = "climb_ease", amount = 2 }] },
+  { id = "kingsguard", name = "Kingsguard", slot = "armour", band = 4, effects = [{ kind = "max_hp", amount = 12 }, { kind = "armor", amount = 1 }] },
+  { id = "hearthwarm", name = "Hearthwarm", slot = "armour", band = 4, effects = [{ kind = "fatigue_guard", amount = 18 }, { kind = "death_save", amount = 6 }] },
+  { id = "coldproof", name = "Coldproof", slot = "armour", band = 5, effects = [{ kind = "armor", amount = 4 }, { kind = "max_hp", amount = 8 }] },
+  # More either-slot affixes.
+  { id = "hale", name = "Hale", slot = "any", band = 1, effects = [{ kind = "max_hp", amount = 5 }] },
+  { id = "warmhearted", name = "Warmhearted", slot = "any", band = 1, effects = [{ kind = "attr", attr = "spirit", amount = 1 }] },
+  { id = "nimble-fit", name = "Nimble", slot = "any", band = 2, effects = [{ kind = "tag", tag = "nimble" }] },
+  { id = "tireless", name = "Tireless", slot = "any", band = 2, effects = [{ kind = "fatigue_guard", amount = 10 }] },
+  { id = "learned", name = "Learned", slot = "any", band = 2, effects = [{ kind = "tag", tag = "lore" }] },
+  { id = "bright", name = "Bright", slot = "any", band = 3, effects = [{ kind = "start_focus", amount = 1 }] },
+  { id = "gilded", name = "Gilded", slot = "any", band = 3, effects = [{ kind = "loot_pct", amount = 12 }] },
+  { id = "stout", name = "Stout", slot = "any", band = 3, effects = [{ kind = "attr", attr = "might", amount = 1 }, { kind = "max_hp", amount = 4 }] },
 ]
 
 core = [
@@ -46,4 +85,19 @@ core = [
   { id = "tinder-core", name = "Tinder Core", text = "It lights your way; lantern-lit rooms give up their secrets.", slot = "armour", band = 2, price = 100, effects = [{ kind = "tag", tag = "lantern" }, { kind = "trap_sense", amount = 1 }] },
   { id = "lodestone-core", name = "Lodestone Core", text = "It always points to the surface. The climb is shorter.", slot = "armour", band = 3, price = 150, effects = [{ kind = "climb_ease", amount = 1 }, { kind = "tag", tag = "deepmap" }] },
   { id = "glass-core", name = "Glass Core", text = "A shard of the Halls. A hit that should kill you, sometimes does not.", slot = "armour", band = 3, price = 0, effects = [{ kind = "death_save", amount = 12 }, { kind = "move", id = "hold-the-line" }] },
+
+  # More weapon cores.
+  { id = "pommel-core", name = "Pommel Core", text = "A knob of slag in the pommel; it lends a stinging rap to the hilt.", slot = "weapon", band = 1, price = 55, effects = [{ kind = "move", id = "pommel-strike" }] },
+  { id = "spark-core", name = "Spark Core", text = "A flint-bright chip that marks a target for the next blow.", slot = "weapon", band = 1, price = 60, effects = [{ kind = "move", id = "spark-snare" }] },
+  { id = "thorn-core", name = "Thorn Core", text = "A barbed cinder; the cuts it makes will not close.", slot = "weapon", band = 2, price = 105, effects = [{ kind = "move", id = "splinter-cut" }] },
+  { id = "tide-core", name = "Tide Core", text = "A coal that pushes outward, like breath; foes are sent staggering back.", slot = "weapon", band = 2, price = 100, effects = [{ kind = "move", id = "gale-push" }] },
+  { id = "breaker-core", name = "Breaker Core", text = "A dense, ringing coal. It turns every blow into a wedge.", slot = "weapon", band = 3, price = 150, effects = [{ kind = "move", id = "breaker-blow" }] },
+  { id = "lash-core", name = "Lash Core", text = "A coil of red coal that unfurls into a whip of embers.", slot = "weapon", band = 3, price = 150, effects = [{ kind = "move", id = "fire-lash" }, { kind = "crit_pct", amount = 2 }] },
+  # More armour cores.
+  { id = "tether-core", name = "Tether Core", text = "A spool of warm wire; ropes run and knots hold where it lies.", slot = "armour", band = 1, price = 70, effects = [{ kind = "tag", tag = "ropework" }, { kind = "carry", amount = 6 }] },
+  { id = "bulwark-core", name = "Bulwark Core", text = "It sits against your ribs like a second wall.", slot = "armour", band = 2, price = 105, effects = [{ kind = "tag", tag = "bulwark" }, { kind = "armor", amount = 1 }] },
+  { id = "foxfire-core", name = "Foxfire Core", text = "A cold little flame that swallows your footsteps.", slot = "armour", band = 2, price = 100, effects = [{ kind = "tag", tag = "sneak" }, { kind = "evade_pct", amount = 4 }] },
+  { id = "mirror-core", name = "Mirror Core", text = "A polished coal that throws a flash of light up between you and the blow.", slot = "armour", band = 3, price = 160, effects = [{ kind = "move", id = "glass-ward" }] },
+  { id = "kindle-core", name = "Kindle Core", text = "A banked fire; fan it, and the pain goes out of you.", slot = "armour", band = 3, price = 150, effects = [{ kind = "move", id = "kindle" }] },
+  { id = "deep-core", name = "Deep Core", text = "A coal from below the lowest stair. It knows what waits there.", slot = "armour", band = 4, price = 220, effects = [{ kind = "tag", tag = "foresee" }, { kind = "trap_sense", amount = 2 }] },
 ]

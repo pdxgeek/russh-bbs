@@ -45,3 +45,56 @@ ascii = [
   " . O . . O . O O . O . O . O O O . . O . O O O . . O . O . . . O . . O  ",
   "                                                                        ",
 ]
+
+[[piece]]
+slot = "area"
+fallback = "[ {board} ]"
+rows = [
+  "●    ●  ●  ●    ●  ●  ●    ●  ●  ●    ●  ●  ●    ●  ●  ●    ●  ●  ●    ●",
+  "· · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · · ",
+  "●   ●● ●  ● ●●   ●● ●  ● ●●   ●● ●  ● ●●   ●● ●  ● ●●   ●● ●  ● ●●   ●● ",
+]
+fg = [
+  "YyyyyYyyYyyYyyyyYyyYyyYyyyyYyyYyyYyyyyYyyYyyYyyyyYyyYyyYyyyyYyyYyyYyyyyY",
+  "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+  "YyyyYYyYyyYyYYyyyYYyYyyYyYYyyyYYyYyyYyYYyyyYYyYyyYyYYyyyYYyYyyYyYYyyyYYy",
+]
+ascii = [
+  "O    O  O  O    O  O  O    O  O  O    O  O  O    O  O  O    O  O  O    O",
+  ". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ",
+  "O   OO O  O OO   OO O  O OO   OO O  O OO   OO O  O OO   OO O  O OO   OO ",
+]
+
+[[piece]]
+slot = "logoff"
+fallback = "End of tape - {board}"
+rows = [
+  "●  ●   ●  ●   ●  ●   ●  ●   ●  ●                ",
+  "· · · · · · · · · · · · · · · · · ·             ",
+  "  ●   ●  ●   ●  ●   ●  ●   ●                    ",
+  "· · · · · · · · · · · · · · ·                   ",
+  " ●   ●  ●   ●  ●   ●                            ",
+  "· · · · · · · · · · · ·                         ",
+  "                                                ",
+  "       END OF TAPE  -  thanks for calling       ",
+]
+fg = [
+  "Y..Y...Y..Y...Y..Y...Y..Y...Y..Y................",
+  "y.y.y.y.y.y.y.y.y.y.y.y.y.y.y.y.y.y.............",
+  "..Y...Y..Y...Y..Y...Y..Y...Y....................",
+  "y.y.y.y.y.y.y.y.y.y.y.y.y.y.y...................",
+  ".Y...Y..Y...Y..Y...Y............................",
+  "y.y.y.y.y.y.y.y.y.y.y.y.........................",
+  "................................................",
+  "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+]
+ascii = [
+  "O  O   O  O   O  O   O  O   O  O                ",
+  ". . . . . . . . . . . . . . . . . .             ",
+  "  O   O  O   O  O   O  O   O                    ",
+  ". . . . . . . . . . . . . . .                   ",
+  " O   O  O   O  O   O                            ",
+  ". . . . . . . . . . . .                         ",
+  "                                                ",
+  "       END OF TAPE  -  thanks for calling       ",
+]

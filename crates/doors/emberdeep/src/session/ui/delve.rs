@@ -42,6 +42,8 @@ pub(super) fn why_closed(c: &Content, need: &Need) -> String {
             c.node(id).map_or(id.as_str(), |x| x.name.as_str())
         ),
         Need::Level { min } => format!("needs level {min}"),
+        Need::Flag { id } => format!("needs the choice `{id}`"),
+        Need::NoFlag { id } => format!("closed by the choice `{id}`"),
     }
 }
 
@@ -57,15 +59,22 @@ pub(crate) fn closed_options(
         return Vec::new();
     };
     let d = game.derived(content);
-    let spent = |i: usize| {
+    let event = level.event(content, room);
+    let spent = |i: usize, once: bool| {
         let idx = u8::try_from(i).unwrap_or(u8::MAX);
-        template.option[i].once && game.today.spent.contains(&(depth, room, idx))
+        once && game.today.spent.contains(&(depth, room, idx))
     };
     template
         .option
         .iter()
         .enumerate()
-        .filter(|(i, _)| !spent(*i))
+        .filter(|(i, o)| !spent(*i, o.once))
+        .chain(
+            event
+                .into_iter()
+                .flat_map(|e| e.option.iter().enumerate())
+                .filter(|(i, o)| !spent(100 + *i, o.once)),
+        )
         .filter_map(|(_, o): (usize, &RoomOption)| {
             o.need
                 .iter()
@@ -371,6 +380,17 @@ fn draw_scene(
     let mut opt_lines: Vec<Line<'static>> = Vec::new();
     for (i, o) in options.iter().enumerate().take(9) {
         let mark = match o.what {
+            OptionWhat::Event(t)
+                if level
+                    .event(content, room)
+                    .is_some_and(|e| !e.option[t].need.is_empty()) =>
+            {
+                if cx.look.ascii {
+                    "*"
+                } else {
+                    "◆"
+                }
+            }
             OptionWhat::Template(t) if !template.option[t].need.is_empty() => {
                 if cx.look.ascii {
                     "*"
@@ -424,7 +444,11 @@ fn draw_scene(
     let art_rows = take(art_rows, &mut room_left);
     let gaps = usize::from(n_opts > 0) + usize::from(n_exits > 0 && n_opts > 0);
     let gaps = take(gaps, &mut room_left);
-    let desc = wrap_to(&template.text, w, room_left.max(1));
+    let full = match level.event(content, room) {
+        Some(e) => format!("{} {}", template.text, e.text),
+        None => template.text.clone(),
+    };
+    let desc = wrap_to(&full, w, room_left.max(1));
     let n_desc = take(desc.len(), &mut room_left);
 
     let mut lines: Vec<Line<'static>> = Vec::new();

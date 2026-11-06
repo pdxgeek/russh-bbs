@@ -10,11 +10,11 @@
 ||###################################||  [t] Temple     tend you: 18c     |
 |+-----------------------------------+|  [g] Guild hall drill 32c, 0 today|
 |+ Tavern board ---------------------+|  [l] Library    reading room shut |
-||- Ash opened a lift at level 6.    ||  [w] Town works 1 of 11 finished  |
-||- Brindle felled the guardian of   ||  [s] Skills     3 point(s) to spe~|
-||- the Upper Works.                 ||  [h] Hero sheet level 4           |
-||- Mott did not come back from level||  [r] The hall   1 fallen          |
-||- 4.                               ||[d] Descend to level 1 (1 turn)    |
+||- Ash bested Brindle in the ring.  ||  [w] Town works 1 of 12 finished  |
+||- Wren joined Ash's company.       ||  [c] Company    1 invitation(s)   |
+||- Ash opened a lift at level 6.    ||  [u] Duel ring  not in the ring   |
+||                                   ||  [j] Journal    0 step(s) done    |
+||                                   ||[d] Descend to level 1 (1 turn)    |
 ||                                   ||[1] lift to level 6 (1 turn)       |
 |+-----------------------------------++-----------------------------------+
 |[Up/Down Enter] open a place  [d] descend  [q] leave the door
@@ -80,7 +80,7 @@
 |[Up/Down] choose  [Left/Right] tab  [Esc] back
 === hall-standings 80x24 (door 74x19)
 |* EMBERDEEP . The Hall . season 1 . the dungeon remade 0x
-| Standings | The dead | The world
+| Standings | The dead | The world | Companies | The ring | Donors | Chroni
 |+ Deepest heroes ---------------++ The guardians ------------------------+
 ||Brindle L14#########           ||1 the Upper Works                      |
 ||Ash     L11#######             ||    slain by Brindle                   |
@@ -100,7 +100,7 @@
 |[Left/Right] tab  [Esc] back
 === hall-dead 80x24 (door 74x19)
 |* EMBERDEEP . The Hall . season 1 . the dungeon remade 0x
-| Standings | The dead | The world
+| Standings | The dead | The world | Companies | The ring | Donors | Chroni
 |+ In memory -------------------------------------------------------------+
 ||x  Mott           level 4  6d ago  carried home by Wren                 |
 ||x  Tallow         level 7  1d ago  waiting, 2 day(s) left               |
@@ -120,14 +120,14 @@
 |[Left/Right] tab  [Esc] back
 === hall-world 80x24 (door 74x19)
 |* EMBERDEEP . The Hall . season 1 . the dungeon remade 0x
-| Standings | The dead | The world
+| Standings | The dead | The world | Companies | The ring | Donors | Chroni
 |+ What heroes have changed ---------++ News of the season ---------------+
-||+ A lift at level 6                ||- Ash opened a lift at level 6.    |
-||* New Bellows for the Forge        ||- Brindle felled the guardian of t~|
+||+ A lift at level 6                ||- Ash bested Brindle in the ring.  |
+||* New Bellows for the Forge        ||- Wren joined Ash's company.       |
+||                                   ||- Ash opened a lift at level 6.    |
+||                                   ||- Brindle felled the guardian of t~|
 ||                                   ||- Mott did not come back from leve~|
 ||                                   ||- Tallow did not come back from le~|
-||                                   ||- Ash opened a lift on level 6.    |
-||                                   ||- Brindle slew the guardian of ban~|
 ||                                   ||                                   |
 ||                                   ||                                   |
 ||                                   ||                                   |
@@ -138,20 +138,200 @@
 ||                                   ||                                   |
 |+-----------------------------------++-----------------------------------+
 |[Left/Right] tab  [Esc] back
+=== hall-companies 80x24 (door 74x19)
+|* EMBERDEEP . The Hall . season 1 . the dungeon remade 0x
+| Standings | The dead | The world | Companies | The ring | Donors | Chroni
+|+ Companies -------------------------------------------------------------+
+||Company of Ash: Ash, Wren                                               |
+||  deepest together: level 0   carried home: 0                           |
+||                                                                        |
+||5 hero(es) known to the town; 0 carried home this season.               |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+|+------------------------------------------------------------------------+
+|[Left/Right] tab  [Esc] back
+=== hall-ring 80x24 (door 74x19)
+|* EMBERDEEP . The Hall . season 1 . the dungeon remade 0x
+| Standings | The dead | The world | Companies | The ring | Donors | Chroni
+|+ The ring's ladder -----------------------------------------------------+
+|| 1. Ash              8 pts  1-0                                         |
+|| 2. Brindle          3 pts  0-1                                         |
+||                                                                        |
+||1 duel(s) fought this season. Stakes lost feed the works.               |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+|+------------------------------------------------------------------------+
+|[Left/Right] tab  [Esc] back
+=== hall-donors 80x24 (door 74x19)
+|* EMBERDEEP . The Hall . season 1 . the dungeon remade 0x
+| Standings | The dead | The world | Companies | The ring | Donors | Chroni
+|+ Hall of donors --------------------------------------------------------+
+|| 1. Town           200c  70s                                            |
+|| 2. Wren           40c  10s                                             |
+||                                                                        |
+||Finished: New Bellows for the Forge (largest gift: Town)                |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+|+------------------------------------------------------------------------+
+|[Left/Right] tab  [Esc] back
+=== hall-chronicle 80x24 (door 74x19)
+|* EMBERDEEP . The Hall . season 1 . the dungeon remade 0x
+| Standings | The dead | The world | Companies | The ring | Donors | Chroni
+|+ Chronicle -------------------------------------------------------------+
+||Fall 1: The Long Table                                                  |
+||  The fire goes out, but the heroes who carried each other home keep a  |
+||long table set, and the town does not go cold.                          |
+||                                                                        |
+||Your epilogue so far: A Hand in the Dark                                |
+||You came, you carried a lamp, and the dark was a little less for it.    |
+||                                                                        |
+||Epitaphs:                                                               |
+||  Mott (level 4): He read the walls to the end.                         |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+|+------------------------------------------------------------------------+
+|[Left/Right] tab  [Esc] back
+=== company 80x24 (door 74x19)
+|* EMBERDEEP . The Company ------------------------------ Ember L6 Duelist
+|who rides together   Coin 360  Salvage 0  Store 45  Turns 25/25
+|+ The Company ---------------------------++ Preview ---------------------+
+||You ride alone.                         ||Ride with Brindle             |
+||Brindle invites you to ride with them.  ||You share the day's dealt-with|
+||                                        ||packs, and carry each other   |
+||                                        ||home for a turn less and with |
+||                                        ||no wound.                     |
+||                                        ||                              |
+||                                        ||                              |
+||                                        ||                              |
+||                                        ||                              |
+||                                        ||                              |
+||                                        ||                              |
+||                                        ||                              |
+|+----------------------------------------++------------------------------+
+|[1] Accept Brindle's invitation  [2] Invite Brindle (level 7, wa~
+|[3] Invite Tallow (level 4, cut~  [4] Close the door to invitatio~
+|[Esc] back
+=== ring 80x24 (door 74x19)
+|* EMBERDEEP . The Duel Ring ---------------------------- Ember L6 Duelist
+|opt-in, capped, never lethal   Coin 360  Salvage 0  Store 45  Turns 25/25
+|+ The Duel Ring -------------------------++ Preview ---------------------+
+||Non-lethal duels against another hero's ||Step out                      |
+||last known strength. Stakes of          ||The ring is opt-in. In the    |
+||0, 5, 20 or 50 coin: a win returns your ||ring, others may call you out |
+||stake and half again, a loss            ||up to three times a day; out  |
+||goes to the town works. The loser       ||of it, no one can.            |
+||carries a bruise for a day.             ||                              |
+||Your record: 0 won, 0 lost. Duels today:||                              |
+||0/2.                                    ||                              |
+||                                        ||                              |
+||                                        ||                              |
+||                                        ||                              |
+||                                        ||                              |
+|+----------------------------------------++------------------------------+
+|[1] Step out of the ring  [2] Call out Wren (level 5) for~
+|[3] Call out Wren (level 5) for~  [4] Call out Wren (level 5) for~
+|[5] Call out Wren (level 5) for~  [6] Call out Ash (level 6, 8 pt~
+=== journal 80x24 (door 74x19)
+|* EMBERDEEP . The Journal ------------------------------ Ember L6 Duelist
+|the ember-priests' chain   Coin 360  Salvage 0  Store 45  Turns 25/25
+|+ The Journal ---------------------------++ Preview ---------------------+
+||The Low Flame (2/10)                    ||Nothing to do                 |
+||Visit two shrines below and trim their  ||Nothing here is open to you   |
+||wicks.                                  ||today.                        |
+||The Smiths' Debt (1/10)                 ||                              |
+||Walk into three old forges.             ||                              |
+||The Quiet Watch (2/10)                  ||                              |
+||Carry a fallen hero home.               ||                              |
+||Epitaph (up to 80 characters, read only ||                              |
+||if you are not found): none             ||                              |
+||[e] Write an epitaph                    ||                              |
+||                                        ||                              |
+||                                        ||                              |
+||                                        ||                              |
+||                                        ||                              |
+|+----------------------------------------++------------------------------+
+|[Esc] back
+=== journal-epitaph 80x24 (door 74x19)
+|+ EMBERDEEP: an epitaph -------------------------------------------------+
+||One line, up to 80 characters. The hall prints it only if you are not   |
+||found.                                                                  |
+||                                                                        |
+||> ash_                                                                  |
+||                                                                        |
+||3/80   [Enter] save   [Backspace] delete   [Esc] cancel                 |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+||                                                                        |
+|+------------------------------------------------------------------------+
+=== verdict 80x24 (door 74x19)
+|* EMBERDEEP . The Cold Furnace -------------------------- Ember L4 Warden
+|one answer, for everyone   Coin 240  Salvage 0  Store 45  Turns 25/25
+|+ The Cold Furnace ----------------------++ Preview ---------------------+
+||The guardian is down and the Furnace is ||Put the fire out              |
+||open. The fire has not gone out,        ||You let the Cold Furnace go   |
+||and it waits on one answer, yours, for  ||cold for good.                |
+||everyone in Cindermere.                 ||                              |
+||Closed to you: Take the heart for       ||                              |
+||yourself (needs the choice              ||                              |
+||`keeps-the-key`).                       ||                              |
+||Closed to you: Open the Furnace to      ||                              |
+||everyone (needs the choice              ||                              |
+||`opens-the-gate`).                      ||                              |
+||                                        ||                              |
+||                  '                     ||                              |
+||  '                   '  '    '      ' '||                              |
+||========================================||                              |
+|+----------------------------------------++------------------------------+
+|[1] Put the fire out  [2] Bank the fire for the town  [Esc] back
 === market 80x24 (door 74x19)
 |* EMBERDEEP . The Market ----------------------------- Ember L4 Runesmith
-|stalls under the hill   Coin 84  Salvage 0  Store 45  Turns 25/25
+|stalls under the hill   Coin 222  Salvage 0  Store 45  Turns 25/25
 |+ The Market ----------------------------++ Preview ---------------------+
-||Wares                 Stats     Lv Price||Prism Coat                    |
-||[-] Glass Sabre       11-17 Fin 7  SOLD ||arm 6                         |
-||[1] Prism Hammer      11-17 Wit 7  156c ||Needs hero level 7 (you are   |
-||[2] Prism Coat        arm 6     7  150c ||4).                           |
-||[3] Sturdy Scrap Plat arm 3     1  56c  ||                              |
-||                                        ||Coin 84 -> -66                |
-||Shelf price, 14 days 61c - 245c         ||                              |
-||#.     #.                               ||                              |
-||##: .: ##+. +-                          ||                              |
-||######+####=##                          ||                              |
+||Wares                 Stats     Lv Price||Ember Dirk                    |
+||[-] Forge Coat        arm 4     4  SOLD ||7-13 Fin                      |
+||[1] Coal Scale        arm 9     10 314c ||Needs hero level 4 (you are   |
+||[2] Ember Dirk        7-13 Fin  4  76c  ||4).                           |
+||[3] Stout Choirmaster arm 6     7  212c ||                              |
+||                                        ||Coin 222 -> 146               |
+||Shelf price, 14 days 60c - 255c         ||                              |
+||.#  . = :  .                            ||                              |
+||##  #-#-##.#-#                          ||                              |
+||##=###########                          ||                              |
 ||                                        ||                              |
 ||                                        ||                              |
 ||                                        ||                              |
@@ -160,12 +340,12 @@
 |[1] Buy 2  [2] Buy 3  [3] Buy 4  [4] Sell 10 salvage (8c)  [Esc] back
 === gear 80x24 (door 74x19)
 |* EMBERDEEP . Gear ----------------------------------- Ember L4 Runesmith
-|Coin 84  Salvage 0  Store 45  Turns 25/25
+|Coin 222  Salvage 0  Store 45  Turns 25/25
 |+ Gear ----------------------------------++ Preview ---------------------+
-||     Piece            Stats    Wear     ||Glass Sabre                   |
-||Hand Rune Hammer      5-9 Wit  #### 0%  ||11-17 Fin                     |
-||Body Smith's Apron    arm 2    #### 0%  ||Sells for 78c: Coin 84 -> 162 |
-||[1]  Glass Sabre      11-17 Fi #### 0%  ||                              |
+||     Piece            Stats    Wear     ||Forge Coat                    |
+||Hand Rune Hammer      5-9 Wit  #### 0%  ||arm 4                         |
+||Body Smith's Apron    arm 2    #### 0%  ||Sells for 39c: Coin 222 -> 261|
+||[1]  Forge Coat       arm 4    #### 0%  ||                              |
 ||                                        ||                              |
 ||                                        ||                              |
 ||                                        ||                              |
@@ -180,15 +360,15 @@
 |[1] Wield 1  [2] Sell 1  [Esc] back
 === forge 80x24 (door 74x19)
 |* EMBERDEEP . The Forge ------------------------------ Ember L4 Runesmith
-|Coin 84  Salvage 0  Store 45  Turns 25/25
+|Coin 222  Salvage 0  Store 45  Turns 25/25
 |+ The Forge -----------------------------++ Preview ---------------------+
 ||Forge level 2  **oo                     ||Runesmith's Mallet            |
 ||weapon Rune Hammer    ############ sound||A mallet with the maker's     |
 ||armour Smith's Apron  ############ sound||marks cut into the head.      |
 ||                                        ||                              |
 ||Recipe            Salv Coin  Fg         ||Salvage 45 -> 28              |
-||[1] Runesmith's M 17s  24c   F1  ready  ||Coin 84 -> 60                 |
-||                                        ||Ready: press Enter.           |
+||[1] Runesmith's M 17s  24c   F1  ready  ||Coin 222 -> 198               |
+||[2] Runesmith's R 20s  30c   F2  ready  ||Ready: press Enter.           |
 ||                                        ||                              |
 ||                                        ||                              |
 ||                                        ||                              |
@@ -197,15 +377,15 @@
 ||  '                   '  '    '      ' '||                              |
 ||========================================||                              |
 |+----------------------------------------++------------------------------+
-|[1] Make Runesmith's Mallet  [Esc] back
+|[1] Make Runesmith's Mallet  [2] Make Runesmith's Rod  [Esc] back
 === temple 80x24 (door 74x19)
 |* EMBERDEEP . The Temple ----------------------------- Ember L4 Runesmith
-|of the Low Flame   Coin 84  Salvage 0  Store 45  Turns 25/25
+|of the Low Flame   Coin 222  Salvage 0  Store 45  Turns 25/25
 |+ The Temple ----------------------------++ Preview ---------------------+
 ||  )   Temple level 0                    ||Cure Gash                     |
 || (%)  Being tended costs 2 turn(s).     ||Lifts the wound at once, with |
 ||  #                                     ||no scar.                      |
-||                                        ||Coin 84 -> 54                 |
+||                                        ||Coin 222 -> 192               |
 ||Health  ###################....... 43/60||                              |
 ||                                        ||                              |
 ||+ Gash (3d)                             ||                              |
@@ -220,12 +400,12 @@
 |[1] Be tended (34c)  [2] Cure gash (30c)  [Esc] back
 === guild 80x24 (door 74x19)
 |* EMBERDEEP . The Guild Hall ------------------------- Ember L4 Runesmith
-|drills and old hands   Coin 84  Salvage 0  Store 45  Turns 25/25
+|drills and old hands   Coin 222  Salvage 0  Store 45  Turns 25/25
 |+ The Guild Hall ------------------------++ Preview ---------------------+
 ||Level  #########.............. 300/400xp||Drill                         |
 ||                                        ||A quarter of the way to the   |
 ||Drills today o                          ||next level and a one-day boon.|
-||                                        ||Coin 84 -> 52                 |
+||                                        ||Coin 222 -> 190               |
 ||The hall drills heroes up to level 8: 1 ||                              |
 ||drill(s) a day, 32c and a turn each.    ||                              |
 ||                                        ||                              |
@@ -240,17 +420,17 @@
 |[1] Drill (32c, 1 turn)  [Esc] back
 === tavern 80x24 (door 74x19)
 |* EMBERDEEP . The Tavern ----------------------------- Ember L4 Runesmith
-|the Banked Ember   Coin 84  Salvage 0  Store 45  Turns 25/25
+|the Banked Ember   Coin 222  Salvage 0  Store 45  Turns 25/25
 |+ The Tavern ----------------------------++ Preview ---------------------+
-||The board                 Lvl  Pay   Day||The Blister Brood             |
-||[1] Beast: The Spitting ~ L2+  40c   3d ||A slag crawler heavy with     |
-||[2] Beast: The Blister B~ L6+  90c   4d ||eggs. Kill it before it nests |
-||[3] Beast: Hollow Sir Al~ L2+  56c   4d ||under the stair.              |
+||The board                 Lvl  Pay   Day||A Child's Whistle             |
+||[1] Beast: The Cellar Gn~ L1+  38c   3d ||A tin whistle was dropped in a|
+||[2] Heirloom: A Child's W L1+  43c   3d ||corridor of level 1, and a    |
+||[3] Heirloom: The Founder L9+  147c  5d ||girl has been crying about it |
+||                                        ||for a week. A small errand,   |
+||Drinks ooo   Dice ooo                   ||but a real one.               |
 ||                                        ||                              |
-||Drinks ooo   Dice ooo                   ||Level 6+ . 90c . 90xp . 4     |
-||                                        ||day(s)                        |
-||                                        ||                              |
-||Debt  ############|.....................||                              |
+||                                        ||Level 1+ . 43c . 40xp . 3     |
+||Debt  ############|.....................||day(s)                        |
 ||                  '                     ||                              |
 ||  '                   '  '    '      ' '||                              |
 ||========================================||                              |
@@ -260,7 +440,7 @@
 |[9] Call on Maren the Lamp-Tend~  [a] Call on Odo the Cellarman (~
 === library 80x24 (door 74x19)
 |* EMBERDEEP . The Library ---------------------------- Ember L4 Runesmith
-|dust, relics and patterns   Coin 84  Salvage 0  Store 45  Turns 25/25
+|dust, relics and patterns   Coin 222  Salvage 0  Store 45  Turns 25/25
 |+ The Library ---------------------------++ Preview ---------------------+
 ||The shelves are dust and the reading    ||Nothing to do                 |
 ||room is shut. You hold 0 relic(s) no one||Nothing here is open to you   |
@@ -280,9 +460,9 @@
 |[Esc] back
 === works 80x24 (door 74x19)
 |* EMBERDEEP . The Town Works ------------------------- Ember L4 Runesmith
-|Coin 84  Salvage 0  Store 45  Turns 25/25
+|Coin 222  Salvage 0  Store 45  Turns 25/25
 |+ The Town Works ------------------------++ Preview ---------------------+
-||Finished ##|.................... 1 of 11||The Great Hearth              |
+||Finished ##..................... 1 of 12||The Great Hearth              |
 ||                                        ||A king's hearth under the     |
 ||The Great Hearth                        ||forge: the finest patterns and|
 ||#........... 40/600c  #......... 10/220s||the cheapest repairs.         |
@@ -331,7 +511,7 @@
 || |    ,      |,            || x Haul the chain up b~ (needs brawn)      |
 ||[?]        .[?]---[.]      || x Study the broken li~ (only without run~ |
 ||Light **** bright          ||                                           |
-||@ you  > way down  < way up||[n] Ember Shrine  [s] unexplored           |
+||@ you  > way down  < way up||[n] Hearth Chapel  [s] unexplored          |
 |+---------------------------++-------------------------------------------+
 |--------------------------------------------------------------------------
 |
@@ -351,7 +531,7 @@
 || |    ,      |,            || x Rig the winch with ~ (needs tinker)     |
 ||[?]        .[?]---[.]      || x Study the broken li~ (only without bra~ |
 ||Light **** bright          ||                                           |
-||@ you  > way down  < way up||[n] Ember Shrine  [s] unexplored           |
+||@ you  > way down  < way up||[n] Hearth Chapel  [s] unexplored          |
 |+---------------------------++-------------------------------------------+
 |--------------------------------------------------------------------------
 |
@@ -359,24 +539,24 @@
 |[n e s w] move  [1] act  [r] camp (2t)  [u] climb (1t)  [m] map
 |[c] sheet  [Esc] leave door
 === delve-torch-low 80x24 (door 74x19)
-|* EMBERDEEP . Level 1 . the Upper Works ----------------- Ember L1 Warden
-|Depth  #........................ 1/25  Torch  ##............... 3/25 turns
+|* EMBERDEEP . Level 3 . the Upper Works ----------------- Ember L1 Warden
+|Depth  ###...................... 3/25  Torch  ##............... 3/25 turns
 |Health ######################## 62/62  Fatigue ........................ 0%
-|+ Floor 1 ------------------++ Sooty Gallery ----------------------------+
-||[?]   [F]   <@>,           ||A long gallery, every surface furred with  |
-|| |     |     | .           ||soot. Footprints, not all of them human.   |
-||[+]---[L]---[$]            || x Follow the footprin~ (needs forage)     |
-|| |     |     |             ||[s] Coffer Room                            |
-||[?]   [<]---[L] . . . , .  ||                                           |
-||       ..    |        .    ||                                           |
-||,           [?]---[.],     ||                                           |
+|+ Floor 3 ------------------++ Sooty Gallery ----------------------------+
+||  .         [?],           ||A long gallery, every surface furred with  |
+||             | .           ||soot. Footprints, not all of them human.   |
+||[>]---<@>---[S]   [F]      || x Follow the footprin~ (needs forage)     |
+||             |     |       ||[e] The Rope Shaft  [w] The Gutter Stair   |
+||            [?]---[?] , [<]||                                           |
+||       ..          |  .  | ||                                           |
+||,           [.]---[.]---[L]||                                           |
 ||Light **oo guttering       ||                                           |
 ||@ you  > way down  < way up||                                           |
 |+---------------------------++-------------------------------------------+
 |--------------------------------------------------------------------------
 |
 |
-|[n e s w] move  [r] camp (2t)  [u] climb (1t)  [m] map  [c] sheet
+|[n e s w] move  [r] camp (2t)  [u] climb (3t)  [m] map  [c] sheet
 |[Esc] leave door
 === delve-lair 80x24 (door 74x19)
 |* EMBERDEEP . Level 1 . the Upper Works ---------------- Ember L1 Duelist
@@ -384,58 +564,58 @@
 |Health ######################## 52/52  Fatigue ........................ 0%
 |+ Floor 1 ------------------++ Bone Pit ---------------------------------+
 ||[?]   [F]   [.]  ,.      .,||A wide pit ringed with bones, the stairs to|
-|| |     | ,   |.          . ||the lower hall visible beyond. Shapes lift~|
-||[+]---[L]---[$]            ||A pack bars the way out of this room.      |
-|| |     |     |             ||                                           |
-||[?]   [<]---<@>            ||[1]   Fight the pack                   0t  |
-||   .    .    |      , .    || x Creep around the rim (needs sneak)      |
-||            [?]---[.]      || x Set a snare line an~ (needs ensnare)    |
-||Light ***o steady          ||                                           |
-||@ you  > way down  < way up||[n] Coffer Room  [s] unexplored            |
-||L lair  G guardian  S shaft||[w] The Landing                            |
+|| |     | ,   |.          . ||the lower hall visible beyond. Shapes lift |
+||[+]---[L]---[$]            ||from the heaps as you enter.               |
+|| |     |     |             ||A pack bars the way out of this room.      |
+||[?]   [<]---[L]            ||                                           |
+||   .    .    |      , .    ||[1]   Fight the pack                   0t  |
+||            <@>---[.]      || x Creep around the rim (needs sneak)      |
+||Light ***o steady          || x Set a snare line an~ (needs ensnare)    |
+||@ you  > way down  < way up||                                           |
+||L lair  G guardian  S shaft||[n] Scrap Warren  [e] Lamp-Lined Hall      |
 |+---------------------------++-------------------------------------------+
 |--------------------------------------------------------------------------
 |
 |
 |[n e s w] move  [1] act  [u] climb (1t)  [m] map  [c] sheet
 === delve-forge 80x24 (door 74x19)
-|* EMBERDEEP . Level 13 . the Glass Halls ---------- Ember L1 Ember-Priest
-|Depth  #############........... 13/25  Torch  ##############|. 22/25 turns
+|* EMBERDEEP . Level 12 . the Glass Halls ---------- Ember L1 Ember-Priest
+|Depth  ############............ 12/25  Torch  ##############|. 22/25 turns
 |Health ######################## 52/52  Fatigue ........................ 0%
-|+ Floor 13 -----------------++ Hot Forge --------------------------------+
-||     ,[>]   [.]---[<]---[$]||A forge that never went cold. The air      |
-||    ,  |    ,      |  ,  | ||shimmers and the bellows breathe by        |
-||   .  [?]---[$]---[.]   [L]||themselves.                                |
-||           .       |       ||                                           |
-||        ,, ,[.]---[?]      ||[1]   Work the bellows and~ 2t . Might 12  |
-||,   .        ,   . | .     || x Walk the coals unto~ (needs warding)    |
-||  .  .            [?]---<@>|| x Read the forge-mast~ (needs runecraft)  |
-||Light **** bright          ||                                           |
-||@ you  > way down  < way up||[w] unexplored                             |
+|+ Floor 12 -----------------++ Hot Forge --------------------------------+
+||     ,[<]---[+]---[L]---[.]||                                           |
+||    ,  |    ,|     |  ,  , ||[1]   Work the bellows and~ 2t . Might 12  |
+||[$]---[.]---<@>   [?]    , ||[2] * Read the mark                    1t  |
+||       |   . |     |       ||[3]   Chip a corner off     1t . Might 12  |
+||      [~], ,[?]---[S]      || x Walk the coals unto~ (needs warding)    |
+||,   .        |   .   .     || x Read the forge-mast~ (needs runecraft)  |
+||  .  .[?]---[L]            || x Drag it to the surf~ (needs brawn)      |
+||Light **** bright          ||[n] Hearth Chapel  [s] unexplored          |
+||@ you  > way down  < way up||[w] Bone Dust Passage                      |
 |+---------------------------++-------------------------------------------+
 |--------------------------------------------------------------------------
 |
 |
-|[n e s w] move  [1] act  [r] camp (2t)  [u] climb (8t)  [m] map
+|[n e s w] move  [1-3] act  [r] camp (2t)  [u] climb (7t)  [m] map
 |[c] sheet  [Esc] leave door
 === map 80x24 (door 74x19)
-|* EMBERDEEP . Map of level 1 . the Upper Works -------- Ember L1 Wanderer
+|* EMBERDEEP . Map of level 3 . the Upper Works -------- Ember L1 Wanderer
 |+ The floor as your torch showed it --++ Key ----------------------------+
-||+---+   +---+   +---+,   .           ||8 of 12 rooms explored           |
-||| ? |   | F |   | @ |       ,        ||Light ***o                       |
-||+---+   +---+   +---+                ||                                 |
-||  |       |     .,|             ,    ||@ you                            |
-||+---+   +---+   +---+                ||> way down                       |
-||| + |---| L |---| $ |                ||< way up                         |
-||+---+   +---+   +---+      ,,        ||L lair                           |
-||  | .     |.      | ..          . ,  ||G guardian                       |
-||+---+   +---+   +---+                ||S shaft                          |
-||| ? |  ,| < |---| L |                ||$ vault                          |
-||+---+   +---+   +---+    .      , .  ||F forge                          |
-||               .  |          ,       ||~ flooded                        |
-||  ,             +---+   +---+     ,  ||+ shrine                         |
-||     ,          | ? |---| . | ,   ,  ||? unvisited                      |
-||.               +---+   +---+        ||                                 |
+|| .              +---+,   .           ||8 of 12 rooms explored           |
+|| ,.             | ? |       ,        ||Light ***o                       |
+||                +---+                ||                                 |
+||                .,|             ,    ||@ you                            |
+||+---+   +---+   +---+   +---+        ||> way down                       |
+||| > |---| @ |---| S |   | F |        ||< way up                         |
+||+---+   +---+   +---+   +---+        ||L lair                           |
+||    .      .      | ..    |     . ,  ||G guardian                       |
+|| ,          ,   +---+   +---+   +---+||S shaft                          |
+||       , .      | ? |---| ? |   | < |||$ vault                          |
+||                +---+   +---+   +---+||F forge                          |
+||               .          |  ,    |  ||~ flooded                        |
+||  ,             +---+   +---+   +---+||+ shrine                         |
+||     ,          | . |---| . |---| L |||? unvisited                      |
+||.               +---+   +---+   +---+||                                 |
 |+-------------------------------------++---------------------------------+
 |[Esc] back
 === fight-one 80x24 (door 74x19)

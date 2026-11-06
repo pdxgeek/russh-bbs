@@ -10,6 +10,9 @@ use crate::lore::{
     Gathers, GroupDef, Req,
 };
 use crate::map::{Band, PoiKind, TileKind};
+use crate::story::{
+    CONTRACTS_TOML, ContractDef, Contracts, Faction, Progress, QUESTS_TOML, QuestDef, Quests,
+};
 use crate::types::{Bundle, Resource, Track, Trade};
 
 /// Buildings table text.
@@ -657,6 +660,10 @@ pub struct Catalog {
     pub gathers: Vec<GatherDef>,
     /// Letter templates between clans.
     pub letters: crate::social::letters::Letters,
+    /// The hand-written quest chains.
+    pub quests: Vec<QuestDef>,
+    /// The contract templates the faction boards draw from.
+    pub contracts: Vec<ContractDef>,
 }
 
 /// The text of every table, so tests can swap one and prove a bad edit is caught.
@@ -684,6 +691,10 @@ pub struct Texts<'a> {
     pub gather: &'a str,
     /// Letter templates.
     pub letters: &'a str,
+    /// Quest chains.
+    pub quests: &'a str,
+    /// Contracts.
+    pub contracts: &'a str,
 }
 
 impl Texts<'static> {
@@ -702,6 +713,8 @@ impl Texts<'static> {
             foes: FOES_TOML,
             gather: GATHER_TOML,
             letters: crate::social::letters::LETTERS_TOML,
+            quests: QUESTS_TOML,
+            contracts: CONTRACTS_TOML,
         }
     }
 }
@@ -735,6 +748,8 @@ impl Catalog {
             groups: foes.groups,
             gathers: content::load::<Gathers>("gather", t.gather)?.entries,
             letters: content::load::<crate::social::letters::Letters>("letters", t.letters)?,
+            quests: content::load::<Quests>("quests", t.quests)?.entries,
+            contracts: content::load::<Contracts>("contracts", t.contracts)?.entries,
         };
         let problems = catalog.cross_check();
         if problems.is_empty() {
@@ -784,7 +799,126 @@ impl Catalog {
             p.push("no building is a sluice".to_owned());
         }
         self.cross_check_lore(&mut p);
+        self.cross_check_story(&mut p);
         p
+    }
+
+    /// How many quest chains the clan (by its marks) has finished.
+    #[must_use]
+    pub fn quests_done(&self, has: impl Fn(&str) -> bool) -> usize {
+        self.quests
+            .iter()
+            .filter(|q| matches!(q.progress(&has), Progress::Ended(_)))
+            .count()
+    }
+
+    /// The scenes that set a mark, with whether each (event or option) needs `needed`.
+    fn setters<'a>(&'a self, mark: &str) -> Vec<(&'a EventDef, Vec<&'a crate::lore::Cond>)> {
+        let mut out = Vec::new();
+        for e in &self.events {
+            for o in &e.options {
+                let sets = std::iter::once(&o.win)
+                    .chain(o.lose.as_ref())
+                    .flat_map(|x| &x.fx)
+                    .any(|fx| matches!(fx, Effect::Mark(m) if m == mark));
+                if sets {
+                    out.push((e, e.needs.iter().chain(&o.needs).collect()));
+                }
+            }
+        }
+        out
+    }
+
+    /// Links between quests, marks, contracts and the places they name.
+    fn cross_check_story(&self, p: &mut Vec<String>) {
+        for c in &self.contracts {
+            if let Some(foe) = &c.foe
+                && self.foe(foe).is_none()
+            {
+                p.push(format!("contract `{}`: unknown foe `{foe}`", c.id));
+            }
+        }
+        for q in &self.quests {
+            let chain: Vec<&str> = q
+                .steps
+                .iter()
+                .map(|s| s.mark.as_str())
+                .chain(q.ends.iter().map(|e| e.mark.as_str()))
+                .collect();
+            for (i, mark) in chain.iter().enumerate() {
+                let setters = self.setters(mark);
+                if setters.is_empty() {
+                    p.push(format!(
+                        "quest `{}`: nothing sets mark `{mark}` (dead step)",
+                        q.id
+                    ));
+                    continue;
+                }
+                // Past the first step, a setter must wait for the step before it (the last
+                // step for an end), so a step cannot be done out of order.
+                let before = if i == 0 {
+                    None
+                } else if i < q.steps.len() {
+                    Some(q.steps[i - 1].mark.as_str())
+                } else {
+                    q.steps.last().map(|s| s.mark.as_str())
+                };
+                if let Some(before) = before
+                    && !setters.iter().any(|(_, needs)| {
+                        needs
+                            .iter()
+                            .any(|c| !c.not && matches!(&c.req, Req::Mark(m) if m == before))
+                    })
+                {
+                    p.push(format!(
+                        "quest `{}`: no scene that sets `{mark}` waits for `{before}`",
+                        q.id
+                    ));
+                }
+            }
+            // Every end closes the others: some option that sets it must refuse a clan that
+            // already holds another end.
+            for e in &q.ends {
+                let others: Vec<&str> = q
+                    .ends
+                    .iter()
+                    .filter(|o| o.mark != e.mark)
+                    .map(|o| o.mark.as_str())
+                    .collect();
+                let setters = self.setters(&e.mark);
+                let closes = setters.iter().all(|(_, needs)| {
+                    others.iter().all(|o| {
+                        needs
+                            .iter()
+                            .any(|c| c.not && matches!(&c.req, Req::Mark(m) if m == o))
+                    })
+                });
+                if !setters.is_empty() && !closes {
+                    p.push(format!(
+                        "quest `{}`: a scene that ends it with `{}` does not refuse the other ends",
+                        q.id, e.mark
+                    ));
+                }
+            }
+        }
+        // A mark a scene reads must be set by some scene (or by the engine).
+        let engine_marks = |m: &str| m.starts_with("seen:") || m.starts_with("done:");
+        for e in &self.events {
+            let conds = e
+                .needs
+                .iter()
+                .chain(&e.draws)
+                .chain(e.options.iter().flat_map(|o| &o.needs));
+            for c in conds {
+                if let Req::Mark(m) = &c.req
+                    && !engine_marks(m)
+                    && self.setters(m).is_empty()
+                {
+                    p.push(format!("event `{}`: mark `{m}` is never set", e.id));
+                }
+            }
+        }
+        let _ = Faction::ALL;
     }
 
     fn cross_check_lore(&self, p: &mut Vec<String>) {
@@ -815,9 +949,13 @@ impl Catalog {
                     Effect::Fight(g) if self.group(g).is_none() => {
                         p.push(format!("event `{}`: unknown fight group `{g}`", e.id));
                     }
-                    Effect::Recipe(r) if self.recipe(r).is_none_or(|d| d.learn != Learn::Ruin) => {
+                    Effect::Recipe(r)
+                        if self
+                            .recipe(r)
+                            .is_none_or(|d| !matches!(d.learn, Learn::Ruin | Learn::Trade)) =>
+                    {
                         p.push(format!(
-                            "event `{}`: `{r}` is not a recipe learned from a ruin",
+                            "event `{}`: `{r}` is not a recipe learned from a ruin or a trade",
                             e.id
                         ));
                     }
@@ -825,6 +963,29 @@ impl Catalog {
                 }
             }
         }
+    }
+
+    /// The position of an event in the table.
+    #[must_use]
+    pub fn event_index(&self, id: &str) -> Option<usize> {
+        self.events.iter().position(|e| e.id == id)
+    }
+
+    /// The branch number of an option's outcome (two for each option, in table order:
+    /// won then lost), for the telemetry in [`crate::story::Story::seen`].
+    #[must_use]
+    pub fn branch_bit(&self, event: usize, option: usize, lost: bool) -> usize {
+        let before: usize = self.events[..event.min(self.events.len())]
+            .iter()
+            .map(|e| e.options.len())
+            .sum();
+        (before + option) * 2 + usize::from(lost)
+    }
+
+    /// How many branches the scenes have.
+    #[must_use]
+    pub fn branch_count(&self) -> usize {
+        self.events.iter().map(|e| e.options.len()).sum::<usize>() * 2
     }
 
     /// A building by id.

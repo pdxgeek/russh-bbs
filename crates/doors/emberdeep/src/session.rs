@@ -16,6 +16,7 @@ use crate::hero::Hero;
 use crate::rules::{CREATION_POINTS, CREATION_TRAITS, DEPTH_MAX, RECOVERY_DAYS};
 use crate::world::World;
 
+mod circle;
 mod places;
 mod ui;
 
@@ -158,6 +159,10 @@ pub(crate) struct Session {
     /// Whether the hero's gifts to the town have been sent to the world this visit.
     reconciled: bool,
     ui: UiState,
+    /// The epitaph being typed, if the hero is writing one (session-only until sent).
+    epitaph: Option<String>,
+    /// Whether the Furnace has already asked its question this visit.
+    verdict_asked: bool,
 }
 
 impl Session {
@@ -178,6 +183,8 @@ impl Session {
             dirty: false,
             reconciled: false,
             ui: UiState::default(),
+            epitaph: None,
+            verdict_asked: false,
         };
         if content.is_none() {
             return session;
@@ -188,7 +195,9 @@ impl Session {
                     Some(mut game) => {
                         game.world = world;
                         game.season = start.season;
-                        let events = game.new_day(&session.content, today);
+                        let mut events = game.new_day(&session.content, today);
+                        game.collect_notes(&session.content, &mut events);
+                        game.sync_roster(&session.content);
                         session.absorb(events);
                         session.dirty = !session.log.is_empty() || game.day != today;
                         session.game = Some(game);
@@ -354,6 +363,7 @@ impl Session {
                 let rng = russh_bbs_door::DoorRng::from_seed(self.fresh_seed);
                 let mut game = Game::new(hero, rng, self.day - 1, self.season, self.world.clone());
                 let events = game.new_day(&content, self.day);
+                game.sync_roster(&content);
                 let line = format!(
                     "{} the {} is ready for the Emberdeep.",
                     game.hero.name,
@@ -364,6 +374,7 @@ impl Session {
                 self.game = Some(game);
                 self.mode = Mode::Play(Screen::Main);
                 self.dirty = true;
+                self.flush_changes(ctx);
             }
             Err(_) => {
                 if let Mode::Create(c) = &mut self.mode {
@@ -417,6 +428,9 @@ impl Session {
                     }
                 }
                 (Screen::Skills, DoorKey::Char(ch)) => self.skills_key(ch, ctx),
+                (Screen::Spot(Spot::Journal), DoorKey::Char('e')) => {
+                    self.epitaph = Some(String::new());
+                }
                 (Screen::Spot(spot), DoorKey::Char(ch)) => self.spot_key(spot, ch, ctx),
                 _ => {}
             }
@@ -442,6 +456,39 @@ impl Session {
             Place::Delve { .. } => self.delve_key(key, ctx),
         }
         Flow::Stay
+    }
+
+    fn epitaph_key(&mut self, key: DoorKey, ctx: &mut Ctx<'_>) {
+        let Some(buf) = self.epitaph.as_mut() else {
+            return;
+        };
+        match key {
+            DoorKey::Escape => self.epitaph = None,
+            DoorKey::Backspace => {
+                buf.pop();
+            }
+            DoorKey::Enter => {
+                let text = std::mem::take(buf);
+                self.epitaph = None;
+                match ctx.player_text(&text) {
+                    Ok(clean) => {
+                        self.act(
+                            Action::Social(crate::company::SocialAct::Epitaph(
+                                clean.as_str().to_owned(),
+                            )),
+                            ctx,
+                        );
+                    }
+                    Err(why) => self.absorb(vec![Event::Say(Tone::Dim, why.to_string())]),
+                }
+            }
+            DoorKey::Char(ch)
+                if !ch.is_control() && buf.chars().count() < crate::social::EPITAPH_MAX =>
+            {
+                buf.push(ch);
+            }
+            _ => {}
+        }
     }
 
     fn skills_key(&mut self, ch: char, ctx: &mut Ctx<'_>) {
@@ -564,6 +611,9 @@ impl Session {
             DoorKey::Char('g') => self.mode = Mode::Play(Screen::Spot(Spot::Guild)),
             DoorKey::Char('l') => self.mode = Mode::Play(Screen::Spot(Spot::Library)),
             DoorKey::Char('w') => self.mode = Mode::Play(Screen::Spot(Spot::Works)),
+            DoorKey::Char('c') => self.mode = Mode::Play(Screen::Spot(Spot::Company)),
+            DoorKey::Char('u') => self.mode = Mode::Play(Screen::Spot(Spot::Ring)),
+            DoorKey::Char('j') => self.mode = Mode::Play(Screen::Spot(Spot::Journal)),
             DoorKey::Char('q') => return Flow::Exit,
             DoorKey::Char(ch) if ch.is_ascii_digit() && ch != '0' => {
                 let n = ch.to_digit(10).unwrap_or(0) as usize - 1;
@@ -670,6 +720,26 @@ impl Session {
     // ---- the text view ----
 
     fn lines(&self) -> Lines {
+        if let Some(buf) = &self.epitaph {
+            return Lines {
+                head: std::iter::once(styled("WRITE AN EPITAPH", DoorStyle::Strong))
+                    .chain(
+                        wrap(
+                            &format!(
+                                "One line of up to {} characters, read in the hall only if you are not found.",
+                                crate::social::EPITAPH_MAX
+                            ),
+                            WRAP,
+                        )
+                        .into_iter()
+                        .map(plain),
+                    )
+                    .chain(wrap(&format!("> {buf}_"), WRAP).into_iter().map(plain))
+                    .collect(),
+                log: Vec::new(),
+                keys: vec![plain("[Enter] Save   [Backspace] Delete   [Esc] Cancel")],
+            };
+        }
         match &self.mode {
             Mode::Stuck(text) => Lines {
                 head: wrap(text, WRAP)
@@ -896,6 +966,7 @@ impl Session {
         keys.push(plain(
             "[g] Guild hall   [l] Library   [w] Town works   [s] Skills",
         ));
+        keys.push(plain("[c] Company   [u] Duel ring   [j] Journal"));
         keys.push(plain("[h] Hero sheet   [r] The hall   [q] Leave"));
     }
 
@@ -917,6 +988,9 @@ impl Session {
             DoorStyle::Accent,
         ));
         body.extend(wrap(&template.text, WRAP).into_iter().map(plain));
+        if let Some(event) = level.event(&self.content, room) {
+            body.extend(wrap(&event.text, WRAP).into_iter().map(plain));
+        }
         if let Some((_, shortcut)) = game
             .ways_down(&self.content)
             .into_iter()
@@ -1245,6 +1319,44 @@ impl Session {
         for f in missing {
             out.push(plain(format!("  {} on level {}", f.name, f.depth)));
         }
+        let c = &w.commons;
+        out.push(plain("Companies:"));
+        if c.parties.is_empty() {
+            out.push(styled("  None yet.", DoorStyle::Dim));
+        }
+        for p in &c.parties {
+            out.push(plain(format!(
+                "  {}: {} (deepest together level {}, {} carried home)",
+                p.leader,
+                p.members.join(", "),
+                p.deepest,
+                p.rescues
+            )));
+        }
+        out.push(plain("The ring:"));
+        if c.ladder.is_empty() {
+            out.push(styled("  No one has fought yet.", DoorStyle::Dim));
+        }
+        for r in c.ladder.iter().take(5) {
+            out.push(plain(format!(
+                "  {}: {} points, {} won, {} lost",
+                r.name, r.points, r.wins, r.losses
+            )));
+        }
+        out.push(plain("Endings so far:"));
+        if c.chronicle.is_empty() {
+            out.push(styled("  The Cold Furnace still burns.", DoorStyle::Dim));
+        }
+        for (epoch, code) in &c.chronicle {
+            let e = crate::endings::ENDINGS[usize::from(*code).min(5)];
+            out.push(plain(format!(
+                "  Fall {}: {}",
+                u32::from(*epoch) + 1,
+                e.name
+            )));
+        }
+        let epi = crate::endings::epilogue(&game.hero);
+        out.push(plain(format!("Your epilogue so far: {}", epi.name)));
         out.push(plain("[Esc] Back"));
         out
     }
@@ -1388,6 +1500,8 @@ fn empty_content() -> Content {
             companion: Vec::new(),
             rumour: Vec::new(),
         },
+        events: crate::content_story::Events { event: Vec::new() },
+        quests: crate::content_story::Quests { quest: Vec::new() },
     }
 }
 
@@ -1413,6 +1527,16 @@ impl DoorSession for Session {
             }
             self.flush_changes(ctx);
         }
+        if self.epitaph.is_some() {
+            self.epitaph_key(key, ctx);
+            if self.dirty
+                && let Some(game) = self.game.as_ref()
+            {
+                ctx.request_save(game.encode());
+            }
+            self.dirty = false;
+            return Flow::Stay;
+        }
         let flow = match &self.mode {
             Mode::Stuck(_) => {
                 if key == DoorKey::Escape {
@@ -1433,6 +1557,16 @@ impl DoorSession for Session {
             }
             self.dirty = false;
         }
+        // The Furnace asks its question as soon as its guardian is down, before anything else.
+        if !self.verdict_asked
+            && self
+                .game
+                .as_ref()
+                .is_some_and(|g| g.hero.story.verdict_due && g.fight.is_none())
+        {
+            self.verdict_asked = true;
+            self.mode = Mode::Play(Screen::Spot(Spot::Verdict));
+        }
         // A new screen starts with the cursor at the top and the first tab.
         let now = match &self.mode {
             Mode::Play(screen) if *screen != Screen::Main => Some(*screen),
@@ -1444,6 +1578,11 @@ impl DoorSession for Session {
             self.ui.tab = 0;
         }
         flow
+    }
+
+    fn captures_text(&self) -> bool {
+        // While an epitaph is being typed, `?` is a character, not the look-around key.
+        self.epitaph.is_some()
     }
 
     fn render(&self, canvas: &mut Canvas<'_>, env: &DoorEnv) {

@@ -1,0 +1,43 @@
+
+┌─────────────────────────────────────────────────────────── russh-bbs ────────────────────────────────────────────────────────────┐
+│Long Haul                                                                                                                         │
+│                                                                                                                                  │
+│▲ LONG HAUL  founder  1,800 cr  debt 20,000  days ●●●●●●●●●● 10                                                                   │
+│╭ SOCIETY: CONVOYS, PIRACY, OUTPOSTS ────────────────────────────────────────────────────────────────────────────────────────────╮│
+││[Convoy]  Piracy   Outposts   Hall   Journal                                                                                    ││
+││The server can read all of this. Other captains see only what is marked shared.                                                 ││
+││Patient Caravan convoy, 1 of 4 captains, guard 0%, pool 0 cr                                                                    ││
+││  * founder  guns 0  earned 0 cr                                                                                                ││
+││5% of each profit goes to the pool; the night shares it out.                                                                    ││
+││Log:                                                                                                                            ││
+││  (nothing yet)                                                                                                                 ││
+││Quick notes:                                                                                                                    ││
+││  1 Holding at the last dock. Catch up when you can.                                                                            ││
+││  2 Fuel is short ahead. Top up before the long lane.                                                                           ││
+││  3 Clean run so far. Nothing on the scope.                                                                                     ││
+││  4 Raiders working the lane. Keep your guns warm.                                                                              ││
+││  5 Found a good price. Check the market before you sell.                                                                       ││
+││  6 Moving out at first light. Fly safe.                                                                                        ││
+││  7 Need a hand with repairs when you reach port.                                                                               ││
+││  8 The loan shark is circling. Keep a little back.                                                                             ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+│╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯│
+│You raise the Patient Caravan convoy. Up to 4 captains can join it.                                                               │
+│[Left/Right] tab  [Up/Down] choose  [Enter] join/hunt  [n] form  [x] leave  [t] say  [1-8] note  [f] colours  [p/P] pledge  [Esc] │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+

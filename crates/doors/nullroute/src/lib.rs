@@ -32,13 +32,18 @@
 pub mod autoplay;
 pub mod cm;
 pub mod code;
+pub mod cond;
 pub mod content;
+pub mod crew;
 pub mod learn;
 pub mod net;
 pub mod player;
 pub mod run;
 pub mod save;
 mod session;
+pub mod social;
+pub mod story;
+pub mod ties;
 pub mod world;
 
 use std::sync::Arc;
@@ -56,10 +61,10 @@ use crate::player::Player;
 pub const DOOR_ID: &str = "nullroute";
 
 /// The current save format version.
-pub const SAVE_VERSION: u32 = 2;
+pub const SAVE_VERSION: u32 = 3;
 
 /// The current world format version.
-pub const WORLD_VERSION: u32 = 2;
+pub const WORLD_VERSION: u32 = 3;
 
 /// The Nullroute door.
 pub struct Nullroute {
@@ -128,7 +133,7 @@ impl Door for Nullroute {
             player.new_season(&self.content, start.season, today);
         }
         let mut world = start.world.and_then(save::decode_world).unwrap_or_default();
-        world.sync_season(start.season);
+        world.sync_season(&self.content, start.season);
         Box::new(session::Session::new(
             Arc::clone(&self.content),
             player,
@@ -145,6 +150,8 @@ impl Door for Nullroute {
         let moved = match (kind, from) {
             (BlobKind::Save, 1) => save::migrate_save_v1(bytes),
             (BlobKind::World, 1) => save::migrate_world_v1(bytes),
+            (BlobKind::Save, 2) => save::migrate_save_v2(bytes),
+            (BlobKind::World, 2) => save::migrate_world_v2(bytes),
             _ => return Err(MigrateError::Unsupported(from)),
         };
         moved.ok_or(MigrateError::Corrupt(from))

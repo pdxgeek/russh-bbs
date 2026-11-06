@@ -42,6 +42,53 @@ weapon = [
   { id = "coldsteel-axe", name = "Coldsteel Axe", reach = "melee", attr = "might", damage = [20, 30], band = 5 },
   { id = "coldsteel-rapier", name = "Coldsteel Rapier", reach = "melee", attr = "finesse", damage = [19, 28], band = 5 },
   { id = "coldsteel-hammer", name = "Coldsteel Hammer", reach = "melee", attr = "wits", damage = [19, 29], band = 5 },
+
+  # More weapons: variety for every attribute, bands 1 to 5.
+  # Band 1.
+  { id = "pit-pick", name = "Pit Pick", reach = "melee", attr = "might", damage = [6, 10], band = 1, price = 29 },
+  { id = "bone-cudgel", name = "Bone Cudgel", reach = "melee", attr = "might", damage = [5, 10], band = 1, price = 24 },
+  { id = "whip-dagger", name = "Whip Dagger", reach = "melee", attr = "finesse", damage = [4, 8], band = 1, price = 25 },
+  { id = "lamp-hook", name = "Lamplighter's Hook", reach = "melee", attr = "finesse", damage = [5, 8], band = 1, price = 27 },
+  { id = "tallow-censer", name = "Tallow Censer", reach = "melee", attr = "spirit", damage = [5, 8], band = 1, price = 26 },
+  { id = "scribe-rod", name = "Scribe's Rod", reach = "melee", attr = "wits", damage = [4, 9], band = 1, price = 27 },
+  { id = "hunters-sling", name = "Hunter's Sling", reach = "ranged", attr = "might", damage = [4, 8], band = 1, price = 31 },
+  { id = "cellar-crossbow", name = "Cellar Crossbow", reach = "ranged", attr = "wits", damage = [5, 8], band = 1, price = 35 },
+  # Band 2.
+  { id = "slag-maul", name = "Slag Maul", reach = "melee", attr = "might", damage = [9, 15], band = 2, price = 82 },
+  { id = "cinder-spear", name = "Cinder Spear", reach = "melee", attr = "might", damage = [8, 14], band = 2, price = 78 },
+  { id = "ember-dirk", name = "Ember Dirk", reach = "melee", attr = "finesse", damage = [7, 13], band = 2, price = 76 },
+  { id = "gutter-sabre", name = "Gutter Sabre", reach = "melee", attr = "finesse", damage = [8, 13], band = 2, price = 79 },
+  { id = "vigil-mace", name = "Vigil Mace", reach = "melee", attr = "spirit", damage = [8, 13], band = 2, price = 79 },
+  { id = "cipher-staff", name = "Cipher Staff", reach = "melee", attr = "wits", damage = [8, 12], band = 2, price = 77 },
+  { id = "thrown-axes", name = "Thrown Axes", reach = "ranged", attr = "might", damage = [7, 12], band = 2, price = 82 },
+  { id = "tinkers-arbalest", name = "Tinker's Arbalest", reach = "ranged", attr = "wits", damage = [8, 12], band = 2, price = 86 },
+  # Band 3.
+  { id = "shard-glaive", name = "Shard Glaive", reach = "melee", attr = "might", damage = [12, 19], band = 3, price = 162 },
+  { id = "mirror-axe", name = "Mirror Axe", reach = "melee", attr = "might", damage = [11, 18], band = 3, price = 158 },
+  { id = "lattice-foil", name = "Lattice Foil", reach = "melee", attr = "finesse", damage = [10, 17], band = 3, price = 154 },
+  { id = "prism-dagger", name = "Prism Dagger", reach = "melee", attr = "finesse", damage = [11, 16], band = 3, price = 152 },
+  { id = "choir-staff", name = "Choir Staff", reach = "melee", attr = "spirit", damage = [11, 17], band = 3, price = 158 },
+  { id = "facet-rod", name = "Facet Rod", reach = "melee", attr = "wits", damage = [10, 17], band = 3, price = 158 },
+  { id = "splinter-sling", name = "Splinter Sling", reach = "ranged", attr = "might", damage = [10, 15], band = 3, price = 160 },
+  { id = "lens-crossbow", name = "Lens Crossbow", reach = "ranged", attr = "wits", damage = [10, 16], band = 3, price = 168 },
+  # Band 4.
+  { id = "throne-maul", name = "Throne Maul", reach = "melee", attr = "might", damage = [16, 25], band = 4, price = 304 },
+  { id = "coal-halberd", name = "Coal Halberd", reach = "melee", attr = "might", damage = [15, 23], band = 4, price = 298 },
+  { id = "ember-estoc", name = "Ember Estoc", reach = "melee", attr = "finesse", damage = [14, 22], band = 4, price = 294 },
+  { id = "ashen-sabre", name = "Ashen Sabre", reach = "melee", attr = "finesse", damage = [15, 22], band = 4, price = 298 },
+  { id = "censer-of-kings", name = "Censer of Kings", reach = "melee", attr = "spirit", damage = [15, 23], band = 4, price = 300 },
+  { id = "sceptre-of-cinders", name = "Sceptre of Cinders", reach = "melee", attr = "wits", damage = [14, 23], band = 4, price = 298 },
+  { id = "hearth-javelins", name = "Hearth Javelins", reach = "ranged", attr = "might", damage = [13, 21], band = 4, price = 306 },
+  { id = "coal-arbalest", name = "Coal Arbalest", reach = "ranged", attr = "wits", damage = [13, 21], band = 4, price = 314 },
+  # Band 5.
+  { id = "coldsteel-glaive", name = "Coldsteel Glaive", reach = "melee", attr = "might", damage = [20, 31], band = 5 },
+  { id = "rime-cleaver", name = "Rime Cleaver", reach = "melee", attr = "might", damage = [21, 30], band = 5 },
+  { id = "frostline-stiletto", name = "Frostline Stiletto", reach = "melee", attr = "finesse", damage = [18, 28], band = 5 },
+  { id = "furnace-sabre", name = "Furnace Sabre", reach = "melee", attr = "finesse", damage = [19, 29], band = 5 },
+  { id = "coldsteel-censer", name = "Coldsteel Censer", reach = "melee", attr = "spirit", damage = [19, 29], band = 5 },
+  { id = "anvil-of-ash", name = "Anvil of Ash", reach = "melee", attr = "wits", damage = [19, 30], band = 5 },
+  { id = "rime-longbow", name = "Rime Longbow", reach = "ranged", attr = "finesse", damage = [17, 26], band = 5 },
+  { id = "coldsteel-arbalest", name = "Coldsteel Arbalest", reach = "ranged", attr = "wits", damage = [17, 27], band = 5 },
 ]
 
 armour = [
@@ -64,4 +111,45 @@ armour = [
   { id = "hearth-plate", name = "Hearth Plate", armor = 9, band = 4, price = 310 },
   { id = "coldsteel-plate", name = "Coldsteel Plate", armor = 11, band = 5 },
   { id = "furnace-mantle", name = "Furnace Mantle", armor = 10, band = 5 },
+
+  # More armour: light, medium and heavy, bands 1 to 5.
+  # Band 1.
+  { id = "hoodman-vest", name = "Hoodman's Vest", armor = 1, band = 1, price = 22 },
+  { id = "tallow-coat", name = "Tallow Coat", armor = 2, band = 1, price = 25 },
+  { id = "cellar-jerkin", name = "Cellar Jerkin", armor = 2, band = 1, price = 28 },
+  { id = "miners-brigandine", name = "Miner's Brigandine", armor = 3, band = 1, price = 38 },
+  { id = "pit-cuirass", name = "Pit Cuirass", armor = 3, band = 1, price = 42 },
+  { id = "wool-cassock", name = "Wool Cassock", armor = 1, band = 1, price = 20 },
+  { id = "tin-scale", name = "Tin Scale", armor = 3, band = 1, price = 40 },
+  # Band 2.
+  { id = "slag-leathers", name = "Slag Leathers", armor = 4, band = 2, price = 76 },
+  { id = "bellows-vest", name = "Bellows Vest", armor = 3, band = 2, price = 70 },
+  { id = "sootweave-robe", name = "Sootweave Robe", armor = 3, band = 2, price = 72 },
+  { id = "galleries-brigandine", name = "Galleries Brigandine", armor = 5, band = 2, price = 92 },
+  { id = "crucible-cuirass", name = "Crucible Cuirass", armor = 5, band = 2, price = 98 },
+  { id = "tallowed-cloak", name = "Tallowed Cloak", armor = 4, band = 2, price = 80 },
+  { id = "foundry-plate", name = "Foundry Plate", armor = 6, band = 2, price = 110 },
+  # Band 3.
+  { id = "glass-leathers", name = "Glass Leathers", armor = 5, band = 3, price = 140 },
+  { id = "prism-robe", name = "Prism Robe", armor = 5, band = 3, price = 146 },
+  { id = "lattice-mail", name = "Lattice Mail", armor = 6, band = 3, price = 160 },
+  { id = "mirrored-cuirass", name = "Mirrored Cuirass", armor = 7, band = 3, price = 184 },
+  { id = "facet-brigandine", name = "Facet Brigandine", armor = 7, band = 3, price = 176 },
+  { id = "choirmaster-cope", name = "Choirmaster's Cope", armor = 6, band = 3, price = 152 },
+  { id = "shardplate", name = "Shardplate", armor = 8, band = 3, price = 205 },
+  # Band 4.
+  { id = "ember-leathers", name = "Ember Leathers", armor = 7, band = 4, price = 262 },
+  { id = "kings-mantle", name = "King's Mantle", armor = 7, band = 4, price = 268 },
+  { id = "ashen-brigandine", name = "Ashen Brigandine", armor = 8, band = 4, price = 284 },
+  { id = "throne-cuirass", name = "Throne Cuirass", armor = 9, band = 4, price = 306 },
+  { id = "coal-scale", name = "Coal Scale", armor = 9, band = 4, price = 314 },
+  { id = "cinder-vestments", name = "Cinder Vestments", armor = 8, band = 4, price = 276 },
+  { id = "hearthguard-plate", name = "Hearthguard Plate", armor = 10, band = 4, price = 340 },
+  # Band 5.
+  { id = "rime-leathers", name = "Rime Leathers", armor = 9, band = 5 },
+  { id = "frostweave-robe", name = "Frostweave Robe", armor = 9, band = 5 },
+  { id = "furnace-brigandine", name = "Furnace Brigandine", armor = 10, band = 5 },
+  { id = "cold-scale", name = "Cold Scale", armor = 11, band = 5 },
+  { id = "smiths-last-apron", name = "Smith's Last Apron", armor = 10, band = 5 },
+  { id = "ashenglass-plate", name = "Ashenglass Plate", armor = 12, band = 5 },
 ]

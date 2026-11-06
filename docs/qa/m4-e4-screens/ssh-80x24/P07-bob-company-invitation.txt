@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Emberdeep                                                                     │
+│                                                                              │
+│◆ EMBERDEEP · The Company ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ bob L1 Warden │
+│who rides together   Coin 20  Salvage 0  Store 0  Turns 25/25                 │
+│╭ The Company ─────────────────────────────╮╭ Preview ───────────────────────╮│
+││You ride alone.                           ││Ride with founder               ││
+││founder invites you to ride with them.    ││You share the day's dealt-with  ││
+││                                          ││packs, and carry each other home││
+││                                          ││for a turn less and with no     ││
+││                                          ││wound.                          ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+│╰──────────────────────────────────────────╯╰────────────────────────────────╯│
+│[1] Accept founder's invitation  [2] Invite founder (level 1, wa…             │
+│[3] Close the door to invitatio…  [Esc] back                                  │
+└──────────────────────────────────────────────────────────────────────────────┘

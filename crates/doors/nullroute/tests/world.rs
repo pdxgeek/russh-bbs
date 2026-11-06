@@ -253,6 +253,7 @@ fn the_world_format_is_pinned_and_round_trips() {
             sig: 1031,
             uses: 9,
         }],
+        ..World::default()
     };
     let bytes = encode_world(&w);
     assert_eq!(
@@ -268,6 +269,13 @@ fn the_world_format_is_pinned_and_round_trips() {
             0x10, 0xe2, 0x04, 0, 5, 1, 2, 2, 150, 0, 0, 0, 0x23, 0x4e, 0, 0, 0, 0, 0, 0, 3, 0, 0,
             0, // season (version 2)
             1, 2, 0x07, 0x04, 9, // learned: count, corp, sig u16, uses (version 2)
+            0, // price history: none (version 3)
+            0, 0, 0, 0, // social: next id
+            0, 0, 0, 0, 0, // posted, orders, deliveries, bounties, deeds
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, // tallies: nine counters of 4 bytes
+            0, 0, // the finale: an empty name, not cracked
+            0, 0, 0, 0, // hall, pairs, crews, ops
         ]
     );
     assert_eq!(decode_world(&bytes), Some(w));
@@ -344,7 +352,7 @@ fn a_save_stays_far_under_the_framework_cap() {
     let mut p = Player::new(&c, 1, &"x".repeat(40), 1, 20_000);
     p.owned = (1..=27).collect();
     p.done = (0..48).collect();
-    assert!(encode(&p).len() < 512, "{}", encode(&p).len());
+    assert!(encode(&p).len() < 700, "{}", encode(&p).len());
     let mut w = World::default();
     for d in 0..30 {
         night(&mut w, d);

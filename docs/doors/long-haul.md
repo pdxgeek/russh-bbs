@@ -1,6 +1,6 @@
 # Long Haul: a space trade and exploration door (design)
 
-Status: **Proposed** design; slices **M4-L1 (the engine)** and **M4-L2 (crew, events, combat, jobs)** are implemented in `crates/doors/long-haul` and described under [Implementation notes (M4-L1)](#implementation-notes-m4-l1) and [Implementation notes (M4-L2)](#implementation-notes-m4-l2) at the end. Slice **M4-L3 (the UI)** is implemented too, described under [Implementation notes (M4-L3)](#implementation-notes-m4-l3). The social layer is not built. Shared platform rules are in [README.md](README.md).
+Status: **Implemented** (all four slices; the twelve crew backgrounds are the one item of the content budget not built); slices **M4-L1 (the engine)** and **M4-L2 (crew, events, combat, jobs)** are implemented in `crates/doors/long-haul` and described under [Implementation notes (M4-L1)](#implementation-notes-m4-l1) and [Implementation notes (M4-L2)](#implementation-notes-m4-l2) at the end. Slice **M4-L3 (the UI)** is implemented too, described under [Implementation notes (M4-L3)](#implementation-notes-m4-l3). Slice **M4-L4 (social, content and balance)** is implemented, described under [Implementation notes (M4-L4)](#implementation-notes-m4-l4): convoys, opt-in piracy, player outposts, six arcs, seasons and the balance pass. Shared platform rules are in [README.md](README.md).
 
 ## Pitch
 
@@ -90,9 +90,9 @@ The core tension: **fuel, time and debt.** Every jump burns fuel and days, the l
 
 ## Open questions
 
-- **Drive-days:** 10 per day?
-- **Piracy:** opt-in flagging, as described?
-- **Debt pressure:** keep the loan shark (pressure early, freedom later), or start debt-free?
+- **Drive-days:** 10 per day (settled, D103).
+- **Piracy:** opt-in flagging, **both sides** (settled, D142: stricter than described).
+- **Debt pressure:** the loan shark is kept (settled, D103).
 
 ## Implementation notes (M4-L1)
 
@@ -360,3 +360,102 @@ Colours are the theme's roles (`DoorStyle` through `DoorFrame::style`) plus thre
 * `cargo test -p russh-bbs-door-long-haul --test ui`: 19 scenes x 3 sizes x 2 tiers as stored snapshots (`tests/snapshots/`, rewrite with `UPDATE_SNAPSHOTS=1`), pure ASCII in the ASCII tier, Nerd Font equals Unicode, wide and tiny windows, a look-around for every screen, planning spends nothing, and a full trip by keys (see the test for what each leg does and where it injects a scene).
 * Walked over a real SSH server (`russh-bbs-server` with SQLite) from a russh client at 80x24, 100x30 and 132x43 in the Unicode tier with colour, through every screen above; the screenshots are in the pull request.
 * **Not exercised:** the OpenSSH client (none in this environment), telnet, a real terminal emulator's rendering of the ambiguous-width shapes (`▲ ● ○ ◆`), the Nerd Font tier on a real terminal.
+
+## Implementation notes (M4-L4)
+
+Slice M4-L4, branch `m4/long-haul-social`, decision D142 (the number is assigned at merge). Everything here is **Implemented and tested** unless it says otherwise; the last section lists what is not built or not verified. This is the last Long Haul slice: the social layer, the content budget, the balance pass and the season.
+
+### How players meet: through the world, one night apart
+
+A door cannot read another captain's save, so **nothing is live**. Every interaction is a change to the shared world (a `SocialDelta`, applied to the stored world with the framework's compare-and-swap), settled by the nightly tick as a pure function of the world and the day, and collected by each captain the next time they open the door, with a cursor in their own save so it counts once (`social.rs` is the world half, `socialplay.rs` the captain's half). Every list in the world has a cap and a clamp; a hostile or busy board cannot grow it (`tests/piracy.rs`). The world stays well under the framework's 256 KiB cap by construction.
+
+| System | What a captain does | What the night does | What the other captain gets, and when |
+|---|---|---|---|
+| **Opt-in piracy** | Raise the colours (`o`, Piracy, `f`): listed on a public roster with a snapshot of the ship (guns, hull, speed, infamy, renown, a worth band 0 to 4). Hunt another listed captain (`Enter`): costs a drive-day, leaves an *intent* in the world. | Settles each intent from the two snapshots: win chance `50 + 3 x (hunter strength - target strength)` clamped 15 to 85, then a third of the rest is *escaped* and the rest *repelled*. A target hit twice that day, or a pair that met in the last three days, makes it *void*. | The victim collects the report at their next open: a prize is `min(1,500, 8 % of their purse)`, hull damage, renown for driving a hunter off. The hunter is **paid exactly what the victim paid** (the victim's collection settles the raid in the world; the hunter collects it at their next open). A prize whose victim never returns within 14 days lapses; nobody is paid from nothing. |
+| **Convoys** | Form (a name from the tables), join a convoy with room (2 to 4 captains), post a quick note from the table or a line they type (`Ctx::player_text`: sanitized, one line, 140 characters, six a minute, five a day per captain). | Shares the pool among members who flew in the last three days; draws a night event for a convoy with two or more active members (6 events in `content/social.toml`, a third of nights); drops a member idle for ten days. | **Shared risk:** the other members' guns are the convoy's *guard*, which cuts a night event's hull loss and the weight of pirate events in transit (by up to four-tenths); **shared reward:** 5 % of each profit a member makes goes into the pool, and the night pays it out as dividends each member collects once. |
+| **Outposts** | After day 21 of a season, pledge 500 to 30,000 credits toward a station in a *charted system with none* (`o`, Outposts, `p`/`P`, in the system). | When a site has 12,000 credits pledged the tick opens a **station** there. More pledges (24,000 and 48,000 in all) or enough traffic raise it to level 2 and 3. | Everyone's map and market have it from then on: it is a real station appended after the generated ones (the generated map and `GEN_VERSION` do not change), with its own stock, prices and nightly recovery, a repair dock at level 2 and a shipyard at level 3. Pledges are spent for good. |
+| **Hall and seasons** | Nothing: records are posted for them each day (net worth, systems charted, infamy). | Keeps each category's best three. | The Hall tab shows this season and the last three. A new season carries the old world's hall forward (`World::successor`). |
+
+**Honest privacy.** Nothing on these screens is private. The server reads every roster entry, note and pledge, and the screen says so (`The server can read all of this`); other captains see what the screen shows them. Flagging is public, in both directions: an unflagged captain can never be hunted, whatever they carry (this is **stricter than the design**, which let a Free Captain stop an unflagged smuggler; the slice brief asked for both sides to opt in).
+
+**Caps that stop griefing.** Two hunts a day per captain, two hits a day on one target, a three-day cooldown per pair, colours must be up a day before hunting, a gun is needed, prizes at most 1,500 credits and 8 % of the purse, a captain cannot hunt their own convoy, a convoy is four captains, twelve convoys, forty-eight roster places and six pledge sites at a time.
+
+### Arcs and endings
+
+Six arcs (49 scenes: 10, 8, 8, 8, 7 and 8): **The Gate Song** (10 steps, the mystery of why the gates failed), and one for each faction (**The Long Patrol**, **The Deep Strike**, **The Black Ledger**, **The Blank Charts**, **The Quiet Vigil**). A scene is an ordinary transit event (`family = "arc"`, weight up to 2,000) that is *due* only for a captain at that step (`arc_at`), after a pause of real days (`arc_wait`), and often only in a place or with a standing (the first step of each). Choices set **branches** (`arc_branch`, up to 16 an arc) that open and close later options; every outcome of the last step ends the arc with an **ending** (25 across the six arcs). The scenes are appended to the event table after `transit.toml`; **an open scene is saved as an index, so append new events only at the end of `arcs.toml`**.
+
+The schema refuses dead content: steps must be contiguous 6 to 10, every non-final outcome advances or ends, every final outcome ends, every declared branch must be both set and tested, and every ending must be reachable (`ArcTable::validate`, `arcs::link_problems`). `tests/arcs.rs` plays every arc 3,000 times for builds that differ in crew, skills, standing, cash and scanner, with a random policy over the options the captain may take, and requires **every ending and every branch of all six arcs to happen**.
+
+The Gate Song has five endings, **The Gates Open**, **The Lock Holds**, **The Loom Burns**, **One Hand on the Key** and **You Walk Away**; the first four set `gates = true` and tell the whole board (`SocialDelta::Gates`, shown on the Hall tab). The framework's season is ended by staff (`end_season`), so the gates do not end the season themselves: the world records them and the board shows it.
+
+### Seasons
+
+On the first visit of a new season, a captain whose save is from the last one is **read against the old season's map and outposts** and becomes a *legacy*: a finished arc's ending counts first (the gates arc before the others), otherwise one of seven season endings (**Tycoon**, **Solvent**, **Pirate King**, **Folk Hero**, **Cartographer**, **Bankrupt**, **Drifter**, from net worth, infamy, renown, systems charted and repossessions). The new captain starts fresh with **one heirloom module**, the dearest the last captain carried, fitted in a free slot or in place of a cheaper module of its kind; the Journal tab keeps the last six seasons. Save format 3 and world format 2 (below).
+
+### Formats and migrations
+
+| What | Version | Change | Tested |
+|---|---|---|---|
+| Player save | 2 to 3 | The ledger gains three causes (Piracy, Convoy, Outpost) and a social section (colours, infamy, renown, cursors, convoy, notes, pledges, arc progress, legacy, heirloom). `Player::migrate_v2` appends zeros and an empty section; the whole chain 1 to 3 also works. | A frozen format-2 save (`L2_SAVE`) migrates, decodes to the same captain and a truncated tail is refused. |
+| World | 1 to 2 | A social section after the header (born day, outposts, sites, convoys, roster, intents, raids, records, past seasons, gates), and stock rows for every station including outposts. `World::migrate_v1` inserts an empty section. | A format-1 world derived from today's bytes migrates to the same world. |
+
+### Content, against the launch budget
+
+| | Budget | Now | Note |
+|---|---|---|---|
+| Goods, economies, hulls | 30, 6, 4 | 30, 6, 4 | unchanged |
+| News event types | 20 | 20 | six appended (raids, flares, relics, amnesty, a skim glut, frost) |
+| Modules | 50 | 50 | thirty appended: drive, cargo, tank, scanner, weapon, shield, cabin, refinery and lab grades |
+| Transit events | 120 | 120 (+ 49 arc scenes) | sixty appended in all eleven families |
+| Derelict layouts | 40 | 40 | thirty-one appended |
+| Pirate and authority ship types | 15 | 15 | six appended: marauder, blockade runner, picket, customs hawk, Union marshal, gate warden |
+| Arcs | 6 (about 45 steps) | 6 (49 steps), 25 endings | |
+| Crew backgrounds | 12 | **not built** | the design lists twelve; the crew table has name parts, goals and roles but no background table. Twelve one-line backstories were written but the schema change and the recruit screen line are not done. |
+
+Every table is append-only by index: `tests/content.rs` pins the counts and `tests/events.rs` and `tests/saves.rs` carry the index promises (an open scene stores an event's position).
+
+### Balance: the five open questions, with numbers
+
+All numbers are medians of final net worth in credits, from the same harness before this slice (main at `02326bc`) and after it. The 60-day trade harness (`tests/sim.rs`, `balance_report`) is run over eight seasons so one lucky seed cannot decide; the crew harness (`tests/sim_crew.rs`, `balance_report`) over six. Run them with `cargo test -p russh-bbs-door-long-haul --test sim balance_report -- --ignored --nocapture` (and `--test sim_crew`).
+
+| Question | Before | After | What was done, and the finding |
+|---|---|---|---|
+| **Informed bots plateau after day 20** | day 20: 16,312; day 60: 40,552 (growth 24,240) | day 20: 18,916; day 60: 40,404 (growth 21,488) | **Not reproduced.** Over eight seasons the informed median keeps growing; the plateau in L1's table was one seed (2024). The gap to the oracle bots (about 2.5 times, 101,934 against 40,404) fits stale memory (the oracle bots see live prices at every station) and is what the information game is meant to cost; **market saturation was not separated from it** (that would take a run with fewer informed bots, which was not done). Nothing was tuned. |
+| **Explorers lose money** | day 20: 4,100; day 60: 232; median final -3,559; 11 of 16 below zero | day 20: 13,969; day 60: 17,333; median final 11,474; 4 of 16 below zero | Exploring had one income (survey data, a finite pool, sold in a lump). The Guild now pays the **first** captain to chart a system a **charter fee on the spot** (400 plus 200 a point of richness) and a deep scan of a charted system pays **half** a first survey (was a third). An explorer is now a working career that earns about 40 % of what a careful trader does. |
+| **Smugglers are bimodal** | 25th percentile 4,295, median 48,989, minimum -48,398; 5 of 24 below zero | 25th percentile 41,307, median 55,935, minimum -30,415; 4 of 24 below zero | The bad runs were not seizures; they were a captain **repossessed** with the loan still whole and a fee on top, a spiral. The lender now **auctions** the ship (60 % of its resale off the loan before the fee), and a haven **warms to legal trade twice as fast** (a navy washout was locked out of the black market for most of a season). The bottom of the spread rose by 37,000; it is still a risky career (4 in 24 end in debt). |
+| **Combat pays less than jobs** | hunters: 25,842 from jobs, 457 loot, median -2,187 | hunters: 33,113 from jobs, 1,037 loot, median 4,253 | A wrecked pirate now earns the patrol offices' **bounty, 14 credits a hull point** (a raider about 630), and a shot does `power x points / 2` (was `/ 3`). **Not solved:** loot is still a thirtieth of job income because a single lance rarely wins: in `tests/combat_rate.rs` (a plain policy, `--ignored`) a starter lance and shield wins a third of fights against a skiff and almost none against a raider or corsair, and a gunner helps a lot against a raider (0 to 9 in 30). Combat is a late-game career that needs a better ship and crew; the early game should not pretend otherwise. One hunter in six seasons still ends in a tow loop (the worst minimum, -202,931, is a bot that never refuels), which is the bot and not the rule. |
+| **An unarmed lone captain bleeds** | loner: median -7,298; 83.5 tows a captain; minimum -190,094 | loner: median 9,324; 4.0 tows; minimum -17,429 | A stranded ship was towed to a dock with an **empty tank** and so was towed again, each tow added to the loan. The tug now **leaves 14 fuel** (the fee covers it). The loner no longer bleeds; it earns a third of what a crewed hauler does, which is the price of having no engineer or pilot. |
+
+Two side effects the numbers show: flailing (random actions) now loses about half as much (median -18,522, was -37,032) because of the auction, and the crews that are ignored still leave faster than the ones cared for (guard rail margin lowered from 0.10 to 0.05 hands a hire).
+
+### The season simulation
+
+`tests/sim.rs`, `simulate_season` (a non-ignored guard-rail test, and `season_report` to print the numbers): 21 captains for 56 days (eight weeks) on one shared frontier with the nightly tick, in styles: 6 solo traders, 4 in two convoys (each armed), 2 pirates (armed, flagged, hunting the richest flagged captain), 2 flagged traders, 3 smugglers, 2 explorers, 2 patrons (oracle traders who put 8,000 credits a time into an outpost once they can afford it, carried to the site because travel is not what is measured), 2 random flailers; the solo, convoy and explorer styles play every arc scene they meet. It checks, every day for every captain, that the ledger balances and the purse is never negative, and at the end: prices stay in 0.7 to 1.8 of base and every price in 0.4 to 3.0; a prize taken never exceeds what victims paid; convoys pay dividends; outposts open and carry traffic; the season ends in at least three different ways; arcs were played.
+
+Two seasons of the report (`season_report`, seeds 1 and 2), net worth medians by style at days 0, 24 and 56:
+
+| Style | Seed 1 | Seed 2 |
+|---|---|---|
+| Solo trader | -2,950, 750, 6,643 | -2,950, 8,811, 31,870 |
+| Convoy trader | -1,450, 7,347, 724 | -1,450, 12,229, 35,111 |
+| Pirate | 250, -6,089, 2,226 | 250, 32,399, 72,010 |
+| Flagged trader | -2,950, 61, -11,497 | -2,950, -2,383, -11,626 |
+| Smuggler | -5,550, -13,573, -25,420 | -5,550, 12,085, -140 |
+| Explorer | -1,000, 1,171, -6,313 | -1,000, 12,980, 29,384 |
+| Patron | -2,950, 33,216, 52,710 | -2,950, 34,383, 43,001 |
+| Random | -2,950, -10,486, -15,654 | -2,950, -11,389, -16,345 |
+
+* **Price stability:** the mean price level stayed between 1,072 and 1,091 per-mille of base in both seasons (the band is 800 to 1,500); the lowest price 400, the highest 3,000, at the walls and never beyond.
+* **Outposts:** the first opened on day 35 (the patrons' third pledge after day 21) and carried 175 to 713 tons by day 42; one to two by day 56 at level 2 to 3, trading 645 to 1,603 tons. Each is a real market with its own recovery.
+* **Piracy:** a handful of raids a season (0 to 6: seed 1 had none settle, seed 2 had 4 raided, 1 repelled, 1 escaped): the credits pirates received equalled what the victims paid to the credit (1,357 and 1,487). Piracy here is a small transfer between the flagged, as designed, not an economy. The pirate that wins early compounds (72,010 in seed 2); the flagged traders who do not hunt only lose (they are targets).
+* **Convoys:** both convoys lived to the end; 9,033 and 12,222 credits went into the pool and 11,766 and 16,508 came out as dividends (night windfalls add and tolls take). A convoy trader is not richer than a solo trader in these runs: the benefit is the guard and the pool, not a profit multiplier.
+* **Endings:** seed 1 ended in 5 kinds (a settlement, Tycoon, Solvent, Bankrupt, Drifter), seed 2 in 9 (the gates' One Hand on the Key and You Walk Away, three faction endings, Tycoon, Solvent, Bankrupt, Drifter). Branch bits seen by random play in one season are partial (seed 2: [484, 119, 59, 28, 0, 7]); the full coverage is the replay test, below.
+* **The sample is small and noisy.** Twenty-one captains and two seeds are a smoke test of the machinery, not a measurement of balance: the smugglers' -25,420 in seed 1 against -140 in seed 2 is the same spread the 8-season harness shows. The trade harness's eight seasons are the evidence for the balance table.
+
+### Verified, and not
+
+* **Tests** (`cargo test -p russh-bbs-door-long-haul`): the L1 to L3 suites (updated where the balance rules moved, each change named in the PR) plus `tests/social.rs` (5: a convoy through the real store with dividends collected once, a typed line sanitized and capped, piracy needing both sides with money in equal to money out over six pairs, an outpost funded late and docked at, a season end with a legacy, an heirloom and a carried hall), `tests/piracy.rs` (8: opt-in enforcement, every cap and cooldown, every list bounded, the guard cutting pirate events, convoy and outpost rules), `tests/arcs.rs` (3: every ending and branch of the six arcs is reached by 3,000 plays each, an arc scene wins the draw, pacing), `tests/index.rs` (2: every table addressed by index is append-only), `tests/saves.rs` (a frozen format-2 save and a format-1 world migrate), the schema tests (the content budget is pinned), the snapshot of the five society tabs at three sizes in two tiers, the framework's sandbox audit, `tests/sim.rs` (adds the season run) and `tests/combat_rate.rs` (a report).
+* **A walk with the OpenSSH client**, two accounts on one board, at 80x24 and 132x43, with screenshots: [qa/m4-l4-walk.md](../qa/m4-l4-walk.md). It covered a convoy with notes and a typed line, the colours, the idle rule, an outpost from a pledge to a market someone docked at, and the Hall.
+* **Not exercised:** a hunt and its report over ssh (store tests and the simulation only); telnet; Postgres (the door touches the store only through the framework's tested save API); more than two live accounts; a real midnight on a long-lived server (the walk moved the clock); a Nerd Font terminal; the Journal with an arc under way over ssh.
+* **Not built:** the **twelve crew backgrounds** of the content budget (twelve one-line backstories exist, but the crew table has no background field and the recruit line does not show one; this is a schema and a screen, left for a follow-up); outpost backers' perks (the pledgers are listed, they get nothing yet); the heat overlay for one good; a negotiation round in combat.
+* **Limits worth knowing:** a hunt is settled by a night, not live (D142 (1)); a prize is lost if its victim never returns (14 days); an outpost needs 12,000 credits pledged and so needs several captains or a rich one; the walk's founder had to borrow to pledge; convoy members who have not flown for ten days are dropped; the arcs are hand-written scenes, each played once per season per captain (a season's endings are kept as a legacy and never replayed); the world's day can lag the clock after a long downtime (the tick's catch-up cap is seven days).

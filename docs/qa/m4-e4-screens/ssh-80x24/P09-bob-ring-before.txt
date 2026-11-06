@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Emberdeep                                                                     │
+│                                                                              │
+│◆ EMBERDEEP · The Duel Ring ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ bob L1 Warden │
+│opt-in, capped, never lethal   Coin 20  Salvage 0  Store 0  Turns 25/25       │
+│╭ The Duel Ring ───────────────────────────╮╭ Preview ───────────────────────╮│
+││Non-lethal duels against another hero's   ││Step in                         ││
+││last known strength. Stakes of            ││The ring is opt-in. In the ring,││
+││0, 5, 20 or 50 coin: a win returns your   ││others may call you out up to   ││
+││stake and half again, a loss              ││three times a day; out of it, no││
+││goes to the town works. The loser carries ││one can.                        ││
+││a bruise for a day.                       ││                                ││
+││You are not in the ring: no one can call  ││                                ││
+││you out, and you cannot call              ││                                ││
+││anyone.                                   ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+││                                          ││                                ││
+│╰──────────────────────────────────────────╯╰────────────────────────────────╯│
+│[1] Step into the ring (opt in)  [Esc] back                                   │
+└──────────────────────────────────────────────────────────────────────────────┘

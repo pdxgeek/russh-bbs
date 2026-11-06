@@ -25,7 +25,12 @@ fn an_e1_save_is_not_a_version_two_save_until_it_is_migrated() {
         Game::decode(&bytes).is_none(),
         "version 1 lacks the town section"
     );
-    let up = crate::save::upgrade_v1(&bytes).expect("a real E1 save migrates");
+    let v2 = crate::save::upgrade_v1(&bytes).expect("a real E1 save migrates");
+    assert!(
+        Game::decode(&v2).is_none(),
+        "version 2 lacks the story section"
+    );
+    let up = crate::save::upgrade_v2(&v2).expect("and so does version 2");
     let g = Game::decode(&up).expect("and then reads");
     // Everything E1 wrote is still there...
     assert_eq!(g.hero.name, "Tester");
@@ -55,8 +60,11 @@ fn an_e1_save_is_not_a_version_two_save_until_it_is_migrated() {
 fn an_e1_world_migrates_with_its_shortcuts_hall_and_news_and_no_pledges() {
     let bytes = unhex(V1_WORLD);
     assert!(World::decode(&bytes).is_none());
-    let up = crate::world::upgrade_v1(&bytes).expect("migrates");
+    let v2 = crate::world::upgrade_v1(&bytes).expect("migrates");
+    assert!(World::decode(&v2).is_none(), "version 2 lacks the commons");
+    let up = crate::world::upgrade_v2(&v2).expect("migrates again");
     let w = World::decode(&up).expect("reads");
+    assert!(w.commons.parties.is_empty() && w.commons.roster.is_empty());
     assert_eq!(w.shortcuts, vec![(3, crate::content::ShortcutKind::Lift)]);
     assert_eq!(w.deepest, vec![("Ada".to_owned(), 4)]);
     assert_eq!(w.day, 20_000);
@@ -81,9 +89,12 @@ fn damaged_version_one_blobs_are_refused_by_the_migration() {
 fn the_door_migrates_version_one_and_nothing_else() {
     use russh_bbs_door::{BlobKind, Door, MigrateError};
     let door = crate::Emberdeep::new().unwrap();
-    let up = door.migrate(BlobKind::Save, 1, &unhex(V1_HERO)).unwrap();
-    assert_eq!(up, crate::save::upgrade_v1(&unhex(V1_HERO)).unwrap());
-    let w = door.migrate(BlobKind::World, 1, &unhex(V1_WORLD)).unwrap();
+    let v2 = door.migrate(BlobKind::Save, 1, &unhex(V1_HERO)).unwrap();
+    assert_eq!(v2, crate::save::upgrade_v1(&unhex(V1_HERO)).unwrap());
+    let up = door.migrate(BlobKind::Save, 2, &v2).unwrap();
+    assert!(Game::decode(&up).is_some());
+    let w2 = door.migrate(BlobKind::World, 1, &unhex(V1_WORLD)).unwrap();
+    let w = door.migrate(BlobKind::World, 2, &w2).unwrap();
     assert!(World::decode(&w).is_some());
     assert_eq!(
         door.migrate(BlobKind::Save, 1, &[1, 2, 3]),
@@ -91,12 +102,16 @@ fn the_door_migrates_version_one_and_nothing_else() {
     );
     assert_eq!(
         door.migrate(BlobKind::Save, 2, &[]),
-        Err(MigrateError::Unsupported(2))
+        Err(MigrateError::Corrupt(2))
+    );
+    assert_eq!(
+        door.migrate(BlobKind::Save, 3, &[]),
+        Err(MigrateError::Unsupported(3))
     );
     assert_eq!(
         door.migrate(BlobKind::World, 0, &[]),
         Err(MigrateError::Unsupported(0))
     );
-    assert_eq!(door.info().save_version, 2);
-    assert_eq!(door.info().world_version, 2);
+    assert_eq!(door.info().save_version, 3);
+    assert_eq!(door.info().world_version, 3);
 }

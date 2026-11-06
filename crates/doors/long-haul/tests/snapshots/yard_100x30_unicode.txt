@@ -9,15 +9,15 @@
 │  Buy  Cartographer's Array (scanner)                           -16,000 │
 │  Buy  Crew Cabin (cabin)                                        -1,500 │
 │  Buy  Skimmer Refinery (refinery)                               -4,500 │
-│  Hull Wren-class courier                                         3,000 │
-│  Hull Pick-class prospector                                     -9,000 │
-│  Hull Talon-class gunship                                      -18,000 │
-│  Sell Ion Drive Mk1 (wear 0%)                                    1,750 │
-│  Sell Cargo Pod (wear 0%)                                          900 │
-│  Sell Fuel Tank (wear 0%)                                          600 │
-│  Sell Pulse Lance (wear 0%)                                      1,500 │
-│  Sell Deflector Plate (wear 0%)                                  1,600 │
-│                                                                        │
-│                                                                        │
+│  Buy  Salvage Pod (cargo)                                         -900 │
+│  Buy  Flatbed Rack (cargo)                                      -2,900 │
+│  Buy  Cold Hold (cargo)                                         -5,800 │
+│  Buy  Mega Pod (cargo)                                          -9,000 │
+│  Buy  Jerry Cans (tank)                                           -500 │
+│  Buy  Slim Tank (tank)                                          -1,800 │
+│  Buy  Reserve Cell (tank)                                       -4,000 │
+│  Buy  Cryo Tank (tank)                                          -6,800 │
+│  Buy  Hand Scanner (scanner)                                    -1,300 │
+│  Buy  Prospector's Sweep (scanner)                              -5,600 │
 ╰────────────────────────────────────────────────────────────────────────╯
 [arrows] choose  [Enter] do it  [Esc] back

@@ -1,0 +1,101 @@
+# Tidecourt quest chains, part B. Each step is done when the clan holds its mark; the scenes in
+# events-quests-b.toml set the marks. The ends are alternative conclusions: holding one closes the rest.
+
+[[quest]]
+id = "toll-inquiry"
+faction = "court"
+title = "The Toll Inquiry"
+intro = "A clan on the old causeway road is said to charge travellers for every plank. The Court sends a clerk, Ansel Pike, to ask. He needs people who can walk the road without being noticed, and a ledger nobody has tampered with."
+[[quest.step]]
+mark = "q-toll-inquiry-1"
+text = "Take Clerk Pike's commission and look at the toll board."
+[[quest.step]]
+mark = "q-toll-inquiry-2"
+text = "Gather the travellers' tales of the toll."
+[[quest.step]]
+mark = "q-toll-inquiry-3"
+text = "Put the tales before Inspector Hesper Voll."
+[[quest.end]]
+mark = "q-toll-inquiry-end-law"
+text = "You backed a toll law. The harbourmaster pays, and the Reed-folk grumble."
+[[quest.end]]
+mark = "q-toll-inquiry-end-builders"
+text = "You sided with the causeway-builders. The Court's judgement stands undone."
+[[quest.end]]
+mark = "q-toll-inquiry-end-bribe"
+text = "You took the inspector's coin. It has not stopped being owed."
+
+[[quest]]
+id = "sealed-cargo"
+faction = "court"
+title = "The Sealed Cargo"
+intro = "A Court clerk, Odalys Marr, will pay well to have a crate carried to a hermit on the far marsh. It is sealed with a heron stamp in grey wax. She would like it to arrive exactly as it is."
+[[quest.step]]
+mark = "q-sealed-cargo-1"
+text = "Take the heron-sealed crate from Clerk Marr."
+[[quest.step]]
+mark = "q-sealed-cargo-2"
+text = "Turn away the man in good boots who wants to look inside."
+[[quest.step]]
+mark = "q-sealed-cargo-3"
+text = "Carry the crate through the far reeds."
+[[quest.end]]
+mark = "q-sealed-cargo-end-deliver"
+text = "You delivered the crate unopened. The hermit pays, and keeps paying."
+[[quest.end]]
+mark = "q-sealed-cargo-end-open"
+text = "You opened the crate and kept what was in it. The seal does not stay broken quietly."
+[[quest.end]]
+mark = "q-sealed-cargo-end-sell"
+text = "You sold the crate back to the clerk's rival, Silas Quill."
+
+[[quest]]
+id = "drowned-assize"
+faction = "court"
+title = "The Drowned Assize"
+intro = "The old Tidecourt kept its assize rolls in a town the sea has since taken. Registrar Mabry Teal wants them found. She is not the only one who has asked, and the rolls say who owned what before the water came."
+[[quest.step]]
+mark = "q-drowned-assize-1"
+text = "Take the registrar's commission and her red-tape tube."
+[[quest.step]]
+mark = "q-drowned-assize-2"
+text = "Find the stair down to the flooded court."
+[[quest.step]]
+mark = "q-drowned-assize-3"
+text = "Bring the rolls up out of the cellar."
+[[quest.step]]
+mark = "q-drowned-assize-4"
+text = "Read what the rolls say, and decide who should hold them."
+[[quest.end]]
+mark = "q-drowned-assize-end-restore"
+text = "You restored the rolls to the Tidecourt. The assize sits again."
+[[quest.end]]
+mark = "q-drowned-assize-end-burn"
+text = "You burned the rolls for the Reed-folk. The old claims went up in the smoke."
+[[quest.end]]
+mark = "q-drowned-assize-end-sell"
+text = "You sold the rolls to the Rakers' Guild."
+
+[[quest]]
+id = "dredgers-oath"
+faction = "court"
+title = "The Dredgers' Oath"
+intro = "Captain Ruan Dray's dredge-barge, the Patient Mule, lies aground near the Tidecourt. If the clan guards her at night and finds the sunk dredge-head, the dredgers swear to clear the channels. The eels have views."
+[[quest.step]]
+mark = "q-dredgers-oath-1"
+text = "Hear Captain Dray's oath and take the barge's watch."
+[[quest.step]]
+mark = "q-dredgers-oath-2"
+text = "Guard the Patient Mule through a night."
+[[quest.step]]
+mark = "q-dredgers-oath-3"
+text = "Find the sunk dredge-head."
+[[quest.end]]
+mark = "q-dredgers-oath-end-dredge"
+text = "You saw the dredging finished. The channels by the Tidecourt can be walked."
+[[quest.end]]
+mark = "q-dredgers-oath-end-refuse"
+text = "You refused the work. The eels' water stays as it was."
+[[quest.end]]
+mark = "q-dredgers-oath-end-sabotage"
+text = "You wrecked the barge for a rival. Captain Dray knows who."

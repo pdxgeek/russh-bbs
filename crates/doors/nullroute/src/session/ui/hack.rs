@@ -255,6 +255,36 @@ fn here(pen: &mut Pen<'_, '_>, s: &Session, a: &Active, rect: Rect) {
             Span::styled(format!("{} d{}", v.kind, v.depth), pen.ink.dim),
         ]));
     }
+    if let Some(link) = &a.crew {
+        for (node, ch, name) in super::super::social::mates(link) {
+            let at = run
+                .net()
+                .nodes
+                .get(usize::from(node))
+                .map_or("?", |n| n.name.as_str());
+            lines.push(Line::styled(
+                format!("{ch} {name} at {at}"),
+                fg(super::VIOLET),
+            ));
+        }
+        if let Some((awake, down)) = link.live.warden_state() {
+            let word = if down {
+                "crew warden down"
+            } else if awake {
+                "CREW WARDEN HUNTING"
+            } else {
+                "a warden sleeps"
+            };
+            lines.push(Line::styled(
+                word,
+                if awake && !down {
+                    bold(RED)
+                } else {
+                    pen.ink.dim
+                },
+            ));
+        }
+    }
     let exits = run.exits();
     if exits.is_empty() {
         lines.push(Line::styled(
@@ -337,8 +367,23 @@ pub(super) fn draw(pen: &mut Pen<'_, '_>, s: &Session, a: &Active, area: Rect) {
             .map(|sc| format!("Aim {}: pick the node (1-9), Esc cancels", sc.name))
     });
     let pulse = u32::try_from(a.feed.rows.len()).unwrap_or(0) + run.trace;
+    let mate_list: Vec<(u8, char)> = a
+        .crew
+        .as_ref()
+        .map(|l| {
+            super::super::social::mates(l)
+                .into_iter()
+                .map(|(n, ch, _)| (n, ch))
+                .collect()
+        })
+        .unwrap_or_default();
     let map = |pen: &mut Pen<'_, '_>, rect: Rect, compact: bool| {
-        let inner = pen.panel(rect, "NODE MAP", CYAN);
+        let title = if a.crew.is_some() {
+            "CREW MAP"
+        } else {
+            "NODE MAP"
+        };
+        let inner = pen.panel(rect, title, CYAN);
         let ascii = pen.ascii;
         pen.f.render_widget(
             MapView {
@@ -347,6 +392,7 @@ pub(super) fn draw(pen: &mut Pen<'_, '_>, s: &Session, a: &Active, area: Rect) {
                 ascii,
                 pulse,
                 compact,
+                mates: &mate_list,
             },
             inner,
         );

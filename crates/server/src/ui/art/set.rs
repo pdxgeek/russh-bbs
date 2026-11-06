@@ -18,6 +18,7 @@ use std::fs;
 use std::io::Read;
 use std::path::Path;
 
+use russh_bbs_core::sanitize::SingleLine;
 use russh_bbs_core::terminal_settings::ThemeName;
 use tracing::warn;
 
@@ -38,6 +39,24 @@ pub struct Problem {
     /// What was wrong.
     pub reason: String,
 }
+
+impl Problem {
+    /// Both fields come from the sysop's file system (a file name, an error that may quote
+    /// file text) and are drawn on the theme preview, so they pass the shared sanitizer here.
+    fn new(file: &str, reason: &str) -> Self {
+        Self {
+            file: SingleLine::new(MAX_PROBLEM_CHARS)
+                .sanitize(file)
+                .into_string(),
+            reason: SingleLine::new(MAX_PROBLEM_CHARS)
+                .sanitize(reason)
+                .into_string(),
+        }
+    }
+}
+
+/// Longest file name or reason kept in a [`Problem`].
+const MAX_PROBLEM_CHARS: usize = 200;
 
 /// Every piece the board can draw.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
@@ -93,10 +112,10 @@ impl ArtSet {
             };
             if seen >= MAX_FILES {
                 warn!(dir = %dir.display(), limit = MAX_FILES, "too many art files; the rest are ignored");
-                self.problems.push(Problem {
-                    file: name,
-                    reason: format!("more than {MAX_FILES} files; ignored"),
-                });
+                self.problems.push(Problem::new(
+                    &name,
+                    &format!("more than {MAX_FILES} files; ignored"),
+                ));
                 break;
             }
             match load(path, &name, kind) {
@@ -106,10 +125,7 @@ impl ArtSet {
                 }
                 Err(error) => {
                     warn!(file = %path.display(), %error, "art refused; the bundled art stays");
-                    self.problems.push(Problem {
-                        file: name,
-                        reason: error.to_string(),
-                    });
+                    self.problems.push(Problem::new(&name, &error.to_string()));
                 }
             }
         }

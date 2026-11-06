@@ -6,6 +6,7 @@
 use russh_bbs_door::DoorRng;
 
 use crate::combat::{Fight, FightAct};
+use crate::company::SocialAct;
 use crate::content::{Attr, Content, Gain, Intent, RoomKind, RoomOption, Weapon};
 use crate::dungeon::{self, Dir, Level};
 use crate::hero::{Derived, Hero, derive, fatigue_steps, modifier};
@@ -13,6 +14,7 @@ use crate::rules::{
     BASE_CARRY, DEPTH_MAX, NIGHT_BELOW_TURNS, RECOVERY_DAYS, RESCUE_TURNS, REST_TURNS,
     TURNS_PER_DAY,
 };
+use crate::social::SocialChange;
 use crate::town::TownAct;
 use crate::world::{Change, Fallen, World};
 
@@ -96,6 +98,10 @@ pub(crate) struct Today {
     pub(crate) tips: Vec<u8>,
     /// Thrown out of the dice game for the night.
     pub(crate) shut_out: bool,
+    /// Challenges made in the duel ring today.
+    pub(crate) bouts: u8,
+    /// Whom the hero has already fought today.
+    pub(crate) sparred: Vec<String>,
 }
 
 impl Today {
@@ -141,6 +147,8 @@ pub(crate) enum OptionWhat {
     Disarm,
     /// Carry a fallen hero home.
     Rescue(String),
+    /// The dungeon event's option, by index.
+    Event(usize),
 }
 
 /// A thing the hero can try to do.
@@ -163,6 +171,8 @@ pub(crate) enum Action {
     Fight(FightAct),
     /// Something in the town's places.
     Town(TownAct),
+    /// Something about other heroes, a questline or the Furnace's verdict.
+    Social(SocialAct),
 }
 
 /// One hero's whole game.
@@ -185,6 +195,9 @@ pub(crate) struct Game {
     /// World changes not yet handed to the board (not saved).
     pub(crate) changes: Vec<Change>,
 }
+
+/// Event options are remembered as spent at this offset in the room's option index.
+const EVENT_SPENT: u8 = 100;
 
 pub(crate) fn say(ev: &mut Vec<Event>, tone: Tone, text: impl Into<String>) {
     ev.push(Event::Say(tone, text.into()));
@@ -282,7 +295,7 @@ impl Game {
         }
     }
 
-    fn spend(&mut self, turns: u32) -> Result<(), Refused> {
+    pub(crate) fn spend(&mut self, turns: u32) -> Result<(), Refused> {
         if self.hero.turns < turns {
             return Err(Refused::new("You do not have enough torch-turns left."));
         }
@@ -413,21 +426,51 @@ impl Game {
     }
 
     fn dead_morning(&mut self, content: &Content, today: i64, since: i64, ev: &mut Vec<Event>) {
-        let rescued = self
+        let carried = self
             .world
             .fallen_of(&self.hero.name, today)
-            .is_some_and(|f| f.rescued_by.is_some());
-        if rescued {
+            .and_then(|f| f.rescued_by.clone().map(|by| (by, f.depth)));
+        if let Some((by, depth)) = carried {
             self.place = Place::Town;
-            self.hero.inflict(content, "dragged-home");
+            self.hero.social.rescued = self.hero.social.rescued.saturating_add(1);
+            let family = self.world.commons.companions(&self.hero.name, &by);
             let d = self.derived(content);
-            self.hero.hp = d.max_hp / 2;
-            self.hero.fatigue = 60;
-            say(
-                ev,
-                Tone::Good,
-                "Someone found you in the dark and carried you home. Your gear and your pack came with you.",
-            );
+            if family {
+                // A companion carries you with care: no wound, and you wake on your feet.
+                self.hero.hp = d.max_hp * 3 / 4;
+                self.hero.fatigue = 30;
+                say(
+                    ev,
+                    Tone::Good,
+                    format!(
+                        "{by}, of your company, carried you home. Your gear and your pack came with you."
+                    ),
+                );
+            } else {
+                self.hero.inflict(content, "dragged-home");
+                let d = self.derived(content);
+                self.hero.hp = d.max_hp / 2;
+                self.hero.fatigue = 60;
+                say(
+                    ev,
+                    Tone::Good,
+                    "Someone found you in the dark and carried you home. Your gear and your pack came with you.",
+                );
+                // The rescued hero thanks the rescuer out of their own purse; the note is
+                // paid when the rescuer next opens the door.
+                let thanks = (self.hero.coin / 5).min(10 + 3 * u32::from(depth));
+                if thanks > 0 {
+                    self.hero.coin -= thanks;
+                    let note =
+                        crate::social::Commons::thanks_note(&self.hero.name, &by, today, thanks);
+                    self.emit(Change::Social(SocialChange::Note(note)));
+                    say(
+                        ev,
+                        Tone::Dim,
+                        format!("You send {by} {thanks} coin in thanks."),
+                    );
+                }
+            }
         } else if today - since >= RECOVERY_DAYS {
             self.wake_in_temple(content, ev);
         } else {
@@ -441,6 +484,9 @@ impl Game {
     }
 
     fn wake_in_temple(&mut self, content: &Content, ev: &mut Vec<Event>) {
+        if let Place::Dead { depth, .. } = self.place {
+            self.post_epitaph(depth);
+        }
         self.place = Place::Town;
         let kept = self.town_fx(content).reliquary.then(|| {
             (
@@ -481,10 +527,10 @@ impl Game {
         };
         let depth = level.depth;
         match r.kind {
-            RoomKind::Lair => !self.today.is_cleared(depth, room),
+            RoomKind::Lair => !self.pack_cleared(depth, room),
             RoomKind::Guardian => {
                 !self.world.is_slain(dungeon::band_of(depth))
-                    && !self.today.is_cleared(depth, room)
+                    && !self.pack_cleared(depth, room)
                     && content
                         .guardian(u32::from(dungeon::band_of(depth)))
                         .is_some()
@@ -514,7 +560,7 @@ impl Game {
             }
             // A cleared room has nothing left to fight, sneak past or stare down.
             let about_the_pack = o.ok.iter().any(|g| matches!(g, Gain::Fight | Gain::Clear));
-            if about_the_pack && self.today.is_cleared(depth, room) {
+            if about_the_pack && self.pack_cleared(depth, room) {
                 continue;
             }
             if !o.need.iter().all(|n| self.hero.meets(&d, n)) {
@@ -526,6 +572,23 @@ impl Game {
                 roll: o.check.map(|c| (c.attr, c.dc)),
                 what: OptionWhat::Template(i),
             });
+        }
+        if let Some(event) = level.event(content, room) {
+            for (i, o) in event.option.iter().enumerate() {
+                let idx = EVENT_SPENT + u8::try_from(i).unwrap_or(0);
+                if o.once && self.today.spent.contains(&(depth, room, idx)) {
+                    continue;
+                }
+                if !o.need.iter().all(|n| self.hero.meets(&d, n)) {
+                    continue;
+                }
+                out.push(OptionView {
+                    label: o.label.clone(),
+                    cost: o.cost,
+                    roll: o.check.map(|c| (c.attr, c.dc)),
+                    what: OptionWhat::Event(i),
+                });
+            }
         }
         if self.today.trap_state(depth, room) == 1
             && let Some(trap) =
@@ -546,9 +609,14 @@ impl Game {
                 && f.name != self.hero.name
                 && self.day - f.day <= RECOVERY_DAYS
             {
+                let family = self.world.commons.companions(&self.hero.name, &f.name);
                 out.push(OptionView {
                     label: format!("Carry {} home", f.name),
-                    cost: RESCUE_TURNS,
+                    cost: if family {
+                        RESCUE_TURNS - 1
+                    } else {
+                        RESCUE_TURNS
+                    },
                     roll: None,
                     what: OptionWhat::Rescue(f.name.clone()),
                 });
@@ -593,6 +661,12 @@ impl Game {
         content: &Content,
         action: Action,
     ) -> Result<Vec<Event>, Refused> {
+        let mut ev = self.apply_inner(content, action)?;
+        self.story_advance(content, &mut ev);
+        Ok(ev)
+    }
+
+    fn apply_inner(&mut self, content: &Content, action: Action) -> Result<Vec<Event>, Refused> {
         let mut ev = Vec::new();
         if self.fight.is_some() {
             return match action {
@@ -615,6 +689,12 @@ impl Game {
                 say(&mut ev, Tone::Good, format!("You learn {name}."));
             }
             (Place::Town, Action::Town(act)) => self.town_act(content, act, &mut ev)?,
+            (_, Action::Social(act @ (SocialAct::Verdict(_) | SocialAct::Choose { .. })))
+                if !matches!(self.place, Place::Dead { .. }) =>
+            {
+                self.social_act(content, act, &mut ev)?;
+            }
+            (Place::Town, Action::Social(act)) => self.social_act(content, act, &mut ev)?,
             (Place::Town, Action::Raise(attr)) => {
                 self.hero.raise(attr).map_err(Refused::new)?;
                 say(
@@ -777,7 +857,14 @@ impl Game {
             depth: level.depth,
             room: target,
         };
+        let fresh = self
+            .explored
+            .get(usize::from(level.depth) - 1)
+            .is_some_and(|m| m & (1 << target) == 0);
         self.mark(level.depth, target);
+        if fresh && let Some(t) = level.room(target) {
+            self.note_new_room(t.kind);
+        }
         self.add_fatigue(1, &d);
         let name = level
             .template(content, target)
@@ -786,6 +873,7 @@ impl Game {
         if self.is_hostile(content, level, target) {
             say(ev, Tone::Bad, "A pack is here, and it has seen you.");
         }
+        self.company_spoils(content, level, target, ev);
         if let Some(t) = level.room(target) {
             self.contract_room(content, t.kind, level.depth, ev);
         }
@@ -945,7 +1033,11 @@ impl Game {
         }
         let name = self.hero.name.clone();
         if depth > 0 {
-            self.emit(Change::Depth(name, self.hero.best_depth));
+            self.emit(Change::Depth(name.clone(), self.hero.best_depth));
+            self.emit(Change::Social(SocialChange::PartyDepth {
+                who: name,
+                depth: self.hero.best_depth,
+            }));
         }
         say(
             ev,
@@ -980,6 +1072,19 @@ impl Game {
                 }
                 self.resolve_option(content, level, room, option, ev);
             }
+            OptionWhat::Event(i) => {
+                let Some(option) = level.event(content, room).and_then(|e| e.option.get(*i)) else {
+                    return;
+                };
+                if option.once {
+                    self.today.spent.push((
+                        depth,
+                        room,
+                        EVENT_SPENT + u8::try_from(*i).unwrap_or(0),
+                    ));
+                }
+                self.resolve_option(content, level, room, option, ev);
+            }
             OptionWhat::Disarm => {
                 let d = self.derived(content);
                 let Some(trap) =
@@ -1005,6 +1110,7 @@ impl Game {
             OptionWhat::Rescue(name) => {
                 let d = self.derived(content);
                 self.emit(Change::Rescue(name.clone(), self.hero.name.clone()));
+                self.hero.social.rescues = self.hero.social.rescues.saturating_add(1);
                 let reward = 15 * u32::from(depth);
                 self.hero.coin = self.hero.coin.saturating_add(pct(reward, d.loot));
                 say(
@@ -1105,7 +1211,10 @@ impl Game {
                     );
                 }
             }
-            Gain::Clear => self.today.cleared.push((depth, room)),
+            Gain::Clear => {
+                self.today.cleared.push((depth, room));
+                self.share_clear(depth, room);
+            }
             Gain::Shortcut { shortcut } => {
                 let by = self.hero.name.clone();
                 self.emit(Change::Shortcut(depth, *shortcut, by));
@@ -1135,7 +1244,7 @@ impl Game {
         }
     }
 
-    fn find_recipe(&mut self, content: &Content, id: &str, ev: &mut Vec<Event>) {
+    pub(crate) fn find_recipe(&mut self, content: &Content, id: &str, ev: &mut Vec<Event>) {
         let name = content.recipe(id).map_or("a recipe", |r| r.name.as_str());
         if content.recipe(id).is_some_and(|r| self.hero.knows(r)) {
             say(
@@ -1149,7 +1258,7 @@ impl Game {
         }
     }
 
-    fn find_core(&mut self, content: &Content, id: &str, ev: &mut Vec<Event>) {
+    pub(crate) fn find_core(&mut self, content: &Content, id: &str, ev: &mut Vec<Event>) {
         let name = content.core(id).map_or("a core", |c| c.name.as_str());
         if self.hero.cores.len() < crate::rules::CORES_MAX {
             self.hero.cores.push(id.to_owned());

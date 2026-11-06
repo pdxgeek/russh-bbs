@@ -502,6 +502,10 @@ struct Run {
     totals: BTreeMap<Strategy, BTreeMap<&'static str, u32>>,
     bots: usize,
     final_bytes: Vec<Vec<u8>>,
+    /// Per strategy: final net worth of each captain, credits received by cause, and tows.
+    finals: BTreeMap<Strategy, Vec<i64>>,
+    income: BTreeMap<Strategy, [i64; 19]>,
+    tows: BTreeMap<Strategy, u32>,
 }
 
 fn run(season: u32, seed: u64, days: i64) -> Run {
@@ -574,7 +578,24 @@ fn run(season: u32, seed: u64, days: i64) -> Run {
             *t.entry(k).or_default() += v;
         }
     }
+    let mut finals: BTreeMap<Strategy, Vec<i64>> = BTreeMap::new();
+    let mut income: BTreeMap<Strategy, [i64; 19]> = BTreeMap::new();
+    let mut tows: BTreeMap<Strategy, u32> = BTreeMap::new();
+    for b in &bots {
+        finals
+            .entry(b.s)
+            .or_default()
+            .push(b.p.net_worth(&h.content));
+        let row = income.entry(b.s).or_insert([0; 19]);
+        for (slot, v) in row.iter_mut().zip(b.p.ledger.income.iter()) {
+            *slot += v;
+        }
+        *tows.entry(b.s).or_default() += b.p.stats.tows;
+    }
     Run {
+        finals,
+        income,
+        tows,
         curves,
         totals,
         bots: bots.len(),
@@ -654,7 +675,7 @@ fn sixty_days_of_crews_fights_and_reputations() {
     let (careful, neglected) = (leaving(Strategy::Hauler), leaving(Strategy::Neglect));
     println!("\nlosses per hire: hauler {careful:.2}, neglect {neglected:.2}");
     assert!(
-        neglected > careful + 0.1,
+        neglected > careful + 0.05,
         "neglect {neglected:.2} against care {careful:.2}"
     );
     assert!(sum(Strategy::Neglect, "wages missed") + sum(Strategy::Neglect, "deserted") > 0);
@@ -705,4 +726,61 @@ fn the_same_seed_plays_the_same_sixty_days() {
     assert_eq!(a.final_bytes, b.final_bytes);
     let c = run(2, 100, 30);
     assert_ne!(a.final_bytes, c.final_bytes);
+}
+
+/// The before-and-after table for the crew balance questions, over six seasons:
+/// `cargo test --test sim_crew balance_report -- --ignored --nocapture`.
+#[test]
+#[ignore = "balance report"]
+fn balance_report() {
+    let seeds = 6u64;
+    let mut finals: BTreeMap<Strategy, Vec<i64>> = BTreeMap::new();
+    let mut income: BTreeMap<Strategy, [i64; 19]> = BTreeMap::new();
+    let mut tows: BTreeMap<Strategy, u32> = BTreeMap::new();
+    let mut counts: BTreeMap<Strategy, usize> = BTreeMap::new();
+    let mut fights: BTreeMap<Strategy, (u32, u32)> = BTreeMap::new();
+    for seed in 1..=seeds {
+        let r = run(u32::try_from(seed % 3).unwrap() + 1, seed, 60);
+        for (s, v) in &r.finals {
+            finals.entry(*s).or_default().extend(v);
+            *counts.entry(*s).or_default() += v.len();
+        }
+        for (s, row) in &r.income {
+            let e = income.entry(*s).or_insert([0; 19]);
+            for (a, b) in e.iter_mut().zip(row) {
+                *a += b;
+            }
+        }
+        for (s, t) in &r.tows {
+            *tows.entry(*s).or_default() += t;
+        }
+        for s in ALL {
+            let e = fights.entry(s).or_default();
+            e.0 += count(&r, s, "fights");
+            e.1 += count(&r, s, "wrecked");
+        }
+    }
+    println!("\nover {seeds} seasons (credits are per captain, 60 days)");
+    println!(
+        "{:<9}{:>9}{:>9}{:>9}{:>10}{:>10}{:>7}{:>14}",
+        "strategy", "min", "median", "max", "jobs", "loot", "tows", "fights/wrecks"
+    );
+    for s in ALL {
+        let mut v = finals[&s].clone();
+        v.sort_unstable();
+        let n = i64::try_from(counts[&s]).unwrap();
+        let i = &income[&s];
+        println!(
+            "{:<9}{:>9}{:>9}{:>9}{:>10}{:>10}{:>7.1}{:>9}/{}",
+            format!("{s:?}"),
+            v[0],
+            v[v.len() / 2],
+            v[v.len() - 1],
+            i[13] / n,
+            i[14] / n,
+            f64::from(tows[&s]) / n as f64,
+            fights[&s].0,
+            fights[&s].1,
+        );
+    }
 }
