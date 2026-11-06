@@ -233,6 +233,214 @@ severity = 1
 skills = ["sneak", "tinker", "fleet"]
 story = "{target}'s lesson was accompanied by thirty separate squeaks, none of them anyone's fault."
 
+[[method]]
+id = "whoopee_chair"
+name = "Plant a whoopee cushion"
+blurb = "The grandest chair in the hall, with a surprise in it."
+place = "main_hall"
+kinds = ["staff", "prefect"]
+present = "absent"
+needs = ["whoopee_cushion"]
+difficulty = 14
+legend = 5
+heat = 4
+severity = 1
+skills = ["sneak", "bluff", "fleet"]
+story = "{target} sat down with great dignity and the Great Hall learned a new sound."
+[[method]]
+id = "marble_pigeonholes"
+name = "Fill the pigeonholes with marbles"
+blurb = "Every teacher who reaches for the post gets a rattling surprise."
+place = "staffroom"
+kinds = ["staff"]
+present = "absent"
+needs = ["marbles"]
+difficulty = 19
+legend = 6
+heat = 5
+severity = 1
+skills = ["sneak", "sneak", "fleet"]
+story = "{target} reached for the morning post and got a small, bright avalanche instead."
+[[method]]
+id = "glitter_register"
+name = "Glitter in the class register"
+blurb = "A little sparkle on every page, for the rest of the term."
+place = "room_languages"
+kinds = ["staff"]
+only = ["thorne", "pell", "orrin", "alder"]
+present = "absent"
+needs = ["glitter"]
+difficulty = 21
+legend = 7
+heat = 6
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "Everything {target} touched for a week came away with a faint, unexplained sparkle."
+[[method]]
+id = "hymnbook_hoist"
+name = "Hoist the hymn books"
+blurb = "A fishing line, a patient hand, and a very slow ascent."
+place = "chapel"
+kinds = ["school", "staff"]
+only = ["the_organ", "soames"]
+present = "absent"
+needs = ["fishing_line"]
+difficulty = 27
+legend = 10
+heat = 8
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "Thirty hymn books rose into the rafters one by one while {target} pretended not to notice."
+[[method]]
+id = "vanishing_memo"
+name = "Send a memo in vanishing ink"
+blurb = "It is read, it is obeyed, and then the page goes blank."
+place = "admin_corridor"
+kinds = ["staff", "prefect"]
+only = ["vane", "marsh", "wick", "bramley"]
+present = "absent"
+needs = ["vanishing_ink"]
+requires = ["tag:forge"]
+difficulty = 29
+legend = 11
+heat = 7
+severity = 2
+skills = ["bluff", "bluff", "fleet"]
+story = "{target} followed the memo to the letter, and then found the page blank and the instructions unprovable."
+[[method]]
+id = "desk_buzzer"
+name = "Hide a buzzer in the desk drawer"
+blurb = "It hums, politely, every time the drawer is opened."
+place = "staffroom"
+kinds = ["staff"]
+present = "absent"
+needs = ["buzzer"]
+requires = ["skill:tinker>=1"]
+difficulty = 23
+legend = 8
+heat = 6
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "{target} opened the drawer, heard a hum, closed it, opened it again, and was a little more tired each time."
+[[method]]
+id = "padlocked_rope"
+name = "Padlock the bell rope"
+blurb = "The bell will be rung, as soon as someone finds the key."
+place = "old_wing"
+kinds = ["school"]
+only = ["the_bell"]
+present = "any"
+needs = ["padlock"]
+difficulty = 24
+legend = 8
+heat = 7
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "The bell rope was padlocked to its post, and morning lessons began only when somebody found the key."
+[[method]]
+id = "wrong_rooms"
+name = "Hand out spare timetable cards"
+blurb = "Every card is neat, official, and wrong in a different way."
+place = "classroom_corridor"
+kinds = ["clique"]
+present = "any"
+needs = ["spare_card"]
+difficulty = 20
+legend = 7
+heat = 5
+severity = 1
+skills = ["bluff", "sneak", "fleet"]
+story = "{target} spent most of first period in a broom cupboard that the card swore was Room 4."
+[[method]]
+id = "kettle_tune"
+name = "Wire the kettle to hum a tune"
+blurb = "It boils to the school song, a little flat."
+place = "staffroom"
+kinds = ["staff"]
+present = "absent"
+needs = ["wire"]
+difficulty = 26
+legend = 9
+heat = 6
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "The staffroom kettle boiled to the school song, and {target} was the only one who knew all the words."
+[[method]]
+id = "spoof_certificate"
+name = "Present a spoof certificate"
+blurb = "Handsome lettering, official seal, and a very odd award."
+place = "main_hall"
+kinds = ["clique", "prefect"]
+present = "any"
+needs = ["forgery_kit"]
+difficulty = 25
+legend = 8
+heat = 6
+severity = 1
+skills = ["bluff", "bluff", "fleet"]
+story = "{target} unrolled a certificate for Most Improved Ankle and could not for the life of them find the joke."
+[[method]]
+id = "boathouse_balls"
+name = "Fill the boathouse with practice balls"
+blurb = "The Eight open the door and are knee-deep in rubber."
+place = "boathouse"
+kinds = ["clique"]
+only = ["rowing_eight"]
+present = "absent"
+needs = ["balls"]
+difficulty = 21
+legend = 7
+heat = 6
+severity = 1
+skills = ["sneak", "sneak", "fleet"]
+story = "{target} opened the boathouse door at dawn and were swept back out onto the grass by a tide of balls."
+[[method]]
+id = "portrait_moustache"
+name = "Give the portrait a moustache"
+blurb = "The founder looks distinguished, and slightly more French."
+place = "deputy_office"
+kinds = ["staff"]
+only = ["vane", "marsh"]
+present = "absent"
+needs = ["forgery_kit"]
+requires = ["legend>=10"]
+difficulty = 33
+legend = 13
+heat = 10
+severity = 2
+skills = ["sneak", "bluff", "fleet"]
+story = "The founder's portrait wore a very fine moustache all morning, and {target} was the last to see it."
+[[method]]
+id = "glitter_lamplighters"
+name = "Glitter over the prefects' meeting"
+blurb = "A tub of glitter and a ceiling fan, in that order."
+place = "common_room"
+kinds = ["clique"]
+only = ["lamplighters"]
+present = "absent"
+needs = ["glitter"]
+difficulty = 22
+legend = 8
+heat = 6
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "The Lamplighters held their meeting in a sparkling blizzard, and no one dared say it was funny."
+[[method]]
+id = "desk_clocks"
+name = "Set every clock to a different time"
+blurb = "Each one is certain, and none of them agree."
+place = "room_sciences"
+kinds = ["staff"]
+only = ["orrin", "pell", "alder", "thorne"]
+present = "absent"
+needs = ["decoy"]
+difficulty = 19
+legend = 6
+heat = 5
+severity = 1
+skills = ["sneak", "tinker", "fleet"]
+story = "Every clock in {target}'s room gave a different time, and each of them was very sure."
+
 # ---- big methods: these change the school for everyone ----
 
 [[method]]

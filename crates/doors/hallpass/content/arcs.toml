@@ -99,3 +99,67 @@ id = "shared"
 name = "Shared with the chaplain"
 text = "Reverend Soames reads the page twice and says he will think about the East Wing, and that you did right to bring it to him."
 effects = ["know:soames_trust", "know:diary_page", "bond:soames:+8", "stat:legend:+6"]
+
+# ---------------------------------------------------------------- what happened in the east wing (H4)
+# The mystery: four acts over weeks. The clues are in content/mystery.toml (found by searching
+# places); the choices at the end are conversations at the step `choice`. Each ending but
+# `walk_away` casts a verdict, and on the finale day the school's verdicts decide what happens
+# to the East Wing for everyone.
+
+[[arc]]
+id = "the_wing"
+name = "What happened in the East Wing"
+blurb = "A page is missing from the register, and chalk arrows point under the school."
+start = ["day>=6"]
+first = "whispers"
+[[arc.step]]
+id = "whispers"
+text = "The East Wing closed years ago and nobody will say why. Look for the torn page, and the places where the story is still told."
+[[arc.step]]
+id = "chalk"
+text = "Somebody has been chalking arrows in the Old Wing. They all point down."
+[[arc.step]]
+id = "loft"
+text = "A key behind the organ pipes opened the loft, and the loft gave you the tunnel map. The tunnels pass right under the East Wing."
+[[arc.step]]
+id = "key"
+text = "You need a way into the wing from above: its key. The caretaker, the chaplain and the shed's nail all know something about it."
+[[arc.step]]
+id = "wing"
+text = "You hold the key. The East Wing opens only after lights-out."
+[[arc.step]]
+id = "truth"
+text = "A diary, a door bolted on the outside, and a pair of initials. Somebody signed for what happened."
+[[arc.step]]
+id = "choice"
+text = "You know what happened to Ines Harrow. Now somebody must be trusted with it, and the whole school will live with what is decided."
+[[arc.ending]]
+id = "fenn"
+name = "Told to the caretaker"
+text = "Mr. Fenn sits on an upturned bucket for a long time. Then he says his name was Harrow once, and that he took the job to find out. He will tell the school himself."
+effects = ["verdict:fenn", "bond:fenn:+10", "stat:legend:+8", "stand:strays:+4"]
+[[arc.ending]]
+id = "soames"
+name = "Told to the chaplain"
+text = "Reverend Soames takes his glasses off. 'I locked that door. I was told it was a punishment, and I have been a coward for as long as it has taken to be old.' He asks to hold a vigil."
+effects = ["verdict:soames", "bond:soames:+10", "stat:legend:+6", "know:soames_forgiven"]
+[[arc.ending]]
+id = "vane"
+name = "Told to the headmistress"
+text = "Dame Vane listens without moving. She promises to see that nothing like it can happen again, and that the wing be sealed so nobody is hurt looking. You choose to believe her."
+effects = ["verdict:vane", "bond:vane:+8", "wary:vane:-2", "stat:legend:+3", "stand:lamplighters:+6"]
+[[arc.ending]]
+id = "paper"
+name = "Given to the paper"
+text = "Wren reads the diary twice and says nothing for a minute. Then: 'Front page. The whole thing. Under her name.'"
+effects = ["verdict:wren", "bond:wren:+8", "stand:ink_society:+8", "stat:legend:+10", "stand:lamplighters:-6"]
+[[arc.ending]]
+id = "bonfire"
+name = "Burnt"
+text = "Sol has matches and does not ask. The diary goes into the quad bonfire with a stack of old registers, and the smoke goes up straight."
+effects = ["verdict:bonfire", "bond:sol:+8", "stand:the_bench:+8", "stat:legend:+4", "stat:notoriety:+8"]
+[[arc.ending]]
+id = "walk_away"
+name = "Some things stay buried"
+text = "You put the key in your pocket and the diary in a drawer, and you go and sit with Tilly in the quad. Nobody on the board will hear your voice in the matter."
+effects = ["bond:tilly:+4", "stat:cool:+2"]

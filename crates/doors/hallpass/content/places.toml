@@ -258,7 +258,7 @@ look = "Closed for years. Nobody says why."
 exits = ["old_wing"]
 hours = ["night"]
 lock = "east"
-unlock = ["item:east_wing_key"]
+unlock = ["item:east_wing_key", "world:wing_opened", "world:wing_vigil", "world:truth_printed"]
 
 [[place]]
 id = "cellars"
@@ -268,7 +268,7 @@ look = "Barrels, pipes and a passage that smells of lake water."
 exits = ["old_wing", "staffroom", "tunnels", "candle_den"]
 hours = ["free", "after", "evening", "night"]
 lock = "cellar"
-unlock = ["know:caretaker_rounds", "rank:candle>=1", "item:tunnel_map", "item:master_key"]
+unlock = ["know:caretaker_rounds", "know:candle_sign", "rank:candle>=1", "item:tunnel_map", "item:master_key"]
 
 [[place]]
 id = "tunnels"
@@ -278,7 +278,7 @@ look = "Brick arches under the old wing. Someone has chalked arrows on the walls
 exits = ["cellars", "boathouse", "chapel"]
 hours = ["free", "after", "evening", "night"]
 lock = "tunnels"
-unlock = ["item:tunnel_map"]
+unlock = ["item:tunnel_map", "world:wing_opened", "world:wing_vigil", "world:truth_printed"]
 
 [[place]]
 id = "staff_quarters"

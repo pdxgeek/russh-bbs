@@ -187,13 +187,20 @@ fn every_branch_of_the_ledger_ends_its_own_way_and_is_replayable() {
         } else {
             base()
         };
-        let (end, edits) = route(player, steps);
+        let (end, _edits) = route(player, steps);
         let arc = end.life.arc("ledger").unwrap();
         assert_eq!(arc.ended.as_deref(), Some(*ending), "{name}");
         seen.insert((*ending).to_owned());
         // The world edit is asked for exactly when the ending is a world change.
         let changes_world = matches!(*ending, "purged" | "headline");
-        assert_eq!(edits > 0, changes_world, "{name}: {edits} edits");
+        // (Every key also sends the pupil's roster entry, so the count of world edits is not the
+        // measure; the engine counts the big changes it asked for.)
+        assert_eq!(
+            end.big > 0,
+            changes_world,
+            "{name}: {} big changes",
+            end.big
+        );
         // A betrayed prefect stays betrayed.
         if *name == "took the money and told the head prefect" {
             assert!(end.knows("betrayed_bramley"));
@@ -276,13 +283,13 @@ fn every_branch_of_the_east_wing_light_ends_its_own_way_and_is_replayable() {
     ];
     let mut seen = BTreeSet::new();
     for (name, steps, ending, bluff) in &routes {
-        let (end, edits) = route(base(*bluff), steps);
+        let (end, _edits) = route(base(*bluff), steps);
         assert_eq!(
             end.life.arc("east_light").unwrap().ended.as_deref(),
             Some(*ending),
             "{name}"
         );
-        assert_eq!(edits, 0, "this story does not change the school");
+        assert_eq!(end.big, 0, "this story does not change the school");
         seen.insert((*ending).to_owned());
         if *ending == "shared" {
             assert!(end.knows("soames_trust") && end.knows("diary_page"));
@@ -374,12 +381,12 @@ fn storylines_begin_by_themselves_on_their_day_and_in_a_new_term_begin_again() {
     g.sync_day(start + 8);
     assert_eq!(
         began(&g),
-        ["ledger", "east_light"],
-        "two storylines in the term"
+        ["ledger", "east_light", "the_wing"],
+        "three storylines in the term"
     );
     // The journal tells where each stands.
     let journal = g.journal();
-    assert_eq!(journal.len(), 2);
+    assert_eq!(journal.len(), 3);
     assert!(journal[0].contains("The prefects' ledger"), "{journal:?}");
     // A new term is a new character: the stories start fresh.
     let term_days = c.rules.term_days;

@@ -1,0 +1,24 @@
+dPermission denied, please try again.
+3Permission denied, please try again.
+founder@127.0.0.1: Permission denied (publickey,password).
+g^[[B^[[C
+or1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

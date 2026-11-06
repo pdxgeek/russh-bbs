@@ -518,12 +518,16 @@ async fn a_cosysop_cannot_edit_a_sysops_profile_but_can_edit_a_members() {
     send(&mut staff, "1").await;
     let view = full(&mut staff).await;
     assert!(view.contains("Handle: aaron_sysop"), "{view}");
+    // FIX-M2-7: the key is not offered for a member the rank refuses, and pressing it does
+    // nothing (the core refusal stays, and is tested against core directly).
+    assert!(!view.contains("e: edit"), "{view}");
     send(&mut staff, "e").await;
-    let refused = full(&mut staff).await;
+    let after = full(&mut staff).await;
     assert!(
-        refused.contains("You cannot edit the profile of someone whose role ranks at or above yours. Nothing was changed.")
-            && !refused.contains("> Display name:"),
-        "{refused}"
+        after.contains("Handle: aaron_sysop")
+            && !after.contains("> Display name:")
+            && !after.contains("You cannot edit"),
+        "{after}"
     );
     // The rank rule is the whole story: nothing was written and nothing was audited.
     assert_eq!(rig.profile_of(sysop).await, sysop_before);
@@ -537,7 +541,12 @@ async fn a_cosysop_cannot_edit_a_sysops_profile_but_can_edit_a_members() {
     // A member below the cosysop still works, and is audited.
     send(&mut staff, "\u{1b}").await;
     send(&mut staff, "3").await;
-    assert!(full(&mut staff).await.contains("Handle: dina"));
+    let dina_view = full(&mut staff).await;
+    assert!(dina_view.contains("Handle: dina"), "{dina_view}");
+    assert!(
+        dina_view.contains("e: edit"),
+        "shown below the rank: {dina_view}"
+    );
     send(&mut staff, "e").await;
     let form = full(&mut staff).await;
     assert!(
@@ -693,5 +702,41 @@ async fn losing_members_view_closes_the_screen_on_the_next_key() {
     assert!(full(&mut channel).await.contains("[l] Member list"));
     send(&mut channel, "l").await;
     assert!(full(&mut channel).await.contains("1 alice"));
+    rig.server.shutdown().await;
+}
+
+/// FIX-M3-7 (D134): a pasted line break in a one-line input is one space, and a character the
+/// input cannot take (it is ASCII only) is dropped with a short hint, not silently.
+#[tokio::test]
+async fn a_paste_with_a_line_break_joins_with_a_space_and_dropped_letters_are_said() {
+    let rig = Rig::start().await;
+    let (alice, key) = rig.member("alice").await;
+    let (_session, mut channel) = at_menu(&rig, &key).await;
+    send(&mut channel, "ue").await;
+    let form = full(&mut channel).await;
+    assert!(form.contains("> Display name:"), "{form}");
+
+    // Display name: a bracketed paste of two lines, then Enter for the next field.
+    send(
+        &mut channel,
+        "\u{1b}[200~first line\r\n\r\nsecond line\u{1b}[201~\r",
+    )
+    .await;
+    // Pronouns: ASCII text with letters the input cannot take.
+    let mut hint = send(&mut channel, "caf\u{e9} \u{65e5}\u{672c}").await;
+    // The toast is drawn with a frame that may land after the first quiet moment.
+    for _ in 0..5 {
+        if hint.contains("Non ASCII characters were skipped") {
+            break;
+        }
+        hint = full(&mut channel).await;
+    }
+    assert!(hint.contains("Non ASCII characters were skipped"), "{hint}");
+    send(&mut channel, "\r\r\r\r").await;
+    let saved = full(&mut channel).await;
+    assert!(saved.contains("Profile saved."), "{saved}");
+    let stored = rig.profile_of(alice).await;
+    assert_eq!(stored.get(Field::DisplayName), "first line second line");
+    assert_eq!(stored.get(Field::Pronouns), "caf"); // trimmed on write
     rig.server.shutdown().await;
 }

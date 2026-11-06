@@ -268,6 +268,30 @@ pub enum Action {
     Quit(String),
     /// Go to a meeting of one of your clubs, here and now.
     Meet,
+    /// Play a structured scheme on another pupil, from the fixed list (H4).
+    Plot {
+        /// The plot template id.
+        kind: String,
+        /// The target's handle, from the roster.
+        to: String,
+    },
+    /// Let a rumour drop, from a template (H4).
+    Spread {
+        /// The rumour template id.
+        rumour: String,
+        /// A character id, a clique id, or `self`.
+        about: String,
+    },
+    /// Put your name on the election ballot (H4).
+    Nominate,
+    /// Work the corridors for your campaign (H4).
+    Canvass,
+    /// Vote for a name on the ballot (H4).
+    Vote(String),
+    /// Opt out of (or back into) player-versus-player play (H4).
+    OptOut(bool),
+    /// Search the place for something the east wing's mystery left (H4).
+    Search,
 }
 
 /// A character in a school, and the rules that change them.
@@ -281,6 +305,8 @@ pub struct Game {
     pub world: World,
     /// World changes the session still has to send to the board.
     pub pending: Vec<WorldDelta>,
+    /// The roster entry last sent, so an unchanged one is not sent again.
+    pub last_pupil: Option<crate::commons::Pupil>,
 }
 
 /// What a period was spent on, for the end-of-period checks.
@@ -300,6 +326,7 @@ impl Game {
             player,
             world,
             pending: Vec::new(),
+            last_pupil: None,
         }
     }
 
@@ -322,6 +349,7 @@ impl Game {
             player: Player::new(name, world.term, today, &rules.start_place),
             world,
             pending: Vec::new(),
+            last_pupil: None,
         };
         if player.term < game.world.term {
             // A new term has begun since this character last played: close the old one's book.
@@ -331,10 +359,16 @@ impl Game {
             }
             player = Player::new(name, game.world.term, today, &rules.start_place);
             player.history = std::mem::take(&mut game.player.history);
+            // What follows a pupil from term to term: the opt-out, the awards, the post read.
+            let old = std::mem::take(&mut game.player.social);
+            player.social.opt_out = old.opt_out;
+            player.social.awards = old.awards;
+            player.social.seen_plot = old.seen_plot;
         }
         name.clone_into(&mut player.name);
         game.player = player;
         events.extend(game.sync_day(today));
+        events.extend(game.social_day());
         (game, events)
     }
 
@@ -663,6 +697,14 @@ impl Game {
             Stat::Bond(id) => p.life.bond_with(id),
             Stat::Rank(id) => p.life.rank_in(id),
             Stat::Day => i32::try_from(self.term_day()).unwrap_or(i32::MAX),
+            Stat::Clues => i32::try_from(
+                self.player
+                    .knowledge
+                    .iter()
+                    .filter(|k| k.starts_with("clue_"))
+                    .count(),
+            )
+            .unwrap_or(0),
         }
     }
 
@@ -1160,6 +1202,13 @@ impl Game {
             Action::Join(id) => self.join_club(id),
             Action::Quit(id) => self.quit_club(id),
             Action::Meet => self.meet(rng),
+            Action::Plot { kind, to } => self.send_plot(kind, to, rng),
+            Action::Spread { rumour, about } => self.spread(rumour, about, rng),
+            Action::Nominate => self.nominate(),
+            Action::Canvass => self.canvass(rng),
+            Action::Vote(who) => self.cast_vote(who),
+            Action::OptOut(out) => Ok(self.set_opt_out(*out)),
+            Action::Search => self.search(rng),
             Action::Enrol(_) => Err(Refused::new("You have already enrolled.")),
             Action::Go(place) => self.go(place, rng),
             Action::Attend => self.attend(rng),
@@ -1189,7 +1238,9 @@ impl Game {
         p.nerve_max = to_u8(rules.start_nerve_max + spec.nerve);
         p.nerve = p.nerve_max;
         p.cool = to_i16(rules.start_cool + spec.cool);
-        p.cash = rules.start_cash;
+        p.cash =
+            rules.start_cash + i32::from(p.social.unpaid) * self.content.social.rules.award_cash;
+        p.social.unpaid = 0;
         p.grades = self
             .content
             .subjects
@@ -1463,6 +1514,13 @@ impl Game {
 
     /// Take the world changes the board still has to apply.
     pub fn take_world_changes(&mut self) -> Vec<WorldDelta> {
+        if self.player.status == Status::Active {
+            let entry = self.pupil_entry();
+            if self.last_pupil.as_ref() != Some(&entry) {
+                self.pending.push(WorldDelta::Roster(entry.clone()));
+                self.last_pupil = Some(entry);
+            }
+        }
         std::mem::take(&mut self.pending)
     }
 
