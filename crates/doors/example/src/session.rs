@@ -390,6 +390,10 @@ fn name_of(call: Call) -> &'static str {
 }
 
 impl DoorSession for Session {
+    fn captures_text(&self) -> bool {
+        matches!(self.mode, Mode::Name(_))
+    }
+
     fn key(&mut self, key: DoorKey, ctx: &mut Ctx<'_>) -> Flow {
         if matches!(self.mode, Mode::Name(_)) {
             self.name_key(key, ctx);

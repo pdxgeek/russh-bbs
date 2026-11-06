@@ -75,6 +75,27 @@ enum Mode {
     Line(String),
 }
 
+impl Mode {
+    /// Whether this mode takes typed text, so the board passes every key (a `?` included) on.
+    const fn takes_text(&self) -> bool {
+        matches!(self, Self::Naming(_) | Self::Line(_))
+    }
+}
+
+#[cfg(test)]
+mod mode_tests {
+    use super::{MenuId, Mode};
+
+    #[test]
+    fn only_the_typing_modes_take_text() {
+        assert!(Mode::Naming(String::new()).takes_text());
+        assert!(Mode::Line(String::new()).takes_text());
+        assert!(!Mode::Report.takes_text());
+        assert!(!Mode::Unreadable.takes_text());
+        assert!(!Mode::Menu(MenuId::Main).takes_text());
+    }
+}
+
 enum Act {
     Go(MenuId),
     Do(Action),
@@ -1037,6 +1058,10 @@ impl DoorSession for Session {
     fn render(&self, canvas: &mut Canvas<'_>, env: &DoorEnv) {
         canvas.clear();
         ui::draw(self, canvas, env);
+    }
+
+    fn captures_text(&self) -> bool {
+        self.mode.takes_text()
     }
 
     fn look_around(&self, _env: &DoorEnv) -> Vec<String> {
