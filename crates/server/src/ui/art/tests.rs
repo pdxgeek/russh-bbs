@@ -754,6 +754,29 @@ fn hostile_art_files_are_refused_with_reasons_and_never_stop_the_boot() {
 }
 
 #[test]
+fn problem_text_from_hostile_file_names_is_sanitized() {
+    // H-3: the theme preview draws these. A name with an RTL override, a Nerd Font glyph
+    // and the reserved marker delimiters must not reach the screen.
+    let dir = tempfile::tempdir().unwrap();
+    let name = "x\u{202E}\u{F07C}\u{27E6}\u{2299}\u{27E7}\u{200B}.art.toml";
+    std::fs::write(dir.path().join(name), b"format = 1\nbogus = true\n").unwrap();
+    let mut set = ArtSet::default();
+    set.add_dir(dir.path());
+    let problems = set.problems();
+    assert_eq!(problems.len(), 1);
+    for text in [&problems[0].file, &problems[0].reason] {
+        assert!(
+            !text.chars().any(|c| matches!(
+                c,
+                '\u{202E}' | '\u{F07C}' | '\u{27E6}' | '\u{27E7}' | '\u{2299}' | '\u{200B}'
+            )),
+            "{text:?}"
+        );
+    }
+    assert!(problems[0].file.contains('\u{FFFD}'));
+}
+
+#[test]
 fn only_the_first_files_of_a_crowded_directory_are_read() {
     let dir = tempfile::tempdir().unwrap();
     for i in 0..(MAX_FILES + 8) {
