@@ -898,7 +898,7 @@ kinds = ["school"]
 only = ["the_paper"]
 present = "any"
 needs = []
-requires = ["bond:cass>=6"]
+requires = ["bond:cass>=4"]
 difficulty = 16
 legend = 6
 heat = 4

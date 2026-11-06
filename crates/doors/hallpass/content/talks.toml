@@ -1800,6 +1800,8 @@ id = "bea_stroke"
 npc = "bea"
 title = "Bea on the rowing machine"
 when = ["day>=3"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -1851,6 +1853,8 @@ id = "dunstan_bread"
 npc = "dunstan"
 title = "Dunstan and the dough"
 when = ["day>=4"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -1902,6 +1906,8 @@ id = "maud_tides"
 npc = "maud"
 title = "Maud and the tide tables"
 when = ["day>=5"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -1929,6 +1935,8 @@ id = "rory_store"
 npc = "rory"
 title = "Rory and the boat store"
 when = ["day>=5"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -1959,6 +1967,8 @@ id = "cass_crossword"
 npc = "cass"
 title = "Cass and the crossword"
 when = ["day>=3"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -1986,6 +1996,8 @@ id = "theo_column"
 npc = "theo"
 title = "Theo and the column"
 when = ["day>=4"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -2014,6 +2026,8 @@ id = "lark_ode"
 npc = "lark"
 title = "Lark and the ode"
 when = ["day>=5"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -2041,6 +2055,8 @@ id = "osei_darkroom"
 npc = "osei"
 title = "Kofi's darkroom"
 when = ["day>=5"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -2070,6 +2086,8 @@ id = "fitch_wall"
 npc = "fitch"
 title = "Fitch on the crate"
 when = ["day>=3", "not:trait:teachers_pet"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -2093,6 +2111,8 @@ id = "jojo_drums"
 npc = "jojo"
 title = "Jojo at the drums"
 when = ["day>=4"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -2120,6 +2140,8 @@ id = "bex_roof"
 npc = "bex"
 title = "Bex on the roof"
 when = ["day>=5"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -2146,6 +2168,8 @@ id = "nico_hand"
 npc = "nico"
 title = "Nico's handwriting"
 when = ["day>=4"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -2256,6 +2280,8 @@ id = "edwin_late_book"
 npc = "edwin"
 title = "Edwin and the late book"
 when = ["day>=3"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -2313,6 +2339,8 @@ id = "grace_wiring"
 npc = "grace"
 title = "Grace and the fuse box"
 when = ["day>=4"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -2340,6 +2368,8 @@ id = "mo_dinghy"
 npc = "mo"
 title = "Mo and the dinghy"
 when = ["day>=4"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -2367,6 +2397,8 @@ id = "ping_radio"
 npc = "ping"
 title = "Ping's radio"
 when = ["day>=4"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -2397,6 +2429,8 @@ id = "bertie_nap"
 npc = "bertie"
 title = "Bertie under the reading table"
 when = ["day>=3"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -2423,6 +2457,8 @@ id = "hattie_cats"
 npc = "hattie"
 title = "Hattie and the cats"
 when = ["day>=3"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -2450,6 +2486,8 @@ id = "ollie_page"
 npc = "ollie"
 title = "Ollie and page eleven"
 when = ["day>=3"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -2498,6 +2536,8 @@ id = "greta_stairwell"
 npc = "greta"
 title = "Greta in the stairwell"
 when = ["day>=4"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -2525,6 +2565,8 @@ id = "moss_greenhouse"
 npc = "moss"
 title = "Moss and the cold frame"
 when = ["day>=4"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -2578,6 +2620,8 @@ id = "posy_map"
 npc = "posy"
 title = "Posy's map of the school"
 when = ["day>=4"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -2635,7 +2679,7 @@ effects = ["bond:abney:+1"]
 id = "abney_stacks"
 npc = "abney"
 title = "Miss Abney's key"
-when = ["bond:abney>=6", "grade:history>=65"]
+when = ["bond:abney>=4", "grade:history>=65"]
 first = "open"
 [[talk.node]]
 id = "open"
@@ -2646,7 +2690,7 @@ say = "It is a small iron key on a ribbon, still warm from her pocket. 'Mind the
 effects = ["know:restricted_key", "bond:abney:+3"]
 [[talk.node.choice]]
 label = "Ask what is on the shelf at the back"
-needs = ["bond:abney>=8"]
+needs = ["bond:abney>=6"]
 say = "She is quiet for a long while. 'The brown register,' she says, finally. 'And a few letters that were not returned. I was young. I am sorry to say I was not brave.' She does not elaborate, and you do not press."
 effects = ["know:restricted_key", "bond:abney:+4", "know:abney_remembers"]
 [[talk.node.choice]]
@@ -2658,7 +2702,7 @@ effects = ["bond:abney:+2"]
 id = "abney_confides"
 npc = "abney"
 title = "Miss Abney tells you why she is a librarian"
-when = ["know:abney_remembers", "bond:abney>=8", "day>=24"]
+when = ["know:abney_remembers", "bond:abney>=6", "day>=24"]
 first = "open"
 [[talk.node]]
 id = "open"
@@ -2740,7 +2784,7 @@ effects = ["bond:soames:+2"]
 id = "vane_tea"
 npc = "vane"
 title = "Tea with the headmistress"
-when = ["file<=2", "day>=14", "bond:vane>=3"]
+when = ["file<=2", "day>=14", "cool>=50"]
 first = "open"
 [[talk.node]]
 id = "open"

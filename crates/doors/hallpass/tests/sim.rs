@@ -21,8 +21,8 @@ use std::collections::BTreeMap;
 use std::fmt::Write;
 
 use common::bot::{
-    Policy, balanced, cautious, play_day, politician, reckless, recluse, rival, scholar, sleuth,
-    take_coverage, variety,
+    Policy, athlete, balanced, cautious, play_day, politician, reckless, recluse, rival, scholar,
+    sleuth, take_coverage, variety,
 };
 use common::{content, monday};
 use russh_bbs_door::DoorRng;
@@ -466,6 +466,7 @@ fn mixed_policies(seed: u64) -> Vec<Policy> {
         politician(),
         rival(),
         quiet,
+        athlete(),
     ]
 }
 
@@ -668,11 +669,29 @@ fn print_report(r: &Report) {
     eprintln!(
         "branch coverage: {taken_choices} of {total_choices} conversation choices taken; talks never had: {dead_talks:?}"
     );
+    if std::env::var("HALLPASS_LIST_UNTAKEN").is_ok() {
+        for t in &c.talks {
+            for n in &t.node {
+                for (i, ch) in n.choice.iter().enumerate() {
+                    if !r
+                        .coverage
+                        .contains_key(&format!("choice:{}/{}/{i}", t.id, n.id))
+                    {
+                        eprintln!("untaken: {}/{}/{i} {}", t.id, n.id, ch.label);
+                    }
+                }
+            }
+        }
+    }
     let missed = |prefix: &str, all: Vec<String>| -> Vec<String> {
         all.into_iter()
             .filter(|id| !r.coverage.contains_key(&format!("{prefix}:{id}")))
             .collect()
     };
+    eprintln!(
+        "methods never drafted: {:?}",
+        missed("method", c.methods.iter().map(|m| m.id.clone()).collect())
+    );
     eprintln!(
         "plots never played: {:?}; rumours never told: {:?}; clues never found: {:?}",
         missed(
@@ -699,7 +718,7 @@ fn the_full_report_nine_styles_whole_terms() {
     let r = report(seeds);
     print_report(&r);
     // Sanity only here; the no-dead-content gates are in the next test.
-    assert_eq!(r.stats.len(), 9);
+    assert_eq!(r.stats.len(), 10);
     for v in r.stats.values() {
         assert_eq!(v.len() as u64, seeds);
     }

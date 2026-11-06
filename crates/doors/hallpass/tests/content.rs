@@ -231,14 +231,12 @@ fn the_bad_edits_a_writer_could_make_are_each_named() {
     );
     // A method that needs a helper nobody offers.
     assert!(
-        problems(broken(
-            |s, _| s.cast = Box::leak(
-                EMBEDDED
-                    .cast
-                    .replace("role = \"gadget\"", "role = \"cover\"")
-                    .into_boxed_str()
-            )
-        ))
+        problems(broken(|s, _| s.cast = Box::leak(
+            EMBEDDED
+                .cast
+                .replace("role = \"gadget\"", "role = \"cover\"")
+                .into_boxed_str()
+        )))
         .contains("gadget")
     );
 }

@@ -101,7 +101,11 @@ fn the_mystery_has_four_acts_over_weeks_and_every_clue_is_gated() {
         .collect();
     assert_eq!(main.len(), 12, "the main road is still twelve clues");
     for side in c.mystery.clues.iter().filter(|x| !x.id.starts_with('c')) {
-        assert!(!side.after.is_empty(), "{} follows an earlier clue", side.id);
+        assert!(
+            !side.after.is_empty(),
+            "{} follows an earlier clue",
+            side.id
+        );
         assert!(side.risk <= 3, "{}", side.id);
     }
     // Every act has side clues, and most of them are opened by a friend, not a step.
@@ -132,7 +136,10 @@ fn the_mystery_has_four_acts_over_weeks_and_every_clue_is_gated() {
             })
         })
         .count();
-    assert!(by_friend >= 15, "{by_friend} clues are opened by a friendship");
+    assert!(
+        by_friend >= 15,
+        "{by_friend} clues are opened by a friendship"
+    );
     for act in 1..=4 {
         assert!(c.mystery.clues.iter().any(|x| x.act == act));
     }

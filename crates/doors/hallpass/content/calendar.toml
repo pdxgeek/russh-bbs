@@ -29,7 +29,7 @@ id = "open"
 text = "Mr. Gale has pinned the team sheet to a goalpost with a rowing boot. Greywater against Hollin House: a race, a scoreboard, a stand full of parents' cars and a great deal of mud. Eleven jobs are still without a name. 'Pick one and keep it,' he says. 'I do not take changes.'"
 [[talk.node.choice]]
 label = "Put your name down for the Eight"
-needs = ["rank:rowing>=2"]
+needs = ["rank:rowing>=1"]
 say = "Mr. Gale writes it in capitals and underlines it twice. Imogen, passing with the oars, says 'About time,' and means it kindly."
 effects = ["know:match_crew", "bond:gale:+3", "bond:imogen:+2", "merit:rowing:+2"]
 [[talk.node.choice]]
@@ -250,9 +250,9 @@ first = "open"
 id = "open"
 text = "Madame Thorne has pinned the cast list to the Great Hall door and is standing beside it, in case anyone weeps. The play is The Lamp Under the Lake, a melodrama about the founder, with a drowned bell, a wicked bursar, and a storm that has to be made with a bucket of peas."
 [[talk.node.choice]]
-label = "Take the lead, the Founder's Daughter"
-needs = ["rank:drama>=3"]
-say = "'I wrote your name in ink,' says Madame Thorne, 'so that you cannot blame the pencil.' She hands you forty pages of lines in an extremely upright hand."
+label = "Step up as the Founder's Daughter, the lead's understudy"
+needs = ["rank:drama>=2"]
+say = "The lead has a chest cold. Madame Thorne writes your name over hers in pencil. 'Only until she is better,' she says, in the voice of a woman who means never. She hands you forty pages of lines in an extremely upright hand."
 effects = ["know:play_lead", "merit:drama:+3", "bond:thorne:+2"]
 [[talk.node.choice]]
 label = "Read for the Wicked Bursar"
@@ -518,17 +518,17 @@ id = "open"
 text = "A card on the Great Hall door in Dame Vane's own copperplate: gowns and jackets, a quartet from the village, and no one to leave before the last waltz. Ambrose is pinning up the dance cards. 'Rule one,' he says, 'you may not go alone, but you may go with someone who is also alone.'"
 [[talk.node.choice]]
 label = "Ask Wren Okonjo"
-needs = ["bond:wren>=8"]
+needs = ["bond:wren>=6"]
 say = "'I would love to,' says Wren, 'provided you tell me everything you know, in order, at some point before the music stops.' It is the nicest thing she has ever said to anyone."
 effects = ["know:dance_wren", "bond:wren:+3"]
 [[talk.node.choice]]
 label = "Ask Sol Marchetti"
-needs = ["bond:sol>=8"]
+needs = ["bond:sol>=6"]
 say = "Sol says no one will believe it, and that he refuses to wear a tie. He wears a tie. It is a very small one."
 effects = ["know:dance_sol", "bond:sol:+3"]
 [[talk.node.choice]]
 label = "Ask Priya Venkat"
-needs = ["bond:priya>=8"]
+needs = ["bond:priya>=5"]
 say = "'I'm meant to be chaperoning,' says Priya, then adds quickly, 'in a dress.' She goes the colour of her badge."
 effects = ["know:dance_priya", "bond:priya:+3"]
 [[talk.node.choice]]
@@ -729,7 +729,7 @@ say = "He plays every waltz perfectly. But on the last one he plays a bar from a
 effects = ["know:soames_hymn_slip", "xp:bluff:1"]
 [[talk.node.choice]]
 label = "Count how many times the prefects look at the clock"
-needs = ["skill:sneak>=1"]
+needs = []
 say = "Eleven. It is the slow clock above the balcony. Every time it ticks over, Cordelia Wick's hand goes to her pocket."
 effects = ["know:slow_clock", "xp:sneak:1"]
 [[talk.node.choice]]
@@ -974,3 +974,37 @@ effects = ["stat:legend:+3", "bond:dot:-1", "stand:the_bench:+2"]
 label = "Read the results quietly and go and have tea"
 say = "Not a triumph, not a disaster. The tea is hot and the school is nearly over."
 effects = ["stat:cool:+1"]
+
+[[talk]]
+id = "exam_invigilate"
+npc = "marsh"
+event = "exam_week"
+title = "Mr. Marsh asks for a monitor"
+when = ["day>=35", "day<=36", "standing:lamplighters>=6"]
+first = "open"
+[[talk.node]]
+id = "open"
+text = "Mr. Marsh is short of monitors. 'Prefects and their friends,' he says. 'Two of you to walk the aisles, on tiptoe, and to say nothing whatever to anyone who is writing. I am told this is a privilege.' He hands you a clipboard of your own."
+[[talk.node.choice]]
+label = "Walk the aisles on tiptoe and see nothing you should not"
+say = "Forty desks, forty bent heads, and not one rule broken that you can swear to. Mr. Marsh takes the clipboard back with a nod that costs him some effort."
+effects = ["bond:marsh:+3", "stand:lamplighters:+2", "stat:cool:+1"]
+[[talk.node.choice]]
+label = "Spot the crib on a cuff, and report it"
+needs = ["skill:sneak>=1"]
+say = "You notice a very small hand on a very small cuff, and you tell Mr. Marsh. He writes something. By supper half the Bench knows who it was who told."
+effects = ["know:exam_informer", "bond:marsh:+5", "stand:lamplighters:+3", "stand:the_bench:-4"]
+[[talk.node.choice]]
+label = "Spot the crib on a cuff, and quietly stand where it cannot be seen"
+needs = ["skill:sneak>=1", "not:know:exam_informer"]
+say = "You pass the desk twice, and the second time you are standing between the cuff and the clipboard. The pupil never knows, and never needs to."
+effects = ["know:exam_mercy", "stand:the_bench:+3", "bond:marsh:-1"]
+[[talk.node.choice]]
+label = "Stand by Ollie's desk, who has frozen, and point at the clock"
+needs = ["bond:ollie>=3"]
+say = "He looks up at the clock and at you, and breathes out. Then he writes, and writes, and does not stop. You have told him nothing but the time."
+effects = ["bond:ollie:+4", "stand:strays:+3", "stat:cool:+1"]
+[[talk.node.choice]]
+label = "Slip out for a cup of tea"
+say = "Mr. Marsh finds you in the corridor with a mug and an innocent face. 'Monitors,' he says, 'are the other reason for examinations.'"
+effects = ["bond:marsh:-1"]

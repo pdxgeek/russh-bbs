@@ -332,7 +332,9 @@ impl Content {
                 .filter(|t| t.event.as_deref() == Some(e.id.as_str()))
                 .count();
             if talks < 3 {
-                out.push(format!("{what} needs at least three scenes, it has {talks}"));
+                out.push(format!(
+                    "{what} needs at least three scenes, it has {talks}"
+                ));
             }
         }
         // Conversations.

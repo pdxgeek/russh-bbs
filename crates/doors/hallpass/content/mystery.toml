@@ -10,7 +10,7 @@
 arc = "the_wing"
 finale_day = 38
 unsolved = "The East Wing stays shut. Nobody could agree what happened there, or nobody tried."
-risk_pct = 12
+risk_pct = 10
 
 # ---------------------------------------------------------------- act one: the torn page
 
@@ -230,7 +230,6 @@ place = "chapel"
 kinds = ["free", "after", "evening"]
 needs = ["day>=12"]
 after = ["c4_pipes"]
-risk = 1
 text = "Under the ribbon on the key, folded very small: For whoever comes next. It is not a pupil's hand, and it is not the chaplain's. The signature is a single letter, F."
 effects = ["know:fenn_left_key"]
 
@@ -241,7 +240,6 @@ place = "organ_loft"
 kinds = ["evening", "after", "free"]
 needs = ["day>=14"]
 after = ["c5_loft"]
-risk = 1
 text = "A hymnal on the organ's music desk is open at number seventy-three, with a pressed forget-me-not in it and in pencil, in a grown man's hand: Never again. Not this one. Not by me."
 effects = ["know:hymn_73"]
 
@@ -314,7 +312,7 @@ place = "east_wing"
 kinds = ["night"]
 needs = ["item:east_wing_key", "day>=21"]
 after = ["c9_hall"]
-risk = 2
+risk = 1
 text = "The music room is at the end of the corridor, with a scorched piano and a stack of hymn slips on its lid. Every slip says seventy-three. The piano stool has been polished, and its seat is still warm."
 effects = ["know:wing_music"]
 
@@ -325,7 +323,7 @@ place = "east_wing"
 kinds = ["night"]
 needs = ["item:east_wing_key", "day>=22"]
 after = ["a3_wing_music"]
-risk = 2
+risk = 1
 text = "The dormitory window has been nailed shut from the outside, years ago; you can see the old holes. Beside them are new ones, where someone re-nailed it last term. Why would anyone keep sealing a room nobody uses?"
 effects = ["know:nailed_window"]
 
@@ -336,7 +334,7 @@ place = "east_wing"
 kinds = ["night"]
 needs = ["item:east_wing_key", "skill:sneak>=2", "day>=23"]
 after = ["c10_diary"]
-risk = 2
+risk = 1
 text = "Under the last bed a floorboard lifts. In the hollow beneath is a bundle of letters in a child's round hand, addressed to a brother called Abel. The last, unsent, says only: They have locked the door. Please don't tell Mother. I am not frightened, only cold."
 effects = ["know:ines_letters"]
 
@@ -347,7 +345,6 @@ place = "restricted_stacks"
 kinds = ["free", "evening", "after", "class"]
 needs = ["know:ines_locket", "day>=18"]
 after = ["c7_trunk"]
-risk = 1
 text = "The brown register for that year is in the stacks, in the order of the school's calendar. The March page records, in a scrupulous hand: East Wing closed by order of the Acting Bursar. Girls rehoused. One pupil unaccounted for. Entry struck out by D. Vane."
 effects = ["know:register_entry"]
 
@@ -356,7 +353,7 @@ id = "a3_abney_card"
 act = 3
 place = "library"
 kinds = ["evening", "after"]
-needs = ["bond:abney>=8", "day>=20"]
+needs = ["bond:abney>=6", "day>=20"]
 after = ["a1_abney_remembers"]
 text = "Miss Abney slides a lending card across the desk. 'The brown register,' she says. 'Last borrowed on the morning after the fire by a young curate, who returned it the same afternoon, white as a sheet. I have never lent it since.' The card is signed W. Soames."
 effects = ["know:soames_borrowed", "bond:abney:+2"]
@@ -368,7 +365,6 @@ place = "paper_office"
 kinds = ["evening", "after", "free"]
 needs = ["rank:paper>=1", "day>=20"]
 after = ["c9_hall"]
-risk = 1
 text = "In the paper's morgue, bound in grey cloth, is the issue for the week after the fire. The front page carries one short item, FIRE IN THE EAST WING, unsigned except for the editor's initials: P.A. A very young hand, afraid of its own sentences."
 effects = ["know:abney_wrote_it"]
 
@@ -379,7 +375,6 @@ place = "caretaker_shed"
 kinds = ["free", "after", "evening"]
 needs = ["skill:sneak>=1", "day>=19"]
 after = ["c7_trunk"]
-risk = 1
 text = "A logbook on the shed shelf, in a steady hand, with one entry for every night for thirty years: East Wing checked. Door sound. Light seen / not seen. And, once a year, the same words: Visited the garden. Said her name."
 effects = ["know:fenn_logbook"]
 
@@ -410,7 +405,7 @@ place = "admin_corridor"
 kinds = ["free", "after"]
 needs = ["day>=27"]
 after = ["c12_report"]
-risk = 3
+risk = 2
 text = "Behind the fire report, in the cabinet marked CLOSED, lies an envelope addressed to Mr. A. Harrow and never posted. It begins: I signed what I was told, and have been signing ever since. It ends: I am sorry. It is dated the week of the fire, and the ink has not faded."
 effects = ["know:vane_letter"]
 

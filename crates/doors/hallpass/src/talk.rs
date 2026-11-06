@@ -136,10 +136,25 @@ impl Game {
         let p = &self.player;
         p.place == e.place
             && (e.from..=e.to).contains(&day)
+            && e.kinds.iter().any(|k| k == self.kind(p.day, slot))
+            && self.place_open(&p.place, p.day, slot)
+    }
+
+    /// Whether a term event is on in period `slot` if the pupil were at `place`: the planning
+    /// half of `event_open`, for a bot or a map that wants to know where to go.
+    #[must_use]
+    pub fn event_open_at(
+        &self,
+        e: &crate::content::CalendarEvent,
+        slot: usize,
+        place: &str,
+    ) -> bool {
+        let day = self.term_day();
+        place == e.place
+            && (e.from..=e.to).contains(&day)
             && e.kinds
                 .iter()
-                .any(|k| k == self.kind(p.day, slot))
-            && self.place_open(&p.place, p.day, slot)
+                .any(|k| k == self.kind(self.player.day, slot))
     }
 
     /// The term events on the calendar today, for the morning bell.

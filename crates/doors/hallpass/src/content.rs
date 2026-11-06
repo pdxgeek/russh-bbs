@@ -1382,7 +1382,11 @@ file_table!(TalksFile, |f: &TalksFile| talk_problems(&f.talk));
 
 file_table!(CalendarFile, |f: &CalendarFile| {
     let mut out = talk_problems(&f.talk);
-    dupes("calendar event", f.event.iter().map(|e| e.id.as_str()), &mut out);
+    dupes(
+        "calendar event",
+        f.event.iter().map(|e| e.id.as_str()),
+        &mut out,
+    );
     for e in &f.event {
         plain(&e.id, &e.name, &mut out);
         plain(&e.id, &e.blurb, &mut out);
