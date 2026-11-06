@@ -55,6 +55,12 @@ A slice with an unmet dependency is not claimable.
 | FIX-M2-6 Stale M2 status text (QA M2 L5, low) | `docs/features.md` (intro and M2 rows), `docs/README.md` | none | Done: re-checked on `main` `0caab35`, [qa/m2.md](qa/m2.md#re-check-after-pr-51-and-pr-52) (was: In review: `fix/m2-lows`, [PR #51](https://github.com/pdxgeek/russh-bbs/pull/51)) | The intro still says M2 rows are Planned; the README says M2 has not started. After the gate merges, move the M2 rows that [qa/m2.md](qa/m2.md) exercised over `ssh` to Verified and keep the rest Implemented. |
 | FIX-M2-7 Profile page offers `e: edit` for a target the viewer's rank refuses (QA M2 re-check L6, low) | `crates/server/src/members`, `crates/core/src/profiles`, `docs/profiles.md` | FIX-M2-1 | Done: [PR #137](https://github.com/pdxgeek/russh-bbs/pull/137), `fix/m3-7-input-polish` (one PR with FIX-M3-7; D134 (4)). The `e` key is hidden when the target's rank is not below the viewer's; the refusal stays. | Cosmetic and honest (the refusal text is correct, nothing is written). Hide the key when the target's rank is not below the viewer's, or change the sentence in `docs/profiles.md`. Does not block the v0.2.0 tag. |
 
+### Documentation
+
+| Slice | Owns | Depends on | Status | Branch / PR |
+|---|---|---|---|---|
+| DOC-2 README refresh | `README.md`, `docs/readme/` (its screenshots), this row | none | In review ([PR #145](https://github.com/pdxgeek/russh-bbs/pull/145)) | Branch `docs/readme-refresh`. Docs only. Merged `origin/main` (DOC-1's `docs/guide/` is there, so the "Sysop and member guides" link works). The new README replaces the stale status line named in FIX-DOC1-4 (a); the other parts of FIX-DOC1-4 are untouched. |
+
 ### M2: Invites and members
 
 | Slice | Owns | Depends on | Status | Branch / PR |
