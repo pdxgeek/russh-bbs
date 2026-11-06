@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Saltmarch                                                                     │
+│                                                                              │
+│ ⌂ bob  day 1 of season 1                turns ██████████ 30/30  ◈ 40 tallies │
+│ ≈ TIDE ██████████░┃░░░░  66 ↓ low in 3h44 (9)  spring tides  ▲ HIGH WATER ▲  │
+│╭ The boards ─────────────────────────╮╭ Standing and offers ────────────────╮│
+││ a Take: Grain levy, ten measures ~  ││Rakers' Guild  Stranger    0         ││
+││ b Take: Reed for the thatchers (d~  ││The Tidecourt  Stranger    0         ││
+││ c Take: Peat for the winter fires~  ││The Reed-folk  Stranger    0         ││
+││ d Take: Cutters on the Tidecourt ~  ││                                     ││
+││                                     ││Nothing in hand. Take one from       ││
+││                                     ││today's board.                       ││
+││                                     ││                                     ││
+││                                     ││court Grain levy~ 70-80t +2          ││
+││                                     ││reed Reed for t~ 55-64t +2           ││
+││                                     ││reed Peat for t~ 100-120t +3         ││
+││                                     ││court Cutters on~ 32-40t +2          ││
+││                                     ││                                     ││
+││                                     ││                                     ││
+││                                     ││                                     ││
+││                                     ││                                     ││
+│╰─────────────────────────────────────╯╰─────────────────────────────────────╯│
+│ » Take: Grain levy, ten measures (deliver 10, 3 day(s)~ up/down  Enter  Esc  │
+└──────────────────────────────────────────────────────────────────────────────┘

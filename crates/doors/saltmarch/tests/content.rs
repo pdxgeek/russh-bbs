@@ -343,13 +343,6 @@ fn a_bad_event_edit_is_named() {
         &with("text = \"ok\"", "text = \"ok\"\nfx = [\"gain:salt:99\"]"),
         "a gain is 1 to 60",
     );
-    // The table as a whole must be big enough.
-    match content::check::<Events>("events", BASE) {
-        Err(ContentError::Invalid { problems, .. }) => {
-            assert!(problems.iter().any(|p| p.contains("at least 6 rare")));
-        }
-        other => panic!("{other:?}"),
-    }
 }
 
 #[test]

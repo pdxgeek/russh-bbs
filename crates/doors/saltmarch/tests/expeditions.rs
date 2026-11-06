@@ -376,8 +376,10 @@ fn v1_bytes(clan: &Clan) -> Vec<u8> {
     // marks and the trip flag.
     let mut social = russh_bbs_door_saltmarch::codec::Writer::new();
     russh_bbs_door_saltmarch::social::ledger::ClanSocial::default().write(&mut social);
+    let mut story = russh_bbs_door_saltmarch::codec::Writer::new();
+    russh_bbs_door_saltmarch::story::Story::default().write(&mut story);
     let bytes = clan.encode();
-    bytes[..bytes.len() - social.finish().len() - (11 * 4 + 2)].to_vec()
+    bytes[..bytes.len() - story.finish().len() - social.finish().len() - (11 * 4 + 2)].to_vec()
 }
 
 #[tokio::test]
@@ -391,7 +393,9 @@ async fn a_version_one_save_migrates_and_plays_on() {
     // The step itself.
     let v2 = door.migrate(BlobKind::Save, 1, &v1).unwrap();
     assert_ne!(v2, clan.encode(), "one step is one version");
-    let up = door.migrate(BlobKind::Save, 2, &v2).unwrap();
+    let v3 = door.migrate(BlobKind::Save, 2, &v2).unwrap();
+    assert_ne!(v3, clan.encode(), "and so is the next");
+    let up = door.migrate(BlobKind::Save, 3, &v3).unwrap();
     assert_eq!(up, clan.encode());
     assert_eq!(Clan::decode(&up), Some(clan.clone()));
     assert!(

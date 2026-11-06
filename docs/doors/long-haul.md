@@ -91,7 +91,7 @@ The core tension: **fuel, time and debt.** Every jump burns fuel and days, the l
 ## Open questions
 
 - **Drive-days:** 10 per day (settled, D103).
-- **Piracy:** opt-in flagging, **both sides** (settled, D-TBD: stricter than described).
+- **Piracy:** opt-in flagging, **both sides** (settled, D142: stricter than described).
 - **Debt pressure:** the loan shark is kept (settled, D103).
 
 ## Implementation notes (M4-L1)
@@ -363,7 +363,7 @@ Colours are the theme's roles (`DoorStyle` through `DoorFrame::style`) plus thre
 
 ## Implementation notes (M4-L4)
 
-Slice M4-L4, branch `m4/long-haul-social`, decision D-TBD (the number is assigned at merge). Everything here is **Implemented and tested** unless it says otherwise; the last section lists what is not built or not verified. This is the last Long Haul slice: the social layer, the content budget, the balance pass and the season.
+Slice M4-L4, branch `m4/long-haul-social`, decision D142 (the number is assigned at merge). Everything here is **Implemented and tested** unless it says otherwise; the last section lists what is not built or not verified. This is the last Long Haul slice: the social layer, the content budget, the balance pass and the season.
 
 ### How players meet: through the world, one night apart
 
@@ -458,4 +458,4 @@ Two seasons of the report (`season_report`, seeds 1 and 2), net worth medians by
 * **A walk with the OpenSSH client**, two accounts on one board, at 80x24 and 132x43, with screenshots: [qa/m4-l4-walk.md](../qa/m4-l4-walk.md). It covered a convoy with notes and a typed line, the colours, the idle rule, an outpost from a pledge to a market someone docked at, and the Hall.
 * **Not exercised:** a hunt and its report over ssh (store tests and the simulation only); telnet; Postgres (the door touches the store only through the framework's tested save API); more than two live accounts; a real midnight on a long-lived server (the walk moved the clock); a Nerd Font terminal; the Journal with an arc under way over ssh.
 * **Not built:** the **twelve crew backgrounds** of the content budget (twelve one-line backstories exist, but the crew table has no background field and the recruit line does not show one; this is a schema and a screen, left for a follow-up); outpost backers' perks (the pledgers are listed, they get nothing yet); the heat overlay for one good; a negotiation round in combat.
-* **Limits worth knowing:** a hunt is settled by a night, not live (D-TBD (1)); a prize is lost if its victim never returns (14 days); an outpost needs 12,000 credits pledged and so needs several captains or a rich one; the walk's founder had to borrow to pledge; convoy members who have not flown for ten days are dropped; the arcs are hand-written scenes, each played once per season per captain (a season's endings are kept as a legacy and never replayed); the world's day can lag the clock after a long downtime (the tick's catch-up cap is seven days).
+* **Limits worth knowing:** a hunt is settled by a night, not live (D142 (1)); a prize is lost if its victim never returns (14 days); an outpost needs 12,000 credits pledged and so needs several captains or a rich one; the walk's founder had to borrow to pledge; convoy members who have not flown for ten days are dropped; the arcs are hand-written scenes, each played once per season per captain (a season's endings are kept as a legacy and never replayed); the world's day can lag the clock after a long downtime (the tick's catch-up cap is seven days).

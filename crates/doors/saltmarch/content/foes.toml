@@ -213,3 +213,115 @@ foes = ["mud-wight", "bog-hound"]
 id = "warden"
 intro = "The spire's door opens, and what was holding it open steps out."
 foes = ["spire-warden"]
+
+[[foe]]
+id = "peat-leech"
+name = "Peat-leech"
+blurb = "Fat, black and patient. One is a nuisance. A bog full of them is a reason to turn back."
+hp = 6
+atk = 2
+def = 0
+spd = 5
+mass = 1
+row = "front"
+behaviour = "swarm"
+aquatic = true
+drops = { peat = 1 }
+
+[[foe]]
+id = "mere-drake"
+name = "Mere-drake"
+blurb = "A scaled thing as long as a skiff, with a crest like a heron's. It likes the tide at the full."
+hp = 26
+atk = 6
+def = 2
+spd = 5
+mass = 7
+row = "front"
+behaviour = "bruiser"
+aquatic = true
+tidal = true
+drops = { fish = 4, silt-glass = 1, tallies = 8 }
+
+[[foe]]
+id = "wrecker"
+name = "Wrecker"
+blurb = "A bandit who lives on a hulk and robs whoever comes to strip it. They fight with boarding axes."
+hp = 15
+atk = 5
+def = 1
+spd = 6
+mass = 5
+row = "front"
+behaviour = "bruiser"
+drops = { tallies = 7, timber = 1, rope = 1 }
+
+[[foe]]
+id = "spire-sentinel"
+name = "Spire sentinel"
+blurb = "A slender guard of silt-glass, quick where the warden is slow. It looks for the one who is hurt."
+hp = 32
+atk = 6
+def = 3
+spd = 7
+mass = 8
+row = "middle"
+behaviour = "lurker"
+tidal = true
+drops = { silt-glass = 3, iron = 2, relic = 1 }
+
+[[foe]]
+id = "drowned-king"
+name = "The Drowned King"
+blurb = "A crowned shape that does not leave its hall. It does not need to; its court does the walking."
+hp = 46
+atk = 8
+def = 2
+spd = 4
+mass = 10
+row = "back"
+behaviour = "hurler"
+aquatic = true
+tidal = true
+drops = { silt-glass = 4, relic = 2, tallies = 20 }
+
+
+[[group]]
+id = "leech-swarm"
+intro = "The black water of the bog begins to shiver, and then to climb your boots."
+foes = ["peat-leech", "peat-leech", "peat-leech", "peat-leech", "peat-leech"]
+
+[[group]]
+id = "mere-drake"
+intro = "The mere heaves. A crested head comes up, and the eels come with it."
+foes = ["mere-drake", "mire-eel", "mire-eel"]
+
+[[group]]
+id = "wrecker-gang"
+intro = "Axes ring on the hulk's rail. The wreckers have been waiting for someone to do their stripping."
+foes = ["wrecker", "wrecker", "cutter", "slinger"]
+
+[[group]]
+id = "deep-sentinels"
+intro = "A glass shape turns on the stair, quickly, as if it had never stopped listening. The hounds it keeps do not bark."
+foes = ["spire-sentinel", "bog-hound", "bog-hound"]
+
+[[group]]
+id = "drowned-king"
+intro = "Water stands in the hall to the knee. At the far end, something crowned lifts its head, and its court rises."
+foes = ["drowned-king", "mud-wight", "tide-hag"]
+
+[[group]]
+id = "leech-and-hag"
+intro = "The bog is quiet in the wrong way. Then a woman's shape stands up out of the leeches."
+foes = ["tide-hag", "peat-leech", "peat-leech", "peat-leech"]
+
+[[group]]
+id = "wrecker-hounds"
+intro = "A whistle from the dune, and the hounds come down with two men behind them."
+foes = ["bog-hound", "bog-hound", "wrecker", "slinger"]
+
+[[group]]
+id = "crab-and-eel"
+intro = "Shells and long shadows, all at the water's edge. They have shared this bank for years."
+foes = ["salt-crab", "mire-eel", "mire-eel", "wrack-gull"]

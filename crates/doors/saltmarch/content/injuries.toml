@@ -142,3 +142,143 @@ work_pct = 80
 severity = 3
 scar = "limp"
 scar_pct = 45
+
+[[injury]]
+id = "salt-burn"
+name = "a salt-burned hand"
+cause = "hurt"
+days = 4
+work_pct = 30
+severity = 1
+scar = "shaky-hands"
+scar_pct = 10
+
+[[injury]]
+id = "gull-bite"
+name = "a gull-bitten ear"
+cause = "hurt"
+days = 2
+work_pct = 10
+severity = 1
+
+[[injury]]
+id = "rope-burn"
+name = "a rope-burned palm"
+cause = "hurt"
+days = 3
+work_pct = 20
+severity = 1
+
+[[injury]]
+id = "peat-fall"
+name = "a peat-bank collapse"
+cause = "hurt"
+days = 10
+work_pct = 70
+severity = 3
+scar = "limp"
+scar_pct = 25
+
+[[injury]]
+id = "brine-lungs"
+name = "a lungful of brine"
+cause = "water"
+days = 5
+work_pct = 40
+severity = 2
+scar = "haunted"
+scar_pct = 15
+
+[[injury]]
+id = "mud-twist"
+name = "a leg twisted in the mud"
+cause = "water"
+days = 6
+work_pct = 45
+severity = 2
+scar = "limp"
+scar_pct = 20
+
+[[injury]]
+id = "stranded-night"
+name = "a night stranded on a bar"
+cause = "water"
+days = 6
+work_pct = 35
+severity = 2
+scar = "weathered"
+scar_pct = 25
+
+[[injury]]
+id = "marsh-ague"
+name = "marsh ague"
+cause = "sickness"
+days = 7
+work_pct = 45
+severity = 2
+
+[[injury]]
+id = "wasting-cough"
+name = "a wasting cough"
+cause = "sickness"
+days = 12
+work_pct = 60
+severity = 3
+scar = "haunted"
+scar_pct = 20
+
+[[injury]]
+id = "gut-flux"
+name = "the flux"
+cause = "sickness"
+days = 4
+work_pct = 40
+severity = 1
+
+[[injury]]
+id = "chilblains"
+name = "split, swollen chilblains"
+cause = "cold"
+days = 3
+work_pct = 20
+severity = 1
+
+[[injury]]
+id = "numb-feet"
+name = "numb, blue feet"
+cause = "cold"
+days = 6
+work_pct = 40
+severity = 2
+scar = "limp"
+scar_pct = 10
+
+[[injury]]
+id = "slashed-cheek"
+name = "a slashed cheek"
+cause = "fight"
+days = 7
+work_pct = 40
+severity = 2
+scar = "weathered"
+scar_pct = 40
+
+[[injury]]
+id = "spear-thigh"
+name = "a spear through the thigh"
+cause = "fight"
+days = 12
+work_pct = 75
+severity = 3
+scar = "limp"
+scar_pct = 35
+
+[[injury]]
+id = "bitten-hand"
+name = "a hand bitten to the bone"
+cause = "fight"
+days = 8
+work_pct = 50
+severity = 2
+scar = "shaky-hands"
+scar_pct = 25
