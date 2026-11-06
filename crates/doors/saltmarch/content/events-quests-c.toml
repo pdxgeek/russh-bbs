@@ -1,0 +1,858 @@
+# Quest scenes, set C (Reed-folk): bell-below, eel-mothers, witchs-apprentice, quiet-fever.
+# Each step scene waits for the step before it; each end scene waits for the last step and
+# refuses a clan that holds any end of its chain.
+
+# ================================================================== bell-below
+
+[[event]]
+id = "bell-heard-chapel"
+title = "A bell under the water"
+text = "At the drowned chapel the tide is making its highest line. Under the wall, under the water, something rings once: a flat, patient note that comes up through your boots."
+poi = ["shrine"]
+needs = ["tier:reed:1", "!mark:q-bell-below-one"]
+draws = ["trade:reed-witch"]
+weight = 9
+[[event.option]]
+label = "Stand on the wall and listen to it out"
+[event.option.win]
+text = "It rings four times and stops. Nobody speaks. The herons on the roof-beam do not move, which is the worst part."
+fx = ["mark:q-bell-below-one", "morale:-1"]
+[[event.option]]
+label = "Wade in and put your ear to the water"
+needs = ["trade:wader"]
+[event.option.win]
+text = "The wader goes in to the chest and comes up grinning, blue-lipped. The note has a rope in it, she says, and a crack, and somebody has tied it down."
+fx = ["mark:q-bell-below-one", "xp:wader:2"]
+[[event.option]]
+label = "Read the tide-marks, then the ring"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "The witch counts the rings against the lines on the wall and says the bell rings by the moon, not the tide. Someone taught it that, long ago, and it has not forgotten."
+fx = ["mark:q-bell-below-one", "xp:reed-witch:2", "chart:2"]
+
+[[event]]
+id = "bell-heard-flat"
+title = "The ring on the mudflat"
+text = "The mudflat is flooding at the spring, and out beyond the old chapel wall a note rolls across the water, low and slow. Gulls lift off the sand as one."
+tiles = ["mudflat", "salt-pan"]
+water = ["high"]
+needs = ["tier:reed:1", "!mark:q-bell-below-one"]
+draws = ["trade:reed-witch"]
+weight = 7
+[[event.option]]
+label = "Follow the sound to the chapel wall"
+[event.option.win]
+text = "You wade toward it. It rings again when you reach the wall: from underneath. A reed stake with a ribbon on it marks the spot."
+fx = ["mark:q-bell-below-one"]
+[[event.option]]
+label = "Take a bearing and keep working"
+needs = ["trade:raker"]
+[event.option.win]
+text = "The raker takes a bearing off the chimney stump and writes it in the margin of the pan-book. Salt first. The bell will keep."
+fx = ["mark:q-bell-below-one", "tallies:3-7"]
+[[event.option]]
+label = "Send the youngest to look and wait with the rope"
+needs = ["size:2", "carry:rope:1"]
+[event.option.win]
+text = "The youngest goes out on the line and returns pale. A bell, she says. Under the water. Ringing. You nod as if it were ordinary."
+fx = ["mark:q-bell-below-one", "bond:1"]
+
+[[event]]
+id = "bell-ose-camp"
+title = "Ose Tallow's fire"
+text = "A reed camp, and a woman at the fire with a bell-rope coiled in her lap and no bell on the end of it. Ose Tallow rang for the chapel forty years. She has heard you have heard it."
+poi = ["camp"]
+needs = ["mark:q-bell-below-one", "!mark:q-bell-below-two"]
+weight = 9
+[[event.option]]
+label = "Give her rope for the old bell-pull"
+needs = ["carry:rope:1"]
+[event.option.win]
+text = "Ose splices your rope to hers without looking. The bell calls the hags off the peat, she says, if it is rung the old way. Nobody has been brave enough to lift it for fifteen years."
+fx = ["lose:rope:1", "mark:q-bell-below-two", "rep:reed:3"]
+[[event.option]]
+label = "Sit and let her talk"
+[event.option.win]
+text = "She talks until the fire is ash. The bell warns and the bell calls. It rang for the drowning of the chapel and has rung at every spring since. She would like it asleep, or answered."
+fx = ["mark:q-bell-below-two", "morale:1"]
+[[event.option]]
+label = "Say the rite's first line back to her"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "Ose's face goes quiet. The witch has the first line right and the second line wrong, and Ose corrects her, and that is how the old rite is taught: a mistake, then a mended mistake."
+fx = ["mark:q-bell-below-two", "xp:reed-witch:3", "rep:reed:2"]
+
+[[event]]
+id = "bell-low-water-dive"
+title = "The chapel at low water"
+text = "At dead low the chapel floor shows through the silt, and the bell lies on its side in the nave, its chain looped round a pillar and wound with something grey. Hair, a lot of it, plaited into a net."
+poi = ["shrine"]
+water = ["low"]
+needs = ["mark:q-bell-below-two", "!mark:q-bell-below-three"]
+weight = 9
+[[event.option]]
+label = "Wade into the nave and cut the net away"
+skill = "wader"
+risk = 30
+[event.option.win]
+text = "You cut the hair-net free and it comes away in a long grey sheet. Under it the bell is green and whole and, you would swear, warm."
+fx = ["mark:q-bell-below-three", "xp:wader:2"]
+[event.option.lose]
+text = "The net moves. It does not move much, but it closes on a wrist and you leave a good deal of skin on the pillar before it lets go."
+fx = ["hurt:any:hurt", "mark:q-bell-below-three"]
+[[event.option]]
+label = "Run a rope to the chain and measure the weight"
+needs = ["carry:rope:2", "size:2"]
+[event.option.win]
+text = "Two ropes, four hands, a long minute. The chain takes the strain and the bell shifts a hand's breadth, no more. It can be raised, with the right tide and the right boat."
+fx = ["mark:q-bell-below-three", "bond:1"]
+[[event.option]]
+label = "Look at it from the boat and do not touch"
+needs = ["boat"]
+[event.option.win]
+text = "From the boat you see the whole shape of it: the bell, the chain, the grey net, and in the net the little white bones of herons. You do not touch it. You note the depth."
+fx = ["mark:q-bell-below-three", "chart:2"]
+
+[[event]]
+id = "bell-warden-asks"
+title = "Warden Aske comes asking"
+text = "Warden Pell Aske of the Tidecourt is waiting on the reed-bank with a ledger and two boatmen. She has heard there is a bell. The Court, she says, is fond of bells."
+tiles = ["reedbed", "island"]
+needs = ["mark:q-bell-below-three", "!mark:q-bell-below-four"]
+weight = 9
+[[event.option]]
+label = "Tell her where it lies"
+[event.option.win]
+text = "She writes it down and does not thank you. The Court will want a lift at spring tide, she says, and a clan with a boat."
+fx = ["mark:q-bell-below-four", "rep:court:2"]
+[[event.option]]
+label = "Show her your Tidecourt standing and ask her price"
+needs = ["tier:court:2"]
+[event.option.win]
+text = "She reads your name in her ledger and softens a very little. Half the weight in silver, she says, for the lift. And the bell stays with the Court."
+fx = ["mark:q-bell-below-four", "tallies:4-9"]
+[[event.option]]
+label = "Say Ose's name and the Reed-folk's claim"
+needs = ["tier:reed:2"]
+[event.option.win]
+text = "The warden writes Ose's name and underlines it. The Reed-folk's claim is old, she admits, and a claim can be bought, but it takes a clan with some standing to make her wait for it."
+fx = ["mark:q-bell-below-four", "rep:reed:2"]
+
+[[event]]
+id = "bell-spring-tide"
+title = "Spring tide at the chapel"
+text = "The highest water of the year, and the chapel is half under it. The bell is already ringing as you come over the wall: slow, flat, huge. The chain stands up out of the nave like a rope to the moon."
+poi = ["shrine"]
+water = ["high"]
+needs = ["mark:q-bell-below-four", "!mark:q-bell-below-end-court", "!mark:q-bell-below-end-hags", "!mark:q-bell-below-end-sleep"]
+weight = 10
+[[event.option]]
+label = "Raise the bell and hand it to the Court"
+needs = ["boat"]
+skill = "salvager"
+risk = 30
+[event.option.win]
+text = "The chain comes up with the tide and the bell breaks the surface like a slow green fish. Warden Aske counts the lift. The Reed-folk on the bank turn their backs, one by one."
+fx = ["mark:q-bell-below-end-court", "rep:court:12", "rep:reed:-8", "gain:relic:1-1", "tallies:8-15"]
+[event.option.lose]
+text = "The chain parts at the pillar. The bell goes down, and you get it up again by the second tide, cracked. The Court takes it; the Reed-folk take note."
+fx = ["mark:q-bell-below-end-court", "rep:court:8", "rep:reed:-8", "lose:rope:1", "hurt:any:hurt", "tallies:10-16"]
+[[event.option]]
+label = "Ring it in the old rite"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "The witch rings the three lines, and the bell answers in the voice it had before the sea. Over the peat, far off, lights go out one by one. The hags have heard their name and gone."
+fx = ["mark:q-bell-below-end-hags", "rep:reed:12", "world:clear-hags", "xp:reed-witch:6", "morale:6"]
+[[event.option]]
+label = "Leave it sleeping, and tie the clapper"
+[event.option.win]
+text = "You tie the clapper with the faded ribbon, say the little word Ose gave you, and go. The bell stops. In the reed camps, later, somebody leaves a net on your boat without a word."
+fx = ["mark:q-bell-below-end-sleep", "rep:reed:9", "heal:all:3", "gain:fish:6-10", "morale:5"]
+
+[[event]]
+id = "bell-ose-ending"
+title = "Ose at the bell-rope"
+text = "Ose Tallow is waiting at the reed camp with the spliced bell-rope over her arm. The bell rings below the chapel, thin and sure. She has decided, and she would like you there when she says it."
+poi = ["camp"]
+needs = ["mark:q-bell-below-four", "!mark:q-bell-below-end-court", "!mark:q-bell-below-end-hags", "!mark:q-bell-below-end-sleep"]
+weight = 8
+[[event.option]]
+label = "Take the rite from her, line by line"
+needs = ["tier:reed:3"]
+[event.option.win]
+text = "She gives it to you in a whisper, three lines and a count. At spring tide you ring it, and the peat goes quiet from here to the Deep. Ose weeps, a bit, and is brisk about it."
+fx = ["mark:q-bell-below-end-hags", "rep:reed:10", "world:clear-hags", "morale:4"]
+[[event.option]]
+label = "Tell Ose the bell should sleep"
+[event.option.win]
+text = "Ose takes your hand in both of hers. She has the clapper ribbon in her pocket and gives it to you, faded to the colour of bone. The Reed-folk will hear."
+fx = ["mark:q-bell-below-end-sleep", "rep:reed:9", "gain:fish:4-8", "morale:3"]
+[[event.option]]
+label = "Send word to Warden Aske and give up the bell"
+needs = ["tier:court:2"]
+[event.option.win]
+text = "Ose does not curse you. She hands you the rope and walks away down the bank, and does not look back, which is worse."
+fx = ["mark:q-bell-below-end-court", "rep:court:10", "rep:reed:-10", "tallies:10-18"]
+
+# ================================================================== eel-mothers
+
+[[event]]
+id = "eel-drowned-tangle"
+title = "A netter in the channel"
+text = "A net floats upside-down in the channel, its floats bobbing, and under it a shape you do not look at twice. Another netter, a Reed-folk man by his knots. The eels have been at the line."
+tiles = ["channel"]
+needs = ["tier:reed:1", "!mark:q-eel-mothers-one"]
+draws = ["trade:wader"]
+weight = 9
+[[event.option]]
+label = "Haul the tangle out and see what it holds"
+skill = "wader"
+risk = 25
+[event.option.win]
+text = "You drag it to the bank. The net is bitten through in a dozen places, each bite round and small, and in the mesh a clutch of silver eggs the size of knuckles. Not eel eggs. Eel-mother eggs."
+fx = ["mark:q-eel-mothers-one", "gain:fish:2-4", "xp:wader:2"]
+[event.option.lose]
+text = "Something long goes by under the net. Your wader is across the channel's edge before the shout is out, and comes up with a bitten hand and the tangle after all."
+fx = ["hurt:wader:hurt", "mark:q-eel-mothers-one"]
+[[event.option]]
+label = "Say the netter's words over him and cut the line"
+[event.option.win]
+text = "You say what you know of the words and cut the line. The body goes down quietly. You carry the net's float-stones back as proof. They are very light."
+fx = ["mark:q-eel-mothers-one", "rep:reed:2"]
+[[event.option]]
+label = "Work the net with a hook from the boat"
+needs = ["boat"]
+[event.option.win]
+text = "From the boat you get the hook through the mesh and drag it up without wetting a boot. The eggs are not eels' eggs. You note which direction the net had come from."
+fx = ["mark:q-eel-mothers-one", "chart:2", "xp:boatwright:1"]
+
+[[event]]
+id = "eel-widows-camp"
+title = "The netters' widows"
+text = "A row of reed huts, nets drying on every stake and not one man mending. The widows of the channel sit round a fire and look at you, and the oldest, Hepzi Mudd, lifts her chin: you have seen the net."
+poi = ["camp"]
+needs = ["mark:q-eel-mothers-one", "!mark:q-eel-mothers-two"]
+weight = 9
+[[event.option]]
+label = "Give them food from the stores"
+needs = ["carry:food:2"]
+[event.option.win]
+text = "Hepzi lifts the lid, sniffs, and puts it back. She does not say thank you. She says the brood lies under the bank at the eel-hole, and the mother of it is a woman, not an eel."
+fx = ["lose:food:2", "mark:q-eel-mothers-two", "rep:reed:4", "morale:2"]
+[[event.option]]
+label = "Tend the ones who are sick with grief and fever"
+needs = ["trade:healer"]
+[event.option.win]
+text = "The healer sits with the widows until the fire is low and sees to a cough and a burned hand. Hepzi tells her the rest. A woman keeps the brood, she says, and the netters never knew what to give her."
+fx = ["mark:q-eel-mothers-two", "xp:healer:2", "rep:reed:3"]
+[[event.option]]
+label = "Hear them out and ask where the brood lies"
+[event.option.win]
+text = "They tell you in pieces. Under the bank at the eel-hole, six nights of drowned netters, and a woman called Maud who sits at the water's edge and talks to the dark."
+fx = ["mark:q-eel-mothers-two"]
+
+[[event]]
+id = "eel-hole-brood"
+title = "The eel-hole"
+text = "The bank at the eel-hole is a honeycomb of wet holes, and each one has a silver tail in it, turning. Further back, on a flat stone with her feet in the water, a grey-haired woman is watching you and humming."
+poi = ["lair"]
+needs = ["mark:q-eel-mothers-two", "!mark:q-eel-mothers-three"]
+weight = 9
+[[event.option]]
+label = "Creep along the bank and count them"
+skill = "wader"
+risk = 30
+[event.option.win]
+text = "Forty, perhaps fifty, long as a forearm, and still growing. The woman on the stone does not stop humming. She nods, as at a clever child."
+fx = ["mark:q-eel-mothers-three", "xp:wader:2", "chart:1"]
+[event.option.lose]
+text = "A bank-hole gives under your foot. Teeth, brief and everywhere. You back out limping, and the woman on the stone laughs once, kindly."
+fx = ["hurt:any:hurt", "mark:q-eel-mothers-three"]
+[[event.option]]
+label = "Throw fish to the water's edge"
+needs = ["carry:fish:2"]
+[event.option.win]
+text = "The silver tails turn and froth and the woman watches you throw. When the fish are gone she says a word to the water and the froth settles. Neighbourly of you, she says."
+fx = ["lose:fish:2", "mark:q-eel-mothers-three", "rep:reed:2"]
+[[event.option]]
+label = "Greet the woman as a witch greets a witch"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "The two of them look at each other for a long time. Then the woman on the stone shifts to make room, and the reed-witch sits, and neither says a word you can hear."
+fx = ["mark:q-eel-mothers-three", "xp:reed-witch:3", "bond:1"]
+
+[[event]]
+id = "eel-wife-terms"
+title = "Maud Greyfin speaks"
+text = "Maud Greyfin, the eel-wife, is on the mere's edge with a bucket of silver at her feet. She talks to eels as other people talk to chickens. She has terms, and she says them quickly, as though to a child who cannot be trusted with long ones."
+tiles = ["mere", "channel"]
+needs = ["mark:q-eel-mothers-three", "!mark:q-eel-mothers-four"]
+weight = 8
+[[event.option]]
+label = "Hear her terms to the end"
+[event.option.win]
+text = "She wants the netters out of the lair channels, and her young left to grow. In return she will keep them from the nets. She says the Deep wants them, if you like: it has the room."
+fx = ["mark:q-eel-mothers-four"]
+[[event.option]]
+label = "Lie that the Reed-folk will honour any terms"
+needs = ["tier:reed:2"]
+[event.option.win]
+text = "She looks at you for a long time. Not a clever lie, she says, but a useful one. She writes it in her bucket with a finger. The terms stand, with your name on them."
+fx = ["mark:q-eel-mothers-four", "rep:reed:2"]
+[[event.option]]
+label = "Show her the steel and say what the Rakers pay for a cull"
+needs = ["trade:fighter"]
+[event.option.win]
+text = "Maud does not flinch. She tips the bucket. Eels, a dozen, pour back into the mere and are gone. Then do your worst, she says, and it is not quite a dare."
+fx = ["mark:q-eel-mothers-four", "xp:fighter:2"]
+
+[[event]]
+id = "eel-the-choice"
+title = "What the brood is owed"
+text = "The eel-hole at dusk, and all the silver turning in the holes. Maud Greyfin waits on her stone. She has said her terms. The netters want the brood gone, the Court wants it moved, and the brood does not care."
+poi = ["lair"]
+needs = ["mark:q-eel-mothers-four", "!mark:q-eel-mothers-end-cull", "!mark:q-eel-mothers-end-tithe", "!mark:q-eel-mothers-end-deep"]
+weight = 10
+[[event.option]]
+label = "Cull the brood, hole by hole"
+needs = ["trade:fighter"]
+skill = "fighter"
+risk = 35
+[event.option.win]
+text = "You work the holes with a hooked spear and a lantern. Maud sits on her stone and does not stop you. By dark the water is quiet and she is gone, and the Rakers' pans will buy any eel you can carry."
+fx = ["mark:q-eel-mothers-end-cull", "rep:rakers:10", "rep:reed:-9", "world:clear-eels", "gain:fish:8-14", "fight:eel-pair"]
+[event.option.lose]
+text = "The brood's mother comes out of the deep hole: eight feet of her, slow and enormous. You cull what you can, and the rest of it culls you. The holes are quiet by dawn, and so are you."
+fx = ["mark:q-eel-mothers-end-cull", "rep:rakers:6", "rep:reed:-9", "world:clear-eels", "hurt:fighter:fight", "fight:mere-drake"]
+[[event.option]]
+label = "Bargain with Maud for a tithe of fish"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "You and Maud settle it on the stone with the water between you. A tithe of fish at every full moon, left at the channel mouth, and the netters stay out of the holes. She pours the first of it into your hands."
+fx = ["mark:q-eel-mothers-end-tithe", "rep:reed:12", "gain:fish:10-16", "xp:reed-witch:5", "morale:4"]
+[[event.option]]
+label = "Drive the brood toward the Deep with lamps and noise"
+needs = ["boat"]
+skill = "boatwright"
+risk = 40
+[event.option.win]
+text = "Lamps on the bows, drums on the thwarts, and the silver shapes pour down the channel toward the Deep in a long ribbon. Maud goes with them in a skiff, singing. The Court will like how quiet it is."
+fx = ["mark:q-eel-mothers-end-deep", "mark:eel-scarred", "rep:court:6", "tallies:6-12"]
+[event.option.lose]
+text = "The ribbon turns and comes back through your boat. When it has passed the hull is chewed, your crew is bitten to the knee and Maud is nowhere. The brood is gone toward the Deep all the same."
+fx = ["mark:q-eel-mothers-end-deep", "mark:eel-scarred", "rep:court:4", "hurt:any:hurt", "lose:rope:1"]
+[[event.option]]
+label = "Walk away and let the brood lie a while"
+[event.option.win]
+text = "You back off along the bank. The silver tails turn in the holes behind you, and Maud watches you go without a word. The netters will lose another before this is settled."
+fx = ["morale:-2"]
+
+[[event]]
+id = "eel-wife-bargain"
+title = "Maud at the mere"
+text = "Maud Greyfin is waiting on the mere's edge with a covered pail. The brood has been quiet all week and she wants it kept so. She asks you what you came to say."
+tiles = ["mere", "channel"]
+water = ["mid", "low"]
+needs = ["mark:q-eel-mothers-four", "!mark:q-eel-mothers-end-cull", "!mark:q-eel-mothers-end-tithe", "!mark:q-eel-mothers-end-deep"]
+weight = 7
+[[event.option]]
+label = "Offer the netters' tithe, in the Reed-folk's name"
+needs = ["tier:reed:3"]
+[event.option.win]
+text = "Maud takes the offer as she takes a fish, with a quick hand. A tithe of fish, kept by the netters at every moon, and her word on the nets. She puts the first of it into your boat."
+fx = ["mark:q-eel-mothers-end-tithe", "rep:reed:10", "gain:fish:8-12", "morale:3"]
+[[event.option]]
+label = "Take the brood to the Deep with the tide"
+needs = ["size:3"]
+skill = "wader"
+risk = 40
+[event.option.win]
+text = "Three of you at the pole and the tide behind. Maud sings the whole brood down the channel in the dark, and when it is gone she thanks you: not warmly, but with a fish."
+fx = ["mark:q-eel-mothers-end-deep", "mark:eel-scarred", "rep:court:5", "gain:fish:4-8"]
+[event.option.lose]
+text = "The brood is bold at the channel mouth and the wader pays for it. They go to the Deep in the end, but the wader will carry a ring of small scars to the grave."
+fx = ["mark:q-eel-mothers-end-deep", "mark:eel-scarred", "rep:court:4", "hurt:wader:hurt"]
+[[event.option]]
+label = "Say you need more time to decide"
+[event.option.win]
+text = "Maud nods. Time is a thing the eels have a great deal of, she says. You go away with the pail's smell in your coat."
+fx = ["morale:-1"]
+
+[[event]]
+id = "eel-tithe-day"
+title = "The tithe at the channel mouth"
+text = "At the channel mouth the Reed-folk have left Maud's tithe: baskets of silver fish, the first catch of the moon, set out on the mud. She has put your clan's share to one side."
+tiles = ["channel", "mudflat"]
+needs = ["mark:q-eel-mothers-end-tithe"]
+weight = 7
+[[event.option]]
+label = "Take your share and leave a little back"
+[event.option.win]
+text = "You take your basket and leave a few fish on the mud for the eels. A wave rolls under the water in answer, friendly or otherwise."
+fx = ["gain:fish:6-12", "rep:reed:1"]
+[[event.option]]
+label = "Carry extra baskets for the widows"
+needs = ["size:2"]
+[event.option.win]
+text = "Two of you carry a double load back to the widows' camp. Hepzi Mudd does not say thanks. She puts a fish in your pocket with the air of an insult."
+fx = ["gain:fish:3-6", "rep:reed:3", "bond:1"]
+
+[[event]]
+id = "eel-scarred-ford"
+title = "The ford the eels remember"
+text = "At the old ford a long ripple follows the boat on the surface, and does not leave. The eels remember the lamps and the drums, and the marks on the arm tell them where to look."
+tiles = ["channel", "mere"]
+needs = ["mark:eel-scarred"]
+weight = 6
+[[event.option]]
+label = "Pole on steadily and do not hurry"
+needs = ["trait:steady"]
+[event.option.win]
+text = "The steady hand does not hurry, and the ripple loses interest. You cross without a bite, and a good deal of pride."
+fx = ["morale:2"]
+[[event.option]]
+label = "Hold a lamp over the water and stare it down"
+skill = "wader"
+risk = 25
+[event.option.win]
+text = "The ripple turns and goes. It will keep the memory. For one tide, at least, the ford is yours."
+fx = ["xp:wader:2", "morale:1"]
+[event.option.lose]
+text = "The ripple comes up through the hull. The old scar on your arm burns, and a new one joins it."
+fx = ["hurt:any:hurt"]
+[[event.option]]
+label = "Go round by the long way"
+[event.option.win]
+text = "Half a day lost, but nothing bites. Still, the ripple watches you go."
+fx = ["turns:1"]
+
+# ================================================================== witchs-apprentice
+
+[[event]]
+id = "witch-asks-hermit"
+title = "Granny Wick's request"
+text = "A reed hut with a pipe-smoke roof and a little green glass phial hung in the doorway. Granny Wick, who is old enough to be rude, wants a girl taken across the marsh before the tide-turn. The girl, Tamsin, sits on the doorstep and stares at her shoes."
+poi = ["hermit"]
+needs = ["tier:reed:2", "!mark:q-witchs-apprentice-one"]
+draws = ["trade:reed-witch"]
+weight = 8
+[[event.option]]
+label = "Agree to escort Tamsin"
+[event.option.win]
+text = "Granny Wick nods and spits into the fire, which is a blessing. Tamsin gets up without a word and takes your sleeve. The hut's door closes behind you with a small, final sound."
+fx = ["mark:q-witchs-apprentice-one", "rep:reed:2"]
+[[event.option]]
+label = "Agree, and ask what the girl is carrying"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "The witch looks Granny Wick in the eye and Granny Wick looks back. The phial is a keepsake, she says. It is not. The two of them agree on the lie, and Tamsin comes along with the phial in her sleeve."
+fx = ["mark:q-witchs-apprentice-one", "xp:reed-witch:3", "rep:reed:2"]
+[[event.option]]
+label = "Say the Reed-folk have asked too much already"
+[event.option.win]
+text = "Granny Wick says nothing at all, which is a form of speech. Tamsin does not look up. You go on your way, and the little green phial in the doorway turns slowly in the smoke."
+fx = ["morale:-1"]
+
+[[event]]
+id = "apprentice-causeway"
+title = "Tamsin on the causeway"
+text = "The causeway is half under and the girl walks it like a heron, light and careful. She has said nine words today. Something in her sleeve is clinking, and she keeps her hand on it."
+tiles = ["causeway", "mudflat"]
+needs = ["mark:q-witchs-apprentice-one", "!mark:q-witchs-apprentice-two"]
+weight = 9
+[[event.option]]
+label = "Share your food and ask what the clinking is"
+needs = ["carry:food:1"]
+[event.option.win]
+text = "She eats like she has not for days. Then she shows you: a little green glass phial, stoppered, with something pale curled in the bottom. The apprentice's, she says. Her witch's, really."
+fx = ["lose:food:1", "mark:q-witchs-apprentice-two", "bond:1"]
+[[event.option]]
+label = "Put your wader in front and the girl in the middle"
+needs = ["trade:wader"]
+[event.option.win]
+text = "The wader sets the line and Tamsin follows it exactly, step for step, with a small private smile. She has the phial in her hand by the end of the causeway and shows it to nobody."
+fx = ["mark:q-witchs-apprentice-two", "xp:wader:2"]
+[[event.option]]
+label = "Walk on and let her keep her secrets"
+[event.option.win]
+text = "She notices you do not ask. At the next stone she falls into step beside you and the clinking stops. A green phial, you think, and say nothing."
+fx = ["mark:q-witchs-apprentice-two"]
+
+[[event]]
+id = "apprentice-reed-toll"
+title = "The wardens at the reed toll"
+text = "A pole across the path, a lamp on a stake and two Tidecourt wardens in grey coats. They are looking for a girl in a reed-witch's cloak. One of them is already looking at Tamsin."
+tiles = ["reedbed", "island"]
+needs = ["mark:q-witchs-apprentice-two", "!mark:q-witchs-apprentice-three"]
+weight = 9
+[[event.option]]
+label = "Pay the toll and ask no questions"
+[event.option.win]
+text = "You pay the toll and a little more. The warden counts it twice and lifts the pole. The other one is still looking at Tamsin as you pass."
+fx = ["pay:8", "mark:q-witchs-apprentice-three"]
+[[event.option]]
+label = "Show your Court standing and name your business"
+needs = ["tier:court:2"]
+[event.option.win]
+text = "They read your name off a list. The senior one waves you through and the junior one stares at the girl's cloak. We will remember you, the senior warden says, and it is not a threat. Not quite."
+fx = ["mark:q-witchs-apprentice-three", "rep:court:2"]
+[[event.option]]
+label = "Hide her in the reeds and talk"
+needs = ["trait:lucky"]
+[event.option.win]
+text = "Luck: the wardens lose interest in the third minute, and the girl sits quiet in the reeds with a duck in her lap. The wardens go off arguing about a lantern."
+fx = ["mark:q-witchs-apprentice-three", "morale:2"]
+
+[[event]]
+id = "apprentice-night-camp"
+title = "What Tamsin says at night"
+text = "The fire is low. Tamsin has been quiet all day and now she is not. The witch did not send her away to be safe, she says. She sent her away because the Court wants what Tamsin can do, and Tamsin does not want to be wanted."
+camp = true
+needs = ["mark:q-witchs-apprentice-three", "!mark:q-witchs-apprentice-four"]
+weight = 9
+[[event.option]]
+label = "Sit with her and let her tell it all"
+needs = ["bond"]
+[event.option.win]
+text = "She tells you everything: the phial, the pale thing in it, and what Granny Wick said when she gave it. Choose somebody, Tamsin was told. Somebody not me, and not the Court."
+fx = ["mark:q-witchs-apprentice-four", "bond:2", "morale:2"]
+[[event.option]]
+label = "Show her how the clan keeps watch"
+[event.option.win]
+text = "You teach her the watch-song and the order of the night. She learns it in one pass. Then she tells you, a little at a time, what the witch would not."
+fx = ["mark:q-witchs-apprentice-four", "morale:1"]
+[[event.option]]
+label = "Test the phial: a witch's trick to read it"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "The pale thing in the phial answers the witch's hand. It is a charm, a good one, and Tamsin has been wearing it against being found. The witch hands it back with new respect."
+fx = ["mark:q-witchs-apprentice-four", "xp:reed-witch:3"]
+
+[[event]]
+id = "apprentice-parting"
+title = "Where Tamsin goes"
+text = "The path forks at the old hermit's stone: one road back to Granny Wick's, one to the Court's causeway and the wardens, and one that is only the way home to your own hold. Tamsin stands where the three meet, looking at you."
+poi = ["hermit"]
+needs = ["mark:q-witchs-apprentice-four", "!mark:q-witchs-apprentice-end-stay", "!mark:q-witchs-apprentice-end-home", "!mark:q-witchs-apprentice-end-court"]
+weight = 10
+[[event.option]]
+label = "Take her home to Granny Wick"
+[event.option.win]
+text = "Granny Wick is waiting in the doorway. She does not smile. She takes the girl's hand and the phial goes back on its hook. A pot of something sour and healing is pressed into your hands."
+fx = ["mark:q-witchs-apprentice-end-home", "rep:reed:11", "heal:all:2", "morale:3"]
+[[event.option]]
+label = "Offer her a place in your hold"
+needs = ["bond"]
+[event.option.win]
+text = "Tamsin looks at the clan and at you, and says yes before you have finished asking. She takes the phial out of her sleeve and puts it on the hold's shelf. Granny Wick will hear of it."
+fx = ["mark:q-witchs-apprentice-end-stay", "mark:apprentice-stays", "bond:4", "rep:reed:4", "morale:6"]
+[[event.option]]
+label = "Hand her to the wardens"
+needs = ["tier:court:2"]
+[event.option.win]
+text = "The senior warden writes a receipt. Tamsin does not cry. She says, quite clearly, that you will have cause to remember this. The Court's silver is warm in your hand."
+fx = ["mark:q-witchs-apprentice-end-court", "rep:court:12", "rep:reed:-12", "tallies:12-22"]
+
+[[event]]
+id = "apprentice-wardens-post"
+title = "The warden's post"
+text = "A warden's post on the causeway, a lamp and a ledger and a grey-coated woman named Garr. She has been told to expect a girl. She tells you the Court will pay well and the girl will be cared for. She says it very evenly."
+tiles = ["causeway", "island"]
+needs = ["mark:q-witchs-apprentice-four", "!mark:q-witchs-apprentice-end-stay", "!mark:q-witchs-apprentice-end-home", "!mark:q-witchs-apprentice-end-court"]
+weight = 7
+[[event.option]]
+label = "Give Tamsin to Garr and take the silver"
+[event.option.win]
+text = "Garr counts the silver twice. Tamsin goes without a word, with the phial held tight, and the post's lamp swings once as she crosses. You will not sleep well."
+fx = ["mark:q-witchs-apprentice-end-court", "rep:court:10", "rep:reed:-12", "tallies:10-20", "morale:-3"]
+[[event.option]]
+label = "Refuse and take her to your own hold"
+needs = ["bond", "size:2"]
+[event.option.win]
+text = "Garr watches you go and writes your name in her ledger. You are not stopped. Tamsin takes your hand all the way home and never lets go."
+fx = ["mark:q-witchs-apprentice-end-stay", "mark:apprentice-stays", "bond:3", "rep:court:-3", "morale:4"]
+[[event.option]]
+label = "Say you will carry her back to the witch"
+[event.option.win]
+text = "Garr shrugs. The Court cannot hold a child against a clan that says no, she says, and her face does not move. You go back the way you came with Tamsin walking very straight at your side."
+fx = ["mark:q-witchs-apprentice-end-home", "rep:reed:9", "rep:court:-2"]
+
+[[event]]
+id = "apprentice-at-hold"
+title = "Tamsin at the hold"
+text = "The camp is quieter since Tamsin came. She has put the green phial on the shelf over the hearth and taught the youngest a rhyme that makes the fire burn longer. She wants to know if she can help."
+camp = true
+needs = ["mark:apprentice-stays"]
+weight = 7
+[[event.option]]
+label = "Let her tend the party's blisters and coughs"
+[event.option.win]
+text = "She works through the party with a pot of pale salve and a rhyme. By the third rhyme the blisters are less. She is better at this than she lets on."
+fx = ["heal:all:2", "morale:3", "xp:healer:1"]
+[[event.option]]
+label = "Ask her to teach you the fire-rhyme"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "The two of them sit by the fire for an hour. The witch writes the rhyme on her own sleeve with soot. Tamsin watches and corrects her twice."
+fx = ["xp:reed-witch:3", "morale:2", "bond:1"]
+
+# ================================================================== quiet-fever
+
+[[event]]
+id = "fever-first-case"
+title = "The netter who cannot speak"
+text = "In the reed camp a netter sits against a post with his mouth working and no sound coming out. His hands are the colour of candle-wax. Round him the camp has gone very quiet in the way of people who are afraid to be loud."
+poi = ["camp"]
+needs = ["tier:reed:1", "!mark:q-quiet-fever-one"]
+draws = ["trade:healer"]
+weight = 9
+[[event.option]]
+label = "Look him over as a healer"
+needs = ["trade:healer"]
+skill = "healer"
+risk = 25
+[event.option.win]
+text = "The healer looks, sniffs, and feels the glands: the voice goes, then the legs, then the rest. It is not a marsh fever. It came in on the tide. The camp takes it very quietly."
+fx = ["mark:q-quiet-fever-one", "xp:healer:3", "rep:reed:2"]
+[event.option.lose]
+text = "The healer bends close to hear, and hears nothing. A cough that is not his. By evening she is quiet too, and coughing."
+fx = ["hurt:healer:sickness", "mark:q-quiet-fever-one"]
+[[event.option]]
+label = "Leave food at a distance and watch"
+needs = ["carry:food:1"]
+[event.option.win]
+text = "You leave a loaf and a pot of broth on the bank and watch from the reeds. Somebody takes it in. Nobody thanks you, but nobody is ill by morning."
+fx = ["lose:food:1", "mark:q-quiet-fever-one", "rep:reed:2"]
+[[event.option]]
+label = "Back away and note the camp"
+[event.option.win]
+text = "You back out of the camp with your sleeve across your mouth. Better a few days late than a few days ill. The camp remembers where you stood."
+fx = ["mark:q-quiet-fever-one", "morale:-1"]
+
+[[event]]
+id = "fever-healer-hut"
+title = "Bram Orris is out of herbs"
+text = "Bram Orris the healer keeps a hut full of empty jars. He used to keep it full. The fever has eaten his stores in a fortnight, and the herb he needs is pale sedge from the peat, and the peat is a long walk."
+poi = ["hermit"]
+needs = ["mark:q-quiet-fever-one", "!mark:q-quiet-fever-two"]
+weight = 9
+[[event.option]]
+label = "Give him reed and rope for the drying racks"
+needs = ["carry:reed:3"]
+[event.option.win]
+text = "Bram builds a new rack with your reed and hangs the bundles to dry in the smoke. Pale sedge, he says. Cut in the dark of the moon. Boiled with a pinch of salt and a little iron. He writes it on the hut wall in charcoal."
+fx = ["lose:reed:3", "mark:q-quiet-fever-two", "rep:reed:3"]
+[[event.option]]
+label = "Take notes while he talks"
+[event.option.win]
+text = "He talks, you write. Pale sedge, a peat-bog herb. It must be cut at dusk and not dried too hot. He has done it twice and both times too late."
+fx = ["mark:q-quiet-fever-two", "xp:healer:1"]
+[[event.option]]
+label = "Offer to cure by hand, as a healer"
+needs = ["trade:healer"]
+[event.option.win]
+text = "Two healers in a hut, one very old. They argue the proportions for an hour and agree on all but the iron. Bram will stew the first batch tonight."
+fx = ["mark:q-quiet-fever-two", "xp:healer:3", "rep:reed:2"]
+
+[[event]]
+id = "fever-pale-sedge"
+title = "Pale sedge in the peat"
+text = "A pocket of pale sedge in the peat, white as paper, growing in a hollow where the peat smoke does not reach. This is what Bram needs. It is also where the fever is thick: the air tastes of old copper."
+tiles = ["peat-bog"]
+needs = ["mark:q-quiet-fever-two", "!mark:q-quiet-fever-three"]
+weight = 9
+[[event.option]]
+label = "Cut it at dusk, as Bram said"
+skill = "healer"
+risk = 30
+[event.option.win]
+text = "You cut at the last light and wrap the sedge in damp cloth. It keeps. You walk out of the hollow with a bundle of pale stems and a clear head, and Bram will have a use for it."
+fx = ["mark:q-quiet-fever-three", "gain:reed:3-6", "xp:healer:3"]
+[event.option.lose]
+text = "The hollow's air gets into your chest. You come out with the sedge, a cough, and a quiet voice. It will pass, you think."
+fx = ["hurt:any:sickness", "mark:q-quiet-fever-three", "gain:reed:2-3"]
+[[event.option]]
+label = "Send your wader in on a line"
+needs = ["trade:wader", "carry:rope:1"]
+[event.option.win]
+text = "The wader goes in on the rope and comes out in a quarter hour with an armful of white stems. Everyone breathes out. The rope is a little yellow with sedge-juice."
+fx = ["mark:q-quiet-fever-three", "gain:reed:3-5", "xp:wader:2"]
+[[event.option]]
+label = "Take what you can without going in"
+[event.option.win]
+text = "You cut at arm's reach from the bank and get a thin handful. Not enough, you think, but it will do to start."
+fx = ["mark:q-quiet-fever-three", "gain:reed:1-2"]
+
+[[event]]
+id = "fever-court-notice"
+title = "The Court's quarantine notice"
+text = "A notice nailed to a post on the causeway, on the Court's heavy paper: reed camps with the quiet fever are to be shut, their people held, their goods burned. A warden named Ilse Marr is reading it to a small and sullen crowd."
+tiles = ["causeway", "island"]
+needs = ["mark:q-quiet-fever-two", "!mark:q-quiet-fever-three"]
+weight = 8
+[[event.option]]
+label = "Read it out loud to the crowd, and calm them"
+needs = ["tier:court:2"]
+[event.option.win]
+text = "Ilse Marr watches you read the Court's notice in the Court's voice. The crowd subsides. She nods once and writes your name down for the Court's good list."
+fx = ["mark:q-quiet-fever-three", "rep:court:3"]
+[[event.option]]
+label = "Argue the notice with Ilse Marr"
+needs = ["trade:healer"]
+[event.option.win]
+text = "She is not unreasonable. She says a healer's word counts, if the healer can show a cure. Otherwise the notice stands. She gives you three days' grace, which is the best anyone has had."
+fx = ["mark:q-quiet-fever-three", "xp:healer:2", "rep:court:2"]
+[[event.option]]
+label = "Read it and walk on"
+[event.option.win]
+text = "The notice is clear, and so is the crowd's mood. You walk on past the post and leave the sullen crowd to its warden."
+fx = ["mark:q-quiet-fever-three"]
+
+[[event]]
+id = "fever-drift-wreck"
+title = "The wreck out of the Deep"
+text = "A wreck has drifted in on the spring: long, grey, with a name painted over in a hurry. The deck is quiet. The air round it is thick and tastes of copper. Whatever the fever is, it came on this."
+tiles = ["wreck", "deep", "mere"]
+needs = ["mark:q-quiet-fever-three", "!mark:q-quiet-fever-four"]
+weight = 8
+[[event.option]]
+label = "Board with a cloth across your face and look"
+needs = ["trade:healer"]
+skill = "healer"
+risk = 30
+[event.option.win]
+text = "In the hold: a row of sealed crates, each stamped with a sealed-ruin glyph, and in the corner a fever-patient, long dead. The healer takes a sample in a jar and gets out quick."
+fx = ["mark:q-quiet-fever-four", "xp:healer:3", "chart:2"]
+[event.option.lose]
+text = "The cloth slips. A single lungful, and the healer is on the deck on her knees, unable to speak. She will mend, but slowly."
+fx = ["hurt:healer:sickness", "mark:q-quiet-fever-four"]
+[[event.option]]
+label = "Sail round it and read what the hull says"
+needs = ["boat"]
+[event.option.win]
+text = "From the boat you read the hull: a Deep-ruin glyph, painted over in a hurry. The fever comes from a sealed ruin that somebody opened. You note the bearing."
+fx = ["mark:q-quiet-fever-four", "chart:3"]
+[[event.option]]
+label = "Burn a torch at the wind side and watch it smoke"
+needs = ["carry:peat:2"]
+[event.option.win]
+text = "The torch smokes yellow and then green. You know enough to back off. The peat is gone. The fever was in the smoke."
+fx = ["lose:peat:2", "mark:q-quiet-fever-four"]
+[[event.option]]
+label = "Keep upwind and watch what comes off her"
+[event.option.win]
+text = "You sit upwind with your sleeve over your mouth until dusk. Gulls land on her rail and do not take off again. That is enough to know where the quiet came from."
+fx = ["mark:q-quiet-fever-four", "morale:-1"]
+
+[[event]]
+id = "fever-cure-hut"
+title = "Bram's last pot"
+text = "Bram Orris's hut again: a pot on the fire, pale sedge in a jar, salt, and a pinch of iron dust. Bram is thin and fierce and sure. It has to be done at dusk and done right, he says, and the healers who can do it are few."
+poi = ["hermit"]
+needs = ["mark:q-quiet-fever-four", "!mark:q-quiet-fever-end-cure", "!mark:q-quiet-fever-end-ban", "!mark:q-quiet-fever-end-ruin"]
+weight = 10
+[[event.option]]
+label = "Brew the salve with Bram, and cure the camps"
+needs = ["trade:healer"]
+skill = "healer"
+risk = 20
+[event.option.win]
+text = "You boil the pale sedge with salt and iron until the smell turns sweet, and Bram writes the proportions on your sleeve. By morning the first patient is whispering. By the week the camps are loud again."
+fx = ["mark:q-quiet-fever-end-cure", "recipe:witch-salve", "rep:reed:13", "heal:all:4", "xp:healer:6", "morale:6"]
+[event.option.lose]
+text = "The first batch is a little too hot. It takes the edge off the fever but not the fever, and it takes some of the healer's own health. Bram writes the proportions down anyway, and the second batch works."
+fx = ["mark:q-quiet-fever-end-cure", "recipe:witch-salve", "rep:reed:9", "hurt:healer:sickness", "xp:healer:3"]
+[[event.option]]
+label = "Send word to the Court that the camps must shut"
+needs = ["tier:court:2"]
+[event.option.win]
+text = "Bram does not argue. He pours the pot into the fire, one jar at a time. A warden's boat is at the reed camp by dusk. The Court is thorough."
+fx = ["mark:q-quiet-fever-end-ban", "mark:marsh-quarantined", "rep:court:11", "rep:reed:-9", "tallies:6-12"]
+[[event.option]]
+label = "Tell Bram you are going to find the source"
+[event.option.win]
+text = "He gives you a jar of the half-made salve and a long look. If you cannot be talked out of it, he says. The road to the Deep's ruins lies north of the wreck."
+fx = ["morale:-1", "gain:food:1-2"]
+
+[[event]]
+id = "fever-quarantine-line"
+title = "The warden's line"
+text = "Ilse Marr has drawn a line of lamps along the causeway, and behind it the reed camps are dark. She has sealed them. Her lamps are the only light, and her men are tired. She would like the clan's help, and says so plainly."
+tiles = ["causeway", "reedbed"]
+needs = ["mark:q-quiet-fever-four", "!mark:q-quiet-fever-end-cure", "!mark:q-quiet-fever-end-ban", "!mark:q-quiet-fever-end-ruin"]
+weight = 8
+[[event.option]]
+label = "Hold the line with the wardens"
+needs = ["size:3"]
+[event.option.win]
+text = "Three of you hold a lamp each through the night. At dawn the line is quiet and Ilse Marr writes your names in her ledger. The reed camps behind it do not look at you."
+fx = ["mark:q-quiet-fever-end-ban", "mark:marsh-quarantined", "rep:court:12", "rep:reed:-10", "tallies:8-16"]
+[[event.option]]
+label = "Hand over your stores for the camps behind the line"
+needs = ["trade:fighter"]
+[event.option.win]
+text = "The fighter stands the line with the wardens and keeps it honest, while the stores go over the lamps to the sealed camps. Ilse Marr thinks it is a risk. The Court thinks it is a service."
+fx = ["mark:q-quiet-fever-end-ban", "mark:marsh-quarantined", "rep:court:10", "rep:reed:-6", "xp:fighter:3"]
+[[event.option]]
+label = "Say you cannot help, and walk on"
+[event.option.win]
+text = "Ilse Marr does not argue. She nods. The lamps burn on behind you, and the quiet of the camps follows you down the causeway."
+fx = ["morale:-2"]
+
+[[event]]
+id = "fever-sealed-ruin"
+title = "The sealed ruin"
+text = "North of the drifted wreck a ruin stands sealed with a pale slab. A glyph is cut in it, a bell with a line through it. Somebody has been breaking the seal from outside, and somebody has been very sick."
+poi = ["ruin"]
+needs = ["mark:q-quiet-fever-four", "!mark:q-quiet-fever-end-cure", "!mark:q-quiet-fever-end-ban", "!mark:q-quiet-fever-end-ruin"]
+weight = 8
+[[event.option]]
+label = "Break the seal and go in for the source"
+skill = "salvager"
+risk = 50
+[event.option.win]
+text = "The slab gives with a scrape and a breath of cold. Inside: a rack of shelved relics under dust, a vault of sealed vials, and a cold that tastes of copper. You carry out what you can in a cloth and seal the door behind you."
+fx = ["mark:q-quiet-fever-end-ruin", "rep:reed:-8", "gain:relic:1-1", "tallies:8-16", "hurt:any:sickness"]
+[event.option.lose]
+text = "The cold gets in. You get out with a single relic and a cough that will not leave, and you leave the door unsealed. The Reed-folk will know."
+fx = ["mark:q-quiet-fever-end-ruin", "rep:reed:-10", "gain:relic:1-1", "hurt:lead:sickness", "hurt:any:sickness"]
+[[event.option]]
+label = "Send a scout in on a line and wait outside"
+needs = ["carry:rope:1", "size:2"]
+skill = "wader"
+risk = 35
+[event.option.win]
+text = "The scout goes in on the rope and comes out with a cold sweat and a sealed vial. It is not the source, but it is a clue, and it is worth something. You re-seal the slab."
+fx = ["mark:q-quiet-fever-end-ruin", "rep:reed:-6", "tallies:10-18", "chart:2"]
+[event.option.lose]
+text = "The rope goes slack. The scout comes out on her own, grey and silent, and the vial in her hand is cracked. You get out of the Deep with a story and a sickness."
+fx = ["mark:q-quiet-fever-end-ruin", "rep:reed:-8", "hurt:wader:sickness", "lose:rope:1"]
+[[event.option]]
+label = "Think better of it and go back"
+[event.option.win]
+text = "You do not break the seal. The glyph on the slab is a bell with a line through it, and you walk away and do not look at it again."
+fx = ["morale:-1"]
+
+[[event]]
+id = "fever-camps-shut"
+title = "The shut reed camp"
+text = "A reed camp with its doors barred and a Court lamp on a stake. Faces watch from the gaps. A woman says through the slats that they know who closed the path. She says it quietly."
+poi = ["camp"]
+needs = ["mark:marsh-quarantined"]
+weight = 8
+[[event.option]]
+label = "Push a little food through the slats"
+needs = ["carry:food:1"]
+[event.option.win]
+text = "You push a loaf through a gap. A hand takes it. Nobody says thank you, but the woman nods once, and that is something."
+fx = ["lose:food:1", "rep:reed:1", "morale:1"]
+[[event.option]]
+label = "Show the Court's seal and ask for the camp's tallies"
+needs = ["tier:court:2"]
+[event.option.win]
+text = "The woman looks at the seal and spits through the slats. A purse is pushed under the door, a Court levy paid in advance. The clan's name is not loved here."
+fx = ["tallies:6-12", "rep:reed:-2", "rep:court:2"]
+[[event.option]]
+label = "Walk on"
+[event.option.win]
+text = "You walk on. Behind the slats the faces turn with you. The Court's lamp burns on."

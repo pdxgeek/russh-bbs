@@ -9,7 +9,7 @@ title = "A cairn of tide-stones"
 text = "On the crown of the island stands a cairn as high as a man, built of flat grey stones. Every stone has a little hole worn through it by the water. Whoever built it did not stop building."
 tiles = ["island"]
 weight = 7
-draws = ["trade:reed-witch"]
+draws = ["trade:reed-witch", "mark:nursed-the-fever-house"]
 [[event.option]]
 label = "Add a stone of your own"
 needs = ["!mark:added-a-stone"]
@@ -182,6 +182,7 @@ tiles = ["drowned-town"]
 water = ["low", "mid"]
 day = ["day", "dawn"]
 weight = 6
+draws = ["mark:returned-the-assize-box"]
 [[event.option]]
 label = "Read the slates"
 [event.option.win]
@@ -909,7 +910,7 @@ title = "Who has the dog watch"
 text = "The straws are drawn and the short one falls to someone who clearly does not want it. The fire is low, the night is long and the marsh is making the noises it makes."
 camp = true
 weight = 7
-draws = ["trait:fearful"]
+draws = ["trait:fearful", "mark:forgave-the-thief"]
 [[event.option]]
 label = "Take the watch yourself"
 [event.option.win]

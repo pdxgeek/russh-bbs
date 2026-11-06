@@ -846,7 +846,7 @@ label = "Fight the eels off the hull"
 needs = ["trade:fighter"]
 [event.option.win]
 text = "They come over the side in pairs and you meet them with the flat of an axe. It is loud and short. The Mule survives with a split plank and a story."
-fx = ["xp:fighter:2", "mark:q-dredgers-oath-2", "fight:eel-pair"]
+fx = ["xp:fighter:2", "mark:q-dredgers-oath-2", "fight:crab-and-eel"]
 [[event.option]]
 label = "Sing the eels quiet"
 needs = ["trade:reed-witch"]
