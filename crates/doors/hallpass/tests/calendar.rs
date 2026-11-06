@@ -22,7 +22,7 @@
 )]
 mod common;
 
-use common::{Sandbox, content, monday, run_branch, world_at};
+use common::{Sandbox, content, monday, replay_twice, run_branch, world_at, world_log};
 use russh_bbs_door_hallpass::game::{Action, Game};
 use russh_bbs_door_hallpass::save::encode_player;
 use russh_bbs_door_hallpass::state::{Membership, map_set};
@@ -650,23 +650,24 @@ fn staged(
     (sb.game.clone(), sb)
 }
 
-/// Run the same keys twice through the framework's real keys and store and require the same pupil
-/// and the same school; return the first.
+/// Replay the keys as a world-aware log (twice, identically), and once through the framework's
+/// real store and keys; the two must leave the same pupil. Returns what the store run left.
 async fn replay(sb: &Sandbox, term_day: i64, keys: &str) -> common::Branch {
     let world = {
         let mut w = world_at(term_day);
         w.active = sb.game.world.active.clone();
         w
     };
-    let one = run_branch(&sb.game.player, &world, keys, 11).await;
-    let two = run_branch(&sb.game.player, &world, keys, 11).await;
+    let log = world_log(&sb.game.player, &world, keys, 11);
+    let run = replay_twice(&log);
+    let stored = run_branch(&sb.game.player, &world, keys, 11).await;
     assert_eq!(
-        encode_player(&one.player),
-        encode_player(&two.player),
-        "{keys}: the same keys give the same pupil"
+        run.save.as_deref(),
+        Some(encode_player(&stored.player).as_slice()),
+        "{keys}: the replay and the store leave the same pupil"
     );
-    assert_eq!(one.world, two.world, "{keys}: and the same school");
-    one
+    assert!(run.world_edits >= 1, "{keys}: it changed the school");
+    stored
 }
 
 /// The key text that starts `talk` (a position in the day's list) and presses `choices`.

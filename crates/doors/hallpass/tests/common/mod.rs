@@ -473,3 +473,45 @@ pub fn world_at(term_day: i64) -> World {
     w.last_day = monday() + term_day - 1;
     w
 }
+
+// ---------------------------------------------------------------- world-aware replay (FW-1)
+
+use russh_bbs_door::replay::{self, ReplayLog, ReplayRun, WorldLog};
+
+/// A log of one visit: the pupil's save, the school as the visit starts, the keys. It carries
+/// the world it read, so a visit that reads the school (a scheme posted at the pupil, the day of
+/// the term) replays to the same bytes.
+pub fn world_log(player: &Player, world: &World, text: &str, seed: u64) -> WorldLog {
+    WorldLog {
+        log: ReplayLog {
+            door: russh_bbs_door_hallpass::DOOR_ID.to_owned(),
+            seed,
+            start: Day::from_raw(player.day).start().as_raw(),
+            season: 1,
+            save: Some(encode_player(player)),
+            keys: keys(text),
+        },
+        world: Some(world.to_bytes()),
+        reads: Vec::new(),
+    }
+}
+
+/// Replay the visit twice: the runs must be identical, and the log must survive its text form.
+pub fn replay_twice(log: &WorldLog) -> ReplayRun {
+    let door = Hallpass::new().unwrap();
+    let env = DoorEnv::for_tests(
+        &decode_player(log.log.save.as_deref().unwrap())
+            .unwrap()
+            .name,
+    );
+    let text = log.to_string();
+    assert_eq!(
+        &text.parse::<WorldLog>().unwrap(),
+        log,
+        "the log round-trips"
+    );
+    let one = replay::run_world(&door, log, &env);
+    let two = replay::run_world(&door, log, &env);
+    assert_eq!(one, two, "the same log gives the same run");
+    one
+}

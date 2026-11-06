@@ -1033,6 +1033,31 @@ needs = ["know:bolt_outside"]
 say = "He listens to every word and asks you to say the last part again."
 effects = ["arc_end:the_wing:fenn"]
 [[talk.node.choice]]
+label = "Lay the shed logbook and the boat store's old log in front of him"
+needs = ["know:fenn_logbook", "know:fenn_rowed"]
+say = "He reads thirty years of his own handwriting, and the line in the other book where a fourteen-year-old signed out a boat. He does not say anything. He puts one hand flat on the page, as if it were warm."
+effects = ["arc_end:the_wing:fenn", "bond:fenn:+3", "stat:legend:+2"]
+[[talk.node.choice]]
+label = "Give him the letters from under the last bed"
+needs = ["know:ines_letters"]
+say = "The letters are in a round child's hand, and the last one is the one she never sent. He holds it for a long time. Then he folds it into his breast pocket, over his heart, and says, 'She called me Abel. Nobody has said it in forty years.'"
+effects = ["arc_end:the_wing:fenn", "bond:fenn:+5", "stat:legend:+2"]
+[[talk.node.choice]]
+label = "Tell him you know about the cats, the bowl and the planks"
+needs = ["know:cats_in_the_wing", "know:fenn_gave_planks"]
+say = "'Eleven cats,' says Mr. Fenn. 'And a boy who builds a boat out of the one wall I could not bring myself to burn.' He almost laughs. It is the first time you have heard it. 'Then you know me better than my own staff.'"
+effects = ["arc_end:the_wing:fenn", "bond:fenn:+3", "stat:legend:+1"]
+[[talk.node.choice]]
+label = "Tell him you found the note he left with the key, and the cut padlock"
+needs = ["know:fenn_left_key", "know:cut_padlock"]
+say = "'I thought somebody might,' he says. 'I left it for whoever came next. I did not think they would be so young. I am sorry. And I am grateful.' He gives you the key to the garden shed as well, as if it settled something."
+effects = ["arc_end:the_wing:fenn", "bond:fenn:+3", "stat:legend:+1"]
+[[talk.node.choice]]
+label = "Say you saw the tin on his shelf, and the lilies, and that you understand"
+needs = ["know:fenn_tin", "know:fenn_garden"]
+say = "He nods, slowly, three times, like a man agreeing with a verdict he has waited a lifetime to hear. 'Then you will want to tell it properly,' he says. 'I will stand beside you.'"
+effects = ["arc_end:the_wing:fenn", "bond:fenn:+4", "stat:legend:+2", "stand:strays:+2"]
+[[talk.node.choice]]
 label = "Not yet"
 say = "'Whenever you are ready,' says Mr. Fenn."
 
@@ -1057,6 +1082,21 @@ label = "Ask him about the initials on the bolt"
 needs = ["know:bolt_outside"]
 say = "'W.S.,' he says. 'Yes.' And nothing else for a long minute."
 effects = ["arc_end:the_wing:soames"]
+[[talk.node.choice]]
+label = "Put his own lending card in his hand, with his confession"
+needs = ["know:soames_borrowed", "know:soames_note"]
+say = "His own signature, and his own words. 'You went through my prayer book,' he says, without anger. 'Good. I have been trying to leave it where somebody would.'"
+effects = ["arc_end:the_wing:soames", "bond:soames:+3", "stat:legend:+2"]
+[[talk.node.choice]]
+label = "Sit at the organ and play him seventy-three"
+needs = ["know:hymn_73", "know:wing_music"]
+say = "You pick it out with one finger, the way the hymn slips on the piano in the wing must have taught you. By the third line his hand is on the other keyboard, and by the last he is playing it, whole, for the first time in forty years."
+effects = ["arc_end:the_wing:soames", "bond:soames:+4", "stat:legend:+3"]
+[[talk.node.choice]]
+label = "Tell him about the girl who hummed in the stairwell, and the line in the pew"
+needs = ["know:echo_stair", "know:ines_poem"]
+say = "'I never knew anyone wrote it down,' says Reverend Soames, of the line in the pew. 'For I.H., who sang last. I think I know who put it there.' He looks at his hands. 'I did not.'"
+effects = ["arc_end:the_wing:soames", "bond:soames:+3", "stat:legend:+1"]
 [[talk.node.choice]]
 label = "Not yet"
 say = "'I am not going anywhere,' says Reverend Soames."
@@ -1083,6 +1123,21 @@ needs = ["know:bolt_outside"]
 say = "'Sit down,' says Dame Vane. 'Let me tell you how these things look from here.'"
 effects = ["arc_end:the_wing:vane"]
 [[talk.node.choice]]
+label = "Show her the letter she never sent"
+needs = ["know:vane_letter"]
+say = "She reads it standing, and she reads it in full, and her face does not change at all until the last line. 'I thought I had burned that,' she says. 'I could not.' She sits. 'Thank you for not leaving it where someone else would find it.'"
+effects = ["arc_end:the_wing:vane", "bond:vane:+4", "stat:legend:+2"]
+[[talk.node.choice]]
+label = "Tell her about the nailed window and the bolt she has never mentioned"
+needs = ["know:nailed_window", "know:bolt_outside"]
+say = "'Somebody re-nailed that window,' says Dame Vane, 'every term, for thirty years. I wondered who. I knew, of course.' She puts both hands on the desk. 'Mr. Fenn.' You have not said his name."
+effects = ["arc_end:the_wing:vane", "bond:vane:+3", "stat:legend:+2"]
+[[talk.node.choice]]
+label = "Ask her about the struck-out line in the register, and watch her hands"
+needs = ["know:register_entry", "know:vane_flinched"]
+say = "She does not look away. 'I struck it,' says Dame Vane. 'On the order of the Governors, on the Tuesday, and I was twenty-two and I signed what I was given to sign. I have been headmistress for thirty years in order to make sure no one ever asks a child to do that again.' It is the longest speech you have ever heard her make."
+effects = ["arc_end:the_wing:vane", "bond:vane:+4", "stat:legend:+3"]
+[[talk.node.choice]]
 label = "Say you came about your reports"
 say = "'Of course,' says Dame Vane, as though she had expected nothing else."
 
@@ -1101,6 +1156,26 @@ text = "Wren Okonjo has the press drawer open and a headline half-written. 'You 
 label = "Give her the diary"
 say = "She reads it standing up, and then she reads it again."
 effects = ["arc_end:the_wing:paper"]
+[[talk.node.choice]]
+label = "Give her the old negatives, the register's struck-out line and the stub"
+needs = ["know:old_photograph", "know:register_entry"]
+say = "She lays them out on the light table. Eight girls, one face scratched out. The register's line, and the stub it was torn from. 'That,' says Wren, in a voice you have never heard her use, 'is a case.'"
+effects = ["arc_end:the_wing:paper", "bond:wren:+4", "stat:legend:+3"]
+[[talk.node.choice]]
+label = "Show her the paper's own front page from the week after the fire"
+needs = ["know:abney_wrote_it"]
+say = "Three lines, unsigned, in a terrified little hand. 'P.A.,' reads Wren. 'Philippa Abney.' She looks up. 'She was fifteen. I am not going to print her name. I am going to print what she was afraid of.'"
+effects = ["arc_end:the_wing:paper", "bond:wren:+4", "stat:legend:+2"]
+[[talk.node.choice]]
+label = "Take the key to the case she locked, and open the plates together"
+needs = ["know:wren_plates"]
+say = "The chase opens with a snap. The page is already set, every column, every rule, and above the fold, in letters an inch high, a name. 'We have been ready for weeks,' says Wren. 'We just needed you.'"
+effects = ["arc_end:the_wing:paper", "bond:wren:+5", "stat:legend:+3", "stand:ink_society:+3"]
+[[talk.node.choice]]
+label = "Tell her Miss Abney has agreed to be quoted"
+needs = ["know:abney_confided"]
+say = "'Has she?' says Wren. 'Has she, really?' She is silent for a full minute. 'Then I shall print it as she wrote it. The three lines, and then the rest. All of it, under her own name, if she lets me.' She will."
+effects = ["arc_end:the_wing:paper", "bond:wren:+3", "bond:abney:+3", "stat:legend:+2"]
 [[talk.node.choice]]
 label = "Say it can wait a day"
 say = "'The best stories never wait,' says Wren, 'but they will, for you.'"
@@ -1121,6 +1196,16 @@ label = "The diary, and every page that mentions the wing"
 say = "He does not argue. He just looks at the matches for a moment and nods."
 effects = ["arc_end:the_wing:bonfire"]
 [[talk.node.choice]]
+label = "Tell him about the eight names on the cellar beam, and the cut padlock"
+needs = ["know:eight_names", "know:cut_padlock"]
+say = "He puts the matches down very carefully. 'Seven names that are fading,' he says, 'and one that somebody keeps cutting. I'll tell you what. We burn the registers and the papers. We leave the beam.' He keeps his promise. He even leaves a small candle."
+effects = ["arc_end:the_wing:bonfire", "bond:sol:+3", "stat:legend:+2"]
+[[talk.node.choice]]
+label = "Let Bex chalk the last arrow, straight to the bonfire"
+needs = ["know:bex_chalk"]
+say = "Bex is on the quad wall in a minute with her chalk, drawing a long blue arrow from the Old Wing across the flagstones to the bonfire. 'It's what they were always for,' she says. 'Pointing. Down, then out, then away.' It is a farewell."
+effects = ["arc_end:the_wing:bonfire", "bond:sol:+2", "bond:bex:+3", "stat:legend:+2"]
+[[talk.node.choice]]
 label = "Nothing. Forget I said anything"
 say = "'Said what?' says Sol, which is the nicest thing he could have said."
 
@@ -1139,6 +1224,16 @@ text = "Tilly Brandt has found a spot in the sun and does not ask what is wrong.
 label = "Agree, and put the key away for good"
 say = "You sit there until the bell, and neither of you says anything about the East Wing again."
 effects = ["arc_end:the_wing:walk_away"]
+[[talk.node.choice]]
+label = "Tell Tilly about Wilf's heron count and the tapping on the pipes"
+needs = ["know:wilf_light", "know:pipe_tapping"]
+say = "'So he has been keeping the light for a long time,' says Tilly, 'and somebody has been keeping him company.' She thinks about it. 'That's the nicest thing I've heard about the school. Let's leave it as it is.'"
+effects = ["arc_end:the_wing:walk_away", "bond:tilly:+3", "stat:cool:+2"]
+[[talk.node.choice]]
+label = "Leave the key with the lilies, and the map with Posy"
+needs = ["know:ines_lilies", "know:posy_map"]
+say = "You press the key into the soil by the cold frame, and Posy folds the map and puts it in her coat. 'Some rooms have no door,' she says, 'for a reason.' The lilies do not mind."
+effects = ["arc_end:the_wing:walk_away", "bond:posy:+3", "bond:moss:+2", "stat:cool:+2"]
 [[talk.node.choice]]
 label = "Say you are not ready to stop"
 say = "'Then you are not,' says Tilly, and offers you half a sandwich."
