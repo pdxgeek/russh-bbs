@@ -281,7 +281,7 @@ A scheme run reached by hand over `ssh` (it needs a scheme that is ready, the it
 
 ## Implementation notes (M4-H4)
 
-Slice 4 is the last Hallpass slice: the social layer, the east wing's mystery, a content pass and the balance pass. Decision D-TBD (number assigned at merge) records the choices that were real alternatives. New code: `src/commons.rs` (what the social layer keeps: a character's `Social` and the school's `Commons`), `src/social.rs` (the rules: schemes on pupils, rumours, the election, the awards, the search), `src/social_spec.rs` (the two new tables and their checks), `src/session/social_views.rs` (the screens); new tables `content/social.toml` and `content/mystery.toml`, and additions to `arcs.toml`, `talks.toml`, `world.toml`, `items.toml`, `places.toml`, `traits.toml`, `clubs.toml`.
+Slice 4 is the last Hallpass slice: the social layer, the east wing's mystery, a content pass and the balance pass. Decision D135 (number assigned at merge) records the choices that were real alternatives. New code: `src/commons.rs` (what the social layer keeps: a character's `Social` and the school's `Commons`), `src/social.rs` (the rules: schemes on pupils, rumours, the election, the awards, the search), `src/social_spec.rs` (the two new tables and their checks), `src/session/social_views.rs` (the screens); new tables `content/social.toml` and `content/mystery.toml`, and additions to `arcs.toml`, `talks.toml`, `world.toml`, `items.toml`, `places.toml`, `traits.toml`, `clubs.toml`.
 
 ### What is implemented (and tested)
 
