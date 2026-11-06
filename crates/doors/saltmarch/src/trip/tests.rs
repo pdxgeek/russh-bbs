@@ -1209,6 +1209,15 @@ fn satisfy(fx: &Fx, needs: &[&Cond]) -> Clan {
             }
             Req::Size(_) => {}
             Req::Boat => trip.kit.boats = 1,
+            Req::Tier(f, t) => {
+                clan.story.rep[f.index()] = [-30, 0, 15, 40, 70][usize::from(*t)];
+            }
+            Req::Quests(n) => {
+                for q in fx.cat.quests.iter().take(usize::from(*n)) {
+                    clan.add_mark(&q.ends[0].mark);
+                }
+            }
+            Req::Contracts(n) => clan.story.done = *n,
         }
     }
     clan.trip = Some(trip);

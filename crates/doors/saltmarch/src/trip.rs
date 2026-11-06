@@ -45,7 +45,7 @@ pub const MAX_BOATS: u8 = 2;
 pub const EVENT_PCT: u32 = 22;
 
 /// The most marks a clan remembers.
-pub const MARKS_CAP: usize = 48;
+pub const MARKS_CAP: usize = 160;
 
 /// The most tiles remembered as visited on one trip.
 const VISITED_CAP: usize = 120;
@@ -771,6 +771,9 @@ impl View<'_> {
             Req::Carry(r, n) => self.trip.carried(*r) >= *n,
             Req::Size(n) => self.trip.party.len() >= usize::from(*n),
             Req::Boat => self.trip.kit.boats > 0,
+            Req::Tier(f, n) => self.clan.story.tier(*f) >= *n,
+            Req::Quests(n) => self.cat.quests_done(|m| self.clan.has_mark(m)) >= usize::from(*n),
+            Req::Contracts(n) => self.clan.story.done >= *n,
         };
         yes != cond.not
     }
@@ -1060,7 +1063,7 @@ fn run_effects(
             Effect::Recipe(id) => {
                 if !clan.recipes.contains(id)
                     && let Some(def) = cat.recipe(id)
-                    && def.learn == Learn::Ruin
+                    && matches!(def.learn, Learn::Ruin | Learn::Trade)
                 {
                     clan.recipes.push(id.clone());
                     events.push(Event::Learned {
@@ -1092,6 +1095,19 @@ fn run_effects(
                         finish_injury(cat, clan, id, &inj, rng, events);
                     }
                 }
+            }
+            Effect::Rep(faction, by) => {
+                let (before, after) = clan.story.add_rep(*faction, i16::from(*by));
+                events.push(Event::Standing {
+                    faction: *faction,
+                    by: *by,
+                    tier: after,
+                    changed: before != after,
+                });
+            }
+            Effect::World(flag) => {
+                clan.story.queue(crate::story::Out::Flag(*flag));
+                events.push(Event::MarshChanged { flag: *flag });
             }
             Effect::Fight(group) => {
                 if let Some(end) = begin_fight(env, clan, trip, group, rng, events) {

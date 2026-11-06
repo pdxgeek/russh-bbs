@@ -38,6 +38,7 @@ pub mod lore;
 pub mod map;
 mod session;
 pub mod social;
+pub mod story;
 pub mod tide;
 pub mod trip;
 pub mod types;
@@ -61,7 +62,7 @@ use crate::world::World;
 pub const DOOR_ID: &str = "saltmarch";
 
 /// The current save format version.
-pub const SAVE_VERSION: u32 = 3;
+pub const SAVE_VERSION: u32 = 4;
 
 /// The current world format version.
 pub const WORLD_VERSION: u32 = 3;
@@ -214,13 +215,20 @@ impl Door for Saltmarch {
                 let upgraded = Clan::upgrade_v1(bytes);
                 // Version 2 is not readable by this code; check it as it will be once the next
                 // step has run.
-                Clan::decode(&Clan::upgrade_v2(&upgraded)).ok_or(MigrateError::Corrupt(1))?;
+                Clan::decode(&Clan::upgrade_v3(&Clan::upgrade_v2(&upgraded)))
+                    .ok_or(MigrateError::Corrupt(1))?;
                 Ok(upgraded)
             }
             // Version 3 added the social state: the clan's pending dispatches, inbox and counters.
             (BlobKind::Save, 2) => {
                 let upgraded = Clan::upgrade_v2(bytes);
-                Clan::decode(&upgraded).ok_or(MigrateError::Corrupt(2))?;
+                Clan::decode(&Clan::upgrade_v3(&upgraded)).ok_or(MigrateError::Corrupt(2))?;
+                Ok(upgraded)
+            }
+            // Version 4 added the story: standing, the contract in hand, the heirloom, the outbox.
+            (BlobKind::Save, 3) => {
+                let upgraded = Clan::upgrade_v3(bytes);
+                Clan::decode(&upgraded).ok_or(MigrateError::Corrupt(3))?;
                 Ok(upgraded)
             }
             // Version 2 added the league scores and the price history.
