@@ -82,20 +82,6 @@ impl Mode {
     }
 }
 
-#[cfg(test)]
-mod mode_tests {
-    use super::{MenuId, Mode};
-
-    #[test]
-    fn only_the_typing_modes_take_text() {
-        assert!(Mode::Naming(String::new()).takes_text());
-        assert!(Mode::Line(String::new()).takes_text());
-        assert!(!Mode::Report.takes_text());
-        assert!(!Mode::Unreadable.takes_text());
-        assert!(!Mode::Menu(MenuId::Main).takes_text());
-    }
-}
-
 enum Act {
     Go(MenuId),
     Do(Action),
@@ -1255,5 +1241,19 @@ impl Session {
             }
             Err(e) => self.notes = vec![(e.to_string(), DoorStyle::Bad)],
         }
+    }
+}
+
+#[cfg(test)]
+mod mode_tests {
+    use super::{MenuId, Mode};
+
+    #[test]
+    fn only_the_typing_modes_take_text() {
+        assert!(Mode::Naming(String::new()).takes_text());
+        assert!(Mode::Line(String::new()).takes_text());
+        assert!(!Mode::Report.takes_text());
+        assert!(!Mode::Unreadable.takes_text());
+        assert!(!Mode::Menu(MenuId::Main).takes_text());
     }
 }
