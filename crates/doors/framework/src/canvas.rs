@@ -22,7 +22,9 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::{Modifier, Style};
 use ratatui::widgets::{StatefulWidget, Widget};
+use russh_bbs_core::limits::Day;
 use russh_bbs_core::sanitize::SingleLine;
+use russh_bbs_core::store::UnixSeconds;
 
 /// The longest string one `text` call draws, in characters, whatever its width.
 const MAX_TEXT_CHARS: usize = 400;
@@ -132,6 +134,7 @@ pub struct Canvas<'a> {
     buf: &'a mut Buffer,
     area: Rect,
     palette: &'a DoorPalette,
+    pub(crate) now: UnixSeconds,
 }
 
 impl<'a> Canvas<'a> {
@@ -140,7 +143,28 @@ impl<'a> Canvas<'a> {
     /// the part inside the buffer.
     pub(crate) fn new(buf: &'a mut Buffer, area: Rect, palette: &'a DoorPalette) -> Self {
         let area = area.intersection(buf.area);
-        Self { buf, area, palette }
+        Self {
+            buf,
+            area,
+            palette,
+            now: UnixSeconds::from_raw(0),
+        }
+    }
+
+    /// The board's clock at the moment of drawing (injected, so a replay or a test sets it).
+    /// A screen draws "today" from this, not from the day its session opened, so a session left
+    /// open across midnight shows the new day. A canvas a test makes by hand (not through a
+    /// [`Driver`](crate::host::Driver) or [`replay::draw_to_text`](crate::replay::draw_to_text))
+    /// reports the epoch.
+    #[must_use]
+    pub const fn now(&self) -> UnixSeconds {
+        self.now
+    }
+
+    /// The current UTC day when drawing (see [`Canvas::now`]).
+    #[must_use]
+    pub const fn today(&self) -> Day {
+        Day::of(self.now)
     }
 
     /// Columns available.

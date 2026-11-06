@@ -16,9 +16,11 @@ use russh_bbs_core::limits::{Clock, Day};
 use russh_bbs_core::store::{AccountId, StoreError};
 use tracing::{error, warn};
 
-use crate::canvas::Canvas;
+use crate::canvas::{Canvas, DoorStyle};
 use crate::ctx::{Ctx, Effects, TextBudget, WorldEdit};
-use crate::door::{BlobKind, Door, DoorEnv, DoorSession, Flow, MigrateError, Save, Start};
+use crate::door::{
+    BlobKind, Door, DoorEnv, DoorSession, Flow, LOOK_AROUND_KEY, MigrateError, Save, Start,
+};
 use crate::key::DoorKey;
 use crate::rng::DoorRng;
 
@@ -35,6 +37,10 @@ pub struct Driver {
     season: u32,
     text: TextBudget,
     effects: Mutex<Effects>,
+    /// The latest world the door may read through [`Ctx::world`].
+    world: Option<Vec<u8>>,
+    /// Whether the look-around view (D98) is showing instead of the door's screen.
+    looking: bool,
 }
 
 impl Driver {
@@ -44,6 +50,7 @@ impl Driver {
         // One RNG for the whole visit: `open` draws from it first, then every key does.
         let mut rng = DoorRng::from_seed(seed);
         let season = start.season;
+        let world = start.world.map(<[u8]>::to_vec);
         let session = door.open(start, &mut rng);
         Self {
             session: Mutex::new(session),
@@ -52,11 +59,47 @@ impl Driver {
             season,
             text: TextBudget::default(),
             effects: Mutex::new(Effects::default()),
+            world,
+            looking: false,
         }
     }
 
+    /// Replace the world the door reads through [`Ctx::world`] (the board does this when it
+    /// re-reads the store; a replay does it from the log).
+    pub fn set_world(&mut self, world: Option<Vec<u8>>) {
+        self.world = world;
+    }
+
+    /// The world the door would read now.
+    #[must_use]
+    pub fn world(&self) -> Option<&[u8]> {
+        self.world.as_deref()
+    }
+
+    /// Whether the look-around view is showing.
+    #[must_use]
+    pub const fn is_looking(&self) -> bool {
+        self.looking
+    }
+
     /// Give the door one key. Effects queue up until [`Driver::take_effects`].
+    ///
+    /// [`LOOK_AROUND_KEY`] opens the look-around view instead of reaching the door (unless the
+    /// door is taking typed text, see [`DoorSession::captures_text`]); while the view shows,
+    /// any key closes it and is not passed on.
     pub fn key(&mut self, key: DoorKey) -> Flow {
+        if self.looking {
+            self.looking = false;
+            return Flow::Stay;
+        }
+        let session = self
+            .session
+            .get_mut()
+            .unwrap_or_else(PoisonError::into_inner);
+        if key == LOOK_AROUND_KEY && !session.captures_text() {
+            self.looking = true;
+            return Flow::Stay;
+        }
         let mut ctx = Ctx {
             now: self.clock.now(),
             season: self.season,
@@ -66,19 +109,24 @@ impl Driver {
                 .get_mut()
                 .unwrap_or_else(PoisonError::into_inner),
             text: &mut self.text,
+            world: self.world.as_deref(),
         };
-        self.session
-            .get_mut()
-            .unwrap_or_else(PoisonError::into_inner)
-            .key(key, &mut ctx)
+        session.key(key, &mut ctx)
     }
 
-    /// Draw the door.
+    /// Draw the door (or the look-around view), telling the canvas the clock's time.
     pub fn render(&self, canvas: &mut Canvas<'_>, env: &DoorEnv) {
-        self.session
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-            .render(canvas, env);
+        canvas.now = self.clock.now();
+        let session = self.session.lock().unwrap_or_else(PoisonError::into_inner);
+        if self.looking {
+            canvas.clear();
+            canvas.text(0, 0, "Look around (any key returns)", DoorStyle::Accent);
+            for (row, line) in (1u16..).zip(session.look_around(env)) {
+                canvas.text(0, row, &line, DoorStyle::Plain);
+            }
+        } else {
+            session.render(canvas, env);
+        }
     }
 
     /// The door's text view.
@@ -97,6 +145,17 @@ impl Driver {
                 .get_mut()
                 .unwrap_or_else(PoisonError::into_inner),
         )
+    }
+
+    /// The size of the save waiting to be written, if the keys asked for one.
+    #[must_use]
+    pub fn pending_save_len(&self) -> Option<usize> {
+        self.effects
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .save
+            .as_ref()
+            .map(Vec::len)
     }
 
     /// Whether anything is waiting to be written.
@@ -154,7 +213,12 @@ pub struct Running {
     door: Arc<dyn Door>,
     account: AccountId,
     revision: Revision,
+    /// The clock second the door's world was last read.
+    world_read_at: i64,
 }
+
+/// How old (in clock seconds) the world a door reads may get before the board re-reads it.
+pub const WORLD_REFRESH_SECS: i64 = 1;
 
 /// Bring a stored blob to `current`, one migration step at a time.
 fn migrated(
@@ -254,13 +318,53 @@ impl Running {
             today: Day::of(clock.now()),
             season,
         };
+        let world_read_at = clock.now().as_raw();
         let driver = Driver::open(door.as_ref(), start, seed, clock);
         Ok(Self {
             driver,
             door,
             account,
             revision,
+            world_read_at,
         })
+    }
+
+    /// Whether the world the door reads is at least [`WORLD_REFRESH_SECS`] old by the clock.
+    #[must_use]
+    pub fn world_is_stale(&self) -> bool {
+        self.driver
+            .clock
+            .now()
+            .as_raw()
+            .saturating_sub(self.world_read_at)
+            >= WORLD_REFRESH_SECS
+    }
+
+    /// Re-read the door's world from the store (one read), so the next key sees other players'
+    /// edits. Read-only: it changes nothing in the store.
+    ///
+    /// # Errors
+    /// [`OpenError::Store`], [`OpenError::Migrate`] or [`OpenError::TooNew`] as for opening.
+    pub async fn refresh_world<S: DoorStore>(&mut self, store: &S) -> Result<(), OpenError> {
+        let world = load_world(store, self.door.as_ref()).await?.map(|w| w.0);
+        self.driver.set_world(world);
+        self.world_read_at = self.driver.clock.now().as_raw();
+        Ok(())
+    }
+
+    /// [`Running::refresh_world`] when [`Running::world_is_stale`]; the board calls it before a
+    /// key.
+    ///
+    /// # Errors
+    /// See [`Running::refresh_world`].
+    pub async fn refresh_world_if_stale<S: DoorStore>(
+        &mut self,
+        store: &S,
+    ) -> Result<(), OpenError> {
+        if self.world_is_stale() {
+            self.refresh_world(store).await?;
+        }
+        Ok(())
     }
 
     /// Give the door one key.
@@ -283,6 +387,12 @@ impl Running {
     #[must_use]
     pub fn has_pending(&self) -> bool {
         self.driver.has_pending()
+    }
+
+    /// The size of the save waiting to be written, if any.
+    #[must_use]
+    pub fn pending_save_len(&self) -> Option<usize> {
+        self.driver.pending_save_len()
     }
 
     /// The door being run.
@@ -320,8 +430,18 @@ impl Running {
                 Err(DoorStoreError::Store(error)) => return Err(FlushError::Store(error)),
             }
         }
+        let edited = !effects.world.is_empty();
         for edit in effects.world {
             self.apply_world_edit(store, edit).await?;
+        }
+        if edited {
+            // The door sees its own edit (and anyone else's before it) on the next key.
+            self.refresh_world(store)
+                .await
+                .map_err(|error| match error {
+                    OpenError::Store(error) => FlushError::Store(error),
+                    other => FlushError::Store(StoreError::Corrupt(other.to_string())),
+                })?;
         }
         Ok(())
     }
