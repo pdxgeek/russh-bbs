@@ -132,7 +132,9 @@ proptest! {
         bytes.extend(PASTE_END);
         bytes.extend(b"\x03");
         let seen = run(&bytes, &cuts);
-        let (last, pasted) = seen.keys.split_last().expect("the Ctrl-C after the paste");
+        let Some((last, pasted)) = seen.keys.split_last() else {
+            return Err(TestCaseError::fail("the Ctrl-C after the paste is missing"));
+        };
         prop_assert_eq!(*last, Key::Ctrl('c'));
         for key in pasted {
             prop_assert!(
@@ -171,7 +173,7 @@ proptest! {
     #[test]
     fn replies_are_never_invented(bytes in soup()) {
         let seen = run(&bytes, &[]);
-        let finals = bytes.iter().filter(|b| **b == b'R').count();
+        let finals = bytes.iter().copied().filter(|b| *b == b'R').count();
         prop_assert!(seen.acks as usize <= finals);
     }
 }
