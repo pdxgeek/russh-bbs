@@ -306,9 +306,47 @@ impl Content {
                 out.push(format!("{what} meets at a time its place is shut"));
             }
         }
+        // The calendar.
+        for e in &self.calendar {
+            let what = format!("event `{}`", e.id);
+            match self.place(&e.place) {
+                None => out.push(format!("{what} is held at unknown place `{}`", e.place)),
+                Some(p) if !e.kinds.iter().all(|k| p.hours.contains(k)) => {
+                    out.push(format!("{what} runs in a period its place is shut"));
+                }
+                Some(_) => {}
+            }
+            if e.to >= self.rules.term_days {
+                out.push(format!("{what} falls after the term ends"));
+            }
+            match self.npc(&e.host) {
+                None => out.push(format!("{what} is run by unknown character `{}`", e.host)),
+                Some(n) if n.role == "student" && n.clique.as_deref() == Some("strays") => {
+                    out.push(format!("{what}: a Stray is never the host of an ordeal"));
+                }
+                Some(_) => {}
+            }
+            let talks = self
+                .talks
+                .iter()
+                .filter(|t| t.event.as_deref() == Some(e.id.as_str()))
+                .count();
+            if talks < 3 {
+                out.push(format!("{what} needs at least three scenes, it has {talks}"));
+            }
+        }
         // Conversations.
         for t in &self.talks {
             let what = format!("talk `{}`", t.id);
+            if let Some(ev) = &t.event {
+                match self.calendar.iter().find(|e| e.id == *ev) {
+                    None => out.push(format!("{what} belongs to unknown event `{ev}`")),
+                    Some(e) if e.host != t.npc => {
+                        out.push(format!("{what} is with `{}`, not the event's host", t.npc));
+                    }
+                    Some(_) => {}
+                }
+            }
             if self.npc(&t.npc).is_none() {
                 out.push(format!("{what} is with unknown character `{}`", t.npc));
             }

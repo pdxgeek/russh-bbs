@@ -705,3 +705,868 @@ place = "main_hall"
 [[npc.schedule]]
 when = "night"
 place = "dorm"
+
+# ---- The twelfth member of staff (launch content) ----
+
+[[npc]]
+id = "abney"
+name = "Miss Philippa Abney"
+role = "staff"
+title = "Librarian"
+home = "library"
+watchful = 2
+prankable = true
+blurb = "Knows where every book is, and where every pupil was when it went missing."
+[[npc.schedule]]
+when = "chapel"
+place = "chapel"
+[[npc.schedule]]
+when = "evening"
+place = "library"
+[[npc.schedule]]
+when = "night"
+place = "staff_quarters"
+[[npc.schedule]]
+when = "*"
+place = "library"
+[[npc.ally]]
+role = "keys"
+needs = ["bond:abney>=14", "grade:history>=70"]
+cost = 2
+
+# ---- Twenty-seven more pupils (launch content): every clique has its people, and the Strays are never targets ----
+
+[[npc]]
+id = "bea"
+name = "Beatrice Carrow"
+role = "student"
+clique = "rowing_eight"
+title = "Stroke of the Eight"
+home = "boathouse"
+watchful = 0
+prankable = false
+blurb = "Rows as if she is late for something, and usually she is."
+[[npc.schedule]]
+when = "class"
+place = "gym"
+[[npc.schedule]]
+when = "after"
+place = "boathouse"
+[[npc.schedule]]
+when = "lunch"
+place = "main_hall"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+
+[[npc]]
+id = "dunstan"
+name = "Dunstan Oyelaran"
+role = "student"
+clique = "rowing_eight"
+title = "Bow, and secret baker"
+home = "tuck_shop"
+watchful = 0
+prankable = false
+blurb = "Six foot four, gentle as a loaf, and carrying flour in his pockets."
+[[npc.schedule]]
+when = "class"
+place = "gym"
+[[npc.schedule]]
+when = "free"
+place = "tuck_shop"
+[[npc.schedule]]
+when = "after"
+place = "boathouse"
+[[npc.schedule]]
+when = "lunch"
+place = "tuck_shop"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+[[npc.ally]]
+role = "distraction"
+needs = ["standing:rowing_eight>=6"]
+cost = 3
+
+[[npc]]
+id = "maud"
+name = "Maud Ferrier"
+role = "student"
+clique = "rowing_eight"
+title = "Keeper of the tide tables"
+home = "boathouse"
+watchful = 0
+prankable = false
+blurb = "The coach's daughter. Knows when the lake will be flat and when it will not."
+[[npc.schedule]]
+when = "class"
+place = "car_park"
+[[npc.schedule]]
+when = "free"
+place = "boathouse"
+[[npc.schedule]]
+when = "after"
+place = "boathouse"
+[[npc.schedule]]
+when = "lunch"
+place = "quad"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+
+[[npc]]
+id = "rory"
+name = "Rory Gascoigne"
+role = "student"
+clique = "rowing_eight"
+title = "Keeper of the boat store"
+home = "boathouse"
+watchful = 0
+prankable = false
+blurb = "Has the only spare key to the boat store and reminds everyone of it."
+[[npc.schedule]]
+when = "free"
+place = "boathouse"
+[[npc.schedule]]
+when = "after"
+place = "boathouse"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "lunch"
+place = "main_hall"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+[[npc.ally]]
+role = "keys"
+needs = ["rank:rowing>=2", "bond:rory>=8"]
+cost = 3
+
+[[npc]]
+id = "cass"
+name = "Cass Halloran"
+role = "student"
+clique = "ink_society"
+title = "Sets the paper's crossword"
+home = "library"
+watchful = 0
+prankable = false
+blurb = "Writes clues so cruel the staff do the puzzle in secret."
+[[npc.schedule]]
+when = "class"
+place = "admin_corridor"
+[[npc.schedule]]
+when = "free"
+place = "library"
+[[npc.schedule]]
+when = "after"
+place = "library"
+[[npc.schedule]]
+when = "lunch"
+place = "quad"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+
+[[npc]]
+id = "theo"
+name = "Theo Brightwater"
+role = "student"
+clique = "ink_society"
+title = "Gossip columnist"
+home = "paper_office"
+watchful = 0
+prankable = false
+blurb = "Prints half of what he hears, and the other half is worse."
+[[npc.schedule]]
+when = "class"
+place = "admin_corridor"
+[[npc.schedule]]
+when = "free"
+place = "paper_office"
+[[npc.schedule]]
+when = "after"
+place = "paper_office"
+[[npc.schedule]]
+when = "lunch"
+place = "main_hall"
+[[npc.schedule]]
+when = "evening"
+place = "paper_office"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+[[npc.ally]]
+role = "lookout"
+needs = ["standing:ink_society>=8"]
+cost = 2
+
+[[npc]]
+id = "lark"
+name = "Lark Deveraux"
+role = "student"
+clique = "ink_society"
+title = "Poet in residence"
+home = "chapel"
+watchful = 0
+prankable = false
+blurb = "Writes odes to radiators and is not entirely joking."
+[[npc.schedule]]
+when = "class"
+place = "classroom_corridor"
+[[npc.schedule]]
+when = "free"
+place = "chapel"
+[[npc.schedule]]
+when = "after"
+place = "quad"
+[[npc.schedule]]
+when = "lunch"
+place = "quad"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+
+[[npc]]
+id = "osei"
+name = "Kofi Osei"
+role = "student"
+clique = "ink_society"
+title = "The paper's photographer"
+home = "old_wing"
+watchful = 0
+prankable = false
+blurb = "Developing prints in the Old Wing, and asking nobody for permission."
+[[npc.schedule]]
+when = "class"
+place = "admin_corridor"
+[[npc.schedule]]
+when = "free"
+place = "old_wing"
+[[npc.schedule]]
+when = "after"
+place = "old_wing"
+[[npc.schedule]]
+when = "lunch"
+place = "main_hall"
+[[npc.schedule]]
+when = "evening"
+place = "paper_office"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+
+[[npc]]
+id = "fitch"
+name = "Fitch Rowntree"
+role = "student"
+clique = "the_bench"
+title = "Smallest lookout in the school"
+home = "quad"
+watchful = 0
+prankable = false
+blurb = "Sees over walls by standing on things."
+[[npc.schedule]]
+when = "class"
+place = "car_park"
+[[npc.schedule]]
+when = "free"
+place = "quad"
+[[npc.schedule]]
+when = "after"
+place = "grounds"
+[[npc.schedule]]
+when = "lunch"
+place = "quad"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+[[npc.ally]]
+role = "lookout"
+needs = ["standing:the_bench>=4", "not:trait:teachers_pet"]
+cost = 2
+
+[[npc]]
+id = "jojo"
+name = "Jojo Marlowe"
+role = "student"
+clique = "the_bench"
+title = "Drummer in an empty room"
+home = "gym"
+watchful = 0
+prankable = false
+blurb = "Practises on anything that rings, and the staffroom radiator rings well."
+[[npc.schedule]]
+when = "class"
+place = "car_park"
+[[npc.schedule]]
+when = "free"
+place = "gym"
+[[npc.schedule]]
+when = "after"
+place = "gym"
+[[npc.schedule]]
+when = "lunch"
+place = "quad"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+[[npc.ally]]
+role = "distraction"
+needs = ["standing:the_bench>=8", "not:trait:teachers_pet"]
+cost = 3
+
+[[npc]]
+id = "bex"
+name = "Bex Tull"
+role = "student"
+clique = "the_bench"
+title = "Roof climber"
+home = "grounds"
+watchful = 0
+prankable = false
+blurb = "Has been on every roof in the school and left a tidy rope on three."
+[[npc.schedule]]
+when = "class"
+place = "car_park"
+[[npc.schedule]]
+when = "free"
+place = "grounds"
+[[npc.schedule]]
+when = "after"
+place = "grounds"
+[[npc.schedule]]
+when = "lunch"
+place = "quad"
+[[npc.schedule]]
+when = "evening"
+place = "old_wing"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+
+[[npc]]
+id = "nico"
+name = "Nico Reyes"
+role = "student"
+clique = "the_bench"
+title = "Forges anyone's handwriting"
+home = "common_room"
+watchful = 0
+prankable = false
+blurb = "Practised on his own report. His mother never noticed."
+[[npc.schedule]]
+when = "class"
+place = "car_park"
+[[npc.schedule]]
+when = "free"
+place = "common_room"
+[[npc.schedule]]
+when = "after"
+place = "art_room"
+[[npc.schedule]]
+when = "lunch"
+place = "quad"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+[[npc.ally]]
+role = "gadget"
+needs = ["standing:the_bench>=6", "tag:forge"]
+cost = 3
+
+[[npc]]
+id = "ambrose"
+name = "Ambrose Pettifer"
+role = "student"
+clique = "lamplighters"
+title = "House captain"
+home = "main_hall"
+watchful = 0
+prankable = false
+blurb = "Believes in rules the way other people believe in weather."
+[[npc.schedule]]
+when = "class"
+place = "admin_corridor"
+[[npc.schedule]]
+when = "free"
+place = "common_room"
+[[npc.schedule]]
+when = "after"
+place = "quad"
+[[npc.schedule]]
+when = "lunch"
+place = "main_hall"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+
+[[npc]]
+id = "harriet"
+name = "Harriet Quayle"
+role = "student"
+clique = "lamplighters"
+title = "Prefect of the library"
+home = "library"
+watchful = 0
+prankable = false
+blurb = "Reshelves in her sleep and forgives only silently."
+[[npc.schedule]]
+when = "class"
+place = "admin_corridor"
+[[npc.schedule]]
+when = "free"
+place = "library"
+[[npc.schedule]]
+when = "after"
+place = "library"
+[[npc.schedule]]
+when = "lunch"
+place = "main_hall"
+[[npc.schedule]]
+when = "evening"
+place = "library"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+
+[[npc]]
+id = "lottie"
+name = "Lottie Dunmore"
+role = "student"
+clique = "lamplighters"
+title = "Monitor of the lower school"
+home = "quad"
+watchful = 0
+prankable = false
+blurb = "Cheerful in a way that makes grown prefects nervous."
+[[npc.schedule]]
+when = "class"
+place = "admin_corridor"
+[[npc.schedule]]
+when = "free"
+place = "quad"
+[[npc.schedule]]
+when = "after"
+place = "quad"
+[[npc.schedule]]
+when = "lunch"
+place = "main_hall"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+[[npc.ally]]
+role = "cover"
+needs = ["standing:lamplighters>=10", "not:trait:known_troublemaker"]
+cost = 3
+
+[[npc]]
+id = "edwin"
+name = "Edwin Sharpe"
+role = "student"
+clique = "lamplighters"
+title = "Keeper of the late book"
+home = "admin_corridor"
+watchful = 0
+prankable = false
+blurb = "Writes down who came in after the bell, in a beautiful hand."
+[[npc.schedule]]
+when = "class"
+place = "admin_corridor"
+[[npc.schedule]]
+when = "free"
+place = "admin_corridor"
+[[npc.schedule]]
+when = "after"
+place = "quad"
+[[npc.schedule]]
+when = "lunch"
+place = "main_hall"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+
+[[npc]]
+id = "ravi"
+name = "Ravi Menon"
+role = "student"
+clique = "workshop"
+title = "Plays chess against the robot"
+home = "workshop"
+watchful = 0
+prankable = false
+blurb = "Loses to it on purpose, to see what it does."
+[[npc.schedule]]
+when = "class"
+place = "car_park"
+[[npc.schedule]]
+when = "free"
+place = "workshop"
+[[npc.schedule]]
+when = "after"
+place = "workshop"
+[[npc.schedule]]
+when = "lunch"
+place = "main_hall"
+[[npc.schedule]]
+when = "evening"
+place = "workshop"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+[[npc.ally]]
+role = "gadget"
+needs = ["standing:workshop>=8"]
+cost = 4
+
+[[npc]]
+id = "grace"
+name = "Grace Adeyemi"
+role = "student"
+clique = "workshop"
+title = "Does the electrics"
+home = "workshop"
+watchful = 0
+prankable = false
+blurb = "Rewired the common room lamp and now it only answers to her."
+[[npc.schedule]]
+when = "class"
+place = "car_park"
+[[npc.schedule]]
+when = "free"
+place = "workshop"
+[[npc.schedule]]
+when = "after"
+place = "workshop"
+[[npc.schedule]]
+when = "lunch"
+place = "main_hall"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+
+[[npc]]
+id = "mo"
+name = "Mo Kessler"
+role = "student"
+clique = "workshop"
+title = "Builds boats in the cellar of the shed"
+home = "caretaker_shed"
+watchful = 0
+prankable = false
+blurb = "Has been building the same dinghy for three terms and calls it a work in progress."
+[[npc.schedule]]
+when = "class"
+place = "car_park"
+[[npc.schedule]]
+when = "free"
+place = "caretaker_shed"
+[[npc.schedule]]
+when = "after"
+place = "caretaker_shed"
+[[npc.schedule]]
+when = "lunch"
+place = "quad"
+[[npc.schedule]]
+when = "evening"
+place = "workshop"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+
+[[npc]]
+id = "ping"
+name = "Ping Zhao"
+role = "student"
+clique = "workshop"
+title = "Radio ham"
+home = "workshop"
+watchful = 0
+prankable = false
+blurb = "Listens to the whole country through a coat hanger."
+[[npc.schedule]]
+when = "class"
+place = "car_park"
+[[npc.schedule]]
+when = "free"
+place = "workshop"
+[[npc.schedule]]
+when = "after"
+place = "grounds"
+[[npc.schedule]]
+when = "lunch"
+place = "main_hall"
+[[npc.schedule]]
+when = "evening"
+place = "workshop"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+[[npc.ally]]
+role = "lookout"
+needs = ["standing:workshop>=6"]
+cost = 2
+
+[[npc]]
+id = "bertie"
+name = "Bertie Pym"
+role = "student"
+clique = "strays"
+title = "Sleeps in the library"
+home = "library"
+watchful = 0
+prankable = false
+blurb = "Has read the whole of one shelf, mostly with his eyes shut."
+[[npc.schedule]]
+when = "class"
+place = "library"
+[[npc.schedule]]
+when = "free"
+place = "library"
+[[npc.schedule]]
+when = "after"
+place = "library"
+[[npc.schedule]]
+when = "lunch"
+place = "quad"
+[[npc.schedule]]
+when = "evening"
+place = "library"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+[[npc.ally]]
+role = "lookout"
+needs = ["standing:strays>=0"]
+cost = 0
+
+[[npc]]
+id = "hattie"
+name = "Hattie Rook"
+role = "student"
+clique = "strays"
+title = "Knows every cat in the school"
+home = "grounds"
+watchful = 0
+prankable = false
+blurb = "There are eleven. She has names for all of them and they come when called."
+[[npc.schedule]]
+when = "class"
+place = "grounds"
+[[npc.schedule]]
+when = "free"
+place = "grounds"
+[[npc.schedule]]
+when = "after"
+place = "grounds"
+[[npc.schedule]]
+when = "lunch"
+place = "quad"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+[[npc.ally]]
+role = "cover"
+needs = ["standing:strays>=4"]
+cost = 0
+
+[[npc]]
+id = "ollie"
+name = "Ollie Finch"
+role = "student"
+clique = "strays"
+title = "New this term, reading the same book"
+home = "common_room"
+watchful = 0
+prankable = false
+blurb = "Has been on page eleven for a fortnight and will not be hurried."
+[[npc.schedule]]
+when = "class"
+place = "classroom_corridor"
+[[npc.schedule]]
+when = "free"
+place = "common_room"
+[[npc.schedule]]
+when = "after"
+place = "common_room"
+[[npc.schedule]]
+when = "lunch"
+place = "main_hall"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+[[npc.ally]]
+role = "cover"
+needs = ["standing:strays>=6"]
+cost = 0
+
+[[npc]]
+id = "greta"
+name = "Greta Lindqvist"
+role = "student"
+clique = "strays"
+title = "Sings in the stairwell"
+home = "classroom_corridor"
+watchful = 0
+prankable = false
+blurb = "Homesick for a country with more snow, and the stairwell is the right shape."
+[[npc.schedule]]
+when = "class"
+place = "classroom_corridor"
+[[npc.schedule]]
+when = "free"
+place = "classroom_corridor"
+[[npc.schedule]]
+when = "after"
+place = "chapel"
+[[npc.schedule]]
+when = "lunch"
+place = "main_hall"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+[[npc.ally]]
+role = "distraction"
+needs = ["standing:strays>=6"]
+cost = 0
+
+[[npc]]
+id = "moss"
+name = "Moss Abara"
+role = "student"
+clique = "strays"
+title = "Grows things behind the shed"
+home = "caretaker_shed"
+watchful = 0
+prankable = false
+blurb = "Has a greenhouse that is technically a cold frame and a tomato that is technically a legend."
+[[npc.schedule]]
+when = "class"
+place = "grounds"
+[[npc.schedule]]
+when = "free"
+place = "caretaker_shed"
+[[npc.schedule]]
+when = "after"
+place = "caretaker_shed"
+[[npc.schedule]]
+when = "lunch"
+place = "quad"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+[[npc.ally]]
+role = "gadget"
+needs = ["standing:strays>=8"]
+cost = 0
+
+[[npc]]
+id = "wilf"
+name = "Wilf Dacre"
+role = "student"
+clique = "strays"
+title = "Counts the herons"
+home = "grounds"
+watchful = 0
+prankable = false
+blurb = "Walks the lake path every morning and writes the number in a notebook."
+[[npc.schedule]]
+when = "class"
+place = "grounds"
+[[npc.schedule]]
+when = "free"
+place = "grounds"
+[[npc.schedule]]
+when = "after"
+place = "boathouse"
+[[npc.schedule]]
+when = "lunch"
+place = "quad"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+[[npc.ally]]
+role = "lookout"
+needs = ["standing:strays>=2"]
+cost = 0
+
+[[npc]]
+id = "posy"
+name = "Posy Hartnell"
+role = "student"
+clique = "strays"
+title = "Draws maps of the school"
+home = "library"
+watchful = 0
+prankable = false
+blurb = "Has a map of the tunnels that is wrong in all the interesting places."
+[[npc.schedule]]
+when = "class"
+place = "library"
+[[npc.schedule]]
+when = "free"
+place = "library"
+[[npc.schedule]]
+when = "after"
+place = "old_wing"
+[[npc.schedule]]
+when = "lunch"
+place = "quad"
+[[npc.schedule]]
+when = "evening"
+place = "common_room"
+[[npc.schedule]]
+when = "night"
+place = "dorm"
+[[npc.ally]]
+role = "lookout"
+needs = ["standing:strays>=3"]
+cost = 0

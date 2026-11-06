@@ -112,11 +112,45 @@ impl Game {
             return false;
         };
         let p = &self.player;
+        if let Some(ev) = &talk.event {
+            // A term event is open at its place, in its periods and on its days: its host need not
+            // be about, because the whole school is.
+            return self.talk_ready(talk)
+                && self
+                    .content
+                    .calendar
+                    .iter()
+                    .any(|e| e.id == *ev && self.event_open(e, slot));
+        }
         self.talk_ready(talk)
             && self
                 .npcs_at(&p.place, p.day, slot)
                 .iter()
                 .any(|n| n.id == talk.npc)
+    }
+
+    /// Whether a term event is on here and now, in period `slot`.
+    #[must_use]
+    pub fn event_open(&self, e: &crate::content::CalendarEvent, slot: usize) -> bool {
+        let day = self.term_day();
+        let p = &self.player;
+        p.place == e.place
+            && (e.from..=e.to).contains(&day)
+            && e.kinds
+                .iter()
+                .any(|k| k == self.kind(p.day, slot))
+            && self.place_open(&p.place, p.day, slot)
+    }
+
+    /// The term events on the calendar today, for the morning bell.
+    #[must_use]
+    pub fn events_today(&self) -> Vec<&crate::content::CalendarEvent> {
+        let day = self.term_day();
+        self.content
+            .calendar
+            .iter()
+            .filter(|e| (e.from..=e.to).contains(&day))
+            .collect()
     }
 
     /// Whether everything but the character's being here holds for a conversation: the pupil is

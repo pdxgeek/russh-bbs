@@ -160,6 +160,53 @@ legend_pct = 0
 heat_pct = 0
 
 
+# ---------------------------------------------------------------- the term's events (M4-H5)
+# Brought about by a pupil's choice at a term event, for everyone, for a few days.
+
+[[effect]]
+id = "match_glory"
+name = "Greywater beat Hollin House"
+days = 4
+headline = "Greywater beat Hollin House on the lake, and {player} was in the boat. The prefects are in too good a mood to patrol properly."
+closes = []
+moves = []
+patrol_mod = -1
+legend_pct = 10
+heat_pct = 0
+
+[[effect]]
+id = "play_triumph"
+name = "The winter play was a triumph"
+days = 5
+headline = "The winter play had the Great Hall on its feet, and {player} was part of the glory. The staff are sentimental, and nobody is counting."
+closes = []
+moves = []
+patrol_mod = 0
+legend_pct = 10
+heat_pct = -10
+
+[[effect]]
+id = "dance_blackout"
+name = "The lights went out at the formal dance"
+days = 2
+headline = "The Great Hall went dark during the last waltz, and the prefects lost their way in the corridors. {player} was seen with a candle, looking surprised."
+closes = []
+moves = []
+patrol_mod = -2
+legend_pct = 5
+heat_pct = 0
+
+[[effect]]
+id = "exam_resit"
+name = "The maths paper has to be resat"
+days = 3
+headline = "A maths paper was found changing hands in the dormitories. Mr. Marsh has ordered a resit under silence, and the corridors are full of tired patrols. {player} brought it to his attention."
+closes = []
+moves = []
+patrol_mod = 1
+legend_pct = 0
+heat_pct = 10
+
 [[ending]]
 id = "expelled"
 name = "Expelled"

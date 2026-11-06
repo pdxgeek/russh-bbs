@@ -57,8 +57,8 @@ fn the_shipped_content_loads_and_has_the_amount_this_slice_promises() {
     );
     assert_eq!(
         c.effects.len(),
-        14,
-        "four big schemes, one storyline ending, five endings of the east wing and four of the election"
+        18,
+        "four big schemes, one storyline ending, five endings of the east wing, four of the election and four from the term's events"
     );
     assert!(c.twists.len() >= 6 && c.getaways.len() >= 6);
     assert!(c.endings.len() >= 5);
@@ -71,8 +71,18 @@ fn the_shipped_content_loads_and_has_the_amount_this_slice_promises() {
         let by_verdict = c.mystery.verdicts.iter().any(|v| v.effect == e.id);
         let by_election = c.social.runners.iter().any(|r| r.win == e.id)
             || c.social.rules.player_win_effect == e.id;
+        let by_event = c
+            .talks
+            .iter()
+            .flat_map(|t| t.node.iter())
+            .flat_map(|n| n.choice.iter())
+            .any(|ch| {
+                ch.effects
+                    .contains(&russh_bbs_door_hallpass::effect::Eff::World(e.id.clone()))
+            });
         assert!(
             by_story
+                || by_event
                 || by_verdict
                 || by_election
                 || c.methods
@@ -222,7 +232,12 @@ fn the_bad_edits_a_writer_could_make_are_each_named() {
     // A method that needs a helper nobody offers.
     assert!(
         problems(broken(
-            |s, _| s.cast = replace(EMBEDDED.cast, "role = \"gadget\"", "role = \"cover\"")
+            |s, _| s.cast = Box::leak(
+                EMBEDDED
+                    .cast
+                    .replace("role = \"gadget\"", "role = \"cover\"")
+                    .into_boxed_str()
+            )
         ))
         .contains("gadget")
     );

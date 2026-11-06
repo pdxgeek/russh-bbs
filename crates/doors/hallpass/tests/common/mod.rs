@@ -355,6 +355,28 @@ pub fn satisfy(game: &mut Game, cond: &Cond) {
 }
 
 /// Stand the character where `npc` is in the first period of their day.
+/// Put the character at a term event: the day of the term is `day` (inside the event's days), the
+/// period is one the event runs in, and they stand where it is held.
+pub fn at_event(game: &mut Game, event: &str, day: i64) {
+    let spec = game
+        .content
+        .calendar
+        .iter()
+        .find(|e| e.id == event)
+        .unwrap()
+        .clone();
+    assert!((spec.from..=spec.to).contains(&day), "{event} is not on day {day}");
+    game.world.term_start = game.player.day - day;
+    let slot = (0..game.periods())
+        .find(|s| {
+            spec.kinds.iter().any(|k| k == game.kind(game.player.day, *s))
+                && game.place_open(&spec.place, game.player.day, *s)
+        })
+        .expect("the event has a period");
+    game.player.slot = u8::try_from(slot).unwrap();
+    game.player.place = spec.place;
+}
+
 pub fn meet(game: &mut Game, npc: &str) {
     let day = game.player.day;
     let spec = game.content.npc(npc).unwrap().clone();

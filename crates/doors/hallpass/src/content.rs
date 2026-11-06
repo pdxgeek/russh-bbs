@@ -812,6 +812,10 @@ pub struct Talk {
     /// Days before a repeatable one can be had again.
     #[serde(default)]
     pub cooldown: i64,
+    /// The calendar event this belongs to: it is then open at the event's place, in its slots
+    /// and on its days, whoever is about, and the character is the one who runs it.
+    #[serde(default)]
+    pub event: Option<String>,
     /// The storyline this belongs to.
     #[serde(default)]
     pub arc: Option<String>,
@@ -827,9 +831,41 @@ pub struct Talk {
     pub node: Vec<Node>,
 }
 
+/// A term event on the school calendar: the house match, the winter play, the formal dance and
+/// exam week. It is a place, a window of days and the periods it runs in; what a pupil does there
+/// is the conversations (`Talk::event`) that name it.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CalendarEvent {
+    /// Its id.
+    pub id: String,
+    /// Its name.
+    pub name: String,
+    /// What it is, for the morning bell.
+    pub blurb: String,
+    /// Where it is held.
+    pub place: String,
+    /// The first day of the term it runs (the same count `day>=N` uses).
+    pub from: i64,
+    /// The last day of the term it runs.
+    pub to: i64,
+    /// The slot kinds it runs in.
+    pub kinds: Vec<String>,
+    /// The character who runs it.
+    pub host: String,
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct TalksFile {
+    talk: Vec<Talk>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct CalendarFile {
+    event: Vec<CalendarEvent>,
+    #[serde(default)]
     talk: Vec<Talk>,
 }
 
@@ -1273,10 +1309,10 @@ file_table!(ClubsFile, |f: &ClubsFile| {
     out
 });
 
-file_table!(TalksFile, |f: &TalksFile| {
+fn talk_problems(talks: &[Talk]) -> Vec<String> {
     let mut out = Vec::new();
-    dupes("talk", f.talk.iter().map(|t| t.id.as_str()), &mut out);
-    for t in &f.talk {
+    dupes("talk", talks.iter().map(|t| t.id.as_str()), &mut out);
+    for t in talks {
         plain(&t.id, &t.title, &mut out);
         if t.node.is_empty() || !t.node.iter().any(|n| n.id == t.first) {
             out.push(format!("talk `{}` has no first node `{}`", t.id, t.first));
@@ -1337,6 +1373,24 @@ file_table!(TalksFile, |f: &TalksFile| {
                     t.id, n.id
                 ));
             }
+        }
+    }
+    out
+}
+
+file_table!(TalksFile, |f: &TalksFile| talk_problems(&f.talk));
+
+file_table!(CalendarFile, |f: &CalendarFile| {
+    let mut out = talk_problems(&f.talk);
+    dupes("calendar event", f.event.iter().map(|e| e.id.as_str()), &mut out);
+    for e in &f.event {
+        plain(&e.id, &e.name, &mut out);
+        plain(&e.id, &e.blurb, &mut out);
+        if e.from > e.to || e.from < 0 {
+            out.push(format!("event `{}`: its days must rise from day 0", e.id));
+        }
+        if e.kinds.is_empty() {
+            out.push(format!("event `{}` runs in no period", e.id));
         }
     }
     out
@@ -1443,6 +1497,8 @@ pub struct Content {
     pub clubs: Vec<ClubSpec>,
     /// Conversations.
     pub talks: Vec<Talk>,
+    /// The term's calendar: the house match, the winter play, the formal dance and exam week.
+    pub calendar: Vec<CalendarEvent>,
     /// Storylines.
     pub arcs: Vec<ArcSpec>,
     /// Player schemes, rumours, the election and the awards (H4).
@@ -1477,6 +1533,8 @@ pub struct Sources<'a> {
     pub clubs: &'a str,
     /// `talks.toml`
     pub talks: &'a str,
+    /// `calendar.toml`
+    pub calendar: &'a str,
     /// `arcs.toml`
     pub arcs: &'a str,
     /// `social.toml`
@@ -1498,6 +1556,7 @@ pub const EMBEDDED: Sources<'static> = Sources {
     lessons: include_str!("../content/lessons.toml"),
     clubs: include_str!("../content/clubs.toml"),
     talks: include_str!("../content/talks.toml"),
+    calendar: include_str!("../content/calendar.toml"),
     arcs: include_str!("../content/arcs.toml"),
     social: include_str!("../content/social.toml"),
     mystery: include_str!("../content/mystery.toml"),
@@ -1522,6 +1581,7 @@ impl Content {
         let lessons: LessonsFile = content::load("lessons", src.lessons)?;
         let clubs: ClubsFile = content::load("clubs", src.clubs)?;
         let talks: TalksFile = content::load("talks", src.talks)?;
+        let calendar: CalendarFile = content::load("calendar", src.calendar)?;
         let arcs: ArcsFile = content::load("arcs", src.arcs)?;
         let (social, mystery) = crate::social_spec::load(src.social, src.mystery)?;
         let place_index = places
@@ -1564,7 +1624,8 @@ impl Content {
             events: lessons.event,
             motifs: lessons.motif,
             clubs: clubs.club,
-            talks: talks.talk,
+            talks: talks.talk.into_iter().chain(calendar.talk).collect(),
+            calendar: calendar.event,
             arcs: arcs.arc,
             social,
             mystery,

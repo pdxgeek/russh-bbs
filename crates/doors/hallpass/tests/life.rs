@@ -18,7 +18,7 @@
 )]
 mod common;
 
-use common::{Sandbox, Setup, arrange, content, meet, monday, satisfy};
+use common::{Sandbox, Setup, arrange, at_event, content, meet, monday, satisfy};
 use russh_bbs_door::DoorRng;
 use russh_bbs_door_hallpass::game::{Action, Event, Game};
 use russh_bbs_door_hallpass::save::{decode_player, encode_player};
@@ -438,7 +438,12 @@ fn friendships_grow_by_doing_and_a_friend_opens_roles_a_stranger_will_not() {
     // Passing time together.
     let mut sb = at("smooth_talker", "paper_office", "after", 1, 1);
     sb.ok(Action::Loiter);
-    assert_eq!(sb.game.player.life.bond_with("wren"), 1);
+    // Whoever of the paper's people was about (Wren, or Theo the columnist) warms by one.
+    let warmed: i32 = ["wren", "theo"]
+        .iter()
+        .map(|n| sb.game.player.life.bond_with(n))
+        .sum();
+    assert_eq!(warmed, 1);
     // Rafe will not play distraction for a stranger, but will for a friend.
     let mut sb = Sandbox::new("fast_runner", 1);
     let id = arrange(&mut sb, "pell", "salt_swap", &Setup::default());
@@ -600,7 +605,20 @@ fn there_are_twenty_conversations_and_every_choice_is_open_to_some_build() {
                 },
             );
         }
-        meet(&mut sb.game, &talk.npc);
+        if let Some(ev) = &talk.event {
+            // A term event is open on its days, whoever is about: find a day when the talk's own
+            // day conditions hold inside the event.
+            let spec = c.calendar.iter().find(|e| e.id == *ev).unwrap();
+            let day = (spec.from..=spec.to)
+                .find(|d| {
+                    sb.game.world.term_start = sb.game.player.day - *d;
+                    sb.game.all_hold(&talk.when)
+                })
+                .unwrap_or_else(|| panic!("{} is never open on its event's days", talk.id));
+            at_event(&mut sb.game, ev, day);
+        } else {
+            meet(&mut sb.game, &talk.npc);
+        }
         assert!(sb.game.talk_open(talk), "{} can never be started", talk.id);
         for node in &talk.node {
             for choice in &node.choice {
