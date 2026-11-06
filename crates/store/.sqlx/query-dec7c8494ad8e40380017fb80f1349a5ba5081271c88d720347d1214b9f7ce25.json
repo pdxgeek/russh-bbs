@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO file_area (name, name_key, description, restricted, auto_approve, created_by, created_at)\n               VALUES (?, ?, ?, ?, ?, ?, ?)\n               ON CONFLICT (name_key) DO NOTHING\n               RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 7
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "dec7c8494ad8e40380017fb80f1349a5ba5081271c88d720347d1214b9f7ce25"
+}

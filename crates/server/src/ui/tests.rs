@@ -40,6 +40,7 @@ fn the_shipped_table_and_tree_are_valid() {
         .chain(crate::ui::widgets::screen::TEXT_KEYS.iter().copied())
         .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
         .chain(russh_bbs_core::community::TEXT_KEYS.iter().copied())
+        .chain(russh_bbs_core::files::keys::TEXT_KEYS.iter().copied())
         .chain(russh_bbs_core::queue::keys::TEXT_KEYS.iter().copied())
         .chain(
             russh_bbs_core::terminal_settings::strings::TEXT_KEYS
@@ -67,6 +68,7 @@ fn the_table_holds_exactly_the_keys_the_code_uses() {
         .chain(crate::ui::widgets::screen::TEXT_KEYS.iter().copied())
         .chain(russh_bbs_core::profiles::TEXT_KEYS.iter().copied())
         .chain(russh_bbs_core::community::TEXT_KEYS.iter().copied())
+        .chain(russh_bbs_core::files::keys::TEXT_KEYS.iter().copied())
         .chain(russh_bbs_core::queue::keys::TEXT_KEYS.iter().copied())
         .chain(
             russh_bbs_core::terminal_settings::strings::TEXT_KEYS
@@ -305,7 +307,7 @@ fn the_main_menu_lists_its_items_with_hotkeys_and_the_footer() {
         "Signed in as alice.",
         "[s] Terminal settings",
         "[l] Log off",
-        "[a] Files  (not built yet)",
+        "[a] Files",
         "? help",
         "Esc back",
         "Ctrl-C log off",
@@ -324,21 +326,6 @@ fn the_main_menu_lists_its_items_with_hotkeys_and_the_footer() {
         (80, 24),
     ));
     assert!(sysop.contains("[o] Sysop tools"), "{sysop}");
-}
-
-#[test]
-fn a_placeholder_says_it_is_not_built_in_words() {
-    let out = text(&draw(
-        &page_for(Role::Member, &['a']),
-        &[],
-        None,
-        Tier::Ascii,
-        (80, 24),
-    ));
-    assert!(
-        out.contains("Notice: File areas are not built yet."),
-        "{out}"
-    );
 }
 
 #[test]

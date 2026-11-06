@@ -222,16 +222,18 @@ async fn the_layout_and_theme_switch_live_and_are_remembered() {
     send(&mut channel, "\r").await;
     let picked = full(&mut channel).await;
     assert!(
-        picked.contains("Notice: File areas are not built yet."),
+        picked.contains("File areas are not available on this board."),
         "{picked}"
     );
-    // Hotkeys still work in the lightbar.
+    // Esc leaves the Files screen for the menu; the hotkey opens it again in the lightbar.
+    send(&mut channel, "\u{1b}").await;
     send(&mut channel, "a").await;
     assert!(
         full(&mut channel)
             .await
-            .contains("Notice: File areas are not built yet.")
+            .contains("File areas are not available on this board.")
     );
+    send(&mut channel, "\u{1b}").await;
 
     // Compact: no box.
     send(&mut channel, "s").await;

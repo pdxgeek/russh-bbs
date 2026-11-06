@@ -26,6 +26,8 @@ pub struct Config {
     pub datasource: DatasourceConfig,
     /// Where member-uploaded bytes live (D30). Parsed only.
     pub blobs: BlobsConfig,
+    /// File areas: SFTP and the virus-scan hook (M4-F2).
+    pub files: FilesConfig,
     /// The optional telnet transport (D27). Parsed only.
     pub telnet: TelnetConfig,
     /// RSS in (feeds as boards) and RSS out (M3-G, D89).
@@ -47,6 +49,7 @@ impl Default for Config {
             ssh: SshConfig::default(),
             datasource: DatasourceConfig::default(),
             blobs: BlobsConfig::default(),
+            files: FilesConfig::default(),
             telnet: TelnetConfig::default(),
             feeds: FeedsConfig::default(),
             waiting_room: WaitingRoomConfig::default(),
@@ -316,6 +319,43 @@ impl Default for BlobsConfig {
             ca_file: None,
             max_object_bytes: 256 * 1024 * 1024,
             multipart_threshold_bytes: 16 * 1024 * 1024,
+        }
+    }
+}
+
+/// Which scanner checks uploads (M4-F2).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ScanBackend {
+    /// No scanner: uploads are stored unscanned and labelled so.
+    None,
+    /// A `ClamAV` daemon reached over a socket with the `INSTREAM` protocol.
+    Clamd,
+}
+
+/// `[files]` (M4-F2): file areas over SFTP and the scan hook.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct FilesConfig {
+    /// Serve file areas over SFTP (ssh only). Off, the `sftp` subsystem is refused; the Files
+    /// screens still list files.
+    pub sftp: bool,
+    /// `none` or `clamd`.
+    pub scan: ScanBackend,
+    /// `host:port` of `clamd` (TCP), with `scan = "clamd"`. The stream is not encrypted: keep
+    /// it on a private network, or use `clamd_socket`.
+    pub clamd_address: Option<String>,
+    /// Path of `clamd`'s unix socket, with `scan = "clamd"`.
+    pub clamd_socket: Option<PathBuf>,
+}
+
+impl Default for FilesConfig {
+    fn default() -> Self {
+        Self {
+            sftp: true,
+            scan: ScanBackend::None,
+            clamd_address: None,
+            clamd_socket: None,
         }
     }
 }

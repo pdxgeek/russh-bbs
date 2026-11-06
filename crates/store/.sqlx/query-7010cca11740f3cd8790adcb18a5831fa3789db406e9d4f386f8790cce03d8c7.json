@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM download_list WHERE account_id = $1 AND file_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7010cca11740f3cd8790adcb18a5831fa3789db406e9d4f386f8790cce03d8c7"
+}

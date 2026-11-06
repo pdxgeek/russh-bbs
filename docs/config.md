@@ -98,6 +98,19 @@ Where member-uploaded bytes will live. The store is built at start so a bad dire
 | `blobs.max_object_bytes` | integer, 1 to 2^40 | `268435456` (256 MiB) | `RUSSH_BBS_BLOBS_MAX_OBJECT_BYTES` | none | The largest object either backend stores; a put over it fails and stores nothing. The per-file and per-day upload limits (M2-H) apply below this at M4-F2 |
 | `blobs.multipart_threshold_bytes` | integer, 5 MiB to 5 GiB (only with `s3`) | `16777216` (16 MiB) | `RUSSH_BBS_BLOBS_MULTIPART_THRESHOLD_BYTES` | none | Uploads larger than this go up in parts of this size. A put holds about three parts in memory, whatever the object size. `max_object_bytes` divided by this must stay under 10,000 (the S3 part limit) |
 
+### `[files]` (M4-F2)
+
+File areas over SFTP and the scan hook. See [files.md](files.md). Bytes go through the blob store (`[blobs]`).
+
+| Key | Type | Default | Environment | Flag | Meaning |
+|---|---|---|---|---|---|
+| `files.sftp` | boolean | `true` | `RUSSH_BBS_FILES_SFTP` | none | Serve the `sftp` subsystem to signed-in members. Off, the subsystem is refused (the Files screens still browse and say so). Telnet never has SFTP |
+| `files.scan` | `none` or `clamd` | `none` | `RUSSH_BBS_FILES_SCAN` | none | `none` stores uploads unscanned and labels them so; `clamd` scans each upload with a ClamAV daemon before anyone can see it |
+| `files.clamd_address` | `host:port` | unset | `RUSSH_BBS_FILES_CLAMD_ADDRESS` | none | With `scan = "clamd"`: the daemon over TCP. The stream is not encrypted: keep it on a private network. Set exactly one of this and `clamd_socket` |
+| `files.clamd_socket` | path | unset | `RUSSH_BBS_FILES_CLAMD_SOCKET` | none | With `scan = "clamd"`: the daemon's unix socket |
+
+A scanner key with `scan = "none"`, both clamd keys, or neither with `scan = "clamd"`, stops the boot naming the key. A scan that fails (daemon down, an error reply, 60 s) leaves the file in quarantine for staff and never auto-approves.
+
 ### `[board]` (UI-2)
 
 The board's identity, and what members may choose. Every key is optional and the defaults draw exactly what the screens drew before. Text is the sysop's own words, not member content, but it still goes through the shared sanitizer: control characters, invisible characters and the reserved security-marker glyphs are **refused** (not silently changed), and so is any text that says the board is private, secure or encrypted (the server can read everything except PGP-encrypted mail and files members encrypt themselves; `docs/threat-model.md`).

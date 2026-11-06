@@ -1,4 +1,4 @@
-=== phosphor / wide / 80x24 / unicode truecolor / colors=d84b4ff7adf19ec3
+=== phosphor / wide / 80x24 / unicode truecolor / colors=88637c4aac7edbc7
  russh-bbs │ Main menu                                                UTC 12:00
 ┌[ Main menu ]───────────────────┐┌[ This board ]───────┐┌[ Clock ]────────────┐
 │ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
@@ -6,7 +6,7 @@
 │ terminal is too small for      ││ Portland, OR        ││   ┃ ┃━  • ┃━┃ ┃━┃   │
 │ > [f] Forums                   ││                     ││ Thu 5 Nov 2026 UTC  │
 │   [m] Mail                     ││                     ││                     │
-│   [a] Files  (not built yet)   │└─────────────────────┘└─────────────────────┘
+│   [a] Files                    │└─────────────────────┘└─────────────────────┘
 │   [c] Chat                     │┌[ Who is online ]────┐┌[ Last callers ]─────┐
 │   [d] Doors                    ││ ● 5 online          ││ bob              2m │
 │   [u] Members                  ││ ▸ alice             ││ carol            1h │
@@ -24,12 +24,12 @@
 └────────────────────────────────┘└─────────────────────┘└─────────────────────┘
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / wide / 132x43 / unicode truecolor / colors=53c8e9ec89ca6cc9
+=== phosphor / wide / 132x43 / unicode truecolor / colors=8c07da2b9bfd646d
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ┌[ Main menu ]───────────────────┐┌[ russh-bbs ]───────────────────────────────────────────────┐┌[ This board ]────────────────────┐
 │ > [f] Forums                   ││                                                            ││ russh-bbs                        │
 │   [m] Mail                     ││  Signed in as alice.                                       ││ A bulletin board in your termin… │
-│   [a] Files  (not built yet)   ││                                                            ││ Portland, OR · since 2026        │
+│   [a] Files                    ││                                                            ││ Portland, OR · since 2026        │
 │   [c] Chat                     ││  > [f] Forums                                              ││                                  │
 │   [d] Doors                    ││                                                            ││                                  │
 │   [u] Members                  ││                                                            ││                                  │
@@ -69,7 +69,7 @@
 └────────────────────────────────┘└────────────────────────────────────────────────────────────┘└──────────────────────────────────┘
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / wide / 80x24 / ascii mono / colors=8c0adbe9c3d4452c
+=== phosphor / wide / 80x24 / ascii mono / colors=751a6c79b593f342
  russh-bbs | Main menu                                                UTC 12:00
 +[ Main menu ]-------------------++[ This board ]-------++[ Clock ]------------+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
@@ -77,7 +77,7 @@
 | terminal is too small for      || Portland, OR        ||   | |_  . |_| |_|   |
 | > [f] Forums                   ||                     || Thu 5 Nov 2026 UTC  |
 |   [m] Mail                     ||                     ||                     |
-|   [a] Files  (not built yet)   |+---------------------++---------------------+
+|   [a] Files                    |+---------------------++---------------------+
 |   [c] Chat                     |+[ Who is online ]----++[ Last callers ]-----+
 |   [d] Doors                    || * 5 online          || bob              2m |
 |   [u] Members                  || > alice             || carol            1h |
@@ -95,7 +95,7 @@
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / wide / 80x24 / unicode truecolor / colors=65e3b65dd7717d2b
+=== neon / wide / 80x24 / unicode truecolor / colors=30e6cdfd953a9f47
  » russh-bbs « │ Main menu                                            UTC 12:00
 ╭« Main menu »───────────────────╮╭« This board »───────╮╭« Clock »────────────╮
 │ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
@@ -103,7 +103,7 @@
 │ terminal is too small for      ││ Portland, OR        ││   ┃ ┃━  • ┃━┃ ┃━┃   │
 │ > [f] Forums                   ││                     ││ Thu 5 Nov 2026 UTC  │
 │   [m] Mail                     ││                     ││                     │
-│   [a] Files  (not built yet)   │╰─────────────────────╯╰─────────────────────╯
+│   [a] Files                    │╰─────────────────────╯╰─────────────────────╯
 │   [c] Chat                     │╭« Who is online »────╮╭« Last callers »─────╮
 │   [d] Doors                    ││ ● 5 online          ││ bob              2m │
 │   [u] Members                  ││ ▸ alice             ││ carol            1h │
@@ -121,12 +121,12 @@
 ╰────────────────────────────────╯╰─────────────────────╯╰─────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / wide / 132x43 / unicode truecolor / colors=d3a114f22e665292
+=== neon / wide / 132x43 / unicode truecolor / colors=d834f58dba83742e
  » russh-bbs « │ Main menu                                                                                                UTC 12:00
 ╭« Main menu »───────────────────╮╭« russh-bbs »───────────────────────────────────────────────╮╭« This board »────────────────────╮
 │ > [f] Forums                   ││                                                            ││ russh-bbs                        │
 │   [m] Mail                     ││  Signed in as alice.                                       ││ A bulletin board in your termin… │
-│   [a] Files  (not built yet)   ││                                                            ││ Portland, OR · since 2026        │
+│   [a] Files                    ││                                                            ││ Portland, OR · since 2026        │
 │   [c] Chat                     ││  > [f] Forums                                              ││                                  │
 │   [d] Doors                    ││                                                            ││                                  │
 │   [u] Members                  ││                                                            ││                                  │
@@ -166,7 +166,7 @@
 ╰────────────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / wide / 80x24 / ascii mono / colors=979eef78f5e6a6ce
+=== neon / wide / 80x24 / ascii mono / colors=e86ce8a01c3dd574
  >> russh-bbs << | Main menu                                          UTC 12:00
 +<< Main menu >>-----------------++<< This board >>-----++<< Clock >>----------+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
@@ -174,7 +174,7 @@
 | terminal is too small for      || Portland, OR        ||   | |_  . |_| |_|   |
 | > [f] Forums                   ||                     || Thu 5 Nov 2026 UTC  |
 |   [m] Mail                     ||                     ||                     |
-|   [a] Files  (not built yet)   |+---------------------++---------------------+
+|   [a] Files                    |+---------------------++---------------------+
 |   [c] Chat                     |+<< Who is online >>--++<< Last callers >>---+
 |   [d] Doors                    || * 5 online          || bob              2m |
 |   [u] Members                  || > alice             || carol            1h |
@@ -192,7 +192,7 @@
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / wide / 80x24 / unicode truecolor / colors=884f49bfb12e7907
+=== paper / wide / 80x24 / unicode truecolor / colors=5000181e50b25a0b
  russh-bbs │ Main menu                                                UTC 12:00
 ╭ Main menu ─────────────────────╮╭ This board ─────────╮╭ Clock ──────────────╮
 │ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
@@ -200,7 +200,7 @@
 │ terminal is too small for      ││ Portland, OR        ││   ┃ ┃━  • ┃━┃ ┃━┃   │
 │ > [f] Forums                   ││                     ││ Thu 5 Nov 2026 UTC  │
 │   [m] Mail                     ││                     ││                     │
-│   [a] Files  (not built yet)   │╰─────────────────────╯╰─────────────────────╯
+│   [a] Files                    │╰─────────────────────╯╰─────────────────────╯
 │   [c] Chat                     │╭ Who is online ──────╮╭ Last callers ───────╮
 │   [d] Doors                    ││ ● 5 online          ││ bob              2m │
 │   [u] Members                  ││ ▸ alice             ││ carol            1h │
@@ -218,12 +218,12 @@
 ╰────────────────────────────────╯╰─────────────────────╯╰─────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / wide / 132x43 / unicode truecolor / colors=e63c6c4722ea3a93
+=== paper / wide / 132x43 / unicode truecolor / colors=b680cd45db587e17
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ╭ Main menu ─────────────────────╮╭ russh-bbs ─────────────────────────────────────────────────╮╭ This board ──────────────────────╮
 │ > [f] Forums                   ││                                                            ││ russh-bbs                        │
 │   [m] Mail                     ││  Signed in as alice.                                       ││ A bulletin board in your termin… │
-│   [a] Files  (not built yet)   ││                                                            ││ Portland, OR · since 2026        │
+│   [a] Files                    ││                                                            ││ Portland, OR · since 2026        │
 │   [c] Chat                     ││  > [f] Forums                                              ││                                  │
 │   [d] Doors                    ││                                                            ││                                  │
 │   [u] Members                  ││                                                            ││                                  │
@@ -263,7 +263,7 @@
 ╰────────────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / wide / 80x24 / ascii mono / colors=1a9f9411539677e8
+=== paper / wide / 80x24 / ascii mono / colors=eb7867acf1858c26
  russh-bbs | Main menu                                                UTC 12:00
 + Main menu ---------------------++ This board ---------++ Clock --------------+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
@@ -271,7 +271,7 @@
 | terminal is too small for      || Portland, OR        ||   | |_  . |_| |_|   |
 | > [f] Forums                   ||                     || Thu 5 Nov 2026 UTC  |
 |   [m] Mail                     ||                     ||                     |
-|   [a] Files  (not built yet)   |+---------------------++---------------------+
+|   [a] Files                    |+---------------------++---------------------+
 |   [c] Chat                     |+ Who is online ------++ Last callers -------+
 |   [d] Doors                    || * 5 online          || bob              2m |
 |   [u] Members                  || > alice             || carol            1h |
@@ -289,7 +289,7 @@
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / wide / 80x24 / unicode truecolor / colors=dc8e18032d8b5f58
+=== amber / wide / 80x24 / unicode truecolor / colors=872fbaabdec681ae
  russh-bbs │ Main menu                                                UTC 12:00
 ┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━┓┏ THIS BOARD ━━━━━━━━━┓┏ CLOCK ━━━━━━━━━━━━━━┓
 ┃ Signed in as alice.            ┃┃ russh-bbs           ┃┃      ━     ━   ━    ┃
@@ -297,7 +297,7 @@
 ┃ terminal is too small for      ┃┃ Portland, OR        ┃┃   ┃ ┃━  • ┃━┃ ┃━┃   ┃
 ┃ > [f] Forums                   ┃┃                     ┃┃ Thu 5 Nov 2026 UTC  ┃
 ┃   [m] Mail                     ┃┃                     ┃┃                     ┃
-┃   [a] Files  (not built yet)   ┃┗━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛
+┃   [a] Files                    ┃┗━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛
 ┃   [c] Chat                     ┃┏ WHO IS ONLINE ━━━━━━┓┏ LAST CALLERS ━━━━━━━┓
 ┃   [d] Doors                    ┃┃ ● 5 online          ┃┃ bob              2m ┃
 ┃   [u] Members                  ┃┃ ▸ alice             ┃┃ carol            1h ┃
@@ -315,12 +315,12 @@
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / wide / 132x43 / unicode truecolor / colors=d879080f576eecd7
+=== amber / wide / 132x43 / unicode truecolor / colors=28fd14588f8e3cf5
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━┓┏ RUSSH-BBS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓┏ THIS BOARD ━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ > [f] Forums                   ┃┃                                                            ┃┃ russh-bbs                        ┃
 ┃   [m] Mail                     ┃┃  Signed in as alice.                                       ┃┃ A bulletin board in your termin… ┃
-┃   [a] Files  (not built yet)   ┃┃                                                            ┃┃ Portland, OR · since 2026        ┃
+┃   [a] Files                    ┃┃                                                            ┃┃ Portland, OR · since 2026        ┃
 ┃   [c] Chat                     ┃┃  > [f] Forums                                              ┃┃                                  ┃
 ┃   [d] Doors                    ┃┃                                                            ┃┃                                  ┃
 ┃   [u] Members                  ┃┃                                                            ┃┃                                  ┃
@@ -360,7 +360,7 @@
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / wide / 80x24 / ascii mono / colors=1a9f9411539677e8
+=== amber / wide / 80x24 / ascii mono / colors=eb7867acf1858c26
  russh-bbs | Main menu                                                UTC 12:00
 + MAIN MENU ---------------------++ THIS BOARD ---------++ CLOCK --------------+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
@@ -368,7 +368,7 @@
 | terminal is too small for      || Portland, OR        ||   | |_  . |_| |_|   |
 | > [f] Forums                   ||                     || Thu 5 Nov 2026 UTC  |
 |   [m] Mail                     ||                     ||                     |
-|   [a] Files  (not built yet)   |+---------------------++---------------------+
+|   [a] Files                    |+---------------------++---------------------+
 |   [c] Chat                     |+ WHO IS ONLINE ------++ LAST CALLERS -------+
 |   [d] Doors                    || * 5 online          || bob              2m |
 |   [u] Members                  || > alice             || carol            1h |
@@ -386,7 +386,7 @@
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / wide / 80x24 / unicode truecolor / colors=c9b891973f333ae8
+=== deepspace / wide / 80x24 / unicode truecolor / colors=bed206fe3124a3a4
  ◆ russh-bbs ◆ │ Main menu                                            UTC 12:00
 ╭────── M A I N   M E N U ───────╮╭ T H I S   B O A R D ╮╭───── C L O C K ─────╮
 │ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
@@ -394,7 +394,7 @@
 │ terminal is too small for      ││ Portland, OR        ││   ┃ ┃━  • ┃━┃ ┃━┃   │
 │ > [f] Forums                   ││                     ││ Thu 5 Nov 2026 UTC  │
 │   [m] Mail                     ││                     ││                     │
-│   [a] Files  (not built yet)   │╰─────────────────────╯╰─────────────────────╯
+│   [a] Files                    │╰─────────────────────╯╰─────────────────────╯
 │   [c] Chat                     │╭I S   O N L I N E ───╮╭ T   C A L L E R S ──╮
 │   [d] Doors                    ││ ● 5 online          ││ bob              2m │
 │   [u] Members                  ││ ▸ alice             ││ carol            1h │
@@ -412,12 +412,12 @@
 ╰────────────────────────────────╯╰─────────────────────╯╰─────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / wide / 132x43 / unicode truecolor / colors=bc311847b3fea579
+=== deepspace / wide / 132x43 / unicode truecolor / colors=f6d56b8b282308dd
  ◆ russh-bbs ◆ │ Main menu                                                                                                UTC 12:00
 ╭────── M A I N   M E N U ───────╮╭──────────────────── R U S S H - B B S ─────────────────────╮╭────── T H I S   B O A R D ───────╮
 │ > [f] Forums                   ││                                                            ││ russh-bbs                        │
 │   [m] Mail                     ││  Signed in as alice.                                       ││ A bulletin board in your termin… │
-│   [a] Files  (not built yet)   ││                                                            ││ Portland, OR · since 2026        │
+│   [a] Files                    ││                                                            ││ Portland, OR · since 2026        │
 │   [c] Chat                     ││  > [f] Forums                                              ││                                  │
 │   [d] Doors                    ││                                                            ││                                  │
 │   [u] Members                  ││                                                            ││                                  │
@@ -457,7 +457,7 @@
 ╰────────────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / wide / 80x24 / ascii mono / colors=35d855158f62facc
+=== deepspace / wide / 80x24 / ascii mono / colors=a54294b33ad53338
  * russh-bbs * | Main menu                                            UTC 12:00
 +------ M A I N   M E N U -------++ T H I S   B O A R D ++----- C L O C K -----+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
@@ -465,7 +465,7 @@
 | terminal is too small for      || Portland, OR        ||   | |_  . |_| |_|   |
 | > [f] Forums                   ||                     || Thu 5 Nov 2026 UTC  |
 |   [m] Mail                     ||                     ||                     |
-|   [a] Files  (not built yet)   |+---------------------++---------------------+
+|   [a] Files                    |+---------------------++---------------------+
 |   [c] Chat                     |+I S   O N L I N E ---++ T   C A L L E R S --+
 |   [d] Doors                    || * 5 online          || bob              2m |
 |   [u] Members                  || > alice             || carol            1h |
@@ -483,7 +483,7 @@
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / wide / 80x24 / unicode truecolor / colors=63d65edbd86a314c
+=== ansi / wide / 80x24 / unicode truecolor / colors=1a0c82d41b12044a
  ░▒▓ russh-bbs ▓▒░ │ Main menu                                        UTC 12:00
 ╔═════════╡ Main menu ╞══════════╗╔═══╡ This board ╞════╗╔══════╡ Clock ╞══════╗
 ║ Signed in as alice.            ║║ russh-bbs           ║║      ━     ━   ━    ║
@@ -491,7 +491,7 @@
 ║ terminal is too small for      ║║ Portland, OR        ║║   ┃ ┃━  • ┃━┃ ┃━┃   ║
 ║ > [f] Forums                   ║║                     ║║ Thu 5 Nov 2026 UTC  ║
 ║   [m] Mail                     ║║                     ║║                     ║
-║   [a] Files  (not built yet)   ║╚═════════════════════╝╚═════════════════════╝
+║   [a] Files                    ║╚═════════════════════╝╚═════════════════════╝
 ║   [c] Chat                     ║╔══╡ Who is online ╞══╗╔══╡ Last callers ╞═══╗
 ║   [d] Doors                    ║║ ● 5 online          ║║ bob              2m ║
 ║   [u] Members                  ║║ ▸ alice             ║║ carol            1h ║
@@ -509,12 +509,12 @@
 ╚════════════════════════════════╝╚═════════════════════╝╚═════════════════════╝
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / wide / 132x43 / unicode truecolor / colors=423d7dd5da8f8021
+=== ansi / wide / 132x43 / unicode truecolor / colors=548522c117a2a7fb
  ░▒▓ russh-bbs ▓▒░ │ Main menu                                                                                            UTC 12:00
 ╔═════════╡ Main menu ╞══════════╗╔═══════════════════════╡ russh-bbs ╞════════════════════════╗╔══════════╡ This board ╞══════════╗
 ║ > [f] Forums                   ║║                                                            ║║ russh-bbs                        ║
 ║   [m] Mail                     ║║  Signed in as alice.                                       ║║ A bulletin board in your termin… ║
-║   [a] Files  (not built yet)   ║║                                                            ║║ Portland, OR · since 2026        ║
+║   [a] Files                    ║║                                                            ║║ Portland, OR · since 2026        ║
 ║   [c] Chat                     ║║  > [f] Forums                                              ║║                                  ║
 ║   [d] Doors                    ║║                                                            ║║                                  ║
 ║   [u] Members                  ║║                                                            ║║                                  ║
@@ -554,7 +554,7 @@
 ╚════════════════════════════════╝╚════════════════════════════════════════════════════════════╝╚══════════════════════════════════╝
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / wide / 80x24 / ascii mono / colors=0f122dc1f283bbca
+=== ansi / wide / 80x24 / ascii mono / colors=add1d7aeb5a96d48
  ## russh-bbs ## | Main menu                                          UTC 12:00
 +---------| Main menu |----------++---| This board |----++------| Clock |------+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
@@ -562,7 +562,7 @@
 | terminal is too small for      || Portland, OR        ||   | |_  . |_| |_|   |
 | > [f] Forums                   ||                     || Thu 5 Nov 2026 UTC  |
 |   [m] Mail                     ||                     ||                     |
-|   [a] Files  (not built yet)   |+---------------------++---------------------+
+|   [a] Files                    |+---------------------++---------------------+
 |   [c] Chat                     |+--| Who is online |--++--| Last callers |---+
 |   [d] Doors                    || * 5 online          || bob              2m |
 |   [u] Members                  || > alice             || carol            1h |

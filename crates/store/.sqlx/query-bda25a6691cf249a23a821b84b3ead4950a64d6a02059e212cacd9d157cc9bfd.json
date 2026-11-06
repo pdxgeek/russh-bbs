@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE file SET downloads = downloads + 1 WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "bda25a6691cf249a23a821b84b3ead4950a64d6a02059e212cacd9d157cc9bfd"
+}

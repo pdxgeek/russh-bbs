@@ -69,6 +69,14 @@ pub trait MemberSessions: Send + Sync {
         key: &Fingerprint,
     ) -> impl Future<Output = Result<Option<Username>, StoreError>> + Send;
 
+    /// The id of the active member `key` is bound to, or `None` for any other key. Like
+    /// [`MemberSessions::handle_for_key`] it records no login: the SFTP subsystem (M4-F2) uses it
+    /// to learn who is connected, and then asks [`MemberSessions::access_for`] for each action.
+    fn account_for_key(
+        &self,
+        key: &Fingerprint,
+    ) -> impl Future<Output = Result<Option<AccountId>, StoreError>> + Send;
+
     /// Begin a session for an account just created (the founder claim).
     fn start_for_account(
         &self,
@@ -122,6 +130,14 @@ impl<S: AccountStore + TerminalSettingsStore + AccessStore> MemberSessions for S
             .map(|account| account.username))
     }
 
+    async fn account_for_key(&self, key: &Fingerprint) -> Result<Option<AccountId>, StoreError> {
+        Ok(self
+            .account_by_fingerprint(key)
+            .await?
+            .filter(|account| account.state.is_member_access())
+            .map(|account| account.id))
+    }
+
     async fn start_for_account(&self, account: &Account) -> Result<MemberStart, StoreError> {
         let settings = self.terminal_settings(account.id).await?;
         let previous_login = self.record_login(account.id).await?;
@@ -166,6 +182,13 @@ impl MemberSessions for NoMembers {
         &self,
         _key: &Fingerprint,
     ) -> impl Future<Output = Result<Option<Username>, StoreError>> + Send {
+        std::future::ready(Ok(None))
+    }
+
+    fn account_for_key(
+        &self,
+        _key: &Fingerprint,
+    ) -> impl Future<Output = Result<Option<AccountId>, StoreError>> + Send {
         std::future::ready(Ok(None))
     }
 

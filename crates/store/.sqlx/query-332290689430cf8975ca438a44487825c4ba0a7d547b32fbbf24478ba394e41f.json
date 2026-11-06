@@ -1,0 +1,50 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT a.id AS \"id!\", a.name, a.description, a.restricted AS \"restricted!: bool\",\n                      a.auto_approve AS \"auto_approve!: bool\",\n                      (SELECT count(*) FROM file f WHERE f.area_id = a.id AND f.state = 'approved') AS \"files!: i64\"\n               FROM file_area a ORDER BY a.id",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "description",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "restricted!: bool",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "auto_approve!: bool",
+        "ordinal": 4,
+        "type_info": "Integer"
+      },
+      {
+        "name": "files!: i64",
+        "ordinal": 5,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "332290689430cf8975ca438a44487825c4ba0a7d547b32fbbf24478ba394e41f"
+}

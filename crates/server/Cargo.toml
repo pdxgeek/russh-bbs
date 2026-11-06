@@ -22,6 +22,7 @@ russh-bbs-door-nullroute = { workspace = true }
 # Long Haul, the space trade door (M4-L1).
 russh-bbs-door-long-haul = { workspace = true }
 russh = { workspace = true }
+russh-sftp = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
@@ -55,6 +56,8 @@ qa-loopback-feeds = []
 
 [dev-dependencies]
 tempfile = { workspace = true }
+# Hashes the files the sftp tests move.
+sha2 = { workspace = true }
 # Property tests: the art parser (UI-3) and the mouse parser (UI-9); already a workspace dependency of core.
 proptest = { workspace = true }
 # Test-only: the access-path tests take a permission away with raw SQL (the role editing

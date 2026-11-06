@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM download_list WHERE account_id = ? AND file_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "104e9d9432f8a82f8b20db5a6d1c06e4ab2492844a5e9b7adc3866cbc118bd0b"
+}

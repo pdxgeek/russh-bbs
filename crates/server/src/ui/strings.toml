@@ -286,9 +286,6 @@ not_found = "That member is not available."
 failed = "That did not work. Nothing was changed. Try again."
 rank = "You cannot edit the profile of someone whose role ranks at or above yours. Nothing was changed."
 
-[placeholder]
-files = "File areas are not built yet."
-
 [queue]
 empty = "No requests are waiting."
 unread = "The requests could not be read. Try again later."
@@ -555,3 +552,123 @@ new_mail = "You have {count} unread mail."
 dock_open = "Chat is beside this screen. Ctrl-W moves between them, Ctrl-T closes it, < > resize."
 dock_narrow = "This terminal is too narrow to show chat beside the screen."
 ascii_only = "Non-ASCII characters were skipped."
+
+# ---- Files (M4-F2) ---------------------------------------------------------------------------
+[files]
+page = "Page {page}"
+
+[files.areas]
+title = "File areas"
+empty = "There are no file areas you can see yet."
+row = "[{key}] {name}  ({files} files)"
+flag_restricted = "      (by invitation only)"
+flag_auto = "      (new files go live after a clean scan)"
+
+[files.heading]
+area = "Files"
+file = "File"
+search = "File search"
+
+[files.area]
+title = "{name}"
+empty = "No files here yet."
+row = "[{key}] {name}  {size}  {handle}  {tags}"
+
+[files.file]
+title = "{name}"
+area = "Area: {area}"
+size = "Size: {size} ({bytes} bytes)"
+uploader = "Uploaded by {handle} on {when}"
+sha256 = "SHA-256: {hash}"
+tags = "Tags: {tags}"
+tags_none = "No tags."
+description = "About: {text}"
+downloads = "Downloads started: {count}"
+pending = "Waiting for staff approval. Only you and staff can see it."
+scan_unscanned = "Not scanned: this board has no virus scanner turned on."
+scan_clean = "Scanned: nothing found."
+scan_failed = "The scan could not finish. Staff decide whether to approve it."
+on_list = "On your download list."
+download_path = "Fetch with sftp: {path}"
+download_no_access = "You may list this file but not fetch it."
+
+[files.queue]
+title = "Waiting for approval"
+empty = "Nothing is waiting."
+row = "[{key}] {name}  {size}  {handle}  in {area}"
+
+[files.search]
+title = "Search: {query}"
+empty = "No files match."
+
+[files.list]
+title = "Download list"
+empty = "Your download list is empty. Press b on a file to add it."
+row = "[{key}] {name}  {size}  in {area}"
+howto = "Fetch the whole list with sftp: get /downloads/*"
+
+[files.note]
+sftp = "Uploads and downloads use an sftp client over ssh, with the key you signed in with."
+no_sftp = "SFTP is turned off on this board: you can browse here but not fetch or upload."
+telnet = "Downloads and uploads need ssh. This connection is telnet: you can browse, not fetch."
+unavailable = "File areas are not available on this board."
+readable = "The board can read every file here. Encrypt a file yourself before you upload it if it must stay secret."
+
+[files.hint]
+upload = "Upload with sftp to {path}  (new files wait for staff approval)"
+open = "Number: open"
+next = "n: next page"
+previous = "p: previous page"
+search = "/: search"
+list = "l: download list"
+queue = "q: files waiting for approval (staff)"
+new_area = "n: new area (staff)"
+tag = "t: add a tag   u: remove a tag"
+describe = "d: change the description"
+list_toggle = "b: add to / take off your download list"
+decide = "a: approve   r: reject"
+remove = "x: remove this file"
+list_clear = "c: empty the list"
+
+[files.field]
+search = "Search for"
+tag = "Tag"
+untag = "Remove tag"
+description = "Description"
+area_name = "Area name"
+area_auto = "Go live after a clean scan (a)"
+area_restricted = "By invitation only (r)"
+
+[files.confirm]
+remove = "Remove this file for good? Press y to confirm, Esc to keep it."
+reject = "Reject this file and delete its bytes? Press y to confirm, Esc to keep it."
+
+[files.result]
+approved = "Approved. It is live now."
+rejected = "Rejected. The bytes are deleted."
+removed = "Removed."
+tagged = "Tag added."
+untagged = "Tag removed."
+described = "Description saved."
+listed = "Added to your download list."
+unlisted = "Taken off your download list."
+list_cleared = "Download list emptied."
+area_created = "Area made."
+
+[files.problem]
+not_found = "That is not available."
+not_permitted = "You may not do that."
+text = "That text was not accepted. Tags use letters, digits, - and _."
+too_many_tags = "A file can have at most 8 tags."
+list_full = "Your download list is full."
+decided = "Someone already decided that file."
+name_taken = "An area with that name exists."
+failed = "That did not work. Nothing was changed. Try again."
+
+[files.footer]
+areas = "Number: open   /: search   l: list   Esc: back"
+area = "Number: open   n/p: pages   /: search   Esc: back"
+file = "t/u: tags   d: about   b: list   Esc: back"
+back = "Esc: back"
+typing = "Enter: accept   Backspace: erase   Esc: cancel"
+confirm = "y: yes   Esc: no"

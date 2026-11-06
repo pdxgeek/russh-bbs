@@ -1,0 +1,24 @@
+ russh-bbs │ Waiting for approval                                     UTC 03:56
+┌ Waiting for approval ────────────────────────────────────────────────────────┐
+│[1] network-diagram.bin  683.5 KiB  ann  in Manuals                           │
+│Number: open                                                                  │
+│Notice: Approved. It is live now.                                             │
+│                                                                              │
+│Number: open   n/p: pages   /: search   Esc: back                             │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+ ? help  Esc back  Ctrl-C log off

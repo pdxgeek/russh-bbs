@@ -36,12 +36,7 @@ const fn gated(hotkey: char, label: &'static str, target: Target, requires: Perm
 static MAIN_ITEMS: [Item; 11] = [
     item('f', "menu.main.item.forums", Target::Action(Action::Forums)),
     item('m', "menu.main.item.mail", Target::Action(Action::Mail)),
-    gated(
-        'a',
-        "menu.main.item.files",
-        Target::Placeholder("placeholder.files"),
-        Permission::FilesList,
-    ),
+    item('a', "menu.main.item.files", Target::Action(Action::Files)),
     item('c', "menu.main.item.chat", Target::Action(Action::Chat)),
     item('d', "menu.main.item.doors", Target::Action(Action::Doors)),
     gated(

@@ -1,0 +1,116 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT f.id AS \"id!\", f.area_id AS \"area_id!\", a.name AS \"area_name!\", f.uploader_id,\n                      u.username AS \"uploader?\", f.name, f.original_name, f.description, f.size,\n                      f.sha256, f.blob_key, f.state, f.scan, f.scan_note, f.created_at,\n                      f.decided_at, f.downloads\n               FROM file f JOIN file_area a ON a.id = f.area_id\n               LEFT JOIN accounts u ON u.id = f.uploader_id\n               WHERE f.state = 'approved' AND f.area_id IN (SELECT value FROM json_each(?))\n                 AND NOT EXISTS (\n                     SELECT 1 FROM json_each(?) t WHERE NOT (\n                         instr(lower(f.name), t.value) > 0\n                         OR instr(lower(f.description), t.value) > 0\n                         OR EXISTS (SELECT 1 FROM file_tag g WHERE g.file_id = f.id AND instr(g.tag, t.value) > 0)))\n               ORDER BY f.id DESC LIMIT ? OFFSET ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "area_id!",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "area_name!",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "uploader_id",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "uploader?",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "name",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "original_name",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "description",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "size",
+        "ordinal": 8,
+        "type_info": "Integer"
+      },
+      {
+        "name": "sha256",
+        "ordinal": 9,
+        "type_info": "Text"
+      },
+      {
+        "name": "blob_key",
+        "ordinal": 10,
+        "type_info": "Text"
+      },
+      {
+        "name": "state",
+        "ordinal": 11,
+        "type_info": "Text"
+      },
+      {
+        "name": "scan",
+        "ordinal": 12,
+        "type_info": "Text"
+      },
+      {
+        "name": "scan_note",
+        "ordinal": 13,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 14,
+        "type_info": "Integer"
+      },
+      {
+        "name": "decided_at",
+        "ordinal": 15,
+        "type_info": "Integer"
+      },
+      {
+        "name": "downloads",
+        "ordinal": 16,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "6560d795a68e1668e80ed75db7aaa097556449aa42610c168018b243f92a095e"
+}

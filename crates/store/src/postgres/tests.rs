@@ -289,6 +289,10 @@ const LANDED_CHECKSUMS: &[(i64, &str)] = &[
         27,
         "a77d74f8fd66bef4f36137137c7a4a1313449cb1a4a773c003b20572a4cc16c28aef9eb45721739b36fec326eedcb046",
     ),
+    (
+        28,
+        "58c42b0326fdf7de90e3daec6e1b17d51ea6e4a6495999e30596a5d4b5cb34300380ee9766782d50b62ff0ae51248a63",
+    ),
 ];
 
 fn hex(bytes: &[u8]) -> String {
@@ -355,9 +359,13 @@ async fn a_fresh_database_gets_every_migration_and_only_these_tables() {
             "door_bar",
             "door_save",
             "door_state",
+            "download_list",
             "draft",
             "feed",
             "feed_item",
+            "file",
+            "file_area",
+            "file_tag",
             "group_closure",
             "group_member",
             "invite",

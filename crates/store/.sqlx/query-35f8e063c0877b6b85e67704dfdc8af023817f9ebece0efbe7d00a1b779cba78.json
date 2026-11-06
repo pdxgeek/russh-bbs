@@ -1,0 +1,118 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT f.id AS \"id!\", f.area_id AS \"area_id!\", a.name AS \"area_name!\", f.uploader_id,\n                      u.username AS \"uploader?\", f.name, f.original_name, f.description, f.size,\n                      f.sha256, f.blob_key, f.state, f.scan, f.scan_note, f.created_at,\n                      f.decided_at, f.downloads\n               FROM download_list d JOIN file f ON f.id = d.file_id\n               JOIN file_area a ON a.id = f.area_id\n               LEFT JOIN accounts u ON u.id = f.uploader_id\n               WHERE d.account_id = $1 AND f.state = 'approved'\n               ORDER BY d.added_at ASC, f.id ASC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "area_id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "area_name!",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "uploader_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 4,
+        "name": "uploader?",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "original_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 8,
+        "name": "size",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 9,
+        "name": "sha256",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 10,
+        "name": "blob_key",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 11,
+        "name": "state",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 12,
+        "name": "scan",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 13,
+        "name": "scan_note",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 14,
+        "name": "created_at",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 15,
+        "name": "decided_at",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 16,
+        "name": "downloads",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "35f8e063c0877b6b85e67704dfdc8af023817f9ebece0efbe7d00a1b779cba78"
+}

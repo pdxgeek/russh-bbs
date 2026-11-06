@@ -238,6 +238,7 @@ impl<D: Backend> Connection<D> {
                 let flow =
                     MemberFlow::new(&start.handle, access, start.previous_login, start.settings)
                         .with_menu_tree(self.ui.menus().tree())
+                        .with_files_mode(crate::sftp::files_mode(&self.ui, true))
                         .signed_in_with_password()
                         .over_telnet()
                         .with_key_notices(russh_bbs_core::keys::notice_lines(&notices));

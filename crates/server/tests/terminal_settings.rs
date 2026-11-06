@@ -260,7 +260,7 @@ async fn a_reconnect_skips_the_glyph_test_and_shows_the_stored_tier() {
         "no glyph test the second time: {next}"
     );
     assert!(next.contains("Main menu"), "{next}");
-    assert!(next.contains("not built yet"), "{next}");
+    assert!(next.contains("[a] Files"), "{next}");
     rig.server.shutdown().await;
 }
 

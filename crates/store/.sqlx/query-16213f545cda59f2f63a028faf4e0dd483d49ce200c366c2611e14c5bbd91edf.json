@@ -1,0 +1,50 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT a.id AS \"id!\", a.name, a.description, a.restricted AS \"restricted!\",\n                      a.auto_approve AS \"auto_approve!\",\n                      (SELECT count(*) FROM file f WHERE f.area_id = a.id AND f.state = 'approved') AS \"files!\"\n               FROM file_area a ORDER BY a.id -- postgres",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "restricted!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 4,
+        "name": "auto_approve!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 5,
+        "name": "files!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "16213f545cda59f2f63a028faf4e0dd483d49ce200c366c2611e14c5bbd91edf"
+}

@@ -173,7 +173,7 @@ async fn the_founder_walks_main_menu_settings_back_and_log_off() {
         "[s] Terminal settings",
         "[l] Log off",
         "[o] Sysop tools",
-        "[a] Files (not built yet)",
+        "[a] Files",
         "? help Esc back Ctrl C log off",
     ] {
         assert!(menu.contains(expected), "{expected:?} missing: {menu}");
@@ -196,13 +196,14 @@ async fn the_founder_walks_main_menu_settings_back_and_log_off() {
     send(&mut channel, "b").await;
     assert!(full(&mut channel).await.contains("Main menu"));
 
-    // A placeholder says so and nothing else happens.
+    // Files opens the file areas; this rig has no file store, and the screen says so.
     send(&mut channel, "a").await;
     let note = full(&mut channel).await;
     assert!(
-        note.contains("Notice: File areas are not built yet."),
+        note.contains("File areas are not available on this board."),
         "{note}"
     );
+    send(&mut channel, "\u{1b}").await;
 
     let (bye, closed) = send(&mut channel, "l").await;
     assert!(bye.contains("Goodbye, founder."), "{bye}");

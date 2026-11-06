@@ -10,6 +10,7 @@ pub mod credits;
 pub mod doors;
 pub mod drafts;
 pub mod feeds;
+pub mod files;
 pub mod forums;
 pub mod founder;
 pub mod icons;

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE file SET scan = ?, scan_note = ? WHERE id = ? AND state = 'quarantine'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "2845698f2a79fa913a43f20726158cde6acde8c304f31f1443e316b8ba70bd8d"
+}

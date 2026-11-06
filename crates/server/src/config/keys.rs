@@ -400,6 +400,22 @@ pub(crate) static KEYS: &[KeyDef] = &[
         Int,
         "8388608",
     ),
+    key("files.sftp", "RUSSH_BBS_FILES_SFTP", None, Bool, "false"),
+    key("files.scan", "RUSSH_BBS_FILES_SCAN", None, Str, "clamd"),
+    key(
+        "files.clamd_address",
+        "RUSSH_BBS_FILES_CLAMD_ADDRESS",
+        None,
+        Str,
+        "127.0.0.1:3310",
+    ),
+    key(
+        "files.clamd_socket",
+        "RUSSH_BBS_FILES_CLAMD_SOCKET",
+        None,
+        Str,
+        "/tmp/clamd.sock",
+    ),
     key(
         "telnet.enabled",
         "RUSSH_BBS_TELNET_ENABLED",

@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE file SET scan = $1, scan_note = $2 WHERE id = $3 AND state = 'quarantine'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "5b0fb0570f22504ec9e3e3d2080f939006bc7c94beee48420d04b7b6fbbbc20c"
+}

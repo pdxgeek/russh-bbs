@@ -139,6 +139,15 @@ backend = "local"             # "local" or "s3"
 # multipart_threshold_bytes = 16777216      # s3 uploads above this go up in parts (min 5 MiB)
 max_object_bytes = 268435456  # the largest object either backend stores
 
+[files]
+# File areas (M4-F2). Members upload and download over SFTP (ssh only); every upload waits in
+# quarantine until staff approve it, unless the area auto-approves.
+sftp = true                   # false: the sftp subsystem is refused (the Files screens still work)
+scan = "none"                 # "none" (files are stored unscanned and labelled so) or "clamd"
+# clamd_address = "127.0.0.1:3310"   # with scan = "clamd": a ClamAV daemon over TCP (not encrypted:
+#                                    # keep it on a private network) ...
+# clamd_socket = "/run/clamav/clamd.ctl"   # ... or over a unix socket; name one of the two
+
 [telnet]
 # Telnet is unencrypted (D27, D85). Turning it on is low-security mode: the server logs a
 # warning, staff screens show LOW-SECURITY, and every telnet screen shows UNENCRYPTED.

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE file SET state = ?, blob_key = COALESCE(?, blob_key), decided_at = ?, decided_by = ?\n             WHERE id = ? AND state = 'quarantine'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": []
+  },
+  "hash": "17de75b7b070e343c63fda9c63383fb3b455352de2f64fa53e3a1d6ab5db8f60"
+}

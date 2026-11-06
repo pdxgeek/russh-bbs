@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO file (area_id, uploader_id, name, original_name, size, sha256, blob_key, state, scan, created_at)\n               VALUES (?, ?, ?, ?, ?, ?, ?, 'quarantine', 'unscanned', ?)\n               RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 8
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "89f935c01301412c8b22750e33969561044b4cbaa62f6ca5a2d70263cf1a4540"
+}

@@ -102,6 +102,10 @@ sysop screen over it is M5; the board has no audit screen yet.
 | Theme pack export (UI-7) | `theme.exported` | the staff member (`themes.manage`) | none | `style <name>` |
 | Menus and pages reload (UI-6) | `menus.reloaded` | the staff member (`themes.manage`) | none | `menus.toml\|built-in\|refused pages <n>`: only when the reload changed what members get; never file text |
 | Theme pack import (UI-7) | `theme.imported` | the staff member (`themes.manage`) | none | `style <name> art <n>`: written after the files are installed; a refused pack writes nothing |
+| `create_area` (M4-F2) | `file_area.created` | the creator (`files.manage_areas`) | none; the resource is the area | `open` or `restricted`, then `auto-approve` or `approval needed`: never the name |
+| `approve` (M4-F2) | `file.approved` | the approver (`files.approve` on the area), or the system for an auto-approving area after a scan that did not fail | the uploader (none if the account is gone); the resource is the area | `file <id>`: the id only, never the name |
+| `reject` (M4-F2) | `file.rejected` | the approver, or the system when the scanner found something | the uploader; the resource is the area | `file <id>`, then `infected` for a scanner rejection |
+| `remove` (M4-F2) | `file.removed` | the approver, or the uploader removing their own file while it is in quarantine | the uploader; the resource is the area | `file <id>` |
 | `remove_poll` (M3-J) | `community.poll_removed` | the staff member | the poll's creator | `poll <id>`; the options and votes go with the poll |
 
 A write that changed nothing (adding a member already in the group, removing one who is not, a

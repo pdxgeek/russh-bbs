@@ -104,6 +104,12 @@ rustls-native-certs = "0.8"
 # Server name type for TLS verification (already in the tree through rustls).
 rustls-pki-types = "1"
 
+# SFTP server protocol for the file areas (M4-F2): a maintained, pure-Rust (Apache-2.0) implementation of the
+# SFTP v3 packets and a server `Handler` trait that runs on any `AsyncRead + AsyncWrite` stream, so it needs
+# no particular `russh` version (the crate only uses `russh` in its examples). It adds `bitflags`, `bytes`,
+# `chrono`, `dashmap`, `serde_bytes` and `tokio-util`, most already in the tree.
+russh-sftp = "3"
+
 [workspace.lints.rust]
 unsafe_code = "forbid"
 missing_docs = "warn"

@@ -1,0 +1,24 @@
+ russh-bbs │ Waiting for approval                                     UTC 03:56
+┌ Waiting for approval ────────────────────────────────────────────────────────┐
+│[1] router-guide.txt  1000 B  ann  in Manuals                                 │
+│[2] network-diagram.bin  683.5 KiB  ann  in Manuals                           │
+│Number: open                                                                  │
+│                                                                              │
+│Number: open   n/p: pages   /: search   Esc: back                             │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+ ? help  Esc back  Ctrl-C log off

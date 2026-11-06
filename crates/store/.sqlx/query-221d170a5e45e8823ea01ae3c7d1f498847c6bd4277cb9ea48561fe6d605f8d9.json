@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT file_id AS \"file_id!\", tag AS \"tag!\" FROM file_tag\n               WHERE file_id IN (SELECT value FROM json_each(?)) ORDER BY file_id, tag",
+  "describe": {
+    "columns": [
+      {
+        "name": "file_id!",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "tag!",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "221d170a5e45e8823ea01ae3c7d1f498847c6bd4277cb9ea48561fe6d605f8d9"
+}

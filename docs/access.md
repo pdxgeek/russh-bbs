@@ -105,8 +105,8 @@ A closed enum, `LimitKind`; each kind has a value per role (a number, or unlimit
 | `calls_per_day` | signed-in sessions started | UTC day | **M2-H now** (SSH sessions) |
 | `max_sessions` | signed-in sessions open at once | none (in-process count) | **M2-H now** (SSH sessions) |
 | `posts_per_hour` | forum posts and replies | rolling hour | **M3-E now** (counted from the post rows inside the write; a refusal is worded with the rolling hour, not the UTC reset of `LimitRefusal::lines`) |
-| `upload_bytes_per_day` | bytes uploaded | UTC day | M4 files |
-| `upload_bytes_per_file` | bytes in one file | none | M4 files |
+| `upload_bytes_per_day` | bytes uploaded | UTC day | **M4-F2 now** (SFTP uploads: counted as bytes arrive in blocks of 1 MiB, never refunded; a used-up day is refused before the first byte; [files.md](files.md#limits)) |
+| `upload_bytes_per_file` | bytes in one file | none | **M4-F2 now** (SFTP uploads: refused at the first byte past it, nothing stored) |
 | `mail_per_day` | mail messages sent | UTC day | M3 mail |
 | `invites_per_month` | invite codes created | calendar month (UTC) | **M2-D now** (`create_invite`, from the invite rows) |
 
@@ -537,3 +537,9 @@ Feeds are boards (D89; Status: **Implemented and tested**, QA gate not run). Cod
 
 - **Permissions:** `mail.read` (the Mail menu item opens the inbox; read and delete), `mail.send` (new message and reply), `mail.report` and `mail.moderate` (new, above). The first three are in `WIRED` in `tests/access_paths.rs` with a path test (`mail_paths_follow_their_permissions_on_the_next_action` in `tests/mail.rs`: each is taken away while a mail screen is open and the next key is refused in words and writes nothing; put back, it works again). `mail.moderate` is core-only (the staff report list is an M5 console screen) and tested in the shared store suite.
 - **Limit:** `mail_per_day` is enforced (see D90 (7)): `add_usage` after the permission, text and recipient checks; a refusal says how long until the UTC day ends.
+
+### Implemented (M4-F2, `m4/sftp-file-areas`)
+
+- **File areas** ([files.md](files.md)) are access resources (`file_area`). `files.list` reaches an area (the main-menu Files item, the area list, search, the SFTP tree), `files.download` reads an approved file, `files.upload` writes into quarantine, `files.tag` tags, `files.approve` decides and sees quarantine, `files.manage_areas` makes areas and reaches restricted ones. All six permissions already existed with their role rows (migration `0003`); migration `0028` adds only the tables. A **restricted** area follows the forum rule: the permission must be scoped to the area, or `files.manage_areas` held globally.
+- **No leak by name or id.** An area or file the member may not see answers the same "not found" as one that does not exist, in the screens and over SFTP (tested through the store suite and a real `sftp` client). A file in quarantine is visible to its uploader and to approvers of its area only.
+- The SFTP subsystem loads the member's snapshot again for each open, listing and stat (`MemberSessions::access_for`), so a change applies on the next action; `MemberSessions::account_for_key` (new, additive) tells it who connected without recording a login.

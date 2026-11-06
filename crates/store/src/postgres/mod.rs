@@ -16,6 +16,7 @@ mod credits;
 mod doors;
 mod drafts;
 mod feeds;
+mod files;
 mod forums;
 mod founder;
 mod invites;

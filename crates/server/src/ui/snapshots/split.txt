@@ -1,11 +1,11 @@
-=== phosphor / split / 80x24 / unicode truecolor / colors=e8713957447525b1
+=== phosphor / split / 80x24 / unicode truecolor / colors=d662c4f7a827ddef
  russh-bbs │ Main menu                                                UTC 12:00
 ┌[ Main menu ]───────────────────┐│┌[ Chat ]───────────────────────────────────┐
 │ Signed in as alice.            │││#lobby  3                                  │
 │                                │││  ann                                      │
 │ > [f] Forums                   │││  bob                                      │
 │   [m] Mail                     │││  carol                                    │
-│   [a] Files  (not built yet)   │││#tech  1                                   │
+│   [a] Files                    │││#tech  1                                   │
 │   [c] Chat                     │││  dave                                     │
 │   [d] Doors                    │││                                           │
 │   [u] Members                  │││                                           │
@@ -24,14 +24,14 @@
 └────────────────────────────────┘│└───────────────────────────────────────────┘
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / split / 132x43 / unicode truecolor / colors=be2b6e298f6287fa
+=== phosphor / split / 132x43 / unicode truecolor / colors=d369c275b1161a98
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ┌[ Main menu ]───────────────────┐│┌[ Chat ]───────────────────────────────────────────────────────────────────────────────────────┐
 │ Signed in as alice.            │││#lobby  3                                                                                      │
 │                                │││  ann                                                                                          │
 │ > [f] Forums                   │││  bob                                                                                          │
 │   [m] Mail                     │││  carol                                                                                        │
-│   [a] Files  (not built yet)   │││#tech  1                                                                                       │
+│   [a] Files                    │││#tech  1                                                                                       │
 │   [c] Chat                     │││  dave                                                                                         │
 │   [d] Doors                    │││                                                                                               │
 │   [u] Members                  │││                                                                                               │
@@ -69,14 +69,14 @@
 └────────────────────────────────┘│└───────────────────────────────────────────────────────────────────────────────────────────────┘
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / split / 80x24 / ascii mono / colors=f85a644947c2a9ec
+=== phosphor / split / 80x24 / ascii mono / colors=5e56b56d173caaba
  russh-bbs | Main menu                                                UTC 12:00
 +[ Main menu ]-------------------+|+[ Chat ]-----------------------------------+
 | Signed in as alice.            |||#lobby  3                                  |
 |                                |||  ann                                      |
 | > [f] Forums                   |||  bob                                      |
 |   [m] Mail                     |||  carol                                    |
-|   [a] Files  (not built yet)   |||#tech  1                                   |
+|   [a] Files                    |||#tech  1                                   |
 |   [c] Chat                     |||  dave                                     |
 |   [d] Doors                    |||                                           |
 |   [u] Members                  |||                                           |
@@ -95,14 +95,14 @@
 +--------------------------------+|+-------------------------------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / split / 80x24 / unicode truecolor / colors=683e5d7409274f07
+=== neon / split / 80x24 / unicode truecolor / colors=09d5598e83fa3581
  » russh-bbs « │ Main menu                                            UTC 12:00
 ╭« Main menu »───────────────────╮│╭« Chat »───────────────────────────────────╮
 │ Signed in as alice.            │││#lobby  3                                  │
 │                                │││  ann                                      │
 │ > [f] Forums                   │││  bob                                      │
 │   [m] Mail                     │││  carol                                    │
-│   [a] Files  (not built yet)   │││#tech  1                                   │
+│   [a] Files                    │││#tech  1                                   │
 │   [c] Chat                     │││  dave                                     │
 │   [d] Doors                    │││                                           │
 │   [u] Members                  │││                                           │
@@ -121,14 +121,14 @@
 ╰────────────────────────────────╯│╰───────────────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / split / 132x43 / unicode truecolor / colors=04604ec1511fd114
+=== neon / split / 132x43 / unicode truecolor / colors=7d292ca6adb1c32a
  » russh-bbs « │ Main menu                                                                                                UTC 12:00
 ╭« Main menu »───────────────────╮│╭« Chat »───────────────────────────────────────────────────────────────────────────────────────╮
 │ Signed in as alice.            │││#lobby  3                                                                                      │
 │                                │││  ann                                                                                          │
 │ > [f] Forums                   │││  bob                                                                                          │
 │   [m] Mail                     │││  carol                                                                                        │
-│   [a] Files  (not built yet)   │││#tech  1                                                                                       │
+│   [a] Files                    │││#tech  1                                                                                       │
 │   [c] Chat                     │││  dave                                                                                         │
 │   [d] Doors                    │││                                                                                               │
 │   [u] Members                  │││                                                                                               │
@@ -166,14 +166,14 @@
 ╰────────────────────────────────╯│╰───────────────────────────────────────────────────────────────────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / split / 80x24 / ascii mono / colors=4d3a6d3ce044eba6
+=== neon / split / 80x24 / ascii mono / colors=74e28587d52878f4
  >> russh-bbs << | Main menu                                          UTC 12:00
 +<< Main menu >>-----------------+|+<< Chat >>---------------------------------+
 | Signed in as alice.            |||#lobby  3                                  |
 |                                |||  ann                                      |
 | > [f] Forums                   |||  bob                                      |
 |   [m] Mail                     |||  carol                                    |
-|   [a] Files  (not built yet)   |||#tech  1                                   |
+|   [a] Files                    |||#tech  1                                   |
 |   [c] Chat                     |||  dave                                     |
 |   [d] Doors                    |||                                           |
 |   [u] Members                  |||                                           |
@@ -192,14 +192,14 @@
 +--------------------------------+|+-------------------------------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / split / 80x24 / unicode truecolor / colors=f8b609122085d8cc
+=== paper / split / 80x24 / unicode truecolor / colors=5ebdcba18f97ae96
  russh-bbs │ Main menu                                                UTC 12:00
 ╭ Main menu ─────────────────────╮│╭ Chat ─────────────────────────────────────╮
 │ Signed in as alice.            │││#lobby  3                                  │
 │                                │││  ann                                      │
 │ > [f] Forums                   │││  bob                                      │
 │   [m] Mail                     │││  carol                                    │
-│   [a] Files  (not built yet)   │││#tech  1                                   │
+│   [a] Files                    │││#tech  1                                   │
 │   [c] Chat                     │││  dave                                     │
 │   [d] Doors                    │││                                           │
 │   [u] Members                  │││                                           │
@@ -218,14 +218,14 @@
 ╰────────────────────────────────╯│╰───────────────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / split / 132x43 / unicode truecolor / colors=eea92a0d6809d5b7
+=== paper / split / 132x43 / unicode truecolor / colors=2b250aa17e329d2d
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ╭ Main menu ─────────────────────╮│╭ Chat ─────────────────────────────────────────────────────────────────────────────────────────╮
 │ Signed in as alice.            │││#lobby  3                                                                                      │
 │                                │││  ann                                                                                          │
 │ > [f] Forums                   │││  bob                                                                                          │
 │   [m] Mail                     │││  carol                                                                                        │
-│   [a] Files  (not built yet)   │││#tech  1                                                                                       │
+│   [a] Files                    │││#tech  1                                                                                       │
 │   [c] Chat                     │││  dave                                                                                         │
 │   [d] Doors                    │││                                                                                               │
 │   [u] Members                  │││                                                                                               │
@@ -263,14 +263,14 @@
 ╰────────────────────────────────╯│╰───────────────────────────────────────────────────────────────────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / split / 80x24 / ascii mono / colors=5db48d73cc79cbe0
+=== paper / split / 80x24 / ascii mono / colors=8a8f1fbf3fe62516
  russh-bbs | Main menu                                                UTC 12:00
 + Main menu ---------------------+|+ Chat -------------------------------------+
 | Signed in as alice.            |||#lobby  3                                  |
 |                                |||  ann                                      |
 | > [f] Forums                   |||  bob                                      |
 |   [m] Mail                     |||  carol                                    |
-|   [a] Files  (not built yet)   |||#tech  1                                   |
+|   [a] Files                    |||#tech  1                                   |
 |   [c] Chat                     |||  dave                                     |
 |   [d] Doors                    |||                                           |
 |   [u] Members                  |||                                           |
@@ -289,14 +289,14 @@
 +--------------------------------+|+-------------------------------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / split / 80x24 / unicode truecolor / colors=0ba45bef65c7d523
+=== amber / split / 80x24 / unicode truecolor / colors=42d74e5f8bb9156d
  russh-bbs │ Main menu                                                UTC 12:00
 ┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━┓│┏ CHAT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ Signed in as alice.            ┃│┃#lobby  3                                  ┃
 ┃                                ┃│┃  ann                                      ┃
 ┃ > [f] Forums                   ┃│┃  bob                                      ┃
 ┃   [m] Mail                     ┃│┃  carol                                    ┃
-┃   [a] Files  (not built yet)   ┃│┃#tech  1                                   ┃
+┃   [a] Files                    ┃│┃#tech  1                                   ┃
 ┃   [c] Chat                     ┃│┃  dave                                     ┃
 ┃   [d] Doors                    ┃│┃                                           ┃
 ┃   [u] Members                  ┃│┃                                           ┃
@@ -315,14 +315,14 @@
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛│┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / split / 132x43 / unicode truecolor / colors=29e8b47e1fed68d5
+=== amber / split / 132x43 / unicode truecolor / colors=e3d2b5238ab62e1f
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━┓│┏ CHAT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ Signed in as alice.            ┃│┃#lobby  3                                                                                      ┃
 ┃                                ┃│┃  ann                                                                                          ┃
 ┃ > [f] Forums                   ┃│┃  bob                                                                                          ┃
 ┃   [m] Mail                     ┃│┃  carol                                                                                        ┃
-┃   [a] Files  (not built yet)   ┃│┃#tech  1                                                                                       ┃
+┃   [a] Files                    ┃│┃#tech  1                                                                                       ┃
 ┃   [c] Chat                     ┃│┃  dave                                                                                         ┃
 ┃   [d] Doors                    ┃│┃                                                                                               ┃
 ┃   [u] Members                  ┃│┃                                                                                               ┃
@@ -360,14 +360,14 @@
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛│┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / split / 80x24 / ascii mono / colors=5db48d73cc79cbe0
+=== amber / split / 80x24 / ascii mono / colors=8a8f1fbf3fe62516
  russh-bbs | Main menu                                                UTC 12:00
 + MAIN MENU ---------------------+|+ CHAT -------------------------------------+
 | Signed in as alice.            |||#lobby  3                                  |
 |                                |||  ann                                      |
 | > [f] Forums                   |||  bob                                      |
 |   [m] Mail                     |||  carol                                    |
-|   [a] Files  (not built yet)   |||#tech  1                                   |
+|   [a] Files                    |||#tech  1                                   |
 |   [c] Chat                     |||  dave                                     |
 |   [d] Doors                    |||                                           |
 |   [u] Members                  |||                                           |
@@ -386,14 +386,14 @@
 +--------------------------------+|+-------------------------------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / split / 80x24 / unicode truecolor / colors=2b69ffa8af4e0c58
+=== deepspace / split / 80x24 / unicode truecolor / colors=739222daea76e712
  ◆ russh-bbs ◆ │ Main menu                                            UTC 12:00
 ╭────── M A I N   M E N U ───────╮│╭───────────────── C H A T ─────────────────╮
 │ Signed in as alice.            │││#lobby  3                                  │
 │                                │││  ann                                      │
 │ > [f] Forums                   │││  bob                                      │
 │   [m] Mail                     │││  carol                                    │
-│   [a] Files  (not built yet)   │││#tech  1                                   │
+│   [a] Files                    │││#tech  1                                   │
 │   [c] Chat                     │││  dave                                     │
 │   [d] Doors                    │││                                           │
 │   [u] Members                  │││                                           │
@@ -412,14 +412,14 @@
 ╰────────────────────────────────╯│╰───────────────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / split / 132x43 / unicode truecolor / colors=937e499384701095
+=== deepspace / split / 132x43 / unicode truecolor / colors=c84a555e6955b6f7
  ◆ russh-bbs ◆ │ Main menu                                                                                                UTC 12:00
 ╭────── M A I N   M E N U ───────╮│╭─────────────────────────────────────────── C H A T ───────────────────────────────────────────╮
 │ Signed in as alice.            │││#lobby  3                                                                                      │
 │                                │││  ann                                                                                          │
 │ > [f] Forums                   │││  bob                                                                                          │
 │   [m] Mail                     │││  carol                                                                                        │
-│   [a] Files  (not built yet)   │││#tech  1                                                                                       │
+│   [a] Files                    │││#tech  1                                                                                       │
 │   [c] Chat                     │││  dave                                                                                         │
 │   [d] Doors                    │││                                                                                               │
 │   [u] Members                  │││                                                                                               │
@@ -457,14 +457,14 @@
 ╰────────────────────────────────╯│╰───────────────────────────────────────────────────────────────────────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / split / 80x24 / ascii mono / colors=62f8236f862b8184
+=== deepspace / split / 80x24 / ascii mono / colors=e22c89545955e838
  * russh-bbs * | Main menu                                            UTC 12:00
 +------ M A I N   M E N U -------+|+----------------- C H A T -----------------+
 | Signed in as alice.            |||#lobby  3                                  |
 |                                |||  ann                                      |
 | > [f] Forums                   |||  bob                                      |
 |   [m] Mail                     |||  carol                                    |
-|   [a] Files  (not built yet)   |||#tech  1                                   |
+|   [a] Files                    |||#tech  1                                   |
 |   [c] Chat                     |||  dave                                     |
 |   [d] Doors                    |||                                           |
 |   [u] Members                  |||                                           |
@@ -483,14 +483,14 @@
 +--------------------------------+|+-------------------------------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / split / 80x24 / unicode truecolor / colors=8ca86f566f084baa
+=== ansi / split / 80x24 / unicode truecolor / colors=9d7ff641bee528a0
  ░▒▓ russh-bbs ▓▒░ │ Main menu                                        UTC 12:00
 ╔═════════╡ Main menu ╞══════════╗│╔═════════════════╡ Chat ╞══════════════════╗
 ║ Signed in as alice.            ║│║#lobby  3                                  ║
 ║                                ║│║  ann                                      ║
 ║ > [f] Forums                   ║│║  bob                                      ║
 ║   [m] Mail                     ║│║  carol                                    ║
-║   [a] Files  (not built yet)   ║│║#tech  1                                   ║
+║   [a] Files                    ║│║#tech  1                                   ║
 ║   [c] Chat                     ║│║  dave                                     ║
 ║   [d] Doors                    ║│║                                           ║
 ║   [u] Members                  ║│║                                           ║
@@ -509,14 +509,14 @@
 ╚════════════════════════════════╝│╚═══════════════════════════════════════════╝
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / split / 132x43 / unicode truecolor / colors=407b9cf9fd8ce8b2
+=== ansi / split / 132x43 / unicode truecolor / colors=0dca0015e5dd5460
  ░▒▓ russh-bbs ▓▒░ │ Main menu                                                                                            UTC 12:00
 ╔═════════╡ Main menu ╞══════════╗│╔═══════════════════════════════════════════╡ Chat ╞════════════════════════════════════════════╗
 ║ Signed in as alice.            ║│║#lobby  3                                                                                      ║
 ║                                ║│║  ann                                                                                          ║
 ║ > [f] Forums                   ║│║  bob                                                                                          ║
 ║   [m] Mail                     ║│║  carol                                                                                        ║
-║   [a] Files  (not built yet)   ║│║#tech  1                                                                                       ║
+║   [a] Files                    ║│║#tech  1                                                                                       ║
 ║   [c] Chat                     ║│║  dave                                                                                         ║
 ║   [d] Doors                    ║│║                                                                                               ║
 ║   [u] Members                  ║│║                                                                                               ║
@@ -554,14 +554,14 @@
 ╚════════════════════════════════╝│╚═══════════════════════════════════════════════════════════════════════════════════════════════╝
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / split / 80x24 / ascii mono / colors=a4f28390aba641da
+=== ansi / split / 80x24 / ascii mono / colors=242e2123fd4cf190
  ## russh-bbs ## | Main menu                                          UTC 12:00
 +---------| Main menu |----------+|+-----------------| Chat |------------------+
 | Signed in as alice.            |||#lobby  3                                  |
 |                                |||  ann                                      |
 | > [f] Forums                   |||  bob                                      |
 |   [m] Mail                     |||  carol                                    |
-|   [a] Files  (not built yet)   |||#tech  1                                   |
+|   [a] Files                    |||#tech  1                                   |
 |   [c] Chat                     |||  dave                                     |
 |   [d] Doors                    |||                                           |
 |   [u] Members                  |||                                           |
