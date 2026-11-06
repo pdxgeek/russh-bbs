@@ -142,7 +142,7 @@ Approved by the owner on 2026-11-04 by adding them here. The other M4 work is in
 
 | Slice | Owns | Depends on | Status | Branch / PR |
 |---|---|---|---|---|
-| H-4 Loader fuzz and caps (server config, `menus.toml` and pages, theme files and packs, `.art.toml` and `.ans`, door content TOML, image PNG headers) | tests in each loader's crate; small fixes in the loaders; this row | none | In review | Branch `hard/loader-fuzz`. No FIX rows: nothing found needed more than a small change. Report: [qa/h4-loader-fuzz.md](qa/h4-loader-fuzz.md) |
+| H-4 Loader fuzz and caps (server config, `menus.toml` and pages, theme files and packs, `.art.toml` and `.ans`, door content TOML, image PNG headers) | tests in each loader's crate; small fixes in the loaders; this row | none | In review | Branch `hard/loader-fuzz`, [PR #149](https://github.com/pdxgeek/russh-bbs/pull/149). No FIX rows: nothing found needed more than a small change. Report: [qa/h4-loader-fuzz.md](qa/h4-loader-fuzz.md) |
 
 ### Documentation
 
