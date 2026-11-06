@@ -10,6 +10,8 @@ flags = [
   "navy_favor", "league_snub", "ark_map", "union_debt", "church_mark", "ghost_log",
   "cartel_contact", "stowaway_taken", "wreck_salvaged", "plague_cured", "guild_pass",
   "ghost_ship_seen", "drive_whisper", "beacon_fixed", "hunted_fugitive",
+  "black_crate", "tithe_forgiven", "lantern_pact", "drive_scar", "relay_tap", "salvage_rights",
+  "marshal_grudge", "fugitive_pact", "reliquary_vow", "archive_key", "wardens_truce",
 ]
 
 # ---------------------------------------------------------------- distress
@@ -2319,3 +2321,2466 @@ label = "Tell them to hush"
 weight = 100
 text = "They hush. The rhyme gets quieter, and does not stop."
 effects = []
+
+# ---------------------------------------------------------------- L4 additions (append only)
+
+# ---------------------------------------------------------------- batch A: distress
+
+[[event]]
+id = "dead_tanker_a"
+family = "distress"
+title = "A tanker venting into the lane"
+text = "A volatiles tanker tumbles slowly, a white plume streaming from a split seam. Her crew has gone to the suits and is waving lamps at you from the hull. The plume is worth money, and the seam is going to get worse."
+weight = 7
+mods = [{ req = { kind = "role", role = "engineer", min = 2 }, pm = 1600 }, { req = { kind = "thirsty", below = 50 }, pm = 1500 }]
+
+[[event.options]]
+label = "Send your engineer to weld the seam"
+req = [{ kind = "role", role = "engineer", min = 2 }]
+needs = "an engineer of skill 2 or better"
+[[event.options.outcomes]]
+weight = 80
+text = "A hard, bright hour of welding in a cloud of vapour. The master gives you a share of the saved cargo and an open invitation at every Union dock."
+effects = [{ kind = "cargo", good = "volatiles", tons = 4 }, { kind = "standing", faction = "miners", amount = 4 }, { kind = "treat", amount = 1 }]
+[[event.options.outcomes]]
+weight = 20
+text = "The seam holds, but the weld flashes in the vapour and your engineer comes back singed and grinning."
+effects = [{ kind = "hurt", who = "engineer", days = 2 }, { kind = "credits", amount = 260 }, { kind = "standing", faction = "miners", amount = 3 }]
+
+[[event.options]]
+label = "Skim fuel from the plume"
+[[event.options.outcomes]]
+weight = 65
+text = "You ladle the leak into your own tanks. The tanker's crew watches you do it and does not wave any more."
+effects = [{ kind = "fuel", amount = 14 }, { kind = "standing", faction = "miners", amount = -4 }, { kind = "treat", amount = -1 }]
+[[event.options.outcomes]]
+weight = 35
+text = "A spark in the vapour. The plume catches, and you burn hard to get clear of it, singed and short of the fuel you came for."
+effects = [{ kind = "hull", amount = -9 }, { kind = "fuel", amount = 3 }, { kind = "scare", amount = 1 }]
+
+[[event.options]]
+label = "Call it in and keep your distance"
+[[event.options.outcomes]]
+weight = 100
+text = "You relay the position and burn on. A small thing, but the Station League logs the call."
+effects = [{ kind = "standing", faction = "league", amount = 1 }]
+
+# ----
+
+[[event]]
+id = "fever_hauler_a"
+family = "distress"
+title = "A hauler flying the yellow flag"
+text = "The hauler is under quarantine colours, drifting off the lane with her running lights half dark. Her master asks for no boarding, only for medicine to be left in a pod and for someone, anyone, to say the words of the dead."
+weight = 6
+mods = [{ req = { kind = "role", role = "medic", min = 2 }, pm = 1700 }, { req = { kind = "good", good = "medicine", tons = 2 }, pm = 1500 }]
+
+[[event.options]]
+label = "Send your medic across"
+req = [{ kind = "role", role = "medic", min = 2 }]
+needs = "a medic of skill 2 or better"
+[[event.options.outcomes]]
+weight = 75
+text = "Your medic works through the night in a borrowed gown and comes back grey with tiredness. Eleven crew live who would not have. The master presses a purse into your hand."
+effects = [{ kind = "credits", amount = 380 }, { kind = "standing", faction = "league", amount = 3 }, { kind = "standing", faction = "church", amount = 3 }, { kind = "xp", skill = "survey", amount = 6 }]
+[[event.options.outcomes]]
+weight = 25
+text = "Too late for some. Your medic does what can be done and says the words over the rest. They stay quiet for days."
+effects = [{ kind = "hurt", who = "medic", days = 3 }, { kind = "standing", faction = "church", amount = 4 }, { kind = "scare", amount = 1 }]
+
+[[event.options]]
+label = "Leave two tons of medicine in a pod"
+req = [{ kind = "good", good = "medicine", tons = 2 }]
+needs = "2 tons of medicine"
+[[event.options.outcomes]]
+weight = 100
+text = "You tow the pod to within hailing distance and cut it loose. The master's thanks come through as static and a hymn."
+effects = [{ kind = "cargo", good = "medicine", tons = -2 }, { kind = "standing", faction = "church", amount = 4 }, { kind = "standing", faction = "league", amount = 2 }]
+
+[[event.options]]
+label = "Say the words and burn on"
+[[event.options.outcomes]]
+weight = 100
+text = "You say them. It costs nothing and does little, and your crew look at the deck."
+effects = [{ kind = "standing", faction = "church", amount = 1 }, { kind = "treat", amount = -1 }]
+
+# ----
+
+[[event]]
+id = "stranded_survey_a"
+family = "distress"
+title = "A Guild survey team out of fuel"
+text = "A Cartographers' Guild skiff is parked at the edge of the lane, drive cold, hatch open. Three surveyors in thermal wraps wave frantically. Their instruments are worth more than their ship, and they know it."
+weight = 6
+mods = [{ req = { kind = "standing", faction = "guild", min = 10 }, pm = 1800 }]
+
+[[event.options]]
+label = "Give them fuel (-8)"
+req = [{ kind = "not", req = { kind = "thirsty", below = 25 } }]
+needs = "enough fuel to spare"
+[[event.options.outcomes]]
+weight = 85
+text = "They top off, map the transfer with ceremony and press a Guild pass into your hand, good at any Guild office."
+effects = [{ kind = "fuel", amount = -8 }, { kind = "standing", faction = "guild", amount = 6 }, { kind = "xp", skill = "survey", amount = 10 }]
+[[event.options.outcomes]]
+weight = 15
+text = "They thank you and promptly find a second thing wrong. A day gone, but their data is generous."
+effects = [{ kind = "fuel", amount = -8 }, { kind = "days", amount = 1 }, { kind = "survey", value = 220 }, { kind = "standing", faction = "guild", amount = 4 }]
+
+[[event.options]]
+label = "Fly a tight rendezvous and tow them"
+req = [{ kind = "role", role = "pilot", min = 3 }]
+needs = "a pilot of skill 3 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "Your pilot threads the skiff onto the tow line without a bump. At the next office the surveyors vouch for you loudly, and a Guild clerk writes you a pass on the spot."
+effects = [{ kind = "fuel", amount = -4 }, { kind = "days", amount = 1 }, { kind = "standing", faction = "guild", amount = 7 }, { kind = "survey", value = 180 }]
+
+[[event.options]]
+label = "Trade fuel for their charts"
+[[event.options.outcomes]]
+weight = 70
+text = "A hard bargain at an airlock. You get half a fuel tank's worth of data and no friends."
+effects = [{ kind = "survey", value = 340 }, { kind = "standing", faction = "guild", amount = -3 }, { kind = "treat", amount = -1 }]
+[[event.options.outcomes]]
+weight = 30
+text = "They give you the wrong charts, expertly forged. By the time you notice, they are gone."
+effects = [{ kind = "standing", faction = "guild", amount = -5 }, { kind = "xp", skill = "survey", amount = 4 }]
+
+# ----
+
+[[event]]
+id = "mayday_trap_a"
+family = "distress"
+title = "A mayday with a rehearsed voice"
+text = "A mayday on the lane band, repeated word for word every ninety seconds. The source is a hauler drifting dark, her hull too clean and her drive too warm. Something about the voice is reading from a card."
+weight = 7
+mods = [{ req = { kind = "standing", faction = "free", max = -10 }, pm = 2200 }, { req = { kind = "scanner", min = 2 }, pm = 800 }]
+
+[[event.options]]
+label = "Read her with your scanner first"
+req = [{ kind = "scanner", min = 2 }]
+needs = "a working scanner of grade 2 or better"
+[[event.options.outcomes]]
+weight = 85
+text = "Two hot hulls in her shadow and a third masked behind the hauler. You slip away on the dark side of the lane, and a League picket thanks you for the bearings later."
+effects = [{ kind = "standing", faction = "league", amount = 3 }, { kind = "xp", skill = "survey", amount = 4 }]
+[[event.options.outcomes]]
+weight = 15
+text = "You see the trap, and they see you seeing it. A burst of fire rakes the hull as you leave."
+effects = [{ kind = "hull", amount = -8 }, { kind = "standing", faction = "league", amount = 2 }]
+
+[[event.options]]
+label = "Answer and approach"
+[[event.options.outcomes]]
+weight = 45
+text = "An honest breakdown, after all. They are embarrassed and slip you a few credits for the trouble."
+effects = [{ kind = "credits", amount = 160 }, { kind = "standing", faction = "league", amount = 1 }]
+[[event.options.outcomes]]
+weight = 55
+text = "The hatch of the hauler opens and a blockade runner slides out of her shadow, guns hot."
+effects = [{ kind = "combat", enemy = "blockade_runner" }]
+
+[[event.options]]
+label = "Burn past at full thrust"
+[[event.options.outcomes]]
+weight = 100
+text = "You waste fuel and shake your crew, but nothing follows."
+effects = [{ kind = "fuel", amount = -5 }, { kind = "scare", amount = 1 }]
+
+# ----
+
+[[event]]
+id = "lantern_barge_a"
+family = "distress"
+title = "A pilgrim barge, lamps dying"
+text = "A barge hung with prayer lanterns, one by one going dark as her power fails. The Quiet Church's colours are painted on her prow. A woman in grey robes calls to you on the comm and asks only that you do not leave before the last lamp goes."
+weight = 5
+once = "lantern_pact"
+mods = [{ req = { kind = "standing", faction = "church", min = 5 }, pm = 2000 }]
+
+[[event.options]]
+label = "Stay and stand watch"
+[[event.options.outcomes]]
+weight = 80
+text = "You hold the lane with her, engines idle, all night. By morning a Church tender arrives, and the woman in grey puts a lantern in your hands, to be lit at any gate."
+effects = [{ kind = "days", amount = 1 }, { kind = "standing", faction = "church", amount = 8 }, { kind = "treat", amount = 1 }]
+[[event.options.outcomes]]
+weight = 20
+text = "A long night with no tender. The lamps go dark. She thanks you anyway and gives you the lantern."
+effects = [{ kind = "days", amount = 2 }, { kind = "standing", faction = "church", amount = 6 }, { kind = "scare", amount = 1 }]
+
+[[event.options]]
+label = "Have your engineer restart her lamps"
+req = [{ kind = "role", role = "engineer", min = 2 }]
+needs = "an engineer of skill 2 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "A new coupling and a borrowed cell. The lamps catch again, one after another, and the barge sets out under her own light. The woman gives you the lantern and a route home."
+effects = [{ kind = "standing", faction = "church", amount = 9 }, { kind = "credits", amount = 150 }]
+
+[[event.options]]
+label = "Leave her to her faith"
+[[event.options.outcomes]]
+weight = 100
+text = "You do not wait. The last lamp goes out behind you. Your crew do not look back."
+effects = [{ kind = "standing", faction = "church", amount = -3 }, { kind = "treat", amount = -1 }]
+
+# ----
+
+[[event]]
+id = "claim_boat_leak_a"
+family = "distress"
+title = "A claim boat and a crate she cannot keep"
+text = "A Miners' Union claim boat wallows with a bad seal. Her prospector has a crate lashed to the hull that she keeps glancing at. She says it is only rock samples. She offers to give it to anyone who will take her to the nearest dock."
+weight = 6
+mods = [{ req = { kind = "standing", faction = "miners", min = 5 }, pm = 1400 }, { req = { kind = "role", role = "engineer", min = 2 }, pm = 1300 }]
+
+[[event.options]]
+label = "Seal her hull for the Union"
+req = [{ kind = "role", role = "engineer", min = 2 }]
+needs = "an engineer of skill 2 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "A clean patch and no questions. The prospector forgets about the crate and pays you in Union goodwill and sealant."
+effects = [{ kind = "standing", faction = "miners", amount = 5 }, { kind = "cargo", good = "parts", tons = 2 }, { kind = "credits", amount = 140 }]
+
+[[event.options]]
+label = "Take the crate and tow her in"
+[[event.options.outcomes]]
+weight = 70
+text = "The crate is not rock. It is sealed ghostwire, and somebody is going to want it back. The prospector will not look at you."
+effects = [{ kind = "flag", name = "black_crate" }, { kind = "cargo", good = "ghostwire", tons = 1 }, { kind = "fuel", amount = -4 }, { kind = "standing", faction = "miners", amount = -3 }]
+[[event.options.outcomes]]
+weight = 30
+text = "A Union tug meets you at the dock. The crate is theirs, and they are very clear about it."
+effects = [{ kind = "fuel", amount = -4 }, { kind = "standing", faction = "miners", amount = -8 }]
+
+[[event.options]]
+label = "Tow her in and leave the crate alone"
+[[event.options.outcomes]]
+weight = 100
+text = "She is first at the dock and tells the clerk exactly who helped. The crate is never mentioned."
+effects = [{ kind = "fuel", amount = -4 }, { kind = "days", amount = 1 }, { kind = "standing", faction = "miners", amount = 3 }]
+
+# ---------------------------------------------------------------- batch A: pirate
+
+[[event]]
+id = "marauder_ledger_a"
+family = "pirate"
+title = "A marauder reads you the ledger"
+text = "A heavy marauder takes position off your bow, running lights doused. A voice reads aloud from a ledger: your hull number, your cargo, the figure that would let you keep both. It is a very good ledger."
+weight = 8
+mods = [{ req = { kind = "weapons", min = 5 }, pm = 600 }, { req = { kind = "contraband", tons = 1 }, pm = 1500 }, { req = { kind = "standing", faction = "free", min = 15 }, pm = 400 }]
+
+[[event.options]]
+label = "Haggle the figure down"
+req = [{ kind = "role", role = "face", min = 2 }]
+needs = "a face of skill 2 or better"
+[[event.options.outcomes]]
+weight = 70
+text = "Your face finds the one entry in the ledger that does not add up and leans on it. The sum drops by half, and the voice laughs."
+effects = [{ kind = "credits", amount = -140 }, { kind = "standing", faction = "free", amount = 3 }]
+bonus = [{ req = { kind = "role", role = "face", min = 4 }, add = 25 }]
+[[event.options.outcomes]]
+weight = 30
+text = "The ledger-keeper does not like to be corrected. The price goes up, and then up again."
+effects = [{ kind = "credits", amount = -420 }, { kind = "scare", amount = 1 }]
+
+[[event.options]]
+label = "Pay the figure (350 cr)"
+req = [{ kind = "cash", min = 350 }]
+needs = "350 cr in the purse"
+[[event.options.outcomes]]
+weight = 100
+text = "They take the money and wave you through, ledger closed. You have the sense of having been stamped."
+effects = [{ kind = "credits", amount = -350 }, { kind = "standing", faction = "free", amount = 2 }]
+
+[[event.options]]
+label = "Refuse and bring the guns up"
+[[event.options.outcomes]]
+weight = 60
+text = "The ledger snaps shut and the marauder comes about."
+effects = [{ kind = "combat", enemy = "marauder" }, { kind = "standing", faction = "free", amount = -4 }]
+[[event.options.outcomes]]
+weight = 40
+text = "A long standoff, and then a laugh. They mark you down as a captain who does not pay and leave you alone, this once."
+effects = [{ kind = "standing", faction = "free", amount = -2 }, { kind = "scare", amount = 1 }]
+bonus = [{ req = { kind = "role", role = "gunner", min = 2 }, add = 25 }]
+
+# ----
+
+[[event]]
+id = "crate_collectors_a"
+family = "pirate"
+title = "Free Captains looking for a crate"
+text = "A Free Captains skiff matches your course and asks, very politely, whether you have taken anything lately that belongs to a friend. The skiff's gunner has not once taken their eyes off your hold."
+weight = 6
+mods = [{ req = { kind = "flag", name = "black_crate" }, pm = 4000 }]
+
+[[event.options]]
+label = "Hand over the crate"
+req = [{ kind = "flag", name = "black_crate" }]
+needs = "a black crate in the hold"
+[[event.options.outcomes]]
+weight = 100
+text = "They take it, check the seal, and pay you a finder's fee. You are, for the moment, a friend."
+effects = [{ kind = "clear_flag", name = "black_crate" }, { kind = "cargo", good = "ghostwire", tons = -1 }, { kind = "credits", amount = 300 }, { kind = "standing", faction = "free", amount = 6 }, { kind = "standing", faction = "miners", amount = -2 }]
+
+[[event.options]]
+label = "Say you have never heard of it"
+req = [{ kind = "role", role = "face", min = 2 }]
+needs = "a face of skill 2 or better"
+[[event.options.outcomes]]
+weight = 60
+text = "Your face lies with the quiet confidence of long practice. The skiff takes the hint and the lie, and leaves."
+effects = [{ kind = "standing", faction = "free", amount = -1 }]
+[[event.options.outcomes]]
+weight = 40
+text = "They have a very good scanner. The skiff's gunner opens fire, once, to make a point."
+effects = [{ kind = "hull", amount = -10 }, { kind = "standing", faction = "free", amount = -4 }]
+
+[[event.options]]
+label = "Let them come aboard and look"
+[[event.options.outcomes]]
+weight = 70
+text = "They find nothing and are polite about it. They also take a ton of parts for the trouble."
+effects = [{ kind = "cargo", good = "parts", tons = -1 }, { kind = "standing", faction = "free", amount = 1 }]
+[[event.options.outcomes]]
+weight = 30
+text = "They find everything. It is a short, ugly conversation."
+effects = [{ kind = "lose_cargo", pct = 25 }, { kind = "standing", faction = "free", amount = -5 }, { kind = "scare", amount = 1 }]
+
+# ----
+
+[[event]]
+id = "pressed_hands_a"
+family = "pirate"
+title = "A press gang on the lane"
+text = "A ragged corvette hails you, short of hands. Their captain does not ask nicely: she wants a body or two from your crew, and she wants them to come willingly. She has left a pistol on her console where you can see it."
+weight = 5
+when = [{ kind = "crew", min = 2 }]
+
+[[event.options]]
+label = "Show them your guns"
+req = [{ kind = "weapons", min = 4 }]
+needs = "weapons of power 4 or better"
+[[event.options.outcomes]]
+weight = 75
+text = "A long silence and a tactful reply. Their captain finds she needs hands somewhere else."
+effects = [{ kind = "standing", faction = "free", amount = -2 }, { kind = "treat", amount = 1 }]
+[[event.options.outcomes]]
+weight = 25
+text = "She fires first, wide, to be sure you understand. You return fire. She goes away with a limp."
+effects = [{ kind = "hull", amount = -7 }, { kind = "standing", faction = "free", amount = -3 }]
+
+[[event.options]]
+label = "Offer a berth to a volunteer"
+[[event.options.outcomes]]
+weight = 70
+text = "One of your crew steps forward, grim, and is gone before the end of the shift. The rest see it and say nothing."
+effects = [{ kind = "kill", who = "random" }, { kind = "standing", faction = "free", amount = 3 }, { kind = "treat", amount = -3 }, { kind = "scare", amount = 1 }]
+[[event.options.outcomes]]
+weight = 30
+text = "No one steps forward. Their captain counts your crew with her eyes, takes a purse in lieu, and goes."
+effects = [{ kind = "credits", amount = -260 }, { kind = "treat", amount = -1 }]
+
+[[event.options]]
+label = "Outrun them"
+req = [{ kind = "role", role = "pilot", min = 3 }]
+needs = "a pilot of skill 3 or better"
+[[event.options.outcomes]]
+weight = 85
+text = "Your pilot takes you across the lane edge and into the debris of a dead barge, and the corvette stays behind. The crew cheers."
+effects = [{ kind = "fuel", amount = -6 }, { kind = "treat", amount = 1 }, { kind = "xp", skill = "pilot", amount = 8 }]
+[[event.options.outcomes]]
+weight = 15
+text = "A grazing hit on the way out. The cheer is smaller."
+effects = [{ kind = "fuel", amount = -6 }, { kind = "hull", amount = -6 }, { kind = "xp", skill = "pilot", amount = 8 }]
+
+[[event.options]]
+label = "Pay them off (400 cr)"
+req = [{ kind = "cash", min = 400 }]
+needs = "400 cr in the purse"
+[[event.options.outcomes]]
+weight = 100
+text = "She counts it twice, and then goes looking for easier prey. Your crew will remember who paid."
+effects = [{ kind = "credits", amount = -400 }, { kind = "treat", amount = 2 }]
+
+# ----
+
+[[event]]
+id = "dice_captain_a"
+family = "pirate"
+title = "A Free Captain with dice"
+text = "A Free Captain on a patched-up frigate hails you for company. She wants a game of dice, the stakes to be whatever you care to name. She says it is a courtesy, and that refusing is a discourtesy."
+weight = 5
+mods = [{ req = { kind = "standing", faction = "free", min = 5 }, pm = 1800 }]
+
+[[event.options]]
+label = "Play for credits (150 cr stake)"
+req = [{ kind = "cash", min = 150 }]
+needs = "150 cr in the purse"
+[[event.options.outcomes]]
+weight = 45
+text = "The dice love you for a while. She pays out with the grace of a captain who can afford to."
+effects = [{ kind = "credits", amount = 300 }, { kind = "standing", faction = "free", amount = 3 }]
+bonus = [{ req = { kind = "role", role = "face", min = 3 }, add = 20 }]
+[[event.options.outcomes]]
+weight = 55
+text = "The dice do not. She takes your stake and tells the whole lane about the nice captain who plays fair."
+effects = [{ kind = "credits", amount = -150 }, { kind = "standing", faction = "free", amount = 2 }]
+
+[[event.options]]
+label = "Play for a favour"
+[[event.options.outcomes]]
+weight = 40
+text = "You win, and she nods once. She gives you a token, a bent coin on a chain, and a black crate to carry for her, no questions."
+effects = [{ kind = "flag", name = "black_crate" }, { kind = "cargo", good = "ghostwire", tons = 1 }, { kind = "standing", faction = "free", amount = 5 }]
+[[event.options.outcomes]]
+weight = 60
+text = "You lose. You now owe her a favour, and she is a captain who collects."
+effects = [{ kind = "flag", name = "owes_haven" }, { kind = "standing", faction = "free", amount = 1 }]
+
+[[event.options]]
+label = "Decline politely"
+[[event.options.outcomes]]
+weight = 100
+text = "She is not pleased, but she lets you go. The dice keep rattling on her console as you burn."
+effects = [{ kind = "standing", faction = "free", amount = -2 }]
+
+# ----
+
+[[event]]
+id = "old_enemies_a"
+family = "pirate"
+title = "A corsair with a long memory"
+text = "A corsair steps out from behind a rock, dead-reckoned to your lane. Her master has a grievance, and the grievance has your hull number on it. You are not sure you remember the original offence, and that does not seem to matter."
+weight = 6
+when = [{ kind = "standing", faction = "free", max = -8 }]
+mods = [{ req = { kind = "flag", name = "betrayed_pirates" }, pm = 3000 }]
+
+[[event.options]]
+label = "Make amends (500 cr)"
+req = [{ kind = "cash", min = 500 }]
+needs = "500 cr in the purse"
+[[event.options.outcomes]]
+weight = 85
+text = "She counts it, forgives nothing, and lets you go. It buys a measure of peace."
+effects = [{ kind = "credits", amount = -500 }, { kind = "standing", faction = "free", amount = 8 }]
+[[event.options.outcomes]]
+weight = 15
+text = "She takes the money and fires anyway, for form's sake."
+effects = [{ kind = "credits", amount = -500 }, { kind = "hull", amount = -10 }, { kind = "standing", faction = "free", amount = 4 }]
+
+[[event.options]]
+label = "Talk to her"
+req = [{ kind = "role", role = "face", min = 3 }]
+needs = "a face of skill 3 or better"
+[[event.options.outcomes]]
+weight = 60
+text = "Your face reminds her of a mutual enemy, and the grievance goes quiet. She even sends a bottle across."
+effects = [{ kind = "standing", faction = "free", amount = 6 }, { kind = "treat", amount = 1 }]
+[[event.options.outcomes]]
+weight = 40
+text = "She hears them out, and then shoots at the face's speaker."
+effects = [{ kind = "hull", amount = -8 }, { kind = "scare", amount = 1 }]
+
+[[event.options]]
+label = "Fight"
+[[event.options.outcomes]]
+weight = 100
+text = "She is already coming about. You take your stations."
+effects = [{ kind = "combat", enemy = "corsair" }]
+
+# ----
+
+[[event]]
+id = "hostage_lifeboat_a"
+family = "pirate"
+title = "Pirates and a hostage lifeboat"
+text = "A raider has a League lifeboat in a grapple, her hatch cut and a handful of frightened passengers in the airlock. The raider's master says they are for sale, and that you are the first customer to come by."
+weight = 5
+
+[[event.options]]
+label = "Sneak aboard and take them back"
+req = [{ kind = "skill", skill = "stealth", min = 3 }]
+needs = "Stealth 3 or better (yours, not the crew's)"
+[[event.options.outcomes]]
+weight = 70
+text = "You come in on the dead side, cut the grapple and run before they notice. The passengers will tell this story for years."
+effects = [{ kind = "standing", faction = "league", amount = 7 }, { kind = "standing", faction = "free", amount = -4 }, { kind = "credits", amount = 220 }, { kind = "xp", skill = "stealth", amount = 10 }]
+[[event.options.outcomes]]
+weight = 30
+text = "They notice. It is brief, loud and costs you a hand's good humour."
+effects = [{ kind = "hurt", who = "random", days = 2 }, { kind = "standing", faction = "league", amount = 4 }, { kind = "standing", faction = "free", amount = -4 }]
+
+[[event.options]]
+label = "Fight the raider"
+[[event.options.outcomes]]
+weight = 100
+text = "You come about and charge. The raider drops the grapple to meet you."
+effects = [{ kind = "combat", enemy = "raider" }, { kind = "standing", faction = "league", amount = 3 }]
+
+[[event.options]]
+label = "Buy them (450 cr)"
+req = [{ kind = "cash", min = 450 }]
+needs = "450 cr in the purse"
+[[event.options.outcomes]]
+weight = 100
+text = "A cold exchange, a handshake you do not want. The passengers are put aboard your ship and hand you a League pass in thanks."
+effects = [{ kind = "credits", amount = -450 }, { kind = "standing", faction = "league", amount = 5 }, { kind = "standing", faction = "free", amount = 1 }]
+
+[[event.options]]
+label = "Sail on"
+[[event.options.outcomes]]
+weight = 100
+text = "You sail on. The lifeboat's lights get smaller and smaller, and nobody on the bridge speaks for a while."
+effects = [{ kind = "treat", amount = -2 }]
+
+# ---------------------------------------------------------------- batch A: inspection
+
+[[event]]
+id = "picket_line_a"
+family = "inspection"
+title = "A League picket closes the lane"
+text = "A League picket sits across the lane with her running lights doused and her transponder shouting. A lieutenant is on the comm, reciting the manifest requirements in a flat voice. The lane is closed until every ship has been looked at."
+weight = 9
+mods = [{ req = { kind = "contraband", tons = 1 }, pm = 1600 }, { req = { kind = "standing", faction = "league", min = 15 }, pm = 700 }]
+
+[[event.options]]
+label = "Hide the hold"
+req = [{ kind = "role", role = "quartermaster", min = 2 }]
+needs = "a quartermaster of skill 2 or better"
+[[event.options.outcomes]]
+weight = 80
+text = "Your quartermaster has a hundred small places for a hundred small things. The inspection team finds a clean, boring hold."
+effects = [{ kind = "standing", faction = "league", amount = 1 }, { kind = "xp", skill = "stealth", amount = 6 }]
+[[event.options.outcomes]]
+weight = 20
+text = "A sharp-eyed lieutenant finds a false bulkhead. Not all of it, but enough."
+effects = [{ kind = "lose_contraband", pct = 60 }, { kind = "credits", amount = -240 }, { kind = "standing", faction = "league", amount = -5 }]
+
+[[event.options]]
+label = "Show your League papers"
+req = [{ kind = "standing", faction = "league", min = 15 }]
+needs = "League standing of 15 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "The lieutenant takes one look at the stamp and waves you on with something close to a smile."
+effects = [{ kind = "standing", faction = "league", amount = 1 }]
+
+[[event.options]]
+label = "Run the line"
+[[event.options.outcomes]]
+weight = 55
+text = "The picket turns, slow and heavy, and fires a warning burst, and then another not so warning."
+effects = [{ kind = "combat", enemy = "picket" }, { kind = "standing", faction = "league", amount = -6 }]
+[[event.options.outcomes]]
+weight = 45
+text = "You slip through a gap in the cordon before it closes. The picket's lieutenant has your hull number now."
+effects = [{ kind = "fuel", amount = -4 }, { kind = "standing", faction = "league", amount = -4 }, { kind = "scare", amount = 1 }]
+bonus = [{ req = { kind = "role", role = "pilot", min = 3 }, add = 30 }]
+
+[[event.options]]
+label = "Submit to the search"
+[[event.options.outcomes]]
+weight = 70
+text = "Three hours of probing, two of paperwork. They find what there is, charge what there is, and go."
+effects = [{ kind = "days", amount = 1 }, { kind = "lose_contraband", pct = 100 }, { kind = "standing", faction = "league", amount = 1 }]
+[[event.options.outcomes]]
+weight = 30
+text = "A clean hold and a clean report. The lieutenant says thank you, and it sounds like she means it."
+effects = [{ kind = "days", amount = 1 }, { kind = "standing", faction = "league", amount = 3 }]
+
+# ----
+
+[[event]]
+id = "customs_hawk_a"
+family = "inspection"
+title = "A customs hawk on your tail"
+text = "A fast customs hawk comes up astern, matches your speed and puts a searchlight through your viewport. She has the clean, relentless look of a ship that has caught a great many smugglers and expects to catch another."
+weight = 6
+when = [{ kind = "contraband", tons = 1 }]
+mods = [{ req = { kind = "standing", faction = "league", max = -10 }, pm = 2200 }]
+
+[[event.options]]
+label = "Bribe the lieutenant (300 cr)"
+req = [{ kind = "cash", min = 300 }]
+needs = "300 cr in the purse"
+[[event.options.outcomes]]
+weight = 70
+text = "A hand goes out, a hand comes back empty. The searchlight clicks off."
+effects = [{ kind = "credits", amount = -300 }, { kind = "standing", faction = "league", amount = -2 }]
+bonus = [{ req = { kind = "role", role = "face", min = 2 }, add = 20 }]
+[[event.options.outcomes]]
+weight = 30
+text = "The lieutenant takes the money, writes your hull number into her book and boards anyway."
+effects = [{ kind = "credits", amount = -300 }, { kind = "lose_contraband", pct = 100 }, { kind = "standing", faction = "league", amount = -6 }]
+
+[[event.options]]
+label = "Dump the contraband and burn"
+[[event.options.outcomes]]
+weight = 100
+text = "A flurry of airlocks and a trail of crates. The hawk stops to collect them, and you gain a few precious minutes."
+effects = [{ kind = "lose_contraband", pct = 100 }, { kind = "scare", amount = 1 }, { kind = "treat", amount = -1 }]
+
+[[event.options]]
+label = "Out-fly her"
+req = [{ kind = "role", role = "pilot", min = 3 }]
+needs = "a pilot of skill 3 or better"
+[[event.options.outcomes]]
+weight = 60
+text = "A long, tight chase through a dust lane. The hawk gives up first."
+effects = [{ kind = "fuel", amount = -8 }, { kind = "xp", skill = "pilot", amount = 10 }, { kind = "treat", amount = 1 }]
+[[event.options.outcomes]]
+weight = 40
+text = "She turns inside you, and a customs shot rattles the hull. The hawk shows no signs of letting you go."
+effects = [{ kind = "combat", enemy = "customs_hawk" }]
+
+# ----
+
+[[event]]
+id = "weigh_station_a"
+family = "inspection"
+title = "A Union weigh station demands a count"
+text = "A Miners' Union weigh station, bolted to a rock and flying the pickaxe flag, hails you. A marshal in a heavy suit wants every ton of ore weighed and every credit of tax paid. She has a way of tapping her wrench against the airlock."
+weight = 6
+mods = [{ req = { kind = "good", good = "ore", tons = 5 }, pm = 2200 }, { req = { kind = "standing", faction = "miners", min = 15 }, pm = 500 }]
+
+[[event.options]]
+label = "Pay the Union tax"
+req = [{ kind = "cash", min = 220 }]
+needs = "220 cr in the purse"
+[[event.options.outcomes]]
+weight = 100
+text = "The marshal stamps your book and taps the wrench against the lock, once, in what might be thanks."
+effects = [{ kind = "credits", amount = -220 }, { kind = "standing", faction = "miners", amount = 4 }]
+
+[[event.options]]
+label = "Argue the weight with your quartermaster"
+req = [{ kind = "role", role = "quartermaster", min = 2 }]
+needs = "a quartermaster of skill 2 or better"
+[[event.options.outcomes]]
+weight = 70
+text = "Your quartermaster has the weights to the gram. The marshal is not pleased, but she is fair, and you pay less than you feared."
+effects = [{ kind = "credits", amount = -90 }, { kind = "standing", faction = "miners", amount = 2 }]
+[[event.options.outcomes]]
+weight = 30
+text = "A mistake in the tally, and the marshal catches it in an instant. Double tax and a new, cold stare."
+effects = [{ kind = "credits", amount = -440 }, { kind = "standing", faction = "miners", amount = -3 }]
+
+[[event.options]]
+label = "Run the weigh station"
+[[event.options.outcomes]]
+weight = 60
+text = "The marshal does not shout. She sends out a Union enforcer boat and lets it speak for her."
+effects = [{ kind = "combat", enemy = "union_marshal" }, { kind = "standing", faction = "miners", amount = -8 }]
+[[event.options.outcomes]]
+weight = 40
+text = "You are three jumps away before anyone closes the lane. A Union clerk will find you eventually."
+effects = [{ kind = "fuel", amount = -5 }, { kind = "standing", faction = "miners", amount = -5 }, { kind = "flag", name = "marshal_grudge" }]
+
+# ----
+
+[[event]]
+id = "gate_toll_a"
+family = "inspection"
+title = "A Church toll at a dead gate"
+text = "A Quiet Church tender is moored to the ring of a dead jump gate, and her deacon waves a collection plate on a pole. The toll is to be paid in coin or in work. The deacon says the gate hears every payment."
+weight = 6
+mods = [{ req = { kind = "standing", faction = "church", min = 5 }, pm = 1600 }, { req = { kind = "flag", name = "lantern_pact" }, pm = 2000 }]
+
+[[event.options]]
+label = "Show the lantern"
+req = [{ kind = "flag", name = "lantern_pact" }]
+needs = "a lantern from a pilgrim barge"
+[[event.options.outcomes]]
+weight = 100
+text = "The deacon bows to the lantern and waves you through. She writes your name in a small book. The toll is forgiven, and she says it will be forgiven again."
+effects = [{ kind = "flag", name = "tithe_forgiven" }, { kind = "standing", faction = "church", amount = 4 }]
+
+[[event.options]]
+label = "Pay the toll (180 cr)"
+req = [{ kind = "cash", min = 180 }]
+needs = "180 cr in the purse"
+[[event.options.outcomes]]
+weight = 100
+text = "The coins go in the plate with a hollow ring. The deacon blesses your ship in a perfunctory voice."
+effects = [{ kind = "credits", amount = -180 }, { kind = "standing", faction = "church", amount = 2 }]
+
+[[event.options]]
+label = "Offer a day of work at the gate"
+[[event.options.outcomes]]
+weight = 80
+text = "A day of hauling stone and polishing sigils. Your crew grumble, but the deacon sends you off with food and a blessing."
+effects = [{ kind = "days", amount = 1 }, { kind = "standing", faction = "church", amount = 5 }, { kind = "treat", amount = -1 }]
+[[event.options.outcomes]]
+weight = 20
+text = "Something in the old ring answers you. Nobody says what, but the deacon makes a sign and gives you a smaller bill."
+effects = [{ kind = "days", amount = 1 }, { kind = "standing", faction = "church", amount = 7 }, { kind = "scare", amount = 1 }]
+
+# ---------------------------------------------------------------- batch A: drive
+
+[[event]]
+id = "shaft_shriek_a"
+family = "drive"
+title = "A shriek from the drive shaft"
+text = "A thin, rising shriek starts somewhere aft and finds every bone in the ship. The drive shaft is wearing against a bearing that is no longer where it was. In an hour it will be a bigger problem."
+weight = 9
+mods = [{ req = { kind = "role", role = "engineer", min = 2 }, pm = 1300 }, { req = { kind = "flag", name = "drive_scar" }, pm = 2500 }]
+
+[[event.options]]
+label = "Have your engineer re-seat the bearing"
+req = [{ kind = "role", role = "engineer", min = 2 }]
+needs = "an engineer of skill 2 or better"
+[[event.options.outcomes]]
+weight = 85
+text = "A cursing hour in the engine well and the shriek is gone. Your engineer comes out grease to the elbows and prouder than before."
+effects = [{ kind = "days", amount = 1 }, { kind = "xp", skill = "engineer", amount = 8 }, { kind = "treat", amount = 1 }]
+[[event.options.outcomes]]
+weight = 15
+text = "It holds, but it leaves a scar on the shaft your engineer does not like."
+effects = [{ kind = "days", amount = 1 }, { kind = "flag", name = "drive_scar" }, { kind = "xp", skill = "engineer", amount = 5 }]
+
+[[event.options]]
+label = "Throttle back and listen"
+[[event.options.outcomes]]
+weight = 60
+text = "The shriek fades at low thrust. You lose a day and some patience."
+effects = [{ kind = "days", amount = 2 }, { kind = "fuel", amount = -3 }]
+[[event.options.outcomes]]
+weight = 40
+text = "It does not fade. Under full thrust the bearing goes, and the shaft takes the hull's plates with it."
+effects = [{ kind = "hull", amount = -11 }, { kind = "wear", amount = 40 }, { kind = "flag", name = "drive_scar" }]
+
+[[event.options]]
+label = "Burn through it"
+[[event.options.outcomes]]
+weight = 50
+text = "The shriek peaks, breaks and stops. You are not sure that is good."
+effects = [{ kind = "wear", amount = 60 }, { kind = "scare", amount = 1 }]
+[[event.options.outcomes]]
+weight = 50
+text = "The bearing lets go in a spray of metal. The ship staggers on."
+effects = [{ kind = "hull", amount = -8 }, { kind = "wear", amount = 90 }, { kind = "flag", name = "drive_scar" }, { kind = "scare", amount = 1 }]
+
+# ----
+
+[[event]]
+id = "coil_chorus_a"
+family = "drive"
+title = "The coils begin to sing"
+text = "Every coil on the ship hums the same note, rising slowly. Pens skitter on the chart table. If it climbs much further something will shatter, and it will not be the coils."
+weight = 7
+mods = [{ req = { kind = "role", role = "scientist", min = 2 }, pm = 1500 }, { req = { kind = "flag", name = "drive_whisper" }, pm = 2000 }]
+
+[[event.options]]
+label = "Retune the coils with a scientist"
+req = [{ kind = "role", role = "scientist", min = 2 }]
+needs = "a scientist of skill 2 or better"
+[[event.options.outcomes]]
+weight = 80
+text = "Your scientist listens, then flips three breakers in an order that seems to make no sense. The chorus drops to a hum, then to silence. A good night's work."
+effects = [{ kind = "xp", skill = "engineer", amount = 8 }, { kind = "xp", skill = "survey", amount = 6 }, { kind = "treat", amount = 1 }]
+[[event.options.outcomes]]
+weight = 20
+text = "The retune works, though a coil cracks at the last moment. The note has gone, and the spare coil with it."
+effects = [{ kind = "cargo", good = "coils", tons = -1 }, { kind = "xp", skill = "engineer", amount = 8 }]
+
+[[event.options]]
+label = "Fly through it at an angle"
+req = [{ kind = "role", role = "pilot", min = 3 }]
+needs = "a pilot of skill 3 or better"
+[[event.options.outcomes]]
+weight = 90
+text = "Your pilot yaws the ship across the lane, and the resonance slides out of tune. The crew stare at the viewport and clap."
+effects = [{ kind = "fuel", amount = -4 }, { kind = "xp", skill = "pilot", amount = 8 }, { kind = "treat", amount = 1 }]
+[[event.options.outcomes]]
+weight = 10
+text = "It slips, then catches. A bad minute with the hull ringing like a bell."
+effects = [{ kind = "hull", amount = -6 }, { kind = "xp", skill = "pilot", amount = 8 }]
+
+[[event.options]]
+label = "Cut the drive and drift"
+[[event.options.outcomes]]
+weight = 100
+text = "You cut power and wait out the song. A day lost, but nothing breaks."
+effects = [{ kind = "days", amount = 1 }, { kind = "fuel", amount = -2 }]
+
+# ----
+
+[[event]]
+id = "ghost_thrust_a"
+family = "drive"
+title = "A thrust that is not yours"
+text = "The ship accelerates, gently, without a command from the drive. The log shows nothing. The log has no entry for it, and the log is the only thing aboard that looks calm."
+weight = 4
+when = [{ kind = "flag", name = "drive_whisper" }]
+
+[[event.options]]
+label = "Have your scientist chase the signal"
+req = [{ kind = "role", role = "scientist", min = 3 }]
+needs = "a scientist of skill 3 or better"
+[[event.options.outcomes]]
+weight = 70
+text = "Your scientist traces the push to a bearing in the old gate ring. A message in the push, if you know how to read one. They write it down and do not say what it says."
+effects = [{ kind = "survey", value = 420 }, { kind = "xp", skill = "survey", amount = 12 }, { kind = "scare", amount = 1 }]
+[[event.options.outcomes]]
+weight = 30
+text = "Nothing is found, and the push stops as if it were listening. The crew do not sleep."
+effects = [{ kind = "scare", amount = 2 }]
+
+[[event.options]]
+label = "Lean into it and ride the push"
+[[event.options.outcomes]]
+weight = 60
+text = "You ride the push for six hours. When it fades, you have gained more than you burned."
+effects = [{ kind = "fuel", amount = 6 }, { kind = "days", amount = 1 }]
+[[event.options.outcomes]]
+weight = 40
+text = "It turns, swings you a quarter-circle off your course, and releases you at a dead star. A day lost, and a scare."
+effects = [{ kind = "days", amount = 2 }, { kind = "scare", amount = 1 }]
+
+[[event.options]]
+label = "Shut the drive down and wait"
+[[event.options.outcomes]]
+weight = 100
+text = "You shut down and wait. The push goes on a while and then stops, as if it had been patient and was no longer."
+effects = [{ kind = "days", amount = 1 }, { kind = "treat", amount = -1 }]
+
+# ----
+
+[[event]]
+id = "dirty_injectors_a"
+family = "drive"
+title = "Dirty injectors, thin fuel"
+text = "The last fuel you took was cut with something. The injectors are clogging, the drive coughs and the thrust sags. You can limp, clean the lines, or burn the cheap stuff hot and hope."
+weight = 8
+mods = [{ req = { kind = "thirsty", below = 30 }, pm = 1800 }, { req = { kind = "flag", name = "drive_scar" }, pm = 1800 }]
+
+[[event.options]]
+label = "Strip and clean the injectors"
+req = [{ kind = "role", role = "engineer", min = 1 }]
+needs = "an engineer aboard"
+[[event.options.outcomes]]
+weight = 85
+text = "A grubby day with a toothbrush and solvent. The injectors run clean, and your engineer is smug."
+effects = [{ kind = "days", amount = 1 }, { kind = "xp", skill = "engineer", amount = 6 }]
+[[event.options.outcomes]]
+weight = 15
+text = "A seal fails during the strip, spraying the engine room. The injectors are clean, and so is the engineer's temper."
+effects = [{ kind = "days", amount = 1 }, { kind = "hurt", who = "engineer", days = 2 }]
+
+[[event.options]]
+label = "Burn it hot and hope"
+[[event.options.outcomes]]
+weight = 55
+text = "The injectors clear themselves in a brief belch of black smoke. You lose a bit of everything and nothing important."
+effects = [{ kind = "wear", amount = 50 }, { kind = "fuel", amount = -3 }]
+[[event.options.outcomes]]
+weight = 45
+text = "The cheap fuel burns hotter than expected, and the nozzle blisters."
+effects = [{ kind = "wear", amount = 120 }, { kind = "hull", amount = -6 }, { kind = "flag", name = "drive_scar" }]
+
+[[event.options]]
+label = "Limp to the next dock on a fraction"
+[[event.options.outcomes]]
+weight = 100
+text = "Slow, cautious flight. You make the dock, and everybody on board is a little poorer for it."
+effects = [{ kind = "days", amount = 2 }, { kind = "fuel", amount = -4 }]
+
+# ----
+
+[[event]]
+id = "rod_fever_a"
+family = "drive"
+title = "A restless reactor"
+text = "The reactor's temperature graph has started to wander. Not up, not down, but sideways, in a slow figure-eight. Your engineer says it is nothing. Your engineer is looking at it a great deal for nothing."
+weight = 6
+mods = [{ req = { kind = "good", good = "reactor_rods", tons = 1 }, pm = 1700 }, { req = { kind = "role", role = "engineer", min = 3 }, pm = 1200 }]
+
+[[event.options]]
+label = "Swap a rod from the cargo"
+req = [{ kind = "good", good = "reactor_rods", tons = 1 }]
+needs = "a ton of reactor rods"
+[[event.options.outcomes]]
+weight = 90
+text = "A new rod seated, the old one dumped into a cold pod. The figure-eight flattens and the whole ship breathes."
+effects = [{ kind = "cargo", good = "reactor_rods", tons = -1 }, { kind = "treat", amount = 1 }, { kind = "xp", skill = "engineer", amount = 6 }]
+[[event.options.outcomes]]
+weight = 10
+text = "The new rod is a dud. You have bought nothing but a short, frightening evening."
+effects = [{ kind = "cargo", good = "reactor_rods", tons = -1 }, { kind = "scare", amount = 1 }, { kind = "wear", amount = 40 }]
+
+[[event.options]]
+label = "Let your engineer talk it down"
+req = [{ kind = "role", role = "engineer", min = 3 }]
+needs = "an engineer of skill 3 or better"
+[[event.options.outcomes]]
+weight = 85
+text = "Your engineer coaxes the reactor back into line over nine hours, and refuses breakfast. When it settles they are almost fond of it."
+effects = [{ kind = "days", amount = 1 }, { kind = "xp", skill = "engineer", amount = 12 }, { kind = "treat", amount = 1 }]
+[[event.options.outcomes]]
+weight = 15
+text = "It settles, then spikes. Your engineer takes a flash burn on the hand and holds the line."
+effects = [{ kind = "days", amount = 1 }, { kind = "hurt", who = "engineer", days = 3 }, { kind = "xp", skill = "engineer", amount = 12 }]
+
+[[event.options]]
+label = "Run on half power until it quiets"
+[[event.options.outcomes]]
+weight = 100
+text = "You run slow, two extra days, listening to the engineers listening to the reactor. It quiets by itself, which is no comfort."
+effects = [{ kind = "days", amount = 2 }, { kind = "fuel", amount = -3 }, { kind = "scare", amount = 1 }]
+
+# ---------------------------------------------------------------- batch A: signal
+
+[[event]]
+id = "relay_tap_a"
+family = "signal"
+title = "A Guild relay left unlocked"
+text = "A Cartographers' Guild relay buoy answers your ping with its whole archive, unencrypted. Whoever set it up forgot the lock. It is full of charts and handwritten notes and some very rude marginalia."
+weight = 6
+once = "relay_tap"
+mods = [{ req = { kind = "role", role = "scientist", min = 2 }, pm = 1600 }]
+
+[[event.options]]
+label = "Have your scientist copy the charts"
+req = [{ kind = "role", role = "scientist", min = 2 }]
+needs = "a scientist of skill 2 or better"
+[[event.options.outcomes]]
+weight = 75
+text = "A full copy, clean and quick. Your scientist is delighted. The Guild's clerks, if they find out, will not be."
+effects = [{ kind = "survey", value = 480 }, { kind = "xp", skill = "survey", amount = 10 }, { kind = "standing", faction = "guild", amount = -4 }]
+[[event.options.outcomes]]
+weight = 25
+text = "The relay logs the copy and pings its owner. You leave in a hurry with half the data."
+effects = [{ kind = "survey", value = 220 }, { kind = "standing", faction = "guild", amount = -8 }, { kind = "scare", amount = 1 }]
+
+[[event.options]]
+label = "Report the open lock to the Guild"
+[[event.options.outcomes]]
+weight = 100
+text = "You ping the Guild with the problem and the position. They are grateful, in the formal way of institutions."
+effects = [{ kind = "standing", faction = "guild", amount = 5 }, { kind = "credits", amount = 100 }]
+
+[[event.options]]
+label = "Leave it alone"
+[[event.options.outcomes]]
+weight = 100
+text = "You break the link and burn on. Everybody feels vaguely virtuous."
+effects = [{ kind = "treat", amount = 1 }]
+
+# ----
+
+[[event]]
+id = "lantern_signal_a"
+family = "signal"
+title = "A lantern's answer"
+text = "The lantern you were given is warm. On the bridge it has started, very faintly, to glow, and the glow points in a direction. Nothing on the charts is there, but the direction is steady."
+weight = 4
+when = [{ kind = "flag", name = "lantern_pact" }]
+mods = [{ req = { kind = "standing", faction = "church", min = 10 }, pm = 1600 }]
+
+[[event.options]]
+label = "Follow the lantern"
+[[event.options.outcomes]]
+weight = 60
+text = "A day's burn and the lantern's light finds a drifting husk, her hull etched with sigils. You board."
+effects = [{ kind = "days", amount = 1 }, { kind = "board", derelict = "sentinel_husk" }]
+[[event.options.outcomes]]
+weight = 40
+text = "A day's burn to a place with nothing in it. The lantern dims, content."
+effects = [{ kind = "days", amount = 1 }, { kind = "standing", faction = "church", amount = 4 }]
+
+[[event.options]]
+label = "Have your scientist study the glow"
+req = [{ kind = "role", role = "scientist", min = 2 }]
+needs = "a scientist of skill 2 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "A hard, quiet hour with instruments and a very odd flame. Your scientist writes up a short note, and sells it to the Guild with some embarrassment."
+effects = [{ kind = "survey", value = 360 }, { kind = "xp", skill = "survey", amount = 8 }]
+
+[[event.options]]
+label = "Put the lantern away"
+[[event.options.outcomes]]
+weight = 100
+text = "You wrap it in a cloth and stow it. The glow fades behind the fabric, but someone on the crew dreams of it that night."
+effects = [{ kind = "scare", amount = 1 }]
+
+# ----
+
+[[event]]
+id = "pilgrim_chant_a"
+family = "signal"
+title = "A chant on the ship's speakers"
+text = "A call-and-response chant on a lane band, a hundred voices singing in the tongue of the Quiet Church. Behind them there is a deep, broad rhythm like the beating of a hull. The words are old and the voices are not."
+weight = 5
+mods = [{ req = { kind = "standing", faction = "church", min = 5 }, pm = 1600 }, { req = { kind = "passenger" }, pm = 800 }]
+
+[[event.options]]
+label = "Sing along"
+req = [{ kind = "role", role = "face", min = 1 }]
+needs = "a face aboard"
+[[event.options.outcomes]]
+weight = 80
+text = "Your face has the knack of joining a song. A hundred voices turn to welcome you, and the Church sends a blessing."
+effects = [{ kind = "standing", faction = "church", amount = 5 }, { kind = "treat", amount = 1 }]
+[[event.options.outcomes]]
+weight = 20
+text = "You get the response wrong. A moment of silence follows, and then a gentle, patient correction."
+effects = [{ kind = "standing", faction = "church", amount = 1 }]
+
+[[event.options]]
+label = "Record the rhythm"
+[[event.options.outcomes]]
+weight = 70
+text = "A fine recording. The beat under the voices is no instrument you know, and a Guild acoustician pays handsomely for it."
+effects = [{ kind = "survey", value = 280 }, { kind = "xp", skill = "survey", amount = 6 }]
+[[event.options.outcomes]]
+weight = 30
+text = "The rhythm gets into the recording, and then into the room. It takes an hour and a bottle to settle your crew."
+effects = [{ kind = "survey", value = 280 }, { kind = "scare", amount = 1 }]
+
+[[event.options]]
+label = "Mute the band"
+[[event.options.outcomes]]
+weight = 100
+text = "The chant ends. Behind it, the quiet is exactly as loud as before."
+
+# ----
+
+[[event]]
+id = "echo_manifest_a"
+family = "signal"
+title = "An echoing manifest"
+text = "A cargo manifest repeats on the lane band, ship name omitted: grain, parts, twelve sealed crates, a name nobody has heard. It is the manifest of a ship that is still carrying it, somewhere close. It pulses every forty seconds."
+weight = 5
+mods = [{ req = { kind = "role", role = "quartermaster", min = 2 }, pm = 1500 }, { req = { kind = "scanner", min = 1 }, pm = 1200 }]
+
+[[event.options]]
+label = "Have your quartermaster match the hold"
+req = [{ kind = "role", role = "quartermaster", min = 2 }]
+needs = "a quartermaster of skill 2 or better"
+[[event.options.outcomes]]
+weight = 70
+text = "Your quartermaster squints at the numbers and finds the ship: a drifting freighter with her locks unlatched. You help yourselves to the cargo that comes loose."
+effects = [{ kind = "cargo", good = "grain", tons = 6 }, { kind = "cargo", good = "parts", tons = 3 }, { kind = "days", amount = 1 }, { kind = "xp", skill = "stealth", amount = 6 }]
+[[event.options.outcomes]]
+weight = 30
+text = "The manifest is a lure for a salvage crew who has been hunting the same thing. A tense hour, and a shared split."
+effects = [{ kind = "cargo", good = "parts", tons = 2 }, { kind = "days", amount = 1 }, { kind = "flag", name = "salvage_rights" }]
+
+[[event.options]]
+label = "Trace the source with the scanner"
+req = [{ kind = "scanner", min = 1 }]
+needs = "a working scanner"
+[[event.options.outcomes]]
+weight = 70
+text = "A hulk so old the transponder is a legend, her manifest still looping in her dead core. You take what's loose."
+effects = [{ kind = "cargo", good = "curios", tons = 2 }, { kind = "days", amount = 1 }]
+[[event.options.outcomes]]
+weight = 30
+text = "Nothing there. The signal comes from an automated buoy, and a long time ago someone left it on."
+effects = [{ kind = "days", amount = 1 }, { kind = "xp", skill = "survey", amount = 4 }]
+
+[[event.options]]
+label = "Note it and move on"
+[[event.options.outcomes]]
+weight = 100
+text = "You log the manifest, in case someone asks. Nobody ever does."
+effects = [{ kind = "xp", skill = "survey", amount = 2 }]
+
+# ----
+
+[[event]]
+id = "warden_challenge_a"
+family = "signal"
+title = "A gate warden asks for a name"
+text = "A challenge comes in on the old gate frequency, in a voice made of three voices. It asks for your name, your cargo and your purpose. The ring of a dead gate hangs ahead of you, and it does not look dead enough to ignore."
+weight = 4
+mods = [{ req = { kind = "flag", name = "tithe_forgiven" }, pm = 2500 }, { req = { kind = "standing", faction = "church", min = 10 }, pm = 1500 }]
+
+[[event.options]]
+label = "Answer with the Church's response"
+req = [{ kind = "flag", name = "tithe_forgiven" }]
+needs = "a toll forgiven at a Church gate"
+[[event.options.outcomes]]
+weight = 100
+text = "The voices pause and one of them says a name that is not yours but is meant for you. The ring parts, a little. You pass through a silence that feels like permission."
+effects = [{ kind = "standing", faction = "church", amount = 6 }, { kind = "fuel", amount = 8 }, { kind = "xp", skill = "survey", amount = 10 }]
+
+[[event.options]]
+label = "Answer in the old tongue"
+req = [{ kind = "skill", skill = "survey", min = 3 }]
+needs = "Survey 3 or better (yours, not the crew's)"
+[[event.options.outcomes]]
+weight = 70
+text = "You say the phrase you picked up from a dead Guild chart. The three voices become one, and say, politely, that you may pass."
+effects = [{ kind = "standing", faction = "church", amount = 4 }, { kind = "xp", skill = "survey", amount = 10 }]
+[[event.options.outcomes]]
+weight = 30
+text = "A mispronunciation. The three voices argue about it for a while and then let you go, annoyed."
+effects = [{ kind = "days", amount = 1 }, { kind = "standing", faction = "church", amount = 1 }]
+
+[[event.options]]
+label = "Give a false name and a plain answer"
+[[event.options.outcomes]]
+weight = 60
+text = "The voices consider it, and the answer is acceptable. They are always polite, up to a point."
+effects = [{ kind = "days", amount = 1 }]
+[[event.options.outcomes]]
+weight = 40
+text = "The ring knows. It says nothing, and it says it very loudly. Your instruments go out for an hour."
+effects = [{ kind = "wear", amount = 70 }, { kind = "days", amount = 1 }, { kind = "scare", amount = 1 }, { kind = "standing", faction = "church", amount = -4 }]
+
+# ----
+
+[[event]]
+id = "cartel_hum_a"
+family = "signal"
+title = "A hum on a cartel band"
+text = "A narrow-band hum, regular as a heartbeat, on a frequency no honest ship uses. It repeats a short code: a price, a lane, and a time. It is the sort of offer that does not come twice."
+weight = 5
+mods = [{ req = { kind = "contraband", tons = 1 }, pm = 1800 }, { req = { kind = "standing", faction = "free", min = 5 }, pm = 1400 }]
+
+[[event.options]]
+label = "Work out who is calling"
+req = [{ kind = "skill", skill = "stealth", min = 2 }]
+needs = "Stealth 2 or better (yours, not the crew's)"
+[[event.options.outcomes]]
+weight = 75
+text = "A clean trace to a mining claim two systems over. You send a polite answer, and a name comes back. You have, apparently, a contact now."
+effects = [{ kind = "flag", name = "cartel_contact" }, { kind = "xp", skill = "stealth", amount = 8 }, { kind = "standing", faction = "free", amount = 2 }]
+[[event.options.outcomes]]
+weight = 25
+text = "The trace is noticed and the line goes dead. A moment later your own transponder blinks, and does not tell you why."
+effects = [{ kind = "scare", amount = 1 }, { kind = "xp", skill = "stealth", amount = 4 }]
+
+[[event.options]]
+label = "Answer with a bid"
+req = [{ kind = "cash", min = 200 }]
+needs = "200 cr in the purse"
+[[event.options.outcomes]]
+weight = 50
+text = "A quick, brusque trade over the dark band: crates at a dead drop for a cash deposit. The crates are real."
+effects = [{ kind = "credits", amount = -200 }, { kind = "cargo", good = "slug_guns", tons = 2 }]
+[[event.options.outcomes]]
+weight = 50
+text = "The deposit goes, and so does the dead drop. There is no one there at the coordinates."
+effects = [{ kind = "credits", amount = -200 }, { kind = "treat", amount = -1 }]
+
+[[event.options]]
+label = "Ignore the hum"
+[[event.options.outcomes]]
+weight = 100
+text = "You leave the band quiet. Somewhere out there a price expires."
+effects = [{ kind = "standing", faction = "league", amount = 1 }]
+
+# ----
+
+[[event]]
+id = "blank_chart_a"
+family = "signal"
+title = "A chart with one point on it"
+text = "Your plotter shows a blank sector with a single glowing point, and the point is moving, very slowly, toward your course. There is no name and no tag. The plotter has not behaved like this before, and it wants you to know."
+weight = 5
+mods = [{ req = { kind = "fresh" }, pm = 3000 }, { req = { kind = "scanner", min = 2 }, pm = 1400 }]
+
+[[event.options]]
+label = "Chart the sector properly"
+req = [{ kind = "role", role = "scientist", min = 2 }]
+needs = "a scientist of skill 2 or better"
+[[event.options.outcomes]]
+weight = 70
+text = "A long day of triangulation. The point turns out to be a drifting buoy with a dozen sector charts in her core, all of them new to you."
+effects = [{ kind = "survey", value = 600 }, { kind = "days", amount = 1 }, { kind = "xp", skill = "survey", amount = 12 }, { kind = "standing", faction = "guild", amount = 3 }]
+[[event.options.outcomes]]
+weight = 30
+text = "The point slips away every time you close in. Your scientist keeps plotting, long past the point of sense, and wastes the whole shift."
+effects = [{ kind = "days", amount = 2 }, { kind = "xp", skill = "survey", amount = 6 }]
+
+[[event.options]]
+label = "Sail to the point yourself"
+req = [{ kind = "skill", skill = "survey", min = 2 }]
+needs = "Survey 2 or better (yours, not the crew's)"
+[[event.options.outcomes]]
+weight = 60
+text = "A lean, quiet detour. The point is a data buoy with a lamp on, and she hands her whole archive to the first ship that asks."
+effects = [{ kind = "survey", value = 420 }, { kind = "fuel", amount = -5 }, { kind = "xp", skill = "survey", amount = 10 }]
+[[event.options.outcomes]]
+weight = 40
+text = "You arrive to find the point gone and a different ship in its place. She is not friendly."
+effects = [{ kind = "fuel", amount = -5 }, { kind = "hull", amount = -7 }, { kind = "scare", amount = 1 }]
+
+[[event.options]]
+label = "Ignore the plotter"
+[[event.options.outcomes]]
+weight = 100
+text = "You wipe the plot and go on. The point is gone from the screen. Your plotter seems almost hurt."
+
+[[event]]
+id = "ion_squall_b"
+family = "hazard"
+title = "An ion squall"
+text = "The scope goes to static, then to a green fog. An ion squall is walking down the lane, the kind that makes every cable on the ship hum and every crew member check their fillings."
+weight = 6
+mods = [{ req = { kind = "hazard", hazard = "nebula" }, pm = 2200 }]
+
+[[event.options]]
+label = "Ground the frame through the drive"
+req = [{ kind = "role", role = "engineer", min = 2 }]
+needs = "an engineer of skill 2 or better"
+[[event.options.outcomes]]
+weight = 85
+text = "Your engineer bleeds the charge off through the drive housing and the squall slides past. The lights flicker once and the crew applauds."
+effects = [{ kind = "wear", amount = 15 }, { kind = "xp", skill = "engineer", amount = 5 }]
+[[event.options.outcomes]]
+weight = 15
+text = "The ground holds, but a relay cooks itself in the process."
+effects = [{ kind = "wear", amount = 70 }, { kind = "hull", amount = -3 }]
+
+[[event.options]]
+label = "Fly the quiet pockets"
+req = [{ kind = "role", role = "pilot", min = 3 }]
+needs = "a pilot of skill 3 or better"
+[[event.options.outcomes]]
+weight = 80
+text = "Your pilot reads the squall's edges and slips through its gaps. Nothing but a headache."
+effects = [{ kind = "xp", skill = "pilot", amount = 6 }]
+[[event.options.outcomes]]
+weight = 20
+text = "One gap closes early and the ship takes a jolt."
+effects = [{ kind = "hull", amount = -5 }, { kind = "wear", amount = 40 }]
+
+[[event.options]]
+label = "Power down and drift"
+[[event.options.outcomes]]
+weight = 65
+text = "You go dark and wait. It is dull and it works, mostly."
+effects = [{ kind = "days", amount = 1 }, { kind = "wear", amount = 20 }]
+[[event.options.outcomes]]
+weight = 35
+text = "A stray arc finds the ship anyway. A bad hour in the dark."
+effects = [{ kind = "days", amount = 1 }, { kind = "wear", amount = 60 }, { kind = "hurt", who = "random", days = 2 }]
+
+# ----
+
+[[event]]
+id = "mine_belt_b"
+family = "hazard"
+title = "Old mines in the lane"
+text = "The scan shows a lattice of small, cold returns across the lane. Somebody laid a minefield here in the last war and never came back to lift it. A wreck sits at its heart."
+weight = 5
+mods = [{ req = { kind = "hazard", hazard = "debris" }, pm = 2400 }]
+
+[[event.options]]
+label = "Shoot a path through"
+req = [{ kind = "role", role = "gunner", min = 2 }]
+needs = "a gunner of skill 2 or better"
+[[event.options.outcomes]]
+weight = 80
+text = "Your gunner pops the mines at long range, one at a time. A fine light show, and the lane is clear."
+effects = [{ kind = "xp", skill = "pilot", amount = 3 }]
+[[event.options.outcomes]]
+weight = 20
+text = "A chain detonation rocks the ship."
+effects = [{ kind = "hull", amount = -9 }]
+
+[[event.options]]
+label = "Map the field and find the wreck's door"
+req = [{ kind = "scanner", min = 1 }]
+needs = "a working scanner"
+[[event.options.outcomes]]
+weight = 100
+text = "The scanner maps every mine and the safe corridor in. The wreck is a gunship hulk, long stripped of anything but its defences."
+effects = [{ kind = "survey", value = 240 }, { kind = "board", derelict = "gunship_hulk" }]
+
+[[event.options]]
+label = "Creep around the edge"
+[[event.options.outcomes]]
+weight = 70
+text = "Slow, careful, and expensive in fuel. You get round untouched."
+effects = [{ kind = "fuel", amount = -6 }, { kind = "days", amount = 1 }]
+[[event.options.outcomes]]
+weight = 30
+text = "The edge was not as empty as it looked."
+effects = [{ kind = "fuel", amount = -6 }, { kind = "hull", amount = -10 }]
+
+# ----
+
+[[event]]
+id = "gravity_wake_b"
+family = "hazard"
+title = "The wake of something huge"
+text = "The ship starts to lean. Nothing is there, but the scope shows a long smear of disturbed dust: the wake of a very large hull that passed an hour ago and is not on any chart."
+weight = 4
+
+[[event.options]]
+label = "Surf the wake"
+req = [{ kind = "role", role = "pilot", min = 2 }]
+needs = "a pilot of skill 2 or better"
+[[event.options.outcomes]]
+weight = 70
+text = "Your pilot rides the wake like a tide and the ship gets a free push down the lane. The fuel gauge is smug about it."
+effects = [{ kind = "fuel", amount = 7 }, { kind = "xp", skill = "pilot", amount = 6 }]
+[[event.options.outcomes]]
+weight = 30
+text = "The wake turns on you and shakes the ship hard."
+effects = [{ kind = "hull", amount = -7 }, { kind = "wear", amount = 40 }]
+
+[[event.options]]
+label = "Take readings of the wake"
+req = [{ kind = "role", role = "scientist", min = 2 }]
+needs = "a scientist of skill 2 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "Your scientist logs the dust pattern and works back to a mass. Nobody will believe the number, but the Guild will pay for it."
+effects = [{ kind = "survey", value = 320 }, { kind = "xp", skill = "survey", amount = 5 }]
+
+[[event.options]]
+label = "Brace and hold course"
+[[event.options.outcomes]]
+weight = 100
+text = "The ship groans and holds. The wake drops away behind you."
+effects = [{ kind = "wear", amount = 30 }]
+
+# ----
+
+[[event]]
+id = "fouled_coolant_b"
+family = "hazard"
+title = "Fouled coolant"
+text = "The coolant loop starts to smell like warm pennies. Somewhere in the lines, a seal has gone and the ship is sweating a thin green film across the engine deck."
+weight = 6
+mods = [{ req = { kind = "hazard", hazard = "radiation" }, pm = 1500 }]
+
+[[event.options]]
+label = "Trace the leak and re-seal it"
+req = [{ kind = "role", role = "engineer", min = 2 }]
+needs = "an engineer of skill 2 or better"
+[[event.options.outcomes]]
+weight = 85
+text = "Your engineer finds the seal in twenty minutes and rebuilds it with a gasket from a spare boot. Hot, filthy, finished."
+effects = [{ kind = "wear", amount = 10 }, { kind = "xp", skill = "engineer", amount = 5 }]
+[[event.options.outcomes]]
+weight = 15
+text = "The seal is not the only thing that has gone."
+effects = [{ kind = "wear", amount = 60 }, { kind = "days", amount = 1 }]
+
+[[event.options]]
+label = "Have the medic tend the fumes"
+req = [{ kind = "role", role = "medic", min = 1 }]
+needs = "a medic aboard"
+[[event.options.outcomes]]
+weight = 100
+text = "Your medic hands out masks and watches faces. Nobody is sick; the crew is grateful, and the seal gets fixed by morning."
+effects = [{ kind = "wear", amount = 40 }, { kind = "treat", amount = 1 }]
+
+[[event.options]]
+label = "Top up and push on"
+[[event.options.outcomes]]
+weight = 55
+text = "You top up the loop and push on. It holds."
+effects = [{ kind = "fuel", amount = -2 }, { kind = "wear", amount = 50 }]
+[[event.options.outcomes]]
+weight = 45
+text = "It does not hold. A long wait while the drive cools."
+effects = [{ kind = "days", amount = 2 }, { kind = "wear", amount = 90 }, { kind = "hurt", who = "random", days = 2 }]
+
+# ----
+
+[[event]]
+id = "gate_scar_b"
+family = "hazard"
+title = "A gate scar"
+text = "The lane bends round a ring of black glass, the burnt ghost of a gate that failed in the old days. The instruments report that space here is not quite the shape it should be."
+weight = 4
+mods = [{ req = { kind = "hazard", hazard = "radiation" }, pm = 1800 }]
+
+[[event.options]]
+label = "Sing the gate song across it"
+req = [{ kind = "flag", name = "gate_song" }]
+needs = "the gate song, learned from pilgrims"
+[[event.options.outcomes]]
+weight = 100
+text = "The song carries on a carrier wave and the scar goes quiet, like a dog that knows you. Pilgrims would call it grace; the scope calls it a clean, calm lane."
+effects = [{ kind = "flag", name = "wardens_truce" }, { kind = "standing", faction = "church", amount = 3 }, { kind = "xp", skill = "survey", amount = 6 }]
+
+[[event.options]]
+label = "Survey the ring"
+req = [{ kind = "role", role = "scientist", min = 2 }]
+needs = "a scientist of skill 2 or better"
+[[event.options.outcomes]]
+weight = 75
+text = "Your scientist samples the glass and the shear in it. Valuable data, for those who dare read it."
+effects = [{ kind = "survey", value = 400 }, { kind = "xp", skill = "survey", amount = 6 }]
+[[event.options.outcomes]]
+weight = 25
+text = "The ring shivers and the instruments scramble. Half your data is noise."
+effects = [{ kind = "survey", value = 120 }, { kind = "wear", amount = 50 }]
+
+[[event.options]]
+label = "Go wide around it"
+[[event.options.outcomes]]
+weight = 100
+text = "A long, nervous detour round the scar. Nobody speaks until it is behind."
+effects = [{ kind = "fuel", amount = -5 }, { kind = "days", amount = 1 }, { kind = "scare", amount = 1 }]
+
+# ----
+
+[[event]]
+id = "sleeper_comet_b"
+family = "hazard"
+title = "A sleeper comet"
+text = "A comet the size of a hab block lies ahead of the lane, tail asleep, ice glittering. Too big to ignore, too slow to avoid, and carrying more water than your whole tank."
+weight = 5
+mods = [{ req = { kind = "hazard", hazard = "debris" }, pm = 1600 }]
+
+[[event.options]]
+label = "Shave ice with the engineer's rig"
+req = [{ kind = "role", role = "engineer", min = 2 }]
+needs = "an engineer of skill 2 or better"
+[[event.options.outcomes]]
+weight = 80
+text = "Your engineer rigs a cutter off the hull and shaves a few tons of clean ice. The ship smells like a cold lake for a day."
+effects = [{ kind = "cargo", good = "water", tons = 5 }, { kind = "xp", skill = "engineer", amount = 5 }]
+[[event.options.outcomes]]
+weight = 20
+text = "The ice cracks and a shard comes back at the hull."
+effects = [{ kind = "cargo", good = "water", tons = 2 }, { kind = "hull", amount = -6 }]
+
+[[event.options]]
+label = "Skim it at speed"
+[[event.options.outcomes]]
+weight = 60
+text = "A fast pass with the scoop out. A little water, a lot of rattling."
+effects = [{ kind = "cargo", good = "water", tons = 2 }, { kind = "wear", amount = 30 }]
+[[event.options.outcomes]]
+weight = 40
+text = "The tail wakes as you pass. Shards on the plates."
+effects = [{ kind = "hull", amount = -8 }, { kind = "wear", amount = 40 }]
+
+[[event.options]]
+label = "Steer wide"
+[[event.options.outcomes]]
+weight = 100
+text = "A long, clean arc round the comet. Fuel burnt, hull whole."
+effects = [{ kind = "fuel", amount = -4 }]
+
+# ----
+
+[[event]]
+id = "refugee_rations_b"
+family = "passenger"
+title = "The refugees are hungry"
+text = "Your refugees have been quiet for days. Then the youngest asks the cook, politely, whether it is true that crew eat first. The galley goes silent."
+weight = 12
+when = [{ kind = "passenger", pax = "refugee" }]
+
+[[event.options]]
+label = "Cut the crew's own share"
+[[event.options.outcomes]]
+weight = 100
+text = "You eat thin for three days. The crew grumbles, and the refugees do not forget it."
+effects = [{ kind = "content", amount = 3 }, { kind = "treat", amount = -1 }]
+
+[[event.options]]
+label = "Let the quartermaster rework the stores"
+req = [{ kind = "role", role = "quartermaster", min = 2 }]
+needs = "a quartermaster of skill 2 or better"
+[[event.options.outcomes]]
+weight = 90
+text = "Your quartermaster finds the slack in the manifest: a few tins nobody had counted and a sack of grain behind a panel. Everyone eats."
+effects = [{ kind = "content", amount = 3 }, { kind = "treat", amount = 1 }, { kind = "xp", skill = "stealth", amount = 4 }]
+[[event.options.outcomes]]
+weight = 10
+text = "The stores turn out thinner than the logs. A lean week."
+effects = [{ kind = "content", amount = 1 }]
+
+[[event.options]]
+label = "Buy them a proper meal (120 cr)"
+req = [{ kind = "cash", min = 120 }]
+needs = "120 cr in the purse"
+[[event.options.outcomes]]
+weight = 100
+text = "A good stew from the next dock's last stock. Nobody asks where the money came from."
+effects = [{ kind = "credits", amount = -120 }, { kind = "content", amount = 4 }]
+
+[[event.options]]
+label = "Tell them to wait"
+[[event.options.outcomes]]
+weight = 100
+text = "They wait. They keep a careful eye on the galley door."
+effects = [{ kind = "content", amount = -3 }]
+
+# ----
+
+[[event]]
+id = "officer_requisition_b"
+family = "passenger"
+title = "The officer pulls rank"
+text = "Your League officer has decided that your ship would be better employed on the navy's business. They have not said so; they have put a hand on the bulkhead and looked thoughtful."
+weight = 12
+when = [{ kind = "passenger", pax = "officer" }]
+
+[[event.options]]
+label = "Say yes, and expect a favour"
+[[event.options.outcomes]]
+weight = 100
+text = "A day of ferrying signals for the navy. The officer signs a chit and gives you a name to remember."
+effects = [{ kind = "days", amount = 1 }, { kind = "standing", faction = "league", amount = 4 }, { kind = "flag", name = "navy_favor" }, { kind = "content", amount = 1 }]
+
+[[event.options]]
+label = "Talk them out of it"
+req = [{ kind = "role", role = "face", min = 2 }]
+needs = "a face of skill 2 or better"
+[[event.options.outcomes]]
+weight = 85
+text = "Your face has the officer laughing about the cargo contract in less than a minute. The matter is not raised again."
+effects = [{ kind = "content", amount = 1 }, { kind = "xp", skill = "trade", amount = 4 }]
+[[event.options.outcomes]]
+weight = 15
+text = "The officer notices the polish in your voice and mentions it to a friend."
+effects = [{ kind = "standing", faction = "league", amount = -2 }]
+
+[[event.options]]
+label = "Refuse flatly"
+[[event.options.outcomes]]
+weight = 100
+text = "The officer's smile is a thin line. You have made a note in someone's ledger, and it is yours."
+effects = [{ kind = "content", amount = -3 }, { kind = "standing", faction = "league", amount = -3 }, { kind = "flag", name = "league_snub" }]
+
+# ----
+
+[[event]]
+id = "miner_child_fever_b"
+family = "passenger"
+title = "A child with a fever"
+text = "The miner family's youngest is burning up, and the parents are trying hard not to ask you for anything. Ship's air, ship's food and a fever that is not on any manifest."
+weight = 12
+when = [{ kind = "passenger", pax = "miner_family" }]
+
+[[event.options]]
+label = "Put the medic on it"
+req = [{ kind = "role", role = "medic", min = 2 }]
+needs = "a medic of skill 2 or better"
+[[event.options.outcomes]]
+weight = 90
+text = "Your medic sits up two nights and brings the fever down. The parents write your hull number on the inside of their lunch box."
+effects = [{ kind = "content", amount = 4 }, { kind = "standing", faction = "miners", amount = 3 }, { kind = "xp", skill = "engineer", amount = 1 }]
+[[event.options.outcomes]]
+weight = 10
+text = "A rough two nights, and a touch-and-go dawn. The child pulls through."
+effects = [{ kind = "content", amount = 2 }, { kind = "standing", faction = "miners", amount = 2 }]
+
+[[event.options]]
+label = "Spend antitoxin on it"
+req = [{ kind = "good", good = "antitoxin", tons = 1 }]
+needs = "antitoxin in the hold"
+[[event.options.outcomes]]
+weight = 100
+text = "The antitoxin does what it does. The fever breaks by morning."
+effects = [{ kind = "cargo", good = "antitoxin", tons = -1 }, { kind = "content", amount = 3 }, { kind = "standing", faction = "miners", amount = 2 }]
+
+[[event.options]]
+label = "Keep the child away from the crew"
+[[event.options.outcomes]]
+weight = 60
+text = "A quiet cabin, a lot of cold cloth. It breaks on its own, and the parents are only grateful that you did not shout."
+effects = [{ kind = "content", amount = 1 }]
+[[event.options.outcomes]]
+weight = 40
+text = "It does not break for days. The parents are sure you did all you could, and also sure it was not enough."
+effects = [{ kind = "content", amount = -2 }, { kind = "standing", faction = "miners", amount = -2 }]
+
+# ----
+
+[[event]]
+id = "deserter_picket_b"
+family = "passenger"
+title = "A picket asks for a man"
+text = "A League picket slides alongside and hails you politely. They are looking for a deserter who answers, in all particulars, to the description of the man asleep in your spare berth."
+weight = 10
+when = [{ kind = "passenger", pax = "deserter" }]
+
+[[event.options]]
+label = "Hand him over"
+[[event.options.outcomes]]
+weight = 100
+text = "He goes across without a word, and the picket pays a bounty that nobody mentions. Your crew will remember how you did it."
+effects = [{ kind = "credits", amount = 300 }, { kind = "standing", faction = "league", amount = 5 }, { kind = "content", amount = -5 }, { kind = "treat", amount = -1 }]
+
+[[event.options]]
+label = "Bluff them"
+req = [{ kind = "role", role = "face", min = 2 }]
+needs = "a face of skill 2 or better"
+[[event.options.outcomes]]
+weight = 80
+text = "Your face has the picket's officer explaining their own rank back to them. The picket wishes you good hunting, and moves on."
+effects = [{ kind = "content", amount = 2 }, { kind = "standing", faction = "league", amount = -1 }, { kind = "xp", skill = "trade", amount = 5 }]
+[[event.options.outcomes]]
+weight = 20
+text = "The officer sees through it and does not say so. You will hear about this at the next League dock."
+effects = [{ kind = "standing", faction = "league", amount = -4 }]
+
+[[event.options]]
+label = "Fight your way off"
+req = [{ kind = "role", role = "gunner", min = 2 }]
+needs = "a gunner of skill 2 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "You cut the line and open fire. The picket answers."
+effects = [{ kind = "combat", enemy = "picket" }, { kind = "content", amount = 2 }, { kind = "standing", faction = "league", amount = -5 }]
+
+# ----
+
+[[event]]
+id = "fugitive_truth_b"
+family = "passenger"
+title = "The fugitive tells the truth"
+text = "Your fugitive has been telling a story for days, and it has changed three times. Tonight, in the dark of the galley, they ask whether you would like to hear what is actually true."
+weight = 10
+when = [{ kind = "passenger", pax = "fugitive" }, { kind = "no_flag", name = "fugitive_pact" }]
+
+[[event.options]]
+label = "Hear them out"
+[[event.options.outcomes]]
+weight = 70
+text = "It is a bad story and a human one. They owe a Free Captain a great deal, and cannot pay it. You say you will not hand them over, and mean it."
+effects = [{ kind = "flag", name = "fugitive_pact" }, { kind = "content", amount = 4 }, { kind = "standing", faction = "free", amount = 3 }]
+[[event.options.outcomes]]
+weight = 30
+text = "It is worse than you thought. You say nothing, and sleep badly."
+effects = [{ kind = "flag", name = "fugitive_pact" }, { kind = "content", amount = 2 }, { kind = "scare", amount = 1 }]
+
+[[event.options]]
+label = "Have the face read the lies"
+req = [{ kind = "role", role = "face", min = 2 }]
+needs = "a face of skill 2 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "Your face lets the fugitive talk until they run out of lies. What is left is sad and plain, and gives you something to trade on later."
+effects = [{ kind = "flag", name = "fugitive_pact" }, { kind = "content", amount = 3 }, { kind = "xp", skill = "trade", amount = 5 }, { kind = "standing", faction = "free", amount = 2 }]
+
+[[event.options]]
+label = "Do not listen"
+[[event.options.outcomes]]
+weight = 100
+text = "You decline the truth. They look relieved, then ashamed."
+effects = [{ kind = "content", amount = -1 }]
+
+# ----
+
+[[event]]
+id = "scholar_archive_b"
+family = "passenger"
+title = "The scholar finds an archive"
+text = "Your scholar hands you a plot and a trembling finger. A Guild archive hulk, they say, lost in the old gate wars with its stacks intact. If the plot is right, it is a day off the lane."
+weight = 10
+when = [{ kind = "passenger", pax = "scholar" }]
+
+[[event.options]]
+label = "Check the plot with the scientist"
+req = [{ kind = "role", role = "scientist", min = 2 }]
+needs = "a scientist of skill 2 or better"
+[[event.options.outcomes]]
+weight = 90
+text = "The plot holds up. Your scientist and the scholar argue happily for an hour, and the archive's key frequency drops into your log."
+effects = [{ kind = "flag", name = "archive_key" }, { kind = "content", amount = 3 }, { kind = "xp", skill = "survey", amount = 6 }, { kind = "survey", value = 180 }]
+[[event.options.outcomes]]
+weight = 10
+text = "The plot is a day off, and the archive is a rumour. The scholar is crushed."
+effects = [{ kind = "content", amount = -2 }, { kind = "days", amount = 1 }]
+
+[[event.options]]
+label = "Board the archive hulk"
+[[event.options.outcomes]]
+weight = 100
+text = "A day's detour to a drifting stack-hulk. The scholar will not shut up, and the hulk is not empty."
+effects = [{ kind = "days", amount = 1 }, { kind = "board", derelict = "guild_archive" }, { kind = "content", amount = 2 }]
+
+[[event.options]]
+label = "Decline politely"
+[[event.options.outcomes]]
+weight = 100
+text = "The scholar nods. They put the plot away carefully, like a thing they will find again."
+effects = [{ kind = "content", amount = -1 }]
+
+# ----
+
+[[event]]
+id = "ghost_liner_b"
+family = "derelict"
+title = "A liner with every light on"
+text = "A passenger liner drifts without engines, her windows burning in rows. Every deck is lit and not one hail is answered. The lights are the first thing wrong, and not the last."
+weight = 4
+mods = [{ req = { kind = "standing", faction = "church", min = 5 }, pm = 1400 }]
+
+[[event.options]]
+label = "Board the liner"
+[[event.options.outcomes]]
+weight = 100
+text = "You dock at the lower hatch. The air is warm and the corridors are clean, which is worse than any wreck."
+effects = [{ kind = "board", derelict = "ghost_liner" }, { kind = "scare", amount = 1 }]
+
+[[event.options]]
+label = "Scan the decks from range"
+req = [{ kind = "scanner", min = 1 }]
+needs = "a working scanner"
+[[event.options.outcomes]]
+weight = 100
+text = "The scanner finds no heat, no air loss and no crew. It gets a clean read of a deck plan nobody has charted."
+effects = [{ kind = "survey", value = 300 }, { kind = "xp", skill = "survey", amount = 5 }]
+
+[[event.options]]
+label = "Leave her lit"
+[[event.options.outcomes]]
+weight = 100
+text = "You leave her lit. In the galley, the crew finds a lot to say about it."
+effects = [{ kind = "scare", amount = 1 }]
+
+# ----
+
+[[event]]
+id = "cargo_ghost_b"
+family = "derelict"
+title = "A hauler with a full hold"
+text = "A bulk hauler sits dead in the lane, hatches shut and seals green. Her manifest is still broadcasting: sealed, insured and nobody's. Somebody ran from this ship, and left the goods."
+weight = 6
+
+[[event.options]]
+label = "Board and strip her hold"
+[[event.options.outcomes]]
+weight = 100
+text = "Her airlocks open on a hold of crated goods and one very angry loader bot."
+effects = [{ kind = "board", derelict = "cargo_ghost" }]
+
+[[event.options]]
+label = "Read the manifest first"
+req = [{ kind = "role", role = "quartermaster", min = 2 }]
+needs = "a quartermaster of skill 2 or better"
+[[event.options.outcomes]]
+weight = 85
+text = "Your quartermaster finds the hold's good crates in a minute, and the bad ones in two. You take only the clean tons without opening a seal."
+effects = [{ kind = "cargo", good = "tools", tons = 3 }, { kind = "cargo", good = "textiles", tons = 3 }, { kind = "xp", skill = "stealth", amount = 5 }]
+[[event.options.outcomes]]
+weight = 15
+text = "A false manifest. The crates are filled with ballast."
+effects = [{ kind = "days", amount = 1 }]
+
+[[event.options]]
+label = "Leave her"
+[[event.options.outcomes]]
+weight = 100
+text = "A full hold is a trap more often than a gift. You leave her to her broadcast."
+effects = []
+
+# ----
+
+[[event]]
+id = "medical_frigate_b"
+family = "derelict"
+title = "A hospital frigate, silent"
+text = "A hospital frigate, her red cross faded to rust, tumbles end over end. The crew's last log reads 'we did all we could.' The ward bays may still hold stock."
+weight = 5
+
+[[event.options]]
+label = "Send the medic across first"
+req = [{ kind = "role", role = "medic", min = 2 }]
+needs = "a medic of skill 2 or better"
+[[event.options.outcomes]]
+weight = 85
+text = "Your medic goes through the wards one by one and comes back with a crate of medicine and a very quiet face."
+effects = [{ kind = "cargo", good = "medicine", tons = 4 }, { kind = "cargo", good = "biogel", tons = 2 }, { kind = "standing", faction = "church", amount = 2 }]
+[[event.options.outcomes]]
+weight = 15
+text = "Something in the wards was still working. Your medic is hurt coming back."
+effects = [{ kind = "cargo", good = "medicine", tons = 2 }, { kind = "hurt", who = "medic", days = 3 }]
+
+[[event.options]]
+label = "Board her"
+[[event.options.outcomes]]
+weight = 100
+text = "You cut the lock on the aft ward. The frigate's defences have not forgotten what they were for."
+effects = [{ kind = "board", derelict = "medical_frigate" }]
+
+[[event.options]]
+label = "Send a prayer and move on"
+[[event.options.outcomes]]
+weight = 100
+text = "A short, awkward silence, then the lane again."
+effects = [{ kind = "treat", amount = 1 }]
+
+# ----
+
+[[event]]
+id = "quarantine_cutter_b"
+family = "derelict"
+title = "A cutter flying the plague flag"
+text = "A small cutter drifts with the yellow plague flag at her mast, the old kind, stitched by hand. Her beacon says the sickness is over. Her beacon is eighty years old."
+weight = 4
+
+[[event.options]]
+label = "Go in with antitoxin"
+req = [{ kind = "good", good = "antitoxin", tons = 1 }]
+needs = "antitoxin in the hold"
+[[event.options.outcomes]]
+weight = 100
+text = "You dose the boarding party and go in. The air is stale and old, and the ship's lockers are not empty."
+effects = [{ kind = "cargo", good = "antitoxin", tons = -1 }, { kind = "board", derelict = "quarantine_cutter" }]
+
+[[event.options]]
+label = "Burn out the beacon"
+req = [{ kind = "role", role = "gunner", min = 1 }]
+needs = "a gunner aboard"
+[[event.options.outcomes]]
+weight = 100
+text = "A single shot silences the old flag. The League's clerks hear of it, and approve."
+effects = [{ kind = "standing", faction = "league", amount = 3 }, { kind = "standing", faction = "church", amount = -1 }]
+
+[[event.options]]
+label = "Keep your distance"
+[[event.options.outcomes]]
+weight = 100
+text = "You keep your distance and log the position for the dock. Some plagues are better left to the old flag."
+effects = [{ kind = "standing", faction = "league", amount = 1 }]
+
+# ----
+
+[[event]]
+id = "reliquary_b"
+family = "derelict"
+title = "A reliquary ship"
+text = "A Church reliquary ship, her sail-arms folded, floats where no Church route runs. The gate sigil on her prow is clean. Whatever she carries, the Quiet Church would like it back."
+weight = 4
+when = [{ kind = "no_flag", name = "reliquary_vow" }]
+
+[[event.options]]
+label = "Ask leave of the Church and board"
+req = [{ kind = "standing", faction = "church", min = 8 }]
+needs = "standing 8+ with the Church"
+[[event.options.outcomes]]
+weight = 100
+text = "You hail the Church band and ask. The answer comes after an hour: a blessing, a condition and a blessing again. The hatch opens for you."
+effects = [{ kind = "flag", name = "reliquary_vow" }, { kind = "standing", faction = "church", amount = 3 }, { kind = "board", derelict = "church_reliquary" }]
+
+[[event.options]]
+label = "Cut your way in"
+[[event.options.outcomes]]
+weight = 100
+text = "You cut in without asking. The Church will not forget the cut."
+effects = [{ kind = "standing", faction = "church", amount = -8 }, { kind = "board", derelict = "church_reliquary" }]
+
+[[event.options]]
+label = "Light a candle and go"
+[[event.options.outcomes]]
+weight = 100
+text = "A small candle in the cockpit, and a quiet lane."
+effects = [{ kind = "standing", faction = "church", amount = 1 }]
+
+# ----
+
+[[event]]
+id = "tomb_barge_b"
+family = "derelict"
+title = "A barge with a sealed door"
+text = "A long barge in old gate livery, doors sealed with a lock that wants a song. The hull is pitted from a hundred years of drift. The lock's glyphs glow faintly when your scanner touches them."
+weight = 3
+
+[[event.options]]
+label = "Sing the gate song at the door"
+req = [{ kind = "flag", name = "gate_song" }]
+needs = "the gate song, learned from pilgrims"
+[[event.options.outcomes]]
+weight = 100
+text = "The door answers the old hymn and slides open on a dry, cold deck. The pilgrims would say it was waiting."
+effects = [{ kind = "board", derelict = "tomb_barge" }, { kind = "standing", faction = "church", amount = 2 }]
+
+[[event.options]]
+label = "Read the glyphs"
+req = [{ kind = "role", role = "scientist", min = 2 }]
+needs = "a scientist of skill 2 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "Your scientist copies the lock's glyphs and writes a long note for the Guild. The door stays shut, and the note pays."
+effects = [{ kind = "survey", value = 360 }, { kind = "xp", skill = "survey", amount = 6 }, { kind = "standing", faction = "guild", amount = 2 }]
+
+[[event.options]]
+label = "Break the door"
+[[event.options.outcomes]]
+weight = 100
+text = "A long grind with a cutter. The door gives, and the barge was ready."
+effects = [{ kind = "days", amount = 1 }, { kind = "board", derelict = "tomb_barge" }, { kind = "standing", faction = "church", amount = -3 }]
+
+[[event.options]]
+label = "Leave the dead"
+[[event.options.outcomes]]
+weight = 100
+text = "You let the barge keep her door."
+effects = []
+
+# ----
+
+[[event]]
+id = "prison_hulk_b"
+family = "derelict"
+title = "A prison hulk"
+text = "An old League prison hulk, her cell ring dark. The tags say it was emptied years ago. The comm panel on her hull says otherwise, in a voice that wants to talk."
+weight = 4
+
+[[event.options]]
+label = "Talk to the voice"
+req = [{ kind = "role", role = "face", min = 2 }]
+needs = "a face of skill 2 or better"
+[[event.options.outcomes]]
+weight = 70
+text = "Your face keeps the voice talking for an hour. In the end it asks to come aboard, and you find a berth for a quiet fixer who knows a lot about locks."
+effects = [{ kind = "stowaway", role = "engineer" }, { kind = "standing", faction = "free", amount = 2 }, { kind = "treat", amount = 1 }]
+[[event.options.outcomes]]
+weight = 30
+text = "The voice is a loop, an old recording of a warden."
+effects = [{ kind = "xp", skill = "trade", amount = 3 }]
+
+[[event.options]]
+label = "Board the hulk"
+[[event.options.outcomes]]
+weight = 100
+text = "You go in through the guard lock. The cell ring is not as dead as it looked."
+effects = [{ kind = "board", derelict = "prison_hulk" }, { kind = "standing", faction = "league", amount = -2 }]
+
+[[event.options]]
+label = "Leave it sealed"
+[[event.options.outcomes]]
+weight = 100
+text = "A prison is a bad thing to open. You leave the voice to its loop."
+effects = []
+
+# ----
+
+[[event]]
+id = "race_yacht_b"
+family = "derelict"
+title = "A racing yacht, adrift"
+text = "A racing yacht, all gleaming lines and thin fuel tanks, drifts with her sails furled. A little brass plate on the hull says the owner is not to be disturbed. The ship, on the other hand, is a prize."
+weight = 5
+
+[[event.options]]
+label = "Tow her to a dock"
+req = [{ kind = "role", role = "pilot", min = 3 }]
+needs = "a pilot of skill 3 or better"
+[[event.options.outcomes]]
+weight = 80
+text = "Your pilot ties on and tows the yacht in. Her owner, a Free Captain with a taste for gold, pays handsomely at the next dock."
+effects = [{ kind = "credits", amount = 520 }, { kind = "standing", faction = "free", amount = 3 }, { kind = "xp", skill = "pilot", amount = 6 }]
+[[event.options.outcomes]]
+weight = 20
+text = "The tow fouls halfway and the yacht tears a plate off your hull."
+effects = [{ kind = "credits", amount = 180 }, { kind = "hull", amount = -6 }, { kind = "days", amount = 1 }]
+
+[[event.options]]
+label = "Board her"
+[[event.options.outcomes]]
+weight = 100
+text = "A small airlock, a very expensive cabin, and an automated guard."
+effects = [{ kind = "board", derelict = "racing_yacht" }, { kind = "standing", faction = "free", amount = -2 }]
+
+[[event.options]]
+label = "Hail the owner"
+[[event.options.outcomes]]
+weight = 100
+text = "No answer, then a long, sulky 'who is this' from a very small bunk. They pay for the hail in credits and in silence."
+effects = [{ kind = "credits", amount = 60 }, { kind = "standing", faction = "free", amount = 1 }]
+
+# ----
+
+[[event]]
+id = "drone_nest_b"
+family = "derelict"
+title = "A drone nest"
+text = "A rock in the lane has been hollowed into a foundry and left to run. The scan shows a ring of small, patient machines that move when you move. Whoever built the nest is gone."
+weight = 4
+
+[[event.options]]
+label = "Pick the nest apart from range"
+req = [{ kind = "role", role = "gunner", min = 2 }]
+needs = "a gunner of skill 2 or better"
+[[event.options.outcomes]]
+weight = 80
+text = "Your gunner takes the drones in ones and twos at long range. The foundry is yours, and so is the stock in its racks."
+effects = [{ kind = "cargo", good = "coils", tons = 4 }, { kind = "cargo", good = "parts", tons = 3 }, { kind = "xp", skill = "engineer", amount = 4 }]
+[[event.options.outcomes]]
+weight = 20
+text = "The drones flank you on the last pass and chew a plate."
+effects = [{ kind = "cargo", good = "coils", tons = 2 }, { kind = "hull", amount = -8 }]
+
+[[event.options]]
+label = "Board the foundry"
+[[event.options.outcomes]]
+weight = 100
+text = "A tight, hot, lit-up shaft, and a hundred red eyes in the dark."
+effects = [{ kind = "board", derelict = "drone_nest" }]
+
+[[event.options]]
+label = "Turn away"
+[[event.options.outcomes]]
+weight = 100
+text = "You turn away and let the machines keep their rock."
+effects = []
+
+# ----
+
+[[event]]
+id = "old_claim_b"
+family = "crew"
+title = "A crewmate's old claim"
+text = "One of your crew has gone quiet on the bridge. Eventually they point at the scope: a dead mining platform off the lane. Their family worked it once, they say. They would like a look."
+weight = 8
+when = [{ kind = "crew", min = 1 }]
+
+[[event.options]]
+label = "Let your sworn engineer lead the way"
+req = [{ kind = "sworn", role = "engineer" }]
+needs = "a sworn engineer aboard"
+[[event.options.outcomes]]
+weight = 100
+text = "Your sworn engineer knows the old platform's bones. They find the crew's old locker and get you all through the defences in one piece. The crew is moved."
+effects = [{ kind = "board", derelict = "mining_platform" }, { kind = "treat", amount = 2 }]
+
+[[event.options]]
+label = "Board it, everyone together"
+req = [{ kind = "crew", min = 2 }]
+needs = "at least two crew"
+[[event.options.outcomes]]
+weight = 100
+text = "The crew goes in as a body, nervous and quiet."
+effects = [{ kind = "board", derelict = "mining_platform" }, { kind = "treat", amount = 1 }]
+
+[[event.options]]
+label = "Say no, and be kind about it"
+[[event.options.outcomes]]
+weight = 100
+text = "You say no and mean it kindly. The crew member nods, and says nothing for a day."
+effects = [{ kind = "treat", amount = -1 }]
+
+# ----
+
+[[event]]
+id = "watch_rota_b"
+family = "crew"
+title = "A quarrel over the watch rota"
+text = "The watch rota has been wrong for a week and everybody has a view. Tonight it reaches the galley table. Three people are talking at once, and the rest are being very careful with their forks."
+weight = 9
+when = [{ kind = "crew", min = 3 }]
+
+[[event.options]]
+label = "Let the quartermaster redraw it"
+req = [{ kind = "role", role = "quartermaster", min = 2 }]
+needs = "a quartermaster of skill 2 or better"
+[[event.options.outcomes]]
+weight = 90
+text = "Your quartermaster redraws the rota on one sheet. It is fair, bleak and followed. The galley goes back to eating."
+effects = [{ kind = "treat", amount = 2 }, { kind = "xp", skill = "stealth", amount = 3 }]
+[[event.options.outcomes]]
+weight = 10
+text = "The new rota is fairer and nobody likes it."
+effects = [{ kind = "treat", amount = -1 }]
+
+[[event.options]]
+label = "Settle it with a firm voice"
+req = [{ kind = "role", role = "face", min = 2 }]
+needs = "a face of skill 2 or better"
+[[event.options.outcomes]]
+weight = 75
+text = "Your face lets everyone talk, then names a fix. It sticks."
+effects = [{ kind = "treat", amount = 1 }]
+[[event.options.outcomes]]
+weight = 25
+text = "It does not stick. By morning the rota has been rewritten twice."
+effects = [{ kind = "treat", amount = -1 }]
+
+[[event.options]]
+label = "Rule by the captain's word"
+[[event.options.outcomes]]
+weight = 55
+text = "You rule by your word and nobody argues. It also stops anyone liking you for a week."
+effects = [{ kind = "treat", amount = -1 }]
+[[event.options.outcomes]]
+weight = 45
+text = "You pick well. The rota holds, and so does the peace."
+effects = [{ kind = "treat", amount = 1 }]
+
+# ----
+
+[[event]]
+id = "night_terrors_b"
+family = "crew"
+title = "The crew cannot sleep"
+text = "Nobody has slept properly since the last bad run. The crew is quiet in the way of people counting things: hull plates, days, the number of friends who were here last month."
+weight = 9
+when = [{ kind = "crew", min = 2 }]
+
+[[event.options]]
+label = "Have the medic run a sleep ward"
+req = [{ kind = "role", role = "medic", min = 2 }]
+needs = "a medic of skill 2 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "Your medic sets quiet hours, a warm drink and a dim lamp. By the third night, the crew is sleeping, and the galley is almost cheerful."
+effects = [{ kind = "treat", amount = 2 }, { kind = "scare", amount = -2 }]
+
+[[event.options]]
+label = "Stand a watch yourself"
+[[event.options.outcomes]]
+weight = 100
+text = "You sit in the dark, listening to the ship breathe, so that nobody else has to. They notice."
+effects = [{ kind = "treat", amount = 1 }, { kind = "scare", amount = -1 }, { kind = "days", amount = 1 }]
+
+[[event.options]]
+label = "Break out the glass wine"
+req = [{ kind = "good", good = "glass_wine", tons = 1 }]
+needs = "glass wine in the hold"
+[[event.options.outcomes]]
+weight = 100
+text = "A bottle goes round. It does what it does."
+effects = [{ kind = "cargo", good = "glass_wine", tons = -1 }, { kind = "treat", amount = 2 }, { kind = "scare", amount = -2 }]
+
+[[event.options]]
+label = "Tell them to toughen up"
+[[event.options.outcomes]]
+weight = 100
+text = "Nobody speaks of it again, and nobody forgets it."
+effects = [{ kind = "treat", amount = -2 }, { kind = "scare", amount = 1 }]
+
+# ----
+
+[[event]]
+id = "wage_petition_b"
+family = "crew"
+title = "A petition for better pay"
+text = "A neat paper note is left on the bridge hatch. It lists, in careful hands, every extra duty the crew has done this season and what the pay for each ought to be. It is signed by everybody."
+weight = 8
+when = [{ kind = "crew", min = 2 }]
+
+[[event.options]]
+label = "Pay a bonus (200 cr)"
+req = [{ kind = "cash", min = 200 }]
+needs = "200 cr in the purse"
+[[event.options.outcomes]]
+weight = 100
+text = "You pay out a bonus, small and sincere. The crew take it as a promise."
+effects = [{ kind = "credits", amount = -200 }, { kind = "treat", amount = 3 }]
+
+[[event.options]]
+label = "Argue the terms down"
+req = [{ kind = "role", role = "face", min = 2 }]
+needs = "a face of skill 2 or better"
+[[event.options.outcomes]]
+weight = 75
+text = "Your face makes a case no one can answer: the ship is poor, the loan is real, and the bonus will come later. They accept a small gesture and a date."
+effects = [{ kind = "credits", amount = -60 }, { kind = "treat", amount = 1 }]
+[[event.options.outcomes]]
+weight = 25
+text = "They see through it. The mood sours."
+effects = [{ kind = "treat", amount = -2 }]
+
+[[event.options]]
+label = "Promise it after the next sale"
+[[event.options.outcomes]]
+weight = 100
+text = "The crew accepts the promise, once. They will want it kept."
+effects = []
+
+[[event.options]]
+label = "Tear it up"
+[[event.options.outcomes]]
+weight = 100
+text = "You tear up the note. Everyone sees you do it."
+effects = [{ kind = "treat", amount = -3 }]
+
+# ----
+
+[[event]]
+id = "stash_buoy_b"
+family = "trade"
+title = "A smuggler's stash buoy"
+text = "A beacon blinks a coded signal you half remember from a Free Captains' bar. A smuggler's stash buoy, tethered to a rock. Inside there may be a lot, or there may be a trap."
+weight = 5
+
+[[event.options]]
+label = "Open it"
+[[event.options.outcomes]]
+weight = 100
+text = "The latch gives, and the buoy's guard wakes up."
+effects = [{ kind = "board", derelict = "smuggler_stash" }, { kind = "standing", faction = "free", amount = -1 }]
+
+[[event.options]]
+label = "Pick the lock quietly"
+req = [{ kind = "role", role = "quartermaster", min = 2 }]
+needs = "a quartermaster of skill 2 or better"
+[[event.options.outcomes]]
+weight = 85
+text = "Your quartermaster takes the lock without waking the guard. Inside, a crate of ghostwire and a purse, and a note in a fist that reads 'if found, forget'."
+effects = [{ kind = "cargo", good = "ghostwire", tons = 3 }, { kind = "credits", amount = 240 }, { kind = "xp", skill = "stealth", amount = 6 }]
+[[event.options.outcomes]]
+weight = 15
+text = "The lock was wired. The guard wakes anyway."
+effects = [{ kind = "board", derelict = "smuggler_stash" }]
+
+[[event.options]]
+label = "Leave a coin and the codes"
+req = [{ kind = "cash", min = 40 }]
+needs = "40 cr in the purse"
+[[event.options.outcomes]]
+weight = 100
+text = "You leave a coin and the code to your own ship. The Free Captains, you hope, will understand."
+effects = [{ kind = "credits", amount = -40 }, { kind = "standing", faction = "free", amount = 3 }]
+
+[[event.options]]
+label = "Ignore it"
+[[event.options.outcomes]]
+weight = 100
+text = "Not your buoy, not your trouble."
+effects = []
+
+# ----
+
+[[event]]
+id = "union_toll_b"
+family = "trade"
+title = "A Union toll gate"
+text = "A Miners' Union tug has strung a cable across the lane and put up a sign. A toll on all traffic, it says, to pay for the lane's lamps. The lamps are dim, but the cable is thick."
+weight = 6
+mods = [{ req = { kind = "standing", faction = "miners", max = -1 }, pm = 1800 }]
+
+[[event.options]]
+label = "Pay the toll (80 cr)"
+req = [{ kind = "cash", min = 80 }]
+needs = "80 cr in the purse"
+[[event.options.outcomes]]
+weight = 100
+text = "You pay, and the cable drops. The tug's clerk gives you a receipt and a small, tired smile."
+effects = [{ kind = "credits", amount = -80 }, { kind = "standing", faction = "miners", amount = 2 }]
+
+[[event.options]]
+label = "Show your debt chit"
+req = [{ kind = "flag", name = "union_debt" }]
+needs = "a debt to the Union, on record"
+[[event.options.outcomes]]
+weight = 100
+text = "You show the chit the Union gave you when you owed it. The marshal tears it in half and lifts the cable. Your debt is clear."
+effects = [{ kind = "standing", faction = "miners", amount = 3 }]
+
+[[event.options]]
+label = "Talk the marshal down"
+req = [{ kind = "role", role = "face", min = 2 }]
+needs = "a face of skill 2 or better"
+[[event.options.outcomes]]
+weight = 65
+text = "Your face remembers the marshal's name from a dock and a drink. The cable drops with a nod."
+effects = [{ kind = "xp", skill = "trade", amount = 5 }, { kind = "standing", faction = "miners", amount = 1 }]
+[[event.options.outcomes]]
+weight = 35
+text = "The marshal remembers you as well. The fight is short and on his terms."
+effects = [{ kind = "combat", enemy = "union_marshal" }, { kind = "standing", faction = "miners", amount = -3 }]
+
+[[event.options]]
+label = "Run the cable"
+[[event.options.outcomes]]
+weight = 100
+text = "You hit the throttle and cut the cable. The tug gives chase for an hour and gives up."
+effects = [{ kind = "hull", amount = -6 }, { kind = "standing", faction = "miners", amount = -6 }, { kind = "scare", amount = 1 }]
+
+# ----
+
+[[event]]
+id = "customs_hawk_b"
+family = "trade"
+title = "A customs hawk"
+text = "A fast League customs hawk comes in on an intercept, lamp bright and turrets cold. A voice requests a manifest, a signature and a look in the hold. It is polite, and it is not a request."
+weight = 6
+mods = [{ req = { kind = "contraband", tons = 1 }, pm = 2500 }]
+
+[[event.options]]
+label = "Let them look"
+[[event.options.outcomes]]
+weight = 100
+text = "The hawk's officer is thorough and cheerful. Nothing is wrong, and he leaves a receipt for it."
+effects = [{ kind = "days", amount = 1 }, { kind = "standing", faction = "league", amount = 1 }]
+
+[[event.options]]
+label = "Hide the contraband"
+req = [{ kind = "role", role = "quartermaster", min = 2 }, { kind = "contraband", tons = 1 }]
+needs = "a quartermaster of skill 2 and contraband aboard"
+[[event.options.outcomes]]
+weight = 75
+text = "Your quartermaster has the hold looking like a church bake sale. The officer leaves with a handshake."
+effects = [{ kind = "xp", skill = "stealth", amount = 6 }]
+[[event.options.outcomes]]
+weight = 25
+text = "The hawk's scanner is better than your shield. Contraband gone, a fine paid."
+effects = [{ kind = "lose_contraband", pct = 100 }, { kind = "credits", amount = -200 }, { kind = "standing", faction = "league", amount = -3 }]
+
+[[event.options]]
+label = "Run for it"
+[[event.options.outcomes]]
+weight = 100
+text = "The hawk's lamp goes red."
+effects = [{ kind = "combat", enemy = "customs_hawk" }, { kind = "standing", faction = "league", amount = -4 }]
+
+# ----
+
+[[event]]
+id = "water_cartel_b"
+family = "trade"
+title = "A water cartel's offer"
+text = "A Free Captains' fixer hails you on a quiet band. They have a buyer for water at a ridiculous price, on a rock that cannot be named, and they are short a hold."
+weight = 5
+
+[[event.options]]
+label = "Sell four tons of water"
+req = [{ kind = "good", good = "water", tons = 4 }]
+needs = "four tons of water"
+[[event.options.outcomes]]
+weight = 100
+text = "A tidy handoff in the dark. The fixer pays in clean credits and remembers your name, which is not always a good thing."
+effects = [{ kind = "cargo", good = "water", tons = -4 }, { kind = "credits", amount = 520 }, { kind = "standing", faction = "free", amount = 2 }, { kind = "flag", name = "cartel_contact" }]
+
+[[event.options]]
+label = "Use your cartel contact"
+req = [{ kind = "flag", name = "cartel_contact" }, { kind = "good", good = "water", tons = 4 }]
+needs = "a cartel contact and four tons of water"
+[[event.options.outcomes]]
+weight = 100
+text = "Your cartel contact vouches for you. The fixer doubles the price and thanks you for your patience."
+effects = [{ kind = "cargo", good = "water", tons = -4 }, { kind = "credits", amount = 820 }, { kind = "standing", faction = "free", amount = 2 }]
+
+[[event.options]]
+label = "Decline"
+[[event.options.outcomes]]
+weight = 100
+text = "The fixer sighs, the band goes quiet, and you wonder what you missed."
+effects = []
+
+# ----
+
+[[event]]
+id = "pilgrim_barge_b"
+family = "omen"
+title = "A barge of singing pilgrims"
+text = "A tired old barge drifts in the lane, crammed with pilgrims who have run out of fuel and nothing else. They sing on, in thin unison. A Church banner flaps on a long pole at the stern."
+weight = 4
+
+[[event.options]]
+label = "Give them fuel (10 units)"
+[[event.options.outcomes]]
+weight = 100
+text = "They weep, and sing louder. A Church elder blesses your ship by name, and the bridge is quiet for a minute."
+effects = [{ kind = "fuel", amount = -10 }, { kind = "standing", faction = "church", amount = 5 }, { kind = "treat", amount = 1 }]
+
+[[event.options]]
+label = "Board and see what the barge carries"
+[[event.options.outcomes]]
+weight = 100
+text = "The pilgrims let you in. What they carry is not what they say."
+effects = [{ kind = "board", derelict = "pilgrim_barge" }, { kind = "standing", faction = "church", amount = -2 }]
+
+[[event.options]]
+label = "Sing along for a verse"
+req = [{ kind = "no_flag", name = "gate_song" }]
+needs = "the song, not yet learned"
+[[event.options.outcomes]]
+weight = 100
+text = "A verse, then another. The song settles in your head and does not leave."
+effects = [{ kind = "flag", name = "gate_song" }, { kind = "standing", faction = "church", amount = 1 }]
+
+[[event.options]]
+label = "Wave them off"
+[[event.options.outcomes]]
+weight = 100
+text = "They keep singing as the barge falls behind."
+effects = []
+
+# ----
+
+[[event]]
+id = "warden_lights_b"
+family = "omen"
+title = "The warden lights"
+text = "Three white lights hang in the lane, spaced like the stations of an old gate. Your scope calls them a hazard. The pilgrims in the crew call them wardens. Whatever they are, they are watching."
+weight = 3
+
+[[event.options]]
+label = "Pass beneath them under truce"
+req = [{ kind = "flag", name = "wardens_truce" }]
+needs = "a truce with the wardens"
+[[event.options.outcomes]]
+weight = 100
+text = "The lights tilt to follow you, then bow and go dark. The way is open."
+effects = [{ kind = "standing", faction = "church", amount = 3 }, { kind = "xp", skill = "pilot", amount = 5 }]
+
+[[event.options]]
+label = "Hum the gate song"
+req = [{ kind = "flag", name = "gate_song" }, { kind = "no_flag", name = "wardens_truce" }]
+needs = "the gate song, learned from pilgrims"
+[[event.options.outcomes]]
+weight = 100
+text = "The lights hold, then tilt. They fall into step beside you for an hour, and then wink out. Something is settled between you."
+effects = [{ kind = "flag", name = "wardens_truce" }, { kind = "standing", faction = "church", amount = 3 }]
+
+[[event.options]]
+label = "Approach and hail"
+[[event.options.outcomes]]
+weight = 55
+text = "The lights hold still. Your hail goes unanswered, and the lights fade like breath."
+effects = [{ kind = "scare", amount = 1 }]
+[[event.options.outcomes]]
+weight = 45
+text = "The lights stir. Something comes up out of the dark, and it is not friendly."
+effects = [{ kind = "combat", enemy = "gate_warden" }, { kind = "scare", amount = 2 }]
+
+[[event.options]]
+label = "Turn back"
+[[event.options.outcomes]]
+weight = 100
+text = "You turn back. The lights do not follow, and the long way round costs you a day."
+effects = [{ kind = "days", amount = 1 }, { kind = "fuel", amount = -3 }]
+
+# ----
+
+[[event]]
+id = "dead_reckoning_b"
+family = "omen"
+title = "The stars go out for a minute"
+text = "At the shift change every star in the forward scope goes dark for sixty seconds. Then they come back, slightly out of place. The pilot says nothing. The navigator's rhyme is on everyone's mind."
+weight = 4
+
+[[event.options]]
+label = "Check the new stars against an archive table"
+req = [{ kind = "flag", name = "archive_key" }]
+needs = "the archive's key frequency"
+[[event.options.outcomes]]
+weight = 100
+text = "The archive's star table matches what you see, offset by exactly the amount the stars moved. You fly straight to the shortcut it implies."
+effects = [{ kind = "fuel", amount = 8 }, { kind = "xp", skill = "pilot", amount = 6 }, { kind = "survey", value = 220 }]
+
+[[event.options]]
+label = "Have the scientist log the shift"
+req = [{ kind = "role", role = "scientist", min = 2 }]
+needs = "a scientist of skill 2 or better"
+[[event.options.outcomes]]
+weight = 100
+text = "Your scientist logs a plausible explanation and an implausible one. The Guild will take both."
+effects = [{ kind = "survey", value = 260 }, { kind = "xp", skill = "survey", amount = 5 }]
+
+[[event.options]]
+label = "Re-fix the nav and move on"
+[[event.options.outcomes]]
+weight = 70
+text = "A long half-hour of re-fixing. The stars are where they were. Probably."
+effects = [{ kind = "days", amount = 1 }]
+[[event.options.outcomes]]
+weight = 30
+text = "The re-fix is a few degrees off. You spend a day finding out."
+effects = [{ kind = "days", amount = 2 }, { kind = "fuel", amount = -4 }]

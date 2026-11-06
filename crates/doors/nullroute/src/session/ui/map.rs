@@ -27,6 +27,8 @@ pub(super) struct MapView<'a> {
     pub pulse: u32,
     /// Draw short tokens (`glyph code digit`) rather than names.
     pub compact: bool,
+    /// Where the other members of a crew are: (node, initial of their handle).
+    pub mates: &'a [(NodeId, char)],
 }
 
 /// What a node looks like.
@@ -280,6 +282,18 @@ impl Widget for MapView<'_> {
                         Style::new().fg(AMBER).add_modifier(Modifier::BOLD),
                     );
                 }
+            }
+            // A crewmate standing here: their initial replaces the node's glyph.
+            if let Some((_, initial)) = self.mates.iter().find(|(n, _)| *n == node.id)
+                && node.id != run.at
+            {
+                buf.set_stringn(
+                    x,
+                    y,
+                    initial.to_string(),
+                    1,
+                    Style::new().fg(VIOLET).add_modifier(Modifier::BOLD),
+                );
             }
             // A scanned patrol is named under the node when there is room.
             if !self.compact

@@ -105,9 +105,12 @@ fn three_missed_payments_repossess_the_ship_and_the_scar_stays() {
     );
     assert!(p.ship.cargo.is_empty());
     assert_eq!(p.docked, Some(h.frontier.home_station));
+    // The lender auctioned the ship (60 % of its resale off the loan) and then added its fee.
+    assert!(p.debt.principal > 0, "the fee is added to what is left");
     assert!(
-        p.debt.principal > before,
-        "interest, penalties and the repossession fee"
+        p.debt.principal < before + before / 2,
+        "the auction took something off the loan: {} against {before}",
+        p.debt.principal
     );
     assert_eq!(p.credit_limit(), BASE_CREDIT_LIMIT - LIMIT_LOSS_PER_REPO);
     assert_eq!(p.debt.missed, 0, "the count starts again");

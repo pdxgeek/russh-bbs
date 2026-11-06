@@ -1,0 +1,28 @@
+version = 1
+title = "House rules"
+text = """
+# Come in, sit down
+This is a small board run by people who like small boards. The rules are short on purpose, so you can keep them in your head.
+
+# The rules
+- Be kind. Argue with ideas, never with people.
+- No spam, no scams, no flooding. One post is plenty.
+- Do not say here what you would not say to a neighbour's face.
+- Do not paste someone else's mail, address or real name.
+- Mark spoilers, and keep long rants to the rants board.
+- One account per person. If you share a handle, you share the blame.
+
+# What the server can read
+> Say it plainly, then nobody is surprised.
+The board's server can read everything members write: posts, chat, mail and files.
+The two exceptions are mail you encrypt with PGP and files you encrypt yourself before you upload them.
+If it matters to you, encrypt it first.
+
+# When something goes wrong
+- A gentle word from a member usually settles it.
+- Then a note from the sysop, then a mute, then the door.
+- Every staff action is written to a log the sysop team can read.
+
+---
+Questions about any of this? Send the sysop a letter from the Post office.
+"""

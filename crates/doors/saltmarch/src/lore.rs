@@ -10,10 +10,27 @@ use russh_bbs_door::content::{Table, plain_text};
 use serde::Deserialize;
 
 use crate::map::{PoiKind, TileKind};
+use crate::story::{Faction, Flag};
 use crate::types::{Bundle, Resource, Trade};
 
-/// Events table text.
-pub const EVENTS_TOML: &str = include_str!("../content/events.toml");
+/// Events table text: the scene files are written by area and joined here.
+pub const EVENTS_TOML: &str = concat!(
+    include_str!("../content/events.toml"),
+    "\n",
+    include_str!("../content/events-flats.toml"),
+    "\n",
+    include_str!("../content/events-wild.toml"),
+    "\n",
+    include_str!("../content/events-places.toml"),
+    "\n",
+    include_str!("../content/events-rare.toml"),
+    "\n",
+    include_str!("../content/events-quests-a.toml"),
+    "\n",
+    include_str!("../content/events-quests-b.toml"),
+    "\n",
+    include_str!("../content/events-quests-c.toml"),
+);
 /// Foes and groups table text.
 pub const FOES_TOML: &str = include_str!("../content/foes.toml");
 /// Gathering table text.
@@ -123,6 +140,12 @@ pub enum Req {
     Size(u8),
     /// The party has a boat.
     Boat,
+    /// The clan's standing with a faction is at least this tier (0 to 4).
+    Tier(Faction, u8),
+    /// The clan has finished at least this many quest chains.
+    Quests(u8),
+    /// The clan has finished at least this many contracts this season.
+    Contracts(u16),
 }
 
 /// A requirement, possibly negated (`!trait:limp`).
@@ -167,6 +190,12 @@ impl TryFrom<String> for Cond {
             ["carry", r, n] => Req::Carry(resource_of(r)?, number(n)?),
             ["size", n] => Req::Size(number(n)?),
             ["boat"] => Req::Boat,
+            ["tier", f, n] => Req::Tier(
+                Faction::from_id(f).ok_or_else(|| format!("`{f}` is not a faction"))?,
+                number(n)?,
+            ),
+            ["quests", n] => Req::Quests(number(n)?),
+            ["contracts", n] => Req::Contracts(number(n)?),
             _ => return Err(format!("`{text}` is not a condition")),
         };
         Ok(Self { not, req })
@@ -249,6 +278,10 @@ pub enum Effect {
     Heal(Who, u8),
     /// A fight with this group. It must be the last effect.
     Fight(String),
+    /// Standing with a faction moves.
+    Rep(Faction, i8),
+    /// A change to the marsh for the whole board, sent to the world after the trip.
+    World(Flag),
 }
 
 fn range(text: &str) -> Result<(u32, u32), String> {
@@ -291,6 +324,13 @@ impl TryFrom<String> for Effect {
             ["chart", n] => Self::Chart(number(n)?),
             ["heal", w, n] => Self::Heal(who_of(w)?, number(n)?),
             ["fight", g] => Self::Fight((*g).to_owned()),
+            ["rep", f, n] => Self::Rep(
+                Faction::from_id(f).ok_or_else(|| format!("`{f}` is not a faction"))?,
+                number(n)?,
+            ),
+            ["world", f] => {
+                Self::World(Flag::from_id(f).ok_or_else(|| format!("`{f}` is not a world change"))?)
+            }
             _ => return Err(format!("`{text}` is not an effect")),
         })
     }
@@ -524,8 +564,12 @@ fn text_ok(text: &str, max: usize) -> bool {
     !text.trim().is_empty() && text.chars().count() <= max && plain_text(text)
 }
 
-fn mark_ok(id: &str) -> bool {
-    id_ok(id)
+pub(crate) fn mark_ok(id: &str) -> bool {
+    !id.is_empty()
+        && id.len() <= 30
+        && id
+            .bytes()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
 }
 
 fn check_cond(c: &Cond, who: &str, p: &mut Vec<String>) {
@@ -535,6 +579,8 @@ fn check_cond(c: &Cond, who: &str, p: &mut Vec<String>) {
             p.push(format!("{who}: a level is at most 10"));
         }
         Req::Size(n) if !(1..=5).contains(n) => p.push(format!("{who}: size is 1 to 5")),
+        Req::Tier(_, n) if *n > 4 => p.push(format!("{who}: a tier is 0 to 4")),
+        Req::Quests(n) if *n > 12 => p.push(format!("{who}: quests is at most 12")),
         _ => {}
     }
 }
@@ -553,6 +599,9 @@ fn check_effect(e: &Effect, who: &str, p: &mut Vec<String>) {
         Effect::Morale(n) if n.unsigned_abs() > 15 => p.push(format!("{who}: morale is -15 to 15")),
         Effect::Chart(n) if *n == 0 || *n > 6 => p.push(format!("{who}: chart is 1 to 6")),
         Effect::Heal(_, n) if *n == 0 || *n > 10 => p.push(format!("{who}: heal is 1 to 10 days")),
+        Effect::Rep(_, n) if *n == 0 || n.unsigned_abs() > 20 => {
+            p.push(format!("{who}: rep is -20 to 20 and not zero"));
+        }
         _ => {}
     }
 }
@@ -630,16 +679,6 @@ impl Table for Events {
                         }
                     }
                 }
-            }
-        }
-        for rare in [false, true] {
-            let n = self.entries.iter().filter(|e| e.rare == rare).count();
-            let need = if rare { 6 } else { 34 };
-            if n < need {
-                p.push(format!(
-                    "[event] at least {need} {} events are needed (have {n})",
-                    if rare { "rare" } else { "common" }
-                ));
             }
         }
         p

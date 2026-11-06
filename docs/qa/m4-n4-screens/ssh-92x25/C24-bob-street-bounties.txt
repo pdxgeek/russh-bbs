@@ -1,0 +1,25 @@
+
+┌─────────────────────────────────────── russh-bbs ────────────────────────────────────────┐
+│Nullroute                                                                                 │
+│                                                                                          │
+│╭ THE STREET ────────────────────────────────────────────────────────────────────────────╮│
+││THE STREET  [1] word  [2] bounties  [3] crews  [4] hall    season 1                     ││
+││bob T1 80 marks via Ostrander until day 20771  from founder                             ││
+││    "pay the weir toll"                                                                 ││
+││A bounty is paid to a hack that gets in, from someone at the                            ││
+││target's tier or below. It fries a rig part. The target is told.                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││                                                                                        ││
+││[1-4] page   [Esc] back                                                                 ││
+│╰────────────────────────────────────────────────────────────────────────────────────────╯│
+└──────────────────────────────────────────────────────────────────────────────────────────┘
+

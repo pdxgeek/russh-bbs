@@ -52,6 +52,7 @@ mod report;
 mod scene;
 mod skirmish;
 mod social;
+mod story;
 mod tides;
 
 use art::{Ground, landscape};
@@ -562,6 +563,8 @@ fn screen(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
             MenuId::Compose => social::compose(ui, f, body),
             MenuId::League => court::league(ui, f, body),
             MenuId::Hall => court::hall(ui, f, body),
+            MenuId::Board => story::board(ui, f, body),
+            MenuId::Journal => story::journal(ui, f, body),
         },
         _ => {}
     }

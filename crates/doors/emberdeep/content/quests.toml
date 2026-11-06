@@ -1,0 +1,228 @@
+# The ember-priests' chain: three questlines. Each step reads the hero's own tallies; the last
+# step of a line makes a choice that sets a flag for good (a room option and the Furnace's
+# verdict may need it).
+
+[[quest]]
+id = "the-low-flame"
+name = "The Low Flame"
+text = "Sister Orlis keeps the temple's lamp and thinks the fires below are listening."
+level = 1
+[[quest.step]]
+id = "first-descent"
+text = "Go down to level 2 and see how the stair-lamps burn."
+goal = { kind = "reach", depth = 2 }
+done_text = "Orlis nods. The lamps burn low at the second landing, she says, as if to hear you."
+reward = [{ kind = "coin", amount = 20 }]
+[[quest.step]]
+id = "three-rats"
+text = "Clear three slag rats from the cellar stair."
+goal = { kind = "slay", monster = "slag-rat", count = 3 }
+done_text = "The cellar is quiet. Orlis lights a second lamp."
+reward = [{ kind = "xp", amount = 30 }]
+[[quest.step]]
+id = "shrine-watch"
+text = "Visit two shrines below and trim their wicks."
+goal = { kind = "visit", room = "shrine", count = 2 }
+done_text = "Both wicks burn blue. Orlis says the flame knows you now."
+reward = [{ kind = "coin", amount = 30 }]
+[[quest.step]]
+id = "warden-fall"
+text = "Put down the Bellows Golem, the first guardian."
+goal = { kind = "guardian", band = 1 }
+done_text = "The Golem's breath stops. Orlis weeps, and then asks what you felt as it fell."
+reward = [{ kind = "relic" }]
+[[quest.step]]
+id = "what-the-lamp-heard"
+text = "Orlis asks what you heard in the Golem's last breath."
+goal = { kind = "level", level = 4 }
+done_text = "You tell her. She nods slowly, and writes it in the temple's margin."
+reward = [{ kind = "xp", amount = 70 }]
+choose = [
+  { id = "heard", label = "Say you heard the flame speak", text = "You tell Orlis the Golem's last breath had words in it. She lights a third lamp, and does not look surprised.", flag = "hears-the-flame" },
+  { id = "bellows", label = "Say it was only the bellows", text = "You tell Orlis it was a dying machine and nothing more. She says, kindly, that you may be right.", flag = "stops-your-ears" },
+]
+[[quest.step]]
+id = "imps-snuffed"
+text = "Put out six cinder imps; they have been nesting in the stair-lamps."
+goal = { kind = "slay", monster = "cinder-imp", count = 6 }
+done_text = "The stair-lamps burn steady again. Orlis counts them twice, to be sure."
+reward = [{ kind = "coin", amount = 80 }, { kind = "xp", amount = 60 }]
+[[quest.step]]
+id = "flooded-wicks"
+text = "Carry a lit taper into three flooded halls; the water forgets the flame."
+goal = { kind = "visit", room = "flooded", count = 3 }
+done_text = "The taper comes back lit. Orlis says the water was listening too."
+reward = [{ kind = "salvage", amount = 30 }, { kind = "xp", amount = 90 }]
+[[quest.step]]
+id = "deep-stair"
+text = "Go down to level 8 and see if the lamps there answer."
+goal = { kind = "reach", depth = 8 }
+done_text = "They do, in a way. The lamps at the eighth landing lean toward you as you pass."
+reward = [{ kind = "relic" }, { kind = "coin", amount = 120 }]
+[[quest.step]]
+id = "cold-shrines"
+text = "Trim the wicks in six shrines, so that none of the fire's small houses sits dark."
+goal = { kind = "visit", room = "shrine", count = 6 }
+done_text = "Six wicks, six blue flames. Orlis says the fire has been very lonely."
+reward = [{ kind = "core", id = "hearth-core" }, { kind = "xp", amount = 130 }]
+[[quest.step]]
+id = "the-choice"
+text = "Orlis asks what the flame is owed, now that you have heard it, or not heard it."
+goal = { kind = "level", level = 9 }
+done_text = "You answer, and the lamp does not flicker."
+reward = [{ kind = "xp", amount = 200 }]
+choose = [
+  { id = "feed", label = "Feed it: the flame must be kept", text = "You promise the temple lamp a share of everything you bring up. Orlis says the fires are a listener, and a listener must be fed.", flag = "keeps-the-flame" },
+  { id = "free", label = "Let it burn down: it was never ours", text = "You tell Orlis the flame owes no one, and was owed nothing. She is quiet a long while.", flag = "lets-it-fall" },
+  { id = "share", label = "Share it: a flame in every hand", text = "You say the flame should be divided until nobody carries too much. Orlis laughs, startled, and then agrees.", flag = "shares-the-flame" },
+]
+
+[[quest]]
+id = "the-smiths-debt"
+name = "The Smiths' Debt"
+text = "Master Okwe's apprentices say the old smiths borrowed something from the Furnace and never paid it back."
+level = 3
+[[quest.step]]
+id = "okwe-hammer"
+text = "Reach level 4, where the dead forges are."
+goal = { kind = "reach", depth = 4 }
+done_text = "In a cold forge you find a ledger written in a smith's shorthand."
+reward = [{ kind = "coin", amount = 40 }]
+[[quest.step]]
+id = "forges-seen"
+text = "Walk into three old forges."
+goal = { kind = "visit", room = "forge", count = 3 }
+done_text = "Each anvil bears the same mark: a key, struck twice."
+reward = [{ kind = "xp", amount = 50 }]
+[[quest.step]]
+id = "slag-mother"
+text = "Put down the Slagmother, who sits on the oldest anvil."
+goal = { kind = "guardian", band = 2 }
+done_text = "Under the Slagmother's bulk, a key of black iron."
+reward = [{ kind = "relic" }]
+[[quest.step]]
+id = "paid-in-full"
+text = "Give the town's works 100 coin, to begin repaying the debt."
+goal = { kind = "give", coin = 100 }
+done_text = "Okwe's apprentices bring the key to the town works, and look at you."
+reward = [{ kind = "xp", amount = 60 }]
+[[quest.step]]
+id = "the-ledger"
+text = "Okwe lays the smiths' ledger on the anvil and asks: read it to the end, or burn it?"
+goal = { kind = "level", level = 6 }
+done_text = "You decide. Okwe's hands are very still."
+reward = [{ kind = "xp", amount = 90 }]
+choose = [
+  { id = "read", label = "Read it to the end", text = "You read every column. The last one is not in the smiths' hand, and it is larger than the rest.", flag = "reads-the-ledger" },
+  { id = "burn", label = "Burn it unread", text = "You feed the ledger to the forge. Okwe says the debt does not burn, only the proof of it.", flag = "burns-the-ledger" },
+]
+[[quest.step]]
+id = "thralls-stilled"
+text = "Still six forge thralls. They are still paying the smiths' debt in hours."
+goal = { kind = "slay", monster = "forge-thrall", count = 6 }
+done_text = "The last thrall sets its hammer down. Okwe takes the hammer and does not say what he feels."
+reward = [{ kind = "recipe", id = "found-slag-mail" }, { kind = "xp", amount = 100 }]
+[[quest.step]]
+id = "crawler-cull"
+text = "Cull eight slag crawlers from the old ore-lines."
+goal = { kind = "slay", monster = "slag-crawler", count = 8 }
+done_text = "The lines are clear. The apprentices push the first cart in years."
+reward = [{ kind = "salvage", amount = 50 }, { kind = "coin", amount = 120 }]
+[[quest.step]]
+id = "second-gift"
+text = "Give the town's works another 300 coin. A debt this old pays slowly."
+goal = { kind = "give", coin = 300 }
+done_text = "Okwe writes the sum in a clean column. He says the fire's side of the book has not moved."
+reward = [{ kind = "core", id = "anvil-core" }, { kind = "xp", amount = 130 }]
+[[quest.step]]
+id = "ring-proof"
+text = "Win three duels in the ring. The apprentices want to see how you carry a blade."
+goal = { kind = "duels", wins = 3 }
+done_text = "The apprentices cheer, once, quietly. Okwe says a smith's debt is paid in craft, and craft is shown."
+reward = [{ kind = "relic" }, { kind = "xp", amount = 150 }]
+[[quest.step]]
+id = "the-key"
+text = "The key is yours to decide. Okwe says the fires were never a gift; they were a loan."
+goal = { kind = "level", level = 10 }
+done_text = "The apprentices watch you decide."
+reward = [{ kind = "xp", amount = 200 }]
+choose = [
+  { id = "keep", label = "Keep the key: the Furnace is worth a lifetime", text = "You hang the key at your belt. It is cold, and it is heavy. Okwe says that is how a debt feels when it is yours.", flag = "keeps-the-key" },
+  { id = "give", label = "Hand it to the apprentices", text = "You hand the key over. The apprentices put it in a box, and the box in a vault. Okwe says the debt is the town's now.", flag = "gave-the-key" },
+  { id = "break", label = "Break it on the anvil", text = "You strike the key until it cracks. Okwe says nothing. The apprentices stare, and then, slowly, begin to laugh.", flag = "broke-the-key" },
+]
+
+[[quest]]
+id = "the-quiet-watch"
+name = "The Quiet Watch"
+text = "The lamplighters keep a watch on the lower stairs, and one of them will not say why."
+level = 5
+[[quest.step]]
+id = "stair-six"
+text = "Reach level 6."
+goal = { kind = "reach", depth = 6 }
+done_text = "The lamplighters tell you the stair there has never been quiet."
+reward = [{ kind = "coin", amount = 60 }]
+[[quest.step]]
+id = "ten-contracts"
+text = "Turn in three contracts at the board."
+goal = { kind = "contracts", count = 3 }
+done_text = "The board-keeper nods. The watch hears about those who finish."
+reward = [{ kind = "xp", amount = 80 }]
+[[quest.step]]
+id = "carry-one-home"
+text = "Carry a fallen hero home."
+goal = { kind = "rescues", count = 1 }
+done_text = "The watch opens its ledger and writes your name in it."
+reward = [{ kind = "relic" }]
+[[quest.step]]
+id = "prism"
+text = "Put down the Prism Warden in the Glass Halls."
+goal = { kind = "guardian", band = 3 }
+done_text = "In the glass, a gate you had not seen."
+reward = [{ kind = "xp", amount = 120 }]
+[[quest.step]]
+id = "the-lamplighters-lie"
+text = "A lamplighter confesses that the watch has been telling the town a half-truth about the gate. Do you believe the rest?"
+goal = { kind = "level", level = 9 }
+done_text = "You choose. The lamplighter nods, and trims the wick."
+reward = [{ kind = "xp", amount = 120 }]
+choose = [
+  { id = "trust", label = "Believe the lamplighter", text = "You tell the lamplighter you believe the rest. The lamplighter lets out a long breath, and gives you a small copper plate.", flag = "trusts-the-lamplighter" },
+  { id = "doubt", label = "Doubt it, and keep your own watch", text = "You tell the lamplighter you will see for yourself. The lamplighter says that is the first sensible thing anyone has said.", flag = "doubts-the-lamplighter" },
+]
+[[quest.step]]
+id = "hounds-hushed"
+text = "Hush six echo hounds. Their barking keeps the lower stair awake."
+goal = { kind = "slay", monster = "echo-hound", count = 6 }
+done_text = "The lower stair is quiet at last. The watch reports it in a single, tired line."
+reward = [{ kind = "coin", amount = 140 }, { kind = "xp", amount = 130 }]
+[[quest.step]]
+id = "wisps-snuffed"
+text = "Snuff eight glass wisps. They sing the gate's name in the dark."
+goal = { kind = "slay", monster = "glass-wisp", count = 8 }
+done_text = "The singing stops. The lamplighters say the gate heard it all the same."
+reward = [{ kind = "recipe", id = "found-glass-scale" }, { kind = "xp", amount = 140 }]
+[[quest.step]]
+id = "more-home"
+text = "Carry three more fallen heroes home. The watch keeps count, and so should you."
+goal = { kind = "rescues", count = 3 }
+done_text = "The watch writes three more names. It does not mark them as dead, only as carried."
+reward = [{ kind = "core", id = "ward-core" }, { kind = "salvage", amount = 50 }]
+[[quest.step]]
+id = "stair-twelve"
+text = "Reach level 12, where the lamplighters stop going."
+goal = { kind = "reach", depth = 12 }
+done_text = "The air at the twelfth landing is thin and listening. You come back with a name on a scrap, and it is not yours."
+reward = [{ kind = "relic" }, { kind = "xp", amount = 180 }]
+[[quest.step]]
+id = "the-gate"
+text = "The lamplighters ask what the watch is for. They say the fires were never fuel; they were a lock."
+goal = { kind = "level", level = 12 }
+done_text = "You answer them."
+reward = [{ kind = "xp", amount = 250 }]
+choose = [
+  { id = "open", label = "To open the gates the old smiths shut", text = "You tell the lamplighters the gates should open. They light a lamp for it.", flag = "opens-the-gate" },
+  { id = "shut", label = "To keep them shut, and the town safe", text = "You tell them to keep watch. The lamps are trimmed low.", flag = "keeps-the-watch" },
+  { id = "ask", label = "To ask the gate what it wants", text = "You say no one has asked. The lamplighters are silent, and then one of them says, softly, that no one has.", flag = "answers-the-gate" },
+]

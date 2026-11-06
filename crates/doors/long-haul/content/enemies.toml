@@ -169,3 +169,117 @@ flee_pct = 0
 loot = [300, 800]
 kill_standing = -8
 wreck = "sentinel_husk"
+
+[[enemy]]
+id = "marauder"
+name = "Marauder"
+faction = "free"
+blurb = "A gutted hauler with guns welded on, crewed by the desperate."
+hull = 55
+shield = 10
+speed = 3
+accuracy = 62
+damage = 10
+reach = "close"
+style = "boarder"
+feint_pm = 200
+boarders = 3
+flee_pct = 25
+loot = [180, 480]
+kill_standing = -4
+wreck = "outrider_wreck"
+
+[[enemy]]
+id = "blockade_runner"
+name = "Blockade runner"
+faction = "free"
+blurb = "A lean hull that would rather outrun you than shoot you, until cornered."
+hull = 30
+shield = 15
+speed = 6
+accuracy = 50
+damage = 7
+reach = "far"
+style = "skirmisher"
+feint_pm = 350
+boarders = 0
+flee_pct = 55
+loot = [120, 340]
+kill_standing = -3
+wreck = "courier_wreck"
+
+[[enemy]]
+id = "picket"
+name = "League picket"
+faction = "league"
+blurb = "A watch ship on a fixed beat, grey, patient and well drilled."
+hull = 65
+shield = 35
+speed = 3
+accuracy = 66
+damage = 11
+reach = "mid"
+style = "guard"
+feint_pm = 0
+boarders = 2
+flee_pct = 5
+loot = [200, 520]
+kill_standing = -28
+wreck = "league_picket"
+
+[[enemy]]
+id = "customs_hawk"
+name = "Customs hawk"
+faction = "league"
+blurb = "A fast League interceptor that hunts the lanes for contraband."
+hull = 38
+shield = 25
+speed = 5
+accuracy = 72
+damage = 9
+reach = "far"
+style = "sniper"
+feint_pm = 100
+boarders = 1
+flee_pct = 20
+loot = [150, 420]
+kill_standing = -25
+wreck = "quarantine_cutter"
+
+[[enemy]]
+id = "union_marshal"
+name = "Union marshal"
+faction = "miners"
+blurb = "A veteran steward's heavy tug, armoured with ore plate and grudges."
+hull = 95
+shield = 30
+speed = 2
+accuracy = 68
+damage = 13
+reach = "close"
+style = "rusher"
+feint_pm = 50
+boarders = 2
+flee_pct = 5
+loot = [300, 700]
+kill_standing = -15
+wreck = "union_tug"
+
+[[enemy]]
+id = "gate_warden"
+name = "Gate warden"
+faction = "church"
+blurb = "A piece of the old gate that has learned to hold a grudge."
+hull = 130
+shield = 70
+speed = 2
+accuracy = 75
+damage = 16
+reach = "mid"
+style = "guard"
+feint_pm = 80
+boarders = 0
+flee_pct = 0
+loot = [500, 1200]
+kill_standing = -12
+wreck = "gate_fragment"

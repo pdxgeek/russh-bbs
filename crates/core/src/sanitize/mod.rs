@@ -30,6 +30,8 @@
 //! stop lookalike characters, and the ASCII tier cannot be protected by text at all; the
 //! reserved style and a chrome-only position are the final cue. See `icons` and D39, D45.
 
+#[cfg(test)]
+mod properties;
 mod scan;
 mod username;
 

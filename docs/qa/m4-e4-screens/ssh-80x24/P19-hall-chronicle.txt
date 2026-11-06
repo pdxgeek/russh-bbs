@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Emberdeep                                                                     │
+│                                                                              │
+│◆ EMBERDEEP · The Hall · season 1 · the dungeon remade 0x                     │
+│ Standings │ The dead │ The world │ Companies │ The ring │ Donors │ Chronicle │
+│╭ Chronicle ─────────────────────────────────────────────────────────────────╮│
+││The Cold Furnace still burns. No season has ended yet.                      ││
+││                                                                            ││
+││Your epilogue so far: A Hand in the Dark                                    ││
+││You came, you carried a lamp, and the dark was a little less for it.        ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+│╰────────────────────────────────────────────────────────────────────────────╯│
+│[Left/Right] tab  [Esc] back                                                  │
+└──────────────────────────────────────────────────────────────────────────────┘

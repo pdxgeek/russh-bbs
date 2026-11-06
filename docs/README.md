@@ -2,6 +2,15 @@
 
 Status of the project: M0, M1, M2 and M3 are merged. M1's QA gate passed except the v0.1.0 image, which is withdrawn (D76; see [qa/m1.md](qa/m1.md)). M2's QA gate is closed: its fixes were re-checked on `0caab35` (see the Re-check section of [qa/m2.md](qa/m2.md)); the remaining FIX-M2 rows in [coordination.md](coordination.md) are low or parked. The next release is v0.2.0, tagged by the owner (D76). M3's QA gate is closed: its fixes (FIX-M3-3, 4, 5 and 8) were re-checked on `927cb0f` (see the Re-check section of [qa/m3.md](qa/m3.md)); the remaining FIX-M3 rows (2, 6, 7) are low. The next milestone does not start until the owner approves it. [features.md](features.md) holds the status of every feature.
 
+## Guides (for people who run or use a board)
+
+| Guide | Purpose |
+|---|---|
+| [guide/README.md](guide/README.md) | Index of the sysop guide, the member guide and the privacy page; says what was verified and what was not |
+| [guide/sysop/01-install.md](guide/sysop/01-install.md) | Sysop guide: install, first start, config, people, look and feel, doors and storage, backups, upgrades, troubleshooting |
+| [guide/member/01-connect.md](guide/member/01-connect.md) | Member guide: connecting, your terminal, using the board, doors |
+| [guide/privacy.md](guide/privacy.md) | Who can read what, said once |
+
 ## Read first (everyone)
 
 | Document | Purpose |
@@ -23,6 +32,7 @@ Status of the project: M0, M1, M2 and M3 are merged. M1's QA gate passed except 
 | Configuration keys, env vars, flags | [config.md](config.md) |
 | Scope and order of work | [features.md](features.md), [mvp-scope.md](mvp-scope.md), [milestones.md](milestones.md) |
 | Terminal UI, menus, layouts, themes, icons | [ui.md](ui.md) |
+| Example board kit (menus, pages, a seventh style) | [examples/board/README.md](../examples/board/README.md) |
 | Door games and the door framework | [doors/README.md](doors/README.md) |
 | Chat rooms, presence, whispers | [chat.md](chat.md) |
 | Internal mail (sealed at rest, reports) | [mail.md](mail.md) |

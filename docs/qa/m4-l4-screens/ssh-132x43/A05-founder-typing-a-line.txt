@@ -1,0 +1,43 @@
+
+┌─────────────────────────────────────────────────────────── russh-bbs ────────────────────────────────────────────────────────────┐
+│Long Haul                                                                                                                         │
+│                                                                                                                                  │
+│▲ LONG HAUL  founder  1,800 cr  debt 20,000  days ●●●●●●●●●● 10                                                                   │
+│╭ SOCIETY: CONVOYS, PIRACY, OUTPOSTS ────────────────────────────────────────────────────────────────────────────────────────────╮│
+││[Convoy]  Piracy   Outposts   Hall   Journal                                                                                    ││
+││The server can read all of this. Other captains see only what is marked shared.                                                 ││
+││Patient Caravan convoy, 1 of 4 captains, guard 0%, pool 0 cr                                                                    ││
+││  * founder  guns 0  earned 0 cr                                                                                                ││
+││5% of each profit goes to the pool; the night shares it out.                                                                    ││
+││Log:                                                                                                                            ││
+││  founder: Clean run so far. Nothing on the scope.                                                                              ││
+││Say: hold at the next dock, bob_                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+│╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯│
+│Your note goes out on the convoy channel.                                                                                         │
+│[Left/Right] tab  [Up/Down] choose  [Enter] join/hunt  [n] form  [x] leave  [t] say  [1-8] note  [f] colours  [p/P] pledge  [Esc] │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+

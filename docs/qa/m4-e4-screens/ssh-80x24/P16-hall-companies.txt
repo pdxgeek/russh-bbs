@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Emberdeep                                                                     │
+│                                                                              │
+│◆ EMBERDEEP · The Hall · season 1 · the dungeon remade 0x                     │
+│ Standings │ The dead │ The world │ Companies │ The ring │ Donors │ Chronicle │
+│╭ Companies ─────────────────────────────────────────────────────────────────╮│
+││Company of founder: founder, bob                                            ││
+││  deepest together: level 0   carried home: 0                               ││
+││                                                                            ││
+││2 hero(es) known to the town; 0 carried home this season.                   ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+││                                                                            ││
+│╰────────────────────────────────────────────────────────────────────────────╯│
+│[Left/Right] tab  [Esc] back                                                  │
+└──────────────────────────────────────────────────────────────────────────────┘

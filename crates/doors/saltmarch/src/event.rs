@@ -9,6 +9,7 @@ use crate::combat::Verdict;
 use crate::social::Refusal;
 use crate::social::market::Memo;
 use crate::social::pact::{ALL_TERMS, term_name};
+use crate::story::{Faction, Flag, TIERS};
 use crate::trip::Ending;
 use crate::types::{Resource, Trade};
 
@@ -165,6 +166,25 @@ pub enum Event {
         value: u32,
         turns: u16,
     },
+    /// Standing with a faction moved (the tier is the one it is now).
+    Standing {
+        faction: Faction,
+        by: i8,
+        tier: u8,
+        changed: bool,
+    },
+    /// A contract was taken from a board.
+    ContractTaken { title: String, days: u8 },
+    /// A contract was done and paid.
+    ContractDone { title: String, tallies: u32 },
+    /// A contract ran out of time or was given back.
+    ContractLapsed { title: String, given_back: bool },
+    /// The party paid a toll on a causeway.
+    TollPaid { owner: String, tallies: u16 },
+    /// The party laid a causeway tile.
+    CausewayLaid { x: u8, y: u8, toll: u8 },
+    /// The marsh itself changed because of what a clan did.
+    MarshChanged { flag: Flag },
     /// The exchange sent goods or tallies.
     Parcel {
         memo: Memo,
@@ -328,6 +348,48 @@ impl fmt::Display for Event {
                 }
                 Ending::Lost => f.write_str("Nobody comes back."),
             },
+            Self::Standing {
+                faction,
+                by,
+                tier,
+                changed,
+            } => {
+                let name = TIERS[usize::from(*tier).min(4)];
+                if *changed {
+                    write!(
+                        f,
+                        "{} now think of you as {}.",
+                        faction.name(),
+                        name.to_lowercase()
+                    )
+                } else if *by > 0 {
+                    write!(f, "{} think a little better of you.", faction.name())
+                } else {
+                    write!(f, "{} think a little worse of you.", faction.name())
+                }
+            }
+            Self::ContractTaken { title, days } => write!(
+                f,
+                "Contract taken: {title} ({days} day{} to do it).",
+                if *days == 1 { "" } else { "s" }
+            ),
+            Self::ContractDone { title, tallies } => {
+                write!(f, "Contract done: {title}. Paid {tallies} tallies.")
+            }
+            Self::ContractLapsed { title, given_back } => {
+                if *given_back {
+                    write!(f, "You gave back the contract: {title}.")
+                } else {
+                    write!(f, "The contract ran out: {title}.")
+                }
+            }
+            Self::TollPaid { owner, tallies } => {
+                write!(f, "Paid {tallies} tallies toll on {owner}'s causeway.")
+            }
+            Self::CausewayLaid { x, y, toll } => {
+                write!(f, "Laid a causeway at {x},{y} (toll {toll}).")
+            }
+            Self::MarshChanged { flag } => f.write_str(flag.news()),
             Self::Parcel {
                 memo,
                 about,
@@ -359,6 +421,14 @@ impl fmt::Display for Event {
                     }
                     Memo::Cancelled => write!(f, "Your order was taken down: {back} came back."),
                     Memo::Refused => write!(f, "An order was turned away: {back} came back."),
+                    Memo::Toll => write!(
+                        f,
+                        "Travellers paid {tallies} tallies toll on your causeways."
+                    ),
+                    Memo::Dividend => write!(
+                        f,
+                        "The Tidecourt paid {tallies} tallies: a week of keeping a pact."
+                    ),
                 }
             }
             Self::RaidWon {

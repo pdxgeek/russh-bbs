@@ -47,6 +47,55 @@ pub(crate) struct Taken {
     pub(crate) done: bool,
 }
 
+/// What the hero has done in the chain of questlines (M4-E4), and the tallies the goals read.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub(crate) struct Story {
+    /// Steps done in each line the hero has begun: quest id, steps done.
+    pub(crate) quests: Vec<(String, u8)>,
+    /// Choices made, for good.
+    pub(crate) flags: Vec<String>,
+    /// Kills by monster id.
+    pub(crate) slain: Vec<(String, u16)>,
+    /// New rooms entered, by kind (`RoomKind::index`).
+    pub(crate) visits: [u16; 10],
+    /// Bands whose guardian this hero struck down (bit `band - 1`).
+    pub(crate) guardians: u8,
+    /// The hero felled the Cold Furnace's guardian and owes the verdict.
+    pub(crate) verdict_due: bool,
+}
+
+/// The hero's part in the town's social life (M4-E4): what they opted into and what they did.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct Social {
+    /// Open to invitations to a company (an opt-out).
+    pub(crate) open: bool,
+    /// In the duel ring (an opt-in).
+    pub(crate) ring: bool,
+    /// A line for the hall if the hero is not found (sanitized by `Ctx::player_text`).
+    pub(crate) epitaph: String,
+    /// Notes already collected (so a note is never paid twice).
+    pub(crate) seen: Vec<String>,
+    pub(crate) rescues: u16,
+    pub(crate) rescued: u16,
+    pub(crate) wins: u16,
+    pub(crate) losses: u16,
+}
+
+impl Default for Social {
+    fn default() -> Self {
+        Self {
+            open: true,
+            ring: false,
+            epitaph: String::new(),
+            seen: Vec::new(),
+            rescues: 0,
+            rescued: 0,
+            wins: 0,
+            losses: 0,
+        }
+    }
+}
+
 /// A hero.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct Hero {
@@ -97,6 +146,8 @@ pub(crate) struct Hero {
     pub(crate) given: Vec<(String, u32, u32)>,
     pub(crate) contract: Option<Taken>,
     pub(crate) contracts_done: u16,
+    pub(crate) story: Story,
+    pub(crate) social: Social,
 }
 
 /// Everything the rules read about a hero, computed from the hero and the content.
@@ -340,6 +391,8 @@ impl Hero {
             given: Vec::new(),
             contract: None,
             contracts_done: 0,
+            story: Story::default(),
+            social: Social::default(),
         };
         hero.hp = derive(&hero, content).max_hp;
         Ok(hero)
@@ -481,6 +534,8 @@ impl Hero {
             Need::Trait { id } => self.traits.contains(id) || self.scars.contains(id),
             Need::Node { id } => self.nodes.contains(id),
             Need::Level { min } => u32::from(self.level) >= *min,
+            Need::Flag { id } => self.story.flags.contains(id),
+            Need::NoFlag { id } => !self.story.flags.contains(id),
         }
     }
 }

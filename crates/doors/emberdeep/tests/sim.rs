@@ -74,6 +74,8 @@ enum Style {
     Careful,
     /// Goes deeper, and quick-resolves fights.
     Greedy,
+    /// Goes deeper still, and stays below with little health left: it dies, and is rescued.
+    Reckless,
 }
 
 struct Delver {
@@ -149,6 +151,7 @@ impl Delver {
         match self.style {
             Style::Careful => 1 + level / 2,
             Style::Greedy => 2 + level * 2 / 3,
+            Style::Reckless => 5 + level,
         }
     }
 
@@ -257,7 +260,7 @@ impl Delver {
         {
             return Some(DoorKey::Char('f'));
         }
-        if self.style == Style::Greedy && has(screen, "[z] Quick") {
+        if self.style != Style::Careful && has(screen, "[z] Quick") {
             return Some(DoorKey::Char('z'));
         }
         let want = if heavy {
@@ -429,8 +432,12 @@ impl Delver {
             .unwrap_or(1);
         let td = self.target_depth(level);
         let hostile = has(screen, "bars the way");
-        let low = hp * 100 < max * 35;
-        let margin = if self.style == Style::Careful { 3 } else { 2 };
+        let low = hp * 100 < max * if self.style == Style::Reckless { 8 } else { 35 };
+        let margin = match self.style {
+            Style::Careful => 3,
+            Style::Greedy => 2,
+            Style::Reckless => 0,
+        };
         if turns <= cost + 1 || low && !hostile {
             return Some(DoorKey::Char('u'));
         }
@@ -741,6 +748,47 @@ impl Bot for Delver {
 }
 
 impl Delver {
+    /// The social places: join and invite, step into the ring (the fighters do) and call
+    /// someone out, take the first choice a questline offers, and answer the Furnace.
+    fn social_step(&mut self, first: &str, screen: &[String]) -> Option<DoorKey> {
+        self.place_steps += 1;
+        if self.place_steps > 6 {
+            return Some(DoorKey::Escape);
+        }
+        let menu = entries(screen);
+        let pick = |prefixes: &[&str]| {
+            prefixes.iter().find_map(|p| {
+                menu.iter()
+                    .find(|(_, l)| l.starts_with(p))
+                    .map(|(k, _)| DoorKey::Char(*k))
+            })
+        };
+        let key = if first == "THE COMPANY" {
+            pick(&["Accept", "Invite"])
+        } else if first == "THE DUEL RING" {
+            if matches!(self.calling, '1' | '2' | '6') {
+                pick(&["Step into", "Call out"])
+            } else {
+                None
+            }
+        } else if first == "THE COLD FURNACE" {
+            // The most committal answer open to this build, to walk every ending.
+            menu.last().map(|(k, _)| DoorKey::Char(*k))
+        } else {
+            // A questline's choice: the last way offered for the cautious, the first for the rest.
+            let choices: Vec<_> = menu
+                .iter()
+                .filter(|(_, l)| !l.starts_with("Write"))
+                .collect();
+            if self.style == Style::Careful {
+                choices.last().map(|(k, _)| DoorKey::Char(*k))
+            } else {
+                choices.first().map(|(k, _)| DoorKey::Char(*k))
+            }
+        };
+        Some(key.unwrap_or(DoorKey::Escape))
+    }
+
     fn decide(&mut self, screen: &[String], visit: u32, keys_this_visit: u32) -> Option<DoorKey> {
         // Every screen any bot ever sees fits the board's box at 80 columns.
         for line in screen {
@@ -754,7 +802,18 @@ impl Delver {
             self.skills_done = false;
             self.no_route = false;
             self.raised = false;
-            self.chores = "fmigwb".chars().collect();
+            self.chores = if let Ok(chores) = std::env::var("EMBERDEEP_CHORES") {
+                chores
+            } else if std::env::var("EMBERDEEP_SIM_NO_SOCIAL").is_ok() {
+                "fmigwb".to_owned()
+            } else if visit.is_multiple_of(3) {
+                // The ring is for a day in three: it costs a turn a bout and a loser's bruise.
+                "fmigwbcuj".to_owned()
+            } else {
+                "fmigwbcj".to_owned()
+            }
+            .chars()
+            .collect();
             self.crafted = 0;
             self.drank = false;
             self.drilled = false;
@@ -762,7 +821,6 @@ impl Delver {
             self.cored = false;
             self.cores_bought = 0;
         }
-        let _ = visit;
         if let Some(key) = self.queue.pop_front() {
             return Some(key);
         }
@@ -788,6 +846,13 @@ impl Delver {
         if first == "HERO SHEET" || first == "THE HALL" {
             return Some(DoorKey::Escape);
         }
+        if first == "THE COMPANY"
+            || first == "THE DUEL RING"
+            || first.starts_with("THE JOURNAL")
+            || first == "THE COLD FURNACE"
+        {
+            return self.social_step(first, screen);
+        }
         if first.starts_with("THE FORGE")
             || first.starts_with("THE MARKET")
             || first == "GEAR"
@@ -800,7 +865,7 @@ impl Delver {
         if has(screen, "You are dead") {
             return None;
         }
-        if has(screen, "sealed") || has(screen, "could not be read") {
+        if has(screen, "Emberdeep is sealed") || has(screen, "could not be read") {
             return None;
         }
         if screen.iter().any(|l| l.starts_with("FIGHT")) {
@@ -831,25 +896,37 @@ fn roster() -> Vec<(&'static str, Delver)> {
     ] {
         out.push((name, Delver::new(calling, traits, attr, Style::Careful)));
         out.push((name, Delver::new(calling, traits, attr, Style::Greedy)));
+        out.push((name, Delver::new(calling, traits, attr, Style::Reckless)));
     }
     out
 }
 
 #[tokio::test]
-async fn thirty_days_of_twelve_delvers() {
+async fn a_season_of_eighteen_delvers() {
     let door = Emberdeep::shared().unwrap();
     let id = door.info().id.clone();
-    let mut sim = Simulation::new(door, Day::from_raw(DAY), 4242);
-    let bots = roster();
+    let mut sim = Simulation::new(
+        door,
+        Day::from_raw(DAY),
+        std::env::var("EMBERDEEP_SEED")
+            .ok()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(4242),
+    );
+    let legacy = std::env::var("EMBERDEEP_SIM_LEGACY").is_ok();
+    let bots: Vec<_> = roster()
+        .into_iter()
+        .filter(|(_, d)| !(legacy && d.style == Style::Reckless))
+        .collect();
     let labels: Vec<(&str, &str)> = bots
         .iter()
         .map(|(n, d)| {
             (
                 *n,
-                if d.style == Style::Careful {
-                    "careful"
-                } else {
-                    "greedy"
+                match d.style {
+                    Style::Careful => "careful",
+                    Style::Greedy => "greedy",
+                    Style::Reckless => "reckless",
                 },
             )
         })
@@ -863,10 +940,10 @@ async fn thirty_days_of_twelve_delvers() {
     let mut curve: Vec<String> = Vec::new();
     let mut done_by_day: Vec<(u32, usize)> = Vec::new();
     let mut gear_curve: Vec<(f64, f64)> = Vec::new();
-    for day in 1..=30u32 {
+    for day in 1..=(if legacy { 30 } else { SEASON_DAYS }) {
         sim.play_day().await.unwrap();
         sim.advance_day().await.unwrap();
-        if day % 5 == 0 || day == 1 {
+        if day % 6 == 0 || day == 1 {
             let mut sums = (0i32, 0i32, 0i32, 0u32, 0u32);
             let mut n = 0;
             for i in 0..labels.len() {
@@ -889,7 +966,7 @@ async fn thirty_days_of_twelve_delvers() {
                 f64::from(sums.1) / f64::from(n),
             ));
             curve.push(format!(
-                "day {day:>2}: avg blow {:>5.1}  avg armor {:>4.1}  avg level {:>4.1}  given {:>5}c {:>4}s  projects done {}/11",
+                "day {day:>2}: avg blow {:>5.1}  avg armor {:>4.1}  avg level {:>4.1}  given {:>5}c {:>4}s  projects done {}/12",
                 f64::from(sums.0) / f64::from(n),
                 f64::from(sums.1) / f64::from(n),
                 f64::from(sums.2) / f64::from(n),
@@ -900,7 +977,7 @@ async fn thirty_days_of_twelve_delvers() {
         }
     }
     let report = sim.report();
-    println!("\nEMBERDEEP 30-DAY SIM: {report:?}");
+    println!("\nEMBERDEEP SEASON SIM: {report:?}");
     for line in &curve {
         println!("{line}");
     }
@@ -965,6 +1042,7 @@ async fn thirty_days_of_twelve_delvers() {
     let world =
         summarize_world(&sim.store().load_world(&id).await.unwrap().unwrap().bytes).unwrap();
     println!("world: {world:?}");
+    balance_report(&labels, &summaries, &world);
     let total = |f: fn(&Summary) -> u32| summaries.iter().map(f).sum::<u32>();
     println!(
         "totals: deaths {} kills {} relics {} deepest {}",
@@ -1064,3 +1142,84 @@ async fn thirty_days_of_twelve_delvers() {
     let below = running.look_around(&env);
     assert!(below.iter().any(|l| l.starts_with("Level ")), "{below:?}");
 }
+
+/// The numbers the pull request reports: by calling, the economy, the social layer and the
+/// questlines.
+#[allow(clippy::cast_precision_loss, clippy::too_many_lines)]
+fn balance_report(
+    labels: &[(&str, &str)],
+    summaries: &[Summary],
+    world: &russh_bbs_door_emberdeep::WorldSummary,
+) {
+    println!("\nBY CALLING (three heroes each: careful, greedy, reckless)");
+    println!(
+        "{:<13} {:>6} {:>8} {:>9} {:>7} {:>9} {:>8}",
+        "calling", "level", "bestdep", "died(h)", "deaths", "coin", "quests"
+    );
+    let mut names: Vec<&str> = labels.iter().map(|(n, _)| *n).collect();
+    names.dedup();
+    for name in &names {
+        let mine: Vec<&Summary> = labels
+            .iter()
+            .zip(summaries)
+            .filter(|((n, _), _)| n == name)
+            .map(|(_, s)| s)
+            .collect();
+        let n = mine.len() as f64;
+        let sum = |f: &dyn Fn(&Summary) -> f64| mine.iter().map(|s| f(s)).sum::<f64>();
+        println!(
+            "{:<13} {:>6.1} {:>8.1} {:>6}/{:<2} {:>7} {:>9.0} {:>8.1}",
+            name,
+            sum(&|s| f64::from(s.level)) / n,
+            sum(&|s| f64::from(s.best_depth)) / n,
+            mine.iter().filter(|s| s.deaths > 0).count(),
+            mine.len(),
+            mine.iter().map(|s| u32::from(s.deaths)).sum::<u32>(),
+            sum(&|s| f64::from(s.coin)) / n,
+            sum(&|s| s.quest_steps as f64) / n
+        );
+    }
+    println!("\nBY STYLE");
+    for style in ["careful", "greedy", "reckless"] {
+        let mine: Vec<&Summary> = labels
+            .iter()
+            .zip(summaries)
+            .filter(|((_, st), _)| *st == style)
+            .map(|(_, s)| s)
+            .collect();
+        println!(
+            "{style:<9} level {:>4.1}  best depth {:>4.1}  deaths {:>2}  heroes dead at least once {}/{}",
+            mine.iter().map(|s| f64::from(s.level)).sum::<f64>() / mine.len() as f64,
+            mine.iter().map(|s| f64::from(s.best_depth)).sum::<f64>() / mine.len() as f64,
+            mine.iter().map(|s| u32::from(s.deaths)).sum::<u32>(),
+            mine.iter().filter(|s| s.deaths > 0).count(),
+            mine.len()
+        );
+    }
+    let carried: u16 = summaries.iter().map(|s| s.rescues.0).sum();
+    let rescued: u16 = summaries.iter().map(|s| s.rescues.1).sum();
+    let deaths: u32 = summaries.iter().map(|s| u32::from(s.deaths)).sum();
+    println!(
+        "\nRESCUES: {deaths} deaths, {carried} heroes carried others home, {rescued} were carried home, {} epitaphs for the unfound (world says {} carried home)",
+        world.epitaphs, world.carried_home
+    );
+    println!(
+        "COMPANIES: {:?}\nRING: {} duels, ladder {:?}",
+        world.companies, world.duels, world.ladder
+    );
+    let flags: std::collections::BTreeSet<&String> =
+        summaries.iter().flat_map(|s| s.flags.iter()).collect();
+    println!(
+        "QUESTS: {} steps done by 18 heroes; choices made: {flags:?}",
+        summaries.iter().map(|s| s.quest_steps).sum::<usize>()
+    );
+    println!("ENDINGS: {:?}", world.chronicle);
+    let coin: u64 = summaries.iter().map(|s| u64::from(s.coin)).sum();
+    let given: u64 = summaries.iter().map(|s| u64::from(s.given.0)).sum();
+    println!(
+        "ECONOMY: {coin} coin in purses, {given} given to the works, {} duels' stakes included in pledges",
+        world.duels
+    );
+}
+
+const SEASON_DAYS: u32 = 42;

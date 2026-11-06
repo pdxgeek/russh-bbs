@@ -9,6 +9,7 @@ use crate::event::Event;
 use crate::hold::{Hold, MAX_CREW};
 use crate::map::{Map, SIZE};
 use crate::social::ledger::ClanSocial;
+use crate::story::Story;
 use crate::trip::{MARKS_CAP, Trip};
 use crate::types::{RESOURCES, Resource, Stock, Trade};
 
@@ -170,6 +171,8 @@ pub struct Clan {
     pub trip: Option<Trip>,
     /// Raids, letters, pending dispatches and what the clan remembers of other clans.
     pub social: ClanSocial,
+    /// Standing with the factions, the contract in hand, the heirloom and the outbox to the world.
+    pub story: Story,
 }
 
 impl Clan {
@@ -214,6 +217,7 @@ impl Clan {
             marks: Vec::new(),
             trip: None,
             social: ClanSocial::default(),
+            story: Story::default(),
         };
         for (r, n) in [
             (Resource::Timber, 12),
@@ -470,7 +474,13 @@ impl Clan {
         }
         self.marks.push(mark.to_owned());
         if self.marks.len() > MARKS_CAP {
-            self.marks.remove(0);
+            // Quest marks are the story; the oldest of the rest goes first.
+            let at = self
+                .marks
+                .iter()
+                .position(|m| !m.starts_with("q-"))
+                .unwrap_or(0);
+            self.marks.remove(at);
         }
     }
 
@@ -563,7 +573,19 @@ impl Clan {
         }
         // Version 3: the social state.
         self.social.write(&mut w);
+        // Version 4: the story.
+        self.story.write(&mut w);
         w.finish()
+    }
+
+    /// Bring a version 3 save to version 4: the clan has no standing, contract or heirloom yet.
+    #[must_use]
+    pub fn upgrade_v3(bytes: &[u8]) -> Vec<u8> {
+        let mut w = Writer::new();
+        Story::default().write(&mut w);
+        let mut out = bytes.to_vec();
+        out.extend(w.finish());
+        out
     }
 
     /// Bring a version 2 save to version 3: the clan has sent and received nothing yet.
@@ -653,6 +675,7 @@ impl Clan {
             None
         };
         let social = ClanSocial::read(&mut r)?;
+        let story = Story::read(&mut r)?;
         (r.done() && crew.len() <= MAX_CREW && morale <= 100).then_some(Self {
             name,
             season,
@@ -678,6 +701,7 @@ impl Clan {
             marks,
             trip,
             social,
+            story,
         })
     }
 }
@@ -725,16 +749,33 @@ pub(crate) mod tests {
     #[test]
     fn a_version_2_save_upgrades_and_keeps_everything_it_had() {
         let (_, _, clan) = fixture();
-        // The version 2 bytes are the version 3 bytes without the social tail.
+        // The version 2 bytes are the current bytes without the social and story tails.
         let mut tail = Writer::new();
         ClanSocial::default().write(&mut tail);
+        Story::default().write(&mut tail);
         let tail = tail.finish();
-        let v3 = clan.encode();
-        let v2 = &v3[..v3.len() - tail.len()];
-        assert_eq!(Clan::decode(v2), None, "version 2 is not version 3");
-        let up = Clan::decode(&Clan::upgrade_v2(v2)).unwrap();
+        let now = clan.encode();
+        let v2 = &now[..now.len() - tail.len()];
+        assert_eq!(Clan::decode(v2), None, "version 2 is not the current one");
+        let up = Clan::decode(&Clan::upgrade_v3(&Clan::upgrade_v2(v2))).unwrap();
         assert_eq!(up, clan);
         assert_eq!(up.social, ClanSocial::default());
+        assert_eq!(up.story, Story::default());
+    }
+
+    #[test]
+    fn a_version_3_save_upgrades_with_an_empty_story() {
+        let (_, _, clan) = fixture();
+        let mut tail = Writer::new();
+        Story::default().write(&mut tail);
+        let tail = tail.finish();
+        let now = clan.encode();
+        let v3 = &now[..now.len() - tail.len()];
+        assert_eq!(Clan::decode(v3), None, "version 3 is not the current one");
+        let up = Clan::decode(&Clan::upgrade_v3(v3)).unwrap();
+        assert_eq!(up, clan);
+        assert_eq!(up.story.rep, [0; 3]);
+        assert_eq!(up.story.toll, crate::story::TOLL_DEFAULT);
     }
 
     #[test]

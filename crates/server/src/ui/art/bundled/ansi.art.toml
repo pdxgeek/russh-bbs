@@ -45,3 +45,47 @@ bg = [
   "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "........................................................................",
 ]
+
+[[piece]]
+slot = "area"
+fallback = "== {board} =="
+rows = [
+  "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄",
+  "░░░░░░░░░░░░▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▒▒▒░░░░░░░░░░░░",
+  "▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀",
+]
+fg = [
+  "bbBBcCCwWWCCcBBbbBBcCCwWWCCcBBbbBBcCCwWWCCcBBbbBBcCCwWWCCcBBbbBBcCCwWWCC",
+  "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+  "bbBBcCCwWWCCcBBbbBBcCCwWWCCcBBbbBBcCCwWWCCcBBbbBBcCCwWWCCcBBbbBBcCCwWWCC",
+]
+ascii = [
+  "________________________________________________________________________",
+  "............::::::::::::%%%%%%%%%%%%%%%%%%%%%%%%::::::::::::............",
+  "\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"",
+]
+
+[[piece]]
+slot = "logoff"
+fallback = "NO CARRIER - {board}"
+rows = [
+  "┌────────────────────────────────────┐  ",
+  "│             NO CARRIER             │░ ",
+  "│         thanks for calling         │░ ",
+  "└────────────────────────────────────┘░ ",
+  " ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  ",
+]
+fg = [
+  "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC..",
+  "CWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWCb...",
+  "CwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwCb...",
+  "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCb.",
+  ".bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb..",
+]
+ascii = [
+  "+------------------------------------+  ",
+  "|             NO CARRIER             |. ",
+  "|         thanks for calling         |. ",
+  "+------------------------------------+. ",
+  " .....................................  ",
+]

@@ -10,9 +10,10 @@ use crate::codec::{Reader, Writer};
 use crate::content::{Content, ShortcutKind};
 use crate::content_town::ProjectEffect;
 use crate::rules::{DEPTH_MAX, RECOVERY_DAYS};
+use crate::social::{Commons, SocialChange};
 
 /// The world blob's format version.
-pub(crate) const WORLD_FORMAT: u32 = 2;
+pub(crate) const WORLD_FORMAT: u32 = 3;
 
 /// A rescue is remembered this long, so a hero who comes back late is still carried home.
 const RESCUE_KEEP_DAYS: i64 = 14;
@@ -75,6 +76,8 @@ pub(crate) struct World {
     pub(crate) news: Vec<String>,
     /// Gifts to the town's projects (see [`Pledge`]).
     pub(crate) pledges: Vec<Pledge>,
+    /// Companies, notes, the ring, epitaphs and the chronicle (format 3).
+    pub(crate) commons: Commons,
 }
 
 /// A change to the world, as a value, so the engine can hand it to the session.
@@ -89,6 +92,8 @@ pub(crate) enum Change {
     Pledge(Pledge),
     /// A line for the tavern board.
     News(String),
+    /// Something the heroes share: a company, a note, a duel.
+    Social(SocialChange),
 }
 
 impl World {
@@ -104,6 +109,7 @@ impl World {
             fallen: Vec::new(),
             news: Vec::new(),
             pledges: Vec::new(),
+            commons: Commons::default(),
         }
     }
 
@@ -202,6 +208,11 @@ impl World {
                 }
             }
             Change::News(line) => self.add_news(line.clone()),
+            Change::Social(change) => {
+                if let Some(line) = self.commons.apply(change) {
+                    self.add_news(line);
+                }
+            }
             Change::Rescue(name, by) => {
                 let mut rescued = false;
                 for f in &mut self.fallen {
@@ -211,6 +222,7 @@ impl World {
                     }
                 }
                 if rescued {
+                    self.commons.on_rescue(name, by);
                     self.add_news(format!("{by} carried {name} home."));
                 }
             }
@@ -301,6 +313,9 @@ impl World {
     /// One day of the world: expire the fallen, and collapse the dungeon if the Furnace fell.
     pub(crate) fn tick(&mut self, day: i64) {
         self.day = day;
+        for line in self.commons.tick(day) {
+            self.add_news(line);
+        }
         self.fallen.retain(|f| {
             let age = day - f.day;
             age <= RECOVERY_DAYS + 1 || (f.rescued_by.is_some() && age <= RESCUE_KEEP_DAYS)
@@ -313,6 +328,51 @@ impl World {
             self.add_news(format!(
                 "{by} put out the Cold Furnace. The Emberdeep collapses and reshapes itself."
             ));
+        }
+    }
+
+    /// One day, with the content in hand: the verdict becomes an ending in the chronicle (before
+    /// the collapse resets the dungeon), and the stakes lost in the ring go to the works.
+    pub(crate) fn tick_full(&mut self, day: i64, content: &Content) {
+        if self.finale.is_some() {
+            let code = crate::endings::collective(self, content);
+            self.commons.chronicle.push((self.epoch, code));
+            while self.commons.chronicle.len() > 8 {
+                self.commons.chronicle.remove(0);
+            }
+            let ending = crate::endings::ENDINGS[usize::from(code)];
+            self.add_news(format!("{}: {}", ending.name, ending.text));
+            self.commons.verdict = None;
+        }
+        self.tick(day);
+        let fund = std::mem::take(&mut self.commons.ring_fund);
+        if fund > 0
+            && let Some(project) = content
+                .projects
+                .project
+                .iter()
+                .find(|p| self.is_open(content, &p.id))
+        {
+            let (have, _) = self.progress(&project.id);
+            let give = fund.min(project.coin.saturating_sub(have));
+            if give > 0 {
+                let ring = "the Ring";
+                let at = self
+                    .pledges
+                    .iter()
+                    .position(|p| p.hero == ring && p.project == project.id);
+                if let Some(at) = at {
+                    let slot = &mut self.pledges[at];
+                    slot.coin = slot.coin.saturating_add(give);
+                } else if self.pledges.len() < PLEDGES_MAX {
+                    self.pledges.push(Pledge {
+                        hero: ring.to_owned(),
+                        project: project.id.clone(),
+                        coin: give,
+                        salvage: 0,
+                    });
+                }
+            }
         }
     }
 
@@ -363,10 +423,17 @@ impl World {
             w.u32(p.coin);
             w.u32(p.salvage);
         }
+        // Format 3: the commons.
+        self.commons.encode(&mut w);
         w.0
     }
 
     pub(crate) fn decode(bytes: &[u8]) -> Option<Self> {
+        Self::decode_with(bytes, true)
+    }
+
+    /// Read a world of format 3 (`commons` true) or of format 2.
+    fn decode_with(bytes: &[u8], commons: bool) -> Option<Self> {
         let mut r = Reader(bytes);
         let season = r.u32()?;
         let epoch = r.u16()?;
@@ -418,6 +485,11 @@ impl World {
         if pledges.len() > PLEDGES_MAX {
             return None;
         }
+        let commons = if commons {
+            Commons::decode(&mut r)?
+        } else {
+            Commons::default()
+        };
         r.done().then_some(Self {
             season,
             epoch,
@@ -429,6 +501,7 @@ impl World {
             fallen,
             news,
             pledges,
+            commons,
         })
     }
 }
@@ -437,6 +510,14 @@ impl World {
 pub(crate) fn upgrade_v1(bytes: &[u8]) -> Option<Vec<u8>> {
     let mut out = bytes.to_vec();
     out.extend_from_slice(&0u16.to_le_bytes());
+    World::decode_with(&out, false).map(|_| out)
+}
+
+/// The empty format-3 section appended to a format-2 world.
+pub(crate) fn upgrade_v2(bytes: &[u8]) -> Option<Vec<u8>> {
+    World::decode_with(bytes, false)?;
+    let mut out = bytes.to_vec();
+    out.extend_from_slice(&Commons::empty_bytes());
     World::decode(&out).map(|_| out)
 }
 
@@ -478,6 +559,18 @@ pub struct WorldSummary {
     pub news: Vec<String>,
     /// Coin and salvage given to each project so far (unfinished and finished alike).
     pub pledged: Vec<(String, u32, u32)>,
+    /// Companies: leader, members, rescues between companions.
+    pub companies: Vec<(String, Vec<String>, u16)>,
+    /// The ring's ladder: name, wins, losses.
+    pub ladder: Vec<(String, u16, u16)>,
+    /// Duels fought and heroes carried home this season.
+    pub duels: u16,
+    /// Carried home, all told.
+    pub carried_home: u16,
+    /// Endings written in the chronicle: epoch and ending name.
+    pub chronicle: Vec<(u16, String)>,
+    /// Epitaphs in the hall.
+    pub epitaphs: usize,
 }
 
 /// Read a world blob into a [`WorldSummary`].
@@ -508,6 +601,34 @@ pub fn summarize_world(bytes: &[u8]) -> Option<WorldSummary> {
                 })
                 .collect()
         },
+        companies: w
+            .commons
+            .parties
+            .iter()
+            .map(|p| (p.leader.clone(), p.members.clone(), p.rescues))
+            .collect(),
+        ladder: w
+            .commons
+            .ladder
+            .iter()
+            .map(|r| (r.name.clone(), r.wins, r.losses))
+            .collect(),
+        duels: w.commons.duels,
+        carried_home: w.commons.rescues,
+        chronicle: w
+            .commons
+            .chronicle
+            .iter()
+            .map(|(e, c)| {
+                (
+                    *e,
+                    crate::endings::ENDINGS[usize::from(*c).min(5)]
+                        .name
+                        .to_owned(),
+                )
+            })
+            .collect(),
+        epitaphs: w.commons.epitaphs.len(),
     })
 }
 

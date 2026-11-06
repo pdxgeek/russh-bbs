@@ -1,0 +1,43 @@
+
+┌─────────────────────────────────────────────────────────── russh-bbs ────────────────────────────────────────────────────────────┐
+│Long Haul                                                                                                                         │
+│                                                                                                                                  │
+│▲ LONG HAUL  founder  15,000 cr  debt 35,736  days ●●●●●●○○○○ 6                                                                   │
+│╭ SOCIETY: CONVOYS, PIRACY, OUTPOSTS ────────────────────────────────────────────────────────────────────────────────────────────╮│
+││ Convoy   Piracy  [Outposts]  Hall   Journal                                                                                    ││
+││The server can read all of this. Other captains see only what is marked shared.                                                 ││
+││Players can fund new stations in charted systems with none. 12,000 cr opens one; 24,000 and 48,000 raise it to level 2 and 3.   ││
+││Pledges are spent for good.                                                                                                     ││
+││  none yet                                                                                                                      ││
+││You are in Kestrel Hold. [p] pledge 500 cr  [P] pledge 5,000 cr toward a station here.                                          ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+││                                                                                                                                ││
+│╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯│
+│Standing with the Quiet Church: -2.                                                                                               │
+│[Left/Right] tab  [Up/Down] choose  [Enter] join/hunt  [n] form  [x] leave  [t] say  [1-8] note  [f] colours  [p/P] pledge  [Esc] │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+

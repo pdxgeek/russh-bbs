@@ -18,9 +18,11 @@ const TRANSIT_TOML: &str = include_str!("../content/transit.toml");
 const ENEMIES_TOML: &str = include_str!("../content/enemies.toml");
 const DERELICTS_TOML: &str = include_str!("../content/derelicts.toml");
 const JOBS_TOML: &str = include_str!("../content/jobs.toml");
+const SOCIAL_TOML: &str = include_str!("../content/social.toml");
+const ARCS_TOML: &str = include_str!("../content/arcs.toml");
 
 /// The embedded tables as `(name, text)`, for the schema test.
-pub const TABLES: [(&str, &str); 11] = [
+pub const TABLES: [(&str, &str); 13] = [
     ("goods", GOODS_TOML),
     ("economies", ECONOMIES_TOML),
     ("news", NEWS_TOML),
@@ -32,6 +34,8 @@ pub const TABLES: [(&str, &str); 11] = [
     ("enemies", ENEMIES_TOML),
     ("derelicts", DERELICTS_TOML),
     ("jobs", JOBS_TOML),
+    ("social", SOCIAL_TOML),
+    ("arcs", ARCS_TOML),
 ];
 
 pub(crate) fn ident_ok(id: &str) -> bool {
@@ -874,6 +878,10 @@ pub struct Content {
     pub derelicts: crate::boarding::DerelictTable,
     /// Passenger kinds and client lines.
     pub jobs: crate::contracts::JobTable,
+    /// Convoy names, notes and night events; outpost names.
+    pub social: crate::social::SocialTable,
+    /// Story arcs, their endings, and the scenes (also appended to `transit.event`).
+    pub arcs: crate::arcs::ArcTable,
 }
 
 impl Content {
@@ -889,10 +897,22 @@ impl Content {
         let backgrounds: BackgroundsTable = content::load("backgrounds", BACKGROUNDS_TOML)?;
         let names: Names = content::load("names", NAMES_TOML)?;
         let crew = content::load("crew", CREW_TOML)?;
-        let transit = content::load("transit", TRANSIT_TOML)?;
+        let mut transit: crate::transit::TransitTable = content::load("transit", TRANSIT_TOML)?;
         let enemies = content::load("enemies", ENEMIES_TOML)?;
         let derelicts = content::load("derelicts", DERELICTS_TOML)?;
         let jobs = content::load("jobs", JOBS_TOML)?;
+        let social = content::load("social", SOCIAL_TOML)?;
+        let arcs: crate::arcs::ArcTable = content::load("arcs", ARCS_TOML)?;
+        // The arc scenes are events at the end of the table: an open scene is saved as an index,
+        // so transit.toml and then arcs.toml only ever grow at their ends.
+        transit.event.extend(arcs.event.iter().cloned());
+        let merged = Table::validate(&transit);
+        if !merged.is_empty() {
+            return Err(ContentError::Invalid {
+                name: "transit+arcs",
+                problems: merged,
+            });
+        }
         let all = Self {
             goods: goods.good,
             economies: economies.economy,
@@ -906,6 +926,8 @@ impl Content {
             enemies,
             derelicts,
             jobs,
+            social,
+            arcs,
         };
         let problems = all.link_problems();
         if problems.is_empty() {
@@ -998,6 +1020,7 @@ impl Content {
             problems.push("the `freighter` and `courier` hulls are required".into());
         }
         problems.extend(self.transit.link_problems(self));
+        problems.extend(crate::arcs::link_problems(self, &self.arcs));
         for e in &self.enemies.enemy {
             if let Some(w) = &e.wreck
                 && !self.derelicts.derelict.iter().any(|d| d.id == *w)

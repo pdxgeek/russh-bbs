@@ -27,8 +27,9 @@ use russh_bbs_door::sim::Bot;
 use russh_bbs_door::{DoorEnv, DoorKey, Flow, Save, Start};
 use russh_bbs_door_nullroute::Nullroute;
 use russh_bbs_door_nullroute::content::FragKind;
-use russh_bbs_door_nullroute::player::Player;
+use russh_bbs_door_nullroute::player::{ArcState, Legend, Player};
 use russh_bbs_door_nullroute::save::{encode, encode_world};
+use russh_bbs_door_nullroute::social::{Bounty, Lines, Posted, SeasonRecord, Tallies};
 use russh_bbs_door_nullroute::world::{Learned, World};
 
 /// The door areas of an 80x24, a 100x30 and a 132x43 window (the board's box takes 8 columns and
@@ -90,7 +91,91 @@ fn rich_save() -> Vec<u8> {
     for s in c.scripts.script.iter().filter(|s| s.price > 0).take(9) {
         p.owned.push(s.num);
     }
+    // The story and the social layer: a choice waiting in the first arc, one arc ended, a
+    // honeypot, some history.
+    p.ties.arcs[0] = ArcState {
+        step: 1,
+        awaiting: true,
+        since: day() - 1,
+        ending: 0,
+    };
+    p.ties.arcs[2] = ArcState {
+        step: 7,
+        awaiting: false,
+        since: day() - 3,
+        ending: 8,
+    };
+    p.ties.endings = 1 << 8;
+    p.ties.honeypot = 1;
+    p.ties.stats = [9, 4, 2, 1, 5, 3, 1, 0];
+    p.ties.legend = vec![Legend {
+        season: 0,
+        ending: 7,
+        rep: 90,
+        jobs: 22,
+    }];
     encode(&p)
+}
+
+/// A world with other people in it: rivals, a bounty, a crew with a run gathering, the street
+/// word and a season in the hall.
+fn social_world() -> Vec<u8> {
+    let c = content();
+    let mut w = World::default();
+    w.season = 1;
+    w.market_pct = 112;
+    let now = day();
+    let mk = |name: &str, tier: u8, heat: u8, cash: u16, rep: u32, born: i64| Posted {
+        handle: name.into(),
+        tier,
+        heat,
+        honeypot: 1,
+        shield: 1,
+        edge: 4,
+        cash,
+        rep,
+        born,
+        seen: now,
+        peace_until: 0,
+        pvp: true,
+        crews_open: true,
+    };
+    for p in [
+        mk("ann", 2, 52, 64, 32, now - 30),
+        mk("Brindle", 2, 20, 40, 33, now - 30),
+        mk("Kestrelfan", 3, 75, 120, 61, now - 40),
+        mk("newbie", 1, 0, 9, 0, now - 2),
+    ] {
+        w.social.post(p);
+    }
+    let id = w.social.id();
+    w.social.bounties.push(Bounty {
+        id,
+        target: "Kestrelfan".into(),
+        poster: String::new(),
+        fixer: 1,
+        reward: 190,
+        stake: 0,
+        tier: 3,
+        posted: now,
+        expires: now + 4,
+        note: String::new(),
+    });
+    w.social.crew_create("Night Shift", "Brindle", now).unwrap();
+    w.social.crew_invite("Brindle", "ann", now).unwrap();
+    w.social.deed(now, Lines::DEED_WARDEN, "Kestrelfan", 1);
+    w.social.deed(now, Lines::DEED_DEEP, "Brindle", 3);
+    w.social.tallies.jobs = 40;
+    w.social.tallies.wardens = 2;
+    w.social.hall.push(SeasonRecord {
+        season: 0,
+        ending: 7,
+        top: vec![("Brindle".into(), 120), ("ann".into(), 90)],
+        tallies: Tallies::default(),
+        finale: String::new(),
+    });
+    let _ = c;
+    encode_world(&w)
 }
 
 /// A world where the corporations have learned some of the scripts, with the market up.
@@ -144,6 +229,7 @@ fn key_of(ch: char) -> DoorKey {
         '\n' => DoorKey::Enter,
         '^' => DoorKey::Up,
         'v' => DoorKey::Down,
+        '~' => DoorKey::Char('v'),
         c => DoorKey::Char(c),
     }
 }
@@ -202,6 +288,7 @@ fn bot_moments(door: &Nullroute) -> BTreeMap<&'static str, (i64, Vec<DoorKey>)> 
 fn screens(door: &Nullroute, env: &DoorEnv) -> Vec<(String, Driver)> {
     let rich = rich_save();
     let world = learned_world();
+    let social = social_world();
     let mut out: Vec<(String, Driver)> = Vec::new();
     let mut add = |name: &str, keys: &str, rich_player: bool| {
         let mut d = if rich_player {
@@ -229,6 +316,24 @@ fn screens(door: &Nullroute, env: &DoorEnv) -> Vec<(String, Driver)> {
     add("code-target", "hc1", true);
     add("code-modifier", "hc11", true);
     add("code-confirm", "hc110", true);
+    let mut add_social = |name: &str, keys: &str| {
+        let mut d = open(door, env, day(), 5, Some(&rich), Some(&social));
+        send(&mut d, keys);
+        out.push((name.to_owned(), d));
+    };
+    add_social("rivals", "~");
+    add_social("rivals-cursor", "~vv");
+    add_social("crew-invited", "k");
+    add_social("crew-in", "k1");
+    add_social("crew-name", "kn");
+    add_social("arcs", "a");
+    add_social("arcs-cursor", "avv");
+    add_social("scene", "a\n");
+    add_social("street-word", "w");
+    add_social("street-bounties", "w2");
+    add_social("street-crews", "w3");
+    add_social("street-hall", "w4");
+    add_social("hideout-honeypot", "h");
     let moments = bot_moments(door);
     for (name, (seed, keys)) in &moments {
         let mut d = open(door, env, *seed, 3, None, None);

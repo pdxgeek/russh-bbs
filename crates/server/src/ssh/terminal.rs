@@ -611,4 +611,6 @@ pub fn parse_keys(bytes: &[u8]) -> Vec<Key> {
 }
 
 #[cfg(test)]
+mod fuzz;
+#[cfg(test)]
 mod tests;

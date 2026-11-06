@@ -1105,6 +1105,108 @@ mod interaction {
         assert_eq!(redraw(&mut with), redraw(&mut without));
     }
 
+    /// Every key the sweep below presses: every hotkey letter and digit, the cursor keys,
+    /// Enter, Esc, the dock and the palette.
+    fn sweep_alphabet() -> Vec<Key> {
+        let mut alphabet: Vec<Key> = ('a'..='z')
+            .chain('0'..='9')
+            .chain(['?', '/', ' '])
+            .map(Key::Char)
+            .collect();
+        alphabet.extend([
+            Key::Enter,
+            Key::Escape,
+            Key::Up,
+            Key::Down,
+            Key::Left,
+            Key::Right,
+            Key::PageDown,
+            Key::Ctrl('k'),
+            Key::Ctrl('t'),
+            Key::Ctrl('x'),
+            Key::Ctrl('i'),
+        ]);
+        alphabet
+    }
+
+    /// Press `first`, then `second`, from the main menu of a staff-rich member; then Ctrl-C
+    /// (`quit_c`) or Ctrl-D, which must log off unless the keys already did. Returns what failed.
+    fn log_off_sweep(firsts: &[Key], seconds: &[Key], ui: &std::sync::Arc<Ui>) -> Vec<String> {
+        let mut stuck = Vec::new();
+        let mut flip = false;
+        for first in firsts {
+            for second in std::iter::once(None).chain(seconds.iter().map(Some)) {
+                flip = !flip;
+                let quit = if flip { Key::Ctrl('c') } else { Key::Ctrl('d') };
+                let flow = MemberFlow::new(
+                    &sanitize_username("alice").unwrap(),
+                    Snapshot::from_role(
+                        Some(AccountId::from_raw(1)),
+                        &Slug::MEMBER,
+                        10,
+                        &Via::Account,
+                        all().iter().copied(),
+                    ),
+                    None,
+                    settings(true),
+                );
+                let mut screen = Screen::new(
+                    PtySize::from_request(100, 30),
+                    RenderCap::default(),
+                    super::super::Content::Member(Box::new(flow)),
+                    ui.clone(),
+                )
+                .unwrap();
+                at_menu(&mut screen);
+                let mut effects = screen.apply_keys(&[*first]);
+                screen.render().unwrap();
+                if !effects.disconnect
+                    && let Some(second) = second
+                {
+                    effects = screen.apply_keys(&[*second]);
+                    screen.render().unwrap();
+                }
+                if !effects.disconnect && !screen.apply_keys(&[quit]).disconnect {
+                    stuck.push(format!("{first:?} {second:?} then {quit:?}"));
+                }
+            }
+        }
+        stuck
+    }
+
+    /// H-2: Ctrl-C and Ctrl-D log off from every screen one key reaches from the main menu
+    /// (menus, settings, forums, mail, chat, doors, the palette, the dock, text fields), and
+    /// from the screens a second navigation key reaches from those. Requests that need the store
+    /// are never answered here, so screens stay in their "loading" state; the answered states
+    /// are covered by each screen's own Ctrl-C test. The full two-key sweep is the `#[ignore]`d
+    /// test below.
+    #[test]
+    fn ctrl_c_and_ctrl_d_log_off_from_the_states_one_or_two_keys_reach() {
+        let ui = std::sync::Arc::new(Ui::standard().unwrap());
+        let seconds = [
+            Key::Enter,
+            Key::Escape,
+            Key::Down,
+            Key::Char('a'),
+            Key::Char('e'),
+            Key::Char('s'),
+            Key::Char('?'),
+            Key::Char('1'),
+        ];
+        let stuck = log_off_sweep(&sweep_alphabet(), &seconds, &ui);
+        assert!(stuck.is_empty(), "no log off from: {stuck:#?}");
+    }
+
+    /// The full sweep: every pair of keys from [`sweep_alphabet`]. About 40 s in a debug build.
+    #[test]
+    #[ignore = "slow: every pair of keys; run with --ignored"]
+    fn ctrl_c_and_ctrl_d_log_off_from_every_pair_of_keys() {
+        let ui = std::sync::Arc::new(Ui::standard().unwrap());
+        let alphabet = sweep_alphabet();
+        let stuck = log_off_sweep(&alphabet, &alphabet, &ui);
+        assert!(stuck.is_empty(), "no log off from: {stuck:#?}");
+    }
+
     #[test]
     fn escape_closes_the_palette_and_ctrl_c_still_logs_off() {
         let mut screen = member(&all(), settings(false));

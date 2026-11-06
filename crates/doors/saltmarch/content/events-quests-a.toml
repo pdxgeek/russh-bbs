@@ -1,0 +1,866 @@
+# Rakers' Guild quest scenes, part A: the Brine Ledger, the Last Pan, the Smith's Debt and
+# Rakes and Wrecks. Each chain's steps are set by the scenes below (step n waits for step n-1),
+# and each end scene refuses a clan that already holds another end of its chain.
+
+# =================================================================== the brine ledger
+
+[[event]]
+id = "ledger-in-the-cellar"
+title = "A ledger in the cellar"
+text = "The counting house cellar in the drowned town is chest-deep and cold. On a shelf above the waterline sits a ledger bound in tarred sailcloth, and on its cover the seal of Master Odo Vane, Guild weigh-master."
+tiles = ["drowned-town"]
+needs = ["tier:rakers:1", "!mark:q-brine-ledger-one"]
+draws = ["trade:salvager"]
+weight = 16
+[[event.option]]
+label = "Wade in and lift it down"
+skill = "salvager"
+risk = 30
+[event.option.win]
+text = "The shelf holds. The ledger is damp at the edges and dry in the middle, and every page is columns of salt in, salt out. Vane's seal is on each one."
+fx = ["mark:q-brine-ledger-one", "xp:salvager:2"]
+[event.option.lose]
+text = "The shelf comes down in a slurry of rot and cold water. You save the book, and you pay for it in bruises."
+fx = ["mark:q-brine-ledger-one", "hurt:any:hurt"]
+[[event.option]]
+label = "Read the seals before touching anything"
+needs = ["trade:raker"]
+[event.option.win]
+text = "The raker turns the pages with a rule and a lamp. The figures are good. Too good: every tenth weighing lands on the same mark. Nobody weighs that evenly. You take the ledger."
+fx = ["mark:q-brine-ledger-one", "xp:raker:2", "turns:1"]
+[[event.option]]
+label = "Row in and take the whole shelf"
+needs = ["boat"]
+[event.option.win]
+text = "The boat drifts under the shelf and the ledger drops in beside the oars. A drawer of ink-stained tallies follows it. Nobody gets wet."
+fx = ["mark:q-brine-ledger-one", "tallies:4-9"]
+[[event.option]]
+label = "Take a good look and leave it"
+[event.option.win]
+text = "You note the seal and the shelf and walk on. The ledger will still be there, unless somebody else wants it more."
+
+[[event]]
+id = "vane-strongbox"
+title = "Vane's private shelf"
+text = "At the counting house, in the ledger room behind the rotted counters, one shelf has a brass hasp and a fresh coat of tar. The seal on it is Master Odo Vane's. Nothing else in the building is cared for."
+poi = ["ruin"]
+needs = ["tier:rakers:1", "!mark:q-brine-ledger-one"]
+weight = 16
+[[event.option]]
+label = "Break the hasp"
+risk = 25
+[event.option.win]
+text = "The hasp is soft with salt. Behind it, in an oilskin: a ledger with Vane's seal and a second set of figures, written small."
+fx = ["mark:q-brine-ledger-one", "tallies:2-6"]
+[event.option.lose]
+text = "The hasp gives, and so does the shelf. A rotten beam falls across your hand. The ledger is still in the oilskin."
+fx = ["mark:q-brine-ledger-one", "hurt:any:hurt"]
+[[event.option]]
+label = "Open the lock without breaking it"
+needs = ["trade:smith"]
+[event.option.win]
+text = "The smith works the pin with a wire and a held breath. It gives. Vane used a plain Guild lock on his own shelf. That tells you something about Vane."
+fx = ["mark:q-brine-ledger-one", "xp:smith:2"]
+[[event.option]]
+label = "Take the ledger and trade the silence"
+needs = ["trait:greedy"]
+[event.option.win]
+text = "You take the book and, in its place, leave a note: 'Interesting reading.' It is a poor joke but a good lever. A drawer of loose tallies comes with it."
+fx = ["mark:q-brine-ledger-one", "tallies:6-12"]
+[[event.option]]
+label = "Leave the shelf alone"
+[event.option.win]
+text = "You back out the way you came. The tar will hold. The question will not."
+
+[[event]]
+id = "hesk-weighs-light"
+title = "Hesk's scales"
+text = "On the salt-pan, old Hesk the pan-keeper sits at his shed door with a balance in his lap. He sees the ledger under your arm and does not ask what it is. 'Weigh me a stone,' he says."
+tiles = ["salt-pan"]
+needs = ["mark:q-brine-ledger-one", "!mark:q-brine-ledger-two"]
+draws = ["trade:raker"]
+weight = 16
+[[event.option]]
+label = "Weigh a stone of his salt against the ledger"
+needs = ["trade:raker"]
+[event.option.win]
+text = "The raker's hand is honest and the numbers are plain. Stone for stone, Hesk's salt was weighed light by a sixth. Eleven years of it. Hesk says nothing, and his hand shakes."
+fx = ["mark:q-brine-ledger-two", "xp:raker:3", "rep:rakers:2"]
+[[event.option]]
+label = "Take Hesk's word and match it to the book"
+risk = 25
+[event.option.win]
+text = "Hesk talks, you read. By dusk the ledger and his memory agree on every date. He gives you three days of salt for the trouble."
+fx = ["mark:q-brine-ledger-two", "gain:salt:3-6"]
+[event.option.lose]
+text = "Hesk's memory runs one way and the book another, and he is old enough to be sharp about it. You get the facts, and a lecture, and a long afternoon."
+fx = ["mark:q-brine-ledger-two", "turns:1"]
+[[event.option]]
+label = "Sit with him and ease his shaking hands"
+needs = ["trade:healer"]
+[event.option.win]
+text = "The healer binds the old man's wrist and talks him round. Hesk gives you the names of every pan-wife who was cheated. It is a long list, and an angry one."
+fx = ["mark:q-brine-ledger-two", "xp:healer:3", "heal:any:2"]
+[[event.option]]
+label = "Buy the whole matter off the table with a sack of salt"
+needs = ["carry:salt:2"]
+[event.option.win]
+text = "A sack of salt on the table, and Hesk laughs for the first time in a year. He signs a statement with a shaking cross. It is worth about what you paid."
+fx = ["mark:q-brine-ledger-two", "lose:salt:2", "rep:rakers:3"]
+
+[[event]]
+id = "eel-wifes-wrapper"
+title = "The eel-wife's wrapper"
+text = "On the reedbeds, an eel-wife is gutting her catch on a stump and wrapping each in a leaf of heavy paper. The paper has columns on it and Master Vane's hand. You recognise the last page of the ledger."
+tiles = ["reedbed"]
+needs = ["mark:q-brine-ledger-two", "!mark:q-brine-ledger-three"]
+draws = ["trade:reed-witch"]
+weight = 16
+[[event.option]]
+label = "Buy the pages off her with food"
+needs = ["carry:food:2"]
+[event.option.win]
+text = "'Good eels are worth more than bad paper,' she says, and hands over her wrappers, grease and all. The last page is there, with a wet thumbprint on the total."
+fx = ["mark:q-brine-ledger-three", "lose:food:2", "rep:reed:3"]
+[[event.option]]
+label = "Ask in the old tongue, as one reed-witch to another"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "She looks at the witch's cord and puts the knife down. The pages come out of the eel basket one by one, and she tells you who brought them: Vane's own clerk, who wanted them gone."
+fx = ["mark:q-brine-ledger-three", "xp:reed-witch:3", "rep:reed:3"]
+[[event.option]]
+label = "Snatch the wrapper and run"
+risk = 35
+[event.option.win]
+text = "She is old and you are not. You have the page, and she has your name. She will shout it across the beds for a week."
+fx = ["mark:q-brine-ledger-three", "rep:reed:-3"]
+[event.option.lose]
+text = "She is old and not slow, and the gutting knife is in her hand. You keep the page and a cut across the knuckles."
+fx = ["mark:q-brine-ledger-three", "hurt:any:fight", "rep:reed:-4"]
+
+[[event]]
+id = "toll-post-ledger"
+title = "The ledger at the toll-post"
+text = "On the causeway stands the Tidecourt toll-post, with its brass bell and its clerk in a rain-hat. You carry the whole ledger now, front to back. The clerk looks at the seal, then at you."
+tiles = ["causeway"]
+needs = ["mark:q-brine-ledger-three", "!mark:q-brine-ledger-end-expose", "!mark:q-brine-ledger-end-bury", "!mark:q-brine-ledger-end-sell"]
+weight = 16
+draws = ["mark:q-brine-ledger-three"]
+[[event.option]]
+label = "Read it out to the toll-post and the queue behind you"
+[event.option.win]
+text = "You read the eleven worst years aloud. The queue goes quiet, then loud. By dusk the harbourmaster's men have Vane's seal and a warrant. The Tidecourt notes your name, and the Guild notes it harder."
+fx = ["mark:q-brine-ledger-end-expose", "rep:court:11", "rep:rakers:-8", "tallies:5-10"]
+[[event.option]]
+label = "Have the healer name every pan-worker made ill"
+needs = ["trade:healer"]
+[event.option.win]
+text = "The healer's list is long and her voice does not shake. The clerk writes all of it down. The assize will be a short one. You come away with the Court's thanks and a salve-pot of gratitude."
+fx = ["mark:q-brine-ledger-end-expose", "rep:court:14", "rep:rakers:-7", "xp:healer:3"]
+[[event.option]]
+label = "Put the ledger away and say nothing"
+[event.option.win]
+text = "You tuck the ledger under your coat and nod to the clerk. He nods back and you both pretend to have had a normal morning."
+fx = ["turns:1"]
+
+[[event]]
+id = "pan-fire-for-the-guild"
+title = "A fire that is not for salt"
+text = "At the Guild's pan-house on the salt-pan, the evaporating fire is banked for the night. Guild Reeve Kessa waits by it with a lamp. She has heard what you carry. 'Give it here,' she says, 'and I will see it is dealt with.'"
+tiles = ["salt-pan"]
+needs = ["mark:q-brine-ledger-three", "!mark:q-brine-ledger-end-expose", "!mark:q-brine-ledger-end-bury", "!mark:q-brine-ledger-end-sell"]
+weight = 16
+draws = ["mark:q-brine-ledger-three"]
+[[event.option]]
+label = "Feed it to the fire"
+[event.option.win]
+text = "The tar catches slowly, then all at once. Master Vane keeps his seal and his post, and his weights are honest from tomorrow. Kessa writes you a note of thanks with real salt in it."
+fx = ["mark:q-brine-ledger-end-bury", "rep:rakers:10", "rep:court:-7", "gain:salt:4-8"]
+[[event.option]]
+label = "Put it in the Reeve's hand, with the raker's own testimony"
+needs = ["trade:raker"]
+[event.option.win]
+text = "You hand it over with the raker's notes and a plain request: a quiet audit, and Vane sent to the far pans. Kessa agrees, and the Guild is a little cleaner for it. She does not forget who asked."
+fx = ["mark:q-brine-ledger-end-bury", "rep:rakers:13", "rep:court:-6", "xp:raker:3"]
+[[event.option]]
+label = "Keep the ledger and walk on"
+[event.option.win]
+text = "'Not tonight,' you say. Kessa lets you go, without friendliness. The fire burns down."
+fx = ["turns:1"]
+
+[[event]]
+id = "vane-at-the-landing"
+title = "Vane at the landing"
+text = "A slim boat idles at the mudflat landing, and a man in a good coat sits in it with his hands folded. Master Odo Vane. He looks at the ledger and then at your faces. 'Let us be sensible,' he says."
+tiles = ["mudflat", "channel"]
+needs = ["mark:q-brine-ledger-three", "!mark:q-brine-ledger-end-expose", "!mark:q-brine-ledger-end-bury", "!mark:q-brine-ledger-end-sell"]
+weight = 16
+draws = ["mark:q-brine-ledger-three"]
+[[event.option]]
+label = "Sell it back to him at his price"
+[event.option.win]
+text = "He counts out the tallies on the thwart as though each one hurt. The ledger goes in his boat and is gone by dusk. The Guild hears you took coin, and the Court hears why."
+fx = ["mark:q-brine-ledger-end-sell", "tallies:28-40", "rep:rakers:-3", "rep:court:-3"]
+[[event.option]]
+label = "Haggle him up, greed to greed"
+needs = ["trait:greedy"]
+risk = 25
+[event.option.win]
+text = "You hold out through two offers and a threat, and the third offer has a boat-load of salt in it. Vane pays, grinding his teeth. Nobody in the Guild or the Court will drink with you."
+fx = ["mark:q-brine-ledger-end-sell", "tallies:42-60", "gain:salt:3-6", "rep:rakers:-4", "rep:court:-4"]
+[event.option.lose]
+text = "You hold out one offer too long. Vane signals and a second boat slides out of the reeds. He takes the ledger, leaves a purse, and does not say thank you."
+fx = ["mark:q-brine-ledger-end-sell", "tallies:12-20", "rep:rakers:-4", "rep:court:-4", "hurt:any:fight"]
+[[event.option]]
+label = "Row away and tell him nothing"
+needs = ["boat"]
+[event.option.win]
+text = "Your oars bite and his offer dies on the water. He calls after you once, politely, then does not."
+[[event.option]]
+label = "Refuse to talk"
+[event.option.win]
+text = "'Another time,' you say. Vane tips his hat to the empty water."
+
+# =================================================================== the last pan
+
+[[event]]
+id = "tollivers-grey-crust"
+title = "Tolliver's grey crust"
+text = "Tolliver's Pan is the oldest on the coast, a wide shallow dish of clay with a rim of tarred timber. The crust is grey instead of white, the brine tastes of iron, and pan-wife Maren Tolliver stands with her arms folded, daring you to say it."
+tiles = ["salt-pan"]
+needs = ["tier:rakers:2", "!mark:q-last-pan-one"]
+draws = ["trade:raker"]
+weight = 16
+[[event.option]]
+label = "Taste the brine and read the crust"
+needs = ["trade:raker"]
+[event.option.win]
+text = "The raker tastes it, spits and tastes again. 'Not the sea. Something is in the feed, and has been for a season.' Maren unfolds her arms. She shows you the brass sluice-wheel, seized in its housing."
+fx = ["mark:q-last-pan-one", "xp:raker:3", "rep:rakers:2"]
+[[event.option]]
+label = "Walk the dikes with her"
+risk = 20
+[event.option.win]
+text = "You walk the whole rim in two hours, and Maren tells you each patch and each death. She has the brass sluice-wheel tied up with rope, and it will not turn."
+fx = ["mark:q-last-pan-one", "gain:salt:2-5"]
+[event.option.lose]
+text = "A dike slumps under your boot and you go into the brine to the hip. It burns. Maren hauls you out, and hands you the sluice-wheel key for your trouble."
+fx = ["mark:q-last-pan-one", "hurt:any:hurt"]
+[[event.option]]
+label = "Give her a bag of salt for the work and ask nothing"
+needs = ["carry:salt:2"]
+[event.option.win]
+text = "She weighs it in her hand, sniffs and gives it back with half a bag of her own. 'You do not pay me yet,' she says. She shows you the seized wheel."
+fx = ["mark:q-last-pan-one", "rep:rakers:3"]
+
+[[event]]
+id = "high-water-stone"
+title = "The high-water stone"
+text = "The old shrine on the pan edge is a leaning stone scored with two hundred years of tide lines, and by the lowest line a smaller mark: three notches, with a wedge cut under them. The pan-wives call it the sluice mark."
+poi = ["shrine"]
+needs = ["tier:rakers:2", "!mark:q-last-pan-one"]
+weight = 16
+[[event.option]]
+label = "Copy the marks down"
+[event.option.win]
+text = "You copy the lines with a stub of chalk. They run true until a hand's width ago, then step sideways, as if someone had moved the stone's world."
+fx = ["mark:q-last-pan-one", "xp:wader:1"]
+[[event.option]]
+label = "Read the stone by touch, as a wader reads mud"
+needs = ["trade:wader"]
+[event.option.win]
+text = "The wader lays a palm on each notch. 'The sea is not higher, just later. Something is holding it back, or letting it in wrong.' It is a good guess, and a useful one."
+fx = ["mark:q-last-pan-one", "xp:wader:3"]
+[[event.option]]
+label = "Ask the stone's keeper at the shrine"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "The keeper of the stone is a thin woman with seaweed in her hair, and she likes to be asked. She tells you the Tolliver sluice is an old wedge-gate, and that someone has been at it with iron."
+fx = ["mark:q-last-pan-one", "xp:reed-witch:3", "rep:reed:2"]
+[[event.option]]
+label = "Leave a pinch of salt and move on"
+[event.option.win]
+text = "The salt goes on the stone, and the herons watch you do it. You learn nothing, but the stone seems pleased."
+
+[[event]]
+id = "choked-feeder"
+title = "The choked feeder"
+text = "The feeder channel that brings the sea to Tolliver's Pan is silted to its lip. The mud is grey and smells of old rust. Something stands upright in the silt, stubborn as a tooth."
+tiles = ["channel"]
+needs = ["mark:q-last-pan-one", "!mark:q-last-pan-two"]
+draws = ["trade:wader", "trade:boatwright"]
+weight = 16
+[[event.option]]
+label = "Dig the channel by hand"
+skill = "wader"
+risk = 30
+[event.option.win]
+text = "Three hours of digging uncovers an iron post, driven deep in the channel bed. A clean cut across its head says it was not the sea that put it there."
+fx = ["mark:q-last-pan-two", "xp:wader:3"]
+[event.option.lose]
+text = "The silt collapses and takes your leg to the hip. You get the post free, and yourself freed, with effort and a twisted knee."
+fx = ["mark:q-last-pan-two", "hurt:any:hurt"]
+[[event.option]]
+label = "Float the boat in and rake the silt aside"
+needs = ["boat"]
+[event.option.win]
+text = "The boat does half the work, and a rope the other half. The post stands clear of the mud: iron, squared, driven from above. It has no business there."
+fx = ["mark:q-last-pan-two", "xp:boatwright:2"]
+[[event.option]]
+label = "Rig a drag-line and pull the post"
+needs = ["carry:rope:1", "size:3"]
+[event.option.win]
+text = "Three of you on the line, a heave and a groan, and the post comes free like a bad tooth. At its foot is a hole where it has been working the sluice wedge for a season."
+fx = ["mark:q-last-pan-two", "bond:1"]
+[[event.option]]
+label = "Leave the channel to the tide"
+[event.option.win]
+text = "You give it a glance and a shrug. The mud rolls over the post as you watch."
+
+[[event]]
+id = "surveyors-stakes"
+title = "Surveyors' stakes"
+text = "In the mudflat by the pan's outflow stand rows of new stakes, each with a red rag and a number. Tidecourt syndicate stakes. A boy in a dry coat sits on a stool, copying measurements, and looks very much like he wishes you were not here."
+tiles = ["mudflat"]
+needs = ["mark:q-last-pan-two", "!mark:q-last-pan-three"]
+weight = 16
+draws = ["mark:q-last-pan-two"]
+[[event.option]]
+label = "Ask the boy who pays him"
+[event.option.win]
+text = "He tells you quickly, to be rid of you: the Marlin & Dree syndicate, who want the pan for salt rights and a harbour wharf. The iron post was theirs. Somebody was paid to move the sluice stones."
+fx = ["mark:q-last-pan-three", "tallies:1-3"]
+[[event.option]]
+label = "Read the survey as it lies"
+needs = ["skill:raker:2"]
+[event.option.win]
+text = "The numbers are plain once you know pans. Marlin & Dree have priced the sluice stones, the iron post and the dike repair, and costed them against the pan's sale. The failure was a business plan."
+fx = ["mark:q-last-pan-three", "xp:raker:3", "rep:court:2"]
+[[event.option]]
+label = "Pull up a stake and hold it to his face"
+risk = 30
+[event.option.win]
+text = "The boy yelps and gives it all away in one breath, names and fees. You carry the stake home as proof, and nobody comes after you."
+fx = ["mark:q-last-pan-three", "rep:court:-2"]
+[event.option.lose]
+text = "The boy yelps for help and two syndicate hands step out of the reeds. You come out with the boy's name, the syndicate's name, and a split lip."
+fx = ["mark:q-last-pan-three", "hurt:any:fight", "rep:court:-2"]
+
+[[event]]
+id = "tolliver-sluice-work"
+title = "The Tolliver sluice"
+text = "Maren has the old sluice stones laid out on the dike like a pulled tooth. The brass wheel is cleaned, the post is gone, and the feeder runs clean for the first time in a season. What is left is the work."
+tiles = ["salt-pan"]
+needs = ["mark:q-last-pan-three", "!mark:q-last-pan-end-sluice", "!mark:q-last-pan-end-sell", "!mark:q-last-pan-end-reeds"]
+weight = 16
+draws = ["mark:q-last-pan-three"]
+[[event.option]]
+label = "Rebuild the sluice with timber and rope"
+needs = ["carry:timber:2", "carry:rope:1"]
+[event.option.win]
+text = "You raise the gate in a day and a night, and the brine runs sweet by dawn. Maren hangs the brass wheel in its housing herself. By week's end the pan is white again, and the Guild knows whose hands did it."
+fx = ["mark:q-last-pan-end-sluice", "lose:timber:2", "lose:rope:1", "rep:rakers:12", "rep:court:-5", "gain:salt:6-12"]
+[[event.option]]
+label = "Rebuild it the old way, as a boatwright would"
+needs = ["trade:boatwright"]
+[event.option.win]
+text = "The boatwright fits the gate with pegged joints and no iron at all. 'Iron is what killed it,' she says. Maren runs her hand over the wedge and says nothing for a long time. The pan makes white salt, and the recipe goes in your book."
+fx = ["mark:q-last-pan-end-sluice", "rep:rakers:15", "rep:court:-5", "recipe:brine-cure", "xp:boatwright:3"]
+[[event.option]]
+label = "Wade in and set the stones by feel"
+skill = "wader"
+risk = 30
+[event.option.win]
+text = "Stone by stone, blind in the brine, until the wedge seats with a sound like a door closing. The water turns clear at the outflow. Maren cries once and denies it."
+fx = ["mark:q-last-pan-end-sluice", "rep:rakers:11", "rep:court:-5", "xp:wader:3"]
+[event.option.lose]
+text = "The stones shift under your hands. You set them in the end, wet to the neck and burned by the brine, and the pan runs half-clean."
+fx = ["mark:q-last-pan-end-sluice", "rep:rakers:8", "rep:court:-5", "hurt:any:hurt"]
+[[event.option]]
+label = "Walk away from the stones"
+[event.option.win]
+text = "Maren watches you go. The stones lie where they are. The decision is still waiting for somebody."
+
+[[event]]
+id = "syndicate-factor"
+title = "The syndicate's factor"
+text = "A stout factor in a dry coat waits on the causeway with a stool, a satchel, and a tide-clock. Marlin & Dree. He has heard that you walked the pan, and he would like to buy Tolliver's rights, today, in coin."
+tiles = ["causeway"]
+needs = ["mark:q-last-pan-three", "!mark:q-last-pan-end-sluice", "!mark:q-last-pan-end-sell", "!mark:q-last-pan-end-reeds"]
+weight = 16
+draws = ["mark:q-last-pan-three"]
+[[event.option]]
+label = "Sell him Maren's rights"
+[event.option.win]
+text = "You sign, he stamps, and the satchel opens. The Court will like a clean title, and Maren will not forgive it. The pan will make wharf-planks, soon enough."
+fx = ["mark:q-last-pan-end-sell", "tallies:34-48", "rep:court:9", "rep:rakers:-8"]
+[[event.option]]
+label = "Sell dear, using the surveyors' own figures"
+needs = ["skill:raker:2"]
+[event.option.win]
+text = "You quote the sluice, the post and the dike back to him, line by line. He stops smiling. The price goes up twice. The Court clerk who witnesses it will remember your ledgers."
+fx = ["mark:q-last-pan-end-sell", "tallies:48-60", "rep:court:12", "rep:rakers:-9"]
+[[event.option]]
+label = "Refuse, and take your time"
+[event.option.win]
+text = "'Think it over,' says the factor. He is already writing a larger number, for later."
+
+[[event]]
+id = "reeds-take-the-pan"
+title = "Let the reeds have it"
+text = "On the reedbed edge of Tolliver's Pan a reed-witch is already waiting with a pole and a patient look. The reeds have been creeping in for a season. One cut in the dike and they will take the whole dish."
+tiles = ["reedbed"]
+needs = ["mark:q-last-pan-three", "!mark:q-last-pan-end-sluice", "!mark:q-last-pan-end-sell", "!mark:q-last-pan-end-reeds"]
+weight = 16
+draws = ["mark:q-last-pan-three"]
+[[event.option]]
+label = "Cut the dike and let them in"
+[event.option.win]
+text = "One cut and the reeds pour in, green as a flag. By evening the pan is a reedbed, and the Reed-folk are singing along its rim. The Guild will hear of it before morning."
+fx = ["mark:q-last-pan-end-reeds", "rep:reed:10", "rep:rakers:-9", "gain:reed:5-10"]
+[[event.option]]
+label = "Ask the reed-witch to sing the pan down"
+needs = ["trade:reed-witch"]
+[event.option.win]
+text = "The witch sings for an hour, and the brine retreats across the clay like a tide going out. When it is done the whole dish is green and humming. The Reed-folk will tell it for years."
+fx = ["mark:q-last-pan-end-reeds", "rep:reed:14", "rep:rakers:-10", "xp:reed-witch:3", "heal:any:2"]
+[[event.option]]
+label = "Leave the dike as it is"
+[event.option.win]
+text = "You shake your head, and the witch shrugs. 'Reeds are patient,' she says."
+
+[[event]]
+id = "white-pan-bloom"
+title = "The white pan"
+text = "Tolliver's Pan has made salt all week, and the crust lies in white scales on the clay, thick as a hand. Maren sends a boy with a message: take what you like, and tell nobody how little it cost."
+tiles = ["salt-pan"]
+needs = ["mark:q-last-pan-end-sluice"]
+weight = 16
+draws = ["mark:q-last-pan-end-sluice"]
+[[event.option]]
+label = "Rake what you can carry"
+skill = "raker"
+risk = 15
+[event.option.win]
+text = "The rake bites clean, and the crust comes up in plates. The brass wheel turns slowly in its housing as you work."
+fx = ["gain:salt:8-14", "xp:raker:2"]
+[event.option.lose]
+text = "A plate breaks under the rake and cuts a long cut across your palm. The salt still comes, and the brass wheel still turns."
+fx = ["gain:salt:4-8", "hurt:any:hurt"]
+[[event.option]]
+label = "Sit with Maren and the wheel for an hour"
+[event.option.win]
+text = "You sit on the dike with Maren and watch the brine turn. 'My mother's wheel,' she says. It is the most she has said in a week."
+fx = ["morale:6", "bond:1"]
+
+# =================================================================== the smith's debt
+
+[[event]]
+id = "ketterells-cold-forge"
+title = "Ketterell's cold forge"
+text = "On the reed island stands a forge with no smoke. A chain across the door, and on the chain a lead tag stamped with a ledger-and-hammer: the mark of the iron-factors Marrow and Vess. A girl in a leather apron sits on the cold anvil and does not stand."
+tiles = ["island"]
+needs = ["tier:rakers:2", "!mark:q-smiths-debt-one"]
+draws = ["trade:smith"]
+weight = 16
+[[event.option]]
+label = "Read the lien-tag and ask the apprentice"
+[event.option.win]
+text = "The tag says: debt called, forge forfeit, assize in a week. The apprentice, Ysolde, says her master's owed nobody anything. She says it to the anvil. You write down her words."
+fx = ["mark:q-smiths-debt-one", "tallies:1-3"]
+[[event.option]]
+label = "Look over the forge as a smith would"
+needs = ["trade:smith"]
+[event.option.win]
+text = "The smith runs a hand along the bellows and the tuyere. 'Good iron, kept clean. This was not a failing shop.' Ysolde looks up for the first time. You are the first to say so."
+fx = ["mark:q-smiths-debt-one", "xp:smith:3", "rep:rakers:2"]
+[[event.option]]
+label = "Light the forge to see if it still draws"
+needs = ["carry:peat:2"]
+[event.option.win]
+text = "Two peats and a stick, and the old flue clears its throat and draws. The apprentice weeps once. 'Nobody has lit it since he died,' she says, and tells you everything."
+fx = ["mark:q-smiths-debt-one", "lose:peat:2", "morale:4"]
+[[event.option]]
+label = "Leave the tag alone"
+[event.option.win]
+text = "It is not your business, yet. The apprentice watches you walk back along the dike."
+
+[[event]]
+id = "ketterells-debt-cried"
+title = "The debt is cried"
+text = "At the trader's stall a boy is crying the debts of the week, and halfway down the list: 'Hobb Ketterell, smith, forty and six in iron, called in by Marrow and Vess, forge to be forfeit.' Nobody laughs. The trader sells you a cup of tea and looks sorry."
+poi = ["trader"]
+needs = ["tier:rakers:2", "!mark:q-smiths-debt-one"]
+weight = 16
+[[event.option]]
+label = "Ask the trader what Ketterell was like"
+[event.option.win]
+text = "'Fair, slow, wrote nothing down,' says the trader, 'and that is likely the trouble.' You take the name and the island with you."
+fx = ["mark:q-smiths-debt-one", "tallies:1-4"]
+[[event.option]]
+label = "Buy the lien-tag's copy from the crier"
+needs = ["trait:greedy"]
+[event.option.win]
+text = "The crier sells you the copy for a pittance. It has the factor's number and a space for a witness. Somebody left the space blank. You note it and keep it."
+fx = ["mark:q-smiths-debt-one", "pay:3"]
+[[event.option]]
+label = "Hear the debts through and move on"
+[event.option.win]
+text = "The boy cries on. You leave with one name in your head."
+
+[[event]]
+id = "ketterells-account-book"
+title = "The account book"
+text = "In the shell of a drowned shop with an anvil-shaped hole in the shopfront, a tin box sits under a collapsed counter. Ketterell's shop-sign is still on the wall. The box is stamped with his initials, and nobody has opened it."
+tiles = ["drowned-town"]
+needs = ["mark:q-smiths-debt-one", "!mark:q-smiths-debt-two"]
+draws = ["trade:salvager"]
+weight = 16
+[[event.option]]
+label = "Dig out the box"
+skill = "salvager"
+risk = 25
+[event.option.win]
+text = "The box comes free with a gasp of damp air. Inside is Ketterell's account book, and his receipts, sewn to the pages. Half the debt was paid, in eleven small payments. The factors never wrote any of them down."
+fx = ["mark:q-smiths-debt-two", "mark:ketterell-receipts", "xp:salvager:3"]
+[event.option.lose]
+text = "The counter shifts and the box slides away into the cold water. You haul it out, and the pages are blurred. Enough is legible: half the debt was paid, but the receipts are ruined."
+fx = ["mark:q-smiths-debt-two", "hurt:any:hurt"]
+[[event.option]]
+label = "Read the book where it lies"
+needs = ["trade:smith"]
+[event.option.win]
+text = "The smith reads the entries with a trained eye. 'He paid it down,' she says. 'Here, here, here.' The receipts are sewn in and all dated. You carry the book out in your coat."
+fx = ["mark:q-smiths-debt-two", "mark:ketterell-receipts", "xp:smith:3"]
+[[event.option]]
+label = "Take the book and leave the rest"
+[event.option.win]
+text = "You take the account book and a handful of rusted nails. The debt looks half-paid on the page, but without a reader's eye the receipts are only scraps of wet paper."
+fx = ["mark:q-smiths-debt-two", "gain:iron:1-2"]
+
+[[event]]
+id = "ketterells-last-cask"
+title = "The cask in the wreck"
+text = "The account book lists a last shipment of iron: one cask, delivered the week Ketterell died. A wreck on the flats has a cask lashed in its hold, with a blacksmith's mark burned into the staves. The hull is leaning and the tide is coming."
+tiles = ["wreck"]
+needs = ["mark:q-smiths-debt-two", "!mark:q-smiths-debt-three"]
+weight = 16
+draws = ["mark:q-smiths-debt-two"]
+[[event.option]]
+label = "Climb in and roll the cask out"
+skill = "fighter"
+risk = 30
+[event.option.win]
+text = "The hull groans and the cask rolls. Out in the open, the staves split and the iron pours out in good bars. You gather them against the tide."
+fx = ["mark:q-smiths-debt-three", "gain:iron:6-10", "xp:fighter:2"]
+[event.option.lose]
+text = "The hull settles, the cask rolls on your leg, and the tide hisses at the door. You get the iron out, and a bruise the size of a plate."
+fx = ["mark:q-smiths-debt-three", "gain:iron:3-5", "hurt:any:hurt"]
+[[event.option]]
+label = "Lash the cask and float it out"
+needs = ["boat", "carry:rope:1"]
+[event.option.win]
+text = "The cask floats, just. You tow it off the wreck in the last of the light, and the iron inside is dry. Ketterell's mark is on every bar."
+fx = ["mark:q-smiths-debt-three", "gain:iron:6-10", "xp:boatwright:2"]
+[[event.option]]
+label = "Read the burnt mark and cut the cask open gently"
+needs = ["trade:smith"]
+[event.option.win]
+text = "The smith knows the mark and the grain of the iron. She cuts the cask with a chisel and takes only what is Ketterell's. The rest stays in the wreck as the wreck's own. Fair is fair."
+fx = ["mark:q-smiths-debt-three", "gain:iron:4-7", "xp:smith:3", "rep:rakers:3"]
+[[event.option]]
+label = "Leave the wreck to the tide"
+[event.option.win]
+text = "You note the cask and the leaning hull. The tide will not wait."
+
+[[event]]
+id = "collector-on-the-causeway"
+title = "The collector"
+text = "A man in a grey coat stops you on the causeway. He has a lead tag in one hand and a writ in the other. 'Marrow and Vess,' he says. 'You have been walking the Ketterell matter. The assize sits in three days. Will you speak or pay?'"
+tiles = ["causeway"]
+needs = ["mark:q-smiths-debt-three", "!mark:q-smiths-debt-four"]
+weight = 16
+draws = ["mark:q-smiths-debt-three"]
+[[event.option]]
+label = "Say you will think it over"
+[event.option.win]
+text = "'Think quickly,' says the collector. He writes the date on your sleeve in chalk, and goes."
+fx = ["mark:q-smiths-debt-four"]
+[[event.option]]
+label = "Tell him the debt was half paid"
+needs = ["mark:ketterell-receipts"]
+[event.option.win]
+text = "He goes still. 'Receipts?' You show them. He reads them twice, folds his writ, and says: 'This will be a short assize.' He leaves. His hands are not steady."
+fx = ["mark:q-smiths-debt-four", "rep:court:2"]
+[[event.option]]
+label = "Ask what the debt is worth in iron"
+needs = ["carry:iron:3"]
+[event.option.win]
+text = "'Forty and six, in iron or its price,' he says. You count out three bars on the stone. 'A start,' he says, and takes them. The chalk goes on your sleeve."
+fx = ["mark:q-smiths-debt-four", "lose:iron:3"]
+
+[[event]]
+id = "forge-lit-again"
+title = "The forge, again"
+text = "Ketterell's forge sits cold, the lien-tag on its chain, the apprentice Ysolde watching from the anvil. You have the account book, the cask, and the assize in three days. There is a way to settle it that is plain, and two that are not."
+tiles = ["island"]
+needs = ["mark:q-smiths-debt-four", "!mark:q-smiths-debt-end-pay", "!mark:q-smiths-debt-end-take", "!mark:q-smiths-debt-end-break"]
+weight = 16
+draws = ["mark:q-smiths-debt-four"]
+[[event.option]]
+label = "Pay what is owed"
+[event.option.win]
+text = "You count out the debt on the anvil and the collector takes it. The lead tag comes off the chain, and Ysolde lights the forge herself. The Guild drinks to it that night, and sends a barrel of the good salt."
+fx = ["mark:q-smiths-debt-end-pay", "pay:50", "rep:rakers:11", "gain:salt:3-6"]
+[[event.option]]
+label = "Pay it, and have the smith light the first fire"
+needs = ["trade:smith"]
+[event.option.win]
+text = "The smith pays, and then takes the hammer. The first bar rings off the anvil like a bell. Ysolde watches every blow, and by dusk she is holding the tongs. The old guild-steel method comes from her master's pages."
+fx = ["mark:q-smiths-debt-end-pay", "pay:50", "rep:rakers:14", "recipe:guild-steel", "xp:smith:4"]
+[[event.option]]
+label = "Take the forge by right of salvage"
+needs = ["size:2"]
+[event.option.win]
+text = "You cut the chain and post a salvage claim on the door, in your own name. The iron in the racks is yours, the arms hanging on the wall with it. The apprentice does not speak to you. The Guild calls it theft with a licence."
+fx = ["mark:q-smiths-debt-end-take", "gain:iron:8-14", "gain:arms:1-2", "rep:rakers:-9", "rep:court:-2"]
+[[event.option]]
+label = "Do nothing, for now"
+[event.option.win]
+text = "Ysolde watches you go. The chain hangs where it was."
+
+[[event]]
+id = "assize-lien-broken"
+title = "The assize at the toll-post"
+text = "The assize of the Tidecourt meets in the lee of the toll-post: a bench, a clerk, a scale of justice that is mostly rust. Marrow and Vess's collector waits at the bench with the lien-tag. The room is full of people who owe someone something."
+tiles = ["causeway"]
+needs = ["mark:q-smiths-debt-four", "!mark:q-smiths-debt-end-pay", "!mark:q-smiths-debt-end-take", "!mark:q-smiths-debt-end-break"]
+weight = 16
+draws = ["mark:q-smiths-debt-four"]
+[[event.option]]
+label = "Lay the receipts before the clerk"
+needs = ["mark:ketterell-receipts"]
+[event.option.win]
+text = "Eleven receipts, sewn to the pages, each in Ketterell's hand. The clerk reads them aloud. The collector's face does not change, but his hands do. The lien is broken. The Court thanks you; the factors will remember."
+fx = ["mark:q-smiths-debt-end-break", "rep:court:12", "rep:rakers:-6", "tallies:8-14"]
+[[event.option]]
+label = "Argue the lien broken without the receipts"
+risk = 35
+[event.option.win]
+text = "You argue it by the book, then by the room, and the clerk lets it stand. The lien falls apart on a technicality as old as the Court. Someone claps."
+fx = ["mark:q-smiths-debt-end-break", "rep:court:9", "rep:rakers:-5"]
+[event.option.lose]
+text = "The clerk yawns, and the collector smiles. You break the lien on the clerk's own error, but the collector's hired crew step out from behind the post. It will be decided on the causeway."
+fx = ["mark:q-smiths-debt-end-break", "rep:court:6", "rep:rakers:-5", "fight:rival-crew"]
+[[event.option]]
+label = "Step back from the bench"
+[event.option.win]
+text = "You wait at the back, and the clerk calls the next case. Ketterell's tag goes on the pile for another week."
+
+# =================================================================== rakes and wrecks
+
+[[event]]
+id = "two-fires-on-the-wrecks"
+title = "Two fires on the wrecks"
+text = "At low water the wreck field stands open: forty hulls in the silt, ribs up, a street of masts. At the north end, Foreman Ansel Pike's rakers hold a fire with a Guild banner. At the south end, a smaller fire, and a green-shaded lantern. Between them, nothing but mud."
+tiles = ["wreck"]
+needs = ["tier:rakers:2", "!mark:q-rakes-and-wrecks-one"]
+draws = ["trade:salvager", "trade:fighter"]
+weight = 16
+[[event.option]]
+label = "Walk between the fires to hear both sides"
+risk = 20
+[event.option.win]
+text = "You walk the middle line in the open. Pike's rakers want the field stripped by turns, by rule. The south fire wants it left alone, and will not say why. Both sides watch you go, and neither shoots."
+fx = ["mark:q-rakes-and-wrecks-one", "tallies:3-7", "xp:fighter:1"]
+[event.option.lose]
+text = "A stone from the south, a jeer from the north, and you cross the mud with your head down. You learn both sides' terms, and one of them hits you."
+fx = ["mark:q-rakes-and-wrecks-one", "hurt:any:fight"]
+[[event.option]]
+label = "Strip a hull and see who comes to complain"
+needs = ["trade:salvager"]
+[event.option.win]
+text = "The salvager is in the hold before the tide-line, and out again with a sack of timber. Both fires send a runner, within the hour. The terms are clear: the field is contested, and nobody wants to say it aloud."
+fx = ["mark:q-rakes-and-wrecks-one", "gain:timber:3-6", "xp:salvager:3"]
+[[event.option]]
+label = "Take the Guild's banner and stand at the north end"
+needs = ["tier:rakers:2"]
+[event.option.win]
+text = "Pike's rakers take you in, and Pike himself shakes your hand. He lays out the Guild's case, and it is a reasonable one, and it has a hole in it the size of a boat. You do not point it out yet."
+fx = ["mark:q-rakes-and-wrecks-one", "rep:rakers:2"]
+[[event.option]]
+label = "Watch from the tide-line"
+[event.option.win]
+text = "You watch the two fires as dusk comes down. Nothing happens, which is a sort of answer."
+
+[[event]]
+id = "wreckers-lamp-store"
+title = "A salvage hold with lamps"
+text = "The grounded barge's hold is a salvage store: coils of rope, a box of nails, and rows of lanterns on pegs. One is shaded in green glass, trimmed and filled. A paper tag on its handle bears a Guild stamp."
+poi = ["salvage"]
+needs = ["tier:rakers:2", "!mark:q-rakes-and-wrecks-one"]
+weight = 16
+[[event.option]]
+label = "Take the green lantern and ask around"
+[event.option.win]
+text = "The lantern is trimmed and full of oil. Anyone can see it was used last night. You ask at both fires that evening and get two different stories. That tells you the story is false on both sides."
+fx = ["mark:q-rakes-and-wrecks-one", "gain:rope:1-2"]
+[[event.option]]
+label = "Read the Guild stamp on the tag"
+needs = ["trade:raker"]
+[event.option.win]
+text = "The raker knows the stamp: Foreman Pike's own hand, dated six days back. Pike's rakers lit the lamp. Whoever is lying, it is not only the wreckers."
+fx = ["mark:q-rakes-and-wrecks-one", "xp:raker:3"]
+[[event.option]]
+label = "Leave the hold as you found it"
+[event.option.win]
+text = "You close the hatch and say nothing. The lanterns sway on their pegs."
+
+[[event]]
+id = "the-green-lantern"
+title = "The green lantern"
+text = "On the channel, past dusk, a green light swings on a pole at the far bank. A laden boat is turning toward it, because that is where a light means safe water. It is not safe water. A hull stands under the surface, a spar's length from the keel."
+tiles = ["channel"]
+needs = ["mark:q-rakes-and-wrecks-one", "!mark:q-rakes-and-wrecks-two"]
+draws = ["boat"]
+weight = 16
+[[event.option]]
+label = "Row out and warn the boat off"
+needs = ["boat"]
+[event.option.win]
+text = "Your oars bite and your shout carries. The boat swings off with a hand's breadth to spare. On the bank, the lamp-tender is a Guild raker in a wrecker's coat. He runs, and drops the lantern. It has Pike's tag on it."
+fx = ["mark:q-rakes-and-wrecks-two", "rep:court:2", "rep:reed:1"]
+[[event.option]]
+label = "Wade out and douse the lantern"
+skill = "wader"
+risk = 30
+[event.option.win]
+text = "You cross the shallows by feel and kill the lamp. The boat swings off in the dark with a curse. Under the lamp's tag is Pike's stamp. The wreckers did not light this."
+fx = ["mark:q-rakes-and-wrecks-two", "xp:wader:3"]
+[event.option.lose]
+text = "A hole in the mud takes you to the chest. You douse the lamp from there, and the boat gets clear. You will have the stamp as proof, and a wet cold that will last a week."
+fx = ["mark:q-rakes-and-wrecks-two", "hurt:any:cold"]
+[[event.option]]
+label = "Fire a shot across the lamp-tender"
+needs = ["trade:fighter"]
+[event.option.win]
+text = "The fighter puts a sling stone through the lamp's green glass. The tender bolts. In the wreckage of the lantern, Pike's tag, and a purse of Guild coin. It is an ugly sight."
+fx = ["mark:q-rakes-and-wrecks-two", "xp:fighter:3", "tallies:4-9"]
+[[event.option]]
+label = "Let the boat take its chances"
+[event.option.win]
+text = "You turn away and hear the grind of a hull on a spar. Somebody will be bailing all night."
+fx = ["morale:-4"]
+
+[[event]]
+id = "captain-dunmores-table"
+title = "Captain Dunmore's table"
+text = "At the drovers' camp Captain Sorrel Dunmore keeps a table of driftwood and a rule of no weapons at it. She is tall, sun-cracked, quiet, and the green lantern hangs behind her. 'Sit,' she says. 'Ask what you came to ask.'"
+poi = ["camp"]
+needs = ["mark:q-rakes-and-wrecks-two", "!mark:q-rakes-and-wrecks-three"]
+weight = 16
+draws = ["mark:q-rakes-and-wrecks-two"]
+[[event.option]]
+label = "Ask her straight about the burning"
+[event.option.win]
+text = "'Pike's men burned my boat,' she says. 'Called it an accident. My brother was aboard.' She puts a charred plank on the table. 'I do not want the field. I want them to say it.'"
+fx = ["mark:q-rakes-and-wrecks-three"]
+[[event.option]]
+label = "Share her fire and her stew"
+needs = ["carry:food:1"]
+[event.option.win]
+text = "You pass food across the table and she eats without speaking. By the end she is speaking. The whole story comes out, grief and grievance together, with a plank as proof."
+fx = ["mark:q-rakes-and-wrecks-three", "lose:food:1", "morale:3"]
+[[event.option]]
+label = "Offer a healer's eye to her wounded"
+needs = ["trade:healer"]
+[event.option.win]
+text = "Three of her crew are lame or fevered, and the healer sees to them in an hour. Dunmore watches in silence, then speaks. 'Pike's men did this,' she says, and tells it all."
+fx = ["mark:q-rakes-and-wrecks-three", "xp:healer:3", "heal:any:2", "rep:reed:1"]
+[[event.option]]
+label = "Hear her out, and say nothing"
+[event.option.win]
+text = "You listen to the whole thing and keep your face still. She notes it, and says, 'That is something.'"
+fx = ["mark:q-rakes-and-wrecks-three"]
+
+[[event]]
+id = "peace-on-the-flats"
+title = "Peace on the flats"
+text = "The two camps stand on the mudflat with fifty paces of open ground between them. Pike, with his rakers, at one end; Dunmore, with her wreckers, at the other. They have agreed to nothing but to be watched. You are the only person either side will speak to."
+tiles = ["mudflat"]
+needs = ["mark:q-rakes-and-wrecks-three", "!mark:q-rakes-and-wrecks-end-peace", "!mark:q-rakes-and-wrecks-end-wreck", "!mark:q-rakes-and-wrecks-end-guild"]
+weight = 16
+draws = ["mark:q-rakes-and-wrecks-three"]
+[[event.option]]
+label = "Stand between them as one who has bled for both"
+needs = ["bond"]
+[event.option.win]
+text = "You walk into the open ground with a friend at your side, and you speak plainly: the field splits by lot, the burning is answered, the lantern is retired. Both leaders listen, because both can see who you trust. The lots are drawn."
+fx = ["mark:q-rakes-and-wrecks-end-peace", "rep:rakers:6", "rep:reed:4", "gain:salt:4-8", "bond:1"]
+[[event.option]]
+label = "Shame them both with the facts"
+needs = ["skill:fighter:3"]
+[event.option.win]
+text = "The fighter walks the open ground and names it all: the lantern, the burning, the dead. No one interrupts, because no one can. By dusk the field is split by lot. The Guild's gratitude is tinged with embarrassment."
+fx = ["mark:q-rakes-and-wrecks-end-peace", "rep:rakers:8", "gain:salt:4-8", "xp:fighter:3"]
+[[event.option]]
+label = "Settle it with the lantern in your hand"
+needs = ["skill:raker:4"]
+[event.option.win]
+text = "You hold up the green lantern and read the Guild tag aloud, then lay it at Dunmore's feet. 'The field is split by lot, and the burning is paid for,' you say. Pike is silent, then agrees. The Guild's honour holds, barely."
+fx = ["mark:q-rakes-and-wrecks-end-peace", "rep:rakers:10", "gain:salt:6-10", "xp:raker:3"]
+[[event.option]]
+label = "Stay out of it"
+[event.option.win]
+text = "You keep your hands in your sleeves. The two camps look at you, and then at each other, and nothing is decided."
+
+[[event]]
+id = "dunmores-cache"
+title = "Dunmore's cache"
+text = "On the wreck's high deck, with the tide running out under it, Captain Dunmore opens a locked chest in the stern. 'The Guild will have the field by the rule,' she says. 'Stand with us and there is something for you. Cheaply bought, dearly kept.'"
+tiles = ["wreck"]
+needs = ["mark:q-rakes-and-wrecks-three", "!mark:q-rakes-and-wrecks-end-peace", "!mark:q-rakes-and-wrecks-end-wreck", "!mark:q-rakes-and-wrecks-end-guild"]
+weight = 16
+draws = ["mark:q-rakes-and-wrecks-three"]
+[[event.option]]
+label = "Side with the wreckers and take the cache"
+risk = 40
+[event.option.win]
+text = "The chest holds a relic, wrapped in oilcloth, and the wreckers cheer. Dunmore holds the field from that night. Pike's rakers will not forget how you chose."
+fx = ["mark:q-rakes-and-wrecks-end-wreck", "gain:relic:1-1", "rep:reed:6", "rep:rakers:-10"]
+[event.option.lose]
+text = "The chest is trapped. The lid flies back and takes a handful of teeth with it. You side with the wreckers anyway, and the cache is mostly splinters and nails."
+fx = ["mark:q-rakes-and-wrecks-end-wreck", "hurt:any:hurt", "gain:iron:1-3", "rep:reed:6", "rep:rakers:-10"]
+[[event.option]]
+label = "Take the wreckers' side and refuse the cache"
+[event.option.win]
+text = "'I will stand with you, but I will not be paid,' you say. Dunmore looks at you a long moment, then closes the chest. 'Then it is not a bribe,' she says. The wreckers keep the field and you keep your hands clean."
+fx = ["mark:q-rakes-and-wrecks-end-wreck", "rep:reed:8", "rep:rakers:-8", "morale:5"]
+[[event.option]]
+label = "Back off and think it over"
+[event.option.win]
+text = "Dunmore closes the chest and watches you go down the ladder. 'Tide turns,' she says."
+
+[[event]]
+id = "pike-strips-the-field"
+title = "Pike strips the field"
+text = "Foreman Pike's rakers stand in a ragged line along the north end of the wreck field, rakes in hand, banners up. The wreckers are camped across the open ground. Pike gives you a nod: 'Rakers work by the rule. Stand with us, and we will see it kept.'"
+tiles = ["mudflat"]
+needs = ["mark:q-rakes-and-wrecks-three", "!mark:q-rakes-and-wrecks-end-peace", "!mark:q-rakes-and-wrecks-end-wreck", "!mark:q-rakes-and-wrecks-end-guild"]
+weight = 16
+draws = ["mark:q-rakes-and-wrecks-three"]
+[[event.option]]
+label = "Lead the rakers' line against the wreckers' camp"
+[event.option.win]
+text = "You walk at the front of the Guild line, and the wreckers' camp scatters before you do. The field is stripped by the rule, and a rack of good arms is handed to you. A few wreckers hold, and will not be moved."
+fx = ["mark:q-rakes-and-wrecks-end-guild", "gain:arms:1-2", "rep:rakers:12", "rep:reed:-6", "fight:wrecker-gang"]
+[[event.option]]
+label = "Take Pike's side, and send the wreckers a warning first"
+needs = ["trade:fighter"]
+[event.option.win]
+text = "The fighter walks over under a plain cloth and says: 'Leave by dusk.' Most do. The rest are met in the open by the Guild's line, and the day is short and ugly. Pike hands you the arms rack himself."
+fx = ["mark:q-rakes-and-wrecks-end-guild", "gain:arms:2-3", "rep:rakers:14", "rep:reed:-8", "xp:fighter:3", "fight:wrecker-gang"]
+[[event.option]]
+label = "Decline, and keep walking"
+[event.option.win]
+text = "Pike watches you go without a word. The line holds, and so does the stalemate."
