@@ -35,10 +35,10 @@
 │Here: Tobias Bramley, Sol Marchetti     ││legend 23   ◈ cash 18               │
 │Now: Art class                          ││ DETENTION  1 owed                  │
 │Next: Sci in the Science lab            ││schemes                             │
-│Classroom cor~: Wick, Hollis            ││ #1 Swap the sugar for salt   READY │
-│The grounds: Fenn                       ││                                    │
-│Gymnasium: Gale, Crouch                 ││                                    │
-│Library: Lund                           ││                                    │
+│Classroom cor~: Wick, Hollis, Deveraux, ││ #1 Swap the sugar for salt   READY │
+│The grounds: Fenn, Rook, Abara, Dacre   ││                                    │
+│Gymnasium: Gale, Crouch, Carrow, Oyelara││                                    │
+│Library: Lund, Abney, Pym, Hartnell     ││                                    │
 │                                        ││                                    │
 │                                        ││                                    │
 │                                        ││                                    │
@@ -60,7 +60,7 @@
 │             │         ╲           ╱           ╲                              │
 │● Stacks    ∙ Common rm ◉ The Quad† ∙ Tuck shop ● Maths                       │
 │           ╲           ╱ │         ╱                                          │
-│⊘ Head's    ● Library   ∙ Hall      ● Gym†      ⊘ Loft                        │
+│⊘ Head's    ● Library†  ∙ Hall      ● Gym†      ⊘ Loft                        │
 │           ╲ │         ╱ │         ╲           ╱                              │
 │● Deputy────● Admin     ⊘ Greenroom ∙ Chapel────● Grounds†──● Car park        │
 │           ╱ │                     ╱           ╱ │                            │
@@ -85,7 +85,7 @@
 │             │         ╲           ╱           ╲                              │
 │● Stacks    ∙ Common rm─◉ The Quad† ∙ Tuck shop ● Maths                       │
 │           ╲           ╱ │         ╱                                          │
-│⊘ Head's    ● Library   ∙ Hall      ● Gym†      ⊘ Loft                        │
+│⊘ Head's    ● Library†  ∙ Hall      ● Gym†      ⊘ Loft                        │
 │           ╲ │         ╱ │         ╲           ╱                              │
 │● Deputy────● Admin     ⊘ Greenroom ∙ Chapel────● Grounds†──● Car park        │
 │           ╱ │                     ╱           ╱ │                            │
@@ -137,7 +137,7 @@
 │ 6 Mr. Alder (staff)                     ││                                   │
 │ 7 Reverend Soames (staff)               ││                                   │
 │ 8 Mrs. Tarn (staff)                     ││                                   │
-│ 9 Cordelia Wick (prefect)               ││                                   │
+│ 9 Miss Abney (staff)                    ││                                   │
 │ . More                                  ││                                   │
 │ b Back                                  ││                                   │
 │                                         ││                                   │
@@ -659,10 +659,10 @@
 │ 3 A spare timetable card - 2 cash         ││                                 │
 │ 4 A rubber whoopee cushion - 3 cash       ││                                 │
 │ 5 A bag of glass marbles - 2 cash         ││                                 │
+│ 6 A paper sack of flour - 2 cash          ││                                 │
+│ 7 A bag of tin kazoos - 2 cash            ││                                 │
+│ 8 A tin of drinking chocolate - 2 cash    ││                                 │
 │ b Back                                    ││                                 │
-│                                           ││                                 │
-│                                           ││                                 │
-│                                           ││                                 │
 │                                           ││                                 │
 │                                           ││                                 │
 │                                           ││                                 │
@@ -755,8 +755,8 @@
 ████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 ╭ Who do you want a word with? ───────────╮╭ The person ───────────────────────╮
 │ 1 Mr. Marsh has noticed you             ││Mr. Quillon Marsh                  │
-│ b Back                                  ││Deputy head                        │
-│                                         ││Patrols the quad with a clipboard  │
+│ 2 Mr. Marsh and the theory              ││Deputy head                        │
+│ b Back                                  ││Patrols the quad with a clipboard  │
 │                                         ││and a theory about you.            │
 │                                         ││bond   ──────────◆┼╵─────────── -18│
 │                                         ││                                   │

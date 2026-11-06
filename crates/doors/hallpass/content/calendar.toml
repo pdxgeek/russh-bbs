@@ -44,7 +44,7 @@ say = "Mr. Gale looks at the size of your voice and the state of the stand, and 
 effects = ["know:match_line", "stat:cool:+2"]
 [[talk.node.choice]]
 label = "Slip over to the Hollin House shed and see what they are planning"
-needs = ["skill:sneak>=2"]
+needs = ["skill:sneak>=1"]
 say = "'I did not hear that,' says Mr. Gale, who has just heard it, and turns very slowly to look at the lake."
 effects = ["know:match_scout", "xp:sneak:1"]
 [[talk.node.choice]]
@@ -64,9 +64,9 @@ id = "open"
 text = "Level with Hollin House, three hundred metres from the line, the lake flat as a plate and every oar on the water. Imogen's voice, from the stern: 'Stroke, I need a number. Give me a number.'"
 [[talk.node.choice]]
 label = "Push for the finish, everything you have"
-needs = ["nerve>=3"]
+needs = ["nerve>=2"]
 say = "Your oar bites and the boat lifts. Hollin's bow slips back by a length, then two, and the stand is shouting your name wrongly. By the line you cannot feel your hands, and you have never been happier."
-effects = ["stat:nerve:-3", "know:match_won", "merit:rowing:+4", "stat:legend:+3", "bond:imogen:+3", "bond:hollis:+4", "world:match_glory"]
+effects = ["stat:nerve:-2", "know:match_won", "merit:rowing:+4", "stat:legend:+3", "bond:imogen:+3", "bond:hollis:+4", "world:match_glory"]
 [[talk.node.choice]]
 label = "Trust Imogen's rhythm and row to her call"
 needs = ["bond:imogen>=8"]
@@ -174,6 +174,10 @@ text = "The stand is damp and loud. Mags is two rows down with a notebook, tally
 label = "Sit with Mags and keep her tally"
 say = "She says nothing for nine minutes, then hands you the notebook. In it, in tiny writing, she has predicted every stroke."
 effects = ["bond:mags:+3", "xp:bluff:1"]
+[[talk.node.choice]]
+label = "Count Hollin House's whistles from the stand and learn their signals"
+say = "One whistle for 'steady', two for 'push', a handkerchief for 'we are losing'. By the third race you can call their orders before the stroke hears them."
+effects = ["know:match_signals", "xp:sneak:1"]
 [[talk.node.choice]]
 label = "Put two biscuits on the Eight with Dot"
 needs = ["bond:dot>=2"]
@@ -528,7 +532,7 @@ say = "Sol says no one will believe it, and that he refuses to wear a tie. He we
 effects = ["know:dance_sol", "bond:sol:+3"]
 [[talk.node.choice]]
 label = "Ask Priya Venkat"
-needs = ["bond:priya>=5"]
+needs = ["bond:priya>=3"]
 say = "'I'm meant to be chaperoning,' says Priya, then adds quickly, 'in a dress.' She goes the colour of her badge."
 effects = ["know:dance_priya", "bond:priya:+3"]
 [[talk.node.choice]]
@@ -645,7 +649,7 @@ say = "Wick passes without looking, which is a sort of blessing. Priya exhales t
 effects = ["bond:priya:+3", "stand:lamplighters:+3"]
 [[talk.node.choice]]
 label = "Tell her she is allowed to take the badge off for one dance"
-needs = ["bond:priya>=12"]
+needs = ["bond:priya>=6"]
 say = "She unpins it, looks at it, puts it in a pocket where it clinks against a toffee. For three minutes she is just a girl at a dance."
 effects = ["bond:priya:+5", "stand:lamplighters:-1", "know:priya_unbadged"]
 [[talk.node.choice]]
@@ -830,25 +834,25 @@ text = "Dot catches your sleeve in the corridor. 'I know a person,' she says, 'w
 label = "Buy the paper for four biscuits"
 needs = ["cash>=4", "bond:dot>=3"]
 say = "The paper is folded into a sweet wrapper. You learn the answers in an hour and your conscience in a night. You will not enjoy tomorrow."
-effects = ["stat:cash:-4", "know:exam_cheated", "grade:maths:+10", "bond:dot:+2"]
+effects = ["stat:cash:-4", "know:exam_met_dot", "know:exam_cheated", "grade:maths:+10", "bond:dot:+2"]
 [[talk.node.choice]]
 label = "Tell Mr. Marsh that a paper is going round the dormitory"
 say = "He stares at you, then at his clipboard, then at the wall behind you. 'This will be dealt with,' he says. By evening every pupil in the school is to resit the maths paper, in silence, under his personal supervision."
-effects = ["know:exam_reported", "bond:marsh:+4", "stand:the_bench:-4", "bond:dot:-6", "world:exam_resit"]
+effects = ["know:exam_met_dot", "know:exam_reported", "bond:marsh:+4", "stand:the_bench:-4", "bond:dot:-6", "world:exam_resit"]
 [[talk.node.choice]]
 label = "Swap the paper's pages for a joke paper before it reaches anyone"
 needs = ["skill:bluff>=2", "item:forgery_kit"]
 say = "Question One asks for the number of halves in a whole sheep. The cheats do not find out until tomorrow, and nobody can say who did it."
-effects = ["know:exam_swapped", "stat:legend:+4", "stat:heat:+3", "bond:dot:-1", "item:spare_card"]
+effects = ["know:exam_met_dot", "know:exam_swapped", "stat:legend:+4", "stat:heat:+3", "bond:dot:-1", "item:spare_card"]
 [[talk.node.choice]]
 label = "Tell Dot you want no part in it, and ask her to burn it"
 needs = ["bond:dot>=6"]
 say = "Dot sniffs. 'A friend,' she says, 'would say that.' She puts the paper in the radiator. It makes a very small, very decisive sound."
-effects = ["know:exam_burned", "bond:dot:+3", "stand:the_bench:+2"]
+effects = ["know:exam_met_dot", "know:exam_burned", "bond:dot:+3", "stand:the_bench:+2"]
 [[talk.node.choice]]
 label = "Walk away"
 say = "Dot shrugs. There are other customers. You hear the biscuits changing hands behind you, and you do not look round."
-effects = ["know:exam_walked"]
+effects = ["know:exam_met_dot", "know:exam_walked"]
 
 [[talk]]
 id = "exam_numbers"

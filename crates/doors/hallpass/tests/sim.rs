@@ -282,7 +282,12 @@ fn a_whole_term_plays_out_and_the_curves_are_sane() {
     );
     for o in &outcomes {
         assert_eq!(o.curve.heat.len(), 42);
-        assert!(o.curve.heat.iter().all(|h| *h <= 100));
+        assert!(
+            o.curve.heat.iter().all(|h| *h <= 100),
+            "{} heat {:?}",
+            o.policy,
+            o.curve.heat
+        );
         assert!(
             o.curve.legend.windows(2).all(|w| w[0] <= w[1]),
             "legend never falls"
@@ -552,9 +557,11 @@ fn print_report(r: &Report) {
         |v: &[Outcome], f: &dyn Fn(&Outcome) -> f64| v.iter().map(f).sum::<f64>() / v.len() as f64;
     eprintln!("\n=== {} terms, nine styles on one school ===", r.terms);
     eprintln!(
-        "{:<11} {:>6} {:>5} {:>8} {:>6} {:>7} {:>6} {:>7} {:>6} {:>6} {:>5} {:>7}",
+        "{:<11} {:>6} {:>6} {:>6} {:>5} {:>8} {:>6} {:>7} {:>6} {:>7} {:>6} {:>6} {:>5} {:>7}",
         "style",
         "legend",
+        "pulled",
+        "caught",
         "file",
         "expelled",
         "grade",
@@ -568,9 +575,11 @@ fn print_report(r: &Report) {
     );
     for (name, v) in &r.stats {
         eprintln!(
-            "{:<11} {:>6.1} {:>5.1} {:>7.0}% {:>6.1} {:>6.0}% {:>6.1} {:>6.0}% {:>6.1} {:>6.1} {:>5.1} {:>7.1}",
+            "{:<11} {:>6.1} {:>6.1} {:>6.1} {:>5.1} {:>7.0}% {:>6.1} {:>6.0}% {:>6.1} {:>6.0}% {:>6.1} {:>6.1} {:>5.1} {:>7.1}",
             name,
             mean(v, &|o| f64::from(o.legend)),
+            mean(v, &|o| f64::from(o.pulled)),
+            mean(v, &|o| f64::from(o.caught)),
             mean(v, &|o| f64::from(o.file)),
             100.0 * mean(v, &|o| f64::from(u8::from(o.ending == "expelled"))),
             mean(v, &|o| f64::from(o.grades)),
@@ -813,6 +822,24 @@ fn no_ending_and_no_branch_of_the_social_layer_or_the_mystery_is_dead_content() 
             r.coverage.contains_key(&format!("clue:{}", k.id)),
             "clue {}",
             k.id
+        );
+    }
+    // Every scheme is tried by somebody: there are sixty, and none sits unused.
+    for m in &c.methods {
+        assert!(
+            r.coverage.contains_key(&format!("method:{}", m.id)),
+            "scheme {} was never drafted",
+            m.id
+        );
+    }
+    // Every term event is attended, and each of its scenes is had by somebody.
+    for t in c.talks.iter().filter(|t| t.event.is_some()) {
+        assert!(
+            r.coverage
+                .keys()
+                .any(|k| k.starts_with(&format!("choice:{}/", t.id))),
+            "event scene {} was never had",
+            t.id
         );
     }
     // Conversations: nearly every choice is taken by somebody. The ones that need a betrayal

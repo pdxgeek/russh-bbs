@@ -162,7 +162,7 @@ pub fn reckless() -> Policy {
         scout_to: 0,
         helpers: false,
         variety: false,
-        explore: false,
+        explore: true,
         accuracy: 55,
         social: 15,
         clubs: &["rowing"],
@@ -193,7 +193,7 @@ pub fn variety() -> Policy {
         variety: true,
         explore: false,
         accuracy: 65,
-        social: 40,
+        social: 70,
         clubs: &["chess", "drama", "rowing", "paper", "robotics", "candle"],
         informer: true,
         sleuth: 30,
@@ -220,7 +220,7 @@ pub fn scholar() -> Policy {
         scout_to: 0,
         helpers: false,
         variety: false,
-        explore: true,
+        explore: false,
         accuracy: 90,
         social: 70,
         clubs: &["chess", "paper", "robotics"],
@@ -249,7 +249,7 @@ pub fn sleuth() -> Policy {
         scout_to: 2,
         helpers: true,
         variety: false,
-        explore: false,
+        explore: true,
         accuracy: 75,
         social: 40,
         clubs: &["candle", "paper"],
@@ -278,7 +278,7 @@ pub fn politician() -> Policy {
         scout_to: 2,
         helpers: true,
         variety: false,
-        explore: false,
+        explore: true,
         accuracy: 70,
         social: 60,
         clubs: &["paper", "drama"],
@@ -307,7 +307,7 @@ pub fn rival() -> Policy {
         scout_to: 2,
         helpers: true,
         variety: false,
-        explore: false,
+        explore: true,
         accuracy: 70,
         social: 40,
         clubs: &["candle", "robotics", "chess"],
@@ -336,7 +336,7 @@ pub fn recluse() -> Policy {
         scout_to: 2,
         helpers: true,
         variety: false,
-        explore: true,
+        explore: false,
         accuracy: 80,
         social: 50,
         clubs: &["chess", "robotics"],
@@ -397,6 +397,51 @@ fn answer_scene(game: &mut Game, policy: &Policy, rng: &mut DoorRng, events: &mu
         .filter(|(_, c)| c.open && (policy.informer || !c.label.starts_with("Name the")))
         .map(|(i, _)| i)
         .collect();
+    // An explorer wants to try something: choices that do nothing (the ways out) come last.
+    let doing: Vec<usize> = if policy.explore {
+        let node = game.scene_view().and_then(|_| {
+            let scene = game.player.life.scene.as_ref()?;
+            let talk = game.content.talk(&scene.talk)?;
+            talk.node.iter().find(|n| n.id == scene.node).cloned()
+        });
+        node.map_or_else(Vec::new, |n| {
+            open.iter()
+                .copied()
+                .filter(|i| n.choice.get(*i).is_some_and(|c| !c.effects.is_empty()))
+                .collect()
+        })
+    } else {
+        Vec::new()
+    };
+    // An explorer also wants what nobody has tried yet: answers no pupil has given come first.
+    let doing: Vec<usize> = if policy.explore {
+        let untried: Vec<usize> = game
+            .player
+            .life
+            .scene
+            .as_ref()
+            .map(|scene| {
+                open.iter()
+                    .copied()
+                    .filter(|i| {
+                        COVERAGE.with(|c| {
+                            !c.borrow()
+                                .contains_key(&format!("choice:{}/{}/{i}", scene.talk, scene.node))
+                        })
+                    })
+                    .collect()
+            })
+            .unwrap_or_default();
+        if untried.is_empty() { doing } else { untried }
+    } else {
+        doing
+    };
+    // (One time in four it takes any open answer, the ways out included.)
+    let open = if doing.is_empty() || rng.below(100) < 25 {
+        open
+    } else {
+        doing
+    };
     let pick = match open.as_slice() {
         [] => None,
         [only] => Some(*only),
@@ -832,13 +877,20 @@ fn social_step(
         .filter(|t| game.talk_ready(t))
         .cloned()
         .collect();
-    let mut talks = talks;
-    // Without a reason to prefer one, a pupil talks to whoever they happen to meet: shuffle, so
-    // the whole table is reached and not only its first rows.
-    for i in (1..talks.len()).rev() {
-        let j = usize::try_from(rng.below(u32::try_from(i + 1).unwrap())).unwrap();
-        talks.swap(i, j);
+    // A pupil follows a story they are in before they chat: the storylines' scenes first, in the
+    // table's order; then half the time the rest in the table's order and half the time in any.
+    // (Whoever wants the Candle Society goes to Sol for the knock first: it is the way in.)
+    let (mut story, mut chat): (Vec<_>, Vec<_>) = talks.into_iter().partition(|t| {
+        t.arc.is_some() || (t.id == "sol_candle" && policy.clubs.contains(&"candle"))
+    });
+    if rng.below(100) < 50 {
+        for i in (1..chat.len()).rev() {
+            let j = usize::try_from(rng.below(u32::try_from(i + 1).unwrap())).unwrap();
+            chat.swap(i, j);
+        }
     }
+    story.extend(chat);
+    let mut talks = story;
     // At the end of the mystery a pupil only takes the conversations they would end it with, in
     // the order they would prefer.
     talks.retain(|t| verdict_of_talk(&t.id).is_none_or(|v| policy.verdicts.contains(&v)));

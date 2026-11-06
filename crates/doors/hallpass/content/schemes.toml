@@ -1058,10 +1058,10 @@ only = ["the_tannoy"]
 present = "any"
 needs = ["wire", "megaphone"]
 roles = ["lookout", "gadget"]
-requires = ["legend>=35", "skill:tinker>=2"]
+requires = ["legend>=40", "skill:tinker>=2"]
 scout = 2
 difficulty = 46
-legend = 36
+legend = 28
 heat = 22
 severity = 3
 big = true
@@ -1078,10 +1078,10 @@ only = ["the_trophies"]
 present = "any"
 needs = ["decoy", "forgery_kit", "wig"]
 roles = ["cover"]
-requires = ["legend>=30"]
+requires = ["legend>=35"]
 scout = 2
 difficulty = 44
-legend = 34
+legend = 26
 heat = 21
 severity = 3
 big = true

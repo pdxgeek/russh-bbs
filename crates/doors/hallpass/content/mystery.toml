@@ -10,7 +10,7 @@
 arc = "the_wing"
 finale_day = 38
 unsolved = "The East Wing stays shut. Nobody could agree what happened there, or nobody tried."
-risk_pct = 10
+risk_pct = 8
 
 # ---------------------------------------------------------------- act one: the torn page
 

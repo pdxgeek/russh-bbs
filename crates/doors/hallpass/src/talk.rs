@@ -381,7 +381,7 @@ impl Game {
                     }
                     Gauge::Cash => p.cash = p.cash.saturating_add(*n),
                     Gauge::Notoriety => p.notoriety = to_u8(i32::from(p.notoriety) + n),
-                    Gauge::Heat => p.heat = to_u8(i32::from(p.heat) + n),
+                    Gauge::Heat => p.add_heat(*n),
                     Gauge::Legend => {
                         let _ = self.legend_gain(i64::from(*n));
                     }

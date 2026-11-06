@@ -1044,7 +1044,7 @@ say = "The letters are in a round child's hand, and the last one is the one she 
 effects = ["arc_end:the_wing:fenn", "bond:fenn:+5", "stat:legend:+2"]
 [[talk.node.choice]]
 label = "Tell him you know about the cats, the bowl and the planks"
-needs = ["know:cats_in_the_wing", "know:fenn_gave_planks"]
+needs = ["know:cats_in_the_wing"]
 say = "'Eleven cats,' says Mr. Fenn. 'And a boy who builds a boat out of the one wall I could not bring myself to burn.' He almost laughs. It is the first time you have heard it. 'Then you know me better than my own staff.'"
 effects = ["arc_end:the_wing:fenn", "bond:fenn:+3", "stat:legend:+1"]
 [[talk.node.choice]]
@@ -1054,7 +1054,7 @@ say = "'I thought somebody might,' he says. 'I left it for whoever came next. I 
 effects = ["arc_end:the_wing:fenn", "bond:fenn:+3", "stat:legend:+1"]
 [[talk.node.choice]]
 label = "Say you saw the tin on his shelf, and the lilies, and that you understand"
-needs = ["know:fenn_tin", "know:fenn_garden"]
+needs = ["know:fenn_tin"]
 say = "He nods, slowly, three times, like a man agreeing with a verdict he has waited a lifetime to hear. 'Then you will want to tell it properly,' he says. 'I will stand beside you.'"
 effects = ["arc_end:the_wing:fenn", "bond:fenn:+4", "stat:legend:+2", "stand:strays:+2"]
 [[talk.node.choice]]
@@ -1084,7 +1084,7 @@ say = "'W.S.,' he says. 'Yes.' And nothing else for a long minute."
 effects = ["arc_end:the_wing:soames"]
 [[talk.node.choice]]
 label = "Put his own lending card in his hand, with his confession"
-needs = ["know:soames_borrowed", "know:soames_note"]
+needs = ["know:soames_note"]
 say = "His own signature, and his own words. 'You went through my prayer book,' he says, without anger. 'Good. I have been trying to leave it where somebody would.'"
 effects = ["arc_end:the_wing:soames", "bond:soames:+3", "stat:legend:+2"]
 [[talk.node.choice]]
@@ -1129,12 +1129,12 @@ say = "She reads it standing, and she reads it in full, and her face does not ch
 effects = ["arc_end:the_wing:vane", "bond:vane:+4", "stat:legend:+2"]
 [[talk.node.choice]]
 label = "Tell her about the nailed window and the bolt she has never mentioned"
-needs = ["know:nailed_window", "know:bolt_outside"]
+needs = ["know:nailed_window"]
 say = "'Somebody re-nailed that window,' says Dame Vane, 'every term, for thirty years. I wondered who. I knew, of course.' She puts both hands on the desk. 'Mr. Fenn.' You have not said his name."
 effects = ["arc_end:the_wing:vane", "bond:vane:+3", "stat:legend:+2"]
 [[talk.node.choice]]
 label = "Ask her about the struck-out line in the register, and watch her hands"
-needs = ["know:register_entry", "know:vane_flinched"]
+needs = ["know:register_entry"]
 say = "She does not look away. 'I struck it,' says Dame Vane. 'On the order of the Governors, on the Tuesday, and I was twenty-two and I signed what I was given to sign. I have been headmistress for thirty years in order to make sure no one ever asks a child to do that again.' It is the longest speech you have ever heard her make."
 effects = ["arc_end:the_wing:vane", "bond:vane:+4", "stat:legend:+3"]
 [[talk.node.choice]]
@@ -1976,7 +1976,7 @@ say = "He lets you, with the air of a man who has been giving crusts to the worl
 id = "dunstan_loaves"
 npc = "dunstan"
 title = "Dunstan's big order"
-when = ["know:dunstan_bakes", "bond:dunstan>=6", "day>=12"]
+when = ["know:dunstan_bakes", "bond:dunstan>=4", "day>=12"]
 first = "open"
 [[talk.node]]
 id = "open"
@@ -3127,7 +3127,7 @@ effects = ["bond:imogen:+2"]
 id = "hollis_speech"
 npc = "hollis"
 title = "Rafe Hollis and the speech"
-when = ["know:match_won", "day>=19", "standing:rowing_eight>=3"]
+when = ["day>=19", "standing:rowing_eight>=3"]
 first = "open"
 [[talk.node]]
 id = "open"
@@ -3151,7 +3151,7 @@ effects = ["bond:hollis:+2"]
 id = "crouch_second_chance"
 npc = "crouch"
 title = "Barnaby Crouch on his own"
-when = ["know:match_won", "day>=19", "bond:crouch>=-8"]
+when = ["day>=19", "bond:crouch>=-8"]
 first = "open"
 [[talk.node]]
 id = "open"
@@ -3174,7 +3174,7 @@ effects = ["bond:crouch:+1"]
 id = "priya_after_the_dance"
 npc = "priya"
 title = "Priya and the badge"
-when = ["know:priya_unbadged", "day>=32"]
+when = ["know:dance_priya", "day>=32"]
 first = "open"
 [[talk.node]]
 id = "open"
@@ -3221,7 +3221,7 @@ effects = ["bond:tilly:+3"]
 id = "mags_clock"
 npc = "mags"
 title = "Mags and the slow clock"
-when = ["know:slow_clock", "day>=32"]
+when = ["bond:mags>=3", "day>=32"]
 first = "open"
 [[talk.node]]
 id = "open"
@@ -3232,7 +3232,7 @@ say = "'That someone keeps it slow on purpose,' says Mags. 'To remember a moment
 effects = ["bond:mags:+5", "stand:strays:+3", "know:mags_clock_theory"]
 [[talk.node.choice]]
 label = "Offer to climb up and have a look at the mechanism"
-needs = ["skill:fleet>=1"]
+needs = ["skill:fleet>=1", "know:slow_clock"]
 say = "You go up the back stairs and over the beam, with Mags holding the rope. The clock has been fixed with a shim of folded paper, a letter, three words visible: Stay a little."
 effects = ["bond:mags:+4", "xp:fleet:2", "know:clock_shim"]
 [[talk.node.choice]]
@@ -3243,22 +3243,34 @@ effects = ["bond:mags:+2"]
 [[talk]]
 id = "dot_debt"
 npc = "dot"
-title = "Dot calls in a debt"
-when = ["know:exam_cheated", "day>=36"]
+title = "Dot has something to say about the paper"
+when = ["know:exam_met_dot", "day>=36"]
 first = "open"
 [[talk.node]]
 id = "open"
-text = "Dot is standing at the head of the stairs with her arms folded, and an exercise book open in one hand. 'Four biscuits,' she says. 'For a paper. Which I notice has led you to a bit of trouble. I want you to know that I would never have sold it to you if I had known you'd be that obvious.'"
+text = "Dot is standing at the head of the stairs with her arms folded, and an exercise book open in one hand. 'Four biscuits,' she says. 'For a paper that did not exist, that everybody now has opinions about. I wanted you to hear it from me.'"
 [[talk.node.choice]]
-label = "Ask her to help you clean up the mess"
-needs = ["bond:dot>=3"]
+label = "Ask her to help you clean up the mess you bought"
+needs = ["know:exam_cheated", "bond:dot>=3"]
 say = "She frowns at the ceiling. 'You owe me,' she says. 'I'll have a word with someone in Mr. Pell's office. It'll cost you.' It does, by two weeks of washing her plates and a promise you'd rather not keep."
-effects = ["bond:dot:+3", "stat:cash:-4", "file:caught:0"]
+effects = ["bond:dot:+3", "stat:cash:-4", "stat:notoriety:-3"]
 [[talk.node.choice]]
 label = "Say you made a mistake and take the consequences"
+needs = ["know:exam_cheated"]
 say = "She looks at you for a very long time. 'That's not what most people say,' says Dot. 'I'll tell you what. I'll give you the biscuits back.' She does."
 effects = ["bond:dot:+4", "stat:cash:+4", "stat:cool:+2"]
+[[talk.node.choice]]
+label = "Tell her you reported the paper, and would again"
+needs = ["know:exam_reported"]
+say = "'I know,' says Dot. 'Everybody knows.' She rolls her shoulders. 'It was the decent thing and the stupid thing at once, and I'll never forgive you for either. But I'll sell you a biscuit.' It is a start."
+effects = ["bond:dot:+2", "stat:cool:+1"]
+[[talk.node.choice]]
+label = "Thank her for putting it in the radiator"
+needs = ["know:exam_burned"]
+say = "'That was the one time I was not selling,' says Dot. 'Don't spread it about.' She slips you a biscuit with an expression of deep suffering."
+effects = ["bond:dot:+3", "stand:the_bench:+2"]
 [[talk.node.choice]]
 label = "Tell her you won't be buying again"
 say = "'Good,' says Dot. 'It's bad for business.' She pockets the book."
 effects = ["bond:dot:-1"]
+
