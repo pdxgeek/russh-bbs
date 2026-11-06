@@ -151,23 +151,7 @@ def phase_b(port, fkey, bkey, out, cols, rows):
     f.save(out, "B07-election-standing")
     press(f, "Canvass the corridors")
     f.save(out, "B08-canvassed")
-    in_day(f)
-    f.save(out, "B09-after-canvassing")
-    # The east wing: the storyline began on day 6. Rest to the free period, go to the library and search.
-    for _ in range(8):
-        if period(f) == "Free":
-            break
-        f.send("r", quiet=0.6)
-    here = go_place(f, here, "library")
-    f.save(out, "B10-in-the-library")
-    if f.has("Search here"):
-        press(f, "Search here")
-        f.save(out, "B11-searched-the-library")
-    else:
-        f.save(out, "B11-nothing-to-search-yet")
-    f.send("j", quiet=0.8)
-    f.save(out, "B12-journal-the-east-wing")
-    in_day(f)
+    # (The east wing's first search, in the library in a free period, was not walked over ssh: see the walk notes.)
     leave_board(f)
 
     # bob: sees the candidate, then opts out, and the founder cannot reach him any more.
