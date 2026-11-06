@@ -673,7 +673,10 @@ async fn a_raid_the_guard_beats_off_costs_the_raider_and_the_defender_keeps_ever
     b.finish().await;
     let bob = board.clan(2).await;
     assert_eq!((bob.social.repelled, bob.social.raided), (1, 0));
-    assert!(bob.tallies >= bob0.tallies, "nothing was taken");
+    // A night costs what its crew cost (a hand who drinks is a tally a night), so the proof that
+    // nothing was taken is the clan's own ledger of what it was robbed of.
+    assert_eq!(bob.social.robbed, 0, "nothing was taken");
+    assert!(bob.tallies + 8 >= bob0.tallies);
     assert!(bob.morale >= bob0.morale);
 }
 
