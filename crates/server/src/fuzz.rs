@@ -5,6 +5,8 @@
 //! nesting, huge strings, many keys), and valid documents with reserved characters spliced in.
 //! The properties each loader checks live beside the loader's tests.
 
+use std::fmt::Write as _;
+
 use proptest::prelude::*;
 use russh_bbs_core::sanitize::RESERVED_CHROME;
 
@@ -195,7 +197,7 @@ fn apply(text: &mut String, (kind, a, b): Op) {
 }
 
 /// `valid` with one to five random edits.
-pub fn mutated(valid: &'static str) -> impl Strategy<Value = String> {
+pub(crate) fn mutated(valid: &'static str) -> impl Strategy<Value = String> {
     prop::collection::vec((any::<u8>(), any::<u32>(), any::<u32>()), 1..6).prop_map(move |ops| {
         let mut text = valid.to_owned();
         for op in ops {
@@ -207,13 +209,13 @@ pub fn mutated(valid: &'static str) -> impl Strategy<Value = String> {
 
 /// Random bytes, read as text the way a loader reads a file it has already checked is UTF-8
 /// (lossy, so every byte value is exercised).
-pub fn random_text() -> impl Strategy<Value = String> {
+pub(crate) fn random_text() -> impl Strategy<Value = String> {
     prop::collection::vec(any::<u8>(), 0..4096)
         .prop_map(|bytes| String::from_utf8_lossy(&bytes).into_owned())
 }
 
 /// Documents shaped to hit recursion, allocation and quadratic paths, whatever the schema.
-pub fn garbage() -> impl Strategy<Value = String> {
+pub(crate) fn garbage() -> impl Strategy<Value = String> {
     prop_oneof![
         // Deep arrays.
         (1_usize..20_000).prop_map(|n| format!("a = {}{}\n", "[".repeat(n), "]".repeat(n))),
@@ -229,7 +231,7 @@ pub fn garbage() -> impl Strategy<Value = String> {
         (1_usize..4_000).prop_map(|n| "[[menu]]\n".repeat(n)),
         // Many keys, and one key repeated.
         (1_usize..8_000).prop_map(|n| (0..n).fold(String::new(), |mut s, i| {
-            s.push_str(&format!("k{i} = {i}\n"));
+            let _ = writeln!(s, "k{i} = {i}");
             s
         })),
         (1_usize..8_000).prop_map(|n| "version = 1\n".repeat(n)),
@@ -249,7 +251,7 @@ pub fn garbage() -> impl Strategy<Value = String> {
 }
 
 /// Whether `c` is something no loaded, displayable string may contain.
-pub fn forbidden_in_content(c: char) -> bool {
+pub(crate) fn forbidden_in_content(c: char) -> bool {
     c.is_control()
         || RESERVED_CHROME.contains(&c)
         || ('\u{e000}'..='\u{f8ff}').contains(&c)
@@ -258,7 +260,7 @@ pub fn forbidden_in_content(c: char) -> bool {
 }
 
 /// What a refusal says is logged and shown: one short line, no control characters.
-pub fn reason_is_loggable(reason: &str) -> Result<(), String> {
+pub(crate) fn reason_is_loggable(reason: &str) -> Result<(), String> {
     if reason.chars().count() > 600 {
         return Err(format!(
             "reason is {} characters: {:.400}",

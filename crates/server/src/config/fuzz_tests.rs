@@ -3,6 +3,7 @@
 //! password in a message.
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
+use std::fmt::Write as _;
 use std::path::Path;
 use std::sync::OnceLock;
 
@@ -51,7 +52,7 @@ fn sample() -> &'static str {
         let mut text = String::new();
         for (section, lines) in &sections {
             if !section.is_empty() {
-                text.push_str(&format!("[{section}]\n"));
+                let _ = writeln!(text, "[{section}]");
             }
             for line in lines {
                 text.push_str(line);
@@ -85,6 +86,25 @@ fn check(text: &str) {
                 assert!(!warning.contains(CANARY), "{warning}");
             }
             assert!(!format!("{:?}", got.config).contains(CANARY));
+            // Board text that loaded holds nothing the sanitizer would change: no control
+            // character, no marker codepoint, no Nerd Font glyph.
+            let board = &got.config.board;
+            let widgets = &got.config.widgets;
+            for text in [
+                &board.name,
+                &board.tagline,
+                &board.location,
+                &board.since,
+                &board.ticker,
+                &board.quotes,
+                &widgets.motd,
+                &widgets.quotes,
+            ] {
+                assert!(
+                    !text.chars().any(crate::fuzz::forbidden_in_content),
+                    "{text:?}"
+                );
+            }
         }
         Err(error) => {
             let shown = error.to_string();

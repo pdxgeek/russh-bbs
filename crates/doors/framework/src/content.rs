@@ -199,6 +199,8 @@ mod tests {
 
     // ---- H-4: hostile input ----
 
+    use std::fmt::Write as _;
+
     use proptest::prelude::*;
 
     const GOOD: &str =
@@ -249,7 +251,9 @@ mod tests {
                         }
                         3 => text.insert_str(i, &"x".repeat(1 + b as usize % 60_000)),
                         4 => text = text.replace("'Hello'", "[1, 2, [3, [4]]]"),
-                        _ => text.push_str(&format!("\nextra{a} = {b}\n")),
+                        _ => {
+                            let _ = write!(text, "\nextra{a} = {b}\n");
+                        }
                     }
                 }
                 text

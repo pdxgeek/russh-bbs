@@ -101,7 +101,7 @@ title = "Talk Hall"
   target = "main.chat"
 "#;
 
-const PAGE: &str = r##"version = 1
+const PAGE: &str = r#"version = 1
 title = "House rules"
 art = "mark.art.toml"
 text = """
@@ -112,7 +112,7 @@ Plain paragraphs wrap to the room there is.
 ---
 The end.
 """
-"##;
+"#;
 
 fn pack_text() -> &'static str {
     static PACK: OnceLock<String> = OnceLock::new();
@@ -302,7 +302,7 @@ fn check_art_toml(text: &str) {
     match timed("art.toml", || parse_art_toml(text, true)) {
         Ok(file) => {
             assert!(text.len() <= super::art::ART_TOML_MAX_BYTES);
-            assert!(!file.pieces.is_empty());
+            assert_ne!(file.pieces.len(), 0);
             for piece in &file.pieces {
                 check_grid(piece.grid());
                 if let Some(fallback) = piece.fallback() {
@@ -380,7 +380,10 @@ fn ans_worst_cases_at_the_byte_cap_are_fast_and_capped() {
             v
         }),
         ("tabs and backspaces", b"\t\x08\t\x08x".repeat(cap / 5)),
-        ("every byte", (0..cap).map(|i| (i % 256) as u8).collect()),
+        (
+            "every byte",
+            (0..cap).map(|i| u8::try_from(i % 256).unwrap()).collect(),
+        ),
         ("eof marks", vec![0x1a; cap]),
     ];
     for (what, bytes) in cases {
@@ -455,7 +458,7 @@ fn an_art_directory_over_the_file_cap_stops_at_the_cap() {
         "{}",
         set.pieces().len()
     );
-    assert!(!set.problems().is_empty());
+    assert_ne!(set.problems().len(), 0);
 }
 
 // ---- menus.toml and pages --------------------------------------------------------------------
