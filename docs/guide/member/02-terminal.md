@@ -4,7 +4,7 @@ The board draws with your terminal's help, and the server cannot see your termin
 
 ![Terminal settings](../img/settings.png)
 
-*Terminal settings as one member had it: layout `dashboard`, motion on, borders set to "blocks".*
+*Terminal settings of a new member: layout `classic` and style `default` (both the board's defaults), motion on, borders the style's own, mouse off.*
 
 | Key | Does |
 |---|---|
