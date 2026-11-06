@@ -137,34 +137,28 @@ fn the_calendar_has_four_events_in_the_term_each_with_enough_scenes_to_matter() 
 fn a_scene_is_open_only_at_the_place_in_the_periods_and_on_the_days_of_its_event() {
     let c = content();
     for e in &c.calendar {
+        // The opening scene of each event: the first one named for it that asks little.
         let first = c
             .talks
             .iter()
             .find(|t| t.event.as_deref() == Some(e.id.as_str()) && t.when.len() <= 2)
             .unwrap();
-        let day = (e.from..=e.to)
-            .find(|d| {
-                let mut sb = at("smooth_talker", &e.id, *d);
-                for cond in &first.when {
-                    common::satisfy(&mut sb.game, cond);
-                }
-                sb.game.world.term_start = monday();
-                sb.game.talk_open(first)
-            })
-            .unwrap_or_else(|| panic!("{} never opens", first.id));
-        let ready = || {
-            let mut sb = at("smooth_talker", &e.id, day);
+        // A pupil on `term_day` at the event with everything the scene asks for.
+        let ready = |term_day: i64| {
+            let mut sb = at("smooth_talker", &e.id, term_day);
             for cond in &first.when {
                 common::satisfy(&mut sb.game, cond);
             }
-            sb.game.world.term_start = monday() + 0;
+            // `satisfy` moves the term for a day condition; put it back where the test stands.
+            sb.game.world.term_start = sb.game.player.day - term_day;
             sb
         };
-        let mut sb = ready();
-        sb.game.world.term_start = monday();
-        assert!(sb.game.talk_open(first), "{} is open", first.id);
+        let day = (e.from..=e.to)
+            .find(|d| ready(*d).game.talk_open(first))
+            .unwrap_or_else(|| panic!("{} never opens", first.id));
+        assert!(ready(day).game.talk_open(first), "{} is open", first.id);
         // The wrong place.
-        let mut elsewhere = ready();
+        let mut elsewhere = ready(day);
         elsewhere.game.player.place = "dorm".into();
         assert!(
             !elsewhere.game.talk_open(first),
@@ -172,17 +166,14 @@ fn a_scene_is_open_only_at_the_place_in_the_periods_and_on_the_days_of_its_event
             first.id
         );
         // The wrong period: a class.
-        let mut in_class = ready();
+        let mut in_class = ready(day);
         in_class.game.player.slot = 0;
         assert!(!in_class.game.talk_open(first), "{}: in class", first.id);
-        // Before and after its days.
-        for off in [-5_i64, 40] {
-            let mut sb = ready();
-            sb.game.world.term_start = monday() - (day - monday() + 0) + off;
-            let term_day = sb.game.term_day();
-            if !(e.from..=e.to).contains(&term_day) {
-                assert!(!sb.game.talk_open(first), "{}: day {term_day}", first.id);
-            }
+        // The days before and after its days.
+        for off in [e.from - 3, e.to + 1] {
+            let mut sb = ready(day);
+            sb.game.world.term_start = sb.game.player.day - off;
+            assert!(!sb.game.talk_open(first), "{}: on day {off}", first.id);
         }
     }
 }
@@ -197,7 +188,7 @@ fn the_morning_bell_names_the_event_on_its_days_and_only_then() {
             .game
             .sync_day(monday() + e.from)
             .iter()
-            .map(|ev| ev.describe())
+            .map(russh_bbs_door_hallpass::game::Event::describe)
             .collect();
         assert!(
             said.iter()
@@ -211,7 +202,7 @@ fn the_morning_bell_names_the_event_on_its_days_and_only_then() {
             .game
             .sync_day(monday() + e.to + 2)
             .iter()
-            .map(|ev| ev.describe())
+            .map(russh_bbs_door_hallpass::game::Event::describe)
             .collect();
         assert!(
             !said.iter().any(|l| l.contains(&format!("{}:", e.name))),
@@ -655,7 +646,7 @@ fn staged(
 async fn replay(sb: &Sandbox, term_day: i64, keys: &str) -> common::Branch {
     let world = {
         let mut w = world_at(term_day);
-        w.active = sb.game.world.active.clone();
+        w.active.clone_from(&sb.game.world.active);
         w
     };
     let log = world_log(&sb.game.player, &world, keys, 11);

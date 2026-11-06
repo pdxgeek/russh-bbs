@@ -848,7 +848,7 @@ fn ready_for(
         }
     }
     sb.game.world.term_start = monday();
-    sb.game.player.place = clue.place.clone();
+    sb.game.player.place.clone_from(&clue.place);
     let kind = &clue.kinds[0];
     sb.game.player.slot = u8::try_from(slot_of(&sb.game, kind)).unwrap();
     sb
@@ -1021,8 +1021,7 @@ fn saying_not_yet_in_a_storylines_scene_leaves_the_door_open_for_when_the_pupil_
             .node
             .iter()
             .flat_map(|n| n.choice.iter().enumerate())
-            .find(|(_, ch)| ch.effects.is_empty() && ch.next.is_empty())
-            .map(|(i, _)| i)
+            .find_map(|(i, ch)| (ch.effects.is_empty() && ch.next.is_empty()).then_some(i))
             .unwrap_or_else(|| panic!("{talk} has a way out"));
         let player = at_the_choice(talk, 30);
         let name = player.name.clone();

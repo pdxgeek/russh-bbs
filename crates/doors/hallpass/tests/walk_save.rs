@@ -6,7 +6,21 @@
 //!
 //! The file holds the save as hex, for `sqlite3 ... "UPDATE door_save SET data = x'...'"`. Said
 //! plainly in the walk's report: this one pupil is prepared; every key after the sign-in is real.
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+#![allow(
+    clippy::cast_precision_loss,
+    clippy::needless_pass_by_value,
+    clippy::doc_markdown,
+    clippy::similar_names,
+    clippy::expect_used,
+    clippy::assert_is_empty,
+    clippy::type_complexity,
+    clippy::collapsible_if,
+    clippy::cast_possible_wrap,
+    clippy::unwrap_used,
+    clippy::too_many_lines,
+    clippy::print_stderr,
+    clippy::panic
+)]
 mod common;
 
 use common::Sandbox;
@@ -53,12 +67,10 @@ fn write_the_prepared_pupil_for_the_ssh_walk() {
         .find(|s| sb.game.kind(day, *s) == "free")
         .expect("a free period");
     sb.game.player.slot = u8::try_from(free).unwrap();
-    std::fs::write(
-        out,
-        encode_player(&sb.game.player)
-            .iter()
-            .map(|b| format!("{b:02x}"))
-            .collect::<String>(),
-    )
-    .unwrap();
+    let mut hex = String::new();
+    for b in encode_player(&sb.game.player) {
+        use std::fmt::Write as _;
+        write!(hex, "{b:02x}").unwrap();
+    }
+    std::fs::write(out, hex).unwrap();
 }

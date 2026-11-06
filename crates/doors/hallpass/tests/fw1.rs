@@ -1,9 +1,18 @@
 //! The framework's FW-1 seams as Hallpass uses them: the board's clock at drawing time, the
 //! world a session reads, and the look-around key.
 #![allow(
-    clippy::unwrap_used,
+    clippy::cast_precision_loss,
+    clippy::needless_pass_by_value,
+    clippy::doc_markdown,
+    clippy::similar_names,
     clippy::expect_used,
+    clippy::assert_is_empty,
+    clippy::type_complexity,
+    clippy::collapsible_if,
+    clippy::cast_possible_wrap,
+    clippy::unwrap_used,
     clippy::too_many_lines,
+    clippy::print_stderr,
     clippy::panic
 )]
 mod common;
