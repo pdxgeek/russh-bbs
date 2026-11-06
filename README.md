@@ -111,7 +111,7 @@ Everything below is **merged and available** unless it says otherwise. Per-featu
 - Registration modes `invite` (default), `apply` and `open`; the waiting room reveals nothing about members, boards or stats to an unauthenticated key in any mode.
 - A sysop queue to approve, deny and vouch.
 - SSH keys: list, add, remove, link a new device with a code, staff recovery codes. Password login over SSH is on by default and can be turned off.
-- Roles are sets of named permissions, with groups, per-area policies and per-role limits (time, calls, sessions). Every action goes through one access function.
+- Roles are sets of named permissions, with groups, per-area policies and per-role limits (time, calls, sessions). Every action goes through one access function. There is no screen yet to assign a role or suspend an account; that is an M5 console item.
 - An append-only audit log.
 
 ### Look and feel
@@ -166,7 +166,7 @@ RUSSH_BBS_BOARD_LAYOUT=dashboard \
 ./target/release/russh-bbs-server --listen 127.0.0.1:2222
 ```
 
-Style names are `phosphor`, `amber`, `neon`, `paper`, `deepspace` and `ansi` (plus `default`, `green` and `contrast`). Use `--db` and `--host-key` to put state somewhere else; back up the database, the host key and the mail key together.
+Style names are `phosphor`, `amber`, `neon`, `paper`, `deepspace` and `ansi` (plus `default`, `green` and `contrast`). Use `--db` and `--host-key` to put state somewhere else. The mail key (`mail.key`) is *not* moved by those two flags (a known issue, tracked as FIX-DOC1-1 in [docs/coordination.md](docs/coordination.md)): set `mail.key_file` as well, and back up the database, the host key and the mail key together.
 
 Switch telnet on with `RUSSH_BBS_TELNET_ENABLED=true` (port 2323 by default). It stays plaintext.
 
@@ -239,7 +239,7 @@ More: [docs/architecture.md](docs/architecture.md) and [docs/ui.md](docs/ui.md).
 ## Documentation
 
 - [docs/README.md](docs/README.md): the documentation index, by area.
-- [Sysop and member guides](docs/guide/): how to run a board and how to use one.
+- [Sysop and member guides](docs/guide/): the [sysop guide](docs/guide/sysop/01-install.md) (install, first start, config, people, look and feel, doors, backups, troubleshooting), the [member guide](docs/guide/member/01-connect.md), and [who can read what](docs/guide/privacy.md).
 - [docs/vision.md](docs/vision.md), [docs/features.md](docs/features.md), [docs/decisions.md](docs/decisions.md).
 - [docs/deploy.md](docs/deploy.md), [docs/config.md](docs/config.md), [docs/threat-model.md](docs/threat-model.md), [docs/ui.md](docs/ui.md), [docs/doors/README.md](docs/doors/README.md).
 
@@ -257,11 +257,6 @@ cargo deny check
 ```
 
 A passing build does not prove behavior: for anything user-visible, also run the server and exercise it with a real `ssh` client.
-
-## Guides
-
-- **Running a board:** the [sysop guide](docs/guide/sysop/01-install.md): install, first start, config, people, look and feel, doors, backups, troubleshooting.
-- **Using a board:** the [member guide](docs/guide/member/01-connect.md), and [who can read what](docs/guide/privacy.md).
 
 ## Software name vs. board name
 

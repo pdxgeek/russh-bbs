@@ -59,7 +59,7 @@ A slice with an unmet dependency is not claimable.
 
 | Slice | Owns | Depends on | Status | Branch / PR |
 |---|---|---|---|---|
-| DOC-2 README refresh | `README.md`, `docs/readme/` (its screenshots), this row | none | Claimed | Branch `docs/readme-refresh`. Docs only. The README links `docs/guide/` as "Sysop and member guides"; that folder comes from DOC-1 (`docs/sysop-member-guide`) and the link is broken until DOC-1 merges. |
+| DOC-2 README refresh | `README.md`, `docs/readme/` (its screenshots), this row | none | Claimed | Branch `docs/readme-refresh`. Docs only. Merged `origin/main` (DOC-1's `docs/guide/` is there, so the "Sysop and member guides" link works). The new README replaces the stale status line named in FIX-DOC1-4 (a); the other parts of FIX-DOC1-4 are untouched. |
 
 ### M2: Invites and members
 
