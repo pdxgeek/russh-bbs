@@ -1238,7 +1238,9 @@ impl Game {
         p.nerve_max = to_u8(rules.start_nerve_max + spec.nerve);
         p.nerve = p.nerve_max;
         p.cool = to_i16(rules.start_cool + spec.cool);
-        p.cash = rules.start_cash;
+        p.cash = rules.start_cash
+            + i32::from(p.social.unpaid) * self.content.social.rules.award_cash;
+        p.social.unpaid = 0;
         p.grades = self
             .content
             .subjects

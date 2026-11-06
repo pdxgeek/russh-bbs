@@ -600,13 +600,9 @@ impl Game {
 
     // ------------------------------------------------------------ the days
 
-    /// What the social layer owes this player at the start of a visit: plots delivered, the
-    /// election result, the finale, awards won.
-    pub fn social_day(&mut self) -> Vec<Event> {
+    /// Plots delivered, the election result and the finale, for a character in school.
+    fn social_news(&mut self) -> Vec<Event> {
         let mut events = Vec::new();
-        if self.player.status != crate::state::Status::Active {
-            return events;
-        }
         events.extend(self.deliver_plots());
         let term = self.player.term;
         let winner = self.world.commons.election.winner.clone();
@@ -641,6 +637,16 @@ impl Game {
                 );
             events.push(Event::Say(line));
         }
+        events
+    }
+
+    /// What the social layer owes this player at the start of a visit: plots delivered, the
+    /// election result, the finale, awards won.
+    pub fn social_day(&mut self) -> Vec<Event> {
+        let mut events = Vec::new();
+        if self.player.status == crate::state::Status::Active {
+            events.extend(self.social_news());
+        }
         let wins: Vec<AwardWin> = self
             .world
             .commons
@@ -664,10 +670,14 @@ impl Game {
                 continue;
             };
             let line = format!("Award, term {}: {}. {}", win.term, spec.name, spec.text);
-            self.player.cash = self
-                .player
-                .cash
-                .saturating_add(self.content.social.rules.award_cash);
+            if self.player.status == crate::state::Status::Active {
+                self.player.cash = self
+                    .player
+                    .cash
+                    .saturating_add(self.content.social.rules.award_cash);
+            } else {
+                self.player.social.unpaid = self.player.social.unpaid.saturating_add(1);
+            }
             self.player
                 .social
                 .awards

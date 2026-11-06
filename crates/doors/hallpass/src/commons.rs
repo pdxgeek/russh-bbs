@@ -61,6 +61,8 @@ pub struct Social {
     pub told_finale: u32,
     /// Awards won, as `term:award`.
     pub awards: Vec<String>,
+    /// Awards won whose cash is still owed (a pupil between terms is paid when they enrol).
+    pub unpaid: u8,
     /// What was done to them, newest last.
     pub inbox: Vec<String>,
 }
@@ -79,6 +81,7 @@ wire_struct!(Social {
     told_term,
     told_finale,
     awards,
+    unpaid,
     inbox
 });
 
