@@ -303,7 +303,7 @@ pub(super) fn league(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
                 Span::styled(format!("Your renown {}: ", rn.total()), p.gold()),
                 Span::styled(
                     format!(
-                        "hold {}, crew {}, deeds {}, Deep {}, pacts {}, raids {} (at most {}), wealth {}{}",
+                        "hold {}, crew {}, deeds {}, Deep {}, pacts {}, raids {} (at most {}), wealth {}, work {}{}",
                         rn.hold,
                         rn.crew,
                         rn.deeds,
@@ -312,6 +312,7 @@ pub(super) fn league(ui: &Ui<'_>, f: &mut DoorFrame<'_>, area: Rect) {
                         rn.raids,
                         crate::social::renown::RAIDS_MAX,
                         rn.wealth,
+                        rn.story,
                         if rn.penalty > 0 {
                             format!(", betrayals -{}", rn.penalty)
                         } else {

@@ -25,6 +25,7 @@
 pub mod dispatch;
 pub mod hall;
 pub mod ledger;
+pub mod legacy;
 pub mod letters;
 pub mod market;
 pub mod pact;
@@ -53,11 +54,11 @@ pub mod caps {
     /// Days unseen after which a clan cannot be raided at all.
     pub const DORMANT_SAFE_DAYS: i64 = 10;
     /// Percent of each posted good a won raid can take.
-    pub const LOOT_PCT: u32 = 12;
+    pub const LOOT_PCT: u32 = 16;
     /// Percent of the posted tallies a won raid can take.
-    pub const LOOT_TALLY_PCT: u32 = 8;
+    pub const LOOT_TALLY_PCT: u32 = 10;
     /// The most a raid can take, in tallies' worth at base prices.
-    pub const LOOT_MAX_VALUE: u32 = 90;
+    pub const LOOT_MAX_VALUE: u32 = 130;
     /// Items one raider can carry off.
     pub const CARRY_PER_RAIDER: u32 = 6;
     /// A clan whose renown is less than a third of the raider's is beneath the raider.
@@ -110,6 +111,8 @@ pub mod caps {
     pub const BOOK_SEASONS: usize = 8;
     /// The world blob is refused growth past this many bytes (the framework's cap is 256 KiB).
     pub const WORLD_SOFT_CAP: usize = 200_000;
+    /// Tallies each partner of a pact in force is paid for a week of keeping it.
+    pub const PEACE_DIVIDEND: u32 = 8;
 }
 
 /// A clan's index in the world's registry. The registry only grows within a season.
@@ -494,6 +497,8 @@ pub enum Refusal {
     MailFull,
     /// The sender is in the Tidecourt's bad books.
     Outlaw,
+    /// The ground cannot take a causeway (or one is there already).
+    Blocked,
 }
 
 impl Refusal {
@@ -523,6 +528,7 @@ impl Refusal {
             Self::NotYours => "That is not yours to change.",
             Self::MailFull => "That clan's post is full.",
             Self::Outlaw => "The Tidecourt will not carry your word.",
+            Self::Blocked => "That ground cannot take a causeway.",
         }
     }
 
@@ -554,6 +560,7 @@ impl Refusal {
             19 => Self::NotYours,
             20 => Self::MailFull,
             21 => Self::Outlaw,
+            22 => Self::Blocked,
             _ => return None,
         })
     }
@@ -805,12 +812,12 @@ mod tests {
 
     #[test]
     fn every_refusal_has_a_sentence_and_a_code_that_round_trips() {
-        for code in 0..=21u8 {
+        for code in 0..=22u8 {
             let r = Refusal::from_code(code).unwrap();
             assert_eq!(r.code(), code);
             assert!(r.text().ends_with('.') && r.text().len() > 12);
         }
-        assert_eq!(Refusal::from_code(22), None);
+        assert_eq!(Refusal::from_code(23), None);
     }
 
     #[test]

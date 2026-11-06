@@ -123,3 +123,13 @@ blurb = "Lost the sight of an eye. Misjudges the gap, and the swing."
 scar = true
 accident_pct = 15
 fight_atk = -1
+
+[[trait]]
+id = "tide-reader"
+name = "Tide-reader"
+blurb = "Knows when the channel will turn, and gets home before it does."
+wet_pct = 20
+accident_pct = -25
+fight_spd = 1
+luck_pct = 4
+hire_pct = 20

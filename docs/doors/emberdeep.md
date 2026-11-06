@@ -1,6 +1,6 @@
 # Emberdeep: a fantasy delving door (design)
 
-Status: **Engine implemented (M4-E1, D101); town and crafting implemented (M4-E2, D110); the full UI implemented (M4-E3, D115); social play, content and balance implemented (M4-E4, D-TBD, in review)**. The design below is the target; the implementation notes ([E1](#implementation-notes-m4-e1), [E2](#implementation-notes-m4-e2), [E3](#implementation-notes-m4-e3), [E4](#implementation-notes-m4-e4)) say what exists, how it behaves and what was not built. Shared platform rules are in [README.md](README.md). This is the "small daily-turn RPG" that M4 plans as a first game, and the smallest engine of the set.
+Status: **Engine implemented (M4-E1, D101); town and crafting implemented (M4-E2, D110); the full UI implemented (M4-E3, D115); social play, content and balance implemented (M4-E4, D136, in review)**. The design below is the target; the implementation notes ([E1](#implementation-notes-m4-e1), [E2](#implementation-notes-m4-e2), [E3](#implementation-notes-m4-e3), [E4](#implementation-notes-m4-e4)) say what exists, how it behaves and what was not built. Shared platform rules are in [README.md](README.md). This is the "small daily-turn RPG" that M4 plans as a first game, and the smallest engine of the set.
 
 ## Pitch
 
@@ -270,7 +270,7 @@ The core tension: **how deep do you go today?** Each level down is richer and mo
 
 ## Implementation notes (M4-E4)
 
-**Status.** Parties, rescues with a reward from the rescued, the opt-in duel ring, shared town projects with a hall of donors, the story tables (100+ dungeon events, three questlines of 10 steps), the Cold Furnace's verdict and six collective endings with eight epilogues, and a content pass are built in the same crate (D-TBD). **Verified:** by unit tests of every rule (`src/tests/social.rs`, `balance.rs`), a two-account test of a company, a rescue by a stranger and by a companion, and an unfound hero's epitaph through the framework's store and nightly tick (`tests/social.rs`), a replay of a social branch, the migrations (a real E1 hero and world walk 1 to 2 to 3 through the host), pinned screen snapshots of every new screen in both icon tiers and all sizes, the framework's sandbox audit, and the 18-hero season simulation. **Not verified:** see "What was not exercised" at the end of this section.
+**Status.** Parties, rescues with a reward from the rescued, the opt-in duel ring, shared town projects with a hall of donors, the story tables (100+ dungeon events, three questlines of 10 steps), the Cold Furnace's verdict and six collective endings with eight epilogues, and a content pass are built in the same crate (D136). **Verified:** by unit tests of every rule (`src/tests/social.rs`, `balance.rs`), a two-account test of a company, a rescue by a stranger and by a companion, and an unfound hero's epitaph through the framework's store and nightly tick (`tests/social.rs`), a replay of a social branch, the migrations (a real E1 hero and world walk 1 to 2 to 3 through the host), pinned screen snapshots of every new screen in both icon tiers and all sizes, the framework's sandbox audit, and the 18-hero season simulation. **Not verified:** see "What was not exercised" at the end of this section.
 
 ### What is built, and where
 
