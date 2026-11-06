@@ -206,7 +206,7 @@ async fn a_bounty_with_a_note_is_posted_and_the_note_went_through_the_text_rules
     keys(&mut r, &store, "vb").await;
     // The note prompt: a hostile line is made plain, one line, within the limit.
     assert!(r.look_around(&e).join("\n").contains("bounty on bob"));
-    keys(&mut r, &store, "pay \u{7}\u{202e}up\n").await;
+    keys(&mut r, &store, "pay \u{7}\u{202e}up?\n").await;
     let p = player(&store, &door, ann).await;
     assert_eq!(p.marks, marks - 100, "the stake is taken");
     let w = world(&store, &door).await;
@@ -222,6 +222,8 @@ async fn a_bounty_with_a_note_is_posted_and_the_note_went_through_the_text_rules
         b.note
     );
     assert!(b.note.contains("pay"));
+    // A typed `?` goes into the text: the prompt takes text, so the look-around key is not special.
+    assert!(b.note.contains('?'), "{:?}", b.note);
     // bob is told that a price is on him, and sees it on the street.
     let eb = DoorEnv::for_tests("bob");
     let mut r = open(&store, &door, bob, "bob", DAY, 3).await;

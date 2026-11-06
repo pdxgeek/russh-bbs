@@ -1862,6 +1862,12 @@ impl DoorSession for Session {
         ui::draw(self, canvas, env);
     }
 
+    /// The crew name, the invitation and the bounty note take typed text: a typed `?` goes into
+    /// the text instead of opening the look-around (D98).
+    fn captures_text(&self) -> bool {
+        matches!(self.view, View::Input(_))
+    }
+
     fn look_around(&self, _env: &DoorEnv) -> Vec<String> {
         self.lines(usize::MAX / 4)
             .into_iter()
