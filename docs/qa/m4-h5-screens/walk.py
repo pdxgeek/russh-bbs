@@ -6,7 +6,7 @@
     python3 walk.py A PORT FOUNDER_KEY BOB_KEY OUT [COLSxROWS]  day 0: both enrol
     python3 walk.py B PORT FOUNDER_KEY BOB_KEY OUT [COLSxROWS]  day 17: the morning bell names the house match; the team sheet
     python3 walk.py C PORT FOUNDER_KEY BOB_KEY OUT [COLSxROWS]  day 18: the scenes the two chose, and what each offers
-    python3 walk.py D PORT FOUNDER_KEY BOB_KEY OUT [COLSxROWS]  day 20: the prepared pupil searches the shed for the key
+    python3 walk.py D PORT FOUNDER_KEY BOB_KEY OUT [COLSxROWS]  day 20: the prepared pupil searches the shed and gets the key
 
 Phases B to D need the board's clock moved on (run the server under `faketime -f "+17d"` and so on
 on the same database). Phase D starts from a pupil the test `walk_save` wrote into the database (the
@@ -27,7 +27,7 @@ PASSWORD = "a throwaway password for the walk\r"
 
 def digit(term, pattern):
     """The key (a digit or letter) the screen shows for the order whose text matches `pattern`."""
-    m = re.search(r"(?m)(?:^|[^A-Za-z0-9])([0-9a-z])\s+" + pattern, term.text())
+    m = re.search(r"(?m)(?:^|[^A-Za-z0-9])([0-9a-z])\s+(?:\u25b8\s+)?" + pattern, term.text())
     return m.group(1) if m else None
 
 
@@ -90,9 +90,8 @@ def to_free_period(term):
 
 
 def to_the_grounds(term):
-    term.send(ESC, quiet=0.3)
-    walk_to(term, "dorm", "quad")
-    walk_to(term, "quad", "grounds")
+    # (Esc on the day screen leaves the door, so no Esc here: `g` opens the map from the day.)
+    walk_to(term, "dorm", "grounds")
 
 
 def talk_menu(term):
@@ -120,10 +119,10 @@ def phase_b(port, fkey, bkey, out, cols, rows):
     f.save(out, "B02-founder-on-the-grounds-after-school")
     talk_menu(f)
     f.save(out, "B03-founder-the-talk-list")
-    press(f, "team sheet")
+    press(f, "The team sheet")
     f.save(out, "B04-founder-the-team-sheet-her-options")
     # A smooth talker with the cool for it takes the touchline.
-    press(f, "singing")
+    press(f, "Take the touchline")
     f.save(out, "B05-founder-leads-the-singing")
     leave_board(f)
     # bob, a teacher's pet, sees the same sheet and a different set of open jobs.
@@ -132,9 +131,9 @@ def phase_b(port, fkey, bkey, out, cols, rows):
     to_after_school(b)
     to_the_grounds(b)
     talk_menu(b)
-    press(b, "team sheet")
+    press(b, "The team sheet")
     b.save(out, "B07-bob-the-team-sheet-his-options")
-    press(b, "stands")
+    press(b, "Watch from the stands")
     b.save(out, "B08-bob-watches-from-the-stands")
     leave_board(b)
 
@@ -146,9 +145,9 @@ def phase_c(port, fkey, bkey, out, cols, rows):
     to_the_grounds(f)
     talk_menu(f)
     f.save(out, "C01-founder-the-talk-list-day-two")
-    press(f, "singing")
+    press(f, "Leading the singing")
     f.save(out, "C02-founder-leading-the-singing")
-    press(f, "school song")
+    press(f, "Strike up the school song")
     f.save(out, "C03-founder-the-song-and-what-it-did")
     leave_board(f)
     b = enter(port, bkey, cols, rows, "bob")
@@ -156,7 +155,7 @@ def phase_c(port, fkey, bkey, out, cols, rows):
     to_the_grounds(b)
     talk_menu(b)
     b.save(out, "C04-bob-the-talk-list-day-two")
-    press(b, "stands")
+    press(b, "In the stands")
     b.save(out, "C05-bob-in-the-stands")
     press(b, "Sit with Mags")
     b.save(out, "C06-bob-keeps-mags-tally")
@@ -177,16 +176,10 @@ def phase_d(port, fkey, bkey, out, cols, rows):
     f.send("j", quiet=0.8)
     f.save(out, "D05-journal-the-wing-step")
     f.send(ESC, quiet=0.4)
-    f.send("f", quiet=0.8)
-    f.save(out, "D06-the-file-and-the-key-on-the-pupil")
-    f.send(ESC, quiet=0.4)
-    # The wing opens only after lights-out: rest to the night, and the map says it is ours.
-    for _ in range(9):
-        if f.has("Lights-out") and re.search(r"[\[▐]\s*Lights", f.text()):
-            break
-        f.send("r", quiet=0.5)
+    # The map with the key in hand: the East Wing is on the plan, and it is shut at this hour (it
+    # opens only after lights-out, to a pupil who holds the key).
     f.send("g", quiet=0.8)
-    f.save(out, "D07-the-map-at-night")
+    f.save(out, "D06-the-map-with-the-key-in-hand")
     f.send(ESC, quiet=0.4)
     leave_board(f)
     print("searched:", ok)

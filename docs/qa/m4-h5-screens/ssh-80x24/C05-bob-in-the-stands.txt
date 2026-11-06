@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Hallpass                                                                      │
+│                                                                              │
+│ ♜ GREYWATER ACADEMY  · bob                            term 1 · Tue day 19/42 │
+│  Sci      Art     Lunch   Maths    Lang     Free   ▐After▌    Eve     Night  │
+│━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄│
+│╭────────────────╮╭ In the stands ───────────────────────────────────────────╮│
+││    ▄▄▄▄▄▄▄     ││Mr. Dunstan Gale                                          ││
+││    ▀▀▀▀▀▀▀     ││The stand is damp and loud. Mags is two rows down with a  ││
+││    ▀▀▀▀▀▀▀     ││notebook, tallying strokes. Dot, three seats along, is    ││
+││    ▀▀▀▀▀▀▀     ││quietly taking bets in biscuits.                          ││
+││   ▄▀▀▀▀▀▀▀▄    ││                                                          ││
+││   ▀▀▀▀▀▀▀▀▀    ││bond   ──────────────────╵─◆─╵─────────────────── +0 known││
+│╰────────────────╯╰──────────────────────────────────────────────────────────╯│
+│╭ You say ───────────────────────────────────────────────────────────────────╮│
+││ 1 ▸ Sit with Mags and keep her tally                                       ││
+││ 2   Count Hollin House's whistles from the stand and learn their signals   ││
+││ ╳   Put two biscuits on the Eight with Dot  needs dot at least 2           ││
+││ 4   Buy a flask of cocoa for the crew                                      ││
+││ 5   Cheer for both boats and eat your sandwich                             ││
+││ x   excuse yourself                                                        ││
+│╰────────────────────────────────────────────────────────────────────────────╯│
+│ » Sit with Mags and keep her tally                      up/down  Enter  Esc  │
+└──────────────────────────────────────────────────────────────────────────────┘

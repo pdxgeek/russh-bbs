@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Hallpass                                                                      │
+│                                                                              │
+│ ♜ GREYWATER ACADEMY  · founder                        term 1 · Tue day 19/42 │
+│  Sci      Art     Lunch   Maths    Lang     Free   ▐After▌    Eve     Night  │
+│━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄│
+│╭────────────────╮╭ Leading the singing from the touchline ──────────────────╮│
+││    ▄▄▄▄▄▄▄     ││Mr. Dunstan Gale                                          ││
+││    ▀▀▀▀▀▀▀     ││The stand is two hundred pupils, a few parents and a      ││
+││    ▀▀▀▀▀▀▀     ││collie. It has the song sheet and no idea how to begin.   ││
+││    ▀▀▀▀▀▀▀     ││You have a megaphone made of rolled cardboard, and        ││
+││   ▄▀▀▀▀▀▀▀▄    ││everyone is waiting.                                      ││
+││   ▀▀▀▀▀▀▀▀▀    ││                                                          ││
+││Gale            ││bond   ──────────────────╵─◆─╵─────────────────── +0 known││
+│╰────────────────╯╰──────────────────────────────────────────────────────────╯│
+│╭ You say ───────────────────────────────────────────────────────────────────╮│
+││ 1 ▸ Strike up the school song, loud and a half-tone sharp                  ││
+││ ╳   Start a chant about the smell of the~  needs being known troublemaker  ││
+││ ╳   Teach the stand the round about the headmist~  needs bluff at least 2  ││
+││ ╳   Pass a tin round for the boat fund  needs tarn at least 5              ││
+││ x   excuse yourself                                                        ││
+│╰────────────────────────────────────────────────────────────────────────────╯│
+│ » Strike up the school song, loud and a half-tone sharp up/down  Enter  Esc  │
+└──────────────────────────────────────────────────────────────────────────────┘

@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Hallpass                                                                      │
+│                                                                              │
+│ ♜ GREYWATER ACADEMY  · bob                             term 1 · Fri day 1/42 │
+│ ▐Art▌     Sci     Lunch    Lang    Maths    Free    After     Eve     Night  │
+│▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄│
+│╭ Fenwick dormitory ────────────────────╮╭ You ──────────────────────────────╮│
+││Main wing                              ││heat   ░░░░░░░░░░░░░░░░░░░░░░░░░░ 0││
+││Eight iron beds, eight trunks, one     ││file   ░░░░░░░░░░░░░░░░░░░░░░░ 0/12││
+││radiator that clanks.                  ││nerve  ●●●●●● 6/6                  ││
+││Nobody else is here.                   ││legend 0   ◈ cash 12               ││
+││Now: Art class                         ││                                   ││
+││Next: Sci in the Science lab           ││                                   ││
+││The Quad: Bramley, Marchetti           ││                                   ││
+││                                       ││                                   ││
+││                                       ││                                   ││
+││                                       ││                                   ││
+││                                       ││                                   ││
+│╰───────────────────────────────────────╯╰───────────────────────────────────╯│
+│ g Go   l Loiter   r Rest   p Schemes   c Clubs   f File   j Journal          │
+│ n Paper   o Social   q Leave                                                 │
+│ You step off the coach at Greywater Academy as a teacher's pet.              │
+│ » Go somewhere                                          up/down  Enter  Esc  │
+└──────────────────────────────────────────────────────────────────────────────┘

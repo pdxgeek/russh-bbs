@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Hallpass                                                                      │
+│                                                                              │
+│ ♜ GREYWATER ACADEMY  · bob                            term 1 · Tue day 19/42 │
+│  Sci      Art     Lunch   Maths    Lang     Free    After    ▐Eve▌    Night  │
+│━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄│
+│╭ The grounds ──────────────────────────╮╭ You ──────────────────────────────╮│
+││Grounds wing                           ││heat   ░░░░░░░░░░░░░░░░░░░░░░░░░░ 0││
+││Lawn sloping to a fog-bound lake.      ││file   ░░░░░░░░░░░░░░░░░░░░░░░ 0/12││
+││Gravel paths, one gate.                ││nerve  ●●●●●● 6/6                  ││
+││Here: Fenn                             ││legend 0   ◈ cash 36               ││
+││Now: evening                           ││                                   ││
+││Next: Night                            ││                                   ││
+││The boathouse: Hollis, Ferrier         ││                                   ││
+││Chapel: Soames                         ││                                   ││
+││Gymnasium: Gale, Crouch                ││                                   ││
+││                                       ││                                   ││
+│╰───────────────────────────────────────╯╰───────────────────────────────────╯│
+│ g Go   l Loiter   t Talk   r Rest   p Schemes   c Clubs   f File             │
+│ j Journal   n Paper   o Social   q Leave                                     │
+│ She says nothing for nine minutes, then hands you the notebook. In it,       │
+│ in tiny writing, she has predicted every stroke.                             │
+│ » Go somewhere                                          up/down  Enter  Esc  │
+└──────────────────────────────────────────────────────────────────────────────┘

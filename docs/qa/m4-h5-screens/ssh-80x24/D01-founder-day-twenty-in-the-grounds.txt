@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Hallpass                                                                      │
+│                                                                              │
+│ ♜ GREYWATER ACADEMY  · founder                        term 1 · Thu day 21/42 │
+│  Lang    Hist     Lunch    Sci      Art    ▐Free▌   After     Eve     Night  │
+│━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄│
+│╭ The grounds ──────────────────────────╮╭ You ──────────────────────────────╮│
+││Grounds wing                           ││heat   ░░░░░░░░░░░░░░░░░░░░░░░░░░ 0││
+││Lawn sloping to a fog-bound lake.      ││file   ░░░░░░░░░░░░░░░░░░░░░░░ 0/12││
+││Gravel paths, one gate.                ││nerve  ●●●●●● 6/6                  ││
+││Here: Fenn, Tull, Rook, Dacre          ││legend 0   ◈ cash 12               ││
+││Now: free                              ││                                   ││
+││Next: After                            ││                                   ││
+││The boathouse: Hollis, Hale, Carrow, Fe││                                   ││
+││Caretaker's s~: Kessler, Abara         ││                                   ││
+││Chapel: Soames, Deveraux               ││                                   ││
+││Gymnasium: Gale, Crouch, Marlowe       ││                                   ││
+││The Quad: Bramley, Marchetti, Varga, Ro││                                   ││
+││                                       ││                                   ││
+│╰───────────────────────────────────────╯╰───────────────────────────────────╯│
+│ g Go   l Loiter   t Talk   r Rest   p Schemes   c Clubs   f File             │
+│ j Journal   n Paper   o Social   q Leave                                     │
+│ » Go somewhere                                          up/down  Enter  Esc  │
+└──────────────────────────────────────────────────────────────────────────────┘

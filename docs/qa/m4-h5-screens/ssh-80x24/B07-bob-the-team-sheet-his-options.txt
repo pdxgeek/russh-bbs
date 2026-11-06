@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Hallpass                                                                      │
+│                                                                              │
+│ ♜ GREYWATER ACADEMY  · bob                            term 1 · Mon day 18/42 │
+│ Maths    Lang     Lunch    Sci     Hist     Free   ▐After▌    Eve     Night  │
+│━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━▀▀▀▀▀▀▀▀┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄│
+│╭────────────────╮╭ The team sheet for the house match ──────────────────────╮│
+││    ▄▄▄▄▄▄▄     ││Mr. Dunstan Gale                                          ││
+││    ▀▀▀▀▀▀▀     ││Mr. Gale has pinned the team sheet to a goalpost with a   ││
+││    ▀▀▀▀▀▀▀     ││rowing boot. Greywater against Hollin House: a race, a    ││
+││    ▀▀▀▀▀▀▀     ││scoreboard, a stand full of parents' cars and a great deal││
+││   ▄▀▀▀▀▀▀▀▄    ││of mud. Eleven jobs are still without a name. 'Pick one   ││
+││   ▀▀▀▀▀▀▀▀▀    ││and keep it,' he says. 'I do not take changes.'           ││
+│╰────────────────╯╰──────────────────────────────────────────────────────────╯│
+│╭ You say ───────────────────────────────────────────────────────────────────╮│
+││ ╳   Put your name down for the Eight  needs rowing at least 1              ││
+││ ╳   Offer to run the scoreboard  needs tinker at least 1                   ││
+││ ╳   Take the touchline and lead the singing  needs cool at least 48        ││
+││ ╳   Slip over to the Hollin House shed and see w~  needs sneak at least 1  ││
+││ 5 ▸ Watch from the stands like a sensible person                           ││
+││ x   excuse yourself                                                        ││
+│╰────────────────────────────────────────────────────────────────────────────╯│
+│ » Watch from the stands like a sensible person          up/down  Enter  Esc  │
+└──────────────────────────────────────────────────────────────────────────────┘
