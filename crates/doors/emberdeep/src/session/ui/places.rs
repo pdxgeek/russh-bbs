@@ -31,6 +31,10 @@ fn title_of(spot: Spot) -> (&'static str, &'static str) {
         Spot::Guild => ("The Guild Hall", "drills and old hands"),
         Spot::Library => ("The Library", "dust, relics and patterns"),
         Spot::Works => ("The Town Works", "what Cindermere builds together"),
+        Spot::Company => ("The Company", "who rides together"),
+        Spot::Ring => ("The Duel Ring", "opt-in, capped, never lethal"),
+        Spot::Journal => ("The Journal", "the ember-priests' chain"),
+        Spot::Verdict => ("The Cold Furnace", "one answer, for everyone"),
     }
 }
 
@@ -103,6 +107,9 @@ pub(super) fn draw(cx: &Cx<'_>, frame: &mut DoorFrame<'_>, area: Rect, spot: Spo
         Spot::Tavern => tavern(cx, frame, mb, game, &entries, selected),
         Spot::Library => library(cx, frame, mb, game),
         Spot::Works => works(cx, frame, mb, game, selected),
+        Spot::Company | Spot::Ring | Spot::Journal | Spot::Verdict => {
+            social(cx, frame, mb, game, spot);
+        }
     }
     // Atmosphere in whatever height the panel did not use.
     ambient(cx, frame, mb, spot);
@@ -206,7 +213,8 @@ fn ambient(cx: &Cx<'_>, frame: &mut DoorFrame<'_>, area: Rect, spot: Spot) {
         Spot::Tavern | Spot::Guild => RoomKind::Forge,
         Spot::Library => RoomKind::Vault,
         Spot::Gear | Spot::Forge => RoomKind::Forge,
-        Spot::Market | Spot::Works => return,
+        Spot::Market | Spot::Works | Spot::Company | Spot::Ring | Spot::Journal => return,
+        Spot::Verdict => RoomKind::Forge,
     };
     frame.render_widget(
         Vignette {
@@ -217,6 +225,30 @@ fn ambient(cx: &Cx<'_>, frame: &mut DoorFrame<'_>, area: Rect, spot: Spot) {
         },
         Rect::new(area.x, area.bottom() - rows, area.width, rows),
     );
+}
+
+/// The company, the ring, the journal and the Furnace's question: the place's own lines.
+fn social(cx: &Cx<'_>, frame: &mut DoorFrame<'_>, area: Rect, game: &Game, spot: Spot) {
+    use russh_bbs_door::DoorStyle;
+    let (lines, _) = cx.s.social_body(game, spot);
+    let lines: Vec<Line<'static>> = lines
+        .into_iter()
+        .flat_map(|(text, style)| {
+            let style = match style {
+                DoorStyle::Accent => cx.roles.accent,
+                DoorStyle::Dim => cx.roles.dim,
+                DoorStyle::Good => cx.roles.good,
+                DoorStyle::Bad => cx.roles.bad,
+                DoorStyle::Strong => cx.roles.strong,
+                _ => cx.roles.plain,
+            };
+            wrap_to(&text, usize::from(area.width), 4)
+                .into_iter()
+                .map(move |l| Line::styled(l, style))
+                .collect::<Vec<_>>()
+        })
+        .collect();
+    frame.render_widget(Paragraph::new(lines), area);
 }
 
 fn market(
@@ -941,6 +973,9 @@ fn detail(cx: &Cx<'_>, game: &Game, e: &Entry, width: usize) -> (String, Vec<Lin
             .map(|l| Line::styled(l, cx.roles.plain))
             .collect()
     };
+    if let Action::Social(act) = &e.action {
+        return social_detail(cx, e, act, width);
+    }
     let Action::Town(act) = &e.action else {
         return (e.label.clone(), Vec::new());
     };
@@ -1222,5 +1257,59 @@ fn detail(cx: &Cx<'_>, game: &Game, e: &Entry, width: usize) -> (String, Vec<Lin
             ],
         ),
         _ => (e.label.clone(), Vec::new()),
+    }
+}
+
+/// The preview of a social entry: what it does, and what it costs.
+fn social_detail(
+    cx: &Cx<'_>,
+    e: &Entry,
+    act: &crate::company::SocialAct,
+    width: usize,
+) -> (String, Vec<Line<'static>>) {
+    use crate::company::SocialAct;
+    let say = |t: &str| -> Vec<Line<'static>> {
+        wrap_to(t, width, 7)
+            .into_iter()
+            .map(|l| Line::styled(l, cx.roles.plain))
+            .collect()
+    };
+    match act {
+        SocialAct::Invite(name) => (
+            format!("Invite {name}"),
+            say("They are asked once; the invitation stands for three days. Words cannot be sent, only the invitation. A company holds three."),
+        ),
+        SocialAct::Accept(from) => (
+            format!("Ride with {from}"),
+            say("You share the day's dealt-with packs, and carry each other home for a turn less and with no wound."),
+        ),
+        SocialAct::Leave => (
+            "Leave".to_owned(),
+            say("You leave at once. A company of one is no company."),
+        ),
+        SocialAct::Open(on) => (
+            if *on { "Open the door" } else { "Close the door" }.to_owned(),
+            say("Closing the door hides you from the invitations list. You can still invite others."),
+        ),
+        SocialAct::Ring(on) => (
+            if *on { "Step in" } else { "Step out" }.to_owned(),
+            say("The ring is opt-in. In the ring, others may call you out up to three times a day; out of it, no one can."),
+        ),
+        SocialAct::Challenge { target, wager } => (
+            format!("Call out {target}"),
+            say(&format!(
+                "Costs 1 turn and {wager} coin. You fight the strength they last showed the town. A win pays {} coin back; a loss gives the stake to the works. The loser is bruised for a day.",
+                wager + wager / 2
+            )),
+        ),
+        SocialAct::Choose { .. } => (
+            "A choice for good".to_owned(),
+            say("It cannot be taken back. It opens some doors and closes others, for you and for the Furnace's verdict."),
+        ),
+        SocialAct::Verdict(id) => {
+            let text = crate::endings::verdict(id).map_or("", |v| v.text);
+            (e.label.clone(), say(text))
+        }
+        SocialAct::Epitaph(_) => (e.label.clone(), Vec::new()),
     }
 }

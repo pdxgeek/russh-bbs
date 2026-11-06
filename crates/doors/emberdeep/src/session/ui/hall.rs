@@ -13,7 +13,15 @@ use super::kit::{
 use super::{Cx, band_name};
 use crate::rules::{DEPTH_MAX, RECOVERY_DAYS};
 
-pub(super) const TABS: [&str; 3] = ["Standings", "The dead", "The world"];
+pub(super) const TABS: [&str; 7] = [
+    "Standings",
+    "The dead",
+    "The world",
+    "Companies",
+    "The ring",
+    "Donors",
+    "Chronicle",
+];
 
 pub(super) fn draw(cx: &Cx<'_>, frame: &mut DoorFrame<'_>, area: Rect) {
     let game = cx.game;
@@ -45,7 +53,11 @@ pub(super) fn draw(cx: &Cx<'_>, frame: &mut DoorFrame<'_>, area: Rect) {
     match tab {
         0 => standings(cx, frame, body),
         1 => the_dead(cx, frame, body),
-        _ => the_world(cx, frame, body),
+        2 => the_world(cx, frame, body),
+        3 => paged(cx, frame, body, "Companies", companies_lines(cx)),
+        4 => paged(cx, frame, body, "The ring's ladder", ring_lines(cx)),
+        5 => paged(cx, frame, body, "Hall of donors", donor_lines(cx)),
+        _ => paged(cx, frame, body, "Chronicle", chronicle_lines(cx)),
     }
     frame.render_widget(
         Keys {
@@ -259,4 +271,143 @@ fn the_world(cx: &Cx<'_>, frame: &mut DoorFrame<'_>, area: Rect) {
         })
         .collect();
     frame.render_widget(Paragraph::new(news), rb);
+}
+
+/// A panel of plain lines.
+fn paged(cx: &Cx<'_>, frame: &mut DoorFrame<'_>, area: Rect, title: &str, lines: Vec<Line<'static>>) {
+    frame.render_widget(Clear, area);
+    frame.render_widget(panel(title, false), area);
+    frame.render_widget(
+        Paragraph::new(lines).wrap(russh_bbs_door::widgets::Wrap { trim: false }),
+        inner(area),
+    );
+    let _ = cx;
+}
+
+fn companies_lines(cx: &Cx<'_>) -> Vec<Line<'static>> {
+    let c = &cx.game.world.commons;
+    let mut out: Vec<Line<'static>> = Vec::new();
+    if c.parties.is_empty() {
+        out.push(Line::styled("No company rides together yet.", cx.roles.dim));
+    }
+    for p in &c.parties {
+        out.push(Line::styled(
+            format!("Company of {}: {}", p.leader, p.members.join(", ")),
+            cx.roles.accent,
+        ));
+        out.push(Line::styled(
+            format!("  deepest together: level {}   carried home: {}", p.deepest, p.rescues),
+            cx.roles.plain,
+        ));
+    }
+    out.push(Line::default());
+    out.push(Line::styled(
+        format!(
+            "{} hero(es) known to the town; {} carried home this season.",
+            c.roster.len(),
+            c.rescues
+        ),
+        cx.roles.dim,
+    ));
+    out
+}
+
+fn ring_lines(cx: &Cx<'_>) -> Vec<Line<'static>> {
+    let c = &cx.game.world.commons;
+    let mut out: Vec<Line<'static>> = Vec::new();
+    if c.ladder.is_empty() {
+        out.push(Line::styled("No one has fought in the ring yet.", cx.roles.dim));
+    }
+    for (i, r) in c.ladder.iter().enumerate().take(12) {
+        out.push(Line::styled(
+            format!(
+                "{:>2}. {:<14} {:>3} pts  {}-{}",
+                i + 1,
+                clip(&r.name, 14),
+                r.points,
+                r.wins,
+                r.losses
+            ),
+            if i == 0 { Style::new().fg(EMBER_HOT) } else { cx.roles.plain },
+        ));
+    }
+    out.push(Line::default());
+    out.push(Line::styled(
+        format!("{} duel(s) fought this season. Stakes lost feed the works.", c.duels),
+        cx.roles.dim,
+    ));
+    out
+}
+
+fn donor_lines(cx: &Cx<'_>) -> Vec<Line<'static>> {
+    let w = &cx.game.world;
+    let mut totals: Vec<(String, u32, u32)> = Vec::new();
+    for p in &w.pledges {
+        match totals.iter_mut().find(|(n, _, _)| *n == p.hero) {
+            Some(t) => {
+                t.1 = t.1.saturating_add(p.coin);
+                t.2 = t.2.saturating_add(p.salvage);
+            }
+            None => totals.push((p.hero.clone(), p.coin, p.salvage)),
+        }
+    }
+    totals.sort_by(|a, b| (b.1 + b.2).cmp(&(a.1 + a.2)).then_with(|| a.0.cmp(&b.0)));
+    let mut out: Vec<Line<'static>> = Vec::new();
+    if totals.is_empty() {
+        out.push(Line::styled("No one has given to the works yet.", cx.roles.dim));
+    }
+    for (i, (name, coin, salvage)) in totals.iter().enumerate().take(10) {
+        out.push(Line::styled(
+            format!("{:>2}. {:<14} {coin}c  {salvage}s", i + 1, clip(name, 14)),
+            if i == 0 { Style::new().fg(EMBER_HOT) } else { cx.roles.plain },
+        ));
+    }
+    out.push(Line::default());
+    for p in &cx.content.projects.project {
+        if w.is_done(cx.content, &p.id) {
+            let top = w
+                .pledges
+                .iter()
+                .filter(|x| x.project == p.id)
+                .max_by_key(|x| x.coin + x.salvage)
+                .map_or("-", |x| x.hero.as_str());
+            out.push(Line::styled(
+                format!("Finished: {} (largest gift: {})", p.name, clip(top, 14)),
+                Style::new().fg(MOSS),
+            ));
+        }
+    }
+    out
+}
+
+fn chronicle_lines(cx: &Cx<'_>) -> Vec<Line<'static>> {
+    let game = cx.game;
+    let c = &game.world.commons;
+    let mut out: Vec<Line<'static>> = Vec::new();
+    if c.chronicle.is_empty() {
+        out.push(Line::styled(
+            "The Cold Furnace still burns. No season has ended yet.",
+            cx.roles.dim,
+        ));
+    }
+    for (epoch, code) in &c.chronicle {
+        let e = crate::endings::ENDINGS[usize::from(*code).min(crate::endings::ENDINGS.len() - 1)];
+        out.push(Line::styled(format!("Fall {}: {}", u32::from(*epoch) + 1, e.name), cx.roles.accent));
+        out.push(Line::styled(format!("  {}", e.text), cx.roles.plain));
+    }
+    out.push(Line::default());
+    let ep = crate::endings::epilogue(&game.hero);
+    out.push(Line::styled(format!("Your epilogue so far: {}", ep.name), Style::new().fg(EMBER_HOT)));
+    out.push(Line::styled(ep.text.to_owned(), cx.roles.plain));
+    if !c.epitaphs.is_empty() {
+        out.push(Line::default());
+        out.push(Line::styled("Epitaphs:", cx.roles.dim));
+        for e in c.epitaphs.iter().rev().take(4) {
+            out.push(Line::styled(
+                format!("  {} (level {}): {}", clip(&e.name, 14), e.depth, e.text),
+                cx.roles.plain,
+            ));
+        }
+    }
+    out
 }
