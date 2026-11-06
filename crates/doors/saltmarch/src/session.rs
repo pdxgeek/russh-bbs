@@ -75,6 +75,13 @@ enum Mode {
     Line(String),
 }
 
+impl Mode {
+    /// Whether this mode takes typed text, so the board passes every key (a `?` included) on.
+    const fn takes_text(&self) -> bool {
+        matches!(self, Self::Naming(_) | Self::Line(_))
+    }
+}
+
 enum Act {
     Go(MenuId),
     Do(Action),
@@ -1039,6 +1046,10 @@ impl DoorSession for Session {
         ui::draw(self, canvas, env);
     }
 
+    fn captures_text(&self) -> bool {
+        self.mode.takes_text()
+    }
+
     fn look_around(&self, _env: &DoorEnv) -> Vec<String> {
         let mut out: Vec<String> = self.lines().into_iter().map(|(text, _)| text).collect();
         out.extend(ui::describe(self));
@@ -1230,5 +1241,19 @@ impl Session {
             }
             Err(e) => self.notes = vec![(e.to_string(), DoorStyle::Bad)],
         }
+    }
+}
+
+#[cfg(test)]
+mod mode_tests {
+    use super::{MenuId, Mode};
+
+    #[test]
+    fn only_the_typing_modes_take_text() {
+        assert!(Mode::Naming(String::new()).takes_text());
+        assert!(Mode::Line(String::new()).takes_text());
+        assert!(!Mode::Report.takes_text());
+        assert!(!Mode::Unreadable.takes_text());
+        assert!(!Mode::Menu(MenuId::Main).takes_text());
     }
 }
