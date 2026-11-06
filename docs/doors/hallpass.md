@@ -317,7 +317,7 @@ Two new tables (`social.toml`, `mystery.toml`), parsed with `deny_unknown_fields
 
 The design asks for about 60 scheme templates, 40 students, 12 staff, 150 school-day events, 25 minigame variants, 8 school events and a 40-step mystery. **This slice falls short of that**, and the pull request says so: see the counts in the next paragraph. The school events are partly there (the election, the awards, each club's term-end event, the Friday report, the big schemes); the house match, the winter play, the formal dance and exam week are not (`docs/features.md`).
 
-CONTENT_COUNTS_PLACEHOLDER
+**Counts at this slice** (design budget in brackets): scheme methods 27 [60] (plus 17 targets, 8 twists, 7 getaways), students 13 [40], staff 11 [12] and two prefects, conversations 76 [about 150 school-day events], items 22, places 34, clubs 6 [6], subjects 6, minigame kinds 6 with levels [25 variants], schemes on pupils 7, rumours 8, awards 7, mystery clues 12 in 4 acts [about 40 steps]. **All of these are under the design budget except clubs and subjects (which meet it).** The content pass was written by a separate agent and checked by the load checks, the tests and the simulation gates, not read line by line by me; it added 14 schemes, 6 students, 27 conversations and 6 items; the rest of the budget is writing, not engine, and every addition is a table row the load checks and the simulation gates already cover.
 
 ### Not done, deliberately
 
@@ -327,4 +327,26 @@ Free-text player messages (the design forbids them where templates serve), a typ
 
 See the pull request for the commands and their results. In short: `tests/social.rs` (a scheme posted, delivered and its outcome heard, each counterplay, the list never offering what the engine refuses, the caps and the protection, kind schemes, the opt-out both ways and against a stale snapshot, the opt-out across a term, rumours and their limits, the election from standing to the winner's effect and through the rule of the mood, a close race by votes, the awards and their payment, and the whole two-player flow through the framework's real store and keys); `tests/mystery.rs` (the twelve clues in order with every gate, the day gate and a risky search, three routes to the key and a build with none, each of the six endings replayed twice through the store and the keys, the doors it shuts, the endings closed to builds that have not earned them, the five finales and what each does to the wing for a pupil with and without the key, the count and its tie-break, the finale through the real board and tick); `tests/migrate.rs` (versions 1 and 2 of a character and version 1 of the school against pinned bytes, and the store opening an old save and an old school); `tests/content.rs` (each new table broken on purpose); the framework's source audit (`tests/sandbox.rs`) with no new dependency; `tests/ui.rs` (the six new screens at every size, tier and colour setting, with a look-around, and snapshots); the simulation below. The walk over a real `ssh` client with two accounts is [qa/m4-h4-walk.md](../qa/m4-h4-walk.md).
 
-BALANCE_PLACEHOLDER
+### Balance (the numbers, before and after)
+
+`cargo test -p russh-bbs-door-hallpass --test sim -- --nocapture` (set `HALLPASS_SEEDS` for more terms). Each term is nine styles on one shared school for 42 days, 40 seeds; the seeds also stand for terms one to three, so the school's mood rotates. **Before H4** (the H2 numbers above, five styles, no social layer or mystery) the sim had: nobody in the School Paper or the Candle Society, no `headline` ledger ending, and the East Wing light and the ledger the only stories. **First H4 run, before tuning:** the Candle Society still empty; Fenn and Soames endings 1 each in 360 players; the election won by the politician style 34 times in 40 and never by a character; every award won every term. **After tuning** (this table; 40 terms, 360 pupils):
+
+| Style | Legend | File | Expelled | Grade | Honour roll | Clues | Reached an ending | Schemes sent / landed / seen through |
+|---|---|---|---|---|---|---|---|---|
+| scholar | 26.7 | 0.1 | 0% | 85 | 100% | 7.6 | 5% | 0 |
+| cautious | 31.6 | 2.9 | 0% | 88 | 100% | 8.8 | 8% | 0 |
+| balanced | 78.8 | 5.9 | 0% | 82 | 78% | 10.2 | 22% | 8.9 / 1.7 / 3.9 |
+| reckless | 91.1 | 11.4 | 65% | 67 | 22% | 7.0 | 8% | 21.7 / 5.3 / 11.0 |
+| variety | 65.0 | 3.5 | 0% | 78 | 55% | 11.7 | 75% | 15.3 / 3.4 / 7.2 |
+| sleuth | 36.9 | 4.2 | 0% | 85 | 98% | 12.0 | 70% | 0 |
+| politician | 29.6 | 3.8 | 0% | 77 | 40% | 5.2 | 0% | 11.8 / 7.6 / 0 (kind) |
+| rival | 51.8 | 5.1 | 0% | 76 | 28% | 6.7 | 0% | 43.6 / 10.2 / 22.4 |
+| recluse (opted out) | 37.8 | 3.5 | 0% | 82 | 80% | 11.5 | 52% | **0 sent, 0 done to them** |
+
+- **Club ranks reached** (players at rank 1/2/3/4): chess 63/76/29/31, robotics 8/63/54/52, paper 46/33/29/15, drama 15/23/9/0, rowing 18/14/2/0, **candle 19/10/1/0 (was nobody)**.
+- **Stories at term end** (players): the ledger ended `headline` 4 times (was 0), `purged` 15, `owed` 62, `returned` 39, `shrugged` 42; the East Wing light and the new story are below. 
+- **The east wing:** 120 of 360 pupils found all twelve clues; 96 reached one of the six endings of their story (`bonfire` 12, `fenn` 7, `paper` 7, `soames` 25, `vane` 15, `walk_away` 30). The school as a whole ended it `soames` 14 times in 40 terms, `fenn` 5, `wren` 3, `vane` 3, `bonfire` 2, and "nobody settled it" 13 (a term where the investigators' preference rotated to walking away or nobody finished).
+- **Election winners** (40 terms): Bramley 9, Wren 6, Hollis 6, and pupils 19 (the scholar style 15: bookish, cool pupils canvass best). *Before tuning:* pupils 40 of 40, or characters 30 of 40, depending on a number that swung the whole result; the fix was a diminishing return on each door knocked on, a cap of 44, characters who campaign, and a mood that rotates by term.
+- **Awards:** all seven won, by a spread of styles (the Legend Cup by balanced, reckless, variety, sleuth and rival; the Clean Hands Medal by seven styles; Club Colours by the scholar).
+- **Branch coverage:** 211 of 227 conversation choices taken. Never had by the bots: `hollis_amends` (it needs a betrayal of Rafe, which the bots do not make), `gale_referee` and `wick_noise` (new, build-dependent); `tests/life.rs` still proves every conversation and choice is open to some build. Every scheme on a pupil, every rumour and every clue was used.
+- **Gates** (`no_ending_and_no_branch_of_the_social_layer_or_the_mystery_is_dead_content`): paper and candle joined and climbed; every ledger and East Light ending; all six endings of the pupil's story and all five verdicts won by the school; every character who runs wins sometimes; every award, scheme, rumour and clue used; at least nine in ten conversation choices taken; the opted-out pupil sent and received nothing; only the reckless are expelled. **What I changed and why:** a paper on-ramp (the Ink Society's standing needed was 6 and nothing early raised it: now 3, with a first conversation with Wren); the knock Sol teaches now opens the cellars, which were the sign-up place and shut to it (a real bug); on-ramps for Fenn, Soames and Sol; bonds, not flags, gate two endings; counters narrowed so a scheme on a pupil lands about a third of the time against a build that can counter it.
