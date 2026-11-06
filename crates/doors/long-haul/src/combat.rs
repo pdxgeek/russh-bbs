@@ -21,6 +21,12 @@ use serde::Deserialize;
 
 use crate::codec::{Reader, Writer};
 use crate::content::{Content, Faction, SlotKind};
+
+/// A shot does `weapon power * (weapons points + gunner bonus) / DAMAGE_DIVISOR` (balance: it was
+/// 3, and a single lance could not wreck a raider inside the round limit).
+pub const DAMAGE_DIVISOR: u32 = 2;
+/// Credits the patrol offices pay for each hull point of a wrecked pirate ship.
+pub const KILL_BOUNTY_PER_HULL: i64 = 14;
 use crate::crew::{DANGER, Role};
 use crate::engine::{Env, can_pay};
 use crate::events::{Event, Refusal};
@@ -702,7 +708,9 @@ impl Player {
                 - if evasive { 15 } else { 0 })
             .clamp(15, 95);
             if env.rng.chance(u32::try_from(hit).unwrap_or(15), 100) {
-                let raw = (power * (u32::from(orders.weapons) + u32::from(gunner)) / 3).max(1);
+                let raw = (power * (u32::from(orders.weapons) + u32::from(gunner))
+                    / DAMAGE_DIVISOR)
+                    .max(1);
                 let mut dmg = i32::try_from(raw).unwrap_or(i32::MAX);
                 if fight.intent == Intent::Brace {
                     dmg = dmg * 6 / 10;
@@ -885,6 +893,16 @@ impl Player {
             enemy: fight.enemy,
             loot,
         });
+        // The League and the Union pay a bounty on pirate ships, win or not a posted job
+        // (balance: a fight paid a fraction of what the same days of jobs did).
+        if def.faction == Faction::Free {
+            let bounty = i64::from(def.hull) * KILL_BOUNTY_PER_HULL;
+            self.credit(Cause::Salvage, bounty);
+            events.push(Event::Social {
+                text: format!("The patrol office pays a bounty of {bounty} credits for the wreck."),
+                tone: 1,
+            });
+        }
         // Killing a faction's ship costs standing with it, and its rival is pleased.
         if def.kill_standing != 0 {
             self.shift_standing_with_rival(def.faction, def.kill_standing, events);

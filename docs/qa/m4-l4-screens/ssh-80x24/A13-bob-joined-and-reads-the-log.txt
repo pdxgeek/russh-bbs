@@ -1,0 +1,24 @@
+┌───────────────────────────────── russh-bbs ──────────────────────────────────┐
+│Long Haul                                                                     │
+│                                                                              │
+│▲ LONG HAUL  bob  1,800 cr  debt 20,000  days ●●●●●●●●●● 10                   │
+│╭ SOCIETY: CONVOYS, PIRACY, OUTPOSTS ────────────────────────────────────────╮│
+││[Convoy]  Piracy   Outposts   Hall   Journal                                ││
+││The server can read all of this. Other captains see only what is marked     ││
+││shared.                                                                     ││
+││Patient Caravan convoy, 2 of 4 captains, guard 0%, pool 0 cr                ││
+││  * founder  guns 0  earned 0 cr                                            ││
+││  * bob  guns 0  earned 0 cr                                                ││
+││5% of each profit goes to the pool; the night shares it out.                ││
+││Log:                                                                        ││
+││  founder: Clean run so far. Nothing on the scope.                          ││
+││  founder: hold at the next dock, bob                                       ││
+││Quick notes:                                                                ││
+││  1 Holding at the last dock. Catch up when you can.                        ││
+││  2 Fuel is short ahead. Top up before the long lane.                       ││
+││  3 Clean run so far. Nothing on the scope.                                 ││
+│╰────────────────────────────────────────────────────────────────────────────╯│
+│You fall in with the Patient Caravan convoy.                                  │
+│[Left/Right] tab  [Up/Down] choose  [Enter] join/hunt  [n] form  [x] leave    │
+│[t] say  [1-8] note  [f] colours  [p/P] pledge  [Esc] back                    │
+└──────────────────────────────────────────────────────────────────────────────┘

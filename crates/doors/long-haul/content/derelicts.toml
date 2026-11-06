@@ -127,3 +127,442 @@ rooms = [
   { name = "Assay office", text = "Samples in drawers, and a squatter guarding them.", foes = 1, good = "rare_earths", tons = 4, cache = 280, exits = [1] },
   { name = "Pay safe", text = "The shift's last pay, never collected.", lock = 3, credits = [200, 520], exits = [1] },
 ]
+
+[[derelict]]
+id = "cargo_ghost"
+name = "Ghost freighter"
+blurb = "A bulk hauler with every light off and every hatch shut."
+foe_name = "Hold rats"
+foe_hp = 5
+foe_dmg = 2
+rooms = [
+  { name = "Airlock", text = "The seal is cold and the manifest plate is blank.", exits = [1] },
+  { name = "Main hold", text = "Stacked pallets, a few of them torn open from inside.", good = "textiles", tons = 10, exits = [0, 2] },
+  { name = "Loadmaster's cage", text = "A wire cage with a ledger and a tin of coins.", credits = [30, 100], exits = [1] },
+]
+
+[[derelict]]
+id = "medical_frigate"
+name = "Hospital frigate"
+blurb = "A League medical ship, her red stripe scraped off."
+foe_name = "Ward orderlies"
+foe_hp = 7
+foe_dmg = 2
+rooms = [
+  { name = "Airlock", text = "A stretcher is still strapped to the wall.", exits = [1] },
+  { name = "Triage", text = "Two orderlies in stained smocks guard the only way on.", foes = 2, parts = 4, exits = [0, 2, 3] },
+  { name = "Pharmacy", text = "A locked cage of vials, labels in three languages.", lock = 3, good = "medicine", tons = 6, exits = [1] },
+  { name = "Surgery", text = "Clean steel and a case-file terminal still logged in.", cache = 340, credits = [40, 120], exits = [1, 4] },
+  { name = "Morgue", text = "Drawers, mostly empty. One has a purse in it.", credits = [60, 160], exits = [3] },
+]
+
+[[derelict]]
+id = "mining_platform"
+name = "Dead mining platform"
+blurb = "A drilling rig that stopped mid-bore, its crane hanging."
+foe_name = "Rig jackals"
+foe_hp = 8
+foe_dmg = 3
+rooms = [
+  { name = "Airlock", text = "Grit on the floor and a hard hat on the hook.", exits = [1] },
+  { name = "Crane deck", text = "Wind that is not wind. The crane sways above you.", exits = [0, 2, 3] },
+  { name = "Core store", text = "Drill cores in racks, and two jackals who counted them first.", foes = 2, good = "rare_earths", tons = 5, exits = [1] },
+  { name = "Foreman's shack", text = "The pay tin is bolted down; the bolts are good.", lock = 3, credits = [150, 380], exits = [1, 4] },
+  { name = "Pump room", text = "Pumps coughing dry, and a spare coil nobody wanted.", parts = 9, good = "coils", tons = 3, exits = [3] },
+]
+
+[[derelict]]
+id = "pilgrim_barge"
+name = "Pilgrim barge"
+blurb = "A slow barge of the faithful, adrift on a long road to nowhere."
+foe_name = "Penitents"
+foe_hp = 6
+foe_dmg = 2
+rooms = [
+  { name = "Airlock", text = "Candle stubs in the lock frame and a hymn on the speaker.", exits = [1] },
+  { name = "Common deck", text = "Rows of mats. Nobody here is armed, only certain.", credits = [20, 60], exits = [0, 2] },
+  { name = "Chapel", text = "Three penitents kneel before a gate drawn in chalk.", foes = 3, credits = [40, 110], exits = [1, 3] },
+  { name = "Almoner's locker", text = "The offerings of a hundred stops, behind a plain lock.", lock = 2, credits = [120, 290], exits = [2] },
+]
+
+[[derelict]]
+id = "survey_buoy_tender"
+name = "Buoy tender"
+blurb = "A little Guild tender with a string of dead buoys in tow."
+foe_name = "Tender bots"
+foe_hp = 6
+foe_dmg = 3
+rooms = [
+  { name = "Airlock", text = "Buoy tags hang from the ceiling like a wind chime.", exits = [1] },
+  { name = "Workshop", text = "Spare transponders in bins, and a sleepy bot at the bench.", foes = 1, parts = 5, good = "sensor_glass", tons = 3, exits = [0, 2] },
+  { name = "Beacon log", text = "A beacon log with a year of untransmitted soundings.", cache = 480, exits = [1] },
+]
+
+[[derelict]]
+id = "smuggler_stash"
+name = "Smuggler's stash ship"
+blurb = "A hull rigged as a false rock, with a crew that lives in the cargo."
+foe_name = "Stash guards"
+foe_hp = 9
+foe_dmg = 4
+rooms = [
+  { name = "Airlock", text = "A hatch hidden behind a rock-face panel.", exits = [1] },
+  { name = "Cargo trap", text = "Crates with the wrong paint. Two guards spring from behind them.", foes = 2, good = "ghostwire", tons = 3, exits = [0, 2, 3] },
+  { name = "Ledger room", text = "A tally of favours owed, written in a clean hand.", cache = 400, credits = [80, 200], exits = [1, 4] },
+  { name = "Fence's vault", text = "A vault door that bites back at amateurs.", lock = 5, credits = [300, 720], good = "dreamsilt", tons = 2, exits = [1] },
+  { name = "Escape pod", text = "A pod with its own small purse, packed for a hurry.", credits = [50, 140], exits = [2] },
+]
+
+[[derelict]]
+id = "league_picket"
+name = "League picket wreck"
+blurb = "A small League picket, cut open along a gun line."
+foe_name = "Picket crew"
+foe_hp = 9
+foe_dmg = 4
+rooms = [
+  { name = "Airlock", text = "A League stencil on the lock and a fresh scorch beside it.", exits = [1] },
+  { name = "Bridge", text = "The watch officer is dead; her crew are not.", foes = 2, parts = 6, exits = [0, 2, 3] },
+  { name = "Signals shack", text = "Codebooks and a half-wiped log.", cache = 420, exits = [1] },
+  { name = "Gun locker", text = "Rifles on racks and a paychest under the bench.", lock = 4, credits = [160, 400], parts = 4, exits = [1] },
+]
+
+[[derelict]]
+id = "union_tug"
+name = "Union steward tug"
+blurb = "A blockade tug whose stewards stayed at their posts too long."
+foe_name = "Stewards"
+foe_hp = 10
+foe_dmg = 4
+rooms = [
+  { name = "Airlock", text = "A union banner, scorched on one corner.", exits = [1] },
+  { name = "Ram deck", text = "The prow ram is bent. Three stewards will not move aside.", foes = 3, parts = 8, exits = [0, 2] },
+  { name = "Dues office", text = "The collected dues, in a safe that still has a stubborn lock.", lock = 4, credits = [220, 500], exits = [1, 3] },
+  { name = "Quarters", text = "Bunks, a union charter and a bottle of something clear.", credits = [40, 110], good = "ore", tons = 4, exits = [2] },
+]
+
+[[derelict]]
+id = "church_reliquary"
+name = "Reliquary ship"
+blurb = "A Church vessel built to carry a single relic and nothing else."
+foe_name = "Reliquary wardens"
+foe_hp = 11
+foe_dmg = 4
+rooms = [
+  { name = "Airlock", text = "Gold leaf worn off the door by many hands.", exits = [1] },
+  { name = "Vestibule", text = "Two wardens in grey, blocking a corridor of bowed lamps.", foes = 2, exits = [0, 2] },
+  { name = "Cloister", text = "A cold cloister with cells to either side.", credits = [30, 90], exits = [1, 3, 4] },
+  { name = "Reliquary vault", text = "The relic's case, sealed as a church seals things.", lock = 6, good = "gate_relics", tons = 4, cache = 560, exits = [2] },
+  { name = "Scriptorium", text = "Inked leaves of gate-lore under glass.", cache = 320, credits = [60, 150], exits = [2] },
+]
+
+[[derelict]]
+id = "guild_archive"
+name = "Guild archive barge"
+blurb = "A floating map room, indexed to the last pin."
+foe_name = "Archive guards"
+foe_hp = 8
+foe_dmg = 3
+rooms = [
+  { name = "Airlock", text = "A brass plate: PLEASE WIPE YOUR BOOTS.", exits = [1] },
+  { name = "Reading room", text = "Desks, lamps, and a guard bot who dislikes loud boots.", foes = 1, exits = [0, 2, 3] },
+  { name = "Chart stacks", text = "Aisle on aisle of chart drives, labelled but not locked.", cache = 520, exits = [1, 4] },
+  { name = "Rare maps", text = "A cage of the only copies of some very old charts.", lock = 5, cache = 700, exits = [1] },
+  { name = "Archivist's den", text = "A kettle, a cat bowl and a surprising stash.", credits = [100, 260], good = "data_cores", tons = 2, exits = [2] },
+]
+
+[[derelict]]
+id = "colony_seedship"
+name = "Colony seedship"
+blurb = "A long-haul colony ship that never found a world to plant."
+foe_name = "Cryo-wakers"
+foe_hp = 7
+foe_dmg = 2
+rooms = [
+  { name = "Airlock", text = "A faded motto: THE SEED GOES ON.", exits = [1] },
+  { name = "Dorm ring", text = "Sleepers in rows. A few woke wrong and are hungry.", foes = 2, exits = [0, 2] },
+  { name = "Seed vault", text = "Frozen trays of seed stock, labelled in a dead hand.", good = "seed_stock", tons = 8, exits = [1, 3] },
+  { name = "Charter office", text = "A locked office with the colony's founding funds.", lock = 3, credits = [200, 480], cache = 360, exits = [2] },
+]
+
+[[derelict]]
+id = "prison_hulk"
+name = "Prison hulk"
+blurb = "A cell block with an engine, long since left to its own devices."
+foe_name = "Cell lords"
+foe_hp = 12
+foe_dmg = 5
+rooms = [
+  { name = "Airlock", text = "A turnstile that no longer turns and a sign that says WAIT.", exits = [1] },
+  { name = "Sally port", text = "A heavy gate, two armed inmates on the far side.", foes = 2, parts = 5, exits = [0, 2] },
+  { name = "Block A", text = "Doors hang open. The residents have claimed the rest.", foes = 3, credits = [60, 180], exits = [1, 3] },
+  { name = "Warden's office", text = "A hard room with a harder safe.", lock = 6, credits = [350, 780], exits = [2, 4] },
+  { name = "Evidence store", text = "Seized goods, tagged and never returned.", good = "slug_guns", tons = 3, credits = [80, 200], lock = 4, exits = [3] },
+]
+
+[[derelict]]
+id = "racing_yacht"
+name = "Racing yacht"
+blurb = "A rich man's sprinter, drifting with the champagne still cold."
+foe_name = "Yacht bot"
+foe_hp = 4
+foe_dmg = 2
+rooms = [
+  { name = "Airlock", text = "A red carpet runs straight through the lock.", exits = [1] },
+  { name = "Salon", text = "Velvet, glass and a bot butler on full alert.", foes = 1, credits = [100, 260], good = "glass_wine", tons = 2, exits = [0, 2] },
+  { name = "Owner's suite", text = "A small safe behind a large painting.", lock = 3, credits = [260, 620], exits = [1] },
+]
+
+[[derelict]]
+id = "scrap_crawler"
+name = "Scrap crawler"
+blurb = "A recycling hulk that eats wrecks, and is half eaten itself."
+foe_name = "Crawler gangs"
+foe_hp = 8
+foe_dmg = 3
+rooms = [
+  { name = "Airlock", text = "A cutting torch is welded to the door. Someone meant to stay.", exits = [1] },
+  { name = "Sorting floor", text = "Piles of hull plate, sorted by colour. Scrappers sort you next.", foes = 2, parts = 14, exits = [0, 2, 3] },
+  { name = "Melt shop", text = "A furnace gone cold and a stack of ingots.", good = "alloy", tons = 8, exits = [1] },
+  { name = "Cashier's cage", text = "The gang's takings behind a cutter-proof lock.", lock = 4, credits = [180, 440], exits = [1] },
+]
+
+[[derelict]]
+id = "dead_refinery"
+name = "Dead refinery"
+blurb = "A processing platform that outlived its last customer."
+foe_name = "Refinery bots"
+foe_hp = 10
+foe_dmg = 3
+rooms = [
+  { name = "Airlock", text = "A smell of sulphur and a sign about hard hats.", exits = [1] },
+  { name = "Charging floor", text = "Mixers idle, bots circling a spill that never dried.", foes = 2, exits = [0, 2, 3] },
+  { name = "Product tanks", text = "Sealed tanks of volatile product.", lock = 2, good = "volatiles", tons = 10, exits = [1] },
+  { name = "Control booth", text = "A lit console and a drawer of petty cash.", credits = [60, 170], cache = 300, parts = 6, exits = [1] },
+]
+
+[[derelict]]
+id = "fuel_tanker"
+name = "Fuel tanker"
+blurb = "A tanker with a hull like a drum and a pilot's note on the wall."
+foe_name = "Tanker crew"
+foe_hp = 6
+foe_dmg = 3
+rooms = [
+  { name = "Airlock", text = "Warning stencils in red. 'NO FLAMES' has been scratched out.", exits = [1] },
+  { name = "Pump deck", text = "A pump crew, tense and armed. One stray shot and all go up.", foes = 2, exits = [0, 2] },
+  { name = "Cargo tanks", text = "A long cold gallery of tanks, most of them full.", good = "volatiles", tons = 12, exits = [1] },
+]
+
+[[derelict]]
+id = "comms_relay"
+name = "Comms relay station"
+blurb = "A relay whose last message is still queued, undelivered."
+foe_name = "Relay wardens"
+foe_hp = 7
+foe_dmg = 3
+rooms = [
+  { name = "Airlock", text = "The air is dry and the dish groans on its mount.", exits = [1] },
+  { name = "Switch room", text = "Racks of switches, blinking at nothing.", parts = 6, exits = [0, 2, 3] },
+  { name = "Operator's cell", text = "An operator's cot, a warden at the door.", foes = 1, credits = [40, 120], exits = [1] },
+  { name = "Message vault", text = "Years of traffic, kept in a vault no one remembers locking.", lock = 4, cache = 540, good = "circuits", tons = 3, exits = [1] },
+]
+
+[[derelict]]
+id = "gunship_hulk"
+name = "Gunship hulk"
+blurb = "A heavy gunship cut in half, the front half still fighting."
+foe_name = "Gun crews"
+foe_hp = 14
+foe_dmg = 6
+rooms = [
+  { name = "Airlock", text = "Scorch and shrapnel. The lock holds only because it must.", exits = [1] },
+  { name = "Gun gallery", text = "Three gun crews, still sure who the enemy is.", foes = 3, parts = 10, exits = [0, 2] },
+  { name = "Magazine", text = "Racks of shells and one very nervous loader.", foes = 1, good = "slug_guns", tons = 4, exits = [1, 3] },
+  { name = "Captain's bridge", text = "A sealed bridge, its log full of orders.", lock = 7, credits = [500, 1100], cache = 700, exits = [2] },
+]
+
+[[derelict]]
+id = "hermit_ship"
+name = "Hermit's ship"
+blurb = "A cluttered little hull with one old man and many opinions."
+foe_name = "The hermit"
+foe_hp = 5
+foe_dmg = 3
+rooms = [
+  { name = "Airlock", text = "Pots of herbs and a hand-lettered NO CALLERS.", exits = [1] },
+  { name = "Parlour", text = "A cluttered parlour. The old man has a wrench and a temper.", foes = 1, credits = [20, 60], exits = [0, 2] },
+  { name = "Curio room", text = "Shelves of odd keepsakes from forty years of drifting.", good = "curios", tons = 2, credits = [60, 180], exits = [1] },
+]
+
+[[derelict]]
+id = "ghost_liner"
+name = "Ghost liner"
+blurb = "A passenger liner with every light on and nobody aboard."
+foe_name = "Stewards' remains"
+foe_hp = 10
+foe_dmg = 4
+rooms = [
+  { name = "Airlock", text = "A cheerful gangway sign: WELCOME ABOARD.", exits = [1] },
+  { name = "Grand hall", text = "Chandeliers swing. Something in uniform comes to take your coat.", foes = 2, credits = [60, 160], exits = [0, 2, 3] },
+  { name = "Promenade", text = "A long deck with window seats and one open purse.", credits = [80, 200], exits = [1, 4] },
+  { name = "Purser's safe", text = "The cruise fund, locked in a room by the lifts.", lock = 5, credits = [300, 760], exits = [1] },
+  { name = "Cargo deck", text = "Passengers' trunks, still tagged for stops that never came.", good = "textiles", tons = 5, foes = 1, credits = [40, 120], exits = [2, 5] },
+  { name = "Bridge", text = "The bridge is empty and the helm is hot.", cache = 440, parts = 8, exits = [4] },
+]
+
+[[derelict]]
+id = "salvage_tug"
+name = "Salvage tug"
+blurb = "A tug that went out to claim a wreck and became one."
+foe_name = "Rival salvors"
+foe_hp = 8
+foe_dmg = 3
+rooms = [
+  { name = "Airlock", text = "A claim flag, torn down and trodden in.", exits = [1] },
+  { name = "Winch deck", text = "Cables, hooks, and a rival crew who also got here first.", foes = 2, parts = 7, exits = [0, 2] },
+  { name = "Claim safe", text = "The salvage claim and the cash from the last job.", lock = 3, credits = [140, 360], exits = [1] },
+]
+
+[[derelict]]
+id = "derelict_casino"
+name = "Derelict casino"
+blurb = "A gambling barge with the wheel still turning and the house gone."
+foe_name = "House dealers"
+foe_hp = 9
+foe_dmg = 4
+rooms = [
+  { name = "Airlock", text = "A bell dings as the door opens. A recording says 'Good luck'.", exits = [1] },
+  { name = "Gaming floor", text = "Wheels spin, cards flip themselves. The dealers still deal.", foes = 2, credits = [100, 300], exits = [0, 2, 3] },
+  { name = "Cage", text = "The cashier's cage, locked tight.", lock = 4, credits = [250, 650], exits = [1] },
+  { name = "Back office", text = "Ledgers, a kettle, and a hidden camera feed.", cache = 380, credits = [40, 130], exits = [1, 4] },
+  { name = "High-stakes room", text = "One chair, one table and a pot nobody ever took.", lock = 6, credits = [400, 900], foes = 1, exits = [3] },
+]
+
+[[derelict]]
+id = "quarantine_cutter"
+name = "Quarantine cutter wreck"
+blurb = "A League health cutter, chewed up in a bad boarding."
+foe_name = "Cutter crew"
+foe_hp = 8
+foe_dmg = 3
+rooms = [
+  { name = "Airlock", text = "Fluorescent lights and a plastic sheet torn aside.", exits = [1] },
+  { name = "Sampling bay", text = "Racks of swabs and a medic with a loaded sprayer.", foes = 1, good = "antitoxin", tons = 3, exits = [0, 2] },
+  { name = "Cabin", text = "Two bunks and a locked tin with the crew's pay.", lock = 2, credits = [70, 190], exits = [1] },
+]
+
+[[derelict]]
+id = "courier_wreck"
+name = "Runner's wreck"
+blurb = "A fast courier hull, fuel gone and engines cooked."
+foe_name = "Runner crew"
+foe_hp = 7
+foe_dmg = 3
+rooms = [
+  { name = "Airlock", text = "Burn marks around the lock ring and a dented cargo hatch.", exits = [1] },
+  { name = "Cockpit", text = "Cramped, with a pilot's chair torn out for room.", foes = 1, parts = 4, exits = [0, 2] },
+  { name = "Cargo nook", text = "A hidden compartment of high-value, low-weight goods.", good = "circuits", tons = 2, credits = [80, 220], exits = [1] },
+]
+
+[[derelict]]
+id = "ice_hauler"
+name = "Ice hauler"
+blurb = "A water hauler frozen solid in a long ellipse around nothing."
+foe_name = "Frost crew"
+foe_hp = 6
+foe_dmg = 2
+rooms = [
+  { name = "Airlock", text = "The lock is rimmed with ice an inch thick.", exits = [1] },
+  { name = "Ice hold", text = "Cold blue blocks to the roof. Some of them have faces.", good = "water", tons = 12, exits = [0, 2] },
+  { name = "Crew deck", text = "Frozen mid-meal. The cook still has her ladle.", credits = [40, 110], exits = [1, 3] },
+  { name = "Captain's berth", text = "A frost-furred strongbox under the bunk.", lock = 2, credits = [110, 280], exits = [2] },
+]
+
+[[derelict]]
+id = "arc_lab"
+name = "Arc laboratory"
+blurb = "A research platform that finished its experiment and everyone in it."
+foe_name = "Lab constructs"
+foe_hp = 12
+foe_dmg = 5
+rooms = [
+  { name = "Airlock", text = "The inner door hums and a sign says DO NOT OPEN.", exits = [1] },
+  { name = "Specimen hall", text = "Tanks, glowing, and constructs that stir as you pass.", foes = 3, good = "lab_samples", tons = 4, exits = [0, 2] },
+  { name = "Instrument gallery", text = "Delicate gear in cradles, safe behind a lock.", lock = 4, good = "sensor_glass", tons = 4, parts = 7, exits = [1, 3] },
+  { name = "Data core", text = "The experiment's results, still arcing.", lock = 6, cache = 750, foes = 1, exits = [2] },
+]
+
+[[derelict]]
+id = "drone_nest"
+name = "Drone nest"
+blurb = "A hull gone feral: its maintenance drones have built a hive."
+foe_name = "Swarm drones"
+foe_hp = 4
+foe_dmg = 2
+rooms = [
+  { name = "Airlock", text = "Faint scratching in the vents.", exits = [1] },
+  { name = "Vent maze", text = "A tangle of crawlways. Drones drop from the ceiling, six at a time.", foes = 5, exits = [0, 2, 3] },
+  { name = "Brood bay", text = "Cells of cannibalised plate and hardware.", foes = 3, parts = 16, exits = [1, 4] },
+  { name = "Parts pile", text = "A hoard of stripped coils and good plate.", good = "coils", tons = 6, parts = 8, exits = [1] },
+  { name = "Queen unit", text = "The hive's mind in an armoured crate, humming happily.", foes = 2, cache = 500, credits = [100, 300], exits = [2] },
+]
+
+[[derelict]]
+id = "outrider_wreck"
+name = "Outrider wreck"
+blurb = "A raider's fast hull, hulled in turn by something faster."
+foe_name = "Raiders"
+foe_hp = 9
+foe_dmg = 4
+rooms = [
+  { name = "Airlock", text = "The lock ring is chewed up by a grapple.", exits = [1] },
+  { name = "Gunnery", text = "Two raiders crouched behind a cracked gun housing.", foes = 2, credits = [50, 140], exits = [0, 2, 3] },
+  { name = "Loot locker", text = "A stuffed locker, half the stuff fused to the other half.", lock = 3, credits = [180, 440], parts = 5, exits = [1] },
+  { name = "Galley", text = "A scorched stove and a spice rack that survived.", good = "salt_spice", tons = 3, credits = [20, 80], exits = [1] },
+]
+
+[[derelict]]
+id = "mutiny_ship"
+name = "Mutiny ship"
+blurb = "A crewed freighter where both factions still hold their halves."
+foe_name = "Mutineers"
+foe_hp = 9
+foe_dmg = 4
+rooms = [
+  { name = "Airlock", text = "Barricades of crates. Someone's painted a line on the deck.", exits = [1] },
+  { name = "Fore deck", text = "The loyalists' barricade. Everyone here is armed and tired.", foes = 2, credits = [40, 120], exits = [0, 2] },
+  { name = "Midships", text = "A bloodied corridor between two camps.", parts = 5, exits = [1, 3] },
+  { name = "Aft deck", text = "The mutineers' barricade, facing the wrong way.", foes = 3, credits = [60, 160], exits = [2, 4] },
+  { name = "Captain's cabin", text = "The captain's cabin, locked from inside by the captain.", lock = 5, credits = [280, 640], cache = 360, exits = [3] },
+]
+
+[[derelict]]
+id = "tomb_barge"
+name = "Tomb barge"
+blurb = "A funeral barge for a crew who wanted to be buried in the dark."
+foe_name = "Tomb guards"
+foe_hp = 11
+foe_dmg = 5
+rooms = [
+  { name = "Airlock", text = "A black door with a single word: REST.", exits = [1] },
+  { name = "Procession", text = "A long hall of urns, and guards who take their rest seriously.", foes = 2, exits = [0, 2] },
+  { name = "Gallery of names", text = "Names on plates, and a few coins left for the ferryman.", credits = [60, 150], exits = [1, 3, 4] },
+  { name = "Sealed crypt", text = "The founding crew's crypt: heavy lock, richer rewards.", lock = 7, credits = [450, 1000], good = "curios", tons = 3, foes = 1, exits = [2] },
+  { name = "Embalmer's room", text = "Salves, oils and a locked case of journals.", cache = 480, good = "biogel", tons = 2, exits = [2] },
+]
+
+[[derelict]]
+id = "gate_fragment"
+name = "Gate fragment"
+blurb = "A broken piece of a jump gate, still guarded and still singing."
+foe_name = "Gate guards"
+foe_hp = 14
+foe_dmg = 6
+rooms = [
+  { name = "Breach", text = "A crack in the ring. The air tastes of metal.", exits = [1] },
+  { name = "Outer ring", text = "Pale light, and a guard drone along the curve.", foes = 2, parts = 8, exits = [0, 2] },
+  { name = "Coil gallery", text = "Coils the size of houses, humming off-pitch.", good = "coils", tons = 6, foes = 1, exits = [1, 3] },
+  { name = "Control throat", text = "Control lattice behind a lock older than the frontier.", lock = 7, cache = 800, parts = 14, exits = [2, 4] },
+  { name = "Heart chamber", text = "The ring's heart. It knows you are here.", lock = 8, foes = 3, good = "gate_relics", tons = 5, credits = [500, 1200], exits = [3] },
+]

@@ -1,0 +1,23 @@
+▲ LONG HAUL  Tester0  18,450 cr  debt 20,000  days ●●●●●●●●●● 10
+╭ SOCIETY: CONVOYS, PIRACY, OUTPOSTS ────────────────────────────────────╮
+│ Convoy   Piracy   Outposts  [Hall]  Journal                            │
+│The server can read all of this. Other captains see only what is marked │
+│shared.                                                                 │
+│Richest captains                                                        │
+│  nobody yet                                                            │
+│Best surveyors                                                          │
+│  nobody yet                                                            │
+│Most feared                                                             │
+│  nobody yet                                                            │
+│                                                                        │
+│                                                                        │
+│                                                                        │
+│                                                                        │
+│                                                                        │
+│                                                                        │
+│                                                                        │
+│                                                                        │
+│                                                                        │
+╰────────────────────────────────────────────────────────────────────────╯
+[Left/Right] tab  [Up/Down] choose  [Enter] join/hunt  [n] form  [x] leave
+[t] say  [1-8] note  [f] colours  [p/P] pledge  [Esc] back

@@ -1,0 +1,68 @@
+# The social layer's data: convoy names and night events, the quick notes a convoy can post
+# without typing, outpost name endings, and the lines piracy prints. Convoy events are addressed
+# by index in the world (append only). `hull` is the hull percent every member loses with no
+# guard; guard (the convoy's combined firepower) cuts it. `pool` is credits added to (or taken
+# from, if negative) the convoy pool.
+
+outpost_suffix = ["Landing", "Rest", "Hold", "Reach", "Yard", "Anchorage", "Haven-Light", "Wharf"]
+convoy_adjective = ["Slow", "Patient", "Long", "Grey", "Stubborn", "Quiet", "Lucky", "Borrowed"]
+convoy_noun = ["Kettle", "Wake", "String", "Caravan", "Ledger", "Lantern", "Tow", "Chorus"]
+
+notes = [
+  "Holding at the last dock. Catch up when you can.",
+  "Fuel is short ahead. Top up before the long lane.",
+  "Clean run so far. Nothing on the scope.",
+  "Raiders working the lane. Keep your guns warm.",
+  "Found a good price. Check the market before you sell.",
+  "Moving out at first light. Fly safe.",
+  "Need a hand with repairs when you reach port.",
+  "The loan shark is circling. Keep a little back.",
+]
+
+[[convoy_event]]
+id = "tailwind"
+title = "A good run"
+text = "The lanes were kind tonight and the convoy made time."
+pool = 260
+hull = 0
+fuel = 2
+
+[[convoy_event]]
+id = "dust_cloud"
+title = "A dust cloud"
+text = "A fine dust cloud scoured the hulls before the convoy cleared it."
+pool = 0
+hull = 5
+fuel = 0
+
+[[convoy_event]]
+id = "raiders"
+title = "Raiders on the lane"
+text = "A raider pack tried the convoy. Guns kept them honest; a lone hull would have paid."
+pool = -120
+hull = 14
+fuel = 0
+
+[[convoy_event]]
+id = "salvage_lane"
+title = "Wreckage on the lane"
+text = "The convoy cut through a debris drift and every ship picked something out of it."
+pool = 340
+hull = 3
+fuel = 0
+
+[[convoy_event]]
+id = "toll_gate"
+title = "A toll gate"
+text = "A League picket asked a toll. The convoy argued, then paid it from the pool."
+pool = -180
+hull = 0
+fuel = 0
+
+[[convoy_event]]
+id = "shared_fire"
+title = "A shared fire"
+text = "Crews traded stories across the comm all night. Everyone burned a little less fuel, and spirits rose."
+pool = 90
+hull = 0
+fuel = 4
