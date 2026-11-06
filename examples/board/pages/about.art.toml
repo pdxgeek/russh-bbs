@@ -1,0 +1,23 @@
+# Original art for the "About this board" page, drawn for russh-bbs.
+format = 1
+name = "about"
+credit = "russh-bbs project (original art)"
+
+[[piece]]
+slot = "area"
+fallback = "{board}"
+rows = [
+  "    ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄    ",
+  "~  ~ ~  ~ ~  ~ ~  ~ ~  ~ ~  ~ ~  ~ ~  ~ ~  ~ ~  ~ ~  ~ ~  ~ ~ ",
+  "~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~ ",
+]
+fg = [
+  "....cccccccccccccccccccccccccccccccccccccccccccccccccccccc....",
+  "C..C.C..C.C..C.C..C.C..C.C..C.C..C.C..C.C..C.C..C.C..C.C..C.C.",
+  "c..c..c..c..c..c..c..c..c..c..c..c..c..c..c..c..c..c..c..c..c.",
+]
+ascii = [
+  "    ______________________________________________________    ",
+  "~  ~ ~  ~ ~  ~ ~  ~ ~  ~ ~  ~ ~  ~ ~  ~ ~  ~ ~  ~ ~  ~ ~  ~ ~ ",
+  "~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~ ",
+]

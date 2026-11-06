@@ -1,0 +1,26 @@
+version = 1
+title = "Who's who"
+text = """
+# The people behind the board
+A template. Replace each handle and line with your own crew. Keep it short: a line each.
+
+# Sysop
+- [handle]: runs the board, reads the logs, answers the letters.
+
+# Co-sysops
+- [handle]: approves invites, sorts out disputes, waters the plants.
+- [handle]: keeps the doors running and the seasons turning.
+
+# Keepers
+- [handle]: librarian of the files area.
+- [handle]: moderator of the message boards.
+- [handle]: host of the Friday chat hour.
+
+# Regulars worth knowing
+- [handle]: has posted every day since the first week.
+- [handle]: the board's resident poet.
+- [handle]: will help you with anything, usually before you finish asking.
+
+---
+Want to be listed? Be useful, be kind, and mention it to the sysop.
+"""

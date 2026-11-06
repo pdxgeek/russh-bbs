@@ -676,7 +676,8 @@ fn the_six_styles_have_different_art() {
             piece.set()
         );
     }
-    assert_eq!(seen.len(), 12);
+    // Login, menu, area and logoff for each of the six styles.
+    assert_eq!(seen.len(), 24);
 }
 
 // ---- choosing ----

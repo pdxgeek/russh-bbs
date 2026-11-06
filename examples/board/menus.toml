@@ -1,0 +1,84 @@
+# menus.toml for the example board kit (russh-bbs, UI-6).
+#
+# What this file shows off:
+#   * reordering: the notice board comes first, then the boards and the post office;
+#   * renaming and re-keying: Mail becomes "Post office" on the key p;
+#   * nesting: Front Hall > Notice board > Board lore (three levels);
+#   * pages: five sysop pages linked from groups.
+#
+# What it cannot do: add an action, a target or a permission. Items you do not list
+# (Members, Community, Invites, Settings, Sysop tools, Log off) stay at the end of the
+# Front Hall with their usual keys. Move a built-in item into a group and it keeps the
+# permission of the menu it came from, so a group can only narrow who sees it.
+version = 1
+
+[[menu]]
+id = "main"
+title = "The Front Hall"
+
+  [[menu.item]]
+  target = "group:notices"
+  key = "n"
+  label = "Notice board"
+
+  [[menu.item]]
+  target = "main.forums"
+  label = "Message boards"
+
+  [[menu.item]]
+  target = "main.mail"
+  key = "p"
+  label = "Post office"
+
+  [[menu.item]]
+  target = "group:commons"
+  key = "t"
+  label = "The Commons"
+
+  # To hide a built-in item from everyone, name it and set hidden. Its hotkey then does nothing.
+  # [[menu.item]]
+  # target = "main.files"
+  # hidden = true
+
+[[menu]]
+id = "notices"
+title = "Notice board"
+
+  [[menu.item]]
+  target = "page:rules"
+  key = "r"
+
+  [[menu.item]]
+  target = "page:about"
+  key = "a"
+
+  [[menu.item]]
+  target = "page:faq"
+  key = "q"
+
+  [[menu.item]]
+  target = "group:lore"
+  key = "l"
+  label = "Board lore"
+
+[[menu]]
+id = "lore"
+title = "Board lore"
+
+  [[menu.item]]
+  target = "page:history"
+  key = "h"
+
+[[menu]]
+id = "commons"
+title = "The Commons"
+
+  [[menu.item]]
+  target = "main.chat"
+
+  [[menu.item]]
+  target = "main.doors"
+
+  [[menu.item]]
+  target = "page:whoswho"
+  key = "w"

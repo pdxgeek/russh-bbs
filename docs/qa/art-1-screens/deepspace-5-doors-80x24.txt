@@ -1,0 +1,24 @@
+  ┌──────────────────────── T I D E P O O L   B B S ─────────────────────────┐
+  │Doors                                                                     │
+  │                                                                          │
+  │Pick a door: Up and Down, then Enter, or its number. Esc goes back.       │
+  │                                                                          │
+  │> [1] Coin Toss                                                           │
+  │      Call it in the air. Five tosses a day.                              │
+  │  [2] Saltmarch                                                           │
+  │      Lead a clan on a tidal salt marsh. The water is the clock.          │
+  │  [3] Emberdeep                                                           │
+  │      Delve the old forges under Cindermere. How deep will you go today?  │
+  │  [4] Nullroute                                                           │
+  │      Hack corporate networks before the trace finds your rig.            │
+  │  [5] Long Haul                                                           │
+  │      A tramp freighter, a loan and a failing frontier.                   │
+  │  [6] Hallpass                                                            │
+  │      Mischief at Greywater Academy. Pull schemes, dodge the file.        │
+  │                                                                          │
+  │Ctrl-C logs off from anywhere.                                            │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  │                                                                          │
+  └──────────────────────────────────────────────────────────────────────────┘
