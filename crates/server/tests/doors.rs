@@ -517,6 +517,49 @@ async fn walk<T: Term>(term: &mut T, rig: &Rig, account: AccountId) {
     );
 }
 
+/// The reserved look-around key (D98) shows the door's text view on either transport, any key
+/// returns to the game without reaching it, and a key sent after the world went stale (the
+/// board re-reads the world first) still plays normally.
+async fn look_around<T: Term>(term: &mut T, rig: &Rig) {
+    term.keys("d").await;
+    let game = term.keys("\r").await;
+    assert!(game.contains("Tosses left today: 5"), "{game}");
+
+    let view = term.keys("?").await;
+    assert!(view.contains("Look around"), "{view}");
+    assert!(view.contains("Tosses left today: 5"), "{view}");
+
+    // The key that closes the view is not passed to the door: `h` would have been a toss.
+    let back = term.keys("h").await;
+    assert!(!back.contains("Look around"), "{back}");
+    assert!(back.contains("Tosses left today: 5"), "{back}");
+
+    // Time passes: the next key goes through the world re-read and still tosses.
+    rig.clock.set(russh_bbs_core::store::UnixSeconds::from_raw(
+        Day::from_raw(DAY).start().as_raw() + 5,
+    ));
+    let tossed = term.keys("h").await;
+    assert!(tossed.contains("Tosses left today: 4"), "{tossed}");
+    term.keys("q").await;
+    rig.clock.set(Day::from_raw(DAY).start());
+}
+
+#[tokio::test]
+async fn the_look_around_key_works_over_ssh() {
+    let rig = Rig::start().await;
+    let (_, key) = rig.member("cat").await;
+    let mut ssh = Ssh::at_menu(&rig, &key, "anyone").await;
+    look_around(&mut ssh, &rig).await;
+}
+
+#[tokio::test]
+async fn the_look_around_key_works_over_telnet() {
+    let rig = Rig::start().await;
+    rig.account("dov", Slug::MEMBER).await;
+    let mut tn = Tn::at_menu(&rig, "dov").await;
+    look_around(&mut tn, &rig).await;
+}
+
 #[tokio::test]
 async fn the_example_door_works_over_ssh() {
     let rig = Rig::start().await;

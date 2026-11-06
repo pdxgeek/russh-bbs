@@ -200,7 +200,10 @@ fn a_lost_raid_pays_nothing_and_costs_morale() {
         &mut events,
     );
     assert_eq!(clan.stock.get(Resource::Salt), salt);
-    assert_eq!((clan.social.raids_lost, clan.morale), (1, morale - 3));
+    assert_eq!(
+        (clan.social.raids_lost, clan.morale),
+        (1, morale - LOSS_MORALE)
+    );
     assert!(clan.social.away.is_empty());
 }
 

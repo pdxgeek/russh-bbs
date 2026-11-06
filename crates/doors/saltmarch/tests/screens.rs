@@ -588,6 +588,12 @@ fn all_screens(door: &Saltmarch, env: &DoorEnv) -> Vec<(&'static str, Visit)> {
         assert!(v.choose("go:hall"));
         out.push(("hall", v));
         let mut v = at("go:court");
+        assert!(v.choose("go:board"));
+        out.push(("board", v));
+        let mut v = at("go:court");
+        assert!(v.choose("go:journal"));
+        out.push(("journal", v));
+        let mut v = at("go:court");
         assert!(v.choose("go:letters"));
         out.push(("letters", v));
         let mut v = at("go:court");
@@ -851,7 +857,7 @@ fn every_screen_has_a_look_around_that_describes_it() {
             "{name} describes the same as another screen"
         );
     }
-    assert_eq!(seen.len(), 22);
+    assert_eq!(seen.len(), 24);
 }
 
 #[test]

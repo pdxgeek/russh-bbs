@@ -164,7 +164,20 @@ pub trait DoorSession: Send {
     /// (`docs/doors/README.md`: every map or board screen has a text "look around" view). The
     /// board sanitizes it like everything else.
     fn look_around(&self, env: &DoorEnv) -> Vec<String>;
+
+    /// Whether the screen is taking typed text right now (a name, a message). While it is, the
+    /// board passes every key through, including [`LOOK_AROUND_KEY`]; otherwise that key shows
+    /// the look-around view instead of reaching the door (D98). Default: never.
+    fn captures_text(&self) -> bool {
+        false
+    }
 }
+
+/// The key the board reserves for the look-around view: no door sees it unless
+/// [`DoorSession::captures_text`] is true. It is `?` (checked against the key maps of
+/// Emberdeep, Hallpass, Long Haul, Nullroute, Saltmarch and the example: none binds it).
+/// Any key closes the view.
+pub const LOOK_AROUND_KEY: DoorKey = DoorKey::Char('?');
 
 /// A door game.
 pub trait Door: Send + Sync + 'static {

@@ -15,7 +15,7 @@ use crate::hold::PLOTS;
 use crate::map::Map;
 use crate::social::dispatch;
 use crate::social::ledger::Acks;
-use crate::social::{Posted, renown};
+use crate::social::{Posted, legacy, renown};
 use crate::tide::{DayTable, Tide, Warning};
 use crate::types::{Resource, Track, Trade};
 use crate::world::World;
@@ -59,6 +59,10 @@ enum MenuId {
     Pacts,
     /// Writing a letter.
     Compose,
+    /// The faction boards: contracts and standing.
+    Board,
+    /// The journal: quest chains.
+    Journal,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -75,6 +79,13 @@ enum Mode {
     Line(String),
 }
 
+impl Mode {
+    /// Whether this mode takes typed text, so the board passes every key (a `?` included) on.
+    const fn takes_text(&self) -> bool {
+        matches!(self, Self::Naming(_) | Self::Line(_))
+    }
+}
+
 enum Act {
     Go(MenuId),
     Do(Action),
@@ -87,6 +98,15 @@ struct Entry {
     tag: String,
     text: String,
     act: Act,
+}
+
+/// The next toll in the cycle 0 to the highest.
+const fn next_toll(now: u8) -> u8 {
+    if now >= crate::story::TOLL_MAX {
+        0
+    } else {
+        now + 1
+    }
 }
 
 fn entry(tag: impl Into<String>, text: impl Into<String>, act: Act) -> Entry {
@@ -141,6 +161,8 @@ pub(crate) struct Session {
     scored: u32,
     /// What the clan last showed the marsh (its posted defence), as the world has it.
     posted: Posted,
+    /// What the clan last told the world about its deeds.
+    badge: crate::world::Badge,
     /// What to tell the world it may now forget, once the fold is saved.
     acks: Acks,
     /// The social screens' state.
@@ -189,7 +211,8 @@ impl Session {
             rolled,
             default_name,
         } = setup;
-        let map = Map::generate(world.seed, &cat.pois);
+        let mut map = Map::generate(world.seed, &cat.pois);
+        world.overlay(&mut map, &cat, clan.as_ref().map(|c| c.name.as_str()));
         let tide = Tide::new(world.seed);
         let mut report = Vec::new();
         let mut ledger = Vec::new();
@@ -268,6 +291,7 @@ impl Session {
             ledger,
             scored: 0,
             posted: Posted::default(),
+            badge: crate::world::Badge::default(),
             acks,
             soc: SocialUi::default(),
             reach: Mutex::new(None),
@@ -318,6 +342,7 @@ impl Session {
     }
 
     fn save(&mut self, ctx: &mut Ctx<'_>) {
+        self.flush_outbox(ctx);
         let Some(c) = &self.clan else { return };
         ctx.request_save(c.encode());
         // What the clan has folded the world may now forget (the save above is written first).
@@ -330,15 +355,19 @@ impl Session {
         // what it last posted (rounded, so the world is not rewritten for every shift).
         let rn = renown::of(&self.cat, c, &self.world, self.today).total();
         let posted = Posted::of(&self.cat, c, self.today);
-        if rn != self.scored || posted != self.posted {
+        let badge = crate::world::Badge::of(&self.cat, c);
+        if rn != self.scored || posted != self.posted || badge != self.badge {
             self.scored = rn;
             self.posted = posted.clone();
+            self.badge = badge;
             let (season, name) = (self.world.season, c.name.clone());
             if let Some(i) = self.world.ix(&name) {
                 self.world.clans[usize::from(i)].score = rn;
                 self.world.clans[usize::from(i)].posted = posted.clone();
             }
-            ctx.edit_world(move |old| dispatch::post_update(old, season, &name, &posted, Some(rn)));
+            ctx.edit_world(move |old| {
+                dispatch::post_update(old, season, &name, &posted, Some(rn), badge)
+            });
         }
     }
 
@@ -353,6 +382,8 @@ impl Session {
             self.today,
             ctx.rng(),
         );
+        let mut clan = clan;
+        legacy::start(&mut clan, &self.cat, &self.map, self.world.legacy, None);
         self.clan = Some(clan);
         self.world_stored = false;
         self.publish(ctx);
@@ -383,6 +414,47 @@ impl Session {
                 }
             }
         }
+    }
+
+    /// The contract board's orders: take today's offers, hand in or give back the one in hand.
+    fn board_entries(&self, clan: &Clan) -> Vec<Entry> {
+        let mut out = Vec::new();
+        for def in crate::board::offers(&self.cat, clan, self.world.seed, self.today) {
+            out.push(entry(
+                format!("take:{}", def.id),
+                format!(
+                    "Take: {} ({} {}, {} day(s), {}-{} tallies)",
+                    def.title,
+                    def.kind.word(),
+                    def.qty,
+                    def.days,
+                    def.pay_lo,
+                    def.pay_hi
+                ),
+                Act::Do(Action::TakeContract { id: def.id.clone() }),
+            ));
+        }
+        if let Some(a) = &clan.story.contract {
+            let deliver = self
+                .cat
+                .contracts
+                .iter()
+                .find(|c| c.id == a.id)
+                .is_some_and(|c| c.kind == crate::story::ContractKind::Deliver);
+            if deliver {
+                out.push(entry(
+                    "hand-over",
+                    "Hand over the goods the contract asks for",
+                    Act::Do(Action::DeliverContract),
+                ));
+            }
+            out.push(entry(
+                "give-back",
+                "Give the contract back (the faction thinks less of you)",
+                Act::Do(Action::GiveBackContract),
+            ));
+        }
+        out
     }
 
     #[allow(clippy::too_many_lines)]
@@ -669,7 +741,8 @@ impl Session {
                     ));
                 }
             }
-            MenuId::Tides | MenuId::Map | MenuId::League | MenuId::Hall => {}
+            MenuId::Tides | MenuId::Map | MenuId::League | MenuId::Hall | MenuId::Journal => {}
+            MenuId::Board => out = self.board_entries(clan),
             MenuId::Exchange | MenuId::Raid | MenuId::Pacts | MenuId::Letters | MenuId::Compose => {
                 out = self.social_entries(menu, clan);
             }
@@ -693,6 +766,29 @@ impl Session {
                     "go:pacts",
                     "Pacts and diplomacy",
                     Act::Go(MenuId::Pacts),
+                ));
+                out.push(entry(
+                    "go:board",
+                    match &clan.story.contract {
+                        Some(_) => "The boards: a contract is in hand".to_owned(),
+                        None => "The boards: contracts and standing".to_owned(),
+                    },
+                    Act::Go(MenuId::Board),
+                ));
+                out.push(entry(
+                    "go:journal",
+                    "The journal: the chains you have heard of",
+                    Act::Go(MenuId::Journal),
+                ));
+                out.push(entry(
+                    format!("toll:{}", next_toll(clan.story.toll)),
+                    format!(
+                        "Causeway toll: {} tallies (press to change)",
+                        clan.story.toll
+                    ),
+                    Act::Do(Action::SetToll {
+                        toll: next_toll(clan.story.toll),
+                    }),
                 ));
                 out.push(entry(
                     "go:letters",
@@ -982,6 +1078,8 @@ impl DoorSession for Session {
                         | MenuId::Hall
                         | MenuId::Exchange
                         | MenuId::Raid
+                        | MenuId::Board
+                        | MenuId::Journal
                         | MenuId::Pacts => MenuId::Court,
                         MenuId::Compose => MenuId::Letters,
                         _ => MenuId::Main,
@@ -1037,6 +1135,10 @@ impl DoorSession for Session {
     fn render(&self, canvas: &mut Canvas<'_>, env: &DoorEnv) {
         canvas.clear();
         ui::draw(self, canvas, env);
+    }
+
+    fn captures_text(&self) -> bool {
+        self.mode.takes_text()
     }
 
     fn look_around(&self, _env: &DoorEnv) -> Vec<String> {
@@ -1230,5 +1332,19 @@ impl Session {
             }
             Err(e) => self.notes = vec![(e.to_string(), DoorStyle::Bad)],
         }
+    }
+}
+
+#[cfg(test)]
+mod mode_tests {
+    use super::{MenuId, Mode};
+
+    #[test]
+    fn only_the_typing_modes_take_text() {
+        assert!(Mode::Naming(String::new()).takes_text());
+        assert!(Mode::Line(String::new()).takes_text());
+        assert!(!Mode::Report.takes_text());
+        assert!(!Mode::Unreadable.takes_text());
+        assert!(!Mode::Menu(MenuId::Main).takes_text());
     }
 }
