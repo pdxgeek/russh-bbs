@@ -107,6 +107,25 @@ impl Live {
 }
 
 #[test]
+fn a_question_mark_typed_into_the_clan_name_is_text_and_in_a_menu_it_is_not_the_door_s() {
+    let door = door();
+    let mut live = Live::open(&door, 1, None);
+    assert!(live.said("Clan name: ann_"));
+    live.key(DoorKey::Char('?'));
+    assert!(
+        live.said("Clan name: ann?_"),
+        "the name took the mark: {:?}",
+        live.screen()
+    );
+    // Once the clan is founded the key is the board's again: the door never sees it.
+    live.key(DoorKey::Backspace);
+    live.key(DoorKey::Enter);
+    let before = live.screen();
+    live.key(DoorKey::Char('?'));
+    assert_eq!(live.screen(), before, "a menu does not take a typed mark");
+}
+
+#[test]
 fn a_fresh_visit_asks_for_a_name_the_board_accepts_and_founds_a_clan() {
     let door = door();
     let mut live = Live::open(&door, 1, None);

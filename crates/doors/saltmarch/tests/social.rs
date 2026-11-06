@@ -831,6 +831,21 @@ async fn a_pact_is_made_and_broken_and_the_clans_remember() {
 }
 
 #[tokio::test]
+async fn a_question_mark_typed_into_a_letter_line_is_text_not_the_look_around_key() {
+    let board = Board::new(DAY);
+    found(&board, 1, "ann").await;
+    found(&board, 2, "bob").await;
+    let mut a = board.visit(1, "ann", 3).await;
+    a.go(&["go:court", "go:letters", "compose"]).await;
+    a.go(&["line"]).await;
+    for c in "who? me?".chars() {
+        a.key(DoorKey::Char(c)).await;
+    }
+    a.key(DoorKey::Enter).await;
+    assert!(a.said("Your line: who? me?"), "{}", a.screen());
+}
+
+#[tokio::test]
 async fn letters_are_templates_with_a_clean_limited_line_and_a_clan_can_block_a_sender() {
     let board = Board::new(DAY);
     found(&board, 1, "ann").await;
