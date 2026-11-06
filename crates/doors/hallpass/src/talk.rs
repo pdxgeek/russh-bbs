@@ -290,7 +290,12 @@ impl Game {
             return Err(Refused::new("You cannot say that to them yet."));
         }
         let day = self.player.day;
-        map_set(&mut self.player.life.talked, &talk.id, day);
+        // A way out of a storyline's scene ("Not yet") does nothing and is not the scene being
+        // had: the story is still at its step, and the door stays open for when the pupil is ready.
+        let only_leaves = talk.arc.is_some() && choice.effects.is_empty() && choice.next.is_empty();
+        if !only_leaves {
+            map_set(&mut self.player.life.talked, &talk.id, day);
+        }
         let mut events = vec![Event::Say(choice.say.clone())];
         events.extend(self.apply_effects(&choice.effects, 0));
         let next = (!choice.next.is_empty()).then(|| choice.next.clone());

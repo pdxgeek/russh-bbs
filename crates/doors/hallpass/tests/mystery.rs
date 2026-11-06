@@ -1010,3 +1010,44 @@ fn what_the_side_clues_teach_is_asked_for_by_the_conversations_the_locks_and_the
         assert!(tested.contains(flag), "{flag}");
     }
 }
+
+#[test]
+fn saying_not_yet_in_a_storylines_scene_leaves_the_door_open_for_when_the_pupil_is_ready() {
+    let c = content();
+    for (talk, ..) in ENDINGS {
+        let spec = c.talk(talk).unwrap();
+        // The way out: the choice that does nothing and goes nowhere.
+        let exit = spec
+            .node
+            .iter()
+            .flat_map(|n| n.choice.iter().enumerate())
+            .find(|(_, ch)| ch.effects.is_empty() && ch.next.is_empty())
+            .map(|(i, _)| i)
+            .unwrap_or_else(|| panic!("{talk} has a way out"));
+        let player = at_the_choice(talk, 30);
+        let name = player.name.clone();
+        let (mut g, _) = Game::open(
+            &c,
+            &name,
+            Some(player),
+            Some(&world_at(30).to_bytes()),
+            monday() + 30,
+        );
+        meet(&mut g, &spec.npc);
+        let mut rng = DoorRng::from_seed(3);
+        g.apply(&Action::Talk((*talk).into()), &mut rng).unwrap();
+        g.apply(&Action::Choose(u8::try_from(exit).unwrap()), &mut rng)
+            .unwrap();
+        assert!(
+            g.player.life.arc("the_wing").unwrap().ended.is_none(),
+            "{talk}: the story goes on"
+        );
+        // Another day: the scene is there again, and the first real choice ends the story.
+        g.sync_day(monday() + 31);
+        meet(&mut g, &spec.npc);
+        assert!(
+            g.talks_here().iter().any(|t| t.id == *talk),
+            "{talk}: still on offer after saying not yet"
+        );
+    }
+}

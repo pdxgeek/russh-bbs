@@ -117,7 +117,7 @@ pub fn athlete() -> Policy {
         politics: false,
         opt_out: false,
         mean: false,
-        verdicts: &["fenn", "walk_away"],
+        verdicts: &["walk_away"],
     }
 }
 
@@ -559,6 +559,75 @@ fn sleuth_step(game: &mut Game, rng: &mut DoorRng, events: &mut Vec<Event>) -> b
     (game.player.place.clone(), game.player.slot) != before
 }
 
+/// A pupil heading for an ending courts whoever that ending needs: if its scene asks for standing
+/// with a clique or a friendship that is not there yet, go and talk to that clique's people (or
+/// that friend). True if the bot did anything with the period.
+fn court_for_verdict(
+    game: &mut Game,
+    policy: &Policy,
+    rng: &mut DoorRng,
+    events: &mut Vec<Event>,
+) -> bool {
+    use russh_bbs_door_hallpass::cond::{Cond, Stat};
+    let Some(slot) = game.current_slot() else {
+        return false;
+    };
+    let day = game.player.day;
+    let Some(verdict) = policy.verdicts.first() else {
+        return false;
+    };
+    let Some(scene) = game
+        .content
+        .talks
+        .iter()
+        .find(|t| verdict_of_talk(&t.id) == Some(*verdict))
+        .cloned()
+    else {
+        return false;
+    };
+    let mut wanted: Vec<String> = Vec::new();
+    for cond in &scene.when {
+        if let Cond::Cmp { stat, value, .. } = cond {
+            match stat {
+                Stat::Standing(clique) if game.stat(stat) < *value => {
+                    wanted.extend(
+                        game.content
+                            .npcs
+                            .iter()
+                            .filter(|n| n.clique.as_deref() == Some(clique.as_str()))
+                            .map(|n| n.id.clone()),
+                    );
+                }
+                Stat::Bond(npc) if game.stat(stat) < *value => wanted.push(npc.clone()),
+                _ => {}
+            }
+        }
+    }
+    for npc in wanted {
+        let talk = game
+            .content
+            .talks
+            .iter()
+            .find(|t| t.npc == npc && t.event.is_none() && t.arc.is_none() && game.talk_ready(t))
+            .cloned();
+        let Some(talk) = talk else { continue };
+        let Some(spec) = game.content.npc(&npc).cloned() else {
+            continue;
+        };
+        let at = game.npc_place(&spec, day, slot).to_owned();
+        if game.place_open(&at, day, slot)
+            && go_then(game, &at, rng, events)
+            && game.talk_open(&talk)
+        {
+            if let Ok(e) = game.apply(&Action::Talk(talk.id.clone()), rng) {
+                events.extend(e);
+                return true;
+            }
+        }
+    }
+    false
+}
+
 /// A term event is on and a scene of it is open to the pupil: go to the event and take part.
 /// True if the bot did anything with the period.
 fn event_step(game: &mut Game, rng: &mut DoorRng, events: &mut Vec<Event>) -> bool {
@@ -808,12 +877,8 @@ fn verdict_of_talk(talk: &str) -> Option<&'static str> {
 }
 
 /// A club meeting, a sign-up or a conversation, whichever is on offer. True if anything happened.
-fn social_step(
-    game: &mut Game,
-    policy: &Policy,
-    rng: &mut DoorRng,
-    events: &mut Vec<Event>,
-) -> bool {
+/// A club meeting that is on today and not yet attended: go to it. True if the bot did anything.
+fn club_meeting_step(game: &mut Game, rng: &mut DoorRng, events: &mut Vec<Event>) -> bool {
     let Some(slot) = game.current_slot() else {
         return false;
     };
@@ -843,6 +908,23 @@ fn social_step(
                 return true;
             }
         }
+    }
+    false
+}
+
+fn social_step(
+    game: &mut Game,
+    policy: &Policy,
+    rng: &mut DoorRng,
+    events: &mut Vec<Event>,
+) -> bool {
+    let Some(slot) = game.current_slot() else {
+        return false;
+    };
+    let day = game.player.day;
+    let kind = game.kind(day, slot).to_owned();
+    if kind == "class" {
+        return false;
     }
     // After lights-out only a club that meets then (the Candle Society) is worth the risk.
     if kind == "night" {
@@ -1264,7 +1346,16 @@ pub fn play_day(game: &mut Game, policy: &Policy, rng: &mut DoorRng) -> Vec<Even
         // The mystery, the other pupils, the election.
         if (!in_class || policy.skip_class) && game.player.due == 0 {
             let night = game.kind(day, slot) == "night";
+            if rng.below(100) < policy.social && club_meeting_step(game, rng, &mut events) {
+                continue;
+            }
             if rng.below(100) < 45 + policy.social / 2 && event_step(game, rng, &mut events) {
+                continue;
+            }
+            if policy.sleuth > 0
+                && rng.below(100) < 15
+                && court_for_verdict(game, policy, rng, &mut events)
+            {
                 continue;
             }
             if policy.sleuth > 0

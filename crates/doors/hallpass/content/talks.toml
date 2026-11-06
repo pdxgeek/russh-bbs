@@ -2746,6 +2746,8 @@ id = "abney_fines"
 npc = "abney"
 title = "Miss Abney and the overdue book"
 when = ["day>=2"]
+once = false
+cooldown = 5
 first = "open"
 [[talk.node]]
 id = "open"
@@ -2797,7 +2799,7 @@ effects = ["bond:abney:+2"]
 id = "abney_confides"
 npc = "abney"
 title = "Miss Abney tells you why she is a librarian"
-when = ["know:abney_remembers", "bond:abney>=6", "day>=24"]
+when = ["know:abney_remembers", "bond:abney>=5", "day>=24"]
 first = "open"
 [[talk.node]]
 id = "open"
@@ -3104,11 +3106,11 @@ say = "'Mind the stairs,' says Mrs. Tarn."
 id = "imogen_cox"
 npc = "imogen"
 title = "Imogen after the match"
-when = ["know:match_crew", "day>=19"]
+when = ["rank:rowing>=1", "day>=19"]
 first = "open"
 [[talk.node]]
 id = "open"
-text = "Imogen is sitting on the boathouse steps with her megaphone across her knees and her chin on her hands. The crew has gone to supper. She hasn't. 'I never said thank you,' she says, 'because I never know how. You were good in the boat.'"
+text = "Imogen is sitting on the boathouse steps with her megaphone across her knees and her chin on her hands. The crew has gone to supper. She hasn't. 'I never said thank you,' she says, 'because I never know how. You are good in the boat.'"
 [[talk.node.choice]]
 label = "Say she was the best cox the school has had"
 say = "She goes pink to the ears, and then, awkwardly, hugs you. 'Don't tell,' she says into your shoulder. 'I will deny it.'"
