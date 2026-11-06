@@ -233,4 +233,10 @@ The tests write under a fresh namespace each and leave their objects in the buck
 
 ## Running with an S3 bucket
 
+### File areas over SFTP (M4-F2)
+
+Members upload and download with an `sftp` client over ssh, signing in with the key bound to their handle (`sftp -P <port> <handle>@<host>`); see [files.md](files.md). `[files] sftp = false` turns the subsystem off. To scan uploads run ClamAV (`clamd`) on a private network or a unix socket and set `files.scan = "clamd"` with `files.clamd_address` or `files.clamd_socket`; without it uploads are stored unscanned and the screens say so. The container image runs as UID 65532 with `/data` as its only writable place, so a `clamd` socket must be mounted in.
+
+To run the SFTP suite against MinIO, start the container from the recipe above and run `cargo test -p russh-bbs-server --test sftp -- --ignored` with the same four `RUSSH_BBS_TEST_S3_*` variables; it uses the same scenario as the local-backend test.
+
 Set `blobs.backend = "s3"` and the bucket, plus the keys in the environment (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`), or give the host an instance or container role. For MinIO and other self-hosted servers set `blobs.path_style = true` and the endpoint; for a private CA set `blobs.ca_file` (it replaces the platform store for this connection only). The server checks the bucket at start and refuses to boot if it cannot list it. Objects are `<namespace>/<xx>/<id>` with the content followed by a 56-byte trailer (SHA-256, size, time), the same bytes the local backend writes, so you can move between a directory and a bucket by copying objects. Give the bucket a lifecycle rule that aborts incomplete multipart uploads after a day or two, so an upload cut off by a crash does not keep costing storage. The bucket itself is private; the server is the only reader (D30).

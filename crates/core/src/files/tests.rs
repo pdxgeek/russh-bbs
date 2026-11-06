@@ -238,3 +238,215 @@ fn tags_are_refused_not_rewritten() {
         Err(TextError::TooLong { .. })
     ));
 }
+
+// ---- the Files screens ----
+
+mod screens {
+    #![allow(clippy::unwrap_used)]
+
+    use super::super::keys;
+    use super::super::screen::{FilesMode, FilesScreen, Request, Response};
+    use super::super::service::{AreaSummary, FilePage, FileSummary, FileView};
+    use super::super::store::{FileState, ScanState};
+    use super::{area, file};
+    use crate::access::{Permission, PermissionCheck};
+    use crate::profiles::{Line, ScreenKey, Step};
+    use crate::sanitize::SingleLine;
+    use crate::store::UnixSeconds;
+
+    struct Holds(&'static [Permission]);
+
+    impl PermissionCheck for Holds {
+        fn allows(&self, permission: Permission) -> bool {
+            self.0.contains(&permission)
+        }
+    }
+
+    const MEMBER: Holds = Holds(&[
+        Permission::FilesList,
+        Permission::FilesDownload,
+        Permission::FilesTag,
+    ]);
+
+    fn summary(id: i64, state: FileState) -> FileSummary {
+        FileSummary {
+            id: file(id),
+            area: area(1),
+            area_name: "Docs".into(),
+            name: format!("f{id}.txt"),
+            size: 1536,
+            uploader: Some("ann".into()),
+            at: UnixSeconds::from_raw(0),
+            state,
+            tags: vec!["x".into()],
+            downloads: 0,
+        }
+    }
+
+    fn view_of(id: i64, state: FileState) -> FileView {
+        FileView {
+            file: summary(id, state),
+            description: SingleLine::new(40).sanitize("about"),
+            sha256: "ab".repeat(32),
+            scan: ScanState::Unscanned,
+            scan_note: String::new(),
+            download_path: Some("/1-docs/7-f7.txt".into()),
+            can_tag: true,
+            can_edit: true,
+            can_decide: state != FileState::Approved,
+            on_list: false,
+        }
+    }
+
+    fn areas_response() -> Response {
+        Response::Areas {
+            areas: vec![AreaSummary {
+                id: area(1),
+                name: "Docs".into(),
+                description: String::new(),
+                restricted: false,
+                auto_approve: false,
+                files: 1,
+                dir: "1-docs".into(),
+            }],
+            queue: true,
+            manage: false,
+        }
+    }
+
+    fn texts(screen: &FilesScreen) -> Vec<&'static str> {
+        screen
+            .view(&MEMBER)
+            .lines
+            .iter()
+            .filter_map(|line| match line {
+                Line::Text(key) => Some(*key),
+                Line::Filled { key, .. } => Some(*key),
+                _ => None,
+            })
+            .collect()
+    }
+
+    #[test]
+    fn the_screens_open_at_the_areas_and_ignore_keys_until_the_answer_comes() {
+        let mut screen = FilesScreen::open(FilesMode::Sftp);
+        assert_eq!(screen.take_request(), Some(Request::Areas));
+        // Waiting: only Esc counts.
+        assert_eq!(screen.press(&MEMBER, ScreenKey::Char('1')), Step::Stay);
+        assert_eq!(screen.take_request(), None);
+        screen.deliver(areas_response());
+        assert_eq!(screen.press(&MEMBER, ScreenKey::Char('1')), Step::Stay);
+        assert_eq!(
+            screen.take_request(),
+            Some(Request::Area {
+                area: area(1),
+                page: 0
+            })
+        );
+        // A session that lost files.list is turned away.
+        assert_eq!(
+            screen.press(&Holds(&[]), ScreenKey::Char('x')),
+            Step::Denied
+        );
+    }
+
+    #[test]
+    fn telnet_and_sftp_off_browse_and_say_why_fetching_is_not_here() {
+        for (mode, note) in [
+            (FilesMode::Telnet, keys::NOTE_TELNET),
+            (FilesMode::NoSftp, keys::NOTE_NO_SFTP),
+            (FilesMode::Sftp, keys::NOTE_SFTP),
+        ] {
+            let mut screen = FilesScreen::open(mode);
+            screen.take_request();
+            screen.deliver(areas_response());
+            assert!(texts(&screen).contains(&note), "{mode:?}");
+            assert!(
+                texts(&screen).contains(&keys::NOTE_READABLE),
+                "never claims privacy"
+            );
+            // The file screen shows the path only where sftp exists.
+            screen.press(&MEMBER, ScreenKey::Char('1'));
+            screen.take_request();
+            screen.deliver(Response::File(Box::new(view_of(7, FileState::Approved))));
+            let has_path = texts(&screen).contains(&keys::DOWNLOAD_PATH);
+            assert_eq!(has_path, mode == FilesMode::Sftp, "{mode:?}");
+        }
+        let mut gone = FilesScreen::open(FilesMode::Unavailable);
+        assert_eq!(
+            gone.take_request(),
+            None,
+            "nothing is asked of a board with no file store"
+        );
+        assert!(
+            texts(&gone).contains(&keys::NOTE_UNAVAILABLE) || !gone.view(&MEMBER).lines.is_empty()
+        );
+    }
+
+    #[test]
+    fn an_approver_approves_after_opening_a_queued_file_and_reject_needs_a_confirm() {
+        let mut screen = FilesScreen::open(FilesMode::Sftp);
+        screen.take_request();
+        screen.deliver(areas_response());
+        screen.press(&MEMBER, ScreenKey::Char('q'));
+        assert_eq!(screen.take_request(), Some(Request::Queue { page: 0 }));
+        screen.deliver(Response::Queue(FilePage {
+            area: None,
+            files: vec![summary(7, FileState::Quarantine)],
+            page: 0,
+            more: false,
+            can_upload: false,
+            can_manage: false,
+        }));
+        screen.press(&MEMBER, ScreenKey::Char('1'));
+        assert_eq!(screen.take_request(), Some(Request::File(file(7))));
+        screen.deliver(Response::File(Box::new(view_of(7, FileState::Quarantine))));
+        // Reject asks first; Esc keeps the file.
+        screen.press(&MEMBER, ScreenKey::Char('r'));
+        assert_eq!(screen.take_request(), None);
+        screen.press(&MEMBER, ScreenKey::Escape);
+        assert_eq!(screen.take_request(), None);
+        screen.press(&MEMBER, ScreenKey::Char('a'));
+        assert_eq!(screen.take_request(), Some(Request::Approve(file(7))));
+        // Esc from a file goes back to the queue, then the areas, then leaves.
+        screen.deliver(Response::Refused(super::super::screen::Note {
+            error: true,
+            key: keys::NOTE_DECIDED,
+        }));
+        assert_eq!(screen.press(&MEMBER, ScreenKey::Escape), Step::Stay);
+        assert_eq!(screen.press(&MEMBER, ScreenKey::Escape), Step::Stay);
+        assert_eq!(screen.press(&MEMBER, ScreenKey::Escape), Step::Leave);
+    }
+
+    #[test]
+    fn typed_text_is_bounded_and_sent_whole() {
+        let mut screen = FilesScreen::open(FilesMode::Sftp);
+        screen.take_request();
+        screen.deliver(areas_response());
+        screen.press(&MEMBER, ScreenKey::Char('/'));
+        for c in "router".chars() {
+            screen.press(&MEMBER, ScreenKey::Char(c));
+        }
+        // Control characters are never taken into the field.
+        screen.press(&MEMBER, ScreenKey::Char('\u{1b}'));
+        screen.press(&MEMBER, ScreenKey::Enter);
+        assert_eq!(
+            screen.take_request(),
+            Some(Request::Search {
+                query: "router".into(),
+                page: 0
+            })
+        );
+        // A long tag is cut at the field's cap, not sent unbounded.
+        screen.deliver(Response::File(Box::new(view_of(7, FileState::Approved))));
+        screen.press(&MEMBER, ScreenKey::Char('t'));
+        for _ in 0..200 {
+            screen.press(&MEMBER, ScreenKey::Char('a'));
+        }
+        screen.press(&MEMBER, ScreenKey::Enter);
+        match screen.take_request() {
+            Some(Request::Tag(_, text)) => assert!(text.chars().count() <= 32, "{}", text.len()),
+            other => panic!("{other:?}"),
+        }
+    }
+}

@@ -20,6 +20,7 @@ use crate::access::{Permission, PermissionCheck, Slug, Snapshot};
 use crate::community::{
     CommunityScreen, EditorAsk, Request as CommunityRequest, Response as CommunityResponse, Section,
 };
+use crate::files::{FilesMode, FilesScreen, Request as FilesRequest, Response as FilesResponse};
 use crate::icons::Tier;
 use crate::invites::{InviteOutcome, InviteRequest, InviteScreen};
 use crate::keys::{
@@ -111,6 +112,8 @@ enum Page {
     Queue(Box<QueueScreen>),
     /// One-liners, the graffiti wall, last callers or the polls (M3-J).
     Community(Box<CommunityScreen>),
+    /// The file areas (M4-F2).
+    Files(Box<FilesScreen>),
     Settings,
     /// The password screen, opened from the settings (M3-D).
     Password(Box<PasswordScreen>),
@@ -171,6 +174,8 @@ pub struct MemberFlow {
     telnet: bool,
     /// The sysop turned SSH password login off; the Password screen says so.
     password_login_off: bool,
+    /// How the Files screens fetch (M4-F2): over SFTP, browse only, or not at all.
+    files_mode: FilesMode,
 }
 
 impl MemberFlow {
@@ -202,6 +207,7 @@ impl MemberFlow {
             mail_note: true,
             key_notices: Vec::new(),
             telnet: false,
+            files_mode: FilesMode::Unavailable,
             password_login_off: false,
         }
     }
@@ -232,6 +238,13 @@ impl MemberFlow {
     #[must_use]
     pub const fn with_password_login_off(mut self) -> Self {
         self.password_login_off = true;
+        self
+    }
+
+    /// How the Files screens may fetch files in this session (M4-F2).
+    #[must_use]
+    pub const fn with_files_mode(mut self, mode: FilesMode) -> Self {
+        self.files_mode = mode;
         self
     }
 
@@ -407,6 +420,16 @@ impl MemberFlow {
             });
             return MemberEffect::Stay;
         }
+        if let Page::Files(screen) = &self.page
+            && !screen.still_permitted(&self.access)
+        {
+            self.page = Page::Home;
+            self.notice = Some(Notice {
+                kind: NoticeKind::Error,
+                text: strings::MEMBERS_NOT_PERMITTED,
+            });
+            return MemberEffect::Stay;
+        }
         match &mut self.page {
             Page::Login => {
                 self.page = if self.settings.needs_glyph_test() {
@@ -421,6 +444,7 @@ impl MemberFlow {
             Page::Members(_) => self.members_input(input),
             Page::Queue(_) => self.queue_input(input),
             Page::Community(_) => self.community_input(input),
+            Page::Files(_) => self.files_input(input),
             Page::Settings => self.settings_input(input),
             Page::Password(_) => self.password_input(input),
             Page::Keys(_) | Page::Recovery(_) => self.keys_input(input),
@@ -459,6 +483,7 @@ impl MemberFlow {
             | Page::Members(_)
             | Page::Queue(_)
             | Page::Community(_)
+            | Page::Files(_)
             | Page::Invites(_)
             | Page::Password(_)
             | Page::Keys(_)
@@ -529,6 +554,10 @@ impl MemberFlow {
             MenuOutcome::Stay => MemberEffect::Stay,
             MenuOutcome::Action(Action::Forums) => MemberEffect::Forums,
             MenuOutcome::Action(Action::Mail) => MemberEffect::Mail,
+            MenuOutcome::Action(Action::Files) => {
+                self.page = Page::Files(Box::new(FilesScreen::open(self.files_mode)));
+                MemberEffect::Stay
+            }
             MenuOutcome::Action(Action::Doors) => MemberEffect::Doors,
             MenuOutcome::Action(Action::TerminalSettings) => {
                 self.page = Page::Settings;
@@ -618,6 +647,7 @@ impl MemberFlow {
             Action::EditOwnProfile => own.map(MembersScreen::edit_own),
             Action::Forums
             | Action::Mail
+            | Action::Files
             | Action::Doors
             | Action::TerminalSettings
             | Action::Chat
@@ -770,6 +800,40 @@ impl MemberFlow {
         MemberEffect::Stay
     }
 
+    fn files_input(&mut self, input: MemberInput) -> MemberEffect {
+        let key = match input {
+            MemberInput::Char(c) => ScreenKey::Char(c),
+            MemberInput::Enter => ScreenKey::Enter,
+            MemberInput::Backspace => ScreenKey::Backspace,
+            MemberInput::Escape => ScreenKey::Escape,
+            MemberInput::Up | MemberInput::Down | MemberInput::Quit => return MemberEffect::Stay,
+        };
+        let Page::Files(screen) = &mut self.page else {
+            return MemberEffect::Stay;
+        };
+        let step = screen.press(&self.access, key);
+        self.after_members(step);
+        MemberEffect::Stay
+    }
+
+    /// The Files request the screen is waiting on, once (M4-F2). The front end runs it with
+    /// `files::execute` and gives the answer to [`MemberFlow::deliver_files`].
+    pub fn take_files_request(&mut self) -> Option<FilesRequest> {
+        match &mut self.page {
+            Page::Files(screen) => screen.take_request(),
+            _ => None,
+        }
+    }
+
+    /// Hand the answer of a Files request to the screen.
+    pub fn deliver_files(&mut self, response: FilesResponse) {
+        let step = match &mut self.page {
+            Page::Files(screen) => screen.deliver(response),
+            _ => return,
+        };
+        self.after_members(step);
+    }
+
     /// The community request the screen is waiting on, once. The front end runs it with
     /// `community::execute` and gives the answer to [`MemberFlow::deliver_community`].
     pub fn take_community_request(&mut self) -> Option<CommunityRequest> {
@@ -808,6 +872,8 @@ impl MemberFlow {
     pub fn community_view(&self) -> Option<ScreenView> {
         match &self.page {
             Page::Community(screen) => Some(screen.view(&self.access)),
+            // The Files screens (M4-F2) produce the same view type and are drawn the same.
+            Page::Files(screen) => Some(screen.view(&self.access)),
             _ => None,
         }
     }
@@ -1394,6 +1460,7 @@ impl MemberFlow {
             Page::Members(_)
             | Page::Queue(_)
             | Page::Community(_)
+            | Page::Files(_)
             | Page::Preview(_)
             | Page::Gallery(_)
             | Page::Packs(_)

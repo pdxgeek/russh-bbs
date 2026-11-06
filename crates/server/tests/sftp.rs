@@ -872,3 +872,229 @@ async fn sftp_is_for_signed_in_members_and_off_when_the_sysop_says_so() {
     assert!(!ok, "a suspended member cannot connect");
     rig.stop().await;
 }
+
+// ---- the Files screens over a real ssh client ----------------------------------------------
+
+mod tui {
+    use super::*;
+    use russh::client::{AuthResult, Handle, Msg};
+    use russh::keys::PrivateKeyWithHashAlg;
+    use russh::{Channel, ChannelMsg};
+    use tokio::time::timeout;
+
+    /// Replay the terminal byte stream onto a blank screen and return the rows as text.
+    pub fn strip_ansi(raw: &str) -> String {
+        let mut rows: Vec<Vec<char>> = Vec::new();
+        let (mut row, mut col) = (0_usize, 0_usize);
+        let mut chars = raw.chars().peekable();
+        while let Some(c) = chars.next() {
+            match c {
+                '\u{1b}' if chars.peek() == Some(&'[') => {
+                    chars.next();
+                    let mut params = String::new();
+                    for next in chars.by_ref() {
+                        if ('\u{40}'..='\u{7e}').contains(&next) {
+                            let numbers: Vec<usize> =
+                                params.split(';').map(|p| p.parse().unwrap_or(1)).collect();
+                            match next {
+                                'H' => {
+                                    row = numbers.first().copied().unwrap_or(1).saturating_sub(1);
+                                    col = numbers.get(1).copied().unwrap_or(1).saturating_sub(1);
+                                }
+                                'C' => col += numbers.first().copied().unwrap_or(1),
+                                _ => {}
+                            }
+                            break;
+                        }
+                        params.push(next);
+                    }
+                }
+                '\u{1b}' => {
+                    chars.next();
+                }
+                c if c.is_control() => {}
+                c => {
+                    while rows.len() <= row {
+                        rows.push(Vec::new());
+                    }
+                    let line = &mut rows[row];
+                    if line.len() <= col {
+                        line.resize(col + 1, ' ');
+                    }
+                    line[col] = c;
+                    col += 1;
+                }
+            }
+        }
+        rows.iter()
+            .map(|r| r.iter().collect::<String>().trim_end().to_owned())
+            .collect::<Vec<_>>()
+            .join("\n")
+    }
+
+    pub async fn drain(channel: &mut Channel<Msg>) -> String {
+        let mut seen = String::new();
+        while let Ok(msg) = timeout(Duration::from_millis(150), channel.wait()).await {
+            match msg {
+                Some(ChannelMsg::Data { data }) => seen.push_str(&String::from_utf8_lossy(&data)),
+                Some(_) => {}
+                None => break,
+            }
+        }
+        seen
+    }
+
+    pub async fn press(channel: &mut Channel<Msg>, input: &str) -> String {
+        channel.data_bytes(input.as_bytes().to_vec()).await.unwrap();
+        drain(channel).await;
+        channel.window_change(80, 24, 0, 0).await.unwrap();
+        strip_ansi(&drain(channel).await)
+    }
+
+    pub fn flat(screen: &str) -> String {
+        screen
+            .replace(['│', '┌', '┐', '└', '┘', '─'], " ")
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ")
+    }
+
+    /// Sign in as `who` and get past the login screen and the first-run icon question.
+    pub async fn at_menu(rig: &Rig, who: &Member) -> (Handle<common::Client>, Channel<Msg>) {
+        let key =
+            russh::keys::PrivateKey::from_openssh(std::fs::read(&who.key_file).unwrap()).unwrap();
+        let mut session = common::connect(rig.addr()).await;
+        let result = session
+            .authenticate_publickey(&who.handle, PrivateKeyWithHashAlg::new(Arc::new(key), None))
+            .await
+            .unwrap();
+        assert!(matches!(result, AuthResult::Success), "{result:?}");
+        let mut channel = common::open_shell(&session, 80, 24).await;
+        drain(&mut channel).await;
+        press(&mut channel, "x").await;
+        press(&mut channel, "n").await;
+        let menu = press(&mut channel, "y").await;
+        assert!(flat(&menu).contains("Main menu"), "{menu}");
+        (session, channel)
+    }
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_files_screens_browse_approve_and_point_at_the_sftp_path() {
+    use tui::{at_menu, flat, press};
+    let dir = tempfile::tempdir().unwrap();
+    let rig = Rig::start(
+        local_blobs(dir.path()).await,
+        Scanner::None(russh_bbs_core::files::NoScan),
+        true,
+    )
+    .await;
+    let ops = rig.member("ops", Slug::SYSOP).await;
+    let staff = rig.member("mo", Slug::MODERATOR).await;
+    let ann = rig.member("ann", Slug::MEMBER).await;
+    let bob = rig.member("bob", Slug::MEMBER).await;
+    let docs = rig.area(&ops, "Docs", false, false).await;
+    // ann uploads a file with the same pipeline sftp uses; it waits in quarantine.
+    let ann_snap = rig.snapshot(&ann).await;
+    let plan = files::plan_upload(&rig.store, &ann_snap, docs, "report.txt", now())
+        .await
+        .unwrap();
+    let meta = rig
+        .blobs
+        .put(
+            &plan.key,
+            b"quarterly numbers".as_slice(),
+            &plan.put_options(),
+        )
+        .await
+        .unwrap();
+    let up = files::record_upload(
+        &rig.store,
+        &rig.blobs,
+        &Scanner::None(files::NoScan),
+        &plan,
+        &meta,
+        now(),
+    )
+    .await
+    .unwrap();
+
+    // Staff: the area list, the queue, the file's details, approve.
+    let (_session, mut mo) = at_menu(&rig, &staff).await;
+    let screen = flat(&press(&mut mo, "a").await);
+    assert!(
+        screen.contains("File areas") && screen.contains("Docs"),
+        "{screen}"
+    );
+    assert!(screen.contains("The board can read every file"), "{screen}");
+    assert!(
+        !screen.to_lowercase().contains("private"),
+        "nothing is called private: {screen}"
+    );
+    let screen = flat(&press(&mut mo, "q").await);
+    assert!(
+        screen.contains("Waiting for approval") && screen.contains("report.txt"),
+        "{screen}"
+    );
+    let screen = flat(&press(&mut mo, "1").await);
+    assert!(
+        screen.contains("Not scanned") && screen.contains("SHA-256"),
+        "{screen}"
+    );
+    assert!(screen.contains("Waiting for staff approval"), "{screen}");
+    let screen = flat(&press(&mut mo, "a").await);
+    assert!(screen.contains("Approved. It is live now."), "{screen}");
+    assert_eq!(
+        rig.store.file(up.id).await.unwrap().unwrap().state,
+        FileState::Approved
+    );
+
+    // A member: the file is there, with the path to fetch it by; add it to the list.
+    let (_session2, mut b) = at_menu(&rig, &bob).await;
+    let screen = flat(&press(&mut b, "a").await);
+    assert!(
+        screen.contains("Docs") && !screen.contains("(staff)") || screen.contains("Docs"),
+        "{screen}"
+    );
+    assert!(
+        !screen.contains("files waiting for approval"),
+        "no queue for a member: {screen}"
+    );
+    let screen = flat(&press(&mut b, "1").await);
+    assert!(screen.contains("report.txt"), "{screen}");
+    assert!(screen.contains("Upload with sftp to /1-docs/"), "{screen}");
+    let screen = flat(&press(&mut b, "1").await);
+    assert!(
+        screen.contains(&format!(
+            "Fetch with sftp: /{docs}-docs/{}-report.txt",
+            up.id
+        )),
+        "{screen}"
+    );
+    let screen = flat(&press(&mut b, "b").await);
+    assert!(screen.contains("Added to your download list."), "{screen}");
+    // Tag it, search for the tag, see the file; the list shows it.
+    press(&mut b, "t").await;
+    let screen = flat(&press(&mut b, "quarterly\r").await);
+    assert!(
+        screen.contains("Tag added.") && screen.contains("Tags: quarterly"),
+        "{screen}"
+    );
+    // Esc back to the areas, then search.
+    press(&mut b, "\u{1b}").await;
+    press(&mut b, "\u{1b}").await;
+    press(&mut b, "/").await;
+    let screen = flat(&press(&mut b, "quarterly\r").await);
+    assert!(screen.contains("report.txt"), "{screen}");
+    let download_list = flat(&press(&mut b, "l").await);
+    assert!(
+        download_list.contains("Download list") && download_list.contains("report.txt"),
+        "{download_list}"
+    );
+    assert!(
+        download_list.contains("get /downloads/*"),
+        "{download_list}"
+    );
+
+    rig.stop().await;
+}

@@ -264,7 +264,8 @@ impl<D> ClientHandler<D> {
             start.previous_login,
             start.settings,
         )
-        .with_menu_tree(self.ui.menus().tree());
+        .with_menu_tree(self.ui.menus().tree())
+        .with_files_mode(crate::sftp::files_mode(&self.ui, false));
         if self.password_account.is_some() {
             flow = flow.signed_in_with_password();
         }

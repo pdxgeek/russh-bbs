@@ -5,7 +5,7 @@
   │                                                                          │
   │   [f] Forums                                                             │
   │   [m] Mail                                                               │
-  │   [a] Files  (not built yet)                                             │
+  │   [a] Files                                                              │
   │   [c] Chat                                                               │
   │   [d] Doors                                                              │
   │   [u] Members                                                            │
@@ -31,7 +31,7 @@
   │                                                                          │
   │ > [f] Forums                                                             │
   │   [m] Mail                                                               │
-  │   [a] Files  (not built yet)                                             │
+  │   [a] Files                                                              │
   │   [c] Chat                                                               │
   │   [d] Doors                                                              │
   │   [u] Members                                                            │
@@ -55,7 +55,7 @@
   Signed in as alice.
   f Forums
   m Mail
-  a Files (not built yet)
+  a Files
   c Chat
   d Doors
   u Members
@@ -83,7 +83,7 @@
 │                                ││ A bulletin board i… ││   ┃  ━┃ • ┃ ┃ ┃ ┃   │
 │ > [f] Forums                   ││ Portland, OR        ││   ┃ ┃━  • ┃━┃ ┃━┃   │
 │   [m] Mail                     ││                     ││ Thu 5 Nov 2026 UTC  │
-│   [a] Files  (not built yet)   ││                     ││                     │
+│   [a] Files                    ││                     ││                     │
 │   [c] Chat                     │└─────────────────────┘└─────────────────────┘
 │   [d] Doors                    │┌ Who is online ──────┐┌ Last callers ───────┐
 │   [u] Members                  ││ ● 5 online          ││ bob              2m │
@@ -110,7 +110,7 @@
 │ terminal is too small for      ││ Portland, OR        ││   ┃ ┃━  • ┃━┃ ┃━┃   │
 │ > [f] Forums                   ││                     ││ Thu 5 Nov 2026 UTC  │
 │   [m] Mail                     ││                     ││                     │
-│   [a] Files  (not built yet)   │└─────────────────────┘└─────────────────────┘
+│   [a] Files                    │└─────────────────────┘└─────────────────────┘
 │   [c] Chat                     │┌ Who is online ──────┐┌ Last callers ───────┐
 │   [d] Doors                    ││ ● 5 online          ││ bob              2m │
 │   [u] Members                  ││ ▸ alice             ││ carol            1h │
@@ -136,7 +136,7 @@
 
            > [f] Forums
              [m] Mail
-             [a] Files  (not built yet)
+             [a] Files
              [c] Chat
              [d] Doors
              [u] Members
@@ -161,7 +161,7 @@
 │                                │││  ann                                      │
 │ > [f] Forums                   │││  bob                                      │
 │   [m] Mail                     │││  carol                                    │
-│   [a] Files  (not built yet)   │││#tech  1                                   │
+│   [a] Files                    │││#tech  1                                   │
 │   [c] Chat                     │││  dave                                     │
 │   [d] Doors                    │││                                           │
 │   [u] Members                  │││                                           │
@@ -187,7 +187,7 @@
   |                                                                          |
   |   [f] Forums                                                             |
   |   [m] Mail                                                               |
-  |   [a] Files  (not built yet)                                             |
+  |   [a] Files                                                              |
   |   [c] Chat                                                               |
   |   [d] Doors                                                              |
   |   [u] Members                                                            |
@@ -213,7 +213,7 @@ UNENCRYPTED  LOW-SECURITY   ? help  Esc back  Ctrl-C log off
   |                                                                          |
   | > [f] Forums                                                             |
   |   [m] Mail                                                               |
-  |   [a] Files  (not built yet)                                             |
+  |   [a] Files                                                              |
   |   [c] Chat                                                               |
   |   [d] Doors                                                              |
   |   [u] Members                                                            |
@@ -237,7 +237,7 @@ UNENCRYPTED  LOW-SECURITY   Up/Down move  Enter choose  ? help  Esc back
   Signed in as alice.
   f Forums
   m Mail
-  a Files (not built yet)
+  a Files
   c Chat
   d Doors
   u Members
@@ -265,7 +265,7 @@ UNENCRYPTED  LOW-SECURITY   ? help  Esc back  Ctrl-C log off
 |                                || A bulletin board i~ ||   |  _| . | | | |   |
 | > [f] Forums                   || Portland, OR        ||   | |_  . |_| |_|   |
 |   [m] Mail                     ||                     || Thu 5 Nov 2026 UTC  |
-|   [a] Files  (not built yet)   ||                     ||                     |
+|   [a] Files                    ||                     ||                     |
 |   [c] Chat                     |+---------------------++---------------------+
 |   [d] Doors                    |+ Who is online ------++ Last callers -------+
 |   [u] Members                  || * 5 online          || bob              2m |
@@ -292,7 +292,7 @@ UNENCRYPTED  LOW-SECURITY   Up/Down move  Enter choose  ? help  Esc back
 | terminal is too small for      || Portland, OR        ||   | |_  . |_| |_|   |
 | > [f] Forums                   ||                     || Thu 5 Nov 2026 UTC  |
 |   [m] Mail                     ||                     ||                     |
-|   [a] Files  (not built yet)   |+---------------------++---------------------+
+|   [a] Files                    |+---------------------++---------------------+
 |   [c] Chat                     |+ Who is online ------++ Last callers -------+
 |   [d] Doors                    || * 5 online          || bob              2m |
 |   [u] Members                  || > alice             || carol            1h |
@@ -318,7 +318,7 @@ UNENCRYPTED  LOW-SECURITY   Up/Down move  Enter choose  ? help  Esc back
 
            > [f] Forums
              [m] Mail
-             [a] Files  (not built yet)
+             [a] Files
              [c] Chat
              [d] Doors
              [u] Members
@@ -343,7 +343,7 @@ UNENCRYPTED  LOW-SECURITY   Up/Down move  Enter choose  Tab widgets  ? help
 |                                |||  ann                                      |
 | > [f] Forums                   |||  bob                                      |
 |   [m] Mail                     |||  carol                                    |
-|   [a] Files  (not built yet)   |||#tech  1                                   |
+|   [a] Files                    |||#tech  1                                   |
 |   [c] Chat                     |||  dave                                     |
 |   [d] Doors                    |||                                           |
 |   [u] Members                  |||                                           |
@@ -369,7 +369,7 @@ UNENCRYPTED  LOW-SECURITY   Up/Down move  Enter choose  ? help  Esc back
             │                                                                          │
             │   [f] Forums                                                             │
             │   [m] Mail                                                               │
-            │   [a] Files  (not built yet)                                             │
+            │   [a] Files                                                              │
             │   [c] Chat                                                               │
             │   [d] Doors                                                              │
             │   [u] Members                                                            │
@@ -401,7 +401,7 @@ UNENCRYPTED  LOW-SECURITY   Up/Down move  Enter choose  ? help  Esc back
             │                                                                          │
             │ > [f] Forums                                                             │
             │   [m] Mail                                                               │
-            │   [a] Files  (not built yet)                                             │
+            │   [a] Files                                                              │
             │   [c] Chat                                                               │
             │   [d] Doors                                                              │
             │   [u] Members                                                            │
@@ -432,7 +432,7 @@ UNENCRYPTED  LOW-SECURITY   Up/Down move  Enter choose  ? help  Esc back
             Signed in as alice.
             f Forums
             m Mail
-            a Files (not built yet)
+            a Files
             c Chat
             d Doors
             u Members
@@ -465,7 +465,7 @@ UNENCRYPTED  LOW-SECURITY   Up/Down move  Enter choose  ? help  Esc back
 │                                ││ A bulletin board in your ter… ││   ┃  ━┃ • ┃ ┃ ┃ ┃             │
 │ > [f] Forums                   ││ Portland, OR · since 2026     ││   ┃ ┃━  • ┃━┃ ┃━┃             │
 │   [m] Mail                     ││                               ││ Thu 5 Nov 2026 UTC            │
-│   [a] Files  (not built yet)   ││                               ││                               │
+│   [a] Files                    ││                               ││                               │
 │   [c] Chat                     ││                               ││                               │
 │   [d] Doors                    ││                               ││                               │
 │   [u] Members                  │└───────────────────────────────┘└───────────────────────────────┘
@@ -498,7 +498,7 @@ UNENCRYPTED  LOW-SECURITY   Up/Down move  Enter choose  ? help  Esc back
 │ terminal is too small for      ││ Portland, OR · since 2026     ││   ┃ ┃━  • ┃━┃ ┃━┃             │
 │ > [f] Forums                   ││                               ││ Thu 5 Nov 2026 UTC            │
 │   [m] Mail                     ││                               ││                               │
-│   [a] Files  (not built yet)   ││                               ││                               │
+│   [a] Files                    ││                               ││                               │
 │   [c] Chat                     ││                               ││                               │
 │   [d] Doors                    │└───────────────────────────────┘└───────────────────────────────┘
 │   [u] Members                  │┌ Who is online ────────────────┐┌ Last callers ─────────────────┐
@@ -532,7 +532,7 @@ UNENCRYPTED  LOW-SECURITY   Up/Down move  Enter choose  ? help  Esc back
 
                        [m] Mail
 
-                       [a] Files  (not built yet)
+                       [a] Files
 
                        [c] Chat
 
@@ -561,7 +561,7 @@ UNENCRYPTED  LOW-SECURITY   Up/Down move  Enter choose  ? help  Esc back
 │                                │││  ann                                                          │
 │ > [f] Forums                   │││  bob                                                          │
 │   [m] Mail                     │││  carol                                                        │
-│   [a] Files  (not built yet)   │││#tech  1                                                       │
+│   [a] Files                    │││#tech  1                                                       │
 │   [c] Chat                     │││  dave                                                         │
 │   [d] Doors                    │││                                                               │
 │   [u] Members                  │││                                                               │
@@ -593,7 +593,7 @@ UNENCRYPTED  LOW-SECURITY   Up/Down move  Enter choose  ? help  Esc back
             |                                                                          |
             |   [f] Forums                                                             |
             |   [m] Mail                                                               |
-            |   [a] Files  (not built yet)                                             |
+            |   [a] Files                                                              |
             |   [c] Chat                                                               |
             |   [d] Doors                                                              |
             |   [u] Members                                                            |
@@ -625,7 +625,7 @@ UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is 
             |                                                                          |
             | > [f] Forums                                                             |
             |   [m] Mail                                                               |
-            |   [a] Files  (not built yet)                                             |
+            |   [a] Files                                                              |
             |   [c] Chat                                                               |
             |   [d] Doors                                                              |
             |   [u] Members                                                            |
@@ -656,7 +656,7 @@ UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is 
             Signed in as alice.
             f Forums
             m Mail
-            a Files (not built yet)
+            a Files
             c Chat
             d Doors
             u Members
@@ -689,7 +689,7 @@ UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is 
 |                                || A bulletin board in your ter~ ||   |  _| . | | | |             |
 | > [f] Forums                   || Portland, OR - since 2026     ||   | |_  . |_| |_|             |
 |   [m] Mail                     ||                               || Thu 5 Nov 2026 UTC            |
-|   [a] Files  (not built yet)   ||                               ||                               |
+|   [a] Files                    ||                               ||                               |
 |   [c] Chat                     ||                               ||                               |
 |   [d] Doors                    ||                               ||                               |
 |   [u] Members                  |+-------------------------------++-------------------------------+
@@ -722,7 +722,7 @@ UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is 
 | terminal is too small for      || Portland, OR - since 2026     ||   | |_  . |_| |_|             |
 | > [f] Forums                   ||                               || Thu 5 Nov 2026 UTC            |
 |   [m] Mail                     ||                               ||                               |
-|   [a] Files  (not built yet)   ||                               ||                               |
+|   [a] Files                    ||                               ||                               |
 |   [c] Chat                     ||                               ||                               |
 |   [d] Doors                    |+-------------------------------++-------------------------------+
 |   [u] Members                  |+ Who is online ----------------++ Last callers -----------------+
@@ -756,7 +756,7 @@ UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is 
 
                        [m] Mail
 
-                       [a] Files  (not built yet)
+                       [a] Files
 
                        [c] Chat
 
@@ -785,7 +785,7 @@ UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is 
 |                                |||  ann                                                          |
 | > [f] Forums                   |||  bob                                                          |
 |   [m] Mail                     |||  carol                                                        |
-|   [a] Files  (not built yet)   |||#tech  1                                                       |
+|   [a] Files                    |||#tech  1                                                       |
 |   [c] Chat                     |||  dave                                                         |
 |   [d] Doors                    |||                                                               |
 |   [u] Members                  |||                                                               |
@@ -817,7 +817,7 @@ UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is 
                             │                                                                          │
                             │   [f] Forums                                                             │
                             │   [m] Mail                                                               │
-                            │   [a] Files  (not built yet)                                             │
+                            │   [a] Files                                                              │
                             │   [c] Chat                                                               │
                             │   [d] Doors                                                              │
                             │   [u] Members                                                            │
@@ -862,7 +862,7 @@ UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is 
                             │                                                                          │
                             │ > [f] Forums                                                             │
                             │   [m] Mail                                                               │
-                            │   [a] Files  (not built yet)                                             │
+                            │   [a] Files                                                              │
                             │   [c] Chat                                                               │
                             │   [d] Doors                                                              │
                             │   [u] Members                                                            │
@@ -906,7 +906,7 @@ UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is 
                             Signed in as alice.
                             f Forums
                             m Mail
-                            a Files (not built yet)
+                            a Files
                             c Chat
                             d Doors
                             u Members
@@ -952,7 +952,7 @@ UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is 
 │                                ││ A bulletin board in your ter… ││   ┃  ━┃ • ┃ ┃ ┃ ┃            ││ ▸ alice       ▸ bob           │
 │ > [f] Forums                   ││ Portland, OR · since 2026     ││   ┃ ┃━  • ┃━┃ ┃━┃            ││ ▸ carol       ▸ dave          │
 │   [m] Mail                     ││                               ││ Thu 5 Nov 2026 UTC           ││ ▸ erin                        │
-│   [a] Files  (not built yet)   ││                               ││                              ││                               │
+│   [a] Files                    ││                               ││                              ││                               │
 │   [c] Chat                     ││                               ││                              ││                               │
 │   [d] Doors                    ││                               ││                              ││                               │
 │   [u] Members                  ││                               ││                              ││                               │
@@ -995,7 +995,7 @@ UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is 
 ┌ Main menu ─────────────────────┐┌ russh-bbs ─────────────────────────────────────────────────┐┌ This board ──────────────────────┐
 │ > [f] Forums                   ││                                                            ││ russh-bbs                        │
 │   [m] Mail                     ││  Signed in as alice.                                       ││ A bulletin board in your termin… │
-│   [a] Files  (not built yet)   ││                                                            ││ Portland, OR · since 2026        │
+│   [a] Files                    ││                                                            ││ Portland, OR · since 2026        │
 │   [c] Chat                     ││  > [f] Forums                                              ││                                  │
 │   [d] Doors                    ││                                                            ││                                  │
 │   [u] Members                  ││                                                            ││                                  │
@@ -1045,7 +1045,7 @@ UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is 
 
                                        [m] Mail
 
-                                       [a] Files  (not built yet)
+                                       [a] Files
 
                                        [c] Chat
 
@@ -1087,7 +1087,7 @@ UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is 
 │                                │││  ann                                                                                          │
 │ > [f] Forums                   │││  bob                                                                                          │
 │   [m] Mail                     │││  carol                                                                                        │
-│   [a] Files  (not built yet)   │││#tech  1                                                                                       │
+│   [a] Files                    │││#tech  1                                                                                       │
 │   [c] Chat                     │││  dave                                                                                         │
 │   [d] Doors                    │││                                                                                               │
 │   [u] Members                  │││                                                                                               │
@@ -1132,7 +1132,7 @@ UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is 
                             |                                                                          |
                             |   [f] Forums                                                             |
                             |   [m] Mail                                                               |
-                            |   [a] Files  (not built yet)                                             |
+                            |   [a] Files                                                              |
                             |   [c] Chat                                                               |
                             |   [d] Doors                                                              |
                             |   [u] Members                                                            |
@@ -1177,7 +1177,7 @@ UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is 
                             |                                                                          |
                             | > [f] Forums                                                             |
                             |   [m] Mail                                                               |
-                            |   [a] Files  (not built yet)                                             |
+                            |   [a] Files                                                              |
                             |   [c] Chat                                                               |
                             |   [d] Doors                                                              |
                             |   [u] Members                                                            |
@@ -1221,7 +1221,7 @@ UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is 
                             Signed in as alice.
                             f Forums
                             m Mail
-                            a Files (not built yet)
+                            a Files
                             c Chat
                             d Doors
                             u Members
@@ -1267,7 +1267,7 @@ UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is 
 |                                || A bulletin board in your ter~ ||   |  _| . | | | |            || > alice       > bob           |
 | > [f] Forums                   || Portland, OR - since 2026     ||   | |_  . |_| |_|            || > carol       > dave          |
 |   [m] Mail                     ||                               || Thu 5 Nov 2026 UTC           || > erin                        |
-|   [a] Files  (not built yet)   ||                               ||                              ||                               |
+|   [a] Files                    ||                               ||                              ||                               |
 |   [c] Chat                     ||                               ||                              ||                               |
 |   [d] Doors                    ||                               ||                              ||                               |
 |   [u] Members                  ||                               ||                              ||                               |
@@ -1310,7 +1310,7 @@ UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is 
 + Main menu ---------------------++ russh-bbs -------------------------------------------------++ This board ----------------------+
 | > [f] Forums                   ||                                                            || russh-bbs                        |
 |   [m] Mail                     ||  Signed in as alice.                                       || A bulletin board in your termin~ |
-|   [a] Files  (not built yet)   ||                                                            || Portland, OR - since 2026        |
+|   [a] Files                    ||                                                            || Portland, OR - since 2026        |
 |   [c] Chat                     ||  > [f] Forums                                              ||                                  |
 |   [d] Doors                    ||                                                            ||                                  |
 |   [u] Members                  ||                                                            ||                                  |
@@ -1360,7 +1360,7 @@ UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is 
 
                                        [m] Mail
 
-                                       [a] Files  (not built yet)
+                                       [a] Files
 
                                        [c] Chat
 
@@ -1402,7 +1402,7 @@ UNENCRYPTED anyone on the network can read this session  LOW-SECURITY telnet is 
 |                                |||  ann                                                                                          |
 | > [f] Forums                   |||  bob                                                                                          |
 |   [m] Mail                     |||  carol                                                                                        |
-|   [a] Files  (not built yet)   |||#tech  1                                                                                       |
+|   [a] Files                    |||#tech  1                                                                                       |
 |   [c] Chat                     |||  dave                                                                                         |
 |   [d] Doors                    |||                                                                                               |
 |   [u] Members                  |||                                                                                               |

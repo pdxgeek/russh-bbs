@@ -303,12 +303,42 @@ fn hotkeys_ignore_case_and_menus_nest_and_unwind() {
     assert_eq!(session.current(), "main");
 }
 
+/// A one-menu tree whose first item is a placeholder (the shipped tree has none left).
+fn placeholder_tree() -> &'static MenuTree {
+    static ITEMS: [Item; 2] = [
+        Item {
+            hotkey: 'a',
+            label: "label",
+            target: Target::Placeholder("placeholder.note"),
+            requires: None,
+            also: None,
+        },
+        Item {
+            hotkey: 'l',
+            label: "label",
+            target: Target::Action(Action::LogOff),
+            requires: None,
+            also: None,
+        },
+    ];
+    static MENUS: [Menu; 1] = [Menu {
+        id: "main",
+        title: "t",
+        items: &ITEMS,
+    }];
+    static TREE: MenuTree = MenuTree {
+        root: "main",
+        menus: &MENUS,
+    };
+    &TREE
+}
+
 #[test]
 fn a_placeholder_says_so_and_the_notice_clears_on_the_next_key() {
     let member = member();
-    let mut session = MenuSession::new(main_tree());
+    let mut session = MenuSession::new(placeholder_tree());
     session.press(&member, MenuKey::Char('a'));
-    assert_eq!(session.page(&member).notice, Some("placeholder.files"));
+    assert_eq!(session.page(&member).notice, Some("placeholder.note"));
     session.press(&member, MenuKey::Char('x'));
     assert_eq!(session.page(&member).notice, None);
 }
@@ -409,11 +439,12 @@ fn text_keys_cover_titles_labels_and_placeholder_notes() {
     for expected in [
         "menu.main.title",
         "menu.main.item.settings",
-        "placeholder.files",
         "menu.sysop.title",
     ] {
         assert!(keys.contains(&expected), "{expected}");
     }
+    let keys: Vec<_> = placeholder_tree().text_keys().collect();
+    assert!(keys.contains(&"placeholder.note"));
 }
 
 #[test]
@@ -485,11 +516,13 @@ fn the_cursor_starts_on_the_first_item_and_stops_at_both_ends() {
 fn select_picks_the_item_under_the_cursor_like_its_hotkey() {
     let member = member();
     let mut session = MenuSession::new(main_tree());
-    // Down to "Files" (third): a placeholder, so a notice and nothing else.
+    // Down to "Files" (third): an action the front end carries out.
     session.press(&member, MenuKey::Down);
     session.press(&member, MenuKey::Down);
-    assert_eq!(session.press(&member, MenuKey::Select), MenuOutcome::Stay);
-    assert_eq!(session.notice_for_tests(), Some("placeholder.files"));
+    assert_eq!(
+        session.press(&member, MenuKey::Select),
+        MenuOutcome::Action(Action::Files)
+    );
     // Down to the last item (Log off): an action.
     for _ in 0..50 {
         session.press(&member, MenuKey::Down);

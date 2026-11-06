@@ -38,3 +38,17 @@ pub struct FileServices {
     /// Whether the `sftp` subsystem is served.
     pub sftp: bool,
 }
+
+/// How the Files screens may fetch in a session: over SFTP on ssh when the board runs the
+/// subsystem, browse-only over telnet or with SFTP off, and nothing on a board built without a
+/// file store.
+#[must_use]
+pub fn files_mode(ui: &crate::ui::Ui, telnet: bool) -> russh_bbs_core::files::FilesMode {
+    use russh_bbs_core::files::FilesMode;
+    match ui.files() {
+        None => FilesMode::Unavailable,
+        Some(_) if telnet => FilesMode::Telnet,
+        Some(services) if services.sftp => FilesMode::Sftp,
+        Some(_) => FilesMode::NoSftp,
+    }
+}

@@ -69,6 +69,8 @@ pub enum Action {
     Forums,
     /// Open the mailbox: the inbox (`mail.read`, M3-I).
     Mail,
+    /// Open the file areas (`files.list`, M4-F2): browse, search, details, the approval queue.
+    Files,
     /// Open the terminal settings screen.
     TerminalSettings,
     /// Make an invite code and show it once (`invites.create`, M2-D).
@@ -127,6 +129,7 @@ impl Action {
         match self {
             Self::Forums => Some(Permission::ForumList),
             Self::Mail => Some(Permission::MailRead),
+            Self::Files => Some(Permission::FilesList),
             Self::TerminalSettings => Some(Permission::AccountEditSettings),
             Self::InviteCreate | Self::InviteList => Some(Permission::InvitesCreate),
             Self::InviteTree => Some(Permission::InvitesViewTree),

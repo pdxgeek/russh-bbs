@@ -212,10 +212,6 @@ fn every_layout_shows_every_item_of_the_same_menu() {
         }
         assert!(out.contains("Notice: Saved."), "{chosen:?}:\n{out}");
         assert!(out.contains("Forums"), "{chosen:?}");
-        assert!(
-            out.contains("not built yet"),
-            "{chosen:?}: placeholders say so"
-        );
     }
 }
 

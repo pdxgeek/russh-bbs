@@ -1,9 +1,9 @@
-=== phosphor / compact / 80x24 / unicode truecolor / colors=3d171116127096d6
+=== phosphor / compact / 80x24 / unicode truecolor / colors=3d6e5d4a9cdd4366
   Main menu
   Signed in as alice.
   f Forums
   m Mail
-  a Files (not built yet)
+  a Files
   c Chat
   d Doors
   u Members
@@ -24,13 +24,13 @@
 
  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / compact / 132x43 / unicode truecolor / colors=5e4310bbe519d2f2
+=== phosphor / compact / 132x43 / unicode truecolor / colors=b9ca8e5764d57862
 
                             Main menu
                             Signed in as alice.
                             f Forums
                             m Mail
-                            a Files (not built yet)
+                            a Files
                             c Chat
                             d Doors
                             u Members
@@ -69,12 +69,12 @@
 
  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / compact / 80x24 / ascii mono / colors=6e1c4d9f303834f1
+=== phosphor / compact / 80x24 / ascii mono / colors=c9827a7fa89c9171
   Main menu
   Signed in as alice.
   f Forums
   m Mail
-  a Files (not built yet)
+  a Files
   c Chat
   d Doors
   u Members
@@ -95,12 +95,12 @@
 
  ? help  Esc back  Ctrl-C log off
 
-=== neon / compact / 80x24 / unicode truecolor / colors=914271af2cffd747
+=== neon / compact / 80x24 / unicode truecolor / colors=0ec846e4ccf545e7
   Main menu
   Signed in as alice.
   f Forums
   m Mail
-  a Files (not built yet)
+  a Files
   c Chat
   d Doors
   u Members
@@ -121,13 +121,13 @@
 
  ? help  Esc back  Ctrl-C log off
 
-=== neon / compact / 132x43 / unicode truecolor / colors=c318e85880936175
+=== neon / compact / 132x43 / unicode truecolor / colors=be748a63e0b902b5
 
                             Main menu
    .     .     .     .     .Signed in as alice.                                                          .     .     .     .     .
                             f Forums
                             m Mail
-   .     .     .     .     .a Files (not built yet)                                                      .     .     .     .     .
+   .     .     .     .     .a Files                                                                      .     .     .     .     .
                             c Chat
                             d Doors
    .     .     .     .     .u Members                                                                    .     .     .     .     .
@@ -166,12 +166,12 @@
    .     .     .     .     .     .     .     .     .     .     .     .     .     .     .     .     .     .     .     .     .     .
  ? help  Esc back  Ctrl-C log off
 
-=== neon / compact / 80x24 / ascii mono / colors=6e1c4d9f303834f1
+=== neon / compact / 80x24 / ascii mono / colors=c9827a7fa89c9171
   Main menu
   Signed in as alice.
   f Forums
   m Mail
-  a Files (not built yet)
+  a Files
   c Chat
   d Doors
   u Members
@@ -192,12 +192,12 @@
 
  ? help  Esc back  Ctrl-C log off
 
-=== paper / compact / 80x24 / unicode truecolor / colors=0870e775830053fb
+=== paper / compact / 80x24 / unicode truecolor / colors=66592b0478e16adb
   Main menu
   Signed in as alice.
   f Forums
   m Mail
-  a Files (not built yet)
+  a Files
   c Chat
   d Doors
   u Members
@@ -218,13 +218,13 @@
 
  ? help  Esc back  Ctrl-C log off
 
-=== paper / compact / 132x43 / unicode truecolor / colors=914386b9942f28bf
+=== paper / compact / 132x43 / unicode truecolor / colors=533473d53bf9ef9f
 
                             Main menu
                             Signed in as alice.
                             f Forums
                             m Mail
-                            a Files (not built yet)
+                            a Files
                             c Chat
                             d Doors
                             u Members
@@ -263,12 +263,12 @@
 
  ? help  Esc back  Ctrl-C log off
 
-=== paper / compact / 80x24 / ascii mono / colors=6e1c4d9f303834f1
+=== paper / compact / 80x24 / ascii mono / colors=c9827a7fa89c9171
   Main menu
   Signed in as alice.
   f Forums
   m Mail
-  a Files (not built yet)
+  a Files
   c Chat
   d Doors
   u Members
@@ -289,12 +289,12 @@
 
  ? help  Esc back  Ctrl-C log off
 
-=== amber / compact / 80x24 / unicode truecolor / colors=c8f817e4f176f8a9
+=== amber / compact / 80x24 / unicode truecolor / colors=7b8247f6f2772369
   Main menu
   Signed in as alice.
   f Forums
   m Mail
-  a Files (not built yet)
+  a Files
   c Chat
   d Doors
   u Members
@@ -315,13 +315,13 @@
 
  ? help  Esc back  Ctrl-C log off
 
-=== amber / compact / 132x43 / unicode truecolor / colors=c72bd30dfd033af9
+=== amber / compact / 132x43 / unicode truecolor / colors=5cbb56f1812093b9
 
                             Main menu
                             Signed in as alice.
                             f Forums
                             m Mail
-                            a Files (not built yet)
+                            a Files
                             c Chat
                             d Doors
                             u Members
@@ -360,12 +360,12 @@
 
  ? help  Esc back  Ctrl-C log off
 
-=== amber / compact / 80x24 / ascii mono / colors=6e1c4d9f303834f1
+=== amber / compact / 80x24 / ascii mono / colors=c9827a7fa89c9171
   Main menu
   Signed in as alice.
   f Forums
   m Mail
-  a Files (not built yet)
+  a Files
   c Chat
   d Doors
   u Members
@@ -386,12 +386,12 @@
 
  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / compact / 80x24 / unicode truecolor / colors=f961bc802825e3e2
+=== deepspace / compact / 80x24 / unicode truecolor / colors=84a4afb4a211bb22
 * Main menu
   Signed in as alice.
   f Forums
   m Mail
-  a Files (not built yet)
+  a Files
   c Chat
   d Doors                                                                      .
   u Members
@@ -412,13 +412,13 @@
                                                                                .
  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / compact / 132x43 / unicode truecolor / colors=2066039ba0d4b9e0
+=== deepspace / compact / 132x43 / unicode truecolor / colors=446212bf258c3120
 *                              .      .                            *                                              *          *
       .                   . Main menu                                                                                .
      .      .  .        .   Signed in as alice.                                                             *      .       .
                             f Forums
   *     .       .        *  m Mail                                                                           .*
-                          * a Files (not built yet)
+                          * a Files
          *               .  c Chat
           .           .     d Doors
 *      * *                  u Members                                                                            ..
@@ -457,12 +457,12 @@
           *           .      *          .                       .   *                      .                 . .              .
  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / compact / 80x24 / ascii mono / colors=6e1c4d9f303834f1
+=== deepspace / compact / 80x24 / ascii mono / colors=c9827a7fa89c9171
   Main menu
   Signed in as alice.
   f Forums
   m Mail
-  a Files (not built yet)
+  a Files
   c Chat
   d Doors
   u Members
@@ -483,12 +483,12 @@
 
  ? help  Esc back  Ctrl-C log off
 
-=== ansi / compact / 80x24 / unicode truecolor / colors=8c74b52f0ed3f858
+=== ansi / compact / 80x24 / unicode truecolor / colors=a65033ae8fd78ed8
   Main menu
   Signed in as alice.
   f Forums
   m Mail
-  a Files (not built yet)
+  a Files
   c Chat
   d Doors
   u Members
@@ -509,13 +509,13 @@
 
  ? help  Esc back  Ctrl-C log off
 
-=== ansi / compact / 132x43 / unicode truecolor / colors=46d967060f4acf2c
+=== ansi / compact / 132x43 / unicode truecolor / colors=babd59db44f779ac
 
                             Main menu
                             Signed in as alice.
                             f Forums
                             m Mail
-                            a Files (not built yet)
+                            a Files
                             c Chat
                             d Doors
                             u Members
@@ -554,12 +554,12 @@
 
  ? help  Esc back  Ctrl-C log off
 
-=== ansi / compact / 80x24 / ascii mono / colors=6e1c4d9f303834f1
+=== ansi / compact / 80x24 / ascii mono / colors=c9827a7fa89c9171
   Main menu
   Signed in as alice.
   f Forums
   m Mail
-  a Files (not built yet)
+  a Files
   c Chat
   d Doors
   u Members

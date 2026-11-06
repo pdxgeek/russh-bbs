@@ -1,4 +1,4 @@
-=== phosphor / focus / 80x24 / unicode truecolor / colors=61e2f7ede591f16c
+=== phosphor / focus / 80x24 / unicode truecolor / colors=08c0ca728fddeef2
  russh-bbs │ Main menu                                                UTC 12:00
            Main menu
            ────────────────────────────────────────
@@ -6,7 +6,7 @@
 
            > [f] Forums
              [m] Mail
-             [a] Files  (not built yet)
+             [a] Files
              [c] Chat
              [d] Doors
              [u] Members
@@ -24,7 +24,7 @@
 
  Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / focus / 132x43 / unicode truecolor / colors=0ca15aa4770d0376
+=== phosphor / focus / 132x43 / unicode truecolor / colors=4cc2dd676b382d10
  russh-bbs │ Main menu                                                                                                    UTC 12:00
                                      Main menu
                                      ────────────────────────────────────────
@@ -34,7 +34,7 @@
 
                                        [m] Mail
 
-                                       [a] Files  (not built yet)
+                                       [a] Files
 
                                        [c] Chat
 
@@ -69,7 +69,7 @@
 
  Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / focus / 80x24 / ascii mono / colors=9d1d1ccead27a2c8
+=== phosphor / focus / 80x24 / ascii mono / colors=1d76eb05af5a2d0a
  russh-bbs | Main menu                                                UTC 12:00
            Main menu
            ----------------------------------------
@@ -77,7 +77,7 @@
 
            > [f] Forums
              [m] Mail
-             [a] Files  (not built yet)
+             [a] Files
              [c] Chat
              [d] Doors
              [u] Members
@@ -95,7 +95,7 @@
 
  Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
 
-=== neon / focus / 80x24 / unicode truecolor / colors=6d9fb43dde26364b
+=== neon / focus / 80x24 / unicode truecolor / colors=92f8ff140040071f
  » russh-bbs « │ Main menu                                            UTC 12:00
            Main menu
    .     . ────────────────────────────────────────                        .
@@ -103,7 +103,7 @@
 
    .     . > [f] Forums                                                    .
              [m] Mail
-             [a] Files  (not built yet)
+             [a] Files
    .     .   [c] Chat                                                      .
              [d] Doors
              [u] Members
@@ -121,7 +121,7 @@
 
  Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
 
-=== neon / focus / 132x43 / unicode truecolor / colors=842dd19425bff516
+=== neon / focus / 132x43 / unicode truecolor / colors=877f245202bffb0a
  » russh-bbs « │ Main menu                                                                                                UTC 12:00
                                      Main menu
    .     .     .     .     .     .   ────────────────────────────────────────                      .     .     .     .     .     .
@@ -131,7 +131,7 @@
 
                                        [m] Mail
    .     .     .     .     .     .                                                                 .     .     .     .     .     .
-                                       [a] Files  (not built yet)
+                                       [a] Files
 
    .     .     .     .     .     .     [c] Chat                                                    .     .     .     .     .     .
 
@@ -166,7 +166,7 @@
    .     .     .     .     .     .                                                                 .     .     .     .     .     .
  Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
 
-=== neon / focus / 80x24 / ascii mono / colors=c3b6cfa674f51c8e
+=== neon / focus / 80x24 / ascii mono / colors=1f56ac652a10d558
  >> russh-bbs << | Main menu                                          UTC 12:00
            Main menu
            ----------------------------------------
@@ -174,7 +174,7 @@
 
            > [f] Forums
              [m] Mail
-             [a] Files  (not built yet)
+             [a] Files
              [c] Chat
              [d] Doors
              [u] Members
@@ -192,7 +192,7 @@
 
  Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
 
-=== paper / focus / 80x24 / unicode truecolor / colors=25caab3df5e8ac30
+=== paper / focus / 80x24 / unicode truecolor / colors=9b84cfe81e797c2c
  russh-bbs │ Main menu                                                UTC 12:00
            Main menu
            ────────────────────────────────────────
@@ -200,7 +200,7 @@
 
            > [f] Forums
              [m] Mail
-             [a] Files  (not built yet)
+             [a] Files
              [c] Chat
              [d] Doors
              [u] Members
@@ -218,7 +218,7 @@
 
  Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
 
-=== paper / focus / 132x43 / unicode truecolor / colors=a1b3252346dcc49c
+=== paper / focus / 132x43 / unicode truecolor / colors=c058b90bd6eb6628
  russh-bbs │ Main menu                                                                                                    UTC 12:00
                                      Main menu
                                      ────────────────────────────────────────
@@ -228,7 +228,7 @@
 
                                        [m] Mail
 
-                                       [a] Files  (not built yet)
+                                       [a] Files
 
                                        [c] Chat
 
@@ -263,7 +263,7 @@
 
  Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
 
-=== paper / focus / 80x24 / ascii mono / colors=9d1d1ccead27a2c8
+=== paper / focus / 80x24 / ascii mono / colors=1d76eb05af5a2d0a
  russh-bbs | Main menu                                                UTC 12:00
            Main menu
            ----------------------------------------
@@ -271,7 +271,7 @@
 
            > [f] Forums
              [m] Mail
-             [a] Files  (not built yet)
+             [a] Files
              [c] Chat
              [d] Doors
              [u] Members
@@ -289,7 +289,7 @@
 
  Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
 
-=== amber / focus / 80x24 / unicode truecolor / colors=53735584d2a7ae46
+=== amber / focus / 80x24 / unicode truecolor / colors=13330a652048f2a3
  russh-bbs │ Main menu                                                UTC 12:00
            Main menu
            ────────────────────────────────────────
@@ -297,7 +297,7 @@
 
            > [f] Forums
              [m] Mail
-             [a] Files  (not built yet)
+             [a] Files
              [c] Chat
              [d] Doors
              [u] Members
@@ -315,7 +315,7 @@
 
  Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
 
-=== amber / focus / 132x43 / unicode truecolor / colors=b10e0c7861e53f12
+=== amber / focus / 132x43 / unicode truecolor / colors=898fca16181f0f4b
  russh-bbs │ Main menu                                                                                                    UTC 12:00
                                      Main menu
                                      ────────────────────────────────────────
@@ -325,7 +325,7 @@
 
                                        [m] Mail
 
-                                       [a] Files  (not built yet)
+                                       [a] Files
 
                                        [c] Chat
 
@@ -360,7 +360,7 @@
 
  Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
 
-=== amber / focus / 80x24 / ascii mono / colors=9d1d1ccead27a2c8
+=== amber / focus / 80x24 / ascii mono / colors=1d76eb05af5a2d0a
  russh-bbs | Main menu                                                UTC 12:00
            Main menu
            ----------------------------------------
@@ -368,7 +368,7 @@
 
            > [f] Forums
              [m] Mail
-             [a] Files  (not built yet)
+             [a] Files
              [c] Chat
              [d] Doors
              [u] Members
@@ -386,7 +386,7 @@
 
  Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / focus / 80x24 / unicode truecolor / colors=eff04327ba06acdf
+=== deepspace / focus / 80x24 / unicode truecolor / colors=ecfcae977897ec90
  ◆ russh-bbs ◆ │ Main menu                                            UTC 12:00
       .    Main menu
      .     ────────────────────────────────────────
@@ -394,7 +394,7 @@
   *     .                                                             .  *
            > [f] Forums                                                     .
          *   [m] Mail                                                  .       .
-             [a] Files  (not built yet)
+             [a] Files
 *      * *   [c] Chat                                                  .
  .           [d] Doors
              [u] Members
@@ -412,7 +412,7 @@
                                                                                .
  Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / focus / 132x43 / unicode truecolor / colors=085cc967e78d7ebf
+=== deepspace / focus / 132x43 / unicode truecolor / colors=b0ecc947926bd4a8
  ◆ russh-bbs ◆ │ Main menu                                                                                                UTC 12:00
       .                   .          Main menu                                                     *                 .
      .      .  .        .         .  ────────────────────────────────────────                               *      .       .
@@ -422,7 +422,7 @@
          *               .
           .           .            *   [m] Mail                                                      .
 *      * *                                                                                       .               ..
- .           .          *              [a] Files  (not built yet)
+ .           .          *              [a] Files
                                    .                                                                                            .
               .          .             [c] Chat                                                                .           ..
     *    *                 .     .                                                                 .              .                .
@@ -457,7 +457,7 @@
           *           .      *                                                                               . .              .
  Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / focus / 80x24 / ascii mono / colors=a0dc47eae8b2dd70
+=== deepspace / focus / 80x24 / ascii mono / colors=5add6d4e1e116cd2
  * russh-bbs * | Main menu                                            UTC 12:00
            Main menu
            ----------------------------------------
@@ -465,7 +465,7 @@
 
            > [f] Forums
              [m] Mail
-             [a] Files  (not built yet)
+             [a] Files
              [c] Chat
              [d] Doors
              [u] Members
@@ -483,7 +483,7 @@
 
  Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
 
-=== ansi / focus / 80x24 / unicode truecolor / colors=b4f75adb64ae886d
+=== ansi / focus / 80x24 / unicode truecolor / colors=0337255c31815511
  ░▒▓ russh-bbs ▓▒░ │ Main menu                                        UTC 12:00
            Main menu
            ────────────────────────────────────────
@@ -491,7 +491,7 @@
 
            > [f] Forums
              [m] Mail
-             [a] Files  (not built yet)
+             [a] Files
              [c] Chat
              [d] Doors
              [u] Members
@@ -509,7 +509,7 @@
 
  Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
 
-=== ansi / focus / 132x43 / unicode truecolor / colors=a9d04c9b0ec01c3d
+=== ansi / focus / 132x43 / unicode truecolor / colors=d99ed16ddc63ec69
  ░▒▓ russh-bbs ▓▒░ │ Main menu                                                                                            UTC 12:00
                                      Main menu
                                      ────────────────────────────────────────
@@ -519,7 +519,7 @@
 
                                        [m] Mail
 
-                                       [a] Files  (not built yet)
+                                       [a] Files
 
                                        [c] Chat
 
@@ -554,7 +554,7 @@
 
  Up/Down move  Enter choose  Tab widgets  ? help  Esc back  Ctrl-C log off
 
-=== ansi / focus / 80x24 / ascii mono / colors=c3b6cfa674f51c8e
+=== ansi / focus / 80x24 / ascii mono / colors=1f56ac652a10d558
  ## russh-bbs ## | Main menu                                          UTC 12:00
            Main menu
            ----------------------------------------
@@ -562,7 +562,7 @@
 
            > [f] Forums
              [m] Mail
-             [a] Files  (not built yet)
+             [a] Files
              [c] Chat
              [d] Doors
              [u] Members

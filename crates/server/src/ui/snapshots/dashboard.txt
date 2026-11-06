@@ -1,11 +1,11 @@
-=== phosphor / dashboard / 80x24 / unicode truecolor / colors=4d34366c3cc174ef
+=== phosphor / dashboard / 80x24 / unicode truecolor / colors=da017c4e7e4ddbcb
  russh-bbs │ Main menu                                                UTC 12:00
 ┌[ Main menu ]───────────────────┐┌[ This board ]───────┐┌[ Clock ]────────────┐
 │ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
 │                                ││ A bulletin board i… ││   ┃  ━┃ • ┃ ┃ ┃ ┃   │
 │ > [f] Forums                   ││ Portland, OR        ││   ┃ ┃━  • ┃━┃ ┃━┃   │
 │   [m] Mail                     ││                     ││ Thu 5 Nov 2026 UTC  │
-│   [a] Files  (not built yet)   ││                     ││                     │
+│   [a] Files                    ││                     ││                     │
 │   [c] Chat                     │└─────────────────────┘└─────────────────────┘
 │   [d] Doors                    │┌[ Who is online ]────┐┌[ Last callers ]─────┐
 │   [u] Members                  ││ ● 5 online          ││ bob              2m │
@@ -24,14 +24,14 @@
 └────────────────────────────────┘└─────────────────────┘└─────────────────────┘
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / dashboard / 132x43 / unicode truecolor / colors=34e7782bb9c644d6
+=== phosphor / dashboard / 132x43 / unicode truecolor / colors=b984673ff63b0d5a
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ┌[ Main menu ]───────────────────┐┌[ This board ]─────────────────┐┌[ Clock ]─────────────────────┐┌[ Who is online ]──────────────┐
 │ Signed in as alice.            ││ russh-bbs                     ││      ━     ━   ━             ││ ● 5 online                    │
 │                                ││ A bulletin board in your ter… ││   ┃  ━┃ • ┃ ┃ ┃ ┃            ││ ▸ alice       ▸ bob           │
 │ > [f] Forums                   ││ Portland, OR · since 2026     ││   ┃ ┃━  • ┃━┃ ┃━┃            ││ ▸ carol       ▸ dave          │
 │   [m] Mail                     ││                               ││ Thu 5 Nov 2026 UTC           ││ ▸ erin                        │
-│   [a] Files  (not built yet)   ││                               ││                              ││                               │
+│   [a] Files                    ││                               ││                              ││                               │
 │   [c] Chat                     ││                               ││                              ││                               │
 │   [d] Doors                    ││                               ││                              ││                               │
 │   [u] Members                  ││                               ││                              ││                               │
@@ -69,14 +69,14 @@
 └────────────────────────────────┘└───────────────────────────────┘
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== phosphor / dashboard / 80x24 / ascii mono / colors=b9a9f5e7a4019ba8
+=== phosphor / dashboard / 80x24 / ascii mono / colors=74d4bc92c6b21216
  russh-bbs | Main menu                                                UTC 12:00
 +[ Main menu ]-------------------++[ This board ]-------++[ Clock ]------------+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
 |                                || A bulletin board i~ ||   |  _| . | | | |   |
 | > [f] Forums                   || Portland, OR        ||   | |_  . |_| |_|   |
 |   [m] Mail                     ||                     || Thu 5 Nov 2026 UTC  |
-|   [a] Files  (not built yet)   ||                     ||                     |
+|   [a] Files                    ||                     ||                     |
 |   [c] Chat                     |+---------------------++---------------------+
 |   [d] Doors                    |+[ Who is online ]----++[ Last callers ]-----+
 |   [u] Members                  || * 5 online          || bob              2m |
@@ -95,14 +95,14 @@
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / dashboard / 80x24 / unicode truecolor / colors=6f835eaea9203b7b
+=== neon / dashboard / 80x24 / unicode truecolor / colors=acd2ab1353b321d7
  » russh-bbs « │ Main menu                                            UTC 12:00
 ╭« Main menu »───────────────────╮╭« This board »───────╮╭« Clock »────────────╮
 │ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
 │                                ││ A bulletin board i… ││   ┃  ━┃ • ┃ ┃ ┃ ┃   │
 │ > [f] Forums                   ││ Portland, OR        ││   ┃ ┃━  • ┃━┃ ┃━┃   │
 │   [m] Mail                     ││                     ││ Thu 5 Nov 2026 UTC  │
-│   [a] Files  (not built yet)   ││                     ││                     │
+│   [a] Files                    ││                     ││                     │
 │   [c] Chat                     │╰─────────────────────╯╰─────────────────────╯
 │   [d] Doors                    │╭« Who is online »────╮╭« Last callers »─────╮
 │   [u] Members                  ││ ● 5 online          ││ bob              2m │
@@ -121,14 +121,14 @@
 ╰────────────────────────────────╯╰─────────────────────╯╰─────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / dashboard / 132x43 / unicode truecolor / colors=0c882c3dfa549872
+=== neon / dashboard / 132x43 / unicode truecolor / colors=7fe52db8a489d62e
  » russh-bbs « │ Main menu                                                                                                UTC 12:00
 ╭« Main menu »───────────────────╮╭« This board »─────────────────╮╭« Clock »─────────────────────╮╭« Who is online »──────────────╮
 │ Signed in as alice.            ││ russh-bbs                     ││      ━     ━   ━             ││ ● 5 online                    │
 │                                ││ A bulletin board in your ter… ││   ┃  ━┃ • ┃ ┃ ┃ ┃            ││ ▸ alice       ▸ bob           │
 │ > [f] Forums                   ││ Portland, OR · since 2026     ││   ┃ ┃━  • ┃━┃ ┃━┃            ││ ▸ carol       ▸ dave          │
 │   [m] Mail                     ││                               ││ Thu 5 Nov 2026 UTC           ││ ▸ erin                        │
-│   [a] Files  (not built yet)   ││                               ││                              ││                               │
+│   [a] Files                    ││                               ││                              ││                               │
 │   [c] Chat                     ││                               ││                              ││                               │
 │   [d] Doors                    ││                               ││                              ││                               │
 │   [u] Members                  ││                               ││                              ││                               │
@@ -166,14 +166,14 @@
 ╰────────────────────────────────╯╰───────────────────────────────╯  .     .     .     .     .     .     .     .     .     .     .
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== neon / dashboard / 80x24 / ascii mono / colors=83426de02138601a
+=== neon / dashboard / 80x24 / ascii mono / colors=db9636239dea9708
  >> russh-bbs << | Main menu                                          UTC 12:00
 +<< Main menu >>-----------------++<< This board >>-----++<< Clock >>----------+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
 |                                || A bulletin board i~ ||   |  _| . | | | |   |
 | > [f] Forums                   || Portland, OR        ||   | |_  . |_| |_|   |
 |   [m] Mail                     ||                     || Thu 5 Nov 2026 UTC  |
-|   [a] Files  (not built yet)   ||                     ||                     |
+|   [a] Files                    ||                     ||                     |
 |   [c] Chat                     |+---------------------++---------------------+
 |   [d] Doors                    |+<< Who is online >>--++<< Last callers >>---+
 |   [u] Members                  || * 5 online          || bob              2m |
@@ -192,14 +192,14 @@
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / dashboard / 80x24 / unicode truecolor / colors=c3aa85c0746cc3b9
+=== paper / dashboard / 80x24 / unicode truecolor / colors=c313f6a38c285235
  russh-bbs │ Main menu                                                UTC 12:00
 ╭ Main menu ─────────────────────╮╭ This board ─────────╮╭ Clock ──────────────╮
 │ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
 │                                ││ A bulletin board i… ││   ┃  ━┃ • ┃ ┃ ┃ ┃   │
 │ > [f] Forums                   ││ Portland, OR        ││   ┃ ┃━  • ┃━┃ ┃━┃   │
 │   [m] Mail                     ││                     ││ Thu 5 Nov 2026 UTC  │
-│   [a] Files  (not built yet)   ││                     ││                     │
+│   [a] Files                    ││                     ││                     │
 │   [c] Chat                     │╰─────────────────────╯╰─────────────────────╯
 │   [d] Doors                    │╭ Who is online ──────╮╭ Last callers ───────╮
 │   [u] Members                  ││ ● 5 online          ││ bob              2m │
@@ -218,14 +218,14 @@
 ╰────────────────────────────────╯╰─────────────────────╯╰─────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / dashboard / 132x43 / unicode truecolor / colors=5ac6aa8a76fee773
+=== paper / dashboard / 132x43 / unicode truecolor / colors=040503e6495d4b05
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ╭ Main menu ─────────────────────╮╭ This board ───────────────────╮╭ Clock ───────────────────────╮╭ Who is online ────────────────╮
 │ Signed in as alice.            ││ russh-bbs                     ││      ━     ━   ━             ││ ● 5 online                    │
 │                                ││ A bulletin board in your ter… ││   ┃  ━┃ • ┃ ┃ ┃ ┃            ││ ▸ alice       ▸ bob           │
 │ > [f] Forums                   ││ Portland, OR · since 2026     ││   ┃ ┃━  • ┃━┃ ┃━┃            ││ ▸ carol       ▸ dave          │
 │   [m] Mail                     ││                               ││ Thu 5 Nov 2026 UTC           ││ ▸ erin                        │
-│   [a] Files  (not built yet)   ││                               ││                              ││                               │
+│   [a] Files                    ││                               ││                              ││                               │
 │   [c] Chat                     ││                               ││                              ││                               │
 │   [d] Doors                    ││                               ││                              ││                               │
 │   [u] Members                  ││                               ││                              ││                               │
@@ -263,14 +263,14 @@
 ╰────────────────────────────────╯╰───────────────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== paper / dashboard / 80x24 / ascii mono / colors=4dad94086eaa8f84
+=== paper / dashboard / 80x24 / ascii mono / colors=3ff226c1f5160baa
  russh-bbs | Main menu                                                UTC 12:00
 + Main menu ---------------------++ This board ---------++ Clock --------------+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
 |                                || A bulletin board i~ ||   |  _| . | | | |   |
 | > [f] Forums                   || Portland, OR        ||   | |_  . |_| |_|   |
 |   [m] Mail                     ||                     || Thu 5 Nov 2026 UTC  |
-|   [a] Files  (not built yet)   ||                     ||                     |
+|   [a] Files                    ||                     ||                     |
 |   [c] Chat                     |+---------------------++---------------------+
 |   [d] Doors                    |+ Who is online ------++ Last callers -------+
 |   [u] Members                  || * 5 online          || bob              2m |
@@ -289,14 +289,14 @@
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / dashboard / 80x24 / unicode truecolor / colors=56190560169764d4
+=== amber / dashboard / 80x24 / unicode truecolor / colors=8c1bdf49dc932a52
  russh-bbs │ Main menu                                                UTC 12:00
 ┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━┓┏ THIS BOARD ━━━━━━━━━┓┏ CLOCK ━━━━━━━━━━━━━━┓
 ┃ Signed in as alice.            ┃┃ russh-bbs           ┃┃      ━     ━   ━    ┃
 ┃                                ┃┃ A bulletin board i… ┃┃   ┃  ━┃ • ┃ ┃ ┃ ┃   ┃
 ┃ > [f] Forums                   ┃┃ Portland, OR        ┃┃   ┃ ┃━  • ┃━┃ ┃━┃   ┃
 ┃   [m] Mail                     ┃┃                     ┃┃ Thu 5 Nov 2026 UTC  ┃
-┃   [a] Files  (not built yet)   ┃┃                     ┃┃                     ┃
+┃   [a] Files                    ┃┃                     ┃┃                     ┃
 ┃   [c] Chat                     ┃┗━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛
 ┃   [d] Doors                    ┃┏ WHO IS ONLINE ━━━━━━┓┏ LAST CALLERS ━━━━━━━┓
 ┃   [u] Members                  ┃┃ ● 5 online          ┃┃ bob              2m ┃
@@ -315,14 +315,14 @@
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━┛
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / dashboard / 132x43 / unicode truecolor / colors=06cb793a83842802
+=== amber / dashboard / 132x43 / unicode truecolor / colors=f119ced6b78ec348
  russh-bbs │ Main menu                                                                                                    UTC 12:00
 ┏ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━┓┏ THIS BOARD ━━━━━━━━━━━━━━━━━━━┓┏ CLOCK ━━━━━━━━━━━━━━━━━━━━━━━┓┏ WHO IS ONLINE ━━━━━━━━━━━━━━━━┓
 ┃ Signed in as alice.            ┃┃ russh-bbs                     ┃┃      ━     ━   ━             ┃┃ ● 5 online                    ┃
 ┃                                ┃┃ A bulletin board in your ter… ┃┃   ┃  ━┃ • ┃ ┃ ┃ ┃            ┃┃ ▸ alice       ▸ bob           ┃
 ┃ > [f] Forums                   ┃┃ Portland, OR · since 2026     ┃┃   ┃ ┃━  • ┃━┃ ┃━┃            ┃┃ ▸ carol       ▸ dave          ┃
 ┃   [m] Mail                     ┃┃                               ┃┃ Thu 5 Nov 2026 UTC           ┃┃ ▸ erin                        ┃
-┃   [a] Files  (not built yet)   ┃┃                               ┃┃                              ┃┃                               ┃
+┃   [a] Files                    ┃┃                               ┃┃                              ┃┃                               ┃
 ┃   [c] Chat                     ┃┃                               ┃┃                              ┃┃                               ┃
 ┃   [d] Doors                    ┃┃                               ┃┃                              ┃┃                               ┃
 ┃   [u] Members                  ┃┃                               ┃┃                              ┃┃                               ┃
@@ -360,14 +360,14 @@
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== amber / dashboard / 80x24 / ascii mono / colors=4dad94086eaa8f84
+=== amber / dashboard / 80x24 / ascii mono / colors=3ff226c1f5160baa
  russh-bbs | Main menu                                                UTC 12:00
 + MAIN MENU ---------------------++ THIS BOARD ---------++ CLOCK --------------+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
 |                                || A bulletin board i~ ||   |  _| . | | | |   |
 | > [f] Forums                   || Portland, OR        ||   | |_  . |_| |_|   |
 |   [m] Mail                     ||                     || Thu 5 Nov 2026 UTC  |
-|   [a] Files  (not built yet)   ||                     ||                     |
+|   [a] Files                    ||                     ||                     |
 |   [c] Chat                     |+---------------------++---------------------+
 |   [d] Doors                    |+ WHO IS ONLINE ------++ LAST CALLERS -------+
 |   [u] Members                  || * 5 online          || bob              2m |
@@ -386,14 +386,14 @@
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / dashboard / 80x24 / unicode truecolor / colors=60fabd3246866df6
+=== deepspace / dashboard / 80x24 / unicode truecolor / colors=2fbf8b9c3b0d853a
  ◆ russh-bbs ◆ │ Main menu                                            UTC 12:00
 ╭────── M A I N   M E N U ───────╮╭ T H I S   B O A R D ╮╭───── C L O C K ─────╮
 │ Signed in as alice.            ││ russh-bbs           ││      ━     ━   ━    │
 │                                ││ A bulletin board i… ││   ┃  ━┃ • ┃ ┃ ┃ ┃   │
 │ > [f] Forums                   ││ Portland, OR        ││   ┃ ┃━  • ┃━┃ ┃━┃   │
 │   [m] Mail                     ││                     ││ Thu 5 Nov 2026 UTC  │
-│   [a] Files  (not built yet)   ││                     ││                     │
+│   [a] Files                    ││                     ││                     │
 │   [c] Chat                     │╰─────────────────────╯╰─────────────────────╯
 │   [d] Doors                    │╭I S   O N L I N E ───╮╭ T   C A L L E R S ──╮
 │   [u] Members                  ││ ● 5 online          ││ bob              2m │
@@ -412,14 +412,14 @@
 ╰────────────────────────────────╯╰─────────────────────╯╰─────────────────────╯
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / dashboard / 132x43 / unicode truecolor / colors=c38b7a093b9e9c92
+=== deepspace / dashboard / 132x43 / unicode truecolor / colors=9f0b190fbacdf546
  ◆ russh-bbs ◆ │ Main menu                                                                                                UTC 12:00
 ╭────── M A I N   M E N U ───────╮╭───── T H I S   B O A R D ─────╮╭───────── C L O C K ──────────╮╭── W H O   I S   O N L I N E ──╮
 │ Signed in as alice.            ││ russh-bbs                     ││      ━     ━   ━             ││ ● 5 online                    │
 │                                ││ A bulletin board in your ter… ││   ┃  ━┃ • ┃ ┃ ┃ ┃            ││ ▸ alice       ▸ bob           │
 │ > [f] Forums                   ││ Portland, OR · since 2026     ││   ┃ ┃━  • ┃━┃ ┃━┃            ││ ▸ carol       ▸ dave          │
 │   [m] Mail                     ││                               ││ Thu 5 Nov 2026 UTC           ││ ▸ erin                        │
-│   [a] Files  (not built yet)   ││                               ││                              ││                               │
+│   [a] Files                    ││                               ││                              ││                               │
 │   [c] Chat                     ││                               ││                              ││                               │
 │   [d] Doors                    ││                               ││                              ││                               │
 │   [u] Members                  ││                               ││                              ││                               │
@@ -457,14 +457,14 @@
 ╰────────────────────────────────╯╰───────────────────────────────╯ *                      .                 . .              .
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== deepspace / dashboard / 80x24 / ascii mono / colors=76ce7b4a9eab1d9c
+=== deepspace / dashboard / 80x24 / ascii mono / colors=5c4576c59bb3ebe8
  * russh-bbs * | Main menu                                            UTC 12:00
 +------ M A I N   M E N U -------++ T H I S   B O A R D ++----- C L O C K -----+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
 |                                || A bulletin board i~ ||   |  _| . | | | |   |
 | > [f] Forums                   || Portland, OR        ||   | |_  . |_| |_|   |
 |   [m] Mail                     ||                     || Thu 5 Nov 2026 UTC  |
-|   [a] Files  (not built yet)   ||                     ||                     |
+|   [a] Files                    ||                     ||                     |
 |   [c] Chat                     |+---------------------++---------------------+
 |   [d] Doors                    |+I S   O N L I N E ---++ T   C A L L E R S --+
 |   [u] Members                  || * 5 online          || bob              2m |
@@ -483,14 +483,14 @@
 +--------------------------------++---------------------++---------------------+
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / dashboard / 80x24 / unicode truecolor / colors=de4e4b20f4ad2302
+=== ansi / dashboard / 80x24 / unicode truecolor / colors=9fb0b7978d2def18
  ░▒▓ russh-bbs ▓▒░ │ Main menu                                        UTC 12:00
 ╔═════════╡ Main menu ╞══════════╗╔═══╡ This board ╞════╗╔══════╡ Clock ╞══════╗
 ║ Signed in as alice.            ║║ russh-bbs           ║║      ━     ━   ━    ║
 ║                                ║║ A bulletin board i… ║║   ┃  ━┃ • ┃ ┃ ┃ ┃   ║
 ║ > [f] Forums                   ║║ Portland, OR        ║║   ┃ ┃━  • ┃━┃ ┃━┃   ║
 ║   [m] Mail                     ║║                     ║║ Thu 5 Nov 2026 UTC  ║
-║   [a] Files  (not built yet)   ║║                     ║║                     ║
+║   [a] Files                    ║║                     ║║                     ║
 ║   [c] Chat                     ║╚═════════════════════╝╚═════════════════════╝
 ║   [d] Doors                    ║╔══╡ Who is online ╞══╗╔══╡ Last callers ╞═══╗
 ║   [u] Members                  ║║ ● 5 online          ║║ bob              2m ║
@@ -509,14 +509,14 @@
 ╚════════════════════════════════╝╚═════════════════════╝╚═════════════════════╝
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / dashboard / 132x43 / unicode truecolor / colors=1b9ff52cded67a3b
+=== ansi / dashboard / 132x43 / unicode truecolor / colors=afad4dce9fc45455
  ░▒▓ russh-bbs ▓▒░ │ Main menu                                                                                            UTC 12:00
 ╔═════════╡ Main menu ╞══════════╗╔════════╡ This board ╞═════════╗╔══════════╡ Clock ╞═══════════╗╔═══════╡ Who is online ╞═══════╗
 ║ Signed in as alice.            ║║ russh-bbs                     ║║      ━     ━   ━             ║║ ● 5 online                    ║
 ║                                ║║ A bulletin board in your ter… ║║   ┃  ━┃ • ┃ ┃ ┃ ┃            ║║ ▸ alice       ▸ bob           ║
 ║ > [f] Forums                   ║║ Portland, OR · since 2026     ║║   ┃ ┃━  • ┃━┃ ┃━┃            ║║ ▸ carol       ▸ dave          ║
 ║   [m] Mail                     ║║                               ║║ Thu 5 Nov 2026 UTC           ║║ ▸ erin                        ║
-║   [a] Files  (not built yet)   ║║                               ║║                              ║║                               ║
+║   [a] Files                    ║║                               ║║                              ║║                               ║
 ║   [c] Chat                     ║║                               ║║                              ║║                               ║
 ║   [d] Doors                    ║║                               ║║                              ║║                               ║
 ║   [u] Members                  ║║                               ║║                              ║║                               ║
@@ -554,14 +554,14 @@
 ╚════════════════════════════════╝╚═══════════════════════════════╝
  Up/Down move  Enter choose  ? help  Esc back  Ctrl-C log off
 
-=== ansi / dashboard / 80x24 / ascii mono / colors=b2f4aa72151ce096
+=== ansi / dashboard / 80x24 / ascii mono / colors=7b0478550ace9f9c
  ## russh-bbs ## | Main menu                                          UTC 12:00
 +---------| Main menu |----------++---| This board |----++------| Clock |------+
 | Signed in as alice.            || russh-bbs           ||      _     _   _    |
 |                                || A bulletin board i~ ||   |  _| . | | | |   |
 | > [f] Forums                   || Portland, OR        ||   | |_  . |_| |_|   |
 |   [m] Mail                     ||                     || Thu 5 Nov 2026 UTC  |
-|   [a] Files  (not built yet)   ||                     ||                     |
+|   [a] Files                    ||                     ||                     |
 |   [c] Chat                     |+---------------------++---------------------+
 |   [d] Doors                    |+--| Who is online |--++--| Last callers |---+
 |   [u] Members                  || * 5 online          || bob              2m |

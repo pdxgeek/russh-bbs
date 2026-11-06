@@ -293,6 +293,10 @@ pub(crate) struct KeyEffects {
     /// The session runs it against the store and gives the answer to
     /// [`Screen::deliver_community`].
     pub(crate) community_request: Option<CommunityRequest>,
+    /// A Files request (areas, a file, the queue, an approval, ...) the Files screens are waiting
+    /// on (M4-F2). The session runs it against the store and the blob store and gives the answer
+    /// to [`Screen::deliver_files`].
+    pub(crate) files_request: Option<russh_bbs_core::files::Request>,
     /// A forum request (board list, thread, search, post, ...) the forum screens are waiting
     /// on (M3-E). The session runs it against the store and gives the answer to
     /// [`Screen::deliver_forum`].
@@ -342,6 +346,7 @@ impl KeyEffects {
         self.mail_request = later.mail_request;
         self.door_request = later.door_request;
         self.community_request = later.community_request;
+        self.files_request = later.files_request;
         if later.palette != PaletteAsk::Nothing {
             self.palette = later.palette;
         }
@@ -1199,6 +1204,12 @@ impl Screen {
                         effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
                         break;
                     }
+                    // And the Files screens (M4-F2).
+                    if let Some(request) = flow.take_files_request() {
+                        effects.files_request = Some(request);
+                        effects.held_back = keys.get(index + 1..).unwrap_or_default().to_vec();
+                        break;
+                    }
                     // The poll form asked for the full-screen editor: the keys after it in
                     // this batch are the editor's.
                     if let Some(ask) = flow.take_community_editor() {
@@ -1672,6 +1683,12 @@ impl Screen {
         self.ui.mail_keys()
     }
 
+    /// The blob store, scanner and SFTP switch the board runs with (`None` on a board built
+    /// without them: the Files screens then say file areas are not available).
+    pub(super) fn file_services(&self) -> Option<Arc<crate::sftp::FileServices>> {
+        self.ui.files()
+    }
+
     /// Move the member into the forum screens; the request loads the board list.
     fn open_forums(&mut self) -> forums::Request {
         let placeholder = Content::Limited(Vec::new());
@@ -1750,6 +1767,23 @@ impl Screen {
             flow.deliver_community(response);
         }
         self.dirty = true;
+    }
+
+    /// The answer to the Files request taken from [`KeyEffects`]; the next request (a reload after
+    /// a change), if the screen asks for one, comes from [`Screen::take_files_request`].
+    pub(crate) fn deliver_files(&mut self, response: russh_bbs_core::files::Response) {
+        if let Content::Member(flow) = &mut self.content {
+            flow.deliver_files(response);
+        }
+        self.dirty = true;
+    }
+
+    /// The Files request the screen asked for after an answer, once.
+    pub(crate) fn take_files_request(&mut self) -> Option<russh_bbs_core::files::Request> {
+        match &mut self.content {
+            Content::Member(flow) => flow.take_files_request(),
+            _ => None,
+        }
     }
 
     /// The community request the screen asked for after an answer (an emptied poll page asks for

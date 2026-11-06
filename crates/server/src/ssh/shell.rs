@@ -442,6 +442,8 @@ impl<D: Backend> Shell<D> {
                 self.run_mail(request).await;
             } else if let Some(request) = effects.community_request.take() {
                 self.run_community(request).await;
+            } else if let Some(request) = effects.files_request.take() {
+                self.run_files(request).await;
             } else if let Some(request) = effects.door_request.take() {
                 self.run_doors(request).await;
             } else {
@@ -1002,7 +1004,11 @@ impl<D: Backend> Shell<D> {
             None => start.access,
         };
         let flow = MemberFlow::new(&start.handle, access, start.previous_login, start.settings)
-            .with_menu_tree(self.parts.screen.ui_handle().menus().tree());
+            .with_menu_tree(self.parts.screen.ui_handle().menus().tree())
+            .with_files_mode(crate::sftp::files_mode(
+                &self.parts.screen.ui_handle(),
+                self.parts.access_filter.is_some(),
+            ));
         // The telnet transport is the one with an access filter (D27): it has no key to bind.
         let flow = if self.parts.access_filter.is_some() {
             flow.over_telnet()
@@ -1465,6 +1471,32 @@ impl<D: Backend> Shell<D> {
             let response = crate::community::run(&*self.parts.directory, &access, request).await;
             self.parts.screen.deliver_community(response);
             match self.parts.screen.take_community_request() {
+                Some(next) => request = next,
+                None => break,
+            }
+        }
+    }
+
+    /// Run the Files request a screen is waiting on and give it the answer (M4-F2). Core checks
+    /// every permission against the snapshot loaded for this action; a change asks for the list
+    /// again, so the follow-up runs here with the same permissions (a few at most).
+    async fn run_files(&mut self, request: russh_bbs_core::files::Request) {
+        let Some(access) = self.parts.screen.access().cloned() else {
+            return;
+        };
+        let services = self.parts.screen.file_services();
+        let mut request = request;
+        for _ in 0..3 {
+            let response = russh_bbs_core::files::execute(
+                &*self.parts.directory,
+                services.as_ref().map(|s| &s.blobs),
+                &access,
+                russh_bbs_core::limits::Clock::now(&russh_bbs_core::limits::SystemClock),
+                request,
+            )
+            .await;
+            self.parts.screen.deliver_files(response);
+            match self.parts.screen.take_files_request() {
                 Some(next) => request = next,
                 None => break,
             }

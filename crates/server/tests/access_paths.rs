@@ -432,7 +432,7 @@ async fn menu_paths_follow_their_permission_on_the_next_action() {
             Permission::FilesList,
             'a',
             "[a] Files",
-            "File areas are not built yet.",
+            "File areas are not available on this board.",
         ),
         (Permission::MembersView, 'u', "[u] Members", "Member list"),
         (

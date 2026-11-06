@@ -26,6 +26,7 @@ Status of the project: M0, M1, M2 and M3 are merged. M1's QA gate passed except 
 | Door games and the door framework | [doors/README.md](doors/README.md) |
 | Chat rooms, presence, whispers | [chat.md](chat.md) |
 | Internal mail (sealed at rest, reports) | [mail.md](mail.md) |
+| File areas, quarantine, approval, scanning, SFTP | [files.md](files.md) |
 | Running cloud sessions | [cloud-sessions.md](cloud-sessions.md), [orchestration.md](orchestration.md) |
 | Third-party crates (default choices, library-first D47) | [third-party.md](third-party.md) |
 | Coding standards (Rust) | [../.claude/skills/rust-coding/SKILL.md](../.claude/skills/rust-coding/SKILL.md), copied from [pdxgeek/ai-skills](https://github.com/pdxgeek/ai-skills) (upstream is the source of truth) |

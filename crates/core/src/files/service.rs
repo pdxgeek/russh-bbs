@@ -28,7 +28,7 @@ use super::text::{
 };
 
 /// Files on a page of a listing, a search or the queue.
-pub const PAGE_SIZE: u32 = 12;
+pub const PAGE_SIZE: u32 = 9;
 /// Most files on a download list.
 pub const MAX_DOWNLOAD_LIST: u32 = 100;
 /// Most entries an SFTP directory listing returns.
